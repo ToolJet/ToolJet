@@ -9,14 +9,18 @@ import {
   PencilRuler,
   Trash2,
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 import { useAppsStore } from '@/_stores/appsStore';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { Button } from '@/components/ui/Button/Button';
 import DropdownMenu from '@/components/ui/Rocket/DropdownMenu';
 
 import type { ItemKindWithDetails } from '../types';
 import { AppDialogType, FolderDialogType } from '@/_stores/types/appsStore';
 import { appTypeToDisplayNameMapping } from '../helper';
+
+import type { IWorkspaceBranchesStore } from '@/_stores/types/workspaceBranchesStore';
 
 // Hidden until the row is hovered, holds keyboard focus (so Tab can reach them) or has its actions menu open.
 const REVEAL_ON_ROW_HOVER_CLASS =
@@ -30,10 +34,25 @@ const ROW_MENU_CLASSES = {
   group: 'tw-p-2',
 };
 
+const checkIsBranchLocked = ({ currentBranch, orgGitConfig, isInitialized }) => {
+  if (!isInitialized || !orgGitConfig) return false;
+
+  const isBranchingEnabled = orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled;
+  const isDefault = currentBranch?.is_default || currentBranch?.isDefault;
+  return !!(isBranchingEnabled && isDefault);
+};
+
 // Sits beside the name; REVEAL_ON_ROW_HOVER_CLASS keeps it shown while open so the menu keeps its anchor.
 export default function ItemActionsMenu({ appType, itemKind, itemDetails }: ItemKindWithDetails) {
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
   const setFolderDialogState = useAppsStore((state) => state.setFolderDialogState);
+  const toggleSwitchBranchModal = useAppsStore((state) => state.toggleSwitchBranchModal);
+
+  const orgGitConfig = useWorkspaceBranchesStore((state: IWorkspaceBranchesStore) => state.orgGitConfig);
+  const isInitialized = useWorkspaceBranchesStore((state: IWorkspaceBranchesStore) => state.isInitialized);
+  const currentBranch = useWorkspaceBranchesStore((state: IWorkspaceBranchesStore) => state.currentBranch);
+
+  const isBranchLocked = checkIsBranchLocked({ currentBranch, orgGitConfig, isInitialized });
 
   const handleFolderActionClick = (actionName: FolderDialogType) => () => {
     setFolderDialogState({
@@ -47,16 +66,37 @@ export default function ItemActionsMenu({ appType, itemKind, itemDetails }: Item
   };
 
   const handleAppActionClick = (actionName: AppDialogType) => () => {
-    setAppDialogState(
-      {
-        type: actionName,
-        appDetails:
-          actionName === 'duplicate'
-            ? { ...itemDetails, name: itemDetails?.name ? `${itemDetails.name.slice(0, 95)}_Copy` : '' }
-            : itemDetails,
-      },
-      appType
-    );
+    const payload = {
+      type: actionName,
+      appDetails:
+        actionName === 'duplicate'
+          ? { ...itemDetails, name: itemDetails?.name ? `${itemDetails.name.slice(0, 95)}_Copy` : '' }
+          : itemDetails,
+    };
+
+    const showSwitchBranchModal = isBranchLocked && itemKind === 'app' && itemDetails.git?.version_synced === false;
+
+    if (showSwitchBranchModal) {
+      switch (actionName) {
+        case 'rename': {
+          toast.error("Renaming isn't allowed on master. Switch branch to update name.");
+          return;
+        }
+        case 'delete':
+        case 'change-icon':
+        case 'duplicate': {
+          toggleSwitchBranchModal({
+            open: true,
+            postSwitchActionDetails: payload,
+          });
+          return;
+        }
+        default:
+          return;
+      }
+    }
+
+    setAppDialogState(payload);
   };
 
   const MENU_ITEMS = {
@@ -80,7 +120,7 @@ export default function ItemActionsMenu({ appType, itemKind, itemDetails }: Item
         icon: <Copy size={MENU_ICON_SIZE} />,
         onSelect: handleAppActionClick('duplicate'),
       },
-      itemKind === 'app' && itemDetails.folder?.id
+      itemKind === 'app' && itemDetails.folder?.id && (isBranchLocked ? !itemDetails.git?.synced : true)
         ? {
             id: 'move',
             label: 'Remove from folder',
@@ -88,12 +128,14 @@ export default function ItemActionsMenu({ appType, itemKind, itemDetails }: Item
             onSelect: handleFolderActionClick('remove-app-from-folder'),
           }
         : null,
-      {
-        id: 'move',
-        label: 'Move to folder',
-        icon: <FolderInput size={MENU_ICON_SIZE} />,
-        onSelect: handleFolderActionClick('add-to-folder'),
-      },
+      (itemKind === 'app' && isBranchLocked ? !itemDetails.git?.synced : true)
+        ? {
+            id: 'move',
+            label: 'Move to folder',
+            icon: <FolderInput size={MENU_ICON_SIZE} />,
+            onSelect: handleFolderActionClick('add-to-folder'),
+          }
+        : null,
       {
         id: 'export',
         label: `Export ${appTypeToDisplayNameMapping[appType]}`,
@@ -114,7 +156,7 @@ export default function ItemActionsMenu({ appType, itemKind, itemDetails }: Item
         id: 'rename',
         label: 'Rename folder',
         icon: <AppWindow size={MENU_ICON_SIZE} />,
-        disabled: !itemDetails.actions?.rename,
+        disabled: isBranchLocked || !itemDetails.actions?.rename,
         onSelect: handleFolderActionClick('rename-folder'),
       },
       {
@@ -122,7 +164,7 @@ export default function ItemActionsMenu({ appType, itemKind, itemDetails }: Item
         label: 'Delete folder',
         icon: <Trash2 size={MENU_ICON_SIZE} />,
         destructive: true,
-        disabled: !itemDetails.actions?.delete,
+        disabled: isBranchLocked || !itemDetails.actions?.delete,
         onSelect: handleFolderActionClick('delete-folder'),
       },
     ],

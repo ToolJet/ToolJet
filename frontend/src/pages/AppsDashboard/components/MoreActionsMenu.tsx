@@ -9,6 +9,7 @@ import { HEADER_MENU_CLASSES } from './headerMenuClasses';
 
 import type { TAppType } from '../helper';
 import { useAppsStore } from '@/_stores/appsStore';
+import { useIsWorkspaceBranchLocked } from '../hooks/useIsWorkspaceBranchLocked';
 
 interface MoreActionsMenuProps {
   appType: TAppType;
@@ -19,14 +20,21 @@ const MENU_CLASSES = { ...HEADER_MENU_CLASSES, content: `${HEADER_MENU_CLASSES.c
 
 export default function MoreActionsMenu({ appType }: MoreActionsMenuProps) {
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
+  const toggleSwitchBranchModal = useAppsStore((state) => state.toggleSwitchBranchModal);
+
+  const { isBranchLocked } = useIsWorkspaceBranchLocked();
+  const { handleFileChange } = useReadAndImportFile(appType);
 
   const hiddenFileInput = useRef(null);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const { handleFileChange } = useReadAndImportFile(appType);
+  const handleImportFromDevice = () => {
+    if (isBranchLocked) {
+      toggleSwitchBranchModal({ open: true, postSwitchActionDetails: { type: 'create', appDetails: null } });
+      return;
+    }
 
-  const handleOpenFilePicker = () => {
     hiddenFileInput.current?.click();
   };
 
@@ -46,7 +54,7 @@ export default function MoreActionsMenu({ appType }: MoreActionsMenuProps) {
           id: 'import-device',
           label: 'Import from device',
           icon: <FileDown />,
-          onSelect: handleOpenFilePicker,
+          onSelect: handleImportFromDevice,
           'data-cy': 'more-actions-import-from-device',
         },
         ...(appType === 'front-end'

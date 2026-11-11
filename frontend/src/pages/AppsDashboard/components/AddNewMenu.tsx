@@ -5,6 +5,7 @@ import { authenticationService } from '@/_services/authentication.service';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 import { useAppsStore } from '@/_stores/appsStore';
+import { useIsWorkspaceBranchLocked } from '../hooks/useIsWorkspaceBranchLocked';
 import { Button } from '@/components/ui/Button/Button';
 import DropdownMenu, { type DropdownMenuSection } from '@/components/ui/Rocket/DropdownMenu';
 import { HEADER_MENU_CLASSES } from './headerMenuClasses';
@@ -13,15 +14,16 @@ import { appTypeToDisplayNameMapping, hasFolderOperationPermission, type TAppTyp
 
 interface AddNewMenuProps {
   appType: TAppType;
-  isBranchLocked: boolean;
 }
 
 const MENU_CLASSES = { ...HEADER_MENU_CLASSES, content: `${HEADER_MENU_CLASSES.content} tw-min-w-40` };
 
-export default function AddNewMenu({ appType, isBranchLocked }: AddNewMenuProps) {
+export default function AddNewMenu({ appType }: AddNewMenuProps) {
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
   const setFolderDialogState = useAppsStore((state) => state.setFolderDialogState);
   const toggleSwitchBranchModal = useAppsStore((state) => state.toggleSwitchBranchModal);
+
+  const { isBranchLocked } = useIsWorkspaceBranchLocked();
 
   const hasFolderCreatePermission = hasFolderOperationPermission(
     authenticationService.currentSessionValue.user_permissions,
@@ -30,11 +32,14 @@ export default function AddNewMenu({ appType, isBranchLocked }: AddNewMenuProps)
   );
 
   const handleOpenCreateAppDialog = () => {
+    const payload = { type: 'create', appDetails: null };
+
     if (isBranchLocked) {
-      toggleSwitchBranchModal({ open: true, postSwitchActionDetails: { type: 'create' } });
+      toggleSwitchBranchModal({ open: true, postSwitchActionDetails: payload });
       return;
     }
-    setAppDialogState({ type: 'create' }, appType);
+
+    setAppDialogState(payload);
   };
 
   const handleOpenCreateNewFolderDialog = () => {
