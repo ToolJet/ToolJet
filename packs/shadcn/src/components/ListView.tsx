@@ -346,11 +346,16 @@ export const ListView = () => {
                     <div
                       key={keys[i]}
                       role="listitem"
-                      tabIndex={0}
+                      // A row of components is no Tab stop, as a ToolJet List view's: Tab goes through its components.
+                      tabIndex={-1}
                       className={cn(cls, 'is-canvas')}
+                      // The item height, as --lv-row-height: with Dynamic height (.tj-cc-fit) the host draws the row's
+                      // canvas at its components' height and the item grows with it, never below that height.
                       style={{
                         ...itemStyle,
-                        height: Math.min(1200, Math.max(24, Number(rowHeight) || 72)) + (dividers ? space : 0),
+                        ['--lv-row-height' as string]: `${
+                          Math.min(1200, Math.max(24, Number(rowHeight) || 72)) + (dividers ? space : 0)
+                        }px`,
                       }}
                       onClickCapture={() => pick(i)}
                       onKeyDown={(e) => e.target === e.currentTarget && onKeyActivate(() => pick(i))(e)}

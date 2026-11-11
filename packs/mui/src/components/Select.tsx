@@ -160,7 +160,7 @@ export const Select = () => {
     fit: true,
     loading: 'own',
     usage:
-      "MUI's Select (TextField select): label, options [{label, value}], value (the picked value), helperText, displayEmpty with placeholder, variant, size, disableClearable (a clear button shows while a value is picked unless set); selectedOption is exposed; onChange, onOpen, onClose. The menu opens in the popup layer.",
+      "MUI's Select (TextField select): label, options [{label, value}], value (the picked value), helperText, displayEmpty with placeholder, disableClearable (a clear button shows while a value is picked unless set); styles variant, size, color; selectedOption is exposed; onChange, onOpen, onClose. The menu opens in the popup layer.",
     roleProps: { description: 'helperText', showClearBtn: 'disableClearable' },
     roleValues: { disableClearable: { true: false, false: true } },
     roleEvents: { onSelect: 'onChange' },
@@ -241,6 +241,8 @@ export const Select = () => {
         title="Clear"
         size="small"
         className="tj-mui-select-clear"
+        // No Tab stop, as a ToolJet Dropdown's clear: Backspace or Delete on the field clears it.
+        tabIndex={-1}
         sx={{ p: `${(CLEAR_SIZE - 20) / 2}px` }}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -303,6 +305,14 @@ export const Select = () => {
             // The picked item's key: its option's own value.
             const k = String(e.target.value ?? '');
             if (available()) change(k === '' ? '' : valueForKey(options, k));
+          }}
+          onKeyDown={(e) => {
+            const onField = (e.target as HTMLElement).getAttribute('role') === 'combobox';
+            if (onField && clearable && (e.key === 'Backspace' || e.key === 'Delete') && available()) {
+              e.preventDefault();
+              change('');
+              check.touch();
+            }
           }}
         >
           {shownOptions(options, selected).map((o) => (

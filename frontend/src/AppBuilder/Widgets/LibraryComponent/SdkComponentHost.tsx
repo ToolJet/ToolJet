@@ -8,10 +8,12 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import type { LibraryManifest } from '@/AppBuilder/types/libraryComponent.types';
+import { canFitContent, holdsComponentsInPlace, holdsComponentsInPopup } from '@/AppBuilder/_helpers/sdkComponentTypes';
 import InlineLibraryComponent, { holdStoreWrites } from './InlineLibraryComponent';
 import LibrarySlotCanvas from './LibrarySlotCanvas';
 import { usePackHost, useRowTemplates } from './usePackHost';
 import { typedPackProps } from './packPropertyTypes';
+import { checkedColorStyles } from './packStyleColors';
 import { createActionRegistry, isActionRegistrySettled, whenActionRegistered } from './actionRegistry';
 import { setSdkActionReadiness } from '@/AppBuilder/_utils/sdkActionReadiness';
 import type { LibraryRuntime } from './inlineRuntime';
@@ -282,16 +284,30 @@ const SdkComponentHost = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties, rowTemplates, hiddenSamples, pack, componentName, manifestComponent, metaKeys.join('|')]);
 
-  // A value a property could not take is reported in the debugger, as a native widget's is; once per value.
+  // Inspector Styles-tab values for the bundle — passed as styles, never set as exposed variables. A colour style the
+  // browser can't read is left out, so the component draws its default (packStyleColors.ts).
+  const { componentStyles, styleErrors } = useMemo(() => {
+    const checked = checkedColorStyles(
+      manifestComponent?.styles,
+      Object.fromEntries(Object.entries(styles).filter(([k]) => !HOST_STYLE_KEYS.has(k)))
+    );
+    return { componentStyles: checked.styles, styleErrors: checked.errors };
+  }, [styles, manifestComponent]);
+
+  // A value a property or style could not take is reported in the debugger, as a native widget's is; once per value.
   const loggedErrors = useRef('');
   useEffect(() => {
-    const signature = JSON.stringify(propertyErrors.map((e) => [e.property, e.message]));
+    const errors = [
+      ...propertyErrors.map((error) => ({ error, target: 'Component Property' })),
+      ...styleErrors.map((error) => ({ error, target: 'Component Style' })),
+    ];
+    const signature = JSON.stringify(errors.map(({ error, target }) => [target, error.property, error.message]));
     if (signature === loggedErrors.current) return;
     loggedErrors.current = signature;
-    if (!propertyErrors.length) return;
+    if (!errors.length) return;
     const state = useStore.getState() as any;
     const name = state.getComponentDefinition?.(id, hostProps.moduleId ?? 'canvas')?.component?.name ?? id;
-    propertyErrors.forEach((error) =>
+    errors.forEach(({ error, target }) =>
       state.debugger?.log?.({
         type: 'component',
         kind: 'component',
@@ -305,18 +321,12 @@ const SdkComponentHost = ({
           effectiveProperty: { [error.property]: error.effective },
           componentId: id,
         },
-        errorTarget: 'Component Property',
+        errorTarget: target,
         logLevel: 'error',
         timestamp: new Date().toISOString(),
       })
     );
-  }, [propertyErrors, id, hostProps.moduleId]);
-
-  // Inspector Styles-tab values for the bundle — passed as styles, never set as exposed variables.
-  const componentStyles = useMemo(
-    () => Object.fromEntries(Object.entries(styles).filter(([k]) => !HOST_STYLE_KEYS.has(k))),
-    [styles]
-  );
+  }, [propertyErrors, styleErrors, id, hostProps.moduleId]);
 
   // Sends a message from this parent widget down into the widget's iframe.
   const postToShell = (msg: Record<string, unknown>) => iframeRef.current?.contentWindow?.postMessage(msg, '*');
@@ -462,8 +472,36 @@ const SdkComponentHost = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shellReady, componentProps, componentStyles]);
 
+  // Dynamic height, in a released app: the component draws at its content's height and the box follows it. One that
+  // holds components in place (a Card, Tabs) fits around them: its drop areas take their components' height
+  // (LibrarySlotCanvas) and it never draws shorter than its box, as a native Container. Before, a pack container kept
+  // its drawn height and its components scrolled inside it (QA: Dynamic height did nothing on pack containers).
+  // A height the component gives a drop area (an accordion section's, a dialog body's) becomes its minimum
+  // (inlineRuntime dropAreaStyle), and a list's rows grow with their components (usePackHost).
+  const fitsDynamicHeight = isInline && properties.dynamicHeight === true && currentMode === 'view';
+  const fit = fitsDynamicHeight && canFitContent(manifestComponent);
+  const fitsSlots = fitsDynamicHeight && holdsComponentsInPlace(manifestComponent);
+  // A dialog's body grows with its components, as a native Modal's does; the widget's own box (its trigger) keeps its size.
+  const fitsPopups = fitsDynamicHeight && holdsComponentsInPopup(manifestComponent);
+
   // Slot drop areas exist only inline: the iframe shell has no way to host ToolJet components.
-  const renderSlot = (slotName: string) => <LibrarySlotCanvas id={`${id}-${slotName}`} darkMode={darkMode} />;
+  const renderSlot = (slotName: string) => (
+    <LibrarySlotCanvas
+      id={`${id}-${slotName}`}
+      darkMode={darkMode}
+      fitContent={fitsSlots}
+      currentLayout={hostProps.currentLayout}
+    />
+  );
+  // A popup's drop area (a dialog's body) is drawn in the popup, outside the widget's box.
+  const renderPopupSlot = (slotName: string) => (
+    <LibrarySlotCanvas
+      id={`${id}-${slotName}`}
+      darkMode={darkMode}
+      fitContent={fitsPopups}
+      currentLayout={hostProps.currentLayout}
+    />
+  );
 
   // Pack contract v2: the control state, validation, fitted height, list rows and popup drop areas.
   const isLoading = !!exposedVariablesTemporaryState.isLoading;
@@ -471,8 +509,6 @@ const SdkComponentHost = ({
   // loading component is not also drawn disabled.
   const ownLoading = isInline && manifestComponent?.loading === 'own';
   const isDisabled = !!exposedVariablesTemporaryState.isDisabled;
-  const fit =
-    isInline && manifestComponent?.fit === true && properties.dynamicHeight === true && currentMode === 'view';
   const { host, light, popupSlotNames, exposeVariable, fireHostEvent } = usePackHost(
     { id, darkMode, setExposedVariable, fireEvent, height, ...hostProps },
     {
@@ -482,6 +518,7 @@ const SdkComponentHost = ({
       // What the row's components call their row besides {{listItem}}: a kanban card's {{cardData}}, as UI 2.0's.
       rowVariable: manifestComponent?.slots?.find?.((slot) => slot.kind === 'rows')?.variable,
       fit,
+      fitDropAreas: fitsSlots || fitsPopups,
       visibility: exposedVariablesTemporaryState.isVisible,
       // A field (a validation section) takes part in a Form's clearForm.
       formField: !!manifestComponent?.validation,
@@ -587,12 +624,13 @@ const SdkComponentHost = ({
           fit={fit}
           stretch={stretch}
           reserveHeight={height}
+          floorHeight={fitsSlots && !stretch ? safeHeight : undefined}
           themed={themed}
           darkMode={darkMode}
           hostRef={fitRef}
           light={light}
           popupSlotNames={popupSlotNames}
-          renderPopupSlot={renderSlot}
+          renderPopupSlot={renderPopupSlot}
           onInnerPress={currentMode === 'edit' ? selectOnInnerPress : undefined}
           fallbackSlotNames={fallbackSlotNames}
         />

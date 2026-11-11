@@ -12,6 +12,7 @@ import {
 } from './inlineRuntime';
 import { setActionRegistrySettled } from './actionRegistry';
 import { MODAL_ATTR, installModalFocusTrap, restoreFocusInside } from './packFocus';
+import { POPUP_LAYER_CLASS, keepPopupTabOrder, rememberInnerFocus } from './popupTabOrder';
 import useStore from '@/AppBuilder/_stores/store';
 
 // Shadow-root baseline. ToolJet's global CSS stays out, while inherited properties and theme custom
@@ -26,6 +27,9 @@ const BASE_CSS = `
 .tj-cc-root.tj-cc-fit { height: auto; overflow: visible; }
 .tj-cc-root.tj-cc-fit > * { height: auto; }
 .tj-cc-root.tj-cc-fit.tj-cc-stretch, .tj-cc-root.tj-cc-fit.tj-cc-stretch > * { height: 100%; }
+/* A fitted container never draws shorter than its box (floorHeight, the host's min-height): its root takes that
+   min-height too, so its surface fills the box when its components are short. */
+.tj-cc-root.tj-cc-fit.tj-cc-floor, .tj-cc-root.tj-cc-fit.tj-cc-floor > * { min-height: inherit; }
 *, *::before, *::after { box-sizing: border-box; }
 .tj-cc-error { padding: 8px; font: 12px/1.4 monospace; color: var(--text-danger); white-space: pre-wrap; }
 /* The component's code failed to load (QA item 19): a plain note with Retry, and the components inside it below. */
@@ -87,6 +91,26 @@ const TOKEN_CSS = `
   --tj-danger: var(--cc-error-systemStatus, #d72d39);
   --tj-success: var(--cc-success-systemStatus, #1e823b);
   --tj-warning: var(--cc-warning-systemStatus, #b54708);
+}
+/* A host without tj-themed resets them: custom properties inherit through a drop area, so an Ant or MUI component in a
+   Rocket container (themed) took the container's tokens and drew in ToolJet's colours, font and radius there, and in its
+   stock look on the canvas. initial leaves a token undefined, as on the canvas. */
+:host(:not(.tj-themed)) {
+  --tj-radius: initial;
+  --tj-radius-small: initial;
+  --tj-radius-large: initial;
+  --tj-on-brand: initial;
+  --tj-brand: initial;
+  --tj-brand-strong: initial;
+  --tj-surface: initial;
+  --tj-surface-muted: initial;
+  --tj-text: initial;
+  --tj-text-muted: initial;
+  --tj-border: initial;
+  --tj-border-weak: initial;
+  --tj-danger: initial;
+  --tj-success: initial;
+  --tj-warning: initial;
 }
 `;
 
@@ -198,7 +222,7 @@ export const holdStoreWrites = (): (() => void) => {
 // the page's body.
 const CANVAS_LAYER_Z = 1055;
 const TOOLJET_MODAL_Z = 1060;
-const LAYER_HOST = 'tj-cc-popup-host';
+const LAYER_HOST = POPUP_LAYER_CLASS;
 const canvasArea = (): HTMLElement => document.querySelector<HTMLElement>('.tj-canvas-area') ?? document.body;
 /** The dialog a widget is drawn in: a pack's popup layer (a dialog body's components are its light-DOM children) or a
  *  ToolJet Modal; null on the canvas. */
@@ -220,20 +244,45 @@ const idOf = (el: Element | null): number => {
 // A page taller than the window scrolls the whole canvas inside the app's scroller, so a layer the canvas's size drew a
 // centred dialog half a page down and a drawer past the window's bottom. A canvas layer covers only what is visible of
 // the canvas (within its scroller and the window), follows it as the page scrolls or the canvas resizes, and is the
-// containing block its dialogs and drawers fill (the transform).
-const scrollerOf = (el: HTMLElement): HTMLElement | null => {
+// containing block its dialogs and drawers fill (the transform). Across too: with the editor's right panel open the
+// canvas scrolls sideways under it (its scroller's right border, which the panel covers), and a right-placed drawer
+// opened under the panel (QA item 46), so the layer ends where the scroller's visible inside does.
+// The ancestors that clip the canvas, each on the axes it clips (a scroller, or overflow hidden).
+const clippersOf = (el: HTMLElement): { node: HTMLElement; x: boolean; y: boolean }[] => {
+  const out: { node: HTMLElement; x: boolean; y: boolean }[] = [];
   for (let node = el.parentElement; node && node !== document.body; node = node.parentElement) {
-    if (/(auto|scroll)/.test(getComputedStyle(node).overflowY)) return node;
+    const style = getComputedStyle(node);
+    const x = style.overflowX !== 'visible' && style.overflowX !== '';
+    const y = style.overflowY !== 'visible' && style.overflowY !== '';
+    if (x || y) out.push({ node, x, y });
   }
-  return null;
+  return out;
 };
 const fitToView = (host: HTMLElement, container: HTMLElement) => {
   const area = container.getBoundingClientRect();
-  const view = scrollerOf(container)?.getBoundingClientRect();
-  const top = Math.max(area.top, view?.top ?? 0, 0);
-  const bottom = Math.min(area.bottom, view?.bottom ?? Infinity, window.innerHeight);
+  let top = Math.max(area.top, 0);
+  let bottom = Math.min(area.bottom, window.innerHeight || Infinity);
+  let left = Math.max(area.left, 0);
+  let right = Math.min(area.right, window.innerWidth || Infinity);
+  // What each clipping ancestor shows: its inside, without its borders (the right panel's) and scrollbars; one with no
+  // layout (client size 0) its box.
+  clippersOf(container).forEach(({ node, x, y }) => {
+    const box = node.getBoundingClientRect();
+    if (y) {
+      const insideTop = box.top + node.clientTop;
+      top = Math.max(top, insideTop);
+      bottom = Math.min(bottom, node.clientHeight > 0 ? insideTop + node.clientHeight : box.bottom);
+    }
+    if (x) {
+      const insideLeft = box.left + node.clientLeft;
+      left = Math.max(left, insideLeft);
+      right = Math.min(right, node.clientWidth > 0 ? insideLeft + node.clientWidth : box.right);
+    }
+  });
   host.style.top = `${top - area.top}px`;
   host.style.height = `${Math.max(0, bottom - top)}px`;
+  host.style.left = `${left - area.left}px`;
+  host.style.width = `${Math.max(0, right - left)}px`;
 };
 
 type Layer = { overlay: HTMLElement; host: HTMLElement; container: HTMLElement; count: number; release: () => void };
@@ -257,6 +306,8 @@ const watchView = (container: HTMLElement) => {
   window.addEventListener('resize', schedule);
   const resized = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
   resized?.observe(container);
+  // The right panel opening or closing resizes a clipping ancestor's inside (its border), not the canvas.
+  clippersOf(container).forEach(({ node }) => resized?.observe(node));
   views.set(container, () => {
     cancelAnimationFrame(frame);
     document.removeEventListener('scroll', schedule, true);
@@ -296,6 +347,7 @@ const acquireLayer = (library: string, sheets: Sheets, widgetHost: HTMLElement) 
   root.appendChild(overlay);
   container.appendChild(host);
   const release = isolateInteractiveEvents(host);
+  const releaseTabOrder = keepPopupTabOrder(host, overlay);
   const layer: Layer = {
     overlay,
     host,
@@ -303,6 +355,7 @@ const acquireLayer = (library: string, sheets: Sheets, widgetHost: HTMLElement) 
     count: 1,
     release: () => {
       release();
+      releaseTabOrder();
       sheets.release(root);
       // A pack may keep the layer's root after it is gone (Ant's rc-util style cache is keyed by container): empty it,
       // so the popups and the listeners React put on the overlay go with the layer.
@@ -458,6 +511,9 @@ interface InlineLibraryComponentProps {
   /** The widget's saved height: a fitted box keeps it until the component draws, so the dynamic height measure does
    *  not read the empty box (the page's widgets collapsed onto each other, then jumped to their heights). */
   reserveHeight?: number;
+  /** A fitted container (a Card with Dynamic height) never draws shorter than this, its box, as a native Container:
+   *  the component's root is held at it too, so its surface fills the box. */
+  floorHeight?: number;
   /** The app theme reaches the pack as --tj-* tokens (TOKEN_CSS). */
   themed?: boolean;
   /** The app is in dark mode: native parts (scrollbars, date inputs) draw dark too. */
@@ -491,6 +547,7 @@ const InlineLibraryComponent = ({
   fit = false,
   stretch = false,
   reserveHeight,
+  floorHeight,
   themed = true,
   darkMode = false,
   hostRef: outerRef,
@@ -544,10 +601,12 @@ const InlineLibraryComponent = ({
     Object.defineProperty(root, 'tjOverlay', { value: layer.overlay, configurable: true });
     const releaseHost = isolateInteractiveEvents(el, pressOptions.current);
     const releaseFocus = restoreFocusInside(el, root);
+    const releaseInnerFocus = rememberInnerFocus(el);
     setShadow({ mount, popupHost: layer.host });
     return () => {
       releaseHost();
       releaseFocus();
+      releaseInnerFocus();
       releaseLayer(layerKey);
       sheets.release(root);
       // A pack may keep the root after the unmount (Ant's icons register every shadow root in rc-util's style
@@ -567,6 +626,7 @@ const InlineLibraryComponent = ({
   useLayoutEffect(() => {
     shadow?.mount.classList.toggle('tj-cc-fit', fit);
     shadow?.mount.classList.toggle('tj-cc-stretch', stretch);
+    shadow?.mount.classList.toggle('tj-cc-floor', fit && floorHeight !== undefined);
     hostRef.current?.classList.toggle('tj-themed', themed);
     // Popups (menus, pickers, dialogs) draw in the shared popup host, outside the widget: it takes the same theme
     // contract, or every popup fell back to the pack's stock colours, font and radius under an applied theme.
@@ -577,7 +637,7 @@ const InlineLibraryComponent = ({
     const scheme = darkMode ? 'dark' : 'light';
     if (hostRef.current) hostRef.current.style.colorScheme = scheme;
     if (shadow?.popupHost) shadow.popupHost.style.colorScheme = scheme;
-  }, [shadow, fit, stretch, themed, darkMode]);
+  }, [shadow, fit, stretch, floorHeight, themed, darkMode]);
 
   // The host already dims a disabled widget's box. It marks the root too, so a component whose controls dim
   // themselves when disabled can keep them at full opacity (the pack's CSS reads the mark) instead of dimming twice.
@@ -739,12 +799,14 @@ const InlineLibraryComponent = ({
     else if (outerRef) (outerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
   };
 
+  const fittedMinHeight = fit && !stretch ? (floorHeight ?? (!drawn ? reserveHeight : undefined)) : undefined;
+
   return (
     <div
       ref={setRef}
       data-cy={dataCy}
       className={fit && !stretch ? 'tw-w-full tw-block' : 'tw-w-full tw-h-full tw-block'}
-      style={{ boxShadow, ...(fit && !stretch && !drawn && reserveHeight ? { minHeight: reserveHeight } : {}) }}
+      style={{ boxShadow, ...(fittedMinHeight ? { minHeight: fittedMinHeight } : {}) }}
     >
       {shadow && createPortal(content, shadow.mount)}
       {/* Light-DOM children, projected into the bundle's <slot> elements. */}

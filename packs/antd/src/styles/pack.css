@@ -1529,3 +1529,61 @@
   flex: 0 0 auto;
   min-width: 0;
 }
+
+/* Container background, once set, fills a field on every variant (QA item 49): Ant draws it on Outlined only, and
+   Filled kept its grey fill and Borderless stayed transparent. Unset, each variant keeps Ant's look. A disabled field
+   and an error or warning one keep Ant's colours; a Filled field darkens a little on hover, as Ant's does. */
+.tj-ant-own-bg .ant-input-filled:not(.ant-input-disabled):not([disabled]):not(.ant-input-status-error):not(.ant-input-status-warning),
+.tj-ant-own-bg .ant-input-borderless:not(.ant-input-disabled):not([disabled]):not(.ant-input-status-error):not(.ant-input-status-warning),
+.tj-ant-own-bg .ant-input-number-filled:not(.ant-input-number-disabled):not([disabled]):not(.ant-input-number-status-error):not(.ant-input-number-status-warning),
+.tj-ant-own-bg .ant-input-number-borderless:not(.ant-input-number-disabled):not([disabled]):not(.ant-input-number-status-error):not(.ant-input-number-status-warning),
+.tj-ant-own-bg .ant-picker-filled:not(.ant-picker-disabled):not([disabled]):not(.ant-picker-status-error):not(.ant-picker-status-warning),
+.tj-ant-own-bg .ant-picker-borderless:not(.ant-picker-disabled):not([disabled]):not(.ant-picker-status-error):not(.ant-picker-status-warning),
+.tj-ant-own-bg .ant-select-filled:not(.ant-select-disabled):not(.ant-select-status-error):not(.ant-select-status-warning) .ant-select-selector,
+.tj-ant-own-bg .ant-select-borderless:not(.ant-select-disabled):not(.ant-select-status-error):not(.ant-select-status-warning) .ant-select-selector {
+  background-color: var(--tj-ant-color-bg-container) !important;
+}
+.tj-ant-own-bg .ant-input-filled:not(.ant-input-disabled):not([disabled]):not(.ant-input-status-error):not(.ant-input-status-warning):not(:focus):not(:focus-within):hover,
+.tj-ant-own-bg .ant-input-number-filled:not(.ant-input-number-disabled):not([disabled]):not(.ant-input-number-status-error):not(.ant-input-number-status-warning):not(:focus):not(:focus-within):hover,
+.tj-ant-own-bg .ant-picker-filled:not(.ant-picker-disabled):not([disabled]):not(.ant-picker-status-error):not(.ant-picker-status-warning):not(:focus):not(:focus-within):hover,
+.tj-ant-own-bg .ant-select-filled:not(.ant-select-disabled):not(.ant-select-focused):not(.ant-select-status-error):not(.ant-select-status-warning):hover .ant-select-selector {
+  background-color: color-mix(in srgb, var(--tj-ant-color-bg-container) 94%, var(--ant-color-text)) !important;
+}
+
+/* TextArea in a fixed-height box (Dynamic height off; the host marks a fitted box .tj-cc-fit): the field fills the box
+   under its label and scrolls its text, as a ToolJet TextArea does (QA item 50). Ant sizes it to its text (autoSize,
+   up to Max rows), so it grew past the box and was cut off: the bottom border and the lines being typed were hidden.
+   With Dynamic height the field keeps growing and the box grows with it. */
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea,
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item,
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-row,
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-control-input-content,
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-control-input-content > .tj-ant-loadable {
+  height: 100%;
+}
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-vertical > .ant-form-item-row {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-control {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-control-input {
+  flex: 1;
+  min-height: 0;
+}
+/* Ant writes the field's height inline (autoSize); the box sets it here. Show count's count sits under the field. */
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-control-input-content > .tj-ant-loadable > textarea,
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-input-textarea-affix-wrapper,
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-input-textarea-affix-wrapper > textarea {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+}
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-input-textarea-affix-wrapper.ant-input-textarea-show-count {
+  height: calc(100% - 22px) !important;
+}

@@ -12,6 +12,7 @@ import {
   styleFieldMeta,
   withManifestDefaults,
 } from '@/AppBuilder/RightSideBar/Inspector/Components/LibraryComponent/utils';
+import { offersDynamicHeight } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 describe('fieldMeta', () => {
   it('[LibraryComponent-FIELDMETA-001] gives a boolean prop a boolean schema', () => {
@@ -133,6 +134,37 @@ describe('additionalActionProps', () => {
       },
     };
     expect(additionalActionProps(componentMeta, false, true)).toEqual(['visibility', 'dynamicHeight', 'loadingState']);
+  });
+
+  const hostMeta = {
+    properties: {
+      visibility: { section: 'additionalActions' },
+      dynamicHeight: { section: 'additionalActions' },
+    },
+  };
+
+  it('[LibraryComponent-ADDITIONALACTIONS-007] offers Dynamic height to a container whose drop areas sit in it (a Card, Tabs), whatever its fit', () => {
+    // Break this catches: a pack Card (fit: false) without the Dynamic height toggle, so it could never grow with the
+    // components dropped into it (QA: Dynamic height does nothing on pack containers).
+    const card = { fit: false, slots: [{ name: 'body', kind: 'slot' }] };
+    expect(additionalActionProps(hostMeta, false, offersDynamicHeight(card))).toEqual(['visibility', 'dynamicHeight']);
+  });
+
+  it("[LibraryComponent-ADDITIONALACTIONS-008] offers Dynamic height to a dialog, whose body grows with its components as a native Modal's", () => {
+    // Break this catches: a pack Dialog, Modal or Drawer without the toggle, its body held at its Body height and
+    // scrolling whatever its components need (QA: Dynamic height missing on pack sub containers).
+    const dialog = { fit: false, slots: [{ name: 'body', kind: 'popup' }] };
+    expect(additionalActionProps(hostMeta, false, offersDynamicHeight(dialog))).toEqual([
+      'visibility',
+      'dynamicHeight',
+    ]);
+  });
+
+  it('[LibraryComponent-ADDITIONALACTIONS-009] keeps Dynamic height off a board whose cards its code draws and that cannot fit (a Kanban)', () => {
+    // Break this catches: the toggle on a Kanban, which keeps its box and scrolls its columns as UI 2.0's (no Dynamic
+    // height there), while its cards already grow with their components.
+    const board = { fit: false, slots: [{ name: 'card', kind: 'rows' }] };
+    expect(additionalActionProps(hostMeta, false, offersDynamicHeight(board))).toEqual(['visibility']);
   });
 });
 

@@ -22,16 +22,28 @@ export const useFieldProps = (defaults: { label?: string } = {}) => {
   return { label, helperText };
 };
 
-/** variant, size and color of MUI's TextField family (TextField, Select, Autocomplete, the pickers). */
+/** variant, size and color of MUI's TextField family (TextField, Select, Autocomplete, the pickers). They are its look,
+ *  so they are styles: the Styles tab, where ToolJet keeps how a component looks, not the Properties tab. */
 export const useTextFieldLook = () => {
-  const [variant] = ToolJet.useStateEnumeration({
+  const variant = ToolJet.useStyleEnumeration({
     name: 'variant',
     label: 'Variant',
     enumDefinition: ['outlined', 'filled', 'standard'],
     initialValue: 'outlined',
   });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium'], initialValue: 'medium' });
-  const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', description: 'The focused colour.', enumDefinition: PALETTE_COLORS, initialValue: 'primary' });
+  const size = ToolJet.useStyleEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'medium'],
+    initialValue: 'medium',
+  });
+  const color = ToolJet.useStyleEnumeration({
+    name: 'color',
+    label: 'Color',
+    description: 'The focused colour.',
+    enumDefinition: PALETTE_COLORS,
+    initialValue: 'primary',
+  });
   return { variant: variant as TextFieldVariant, size: size as FieldSize, color: color as PaletteColor };
 };
 

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Input, InputNumber, Progress, Select, Space, Spin } from 'antd';
 import type { InputRef } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { rangeRule } from '../lib/typeRule';
+import { boundsRule } from '../lib/typeRule';
 import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { ControlSkeleton, SpinOver } from '../lib/Loading';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
@@ -342,7 +342,7 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
     value: n === null ? '' : String(n),
     present: n !== null,
     // A default or setFieldValue outside Min and Max is not valid (Ant clamps only what is typed).
-    rule: rangeRule(n, toNumber(min), toNumber(max)),
+    rule: boundsRule(n, toNumber(min), toNumber(max)),
   });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
@@ -608,6 +608,8 @@ export const PhoneInput = (props: Record<string, unknown>) => {
                 <Select
                   value={picked.code}
                   disabled={disabled || !allowCountryChange}
+                  // One Tab stop, the number, as a ToolJet Phone input has: the country is picked with the pointer.
+                  tabIndex={-1}
                   showSearch
                   popupMatchSelectWidth={false}
                   optionFilterProp="search"

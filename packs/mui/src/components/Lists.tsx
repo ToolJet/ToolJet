@@ -84,7 +84,7 @@ const Empty = ({ text }: { text: string }) => (
     className="tj-mui-lists__empty"
     sx={{ height: '100%', minHeight: 72, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}
   >
-    <Typography variant="body2" color="text.secondary" align="center">
+    <Typography variant="body2" align="center" sx={{ color: 'text.secondary' }}>
       {text}
     </Typography>
   </Box>
@@ -558,9 +558,8 @@ export const ProgressList = () => {
                         {pct && !row.caption ? (
                           <Typography
                             variant="body2"
-                            color="text.secondary"
                             className="tj-mui-progresslist__pct"
-                            sx={{ whiteSpace: 'nowrap' }}
+                            sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}
                           >
                             {pct}
                           </Typography>
@@ -575,16 +574,17 @@ export const ProgressList = () => {
                       />
                       {row.caption ? (
                         <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ flex: 1, minWidth: 0 }} noWrap>
+                          <Typography variant="caption" sx={{ color: 'text.secondary', flex: 1, minWidth: 0 }} noWrap>
                             {row.caption}
                           </Typography>
                           {pct ? (
                             <Typography
                               variant="caption"
-                              color={
-                                row.tone && TONE_COLOR[row.tone] ? `${TONE_COLOR[row.tone]}.main` : 'text.secondary'
-                              }
                               className="tj-mui-progresslist__pct"
+                              sx={{
+                                color:
+                                  row.tone && TONE_COLOR[row.tone] ? `${TONE_COLOR[row.tone]}.main` : 'text.secondary',
+                              }}
                             >
                               {pct}
                             </Typography>
@@ -747,9 +747,8 @@ export const Timeline = () => {
                 const timeNode = time ? (
                   <Typography
                     variant="caption"
-                    color="text.secondary"
                     className="tj-mui-timeline__time"
-                    sx={{ whiteSpace: 'nowrap', lineHeight: '20px' }}
+                    sx={{ color: 'text.secondary', whiteSpace: 'nowrap', lineHeight: '20px' }}
                   >
                     {time}
                   </Typography>
@@ -821,9 +820,8 @@ export const Timeline = () => {
                       {item.description ? (
                         <Typography
                           variant="body2"
-                          color="text.secondary"
                           className="tj-mui-timeline__desc"
-                          sx={{ mt: 0.25 }}
+                          sx={{ color: 'text.secondary', mt: 0.25 }}
                         >
                           {item.description}
                         </Typography>
@@ -894,7 +892,7 @@ const KvValue = ({
         sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: yes ? 'success.main' : 'text.secondary' }}
       >
         {yes ? <CheckIcon fontSize="small" /> : <CloseIcon fontSize="small" />}
-        <Typography variant="body2" component="span" color="text.primary">
+        <Typography variant="body2" component="span" sx={{ color: 'text.primary' }}>
           {shown}
         </Typography>
       </Box>
@@ -902,7 +900,7 @@ const KvValue = ({
   }
   if (!shown)
     return (
-      <Typography variant="body2" component="span" color="text.disabled">
+      <Typography variant="body2" component="span" sx={{ color: 'text.disabled' }}>
         {empty}
       </Typography>
     );
@@ -931,17 +929,22 @@ const KvValue = ({
         {label}
       </Link>
     ) : (
-      <Typography variant="body2" component="span">
+      <Typography variant="body2" component="span" sx={{ color: 'text.primary' }}>
         {label}
       </Typography>
     );
   }
   const figure = row.type === 'number' || row.type === 'currency' || row.type === 'percent';
+  // The theme's text colour, not the canvas's inherited one, so values stand apart from the grey labels.
   return (
     <Typography
       variant="body2"
       component="span"
-      sx={{ wordBreak: 'break-word', ...(figure ? { fontVariantNumeric: 'tabular-nums' } : null) }}
+      sx={{
+        color: 'text.primary',
+        wordBreak: 'break-word',
+        ...(figure ? { fontVariantNumeric: 'tabular-nums' } : null),
+      }}
     >
       {shown}
     </Typography>
@@ -1086,11 +1089,10 @@ export const KeyValue = () => {
                     <Typography
                       component="dt"
                       variant="body2"
-                      color="text.secondary"
                       className="tj-mui-keyvalue__label"
                       sx={
                         inline
-                          ? { width: cssSize(labelWidth, '40%'), flexShrink: 0, minWidth: 0 }
+                          ? { color: 'text.secondary', width: cssSize(labelWidth, '40%'), flexShrink: 0, minWidth: 0 }
                           : { typography: 'caption', color: 'text.secondary' }
                       }
                     >

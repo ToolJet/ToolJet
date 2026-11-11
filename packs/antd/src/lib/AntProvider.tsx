@@ -158,6 +158,16 @@ const PopupTheme = createContext<{ className: string; style: CSSProperties; cont
 });
 export const usePopupTheme = () => useContext(PopupTheme);
 
+// Tab in an open Select, AutoComplete, Cascader or TreeSelect: antd picks the highlighted option and keeps the focus, so
+// leaving took a second Tab. A ToolJet Dropdown closes its list without picking and goes on to the next component: the
+// key does not reach antd (its list closes as the field loses the focus) and the browser moves the focus.
+const tabPastOpenSelect = (e: React.KeyboardEvent) => {
+  const field = e.target as HTMLElement;
+  if (e.key !== 'Tab' || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (field.getAttribute?.('aria-expanded') === 'true' && field.matches('.ant-select-selection-search-input'))
+    e.stopPropagation();
+};
+
 // Every pack component renders inside this: antd's ConfigProvider with popups portalled into ToolJet's popup layer, and
 // a root that declares antd's token variables (the `.tj-ant` rule in antd.css), dark when the app is.
 export const AntProvider = ({
@@ -184,14 +194,19 @@ export const AntProvider = ({
   // alive. Emptied when a widget unmounts; the cache is only a lookup, refilled on the next insert.
   useEffect(() => () => clearContainerCache(), []);
   const popup = useMemo(() => ({ className: dark ? 'tj-ant tj-ant-dark' : 'tj-ant', style: tokens ?? {}, container }), [tokens, container, dark]);
+  const ownBackground = Boolean((tokens as Record<string, unknown> | undefined)?.['--tj-ant-color-bg-container']);
   return (
     <div
       ref={(el) => {
         (anchorRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
         if (ownerRef) ownerRef.current = el;
       }}
-      className={['tj-ant tj-ant-root', dark ? 'tj-ant-dark' : '', fill ? 'tj-ant--fill' : '', className ?? ''].join(' ').trim()}
+      // Container background set: it fills the Filled and Borderless fields too (pack.css .tj-ant-own-bg).
+      className={['tj-ant tj-ant-root', dark ? 'tj-ant-dark' : '', fill ? 'tj-ant--fill' : '', ownBackground ? 'tj-ant-own-bg' : '', className ?? '']
+        .join(' ')
+        .trim()}
       style={{ ...tokens, ...style }}
+      onKeyDownCapture={tabPastOpenSelect}
     >
       <StyleProvider cache={cache} container={sinkElement()}>
         <ConfigProvider

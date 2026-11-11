@@ -263,6 +263,9 @@ export const Segmented = (props: Record<string, unknown>) => {
                 vertical={vertical}
                 size={size as 'middle'}
                 disabled={disabled}
+                // One Tab stop, the radio that takes the arrow keys: rc-segmented also makes its frame a stop, where
+                // the arrow keys do nothing.
+                tabIndex={-1}
                 onChange={(v) => change(options.find((o) => o.key === v)?.data ?? '')}
               />
             ) : (
@@ -331,6 +334,8 @@ export const Rate = (props: Record<string, unknown>) => {
             allowClear={allowClear}
             tooltips={tips.length ? tips : undefined}
             disabled={disabled}
+            // A Tab stop per star, as ToolJet's Rating; the row of stars itself is none.
+            tabIndex={-1}
             onChange={(v) => change(v)}
           />
         </SpinOver>

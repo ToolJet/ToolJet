@@ -13,7 +13,7 @@ import {
   resolveWidgetVisibility,
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
-import { heightHeldInView, isUi2PerRowType } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { heightHeldInView, isUi2PerRowType, sizesToDropAreas } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Grid slice — owns the mutable reflow state for dynamic-height layout.
@@ -471,9 +471,13 @@ export const createGridSlice = (set, get) => {
             : null;
           const nextBubbleType = nextBubbleTargetId ? getComponentTypeFromId(nextBubbleTargetId, moduleId) : undefined;
           const nextBubbleHasDynamicHeight = !heightHeldInView(nextBubbleType, nextBubbleResolved?.properties);
+          // A reflow in a pack container's drop area (`<id>-<slot>`) leaves the container to size itself around it.
+          const leavesToDropAreaOwner =
+            parentId !== nextBubbleTargetId && sizesToDropAreas(nextBubbleType, nextBubbleResolved?.properties);
 
           if (
             nextBubbleHasDynamicHeight &&
+            !leavesToDropAreaOwner &&
             shouldBubbleToParent({
               currentComponentId: componentId,
               nextComponentId: nextBubbleTargetId,

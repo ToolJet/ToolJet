@@ -88,7 +88,7 @@ export const TextArea = (props: Record<string, unknown>) => {
   const min = Math.max(1, Number(minRows) || 3);
   const max = Number(maxRows) > 0 ? Math.max(min, Number(maxRows)) : undefined;
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} className="tj-ant-textarea">
       <FormField {...field} check={check} htmlFor={fieldId}>
         <ControlSkeleton loading={loading} size={look.size} rows={min}>
           <Input.TextArea

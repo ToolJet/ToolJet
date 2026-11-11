@@ -7,7 +7,7 @@ import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider'
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str } from '../lib/data';
 import { ControlSkeleton } from '../lib/Loading';
-import { useOwnedPopup } from '../lib/useOwnerGuard';
+import { closesOnEscape, useOwnedPopup } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
 import { isBlankDate, parseDate } from '../lib/dates';
 
@@ -38,6 +38,10 @@ const bound = (v: unknown, edge: 'start' | 'end'): Dayjs | undefined => {
   if (!d) return undefined;
   return /^\s*\d{4}-\d{2}-\d{2}\s*$/.test(str(v)) ? (edge === 'end' ? d.endOf('day') : d.startOf('day')) : d;
 };
+
+// The unit a picker's value is compared at: a month picker's value is that month, whatever day it holds.
+const UNIT: Record<string, 'day' | 'week' | 'month' | 'year'> = { date: 'day', week: 'week', month: 'month', year: 'year' };
+const range = (from: number, to: number) => Array.from({ length: Math.max(0, to - from) }, (_, i) => from + i);
 
 /**
  * The picker both components draw. `dateTime` is the DateTimePicker: the time is always on (no showTime or picker
@@ -133,7 +137,36 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
   const onOpenChange = ToolJet.useEventCallback({ name: 'onOpenChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ kind: 'date', value });
+  // A date outside Min date or Max date is invalid, as on the ToolJet date pickers (QA item 52): Ant only greys the days
+  // out of range, so a bound value or setFieldValue past them counted as valid. With the time on, a date-only bound
+  // covers that whole day (bound()); a quarter picker is left to Ant's own greying.
+  const timed = dateTime || showTime;
+  const lo = timed ? bound(minDate, 'start') : (parse(minDate) ?? undefined);
+  const hi = timed ? bound(maxDate, 'end') : (parse(maxDate) ?? undefined);
+  const unit = timed ? undefined : UNIT[String(picker)];
+  const picked = parse(value);
+  const outside =
+    !picked || (!timed && !unit)
+      ? ''
+      : lo && picked.isBefore(lo, unit)
+        ? `Minimum date is ${str(minDate).trim()}`
+        : hi && picked.isAfter(hi, unit)
+          ? `Maximum date is ${str(maxDate).trim()}`
+          : '';
+  const check = ToolJet.useValidation({ kind: 'date', value, rule: outside });
+  // On the first and last allowed day, the times before the min and after the max can't be picked either.
+  const disabledTime = (current: Dayjs | null) => {
+    if (!current) return {};
+    const first = lo && current.isSame(lo, 'day') ? lo : null;
+    const last = hi && current.isSame(hi, 'day') ? hi : null;
+    return {
+      disabledHours: () => [...(first ? range(0, first.hour()) : []), ...(last ? range(last.hour() + 1, 24) : [])],
+      disabledMinutes: (hour: number) => [
+        ...(first && hour === first.hour() ? range(0, first.minute()) : []),
+        ...(last && hour === last.hour() ? range(last.minute() + 1, 60) : []),
+      ],
+    };
+  };
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     ...(dateTime ? DATE_TIME_SETTINGS : DATE_SETTINGS),
@@ -196,6 +229,7 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
                 picker={showTime ? 'date' : (picker as 'date')}
                 minDate={(dateTime ? bound(minDate, 'start') : parse(minDate)) ?? undefined}
                 maxDate={(dateTime ? bound(maxDate, 'end') : parse(maxDate)) ?? undefined}
+                disabledTime={timed ? disabledTime : undefined}
                 placeholder={placeholder || undefined}
                 allowClear={allowClear}
                 disabled={disabled}
@@ -206,6 +240,7 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
                 popupStyle={popup.style}
                 open={panel.open}
                 onOpenChange={panel.onOpenChange}
+                panelRender={closesOnEscape(() => panel.onOpenChange(false))}
                 // The time columns have no seconds: a pick keeps none (Ant fills them from the clock).
                 onChange={(d) =>
                   panel.available() &&

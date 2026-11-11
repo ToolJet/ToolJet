@@ -180,11 +180,14 @@ export const MuiProvider = ({
   const theme = useMemo(() => buildTheme(app, resolved, container), [app, resolvedKey, container]);
   const chartBrand = resolved.primary ?? app.brand;
   const chartLook = useMemo(() => ({ brand: chartBrand, app }), [chartBrand, app]);
+  // The root draws in the theme's text colour, as an MUI app's body does: a Checkbox's, Switch's or Radio's label sets
+  // none of its own, and took the colour around it, ToolJet's page text on the canvas and the container's text inside
+  // a Rocket or Ant container.
   return (
     <div
       ref={setRoot}
       className={['tj-mui tj-mui-root', fill ? 'tj-mui--fill' : '', className ?? ''].join(' ').trim()}
-      style={{ fontFamily: app.font, ...style }}
+      style={{ fontFamily: app.font, color: theme.palette.text.primary, ...style }}
     >
       <CacheProvider value={cache}>
         <ThemeProvider theme={theme}>

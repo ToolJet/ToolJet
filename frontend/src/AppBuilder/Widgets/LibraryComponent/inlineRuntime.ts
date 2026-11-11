@@ -76,6 +76,8 @@ export interface PackHost {
   /** A drop area drawn inside the popup layer (a dialog's body). */
   registerPopupSlot: (name: string) => () => void;
   popupSlotAttr: (name: string) => string;
+  /** Dynamic height, in a released app: every drop area (Slot, PopupSlot) takes the height of its components. */
+  fitDropAreas?: boolean;
   /** A field component (its manifest has a validation section): a Form's clearForm empties its `value`/`values`. */
   formField?: boolean;
   /** Marks props whose `{{...}}` strings that read rowData, cellValue or rowIndex the host keeps unresolved. */
@@ -103,6 +105,13 @@ const SLOT_NAME = /^[A-Za-z][A-Za-z0-9_]*$/;
 export const slotAttributeName = (name: string): string => `tj-slot-${name}`;
 
 export const LibraryInstanceContext = React.createContext<LibraryInstance | null>(null);
+
+// A drop area's box. With Dynamic height on, the area takes its components' height, so a height the component gives it
+// (an accordion section's, a dialog body's) becomes its minimum: the area grows past it instead of clipping or scrolling.
+const dropAreaStyle = (style: React.CSSProperties | undefined, fits: boolean): React.CSSProperties => {
+  const box: React.CSSProperties = { position: 'relative', minWidth: 0, minHeight: 0, ...style };
+  return fits && style?.height !== undefined ? { ...box, height: 'auto', minHeight: style.height } : box;
+};
 
 const useLibraryInstance = (hookName: string): LibraryInstance => {
   const instance = React.useContext(LibraryInstanceContext);
@@ -223,7 +232,7 @@ const Slot = ({ name, className, style }: { name: string; className?: string; st
 
   return React.createElement(
     'div',
-    { className, style: { position: 'relative', minWidth: 0, minHeight: 0, ...style }, 'data-tj-slot': name },
+    { className, style: dropAreaStyle(style, !!instance.host?.fitDropAreas), 'data-tj-slot': name },
     isValid ? React.createElement('slot', { name: slotAttributeName(name) }) : null
   );
 };
@@ -314,7 +323,7 @@ const v2Hooks = {
     React.useLayoutEffect(() => host?.registerPopupSlot(name), [host, name]);
     return React.createElement(
       'div',
-      { className, style: { position: 'relative', minWidth: 0, minHeight: 0, ...style }, 'data-tj-slot': name },
+      { className, style: dropAreaStyle(style, !!host?.fitDropAreas), 'data-tj-slot': name },
       host ? React.createElement('slot', { name: host.popupSlotAttr(name) }) : null
     );
   },
