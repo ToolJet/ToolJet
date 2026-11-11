@@ -38,7 +38,7 @@ import {
 
 const CURRENT_BRANCH_DESCRIPTION = 'State of this branch will appear here';
 
-export function Workflows({ options, optionsChanged, currentState }) {
+export function Workflows({ options, optionsChanged, currentState, darkMode }) {
   const { moduleId } = useModuleContext();
   const { t } = useTranslation();
   const [workflowOptions, setWorkflowOptions] = useState([]);
@@ -275,6 +275,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
           action="syncExecution"
           label="Run workflows synchronously"
           dataCy="sync-workflow-execution"
+          darkMode={darkMode}
         />
       </div>
       {declaredInputs.length > 0 && (
