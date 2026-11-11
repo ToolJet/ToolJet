@@ -184,12 +184,25 @@ export default [
       '@typescript-eslint': tsPlugin,
       react: pluginReact,
       'react-hooks': pluginReactHooks,
+      // Register import-x under the 'import' namespace so existing
+      // `eslint-disable import/...` directives continue to work
+      import: pluginImportX,
       prettier: pluginPrettier,
     },
 
     settings: {
       react: {
         version: 'detect',
+      },
+      // Without this the node resolver only knows .js/.jsx and reports every
+      // extensionless relative import of a .ts/.tsx module as unresolved.
+      'import-x/resolver': {
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
+        webpack: {
+          config: new URL('./webpack.config.js', import.meta.url).pathname,
+        },
       },
     },
 
@@ -207,19 +220,23 @@ export default [
       // @typescript-eslint recommended
       '@typescript-eslint/adjacent-overload-signatures': 'error',
       '@typescript-eslint/ban-ts-comment': 'error',
-      '@typescript-eslint/ban-types': 'error',
       '@typescript-eslint/no-array-constructor': 'error',
-      '@typescript-eslint/no-empty-interface': 'error',
+      // `ban-types` was removed in typescript-eslint v8 and split into these three rules
+      '@typescript-eslint/no-empty-object-type': 'error',
+      '@typescript-eslint/no-unsafe-function-type': 'error',
+      '@typescript-eslint/no-wrapper-object-types': 'error',
       '@typescript-eslint/no-extra-non-null-assertion': 'error',
       '@typescript-eslint/no-inferrable-types': 'error',
-      '@typescript-eslint/no-loss-of-precision': 'error',
+      // `no-loss-of-precision` was deprecated in v8 in favour of the base ESLint rule,
+      // which is already enabled via eslint:recommended above.
       '@typescript-eslint/no-misused-new': 'error',
       '@typescript-eslint/no-namespace': 'error',
       '@typescript-eslint/no-non-null-asserted-optional-chain': 'error',
       '@typescript-eslint/no-non-null-assertion': 'warn',
       '@typescript-eslint/no-this-alias': 'error',
       '@typescript-eslint/no-unnecessary-type-constraint': 'error',
-      '@typescript-eslint/no-var-requires': 'error',
+      // replaces the deprecated `no-var-requires`
+      '@typescript-eslint/no-require-imports': 'error',
       '@typescript-eslint/prefer-as-const': 'error',
       '@typescript-eslint/triple-slash-reference': 'error',
 
