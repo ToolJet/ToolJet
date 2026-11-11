@@ -327,6 +327,15 @@ export const Upload = () => {
   );
 };
 
+// A display format on the 12-hour clock: 24-hour hours (H, HH) as 12-hour ones (h), and AM/PM added when it has none.
+// Text in [brackets] is literal (dayjs).
+const twelveHourFormat = (format: string) => {
+  const parts = format.split(/(\[[^\]]*\])/);
+  const tokens = parts.filter((_, i) => i % 2 === 0).join('');
+  const out = parts.map((p, i) => (i % 2 ? p : p.replace(/H{1,2}/g, 'h'))).join('');
+  return /[aA]/.test(tokens) ? out : `${out} A`;
+};
+
 // Ant's TimePicker: value as text in valueFormat (HH:mm by default), format (display), use12Hours, hourStep,
 // minuteStep, placeholder, allowClear; event onChange.
 export const TimePicker = (props: Record<string, unknown>) => {
@@ -376,7 +385,12 @@ export const TimePicker = (props: Record<string, unknown>) => {
     defaultWidth: 10,
     defaultHeight: 6,
   });
-  const fmt = str(format).trim() || (use12Hours ? 'h:mm a' : 'HH:mm');
+  const given = str(format).trim();
+  // A 12-hour Format (h, a or A outside [literal] text) is a 12-hour clock without Use 12 hours too: Ant's popup listed
+  // hours 00-23 and no AM/PM for h:mm a. Use 12 hours shows a 24-hour Format (HH:mm, the default) on the 12-hour clock,
+  // with AM/PM when it has none: it showed 14:05 beside a 12-hour popup (QA AD-32).
+  const twelve = use12Hours || /[haA]/.test(given.replace(/\[[^\]]*\]/g, ''));
+  const fmt = !given ? (use12Hours ? 'h:mm a' : 'HH:mm') : twelve ? twelveHourFormat(given) : given;
   // The value keeps 24-hour text whatever the display, so queries read one shape.
   const valueFormat = /s/.test(fmt) ? 'HH:mm:ss' : 'HH:mm';
   // A value it already has changes nothing and fires nothing (lib/sameValue).
@@ -403,7 +417,7 @@ export const TimePicker = (props: Record<string, unknown>) => {
                 style={{ width: '100%' }}
                 value={current}
                 format={fmt}
-                use12Hours={use12Hours}
+                use12Hours={twelve}
                 hourStep={Math.max(1, Number(hourStep) || 1) as 1}
                 minuteStep={Math.max(1, Number(minuteStep) || 1) as 1}
                 placeholder={placeholder || undefined}
