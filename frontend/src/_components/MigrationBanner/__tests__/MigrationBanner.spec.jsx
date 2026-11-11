@@ -40,7 +40,7 @@ describe('MigrationBanner', () => {
       render(<MigrationBanner />);
       await waitFor(() => expect(visibleBanner()).toBeInTheDocument());
 
-      act(() => jest.advanceTimersByTime(3000));
+      act(() => jest.advanceTimersByTime(30000));
 
       await waitFor(() => expect(visibleBanner()).not.toBeInTheDocument());
     } finally {

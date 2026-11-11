@@ -9,7 +9,6 @@ import { MIGRATION_GATE_EVENT } from '@/_helpers/migrationGate';
 
 const DISMISS_KEY = 'migration-banner-dismissed';
 const POLL_MS = 30000;
-const RUNNING_POLL_MS = 3000;
 
 const MESSAGES = {
   running: 'ToolJet is being upgraded. Some features may not work and changes may not save until it finishes.',
@@ -69,7 +68,7 @@ export const MigrationBanner = ({ darkMode, onVisibilityChange, floating = false
       busy = false;
       if (cancelled) return;
       setStatus(next);
-      if (next.state !== 'idle') timer = setTimeout(poll, next.state === 'running' ? RUNNING_POLL_MS : POLL_MS);
+      if (next.state !== 'idle') timer = setTimeout(poll, POLL_MS);
     };
     const wake = () => {
       if (!busy && !timer) poll();
