@@ -76,7 +76,13 @@ function collectBeforeCommitSteps(dataDS: DataSource): BeforeCommitSteps {
   return {
     clear: () => beforeCommitSteps.splice(0),
     async run(queryRunner) {
-      for (const { name, beforeCommit } of beforeCommitSteps.splice(0)) {
+      // The legacy branch key swap takes ACCESS EXCLUSIVE; any step after it would run under that lock.
+      const steps = beforeCommitSteps.splice(0);
+      const ordered = [
+        ...steps.filter(({ name }) => name !== LEGACY_BRANCH_MIGRATION),
+        ...steps.filter(({ name }) => name === LEGACY_BRANCH_MIGRATION),
+      ];
+      for (const { name, beforeCommit } of ordered) {
         console.log(`[migrations] BEFORE COMMIT ${name}`);
         await beforeCommit(queryRunner);
       }

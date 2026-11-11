@@ -184,7 +184,7 @@ Removals wait for the cleanup migration `CleanupLegacyBranchModel`, one upgrade 
 
 - Runs as a child of the server (`MIGRATION_PHASE=data`), started at boot or by the dead-run check.
 - All data migrations run in one transaction. A failure undoes the data changes only. The schema additions stay, and the next run does the data migrations again.
-- **`beforeCommit()`** (`DataMigration`, `migration-mode.ts`) runs after every data migration's `up()`, just before commit. Lock-taking steps placed there hold their SHARE locks for seconds, not the whole run, so sign-in writes that pass the gate wait only that long. A single-transaction run calls the same steps at the same point.
+- **`beforeCommit()`** (`DataMigration`, `migration-mode.ts`) runs after every data migration's `up()`, just before commit. Lock-taking steps placed there hold their SHARE locks for seconds, not the whole run, so sign-in writes that pass the gate wait only that long. A single-transaction run calls the same steps at the same point. Steps run in migration order, except the 3.21.58 branch key swap, which always runs last: its ACCESS EXCLUSIVE lock would otherwise cover every later step.
 - **Retries.** A deadlock (`40P01`), serialization failure (`40001`) or lock timeout (`55P03`) rolls the data phase back and runs it again, up to 3 attempts, 2s apart. Any other error fails the run at once.
 
 ### Cleanup phase
