@@ -43,7 +43,9 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
     if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
       try {
         const cliptext = await navigator.clipboard.readText();
-        await pasteComponents(focusedParentId === 'canvas' ? undefined : focusedParentId, JSON.parse(cliptext));
+        // pasteComponents resolves its own target from the last canvas click or the clipboard's original parent.
+        // The explicit argument is only for cloning, which passes the source component's parent.
+        await pasteComponents(undefined, JSON.parse(cliptext));
       } catch (err) {
         console.log(err);
       }
