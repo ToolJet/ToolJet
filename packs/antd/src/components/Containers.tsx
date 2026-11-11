@@ -278,8 +278,8 @@ export const Modal = () => {
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center" ownerRef={owner}>
       {showTrigger ? (
-        <Button type="primary" block disabled={disabled} onClick={() => setOpen(true)}>
-          {triggerText}
+        <Button type="primary" block disabled={disabled} loading={loading} onClick={() => setOpen(true)}>
+          {loading ? "" : triggerText}
         </Button>
       ) : null}
       <ModalBody
@@ -295,7 +295,8 @@ export const Modal = () => {
         centered={centered}
         closable={closable}
         maskClosable={maskClosable}
-        confirmLoading={loading}
+        // Not confirmLoading: antd then drops Cancel, the X, the mask and Escape, so Loading only spins OK.
+        okLoading={loading}
         okDisabled={guard.blocked}
         onOk={() => {
           if (!guard.takesInput()) return;
@@ -318,6 +319,7 @@ const ModalBody = ({
   footer,
   okType,
   okDisabled,
+  okLoading,
   ...props
 }: Omit<React.ComponentProps<typeof AntModal>, 'footer' | 'content'> & {
   content: string;
@@ -325,6 +327,7 @@ const ModalBody = ({
   footer: boolean;
   okType: 'primary' | 'danger';
   okDisabled: boolean;
+  okLoading: boolean;
 }) => {
   const popup = usePopupTheme();
   // Portal only once the popup layer is known: antd would otherwise mount the modal on document.body, unstyled.
@@ -335,7 +338,7 @@ const ModalBody = ({
       getContainer={popup.container}
       rootClassName={popup.className}
       styles={{ wrapper: popup.style }}
-      okButtonProps={{ danger: okType === 'danger', disabled: okDisabled }}
+      okButtonProps={{ danger: okType === 'danger', disabled: okDisabled, loading: okLoading }}
       footer={footer ? undefined : null}
       forceRender
     >
