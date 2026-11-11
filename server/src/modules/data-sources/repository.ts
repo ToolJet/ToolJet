@@ -123,8 +123,9 @@ export class DataSourcesRepository extends Repository<DataSource> {
       query.leftJoin(
         'data_source_versions',
         'dsv',
+        // Exact, like 3.21.58: a branchless row is the git-off fallback, never shown on a branch.
         `dsv.data_source_id = data_source.id
-          AND ${onBranch('dsv.branch_id', 'branchId')}
+          AND dsv.branch_id = :branchId
           AND dsv.is_active = true`,
         { branchId }
       );
