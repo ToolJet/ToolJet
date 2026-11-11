@@ -2,6 +2,7 @@ import React from 'react';
 //TODO: Inspector folder needs to be refactored
 import { Inspector } from '@/AppBuilder/RightSideBar/Inspector/Inspector';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
+import CrashTest from '@/_ui/ErrorBoundary/__CrashTest'; // TEMP: remove before merge
 import useStore from '@/AppBuilder/_stores/store';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { shallow } from 'zustand/shallow';
@@ -56,6 +57,7 @@ export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
       darkMode={darkMode}
       resetKeys={[selectedComponentId]}
     >
+      <CrashTest message="🔥 Properties panel (Inspector) test crash" />
       <Inspector
         componentDefinitionChanged={() => {}}
         darkMode={darkMode}
