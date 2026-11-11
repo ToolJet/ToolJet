@@ -472,27 +472,45 @@ export const Pagination = () => {
   return (
     <AntProvider tokens={tokens}>
       <SpinOver loading={loading}>
-        <AntPagination
-          current={clampPage(current)}
-          pageSize={Math.max(1, Number(pageSize) || 10)}
-          total={Math.max(0, Number(total) || 0)}
-          showSizeChanger={showSizeChanger}
-          simple={simple}
-          size={size as 'default'}
-          align={align as 'end'}
-          disabled={disabled}
-          showTotal={
-            showTotal
-              ? (t, [s, e]) =>
-                  str(showTotal).replace('{start}', String(s)).replace('{end}', String(e)).replace('{total}', String(t))
-              : undefined
-          }
-          onChange={(page, ps) => {
-            setCurrent(page);
-            setPageSize(ps);
-            onChange();
-          }}
-        />
+        <WithPopupTheme>
+          {(popup) => (
+            <AntPagination
+              current={clampPage(current)}
+              pageSize={Math.max(1, Number(pageSize) || 10)}
+              total={Math.max(0, Number(total) || 0)}
+              // Ant gives its page-size list the trigger's parent as container: inside the widget's box, which clipped
+              // it (in a 40px Pagination only the last option could be picked). Select props given here win over that:
+              // the list opens in the popup layer, themed as the component, as every other list does (QA AD-06).
+              showSizeChanger={
+                showSizeChanger
+                  ? {
+                      getPopupContainer: () => popup.container ?? document.body,
+                      classNames: { popup: { root: popup.className } },
+                      styles: { popup: { root: popup.style } },
+                    }
+                  : false
+              }
+              simple={simple}
+              size={size as 'default'}
+              align={align as 'end'}
+              disabled={disabled}
+              showTotal={
+                showTotal
+                  ? (t, [s, e]) =>
+                      str(showTotal)
+                        .replace('{start}', String(s))
+                        .replace('{end}', String(e))
+                        .replace('{total}', String(t))
+                  : undefined
+              }
+              onChange={(page, ps) => {
+                setCurrent(page);
+                setPageSize(ps);
+                onChange();
+              }}
+            />
+          )}
+        </WithPopupTheme>
       </SpinOver>
     </AntProvider>
   );
