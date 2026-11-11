@@ -1377,6 +1377,10 @@ export class AppImportExportService {
         : convertSinglePageSchemaToMultiPageSchema(appParams);
       schemaUnifiedAppParams.name = appName;
 
+      if (cloning) {
+        await this.dedupeClonedDataSourceNames(manager, schemaUnifiedAppParams, user.organizationId);
+      }
+
       const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
       const isNormalizedAppDefinitionSchema = cloning
         ? true
@@ -1428,6 +1432,22 @@ export class AppImportExportService {
       });
       return { newApp, resourceMapping };
     }, manager);
+  }
+
+  // Copies cannot reuse a name (idx_unique_active_name_branch). Default sources are recognised by name; skip them.
+  private async dedupeClonedDataSourceNames(
+    manager: EntityManager,
+    appParams: { dataSources?: Pick<DataSource, 'name' | 'type'>[] },
+    organizationId: string
+  ): Promise<void> {
+    const dataSources = appParams?.dataSources;
+    if (!dataSources?.length) return;
+    for (const dataSource of dataSources) {
+      if (!dataSource?.name) continue;
+      if (DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName)) continue;
+      if (dataSource.type === DataSourceTypes.SAMPLE) continue;
+      dataSource.name = await this.dataSourcesUtilService.generateUniqueName(dataSource.name, organizationId, manager);
+    }
   }
 
   /**
@@ -3282,7 +3302,7 @@ export class AppImportExportService {
       if (plugin) {
         const newDataSource = manager.create(DataSource, {
           organizationId: user?.organizationId,
-          name: dataSource.name,
+          name: await this.dataSourcesUtilService.generateUniqueName(dataSource.name, user.organizationId, manager),
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
           scope: DataSourceScopes.GLOBAL,
@@ -3302,7 +3322,8 @@ export class AppImportExportService {
     const createNewGlobalDs = async (ds: DataSource): Promise<DataSource> => {
       const newDataSource = manager.create(DataSource, {
         organizationId: user?.organizationId,
-        name: dataSource.name,
+        // No reusable global source matched above; (name, branch_id) is unique per workspace, so a clash gets a numbered name.
+        name: await this.dataSourcesUtilService.generateUniqueName(dataSource.name, user.organizationId, manager),
         kind: dataSource.kind,
         type: DataSourceTypes.DEFAULT,
         scope: DataSourceScopes.GLOBAL,
@@ -4620,7 +4641,7 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @param {NewRevampedComponent[]} componentTypes - An array of component types for which to perform property migration.
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
-function migrateProperties(
+export function migrateProperties(
   componentType: NewRevampedComponent | PartialRevampedComponent | 'ModuleViewer',
   component: Component,
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
@@ -4849,7 +4870,9 @@ function migrateProperties(
 
     // Image
     if (componentType === 'Image') {
-      if (styles.padding) {
+      // Old exports kept the padding number in `padding`; current ones keep the switch value there and the
+      // number in `customPadding`. Only a `padding` that isn't a switch value needs moving.
+      if (styles.padding && !['default', 'custom'].includes(styles.padding.value)) {
         styles.customPadding = styles.padding;
         styles.padding = { value: 'custom' };
       }

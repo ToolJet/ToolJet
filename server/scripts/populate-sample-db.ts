@@ -2,36 +2,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Client } from 'pg';
 import { buildAndValidateDatabaseConfig } from './database-config-utils';
-
-interface Config {
-  user: any;
-  host: any;
-  database: any;
-  password: any;
-  port: any;
-  ssl?: {
-    rejectUnauthorized: boolean;
-    ca?: any;
-  };
-}
+import { SAMPLE_DB_LOCK_SQL, sampleDbAdminConfig } from '../src/helpers/sample-db-role.helper';
 
 // PostgreSQL connection configuration
 function createPGconnection(envVars): Client {
-  let config: Config = {
-    user: envVars.SAMPLE_PG_DB_USER,
-    host: envVars.SAMPLE_PG_DB_HOST,
-    database: envVars.SAMPLE_DB,
-    password: envVars.SAMPLE_PG_DB_PASS,
-    port: envVars.SAMPLE_PG_DB_PORT,
-  };
-  if (envVars?.CA_CERT) {
-    config = {
-      ...config,
-      ssl: { rejectUnauthorized: false, ca: envVars.CA_CERT },
-    };
-  }
-
-  return new Client(config);
+  return new Client(sampleDbAdminConfig(envVars));
 }
 
 const folderPath = path.join(__dirname, '../src/assets/sample-data-json-files');
@@ -58,6 +33,9 @@ export async function populateSampleData(envVars) {
   try {
     //Checking postgres connection
     await connectToPostgreSQL(client);
+
+    await client.query('BEGIN');
+    await client.query(SAMPLE_DB_LOCK_SQL);
 
     // Read files from the folder asynchronously
     const files = await fs.promises.readdir(folderPath);
@@ -89,7 +67,9 @@ export async function populateSampleData(envVars) {
 
       console.log(`Data populated for table: ${tableName}`);
     }
+    await client.query('COMMIT');
   } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined);
     console.error('Error populating sample data:', error);
   } finally {
     // Close the database connection

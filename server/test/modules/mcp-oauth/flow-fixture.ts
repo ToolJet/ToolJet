@@ -17,6 +17,9 @@ import { AddGrantTypeKeyInSSOConfig1761556597329 } from '@migrations/data/176155
 import { assertPatMintSession, assertPatExchange } from '@modules/personal-access-tokens/credential-lifecycle';
 jest.mock('@helpers/utils.helper', () => ({
   getTooljetEdition: jest.fn(() => 'cloud'),
+  isHttpsEnabled: () => false,
+  generateNextNameAndSlug: (name) => ({ name, slug: 'synthetic-generated-workspace' }),
+  applyCustomDomainCookieOptions: () => undefined,
   catchDbException: (callback) => callback(),
   validatePasswordServer: jest.fn(),
   cleanObject: (object) => {
@@ -41,16 +44,18 @@ import { getTooljetEdition } from '@helpers/utils.helper';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { McpOAuthIdentityService } from '@modules/mcp-oauth/identity.service';
 import 'reflect-metadata';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityNotFoundError } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import { UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { UnauthorizedException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { createHash, randomUUID } from 'crypto';
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
 import * as cookieParser from 'cookie-parser';
 import { McpOAuthThrottleGuard } from '@modules/mcp-oauth/throttle.guard';
+import { McpOAuthAccountGuard } from '@modules/mcp-oauth/account.guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
+import { JwtStrategy } from '@modules/session/jwt/jwt.strategy';
 import { McpOAuthController, McpOAuthMetadataController } from '@modules/mcp-oauth/controller';
 import { AddMcpOAuth1789416000000 } from '@migrations/schema/1789416000000-AddMcpOAuth';
 import { AddMcpOAuthRevocationHooks1791290000000 } from '@migrations/schema/1791290000000-AddMcpOAuthRevocationHooks';
@@ -80,7 +85,7 @@ export function oauthFlowTests(registerTests?: (context: () => McpOAuthFlowConte
       let organizationId: string;
       let client: any;
       let loginPolicy: any;
-      const loginConfigs = { fetchOrganizationDetails: async () => loginPolicy };
+      const loginConfigs = { fetchOrganizationDetails: async (id?: string) => ({ id, ...loginPolicy }) };
 
       const resourceBase = 'https://mcp.synthetic.example/mcp';
       const exchangeSecret = 'synthetic-service-secret-with-over-32-characters';
@@ -248,6 +253,425 @@ export function oauthFlowTests(registerTests?: (context: () => McpOAuthFlowConte
         return;
       }
 
+      describe('shared resource workspace selection', () => {
+        const choose = async () => {
+          const chooser = await oauth.start(request({ resource: resourceBase }));
+          const consent = await oauth.selectWorkspace(
+            chooser.id,
+            chooser.csrf,
+            organizationId,
+            new URL(settings.TOOLJET_HOST).origin
+          );
+          return { chooser, consent };
+        };
+        test('picker approval resumes once for the same account after required SSO', async () => {
+          const root = await oauth.start(request({ resource: resourceBase }));
+          const child = await oauth.selectWorkspace(
+            root.id,
+            root.csrf,
+            organizationId,
+            settings.TOOLJET_HOST,
+            true,
+            user
+          );
+          expect((await oauth.preview(child.id, child.csrf)).approvalPending).toBe(true);
+          loginPolicy.form.enabled = false;
+          await expect(oauth.consent(child.id, child.csrf, user, true, settings.TOOLJET_HOST, true)).rejects.toThrow(
+            UnauthorizedException
+          );
+          expect(await db.query('SELECT id FROM mcp_oauth_grants')).toHaveLength(0);
+          user.isPasswordLogin = false;
+          user.isSSOLogin = true;
+          user.workspaceAuthentication = await oauth.captureAuthentication(
+            organizationId,
+            'openid',
+            'synthetic-provider'
+          );
+          await expect(
+            oauth.consent(child.id, child.csrf, { ...user, id: randomUUID() }, true, settings.TOOLJET_HOST, true)
+          ).rejects.toMatchObject({ error: 'access_denied' });
+          await expect(
+            oauth.consent(child.id, child.csrf, { ...user, id: randomUUID() }, true, settings.TOOLJET_HOST)
+          ).rejects.toMatchObject({ error: 'access_denied' });
+          const result = await oauth.consent(child.id, child.csrf, user, true, settings.TOOLJET_HOST, true);
+          expect(
+            (await redeem(new URL(result.redirectUrl).searchParams.get('code'), { resource: resourceBase }))
+              .access_token
+          ).toBeDefined();
+          await expect(
+            oauth.consent(child.id, child.csrf, user, true, settings.TOOLJET_HOST, true)
+          ).rejects.toMatchObject({ error: 'invalid_request' });
+        });
+        test('workspace URL entry does not count as consent and cannot be silently resumed', async () => {
+          const root = await oauth.start(request({ resource: resourceBase }));
+          const child = await oauth.selectWorkspace(root.id, root.csrf, 'garden', settings.TOOLJET_HOST);
+          expect((await oauth.preview(child.id, child.csrf)).approvalPending).toBe(false);
+          await expect(
+            oauth.consent(child.id, child.csrf, user, true, settings.TOOLJET_HOST, true)
+          ).rejects.toMatchObject({ error: 'access_denied' });
+        });
+        test('picker cannot record approval for a workspace without active membership', async () => {
+          const root = await oauth.start(request({ resource: resourceBase }));
+          await db.query("UPDATE organization_users SET status='archived' WHERE user_id=$1", [user.id]);
+          await expect(
+            oauth.selectWorkspace(root.id, root.csrf, organizationId, settings.TOOLJET_HOST, true, user)
+          ).rejects.toMatchObject({ status: 403 });
+          expect((await oauth.preview(root.id, root.csrf)).organizationId).toBeNull();
+        });
+        test('lists only active memberships and does not authorize before workspace selection', async () => {
+          const chooser = await oauth.start(request({ resource: resourceBase }));
+          const preview = await oauth.preview(chooser.id, chooser.csrf);
+          expect(preview.organizationId).toBeNull();
+          expect(preview.loginUrl).toContain('/login?oauth_reauthenticate=1');
+          const choices = await oauth.workspaces(chooser.id, chooser.csrf, user, settings.TOOLJET_HOST);
+          expect(choices.workspaces).toEqual([{ id: organizationId, name: 'Garden operations', slug: 'garden' }]);
+          await expect(oauth.consent(chooser.id, chooser.csrf, user, true)).rejects.toBeInstanceOf(
+            UnauthorizedException
+          );
+          await db.query("UPDATE organization_users SET status='archived' WHERE user_id=$1", [user.id]);
+          expect((await oauth.workspaces(chooser.id, chooser.csrf, user, settings.TOOLJET_HOST)).workspaces).toEqual(
+            []
+          );
+        });
+        test('preserves the shared audience through consent, exchange, refresh and revocation', async () => {
+          const { chooser, consent } = await choose();
+          await expect(oauth.preview(chooser.id, chooser.csrf)).rejects.toMatchObject({ error: 'invalid_request' });
+          expect((await oauth.preview(consent.id, consent.csrf)).organizationId).toBe(organizationId);
+          const approval = await oauth.consent(consent.id, consent.csrf, user, true);
+          const callback = new URL(approval.redirectUrl);
+          expect(callback.searchParams.get('state')).toBe('synthetic-state');
+          const pair = await redeem(callback.searchParams.get('code'), { resource: resourceBase });
+          expect(await exchange(pair.access_token, { resource: resourceBase })).toMatchObject({
+            organization_id: organizationId,
+          });
+          await expect(exchange(pair.access_token)).rejects.toMatchObject({ error: 'invalid_target' });
+          const next = await refresh(pair.refresh_token, { resource: resourceBase });
+          expect(await exchange(next.access_token, { resource: resourceBase })).toMatchObject({
+            organization_id: organizationId,
+          });
+          await oauth.revoke({ token: next.refresh_token, client_id: client.client_id });
+          await expect(exchange(next.access_token, { resource: resourceBase })).rejects.toMatchObject({
+            error: 'invalid_grant',
+          });
+        });
+        test('cannot use legacy credentials at the shared resource', async () => {
+          const pair = await redeem(await approve());
+          await expect(exchange(pair.access_token, { resource: resourceBase })).rejects.toMatchObject({
+            error: 'invalid_target',
+          });
+          await expect(refresh(pair.refresh_token, { resource: resourceBase })).rejects.toMatchObject({
+            error: 'invalid_target',
+          });
+          expect(await exchange(pair.access_token)).toMatchObject({ organization_id: organizationId });
+        });
+        test('a slug matching another workspace ID cannot change selection, consent or exchange', async () => {
+          await db.query("INSERT INTO organizations (name,slug,status) VALUES ('Willow operations',$1,'active')", [
+            organizationId,
+          ]);
+          await db.query("UPDATE organizations SET name='Garden operations' WHERE id=$1", [organizationId]);
+          const { consent } = await choose();
+          expect((await oauth.preview(consent.id, consent.csrf)).organizationId).toBe(organizationId);
+          const approval = await oauth.consent(consent.id, consent.csrf, user, true);
+          const pair = await redeem(new URL(approval.redirectUrl).searchParams.get('code'), { resource: resourceBase });
+          expect(await exchange(pair.access_token, { resource: resourceBase })).toMatchObject({
+            organization_id: organizationId,
+            organization_slug: 'garden',
+          });
+          const root = await oauth.start(request({ resource: resourceBase }));
+          await db.query("UPDATE organizations SET status='archived' WHERE id=$1", [organizationId]);
+          await expect(
+            oauth.selectWorkspace(root.id, root.csrf, organizationId, settings.TOOLJET_HOST)
+          ).rejects.toMatchObject({ error: 'invalid_target' });
+        });
+        test('a picker ID never resolves a colliding slug after the listed workspace is deleted', async () => {
+          const root = await oauth.start(request({ resource: resourceBase }));
+          const choices = await oauth.workspaces(root.id, root.csrf, user, settings.TOOLJET_HOST);
+          const selectedId = choices.workspaces[0].id;
+          await db.query("INSERT INTO organizations (name,slug,status) VALUES ('Birch inventory',$1,'active')", [
+            selectedId,
+          ]);
+          await db.query('DELETE FROM organizations WHERE id=$1', [selectedId]);
+          await expect(
+            oauth.selectWorkspace(root.id, root.csrf, selectedId, settings.TOOLJET_HOST, true)
+          ).rejects.toMatchObject({ error: 'invalid_target' });
+          expect((await oauth.preview(root.id, root.csrf)).organizationId).toBeNull();
+          // Explicit URL/slug entry still supports UUID-shaped slugs.
+          const child = await oauth.selectWorkspace(
+            root.id,
+            root.csrf,
+            `${settings.TOOLJET_HOST}/login/${selectedId}`,
+            settings.TOOLJET_HOST
+          );
+          expect((await oauth.preview(child.id, child.csrf)).organizationId).not.toBe(selectedId);
+        });
+        test.each([false, true])('cancel refuses a disabled client for a selected=%s interaction', async (selected) => {
+          const root = await oauth.start(request({ resource: resourceBase }));
+          const pending = selected
+            ? await oauth.selectWorkspace(root.id, root.csrf, organizationId, settings.TOOLJET_HOST)
+            : root;
+          await db.query('UPDATE mcp_oauth_clients SET disabled=true WHERE id=$1', [client.client_id]);
+          await expect(oauth.cancelSelection(pending.id, pending.csrf, settings.TOOLJET_HOST)).rejects.toMatchObject({
+            error: 'invalid_client',
+          });
+          const [row] = await db.query('SELECT consumed_at FROM mcp_oauth_artifacts WHERE id=$1', [hash(pending.id)]);
+          expect(row.consumed_at).toBeNull();
+        });
+        test('a selected workspace ID never falls back to a slug if the workspace disappears', async () => {
+          const { consent } = await choose();
+          await db.query("INSERT INTO organizations (name,slug,status) VALUES ('Willow operations',$1,'active')", [
+            organizationId,
+          ]);
+          await db.query('DELETE FROM organizations WHERE id=$1', [organizationId]);
+          await expect(oauth.preview(consent.id, consent.csrf)).rejects.toMatchObject({ error: 'invalid_target' });
+        });
+        test.each([
+          'login',
+          'login/',
+          'login/sso/openid',
+          'login/super-admin',
+          'applications/sample',
+          'embed-apps/sample',
+          'sso/google',
+          'switch-workspace',
+          'settings/profile',
+          'integrations',
+          'instance-settings',
+          'organization-invitations/sample',
+          'invitations/sample',
+          'mcp/consent',
+          'oauth2/authorize',
+          'error/sample',
+          'app-url-archived',
+          'switch-workspace-archived',
+          'signup',
+          'setup',
+          'forgot-password',
+          'reset-password/sample',
+          'password-expired',
+          'ldap/sample',
+        ])('rejects non-workspace URL /%s even when its route name is a workspace slug', async (path) => {
+          const slug = path.startsWith('login') ? path.split('/')[1] || 'undefined' : path.split('/')[0];
+          await db.query("INSERT INTO organizations (name,slug,status) VALUES ('Willow operations',$1,'active')", [
+            slug,
+          ]);
+          const root = await oauth.start(request({ resource: resourceBase }));
+          await expect(
+            oauth.selectWorkspace(root.id, root.csrf, `${settings.TOOLJET_HOST}/${path}`, settings.TOOLJET_HOST)
+          ).rejects.toMatchObject({ error: 'invalid_target' });
+          // The explicit slug remains usable without mistaking a platform URL for a workspace URL.
+          const selected = await oauth.selectWorkspace(root.id, root.csrf, slug, settings.TOOLJET_HOST);
+          expect((await oauth.preview(selected.id, selected.csrf)).organizationSlug).toBe(slug);
+        });
+        test('accepts a bare workspace URL through the existing origin validation', async () => {
+          const root = await oauth.start(request({ resource: resourceBase }));
+          await expect(
+            oauth.selectWorkspace(root.id, root.csrf, 'unknown.synthetic.example/garden', settings.TOOLJET_HOST)
+          ).rejects.toMatchObject({ error: 'invalid_target' });
+          const child = await oauth.selectWorkspace(
+            root.id,
+            root.csrf,
+            'tooljet.synthetic.example/login/garden',
+            settings.TOOLJET_HOST
+          );
+          expect((await oauth.preview(child.id, child.csrf)).organizationId).toBe(organizationId);
+        });
+        test('cancels a bound interaction before workspace login without granting access', async () => {
+          const { consent } = await choose();
+          await expect(oauth.cancelSelection(consent.id, 'wrong-cookie', settings.TOOLJET_HOST)).rejects.toMatchObject({
+            error: 'invalid_request',
+          });
+          await expect(
+            oauth.cancelSelection(consent.id, consent.csrf, 'https://untrusted.synthetic.example')
+          ).rejects.toMatchObject({ error: 'invalid_request' });
+          const callback = new URL(
+            (await oauth.cancelSelection(consent.id, consent.csrf, settings.TOOLJET_HOST)).redirectUrl
+          );
+          expect(callback.searchParams.get('error')).toBe('access_denied');
+          expect(callback.searchParams.get('state')).toBe('synthetic-state');
+          expect(callback.searchParams.has('code')).toBe(false);
+          await expect(oauth.preview(consent.id, consent.csrf)).rejects.toMatchObject({ error: 'invalid_request' });
+          expect(await db.query('SELECT id FROM mcp_oauth_grants')).toHaveLength(0);
+        });
+        test('workspace discovery verifies signed browser cookies and live sessions with the real account guard', async () => {
+          const otherId = randomUUID();
+          const otherWorkspace = randomUUID();
+          await db.query("INSERT INTO users (id,email,status) VALUES ($1,'other@synthetic.example','active')", [
+            otherId,
+          ]);
+          await db.query(
+            "INSERT INTO organizations (id,name,slug,status) VALUES ($1,'Willow operations','willow','active')",
+            [otherWorkspace]
+          );
+          await db.query(
+            "INSERT INTO organization_users (user_id,organization_id,status,role) VALUES ($1,$2,'active','admin')",
+            [otherId, otherWorkspace]
+          );
+          const config = new ConfigService(settings);
+          const jwt = new JwtService({ secret: signingSecret });
+          const sessions = Object.assign(Object.create(SessionUtilService.prototype), { configService: config });
+          const strategy = new JwtStrategy(
+            config,
+            sessions,
+            { findByEmail: (email) => db.manager.findOneBy(User, { email }) } as any,
+            {} as any,
+            { log: () => undefined } as any
+          );
+          const module = await Test.createTestingModule({
+            controllers: [McpOAuthController],
+            providers: [
+              { provide: McpOAuthService, useValue: oauth },
+              { provide: JwtService, useValue: jwt },
+              { provide: JwtStrategy, useValue: strategy },
+            ],
+          })
+            .overrideGuard(McpOAuthThrottleGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
+          const app = module.createNestApplication();
+          app.use(cookieParser());
+          app.setGlobalPrefix('api');
+          await app.init();
+          try {
+            const root = await oauth.start(request({ resource: resourceBase }));
+            const path = `/api/mcp-oauth/interactions/${root.id}/workspaces`;
+            const flowCookie = `${oauth.cookieName(root.id)}=${root.csrf}`;
+            const payload = {
+              username: user.id,
+              sub: user.email,
+              sessionId: user.sessionId,
+              isPasswordLogin: true,
+              organizationIds: [organizationId],
+            };
+            const get = (token: string) =>
+              supertest(app.getHttpServer())
+                .get(path)
+                .set('Cookie', [flowCookie, `tj_auth_token=${token}`]);
+            const browser = jwt.sign(payload);
+            const result = await get(browser).expect(200);
+            expect(result.body.workspaces).toEqual([{ id: organizationId, name: 'Garden operations', slug: 'garden' }]);
+            await get(jwt.sign({ ...payload, isPasswordLogin: false, isSSOLogin: true })).expect(200);
+            await get(jwt.sign({ ...payload, isPATLogin: true })).expect(401);
+            await get(new JwtService({ secret: 'different-synthetic-signing-key' }).sign(payload)).expect(401);
+            await db.query('DELETE FROM user_sessions WHERE id=$1', [user.sessionId]);
+            await get(browser).expect(401);
+          } finally {
+            await app.close();
+          }
+        });
+        test('two shared-URL grants remain bound to their independently selected workspaces', async () => {
+          const first = (await choose()).consent;
+          const firstApproval = await oauth.consent(first.id, first.csrf, user, true);
+          const firstPair = await redeem(new URL(firstApproval.redirectUrl).searchParams.get('code'), {
+            resource: resourceBase,
+          });
+          const secondId = randomUUID();
+          await db.query(
+            "INSERT INTO organizations (id,name,slug,status) VALUES ($1,'Meadow operations','meadow','active')",
+            [secondId]
+          );
+          await db.query(
+            "INSERT INTO organization_users (user_id,organization_id,status,role) VALUES ($1,$2,'active','admin')",
+            [user.id, secondId]
+          );
+          const root = await oauth.start(request({ resource: resourceBase }));
+          const second = await oauth.selectWorkspace(root.id, root.csrf, secondId, settings.TOOLJET_HOST);
+          const secondUser = {
+            ...user,
+            organizationId: secondId,
+            workspaceAuthentication: await oauth.captureAuthentication(secondId, 'form'),
+          };
+          const secondApproval = await oauth.consent(second.id, second.csrf, secondUser, true);
+          const secondPair = await redeem(new URL(secondApproval.redirectUrl).searchParams.get('code'), {
+            resource: resourceBase,
+          });
+          expect(
+            await exchange(firstPair.access_token, { resource: resourceBase, organization_id: secondId })
+          ).toMatchObject({ organization_id: organizationId });
+          expect(
+            await exchange(secondPair.access_token, { resource: resourceBase, organization_id: organizationId })
+          ).toMatchObject({ organization_id: secondId });
+          const next = await refresh(firstPair.refresh_token, { resource: resourceBase });
+          expect(await exchange(next.access_token, { resource: resourceBase })).toMatchObject({
+            organization_id: organizationId,
+          });
+        });
+        test('requires the selected workspace login evidence even after general login', async () => {
+          const { consent } = await choose();
+          for (const principal of [
+            { ...user, workspaceAuthentication: undefined },
+            { ...user, workspaceAuthentication: { ...user.workspaceAuthentication, organizationId: randomUUID() } },
+            { ...user, isPATLogin: true },
+          ])
+            await expect(oauth.consent(consent.id, consent.csrf, principal, true)).rejects.toBeInstanceOf(
+              UnauthorizedException
+            );
+          loginPolicy = { form: { enabled: false }, openid: { enabled: true, configId: 'synthetic-provider' } };
+          await expect(oauth.consent(consent.id, consent.csrf, user, true)).rejects.toBeInstanceOf(
+            UnauthorizedException
+          );
+          user.isPasswordLogin = false;
+          user.isSSOLogin = true;
+          user.workspaceAuthentication = await oauth.captureAuthentication(
+            organizationId,
+            'openid',
+            'synthetic-provider'
+          );
+          expect(
+            new URL((await oauth.consent(consent.id, consent.csrf, user, true)).redirectUrl).searchParams.has('code')
+          ).toBe(true);
+        });
+        test('serializes selection and rejects expired, foreign-browser and legacy selectors', async () => {
+          const chooser = await oauth.start(request({ resource: resourceBase }));
+          await expect(
+            oauth.selectWorkspace(chooser.id, 'wrong-cookie', organizationId, settings.TOOLJET_HOST)
+          ).rejects.toMatchObject({ error: 'invalid_request' });
+          await expect(
+            oauth.selectWorkspace(chooser.id, chooser.csrf, organizationId, 'https://untrusted.synthetic.example')
+          ).rejects.toMatchObject({ error: 'invalid_request' });
+          const results = await Promise.allSettled(
+            [1, 2].map(() => oauth.selectWorkspace(chooser.id, chooser.csrf, organizationId, settings.TOOLJET_HOST))
+          );
+          expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+          const legacy = await oauth.start(request());
+          await expect(
+            oauth.selectWorkspace(legacy.id, legacy.csrf, organizationId, settings.TOOLJET_HOST)
+          ).rejects.toMatchObject({ error: 'invalid_request' });
+          const expired = await oauth.start(request({ resource: resourceBase }));
+          await db.query("UPDATE mcp_oauth_artifacts SET expires_at=now()-interval '1 second' WHERE id=$1", [
+            hash(expired.id),
+          ]);
+          await expect(
+            oauth.selectWorkspace(expired.id, expired.csrf, organizationId, settings.TOOLJET_HOST)
+          ).rejects.toMatchObject({ error: 'invalid_request' });
+        });
+        test('resolves workspace URLs without fetching arbitrary hosts and permits cancellation before login', async () => {
+          const chooser = await oauth.start(request({ resource: resourceBase }));
+          await expect(
+            oauth.selectWorkspace(
+              chooser.id,
+              chooser.csrf,
+              'https://untrusted.synthetic.example/garden',
+              settings.TOOLJET_HOST
+            )
+          ).rejects.toMatchObject({ error: 'invalid_target' });
+          const selected = await oauth.selectWorkspace(
+            chooser.id,
+            chooser.csrf,
+            `${settings.TOOLJET_HOST}/garden/home`,
+            settings.TOOLJET_HOST
+          );
+          expect((await oauth.preview(selected.id, selected.csrf)).organizationId).toBe(organizationId);
+          const cancelled = await oauth.start(request({ resource: resourceBase }));
+          const callback = new URL(
+            (await oauth.cancelSelection(cancelled.id, cancelled.csrf, settings.TOOLJET_HOST)).redirectUrl
+          );
+          expect(callback.searchParams.get('error')).toBe('access_denied');
+          expect(callback.searchParams.get('state')).toBe('synthetic-state');
+          expect(callback.searchParams.has('code')).toBe(false);
+          await expect(oauth.preview(cancelled.id, cancelled.csrf)).rejects.toMatchObject({ error: 'invalid_request' });
+        });
+      });
+
       const clientRequest = (body, method = client.token_endpoint_auth_method, credential = client.client_secret) =>
         method === 'client_secret_basic'
           ? ([
@@ -312,6 +736,70 @@ export function oauthFlowTests(registerTests?: (context: () => McpOAuthFlowConte
           const ticket = new URLSearchParams(new URL(flow.location).hash.slice(1)).get('bootstrap');
           return { ...flow, ticket };
         };
+
+        test('workspace selection resolves custom-domain licensing without holding a pooled transaction', async () => {
+          const root = await oauth.start(request({ resource: resourceBase }));
+          let inTransaction = false;
+          const transaction = db.transaction.bind(db);
+          const transactionSpy = jest.spyOn(db, 'transaction').mockImplementation(async (...args: any[]) => {
+            inTransaction = true;
+            try {
+              return await (transaction as any)(...args);
+            } finally {
+              inTransaction = false;
+            }
+          });
+          const resolver = (oauth as any).customDomains;
+          const resolve = resolver.resolveCustomDomain.bind(resolver);
+          const resolverSpy = jest.spyOn(resolver, 'resolveCustomDomain').mockImplementation(async (domain) => {
+            expect(inTransaction).toBe(false);
+            return resolve(domain);
+          });
+          try {
+            const child = await oauth.selectWorkspace(root.id, root.csrf, customOrigin, settings.TOOLJET_HOST);
+            expect(new URL(child.location).origin).toBe(customOrigin);
+            expect(resolverSpy).toHaveBeenCalled();
+          } finally {
+            transactionSpy.mockRestore();
+            resolverSpy.mockRestore();
+          }
+        });
+        test('workspace selection rechecks domain ownership after preflight before consuming the root', async () => {
+          const root = await oauth.start(request({ resource: resourceBase }));
+          const transaction = db.transaction.bind(db);
+          const transactionSpy = jest.spyOn(db, 'transaction').mockImplementationOnce(async (...args: any[]) => {
+            await db.query("UPDATE custom_domains SET status='failed' WHERE organization_id=$1", [organizationId]);
+            return (transaction as any)(...args);
+          });
+          try {
+            await expect(
+              oauth.selectWorkspace(root.id, root.csrf, customOrigin, settings.TOOLJET_HOST)
+            ).rejects.toMatchObject({ error: 'invalid_request' });
+            expect((await oauth.preview(root.id, root.csrf)).organizationId).toBeNull();
+          } finally {
+            transactionSpy.mockRestore();
+          }
+        });
+        test.each(['https://orchard.synthetic.example/home', 'orchard.synthetic.example'])(
+          'shared selection bootstraps custom-domain reference %s without changing its resource',
+          async (reference) => {
+            const chooser = await oauth.start(request({ resource: resourceBase }));
+            expect(new URL(chooser.location).origin).toBe(settings.TOOLJET_HOST);
+            const selected = await oauth.selectWorkspace(chooser.id, chooser.csrf, reference, settings.TOOLJET_HOST);
+            expect(new URL(selected.location).origin).toBe(customOrigin);
+            const ticket = new URLSearchParams(new URL(selected.location).hash.slice(1)).get('bootstrap');
+            const csrf = await oauth.bootstrapBrowser(selected.id, ticket, 'S'.repeat(43), customOrigin);
+            expect((await oauth.preview(selected.id, csrf, customOrigin)).loginUrl).toContain(
+              `${customOrigin}/login/garden`
+            );
+            const result = await oauth.consent(selected.id, csrf, user, true, customOrigin);
+            const pair = await redeem(new URL(result.redirectUrl).searchParams.get('code'), { resource: resourceBase });
+            expect(await exchange(pair.access_token, { resource: resourceBase })).toMatchObject({
+              organization_id: organizationId,
+              browser_url: customOrigin,
+            });
+          }
+        );
 
         test('one browser binding wins concurrent bootstrap attempts and a lost-response retry recovers it', async () => {
           const flow = await begin();
@@ -1293,16 +1781,140 @@ export function oauthFlowTests(registerTests?: (context: () => McpOAuthFlowConte
         delete user.workspaceAuthentication;
         await expect(approve()).rejects.toThrow('Sign in to this workspace again');
       });
-      test('authentication from a different workspace, provider or old login cannot authorize', async () => {
+      test('unverifiable workspace, provider or future login evidence cannot authorize', async () => {
         const evidence = { ...user.workspaceAuthentication };
         for (const changed of [
           { organizationId: randomUUID() },
           { providerId: 'unverified-provider' },
-          { verifiedAt: Math.floor(Date.now() / 1000) - 601 },
           { verifiedAt: Math.floor(Date.now() / 1000) + 60 },
         ]) {
           user.workspaceAuthentication = { ...evidence, ...changed };
           await expect(approve()).rejects.toThrow(UnauthorizedException);
+        }
+      });
+      test('rejects login policy resolved through a slug belonging to another workspace', async () => {
+        const otherId = randomUUID();
+        await db.query("INSERT INTO organizations(id,name,slug,status) VALUES ($1,'Harbor operations',$2,'active')", [
+          otherId,
+          organizationId,
+        ]);
+        await db.query(
+          "INSERT INTO sso_configs(id,organization_id,sso,enabled,configs) VALUES ($1,$2,'form',true,'{}')",
+          [randomUUID(), otherId]
+        );
+        const organizations = new OrganizationRepository(db);
+        const resolved = await organizations.fetchOrganizationWithSSOConfigs(organizationId, [true, false]);
+        expect(resolved.id).toBe(otherId);
+        const policies = jest
+          .spyOn(loginConfigs, 'fetchOrganizationDetails')
+          .mockResolvedValue({ id: resolved.id, form: { enabled: true } });
+        try {
+          await expect(oauth.captureAuthentication(organizationId, 'form')).rejects.toThrow(UnauthorizedException);
+          await expect(approve()).rejects.toThrow(UnauthorizedException);
+        } finally {
+          policies.mockRestore();
+        }
+      });
+      test.each(['archived', 'deleted'])(
+        'requests workspace sign-in when the source workspace is %s',
+        async (reason) => {
+          const sourceId = randomUUID();
+          user.workspaceAuthentication = { ...user.workspaceAuthentication, organizationId: sourceId };
+          const policies = jest.spyOn(loginConfigs, 'fetchOrganizationDetails').mockImplementation(async (id) => {
+            if (id === sourceId)
+              throw reason === 'archived'
+                ? new BadRequestException('Workspace archived')
+                : new EntityNotFoundError(Organization, { id });
+            return { id, ...loginPolicy };
+          });
+          try {
+            await expect(approve()).rejects.toThrow(UnauthorizedException);
+          } finally {
+            policies.mockRestore();
+          }
+        }
+      );
+      test('retains the native super-admin domain exemption without bypassing membership', async () => {
+        user.userType = 'instance';
+        await db.query("UPDATE organizations SET password_allowed_domains='another.synthetic.example' WHERE id=$1", [
+          organizationId,
+        ]);
+        user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'form');
+        expect((await redeem(await approve())).access_token).toBeDefined();
+        await db.query('DELETE FROM organization_users WHERE user_id=$1', [user.id]);
+        await expect(oauth.workspaceUser(user, organizationId)).rejects.toMatchObject({ status: 403 });
+      });
+      test('requires target-workspace OIDC login to apply its group mappings', async () => {
+        loginPolicy.openid = { enabled: true };
+        const sourceId = randomUUID();
+        await db.query(
+          "INSERT INTO organizations(id,name,slug,status) VALUES ($1,'Forest operations','forest','active')",
+          [sourceId]
+        );
+        const providerId = randomUUID();
+        await db.query(
+          "INSERT INTO sso_configs(id,sso,enabled,config_scope,configs) VALUES ($1,'openid',true,'instance','{}')",
+          [providerId]
+        );
+        await db.query(
+          "INSERT INTO sso_config_oidc_group_sync(id,sso_config_id,organization_id,claim_name,group_mapping,enable_group_sync) VALUES ($1,$2,$3,'teams','{}',true)",
+          [randomUUID(), providerId, organizationId]
+        );
+        user.isPasswordLogin = false;
+        user.isSSOLogin = true;
+        user.workspaceAuthentication = await oauth.captureAuthentication(sourceId, 'openid');
+        await expect(approve()).rejects.toThrow('synchronize access');
+        user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'openid');
+        expect((await redeem(await approve())).access_token).toBeDefined();
+      });
+      test('reuses an older verified login while its browser session remains live', async () => {
+        user.workspaceAuthentication.verifiedAt = Math.floor(Date.now() / 1000) - 86400;
+        expect((await redeem(await approve())).access_token).toMatch(/^tj_oauth_at_/);
+        await db.query('DELETE FROM user_sessions WHERE id=$1', [user.sessionId]);
+        await expect(approve()).rejects.toThrow(UnauthorizedException);
+      });
+      test('reuses a verified password login for another workspace that permits it', async () => {
+        const otherId = randomUUID();
+        await db.query("INSERT INTO organizations(id,name,slug,status) VALUES ($1,'Lake operations','lake','active')", [
+          otherId,
+        ]);
+        await db.query(
+          "INSERT INTO organization_users(user_id,organization_id,status,role) VALUES ($1,$2,'active','admin')",
+          [user.id, otherId]
+        );
+        const selected = await oauth.workspaceUser(user, otherId);
+        expect(await oauth.assertCurrentAuthentication(selected, otherId)).toMatchObject({
+          organizationId: otherId,
+          method: 'form',
+        });
+        await db.query("UPDATE organizations SET password_restricted_domains='synthetic.example' WHERE id=$1", [
+          otherId,
+        ]);
+        await expect(oauth.assertCurrentAuthentication(selected, otherId)).rejects.toThrow(UnauthorizedException);
+      });
+      test('reuses a shared Google provider but requires login for a different workspace provider', async () => {
+        loginPolicy.google = { enabled: true, configs: { clientId: 'synthetic-global-google' } };
+        user.isPasswordLogin = false;
+        user.isSSOLogin = true;
+        user.workspaceAuthentication = await oauth.captureAuthentication(organizationId, 'google');
+        const otherId = randomUUID();
+        await db.query("INSERT INTO organizations(id,name,slug,status) VALUES ($1,'Hill operations','hill','active')", [
+          otherId,
+        ]);
+        const targetPolicy = { google: { enabled: true, configs: { clientId: 'synthetic-global-google' } } };
+        const policies = jest
+          .spyOn(loginConfigs, 'fetchOrganizationDetails')
+          .mockImplementation(async (id?: string) => ({ id, ...(id === otherId ? targetPolicy : loginPolicy) }));
+        try {
+          const selected = { ...user, organizationId: otherId };
+          expect(await oauth.assertCurrentAuthentication(selected, otherId)).toMatchObject({
+            organizationId: otherId,
+            method: 'google',
+          });
+          targetPolicy.google.configs.clientId = 'synthetic-workspace-google';
+          await expect(oauth.assertCurrentAuthentication(selected, otherId)).rejects.toThrow(UnauthorizedException);
+        } finally {
+          policies.mockRestore();
         }
       });
       test('workspace domain and instance restrictions invalidate captured evidence and active grants', async () => {
@@ -1917,6 +2529,13 @@ export function oauthFlowTests(registerTests?: (context: () => McpOAuthFlowConte
         })
           .overrideGuard(McpOAuthThrottleGuard)
           .useValue({ canActivate: () => true })
+          .overrideGuard(McpOAuthAccountGuard)
+          .useValue({
+            canActivate: (context) => {
+              context.switchToHttp().getRequest().user = user;
+              return true;
+            },
+          })
           .overrideGuard(JwtAuthGuard)
           .useValue({
             canActivate: (context) => {
@@ -1951,6 +2570,73 @@ export function oauthFlowTests(registerTests?: (context: () => McpOAuthFlowConte
             .query(request({ redirect_uri: 'https://unregistered.synthetic.example/callback' }))
             .expect(400);
           expect(invalidClient.headers.location).toBeUndefined();
+          // The unbound chooser and the selected workspace each have their own browser cookie.
+          const shared = await http
+            .get('/api/mcp-oauth/authorize')
+            .query(request({ resource: resourceBase }))
+            .expect(302);
+          const rootId = new URL(shared.headers.location).searchParams.get('request');
+          const rootPath = `/api/mcp-oauth/interactions/${rootId}`;
+          const rootCookies = shared.headers['set-cookie'].map((cookie) => cookie.split(';')[0]);
+          const root = await http.get(rootPath).set('Cookie', rootCookies).expect(200);
+          expect(root.body.organizationId).toBeNull();
+          const list = await http.get(`${rootPath}/workspaces`).set('Cookie', rootCookies).expect(200);
+          expect(list.body.workspaces).toEqual([{ id: organizationId, name: 'Garden operations', slug: 'garden' }]);
+          const selectionHeaders = { Cookie: rootCookies, 'x-tooljet-oauth-csrf': root.body.csrfToken };
+          await http
+            .post(`${rootPath}/workspace`)
+            .set(selectionHeaders)
+            .send({ workspace: organizationId })
+            .expect(403);
+          await http
+            .post(`${rootPath}/workspace`)
+            .set(selectionHeaders)
+            .set('Origin', settings.TOOLJET_HOST)
+            .set('x-tooljet-oauth-csrf', 'wrong-browser')
+            .send({ workspace: organizationId })
+            .expect(403);
+          const selected = await http
+            .post(`${rootPath}/workspace`)
+            .set(selectionHeaders)
+            .set('Origin', settings.TOOLJET_HOST)
+            .send({ workspace: organizationId })
+            .expect(201);
+          const childId = new URL(selected.body.redirectUrl).searchParams.get('request');
+          expect(childId).not.toBe(rootId);
+          const childCookies = selected.headers['set-cookie'].map((cookie) => cookie.split(';')[0]);
+          await http.get(`/api/mcp-oauth/interactions/${childId}`).set('Cookie', rootCookies).expect(400);
+          const child = await http
+            .get(`/api/mcp-oauth/interactions/${childId}`)
+            .set('Cookie', childCookies)
+            .expect(200);
+          expect(child.body.organizationId).toBe(organizationId);
+          await http
+            .post(`${rootPath}/workspace`)
+            .set(selectionHeaders)
+            .set('Origin', settings.TOOLJET_HOST)
+            .send({ workspace: organizationId })
+            .expect(400);
+          const cancelled = await http
+            .get('/api/mcp-oauth/authorize')
+            .query(request({ resource: resourceBase }))
+            .expect(302);
+          const cancelledId = new URL(cancelled.headers.location).searchParams.get('request');
+          const cancelledPath = `/api/mcp-oauth/interactions/${cancelledId}`;
+          const cancelledCookies = cancelled.headers['set-cookie'].map((cookie) => cookie.split(';')[0]);
+          const cancelPreview = await http.get(cancelledPath).set('Cookie', cancelledCookies).expect(200);
+          await http
+            .post(`${cancelledPath}/cancel`)
+            .set('Cookie', cancelledCookies)
+            .set('x-tooljet-oauth-csrf', cancelPreview.body.csrfToken)
+            .expect(403);
+          const cancel = await http
+            .post(`${cancelledPath}/cancel`)
+            .set('Cookie', cancelledCookies)
+            .set('Origin', settings.TOOLJET_HOST)
+            .set('x-tooljet-oauth-csrf', cancelPreview.body.csrfToken)
+            .expect(201);
+          expect(new URL(cancel.body.redirectUrl).searchParams.get('error')).toBe('access_denied');
+          expect(new URL(cancel.body.redirectUrl).searchParams.get('state')).toBe('synthetic-state');
           const authorization = await http.get('/api/mcp-oauth/authorize').query(request()).expect(302);
           const id = new URL(authorization.headers.location).searchParams.get('request');
           const cookies = authorization.headers['set-cookie'].map((cookie) => cookie.split(';')[0]);
@@ -1961,6 +2647,12 @@ export function oauthFlowTests(registerTests?: (context: () => McpOAuthFlowConte
             'x-tooljet-oauth-csrf': preview.body.csrfToken,
           };
           await http.post(`/api/mcp-oauth/interactions/${id}`).set(headers).send({ allow: true }).expect(403);
+          await http
+            .post(`/api/mcp-oauth/interactions/${id}`)
+            .set(headers)
+            .set('Origin', 'https://tooljet.synthetic.example')
+            .send({ allow: true, accountId: randomUUID() })
+            .expect(401);
           const approved = await http
             .post(`/api/mcp-oauth/interactions/${id}`)
             .set(headers)
@@ -2049,6 +2741,49 @@ export function oauthFlowTests(registerTests?: (context: () => McpOAuthFlowConte
             .send({ token: confidential.body.access_token })
             .expect(200);
           await expect(exchange(confidential.body.access_token)).rejects.toMatchObject({ error: 'invalid_grant' });
+
+          const chooser = await http
+            .get('/api/mcp-oauth/authorize')
+            .query(request({ resource: resourceBase }))
+            .expect(302);
+          const chooserId = new URL(chooser.headers.location).searchParams.get('request');
+          const chooserPath = `/api/mcp-oauth/interactions/${chooserId}`;
+          const chooserCookies = chooser.headers['set-cookie'].map((cookie) => cookie.split(';')[0]);
+          const chooserPreview = await http.get(chooserPath).set('Cookie', chooserCookies).expect(200);
+          const chooserHeaders = {
+            Cookie: chooserCookies,
+            Origin: settings.TOOLJET_HOST,
+            'x-tooljet-oauth-csrf': chooserPreview.body.csrfToken,
+          };
+          await http
+            .post(chooserPath)
+            .set(chooserHeaders)
+            .send({ allow: true, workspaceId: organizationId })
+            .expect(400);
+          await http
+            .post(chooserPath)
+            .set(chooserHeaders)
+            .send({ allow: true, accountId: randomUUID(), workspaceId: organizationId })
+            .expect(401);
+          const continued = await http
+            .post(chooserPath)
+            .set(chooserHeaders)
+            .send({ allow: true, accountId: user.id, workspaceId: organizationId })
+            .expect(200);
+          const approvedId = new URL(continued.body.redirectUrl).searchParams.get('request');
+          const approvedPath = `/api/mcp-oauth/interactions/${approvedId}`;
+          const approvedCookies = continued.headers['set-cookie'].map((cookie) => cookie.split(';')[0]);
+          const approvedPreview = await http.get(approvedPath).set('Cookie', approvedCookies).expect(200);
+          expect(approvedPreview.body.approvalPending).toBe(true);
+          await http.get(`${approvedPath}/session`).set('Cookie', approvedCookies).expect(200);
+          const finished = await http
+            .post(approvedPath)
+            .set('Cookie', approvedCookies)
+            .set('Origin', settings.TOOLJET_HOST)
+            .set('x-tooljet-oauth-csrf', approvedPreview.body.csrfToken)
+            .send({ allow: true, accountId: user.id, resume: true })
+            .expect(200);
+          expect(new URL(finished.body.redirectUrl).searchParams.has('code')).toBe(true);
         } finally {
           await app.close();
         }
