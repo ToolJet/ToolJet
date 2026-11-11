@@ -82,7 +82,7 @@ describe("Workflows - execution history (API)", () => {
     });
   });
 
-  // The run API does not merge defaultParams (only the webhook does).
+  // A manual run fills missing params from defaultParams, but never adds undeclared keys.
   it("A run passes exactly the params it was given to the start trigger", () => {
     createRunjsQueries({ echo: "return startTrigger.params" }).then((ids) => {
       cy.apiSaveWorkflowDefinition(
@@ -104,11 +104,11 @@ describe("Workflows - execution history (API)", () => {
 
     cy.apiRunWorkflow({ params: { who: "me", count: 2 } }).then((res) => {
       expect(res.status).to.equal(201);
-      expect(res.body.result.data).to.deep.equal({ who: "me", count: 2 });
+      expect(res.body.result.data).to.deep.equal({ greeting: "hello", who: "me", count: 2 });
     });
     cy.apiRunWorkflow({ params: {} }).then((res) => {
       expect(res.status).to.equal(201);
-      expect(res.body.result.data).to.deep.equal({});
+      expect(res.body.result.data).to.deep.equal({ greeting: "hello" });
     });
   });
 

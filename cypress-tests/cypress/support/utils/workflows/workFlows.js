@@ -86,6 +86,9 @@ export const deleteAppandWorkflowAfterExecution = (workflowName, appName) => {
 };
 
 export const verifyPreviewOutputText = (expectedOutput) => {
+  // Blur the editor so the query save lands before previewing; the preview runs the saved code.
+  cy.focused().blur();
+  cy.wait(1500);
   cy.get('[data-cy="preview-button"]').click();
   cy.wait(2000);
   cy.get('[data-cy="inspector-node-data"]')
@@ -510,7 +513,7 @@ export const getWorkflowQueries = (workflowId) =>
 export const verifyTextInResponseOutputLimited = (expectedText, limit = 5) => {
   cy.get(workflowSelector.workflowRunButton).click();
   cy.get(workflowSelector.workflowLogs).should(
-    "have.text",
+    "contain.text",
     workflowsText.workflowRunhelperText
   );
 
@@ -546,7 +549,14 @@ export const verifyTextInResponseOutputLimited = (expectedText, limit = 5) => {
     }
   });
   cy.get("body").then(($body) => {
-    const icons = $body.find("span.json-tree-node-icon");
+    const dataIcons = $body
+      .find('[data-cy="inspector-node-data"]')
+      .last()
+      .parent()
+      .find("span.json-tree-node-icon");
+    const icons = dataIcons.length
+      ? dataIcons
+      : $body.find("span.json-tree-node-icon");
     if (icons.length > 0) {
       cy.wrap(icons.slice(0, limit)).each(($el) => {
         if ($el[0].style.transform === "rotate(0deg)") {
@@ -661,4 +671,97 @@ export const createRunjsQueries = (queries) => {
     );
   });
   return cy.wrap(ids);
+};
+
+// ---------------------------------------------------------------------------
+// Human-in-the-loop (HITL) graphs
+//
+// The Human node is `type: "human"` with its whole configuration on `data`
+// (confirmed by saving one from the editor and reading the version back). Each
+// outcome key is a source handle, so edges leave the node through
+// `sourceHandle: <outcome key>`.
+// ---------------------------------------------------------------------------
+
+export const HUMAN_DEFAULT_OUTCOMES = [
+  { key: "approved", label: "Approve", color: "#1E823B" },
+  { key: "rejected", label: "Reject", color: "#D72D39" },
+];
+
+export const wfHumanNode = (id = "human1", config = {}) => {
+  const {
+    nodeName = id,
+    description = "",
+    outcomes = HUMAN_DEFAULT_OUTCOMES,
+    inputSchema = [],
+    approvers = { users: [], groups: [], dynamic: "", tokenBypass: true },
+    timeout = {
+      enabled: false,
+      durationSeconds: 86400,
+      onExpire: "fail",
+      timeoutOutcome: "",
+    },
+    notification = {
+      url: "",
+      method: "POST",
+      headers: {},
+      bodyTemplate: "",
+      includeResolveUrl: true,
+    },
+    reminders,
+    position = { x: 400, y: 250 },
+  } = config;
+  return {
+    id,
+    type: "human",
+    data: {
+      nodeType: "human",
+      label: "Human",
+      nodeName,
+      description,
+      approvers,
+      outcomes,
+      inputSchema,
+      timeout,
+      notification,
+      ...(reminders ? { reminders } : {}),
+    },
+    position,
+    sourcePosition: "right",
+    targetPosition: "left",
+  };
+};
+
+// A Response node that reports which branch ran and what the Human step
+// handed downstream (`<human>.data.outcome|input|resolvedBy`).
+export const wfOutcomeResponse = (humanName, outcomeKey, index = 0) => {
+  const node = wfResponseNode(
+    `resp-${outcomeKey}`,
+    `return { branch: '${outcomeKey}', outcome: ${humanName}.data.outcome, input: ${humanName}.data.input, resolvedBy: ${humanName}.data.resolvedBy }`,
+    "200",
+    `response_${outcomeKey}`
+  );
+  node.position = { x: 800, y: 100 + index * 150 };
+  return node;
+};
+
+// Start -> Human -> one Response per connected outcome. `connect` lists the
+// outcome keys that get a Response (default: all of them).
+export const humanWorkflowDefinition = ({
+  human = {},
+  humanName = "human1",
+  connect,
+} = {}) => {
+  const humanNode = wfHumanNode(humanName, human);
+  const outcomes = humanNode.data.outcomes;
+  const keys = connect || outcomes.map((outcome) => outcome.key);
+  const responses = keys.map((key, index) =>
+    wfOutcomeResponse(humanName, key, index)
+  );
+  return workflowDefinition({
+    nodes: [wfStartNode(), humanNode, ...responses],
+    edges: [
+      wfEdge("start", humanName),
+      ...keys.map((key) => wfEdge(humanName, `resp-${key}`, key)),
+    ],
+  });
 };

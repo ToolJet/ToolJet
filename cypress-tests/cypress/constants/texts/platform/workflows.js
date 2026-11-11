@@ -63,11 +63,17 @@ export const workflowsText = {
   cloneAppOption: "Clone app",
   cloneWorkflowOption: "Clone workflow",
 
-  // Folder delete confirmation. The trailing sentence says "Apps ... will not be
-  // deleted" even on the workflows dashboard, so only the stable prefix is
-  // asserted.
+  // Folder delete confirmation. The workflows dashboard names its own type in
+  // the trailing sentence ("Workflows within the folder ..."); lts-3.16 still
+  // says "Apps", so this is the main/release wording.
   folderDeletePrefix: (folderName) =>
     `Are you sure you want to delete the folder ${folderName}?`,
+  folderDeleteMessage: (folderName) =>
+    `Are you sure you want to delete the folder ${folderName}? Workflows within the folder will not be deleted.`,
+
+  // Node menu (Copy / Duplicate / Delete)
+  nodeDeleteConfirmMessage: "Do you really want to delete this node?",
+  duplicatedRunjsNodeName: "runjs1_copy",
 
   llmAgentFixturePath:
     "cypress/fixtures/templates/workflows/workflow_llm_agent_node-export-1781268843647.json",
@@ -84,8 +90,41 @@ export const workflowsText = {
   loopNotArrayError: "Loop array did not resolve into an array",
   releaseNeedsProductionError:
     "You can only release when the version is promoted to production",
-  invalidScheduleError: "Invalid interval configuration",
+  invalidScheduleError: "is not a valid cron expression",
   responseStatusError: (code, reason) =>
     `Workflow failed due to HTTP status code: ${code} ${reason}`,
   versionLockedText: "This version is locked",
+};
+
+// Human-in-the-loop (HITL) copy asserted by the specs.
+export const humanText = {
+  sidebarNodeLabel: "Human-in-the-loop",
+  defaultNodeName: "human1",
+  defaultOutcomes: [
+    { key: "approved", label: "Approve" },
+    { key: "rejected", label: "Reject" },
+  ],
+  duplicateOutcomeKeyToast: "Outcome key must be unique",
+  duplicateFieldName: "Field names must be unique",
+  timeoutOutcomeWarning:
+    "Pick an outcome, or the run fails when the timeout expires.",
+  waitingBannerTitle: "Waiting for human input",
+  waitingRunLabel: "Waiting for input",
+  statusWaiting: "Waiting",
+  statusSuccess: "Success",
+  statusFailed: "Failed",
+  statusStopped: "Stopped",
+  notApprover: "You are not an approver for this request, so you cannot resolve it.",
+  noApprovalsMatch: "No approval requests match these filters.",
+  removeOutcomeConfirm: (label, edges) =>
+    `Removing outcome "${label}" will also delete ${edges} connected edge(s). Continue?`,
+  requiredInputToast: (label) => `"${label}" is required`,
+  resolvedToast: (label) => `Resolved as "${label}"`,
+  requestCancelledToast: "Request cancelled",
+  notPendingError: "Approval request is not pending",
+  notFoundError: "Approval request not found",
+  unknownOutcomeError: (key) => `Unknown outcome "${key}"`,
+  missingInputError: (name) => `Missing required input "${name}"`,
+  notAuthorizedError: "Not authorized to resolve this approval request",
+  setupError: "requires at least one outcome",
 };
