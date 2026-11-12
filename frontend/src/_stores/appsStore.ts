@@ -73,7 +73,7 @@ const createAppsStore: AppsStoreCreator = (set, get) => ({
       false,
       'clearSelection'
     ),
-  setAppDialogState: (updatedState) => {
+  setAppDialogState: (updatedState, skipBranchLockCheck = false) => {
     if (!updatedState.type) return;
 
     const { isInitialized, orgGitConfig, currentBranch } = useWorkspaceBranchesStore.getState();
@@ -87,7 +87,7 @@ const createAppsStore: AppsStoreCreator = (set, get) => ({
 
     set(
       (state) => {
-        if (isBranchLocked) {
+        if (isBranchLocked && !skipBranchLockCheck) {
           state.switchBranchModal = {
             open: true,
             postSwitchActionDetails: updatedState,

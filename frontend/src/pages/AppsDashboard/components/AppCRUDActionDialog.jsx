@@ -24,8 +24,9 @@ import {
 } from '@/_services/hooks/appsServiceHooks';
 import { useAppsStore } from '@/_stores/appsStore';
 import { useInstallDependentPlugins, useUninstallPlugins } from '@/_services/hooks/pluginsServiceHooks';
+import { useDeployTemplateApp, useFetchTemplateDependentPlugins } from '@/_services/hooks/libraryAppServiceHooks';
 
-// import Collapsible from './Collapsible';
+import Collapsible from './Collapsible';
 import ActionDialog from './ActionDialog';
 import { appTypeToDisplayNameMapping } from '../helper';
 
@@ -33,6 +34,8 @@ const MAX_APP_NAME_LENGTH = 100;
 
 // `defaultAppType` is the page's app type, used when the dialog's app doesn't carry its own.
 export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
+  const navigate = useNavigate();
+
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
   const resetAppDialogState = useAppsStore((state) => state.resetAppDialogState);
   const { type: actionType, appDetails } = useAppsStore((state) => state.appDialogState);
@@ -43,7 +46,9 @@ export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
   const appType = appDetails?.type ?? defaultAppType;
   const appTypeDisplayName = appTypeToDisplayNameMapping[appType];
 
-  const navigate = useNavigate();
+  const { data: templateDependentPlugins } = useFetchTemplateDependentPlugins(
+    actionType === 'create-from-template' && appDetails?.id
+  );
 
   const { mutate: createNewApp, isPending: isCreatingApp } = useCreateApp();
   const { mutate: renameApp, isPending: isRenamingApp } = useRenameApp();
@@ -53,6 +58,8 @@ export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
     useInstallDependentPlugins();
   const { mutateAsync: uninstallPlugins, isPending: isUninstallingPlugins } = useUninstallPlugins();
   const { mutateAsync: importResource, isPending: isImportingResource } = useImportResource();
+  const { mutate: deployTemplateApp, isPending: isDeployingTemplateApp } = useDeployTemplateApp();
+
   // const inputRef = useRef();
   const [name, setName] = useState(appDetails?.name ?? '');
   const [errorText, setErrorText] = useState('');
@@ -192,19 +199,16 @@ export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
           }
         } catch (error) {
           if (error?.error?.type === 'permission-check') {
-            setAppDialogState(
-              {
-                type: 'import-anyway',
-                appDetails: {
-                  fileContent,
-                  fileName,
-                  dependentPlugins,
-                  dependentPluginsDetail,
-                  missingGroups: error?.error?.data ?? [],
-                },
+            setAppDialogState({
+              type: 'import-anyway',
+              appDetails: {
+                fileContent,
+                fileName,
+                dependentPlugins,
+                dependentPluginsDetail,
+                missingGroups: error?.error?.data ?? [],
               },
-              appType
-            );
+            });
             return;
           }
 
@@ -229,6 +233,34 @@ export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
         }
         break;
       }
+      case 'create-from-template': {
+        const { id } = appDetails;
+        const dependentPlugins = templateDependentPlugins?.plugins_to_be_installed ?? [];
+
+        deployTemplateApp(
+          {
+            identifier: id,
+            appName: formattedAppName,
+            dependentPlugins: dependentPlugins,
+            shouldAutoImportPlugin: Boolean(dependentPlugins?.length),
+            appTypeDisplayName,
+            // This will remain false in every case post git sync branching implementation change refer: https://github.com/ToolJet/ToolJet/pull/15361/changes#diff-9cdf23554d644a3e168cc72f2f6eab4912bd0ca96c499fa3e894888959c6ff04
+            isCommitEnabled: false,
+          },
+          {
+            onError: (error) => {
+              if (error.statusCode === 409) {
+                handle409Error(error);
+                return;
+              }
+
+              handleResetState();
+            },
+          }
+        );
+
+        break;
+      }
       default:
         break;
     }
@@ -236,6 +268,7 @@ export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
 
   const isDeleteActionType = actionType === 'delete';
   const isImportAnywayActionType = actionType === 'import-anyway';
+  const isCreateAction = ['create', 'import', 'duplicate', 'create-from-template'].includes(actionType);
   const isAlertDialog = isDeleteActionType || isImportAnywayActionType;
   const { title, submitBtnLabel } = getDialogConfig({ actionType, appTypeDisplayName, isAlertDialog });
   const isNameInvalid = name.trim().length === 0 || name?.length > MAX_APP_NAME_LENGTH || Boolean(errorText);
@@ -248,7 +281,8 @@ export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
     isCloningApp ||
     isInstallingDependentPlugins ||
     isImportingResource ||
-    isUninstallingPlugins;
+    isUninstallingPlugins ||
+    isDeployingTemplateApp;
   const isCancelBtnDisabled = isFormBeingSubmitted;
   const isSubmitBtnDisabled = isNameInvalid || isFormBeingSubmitted || (isNameChangeRequired && !isNameChanged);
 
@@ -270,7 +304,7 @@ export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
         },
       ]}
     >
-      {['create', 'rename', 'import', 'duplicate', 'create-from-template'].includes(actionType) ? (
+      {isCreateAction ? (
         <CreateRenameCloneImportBody
           appType={appType}
           appName={name}
@@ -278,9 +312,19 @@ export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
           actionType={actionType}
           isNameInputDisabled={isFormBeingSubmitted}
           onSubmit={handleSubmitForm}
-          onFolderNameChange={handleNameChange}
-          dependentPlugins={appDetails?.dependentPlugins}
-          dependentPluginsDetail={appDetails?.dependentPluginsDetail}
+          onNameChange={handleNameChange}
+          dependentPlugins={templateDependentPlugins?.plugins_to_be_installed ?? []}
+          dependentPluginsDetail={{ ...templateDependentPlugins?.plugins_detail_by_id }}
+        />
+      ) : actionType === 'rename' ? (
+        <CreateRenameCloneImportBody
+          appType={appType}
+          appName={name}
+          errorText={errorText}
+          actionType={actionType}
+          isNameInputDisabled={isFormBeingSubmitted}
+          onSubmit={handleSubmitForm}
+          onNameChange={handleNameChange}
         />
       ) : actionType === 'delete' ? (
         <DeleteAppBody appType={appType} appName={name} />
@@ -292,6 +336,7 @@ export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
     </ActionDialog>
   );
 }
+
 function CreateRenameCloneImportBody({
   actionType,
   appType,
@@ -299,7 +344,7 @@ function CreateRenameCloneImportBody({
   errorText,
   isNameInputDisabled,
   onSubmit,
-  onFolderNameChange,
+  onNameChange,
   dependentPlugins,
   dependentPluginsDetail,
 }) {
@@ -308,6 +353,7 @@ function CreateRenameCloneImportBody({
     appName.length >= MAX_APP_NAME_LENGTH
       ? 'Maximum length has been reached'
       : `${capitalize(appTypeDisplayName)} name must be unique and max ${MAX_APP_NAME_LENGTH} characters`;
+
   return (
     <form id={`${actionType}-${appType}-form`} className="tw-px-6 tw-py-4" onSubmit={onSubmit}>
       <Field>
@@ -323,7 +369,7 @@ function CreateRenameCloneImportBody({
           placeholder={`Enter ${appTypeDisplayName.toLowerCase()} name`}
           // ref={inputRef}
           disabled={isNameInputDisabled}
-          onChange={onFolderNameChange}
+          onChange={onNameChange}
           className={cn({ 'tw-border-border-danger-strong': errorText })}
           data-cy={`${generateCypressDataCy(appTypeDisplayName)}-name-input`}
         />
@@ -338,9 +384,14 @@ function CreateRenameCloneImportBody({
           <></>
         )}
       </Field>
+
+      {Boolean(dependentPlugins?.length) && (
+        <PluginsToBeInstalled dependentPlugins={dependentPlugins} dependentPluginsDetail={dependentPluginsDetail} />
+      )}
     </form>
   );
 }
+
 function MissingGroupsDialogBody({ missingGroups }) {
   const groupNames = missingGroups.join(', ');
 
@@ -356,9 +407,9 @@ function MissingGroupsDialogBody({ missingGroups }) {
             The following groups are missing, so their permissions won&apos;t carry over after import.
           </p>
         </div>
-        {/* <Collapsible title={`Missing user groups (${missingGroups.length})`}>
+        <Collapsible title={`Missing user groups (${missingGroups.length})`}>
           <p className="tw-font-body-default tw-text-text-default tw-mb-0">{groupNames}</p>
-        </Collapsible> */}
+        </Collapsible>
         <p className="tw-font-body-default tw-text-text-default tw-mb-0">
           Without these groups, restricted pages, queries, and components may become accessible to unintended users. To
           prevent this, create the missing groups before importing or review permissions after.
@@ -367,6 +418,7 @@ function MissingGroupsDialogBody({ missingGroups }) {
     </div>
   );
 }
+
 function DeleteAppBody({ appType, appName }) {
   const appTypeDisplayName = appTypeToDisplayNameMapping[appType];
   const heading = `Delete "${appName}"`;
@@ -383,28 +435,29 @@ function DeleteAppBody({ appType, appName }) {
   );
 }
 
-// function PluginsToBeInstalled({ dependentPlugins, dependentPluginsDetail }) {
-//   return (
-//     <Collapsible
-//       subTitle="These plugins are needed to run queries in this app."
-//       title={`Marketplace plugins required (${dependentPlugins.length})`}
-//       classes={{ collapsibleContainer: 'tw-mt-5' }}
-//     >
-//       <ul className="tw-list-none tw-mb-0 tw-pl-0 tw-max-h-32 tw-overflow-y-auto tw-hide-scrollbar">
-//         {dependentPlugins.map((plugin, index) => {
-//           const pluginsName = dependentPluginsDetail[plugin].name || plugin;
-//           const iconSrc = `${config.TOOLJET_MARKETPLACE_URL}/marketplace-assets/${plugin}/lib/icon.svg`;
-//           return (
-//             <li key={`${pluginsName}-${index}`} className="tw-flex tw-items-center tw-gap-2 tw-p-1">
-//               <img className="tw-size-4" src={iconSrc} alt={pluginsName} />
-//               <span className="tw-font-body-default tw-text-text-default">{pluginsName}</span>
-//             </li>
-//           );
-//         })}
-//       </ul>
-//     </Collapsible>
-//   );
-// }
+function PluginsToBeInstalled({ dependentPlugins, dependentPluginsDetail }) {
+  return (
+    <Collapsible
+      subTitle="These plugins are needed to run queries in this app."
+      title={`Marketplace plugins required (${dependentPlugins.length})`}
+      classes={{ collapsibleContainer: 'tw-mt-5' }}
+    >
+      <ul className="tw-list-none tw-mb-0 tw-pl-0 tw-max-h-32 tw-overflow-y-auto tw-hide-scrollbar">
+        {dependentPlugins.map((plugin, index) => {
+          const pluginsName = dependentPluginsDetail[plugin].name || plugin;
+          const iconSrc = `${config.TOOLJET_MARKETPLACE_URL}/marketplace-assets/${plugin}/lib/icon.svg`;
+          return (
+            <li key={`${pluginsName}-${index}`} className="tw-flex tw-items-center tw-gap-2 tw-p-1">
+              <img className="tw-size-4" src={iconSrc} alt={pluginsName} />
+              <span className="tw-font-body-default tw-text-text-default">{pluginsName}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </Collapsible>
+  );
+}
+
 function getDialogConfig({ actionType, appTypeDisplayName, isAlertDialog }) {
   switch (actionType) {
     case 'create-from-template':

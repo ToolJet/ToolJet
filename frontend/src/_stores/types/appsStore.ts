@@ -54,7 +54,7 @@ export interface IFolderDialogState {
 
 export interface ISwitchBranchModal {
   open: boolean;
-  postSwitchActionDetails: Partial<IAppDialogState> | null;
+  postSwitchActionDetails?: Partial<IAppDialogState> | null;
 }
 
 export interface IAppsStore {
@@ -70,7 +70,8 @@ export interface IAppsStore {
   setExpanded: (updater: Updater<ExpandedState>) => void;
   setRowSelection: (updater: Updater<RowSelectionState>) => void;
   clearSelection: () => void;
-  setAppDialogState: (updatedState: Partial<IAppDialogState>) => void;
+  // skipBranchLockCheck opens the dialog even when the branch is locked, e.g. right after the user switched branches.
+  setAppDialogState: (updatedState: Partial<IAppDialogState>, skipBranchLockCheck?: boolean) => void;
   resetAppDialogState: () => void;
   setFolderDialogState: (updatedState: Partial<IFolderDialogState>) => void;
   resetFolderDialogState: () => void;

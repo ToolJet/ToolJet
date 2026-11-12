@@ -102,7 +102,7 @@ export default function Dialogs({
     handleCloseSwitchBranchModal();
     // setCurrentPage(1);
     // queryClient.invalidateQueries({ queryKey: ['apps'] });
-    setAppDialogState(postSwitchActionDetails, appType);
+    setAppDialogState(postSwitchActionDetails);
   };
 
   const isExportAppDialogOpen = appDialogState.type === 'export';
@@ -152,7 +152,9 @@ export default function Dialogs({
         onClose={handleCloseSwitchBranchModal}
       />
 
-      <ImportAppFromGit open={isImportFromGitDialogOpen} handleClose={resetAppDialogState} />
+      {isImportFromGitDialogOpen && (
+        <ImportAppFromGit open={isImportFromGitDialogOpen} handleClose={resetAppDialogState} />
+      )}
 
       {isChooseFromTemplateDialogOpen && (
         <TemplateLibraryModal

@@ -5,12 +5,15 @@ import { authenticationService } from '@/_services/authentication.service';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 import { useAppsStore } from '@/_stores/appsStore';
+import { useLicenseStore } from '@/_stores/licenseStore';
 import { useIsWorkspaceBranchLocked } from '../hooks/useIsWorkspaceBranchLocked';
 import { Button } from '@/components/ui/Button/Button';
 import DropdownMenu, { type DropdownMenuSection } from '@/components/ui/Rocket/DropdownMenu';
 import { HEADER_MENU_CLASSES } from './headerMenuClasses';
 
 import { appTypeToDisplayNameMapping, hasFolderOperationPermission, type TAppType } from '../helper';
+
+import type { ILicenseStore } from '@/_stores/types/licenseStore';
 
 interface AddNewMenuProps {
   appType: TAppType;
@@ -19,11 +22,17 @@ interface AddNewMenuProps {
 const MENU_CLASSES = { ...HEADER_MENU_CLASSES, content: `${HEADER_MENU_CLASSES.content} tw-min-w-40` };
 
 export default function AddNewMenu({ appType }: AddNewMenuProps) {
+  const isModulesFeatureEnabled = useLicenseStore(
+    (state: ILicenseStore) => state.featureAccess?.modulesEnabled ?? false
+  );
+
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
   const setFolderDialogState = useAppsStore((state) => state.setFolderDialogState);
   const toggleSwitchBranchModal = useAppsStore((state) => state.toggleSwitchBranchModal);
 
-  const { isBranchLocked } = useIsWorkspaceBranchLocked();
+  const { isBranchLocked, isGitSyncLicenseLocked } = useIsWorkspaceBranchLocked();
+
+  const isCreationDisabled = isGitSyncLicenseLocked || (appType === 'module' && !isModulesFeatureEnabled);
 
   const hasFolderCreatePermission = hasFolderOperationPermission(
     authenticationService.currentSessionValue.user_permissions,
@@ -32,6 +41,8 @@ export default function AddNewMenu({ appType }: AddNewMenuProps) {
   );
 
   const handleOpenCreateAppDialog = () => {
+    if (isCreationDisabled) return;
+
     const payload = { type: 'create', appDetails: null };
 
     if (isBranchLocked) {
@@ -62,6 +73,7 @@ export default function AddNewMenu({ appType }: AddNewMenuProps) {
           id: 'app',
           label: `New ${appTypeToDisplayNameMapping[appType]}`,
           icon: <Blocks />,
+          disabled: isCreationDisabled,
           onSelect: handleOpenCreateAppDialog,
           'data-cy': 'add-new-blank-app',
         },

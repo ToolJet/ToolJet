@@ -26,7 +26,7 @@ export default function FolderTag({ folderName, classes }: FolderTagProps) {
         classes?.root
       )}
     >
-      <Folder size={12} className="tw-mr-1 tw-inline tw-align-middle tw-text-icon-strong" aria-hidden />
+      <Folder size={12} className="tw-mr-1 tw-inline tw-align-middle tw-text-icon-strong tw-mb-px" aria-hidden />
       {folderName}
     </TruncatedText>
   );

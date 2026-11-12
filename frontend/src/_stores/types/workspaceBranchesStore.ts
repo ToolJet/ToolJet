@@ -71,6 +71,7 @@ export interface IWorkspaceBranchesActions {
 // Partial: only the state read from TypeScript files is typed so far (the store is still JS).
 // Add fields here as TS code needs them, and use this type for selectors in TS files.
 export interface IWorkspaceBranchesStore {
+  activeBranchId: string | null;
   isInitialized: boolean;
   isGitSyncConfigured: boolean;
   orgGitConfig: IOrgGitConfig | null;
