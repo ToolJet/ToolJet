@@ -198,3 +198,81 @@ describe('inline SDK: style bindings', () => {
     expect(card().dataset.tone).toBe('secondary');
   });
 });
+
+describe('inline SDK: style values the style cannot draw', () => {
+  // jsdom has no CSS.supports; this stand-in reads colours with jsdom's own CSS parser and accepts var(), as browsers do.
+  const realCss = global.CSS;
+  beforeAll(() => {
+    global.CSS = {
+      supports: (property, value) => {
+        if (/^var\(--[\w-]+(,.*)?\)$/.test(String(value).trim())) return true;
+        const style = document.createElement('div').style;
+        style[property] = value;
+        return style[property] !== '';
+      },
+    };
+  });
+  afterAll(() => {
+    global.CSS = realCss;
+  });
+
+  it('[LibraryComponent-STYLE-005] a bad colour, a non-number and a negative radius fall back to initialValue', async () => {
+    // Break this catches: notacolor or a radius of abc / -4 reaching CSS, which drops it and draws the part transparent,
+    // black or square (Rocket 2.0 RK-09, Ant Design PKB-66).
+    loadLibraryModule.mockResolvedValue({
+      Card: () => {
+        const fill = ToolJet.useStyleString({
+          name: 'fill',
+          inspector: 'color',
+          initialValue: 'var(--cc-primary-brand)',
+        });
+        const ink = ToolJet.useStyleString({ name: 'ink', inspector: 'color', initialValue: '#ffffff' });
+        const label = ToolJet.useStyleString({ name: 'label', initialValue: 'Hi' });
+        const radius = ToolJet.useStyleNumber({ name: 'borderRadius', initialValue: 4 });
+        const gap = ToolJet.useStyleNumber({ name: 'gap', initialValue: 8 });
+        const offset = ToolJet.useStyleNumber({ name: 'offset', initialValue: 0 });
+        return (
+          <div
+            data-testid="card"
+            data-fill={fill}
+            data-ink={ink}
+            data-label={label}
+            data-radius={radius}
+            data-gap={gap}
+            data-offset={offset}
+          />
+        );
+      },
+    });
+    const { card, rerenderWith } = renderCard({
+      componentStyles: {
+        fill: 'notacolor',
+        ink: '#ff00zz',
+        label: 'notacolor',
+        borderRadius: 'abc',
+        gap: 'wide',
+        offset: -3,
+      },
+    });
+    await waitFor(() => expect(card()).not.toBeNull());
+    expect(card().dataset).toMatchObject({
+      fill: 'var(--cc-primary-brand)',
+      ink: '#ffffff',
+      label: 'notacolor',
+      radius: '4',
+      gap: '8',
+      offset: '-3',
+    });
+    rerenderWith({
+      componentStyles: { fill: 'var(--cc-success-systemStatus)', ink: 'rgb(1, 2, 3)', borderRadius: -4, gap: '12' },
+    });
+    expect(card().dataset).toMatchObject({
+      fill: 'var(--cc-success-systemStatus)',
+      ink: 'rgb(1, 2, 3)',
+      radius: '4',
+      gap: '12',
+    });
+    rerenderWith({ componentStyles: { borderRadius: 10 } });
+    expect(card().dataset.radius).toBe('10');
+  });
+});
