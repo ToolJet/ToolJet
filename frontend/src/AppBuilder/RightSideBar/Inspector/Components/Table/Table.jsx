@@ -158,7 +158,7 @@ export const Table = (props) => {
         className={`${darkMode && 'dark-theme'} shadow table-column-popover`}
         style={{
           width: '280px',
-          zIndex: 11,
+          zIndex: 60,
         }}
       >
         <ColumnPopoverContent

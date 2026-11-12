@@ -36,6 +36,9 @@ on:
           - ai-3.16-lts
           - ai-pre-release
 
+permissions:
+  contents: read
+
 jobs:
   manage-environment:
     if: ${{ github.event.inputs.env_changes != '' }}
@@ -330,11 +333,9 @@ jobs:
           push: true
           tags: ${{ steps.taggen.outputs.tag }}
           platforms: linux/amd64
-          # Pass the token both ways: Dockerfiles read either the build arg or the BuildKit secret
           secrets: |
             github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ github.event.inputs.branch_name }}
       
       - name: Show the full Docker tag
