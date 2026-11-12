@@ -464,7 +464,8 @@ export const Pagination = () => {
   );
   return (
     <AntProvider tokens={tokens}>
-      <SpinOver loading={loading}>
+      {/* Full width, so align has room to move the buttons (an inline wrapper shrank to them: AD-23). */}
+      <SpinOver loading={loading} as="block">
         <AntPagination
           current={clampPage(current)}
           pageSize={Math.max(1, Number(pageSize) || 10)}
