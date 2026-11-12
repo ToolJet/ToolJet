@@ -1,0 +1,23 @@
+---
+id: overview
+title: Troubleshooting
+sidebar_label: Overview
+---
+
+<PlanBadge type="team" />
+
+Two situations interrupt a push or a pull and ask you to act before ToolJet writes anything. Neither is part of the normal day-to-day flow, and both stop safely without changing your workspace.
+
+| Situation | What it means | Where to go |
+|:----------|:--------------|:------------|
+| Name or slug conflicts | A commit or pull stops and opens a conflict dialog, because two resources are competing for the same name or slug | [Resolving Conflicts](./resolving-conflicts.md) |
+| Unsynced resources | A resource was built before GitSync or branching was turned on, so Git has never seen it | [Single-branch mode](../single-branch/sync-resources.md) or [multi-branch mode](../multi-branch/sync-resources.md) |
+
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

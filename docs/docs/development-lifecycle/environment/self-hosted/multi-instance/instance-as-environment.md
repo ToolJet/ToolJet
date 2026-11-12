@@ -19,11 +19,11 @@ ToolJet’s GitSync feature helps to migrate applications between instances by p
 
 ### Pushing Changes
 
-GitSync enables users to commit and push updates from your instance to your Git repository. New apps, renames, and version creations are auto-committed and you can also manually commit changes using the GitSync button in the App Builder. Refer to [Push-Gitsync](/docs/development-lifecycle/gitsync/push) doc to learn more.
+GitSync enables users to commit and push updates from your instance to your Git repository. New apps, renames, and version creations are auto-committed and you can also manually commit changes using the GitSync button in the App Builder. Refer to [Push-Gitsync](../../../gitsync/single-branch/push-and-pull.md#push-a-commit) doc to learn more.
 
 ### Pulling Changes
 
-GitSync allows you to pull updates from a Git repository into your instance. You can import apps from Git through the ToolJet dashboard. Once pulled, the app will be in view-only mode. You can also check for updates, which fetches the latest commits with details like author and date. If updates are available, you can pull changes and sync them. Refer to [Pull-Gitsync](/docs/development-lifecycle/gitsync/pull) doc to learn more.Here is the diagram showing how you can use gitsync to migrate your apps across instances.
+GitSync allows you to pull updates from a Git repository into your instance. You can import apps from Git through the ToolJet dashboard. Once pulled, the app will be in view-only mode. You can also check for updates, which fetches the latest commits with details like author and date. If updates are available, you can pull changes and sync them. Refer to [Pull-Gitsync](../../../gitsync/single-branch/push-and-pull.md#pull-a-commit) doc to learn more.Here is the diagram showing how you can use gitsync to migrate your apps across instances.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/development-lifecycle/environments/multi-instance.png" alt="self-hosted-env-concept" />
 
