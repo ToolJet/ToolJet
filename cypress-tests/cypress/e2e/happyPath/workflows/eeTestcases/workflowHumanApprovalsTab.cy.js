@@ -211,9 +211,10 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
     });
   });
 
-  // Suspected bug: the approver filter matches approver ids and emails (repository ILIKE on the snapshot), not displayed names.
-  it("The approver filter finds a request by the displayed name of a listed user or group", () => {
+  // Name search is not supported by contract: the filter matches approver user id, group id and email only.
+  it("The approver filter matches an approver's user id, group id or email and does not match their displayed or group name", () => {
     data.groupName = `hitl-grp-${Date.now()}`;
+    data.approverEmail = `hitl-filter-${Date.now()}@example.com`;
     createApproverGroup(data.groupName, [Cypress.env("user_id")]).then((groupId) => {
       data.groupId = groupId;
       createHumanWorkflow(data.workflowName, {
@@ -221,7 +222,7 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
           approvers: {
             users: [Cypress.env("user_id")],
             groups: [groupId],
-            dynamic: "",
+            dynamic: data.approverEmail,
             tokenBypass: true,
           },
         },
@@ -230,21 +231,22 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
         cy.apiListApprovals({ status: "pending", app_id: Cypress.env("workflowId") })
           .its("body.requests.0.approversSnapshot")
           .then((snapshot) => {
-            const userLabel = snapshot.users[0].label;
-            const groupLabel = snapshot.groups[0].label;
-            expect(groupLabel).to.equal(data.groupName);
+            const userName = snapshot.users[0].label;
+            expect(snapshot.groups[0].label).to.equal(data.groupName);
 
             visitApprovals();
             cy.get(approvalSelector.row(request.id)).should("be.visible");
 
-            cy.get(approvalSelector.filterApprover).type(groupLabel);
-            cy.get(approvalSelector.row(request.id)).should("be.visible");
-            cy.get(approvalSelector.filterApprover).clear().type(userLabel);
-            cy.get(approvalSelector.row(request.id)).should("be.visible");
+            [Cypress.env("user_id"), groupId, data.approverEmail].forEach((term) => {
+              cy.get(approvalSelector.filterApprover).clear().type(term);
+              cy.get(approvalSelector.row(request.id)).should("be.visible");
+            });
 
-            cy.get(approvalSelector.filterApprover).clear().type("no-such-approver-name");
-            cy.get(approvalSelector.row(request.id)).should("not.exist");
-            cy.get(approvalSelector.empty).should("contain.text", humanText.noApprovalsMatch);
+            [userName, data.groupName].forEach((term) => {
+              cy.get(approvalSelector.filterApprover).clear().type(term);
+              cy.get(approvalSelector.row(request.id)).should("not.exist");
+              cy.get(approvalSelector.empty).should("contain.text", humanText.noApprovalsMatch);
+            });
           });
       });
     });

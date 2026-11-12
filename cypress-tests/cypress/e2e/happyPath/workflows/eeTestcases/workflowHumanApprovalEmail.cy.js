@@ -120,6 +120,8 @@ describe("Workflows - Human approval email", SLOW_API, () => {
         dynamicOnlyB,
       ];
       expected.forEach((email) => waitForApprovalMails(email, data.workflowName));
+      // Stability window so a delayed duplicate or archived-user email would arrive before counting.
+      cy.wait(8000);
       expected.forEach((email) =>
         approvalMailsFor(email, data.workflowName).should("have.length", 1)
       );

@@ -159,12 +159,12 @@ describe("Workflows - schedules panel", SLOW_API, () => {
     cy.contains(schedulesSelector.fieldLabels, "Input overrides").should("be.visible");
   });
 
+  // Suspected bug: with zero schedules the new-schedule form opens with no version selected.
   it("A new schedule defaults to every minute on the current version in development and is created inactive", () => {
     const name = uniqueName("defaults");
-    seedSchedule();
     openWorkflowEditor();
     openSchedulesPanel();
-    cy.get(schedulesSelector.item).should("have.length", 1);
+    cy.get(schedulesSelector.item).should("not.exist");
     openNewScheduleForm();
 
     cy.get(schedulesSelector.environmentDropdown).should("contain.text", "Development");
@@ -181,7 +181,7 @@ describe("Workflows - schedules panel", SLOW_API, () => {
       expect(request.body.environmentId).to.equal(Cypress.env("environmentId"));
       expect(request.body.details.frequency).to.equal("minute");
     });
-    cy.get(schedulesSelector.item).should("have.length", 2);
+    cy.get(schedulesSelector.item).should("have.length", 1);
     scheduleItem(name)
       .should("contain.text", schedulesText.everyMinute)
       .find("input[type='checkbox']")
@@ -269,13 +269,14 @@ describe("Workflows - schedules firing", SLOW_API, () => {
         .its("body")
     );
 
-  const waitForRunCount = (predicate, description, attempt = 0) =>
+  const waitForRunOf = (scheduleName, attempt = 0) =>
     runsOf().then((body) => {
-      const runs = body.workflowExecutions || body.data || body;
-      if (predicate(runs)) return runs;
-      if (attempt >= 30) throw new Error(`Timed out waiting for ${description}`);
-      cy.wait(5000, { log: false });
-      return waitForRunCount(predicate, description, attempt + 1);
+      const runs = body.data || [];
+      const mine = runs.filter((run) => JSON.stringify(run).includes(scheduleName));
+      if (mine.length) return { runs, mine };
+      if (attempt >= 30) throw new Error(`Timed out waiting for schedule ${scheduleName} to fire`);
+      cy.wait(4000, { log: false });
+      return waitForRunOf(scheduleName, attempt + 1);
     });
 
   beforeEach(() => {
@@ -295,43 +296,34 @@ describe("Workflows - schedules firing", SLOW_API, () => {
   });
 
   it("A schedule runs its pinned version with its input overrides, and an inactive schedule never fires", () => {
-    createEveryMinute({ name: uniqueName("active"), params: { limit: 42 } }).then((res) => {
+    const activeName = uniqueName("active");
+    const inactiveName = uniqueName("inactive");
+    createEveryMinute({ name: activeName, params: { limit: 42 } }).then((res) => {
       expect(res.status).to.equal(201);
       cy.apiActivateWorkflowSchedule(res.body.id, true);
     });
-    createEveryMinute({ name: uniqueName("inactive"), params: { limit: 7 } }).then((res) => {
+    createEveryMinute({ name: inactiveName, params: { limit: 7 } }).then((res) => {
       expect(res.status).to.equal(201);
       expect(res.body.active).to.equal(false);
     });
 
-    waitForRunCount((runs) => runs.length > 0, "the active schedule to fire").then((runs) => {
-      cy.wait(65000, { log: false });
-      runsOf().then((body) => {
-        const later = body.workflowExecutions || body.data || body;
-        expect(later.length).to.be.greaterThan(0);
-        later.forEach((run) => {
-          expect(run.appVersionId || run.app_version_id).to.equal(Cypress.env("editingVersionId"));
-        });
-        const ids = later.map((run) => run.id);
-        cy.wrap(ids).as("runIds");
+    waitForRunOf(activeName).then(({ runs, mine }) => {
+      runs.forEach((run) => {
+        expect(run.appVersionId || run.app_version_id).to.equal(Cypress.env("editingVersionId"));
       });
-    });
-
-    cy.get("@runIds").then((ids) => {
-      ids.forEach((id) =>
-        cy.getAuthHeaders().then((headers) =>
-          cy
-            .request({
-              url: `${Cypress.env("server_host")}/api/workflow_executions/${id}`,
-              headers,
-              log: false,
-            })
-            .its("body")
-            .then((run) => {
-              expect(JSON.stringify(run)).to.include("42");
-              expect(JSON.stringify(run.params ?? {})).to.not.include('"limit":7');
-            })
-        )
+      expect(runs.filter((run) => JSON.stringify(run).includes(inactiveName))).to.have.length(0);
+      cy.getAuthHeaders().then((headers) =>
+        cy
+          .request({
+            url: `${Cypress.env("server_host")}/api/workflow_executions/${mine[0].id}`,
+            headers,
+            log: false,
+          })
+          .its("body")
+          .then((run) => {
+            expect(JSON.stringify(run)).to.include("42");
+            expect(JSON.stringify(run)).to.not.include('"limit":7');
+          })
       );
     });
   });

@@ -44,6 +44,7 @@ const newWorkflow = (label, definitionNodes, edges) => {
     name,
     id: Cypress.env("workflowId"),
     versionId: Cypress.env("editingVersionId"),
+    versionName: Cypress.env("editingVersionName"),
   }));
 };
 
@@ -292,6 +293,33 @@ describe("Workflows - Executions tab", SLOW_API, () => {
     });
   });
 
+  it("A scheduled run shows its exact schedule name and the pinned version", () => {
+    okWorkflow("exsched").then((workflow) => {
+      const scheduleName = `tab-sched-${Date.now()}`;
+      everyMinute(workflow, scheduleName).then((id) => cy.apiActivateWorkflowSchedule(id, true));
+
+      visitExecutions();
+      filterExecutionsByWorkflow(workflow.name);
+      const waitForScheduledRow = (attempt = 0) => {
+        cy.get("body").then(($body) => {
+          const found = $body.find(`${executionsFilterSelector.anyRow}:contains("${scheduleName}")`).length;
+          if (found) return;
+          if (attempt >= 20) throw new Error("Timed out waiting for the scheduled run to appear");
+          cy.wait(6000, { log: false });
+          cy.get(executionsSelector.refresh).click();
+          waitForScheduledRow(attempt + 1);
+        });
+      };
+      waitForScheduledRow();
+
+      rowOf(workflow).find("td").then(($cells) => {
+        expect($cells.eq(2).text().trim()).to.equal("Schedule");
+        expect($cells.eq(3).text().trim()).to.equal(scheduleName);
+        expect($cells.eq(6).text().trim()).to.equal(workflow.versionName);
+      });
+    });
+  });
+
   it("Stop works on running and waiting runs from the Executions tab: a Wait run never resumes and the stop time is kept", () => {
     waitWorkflow("exstopwait", 20).then((waiting) => {
       runOf(waiting);
@@ -408,7 +436,7 @@ describe("Workflows - Used by", SLOW_API, () => {
     cleanupWorkflows(names);
   });
 
-  it("Used by lists every app, module and workflow that calls this workflow, grouped with counts and opening in a new tab", () => {
+  it("Used by lists the workflows that call this workflow, grouped with a count, and opens each in a new tab", () => {
     okWorkflow("ubtarget").then((target) => {
       okWorkflow("ubcaller").then((caller) => {
         callerQuery(caller, target);

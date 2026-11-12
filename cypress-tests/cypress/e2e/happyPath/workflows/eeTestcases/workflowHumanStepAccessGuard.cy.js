@@ -9,6 +9,7 @@ import {
   createRunjsQueries,
   cleanupWorkflows,
 } from "Support/utils/workflows/workFlows";
+import { deleteApproverUsers } from "Support/utils/workflows/workflowApprovals";
 
 const SLOW_API = {
   responseTimeout: 60000,
@@ -55,17 +56,44 @@ const pendingRequests = () =>
     .apiListApprovals({ status: "pending", app_id: Cypress.env("workflowId") })
     .its("body.requests");
 
-const assertHumanStepNotSkipped = (res) => {
-  if (res.status >= 400) return;
-  const executionId = executionIdOf(res);
-  expect(executionId, "execution id").to.be.ok;
+const runCount = () =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        url: `${Cypress.env("server_host")}/api/workflow_executions?appVersionId=${Cypress.env("editingVersionId")}&page=1&per_page=1`,
+        headers,
+        log: false,
+      })
+      .its("body.total")
+  );
+
+const assertHumanStepNotSkipped = (res, runsBefore) => {
+  expect(res.status, `unexpected status: ${JSON.stringify(res.body)}`).to.be.oneOf([
+    200, 201, 403,
+  ]);
   cy.apiLogout();
   cy.apiLogin();
+  if (res.status === 403) {
+    runCount().should("equal", runsBefore);
+    return;
+  }
+  const executionId = executionIdOf(res);
+  expect(executionId, "execution id").to.be.ok;
   pendingRequests().then((requests) => {
     expect(requests.map((request) => request.executionId)).to.include(executionId);
   });
   cy.apiGetExecutionNode(PAYOUT_NODE_NAME, executionId).then((node) => {
     expect(node?.executed ?? false, "payout step executed").to.equal(false);
+  });
+};
+
+const attemptSkip = (path, extra) => {
+  cy.apiLogin();
+  runCount().then((runsBefore) => {
+    cy.apiLogin(data.email);
+    asEndUser("POST", path, runBody(extra)).then((res) =>
+      assertHumanStepNotSkipped(res, runsBefore)
+    );
   });
 };
 
@@ -107,6 +135,7 @@ describe("Workflows - Human step cannot be skipped by a run-only user", SLOW_API
     cy.apiLogin();
     cy.visit("/");
     cleanupWorkflows([data.workflowName]);
+    deleteApproverUsers([data.email]);
   });
 
   it("A run-only user's normal run parks at the Human step with one approval request", () => {
@@ -125,27 +154,16 @@ describe("Workflows - Human step cannot be skipped by a run-only user", SLOW_API
 
   // Suspected bug: a client-sent startNodeId is honoured for run-only users, so they can jump past the Human step.
   it("A run-only user cannot skip the Human step by starting from a later step on the run endpoint", () => {
-    cy.apiLogin(data.email);
     cy.visit("/");
-    cy.then(() =>
-      asEndUser(
-        "POST",
-        "/api/workflow_executions",
-        runBody({ startNodeId: PAYOUT_NODE_ID })
-      ).then(assertHumanStepNotSkipped)
-    );
+    attemptSkip("/api/workflow_executions", { startNodeId: PAYOUT_NODE_ID });
   });
 
   // Suspected bug: same startNodeId bypass on the trigger route.
   it("A run-only user cannot skip the Human step by starting from a later step on the trigger endpoint", () => {
-    cy.apiLogin(data.email);
     cy.visit("/");
-    cy.then(() =>
-      asEndUser(
-        "POST",
-        `/api/workflow_executions/${Cypress.env("editingVersionId")}/trigger`,
-        runBody({ startNodeId: PAYOUT_NODE_ID, syncExecution: true })
-      ).then(assertHumanStepNotSkipped)
-    );
+    attemptSkip(`/api/workflow_executions/${Cypress.env("editingVersionId")}/trigger`, {
+      startNodeId: PAYOUT_NODE_ID,
+      syncExecution: true,
+    });
   });
 });

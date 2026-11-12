@@ -186,63 +186,57 @@ describe("Workflows - workflow inputs", SLOW_API, () => {
   });
 
   it("Blank, duplicate and invalid-default inputs show a clear message and are not saved", () => {
-    seedInputsWorkflow([wfInput("keeper", "string", { defaultValue: "k" })]);
+    const keeper = wfInput("keeper", "string", { defaultValue: "k" });
+    const typeControl = `${inputsSelector.card}:eq(0) ${inputsSelector.typeControl}`;
+    const savedStaysUnchanged = () => {
+      cy.wait(2500);
+      savedInputs().then((inputs) => {
+        expect(inputs.map(({ key, defaultValue }) => ({ key, defaultValue }))).to.deep.equal([
+          { key: "keeper", defaultValue: "k" },
+        ]);
+      });
+    };
+
+    seedInputsWorkflow([keeper]);
     openInputsPanel();
 
     cy.get(inputsSelector.add).click();
     card(0).find(inputsSelector.error).should("contain.text", inputsText.nameRequired);
+    savedStaysUnchanged();
 
     card(0).find(inputsSelector.name).type("KEEPER");
     card(0).find(inputsSelector.error).should("contain.text", inputsText.namesUnique);
     card(1).find(inputsSelector.error).should("contain.text", inputsText.namesUnique);
+    savedStaysUnchanged();
 
     card(0).find(inputsSelector.name).clear().type("limit");
     card(0).find(inputsSelector.error).should("not.exist");
-    pickSelectOption(
-      `${inputsSelector.card}:eq(0) ${inputsSelector.typeControl}`,
-      "number"
-    );
+    pickSelectOption(typeControl, "number");
     card(0).find(inputsSelector.defaultValue).type("abc");
     card(0).find(inputsSelector.error).should("contain.text", inputsText.numberDefault);
+    savedStaysUnchanged();
 
-    pickSelectOption(
-      `${inputsSelector.card}:eq(0) ${inputsSelector.typeControl}`,
-      "boolean"
-    );
-    card(0).find(inputsSelector.defaultValue).type("yes");
+    pickSelectOption(typeControl, "boolean");
+    card(0).find(inputsSelector.defaultValue).clear().type("yes");
     card(0).find(inputsSelector.error).should("contain.text", inputsText.booleanDefault);
+    savedStaysUnchanged();
 
-    pickSelectOption(
-      `${inputsSelector.card}:eq(0) ${inputsSelector.typeControl}`,
-      "array"
-    );
-    card(0).find(inputsSelector.defaultValue).type("{{}");
+    pickSelectOption(typeControl, "array");
+    card(0).find(inputsSelector.defaultValue).clear().type("{{}");
     card(0).find(inputsSelector.error).should("contain.text", inputsText.arrayDefault);
+    savedStaysUnchanged();
 
-    pickSelectOption(
-      `${inputsSelector.card}:eq(0) ${inputsSelector.typeControl}`,
-      "object"
-    );
-    card(0).find(inputsSelector.defaultValue).type("[1]");
-    card(0).find(inputsSelector.error).should("be.visible");
+    pickSelectOption(typeControl, "object");
+    card(0).find(inputsSelector.defaultValue).clear().type("[1]");
+    card(0).find(inputsSelector.error).should("contain.text", inputsText.objectDefault);
+    savedStaysUnchanged();
 
+    card(0).find(inputsSelector.defaultValue).clear().type("{{}}");
+    card(0).find(inputsSelector.error).should("not.exist");
     cy.apiWaitForWorkflowDefinition(
       (definition) => definition.workflowInputs?.some((input) => input.key === "limit"),
-      "the new input to be saved"
+      "the now-valid input to be saved"
     );
-    savedInputs().then((inputs) => {
-      const limit = inputs.find((input) => input.key === "limit");
-      expect(limit.defaultValue, "invalid default").to.equal(undefined);
-    });
-
-    card(0).find(inputsSelector.name).clear();
-    cy.apiWaitForWorkflowDefinition(
-      (definition) => definition.workflowInputs?.length === 1,
-      "the blank input to be left out of the save"
-    );
-    savedInputs().then((inputs) => {
-      expect(inputs.map((input) => input.key)).to.deep.equal(["keeper"]);
-    });
   });
 
   it("The inputs panel is read-only on a released version", () => {
@@ -264,23 +258,7 @@ describe("Workflows - workflow inputs", SLOW_API, () => {
   it("The Run dialog lists the inputs, a ticked value overrides the default and an unticked one uses it", () => {
     seedInputsWorkflow([
       wfInput("region", "string", { defaultValue: "eu" }),
-      wfInput("limit", "number", { defaultValue: 10 }),
-    ]);
-    openWorkflowEditor();
-
-    runLastWithOverrides({ region: "us" }).then(({ response }) => {
-      expect(response.statusCode).to.equal(201);
-      cy.apiWaitForExecutionStatus("success");
-      cy.apiGetExecutionNode("response1").then((node) => {
-        expect(node.result.data).to.deep.equal({ region: "us", limit: 10 });
-      });
-    });
-  });
-
-  it("The Run dialog opens with every input listed and nothing ticked", () => {
-    seedInputsWorkflow([
-      wfInput("region", "string", { defaultValue: "eu" }),
-      wfInput("limit", "number", { required: true }),
+      wfInput("limit", "number", { defaultValue: 10, required: true }),
     ]);
     openWorkflowEditor();
     runFromEditor();
@@ -299,7 +277,17 @@ describe("Workflows - workflow inputs", SLOW_API, () => {
     cy.contains(inputsSelector.overrideRow, "region")
       .find("> input")
       .should("have.value", "eu")
-      .and("have.attr", "placeholder", "Default: eu");
+      .and("have.attr", "placeholder", "Default: eu")
+      .clear()
+      .type("us");
+    cy.get(inputsSelector.runDialogConfirm).click();
+    waitForEditorRun().then(({ response }) => {
+      expect(response.statusCode).to.equal(201);
+      cy.apiWaitForExecutionStatus("success");
+      cy.apiGetExecutionNode("response1").then((node) => {
+        expect(node.result.data).to.deep.equal({ region: "us", limit: 10 });
+      });
+    });
   });
 
   it("A required input with no default and no value starts the run and fails it at Start", () => {

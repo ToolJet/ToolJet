@@ -15,6 +15,7 @@ import {
   openApprovalRequest,
   chooseOutcomeInDialog,
   pickSelectOption,
+  deleteApproverUsers,
 } from "Support/utils/workflows/workflowApprovals";
 
 const SLOW_API = {
@@ -55,6 +56,11 @@ describe("Workflows - approvals access by role", SLOW_API, () => {
         user.id = result.rows[0].id;
       });
     });
+  });
+
+  after(() => {
+    cy.apiLogin();
+    cy.then(() => deleteApproverUsers(Object.values(users).map((user) => user.email)));
   });
 
   beforeEach(() => {

@@ -477,7 +477,7 @@ describe("Workflows - If step with Else if branches", SLOW_API, () => {
     );
   });
 
-  it("Only the first matching branch runs, Else runs when nothing matches and nothing runs when nothing matches without an Else", () => {
+  it("Only the first matching branch runs and Else runs when no condition matches", () => {
     multiIfWorkflow();
     openWorkflowEditor();
 

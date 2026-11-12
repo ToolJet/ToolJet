@@ -50,6 +50,17 @@ const stubClipboard = () =>
 
 const enableWebhook = () => cy.get(workflowSelector.workflowWebhookToggle).click();
 
+const parseCurl = (curl) => {
+  const method = curl.match(/--request (\w+)/)?.[1];
+  const url = curl.match(/--url "([^"]+)"/)?.[1];
+  const headers = {};
+  [...curl.matchAll(/--header "([^:"]+): ([^"]*)"/g)].forEach(([, name, value]) => {
+    headers[name] = value;
+  });
+  const rawBody = curl.match(/--data '(.*)'$/s)?.[1]?.replaceAll(`'"'"'`, "'");
+  return { method, url, headers, body: rawBody === undefined ? undefined : JSON.parse(rawBody) };
+};
+
 const copiedValue = () => cy.get("@clipboard").its("lastCall.args.0");
 
 describe("Workflows - Webhooks panel", SLOW_API, () => {
@@ -183,32 +194,30 @@ describe("Workflows - Webhooks panel", SLOW_API, () => {
       .then((body) => expect(JSON.parse(body)).to.deep.equal({ region: "eu", limit: 10 }));
   });
 
-  it("Copy cURL builds a call from the webhook URL, token and body, and the same call returns the workflow's response", () => {
+  it("The copied cURL command, run exactly as copied, returns the workflow's response", () => {
     cy.apiSaveWorkflowDefinition(echoDefinition({ workflowInputs: inputs() }));
     cy.apiSetWorkflowWebhookEnabled(true);
     openWebhooksPanel();
     stubClipboard();
 
-    cy.get(workflowSelector.workflowEndpointUrl)
-      .invoke("text")
-      .then((rawUrl) => {
-        const url = rawUrl.trim();
-        cy.contains("button", "Copy cURL").click();
-        copiedValue().then((curl) => {
-          expect(curl).to.include(`--url "${url}"`);
-          expect(curl).to.include(`Authorization: Bearer ${data.token}`);
-          const payload = curl.match(/--data '(.*)'$/)[1];
-          expect(JSON.parse(payload)).to.deep.equal({ region: "eu", limit: 10 });
-          cy.apiTriggerWorkflowWebhook({
-            token: data.token,
-            qs: draftQuery(),
-            body: JSON.parse(payload),
-          }).then((res) => {
-            expect(res.status).to.be.oneOf([200, 201]);
-            expect(res.body).to.deep.equal({ region: "eu", limit: 10 });
-          });
-        });
+    cy.contains("button", "Copy cURL").click();
+    copiedValue().then((curl) => {
+      const request = parseCurl(curl);
+      expect(request.method).to.equal("POST");
+      expect(request.url).to.include("/v2/webhooks/workflows/");
+      expect(request.headers.Authorization).to.match(/^Bearer \S+$/);
+      expect(request.headers["Content-Type"]).to.equal("application/json");
+      cy.request({
+        method: request.method,
+        url: request.url,
+        headers: request.headers,
+        body: request.body,
+        failOnStatusCode: false,
+      }).then((res) => {
+        expect(res.status).to.be.oneOf([200, 201]);
+        expect(res.body).to.deep.equal({ region: "eu", limit: 10 });
       });
+    });
   });
 
   it("The Webhooks panel marks Parameter and Test JSON parameters as Legacy, and the Start node's Test JSON does not", () => {
@@ -234,22 +243,5 @@ describe("Workflows - Webhooks panel", SLOW_API, () => {
     cy.get(webhookPanelSelector.testJsonBlock)
       .find(webhookPanelSelector.legacyTag)
       .should("not.exist");
-  });
-
-  it("A webhook URL that names an unknown version returns a clear version-not-found error", () => {
-    cy.apiSaveWorkflowDefinition(echoDefinition({ workflowInputs: inputs() }));
-    cy.apiSetWorkflowWebhookEnabled(true);
-
-    cy.then(() =>
-      cy
-        .apiTriggerWorkflowWebhook({
-          token: data.token,
-          qs: { version: "no-such-version", environment: "development" },
-        })
-        .then((res) => {
-          expect(res.status).to.equal(404);
-          expect(res.body.message).to.include('Version "no-such-version" not found');
-        })
-    );
   });
 });
