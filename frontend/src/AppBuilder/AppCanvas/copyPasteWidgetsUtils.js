@@ -428,7 +428,7 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
   });
   const canAddToParent = useStore.getState().canAddToParent;
   const fc = finalComponents.filter((component) => {
-    return canAddToParent(component?.component.parent, component?.component.component);
+    return canAddToParent(component?.component.parent, component?.component.component, undefined, component?.component);
   });
   const filteredFinalComponents = fc.map((component) => {
     if (formComponentIds.has(component.id)) {

@@ -49,6 +49,22 @@
 .tj-ant-table.tj-ant--fill > .ant-table-wrapper > .ant-spin-nested-loading > .ant-spin-container > .ant-table {
   flex: 1 0 auto;
 }
+/* A table taller than its box scrolls inside it with its header row at the top of the box and its pager at the bottom,
+   as the ToolJet Table: both scrolled away with the rows. The pager's spacing is padding on the table's surface, so
+   the rows pass under it. */
+.tj-ant-table .ant-table-wrapper .ant-table-thead {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.tj-ant-table .ant-table-wrapper .ant-table-pagination.ant-pagination {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  margin: 0;
+  padding: 16px 0;
+  background: var(--ant-color-bg-container);
+}
 /* Alert: its surface fills the box, and a long description scrolls inside it. */
 .tj-ant-alert .ant-alert {
   height: 100%;
@@ -79,6 +95,13 @@
 }
 .tj-ant-center > .ant-btn-block {
   width: 100%;
+}
+/* A button drawn in its box (Button, the Modal, Drawer and Dropdown triggers) takes the box's height, as a native
+   Button does: its Size sets the text and padding. A split Dropdown's two buttons and their group too (QA item 9). */
+.ant-btn.tj-ant-fill,
+.ant-space-compact.tj-ant-fill,
+.ant-space-compact.tj-ant-fill > .ant-btn {
+  height: 100%;
 }
 .tj-ant-required {
   color: var(--ant-color-error);
@@ -225,6 +248,13 @@
   cursor: pointer;
 }
 .tj-ant-table .ant-table-tbody > tr.tj-ant-row-selected > td {
+  background: var(--ant-control-item-bg-active);
+}
+/* A long Table drawn virtual (antd's virtual Table, lib/virtualRows) has div rows and cells, not tr and td. */
+.tj-ant-table .ant-table-tbody-virtual .ant-table-row {
+  cursor: pointer;
+}
+.tj-ant-table .ant-table-tbody-virtual .ant-table-row.tj-ant-row-selected .ant-table-cell {
   background: var(--ant-control-item-bg-active);
 }
 .tj-ant-item {
@@ -1002,6 +1032,8 @@
 .tj-ant-cardgrid {
   display: grid;
   gap: 16px;
+  /* The selected card's ring, outside its border, isn't cut by the scrolling box. */
+  padding: 1px;
 }
 .tj-ant-gridcard.is-selected {
   border-color: var(--ant-color-primary);
@@ -1012,8 +1044,30 @@
   flex-direction: column;
   gap: 6px;
 }
+/* Row: the image beside the text, as the Material UI and Rocket card grids draw it. An Ant Card is a block box, so
+   flex-direction alone did nothing and Row drew as Stacked (QA AD-09). The image takes up to 220px, stretched to the
+   text's height (its aspect gives its least height), and the text takes the rest, its ellipsis kept. */
 .tj-ant-gridcard.is-row {
+  display: flex;
   flex-direction: row;
+}
+.tj-ant-gridcard.is-row > .ant-card-cover {
+  flex: 0 0 auto;
+  width: 38%;
+  min-width: 96px;
+  max-width: 220px;
+}
+.tj-ant-gridcard.is-row.ant-card-bordered > .ant-card-cover {
+  margin-inline-end: 0;
+  margin-block-end: -1px;
+}
+.tj-ant-gridcard.is-row > .ant-card-cover > img {
+  height: 100%;
+  border-radius: var(--ant-border-radius-lg) 0 0 var(--ant-border-radius-lg);
+}
+.tj-ant-gridcard.is-row > .ant-card-body {
+  flex: 1 1 0;
+  min-width: 0;
 }
 .tj-ant-progress-row.ant-list-item {
   display: flex;
@@ -1060,7 +1114,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   line-height: 1;
+}
+/* The box the Icon's chip is fitted to (useFitSquare): the widget's whole box. */
+.tj-ant-icon-fit {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
 }
 .tj-ant-field-label {
   margin-bottom: 4px;
@@ -1459,6 +1523,20 @@
 .tj-ant-ring-fit > .ant-progress {
   flex-shrink: 0;
 }
+/* Dynamic height (tj-cc-fit): the box has no height to fill, so flex 1 1 0 measured 0 and the widgets below rode up over
+   the ring. Make it the ring's own square. */
+.tj-cc-fit .tj-ant-ring-fit {
+  flex: 0 0 auto;
+  width: min(100%, var(--tj-ring-size, 100%));
+  aspect-ratio: 1;
+}
+/* An Equal heights row stretches the box (tj-cc-stretch) and gives it a height again: the ring's box fills it, as
+   without Dynamic height, so the ring fits a row shorter than its size. */
+.tj-cc-root.tj-cc-fit.tj-cc-stretch .tj-ant-ring-fit {
+  flex: 1 1 0;
+  width: 100%;
+  aspect-ratio: auto;
+}
 
 /* RadialChart's categories: the box measured for its legend's place, filled by the chart. */
 .tj-ant-chart-fill {
@@ -1466,4 +1544,99 @@
   height: 100%;
   min-width: 0;
   min-height: 0;
+}
+
+/* A calendar with no value, or showing another day than its value, draws no day as picked (Ant marks its own panel
+   date, today by default). */
+.tj-ant-calendar.is-unpicked .ant-picker-calendar .ant-picker-cell-in-view.ant-picker-cell-selected:not(.ant-picker-cell-disabled) .ant-picker-cell-inner {
+  color: inherit;
+  background: transparent;
+}
+.tj-ant-calendar.is-unpicked .ant-picker-calendar.ant-picker-calendar-full .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-calendar-date,
+.tj-ant-calendar.is-unpicked .ant-picker-calendar.ant-picker-calendar-full .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-calendar-date-today {
+  background: transparent;
+}
+.tj-ant-calendar.is-unpicked .ant-picker-calendar.ant-picker-calendar-full .ant-picker-cell-selected .ant-picker-calendar-date .ant-picker-calendar-date-value {
+  color: inherit;
+}
+
+/* A horizontal Switch in a narrow box: the label shrinks with an ellipsis and the switch keeps its size, inside the box
+   (the row did not shrink, so the switch drew over the next widget). */
+.tj-ant-switch .ant-form-item .ant-row {
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+.tj-ant-switch .ant-form-item-label {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+.tj-ant-switch .ant-form-item-label > label {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tj-ant-switch .ant-form-item-control {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+/* Container background, once set, fills a field on every variant (QA item 49): Ant draws it on Outlined only, and
+   Filled kept its grey fill and Borderless stayed transparent. Unset, each variant keeps Ant's look. A disabled field
+   and an error or warning one keep Ant's colours; a Filled field darkens a little on hover, as Ant's does. */
+.tj-ant-own-bg .ant-input-filled:not(.ant-input-disabled):not([disabled]):not(.ant-input-status-error):not(.ant-input-status-warning),
+.tj-ant-own-bg .ant-input-borderless:not(.ant-input-disabled):not([disabled]):not(.ant-input-status-error):not(.ant-input-status-warning),
+.tj-ant-own-bg .ant-input-number-filled:not(.ant-input-number-disabled):not([disabled]):not(.ant-input-number-status-error):not(.ant-input-number-status-warning),
+.tj-ant-own-bg .ant-input-number-borderless:not(.ant-input-number-disabled):not([disabled]):not(.ant-input-number-status-error):not(.ant-input-number-status-warning),
+.tj-ant-own-bg .ant-picker-filled:not(.ant-picker-disabled):not([disabled]):not(.ant-picker-status-error):not(.ant-picker-status-warning),
+.tj-ant-own-bg .ant-picker-borderless:not(.ant-picker-disabled):not([disabled]):not(.ant-picker-status-error):not(.ant-picker-status-warning),
+.tj-ant-own-bg .ant-select-filled:not(.ant-select-disabled):not(.ant-select-status-error):not(.ant-select-status-warning) .ant-select-selector,
+.tj-ant-own-bg .ant-select-borderless:not(.ant-select-disabled):not(.ant-select-status-error):not(.ant-select-status-warning) .ant-select-selector {
+  background-color: var(--tj-ant-color-bg-container) !important;
+}
+.tj-ant-own-bg .ant-input-filled:not(.ant-input-disabled):not([disabled]):not(.ant-input-status-error):not(.ant-input-status-warning):not(:focus):not(:focus-within):hover,
+.tj-ant-own-bg .ant-input-number-filled:not(.ant-input-number-disabled):not([disabled]):not(.ant-input-number-status-error):not(.ant-input-number-status-warning):not(:focus):not(:focus-within):hover,
+.tj-ant-own-bg .ant-picker-filled:not(.ant-picker-disabled):not([disabled]):not(.ant-picker-status-error):not(.ant-picker-status-warning):not(:focus):not(:focus-within):hover,
+.tj-ant-own-bg .ant-select-filled:not(.ant-select-disabled):not(.ant-select-focused):not(.ant-select-status-error):not(.ant-select-status-warning):hover .ant-select-selector {
+  background-color: color-mix(in srgb, var(--tj-ant-color-bg-container) 94%, var(--ant-color-text)) !important;
+}
+
+/* TextArea in a fixed-height box (Dynamic height off; the host marks a fitted box .tj-cc-fit): the field fills the box
+   under its label and scrolls its text, as a ToolJet TextArea does (QA item 50). Ant sizes it to its text (autoSize,
+   up to Max rows), so it grew past the box and was cut off: the bottom border and the lines being typed were hidden.
+   With Dynamic height the field keeps growing and the box grows with it. */
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea,
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item,
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-row,
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-control-input-content,
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-control-input-content > .tj-ant-loadable {
+  height: 100%;
+}
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-vertical > .ant-form-item-row {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-control {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-control-input {
+  flex: 1;
+  min-height: 0;
+}
+/* Ant writes the field's height inline (autoSize); the box sets it here. Show count's count sits under the field. */
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-form-item-control-input-content > .tj-ant-loadable > textarea,
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-input-textarea-affix-wrapper,
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-input-textarea-affix-wrapper > textarea {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+}
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-input-textarea-affix-wrapper.ant-input-textarea-show-count {
+  height: calc(100% - 22px) !important;
 }

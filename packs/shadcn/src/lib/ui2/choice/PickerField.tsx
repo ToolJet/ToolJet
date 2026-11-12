@@ -32,6 +32,13 @@ export const PickerTrigger = React.forwardRef<HTMLButtonElement, PickerTriggerPr
         aria-label={label ? undefined : placeholder || undefined}
         {...fieldAria(fieldId, error, required, hasNote)}
         {...focusHandlers}
+        // Backspace or Delete clears the value: the x is no Tab stop.
+        onKeyDown={(e) => {
+          if ((e.key === 'Backspace' || e.key === 'Delete') && clearable && !loading) {
+            e.preventDefault();
+            onClear();
+          }
+        }}
         className={cn('ui-select-trigger uc-picker-trigger', clearable && 'has-clear', !text && 'ui-placeholder', loading && 'uc-is-loading')}
       >
         {loading ? <Spinner /> : icon}

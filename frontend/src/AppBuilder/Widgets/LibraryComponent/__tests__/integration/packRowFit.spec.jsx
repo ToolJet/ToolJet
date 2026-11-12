@@ -136,8 +136,15 @@ describe('pack rows on the host', () => {
     expect(mockRows.map((r) => r.rowHeight)).toEqual([72, 72]);
   });
 
-  test("a widget with Dynamic height keeps the native List view's dynamic rows for rows it does not fit", () => {
+  test('a widget with Dynamic height fits every row to its components, never below the row height', () => {
+    // The native List view's row reflow floored each row of a pack list at the whole widget's height (a 300px list
+    // drew 300px rows) and left a row the pack draws at a fixed height clipped; with Dynamic height the host sizes
+    // every row itself, as it does a fitted card (QA: Dynamic height on pack sub containers).
     render(<Harness items={ITEMS} rowHeight={72} fit />);
-    expect(mockRows.every((r) => r.isDynamicHeightEnabled === true)).toBe(true);
+    expect(mockRows.every((r) => r.isDynamicHeightEnabled === false)).toBe(true);
+    // The button ends at 174, plus the 8px a UI 2.0 row keeps under its lowest component.
+    expect(mockRows.map((r) => r.rowHeight)).toEqual([182, 182]);
+    act(() => useStore.setState({ temporaryLayouts: { 'button-0': { top: 186 } } }));
+    expect(mockRows.map((r) => r.rowHeight)).toEqual([222, 182]);
   });
 });

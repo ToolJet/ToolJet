@@ -301,12 +301,14 @@ const TypographyView = ({
 }) => (
   <MuiTypography
     variant={t.variant as 'body1'}
-    color={t.color}
     align={t.align as 'left'}
     noWrap={t.noWrap}
     gutterBottom={gutterBottom}
     onClick={() => t.onClick()}
     sx={{
+      // A theme path (text.secondary, error.main), which sx resolves: Typography's color prop takes only palette names
+      // (error, textSecondary) and drew a path in the inherited colour, so Color and the Text style did nothing.
+      color: t.color,
       whiteSpace: t.noWrap ? undefined : 'pre-wrap',
       ...(heading && t.variant.startsWith('subtitle') ? { fontWeight: 600 } : null),
     }}

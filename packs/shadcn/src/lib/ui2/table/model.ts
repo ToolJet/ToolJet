@@ -473,6 +473,15 @@ const DEFAULT_DATETIME = 'DD MMM YYYY, HH:mm';
 
 export type ColumnLike = { type?: string; format?: ColumnFormat };
 
+/** A currency's minor units (2 for USD, 0 for JPY, 3 for KWD), as Intl knows them; 2 for a code it does not. */
+const currencyMinorUnits = (code: string): number => {
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: code }).resolvedOptions().maximumFractionDigits ?? 2;
+  } catch {
+    return 2;
+  }
+};
+
 /** A cell as text: what the table shows for plain types, searches and exports. Never throws. */
 export const formatCell = (value: unknown, column: ColumnLike = {}): string => {
   try {
@@ -492,13 +501,16 @@ export const formatCell = (value: unknown, column: ColumnLike = {}): string => {
       const n = typeof value === 'number' ? value : Number(String(value).replace(/,/g, ''));
       if (!Number.isFinite(n)) return String(value);
       const digits = format.decimalPlaces;
+      const code = String(format.currency || 'USD').toUpperCase();
+      // With no Decimal places set, a currency's own minor units: JPY 0, KWD 3 (always 2 showed ¥1,235.00).
+      const own = currencyMinorUnits(code);
       const options: Intl.NumberFormatOptions =
         type === 'currency'
           ? {
               style: 'currency',
-              currency: String(format.currency || 'USD').toUpperCase(),
-              minimumFractionDigits: digits ?? 2,
-              maximumFractionDigits: digits ?? 2,
+              currency: code,
+              minimumFractionDigits: digits ?? own,
+              maximumFractionDigits: digits ?? own,
             }
           : { minimumFractionDigits: digits ?? 0, maximumFractionDigits: digits ?? 2 };
       return wrap(usableFormatter(format.locale, options).format(n));

@@ -393,9 +393,13 @@ export const valueAxisWidth = (data: unknown, series: string[], format: (v: numb
   const max = Math.max(...values);
   const min = Math.min(0, ...values);
   const top = niceCeil(max);
+  // The negative ticks too, as the axis rounds them (-11.5K under a -15K floor): only the minimum was measured, and a
+  // longer negative tick lost its minus sign at the axis's left edge (-11.5K USD read 11.5K USD).
+  const bottom = min < 0 ? -niceCeil(-min) : 0;
   const ticks = [max, top, min, top * 0.25, top * 0.5, top * 0.75, top * 0.9, top * 0.3, top * 0.7];
+  if (bottom < 0) ticks.push(bottom, bottom * 0.25, bottom * 0.5, bottom * 0.75, bottom * 0.3, bottom * 0.7, min * 0.5);
   const longest = Math.max(...ticks.map((v) => String(format(v) ?? '').length));
-  return Math.min(110, Math.max(32, longest * 7 + 12));
+  return Math.min(120, Math.max(32, longest * 7 + (bottom < 0 ? 18 : 12)));
 };
 
 export const axisWidthFor = (values: number[], tick: (v: number) => unknown): number => {

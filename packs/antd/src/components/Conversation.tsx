@@ -156,7 +156,9 @@ export const Chat = () => {
       .filter(Boolean) as NonNullable<ReturnType<typeof toMessageInput>>[];
     if (!list.length) return [] as ChatMessage[];
     const built = list.map((m) => buildMessage(m, people));
-    setHistory([...(Array.isArray(history) ? history : []), ...built]);
+    // Onto the latest history, not the one this render read: one click can run two actions (Send message, then Append
+    // to history) before the chat draws again, and the second then dropped the first's message.
+    setHistory((latest) => [...(Array.isArray(latest) ? latest : []), ...built]);
     const lastResponse = [...built].reverse().find((m) => m.type === 'response');
     if (lastResponse) setLastResponse(lastResponse as unknown as Record<string, unknown>);
     return built;
@@ -517,7 +519,11 @@ export const Questionnaire = () => {
     { name: 'goTo', displayName: 'Go to', params: [{ handle: 'item', displayName: 'Position or name' }] },
     (arg) => {
       const i = resolveIndex(arg, questions);
-      if (i !== null) go(i, true);
+      if (i === null) return;
+      // After a submit, going to a question opens it again for an edit: the Thank-you screen and isComplete stayed
+      // while currentIndex moved behind them.
+      if (isComplete) setIsComplete(false);
+      go(i, true);
     }
   );
 

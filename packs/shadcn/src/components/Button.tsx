@@ -3,6 +3,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { isSet, lookVars, px } from '../lib/ui2/nav/look';
 import { TOKEN, useAutoRadius, useThemeColor } from '../lib/styleDefaults';
+import { onPointerIn } from '../lib/pointerEnter';
 import '../styles/ui2-nav.css';
 
 const VARIANTS = ['default', 'secondary', 'outline', 'ghost', 'destructive', 'link'];
@@ -135,7 +136,7 @@ export const Button = () => {
         )}
         disabled={busy}
         onClick={onClick}
-        onMouseEnter={onHover}
+        onMouseOver={onPointerIn(onHover)}
       >
         {/* Loading (the host's Loading or the pack's Show spinner), UI 2.0's spinner before the label, disabled. */}
         {loading ? <span className="n2-spinner" role="status" aria-label="Loading" /> : null}

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Avatar, Button, Card as AntCard, List as AntList, Modal as AntModal, Space, Tabs as AntTabs, Tag } from 'antd';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
 
@@ -15,6 +16,7 @@ import { SpinOver } from '../lib/Loading';
 import {
   followSelection,
   idGroup,
+  occurrenceKeys,
   readField,
   repeatedIds,
   rowIdOf,
@@ -29,6 +31,8 @@ import { formatCell } from '../lib/format';
 import { slotNames } from '../lib/slots';
 import { useDialogOwner } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
+import VirtualList, { type ListRef } from 'rc-virtual-list';
+import { VIRTUAL_MIN_ROWS, useVirtualBody } from '../lib/virtualRows';
 
 // Ant's Tabs: items [{ key, label }], activeKey, type (line, card), size, centered, tabPosition; each tab is a canvas
 // of ToolJet components (slot tab_<key>); events onChange, onTabClick.
@@ -69,6 +73,7 @@ export const Tabs = () => {
   });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onTabClick = ToolJet.useEventCallback({ name: 'onTabClick' });
+  const [, setClickedTab] = ToolJet.useStateString({ name: 'clickedTab', initialValue: '', inspector: 'hidden' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
@@ -117,7 +122,13 @@ export const Tabs = () => {
           centered={centered}
           tabPosition={tabPosition as 'top'}
           onChange={change}
-          onTabClick={() => onTabClick()}
+          // Ant fires its tab click before its change: the click's handlers read the tab clicked (clickedTab) and
+          // activeKey already on it (the first one saw the previous tab). onChange still follows, once.
+          onTabClick={(key) => {
+            setClickedTab(String(key));
+            change(String(key));
+            onTabClick();
+          }}
           items={items.map((t) => ({
             key: t.key,
             label: t.label,
@@ -278,7 +289,7 @@ export const Modal = () => {
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center" ownerRef={owner}>
       {showTrigger ? (
-        <Button type="primary" block disabled={disabled} onClick={() => setOpen(true)}>
+        <Button type="primary" block className="tj-ant-fill" disabled={disabled} onClick={() => setOpen(true)}>
           {triggerText}
         </Button>
       ) : null}
@@ -327,36 +338,39 @@ const ModalBody = ({
   okDisabled: boolean;
 }) => {
   const popup = usePopupTheme();
+  // The modal's own place in the popup layer, carrying the component's token values. antd puts the tj-ant class on the
+  // modal's root (rootClassName) but takes no style for that root: the values went on the wrapper inside it, after the
+  // root had worked out the colours, the radius and the modal's own tokens from stock Ant's, so Primary color, Text
+  // color, Container background and Border radius changed nothing on the open modal (QA AD-18). display: contents
+  // keeps it out of the layout.
+  const [scope, setScope] = useState<HTMLDivElement | null>(null);
   // Portal only once the popup layer is known: antd would otherwise mount the modal on document.body, unstyled.
   if (!popup.container) return null;
   return (
-    <AntModal
-      {...props}
-      getContainer={popup.container}
-      rootClassName={popup.className}
-      styles={{ wrapper: popup.style }}
-      okButtonProps={{ danger: okType === 'danger', disabled: okDisabled }}
-      footer={footer ? undefined : null}
-      forceRender
-    >
-      {content ? <p className="tj-ant-modal-content">{content}</p> : null}
-      {bodyHeight > 0 ? <ToolJet.PopupSlot name="body" style={{ height: bodyHeight }} /> : null}
-    </AntModal>
+    <>
+      {createPortal(<div ref={setScope} style={{ ...popup.style, display: 'contents' }} />, popup.container)}
+      {scope ? (
+        <AntModal
+          {...props}
+          getContainer={scope}
+          rootClassName={popup.className}
+          okButtonProps={{ danger: okType === 'danger', disabled: okDisabled }}
+          footer={footer ? undefined : null}
+          forceRender
+          // The host keeps Tab inside an open dialog (packFocus): antd's own trap reads document.activeElement, which a
+          // shadow root hides.
+          modalRender={(node) => <div data-tj-modal={props.open ? 'open' : 'closed'}>{node}</div>}
+        >
+          {content ? <p className="tj-ant-modal-content">{content}</p> : null}
+          {bodyHeight > 0 ? <ToolJet.PopupSlot name="body" style={{ height: bodyHeight }} /> : null}
+        </AntModal>
+      ) : null}
+    </>
   );
 };
 
-// Each row's own key: its id, a repeated id suffixed by its occurrence (1, then 1~1), so two records that share an id
-// are told apart: both drew selected, and a refresh moved the selection to the first of them.
-const occurrenceKeys = (rows: Row[], field: string) => {
-  const seen = new Set<string>();
-  return rows.map((r, i) => {
-    const base = rowKeyOf(r, field, i);
-    let key = base;
-    for (let n = 1; seen.has(key); n += 1) key = `${base}~${n}`;
-    seen.add(key);
-    return key;
-  });
-};
+const LIST_CHROME = ['.ant-list-header', '.ant-list-footer', '.ant-list-pagination'] as const;
+const ITEM_HEIGHT: Record<string, number> = { small: 40, default: 56, large: 72 };
 
 // Ant's List: dataSource; each item is either a row of ToolJet components (renderItem 'components', reading
 // {{listItem}}, rowHeight) or Ant's List.Item.Meta from fields (titleField, descriptionField, avatarField, extraField);
@@ -572,14 +586,69 @@ export const List = () => {
       // selection is invisible (team testing, 2026-10-29).
       select(rows[index], index, false);
       if (size_) setPage(Math.floor(index / size_) + 1);
+      // A long list scrolls the item into view (after the page change renders).
+      const local = size_ ? index % size_ : index;
+      setTimeout(() => vlist.current?.scrollTo({ index: local, align: 'top' }), 0);
     }
   );
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null, -1));
 
+  // A long list of field items draws only the items in view (rc-virtual-list, lib/virtualRows), as ToolJet 1.0's
+  // Table does. Rows of ToolJet components draw every row: the host mounts every component row anyway.
+  const rootRef = useRef<HTMLElement | null>(null);
+  const vlist = useRef<ListRef>(null);
+  const body = useVirtualBody(rootRef, LIST_CHROME, !asRows && visible.length > VIRTUAL_MIN_ROWS);
+  const keyByRow = new Map(visible.map((r, i) => [r, keys[i + offset] ?? String(i)]));
+  const metaItem = (row: Row, i: number) => {
+    const key = keys[i + offset];
+    const selected = key === selectedKey;
+    const avatar = avatarField ? str(readField(row, avatarField)) : '';
+    const extraText = extraField ? formatCell(readField(row, extraField)) : '';
+    const badge = badgeField ? str(readField(row, badgeField)) : '';
+    const extra =
+      badge || extraText ? (
+        <Space size={8}>
+          {badge ? (
+            <Tag color={TONE_TAG[chipTone(badge)]} style={{ marginInlineEnd: 0 }}>
+              {chipLabel(badge)}
+            </Tag>
+          ) : null}
+          {extraText ? <span>{extraText}</span> : null}
+        </Space>
+      ) : null;
+    // The title field; the row's first text field only when no title field is set. A named field the row lacks
+    // shows a blank title, as in the Rocket and MUI lists, not another field (team testing, 2026-10-29).
+    const titleValue = str(titleField)
+      ? readField(row, titleField)
+      : Object.values(row).find((v) => typeof v === 'string' && v.trim());
+    return (
+      <AntList.Item
+        key={key}
+        className={selected ? 'tj-ant-item is-selected' : 'tj-ant-item'}
+        onClick={() => select(row, i + offset)}
+        extra={extra || undefined}
+      >
+        <AntList.Item.Meta
+          avatar={
+            avatar ? (
+              /^(https?:|data:)/.test(avatar) ? (
+                <Avatar src={avatar} />
+              ) : (
+                <Avatar>{avatar.slice(0, 1).toUpperCase()}</Avatar>
+              )
+            ) : undefined
+          }
+          title={formatCell(titleValue)}
+          description={descriptionField ? formatCell(readField(row, descriptionField)) || undefined : undefined}
+        />
+      </AntList.Item>
+    );
+  };
+
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-list tj-ant-scroll">
+    <AntProvider tokens={tokens} fill className="tj-ant-list tj-ant-scroll" ownerRef={rootRef}>
       <AntList<Row>
-        dataSource={visible}
+        dataSource={body.on ? [] : visible}
         header={header || undefined}
         footer={footer || undefined}
         bordered={bordered}
@@ -607,48 +676,21 @@ export const List = () => {
                 </div>
               </AntList.Item>
             );
-          const avatar = avatarField ? str(readField(row, avatarField)) : '';
-          const extraText = extraField ? formatCell(readField(row, extraField)) : '';
-          const badge = badgeField ? str(readField(row, badgeField)) : '';
-          const extra =
-            badge || extraText ? (
-              <Space size={8}>
-                {badge ? (
-                  <Tag color={TONE_TAG[chipTone(badge)]} style={{ marginInlineEnd: 0 }}>
-                    {chipLabel(badge)}
-                  </Tag>
-                ) : null}
-                {extraText ? <span>{extraText}</span> : null}
-              </Space>
-            ) : null;
-          // The title field; the row's first text field only when no title field is set. A named field the row lacks
-          // shows a blank title, as in the Rocket and MUI lists, not another field (team testing, 2026-10-29).
-          const titleValue = str(titleField)
-            ? readField(row, titleField)
-            : Object.values(row).find((v) => typeof v === 'string' && v.trim());
-          return (
-            <AntList.Item
-              className={selected ? 'tj-ant-item is-selected' : 'tj-ant-item'}
-              onClick={() => select(row, i + offset)}
-              extra={extra || undefined}
-            >
-              <AntList.Item.Meta
-                avatar={
-                  avatar ? (
-                    /^(https?:|data:)/.test(avatar) ? (
-                      <Avatar src={avatar} />
-                    ) : (
-                      <Avatar>{avatar.slice(0, 1).toUpperCase()}</Avatar>
-                    )
-                  ) : undefined
-                }
-                title={formatCell(titleValue)}
-                description={descriptionField ? formatCell(readField(row, descriptionField)) || undefined : undefined}
-              />
-            </AntList.Item>
-          );
+          return metaItem(row, i);
         }}
-      />
+      >
+        {body.on ? (
+          <VirtualList<Row>
+            ref={vlist}
+            data={visible}
+            height={body.height}
+            itemHeight={ITEM_HEIGHT[String(size)] ?? 56}
+            itemKey={(r) => keyByRow.get(r) ?? ''}
+          >
+            {(row, i) => metaItem(row, i)}
+          </VirtualList>
+        ) : null}
+      </AntList>
     </AntProvider>
   );
 };

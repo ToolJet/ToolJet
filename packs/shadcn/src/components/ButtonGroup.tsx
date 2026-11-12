@@ -126,7 +126,8 @@ export const ButtonGroup = () => {
   // value and selected as `keys` publishes them (multiple: value is the list too).
   const exposedFor = (next: string[]) => {
     const e = selectionExposed(next, live.current.kind, live.current.items);
-    return { value: live.current.kind === 'multiple' ? e.value : String(e.value), selected: e.selected };
+    // The buttons' values as they give them: a numeric value stays a number in single mode (it was made text).
+    return { value: e.value, selected: e.selected };
   };
   const shown = useRef({ value: value as unknown, selected: selected as unknown });
   shown.current = { value, selected };
@@ -194,7 +195,11 @@ export const ButtonGroup = () => {
       params: [{ handle: 'selected', displayName: 'Value (or a list)' }],
     },
     (v) => {
-      apply(initialSelection(v, live.current.kind, live.current.items));
+      const next = initialSelection(v, live.current.kind, live.current.items);
+      // A value no button has is refused, leaving the selection as it was (it cleared it); an empty one clears.
+      const asked = Array.isArray(v) ? v.length > 0 : !(v === '' || v === undefined || v === null);
+      if (asked && !next.length) return;
+      apply(next);
     }
   );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => apply([]));

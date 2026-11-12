@@ -9,7 +9,9 @@ import { getLibraryComponentIdentity } from '@/AppBuilder/Widgets/libraryCompone
 import { useEffectiveLibraryRevision } from '@/AppBuilder/Widgets/hooks/useEffectiveLibraryRevision';
 import { useLibraryManifest } from '@/AppBuilder/Widgets/hooks/useLibraryManifest';
 import useStore from '@/AppBuilder/_stores/store';
-import { usePackManifest } from '@/_stores/builtinPacksStore';
+import { offersDynamicHeight } from '@/AppBuilder/_helpers/sdkComponentTypes';
+import { useBuiltinPack, usePackManifest } from '@/_stores/builtinPacksStore';
+import { packIdentityRows } from './packIdentity';
 import type { ManifestComponent } from '@/AppBuilder/types/libraryComponent.types';
 import {
   DISABLED_STATE_META,
@@ -73,7 +75,7 @@ const ManifestPropertiesPanel = ({
   const staticProps = additionalActionProps(
     componentMeta,
     componentManifest?.controlState === true,
-    componentManifest?.fit === true
+    offersDynamicHeight(componentManifest)
   );
   const hostProperties = (componentMeta.properties ?? {}) as Record<string, { placeholder?: string }>;
 
@@ -286,10 +288,13 @@ export const LibraryComponentProperties = (props: LibraryComponentPropertiesProp
 export const PackComponentProperties = (props: LibraryComponentPropertiesProps) => {
   const { pack, componentName } = packIdentity(props.component);
   const manifest = usePackManifest(pack);
+  const shipped = useBuiltinPack(pack);
+  const componentManifest = componentName ? manifest?.components?.[componentName] : undefined;
   return (
     <ManifestPropertiesPanel
       {...props}
-      componentManifest={componentName ? manifest?.components?.[componentName] : undefined}
+      componentManifest={componentManifest}
+      identityRows={packIdentityRows(pack, componentName, componentManifest, shipped?.displayName)}
     />
   );
 };

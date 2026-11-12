@@ -6,6 +6,7 @@ import { clampInt, own, safeUrl } from '../lib/ui2/nav/model';
 import { lookVars } from '../lib/ui2/nav/look';
 import { LineSkel, LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor } from '../lib/styleDefaults';
+import { onPointerIn } from '../lib/pointerEnter';
 import '../styles/ui2-nav.css';
 
 // The underline values UI 2.0 and the pack's earlier names map to.
@@ -142,7 +143,7 @@ export const Link = () => {
             tabIndex={disabled ? -1 : undefined}
             className={className}
             style={style}
-            onMouseEnter={onHover}
+            onMouseOver={onPointerIn(onHover)}
             onClick={(e) => {
               if (disabled) {
                 e.preventDefault();
@@ -159,7 +160,7 @@ export const Link = () => {
             disabled={disabled}
             className={className}
             style={style}
-            onMouseEnter={onHover}
+            onMouseOver={onPointerIn(onHover)}
             onClick={onClick}
           >
             {content}

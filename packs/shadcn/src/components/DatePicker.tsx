@@ -178,7 +178,10 @@ export const DatePicker = () => {
       setEndDate(ymd(to));
       setStartDateInUnix(unix(from) as number);
       setEndDateInUnix(unix(to) as number);
-      setSelectedDateRange(from ? `${shown(from)}${to ? ` – ${shown(to)}` : ''}` : '');
+      const text = from ? `${shown(from)}${to ? ` – ${shown(to)}` : ''}` : '';
+      setSelectedDateRange(text);
+      // displayValue is what the field shows, a range included (it stayed empty in range mode).
+      setDisplayValue(text);
     } else {
       setValue(ymd(dayOf(sel)));
       setStartDate('');
@@ -328,6 +331,8 @@ export const DatePicker = () => {
     kind: 'date',
     value: range ? (filled ? [ymd(from), ymd(to)] : '') : ymd(day),
     present: filled && !problem,
+    // Its own min, max or start-after-end message makes isValid false, as the field shows it (isValid stayed true).
+    rule: problem,
   });
   const focus = useFocusEvents(onFocus, onBlur, check.touch);
   const text = range ? (from ? `${shown(from)}${to ? ` – ${shown(to)}` : ''}` : '') : shown(day);

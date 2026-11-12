@@ -206,7 +206,9 @@ describe('a Dialog', () => {
   const dialogContent = () => layer()?.querySelector('[role="dialog"]');
   const button = (label) => [...layer().querySelectorAll('button')].find((b) => b.textContent === label);
 
-  // A Dialog whose body holds a DatePicker, both from the same pack revision (one popup layer), as the host draws it.
+  // A Dialog whose body holds a DatePicker of the same pack, as the host draws it: the body's widgets draw their popups
+  // in a layer of their own above the dialog's (the second layer on the page).
+  const bodyLayer = () => document.querySelectorAll('.tj-cc-popup-host')[1]?.shadowRoot;
   const dialogWithPicker = (dialog, picker, dialogHost) =>
     widget('Dialog', DIALOG, dialog, {
       host: dialogHost,
@@ -229,12 +231,12 @@ describe('a Dialog', () => {
     await tick();
 
     press(pickerRoot.querySelector('.uc-picker-trigger'));
-    await waitFor(() => expect(layer().querySelector('[aria-label="Choose a date"]')).toBeTruthy());
+    await waitFor(() => expect(bodyLayer()?.querySelector('[aria-label="Choose a date"]')).toBeTruthy());
     await tick();
     expect(dialog.events).not.toContain('onCancel');
     expect(dialogContent()).toBeTruthy();
 
-    const first = layer().querySelector('[aria-label="Choose a date"] [data-day]:not([disabled]):not(.is-outside)');
+    const first = bodyLayer().querySelector('[aria-label="Choose a date"] [data-day]:not([disabled]):not(.is-outside)');
     press(first);
     await waitFor(() => expect(picker.exposed.value).toBe(first.getAttribute('data-day')));
     await tick();

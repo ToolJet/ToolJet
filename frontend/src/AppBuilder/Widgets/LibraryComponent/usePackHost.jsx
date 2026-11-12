@@ -28,7 +28,7 @@ const filled = (value) =>
 // published, and the error shows once the field was touched. 0 and false are values.
 // `rule` is the component's own check (a format or range message, '' when it passes), checked before the section's.
 export const useHostValidation = (latest, value, present, rule) => {
-  const { validate, validation, setExposedVariable, exposed, judged } = latest.current;
+  const { validate, validation, setExposedVariable, exposed, judged, required } = latest.current;
   // Which exposed variable this is the value of, so an event fired right after the value changes can judge the new
   // value first (see fireHostEvent).
   if (exposed && judged) {
@@ -40,15 +40,21 @@ export const useHostValidation = (latest, value, present, rule) => {
   const status =
     (typeof validate === 'function' ? validate((present ?? filled(value)) ? value : undefined) : null) || {};
   const isValid = status.isValid !== false && !rule;
-  const isMandatory = validation?.mandatory === true;
+  // A pack's own Required property (an earlier name some packs keep) is Mandatory too, as the Validation section's.
+  const isMandatory = validation?.mandatory === true || required === true;
   const [touched, setTouched] = useState(false);
   // A Form around the field shows its message after a failed submit, and clearForm hides it again.
   useShowValidationOnFormSubmit(setTouched);
   useFormClear(() => setTouched(false));
-  // Every render, not on a change of isValid: an event-time write (fireHostEvent, section only) can leave a stale true.
+  // Every render, not on a change of isValid: an event-time write (fireHostEvent, section only) can leave a stale true,
+  // so it writes again when the last write differs or the value changed.
+  const valueKey = typeof value === 'object' && value !== null ? JSON.stringify(value) : value;
+  const judgedKey = useRef(undefined);
   useEffect(() => {
     const last = judged ? judged.current.published : published.current;
-    if (last === isValid) return;
+    const newValue = !Object.is(judgedKey.current, valueKey);
+    judgedKey.current = valueKey;
+    if (last === isValid && !newValue) return;
     if (judged) judged.current.published = isValid;
     else published.current = isValid;
     setExposedVariable('isValid', isValid);
@@ -290,7 +296,9 @@ const useRowHeight = ({ id, index, moduleId, rowHeight, currentLayout, parentInd
 
 // One row's canvas, as wide as the pack lays the row out: a grid cell or a kanban card, not the whole widget (a
 // 4-column list drew each row's components across the full width, clipped by the cell). A fitted row (fitRows: the
-// pack asked for it, a Kanban card) grows with its components and the pack's card, which wraps the row's slot, follows.
+// pack asked for it, a Kanban card, or the list fits its content with Dynamic height on) grows with its components,
+// never below the row height, and the pack's row, which wraps the row's slot, follows. It is never sized by the native
+// row reflow, which floored each row of a pack list at the whole widget's height (fittedRowHeight).
 const PackRow = ({
   slot,
   id,
@@ -299,7 +307,6 @@ const PackRow = ({
   rowHeight,
   darkMode,
   widgetWidth,
-  fit,
   fitRows,
   parentIndices,
   items,
@@ -324,7 +331,7 @@ const PackRow = ({
         computeCanvasBackgroundColor={() => 'transparent'}
         darkMode={darkMode}
         width={measured ?? widgetWidth}
-        isDynamicHeightEnabled={fit && !fitRows}
+        isDynamicHeightEnabled={false}
         data={items}
         currentLayout={currentLayout}
         visibility={visibility}
@@ -393,8 +400,7 @@ const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMo
           rowHeight={rows.rowHeight}
           darkMode={darkMode}
           widgetWidth={width}
-          fit={fit}
-          fitRows={rows.fit}
+          fitRows={rows.fit || fit}
           parentIndices={parentIndices}
           items={rows.items}
           currentLayout={currentLayout}
@@ -408,7 +414,18 @@ const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMo
 
 export const usePackHost = (
   props,
-  { disabled, loading, rowsEnabled, rowVariable, fit, visibility, formField = false, markRowScoped }
+  {
+    disabled,
+    loading,
+    rowsEnabled,
+    rowVariable,
+    fit,
+    fitDropAreas = false,
+    visibility,
+    formField = false,
+    markRowScoped,
+    required = false,
+  }
 ) => {
   const { id, validate, validation, setExposedVariable, fireEvent, width, height, currentLayout, darkMode } = props;
   const { moduleId } = useModuleContext();
@@ -418,7 +435,7 @@ export const usePackHost = (
   const exposed = useRef(new Map());
   const judged = useRef({ key: null, value: undefined });
   const latest = useRef({ validate, validation, setExposedVariable });
-  latest.current = { validate, validation, setExposedVariable, exposed: exposed.current, judged };
+  latest.current = { validate, validation, setExposedVariable, exposed: exposed.current, judged, required };
   const exposeVariable = useCallback((key, value) => {
     exposed.current.set(key, value);
     latest.current.setExposedVariable(key, value);
@@ -483,6 +500,15 @@ export const usePackHost = (
     setPopupSlotNames((names) => (names.includes(name) ? names : [...names, name]));
     return () => setPopupSlotNames((names) => names.filter((n) => n !== name));
   }, []);
+  // Where this instance is drawn: its module and the row of each List view, pack list or table expanded row around it.
+  // A widget in a row is drawn once per row under one id, and the popup layer is shared, where a body reaches its
+  // dialog by slot name: named by the id alone, every row's body had the same name, a slot takes every element named
+  // for it, and the first row's dialog showed all the rows' bodies while the others' were empty (QA AD-05).
+  const { contextPath } = useSubcontainerContext();
+  const placement = useMemo(
+    () => [...(moduleId && moduleId !== 'canvas' ? [moduleId] : []), ...contextPath.map((s) => s.index)].join('.'),
+    [moduleId, contextPath]
+  );
 
   const host = useMemo(
     () => ({
@@ -494,7 +520,8 @@ export const usePackHost = (
       setRows,
       rowSlotAttr: (index) => rowSlotAttr(id, index),
       registerPopupSlot,
-      popupSlotAttr: (name) => `tj-slot-${id}-${name}`,
+      popupSlotAttr: (name) => (placement ? `tj-slot-${id}-${placement}-${name}` : `tj-slot-${id}-${name}`),
+      fitDropAreas,
       formField,
       markRowScoped,
       resolveRow,
@@ -506,7 +533,20 @@ export const usePackHost = (
           new CustomEvent('submitForm', { detail: { buttonComponentId: id, buttonModuleId: moduleId } })
         ),
     }),
-    [disabled, loading, id, setRows, registerPopupSlot, formField, markRowScoped, resolveRow, moduleId, editing]
+    [
+      disabled,
+      loading,
+      id,
+      setRows,
+      registerPopupSlot,
+      placement,
+      fitDropAreas,
+      formField,
+      markRowScoped,
+      resolveRow,
+      moduleId,
+      editing,
+    ]
   );
   return { host, light, popupSlotNames, exposeVariable, fireHostEvent };
 };

@@ -29,7 +29,7 @@ afterEach(() => {
 });
 
 let serial = 0;
-async function mount(pack, name, { onEvent } = {}) {
+async function mount(pack, name, { onEvent, props = {} } = {}) {
   loadLibraryModule.mockResolvedValue({ [name]: packs[pack][name] });
   const actions = new Map();
   const exposed = {};
@@ -40,7 +40,7 @@ async function mount(pack, name, { onEvent } = {}) {
       cssUrl={`${pack}-${name}.css`}
       cacheKey={`same-value-${++serial}`}
       componentName={name}
-      componentProps={{}}
+      componentProps={props}
       componentStyles={{}}
       renderSlot={() => null}
       setExposedVariable={(k, v) => {
@@ -96,7 +96,8 @@ const SETTERS = [
   ['antd', 'Transfer', 'setFieldValue', [['orders']], 'onChange'],
   ['antd', 'Switch', 'setFieldValue', [true], 'onChange'],
   ['antd', 'Checkbox', 'setFieldValue', [true], 'onChange'],
-  ['antd', 'ButtonGroup', 'setSelected', ['week'], 'onChange'],
+  // A selection exists only in single and multiple modes; Actions (the default) has none to set.
+  ['antd', 'ButtonGroup', 'setSelected', ['week'], 'onChange', { mode: 'single' }],
   ['antd', 'Tabs', 'setActiveKey', ['tab2'], 'onChange'],
   ['antd', 'Steps', 'setCurrent', [2], 'onChange'],
   ['antd', 'Alert', 'dismiss', [], 'onClose'],
@@ -120,9 +121,11 @@ const SETTERS = [
 ];
 
 describe('a value setter fires once for a new value and nothing for the same one', () => {
-  test.each(SETTERS)('%s %s.%s', async (pack, name, action, args, event) => {
+  // A rest parameter: jest-each reads a sixth named parameter as `done` on the rows that have five columns.
+  test.each(SETTERS)('%s %s.%s', async (...row) => {
+    const [pack, name, action, args, event, props] = row;
     expect(packs[pack][name]).toBeDefined();
-    const w = await mount(pack, name);
+    const w = await mount(pack, name, { props });
     await waitFor(() => expect(w.actions.has(action)).toBe(true));
     const count = () => w.events.filter((e) => e === event).length;
     w.events.length = 0;

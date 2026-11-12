@@ -32,8 +32,8 @@ const fmt = (opts: Intl.NumberFormatOptions, locale = 'en-US') => {
 };
 
 /**
- * Formats a number. `auto` keeps integers whole and other numbers to 2 places, with grouping. `percent` reads 0.25 and
- * 25 both as 25% (a fraction when |n| <= 1). precision: fixed decimals, or null for the format's own. locale: the
+ * Formats a number. `auto` keeps integers whole and other numbers to 2 places, with grouping. `percent` reads a
+ * fraction: 0.25 is 25% and 1.2 is 120% (only values up to 1 were fractions, so 1.2 showed 1.2%). precision: fixed decimals, or null for the format's own. locale: the
  * author's (pt-BR), or blank to follow the currency (BRL writes "R$ 8.799,00"), else en-US.
  */
 export const formatNumber = (n: number, format: NumberFormat = 'auto', currency = 'USD', precision: number | null = null, locale?: unknown) => {
@@ -43,7 +43,7 @@ export const formatNumber = (n: number, format: NumberFormat = 'auto', currency 
     case 'currency':
       return fmt(moneyStyle(currencyCode(currency), digits), where).format(n);
     case 'percent':
-      return fmt({ style: 'percent', maximumFractionDigits: precision ?? 1, ...digits }, where).format(Math.abs(n) <= 1 ? n : n / 100);
+      return fmt({ style: 'percent', maximumFractionDigits: precision ?? 1, ...digits }, where).format(n);
     case 'compact':
       return fmt({ notation: 'compact', maximumFractionDigits: precision ?? 1 }, where).format(n);
     case 'number':
@@ -102,10 +102,22 @@ export const formatCell = (v: unknown, format?: string, currency?: string, local
     if (n !== null && ['number', 'currency', 'percent', 'compact'].includes(format)) return formatNumber(n, format as NumberFormat, currency, null, locale);
   }
   if (format === 'boolean') return v === true || v === 'true' || v === 1 || v === '1' ? 'Yes' : v === false || v === 'false' || v === 0 || v === '0' ? 'No' : String(v);
+  // A date or datetime column also takes an epoch timestamp (milliseconds, or seconds below 1e11), which showed as a
+  // plain number, and a Date.
+  if ((format === 'date' || format === 'datetime') && (typeof v === 'number' || v instanceof Date)) {
+    const ms = v instanceof Date ? v.getTime() : Math.abs(v) < 1e11 ? v * 1000 : v;
+    if (Number.isFinite(ms)) {
+      const d = dayjs(ms);
+      const how = { pattern: dateFormat, locale, currency };
+      return format === 'date' ? formatDate(d.format('YYYY-MM-DD'), how) : formatDate(d.format('YYYY-MM-DDTHH:mm:ss'), how);
+    }
+  }
   if (typeof v === 'string' && ISO_DATE.test(v) && (format === 'date' || format === 'datetime' || !format)) {
     const how = { pattern: dateFormat, locale, currency };
     if (format === 'datetime' && DATE_ONLY.test(v)) return formatDate(v, how);
-    return format === 'date' ? formatDate(v.slice(0, 10), how) : formatDate(v, how);
+    // A date column shows the local day of a timestamp, as a datetime column shows its local time: the date as
+    // written (2026-10-25T23:30:00Z) showed the 25th beside a datetime column's 26th for the same instant.
+    return format === 'date' ? formatDate(DATE_ONLY.test(v) ? v : dayjs(v).format('YYYY-MM-DD'), how) : formatDate(v, how);
   }
   if (typeof v === 'number') return formatNumber(v, 'auto', currency || 'USD', null, locale);
   if (typeof v === 'boolean') return v ? 'Yes' : 'No';
