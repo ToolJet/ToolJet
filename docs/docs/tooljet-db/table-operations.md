@@ -5,6 +5,20 @@ title: Table Operations
 
 Operations that change a table's schema, such as renaming the table or adding, editing, or deleting a column, are made in the development environment. Each change is recorded as a migration in the table's migration history, and is later run in staging and production. See [Migrations](/docs/tooljet-db/migrations/overview) to learn more.
 
+## Available Actions in Each Environment
+
+| Action | Development | Staging and Production |
+|:-------|:-----------:|:----------------------:|
+| Create or edit a table | ✅ | ❌ |
+| Add, edit, or delete a column | ✅ | ❌ |
+| Add, edit, or remove a foreign key | ✅ | ❌ |
+| Write a SQL migration | ✅ | ❌ |
+| Add, edit, or delete rows | ✅ | ✅ |
+| Bulk upload or export data | ✅ | ✅ |
+| [Seed data with SQL](/docs/tooljet-db/manage-data#seed-data-with-sql) | ✅ | ✅ |
+
+Deleting a table deletes it in every environment. See [Delete Table](#delete-table).
+
 ## Confirm a Schema Change
 
 Creating a table records its first migration, `0001`, automatically. For any other change, such as editing a column or adding a foreign key, ToolJet shows a confirmation modal first:
