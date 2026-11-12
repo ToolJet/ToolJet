@@ -132,6 +132,10 @@ export class User extends BaseEntity {
   @Column({ name: 'company_size' })
   companySize: string;
 
+  // Cloud only: workspace limit for this user. Null = MAX_CLOUD_WORKSPACES_PER_USER.
+  @Column({ name: 'workspace_limit', type: 'integer', nullable: true, default: null })
+  workspaceLimit: number | null;
+
   @Column({ name: 'auto_activated', default: false })
   autoActivated: boolean;
 
