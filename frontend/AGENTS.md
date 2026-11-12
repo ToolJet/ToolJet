@@ -196,6 +196,8 @@ Query Library consumer creation keeps query/snapshot selection local in the exis
 
 - Library promotion follows the selected saved UUID into its returned environment atomically. Delayed promotion must not steal a different query, session, version or environment selection.
 
+Workflows are Query Library consumers too. The workflow editor's "Add new node" list stages a Query library pick in `FlowBuilder/BlockOptions` (the same Library editor plus Cancel/Create node), and `addNewNode` takes the picked options as `initialOptions`, so the node is created already pinned. The Library editor rendered with `queryName === 'workflowNode'` hides RunJS versions and drafts, and queries with nothing else. On save, a Query Library node's `inputs` are replaced, not deep-merged (`workflowQuerySlice.updateQueryWithAPI`). The node menu's "Add to query library" reuses `AddToLibraryModal` with an `onAdd` prop (no component names to map) and `workflowQuerySlice.addQueryToLibrary`. Query library is left out of the agent tool list, and `canBeAgentTool` refuses a drag onto an agent's tool handle. The node config's Source dropdown shows Query library only on a node that already is one.
+
 ## Query Library license and edition composition
 
 Public QueryLibrary entry components are edition-selected facades, and the public state slice keeps an inert shape for ordinary panels. EE supplies editor components, lifecycle adapter, feature state, browser execution and draft transport through existing module/slice registries. Pure input, snapshot-selection and environment helpers remain shared. Cloud selects the EE implementation.

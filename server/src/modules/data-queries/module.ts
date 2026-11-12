@@ -64,7 +64,7 @@ export class DataQueriesModule extends SubModule {
         AppScopedThrottlerGuard,
         GitSyncQueryEditGuard,
       ],
-      exports: [DataQueriesUtilService],
+      exports: [DataQueriesUtilService, DataQueriesService],
       controllers: isMainImport ? [DataQueriesController] : [],
     });
   }

@@ -260,6 +260,24 @@ function createTemplateSandbox(): { isolate: ivm.Isolate; context: ivm.Context }
   }
 }
 
+// Runs library code (a transformation) on the server the way the browser does: a function body where `return`
+// works, with only `scope`'s names plus moment and lodash. Own isolate per run: resolveCode writes `scope` as
+// globals, so a shared isolate would leak `input`/`data` into whatever runs next.
+export function runLibraryCode(
+  code: string,
+  scope: Record<string, unknown>,
+  // Where `console.log` goes; without it, calling console.log throws.
+  addLog?: (message: string) => void
+): unknown {
+  const { isolate, context } = createTemplateSandbox();
+  try {
+    return resolveCode({ code, state: scope, isolate, context, wrapInIIFE: true, addLog });
+  } finally {
+    // A memory-limit kill already disposes the isolate; disposing again would throw and mask the real error.
+    if (!isolate.isDisposed) isolate.dispose();
+  }
+}
+
 export function assertLibraryTarget({
   consumer,
   library,
@@ -288,6 +306,10 @@ export type LibraryRunContext = {
 };
 
 export type LibraryRunValues = { inputs?: Record<string, unknown> };
+
+// Who runs a consumer: an app (or module) checks query-level permissions on it; a workflow node doesn't,
+// like every other workflow node.
+export type LibraryRunCaller = 'app' | 'workflow';
 
 // Library templates see `input` and `globals.currentUser` (from the signed-in user, never the client).
 // The library editor resolves with the same names (queryPanelSlice), so authors see what consumers get.
@@ -530,14 +552,14 @@ export function libraryTransformationOf(options: Record<string, unknown>): strin
   return String(perLanguage?.[language ?? 'javascript'] ?? options.transformation ?? '');
 }
 
-// Same strings as APP_TYPES.FRONT_END / APP_TYPES.MODULE, as literals so the type is a plain union.
-const CONSUMER_APP_TYPES = ['front-end', 'module'] as const;
+// Same strings as APP_TYPES.FRONT_END / MODULE / WORKFLOW, as literals so the type is a plain union.
+const CONSUMER_APP_TYPES = ['front-end', 'module', 'workflow'] as const;
 export type LibraryConsumerAppType = (typeof CONSUMER_APP_TYPES)[number];
 
 export type LibraryConsumer = {
   appId: string;
   appName: string;
-  appType: LibraryConsumerAppType; // only apps and modules consume library queries
+  appType: LibraryConsumerAppType; // apps, modules and workflows consume library queries
   appVersionName: string; // every app version counts as a use, not just the latest
   queryId: string;
   queryName: string;
@@ -614,6 +636,7 @@ export type LibraryUsageEntry = {
 export function toLibraryUsage(consumers: LibraryConsumer[]): {
   apps: LibraryUsageEntry[];
   modules: LibraryUsageEntry[];
+  workflows: LibraryUsageEntry[];
 } {
   const group = (appType: LibraryConsumerAppType): LibraryUsageEntry[] => {
     const byApp = new Map<string, LibraryUsageEntry>();
@@ -633,22 +656,27 @@ export function toLibraryUsage(consumers: LibraryConsumer[]): {
     }
     return [...byApp.values()];
   };
-  return { apps: group('front-end'), modules: group('module') };
+  return { apps: group('front-end'), modules: group('module'), workflows: group('workflow') };
 }
 
-// The delete-in-use message: counts apps and modules, lists each app version once.
+// The delete-in-use message: counts apps, modules and workflows, lists each app version once.
 export function libraryUsedByMessage(consumers: LibraryConsumer[]): string {
   const countOf = (appType: LibraryConsumerAppType) =>
     new Set(consumers.filter((consumer) => consumer.appType === appType).map((consumer) => consumer.appId)).size;
-  const counts = [
-    [countOf('front-end'), 'app(s)'],
-    [countOf('module'), 'module(s)'],
-  ]
-    .filter(([n]) => n)
-    .map(([n, label]) => `${n} ${label}`)
-    .join(' and ');
-  // Apps first, then modules, matching the counts.
-  const ordered = [...consumers].sort((a, b) => Number(a.appType === 'module') - Number(b.appType === 'module'));
+  const labels: Record<LibraryConsumerAppType, string> = {
+    'front-end': 'app(s)',
+    module: 'module(s)',
+    workflow: 'workflow(s)',
+  };
+  const counts = CONSUMER_APP_TYPES.filter((appType) => countOf(appType)).map(
+    (appType) => `${countOf(appType)} ${labels[appType]}`
+  );
+  const countText =
+    counts.length > 1 ? `${counts.slice(0, -1).join(', ')} and ${counts[counts.length - 1]}` : counts[0];
+  // Same order as the counts: apps, then modules, then workflows.
+  const ordered = [...consumers].sort(
+    (a, b) => CONSUMER_APP_TYPES.indexOf(a.appType) - CONSUMER_APP_TYPES.indexOf(b.appType)
+  );
   const list = [...new Set(ordered.map((consumer) => `${consumer.appName} · ${consumer.appVersionName}`))].join(', ');
-  return `Used by ${counts}: ${list}. Remove it from those first.`;
+  return `Used by ${countText}: ${list}. Remove it from those first.`;
 }

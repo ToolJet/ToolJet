@@ -152,11 +152,11 @@ function DataSourceSelect({
 
     // Defaults section
     const staticSources = dataSources?.filter((gds) => gds.type === DATA_SOURCE_TYPE.STATIC) || [];
-    // Workflows have no runner for library queries; a query library can't hold library/runpy/workflows queries.
-    // Callback-driven menus (component Add query, folder Add query) can't wait for the staged library picker.
+    // A query library can't hold library/runpy/workflows queries. Callback-driven menus (component Add query,
+    // folder Add query) can't wait for the staged library picker; the workflow node list stages it itself.
     const defaultsList = (workflowDataSources ? defaultDataSources || [] : staticSources).filter(
       (ds) =>
-        !((workflowDataSources || hasCreateCallback) && ds.kind === 'library') &&
+        !(hasCreateCallback && ds.kind === 'library') &&
         (ds.kind !== 'library' || isQueryLibraryEnabled(queryLibraryAccess)) &&
         (!isQueryLibrary || !LIBRARY_UNSUPPORTED_KINDS.includes(ds.kind))
     );

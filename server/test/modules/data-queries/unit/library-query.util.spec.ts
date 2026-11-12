@@ -22,6 +22,7 @@ import {
   toRunTarget,
   LibraryRunValues,
   LIBRARY_QUERY_MISSING,
+  runLibraryCode,
 } from '../../../../src/modules/data-queries/library/library-query.util';
 
 const q = (over: Record<string, any> = {}) =>
@@ -670,12 +671,21 @@ describe('library-query.util', () => {
       queryId: 'c2',
       versionName: 'v1',
     });
+    const workflowConsumer = consumer({
+      appId: 'w1',
+      appName: 'Nightly sync',
+      appType: 'workflow',
+      appVersionName: 'v4',
+      queryId: 'c4',
+      versionName: 'v3',
+    });
 
     describe('toLibraryUsage', () => {
-      it('should list modules separately from apps', () => {
-        expect(toLibraryUsage([consumer(), moduleConsumer])).toMatchObject({
+      it('should list modules and workflows separately from apps', () => {
+        expect(toLibraryUsage([consumer(), moduleConsumer, workflowConsumer])).toMatchObject({
           apps: [{ name: 'Sales CRM', queries: [{ versionName: 'v2' }] }],
           modules: [{ name: 'Address block', queries: [{ versionName: 'v1' }] }],
+          workflows: [{ name: 'Nightly sync', queries: [{ versionName: 'v3' }] }],
         });
       });
 
@@ -735,6 +745,44 @@ describe('library-query.util', () => {
           'Used by 1 app(s) and 1 module(s): Sales CRM · v1, Sales CRM · v2, Address block · v3. Remove it from those first.'
         );
       });
+
+      it('counts workflows after apps and modules', () => {
+        expect(libraryUsedByMessage([workflowConsumer, moduleConsumer, consumer()])).toBe(
+          'Used by 1 app(s), 1 module(s) and 1 workflow(s): Sales CRM · v1, Address block · v3, Nightly sync · v4. Remove it from those first.'
+        );
+      });
+
+      it('counts workflows only', () => {
+        expect(libraryUsedByMessage([workflowConsumer])).toBe(
+          'Used by 1 workflow(s): Nightly sync · v4. Remove it from those first.'
+        );
+      });
     });
+  });
+});
+
+describe('runLibraryCode', () => {
+  it('should run code as a function body with only the given names in scope', () => {
+    const result = runLibraryCode('return data.map((row) => row.n * input.factor + constants.offset);', {
+      data: [{ n: 1 }, { n: 2 }],
+      input: { factor: 10 },
+      constants: { offset: 1 },
+    });
+
+    expect(result).toEqual([11, 21]);
+  });
+
+  it('should give the code lodash and moment like the browser does', () => {
+    expect(runLibraryCode('return _.sum(data) + moment.utc(0).year();', { data: [1, 2] })).toBe(1973);
+  });
+
+  it('should surface an error thrown by the code', () => {
+    expect(() => runLibraryCode('throw new Error("bad row");', { data: [] })).toThrow('bad row');
+  });
+
+  it('should not leak one run into the next', () => {
+    runLibraryCode('globalThis.leaked = input.secret; return 1;', { input: { secret: 's3cret' } });
+
+    expect(runLibraryCode('return typeof leaked;', {})).toBe('undefined');
   });
 });
