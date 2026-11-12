@@ -53,17 +53,17 @@
     },
     "slack": {
         "authorize": "Autorizza",
-        "connectToolJetToSlack": "ToolJet può connettersi a Slack ed elencare gli utenti, inviare messaggi, ecc. Selezionare i permessi desiderati.",
+        "connectToolJetToSlack": "{{whiteLabelText}} può connettersi a Slack ed elencare gli utenti, inviare messaggi, ecc. Selezionare i permessi desiderati.",
         "chatWrite": "chat:scrivi",
-        "listUsersAndSendMessage": "L'applicazione ToolJet sarà in grado di elencare gli utenti e di inviare messaggi agli utenti e al canale.",
+        "listUsersAndSendMessage": "L'applicazione {{whiteLabelText}} sarà in grado di elencare gli utenti e di inviare messaggi agli utenti e al canale.",
         "connectSlack": "Connetti a Slack"
     },
     "googleSheets": {
         "readOnly": "Sola Lettura",
-        "enableReadAndWrite": "Se volete che le vostre applicazioni ToolJet modifichino i vostri fogli di lavoro su Google Sheets, assicuratevi di selezionare gli accessi di lettura e scrittura.",
-        "readDataFromSheets": "Le applicazioni ToolJet possono leggere i dati solo dal foglio di lavoro Google Sheets",
+        "enableReadAndWrite": "Se volete che le vostre applicazioni {{whiteLabelText}} modifichino i vostri fogli di lavoro su Google Sheets, assicuratevi di selezionare gli accessi di lettura e scrittura.",
+        "readDataFromSheets": "Le applicazioni {{whiteLabelText}} possono leggere i dati solo dal foglio di lavoro Google Sheets",
         "readWrite": "Lettura e Scrittura",
-        "readModifySheets": "Le applicazioni ToolJet possono leggere i dati dai fogli di lavoro, modificarli e molto altro ancora.",
+        "readModifySheets": "Le applicazioni {{whiteLabelText}} possono leggere i dati dai fogli di lavoro, modificarli e molto altro ancora.",
         "toGoogleSheets": "vai a Google Sheets"
     },
     "profile": {
@@ -382,7 +382,7 @@
         "noApplicationFound": "Nessuna Applicazione trovata",
         "noWorkflowFound": "Nessun flusso di lavoro trovato",
         "thisFolderIsEmpty": "Questa cartella è vuota",
-        "deleteAppAndData": "L'app e i dati ad essa associati saranno eliminati in modo permanente, vuoi continuare?",
+        "deleteAppAndData": "L'app {{appName}} e i dati ad essa associati saranno eliminati in modo permanente, vuoi continuare?",
         "deleteWorkflowAndData": "Il flusso di lavoro {{appName}} e i dati associati verranno eliminati definitivamente. Continuare?",
         "removeAppFromFolder": "L'applicazione verrà rimossa da questa cartella, vuoi continuare?",
         "change": "Modifica",

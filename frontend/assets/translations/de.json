@@ -53,17 +53,17 @@
     },
     "slack": {
         "authorize": "Autorisierung",
-        "connectToolJetToSlack": "ToolJet kann eine Verbindung zu Slack herstellen und Benutzer auflisten, Nachrichten senden, usw. Bitte wählen Sie entsprechende Berechtigungsbereiche.",
+        "connectToolJetToSlack": "{{whiteLabelText}} kann eine Verbindung zu Slack herstellen und Benutzer auflisten, Nachrichten senden, usw. Bitte wählen Sie entsprechende Berechtigungsbereiche.",
         "chatWrite": "chat:schreiben",
-        "listUsersAndSendMessage": "Ihre ToolJet-Anwendung kann dann Benutzer auflisten und Nachrichten an Benutzer und Kanäle senden.",
+        "listUsersAndSendMessage": "Ihre {{whiteLabelText}}-Anwendung kann dann Benutzer auflisten und Nachrichten an Benutzer und Kanäle senden.",
         "connectSlack": "Mit Slack verbinden"
     },
     "googleSheets": {
         "readOnly": "Nur lesen",
-        "enableReadAndWrite": "Wenn Sie möchten, dass Ihre ToolJet-Apps Ihre Google Sheets ändern können, müssen Sie Lese- und Schreibzugriff auswählen",
-        "readDataFromSheets": "Ihre ToolJet-Apps können nur Daten aus Google Sheets lesen",
+        "enableReadAndWrite": "Wenn Sie möchten, dass Ihre {{whiteLabelText}}-Apps Ihre Google Sheets ändern können, müssen Sie Lese- und Schreibzugriff auswählen",
+        "readDataFromSheets": "Ihre {{whiteLabelText}}-Apps können nur Daten aus Google Sheets lesen",
         "readWrite": "Lesen und Schreiben",
-        "readModifySheets": "Ihre ToolJet-Apps können Daten von Tabellen lesen, Tabellen ändern und vieles mehr.",
+        "readModifySheets": "Ihre {{whiteLabelText}}-Apps können Daten von Tabellen lesen, Tabellen ändern und vieles mehr.",
         "toGoogleSheets": "zu Google Sheets"
     },
     "profile": {
@@ -108,7 +108,7 @@
             "save": "Speichern",
             "create": "Version herstellen",
             "editVersion": "Version bearbeiten",
-            "deleteVersion": "Wollen Sie diese Version wirklich löschen?",
+            "deleteVersion": "Wollen Sie diese Version ({{version}}) wirklich löschen?",
             "enterVersionName": "Version Name eingeben",
             "versionAlreadyReleased": "Version bereits freigegeben. Bitte erstellen Sie eine neue Version oder wechseln Sie zu einer anderen Version, um weitere Änderungen vorzunehmen."
         },
@@ -382,7 +382,7 @@
         "noApplicationFound": "Keine Apps gefunden",
         "noWorkflowFound": "Keine Workflows gefunden",
         "thisFolderIsEmpty": "Dieser Ordner ist leer",
-        "deleteAppAndData": "Die App und die zugehörigen Daten werden endgültig gelöscht. Möchten Sie fortfahren?",
+        "deleteAppAndData": "Die App {{appName}} und die zugehörigen Daten werden endgültig gelöscht. Möchten Sie fortfahren?",
         "deleteWorkflowAndData": "Der Workflow {{appName}} und die zugehörigen Daten werden dauerhaft gelöscht. Fortfahren?",
         "removeAppFromFolder": "Die App wird aus diesem Ordner entfernt. Möchten Sie fortfahren?",
         "change": "Ändern Sie",
