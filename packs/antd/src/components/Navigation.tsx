@@ -403,7 +403,7 @@ export const Pagination = () => {
   const [pageSize, setPageSize] = ToolJet.useStateNumber({
     name: 'pageSize',
     label: 'Page size',
-    initialValue: 10,
+    initialValue: 1,
     min: 1,
   });
   const [total] = ToolJet.useStateNumber({ name: 'total', label: 'Total', initialValue: 50, min: 0 });
@@ -448,7 +448,7 @@ export const Pagination = () => {
   });
   // current is a page that exists: an action past the last page goes to the last, and when the total shrinks under the
   // page shown, current follows the page Ant draws (no onChange: the user did not change it).
-  const pages = Math.max(1, Math.ceil(Math.max(0, Number(total) || 0) / Math.max(1, Number(pageSize) || 10)));
+  const pages = Math.max(1, Math.ceil(Math.max(0, Number(total) || 0) / Math.max(1, Number(pageSize) || 1)));
   const clampPage = (p: unknown) => Math.min(pages, Math.max(1, Math.trunc(Number(p)) || 1));
   useEffect(() => {
     if (toNumber(current) !== null && clampPage(current) !== Number(current)) setCurrent(clampPage(current));
@@ -468,7 +468,7 @@ export const Pagination = () => {
       <SpinOver loading={loading} as="block">
         <AntPagination
           current={clampPage(current)}
-          pageSize={Math.max(1, Number(pageSize) || 10)}
+          pageSize={Math.max(1, Number(pageSize) || 1)}
           total={Math.max(0, Number(total) || 0)}
           showSizeChanger={showSizeChanger}
           simple={simple}
