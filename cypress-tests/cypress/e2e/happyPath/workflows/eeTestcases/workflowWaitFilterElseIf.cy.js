@@ -69,10 +69,11 @@ const runWithOverrides = (overrides = {}) => {
   runFromEditor();
   cy.get(inputsSelector.runDialogTitle).should("be.visible");
   Object.entries(overrides).forEach(([key, value]) => {
-    cy.contains(inputsSelector.overrideRow, key)
+    const row = new RegExp(`^${key}`);
+    cy.contains(inputsSelector.overrideRow, row)
       .find(inputsSelector.overrideToggle)
       .check();
-    cy.contains(inputsSelector.overrideRow, key)
+    cy.contains(inputsSelector.overrideRow, row)
       .find("> input")
       .clear()
       .type(value, { parseSpecialCharSequences: false });

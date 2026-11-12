@@ -228,8 +228,9 @@ describe("Workflows - Webhooks panel", SLOW_API, () => {
     cy.get(workflowSelector.workflowWebhookIcon).click();
     cy.get(workflowSelector.workflowEndpointUrl).should("not.exist");
     cy.get(workflowSelector.startNode).click({ force: true });
-    cy.get(webhookPanelSelector.testJsonInput).should("be.visible");
-    cy.get(webhookPanelSelector.testJsonBlock).should("contain.text", "Test JSON parameters");
+    cy.get(webhookPanelSelector.testJsonBlock)
+      .should("be.visible")
+      .and("contain.text", "Test JSON parameters");
     cy.get(webhookPanelSelector.testJsonBlock)
       .find(webhookPanelSelector.legacyTag)
       .should("not.exist");

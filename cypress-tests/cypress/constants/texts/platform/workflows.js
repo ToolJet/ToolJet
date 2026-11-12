@@ -70,7 +70,7 @@ export const workflowsText = {
     `Are you sure you want to delete the folder ${folderName}? Workflows within the folder will not be deleted.`,
 
   nodeDeleteConfirmMessage: "Do you really want to delete this node?",
-  duplicatedRunjsNodeName: "runjs1_copy",
+  duplicatedRunjsNodeName: "runjs1-copy",
 
   llmAgentFixturePath:
     "cypress/fixtures/templates/workflows/workflow_llm_agent_node-export-1781268843647.json",

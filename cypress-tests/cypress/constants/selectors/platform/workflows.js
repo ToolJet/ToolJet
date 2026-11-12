@@ -189,7 +189,7 @@ export const controlFlowSelector = {
   filterPredicate: '[data-cy="input-filter-predicate-expression"] .cm-content[contenteditable="true"]',
   filterError: ".filter-node-modal-content .field-error",
   previewButton: '[data-cy="preview-button"]',
-  nodePreviewButton: ".header-preview-btn",
+  nodePreviewButton: ".header-preview-btn:not(.run-workflow-btn)",
   nodeResultBody: ".result-section .result-body",
   ifModal: '[data-cy="if-condition-modal"]',
   ifCondition: (index) =>
@@ -299,6 +299,5 @@ export const webhookPanelSelector = {
   versionToggle: '[data-cy="webhook-version-dropdown-toggle"]',
   legacyLabel: ".workflow-legacy-field-label",
   legacyTag: ".legacy-banner",
-  testJsonInput: '[data-cy="start-node-input-field"]',
   testJsonBlock: ".test-json-parameter",
 };

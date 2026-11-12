@@ -65,7 +65,10 @@ describe("Workflows - node menu", () => {
   });
 
   it("Deleting a node from its menu asks for confirmation, keeps it on cancel and removes it with its edges on confirm", () => {
-    cy.get(workflowSelector.canvasEdge).its("length").as("edgesBefore");
+    let edgesBefore;
+    cy.get(workflowSelector.canvasEdge).then(($edges) => {
+      edgesBefore = $edges.length;
+    });
 
     openNodeMenu(workflowsText.runjs);
     cy.get(workflowSelector.nodeMenuDelete).click({ force: true });
@@ -76,20 +79,18 @@ describe("Workflows - node menu", () => {
     cy.get(workflowSelector.nodeDeleteCancel).click();
     cy.get(workflowSelector.nodeDeleteMessage).should("not.exist");
     cy.get(workflowSelector.nodeName(workflowsText.runjs)).should("exist");
-    cy.get("@edgesBefore").then((before) => {
-      cy.get(workflowSelector.canvasEdge).should("have.length", before);
+    cy.get(workflowSelector.canvasEdge).should(($edges) => {
+      expect($edges.length).to.equal(edgesBefore);
     });
 
     openNodeMenu(workflowsText.runjs);
     cy.get(workflowSelector.nodeMenuDelete).click({ force: true });
     cy.get(workflowSelector.nodeDeleteConfirm).click();
     cy.get(workflowSelector.nodeName(workflowsText.runjs)).should("not.exist");
-    cy.get("@edgesBefore").then((before) => {
-      cy.get("body").then(($body) => {
-        expect($body.find(workflowSelector.canvasEdge).length).to.be.lessThan(
-          before
-        );
-      });
+    cy.get("body").should(($body) => {
+      expect($body.find(workflowSelector.canvasEdge).length).to.be.lessThan(
+        edgesBefore
+      );
     });
   });
 });

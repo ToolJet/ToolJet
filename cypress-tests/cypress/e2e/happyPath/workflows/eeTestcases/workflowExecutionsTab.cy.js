@@ -83,10 +83,11 @@ const runOf = (workflow, status) => {
   });
 };
 
-const useWorkflowContext = (workflow) => {
-  Cypress.env("workflowId", workflow.id);
-  Cypress.env("editingVersionId", workflow.versionId);
-};
+const useWorkflowContext = (workflow) =>
+  cy.then(() => {
+    Cypress.env("workflowId", workflow.id);
+    Cypress.env("editingVersionId", workflow.versionId);
+  });
 
 const applyFilter = (open) => {
   cy.get(executionsFilterSelector.trigger).click();
@@ -159,14 +160,11 @@ describe("Workflows - Executions tab", SLOW_API, () => {
     cleanupFolders([data.folderName]);
   });
 
-  it("The Executions list filters by environment, workflow, status, trigger, date and folder", () => {
+  it("The Executions list filters by environment, workflow, status, trigger and date", () => {
     okWorkflow("exok").then((ok) => {
       failingWorkflow("exfail").then((failing) => {
         runOf(ok, "success");
         runOf(failing, "failure");
-        cy.apiCreateFolder(data.folderName, "workflow").then((folder) => {
-          cy.apiAddAppToFolder(folder.id, ok.id);
-        });
 
         visitExecutions();
         rowOf(ok).should("exist");
@@ -205,6 +203,20 @@ describe("Workflows - Executions tab", SLOW_API, () => {
         cy.get(executionsFilterSelector.empty).should("be.visible");
         pickOptionIgnoringCase(executionsFilterSelector.environment, "all environments");
         rowOf(ok).should("exist");
+      });
+    });
+  });
+
+  it("The folder chosen in the sidebar scopes the Executions list, its workflow picker and Upcoming runs", () => {
+    okWorkflow("exfin").then((inside) => {
+      failingWorkflow("exfout").then((outside) => {
+        runOf(inside, "success");
+        runOf(outside, "failure");
+        everyMinute(inside, "tab-in").then((id) => cy.apiActivateWorkflowSchedule(id, true));
+        everyMinute(outside, "tab-out").then((id) => cy.apiActivateWorkflowSchedule(id, true));
+        cy.apiCreateFolder(data.folderName, "workflow").then((folder) => {
+          cy.apiAddAppToFolder(folder.id, inside.id);
+        });
 
         cy.visit(
           `/${Cypress.env("workspaceId")}/workflows/executions?folder=${data.folderName}`
@@ -214,8 +226,11 @@ describe("Workflows - Executions tab", SLOW_API, () => {
           "contain.text",
           `All workflows in ${data.folderName}`
         );
-        rowOf(ok).should("exist");
-        rowOf(failing).should("not.exist");
+        rowOf(inside).should("exist");
+        rowOf(outside).should("not.exist");
+        cy.get(upcomingSelector.panel)
+          .should("contain.text", inside.name)
+          .and("not.contain.text", outside.name);
       });
     });
   });
@@ -323,18 +338,18 @@ describe("Workflows - Executions tab", SLOW_API, () => {
       okWorkflow("exuptwo").then((second) => {
         everyMinute(first, "tab-one").then((id) => cy.apiActivateWorkflowSchedule(id, true));
         everyMinute(second, "tab-two").then((id) => cy.apiActivateWorkflowSchedule(id, true));
-        cy.apiCreateFolder(data.folderName, "workflow").then((folder) => {
-          cy.apiAddAppToFolder(folder.id, first.id);
-        });
-
-        cy.intercept("GET", "/api/workflow_executions/workspace/upcoming*").as("upcoming");
         visitExecutions();
         cy.get(upcomingSelector.panel)
           .should("contain.text", first.name)
           .and("contain.text", second.name);
 
+        cy.intercept({
+          method: "GET",
+          pathname: "/api/workflow_executions/workspace/upcoming",
+          query: { app_id: first.id },
+        }).as("upcomingScoped");
         filterExecutionsByWorkflow(first.name);
-        cy.wait("@upcoming").its("request.url").should("include", `app_id=${first.id}`);
+        cy.wait("@upcomingScoped");
         cy.get(upcomingSelector.panel)
           .should("contain.text", first.name)
           .and("not.contain.text", second.name);
@@ -343,17 +358,9 @@ describe("Workflows - Executions tab", SLOW_API, () => {
         cy.get(upcomingSelector.empty).should("contain.text", executionsText.noSchedulesScoped);
         pickOptionIgnoringCase(executionsFilterSelector.environment, "all environments");
         pickWorkflowOption(executionsText.allWorkflows);
-
-        cy.visit(
-          `/${Cypress.env("workspaceId")}/workflows/executions?folder=${data.folderName}`
-        );
-        cy.get(executionsFilterSelector.workflow).should(
-          "contain.text",
-          `All workflows in ${data.folderName}`
-        );
         cy.get(upcomingSelector.panel)
           .should("contain.text", first.name)
-          .and("not.contain.text", second.name);
+          .and("contain.text", second.name);
       });
     });
   });

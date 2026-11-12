@@ -88,7 +88,7 @@ export const deleteAppandWorkflowAfterExecution = (workflowName, appName) => {
 export const verifyPreviewOutputText = (expectedOutput) => {
   cy.focused().blur();
   cy.wait(1500);
-  cy.get(".header-preview-btn").first().click();
+  cy.get(".header-preview-btn:not(.run-workflow-btn)").click();
   cy.get(".result-section .result-body", { timeout: 20000 })
     .invoke("text")
     .should("include", expectedOutput);

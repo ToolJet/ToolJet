@@ -176,12 +176,14 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
 
   it("A workflow folder limits the requests and the workflow picker to the workflows inside it", () => {
     createHumanWorkflow(data.workflowName);
-    const inFolderId = Cypress.env("workflowId");
+    cy.then(() => {
+      data.inFolderId = Cypress.env("workflowId");
+    });
     runUntilWaiting().then((inFolder) => {
       createHumanWorkflow(data.otherName);
       runUntilWaiting().then((outside) => {
         cy.apiCreateFolder(data.folderName, "workflow").then((folder) => {
-          cy.apiAddAppToFolder(folder.id, inFolderId);
+          cy.apiAddAppToFolder(folder.id, data.inFolderId);
         });
 
         cy.visit(

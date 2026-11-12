@@ -111,8 +111,10 @@ describe("Workflows - versions, promotion and release", () => {
       workflowsText.versionLockedText
     );
 
+    cy.intercept("POST", "**/draft-versions").as("createDraft");
     cy.get(workflowSelector.createDraftLink).click();
     cy.get(workflowSelector.confirmYesButton).click();
+    cy.wait("@createDraft");
 
     // A new editable draft exists; reloading opens it without the lock banner.
     cy.then(() => {
