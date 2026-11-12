@@ -87,6 +87,9 @@ function DataSourceSelect({
       // A library consumer needs a query and version first: open the body card's staged picker instead of creating.
       stageLibrarySource(source);
       useStore.getState().queryPanel.setSelectedQuery(null);
+      // The staged picker lives in the query editor; nothing else opens it while no query is selected.
+      useStore.getState().setActiveRightSideBarTab('query');
+      useStore.getState().setRightSidebarOpen(true);
       setPreviewData(null);
       if (!skipClosePopup) closePopup();
       return;

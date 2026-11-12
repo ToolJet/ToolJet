@@ -30,8 +30,10 @@ export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSav
   // Set the moment editing starts to close, so a blur from the same action can't save a second time.
   const isClosingRef = useRef(false);
 
+  // Editing can also start from outside: a newly created query opens in rename mode while another query's name
+  // is still on screen. So the draft follows the name whenever it changes or editing starts.
   useEffect(() => {
-    if (!isEditing) setDraftName(value);
+    setDraftName(value);
   }, [isEditing, value]);
 
   useEffect(() => () => window.clearTimeout(exitTimeoutRef.current), []);

@@ -7,6 +7,7 @@ import ResponseIcon from '@assets/images/icons/response.svg';
 import IfIcon from '@assets/images/icons/if.svg';
 import LoopIcon from '@assets/images/icons/loop.svg';
 import AgentNodeIcon from '../../../../assets/images/icons/agent-node.svg';
+import { Library } from 'lucide-react';
 
 const DataSourceIcon = ({ source, height = 25, styles }) => {
   const iconFile = source?.plugin?.iconFile?.data ?? source?.plugin?.icon_file?.data;
@@ -27,6 +28,9 @@ const DataSourceIcon = ({ source, height = 25, styles }) => {
       return <ResponseIcon style={{ height: height, width: height, marginTop: '-3px' }} />;
     case 'agent':
       return <AgentNodeIcon style={{ height: height, width: height, marginTop: '-3px' }} />;
+    // The same mark as "Add to query library", in the brand colour like the other built-in ToolJet sources.
+    case 'library':
+      return <Library size={height} color="var(--icon-brand)" aria-hidden="true" />;
     default:
       return <Icon />;
   }

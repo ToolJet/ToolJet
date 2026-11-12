@@ -129,7 +129,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
       >
         <div className="query-card-leading">
           <div className="query-icon d-flex">
-            <DataSourceIcon source={dataQuery} height={16} />
+            {/* A Query Library row has no kind until its version loads; it brings its icon source separately. */}
+            <DataSourceIcon source={dataQuery.librarySource ?? dataQuery} height={16} />
           </div>
           <div className="query-row-query-name">
             {isRenaming ? (
@@ -158,7 +159,9 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                     {licenseValid && isRestricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
                   </div>
                 </ToolTip>{' '}
-                {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
+                {!dataQuery.librarySource && !isQueryRunnable(dataQuery) && (
+                  <small className="mx-2 text-secondary">Draft</small>
+                )}
                 {localDs && (
                   <>
                     <a

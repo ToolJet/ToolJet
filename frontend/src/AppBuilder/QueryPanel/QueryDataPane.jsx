@@ -147,18 +147,21 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
           <span className="queries-panel-title">Queries</span>
           <div className="queries-panel-header-actions">
             {headerPlacement.add === 'title' && <AddDataSourceButton darkMode={darkMode} surface={surface} />}
-            <ToolTip message="Close queries" placement="bottom">
-              <Button
-                isLucid
-                iconOnly
-                size="medium"
-                variant="ghost"
-                leadingIcon="x"
-                aria-label="Close queries"
-                onClick={onClose}
-                data-cy="close-query-panel"
-              />
-            </ToolTip>
+            {/* The Query Library page shows the list permanently, so it passes no onClose. */}
+            {onClose && (
+              <ToolTip message="Close queries" placement="bottom">
+                <Button
+                  isLucid
+                  iconOnly
+                  size="medium"
+                  variant="ghost"
+                  leadingIcon="x"
+                  aria-label="Close queries"
+                  onClick={onClose}
+                  data-cy="close-query-panel"
+                />
+              </ToolTip>
+            )}
           </div>
         </div>
         <div className={getQueryToolbarClassName(surface, showSearchBox)}>

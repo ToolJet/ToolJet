@@ -1,15 +1,13 @@
 import LibraryQueryDependencyWarning from '@/AppBuilder/QueryLibrary/LibraryQueryDependencyWarning';
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Bug, PanelBottomClose, PanelBottomOpen, ScanSearch } from 'lucide-react';
-import { isEmpty, isEqual } from 'lodash';
-import { diff } from 'deep-object-diff';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
 
 import { useEventListener } from '@/_hooks/use-event-listener';
 import useWindowResize from '@/_hooks/useWindowResize';
 import useStore from '@/AppBuilder/_stores/store';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import useQueryAutosave from '@/AppBuilder/QueryPanel/useQueryAutosave';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import RuntimeInspector from '@/AppBuilder/QueryPanel/RuntimeInspector/RuntimeInspector';
 import RuntimeDebugger from '@/AppBuilder/QueryPanel/RuntimeDebugger/RuntimeDebugger';
@@ -56,24 +54,7 @@ export const QueryPanel = ({ darkMode }) => {
   const [isResizeHandleActive, setResizeHandleActive] = useState(false);
   const [windowSize, isWindowResizing] = useWindowResize();
 
-  useEffect(() => {
-    const unsubscribe = useStore.subscribe(({ queryPanel: { selectedQuery, queryHydrationRevision } }, prevState) => {
-      // Restoring server content establishes the editor baseline; it is not a user edit.
-      if (queryHydrationRevision !== prevState.queryPanel.queryHydrationRevision) return;
-      if (isEmpty(prevState?.queryPanel?.selectedQuery) || isEmpty(selectedQuery)) return;
-      if (prevState?.queryPanel?.selectedQuery?.id !== selectedQuery.id) return;
-      const formattedQuery = deepClone(selectedQuery);
-      const formattedPreviousQuery = deepClone(prevState?.queryPanel?.selectedQuery || {});
-      delete formattedQuery.updated_at;
-      delete formattedPreviousQuery.updated_at;
-      const queryDiff = diff(formattedPreviousQuery, formattedQuery);
-      const onlyNameChanged = Object.keys(queryDiff).length === 1 && 'name' in queryDiff;
-      if (!isEqual(formattedQuery, formattedPreviousQuery) && !onlyNameChanged) {
-        useStore.getState().dataQuery.saveData(selectedQuery);
-      }
-    });
-    return unsubscribe;
-  }, []);
+  useQueryAutosave();
 
   useEffect(() => {
     const measuredHeight = panelRef.current?.offsetHeight ?? 0;

@@ -71,9 +71,13 @@ export class LibraryQueryResponseDto {
   @Expose() id: string;
   @Expose() name: string;
   @Expose() folderId: string | null;
+  // Present in the list only: what the query runs on, taken from its newest saved version or else its first draft.
+  @Expose() kind?: string;
+  @Expose() dataSourceId?: string | null;
   @Expose() createdAt: Date;
   @Expose() updatedAt: Date;
 }
+export type LibraryQueryListItem = LibraryQuery & { kind?: string; dataSourceId?: string | null };
 @Exclude()
 export class LibraryQueryCreatedResponseDto extends LibraryQueryResponseDto {
   @Expose() draftId: string;
@@ -89,11 +93,13 @@ export class LibraryFolderResponseDto {
   @Expose() createdAt: Date;
   @Expose() updatedAt: Date;
 }
-export const toLibraryQueryResponse = (query: LibraryQuery): LibraryQueryResponseDto =>
+export const toLibraryQueryResponse = (query: LibraryQueryListItem): LibraryQueryResponseDto =>
   plainToInstance(LibraryQueryResponseDto, {
     id: query.id,
     name: query.name,
     folderId: query.folderId ?? null,
+    kind: query.kind,
+    dataSourceId: query.dataSourceId,
     createdAt: query.createdAt,
     updatedAt: query.updatedAt,
   });

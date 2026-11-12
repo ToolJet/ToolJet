@@ -12,7 +12,7 @@ import { AbilityService } from '@modules/ability/interfaces/IService';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { LibraryCatalog, toLibraryUsage } from '@modules/data-queries/library/library-query.util';
 import { QueryLibraryRepository } from './repository';
-import { CreateLibraryQueryDto, UpdateLibraryQueryDto } from './dto';
+import { CreateLibraryQueryDto, LibraryQueryListItem, UpdateLibraryQueryDto } from './dto';
 import { LibraryDraftService } from './draft.service';
 @Injectable()
 export class QueryLibraryService {
@@ -51,7 +51,7 @@ export class QueryLibraryService {
   async getUsage(organizationId: string): Promise<ReturnType<typeof toLibraryUsage>> {
     throw new NotImplementedException('Query Library is unavailable');
   }
-  list(user: User): Promise<LibraryQuery[]> {
+  list(user: User): Promise<LibraryQueryListItem[]> {
     throw new NotImplementedException('Query Library is unavailable');
   }
   async authorizeDataSource(user: User, sourceId: string | null, manager?: EntityManager): Promise<DataSource | null> {
