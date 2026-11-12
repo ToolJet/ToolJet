@@ -51,6 +51,24 @@ describe('planAddToLibrary - app references become inputs', () => {
   });
 });
 
+describe('planAddToLibrary - workflow node references become inputs', () => {
+  // A workflow has no components, so it plans with empty id->name mappings.
+  const workflow = { componentIdNameMapping: {}, queryIdNameMapping: {}, takenNames: [] };
+
+  it('turns trigger params and other nodes into inputs bound to them, and keeps constants', () => {
+    const r = plan(
+      'restapi',
+      'q',
+      { url: 'https://x/{{startTrigger.params.id}}/{{someNode.data[0].name}}/{{constants.base}}' },
+      workflow
+    );
+
+    expect(r.blocked).toEqual([]);
+    expect(r.libraryOptions.url).toBe('https://x/{{input.id}}/{{input.name}}/{{constants.base}}');
+    expect(r.inputs).toEqual({ id: '{{startTrigger.params.id}}', name: '{{someNode.data[0].name}}' });
+  });
+});
+
 describe('planAddToLibrary - blocked', () => {
   it('blocks a template reading parameters, alone or with app state', () => {
     expect(plan('restapi', 'q', { url: '{{parameters.p}}' }).blocked.join(' ')).toMatch(/parameters/);

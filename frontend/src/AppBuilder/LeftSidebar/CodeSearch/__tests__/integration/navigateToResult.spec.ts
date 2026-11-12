@@ -322,7 +322,7 @@ describe('navigateToResult', () => {
     expect(spy.steps()).toEqual([]);
   });
 
-  test('an app setting opens Global settings with a way back to search', async () => {
+  test('an app setting opens App settings with a way back to search', async () => {
     await go({ entityType: 'app', entityId: 'app', pageId: null, fieldPath: ['canvasBackgroundColor'] });
 
     expect(state().selectedSidebarItem).toBe('settings');
@@ -351,7 +351,7 @@ describe('navigateToResult', () => {
     expect(spy.steps()).toEqual([]);
   });
 
-  test('without the libraries license they fall back to Global settings, never a hidden panel', async () => {
+  test('without the libraries license they fall back to App settings, never a hidden panel', async () => {
     licenseLibraries(false);
 
     await go(preloadedScript, { hops: 120 });

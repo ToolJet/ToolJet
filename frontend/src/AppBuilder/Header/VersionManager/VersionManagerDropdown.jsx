@@ -22,6 +22,12 @@ import { Button } from '@/components/ui/Button/Button';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import './style.scss';
 
+// Enough rows to fill the fixed-height list body while versions load.
+const VERSION_SKELETON_COUNT = 5;
+// Fast fetches finish before this, so the list crossfades straight to new content
+// instead of flashing a skeleton for a few frames.
+const SKELETON_DELAY_MS = 150;
+
 export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) => {
   const {
     resourceType,
@@ -63,6 +69,21 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
   const [versionToPromote, setVersionToPromote] = useState(null);
   const [versionToEdit, setVersionToEdit] = useState(null);
   const [openMenuVersionId, setOpenMenuVersionId] = useState(null);
+  // -1 / 1 when the user moves left / right across environment tabs; drives the list's enter slide.
+  const [slideDirection, setSlideDirection] = useState(0);
+  const [showSkeleton, setShowSkeleton] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      setShowSkeleton(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowSkeleton(true), SKELETON_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  const viewedEnvironment = selectedEnvironmentFilter || currentEnvironment;
+  const viewedEnvironmentIndex = environments?.findIndex((env) => env.id === viewedEnvironment?.id) ?? -1;
   const buttonRef = useRef(null);
   const popoverRef = useRef(null);
   useEffect(() => {
@@ -125,6 +146,7 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
   const handleToggleDropdown = () => {
     if (isPullingVersion) return;
     if (!isDropdownOpen) {
+      setSlideDirection(0);
       setSearchQuery('');
       // Reset environment filter to global currentEnvironment when opening
       // This ensures the dropdown always starts at the current global environment
@@ -138,6 +160,8 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
   };
 
   const handleEnvironmentChange = (env) => {
+    const nextIndex = environments?.findIndex((e) => e.id === env.id) ?? -1;
+    setSlideDirection(Math.sign(nextIndex - viewedEnvironmentIndex));
     // Close any open menus when switching environments
     setOpenMenuVersionId(null);
     // Update local filter and lazy load versions for the selected environment
@@ -298,6 +322,34 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
       (v.versionType || 'version') === 'version'
   ).length;
 
+  const renderVersionItems = () =>
+    mergedVersions.map((version) => {
+      const isViewingCurrentEnvironment = selectedEnvironmentFilter?.id === currentEnvironment?.id;
+      const isVersionSelected = version.id === currentVersionId && isViewingCurrentEnvironment;
+
+      return (
+        <VersionDropdownItem
+          key={version.id}
+          version={version}
+          isSelected={isVersionSelected}
+          isViewingCurrentEnvironment={isViewingCurrentEnvironment}
+          currentEnvironment={viewedEnvironment}
+          environments={environments}
+          onSelect={() => handleVersionSelect(version)}
+          onPromote={() => handlePromoteDraft(version)}
+          onCreateVersion={() => handleCreateVersion(version)}
+          onEdit={(v) => handleEditVersion(v)}
+          onDelete={(v) => openDeleteModal(v)}
+          darkMode={darkMode}
+          openMenuVersionId={openMenuVersionId}
+          setOpenMenuVersionId={setOpenMenuVersionId}
+          gitStatus={gitVersionStatus.get(version.name)}
+          onPull={(v, gs) => handlePullVersion(v, gs)}
+          isPulling={isPullingVersion === version.name}
+        />
+      );
+    });
+
   const renderPopover = (overlayProps) => (
     <Popover
       id="version-manager-popover"
@@ -306,7 +358,9 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
       {...overlayProps}
       style={{
         ...overlayProps?.style,
-        minWidth: '350px',
+        // Fixed width so tabs with wider version actions don't make the popover jump.
+        width: '360px',
+        maxWidth: 'calc(100vw - 16px)',
         borderRadius: '8px',
         border: '1px solid var(--border-weak)',
         boxShadow: '0px 0px 1px var(--interactive-default), 0px 1px 1px var(--interactive-hover)',
@@ -350,10 +404,13 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
         )}
 
         {/* Divider */}
-        <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
+        {isGitSyncEnabled && <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />}
 
-        {/* Environment Toggle */}
-        <div>
+        {/* Environment Toggle — index/count feed the sliding selection indicator */}
+        <div
+          className={cx({ 'environment-toggle-host--animated': viewedEnvironmentIndex >= 0 })}
+          style={{ '--env-index': viewedEnvironmentIndex, '--env-count': environments?.length || 1 }}
+        >
           <EnvironmentSwitcherContent
             environmentsWithMeta={
               capabilities.environmentOptions ||
@@ -371,75 +428,47 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
           />
         </div>
 
-        {/* Search Field - Only show if more than 5 versions */}
-        {versionOnlyCount > 5 && (
-          <div>
-            <VersionSearchField value={searchQuery} onChange={handleSearchChange} />
+        {/* Fixed-height body: switching environment tabs swaps content in place
+            instead of resizing the popover. */}
+        <div className="version-manager-body">
+          {/* Search Field - Only show if more than 5 versions */}
+          {versionOnlyCount > 5 && <VersionSearchField value={searchQuery} onChange={handleSearchChange} />}
+
+          {/* Versions List - Scrollable */}
+          <div className="versions-list">
+            {loading && showSkeleton ? (
+              <div className="versions-list__skeleton" aria-busy="true">
+                {Array.from({ length: VERSION_SKELETON_COUNT }, (_, index) => (
+                  <VersionItemSkeleton key={index} />
+                ))}
+              </div>
+            ) : loading ? (
+              // Brief window before the skeleton: keep the previous rows, dimmed, so the swap is a crossfade.
+              <div className="versions-list__items versions-list__items--stale" key="stale" aria-busy="true">
+                {renderVersionItems()}
+              </div>
+            ) : error ? (
+              <div role="alert" className="tw-px-3 tw-py-6 tw-font-body-default tw-text-text-default">
+                {typeof error === 'string' ? error : error?.message || 'Could not load versions'}
+              </div>
+            ) : mergedVersions.length === 0 ? (
+              <div className="versions-list__empty" key={`empty-${viewedEnvironment?.id}`}>
+                {searchQuery
+                  ? 'No versions found'
+                  : gitVersionStatus.size === 0 && isGitSyncEnabled
+                    ? 'No versions available — click Refresh to check git'
+                    : 'No versions available'}
+              </div>
+            ) : (
+              <div
+                className="versions-list__items"
+                key={viewedEnvironment?.id}
+                style={{ '--enter-offset': `${slideDirection * 12}px` }}
+              >
+                {renderVersionItems()}
+              </div>
+            )}
           </div>
-        )}
-
-        {/* Versions List - Scrollable */}
-        <div
-          className="versions-list"
-          style={{
-            maxHeight: '320px',
-            overflowY: 'auto',
-            padding: '8px',
-          }}
-        >
-          {loading ? (
-            // Skeleton loaders
-            <>
-              <VersionItemSkeleton />
-              <VersionItemSkeleton />
-              <VersionItemSkeleton />
-            </>
-          ) : error ? (
-            <div role="alert" className="tw-px-3 tw-py-6 tw-font-body-default tw-text-text-default">
-              {typeof error === 'string' ? error : error?.message || 'Could not load versions'}
-            </div>
-          ) : mergedVersions.length === 0 ? (
-            <div
-              className="d-flex align-items-center justify-content-center tj-text-sm"
-              style={{
-                padding: '24px 12px',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              {searchQuery
-                ? 'No versions found'
-                : gitVersionStatus.size === 0 && isGitSyncEnabled
-                  ? 'No versions available — click Refresh to check git'
-                  : 'No versions available'}
-            </div>
-          ) : (
-            mergedVersions.map((version) => {
-              const isViewingCurrentEnvironment = selectedEnvironmentFilter?.id === currentEnvironment?.id;
-              const isVersionSelected = version.id === currentVersionId && isViewingCurrentEnvironment;
-
-              return (
-                <VersionDropdownItem
-                  key={version.id}
-                  version={version}
-                  isSelected={isVersionSelected}
-                  isViewingCurrentEnvironment={isViewingCurrentEnvironment}
-                  currentEnvironment={selectedEnvironmentFilter || currentEnvironment}
-                  environments={environments}
-                  onSelect={() => handleVersionSelect(version)}
-                  onPromote={() => handlePromoteDraft(version)}
-                  onCreateVersion={() => handleCreateVersion(version)}
-                  onEdit={(v) => handleEditVersion(v)}
-                  onDelete={(v) => openDeleteModal(v)}
-                  darkMode={darkMode}
-                  openMenuVersionId={openMenuVersionId}
-                  setOpenMenuVersionId={setOpenMenuVersionId}
-                  gitStatus={gitVersionStatus.get(version.name)}
-                  onPull={(v, gs) => handlePullVersion(v, gs)}
-                  isPulling={isPullingVersion === version.name}
-                />
-              );
-            })
-          )}
         </div>
 
         {/* Divider */}

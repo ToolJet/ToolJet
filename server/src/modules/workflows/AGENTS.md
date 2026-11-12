@@ -50,6 +50,7 @@ Workflows are visual automations: a graph of nodes/edges stored as an app-versio
 ## Related modules
 - `apps` — workflow is an App (`APP_TYPES.WORKFLOW`); versions/environments come from apps/versions modules.
 - `data-queries` / `data-sources` — query nodes execute real data queries through `DataQueriesModule`.
+- `query-library` — a **Query Library node** is a query node of kind `library` pinned to a Library Query version. The runner resolves its inputs and calls `DataQueriesService.runLibraryQuery` (exported by `DataQueriesModule`); details in `../data-queries/AGENTS.md`. RunJS Library Queries and Library Queries as agent tools are not supported yet. Workflows count as consumers for usage, the delete guard and the release/promote gates.
 - `external-apis` — `'workflows'` is a `DefaultDataSourceKind`: front-end apps trigger workflows as queries (`FEATURE_KEY.EXECUTE_WORKFLOW_FROM_APP`).
 - `background-processor` — unrelated; contains no workflow code. Workflow workers live in this module behind `WORKER=true`.
 - `licensing` — `LICENSE_FIELD.WORKFLOWS` limits; `ai` module backs `AgentNodeService`.

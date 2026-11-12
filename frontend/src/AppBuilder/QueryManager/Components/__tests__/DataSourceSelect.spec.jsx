@@ -9,9 +9,9 @@ const staticSources = [
   { id: 's2', kind: 'library', name: 'librarydefault', type: 'static' },
 ];
 
-// The workflow builder passes the server's static sources straight through. Workflows have no
-// runner for `library` queries, so it must not be offered as a workflow node.
-it('does not offer Query library as a workflow node', () => {
+// The workflow builder passes the server's static sources straight through. Query library is a workflow node
+// only with the Query Library licence (none here; the licensed case is in the workflow BlockOptions spec).
+it('does not offer Query library as a workflow node without the licence', () => {
   // The list is virtualised (react-virtuoso); give it geometry so rows render in jsdom.
   render(
     <VirtuosoMockContext.Provider value={{ viewportHeight: 1000, itemHeight: 32 }}>

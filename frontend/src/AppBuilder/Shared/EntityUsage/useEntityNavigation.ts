@@ -32,7 +32,7 @@ export type NavigableEntry = {
 
 /**
  * A callable with an `inspect` method hung off it: calling it navigates the builder,
- * `.inspect(entry)` only opens the left Inspector. Same function object, two entry points.
+ * `.inspect(entry)` only opens the Inspector. Same function object, two entry points.
  */
 export interface NavigateToEntity {
   (entry: NavigableEntry): boolean;
@@ -41,7 +41,7 @@ export interface NavigateToEntity {
 
 // Navigates the builder to a usage entry ({ kind, id, name }): components are
 // selected on canvas, queries open in the query panel, variables/globals/constants
-// open the left Inspector. Returns true when navigation happened.
+// open the Inspector. Returns true when navigation happened.
 // Inspector node path for an entry, or null when the entry has no Inspector node.
 export const inspectorPathFor = (entry?: NavigableEntry | null): string | null => {
   switch (entry?.kind) {
@@ -67,15 +67,7 @@ const useEntityNavigation = (): NavigateToEntity => {
   const setSelectedComponents = useStore((state: any) => state.setSelectedComponents);
   const setSelectedQuery = useStore((state: any) => state.queryPanel.setSelectedQuery);
   const setIsQueryPaneExpanded = useStore((state: any) => state.queryPanel.setIsQueryPaneExpanded);
-  const setSelectedSidebarItem = useStore((state: any) => state.setSelectedSidebarItem);
-  const toggleLeftSidebar = useStore((state: any) => state.toggleLeftSidebar);
-  const setSelectedNodePath = useStore((state: any) => state.setSelectedNodePath);
-
-  const openLeftInspector = (path: string) => {
-    setSelectedNodePath?.(path);
-    setSelectedSidebarItem('inspect');
-    toggleLeftSidebar(true);
-  };
+  const openInspector = useStore((state: any) => state.queryPanel.openRuntimeInspector);
 
   const navigate = (entry: NavigableEntry): boolean => {
     switch (entry.kind) {
@@ -90,16 +82,16 @@ const useEntityNavigation = (): NavigateToEntity => {
         return true;
       }
       case 'variable':
-        openLeftInspector(`variables.${entry.name}`);
+        openInspector(`variables.${entry.name}`);
         return true;
       case 'pageVariable':
-        openLeftInspector(`page.variables.${entry.name}`);
+        openInspector(`page.variables.${entry.name}`);
         return true;
       case 'global':
-        openLeftInspector(`globals.${entry.name}`);
+        openInspector(`globals.${entry.name}`);
         return true;
       case 'constant':
-        openLeftInspector(`constants.${entry.name}`);
+        openInspector(`constants.${entry.name}`);
         return true;
       default:
         return false;
@@ -111,7 +103,7 @@ const useEntityNavigation = (): NavigateToEntity => {
   navigateToEntity.inspect = (entry: NavigableEntry): boolean => {
     const path = inspectorPathFor(entry);
     if (!path) return false;
-    openLeftInspector(path);
+    openInspector(path);
     return true;
   };
 

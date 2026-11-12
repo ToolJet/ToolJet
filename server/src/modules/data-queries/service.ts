@@ -24,7 +24,7 @@ import {
   RunLibraryQueryDto,
   UpdateDataQueryDto,
 } from './dto';
-import { LIBRARY_KIND } from './library/library-query.util';
+import { LIBRARY_KIND, LibraryRunCaller } from './library/library-query.util';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { FEATURE_KEY } from './constants';
 import { isEmpty } from 'lodash';
@@ -492,7 +492,8 @@ export class DataQueriesService implements IDataQueriesService {
     dto: RunLibraryQueryDto,
     response: Response,
     app: App,
-    environmentId?: string
+    environmentId?: string,
+    caller: LibraryRunCaller = 'app'
   ): Promise<object> {
     throw new NotImplementedException('Query Library is unavailable');
   }

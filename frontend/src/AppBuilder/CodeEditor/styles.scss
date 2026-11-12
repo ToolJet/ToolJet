@@ -1,5 +1,25 @@
 @import "../../_styles/colors.scss";
 
+.wrapper.editor {
+    font-family: var(--app-builder-font-family) !important;
+
+    :not(.main-editor-canvas):not(.main-editor-canvas *):not(.code-hinter-wrapper):not(.code-hinter-wrapper *) {
+        font-family: var(--app-builder-font-family) !important;
+    }
+
+    .main-editor-canvas {
+        font-family: var(--app-builder-canvas-font-family) !important;
+    }
+}
+
+.wrapper.editor .code-hinter-wrapper {
+    .cm-scroller,
+    .cm-content,
+    .cm-line {
+        font-family: var(--app-builder-code-font-family) !important;
+    }
+}
+
 .popover-body {
     .query-manager-input-preview-popover-card{
         border: 1px solid var(--border-success-weak) !important;

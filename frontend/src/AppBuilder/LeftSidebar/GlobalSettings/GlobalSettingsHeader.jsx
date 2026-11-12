@@ -18,7 +18,7 @@ const GlobalSettingsHeader = ({ darkMode, onClose, onBackToSearch }) => {
           data-cy="global-settings-back-to-search"
         />
       )}
-      <span className="global-settings-header-title">Global settings</span>
+      <span className="global-settings-header-title">App settings</span>
       <Button
         iconOnly
         leadingIcon="x"

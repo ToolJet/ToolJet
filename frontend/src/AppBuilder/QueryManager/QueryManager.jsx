@@ -9,6 +9,7 @@ import { resolveReferences } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { isQueryLibraryMode, withViewedLibraryVersion } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { getQueryManagerClassName } from '@/AppBuilder/panelLayout';
 import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 // name -> resolved default, for a list of { name, defaultValue } (parameters, or a library query's inputs).
@@ -18,7 +19,7 @@ const resolveDefaults = (list) =>
 // Code search's tab names → QueryManagerHeader's tab ids.
 const QUERY_TAB_IDS = { setup: 1, transformation: 2, settings: 3 };
 
-const QueryManager = ({ mode, darkMode }) => {
+const QueryManager = ({ mode, darkMode, surface = 'bottom' }) => {
   const { moduleId } = useModuleContext();
   const isQueryLibrary = useStore((state) => isQueryLibraryMode(state));
   // TODO to be moved into queryPanelStore and reimplemented
@@ -80,13 +81,13 @@ const QueryManager = ({ mode, darkMode }) => {
 
   return (
     <div
-      className={cx(`query-manager ${darkMode ? 'theme-dark' : ''}`, {
+      className={cx(getQueryManagerClassName(surface, darkMode), {
         'd-none': loadingDataSources,
       })}
     >
-      <QueryManagerHeader darkMode={darkMode} setActiveTab={setActiveTab} activeTab={activeTab} />
+      <QueryManagerHeader darkMode={darkMode} setActiveTab={setActiveTab} activeTab={activeTab} surface={surface} />
       <CodeHinterContext.Provider value={codeHinterContext}>
-        <QueryManagerBody darkMode={darkMode} activeTab={activeTab} />
+        <QueryManagerBody darkMode={darkMode} activeTab={activeTab} surface={surface} />
       </CodeHinterContext.Provider>
     </div>
   );

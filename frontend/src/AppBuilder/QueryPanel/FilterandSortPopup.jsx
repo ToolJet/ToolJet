@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { OverlayTrigger, Popover, Form } from 'react-bootstrap';
+import { Fade, OverlayTrigger, Popover, Form } from 'react-bootstrap';
 import { ListFilter } from 'lucide-react';
 import cx from 'classnames';
 import { Button } from '@/_ui/LeftSidebar';
@@ -12,6 +12,7 @@ import { staticDataSources } from '../QueryManager/constants';
 import { ToolTip } from '@/_components';
 import { PillButton } from '../QueryManager/Components/ParameterDetails';
 import useStore from '@/AppBuilder/_stores/store';
+import { getQueryPopoverMotion } from '@/AppBuilder/panelLayout';
 
 const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasourcesChange, clearSelectedDataSources }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-sort-filter-popover', '#query-sort-filter-popover-btn');
@@ -27,6 +28,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
   const sampleDataSources = useStore((state) => state.sampleDataSources);
   const [sources, setSources] = useState();
   const searchBoxRef = useRef(null);
+  const popoverMotion = getQueryPopoverMotion('filter');
 
   useState(() => {
     if (action === 'filter-by-datasource' && searchBoxRef.current) {
@@ -184,11 +186,14 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
       placement="right-end"
       // rootClose={true}
       show={showMenu}
+      transition={popoverMotion.transition ? Fade : false}
       overlay={
         <Popover
           key={'page.i'}
           id="query-sort-filter-popover"
-          className={`query-manager-sort-filter-popup ${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
+          className={`query-manager-sort-filter-popup ${popoverMotion.className} ${
+            darkMode && 'popover-dark-themed dark-theme tj-dark-mode'
+          }`}
         >
           <Popover.Body key={'1'} bsPrefix="popover-body" className="pt-1 p-0">
             {renderPopupComponent(action)}

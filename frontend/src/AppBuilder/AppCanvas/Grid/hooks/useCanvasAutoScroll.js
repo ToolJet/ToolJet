@@ -1,6 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { positionGhostElement, getCanvasBottomBound } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import useStore from '@/AppBuilder/_stores/store';
+import { getLeftPanelState } from '@/AppBuilder/panelLayout';
 import { shallow } from 'zustand/shallow';
 import { useGridStore } from '@/_stores/gridStore';
 import { GRID_HEIGHT } from '../../appCanvasConstants';
@@ -49,6 +50,8 @@ const parseTransform = (element) => {
 export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = null, moveableRef = null) => {
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const isLeftSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
+  const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
+  const isLeftPanelOpen = getLeftPanelState(selectedSidebarItem, isLeftSidebarOpen).isLeftPanelOpen;
 
   const { threshold, scrollSpeed, verticalContainerSelector, horizontalContainerSelector, canvasHeightIncrement } = {
     ...DEFAULT_CONFIG,
@@ -220,7 +223,7 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     // Check horizontal boundaries using MOUSE POSITION (on .canvas-container)
     if (horizontalContainer) {
       let leftBoundary = horizontalRect.left + threshold;
-      if (isLeftSidebarOpen) {
+      if (isLeftPanelOpen) {
         const leftSidebar = document.querySelector('.left-sidebar-scrollbar');
         if (leftSidebar) {
           const leftSidebarRect = leftSidebar.getBoundingClientRect();
@@ -311,7 +314,7 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     extendCanvasIfNeeded,
     updateElementPositionOnScroll,
     isRightSidebarOpen,
-    isLeftSidebarOpen,
+    isLeftPanelOpen,
     horizontalContainerSelector,
   ]);
 

@@ -5,7 +5,58 @@
     font-family: 'IBM Plex Sans', sans-serif;
   }
 
+  // Fixed body height keeps the popover steady across environment tabs; the list scrolls
+  // inside it and loading/empty states fill the same box.
+  .version-manager-body {
+    display: flex;
+    flex-direction: column;
+    height: 264px;
+  }
+
   .versions-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    // The enter slide offsets rows sideways; never let that become a horizontal scrollbar.
+    overflow-x: hidden;
+    padding: 4px 8px 8px;
+
+    &__items {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      animation: versions-list-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+      // Previous environment's rows while the next one loads — dim and inert.
+      &--stale {
+        pointer-events: none;
+        animation: versions-list-dim 0.15s ease-out forwards;
+      }
+    }
+
+    &__skeleton {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      animation: versions-list-fade 0.18s ease-out both;
+    }
+
+    &__empty {
+      animation: versions-list-fade 0.18s ease-out both;
+    }
+
+    &__empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 0 12px;
+      text-align: center;
+      color: var(--text-placeholder);
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 18px;
+    }
 
     // Custom scrollbar styling
     &::-webkit-scrollbar {
@@ -212,11 +263,17 @@
     transition: all 0.2s ease;
     outline: none !important;
     padding: 0px !important;
-    border: 1px solid var(--border-accent-weak) !important;
-    box-shadow: none;
+    border: 1px solid var(--border-default) !important;
+    background-color: var(--surfaces-surface-01) !important;
+    color: var(--text-default) !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    line-height: 18px !important;
+    box-shadow: none !important;
 
     &:hover:not(:disabled) {
-      background-color: var(--slate3) !important;
+      border-color: var(--border-strong) !important;
+      background-color: var(--surfaces-surface-02) !important;
     }
 
     &:active:not(:disabled) {
@@ -343,12 +400,60 @@
   animation: fadeIn 0.15s ease;
 }
 
-// Version Item Skeleton
-.version-item-skeleton {
-  animation: pulse 1.5s ease-in-out infinite;
+// --enter-offset is ±12px in the direction of the tab change (0 on first open).
+@keyframes versions-list-in {
+  from {
+    opacity: 0;
+    transform: translate(var(--enter-offset, 0px), 2px);
+  }
 
-  >div {
-    pointer-events: none;
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes versions-list-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes versions-list-dim {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .version-manager-popover .versions-list__items,
+  .version-manager-popover .versions-list__skeleton,
+  .version-manager-popover .versions-list__empty {
+    animation-duration: 1ms;
+  }
+}
+
+// Version Item Skeleton — same footprint as a version row so the swap doesn't shift layout.
+.version-item-skeleton {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  height: 48px;
+  padding: 6px;
+  pointer-events: none;
+
+  .version-item-skeleton__bone {
+    background-color: var(--slate3);
+    border-radius: 4px;
+    animation: pulse 1.2s ease-in-out infinite;
   }
 }
 

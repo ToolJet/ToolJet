@@ -5,7 +5,15 @@ import { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
-import { resolveQueryEditor } from '../utils';
+import { getQueryPluginSchemaForSurface, resolveQueryEditor } from '../utils';
+import {
+  getQueryDetailsClassName,
+  getQueryDetailsStyle,
+  getQueryDetailsOverflowStyle,
+  getQueryTypographyClassName,
+  isCodeQueryLayout,
+  PREVIEW_PANEL,
+} from '@/AppBuilder/panelLayout';
 import DataSourcePicker from './DataSourcePicker';
 import { Transformation } from './Transformation';
 import Preview from './Preview';
@@ -38,7 +46,7 @@ import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditi
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { shallow } from 'zustand/shallow';
 
-export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null }) => {
+export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null, surface = 'bottom' }) => {
   const { t } = useTranslation();
   const { moduleId } = useModuleContext();
   const getResolvedValue = useStore((state) => state.getResolvedValue);
@@ -220,10 +228,10 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
       />
     );
   };
-  const [previewHeight, setPreviewHeight] = useState(40);
+  const [previewHeight, setPreviewHeight] = useState(PREVIEW_PANEL.collapsedPx);
 
   const calculatePreviewHeight = (height, previewPanelExpanded) => {
-    setPreviewHeight(previewPanelExpanded ? height : 40);
+    setPreviewHeight(previewPanelExpanded ? height : PREVIEW_PANEL.collapsedPx);
   };
   const renderDataSourcesList = () => {
     return (
@@ -262,27 +270,12 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     updateDataQuery(options);
   };
 
-  let docLinkStatic = '';
-  switch (selectedDataSource?.kind) {
-    case 'restapi':
-      docLinkStatic = `https://docs.tooljet.com/docs/data-sources/restapi/querying-rest-api`;
-      break;
-    case 'tooljetdb':
-      docLinkStatic = `https://docs.tooljet.com/docs/tooljet-db/querying-tooljet-db`;
-      break;
-    case 'runjs':
-      docLinkStatic = `https://docs.tooljet.com/docs/data-sources/run-js`;
-      break;
-    case 'runpy':
-      docLinkStatic = `https://docs.tooljet.com/docs/data-sources/run-py`;
-      break;
-  }
-
   const renderQueryElement = () => {
     return (
       <div
         className={cx({
           'disabled ': isFreezed,
+          'query-code-layout': isCodeQueryLayout(surface, activeTab, selectedDataSource?.kind),
         })}
       >
         <div ref={paramListContainerRef} style={{ marginBottom: '16px' }}>
@@ -291,34 +284,14 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
               selectedDataSource?.kind === 'runpy' ||
               selectedDataSource?.kind === 'tooljetdb' ||
               (selectedDataSource?.kind === 'restapi' && selectedDataSource?.type !== 'default')) && (
-              <>
-                {docLinkStatic && (
-                  <div style={{ marginBottom: '2px' }}>
-                    {`To know more about querying ${selectedDataSource?.kind} data,`}
-                    &nbsp;
-                    <a
-                      href={docLinkStatic}
-                      target="_blank"
-                      style={{
-                        marginLeft: '0px !important',
-                        color: 'hsl(226, 70.0%, 55.5%)',
-                        textDecoration: 'underline',
-                      }}
-                      rel="noreferrer"
-                    >
-                      {t('globals.readDocumentation', 'read documentation').toLowerCase()}
-                    </a>
-                  </div>
-                )}
-                {renderParameterLists()}
-              </>
+              <>{renderParameterLists()}</>
             )}
         </div>
         {ElementToRender && (
           <ElementToRender
             renderCopilot={(props) => renderCopilot?.({ ...props, selectedDataSource })}
             key={`${selectedQuery?.id}:${viewedLibraryVersion ?? ''}`}
-            pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
+            pluginSchema={getQueryPluginSchemaForSurface(selectedDataSource?.plugin?.operations_file?.data, surface)}
             selectedDataSource={selectedDataSource}
             options={selectedQuery?.options}
             optionsChanged={optionsChanged}
@@ -326,6 +299,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
             darkMode={darkMode}
             isEditMode={true} // Made TRUE always to avoid setting default options again
             queryName={queryName}
+            surface={surface}
             currentEnvironment={currentEnvironment}
             currentAppEnvironmentId={currentEnvironment?.id}
             onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
@@ -339,7 +313,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     const queryComponent = mockDataQueryAsComponent(options?.events || []);
     return (
       <div
-        className={cx('d-flex', {
+        className={cx('d-flex query-option-field', {
           'disabled ': isFreezed,
         })}
         data-cy="query-events-section"
@@ -364,7 +338,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   const renderTimeout = () => {
     return (
       <div
-        className={cx('d-flex', { 'disabled ': isFreezed })}
+        className={cx('d-flex query-option-field', { 'disabled ': isFreezed })}
         data-param="query_timeout"
         data-cy="query-timeout-section"
         style={{ marginBottom: '16px' }}
@@ -387,7 +361,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   const renderDisableQuery = () => {
     return (
       <div
-        className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })}
+        className={cx('d-flex tw-mb-4 query-option-field', { 'disabled ': isFreezed })}
         data-param="disableQuery"
         data-cy="query-disable-section"
       >
@@ -411,7 +385,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     const hasDisableExpression = !!selectedQuery?.options?.disableQuery?.trim();
     return (
       <div
-        className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })}
+        className={cx('d-flex tw-mb-4 query-option-field', { 'disabled ': isFreezed })}
         data-param="disabledMessage"
         data-cy="query-disabled-message-section"
       >
@@ -443,6 +417,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
         <div
           className={cx(`d-flex pb-1`, {
             'disabled ': isFreezed,
+            'query-option-field': true,
           })}
           data-cy="query-triggers-section"
         >
@@ -515,7 +490,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
               ))}
           </div>
         </div>
-        <div className="d-flex">
+        <div className="d-flex query-option-field query-success-options">
           <div className="form-label">{}</div>
           <SuccessNotificationInputs
             // currentState={currentState}
@@ -551,18 +526,12 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     if (isEmpty(selectableDataSources)) {
       return '';
     }
-    const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
-    const docLink = isSampleDb
-      ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
-      : selectedDataSource?.plugin_id && selectedDataSource.plugin_id.trim() !== ''
-        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       <>
         <div className={cx({ 'disabled ': isFreezed })} ref={paramListContainerRef}>
           {selectedQuery && !showLocalDataSourceDeprecationBanner && renderParameterLists()}
         </div>
-        <div className="d-flex" style={{ marginBottom: '16px', marginTop: '12px' }}>
+        <div className="d-flex query-option-field" style={{ marginBottom: '16px', marginTop: '12px' }}>
           <div
             className={cx(
               'd-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source',
@@ -611,22 +580,6 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
                 )}
               </div>
             )}
-            <div
-              className={cx({ 'disabled ': isFreezed })}
-              style={{ marginBottom: '2px' }}
-              data-cy="query-manager-source-doc-link"
-            >
-              {`To know more about querying ${selectedDataSource?.kind} data,`}
-              &nbsp;
-              <a
-                href={docLink}
-                target="_blank"
-                style={{ marginLeft: '0px !important', color: 'hsl(226, 70.0%, 55.5%)', textDecoration: 'underline' }}
-                rel="noreferrer"
-              >
-                {t('globals.readDocumentation', 'read documentation').toLowerCase()}
-              </a>
-            </div>
           </div>
         </div>
       </>
@@ -657,13 +610,13 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
 
   return (
     <div
-      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
-        !hasPermissions ? 'disabled' : ''
-      }`}
+      className={cx(getQueryDetailsClassName(surface, activeTab, selectedDataSource?.kind), {
+        'tooljetdb-query-details': selectedDataSource?.kind === 'tooljetdb',
+        disabled: !hasPermissions,
+      })}
       style={{
-        height: `calc(100% - ${selectedQuery ? previewHeight + 40 : 0}px)`,
-        overflowY: 'auto',
-        scrollbarWidth: 'none',
+        ...getQueryDetailsStyle(surface),
+        ...getQueryDetailsOverflowStyle(surface, Boolean(selectedQuery), previewHeight),
       }} // 40px for preview header height
     >
       {selectedDataSource === null || !selectedQuery ? (
@@ -734,6 +687,10 @@ const CustomToggleFlag = ({
           label={t(translatedLabel, label)}
           subLabel={subLabel}
           disabled={fxMode}
+          classes={{
+            toggleLabel: getQueryTypographyClassName('label'),
+            toggleSubLabel: getQueryTypographyClassName('helper'),
+          }}
         />
         {fx && onFxToggle && <FxButton active={!!fxMode} onPress={onFxToggle} dataCy={dataCy} />}
       </div>

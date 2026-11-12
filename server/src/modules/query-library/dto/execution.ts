@@ -101,6 +101,7 @@ class LibraryUsageEntryResponseDto {
 export class LibraryUsageResponseDto {
   @Expose() @Type(() => LibraryUsageEntryResponseDto) apps: LibraryUsageEntryResponseDto[];
   @Expose() @Type(() => LibraryUsageEntryResponseDto) modules: LibraryUsageEntryResponseDto[];
+  @Expose() @Type(() => LibraryUsageEntryResponseDto) workflows: LibraryUsageEntryResponseDto[];
 }
 @Exclude()
 export class LibraryRunResponseDto {

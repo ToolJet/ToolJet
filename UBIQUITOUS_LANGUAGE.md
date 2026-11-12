@@ -46,7 +46,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Custom Component** | A user-created component built with React for functionality beyond built-in components | — |
 | **Layout** | Positioning metadata (top, left, width, height) for a component on the canvas grid | — |
 | **Canvas** | The visual workspace area in the App-Builder where components are placed | — |
-| **Left Sidebar** | App-Builder panel containing Pages, Inspector, and Debugger | — |
+| **Left Sidebar** | App-Builder navigation rail and contextual panel containing Pages, Components, Queries, and Settings | — |
 | **Right Sidebar** | App-Builder panel for component properties and styles | — |
 | **Toolbar** | The top bar of the App-Builder with version management, undo/redo, preview, and release | — |
 | **Module** | A reusable app-level building block shared across apps (EE feature; app type `MODULE`) | "module" also means a NestJS backend module — always qualify |
@@ -54,10 +54,12 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Query Library** | Workspace-owned reusable query identities (`LibraryQuery`, `library_queries`), folders, independent named drafts and immutable saved versions, edited in the dashboard Query library tab; no backing app or app version | — |
 | **Library query draft** | An independent named editable snapshot (`LibraryQueryDraft`, `library_query_drafts`), edited and run in Development. Saving inserts an immutable saved snapshot with the same UUID and soft-deletes the draft. | — |
 | **Version lifecycle adapter** | `useAppVersionLifecycle` or `useLibraryVersionLifecycle`, which supplies normalized rows, selection, capabilities and async resource actions to `VersionLifecycleContext` and the shared lifecycle dialogs. Library adapters disable Git. | — |
-| **Library Query** | A query of kind `library` in any app that runs a query from the Query Library, pinned to an explicit live draft or saved UUID (`options.libraryQueryId`, `options.libraryQueryVersionId`, inputs in `options.inputs`); saving preserves the UUID | — |
-| **Library query version** | An immutable named snapshot (content, name and description) of one library query (`library_query_versions`) that starts in Development and is promoted through environments; numbers are never reused, deleting one is a soft delete and is blocked while it is Released or an app or module pins it | — |
+| **Library Query** | One reusable query in the Query Library (`LibraryQuery`, `library_queries`), with its drafts and saved versions | — |
+| **Query Library consumer** | A query of kind `library` in an app, module or workflow that runs a Library Query, pinned to an explicit live draft or saved UUID (`options.libraryQueryId`, `options.libraryQueryVersionId`, inputs in `options.inputs`); saving preserves the UUID | Library Query (old glossary meaning), library node |
+| **Query Library node** | The workflow-editor name for a Query Library consumer placed as a workflow node | Library node |
+| **Library query version** | An immutable named snapshot (content, name and description) of one library query (`library_query_versions`) that starts in Development and is promoted through environments; numbers are never reused, deleting one is a soft delete and is blocked while it is Released or an app, module or workflow pins it | — |
 | **Released version (library query)** | The one library query version marked Released (`library_query_states.released_version_id`); an app can release only when each direct pin is that version. Distinct from an app's released version | — |
-| **Draft pin** | A Library Query whose `options.libraryQueryVersionId` is the exact UUID of a live `LibraryQueryDraft`, for Development testing; the literal `'draft'` sentinel is invalid; it blocks releasing or promoting the app or module until it is pinned to a saved (and for release, Released) version | — |
+| **Draft pin** | A Query Library consumer whose `options.libraryQueryVersionId` is the exact UUID of a live `LibraryQueryDraft`, for Development testing; the literal `'draft'` sentinel is invalid; it blocks releasing or promoting the app, module or workflow until it is pinned to a saved (and for release, Released) version | — |
 | **Template** | A pre-built app sample that users can clone as a starting point (60+ across 10 categories) | — |
 | **Conditional Styling** | Dynamic styles applied to components based on runtime conditions | — |
 | **Custom CSS** | User-defined free-form CSS applied at component or app level | Custom Styling (related but different — see Flagged Ambiguities) |
@@ -82,8 +84,9 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Workspace Constant** | A reusable, non-secret value available across all apps in a workspace; resolved server-side; syntax: `{{constants.name}}` | Global Constant (acceptable), Workspace Variable / Environment Variable (deprecated docs terms) |
 | **Workspace Secret** | An encrypted workspace constant for sensitive data; masked in frontend; syntax: `{{secrets.name}}` | — |
 | **Environment-Specific Configuration** | Constants and secrets can hold different values per environment (dev/staging/prod) | — |
-| **Inspector** | The App-Builder panel for viewing all runtime state (sections: Queries, Components, Globals, Variables, Page, Constants) | Debugger (separate panel) |
-| **Debugger** | The App-Builder panel for debugging code execution errors | Console (the browser console is separate) |
+| **Inspector** | The Runtime Drawer tab for viewing runtime state: a split view with an entity list (sections: Queries, Components, Globals, Variables, Page, Constants) beside the selected entity's values | Debugger (separate tab) |
+| **Debugger** | The Runtime Drawer tab listing runtime logs (errors, warnings, info, success) from queries, transformations, events and component validation, filterable by level and page, beside the selected log's details | Console (the browser console is separate) |
+| **Runtime Drawer** | The collapsible bottom App-Builder panel containing Inspector and Debugger | Query Panel (legacy bottom panel) |
 | **Transformation** | A JavaScript/Python transform applied to query results before binding to components | — |
 
 ## Versioning & Deployment
@@ -114,9 +117,9 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **App-Level Data Source** | A data source scoped to a single app | "local" type (code term, not user-facing) |
 | **Data Source Version** | A branch-aware version row of a data source (`DataSourceVersion`; `is_default`, `branch_id`); its per-Environment options/credentials live in `DataSourceVersionOptions` — there is no single "the options", always resolve with an environment | DSV/DSVO (code shorthand) |
 | **Query** | A parameterized operation against a data source; created in the Query Panel | Data Query (formal alias, use when distinguishing from SQL queries) |
-| **Query Panel** | The App-Builder panel for creating and managing queries | — |
-| **Query Manager** | The left section of the Query Panel listing all queries | — |
-| **Query Editor** | The right section of the Query Panel for writing/configuring a query | — |
+| **Query Panel** | The App-Builder left contextual panel for creating and managing the query list | Bottom Query Panel (legacy) |
+| **Query Manager** | The query-list surface in the left contextual panel | — |
+| **Query Editor** | The right configuration panel for writing and configuring the selected query | — |
 | **ToolJet Database** | ToolJet's built-in PostgreSQL-backed database offering | TJDB (informal shorthand in docs) |
 | **Internal Table** | A table within ToolJet Database | — |
 | **Internal Table Relation** | An Internal Table's physical presence at one (Environment, Workspace Branch) pair — carries the physical Postgres relation's identity and per-relation configuration (`internal_table_relations`) | Relation (short form, context-dependent) |
