@@ -284,6 +284,9 @@ export const RadioGroup = () => {
         >
           <MuiRadioGroup
             id={fieldId}
+            // The label is the fieldset's legend, which names the fieldset but not the radiogroup in it: a screen
+            // reader announces a radio's group by the radiogroup's name.
+            aria-label={field.label || undefined}
             row={row}
             value={key}
             onChange={(e) => {

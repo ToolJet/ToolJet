@@ -327,6 +327,10 @@ export const Rate = (props: Record<string, unknown>) => {
       <FormField {...field} check={check}>
         <SpinOver loading={loading} as="inline">
           <AntRate
+            // The stars are radios (rc-rate's role="radio"): the row they sit in is their group, named by the label.
+            // rc-rate passes role and aria-label to its <ul>, which otherwise read as a list named by the label; its
+            // props type lists no role.
+            {...({ role: 'radiogroup' } as object)}
             aria-label={field.label || undefined}
             value={drawn ?? 0}
             count={stars}
