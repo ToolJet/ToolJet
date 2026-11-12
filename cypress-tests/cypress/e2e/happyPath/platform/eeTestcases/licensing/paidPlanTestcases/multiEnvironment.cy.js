@@ -20,7 +20,7 @@ describe("License - Multi-Environment Flow", () => {
     deleteAllUIConstants();
 
     cy.visit("/");
-    cy.intercept("GET", "/api/apps/*").as("getAppData");
+    cy.intercept({ method: "GET", pathname: /^\/api\/apps\/[0-9a-f-]{36}$/ }).as("getAppData");
 
     multiEnvAppSetup(appName);
     cy.apiUpdateLicense("expired");
