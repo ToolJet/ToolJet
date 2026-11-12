@@ -1,9 +1,5 @@
 name: Release
 
-# Actions -> Release -> Run workflow -> pick main (beta) or lts-3.16 (LTS) -> Run.
-# The run checks everything, pins the latest ee commits, bumps and merges the version,
-# tags ee-server and ee-frontend, and creates a DRAFT release. The lead who pressed Run
-# gets a Slack message. To release: open the draft, check it, click "Publish release".
 on:
   workflow_dispatch:
 
