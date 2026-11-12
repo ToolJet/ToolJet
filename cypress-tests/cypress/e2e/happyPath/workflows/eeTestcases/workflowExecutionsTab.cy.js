@@ -18,7 +18,6 @@ import {
 } from "Support/utils/workflows/workFlows";
 import {
   visitExecutions,
-  pickSelectOption,
   filterExecutionsByWorkflow,
   openWorkflowEditor,
 } from "Support/utils/workflows/workflowApprovals";
@@ -104,6 +103,29 @@ const filterByTrigger = (value) =>
     cy.get(executionsFilterSelector.triggerType(value)).click();
   });
 
+const clearFilters = () => {
+  cy.get(executionsFilterSelector.trigger).click();
+  cy.get(executionsFilterSelector.reset).click();
+  cy.get(executionsFilterSelector.apply).click();
+};
+
+const filterFromDate = (isoDate) =>
+  applyFilter(() => {
+    cy.get(executionsFilterSelector.category("date")).click();
+    cy.get(executionsFilterSelector.from).type(isoDate);
+  });
+
+const daysFromNow = (days) =>
+  new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+
+const pickOptionIgnoringCase = (containerSelector, text) => {
+  cy.get(`${containerSelector} .react-select__control`).click();
+  cy.contains(".react-select__option", new RegExp(`^${text}$`, "i")).click();
+};
+
+const pickWorkflowOption = (text) =>
+  pickOptionIgnoringCase(executionsFilterSelector.workflow, text);
+
 const rowOf = (workflow) => cy.contains(executionsFilterSelector.anyRow, workflow.name);
 
 const stopOf = (workflow) => rowOf(workflow).find('[data-cy^="executions-stop-"]');
@@ -147,65 +169,51 @@ describe("Workflows - Executions tab", SLOW_API, () => {
         });
 
         visitExecutions();
-        filterExecutionsByWorkflow(ok.name);
-        rowOf(ok).should("contain.text", ok.name);
-        rowOf(failing).should("not.exist");
-
-        pickSelectOption(
-          `${executionsFilterSelector.workflow} .react-select__control`,
-          failing.name
-        );
-        rowOf(failing).should("contain.text", executionsText.statusFailed);
-
-        pickSelectOption(
-          `${executionsFilterSelector.workflow} .react-select__control`,
-          executionsText.allWorkflows
-        );
-        filterByStatus("failed");
+        rowOf(ok).should("exist");
         rowOf(failing).should("exist");
+
+        filterExecutionsByWorkflow(ok.name);
+        rowOf(ok).should("exist");
+        rowOf(failing).should("not.exist");
+        pickWorkflowOption(executionsText.allWorkflows);
+
+        filterByStatus("failed");
+        rowOf(failing).should("contain.text", executionsText.statusFailed);
         rowOf(ok).should("not.exist");
-        cy.get(executionsFilterSelector.trigger).click();
-        cy.get(executionsFilterSelector.reset).click();
-        cy.get(executionsFilterSelector.apply).click();
+        clearFilters();
         rowOf(ok).should("exist");
 
         filterByTrigger("manual");
         rowOf(ok).should("exist");
-        filterByTrigger("manual");
+        rowOf(failing).should("exist");
+        clearFilters();
         filterByTrigger("schedule");
-        rowOf(ok).should("not.exist");
         cy.get(executionsFilterSelector.empty).should("be.visible");
-        cy.get(executionsFilterSelector.trigger).click();
-        cy.get(executionsFilterSelector.reset).click();
-        cy.get(executionsFilterSelector.apply).click();
-
-        const tomorrow = new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10);
-        applyFilter(() => {
-          cy.get(executionsFilterSelector.category("date")).click();
-          cy.get(executionsFilterSelector.from).type(tomorrow);
-        });
-        rowOf(ok).should("not.exist");
-        cy.get(executionsFilterSelector.empty).should("be.visible");
-        cy.get(executionsFilterSelector.trigger).click();
-        cy.get(executionsFilterSelector.reset).click();
-        cy.get(executionsFilterSelector.apply).click();
+        clearFilters();
         rowOf(ok).should("exist");
 
-        pickSelectOption(
-          `${executionsFilterSelector.environment} .react-select__control`,
-          "development"
-        );
+        filterFromDate(daysFromNow(2));
+        cy.get(executionsFilterSelector.empty).should("be.visible");
+        clearFilters();
+        filterFromDate(daysFromNow(-1));
         rowOf(ok).should("exist");
-        pickSelectOption(
-          `${executionsFilterSelector.environment} .react-select__control`,
-          "staging"
-        );
-        rowOf(ok).should("not.exist");
+        clearFilters();
+
+        pickOptionIgnoringCase(executionsFilterSelector.environment, "development");
+        rowOf(ok).should("exist");
+        pickOptionIgnoringCase(executionsFilterSelector.environment, "staging");
+        cy.get(executionsFilterSelector.empty).should("be.visible");
+        pickOptionIgnoringCase(executionsFilterSelector.environment, "all environments");
+        rowOf(ok).should("exist");
 
         cy.visit(
           `/${Cypress.env("workspaceId")}/workflows/executions?folder=${data.folderName}`
         );
         cy.get(executionsSelector.page).should("be.visible");
+        cy.get(executionsFilterSelector.workflow).should(
+          "contain.text",
+          `All workflows in ${data.folderName}`
+        );
         rowOf(ok).should("exist");
         rowOf(failing).should("not.exist");
       });
@@ -319,24 +327,29 @@ describe("Workflows - Executions tab", SLOW_API, () => {
           cy.apiAddAppToFolder(folder.id, first.id);
         });
 
+        cy.intercept("GET", "/api/workflow_executions/workspace/upcoming*").as("upcoming");
         visitExecutions();
         cy.get(upcomingSelector.panel)
           .should("contain.text", first.name)
           .and("contain.text", second.name);
 
         filterExecutionsByWorkflow(first.name);
+        cy.wait("@upcoming").its("request.url").should("include", `app_id=${first.id}`);
         cy.get(upcomingSelector.panel)
           .should("contain.text", first.name)
           .and("not.contain.text", second.name);
 
-        pickSelectOption(
-          `${executionsFilterSelector.environment} .react-select__control`,
-          "staging"
-        );
+        pickOptionIgnoringCase(executionsFilterSelector.environment, "staging");
         cy.get(upcomingSelector.empty).should("contain.text", executionsText.noSchedulesScoped);
+        pickOptionIgnoringCase(executionsFilterSelector.environment, "all environments");
+        pickWorkflowOption(executionsText.allWorkflows);
 
         cy.visit(
           `/${Cypress.env("workspaceId")}/workflows/executions?folder=${data.folderName}`
+        );
+        cy.get(executionsFilterSelector.workflow).should(
+          "contain.text",
+          `All workflows in ${data.folderName}`
         );
         cy.get(upcomingSelector.panel)
           .should("contain.text", first.name)
@@ -349,12 +362,25 @@ describe("Workflows - Executions tab", SLOW_API, () => {
 
 describe("Workflows - Used by", SLOW_API, () => {
   const callerQuery = (caller, target, queryName = "callTarget") => {
-    useWorkflowContext(caller);
-    cy.apiGetDataSourceId("workflows");
-    cy.apiCreateWorkflowNode("workflows", queryName, {
-      workflowId: target.id,
-      params: "{}",
-    });
+    cy.getAuthHeaders().then((headers) =>
+      cy
+        .request({
+          url: `${Cypress.env("server_host")}/api/apps?page=1&type=workflow&searchKey=${target.name}`,
+          headers,
+          log: false,
+        })
+        .then((response) => {
+          const found = response.body.apps.find((app) => app.id === target.id);
+          const reference = found?.co_relation_id || target.id;
+          useWorkflowContext(caller);
+          cy.apiGetDataSourceId("workflows");
+          cy.apiCreateWorkflowNode("workflows", queryName, {
+            workflowId: reference,
+            workflowVersionId: null,
+            params: [{ key: "", value: "" }],
+          });
+        })
+    );
   };
 
   const openUsedBy = () => {

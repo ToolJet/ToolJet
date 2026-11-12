@@ -586,6 +586,31 @@ export const wfQueryNode = (id, queryId, kind = "runjs", extraData = {}) => ({
   targetPosition: "left",
 });
 
+// A Run Workflow node; `queryId` comes from cy.apiCreateWorkflowNode("workflows", ...).
+export const wfWorkflowNode = (id, queryId, options = {}) => ({
+  id,
+  type: "workflow",
+  data: { idOnDefinition: queryId, kind: "workflows", options, nodeType: "workflow" },
+  position: { x: 400, y: 250 },
+  sourcePosition: "right",
+  targetPosition: "left",
+});
+
+// What a Run Workflow query stores as `workflowId`: the app's co_relation_id, else its id.
+export const getWorkflowReference = (workflowName, workflowId) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        url: `${Cypress.env("server_host")}/api/apps?page=1&type=workflow&searchKey=${workflowName}`,
+        headers,
+        log: false,
+      })
+      .then(
+        (response) =>
+          response.body.apps.find((app) => app.id === workflowId)?.co_relation_id || workflowId
+      )
+  );
+
 // `code` is an expression (no `return`); its truthiness picks the branch.
 export const wfIfNode = (id, code, nodeName = "ifCondition1") => ({
   id,

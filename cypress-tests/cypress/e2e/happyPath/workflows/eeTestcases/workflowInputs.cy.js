@@ -10,6 +10,8 @@ import {
   wfResponseNode,
   wfEdge,
   wfInput,
+  wfWorkflowNode,
+  getWorkflowReference,
   workflowDefinition,
   cleanupWorkflows,
   openLeftDrawer,
@@ -426,5 +428,73 @@ describe("Workflows - workflow inputs", SLOW_API, () => {
         .should("contain.text", data.workflowName)
         .and("contain.text", "Failed");
     });
+  });
+});
+
+describe("Workflows - inputs passed to a child workflow", SLOW_API, () => {
+  const DRAFT_PIN = "__default_branch_draft__";
+
+  const seedParent = (childName, childId, params) => {
+    cy.apiCreateWorkflowApp(data.parentName);
+    cy.apiFetchWorkflowContext();
+    getWorkflowReference(childName, childId).then((reference) => {
+      cy.apiGetDataSourceId("workflows");
+      cy.apiCreateWorkflowNode("workflows", "callChild", {
+        workflowId: reference,
+        workflowVersionId: DRAFT_PIN,
+        params,
+      });
+      cy.then(() => {
+        const queryId = Cypress.env("callChildQueryId");
+        cy.apiSaveWorkflowDefinition(
+          workflowDefinition({
+            nodes: [
+              wfStartNode(),
+              wfWorkflowNode("call-node", queryId, { workflowId: reference }),
+              wfResponseNode("response", "return callChild"),
+            ],
+            edges: [wfEdge("start", "call-node"), wfEdge("call-node", "response", "success")],
+            queryIds: [queryId],
+          })
+        );
+      });
+    });
+  };
+
+  beforeEach(() => {
+    cy.apiLogin();
+    cy.visit("/");
+    data.childName = `${fake.lastName.toLowerCase()}-child`;
+    data.parentName = `${fake.lastName.toLowerCase()}-parent`;
+    cy.apiCreateWorkflowApp(data.childName);
+    cy.apiFetchWorkflowContext();
+    cy.then(() => {
+      data.childId = Cypress.env("workflowId");
+    });
+    cy.apiSaveWorkflowDefinition(
+      workflowDefinition({
+        nodes: [wfStartNode(), wfResponseNode("response", "return startTrigger.params")],
+        edges: [wfEdge("start", "response")],
+        workflowInputs: [wfInput("region", "string", { required: true })],
+      })
+    );
+  });
+
+  afterEach(() => {
+    cleanupWorkflows([data.parentName, data.childName]);
+  });
+
+  it("A parent workflow passes values for the child's required input through a Run Workflow step and the child receives them", () => {
+    seedParent(data.childName, data.childId, [{ key: "region", value: "emea" }]);
+    cy.apiRunWorkflow().then((response) => {
+      expect(response.status).to.equal(201);
+      expect(JSON.stringify(response.body.result)).to.include("emea");
+    });
+  });
+
+  it("A parent workflow that leaves out the child's required input fails the run", () => {
+    seedParent(data.childName, data.childId, [{ key: "", value: "" }]);
+    cy.apiRunWorkflow();
+    cy.apiWaitForExecutionStatus("failure");
   });
 });

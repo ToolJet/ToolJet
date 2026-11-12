@@ -54,6 +54,9 @@ const scheduleItem = (name) => cy.contains(schedulesSelector.item, name);
 const typeName = (name) =>
   cy.get(schedulesSelector.name).clear().type(name, { delay: 0 });
 
+// The new-schedule form needs an existing schedule, otherwise it opens with no version selected.
+const seedSchedule = () => createEveryMinute({ name: uniqueName("seed") });
+
 const createEveryMinute = (overrides = {}) =>
   cy.apiCreateWorkflowSchedule({
     type: "interval",
@@ -125,6 +128,7 @@ describe("Workflows - schedules panel", SLOW_API, () => {
 
   it("A new schedule form shows Name, Environment, Version, Input overrides, then Schedule type", () => {
     saveEchoDefinition([wfInput("limit", "number")]);
+    seedSchedule();
     openWorkflowEditor();
     openSchedulesPanel();
     openNewScheduleForm();
@@ -136,6 +140,7 @@ describe("Workflows - schedules panel", SLOW_API, () => {
   });
 
   it("Input overrides appear only for versions that have inputs", () => {
+    seedSchedule();
     openWorkflowEditor();
     openSchedulesPanel();
     openNewScheduleForm();
@@ -147,6 +152,7 @@ describe("Workflows - schedules panel", SLOW_API, () => {
     cy.apiCreateWorkflowApp(data.withInputsName);
     cy.apiFetchWorkflowContext();
     saveEchoDefinition([wfInput("limit", "number")]);
+    seedSchedule();
     openWorkflowEditor();
     openSchedulesPanel();
     openNewScheduleForm();
@@ -155,10 +161,10 @@ describe("Workflows - schedules panel", SLOW_API, () => {
 
   it("A new schedule defaults to every minute on the current version in development and is created inactive", () => {
     const name = uniqueName("defaults");
+    seedSchedule();
     openWorkflowEditor();
     openSchedulesPanel();
-    cy.get(schedulesSelector.item).should("not.exist");
-    cy.get(schedulesSelector.noResults).should("contain.text", schedulesText.noMatch);
+    cy.get(schedulesSelector.item).should("have.length", 1);
     openNewScheduleForm();
 
     cy.get(schedulesSelector.environmentDropdown).should("contain.text", "Development");
@@ -175,6 +181,7 @@ describe("Workflows - schedules panel", SLOW_API, () => {
       expect(request.body.environmentId).to.equal(Cypress.env("environmentId"));
       expect(request.body.details.frequency).to.equal("minute");
     });
+    cy.get(schedulesSelector.item).should("have.length", 2);
     scheduleItem(name)
       .should("contain.text", schedulesText.everyMinute)
       .find("input[type='checkbox']")

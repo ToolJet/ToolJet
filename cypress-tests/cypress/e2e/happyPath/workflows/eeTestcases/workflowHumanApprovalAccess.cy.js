@@ -196,7 +196,7 @@ describe("Workflows - approvals access by role", SLOW_API, () => {
     });
   });
 
-  it("An end user who is not an approver cannot resolve a request or list approvals, and the request stays pending", () => {
+  it("An end user who is not an approver cannot resolve a request and sees none of the requests, and it stays pending", () => {
     createHumanWorkflow(data.workflowName, {
       human: { approvers: approversOf(users.listedBuilder.id) },
     });
@@ -205,8 +205,8 @@ describe("Workflows - approvals access by role", SLOW_API, () => {
       cy.apiResolveApproval(request.id, "approved")
         .its("status")
         .should("be.oneOf", [403, 404]);
-      cy.apiListApprovals().its("status").should("be.oneOf", [200, 403]);
       cy.apiListApprovals().then((res) => {
+        expect(res.status).to.equal(200);
         const ids = (res.body.requests || []).map((item) => item.id);
         expect(ids).to.not.include(request.id);
       });

@@ -135,6 +135,7 @@ export const approvalSelector = {
   row: (id) => `[data-cy="approvals-row-${id}"]`,
   anyRow: '[data-cy^="approvals-row-"]',
   filterWorkflow: '[data-cy="approvals-filter-workflow"]',
+  filterEnvironment: '[data-cy="approvals-environment-select"]',
   filterStatus: '[data-cy="approvals-filter-status"]',
   filterApprover: '[data-cy="approvals-filter-approver"]',
   filterFrom: '[data-cy="approvals-filter-from"]',
@@ -284,4 +285,20 @@ export const executionsFilterSelector = {
   recordCount: '[data-cy="executions-record-count"]',
   anyRow: '[data-cy^="executions-row-"]',
   refresh: '[data-cy="executions-refresh"]',
+};
+
+export const webhookPanelSelector = {
+  copyUrl: 'button[aria-label="Copy URL"]',
+  copyToken: 'button[aria-label="Copy token"]',
+  copyJson: 'button[aria-label="Copy JSON"]',
+  resetBody: 'button[aria-label="Reset request body"]',
+  requestBody: 'textarea[aria-label="Webhook request body"]',
+  bodyError: ".webhook-request-body-error",
+  environmentToggle: '[data-cy="webhook-environment-dropdown-toggle"]',
+  environmentOption: (name) => `[data-cy="webhook-environment-option-${name}"]`,
+  versionToggle: '[data-cy="webhook-version-dropdown-toggle"]',
+  legacyLabel: ".workflow-legacy-field-label",
+  legacyTag: ".legacy-banner",
+  testJsonInput: '[data-cy="start-node-input-field"]',
+  testJsonBlock: ".test-json-parameter",
 };

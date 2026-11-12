@@ -597,3 +597,71 @@ describe("Workflows - If step with Else if branches", SLOW_API, () => {
     cy.get(controlFlowSelector.nodeResultBody).should("not.contain.text", "Else if");
   });
 });
+
+describe("Workflows - nested If and Else", SLOW_API, () => {
+  const responseAt = (name, y) => ({
+    ...wfResponseNode(`r-${name}`, `return '${name}'`, "200", name),
+    position: { x: 1200, y },
+  });
+
+  beforeEach(() => {
+    cy.apiLogin();
+    cy.visit("/");
+    data.workflowName = `${fake.lastName.toLowerCase()}-nest`;
+    cy.apiCreateWorkflowApp(data.workflowName);
+    cy.apiFetchWorkflowContext();
+    cy.apiSaveWorkflowDefinition(
+      workflowDefinition({
+        nodes: [
+          wfStartNode(),
+          wfMultiIfNode("outer", ["startTrigger.params.a > 0"], { nodeName: "outerIf" }),
+          {
+            ...wfMultiIfNode("inner", ["startTrigger.params.b > 0"], { nodeName: "innerIf" }),
+            position: { x: 800, y: 120 },
+          },
+          responseAt("resp_tt", 40),
+          responseAt("resp_tf", 200),
+          responseAt("resp_ff", 400),
+        ],
+        edges: [
+          wfEdge("start", "outer"),
+          wfEdge("outer", "inner", "true"),
+          wfEdge("outer", "r-resp_ff", "false"),
+          wfEdge("inner", "r-resp_tt", "true"),
+          wfEdge("inner", "r-resp_tf", "false"),
+        ],
+        workflowInputs: [
+          wfInput("a", "number", { defaultValue: 0 }),
+          wfInput("b", "number", { defaultValue: 0 }),
+        ],
+      })
+    );
+  });
+
+  afterEach(() => {
+    cleanupWorkflows([data.workflowName]);
+  });
+
+  it("A nested If runs only the matching inner branch and leaves every other branch unexecuted", () => {
+    openWorkflowEditor();
+
+    runWithOverrides({ a: "1", b: "1" });
+    assertNodeRan("innerIf");
+    assertNodeRan("resp-tt");
+    assertNodeRan("resp-tf", false);
+    assertNodeRan("resp-ff", false);
+
+    runWithOverrides({ a: "1", b: "0" });
+    assertNodeRan("innerIf");
+    assertNodeRan("resp-tt", false);
+    assertNodeRan("resp-tf");
+    assertNodeRan("resp-ff", false);
+
+    runWithOverrides({ a: "0", b: "1" });
+    assertNodeRan("innerIf", false);
+    assertNodeRan("resp-tt", false);
+    assertNodeRan("resp-tf", false);
+    assertNodeRan("resp-ff");
+    cy.get(workflowSelector.workflowLogErrorRow).should("not.exist");
+  });
+});

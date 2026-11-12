@@ -6,7 +6,7 @@ import {
   executionsSelector,
 } from "Selectors/platform/workflows";
 import { humanText } from "Texts/platform/workflows";
-import { cleanupWorkflows } from "Support/utils/workflows/workFlows";
+import { cleanupWorkflows, cleanupFolders } from "Support/utils/workflows/workFlows";
 import {
   createHumanWorkflow,
   runUntilWaiting,
@@ -46,10 +46,12 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
     cy.visit("/");
     data.workflowName = `${fake.lastName.toLowerCase()}-appr`;
     data.otherName = `${fake.lastName.toLowerCase()}-apprb`;
+    data.folderName = `${fake.lastName.toLowerCase()}-apprfolder`;
   });
 
   afterEach(() => {
     cleanupWorkflows([data.workflowName, data.otherName]);
+    cleanupFolders([data.folderName]);
   });
 
   it("The list opens on Pending requests, newest first, and leaves resolved ones out", () => {
@@ -141,6 +143,62 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
         cy.get(approvalSelector.row(mine.id)).should("be.visible");
         cy.get(approvalSelector.filterTo).type(isoDay(-1));
         cy.get(approvalSelector.row(mine.id)).should("not.exist");
+      });
+    });
+  });
+
+  it("The environment filter shows a pending request only for the environment its run used", () => {
+    createHumanWorkflow(data.workflowName);
+    runUntilWaiting().then((request) => {
+      visitApprovals();
+      cy.get(approvalSelector.row(request.id)).should("be.visible");
+
+      pickSelectOption(
+        `${approvalSelector.filterEnvironment} .react-select__control`,
+        "staging"
+      );
+      cy.get(approvalSelector.row(request.id)).should("not.exist");
+      cy.get(approvalSelector.empty).should("contain.text", humanText.noApprovalsMatch);
+
+      pickSelectOption(
+        `${approvalSelector.filterEnvironment} .react-select__control`,
+        "development"
+      );
+      cy.get(approvalSelector.row(request.id)).should("be.visible");
+
+      pickSelectOption(
+        `${approvalSelector.filterEnvironment} .react-select__control`,
+        "All environments"
+      );
+      cy.get(approvalSelector.row(request.id)).should("be.visible");
+    });
+  });
+
+  it("A workflow folder limits the requests and the workflow picker to the workflows inside it", () => {
+    createHumanWorkflow(data.workflowName);
+    const inFolderId = Cypress.env("workflowId");
+    runUntilWaiting().then((inFolder) => {
+      createHumanWorkflow(data.otherName);
+      runUntilWaiting().then((outside) => {
+        cy.apiCreateFolder(data.folderName, "workflow").then((folder) => {
+          cy.apiAddAppToFolder(folder.id, inFolderId);
+        });
+
+        cy.visit(
+          `/${Cypress.env("workspaceId")}/workflows/approvals?folder=${data.folderName}`
+        );
+        cy.get(approvalSelector.page).should("be.visible");
+        cy.get(approvalSelector.filterWorkflow).should(
+          "contain.text",
+          `All workflows in ${data.folderName}`
+        );
+        cy.get(approvalSelector.row(inFolder.id)).should("be.visible");
+        cy.get(approvalSelector.row(outside.id)).should("not.exist");
+
+        cy.get(`${approvalSelector.filterWorkflow} .react-select__control`).click();
+        cy.get(".react-select__option")
+          .should("contain.text", data.workflowName)
+          .and("not.contain.text", data.otherName);
       });
     });
   });
