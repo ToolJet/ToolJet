@@ -1,12 +1,16 @@
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 
-export const QueryConfirmPopup = ({ show, message, onConfirm, onCancel, darkMode, dialogKey }) => {
+export const QueryConfirmPopup = ({ show, message, onConfirm, onCancel, darkMode, dialogKey, overlayOpen = false }) => {
   return (
     <Modal
       show={show}
       animation={false}
       onHide={onCancel}
+      // A full-screen view (compare versions) covers this popup: it must not pull focus or take Escape from it.
+      enforceFocus={!overlayOpen}
+      autoFocus={!overlayOpen}
+      keyboard={!overlayOpen}
       centered
       backdrop
       dialogClassName="tw-max-w-[491px]"
