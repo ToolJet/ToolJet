@@ -54,7 +54,9 @@ export default function BuildWithAIButton({ appType, 'data-cy': dataCy }: BuildW
         Build with AI
       </Button>
 
-      <BuildWithAIAssistantDialog open={openBuildWithAIDialog} handleOpenChange={setOpenBuildWithAIDialog} />
+      {openBuildWithAIDialog && (
+        <BuildWithAIAssistantDialog open={openBuildWithAIDialog} handleOpenChange={setOpenBuildWithAIDialog} />
+      )}
     </>
   );
 }
