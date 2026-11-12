@@ -1,0 +1,8 @@
+{
+  "$sources": {
+    "namePattern": "frontend/src/_helpers/utils.js validateQueryName (Inspector.jsx validates component renames with it; code references components as components.<name>)",
+    "dynamicEventSources": "ModuleViewer events come from the module's own contract, custom widgets declare nothing (frontend widget configs)"
+  },
+  "namePattern": "^[A-Za-z0-9_-]+$",
+  "dynamicEventSources": ["ModuleViewer", "ModuleContainer", "CustomComponent"]
+}

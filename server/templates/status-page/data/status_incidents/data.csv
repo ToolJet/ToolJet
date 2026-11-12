@@ -1,0 +1,17 @@
+id,title,impact,current_status,summary,started_at,resolved_at,is_public,created_at
+,Routine API maintenance,minor,resolved,A scheduled maintenance window for the Public API completed successfully.,2026-09-10T16:00:00+00:00,2026-09-10T17:15:00Z,true,2026-09-14T18:44:25.412863+00:00
+,Elevated sign-in latency,minor,monitoring,Some customers are seeing slower sign-in responses. Authentication is working and requests are completing.,2026-09-17T06:40:00+00:00,,true,2026-09-17T06:42:00+00:00
+,Intermittent webhook delivery delays,minor,investigating,A subset of outbound webhooks are arriving later than expected. Retries are succeeding.,2026-09-16T11:20:00+00:00,,true,2026-09-16T11:23:00+00:00
+,Elevated API error rates,major,resolved,The Public API returned elevated 5xx responses for a subset of requests.,2026-09-15T14:05:00+00:00,2026-09-15T15:42:00+00:00,true,2026-09-15T14:07:00+00:00
+,Slow report exports,minor,resolved,Scheduled report exports took longer than usual to complete.,2026-09-12T09:30:00+00:00,2026-09-12T10:55:00+00:00,true,2026-09-12T09:32:00+00:00
+,Notification emails delayed,minor,resolved,Transactional emails were delivered with a delay of up to 20 minutes.,2026-09-09T07:15:00+00:00,2026-09-09T08:40:00+00:00,true,2026-09-09T07:18:00+00:00
+,Dashboard loading errors,major,resolved,The web application showed loading errors for some accounts.,2026-09-04T16:10:00+00:00,2026-09-04T17:35:00+00:00,true,2026-09-04T16:12:00+00:00
+,Elevated login failures,critical,resolved,A configuration change caused repeated sign-in failures.,2026-09-01T05:50:00+00:00,2026-09-01T06:35:00+00:00,true,2026-09-01T05:52:00+00:00
+,API gateway timeouts,major,resolved,Requests to the Public API timed out at the gateway.,2026-08-27T18:20:00+00:00,2026-08-27T19:45:00+00:00,true,2026-08-27T18:22:00+00:00
+,Scheduled export failures,minor,resolved,Nightly exports failed for a small number of workspaces.,2026-08-24T05:05:00+00:00,2026-08-24T06:20:00+00:00,true,2026-08-24T05:07:00+00:00
+,Search results incomplete,minor,resolved,Search returned partial results in the web application.,2026-08-20T12:40:00+00:00,2026-08-20T13:30:00+00:00,true,2026-08-20T12:42:00+00:00
+,Webhook signature errors,major,resolved,Outgoing webhooks were rejected because of signature validation errors.,2026-08-17T09:10:00+00:00,2026-08-17T11:05:00+00:00,true,2026-08-17T09:13:00+00:00
+,Slow report rendering,minor,resolved,Large reports rendered slowly during peak hours.,2026-08-13T14:00:00+00:00,2026-08-13T15:20:00+00:00,true,2026-08-13T14:02:00+00:00
+,Partial outage: Public API,major,resolved,A subset of API requests failed for about 85 minutes.,2026-08-08T20:15:00+00:00,2026-08-08T21:40:00+00:00,true,2026-08-08T20:17:00+00:00
+,Elevated errors on data exports,minor,resolved,Export requests returned errors intermittently.,2026-08-05T06:25:00+00:00,2026-08-05T07:50:00+00:00,true,2026-08-05T06:27:00+00:00
+,Elevated API Errors,major,resolved,Unexpected 404 errors,2026-09-17T19:57:22.964+00:00,2026-09-17T19:57:32.178Z,true,2026-09-14T18:44:25.412863+00:00

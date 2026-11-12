@@ -22,8 +22,8 @@ import "../commands/apiCommands";
 import "../commands/appbuilder/appbuilderCommands";
 import "../commands/appbuilder/appbuilderApiCommands";
 import "../commands/appbuilder/codemirrorCommands";
-import "../commands/workflowsApiCommands";
-import '../commands/workflowCommands';
+import "../commands/workflows/workflowsApiCommands";
+import "../commands/workflows/workflowCommands";
 
 import '../commands/platform/platformApiCommands';
 

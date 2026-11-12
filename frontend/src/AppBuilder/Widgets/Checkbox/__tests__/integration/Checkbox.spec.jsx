@@ -7,7 +7,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import useStore from '@/AppBuilder/_stores/store';
 import { componentDefinition } from '@/test/app-builder';
-import { checkboxConfig } from '@/AppBuilder/WidgetManager/widgets/checkbox';
+import { checkboxConfig } from '@tooljet/widget-definitions';
 import { createWidgetHarness, setVariableOn, binding, store } from '../../../__tests__/integration/widgetHarness';
 
 const CHK = 'chk1';

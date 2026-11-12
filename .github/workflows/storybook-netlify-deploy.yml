@@ -1,10 +1,9 @@
 name: Deploy Storybook to Netlify
 
 on:
-  pull_request:
-    types: [closed]
-    branches:
-      - lts-3.16
+  # push:
+  #   branches:
+  #     - lts-3.16
   workflow_dispatch:
     inputs:
       branch:
@@ -26,7 +25,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.15.1"
+          node-version: "22.23.4"
           cache: "npm"
           cache-dependency-path: frontend/package.json
 

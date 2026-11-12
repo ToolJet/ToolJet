@@ -1,0 +1,9 @@
+id,contact,channel,scope,verified,status,created_at
+,ops@northstar.io,Email,All components,true,Active,2026-07-11T12:30:00Z
+,+1 415 555 0137,SMS,Major incidents,true,Active,2026-07-18T17:05:00Z
+,engineering@mariner.co,Email,"API Gateway, US region",true,Active,2026-08-03T09:10:00Z
+,support@brightpath.edu,Email,All components,true,Active,2026-08-09T15:42:00Z
+,https://example.com/status-webhook,Webhook,All components,true,Active,2026-08-12T13:25:00Z
+,+44 7700 900182,SMS,Authentication,false,Pending,2026-09-01T08:14:00Z
+,it@solacehealth.org,Email,Customer experience,true,Active,2026-09-05T18:37:00Z
+,devops@orbitpay.com,Email,Processing,true,Paused,2026-09-12T11:22:00Z

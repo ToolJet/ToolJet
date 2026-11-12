@@ -1,0 +1,19 @@
+{
+  "name": "Moving company dispatch",
+  "description": "Dispatch moving crews with arrival windows, routes and handover status for every move.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "moving-company-dispatch",
+  "category": "inventory-orders-and-fleet"
+}

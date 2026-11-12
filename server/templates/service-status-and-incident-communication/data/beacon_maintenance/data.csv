@@ -1,0 +1,4 @@
+id,reference,title,status,affected_components,starts_at,ends_at,message,owner,notify_subscribers
+,MNT-260920-01,EU database failover exercise,Scheduled,"EU region, API Gateway",2026-09-20T01:00:00Z,2026-09-20T02:30:00Z,Brief connection resets may occur while validating regional database failover.,SRE,true
+,MNT-260924-01,Notification provider upgrade,Scheduled,Notifications,2026-09-24T03:00:00Z,2026-09-24T04:00:00Z,Outbound delivery will remain available with reduced throughput during the provider upgrade.,Messaging,true
+,MNT-260910-01,Queue storage maintenance,Completed,Background jobs,2026-09-10T02:00:00Z,2026-09-10T02:42:00Z,Planned storage maintenance completed without customer impact.,Core Systems,false

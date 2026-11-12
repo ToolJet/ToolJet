@@ -20,6 +20,8 @@ import {
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { cn } from '@/lib/utils';
 import cx from 'classnames';
+import { placeCaretAtEnd } from '@/AppBuilder/Shared/DataTypes/utils';
+import { getOverlayContainer } from '../_utils/overlayContainer';
 
 /**
  * KeyValueRow - Renders a single key-value pair row
@@ -53,6 +55,10 @@ const KeyValueRow = ({
   // Validation state from adapter
   const [validation, setValidation] = useState({ isValid: true, validationError: null });
   const valueRef = useRef(null);
+  // State, not a ref: react-bootstrap resolves `container` at first render, before the row is attached, and only
+  // re-resolves when the function's identity changes.
+  const [rowEl, setRowEl] = useState(null);
+  const overlayContainer = useCallback(() => getOverlayContainer(rowEl), [rowEl]);
   const displayLabel = name || label || fieldKey;
   // Field is editable if configured AND not disabled
   const canEdit = isEditable && !isDisabled;
@@ -68,12 +74,23 @@ const KeyValueRow = ({
   }, []);
 
   const handleEditClick = () => {
-    if (isEditable) {
+    // Only the click entering edit mode should force the caret to the end; a later click while
+    // already editing must reposition it normally, like Table's string column.
+    if (isEditable && !isEditing) {
       setIsEditing(true);
       setTimeout(() => {
-        document.getElementById(`${componentId}-${fieldKey}`)?.focus();
+        const node = document.getElementById(`${componentId}-${fieldKey}`);
+        if (!node) return;
+        node.focus();
+        placeCaretAtEnd(node);
       }, 0);
     }
+  };
+
+  // Fired on press, not click: focusing a markdown/html field swaps its rendered markup for raw text before
+  // mouseup, detaching the pressed element so the browser never dispatches the click.
+  const handleRowMouseDown = (e) => {
+    if (e.button === 0) onFieldClick?.();
   };
 
   const handleBlur = () => {
@@ -99,6 +116,8 @@ const KeyValueRow = ({
       textColor,
       accentColor,
       darkMode,
+      containerWidth: valueRef.current?.offsetWidth,
+      overlayContainer,
       // Pass edit state
       isEditable,
       autoFocus: true, // Auto focus when switching to edit mode
@@ -158,13 +177,13 @@ const KeyValueRow = ({
   // Get error offset based on label width for alignment
   const getErrorOffset = () => {
     if (isTopAlignment) return {};
-    if (autoLabelWidth) return {};
     if (isRightDirection) return {};
+    if (autoLabelWidth) return maxLabelWidth > 0 ? { paddingLeft: `${maxLabelWidth}px` } : {};
     return { paddingLeft: `${labelWidth}%` };
   };
 
   return (
-    <div className="kv-row-container" onClick={() => onFieldClick && onFieldClick()}>
+    <div className="kv-row-container" ref={setRowEl} onMouseDown={handleRowMouseDown}>
       <div className={rowClassName}>
         <Label
           label={displayLabel}
@@ -175,6 +194,9 @@ const KeyValueRow = ({
           direction={direction}
           defaultAlignment={alignment}
           inputId={fieldKey}
+          overflowTooltip
+          overlayContainer={overlayContainer}
+          overlayClassName={`overlay-cell-table kv-label-overlay ${darkMode ? 'dark-theme' : ''}`}
           style={autoLabelWidth && maxLabelWidth > 0 ? { minWidth: `${maxLabelWidth}px` } : {}}
           classes={{
             labelContainer: cn({

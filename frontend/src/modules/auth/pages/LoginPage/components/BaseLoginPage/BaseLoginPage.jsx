@@ -8,7 +8,7 @@ import { getRedirectTo } from '@/_helpers/routes';
 import { setCookie } from '@/_helpers/cookie';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
+import { FeatureGraphicRightPanel } from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import { LoginForm, MfaVerifyForm } from '..';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -110,6 +110,7 @@ const BaseLoginPage = ({ configs, organizationId, currentOrganizationName, handl
 
   return (
     <OnboardingBackgroundWrapper
+      className="feature-graphic-layout"
       LeftSideComponent={() =>
         mfaChallenge ? (
           <MfaVerifyForm
@@ -130,7 +131,7 @@ const BaseLoginPage = ({ configs, organizationId, currentOrganizationName, handl
           />
         )
       }
-      RightSideComponent={LoginPageRightPanel}
+      RightSideComponent={FeatureGraphicRightPanel}
     />
   );
 };

@@ -1,0 +1,5 @@
+id,name,owner,detail,capacity,extras,revision
+,Payment processing,Elena Park,"Card gateway, checkout API, settlement queue",60,[],1
+,Identity platform,Samira Khan,"Account provisioning, identity directory, authentication",120,[],1
+,Order orchestration,Marcus Bell,"Order intake, inventory events, fulfillment routing",90,[],1
+,Reporting services,Avery Chen,Batch exports and customer reporting,240,[],1

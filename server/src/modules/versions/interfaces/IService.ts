@@ -23,12 +23,17 @@ export interface VersionSettingsUpdateContext {
 }
 
 export interface IVersionService {
-  getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }>;
+  getAllVersions(
+    app: App,
+    branchId?: string,
+    includeDefaultBranchVersions?: boolean
+  ): Promise<{ versions: Array<AppVersion> }>;
 
   createVersion(app: App, user: User, versionCreateDto: VersionCreateDto): Promise<any>;
 
   deleteVersion(app: App, user: User): Promise<void>;
 
+  getViewerLicenseTerms(organizationId: string): Promise<unknown>;
   getVersion(app: App, user: User, mode?: string): Promise<any>;
 
   getVersionByStableIds(

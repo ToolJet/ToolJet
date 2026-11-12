@@ -1,4 +1,20 @@
-FROM node:22.15.1 AS builder
+# tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827). Same as ee-production,
+# but follows BRANCH_NAME like the submodules do, falling back to main.
+FROM node:22.23.4 AS mcp-builder
+WORKDIR /mcp
+ARG BRANCH_NAME
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git clone https://github.com/ToolJet/tooljet-mcp.git . && \
+    if [ -n "${BRANCH_NAME}" ] && git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then \
+      git checkout "${BRANCH_NAME}"; \
+    else \
+      echo "Branch ${BRANCH_NAME} not found in tooljet-mcp, falling back to main"; \
+    fi
+RUN npm ci && npm run build:plugin
+
+FROM node:22.23.4 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
@@ -71,14 +87,14 @@ RUN if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
 # Handle submodules - try normal submodule update first, if it fails clone directly from base repo
 RUN if git submodule update --init --recursive; then \
   echo "Submodules initialized successfully"; \
-  # Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
+  # Follow a same-named submodule branch only when it contains the pinned commit (HEAD after
+  # update), else keep the pin: a stale branch builds EE code older than this checkout.
   git submodule foreach " \
-    if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-       git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-      git checkout ${BRANCH_NAME}; \
+    if git fetch -q origin ${BRANCH_NAME} 2>/dev/null && \
+       git merge-base --is-ancestor HEAD FETCH_HEAD; then \
+      git checkout -B ${BRANCH_NAME} FETCH_HEAD; \
     else \
-      echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to lts-3.16'; \
-      git checkout lts-3.16; \
+      echo 'Submodule \$name: no ${BRANCH_NAME} branch containing the pinned commit, keeping the pin'; \
     fi"; \
 else \
   echo "Submodule update failed, likely a forked repo. Cloning EE submodules directly from base repo."; \
@@ -129,6 +145,10 @@ RUN npm --prefix plugins prune --production
 
 ENV TOOLJET_EDITION=ee
 
+# Copy shared widget-definitions package (required by frontend + server file: dependency)
+COPY ./packages/widget-definitions/package.json ./packages/widget-definitions/package.json
+COPY ./packages/widget-definitions/src/ ./packages/widget-definitions/src/
+
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
@@ -143,6 +163,7 @@ ENV TOOLJET_EDITION=ee
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
+RUN node server/scripts/compress-templates.js
 RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
@@ -154,7 +175,7 @@ RUN npm --prefix server run build
 # apt-get update fails with exit 100. Bookworm also matches the builder stage,
 # which fixes the libprotobuf ABI mismatch for the copied nsjail binary.
 # ---------------------------------------------------------------------------
-FROM node:22.15.1-bookworm
+FROM node:22.23.4-bookworm
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
@@ -163,6 +184,11 @@ RUN apt-get update -yq \
 
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
+
+# Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
+COPY ./docker/icu-tz /usr/local/share/icu-tz
+ENV ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tz
+RUN node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: ' + process.versions.tz)"
 
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
@@ -209,6 +235,8 @@ COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
 COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 # copy frontend build
 COPY --from=builder /app/frontend/build ./app/frontend/build
+# copy widget-definitions (server node_modules symlinks to this)
+COPY --from=builder /app/packages/widget-definitions ./app/packages/widget-definitions
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
@@ -219,6 +247,12 @@ COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 # Copy nsjail configuration for Python sandboxing
 COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
+# tooljet-mcp bundle for the socket relay. data/ must sit next to mcp/, not inside it (bundle
+# resolves it as ../data); package.json ships for its "type":"module". Copy all of bundle/:
+# index.js imports its chunk-*.js siblings.
+COPY --from=mcp-builder /mcp/bundle/ ./app/mcp/
+COPY --from=mcp-builder /mcp/package.json ./app/mcp/package.json
+COPY --from=mcp-builder /mcp/data ./app/data
 
 WORKDIR /app
 

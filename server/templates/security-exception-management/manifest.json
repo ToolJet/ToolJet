@@ -1,0 +1,15 @@
+{
+  "name": "Security exception management",
+  "description": "Record security exceptions with an owner, compensating controls and an expiry date, and track each one through assessment to closure.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "security-exception-management",
+  "category": "risk-and-compliance"
+}

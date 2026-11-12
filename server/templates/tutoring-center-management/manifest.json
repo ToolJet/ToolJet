@@ -1,0 +1,15 @@
+{
+  "name": "Tutoring center management",
+  "description": "Schedule tutoring sessions, record learner progress and manage follow-ups with parents.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "tutoring-center-management",
+  "category": "education-and-training"
+}

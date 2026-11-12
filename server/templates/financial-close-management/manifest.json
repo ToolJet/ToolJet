@@ -1,0 +1,21 @@
+{
+  "name": "Financial close management",
+  "description": "Run the month-end close by entity and period. Track reconciliations, exceptions and reviews until each period is closed.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "financial-close-management",
+  "category": "finance-and-accounting"
+}

@@ -32,7 +32,7 @@ widget.
 
 ## Registered-surface disposition
 
-Every key in `src/AppBuilder/WidgetManager/widgets/dropdownV2.js`. "Untagged case" means a passing test
+Every key in `packages/widget-definitions/src/widgets/dropdownV2.js`. "Untagged case" means a passing test
 exists but carries no scenario ID, which this contract does not count as maintained protection.
 
 | Registered key | Kind | Disposition |

@@ -363,18 +363,11 @@ Cypress.Commands.add("hideTooltip", () => {
  * @tjUsage cy.createApp('My Test App')
  */
 Cypress.Commands.add("createApp", (appName) => {
-  const getAppButtonSelector = ($title) =>
-    $title.text().includes(commonText.introductionMessage)
-      ? commonSelectors.dashboardAppCreateButton
-      : commonSelectors.appCreateButton;
-
-  cy.get("body").then(($title) => {
-    cy.get(getAppButtonSelector($title))
-      .scrollIntoView()
-      .click({ force: true }); //workaround for cypress dashboard click issue
-    cy.clearAndType('[data-cy="app-name-input"]', appName);
-    cy.get('[data-cy="create-app"]').click();
-  });
+  cy.get(commonSelectors.appCreateButton)
+    .scrollIntoView()
+    .click({ force: true }); //workaround for cypress dashboard click issue
+  cy.clearAndType('[data-cy="app-name-input"]', appName);
+  cy.get('[data-cy="create-app"]').click();
   cy.waitForAppLoad();
   cy.skipEditorPopover();
 });

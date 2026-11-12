@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.20.0
+          node-version: 22.23.4
 
       - name: Install dependencies
         working-directory: docs
