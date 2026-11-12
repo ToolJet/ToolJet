@@ -61,6 +61,7 @@ describe("Workflows - node menu", () => {
     assertRunjsCode(workflowsText.duplicatedRunjsNodeName);
     assertRunjsCode(workflowsText.runjs);
 
+    cy.get("body").click(50, 50);
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
   });
 

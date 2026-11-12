@@ -89,7 +89,12 @@ export const verifyPreviewOutputText = (expectedOutput) => {
   cy.focused().blur();
   cy.wait(1500);
   cy.get(".header-preview-btn:not(.run-workflow-btn)").click();
-  cy.get(".result-section .result-body", { timeout: 20000 })
+  cy.get(".result-section .result-body", { timeout: 20000 }).should(
+    "contain.text",
+    "status"
+  );
+  cy.get('.result-section [data-cy="inspector-data-label"]').click();
+  cy.get(".result-section .result-body")
     .invoke("text")
     .should("include", expectedOutput);
 };
