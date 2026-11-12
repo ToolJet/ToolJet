@@ -124,8 +124,18 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
     }
     if (filters.approver) {
       query.andWhere(
-        `EXISTS (SELECT 1 FROM jsonb_array_elements_text(${approverValuesSql('request.approvers_snapshot')}) AS approver_value
-          WHERE approver_value ILIKE :approver ESCAPE '\\')`,
+        `(EXISTS (SELECT 1 FROM jsonb_array_elements_text(${approverValuesSql('request.approvers_snapshot')}) AS approver_value
+            WHERE approver_value ILIKE :approver ESCAPE '\\')
+          OR EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'users')} AS approver_user
+            JOIN users ON users.id::text = approver_user
+            JOIN organization_users ON organization_users.user_id = users.id
+              AND organization_users.organization_id = request.organization_id
+            WHERE concat_ws(' ', users.first_name, users.last_name) ILIKE :approver ESCAPE '\\'
+              OR users.email ILIKE :approver ESCAPE '\\')
+          OR EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'groups')} AS approver_group
+            JOIN permission_groups ON permission_groups.id::text = approver_group
+              AND permission_groups.organization_id = request.organization_id
+            WHERE permission_groups.name ILIKE :approver ESCAPE '\\'))`,
         { approver: `%${escapeLikePattern(filters.approver)}%` }
       );
     }
