@@ -1,0 +1,47 @@
+// The inner field is the wrapper's last child, so its last:tw-mb-0 removes
+// the shared spacing. Keep section spacing on these sibling wrappers instead.
+.library-style-field:not(:last-child) {
+  margin-bottom: 8px;
+}
+
+// Compact style controls share one column, regardless of label or value length.
+// Explicit stacked fields and expression mode retain the editor's full-width layout.
+.library-style-field .wrapper-div-code-editor:not(.codeShow-active) {
+  > .code-flex-wrapper:has(> :nth-child(3)) {
+    position: relative;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 24px 142px;
+    column-gap: 4px;
+
+    > .field {
+      min-width: 0;
+      grid-column: 1;
+      grid-row: 1;
+      overflow-wrap: anywhere;
+    }
+
+    > .flex-grow-1 {
+      grid-column: 2;
+      grid-row: 1;
+      min-width: 0;
+
+      .fx-common {
+        margin-right: 0;
+      }
+    }
+
+    > :last-child {
+      grid-column: 3;
+      grid-row: 1;
+      min-width: 0;
+      max-width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+
+      &.row.fx-container > .col {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  }
+}

@@ -681,7 +681,9 @@ const DynamicEditorBridge = (props) => {
   if (heldExpression && !heldCode && !controlChosen) setHeldCode(true);
   const codeShow = paramType === 'code' || forceCodeBox || heldCode;
   const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Slider type'];
-  const { isFxNotRequired, newLine = false, section = '' } = fieldMeta;
+  const [segmentedFullRow, setSegmentedFullRow] = React.useState(false);
+  const { isFxNotRequired, newLine: explicitNewLine = false, section = '' } = fieldMeta;
+  const newLine = explicitNewLine || (paramType === 'switch' && segmentedFullRow);
   const isDeprecated = section === 'deprecated';
   const { t } = useTranslation();
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
@@ -791,6 +793,7 @@ const DynamicEditorBridge = (props) => {
           onFxPress(true);
         }}
         meta={fieldMeta}
+        onLayoutChange={setSegmentedFullRow}
         cyLabel={cyLabel}
         styleDefinition={styleDefinition}
         component={component}
