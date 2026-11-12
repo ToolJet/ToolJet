@@ -31,20 +31,21 @@ const BaseLeftNavSideBar = ({
     <div>
       <ul className="sidebar-inner nav nav-vertical">
         {showNewHomePage && (
-          <li className="text-center cursor-pointer">
+          <li className="text-center">
             <ToolTip message="Home" placement="right">
               <Link
                 to={getPrivateRoute('home')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('home'), event)}
                 className={routeLinkClassName(router.pathname === getPrivateRoute('home'))}
                 data-cy="icon-home"
+                aria-label="Home"
               >
                 <Home size={16} />
               </Link>
             </ToolTip>
           </li>
         )}
-        <li className="text-center cursor-pointer">
+        <li className="text-center">
           <ToolTip message="Apps" placement="right">
             <Link
               to={appendBranchName(getPrivateRoute('dashboard'))}
@@ -53,6 +54,7 @@ const BaseLeftNavSideBar = ({
                 router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')
               )}
               data-cy="icon-dashboard"
+              aria-label="Apps"
             >
               <Blocks size={16} />
             </Link>
@@ -60,13 +62,14 @@ const BaseLeftNavSideBar = ({
         </li>
 
         {hasModuleAccess && (
-          <li className="text-center cursor-pointer">
+          <li className="text-center">
             <ToolTip message="Modules" placement="right">
               <Link
                 to={appendBranchName(getPrivateRoute('modules'))}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('modules'), event)}
                 className={routeLinkClassName(router.pathname === getPrivateRoute('modules'))}
                 data-cy="icon-modules"
+                aria-label="Modules"
               >
                 <ToyBrick size={16} />
               </Link>
@@ -75,12 +78,13 @@ const BaseLeftNavSideBar = ({
         )}
 
         {workflowsEnabled && (
-          <li className="text-center  cursor-pointer" data-cy="icon-workflows">
+          <li className="text-center" data-cy="icon-workflows">
             <ToolTip message="Workflows" placement="right">
               <Link
                 to={appendBranchName(getPrivateRoute('workflows'))}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workflows'), event)}
                 className={routeLinkClassName(router.pathname === getPrivateRoute('workflows'))}
+                aria-label="Workflows"
               >
                 <Workflow size={16} />
               </Link>
@@ -89,13 +93,14 @@ const BaseLeftNavSideBar = ({
         )}
 
         {canAccessTooljetDbDashboard() && (
-          <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
+          <li className="text-center" data-cy={`database-icon`}>
             <ToolTip message="ToolJet Database" placement="right">
               <Link
                 to={getPrivateRoute('database')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('database'), event)}
                 className={routeLinkClassName(router.pathname === getPrivateRoute('database'))}
                 data-cy="icon-database"
+                aria-label="ToolJet Database"
               >
                 <Table2 size={16} />
               </Link>
@@ -105,13 +110,14 @@ const BaseLeftNavSideBar = ({
 
         {/* DATASOURCES */}
         {isAuthorizedForGDS && (
-          <li className="text-center cursor-pointer">
+          <li className="text-center">
             <ToolTip message="Data sources" placement="right">
               <Link
                 to={appendBranchName(getPrivateRoute('data_sources'))}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('data_sources'), event)}
                 className={routeLinkClassName(router.pathname === getPrivateRoute('data_sources'))}
                 data-cy="icon-global-datasources"
+                aria-label="Data sources"
               >
                 <Puzzle size={16} />
               </Link>
@@ -119,13 +125,14 @@ const BaseLeftNavSideBar = ({
           </li>
         )}
         {canCreateVariableOrConstant() && (
-          <li className="text-center cursor-pointer">
+          <li className="text-center">
             <ToolTip message="Workspace constants" placement="right">
               <Link
                 to={getPrivateRoute('workspace_constants')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_constants'), event)}
                 className={routeLinkClassName(router.pathname === getPrivateRoute('workspace_constants'))}
                 data-cy="icon-workspace-constants"
+                aria-label="Workspace constants"
               >
                 <KeyRound size={16} />
               </Link>
@@ -140,6 +147,7 @@ const BaseLeftNavSideBar = ({
               className="cursor-pointer tj-leftsidebar-icon-items"
               onClick={() => switchDarkMode(!darkMode)}
               data-cy="mode-switch-button"
+              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {darkMode ? <Sun size={16} /> : <Moon size={16} />}
             </button>

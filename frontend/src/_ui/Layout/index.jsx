@@ -148,6 +148,7 @@ function Layout({
               <Link
                 to={isEndUser ? getPrivateRoute('dashboard') : getPrivateRoute('home')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
+                aria-label="Home"
               >
                 {isWhiteLabellingDataLoading ? (
                   ''
@@ -155,6 +156,7 @@ function Layout({
                   <img
                     width="18"
                     height="18"
+                    alt="Brand logo"
                     src={logo}
                     onError={(e) => {
                       e.currentTarget.onerror = null; // prevent infinite loop

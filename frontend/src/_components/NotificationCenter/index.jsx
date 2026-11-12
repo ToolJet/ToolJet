@@ -160,6 +160,7 @@ export const NotificationCenter = ({ darkMode }) => {
               className={cn('tw-relative cursor-pointer tj-leftsidebar-icon-items', {
                 active: showOverlay,
               })}
+              aria-label="Notifications"
               {...triggerProps}
             >
               <Bell data-cy="notifications-icon" size={16} />
