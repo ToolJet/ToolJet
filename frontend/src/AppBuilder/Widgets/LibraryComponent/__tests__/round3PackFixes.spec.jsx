@@ -381,6 +381,36 @@ describe('T54: MUI Radio deselects on a second click with Allow deselect', () =>
     expect(v.events.filter((e) => e === 'onChange')).toHaveLength(2);
   });
 
+  // A real click on the circle lands on its icon (an <svg> inside the label), not on the hidden input: it reaches the
+  // Radio once itself, and again as the click the label sends on to the input, which picked the option back. A click
+  // on the label's text reaches the Radio only through the input, so it cleared the value and the circle did not.
+  //
+  // As Chrome does it (logged there: click on the svg, then focus and click on the input with the radio already
+  // unchecked): the click on the part, the page's work for it (React's render) done, then the label's click on the
+  // input. jsdom sends the label's click inside the first one, before React renders, which hid the break.
+  const clickAsChrome = async (target, input) => {
+    target.addEventListener('click', (e) => e.preventDefault(), { once: true });
+    fireEvent.click(target);
+    await act(async () => {});
+    if (target !== input) fireEvent.click(input);
+  };
+
+  it.each([
+    ['the circle (its icon)', (v) => radio(v, 'one').parentElement.querySelector('svg')],
+    ['the label text', (v) => radio(v, 'one').closest('label').querySelector('.MuiFormControlLabel-label')],
+  ])('on: a click on %s of the picked option clears it, firing onChange once', async (_, part) => {
+    const v = await mount('mui', 'RadioGroup', { options: OPTIONS, value: 'one', allowDeselect: true });
+    await waitFor(() => expect(radio(v, 'one').checked).toBe(true));
+
+    await clickAsChrome(part(v), radio(v, 'one'));
+
+    await waitFor(() => expect(v.exposed.value).toBe(''));
+    await settle();
+    expect(v.exposed.value).toBe('');
+    expect(radio(v, 'one').checked).toBe(false);
+    expect(v.events.filter((e) => e === 'onChange')).toHaveLength(1);
+  });
+
   it('off (the default): a second click keeps the value', async () => {
     const v = await mount('mui', 'RadioGroup', { options: OPTIONS, value: 'one' });
     await waitFor(() => expect(radio(v, 'one').checked).toBe(true));
