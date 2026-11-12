@@ -29,6 +29,7 @@ const WorkspaceSettings = React.lazy(() => import('@/modules/WorkspaceSettings')
 
 const WorkspaceConstants = React.lazy(() => import('@/WorkspaceConstants'));
 const AppsDashboard = React.lazy(() => import('@/pages/AppsDashboard'));
+const AppLoader = React.lazy(() => import('@/AppLoader/AppLoader'));
 
 import LayoutRouteWrapper from '@/_ui/Layout/LayoutRouteWrapper';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
@@ -36,7 +37,6 @@ import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { toast } from 'react-hot-toast';
 import '@/_styles/theme.scss';
-import AppLoader from '@/AppLoader';
 import { BreadCrumbContext } from './BreadCrumbContext';
 
 export { BreadCrumbContext };
