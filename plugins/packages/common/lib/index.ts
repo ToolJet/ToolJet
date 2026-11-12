@@ -37,6 +37,7 @@ import {
   isPrivateIP,
   getSSRFConfig,
   getSSRFProtectionOptions,
+  queryErrorMessage,
 } from './ssrf-protection';
 import { QueryBuilder, QueryBuilderError, createQueryBuilder } from './queryBuilder';
 
@@ -75,6 +76,7 @@ export {
   isPrivateIP,
   getSSRFConfig,
   getSSRFProtectionOptions,
+  queryErrorMessage,
   getTooljetEdition,
   QueryBuilder,
   QueryBuilderError,
