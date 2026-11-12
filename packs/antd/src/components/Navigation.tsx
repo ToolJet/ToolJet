@@ -1261,10 +1261,21 @@ export const QRCode = () => {
   });
   const px = Math.max(48, Math.min(600, toNumber(size) ?? 160));
   const fits = useMemo(() => !value || fitsQrCode(value, String(errorLevel)), [value, errorLevel]);
+  // Ant fills the modules from its JS token (light mode's black) as an SVG attribute, which the pack's dark mode and
+  // theme colours (CSS variables) never reach (AD-25). currentColor follows the box's CSS colour instead, and the box
+  // takes the container background (it was transparent, so Container background did nothing). A set Color or
+  // Background still wins; with only a Background set, the modules keep Ant's dark default (light on a white Background
+  // would vanish).
+  const colors = {
+    color: color || (bgColor ? undefined : 'currentColor'),
+    bgColor: bgColor || undefined,
+    style: { color: 'var(--ant-color-text)', backgroundColor: bgColor || 'var(--ant-color-bg-container)' },
+  };
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center">
       {value && !fits ? (
         <AntQRCode
+          {...colors}
           value="-"
           size={px}
           status="expired"
@@ -1274,10 +1285,9 @@ export const QRCode = () => {
         />
       ) : value ? (
         <AntQRCode
+          {...colors}
           value={value}
           size={px}
-          color={color || undefined}
-          bgColor={bgColor || undefined}
           errorLevel={errorLevel as 'M'}
           icon={icon || undefined}
           bordered={bordered}
@@ -1285,9 +1295,10 @@ export const QRCode = () => {
           type="svg"
         />
       ) : loading ? (
-        <AntQRCode value="-" size={px} status="loading" bordered={bordered} type="svg" />
+        <AntQRCode {...colors} value="-" size={px} status="loading" bordered={bordered} type="svg" />
       ) : (
         <AntQRCode
+          {...colors}
           value="-"
           size={px}
           status="expired"
