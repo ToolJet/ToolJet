@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Inbox } from 'lucide-react';
@@ -27,6 +27,7 @@ import { useRowResolver } from '../lib/ui2/table/rowResolver';
 import { TOKEN, useDrawnNumber, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import { useLiveState } from '../lib/useLiveState';
 import { sameValue } from '../lib/sameValue';
+import { useVirtualRows } from '../lib/virtualRows';
 import '../styles/ui2-table.css';
 
 // ToolJet UI 2.0's Table (ShadTable) in the pack: its property, style, event, action and exposed-value names and
@@ -551,17 +552,17 @@ export const DataTable = () => {
     }
   }, [serverPaging, paged.page, page, setPageIndex]);
 
+  // currentData is the rows the table shows, searched, filtered and sorted, across its pages (it was always the raw data).
   const publishRows = (rows: Entry[], pg: Paged) => {
     setFilteredData(rows.map((e) => e.row));
+    setCurrentData(rows.map((e) => e.row));
     setCurrentPageData(pg.items.map((e) => e.row));
   };
   useEffect(() => {
-    setCurrentData(data);
-  }, [data, setCurrentData]);
-  useEffect(() => {
     setFilteredData(processed.map((e) => e.row));
+    setCurrentData(processed.map((e) => e.row));
     setCurrentPageData(paged.items.map((e) => e.row));
-  }, [processed, paged.items, setFilteredData, setCurrentPageData]);
+  }, [processed, paged.items, setFilteredData, setCurrentData, setCurrentPageData]);
 
   // ---- selection --------------------------------------------------------------------------------------------------
   const allowSelection = allowSelectionProp !== false;
@@ -692,6 +693,8 @@ export const DataTable = () => {
   const exposedFilters = (list: TableFilter[]) =>
     list.map((f) => ({
       column: columns.find((c) => c.key === f.column)?.name ?? f.column,
+      // The key setFilters takes, beside the name shown, as sortApplied has it.
+      columnKey: f.column,
       condition: f.condition,
       value: f.value ?? '',
     }));
@@ -734,7 +737,7 @@ export const DataTable = () => {
     return () => clearTimeout(timer);
   }, [searchInput, searchText]);
 
-  const goTo = (target: unknown, fire = true) => {
+  const goTo = (target: unknown, fire = true, changedOnly = false) => {
     const n = Math.floor(Number(target));
     if (!Number.isFinite(n) || n < 1) return;
     // The rows as the last action left them, not as the last render drew them (the drawn ones when nothing changed).
@@ -742,10 +745,11 @@ export const DataTable = () => {
     const rows = current ? processed : process(searchRef.current, filtersRef.current, sortRef.current);
     const { pageCount } = pageFor(rows, 1);
     const next = pageCount ? Math.min(n, pageCount) : n;
+    const was = pageRef.current;
     setPage(next);
     setPageIndex(next);
     setCurrentPageData(pageFor(rows, next).items.map((e) => e.row));
-    if (fire) onPageChanged();
+    if (fire && (!changedOnly || next !== was)) onPageChanged();
   };
 
   const pressHeader = (column: TableColumn) => {
@@ -802,6 +806,16 @@ export const DataTable = () => {
   };
 
   // ---- component actions ------------------------------------------------------------------------------------------
+  // A selection set by an action fires onSelectionChanged when it changes the selection (it fired nothing). In single
+  // selection one row at most is selected (selectRows and selectAllRows selected several).
+  const single = allowSelection && !bulk;
+  const selectByAction = (keys: Set<string>, focus: string | null) => {
+    const before = live.current.selected;
+    const changed = keys.size !== before.size || [...keys].some((k) => !before.has(k));
+    select(keys, focus);
+    live.current.selected = keys;
+    if (changed) onSelectionChanged();
+  };
   const isKey = (key: unknown): key is string | number =>
     (typeof key === 'string' && key !== '') || typeof key === 'number';
   const byKeyValues = (key: unknown, values: unknown[]): Entry[] => {
@@ -811,14 +825,14 @@ export const DataTable = () => {
   };
   const asList = (values: unknown) => (Array.isArray(values) ? values : [values]);
 
-  // As on the native Table, setPage does not fire onPageChanged.
+  // setPage fires onPageChanged when the page changes, as setSort, setFilters and setSearchText fire theirs.
   ToolJet.useAction(
     {
       name: 'setPage',
       displayName: 'Set page',
       params: [{ handle: 'page', displayName: 'Page (1-based)', defaultValue: '{{1}}' }],
     },
-    (target: unknown) => goTo(target, false)
+    (target: unknown) => goTo(target, true, true)
   );
   ToolJet.useAction(
     {
@@ -831,10 +845,10 @@ export const DataTable = () => {
     },
     (key: unknown, value: unknown) => {
       const [match] = byKeyValues(key, [value]);
-      if (match) select(new Set([match.key]), match.key);
+      if (match) selectByAction(new Set([match.key]), match.key);
     }
   );
-  ToolJet.useAction({ name: 'deselectRow', displayName: 'Deselect row' }, () => select(new Set(), null));
+  ToolJet.useAction({ name: 'deselectRow', displayName: 'Deselect row' }, () => selectByAction(new Set(), null));
   ToolJet.useAction(
     {
       name: 'selectRows',
@@ -845,9 +859,14 @@ export const DataTable = () => {
       ],
     },
     (key: unknown, values: unknown) => {
+      const matches = byKeyValues(key, asList(values));
+      if (single) {
+        if (matches[0]) selectByAction(new Set([matches[0].key]), matches[0].key);
+        return;
+      }
       const keys = new Set(live.current.selected);
-      byKeyValues(key, asList(values)).forEach((e) => keys.add(e.key));
-      select(keys, live.current.focusKey);
+      matches.forEach((e) => keys.add(e.key));
+      selectByAction(keys, live.current.focusKey);
     }
   );
   ToolJet.useAction(
@@ -862,13 +881,17 @@ export const DataTable = () => {
     (key: unknown, values: unknown) => {
       const keys = new Set(live.current.selected);
       byKeyValues(key, asList(values)).forEach((e) => keys.delete(e.key));
-      select(keys, live.current.focusKey);
+      const focus = live.current.focusKey !== null && keys.has(live.current.focusKey) ? live.current.focusKey : null;
+      selectByAction(keys, single ? focus : live.current.focusKey);
     }
   );
-  ToolJet.useAction({ name: 'selectAllRows', displayName: 'Select all rows' }, () =>
-    select(toKeySet(live.current.processed), live.current.focusKey)
+  ToolJet.useAction({ name: 'selectAllRows', displayName: 'Select all rows' }, () => {
+    if (single) return;
+    selectByAction(toKeySet(live.current.processed), live.current.focusKey);
+  });
+  ToolJet.useAction({ name: 'deselectAllRows', displayName: 'Deselect all rows' }, () =>
+    selectByAction(new Set(), null)
   );
-  ToolJet.useAction({ name: 'deselectAllRows', displayName: 'Deselect all rows' }, () => select(new Set(), null));
   ToolJet.useAction(
     {
       name: 'setFilters',
@@ -920,18 +943,21 @@ export const DataTable = () => {
       displayName: 'Download table data',
       params: [{ handle: 'type', displayName: 'Type (csv or json)', defaultValue: 'csv' }],
     },
-    (type: unknown) =>
+    // Fires onTableDataDownload, as the toolbar's download does.
+    (type: unknown) => {
       runDownload(
         String(type ?? 'csv')
           .toLowerCase()
           .includes('json')
           ? 'json'
           : 'csv'
-      )
+      );
+      onTableDataDownload();
+    }
   );
 
   // ---- layout -----------------------------------------------------------------------------------------------------
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   const [box, setBox] = useState({ width: 0, height: 0 });
   const boxWidth = box.width;
   const [edges, setEdges] = useState({ right: false, below: false });
@@ -982,6 +1008,18 @@ export const DataTable = () => {
   }, []);
 
   const rowHeight = ROW_HEIGHT[cellSize] ?? ROW_HEIGHT.regular;
+  // A long page draws only the rows in view, as ToolJet 1.0's Table (lib/virtualRows): spacer rows keep the table its
+  // full height, so the sticky header, the scrollbar and the column layout stay as they are.
+  const virtualKey = useCallback((i: number) => paged.items[i]?.key ?? i, [paged.items]);
+  const virtual = useVirtualRows({ count: loading ? 0 : paged.items.length, estimate: rowHeight, getKey: virtualKey });
+  const { setScrollEl } = virtual;
+  const boxRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      scrollRef.current = el;
+      setScrollEl(el);
+    },
+    [setScrollEl]
+  );
   const striped = tableType === 'striped';
   const bordered = tableType === 'bordered';
   // Column widths are preferences: when they add up to more than the table's width, the table shares its width instead.
@@ -1072,10 +1110,13 @@ export const DataTable = () => {
       ) : null}
 
       <div
-        ref={scrollRef}
+        ref={boxRef}
         className={cn('t2-box', showBorder !== false && 'has-border', empty && 'is-empty', edges.right && 'more-right')}
       >
-        <table className={cn('t2-grid', bordered && 'is-bordered')}>
+        <table
+          className={cn('t2-grid', bordered && 'is-bordered')}
+          aria-rowcount={virtual.on ? paged.items.length + 1 : undefined}
+        >
           <thead className={cn(stickyHeader !== false && 'is-sticky')}>
             <tr>
               {bulk ? (
@@ -1136,8 +1177,14 @@ export const DataTable = () => {
                 </tr>
               ))
             ) : paged.items.length ? (
-              paged.items
-                .map((entry, i) => {
+              [
+                virtual.padTop > 0 ? (
+                  <tr key="t2-pad-top" aria-hidden="true" className="t2-plain">
+                    <td colSpan={colCount} style={{ height: virtual.padTop, padding: 0, border: 0 }} />
+                  </tr>
+                ) : null,
+                ...(virtual.on ? virtual.items.map((v) => v.index) : paged.items.map((_, i) => i)).map((i) => {
+                  const entry = paged.items[i];
                   const row = entry.row;
                   const isSelected = selected.has(entry.key);
                   // As natively, only a selectable table marks rows.
@@ -1145,6 +1192,9 @@ export const DataTable = () => {
                   return (
                     <tr
                       key={entry.key}
+                      ref={virtual.on ? virtual.measure : undefined}
+                      data-index={i}
+                      aria-rowindex={virtual.on ? i + 2 : undefined}
                       data-state={showSelected ? 'selected' : undefined}
                       className={cn(allowSelection && 'is-selectable', striped && i % 2 === 1 && 'is-striped')}
                       onClick={() => clickRow(entry)}
@@ -1221,18 +1271,23 @@ export const DataTable = () => {
                       })}
                     </tr>
                   );
-                })
-                .concat(
-                  // A short last page keeps the table a full page tall: the blank sits inside the table, under its rows,
-                  // instead of the table (and a card fitted to it) shrinking and leaving a gap below on the page.
-                  fillerRows > 0
-                    ? [
-                        <tr key="t2-page-filler" aria-hidden="true" className="t2-plain t2-page-filler">
-                          <td colSpan={colCount} style={{ height: rowHeight * fillerRows, padding: 0, border: 0 }} />
-                        </tr>,
-                      ]
-                    : []
-                )
+                }),
+                virtual.padBottom > 0 ? (
+                  <tr key="t2-pad-bottom" aria-hidden="true" className="t2-plain">
+                    <td colSpan={colCount} style={{ height: virtual.padBottom, padding: 0, border: 0 }} />
+                  </tr>
+                ) : null,
+              ].concat(
+                // A short last page keeps the table a full page tall: the blank sits inside the table, under its rows,
+                // instead of the table (and a card fitted to it) shrinking and leaving a gap below on the page.
+                fillerRows > 0
+                  ? [
+                      <tr key="t2-page-filler" aria-hidden="true" className="t2-plain t2-page-filler">
+                        <td colSpan={colCount} style={{ height: rowHeight * fillerRows, padding: 0, border: 0 }} />
+                      </tr>,
+                    ]
+                  : []
+              )
             ) : (
               <tr className="t2-plain">
                 {/* The empty state fills the body: in a short table the icon goes, then the description. */}

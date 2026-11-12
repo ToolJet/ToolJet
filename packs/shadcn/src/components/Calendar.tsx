@@ -282,14 +282,27 @@ export const Calendar = () => {
     },
     (date, endDate) => {
       const { m: mode2, selected: current } = live.current;
-      let next: Selection;
-      if (mode2 === 'multiple')
-        next = selectionOf(
-          [...((current as Date[] | undefined) || []), ...((selectionOf(date, 'multiple') as Date[]) || [])],
-          'multiple'
+      // A day the calendar does not let a user pick (before Min date, after Max date, a disabled date or weekday) is
+      // not selected by the action either (it was, with nothing to tell it apart).
+      const ruledOut = (d: unknown) => {
+        const day = toDay(d as string);
+        return (
+          !!day &&
+          ((!!min && day < min) || (!!max && day > max) || disabledSet.has(ymd(day)) || offDays.has(day.getDay()))
         );
-      else if (mode2 === 'range') next = selectionOf([date, endDate], 'range');
-      else next = selectionOf(date, 'single');
+      };
+      let next: Selection;
+      if (mode2 === 'multiple') {
+        const added = ((selectionOf(date, 'multiple') as Date[]) || []).filter((d) => !ruledOut(d));
+        if (!added.length) return;
+        next = selectionOf([...((current as Date[] | undefined) || []), ...added], 'multiple');
+      } else if (mode2 === 'range') {
+        if (ruledOut(date) || ruledOut(endDate)) return;
+        next = selectionOf([date, endDate], 'range');
+      } else {
+        if (ruledOut(Array.isArray(date) ? date[0] : date)) return;
+        next = selectionOf(date, 'single');
+      }
       publish(next);
       showMonth(toDay(Array.isArray(date) ? date[0] : date), false);
     }

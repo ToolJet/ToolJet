@@ -13,6 +13,7 @@ import {
 } from '../lib/ui2/display/type';
 import { HeadingSkel, LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useBlankNumber, useThemeColor } from '../lib/styleDefaults';
+import { onPointerIn } from '../lib/pointerEnter';
 import '../styles/ui2-display.css';
 
 const LEVELS = ['h1', 'h2', 'h3', 'h4'];
@@ -116,7 +117,7 @@ export const Heading = () => {
           className={cn('ui2-heading', `is-${Tag}`)}
           style={{ textAlign: textAlign as 'left', ...(textColor ? { color: textColor } : {}), ...looks, ...clamped }}
           onClick={onClick}
-          onMouseEnter={onHover}
+          onMouseOver={onPointerIn(onHover)}
         >
           {value}
         </Tag>

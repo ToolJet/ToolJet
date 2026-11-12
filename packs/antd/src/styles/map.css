@@ -847,10 +847,13 @@
   }
 }
 
-/* Map */
+/* Map. Its Border color and Border radius styles (--lk-border, --lk-radius) are read here: the frame rule at the top,
+   from the shadcn pack's layout, is for its .ui root and never matched this one (QA item 29). Unset, the frame is as
+   before: the secondary border, square corners. */
 .ui-map {
   overflow: hidden;
-  border: 1px solid var(--ant-color-border-secondary);
+  border: 1px solid var(--lk-border, var(--ant-color-border-secondary));
+  border-radius: var(--lk-radius, 0);
 }
 .ui-map-canvas {
   width: 100%;

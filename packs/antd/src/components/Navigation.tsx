@@ -1,4 +1,5 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Breadcrumb as AntBreadcrumb,
   Button,
@@ -27,6 +28,7 @@ import { boundedTree } from '../lib/tree';
 import { slotNames } from '../lib/slots';
 import { ownerAvailable, useOwnedPopup, useOwnerShown } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
+import { useMenuLookup } from '../lib/menuLookup';
 
 type MenuItem = {
   key: string;
@@ -35,6 +37,8 @@ type MenuItem = {
   disabled?: boolean;
   children?: MenuItem[];
   type?: 'divider';
+  popupClassName?: string;
+  popupStyle?: React.CSSProperties;
 };
 // Ant's menu items: [{ key, label, danger, disabled, children }] and { type: 'divider' }; strings become both.
 // Bounded by lib/tree (depth, size, cycles), as toTree is.
@@ -55,6 +59,21 @@ const toMenuItems = (raw: unknown): MenuItem[] =>
       ...(children.length ? { children } : {}),
     };
   });
+
+// A sub-menu's list pops out into the popup layer, outside the menu: it takes the component's theme (its class and token
+// values) as every other popup does, or it kept stock Ant's black on white under Text color and Container background
+// (QA AD-17). Each nested sub-menu pops out a list of its own.
+const withPopupTheme = (items: MenuItem[], popup: { className: string; style: React.CSSProperties }): MenuItem[] =>
+  items.map((item) =>
+    item.children
+      ? {
+          ...item,
+          popupClassName: popup.className,
+          popupStyle: popup.style,
+          children: withPopupTheme(item.children, popup),
+        }
+      : item
+  );
 
 // Ant's Collapse: items [{ key, label }], each panel a canvas of ToolJet components (slot panel_<key>); activeKey
 // (the open panels' keys), accordion (one open at a time), bordered, ghost, size; event onChange.
@@ -215,8 +234,27 @@ export const Dropdown = () => {
     defaultHeight: 4,
   });
   const list = useOwnedPopup(disabled);
-  const menu = {
-    items: toMenuItems(items) as never,
+  // rc-menu's own keys (the arrows, Enter) find the list's items through the document (lib/menuLookup).
+  const menuId = useMenuLookup(list.anchor);
+  // A list opened from the keyboard (Enter, Space or ArrowDown on the button) takes the focus, on its first item, so the
+  // arrows move through it and Enter picks, as on a menu button: it opened with the focus left on the button, where no
+  // key could pick (QA AD-16). One opened with the pointer leaves the focus where it was. ArrowDown on an open list goes
+  // into it.
+  const [focusList, setFocusList] = useState(false);
+  const triggerKeys = (container: HTMLElement | null) => ({
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+      setFocusList(true);
+      if (e.key !== 'ArrowDown') return;
+      e.preventDefault();
+      if (!list.open) list.onOpenChange(true);
+      else container?.querySelector<HTMLElement>(`[data-menu-id^="${menuId}-"]`)?.focus();
+    },
+    onPointerDown: () => setFocusList(false),
+  });
+  const menu = (popup: ReturnType<typeof usePopupTheme>) => ({
+    id: menuId,
+    items: withPopupTheme(toMenuItems(items), popup) as never,
     onClick: ({ key }: { key: string }) => {
       // A pick in the instant the owner stopped taking input (before the guard closed the menu) is refused.
       if (!list.available()) return;
@@ -224,15 +262,15 @@ export const Dropdown = () => {
       onClick();
       list.onOpenChange(false);
     },
-  };
+  });
   const common = {
-    menu,
     open: list.open,
     onOpenChange: (next: boolean) => list.onOpenChange(next),
     trigger: [trigger as 'click'],
     placement: placement as 'bottomLeft',
     arrow,
     disabled,
+    autoFocus: focusList,
   };
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-start" ownerRef={list.anchor}>
@@ -241,18 +279,33 @@ export const Dropdown = () => {
           split ? (
             <AntDropdown.Button
               {...common}
+              menu={menu(popup)}
+              className="tj-ant-fill"
               overlayClassName={popup.className}
               overlayStyle={popup.style}
               type={type as 'default'}
               loading={loading}
               onClick={() => onButtonClick()}
               style={block ? { width: '100%' } : undefined}
+              buttonsRender={([button, arrowButton]) => [
+                button,
+                React.isValidElement(arrowButton)
+                  ? React.cloneElement(arrowButton as React.ReactElement, triggerKeys(popup.container))
+                  : arrowButton,
+              ]}
             >
               {children}
             </AntDropdown.Button>
           ) : (
-            <AntDropdown {...common} overlayClassName={popup.className} overlayStyle={popup.style}>
-              <Button type={type as 'default'} loading={loading} disabled={disabled} block={block}>
+            <AntDropdown {...common} menu={menu(popup)} overlayClassName={popup.className} overlayStyle={popup.style}>
+              <Button
+                type={type as 'default'}
+                className="tj-ant-fill"
+                loading={loading}
+                disabled={disabled}
+                block={block}
+                {...triggerKeys(popup.container)}
+              >
                 {children} <DownOutlined />
               </Button>
             </AntDropdown>
@@ -321,23 +374,47 @@ export const Menu = () => {
     { name: 'setSelectedKey', displayName: 'Select item', params: [{ handle: 'key', displayName: 'Key' }] },
     (k) => setSelectedKey(str(k))
   );
+  const anchor = useRef<HTMLElement | null>(null);
+  // rc-menu's own keys (the arrows, Enter) find the items through the document (lib/menuLookup).
+  const menuId = useMenuLookup(anchor);
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-menu">
+    <AntProvider tokens={tokens} fill className="tj-ant-menu" ownerRef={anchor}>
       <SpinOver loading={loading} as="fill">
-        <AntMenu
-          items={toMenuItems(items) as never}
-          mode={mode as 'inline'}
-          theme={theme as 'light'}
-          selectedKeys={selectedKey ? [selectedKey] : []}
-          onClick={({ key }) => {
-            setSelectedKey(key);
-            onClick();
-          }}
-          onSelect={() => onSelect()}
-        />
+        <WithPopupTheme>
+          {(popup) => (
+            <>
+              <ClassTokens scope={`${menuId}-more`} popup={popup} />
+              <AntMenu
+                id={menuId}
+                items={withPopupTheme(toMenuItems(items), popup) as never}
+                overflowedIndicatorPopupClassName={`${popup.className} ${menuId}-more`}
+                mode={mode as 'inline'}
+                theme={theme as 'light'}
+                selectedKeys={selectedKey ? [selectedKey] : []}
+                onClick={({ key }) => {
+                  setSelectedKey(key);
+                  onClick();
+                }}
+                onSelect={() => onSelect()}
+              />
+            </>
+          )}
+        </WithPopupTheme>
       </SpinOver>
     </AntProvider>
   );
+};
+
+// The component's token values for a popup that takes a class and no style (the Menu's overflow list, the '…' in
+// Horizontal mode): a rule for a class of the popup's own, drawn in the popup layer. Only the token values useTokenStyles
+// gives are written, and only ones with nothing in them that could end the rule.
+const ClassTokens = ({ scope, popup }: { scope: string; popup: ReturnType<typeof usePopupTheme> }) => {
+  const declarations = Object.entries(popup.style as Record<string, unknown>)
+    .filter(([name, value]) => name.startsWith('--tj-ant-') && /^[^;{}<>]*$/.test(String(value)))
+    .map(([name, value]) => `${name}:${String(value)}`)
+    .join(';');
+  if (!popup.container || !declarations) return null;
+  return createPortal(<style>{`.${scope}{${declarations}}`}</style>, popup.container);
 };
 
 // Ant's Breadcrumb: items [{ title, key }] (strings become titles), separator; event onClick for an item, its key
@@ -466,27 +543,45 @@ export const Pagination = () => {
     <AntProvider tokens={tokens}>
       {/* Full width, so align has room to move the buttons (an inline wrapper shrank to them: AD-23). */}
       <SpinOver loading={loading} as="block">
-        <AntPagination
-          current={clampPage(current)}
-          pageSize={Math.max(1, Number(pageSize) || 1)}
-          total={Math.max(0, Number(total) || 0)}
-          showSizeChanger={showSizeChanger}
-          simple={simple}
-          size={size as 'default'}
-          align={align as 'end'}
-          disabled={disabled}
-          showTotal={
-            showTotal
-              ? (t, [s, e]) =>
-                  str(showTotal).replace('{start}', String(s)).replace('{end}', String(e)).replace('{total}', String(t))
-              : undefined
-          }
-          onChange={(page, ps) => {
-            setCurrent(page);
-            setPageSize(ps);
-            onChange();
-          }}
-        />
+        <WithPopupTheme>
+          {(popup) => (
+            <AntPagination
+              current={clampPage(current)}
+              pageSize={Math.max(1, Number(pageSize) || 1)}
+              total={Math.max(0, Number(total) || 0)}
+              // Ant gives its page-size list the trigger's parent as container: inside the widget's box, which clipped
+              // it (in a 40px Pagination only the last option could be picked). Select props given here win over that:
+              // the list opens in the popup layer, themed as the component, as every other list does (QA AD-06).
+              showSizeChanger={
+                showSizeChanger
+                  ? {
+                      getPopupContainer: () => popup.container ?? document.body,
+                      classNames: { popup: { root: popup.className } },
+                      styles: { popup: { root: popup.style } },
+                    }
+                  : false
+              }
+              simple={simple}
+              size={size as 'default'}
+              align={align as 'end'}
+              disabled={disabled}
+              showTotal={
+                showTotal
+                  ? (t, [s, e]) =>
+                      str(showTotal)
+                        .replace('{start}', String(s))
+                        .replace('{end}', String(e))
+                        .replace('{total}', String(t))
+                  : undefined
+              }
+              onChange={(page, ps) => {
+                setCurrent(page);
+                setPageSize(ps);
+                onChange();
+              }}
+            />
+          )}
+        </WithPopupTheme>
       </SpinOver>
     </AntProvider>
   );
@@ -547,7 +642,7 @@ export const Drawer = () => {
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center">
       {showTrigger ? (
-        <Button type="primary" block disabled={disabled} onClick={() => setOpen(true)}>
+        <Button type="primary" block className="tj-ant-fill" disabled={disabled} onClick={() => setOpen(true)}>
           {triggerText}
         </Button>
       ) : null}
@@ -574,14 +669,29 @@ export const Drawer = () => {
 
 const DrawerBody = (props: React.ComponentProps<typeof AntDrawer>) => {
   const popup = usePopupTheme();
+  // Kept drawn while closed (forceRender, for the body's components), its focus sentinels stayed in the page's Tab
+  // order: hidden once the close has animated, shown again as it opens.
+  const [shown, setShown] = React.useState(!!props.open);
+  if (props.open && !shown) setShown(true);
   if (!popup.container) return null;
   return (
     <AntDrawer
       {...props}
       getContainer={popup.container}
       rootClassName={popup.className}
-      rootStyle={popup.style}
+      rootStyle={shown ? popup.style : { ...popup.style, visibility: 'hidden' }}
+      afterOpenChange={(next) => {
+        if (!next) setShown(false);
+        props.afterOpenChange?.(next);
+      }}
       forceRender
+      // The host keeps Tab inside an open drawer (packFocus): antd's own trap reads document.activeElement, which a
+      // shadow root hides.
+      drawerRender={(node) => (
+        <div data-tj-modal={props.open ? 'open' : 'closed'} style={{ height: '100%' }}>
+          {node}
+        </div>
+      )}
     >
       <ToolJet.PopupSlot name="body" style={{ height: '100%' }} />
     </AntDrawer>
@@ -835,21 +945,21 @@ export const Calendar = () => {
   });
   const parsed = value ? dayjs(value) : null;
   const shownValue = parsed && parsed.isValid() ? parsed : undefined;
-  // Ant's Calendar keeps its own selection once its value is undefined, so an emptied value (a cleared binding) still
-  // showed the last date picked (SP-27): it starts again instead, on today with nothing picked.
-  const [epoch, setEpoch] = useState(0);
-  const hadValue = useRef(!!shownValue);
+  // The date the grid shows: the value's, else today's with nothing picked. Every pick (a day, a month in Year mode or
+  // in the header selects) writes the value and fires On select (AD-08). An emptied value (a cleared binding) starts
+  // again on today (SP-27).
+  const [panel, setPanel] = useState(() => shownValue ?? dayjs());
   useEffect(() => {
-    if (hadValue.current && !shownValue) setEpoch((n) => n + 1);
-    hadValue.current = !!shownValue;
+    setPanel(shownValue ?? dayjs());
   }, [shownValue ? shownValue.valueOf() : null]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Nothing looks picked while there is no value (today did), or while the grid shows another day than the value.
+  const unpicked = !shownValue || !panel.isSame(shownValue, 'day');
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-calendar">
+    <AntProvider tokens={tokens} fill className={unpicked ? 'tj-ant-calendar is-unpicked' : 'tj-ant-calendar'}>
       <SpinOver loading={loading} as="fill">
         <AntCalendar
-          key={epoch}
           fullscreen={fullscreen}
-          value={shownValue}
+          value={panel}
           cellRender={(d, info) => {
             if (info.type !== 'date') return info.originNode;
             const list = byDate.get(d.format('YYYY-MM-DD'));
@@ -880,9 +990,11 @@ export const Calendar = () => {
               </div>
             );
           }}
-          onSelect={(d, info) => {
+          // Every source (day, Year-mode month, header dropdowns) writes Value, so every one fires On select (AD-08).
+          onSelect={(d) => {
+            setPanel(d);
             setValue(d.format('YYYY-MM-DD'));
-            if (info.source === 'date') onSelect();
+            onSelect();
           }}
           onPanelChange={(d) => {
             setPanelDate(d.format('YYYY-MM-DD'));
@@ -1035,8 +1147,11 @@ export const Carousel = () => {
     enumDefinition: ['scrollx', 'fade'],
     initialValue: 'scrollx',
   });
-  const [, setCurrent] = ToolJet.useStateNumber({ name: 'current', initialValue: 0, inspector: 'hidden' });
+  const [current, setCurrent] = ToolJet.useStateNumber({ name: 'current', initialValue: 0, inspector: 'hidden' });
   const afterChange = ToolJet.useEventCallback({ name: 'afterChange' });
+  // current, set by the app, is the slide shown (it was only ever exposed): the carousel turns to it.
+  const carousel = useRef<{ goTo: (slide: number, dontAnimate?: boolean) => void } | null>(null);
+  const shownSlide = useRef(0);
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
@@ -1054,17 +1169,26 @@ export const Carousel = () => {
   // background browser tab) it kept turning slides and firing afterChange for nobody (SP-09).
   const owner = useRef<HTMLElement | null>(null);
   const shown = useOwnerShown(owner, !!autoplay);
+  const wanted = Math.max(0, Math.min(slides.length - 1, Math.trunc(Number(current) || 0)));
+  useEffect(() => {
+    if (!slides.length || wanted === shownSlide.current) return;
+    shownSlide.current = wanted;
+    carousel.current?.goTo(wanted);
+  }, [wanted, slides.length]);
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-carousel" ownerRef={owner}>
       <SpinOver loading={loading} as="fill">
         {slides.length ? (
           <AntCarousel
+            ref={carousel as never}
+            initialSlide={wanted}
             autoplay={!!autoplay && shown}
             autoplaySpeed={Math.max(500, Number(autoplaySpeed) || 3000)}
             dots={dots}
             arrows={arrows}
             effect={effect as 'scrollx'}
             afterChange={(i) => {
+              shownSlide.current = i;
               setCurrent(i);
               if (ownerAvailable(owner.current)) afterChange();
             }}
@@ -1090,6 +1214,23 @@ export const Carousel = () => {
 };
 
 // Ant's QRCode: value (the text or URL), size, color, bgColor, errorLevel (L, M, Q, H), icon (image URL), bordered.
+// The most a QR code holds (version 40), by error level, in the mode its encoder picks for the whole value: digits only,
+// the uppercase alphanumeric set, or bytes (UTF-8). A longer value made Ant's QRCode throw (RangeError: Data too long)
+// and the widget show "Something went wrong" (QA item 40).
+const QR_CAPACITY = {
+  numeric: { L: 7089, M: 5596, Q: 3993, H: 3057 },
+  alphanumeric: { L: 4296, M: 3391, Q: 2420, H: 1852 },
+  byte: { L: 2953, M: 2331, Q: 1663, H: 1273 },
+} as const;
+const fitsQrCode = (value: string, level: string): boolean => {
+  const at = (['L', 'M', 'Q', 'H'].includes(level) ? level : 'M') as 'M';
+  if (/^\d*$/.test(value)) return value.length <= QR_CAPACITY.numeric[at];
+  if (/^[0-9A-Z $%*+\-./:]*$/.test(value)) return value.length <= QR_CAPACITY.alphanumeric[at];
+  // Only a value near the limit is measured in bytes (UTF-8 is at most 4 bytes a character).
+  if (value.length * 4 <= QR_CAPACITY.byte[at]) return true;
+  return new TextEncoder().encode(value).length <= QR_CAPACITY.byte[at];
+};
+
 export const QRCode = () => {
   const [value] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: 'https://tooljet.com' });
   const [size] = ToolJet.useStateNumber({ name: 'size', label: 'Size (px)', initialValue: 160, min: 48, max: 600 });
@@ -1119,9 +1260,19 @@ export const QRCode = () => {
     defaultHeight: 18,
   });
   const px = Math.max(48, Math.min(600, toNumber(size) ?? 160));
+  const fits = useMemo(() => !value || fitsQrCode(value, String(errorLevel)), [value, errorLevel]);
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center">
-      {value ? (
+      {value && !fits ? (
+        <AntQRCode
+          value="-"
+          size={px}
+          status="expired"
+          bordered={bordered}
+          statusRender={() => <span>Too long for a QR code</span>}
+          type="svg"
+        />
+      ) : value ? (
         <AntQRCode
           value={value}
           size={px}

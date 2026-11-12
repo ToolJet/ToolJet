@@ -52,7 +52,10 @@ export const useTabs = ({ raw, fallbackLabel, current, setCurrent, defaultTab, s
   useEffect(() => setPatches({}), [base]);
   const tabs = useMemo(() => base.map((t) => ({ ...t, ...(patches[t.id] ?? {}) })), [base, patches]);
   const shown = useMemo(() => tabs.filter((t) => t.visible), [tabs]);
-  const active = shown.some((t) => t.id === String(current)) ? String(current) : shown[0]?.id ?? '';
+  // A current tab that is hidden (or names none) gives way to the first visible tab that is not disabled.
+  const active = shown.some((t) => t.id === String(current))
+    ? String(current)
+    : (shown.find((t) => !t.disable) ?? shown[0])?.id ?? '';
   const stepIndex = Math.max(0, shown.findIndex((t) => t.id === active));
   const tab = shown[stepIndex];
 
@@ -84,7 +87,8 @@ export const useTabs = ({ raw, fallbackLabel, current, setCurrent, defaultTab, s
 
   const switchTo = (id: unknown, fire = true) => {
     const { tabs: all, active: now } = live.current;
-    const target = all.find((t) => t.visible && t.id === String(id ?? ''));
+    // A disabled tab is not a place to go, by an action as by a click.
+    const target = all.find((t) => t.visible && !t.disable && t.id === String(id ?? ''));
     if (!target || target.id === now) return;
     live.current.active = target.id;
     live.current.setCurrent(target.id);
@@ -107,7 +111,25 @@ export const useTabs = ({ raw, fallbackLabel, current, setCurrent, defaultTab, s
   ];
   ToolJet.useAction({ name: 'setTabDisable', displayName: 'Set tab disable', params: tabParams('Disable') }, (id, v) => patch(id, { disable: onArg(v) }));
   ToolJet.useAction({ name: 'setTabLoading', displayName: 'Set tab loading', params: tabParams('Loading') }, (id, v) => patch(id, { loading: onArg(v) }));
-  ToolJet.useAction({ name: 'setTabVisibility', displayName: 'Set tab visibility', params: tabParams('Visible') }, (id, v) => patch(id, { visible: onArg(v) }));
+  ToolJet.useAction({ name: 'setTabVisibility', displayName: 'Set tab visibility', params: tabParams('Visible') }, (id, v) => {
+    const visible = onArg(v);
+    // Hiding the tab shown moves to the next tab that can be shown (else the previous one), with onTabSwitch: the tab
+    // changed under the user (it moved with no event).
+    if (!visible && String(id) === live.current.active) {
+      const rest = live.current.tabs.map((t) => (t.id === String(id) ? { ...t, visible: false } : t));
+      const order = live.current.tabs.filter((t) => t.visible);
+      const at = order.findIndex((t) => t.id === String(id));
+      const next =
+        order.slice(at + 1).find((t) => !t.disable) ?? [...order.slice(0, at)].reverse().find((t) => !t.disable);
+      patch(id, { visible });
+      if (next) {
+        live.current.tabs = rest;
+        switchTo(next.id);
+      }
+      return;
+    }
+    patch(id, { visible });
+  });
 
   return {
     tabs,

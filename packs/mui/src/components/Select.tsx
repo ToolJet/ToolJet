@@ -146,13 +146,21 @@ export const Select = () => {
   const key = value === '' ? '' : keyForValue(options, value);
   const known = key !== '' && options.some((o) => o.value === key);
   const check = ToolJet.useValidation({ kind: 'choice', value: str(value), present: known });
+  // A value no option offers is not kept while nothing shows picked; not while the options are empty or loading (a
+  // query not yet run), so a default waits for them. Fires no event.
+  const offeredNow = value === '' || value === null || value === undefined || options.some((o) => o.value === key);
+  React.useEffect(() => {
+    if (!offeredNow && options.length > 0 && !loading) setValue('' as never);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offeredNow, options.length, loading]);
+
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({
     role: 'select',
     fit: true,
     loading: 'own',
     usage:
-      "MUI's Select (TextField select): label, options [{label, value}], value (the picked value), helperText, displayEmpty with placeholder, variant, size, disableClearable (a clear button shows while a value is picked unless set); selectedOption is exposed; onChange, onOpen, onClose. The menu opens in the popup layer.",
+      "MUI's Select (TextField select): label, options [{label, value}], value (the picked value), helperText, displayEmpty with placeholder, disableClearable (a clear button shows while a value is picked unless set); styles variant, size, color; selectedOption is exposed; onChange, onOpen, onClose. The menu opens in the popup layer.",
     roleProps: { description: 'helperText', showClearBtn: 'disableClearable' },
     roleValues: { disableClearable: { true: false, false: true } },
     roleEvents: { onSelect: 'onChange' },
@@ -233,6 +241,8 @@ export const Select = () => {
         title="Clear"
         size="small"
         className="tj-mui-select-clear"
+        // No Tab stop, as a ToolJet Dropdown's clear: Backspace or Delete on the field clears it.
+        tabIndex={-1}
         sx={{ p: `${(CLEAR_SIZE - 20) / 2}px` }}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -295,6 +305,14 @@ export const Select = () => {
             // The picked item's key: its option's own value.
             const k = String(e.target.value ?? '');
             if (available()) change(k === '' ? '' : valueForKey(options, k));
+          }}
+          onKeyDown={(e) => {
+            const onField = (e.target as HTMLElement).getAttribute('role') === 'combobox';
+            if (onField && clearable && (e.key === 'Backspace' || e.key === 'Delete') && available()) {
+              e.preventDefault();
+              change('');
+              check.touch();
+            }
           }}
         >
           {shownOptions(options, selected).map((o) => (
@@ -604,9 +622,15 @@ export const AutocompleteMultiple = () => {
   const popup = usePopupState(p, disabled, check.touch, onOpen, onClose);
   ToolJet.useAction(
     { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Values' }] },
+    // One value (not a list) picks that option: a string cleared the selection.
     (next) =>
       change(
-        toArray(next)
+        (Array.isArray(next) || (typeof next === 'string' && next.trim().startsWith('['))
+          ? toArray(next)
+          : next === '' || next === null || next === undefined
+            ? []
+            : [next]
+        )
           .map((v) => findOption(p.options, v))
           .filter((o): o is Option => !!o)
       )

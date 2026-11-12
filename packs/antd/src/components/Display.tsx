@@ -25,6 +25,7 @@ import { str, toArray, type Row } from '../lib/data';
 import { formatCell, formatFigure, formatNumber, parseFormat, toNumber, type NumberFormat } from '../lib/format';
 import { LOCALE_HINT } from '../lib/locale';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
+import { safeUrl } from '../lib/ui2/display/chat/values';
 import { useFitLayout, useFitSquare, useFitText } from '../lib/fitText';
 import { useValueSetter } from '../lib/sameValue';
 
@@ -601,18 +602,31 @@ export const Progress = () => {
   });
   const pct = Math.max(0, Math.min(100, toNumber(percent) ?? 0));
   const isLine = type === 'line';
+  // A circle or dashboard is the largest square the box has room for, up to Ant's 120px: a fixed 120px ring was cut
+  // in a shorter widget.
+  const [ringBox, ringPx] = useFitSquare<HTMLDivElement>(120);
+  const bar = (
+    <AntProgress
+      percent={Math.round(pct * 10) / 10}
+      type={type as 'line'}
+      size={isLine ? undefined : ringPx}
+      status={status === 'normal' ? undefined : (status as 'active')}
+      showInfo={showInfo}
+      steps={isLine && Number(steps) > 0 ? Number(steps) : undefined}
+      strokeColor={strokeColor || undefined}
+    />
+  );
   return (
     <AntProvider tokens={tokens} fill className={isLine ? 'tj-ant-progress-line' : 'tj-ant-center'}>
       <SpinOver loading={loading} as="fill">
         {title && isLine ? <div className="tj-ant-progress-title">{title}</div> : null}
-        <AntProgress
-          percent={Math.round(pct * 10) / 10}
-          type={type as 'line'}
-          status={status === 'normal' ? undefined : (status as 'active')}
-          showInfo={showInfo}
-          steps={isLine && Number(steps) > 0 ? Number(steps) : undefined}
-          strokeColor={strokeColor || undefined}
-        />
+        {isLine ? (
+          bar
+        ) : (
+          <div ref={ringBox} className="tj-ant-icon-fit" style={{ justifyContent: 'center' }}>
+            {bar}
+          </div>
+        )}
       </SpinOver>
     </AntProvider>
   );
@@ -861,7 +875,7 @@ export const Descriptions = () => {
       );
     else if (f.format === 'link' && text)
       children = (
-        <Typography.Link href={str(r.href ?? v)} target="_blank">
+        <Typography.Link href={safeUrl(r.href ?? v) || undefined} target="_blank">
           {str(r.linkText) || text}
         </Typography.Link>
       );

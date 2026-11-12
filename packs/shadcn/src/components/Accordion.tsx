@@ -141,8 +141,8 @@ export const Accordion = () => {
           : [...new Set([...openRef.current, one])]
         : [one ?? every[0]].filter(Boolean);
       if (same(next, openRef.current)) return;
-      apply(next, false);
-      onExpand();
+      // What a click fires: onExpand, onCollapse for a section it closes (single open), and onChange.
+      apply(next);
     }
   );
   ToolJet.useAction(
@@ -152,8 +152,8 @@ export const Accordion = () => {
       if (!noIndex(index) && one === null) return;
       const next = one === null ? [] : openRef.current.filter((k) => k !== one);
       if (same(next, openRef.current)) return;
-      apply(next, false);
-      onCollapse();
+      // onCollapse and onChange, as a click fires them.
+      apply(next);
     }
   );
   // The pack's earlier actions.

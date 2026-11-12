@@ -124,6 +124,7 @@ export const Menu = () => {
     <MuiProvider overrides={overrides} fill className="tj-mui-center" rootRef={rootRef}>
       <Button
         ref={anchor}
+        className="tj-mui-fill"
         variant={variant as 'outlined'}
         color={color as 'primary'}
         size={size as 'medium'}

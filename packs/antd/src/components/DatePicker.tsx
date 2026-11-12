@@ -7,16 +7,28 @@ import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider'
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str } from '../lib/data';
 import { ControlSkeleton } from '../lib/Loading';
-import { useOwnedPopup } from '../lib/useOwnerGuard';
+import { closesOnEscape, useOwnedPopup } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
+import { isBlankDate, parseDate } from '../lib/dates';
 
 const VALUE_FORMAT = 'YYYY-MM-DD';
 const VALUE_FORMAT_TIME = 'YYYY-MM-DDTHH:mm:ss';
-const parse = (v: unknown): Dayjs | null => {
-  const s = str(v).trim();
-  if (!s) return null;
-  const d = dayjs(s);
-  return d.isValid() ? d : null;
+const parse = parseDate;
+
+// The week, month, quarter or year a picked date stands for, as its first day: a month picked over a value of the 25th
+// kept the 25th.
+const startOfPeriod = (d: Dayjs, picker: string): Dayjs => {
+  if (picker === 'week') return d.startOf('week');
+  if (picker === 'month') return d.startOf('month');
+  if (picker === 'quarter') return d.month(Math.floor(d.month() / 3) * 3).startOf('month');
+  if (picker === 'year') return d.startOf('year');
+  return d;
+};
+// Ant's own display format for a period picker (2026-10, 2026-Q4, 2026), not the full date.
+const PERIOD_FORMAT: Record<string, string | undefined> = {
+  month: 'YYYY-MM',
+  quarter: 'YYYY-[Q]Q',
+  year: 'YYYY',
 };
 
 /** A date-time bound: a date alone is the start of that day as a minimum and its end as a maximum, so maxDate
@@ -26,6 +38,10 @@ const bound = (v: unknown, edge: 'start' | 'end'): Dayjs | undefined => {
   if (!d) return undefined;
   return /^\s*\d{4}-\d{2}-\d{2}\s*$/.test(str(v)) ? (edge === 'end' ? d.endOf('day') : d.startOf('day')) : d;
 };
+
+// The unit a picker's value is compared at: a month picker's value is that month, whatever day it holds.
+const UNIT: Record<string, 'day' | 'week' | 'month' | 'year'> = { date: 'day', week: 'week', month: 'month', year: 'year' };
+const range = (from: number, to: number) => Array.from({ length: Math.max(0, to - from) }, (_, i) => from + i);
 
 /**
  * The picker both components draw. `dateTime` is the DateTimePicker: the time is always on (no showTime or picker
@@ -121,7 +137,36 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
   const onOpenChange = ToolJet.useEventCallback({ name: 'onOpenChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ kind: 'date', value });
+  // A date outside Min date or Max date is invalid, as on the ToolJet date pickers (QA item 52): Ant only greys the days
+  // out of range, so a bound value or setFieldValue past them counted as valid. With the time on, a date-only bound
+  // covers that whole day (bound()); a quarter picker is left to Ant's own greying.
+  const timed = dateTime || showTime;
+  const lo = timed ? bound(minDate, 'start') : (parse(minDate) ?? undefined);
+  const hi = timed ? bound(maxDate, 'end') : (parse(maxDate) ?? undefined);
+  const unit = timed ? undefined : UNIT[String(picker)];
+  const picked = parse(value);
+  const outside =
+    !picked || (!timed && !unit)
+      ? ''
+      : lo && picked.isBefore(lo, unit)
+        ? `Minimum date is ${str(minDate).trim()}`
+        : hi && picked.isAfter(hi, unit)
+          ? `Maximum date is ${str(maxDate).trim()}`
+          : '';
+  const check = ToolJet.useValidation({ kind: 'date', value, rule: outside });
+  // On the first and last allowed day, the times before the min and after the max can't be picked either.
+  const disabledTime = (current: Dayjs | null) => {
+    if (!current) return {};
+    const first = lo && current.isSame(lo, 'day') ? lo : null;
+    const last = hi && current.isSame(hi, 'day') ? hi : null;
+    return {
+      disabledHours: () => [...(first ? range(0, first.hour()) : []), ...(last ? range(last.hour() + 1, 24) : [])],
+      disabledMinutes: (hour: number) => [
+        ...(first && hour === first.hour() ? range(0, first.minute()) : []),
+        ...(last && hour === last.hour() ? range(last.minute() + 1, 60) : []),
+      ],
+    };
+  };
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     ...(dateTime ? DATE_TIME_SETTINGS : DATE_SETTINGS),
@@ -131,7 +176,9 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
 
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
-  const change = (next: Dayjs | null) => {
+  const period = showTime ? 'date' : str(picker) || 'date';
+  const change = (picked: Dayjs | null) => {
+    const next = picked ? startOfPeriod(picked, period) : null;
     if (!valueSetter.set(next ? next.format(showTime ? VALUE_FORMAT_TIME : VALUE_FORMAT) : '')) return;
     parts.expose(next);
     onChange();
@@ -144,7 +191,11 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
         { handle: 'value', displayName: dateTime ? 'Date and time (YYYY-MM-DDTHH:mm:ss)' : 'Date (YYYY-MM-DD)' },
       ],
     },
-    (next) => change(parse(next))
+    // Text that names no real date is refused (the value stays); an empty one clears.
+    (next) => {
+      const d = parse(next);
+      if (d || isBlankDate(next)) change(d);
+    }
   );
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(parse(props.value)));
   parts.useClear(() => change(null));
@@ -164,7 +215,10 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
               <Picker
                 id={fieldId}
                 value={parse(value)}
-                format={str(format).trim() || (showTime ? `YYYY-MM-DD ${timeFormat}` : VALUE_FORMAT)}
+                format={
+                  str(format).trim() ||
+                  (showTime ? `YYYY-MM-DD ${timeFormat}` : period === 'date' ? VALUE_FORMAT : PERIOD_FORMAT[period])
+                }
                 showTime={
                   showTime
                     ? dateTime
@@ -175,6 +229,7 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
                 picker={showTime ? 'date' : (picker as 'date')}
                 minDate={(dateTime ? bound(minDate, 'start') : parse(minDate)) ?? undefined}
                 maxDate={(dateTime ? bound(maxDate, 'end') : parse(maxDate)) ?? undefined}
+                disabledTime={timed ? disabledTime : undefined}
                 placeholder={placeholder || undefined}
                 allowClear={allowClear}
                 disabled={disabled}
@@ -185,6 +240,7 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
                 popupStyle={popup.style}
                 open={panel.open}
                 onOpenChange={panel.onOpenChange}
+                panelRender={closesOnEscape(() => panel.onOpenChange(false))}
                 // The time columns have no seconds: a pick keeps none (Ant fills them from the clock).
                 onChange={(d) =>
                   panel.available() &&

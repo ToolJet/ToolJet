@@ -110,7 +110,11 @@ export const Tabs = () => {
     ),
     fallbackLabel: 'Tab',
     current: value,
-    setCurrent: setValue,
+    // currentTab with value, before onTabSwitch: set when drawn, the first handler read the previous tab.
+    setCurrent: (id: string) => {
+      setValue(id);
+      setCurrentTab(id);
+    },
     defaultTab,
     setTabParam: 'value',
     onSwitched: onTabSwitch,

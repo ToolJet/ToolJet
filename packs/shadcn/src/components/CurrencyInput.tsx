@@ -122,7 +122,8 @@ export const CurrencyInput = () => {
   if (!M.isBlank(currencyProp) && M.toCurrency(currencyProp, null) === null) currencyCode(currencyProp);
   const currency = M.toCurrency(currencyProp, options[0] ?? 'USD');
   const decimals = M.currencyDecimals(currency, decimalPlaces) ?? 2;
-  const value = typeof rawValue === 'number' && Number.isFinite(rawValue) ? rawValue : M.parseNumber(rawValue, locale);
+  const value =
+    typeof rawValue === 'number' && Number.isFinite(rawValue) ? rawValue : M.parseBoundNumber(rawValue, locale);
   const lo = M.parseNumber(minValue);
   const hi = M.parseNumber(maxValue);
   const formatted = (n: number | null, code = currency) =>
@@ -159,7 +160,7 @@ export const CurrencyInput = () => {
   };
   useReseed(defaultValue, () => {
     setDraft(null);
-    publish(M.roundTo(M.parseNumber(defaultValue, locale), decimals));
+    publish(M.roundTo(M.parseBoundNumber(defaultValue, locale), decimals));
   });
   // The formatted value follows a new currency, locale or decimal places too.
   useReseed([currency, locale, decimalPlaces], () => setFormattedValue(formatted(value)), { onMount: false });
@@ -183,15 +184,15 @@ export const CurrencyInput = () => {
     (v, code) => {
       const now = currencySetter.latest.current;
       const next = code !== undefined && code !== null && code !== '' ? M.toCurrency(code, now) : now;
-      set(M.parseNumber(v, locale), next);
+      set(M.parseBoundNumber(v, locale), next);
     }
   );
   ToolJet.useAction(
     { name: 'setCurrency', displayName: 'Set currency', params: [{ handle: 'currency', displayName: 'Currency' }] },
     (code) => {
-      const next = M.toCurrency(code, currencySetter.latest.current);
-      currencySetter.set(next);
-      setFormattedValue(formatted(amount.latest.current, next));
+      // The amount is rounded to the new currency's decimals, as setValue(value, currency) does, so value and the
+      // field agree (1234.5 shown as ¥1,235 is 1235).
+      set(amount.latest.current, M.toCurrency(code, currencySetter.latest.current));
     }
   );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => set(null));

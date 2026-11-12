@@ -105,6 +105,20 @@ export const parseNumber = (v: unknown, locale?: unknown): number | null => {
   return negative ? -n : n;
 };
 
+// A number written the way code and databases write it: '1234.56', '-0.5', '1e3' (Postgres numeric arrives as such text).
+const PLAIN_NUMBER = /^\s*-?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?\s*$/i;
+
+/** A number from a value the app gives (a default, a binding, an action argument): plain number text such as
+ *  '1234.56' is read as written in any locale, so a de-DE field does not take its '.' for a group separator; other
+ *  text is read in the locale's format, as typed text is. */
+export const parseBoundNumber = (v: unknown, locale?: unknown): number | null => {
+  if (typeof v === 'string' && PLAIN_NUMBER.test(v)) {
+    const n = Number(v.trim());
+    return Number.isFinite(n) ? n : null;
+  }
+  return parseNumber(v, locale);
+};
+
 /** Rounds to `decimals` places (0 to 10) without float noise (1.005 -> 1.01). */
 export const roundTo = (n: unknown, decimals: unknown): number | null => {
   if (typeof n !== 'number' || !Number.isFinite(n)) return null;
