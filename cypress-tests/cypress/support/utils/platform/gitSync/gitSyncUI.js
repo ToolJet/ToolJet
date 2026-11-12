@@ -110,6 +110,10 @@ const githubField = {
   githubAppPrivateKey: 'textarea[placeholder="Enter GitHub app private key"], input[placeholder="Enter GitHub app private key"]',
 };
 
+// Credential fields are plain text inputs: type them without a command-log entry and mask
+// them in the test browser so screenshots and videos never show the values.
+const credentialFields = ["githubAppId", "githubAppInstallationId", "githubAppPrivateKey"];
+
 /**
  * @tjType gitSyncUI.openGithubConfig
  * @tjBlock gitSync
@@ -138,6 +142,9 @@ export const openGithubConfigModal = (ws) => {
   };
   openModal(1);
   cy.get('[data-cy="save-config-button"]').should("be.visible");
+  credentialFields.forEach((key) =>
+    cy.get(githubField[key]).invoke("css", "-webkit-text-security", "disc"),
+  );
 };
 
 /**
@@ -153,8 +160,10 @@ export const openGithubConfigModal = (ws) => {
 export const fillGithubConfigViaUI = (values) => {
   Object.entries(githubField).forEach(([key, selector]) => {
     if (!(key in values)) return;
+    const isCredential = credentialFields.includes(key);
+    if (isCredential) cy.get(selector).invoke("css", "-webkit-text-security", "disc");
     cy.get(selector).clear();
-    if (values[key]) cy.get(selector).type(String(values[key]), { delay: 0 });
+    if (values[key]) cy.get(selector).type(String(values[key]), { delay: 0, log: !isCredential });
   });
 };
 
