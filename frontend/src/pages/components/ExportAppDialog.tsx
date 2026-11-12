@@ -9,40 +9,38 @@ import {
   useFetchAppTables,
   useFetchAppVersions,
 } from '@/_services/hooks/appsServiceHooks';
+import { authenticationService } from '@/_services/authentication.service';
 import CheckboxComponent from '@/components/ui/Checkbox/Index';
 
-import ActionDialog from './ActionDialog';
+import ActionDialog from '@/pages/AppsDashboard/components/ActionDialog';
 
-import type { IAppDetails } from '@/_stores/types/appsStore';
+import type { IAppDetails, IAppVersion } from '@/_stores/types/appsStore';
+import { type TAppType } from '@/pages/AppsDashboard/helper';
 
-interface IExportAppModalProps {
-  open: boolean;
-  onClose: () => void;
-  appDetails: IAppDetails;
-}
-
-export default function ExportAppModal({ open, onClose, appDetails }: IExportAppModalProps) {
+export default function ExportAppDialog({ open, onClose, appDetails, appType }: IExportAppModalProps) {
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
-  const [currentVersion, setCurrentVersion] = useState<string | null>(null);
+  const [currentVersion, setCurrentVersion] = useState<IAppVersion | null>(null);
   const [exportTJDBSchema, setExportTJDBSchema] = useState(true);
 
-  const appType = appDetails?.type;
+  const derivedAppType = appType ?? appDetails?.type;
+  const appId = appDetails?.appId || appDetails?.id;
+  const currentOrganizationId = authenticationService.currentSessionValue?.current_organization_id;
 
   const {
     data: versions,
     isFetching: isFetchingAppVersions,
     isError: isErrorInFetchingAppVersions,
-  } = useFetchAppVersions(appDetails?.id, { enabled: open && appDetails?.id });
+  } = useFetchAppVersions(appId, { enabled: Boolean(appId) });
   const {
     data: allTables,
     isFetching: isFetchingAppTables,
     isError: isErrorInFetchingAppTables,
-  } = useFetchAppTables(open ? appDetails?.id : null);
+  } = useFetchAppTables(appId);
   const {
     data: appByVersion,
     isFetching: isFetchingAppByVersion,
     isError: isErrorInFetchingAppByVersion,
-  } = useFetchAppByVersion(open ? appDetails?.id : null, selectedVersionId);
+  } = useFetchAppByVersion(appId, selectedVersionId);
 
   const { mutate: exportApp, isPending: isExportingApp } = useExportApp();
 
@@ -50,8 +48,8 @@ export default function ExportAppModal({ open, onClose, appDetails }: IExportApp
     onClose();
   };
 
-  const handleChangeSelectedVersion = (newVersionId: string) => () => {
-    if (newVersionId === selectedVersionId) return;
+  const handleChangeSelectedVersion = (newVersionId?: string) => () => {
+    if (!newVersionId || newVersionId === selectedVersionId) return;
 
     setSelectedVersionId(newVersionId);
   };
@@ -60,35 +58,38 @@ export default function ExportAppModal({ open, onClose, appDetails }: IExportApp
     setExportTJDBSchema((prev) => !prev);
   };
 
-  const handleExportApp = (versionToExport: string | null, tables) => {
+  const handleExportApp = (versionToExport: string | null, tables?: ITableRef[]) => {
     const requestBody = {
       app: [
         {
-          id: appDetails.appId || appDetails?.id,
+          id: appId,
           ...(versionToExport && { search_params: { version_id: versionToExport } }),
         },
       ],
       ...(exportTJDBSchema && { tooljet_database: tables }),
-      organization_id: appDetails.organization_id || appDetails.organizationId,
+      organization_id: appDetails.organization_id || appDetails.organizationId || currentOrganizationId,
     };
 
     exportApp(
-      { requestBody, appType },
+      { requestBody, appType: derivedAppType },
       {
         onError: (error) => {
-          toast.error(`Could not export ${appType === 'module' ? 'module' : 'app'}: ${error?.data?.message}`, {
-            position: 'top-center',
-          });
+          toast.error(
+            `Could not export ${derivedAppType === 'module' ? 'module' : 'app'}: ${(error as IApiError)?.data?.message}`,
+            {
+              position: 'top-center',
+            }
+          );
 
           handleCloseDialog();
         },
         onSuccess: (data) => {
-          const appName = (appDetails.appName || appDetails.name).replace(/\s+/g, '-').toLowerCase();
+          const appName = (appDetails.appName || appDetails.name)?.replace(/\s+/g, '-');
           const fileName = `${appName}-export-${new Date().getTime()}`;
 
           downloadExportedData(data, fileName);
 
-          toast.success(`${appType === 'module' ? 'Module' : 'App'} has been exported successfully!`);
+          toast.success(`${derivedAppType === 'module' ? 'Module' : 'App'} has been exported successfully!`);
 
           handleCloseDialog();
         },
@@ -109,10 +110,10 @@ export default function ExportAppModal({ open, onClose, appDetails }: IExportApp
 
   useEffect(() => {
     // auto-export module
-    if (appType === 'module' && open && allTables && currentVersion) {
+    if (derivedAppType === 'module' && open && allTables && currentVersion) {
       handleExportApp(null, allTables);
     }
-  }, [appType, open, allTables, currentVersion]);
+  }, [derivedAppType, open, allTables, currentVersion]);
 
   useEffect(() => {
     if (isErrorInFetchingAppVersions || isErrorInFetchingAppTables) {
@@ -130,11 +131,13 @@ export default function ExportAppModal({ open, onClose, appDetails }: IExportApp
 
   const isFormBeingSubmitted = isExportingApp;
   const isCancelBtnDisabled = isFormBeingSubmitted || isFetchingAppVersions || isFetchingAppTables;
-  const isSubmitBtnDisabled = true;
-  // const isSubmitBtnDisabled = isFormBeingSubmitted || isFetchingAppVersions || isFetchingAppTables;
+  const isSubmitBtnDisabled = isFormBeingSubmitted || isFetchingAppVersions || isFetchingAppTables;
+  // The selected version's tables arrive asynchronously; exporting earlier would omit them.
+  const isExportSelectedBtnDisabled = isSubmitBtnDisabled || isFetchingAppByVersion;
+  const allVersions = versions?.versions ?? [];
 
   // Don't render modal for modules - they auto-export
-  if (appType === 'module') {
+  if (derivedAppType === 'module') {
     return null;
   }
 
@@ -154,7 +157,7 @@ export default function ExportAppModal({ open, onClose, appDetails }: IExportApp
         },
         {
           label: 'Export selected version',
-          disabled: isSubmitBtnDisabled,
+          disabled: isExportSelectedBtnDisabled,
           isLoading: isFetchingAppByVersion,
           'data-cy': 'export-selected-version-button',
           onClick: () => handleExportApp(selectedVersionId, appByVersion),
@@ -172,39 +175,37 @@ export default function ExportAppModal({ open, onClose, appDetails }: IExportApp
         </div>
       ) : (
         <div>
-          <div className="tw-px-6 tw-py-4 tw-space-y-4 tw-h-96 tw-overflow-y-auto">
+          <div className="tw-px-6 tw-py-4 tw-space-y-4 tw-h-96 tw-overflow-y-auto tw-hide-scrollbar">
             <p className="tw-font-title-large tw-text-text-default" data-cy="current-version-label">
               Current version
             </p>
-            <div data-cy="current-version">
+            <div data-cy="current-version-section">
               <VersionItem
-                name={currentVersion?.name}
+                name={getVersionDisplayName(currentVersion)}
                 isChecked={selectedVersionId === currentVersion?.id}
                 createdAt={currentVersion?.created_at || currentVersion?.createdAt}
                 onCheckedChange={handleChangeSelectedVersion(currentVersion?.id)}
               />
             </div>
             <div data-cy="other-version-section">
-              {versions?.versions?.length > 1 ? (
+              {allVersions.length > 1 ? (
                 <>
                   <p className="tw-font-title-large tw-text-text-default" data-cy="other-version-label">
                     Older versions
                   </p>
 
                   <div className="tw-space-y-3" data-cy="older-version-list">
-                    {versions.versions.map((version) => {
-                      if (version.id !== currentVersion?.id) {
-                        return (
-                          <VersionItem
-                            key={version.id}
-                            name={version.name}
-                            isChecked={selectedVersionId === version.id}
-                            createdAt={version.createdAt || version.created_at}
-                            onCheckedChange={handleChangeSelectedVersion(version.id)}
-                          />
-                        );
-                      }
-                    })}
+                    {allVersions
+                      .filter((version) => version.id !== currentVersion?.id)
+                      .map((version) => (
+                        <VersionItem
+                          key={version.id}
+                          name={getVersionDisplayName(version)}
+                          isChecked={selectedVersionId === version.id}
+                          createdAt={version.createdAt || version.created_at}
+                          onCheckedChange={handleChangeSelectedVersion(version.id)}
+                        />
+                      ))}
                   </div>
                 </>
               ) : (
@@ -230,17 +231,13 @@ export default function ExportAppModal({ open, onClose, appDetails }: IExportApp
   );
 }
 
+const getVersionDisplayName = (version: IAppVersion | null) =>
+  version?.display_name || version?.displayName || version?.name || '';
+
 const versionItemClasses = {
   checkboxLabel: 'tw-text-text-default tw-font-title-default',
   helperText: 'tw-text-text-placeholder tw-font-body-default',
 };
-
-interface IVersionItemProps {
-  name: string;
-  createdAt?: string;
-  isChecked: boolean;
-  onCheckedChange: (checked: boolean) => void;
-}
 
 function VersionItem({ name, createdAt, isChecked, onCheckedChange }: IVersionItemProps) {
   const createdOnText = createdAt ? `Created on ${moment(createdAt).format('Do MMM YYYY')}` : '';
@@ -253,7 +250,37 @@ function VersionItem({ name, createdAt, isChecked, onCheckedChange }: IVersionIt
       helper={createdOnText}
       classes={versionItemClasses}
       onCheckedChange={onCheckedChange}
-      data-cy={`${String(name).toLowerCase().replace(/\s+/g, '-')}-version-wrapper`}
+      data-cy={`${String(name).toLowerCase().replace(/\s+/g, '-')}-radio-button`}
     />
   );
+}
+
+interface IExportAppModalProps {
+  open: boolean;
+  onClose: () => void;
+  appType?: TAppType;
+  appDetails: IAppDetails & {
+    // Additional optional properties, may be received from App Builder
+    appId?: string;
+    appName?: string;
+    organization_id?: string;
+    organizationId?: string;
+    type?: TAppType;
+  };
+}
+
+interface IVersionItemProps {
+  name: string;
+  createdAt?: string;
+  isChecked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}
+
+interface ITableRef {
+  table_id: string;
+}
+
+// The service layer rejects with the parsed response body on `data`.
+interface IApiError extends Error {
+  data?: { message?: string };
 }

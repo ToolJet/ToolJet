@@ -257,8 +257,11 @@ export function useImportResource() {
 export function useFetchAppVersions(appId, options) {
   return useQuery({
     queryKey: ['appVersions', appId],
+    /** @returns {Promise<{ versions: import('@/_stores/types/appsStore').IAppVersion[] }>} */
     queryFn: () => appsService.getVersions(appId),
     enabled: options?.enabled ?? true,
+    // Dropped once the dialog unmounts so a reopened dialog never shows a stale version list.
+    gcTime: 0,
   });
 }
 
@@ -270,11 +273,12 @@ export function useFetchAppTables(appId) {
     queryFn: () => appsService.getTables(appId),
     enabled: !!appId,
     select: selectAppTables,
+    gcTime: 0,
   });
 }
 
 const selectTablesFromVersion = (raw) => {
-  const { dataQueries = [] } = raw?.editing_version || {};
+  const dataQueries = raw?.data_queries ?? raw?.editing_version?.dataQueries ?? [];
   const extractedIdData = [];
 
   dataQueries.forEach((item) => {
@@ -295,7 +299,8 @@ const selectTablesFromVersion = (raw) => {
       });
     }
 
-    if (item.kind === 'tooljetdb' && item.options?.tableId) extractedIdData.push(item.options.tableId);
+    const tjdbTableId = item.options?.table_id ?? item.options?.tableId;
+    if (item.kind === 'tooljetdb' && tjdbTableId) extractedIdData.push(tjdbTableId);
   });
 
   return Array.from(new Set(extractedIdData)).map((id) => ({ table_id: id }));
@@ -307,6 +312,7 @@ export function useFetchAppByVersion(appId, versionId) {
     queryFn: () => appsService.getAppByVersion(appId, versionId),
     select: selectTablesFromVersion,
     enabled: !!appId && !!versionId,
+    gcTime: 0,
   });
 }
 
@@ -324,6 +330,7 @@ export const downloadExportedData = (data, fileName) => {
 
 export function useExportApp() {
   return useMutation({
+    /** @param {{ requestBody: object, appType?: TAppType }} variables */
     mutationFn: ({ requestBody, appType }) => appsService.exportResource(requestBody, appType),
   });
 }

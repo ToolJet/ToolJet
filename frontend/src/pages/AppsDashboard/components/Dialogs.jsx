@@ -8,14 +8,13 @@ import { useAppsStore } from '@/_stores/appsStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 
 // import PermissionDeniedDialog from './PermissionDeniedDialog';
-// import ExportAppModal from '../../shared/components/ExportAppModal';
 // import ChangeIconDialog from '../../shared/components/ChangeIconDialog';
 import ImportAppFromGit from './ImportAppFromGit';
 import AppCRUDActionDialog from './AppCRUDActionDialog';
 import FolderActionsDialog from './FolderActionsDialog';
 import TemplateLibraryModal from '@/HomePage/TemplateLibraryModal';
 import ChangeIconDialog from './ChangeIconDialog';
-import ExportAppModal from './ExportAppDialog';
+import ExportAppDialog from '@/pages/components/ExportAppDialog';
 
 export default function Dialogs({
   appType,
@@ -133,7 +132,8 @@ export default function Dialogs({
       )}
 
       {isExportAppDialogOpen && (
-        <ExportAppModal
+        <ExportAppDialog
+          appType={appType}
           open={isExportAppDialogOpen}
           onClose={resetAppDialogState}
           appDetails={appDialogState.appDetails}

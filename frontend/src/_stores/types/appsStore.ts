@@ -39,6 +39,17 @@ export interface IAppDetails {
   missingGroups?: unknown[];
 }
 
+// A row of the `GET /apps/:id/versions` response.
+export interface IAppVersion {
+  id: string;
+  name?: string;
+  display_name?: string;
+  displayName?: string;
+  created_at?: string;
+  createdAt?: string;
+  isCurrentEditingVersion?: boolean;
+}
+
 export interface IAppDialogState {
   type: AppDialogType;
   appDetails: IAppDetails | null;
