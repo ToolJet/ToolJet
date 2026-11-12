@@ -131,6 +131,8 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
 
       cy.apiLogin(userEmail, 'password');
       openDataSourcesList();
+      cy.get(dsFolder.folderRow(adminFolderName)).realHover();
+      cy.contains('.tooltip', 'Sample data source').should('not.exist');
       uiDeleteDataSourceFolder(adminFolderId);
       uiVerifyDataSourceFolderExists(adminFolderName, false);
     });
