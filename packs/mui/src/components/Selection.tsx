@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Checkbox as MuiCheckbox,
   FormControlLabel,
@@ -239,6 +239,14 @@ export const RadioGroup = () => {
     value: str(value),
     present: options.some((o) => o.value === key),
   });
+  // A value no option offers is not kept while nothing shows picked; not while the options are empty or loading (a
+  // query not yet run), so a default waits for them. Fires no event.
+  const offeredNow = value === '' || value === null || value === undefined || options.some((o) => o.value === key);
+  React.useEffect(() => {
+    if (!offeredNow && options.length > 0 && !loading) setValue('' as never);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offeredNow, options.length, loading]);
+
   const overrides = useThemeStyles();
   // The label over the three sample options (148px): a 96px box cut the last two.
   ToolJet.useComponentSettings({
@@ -385,15 +393,25 @@ export const ToggleButtonGroup = () => {
   const options = toOptions(rawOptions, 'ToggleButtonGroup');
   // The buttons hold option keys (lib/data Option); values keep their type, so 1 and '1' are two buttons.
   const keyOf = (v: unknown) => keyForValue(options, toChoiceValue(v));
+  // The value as a list whatever its shape: an array, JSON array text, one value, or nothing.
+  const listOf = (v: unknown): unknown[] =>
+    Array.isArray(v) || (typeof v === 'string' && v.trim().startsWith('['))
+      ? toArray(v)
+      : v === '' || v === null || v === undefined
+        ? []
+        : [v];
+  const picked = listOf(value);
   const current: string | string[] | null = exclusive
-    ? (Array.isArray(value)
-        ? value.length
-          ? keyOf(value[0])
-          : ''
-        : value === '' || value === null || value === undefined
-          ? ''
-          : keyOf(value)) || null
-    : toArray(value).map(keyOf);
+    ? (picked.length ? keyOf(picked[0]) : '') || null
+    : picked.map(keyOf);
+  // The value takes the shape Exclusive asks for: turned off, the picked text stayed text, showed no button pressed and
+  // was dropped by the next click; turned on, an array stayed. Fires no event.
+  const shaped: unknown = exclusive ? (picked.length ? picked[0] : '') : picked;
+  const shapedKey = JSON.stringify(shaped);
+  React.useEffect(() => {
+    if (JSON.stringify(value) !== shapedKey) setValue(shaped as never);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shapedKey, JSON.stringify(value)]);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: unknown) => {
@@ -404,10 +422,14 @@ export const ToggleButtonGroup = () => {
     { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
     (next) =>
       // Nothing picked is '', the declared text value, as a clear leaves it; null (MUI's own none) flipped its type.
+      // A value of the other shape is taken in this one: an array's first value when exclusive (it became JSON text),
+      // one value as a list of one when not (it cleared the selection).
       change(
         exclusive
-          ? storedChoice(options, toChoiceValue(next))
-          : toArray(next).map((v) => storedChoice(options, toChoiceValue(v)))
+          ? listOf(next).length
+            ? storedChoice(options, toChoiceValue(listOf(next)[0]))
+            : ''
+          : listOf(next).map((v) => storedChoice(options, toChoiceValue(v)))
       )
   );
   return (
@@ -421,7 +443,7 @@ export const ToggleButtonGroup = () => {
           : { justifyContent: alignment === 'right' ? 'flex-end' : alignment === 'center' ? 'center' : 'flex-start' }
       }
     >
-      <Loading loading={loading} look={<Spinner />}>
+      <Loading loading={loading} look={<Spinner />} className={fullWidth ? 'tj-mui-loading--wide' : undefined}>
         <MuiToggleButtonGroup
           exclusive={exclusive}
           value={current}
@@ -551,7 +573,7 @@ const toRange = (v: unknown, lo: number, hi: number): [number, number] => {
 // MUI's Slider: label, value, min, max, step, marks, valueLabelDisplay (auto, on, off), color, size; events onChange
 // (while dragging) and onChangeCommitted (on release). Range gives two thumbs (MUI's range slider): value is then
 // [from, to].
-export const Slider = () => {
+export const Slider = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Volume' });
   const [value, setValue] = ToolJet.useStateNumber({
     name: 'value',
@@ -631,6 +653,22 @@ export const Slider = () => {
     if (valueKey !== drawnKey || Array.isArray(value) !== isRange) setValue(drawn as number);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [valueKey, drawnKey, isRange]);
+  // Range bound to another component resolves after the first render: the configured [from, to] was first fitted to one
+  // thumb, then that one number became the whole range, and the configured value was lost. When Range changes, the
+  // value is fitted again from the one the app configured (declared after the effect above, so its write wins).
+  const firstRange = useRef(isRange);
+  useEffect(() => {
+    if (firstRange.current === isRange) return;
+    firstRange.current = isRange;
+    const configured = props.value;
+    if (configured === undefined || configured === null || configured === '') return;
+    setValue(
+      (isRange
+        ? toRange(configured, lo, hi)
+        : Math.min(hi, Math.max(lo, toNumber(Array.isArray(configured) ? configured[0] : configured) ?? lo))) as number
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRange]);
   // The value the thumbs already show changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(drawn, (v) => setValue(v as number));
   ToolJet.useAction(

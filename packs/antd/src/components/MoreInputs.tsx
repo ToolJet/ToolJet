@@ -5,6 +5,7 @@ import {
   Cascader as AntCascader,
   ColorPicker as AntColorPicker,
   DatePicker,
+  Grid,
   Spin,
   TimePicker as AntTimePicker,
   Transfer as AntTransfer,
@@ -20,10 +21,11 @@ import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider'
 import { ControlSkeleton, SpinOver } from '../lib/Loading';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str, toArray, toOptions, type Row } from '../lib/data';
-import { useOwnedPopup } from '../lib/useOwnerGuard';
+import { closesOnEscape, useOwnedPopup } from '../lib/useOwnerGuard';
 import { useFormValue } from '../lib/formValue';
 import { boundedTree } from '../lib/tree';
 import { useValueSetter } from '../lib/sameValue';
+import { isBlankDate, parseDate as strictDate, parseTime } from '../lib/dates';
 import '../styles/controls.css';
 
 const useFieldActions = (change: (v: unknown) => void, initial: unknown) => {
@@ -34,11 +36,18 @@ const useFieldActions = (change: (v: unknown) => void, initial: unknown) => {
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(initial));
 };
 
-const parseDate = (v: unknown, format?: string): Dayjs | null => {
-  const s = str(v).trim();
-  if (!s) return null;
-  const d = format ? dayjs(`2000-01-01 ${s}`, `YYYY-MM-DD ${format}`) : dayjs(s);
-  return d.isValid() ? d : null;
+// Strict: text that names no real date or time (2026-13-45, 25:99) is no value, not a rolled-over one (lib/dates).
+const COLOR_TEXT =
+  /^(#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|(rgba?|hsla?|hsba?|hsva?)\(\s*[-+\d.%]+(\s*[,\s/]\s*[-+\d.%]+){2,3}\s*\))$/i;
+const parseDate = (v: unknown, format?: string): Dayjs | null =>
+  format ? parseTime(v, [format, format.replace(/^HH/, 'H')]) : strictDate(v);
+
+// The panel before the one `end` is in, for each picker: Ant's Range Picker opens the end field there when the range
+// spans panels, so the end shows in its second panel.
+const panelBefore = (picker: string, end: Dayjs, shown: Dayjs) => {
+  if (picker === 'year') return Math.floor(shown.year() / 10) === Math.floor(end.year() / 10) - 1;
+  if (picker === 'month' || picker === 'quarter') return shown.year() === end.year() - 1;
+  return shown.isSame(end.subtract(1, 'month'), 'month');
 };
 
 type FileInfo = { uid: string; name: string; size: number; type: string; base64: string; content: string };
@@ -318,6 +327,15 @@ export const Upload = () => {
   );
 };
 
+// A display format on the 12-hour clock: 24-hour hours (H, HH) as 12-hour ones (h), and AM/PM added when it has none.
+// Text in [brackets] is literal (dayjs).
+const twelveHourFormat = (format: string) => {
+  const parts = format.split(/(\[[^\]]*\])/);
+  const tokens = parts.filter((_, i) => i % 2 === 0).join('');
+  const out = parts.map((p, i) => (i % 2 ? p : p.replace(/H{1,2}/g, 'h'))).join('');
+  return /[aA]/.test(tokens) ? out : `${out} A`;
+};
+
 // Ant's TimePicker: value as text in valueFormat (HH:mm by default), format (display), use12Hours, hourStep,
 // minuteStep, placeholder, allowClear; event onChange.
 export const TimePicker = (props: Record<string, unknown>) => {
@@ -367,7 +385,12 @@ export const TimePicker = (props: Record<string, unknown>) => {
     defaultWidth: 10,
     defaultHeight: 6,
   });
-  const fmt = str(format).trim() || (use12Hours ? 'h:mm a' : 'HH:mm');
+  const given = str(format).trim();
+  // A 12-hour Format (h, a or A outside [literal] text) is a 12-hour clock without Use 12 hours too: Ant's popup listed
+  // hours 00-23 and no AM/PM for h:mm a. Use 12 hours shows a 24-hour Format (HH:mm, the default) on the 12-hour clock,
+  // with AM/PM when it has none: it showed 14:05 beside a 12-hour popup (QA AD-32).
+  const twelve = use12Hours || /[haA]/.test(given.replace(/\[[^\]]*\]/g, ''));
+  const fmt = !given ? (use12Hours ? 'h:mm a' : 'HH:mm') : twelve ? twelveHourFormat(given) : given;
   // The value keeps 24-hour text whatever the display, so queries read one shape.
   const valueFormat = /s/.test(fmt) ? 'HH:mm:ss' : 'HH:mm';
   // A value it already has changes nothing and fires nothing (lib/sameValue).
@@ -376,7 +399,11 @@ export const TimePicker = (props: Record<string, unknown>) => {
     if (!valueSetter.set(d ? d.format(valueFormat) : '')) return;
     onChange();
   };
-  useFieldActions((v) => change(parseDate(v, 'HH:mm:ss') ?? parseDate(v, 'HH:mm')), props.value);
+  // Text that names no time is refused (the value stays); an empty one clears.
+  useFieldActions((v) => {
+    const d = parseDate(v, 'HH:mm:ss') ?? parseDate(v, 'HH:mm');
+    if (d || isBlankDate(v)) change(d);
+  }, props.value);
   const current = parseDate(value, valueFormat) ?? parseDate(value, 'HH:mm');
   const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
   return (
@@ -390,7 +417,7 @@ export const TimePicker = (props: Record<string, unknown>) => {
                 style={{ width: '100%' }}
                 value={current}
                 format={fmt}
-                use12Hours={use12Hours}
+                use12Hours={twelve}
                 hourStep={Math.max(1, Number(hourStep) || 1) as 1}
                 minuteStep={Math.max(1, Number(minuteStep) || 1) as 1}
                 placeholder={placeholder || undefined}
@@ -403,6 +430,7 @@ export const TimePicker = (props: Record<string, unknown>) => {
                 popupStyle={popup.style}
                 open={panel.open}
                 onOpenChange={panel.onOpenChange}
+                panelRender={closesOnEscape(() => panel.onOpenChange(false))}
                 onChange={(d) => panel.available() && change(d as Dayjs | null)}
               />
             )}
@@ -439,8 +467,16 @@ export const RangePicker = (props: Record<string, unknown>) => {
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const pair = toArray(value).map((v) => parseDate(v));
-  const check = ToolJet.useValidation({ kind: 'date', value: pair[0] ? str(toArray(value)[0]) : '' });
+  // The same dates while the value is the same: Ant resets the shown panel whenever the value it is given changes, and
+  // the one-panel correction below answers each reset (a new pair each render reset it again, without end).
+  const pair = React.useMemo(() => toArray(value).map((v) => parseDate(v)), [JSON.stringify(value)]); // eslint-disable-line react-hooks/exhaustive-deps
+  // A range whose start is after its end (a default or setFieldValue; a pick is always in order) is not valid.
+  const reversed = !!pair[0] && !!pair[1] && pair[0].isAfter(pair[1]);
+  const check = ToolJet.useValidation({
+    kind: 'date',
+    value: pair[0] ? str(toArray(value)[0]) : '',
+    rule: reversed ? 'The start date is after the end date' : '',
+  });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'daterangepicker',
@@ -468,6 +504,22 @@ export const RangePicker = (props: Record<string, unknown>) => {
   };
   useFieldActions(change, props.value);
   const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
+  // Ant has no phone layout: its two panels side by side (576px) ran off a phone screen (QA item 22). On Ant's xs
+  // screens (below its sm breakpoint, 576px) one panel shows (controls.css). Ant opens the end field a panel early
+  // when the range spans panels, to show the end in the second one; with one shown, it opens on the end's own panel.
+  const single = Grid.useBreakpoint().xs === true;
+  const [shownPanels, setShownPanels] = useState<[Dayjs, Dayjs] | undefined>();
+  const onePanel = single
+    ? {
+        pickerValue: shownPanels,
+        onPickerValueChange: (next: [Dayjs, Dayjs], info: { source: string; range?: string }) => {
+          const end = pair[1];
+          const early =
+            info.source === 'reset' && info.range === 'end' && end && panelBefore(str(picker), end, next[1]);
+          setShownPanels(early ? [next[0], end as Dayjs] : next);
+        },
+      }
+    : {};
   return (
     <AntProvider tokens={tokens} ownerRef={panel.anchor}>
       <FormField {...field} check={check} htmlFor={fieldId}>
@@ -475,6 +527,7 @@ export const RangePicker = (props: Record<string, unknown>) => {
           <WithPopupTheme>
             {(popup) => (
               <DatePicker.RangePicker
+                {...onePanel}
                 id={fieldId as never}
                 style={{ width: '100%' }}
                 value={pair[0] && pair[1] ? [pair[0], pair[1]] : null}
@@ -487,10 +540,11 @@ export const RangePicker = (props: Record<string, unknown>) => {
                 variant={look.variant}
                 size={look.size}
                 status={check.error ? 'error' : undefined}
-                popupClassName={popup.className}
+                popupClassName={single ? `${popup.className ?? ''} tj-ant-range--single`.trim() : popup.className}
                 popupStyle={popup.style}
                 open={panel.open}
                 onOpenChange={panel.onOpenChange}
+                panelRender={closesOnEscape(() => panel.onOpenChange(false))}
                 onChange={(dates) => panel.available() && change(dates ?? [])}
               />
             )}
@@ -608,8 +662,9 @@ export const AutoComplete = (props: Record<string, unknown>) => {
   );
 };
 
-type TreeNode = { title: string; value: string; key: string; children?: TreeNode[] };
-// Ant's treeData: [{ title, value, children }]; also { label } for title and { key } for value.
+type TreeNode = { title: string; value: string; key: string; disabled?: boolean; children?: TreeNode[] };
+// Ant's treeData: [{ title, value, disabled, children }]; also { label } for title and { key } for value. A node marked
+// disabled cannot be picked (the mark was dropped, QA AD-36).
 // Bounded by lib/tree (depth, size, cycles), as everything built from it is: TreeSelect, Cascader, Navigation's Tree.
 export const toTree = (raw: unknown): TreeNode[] =>
   boundedTree<TreeNode>(raw, (o, _i, kids) => {
@@ -619,8 +674,23 @@ export const toTree = (raw: unknown): TreeNode[] =>
     const value = str(r.value ?? r.key ?? r.title ?? r.label);
     if (value === '') return null;
     const children = kids();
-    return { title: str(r.title ?? r.label ?? value), value, key: value, ...(children.length ? { children } : {}) };
+    return {
+      title: str(r.title ?? r.label ?? value),
+      value,
+      key: value,
+      ...(r.disabled ? { disabled: true } : {}),
+      ...(children.length ? { children } : {}),
+    };
   });
+
+// Every value a tree offers, at any depth.
+const treeValues = (nodes: TreeNode[], into = new Set<string>()): Set<string> => {
+  nodes.forEach((n) => {
+    into.add(n.value);
+    if (n.children) treeValues(n.children, into);
+  });
+  return into;
+};
 
 // Ant's TreeSelect: treeData, value (an array when multiple or treeCheckable), placeholder, showSearch,
 // treeDefaultExpandAll, allowClear; event onChange.
@@ -705,12 +775,24 @@ export const TreeSelect = (props: Record<string, unknown>) => {
     const arr = Array.isArray(v) ? v.map(str) : v === undefined || v === null || v === '' ? [] : [str(v)];
     if (valueSetter.set(many ? arr : (arr[0] ?? ''))) onChange();
   };
+  // The value takes the shape Multiple asks for: multiple to single kept the whole array while one item showed, single to
+  // multiple kept text. Fires no event.
+  const shaped: unknown = many ? values : (values[0] ?? '');
+  const shapedKey = JSON.stringify(shaped);
+  React.useEffect(() => {
+    if (JSON.stringify(value) !== shapedKey) setValue(shaped as never);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shapedKey, JSON.stringify(value)]);
   // A cleared Form empties a multiple TreeSelect to no values ([]), not to the '' the host clears text values to.
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(
     () => many && setValue([] as unknown as string)
   );
   useFieldActions(change, props.value);
   const list = useOwnedPopup(disabled, (open) => !open && check.touch());
+  const tree = toTree(treeData);
+  // A value no node offers shows the placeholder, as in the Select: Ant drew it as bare text (QA AD-35).
+  const offered = treeValues(tree);
+  const shown = many ? values.filter((v) => offered.has(v)) : offered.has(values[0] ?? '') ? values[0] : undefined;
   return (
     <AntProvider tokens={tokens} ownerRef={list.anchor}>
       <FormField {...field} check={check} htmlFor={fieldId}>
@@ -719,8 +801,8 @@ export const TreeSelect = (props: Record<string, unknown>) => {
             <AntTreeSelect
               id={fieldId}
               style={{ width: '100%' }}
-              treeData={toTree(treeData)}
-              value={many ? values : values[0]}
+              treeData={tree}
+              value={shown}
               multiple={multiple}
               treeCheckable={treeCheckable}
               placeholder={placeholder || undefined}
@@ -838,10 +920,25 @@ export const Cascader = (props: Record<string, unknown>) => {
     defaultWidth: 10,
     defaultHeight: 6,
   });
-  const toCascade = (raw: unknown): { label: string; value: string; children?: unknown[] }[] =>
-    toTree(raw).map(function map(n): { label: string; value: string; children?: unknown[] } {
-      return { label: n.title, value: n.value, ...(n.children ? { children: n.children.map(map) } : {}) };
+  type Cascade = { label: string; value: string; disabled?: boolean; children?: Cascade[] };
+  const toCascade = (raw: unknown): Cascade[] =>
+    toTree(raw).map(function map(n): Cascade {
+      return {
+        label: n.title,
+        value: n.value,
+        ...(n.disabled ? { disabled: true } : {}),
+        ...(n.children ? { children: n.children.map(map) } : {}),
+      };
     });
+  const cascade = toCascade(rawOptions);
+  // A path the options do not hold, step by step, shows the placeholder, as in the Select: Ant drew it as bare text
+  // (nope / x, QA AD-35).
+  const holds = (level: Cascade[], steps: string[]): boolean => {
+    if (!steps.length) return true;
+    const hit = level.find((o) => o.value === steps[0]);
+    return !!hit && holds(hit.children ?? [], steps.slice(1));
+  };
+  const known = path.length > 0 && holds(cascade, path);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
@@ -858,8 +955,8 @@ export const Cascader = (props: Record<string, unknown>) => {
             <AntCascader
               id={fieldId}
               style={{ width: '100%' }}
-              options={toCascade(rawOptions) as never}
-              value={path.length ? (path as never) : undefined}
+              options={cascade as never}
+              value={known ? (path as never) : undefined}
               placeholder={placeholder || undefined}
               expandTrigger={expandTrigger as 'click'}
               changeOnSelect={changeOnSelect}
@@ -931,9 +1028,18 @@ export const ColorPicker = (props: Record<string, unknown>) => {
   });
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  // A colour the picker can read (hex, rgb(), hsl(), hsb()): anything else showed as #000000 while value kept the text.
+  // A value it cannot read is not kept; setFieldValue refuses it.
+  const readable = (v: unknown) => str(v).trim() === '' || COLOR_TEXT.test(str(v).trim());
   useFieldActions((v) => {
+    if (!readable(v)) return;
     if (valueSetter.set(str(v))) onChange();
   }, props.value);
+  const valueReadable = readable(value);
+  useEffect(() => {
+    if (!valueReadable) setValue('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [valueReadable]);
   const presetList = toArray(presets)
     .map((p) =>
       p && typeof p === 'object' ? { label: str((p as Row).label), colors: toArray((p as Row).colors).map(str) } : null
@@ -961,6 +1067,23 @@ export const ColorPicker = (props: Record<string, unknown>) => {
                 styles={{ popup: popup.style, popupOverlayInner: popup.style } as never}
                 open={panel.open}
                 onOpenChange={panel.onOpenChange}
+                // Ant's swatch is a plain div, so Tab skipped the picker (a ToolJet Color picker takes it): it takes
+                // Tab, Enter or Space opens the panel, and Tab closes it on the way out. A click focuses it too (the
+                // editor's canvas keeps a press from doing so), or Tab went on with the panel left open.
+                {...({
+                  tabIndex: disabled ? -1 : 0,
+                  role: 'button',
+                  'aria-label': field.label || 'Color',
+                  'aria-haspopup': 'dialog',
+                  'aria-expanded': !!panel.open,
+                  onClick: (e: React.MouseEvent<HTMLElement>) => e.currentTarget.focus(),
+                  onKeyDown: (e: React.KeyboardEvent) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      panel.onOpenChange(!panel.open);
+                    } else if (e.key === 'Tab' && panel.open) panel.onOpenChange(false);
+                  },
+                } as object)}
                 onChange={(c, css) => {
                   if (!panel.available()) return;
                   setValue(c.cleared ? '' : format === 'rgb' ? css : c.toHexString());
@@ -1008,7 +1131,9 @@ export const Transfer = (props: Record<string, unknown>) => {
   const [oneWay] = ToolJet.useStateBoolean({ name: 'oneWay', label: 'One way', initialValue: false });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
-  const keys = toArray(targetKeys).map(str);
+  const chosen = toArray(targetKeys);
+  // Ant's Transfer holds keys as text.
+  const keys = chosen.map(str);
   const check = ToolJet.useValidation({ kind: 'choice', value: keys.join(','), present: keys.length > 0 });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
@@ -1016,31 +1141,54 @@ export const Transfer = (props: Record<string, unknown>) => {
     fit: false,
     loading: 'own',
     usage:
-      "Ant's Transfer: two lists; dataSource [{key, title}], targetKeys (the chosen keys, exposed), titles, showSearch, oneWay; onChange.",
+      "Ant's Transfer: two lists; dataSource [{key, title, disabled?}], targetKeys (the chosen keys, exposed), titles, showSearch, oneWay; onChange.",
     roleProps: { data: 'dataSource', value: 'targetKeys' },
     roleActions: { setValue: 'setFieldValue' },
     defaultWidth: 24,
     defaultHeight: 30,
   });
+  // Each item's key as the data gives it (1 stays a number), by its text. An item marked disabled cannot be ticked or
+  // moved: the mark was dropped, and it moved like any other (QA AD-33).
+  const given = new Map<string, unknown>();
   const items = toArray(dataSource)
     .map((o) => {
-      if (typeof o === 'string') return { key: o, title: o };
+      if (typeof o === 'string') {
+        given.set(o, o);
+        return { key: o, title: o };
+      }
       const r = (o ?? {}) as Row;
       const key = str(r.key ?? r.value ?? r.id);
-      return key ? { key, title: str(r.title ?? r.label ?? key), description: str(r.description) || undefined } : null;
+      if (!key) return null;
+      given.set(key, r.key ?? r.value ?? r.id);
+      return {
+        key,
+        title: str(r.title ?? r.label ?? key),
+        description: str(r.description) || undefined,
+        ...(r.disabled ? { disabled: true } : {}),
+      };
     })
-    .filter((x): x is { key: string; title: string; description?: string } => !!x);
+    .filter((x): x is { key: string; title: string; description?: string; disabled?: boolean } => !!x);
+  // Keys as the data has them, else as they were given: Ant's text keys were exposed as they were, so the number keys 1
+  // and 2 came back as '2' and '1' after a move (QA AD-34).
+  const asGiven = (k: unknown) => (given.has(str(k)) ? given.get(str(k)) : k);
   // targetKeys and the Form's value published together before onChange; the keys it already has fire nothing.
-  const keysSetter = useValueSetter(keys, (next) => {
+  const keysSetter = useValueSetter<unknown[]>(chosen, (next) => {
     setTargetKeys(next);
     publishValue(next);
   });
-  const change = (next: unknown) => {
-    if (!keysSetter.set(toArray(next).map(str))) return;
+  const change = (next: unknown[]) => {
+    if (!keysSetter.set(next)) return;
     check.touch();
     onChange();
   };
-  useFieldActions(change, props.targetKeys);
+  useFieldActions((v) => change(toArray(v).map(asGiven)), props.targetKeys);
+  // Ant gives the moved keys first: the chosen keys are kept in the data's order, then any no item has, as they were.
+  const move = (next: React.Key[]) => {
+    const picked = new Set(next.map(str));
+    const known = items.filter((i) => picked.has(i.key)).map((i) => asGiven(i.key));
+    const unknown = chosen.filter((k) => picked.has(str(k)) && !given.has(str(k)));
+    change([...known, ...unknown]);
+  };
   // A Form's clearForm moves every item back, and starts Ant's Transfer again: its ticked items and search text are its
   // own state, and the ticks stayed on the items that moved back.
   const [epoch, setEpoch] = useState(0);
@@ -1058,10 +1206,12 @@ export const Transfer = (props: Record<string, unknown>) => {
           status={check.error ? 'error' : undefined}
           titles={toArray(titles).map(str).slice(0, 2)}
           showSearch={showSearch}
+          // Ant's own search matches case-sensitively ('rev' missed 'Revenue').
+          filterOption={(input, item) => str(item.title).toLowerCase().includes(str(input).toLowerCase())}
           oneWay={oneWay}
           disabled={disabled}
           render={(item) => item.title}
-          onChange={(keys) => change(keys)}
+          onChange={(next) => move(next)}
         />
         {check.error ? (
           <div className="tj-ant-transfer-error" role="alert">

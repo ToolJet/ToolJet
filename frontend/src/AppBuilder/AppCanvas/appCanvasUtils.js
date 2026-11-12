@@ -75,7 +75,11 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.properties.componentName = { value: libraryComponentInfo.componentName };
     // Manifest prop defaults land as instance values so the Inspector's fields arrive
     // pre-filled (module input_items precedent below).
+    // A hidden prop has no Inspector field: it is the component's own state (a field's value) or an earlier name it
+    // still honours when an app sets it. Saving its sample would set it, so a Number Input whose Default value is
+    // later emptied kept showing the sample 1 after a reload.
     for (const prop of libraryComponentInfo.props ?? []) {
+      if (prop.inspector === 'hidden') continue;
       componentData.definition.properties[prop.name] = { value: manifestDefaultToDefinitionValue(prop) };
     }
     for (const style of libraryComponentInfo.styles ?? []) {
@@ -106,7 +110,9 @@ export const addNewWidgetToTheEditor = (
   const gridWidth = subContainerWidths[targetCanvasId] || fallbackGridWidth;
   let [left, top] = snapToGrid(gridWidth * NO_OF_GRIDS, _left, _top + scrollTop);
 
-  left = Math.round(left / gridWidth);
+  // A drop whose pointer sits left of the target's first column (near the left edge of a pack slot, whose box starts
+  // inside its card's padding) starts at column 0: it saved a negative left and the widget was cut off.
+  left = Math.max(0, Math.round(left / gridWidth));
 
   // Adjust widget width based on the dropping canvas width
   const mainCanvasGridWidth = subContainerWidths.canvas || gridWidth;

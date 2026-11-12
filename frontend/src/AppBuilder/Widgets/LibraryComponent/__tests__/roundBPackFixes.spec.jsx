@@ -26,7 +26,7 @@ const SOURCE = {
 };
 
 let mounts = 0;
-const mount = async (pack, name, props = {}) => {
+const mount = async (pack, name, props = {}, { fit = false } = {}) => {
   loadLibraryModule.mockResolvedValue({ [name]: SOURCE[pack][name] });
   mounts += 1;
   const exposed = {};
@@ -47,6 +47,7 @@ const mount = async (pack, name, props = {}) => {
       fireEvent={(event) => events.push(event)}
       actions={new Map()}
       host={makeHost(name, {})}
+      fit={fit}
       dataCy="rb-widget"
     />
   );
@@ -312,6 +313,26 @@ describe('B-05: rings fit a narrow box', () => {
     const c = await mount('antd', 'RadialChart', { mode: 'progress', value: 50 });
     await settle();
     expect(c.root().querySelector('.ant-progress-inner').style.width).toBe('96px');
+  });
+
+  // Dynamic height: the ring box is its own square, sized by --tj-ring-size.
+  it.each([
+    [{ percent: 40 }, '120px'],
+    [{ percent: 40, size: 10 }, '32px'],
+    [{ percent: 40, size: 900 }, '400px'],
+  ])('Ant CircularProgress %o hands its ring box the size %s, for Dynamic height', async (props, asked) => {
+    const c = await mount('antd', 'CircularProgress', props, { fit: true });
+    await settle();
+    expect(c.root().querySelector('.tj-ant-ring-fit').style.getPropertyValue('--tj-ring-size')).toBe(asked);
+  });
+
+  it('the Ant pack CSS lays the ring box out as its own square under Dynamic height', () => {
+    const css = require('fs').readFileSync(
+      require('path').join(__dirname, '../../../../../../packs/antd/src/styles/pack.css'),
+      'utf8'
+    );
+    const rule = /\.tj-cc-fit \.tj-ant-ring-fit\s*{([^}]*)}/.exec(css)?.[1] ?? '';
+    expect(rule).toMatch(/flex:\s*0 0 auto/);
   });
 
   it('shadcn CircularProgress draws the largest square its box has room for, up to its size', async () => {

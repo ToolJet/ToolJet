@@ -66,8 +66,8 @@ const baseHost = (name, extra = {}) => ({
 });
 
 // One pack widget on the inline host, inside a Form signal. `update` re-renders it with new properties, a new host
-// state, a new wrapper (a parent turning inert) or a Form clear.
-const mount = async (name, props, { host = {}, wrapper = {}, popup } = {}) => {
+// state, a new wrapper (a parent turning inert) or a Form clear. `styles` are the widget's styles (its look).
+const mount = async (name, props, { host = {}, wrapper = {}, popup, styles = {} } = {}) => {
   loadLibraryModule.mockResolvedValue({ [name]: COMPONENTS[name] });
   const exposed = {};
   const events = [];
@@ -85,7 +85,7 @@ const mount = async (name, props, { host = {}, wrapper = {}, popup } = {}) => {
           cacheKey={cacheKey}
           componentName={name}
           componentProps={c.props}
-          componentStyles={{}}
+          componentStyles={styles}
           renderSlot={(slot) => {
             slots.push(slot);
             return null;
@@ -1211,7 +1211,8 @@ describe('MUI Select clear button room', () => {
   ])(
     '%s %s: the x sits left of the arrow and the value stops before both',
     async (variant, size, clearRight, valueRight) => {
-      const t = await mount('Select', { options: LONG, value: 'long', variant, size });
+      // The field's look is its styles (the Styles tab).
+      const t = await mount('Select', { options: LONG, value: 'long' }, { styles: { variant, size } });
       const clear = t.root().querySelector('.tj-mui-select-clear');
       expect(clear).not.toBeNull();
       const slot = clear.closest('.tj-mui-select-clear-slot');

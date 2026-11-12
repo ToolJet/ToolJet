@@ -1435,6 +1435,15 @@ body {
   box-shadow: var(--ui-shadow-lg);
   transform: translate(-50%, -50%);
   animation: ui-dialog-in 0.15s ease-out;
+  /* A body taller than the screen scrolls inside the dialog, which stays on screen: 100% is the visible canvas (the
+     popup layer is its containing block), or the window when the layer is the page's. */
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+}
+
+/* Kept at their own height, so a tall body scrolls rather than being squeezed under the title and footer. */
+.ui-dialog > * {
+  flex-shrink: 0;
 }
 
 .ui-dialog:focus-visible {

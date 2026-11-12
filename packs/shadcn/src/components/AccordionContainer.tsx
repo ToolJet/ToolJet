@@ -7,6 +7,16 @@ import { lookVars } from '../lib/ui2/nav/look';
 import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
+// The look variables the container sets on its root are for its own sections. Custom properties inherit through a drop
+// area, so a Divider color also drew the borders of a Rocket input or an Ant Schedule dropped in a section: each
+// section's drop area resets them.
+const OWN_LOOKS_RESET = {
+  ['--lk-title' as string]: 'initial',
+  ['--lk-border' as string]: 'initial',
+  ['--ui-border' as string]: 'initial',
+  ['--lk-icon' as string]: 'initial',
+} as React.CSSProperties;
+
 // Container: one drop area per section. Sections come from a property, so the slots are dynamic.
 // forceMount keeps closed sections (and the components in them) mounted; CSS hides them.
 export const AccordionContainer = () => {
@@ -96,6 +106,11 @@ export const AccordionContainer = () => {
     const collapsed = prev.some((id) => !next.includes(id));
     openRef.current = next;
     setOpenSections(next);
+    // openIndexes and isExpanded with the ids, before the events: set only once drawn, the first onChange's handlers
+    // read the previous openIndexes beside the new openSections.
+    const shown = indexes(allowMultiple ? next : next.slice(0, 1));
+    setOpenIndexes(shown);
+    setIsExpanded(shown.length > 0);
     // The sections already open: nothing changes and nothing fires.
     if (!fire || (!expanded && !collapsed)) return;
     if (expanded) onExpand();
@@ -124,10 +139,10 @@ export const AccordionContainer = () => {
       const all = sections.map((s) => s.id);
       const prev = openRef.current;
       const next = allowMultiple ? (one ? [...new Set([...prev, one])] : all) : [one ?? all[0]].filter(Boolean);
-      // Only when a section opens, as the pack's Accordion: one already open fires nothing.
+      // Only when a section opens, as the pack's Accordion: one already open fires nothing. It fires what a click does:
+      // onExpand, onCollapse for a section it closes (a single accordion), and onChange (it fired onExpand only).
       if (!next.some((id) => !prev.includes(id))) return;
-      update(next, false);
-      onExpand();
+      update(next);
     }
   );
   ToolJet.useAction(
@@ -142,8 +157,8 @@ export const AccordionContainer = () => {
       const prev = openRef.current;
       const next = one ? prev.filter((id) => id !== one) : [];
       if (next.length === prev.length) return;
-      update(next, false);
-      onCollapse();
+      // onCollapse and onChange, as a click fires them (it fired onCollapse only).
+      update(next);
     }
   );
 
@@ -174,7 +189,7 @@ export const AccordionContainer = () => {
         </AccordionPrimitive.Trigger>
       </AccordionPrimitive.Header>
       <AccordionPrimitive.Content forceMount className="ui-accordion-container-panel">
-        <ToolJet.Slot name={slots.get(section.id) as string} style={{ height: panelHeight }} />
+        <ToolJet.Slot name={slots.get(section.id) as string} style={{ height: panelHeight, ...OWN_LOOKS_RESET }} />
       </AccordionPrimitive.Content>
     </AccordionPrimitive.Item>
   ));

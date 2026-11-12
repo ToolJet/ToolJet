@@ -93,7 +93,7 @@ export const Button = () => {
     },
     labelCase: 'upper',
     defaultWidth: 6,
-    defaultHeight: 5,
+    defaultHeight: 4,
   });
 
   ToolJet.useAction({ name: 'click', displayName: 'Click' }, () => {
@@ -104,6 +104,7 @@ export const Button = () => {
   const button = (
     <MuiButton
       ref={ref}
+      className="tj-mui-fill"
       variant={variant as 'contained'}
       color={color as 'primary'}
       size={size as 'medium'}
@@ -112,11 +113,13 @@ export const Button = () => {
       startIcon={iconOf(startIcon)}
       endIcon={iconOf(endIcon)}
       {...(href ? ({ href, target: '_blank', rel: 'noopener noreferrer' } as object) : {})}
-      disabled={disabled}
+      // Disabled only by the host, which dims the widget to half and makes it inert, as a native Button: MUI's own
+      // disabled look dimmed it a second time, its label nearly gone. It keeps its look and says it is disabled.
+      aria-disabled={disabled || undefined}
       loading={loading}
       // The label stays on one line, cut with an ellipsis; the full text shows on hover (unless there is a tooltip).
       title={tooltip ? undefined : children || undefined}
-      onClick={() => onClick()}
+      onClick={() => !disabled && onClick()}
     >
       <span className="tj-mui-button-label">{children}</span>
     </MuiButton>

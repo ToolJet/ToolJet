@@ -12,6 +12,7 @@ import {
 } from '../lib/ui2/display/type';
 import { LoadingBox, LoadingFrame, TextSkel, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useBlankNumber, useThemeColor } from '../lib/styleDefaults';
+import { onPointerIn } from '../lib/pointerEnter';
 import '../styles/ui2-display.css';
 
 export const Text = () => {
@@ -87,7 +88,7 @@ export const Text = () => {
           )}
           style={{ textAlign: textAlign as 'left', ...(textColor ? { color: textColor } : {}), ...looks }}
           onClick={onClick}
-          onMouseEnter={onHover}
+          onMouseOver={onPointerIn(onHover)}
         >
           {String(text ?? '')}
         </p>

@@ -84,6 +84,18 @@ export const heightHeldInView = (componentType, properties = {}) => {
 };
 
 /**
+ * Whether a component pack widget with Dynamic height sizes itself around the components in its drop areas: they take
+ * their components' height and it measures the box it then draws (SdkComponentHost, LibrarySlotCanvas). A reflow in one
+ * of its drop areas leaves its height to it: sized as a grid container it had no components of its own (they sit on
+ * `<id>-<slot>`), so it went back to its drawn height over the one it had measured.
+ * @param {string | undefined} componentType
+ * @param {Record<string, unknown>} [properties]  the widget's resolved properties
+ * @returns {boolean}
+ */
+export const sizesToDropAreas = (componentType, properties = {}) =>
+  isSdkComponentType(componentType) && properties.dynamicHeight === true;
+
+/**
  * Whether a child of a FlexContainer row is stretched to its line's height. An Equal heights row (or one whose Align is
  * Stretch, for FlexContainer children) stretches the children that draw a surface filling their box: a FlexContainer
  * (a card or a plain container) and a UI 2.0 Stat drawn as a card that fits its content, so cards of different content

@@ -110,20 +110,31 @@ export const Steps = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, all]);
 
+  // Actions never land on a disabled step, as a click cannot: setStep refuses one, next and previous pass over them,
+  // and reset goes to the first step that is not disabled.
+  const enabledFrom = (from: number, delta: number) => {
+    const list = live.current.shown;
+    for (let i = from; i >= 0 && i < list.length; i += delta) if (!list[i].disabled) return i;
+    return -1;
+  };
   ToolJet.useAction(
     { name: 'setStep', displayName: 'Set step', params: [{ handle: 'option', displayName: 'Step id' }] },
     (id) => {
-      if (!disabled) moveTo(stepIndexOf(live.current.shown, id));
+      const i = stepIndexOf(live.current.shown, id);
+      if (!disabled && i >= 0 && !live.current.shown[i].disabled) moveTo(i);
     }
   );
   ToolJet.useAction({ name: 'nextStep', displayName: 'Next step' }, () => {
-    moveTo(live.current.index + 1);
+    const i = enabledFrom(live.current.index + 1, 1);
+    if (i >= 0) moveTo(i);
   });
   ToolJet.useAction({ name: 'previousStep', displayName: 'Previous step' }, () => {
-    if (live.current.index > 0) moveTo(live.current.index - 1);
+    const i = enabledFrom(live.current.index - 1, -1);
+    if (i >= 0) moveTo(i);
   });
   ToolJet.useAction({ name: 'resetSteps', displayName: 'Reset steps' }, () => {
-    moveTo(0);
+    const i = enabledFrom(0, 1);
+    moveTo(i >= 0 ? i : 0);
   });
   const override = (id: unknown, patch: Partial<Step>) =>
     setOverrides((p) => ({ ...p, [String(id)]: { ...(p[String(id)] ?? {}), ...patch } }));

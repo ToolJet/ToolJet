@@ -146,7 +146,17 @@ const MAX_POINTS = 2000;
 
 /** The trend line's numbers from [3, 5, 4], '3,5,4' or [{ x, y }] (also { label, value }); the last 2000 are kept. */
 const sparkValues = (data: unknown): number[] => {
-  const raw: unknown[] = Array.isArray(data) ? data : typeof data === 'string' ? data.split(',') : [];
+  // Text may be a JSON array ('[3,5,4,8]': split on commas, its first and last points lost their brackets and were
+  // dropped) or a plain list ('3,5,4,8').
+  let list: unknown = data;
+  if (typeof data === 'string' && data.trim().startsWith('[')) {
+    try {
+      list = JSON.parse(data);
+    } catch {
+      list = data.replace(/[[\]]/g, '');
+    }
+  }
+  const raw: unknown[] = Array.isArray(list) ? list : typeof list === 'string' ? list.split(',') : [];
   return raw
     .slice(-MAX_POINTS)
     .map((d) => (isRecord(d) ? num(d.y !== undefined ? d.y : d.value) : isScalar(d) ? num(d) : null))

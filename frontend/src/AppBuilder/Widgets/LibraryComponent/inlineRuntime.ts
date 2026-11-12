@@ -76,6 +76,8 @@ export interface PackHost {
   /** A drop area drawn inside the popup layer (a dialog's body). */
   registerPopupSlot: (name: string) => () => void;
   popupSlotAttr: (name: string) => string;
+  /** Dynamic height, in a released app: every drop area (Slot, PopupSlot) takes the height of its components. */
+  fitDropAreas?: boolean;
   /** A field component (its manifest has a validation section): a Form's clearForm empties its `value`/`values`. */
   formField?: boolean;
   /** Marks props whose `{{...}}` strings that read rowData, cellValue or rowIndex the host keeps unresolved. */
@@ -105,6 +107,13 @@ const SLOT_NAME = /^[A-Za-z][A-Za-z0-9_]*$/;
 export const slotAttributeName = (name: string): string => `tj-slot-${name}`;
 
 export const LibraryInstanceContext = React.createContext<LibraryInstance | null>(null);
+
+// A drop area's box. With Dynamic height on, the area takes its components' height, so a height the component gives it
+// (an accordion section's, a dialog body's) becomes its minimum: the area grows past it instead of clipping or scrolling.
+const dropAreaStyle = (style: React.CSSProperties | undefined, fits: boolean): React.CSSProperties => {
+  const box: React.CSSProperties = { position: 'relative', minWidth: 0, minHeight: 0, ...style };
+  return fits && style?.height !== undefined ? { ...box, height: 'auto', minHeight: style.height } : box;
+};
 
 const useLibraryInstance = (hookName: string): LibraryInstance => {
   const instance = React.useContext(LibraryInstanceContext);
@@ -143,9 +152,12 @@ const makeStateHook = (hookName: string, cleared?: () => unknown) =>
     // overwrote what the component had published.
     if (!Object.is(lastExternal.current, external) && !sameContent(lastExternal.current, external)) {
       lastExternal.current = external;
-      if (external !== undefined && !Object.is(external, value)) {
-        valueRef.current = external;
-        setValue(external);
+      // A bound property that goes back to undefined (a query re-run that failed, a ternary that yields nothing)
+      // empties as it would on the first render, instead of keeping the last value shown.
+      const next = external !== undefined ? external : bound && cleared ? cleared() : undefined;
+      if (next !== undefined && !Object.is(next, value) && !sameContent(next, value)) {
+        valueRef.current = next;
+        setValue(next);
       }
     }
 
@@ -222,7 +234,7 @@ const Slot = ({ name, className, style }: { name: string; className?: string; st
 
   return React.createElement(
     'div',
-    { className, style: { position: 'relative', minWidth: 0, minHeight: 0, ...style }, 'data-tj-slot': name },
+    { className, style: dropAreaStyle(style, !!instance.host?.fitDropAreas), 'data-tj-slot': name },
     isValid ? React.createElement('slot', { name: slotAttributeName(name) }) : null
   );
 };
@@ -315,7 +327,7 @@ const v2Hooks = {
     React.useLayoutEffect(() => host?.registerPopupSlot(name), [host, name]);
     return React.createElement(
       'div',
-      { className, style: { position: 'relative', minWidth: 0, minHeight: 0, ...style }, 'data-tj-slot': name },
+      { className, style: dropAreaStyle(style, !!host?.fitDropAreas), 'data-tj-slot': name },
       host ? React.createElement('slot', { name: host.popupSlotAttr(name) }) : null
     );
   },
@@ -458,9 +470,23 @@ export const loadLibraryModule = (
 export const loadLibraryCss = (cssUrl: string, cacheKey: string, options: LoadOptions = {}): Promise<string | null> => {
   let pending = cssCache.get(cacheKey);
   if (!pending) {
+    // A library with no stylesheet answers 404, kept as "no stylesheet". Any other failure (a server error, a dropped
+    // connection) is let go, so the next load (a retry, another instance) fetches it again (QA item 19).
+    let failed = false;
     pending = fetch(cssUrl, fetchInit(options))
-      .then((r) => (r.ok ? r.text() : null))
-      .catch(() => null);
+      .then((r) => {
+        if (r.ok) return r.text();
+        failed = r.status !== 404;
+        return null;
+      })
+      .catch(() => {
+        failed = true;
+        return null;
+      });
+    const settled = pending;
+    settled.then(() => {
+      if (failed && cssCache.get(cacheKey) === settled) cssCache.delete(cacheKey);
+    });
     cssCache.set(cacheKey, pending);
   }
   return pending;

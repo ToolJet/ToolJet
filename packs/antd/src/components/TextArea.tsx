@@ -50,7 +50,13 @@ export const TextArea = (props: Record<string, unknown>) => {
   const ref = useRef<InputRef>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ kind: 'text', value });
+  // Text longer than Max length (a default or setFieldValue; typing stops at it) is not valid.
+  const tooLong = Number(maxLength) > 0 && String(value ?? '').length > Number(maxLength);
+  const check = ToolJet.useValidation({
+    kind: 'text',
+    value,
+    rule: tooLong ? `Maximum ${Number(maxLength)} characters is allowed` : '',
+  });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'textarea',
@@ -82,7 +88,7 @@ export const TextArea = (props: Record<string, unknown>) => {
   const min = Math.max(1, Number(minRows) || 3);
   const max = Number(maxRows) > 0 ? Math.max(min, Number(maxRows)) : undefined;
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} className="tj-ant-textarea">
       <FormField {...field} check={check} htmlFor={fieldId}>
         <ControlSkeleton loading={loading} size={look.size} rows={min}>
           <Input.TextArea
