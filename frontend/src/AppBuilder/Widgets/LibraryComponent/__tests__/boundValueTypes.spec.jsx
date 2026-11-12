@@ -136,8 +136,9 @@ describe('a property that takes an array on purpose', () => {
     await waitFor(() => expect(exposed.value).toEqual(['a', 'b']));
   });
 
+  // A path its options hold: one they do not is dropped, as the Select drops a value no option offers (QA AD-57).
   it("keeps an Ant Cascader's path", async () => {
-    const { exposed } = await mount('antd', 'Cascader', { value: ['asia', 'india'] }, ARRAY_VALUE);
-    await waitFor(() => expect(exposed.value).toEqual(['asia', 'india']));
+    const { exposed } = await mount('antd', 'Cascader', { value: ['asia', 'japan'] }, ARRAY_VALUE);
+    await waitFor(() => expect(exposed.value).toEqual(['asia', 'japan']));
   });
 });

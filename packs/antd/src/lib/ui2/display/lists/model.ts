@@ -286,6 +286,10 @@ export interface CardItem {
   index: number;
 }
 
+// A badge field's badges: one per entry of a list (tags: ['Easy', 'Quick']) and none for an empty list. A list drew as one
+// badge of its JSON text, brackets and quotes (QA AD-40).
+const badgeTexts = (v: unknown): string[] => (Array.isArray(v) ? v : [v]).map((x) => toText(x).trim()).filter(Boolean);
+
 export const cardItems = (data: unknown, f: Record<string, unknown> = {}): CardItem[] => {
   if (!Array.isArray(data)) return [];
   const metaSpecs = fieldList(f.metaFields);
@@ -296,7 +300,7 @@ export const cardItems = (data: unknown, f: Record<string, unknown> = {}): CardI
     const titleKey = isNonBlankString(f.titleField) ? f.titleField : firstTextField(row);
     const id = isNonBlankString(f.idField) ? row[f.idField] : row.id;
     const title = titleKey ? toText(row[titleKey]) : '';
-    const badges = badgeKeys.map((k) => toText(row[k]).trim()).filter(Boolean).slice(0, 4);
+    const badges = badgeKeys.flatMap((k) => badgeTexts(row[k])).slice(0, 4);
     const avatarValue = isNonBlankString(f.avatarField) && f.avatarField in row ? row[f.avatarField] : undefined;
     const progress = isNonBlankString(f.progressField) ? percentOf(row[f.progressField]) : null;
     const description = isNonBlankString(f.descriptionField) ? toText(row[f.descriptionField]) : '';

@@ -28,17 +28,30 @@ const num = (v: unknown): number | null => {
   const n = Number(v.replace(/[,\s]/g, ''));
   return Number.isFinite(n) ? n : null;
 };
+// The figures formatValue formats (a finite number, or plain numeric text); anything else shows as written.
+const isNumericFigure = (v: unknown): boolean =>
+  typeof v === 'number' ? Number.isFinite(v) : typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v.trim());
 
+// A change as shown. A percent change is a fraction (0.12 is +12%), as Ant's Descriptions and Statistic read percents:
+// 0.12 showed +0.1% (QA AD-43). A percent or number change shows one decimal, or its first significant digit where one
+// decimal would round it away, so it keeps its direction: -0.004 showed a grey 0 with no arrow.
 const formatChange = (n: number, format: string, currency: unknown, locale: unknown): Delta => {
   const code = currencyCode(currency);
   const where = localeFor(currency, locale);
-  const f =
-    format === 'currency'
-      ? numberFormat(where, moneyStyle(code))
-      : numberFormat(where, { minimumFractionDigits: format === 'percent' ? 1 : 0, maximumFractionDigits: 1 });
+  const money = format === 'currency';
+  const value = format === 'percent' ? n * 100 : n;
+  const f = money
+    ? numberFormat(where, moneyStyle(code))
+    : numberFormat(where, {
+        minimumFractionDigits: format === 'percent' ? 1 : 0,
+        maximumFractionDigits: 1,
+        maximumSignificantDigits: 1,
+        roundingPriority: 'morePrecision',
+      } as Intl.NumberFormatOptions);
   const digits = f.resolvedOptions().maximumFractionDigits ?? 1;
-  const shown = Math.round(Math.abs(n) * 10 ** digits) / 10 ** digits;
-  const direction = shown === 0 ? 0 : Math.sign(n);
+  // Money rounds to its own decimals; the other formats never round a change to zero.
+  const shown = money ? Math.round(Math.abs(value) * 10 ** digits) / 10 ** digits : Math.abs(value);
+  const direction = shown === 0 ? 0 : Math.sign(value);
   const sign = direction > 0 ? '+' : direction < 0 ? '−' : '';
   return { text: `${sign}${f.format(shown)}${format === 'percent' ? '%' : ''}`, direction };
 };
@@ -106,6 +119,9 @@ export const summaryFigures = (
             : valueFormat;
       const itemCurrency = isNonBlankString(item.currency) ? item.currency : currency;
       const itemLocale = isNonBlankString(item.locale) ? item.locale : locale;
+      // A percent figure is a fraction too (0.021 is 2.1%); text such as '45%' shows as written (QA AD-43).
+      const value =
+        format === 'percent' && isNumericFigure(item.value) ? Number(item.value) * 100 : item.value;
       const delta = deltaOf(item.delta, isNonBlankString(item.deltaFormat) ? item.deltaFormat : deltaFormat, itemCurrency, itemLocale);
       let tone = TONES[isNonBlankString(item.tone) ? item.tone.trim().toLowerCase() : ''];
       if (delta && !tone) {
@@ -116,7 +132,7 @@ export const summaryFigures = (
         {
           key: String(index),
           label: toText(item.label),
-          value: formatValue(item.value, format, itemCurrency, itemLocale),
+          value: formatValue(value, format, itemCurrency, itemLocale),
           delta: delta ? { ...delta, tone } : null,
           caption: toText(item.caption),
         },

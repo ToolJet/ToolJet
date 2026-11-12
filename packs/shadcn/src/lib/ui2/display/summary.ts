@@ -29,15 +29,23 @@ const num = (v: unknown): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
+// A change as shown: a percent or number change shows one decimal, or its first significant digit where one decimal
+// would round it away, so it keeps its direction: -0.004 showed a grey 0 with no arrow (QA AD-43). Money rounds to its
+// own decimals.
 const formatChange = (n: number, format: string, currency: unknown, locale: unknown): Delta => {
   const code = currencyCode(currency);
   const where = localeFor(currency, locale);
-  const f =
-    format === 'currency'
-      ? numberFormat(where, moneyStyle(code))
-      : numberFormat(where, { minimumFractionDigits: format === 'percent' ? 1 : 0, maximumFractionDigits: 1 });
+  const money = format === 'currency';
+  const f = money
+    ? numberFormat(where, moneyStyle(code))
+    : numberFormat(where, {
+        minimumFractionDigits: format === 'percent' ? 1 : 0,
+        maximumFractionDigits: 1,
+        maximumSignificantDigits: 1,
+        roundingPriority: 'morePrecision',
+      } as Intl.NumberFormatOptions);
   const digits = f.resolvedOptions().maximumFractionDigits ?? 1;
-  const shown = Math.round(Math.abs(n) * 10 ** digits) / 10 ** digits;
+  const shown = money ? Math.round(Math.abs(n) * 10 ** digits) / 10 ** digits : Math.abs(n);
   const direction = shown === 0 ? 0 : Math.sign(n);
   const sign = direction > 0 ? '+' : direction < 0 ? '−' : '';
   return { text: `${sign}${f.format(shown)}${format === 'percent' ? '%' : ''}`, direction };

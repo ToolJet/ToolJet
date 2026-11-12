@@ -776,8 +776,14 @@ export const TreeSelect = (props: Record<string, unknown>) => {
     if (valueSetter.set(many ? arr : (arr[0] ?? ''))) onChange();
   };
   // The value takes the shape Multiple asks for: multiple to single kept the whole array while one item showed, single to
-  // multiple kept text. Fires no event.
-  const shaped: unknown = many ? values : (values[0] ?? '');
+  // multiple kept text. It holds only values the tree offers, as the Select's holds only its options': a value no node
+  // offers showed the placeholder but stayed exposed (QA AD-57). Not while the tree is empty or loading (data a query
+  // has not fetched yet), so a default waits for it. Fires no event.
+  const tree = toTree(treeData);
+  const offered = treeValues(tree);
+  const prune = tree.length > 0 && !loading;
+  const kept = prune ? values.filter((v) => offered.has(v)) : values;
+  const shaped: unknown = many ? kept : (kept[0] ?? '');
   const shapedKey = JSON.stringify(shaped);
   React.useEffect(() => {
     if (JSON.stringify(value) !== shapedKey) setValue(shaped as never);
@@ -789,9 +795,7 @@ export const TreeSelect = (props: Record<string, unknown>) => {
   );
   useFieldActions(change, props.value);
   const list = useOwnedPopup(disabled, (open) => !open && check.touch());
-  const tree = toTree(treeData);
   // A value no node offers shows the placeholder, as in the Select: Ant drew it as bare text (QA AD-35).
-  const offered = treeValues(tree);
   const shown = many ? values.filter((v) => offered.has(v)) : offered.has(values[0] ?? '') ? values[0] : undefined;
   return (
     <AntProvider tokens={tokens} ownerRef={list.anchor}>
@@ -939,6 +943,14 @@ export const Cascader = (props: Record<string, unknown>) => {
     return !!hit && holds(hit.children ?? [], steps.slice(1));
   };
   const known = path.length > 0 && holds(cascade, path);
+  // A path the options do not hold is dropped, as the Select drops a value no option offers: it showed the placeholder
+  // but stayed exposed (QA AD-57). Not while the options are empty or loading, so a default waits for them. Fires no
+  // event.
+  const prune = cascade.length > 0 && !loading;
+  useEffect(() => {
+    if (prune && path.length > 0 && !known) setValue([] as never);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prune, known, JSON.stringify(path)]);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {

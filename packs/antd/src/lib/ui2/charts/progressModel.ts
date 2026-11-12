@@ -116,14 +116,21 @@ export const percentOf = (v: unknown): number | null => {
   return m ? Number(m[1]) : null;
 };
 
+/** A percent as a fraction: a number is one (0.75 is 75%), text written with a % sign is in points ('75%'). In the Ant
+ *  pack percents are fractions, as its Descriptions and Statistic read them (QA AD-43). null when it is no number. */
+export const fractionOf = (v: unknown): number | null => {
+  const n = percentOf(v);
+  return n !== null && typeof v === 'string' && v.trim().endsWith('%') ? n / 100 : n;
+};
+
 /** A figure in a format: 'auto' and 'number' group the digits, 'currency' in currency (cents only when it has them),
- *  'percent' takes values in percent (42.5 shows 42.5%), 'compact' abbreviates (18.4K). */
+ *  'percent' takes a fraction (0.425 shows 42.5%), 'compact' abbreviates (18.4K). */
 export const formatFigure = (n: number, format: unknown, currency?: unknown, locale?: unknown): string => {
   const kind = typeof format === 'string' && PROGRESS_FORMATS.includes(format) ? format : 'auto';
   const where = localeFor(currency, locale);
   if (kind === 'currency') return numberFormat(where, moneyStyle(currencyCode(currency), moneyDigits(n, where))).format(n);
   if (kind === 'compact') return numberFormat(where, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
-  if (kind === 'percent') return `${numberFormat(where, { maximumFractionDigits: 1 }).format(n)}%`;
+  if (kind === 'percent') return `${numberFormat(where, { maximumFractionDigits: 1 }).format(n * 100)}%`;
   return numberFormat(where, { maximumFractionDigits: 2 }).format(n);
 };
 
@@ -203,17 +210,21 @@ export const progressMax = (entries: ProgressEntry[], f: ProgressFields): number
   return values.length ? Math.max(...values) : null;
 };
 
-/** One drawn row: its figures formatted, its percentage and tone worked out. pct is percentField when it holds a
- *  number, else value / target; a row with a value and no target reads its value as the percentage, unless the list
- *  formats values as money or counts (then the bar is a share of the largest value). */
+/** One drawn row: its figures formatted, its percentage (0 to 100) and tone worked out. pct is percentField when it holds
+ *  a number (a fraction: 0.75 is 75%), else value / target; a row with a value and no target reads its value as the
+ *  percentage (a fraction under the percent format), unless the list formats values as money or counts (then the bar is
+ *  a share of the largest value). Fractions were read as points: 0.75 drew a bar 0.75% wide (QA AD-43). */
 export const progressItem = (entry: ProgressEntry, f: ProgressFields): ProgressItem => {
   const { row } = entry;
   const format = typeof f.valueFormat === 'string' && PROGRESS_FORMATS.includes(f.valueFormat) ? f.valueFormat : 'auto';
+  const percent = format === 'percent';
+  const figure = percent ? fractionOf : percentOf;
   // A named field the row lacks shows blank, not another field (team testing, 2026-10-29).
   const labelKey = isText(f.labelField) ? f.labelField : firstTextField(row);
-  const value = isText(f.valueField) ? percentOf(row[f.valueField]) : null;
-  const target = isText(f.targetField) ? percentOf(row[f.targetField]) : null;
-  let pct = isText(f.percentField) ? percentOf(row[f.percentField]) : null;
+  const value = isText(f.valueField) ? figure(row[f.valueField]) : null;
+  const target = isText(f.targetField) ? figure(row[f.targetField]) : null;
+  const share = isText(f.percentField) ? fractionOf(row[f.percentField]) : null;
+  let pct = share === null ? null : share * 100;
   let relative = false;
   if (pct === null && value !== null) {
     const max = typeof f.max === 'number' && Number.isFinite(f.max) ? f.max : null;
@@ -221,7 +232,7 @@ export const progressItem = (entry: ProgressEntry, f: ProgressFields): ProgressI
     else if (max !== null && ['currency', 'number', 'compact'].includes(format)) {
       pct = max > 0 ? Math.max(0, (value / max) * 100) : null;
       relative = true;
-    } else pct = value;
+    } else pct = percent ? value * 100 : value;
   }
   const status = isText(f.statusField) ? toText(row[f.statusField]).trim() : '';
   return {

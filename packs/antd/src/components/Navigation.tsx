@@ -44,7 +44,8 @@ type MenuItem = {
 // Bounded by lib/tree (depth, size, cycles), as toTree is.
 const toMenuItems = (raw: unknown): MenuItem[] =>
   boundedTree<MenuItem>(raw, (o, i, kids) => {
-    if (typeof o === 'string') return { key: o, label: o };
+    // Blank text is no item, as null or a number is not: '' drew an empty item.
+    if (typeof o === 'string') return o.trim() ? { key: o, label: o } : null;
     if (!o || typeof o !== 'object') return null;
     const r = o as Row;
     if (r.type === 'divider') return { key: `divider-${i}`, label: '', type: 'divider' };
@@ -441,11 +442,16 @@ export const Breadcrumb = () => {
     defaultWidth: 16,
     defaultHeight: 3,
   });
-  const list = toArray(items).map((o, i, all) => {
-    const r = typeof o === 'string' ? { title: o } : ((o ?? {}) as Row);
-    const title = str(r.title ?? r.label);
+  // A crumb is text, or an object with a title (or label). Anything else (null, a number, {}, blank text) is left out,
+  // as the Menu leaves it out: each drew an empty crumb between doubled separators (QA AD-44).
+  const crumbs = toArray(items).flatMap((o) => {
+    const r = typeof o === 'string' ? { title: o } : o && typeof o === 'object' ? (o as Row) : null;
+    const title = r ? str(r.title ?? r.label) : '';
+    return r && title.trim() ? [{ r, title }] : [];
+  });
+  const list = crumbs.map(({ r, title }, i) => {
     const key = str(r.key ?? r.value ?? title);
-    const last = i === all.length - 1;
+    const last = i === crumbs.length - 1;
     return {
       key,
       title: last ? (
@@ -525,7 +531,13 @@ export const Pagination = () => {
   });
   // current is a page that exists: an action past the last page goes to the last, and when the total shrinks under the
   // page shown, current follows the page Ant draws (no onChange: the user did not change it).
-  const pages = Math.max(1, Math.ceil(Math.max(0, Number(total) || 0) / Math.max(1, Number(pageSize) || 10)));
+  // pageSize is the size drawn too: a Page size of 0 drew 10 a page while pageSize stayed 0 (QA AD-49).
+  const sizeDrawn = Math.max(1, Number(pageSize) || 10);
+  useEffect(() => {
+    if (Number(pageSize) !== sizeDrawn) setPageSize(sizeDrawn);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sizeDrawn, pageSize]);
+  const pages = Math.max(1, Math.ceil(Math.max(0, Number(total) || 0) / sizeDrawn));
   const clampPage = (p: unknown) => Math.min(pages, Math.max(1, Math.trunc(Number(p)) || 1));
   useEffect(() => {
     if (toNumber(current) !== null && clampPage(current) !== Number(current)) setCurrent(clampPage(current));
@@ -546,7 +558,7 @@ export const Pagination = () => {
           {(popup) => (
             <AntPagination
               current={clampPage(current)}
-              pageSize={Math.max(1, Number(pageSize) || 10)}
+              pageSize={sizeDrawn}
               total={Math.max(0, Number(total) || 0)}
               // Ant gives its page-size list the trigger's parent as container: inside the widget's box, which clipped
               // it (in a 40px Pagination only the last option could be picked). Select props given here win over that:

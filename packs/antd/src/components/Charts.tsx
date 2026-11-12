@@ -847,7 +847,10 @@ export const Funnel = () => {
   const tips = useTooltipLayer(ref, theme.dark);
   const y = yFields(p.yField)[0] ?? 'value';
   const rows = toRows(p.rawData).map((r) => ({ ...r, [y]: toNumber(r[y]) ?? 0 }));
-  const first = (rows[0]?.[y] as number) || 1;
+  // A stage's share is of the first stage. A first stage of 0 gives no share: it was worked out against 1 in its place,
+  // so 50 after 0 read 5000% (QA AD-46).
+  const first = rows[0]?.[y] as number;
+  const share = (v: number) => (first > 0 ? ` (${Math.round((v / first) * 100)}%)` : '');
   const fmt = (v: unknown) => {
     const n = toNumber(v);
     return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency, null, p.locale);
@@ -864,7 +867,7 @@ export const Funnel = () => {
           scale={{ color: { range: theme.palette } }}
           legend={false}
           label={{
-            text: (d: Row) => `${str(d[p.xField])}  ${fmt(d[y])} (${Math.round(((d[y] as number) / first) * 100)}%)`,
+            text: (d: Row) => `${str(d[p.xField])}  ${fmt(d[y])}${share(d[y] as number)}`,
             fill: '#fff',
             position: 'inside',
             // White text on a stage too narrow to hold it fell on the light background; the colour now turns dark

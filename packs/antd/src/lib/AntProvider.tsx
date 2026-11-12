@@ -82,7 +82,9 @@ export const useTokenStyles = () => {
       const r = Number(borderRadius);
       vars['--tj-ant-border-radius'] = `${r}px`;
       vars['--tj-ant-border-radius-sm'] = `${Math.max(0, r - 2)}px`;
-      vars['--tj-ant-border-radius-lg'] = `${r + 2}px`;
+      // The large radius (a Card's, a Collapse's, a List's, a Transfer list's, the Upload drag area's corners) is the
+      // value set too: it was set 2px larger, so 0 left round corners and 20 drew 22 (QA AD-45).
+      vars['--tj-ant-border-radius-lg'] = `${r}px`;
       vars['--tj-ant-border-radius-xs'] = `${Math.max(0, r - 4)}px`;
     }
     return vars as CSSProperties;
