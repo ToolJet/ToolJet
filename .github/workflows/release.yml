@@ -1,0 +1,256 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# Two runs on the same branch never overlap
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RELEASE_LEADS: ${{ secrets.RELEASE_LEADS }}
+      SLACK_WEBHOOK_URL: ${{ secrets.RELEASE_SLACK_WEBHOOK_URL }}
+    steps:
+      # 1. Only a lead for this branch may run it
+      - name: Check branch and lead
+        run: |
+          fail() { echo "::error::$1"; printf '%s\n' "$1" > "$RUNNER_TEMP/reason"; exit 1; }
+          case "$GITHUB_REF_NAME" in
+            main|lts-3.16) ;;
+            *) fail "Run this from main or lts-3.16 (got $GITHUB_REF_NAME)" ;;
+          esac
+          echo "$RELEASE_LEADS" | jq -e 'type == "object"' >/dev/null 2>&1 \
+            || fail "Secret RELEASE_LEADS is missing or is not valid JSON"
+          # RELEASE_LEADS = {"main":{"github-user":"SLACKID"},"lts-3.16":{"github-user":"SLACKID"}}
+          slack=$(echo "$RELEASE_LEADS" | jq -r --arg b "$GITHUB_REF_NAME" --arg a "$GITHUB_ACTOR" \
+            '(.[$b] // {}) | to_entries[] | select(.key | ascii_downcase == ($a | ascii_downcase)) | .value' | head -n1)
+          [ -n "$slack" ] || fail "$GITHUB_ACTOR is not a release lead for $GITHUB_REF_NAME"
+          echo "MENTION=<@$slack>" >> "$GITHUB_ENV"
+          echo "$GITHUB_ACTOR is a release lead for $GITHUB_REF_NAME"
+
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # 2. No waiting drafts, .version matches the latest release, work out the new tag
+      - name: Check releases and work out the version
+        id: version
+        run: |
+          fail() { echo "::error::$1"; printf '%s\n' "$1" > "$RUNNER_TEMP/reason"; exit 1; }
+          newer() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -n1)" = "$1" ]; }
+
+          if [ "$GITHUB_REF_NAME" = "lts-3.16" ]; then SUFFIX=lts; else SUFFIX=beta; fi
+          re="^v[0-9]+\.[0-9]+\.[0-9]+-$SUFFIX([.-][0-9]+)?\$"
+
+          # All releases of this line (lts or beta): drafts and published ones
+          drafts=""; published=""
+          while read -r tag draft url; do
+            [[ "$tag" =~ $re ]] || continue
+            if [ "$draft" = "true" ]; then drafts+="$tag $url"$'\n'; else published+="${tag#v}"$'\n'; fi
+          done < <(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+                     --jq '.[] | "\(.tag_name) \(.draft) \(.html_url)"')
+
+          # A waiting draft (or duplicate drafts) must be published or deleted first
+          if [ -n "$drafts" ]; then
+            count=$(printf '%s' "$drafts" | grep -c .)
+            list=$(printf '%s' "$drafts" | sed 's/^/• /')
+            if [ "$count" -gt 1 ]; then what="$count draft $SUFFIX releases are waiting (duplicates)"; else what="A draft $SUFFIX release is already waiting"; fi
+            fail "$what. Publish or delete them first, then run again:"$'\n'"$list"
+          fi
+
+          LATEST=$(printf '%s' "$published" | grep . | sort -V | tail -n1 || true)
+          [ -n "$LATEST" ] || fail "No published *-$SUFFIX release found to compare .version with"
+
+          CURRENT=$(head -n1 .version | tr -d '[:space:]')
+          [[ "v$CURRENT" =~ $re ]] || fail ".version contains '$CURRENT' - expected X.Y.Z-$SUFFIX"
+
+          # The next version: latest release + 1 on the patch number
+          [[ "$LATEST" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]
+          NEXT="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((10#${BASH_REMATCH[3]} + 1))-$SUFFIX"
+
+          # .version should equal the latest release.
+          #   behind -> corrected by this run's version bump
+          #   ahead by exactly the next version (an earlier draft was deleted) -> reuse it
+          #   ahead by anything else -> stop
+          NOTE=""; REUSE=false
+          if newer "$CURRENT" "$LATEST"; then
+            if [ "$CURRENT" = "$NEXT" ]; then
+              REUSE=true
+              NOTE=".version is already $CURRENT (its earlier draft was deleted) - reusing it."
+            else
+              fail ".version is $CURRENT, ahead of the latest $SUFFIX release v$LATEST, and it is not the next version (v$NEXT). Set .version, server/.version and frontend/.version back to $LATEST, or release v$CURRENT by hand."
+            fi
+          elif newer "$LATEST" "$CURRENT"; then
+            NOTE=".version was $CURRENT, behind the latest release v$LATEST - corrected by this version bump."
+          fi
+          [ -z "$NOTE" ] || echo "::warning::$NOTE"
+          TAG="v$NEXT"
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" >/dev/null 2>&1; then
+            fail "Tag $TAG already exists in ToolJet but has no published release. Check that tag, delete it if it is wrong, then run again."
+          fi
+
+          echo "Latest release v$LATEST -> releasing $TAG"
+          echo "version=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "prev=v$LATEST" >> "$GITHUB_OUTPUT"
+          echo "note=$NOTE" >> "$GITHUB_OUTPUT"
+          echo "reuse=$REUSE" >> "$GITHUB_OUTPUT"
+
+      # 3. Latest commit on the same branch in ee-server and ee-frontend (the team merges ee PRs before Run)
+      - name: Find the latest ee-server and ee-frontend commits
+        id: ee
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+        run: |
+          fail() { echo "::error::$1"; printf '%s\n' "$1" > "$RUNNER_TEMP/reason"; exit 1; }
+          for repo in ee-server ee-frontend; do
+            sha=$(gh api "repos/ToolJet/$repo/branches/$GITHUB_REF_NAME" --jq .commit.sha) \
+              || fail "Cannot read $repo branch $GITHUB_REF_NAME. The TOKEN_PR secret is probably expired or has no access to $repo - create a new token and update the secret."
+            echo "$repo -> $sha"
+            echo "${repo//-/_}_sha=$sha" >> "$GITHUB_OUTPUT"
+          done
+
+      # 4. One version bump PR, merged straight away
+      - name: Bump the version and merge it
+        id: bump
+        env:
+          PR_TOKEN: ${{ secrets.TOKEN_PR }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+          SERVER_SHA: ${{ steps.ee.outputs.ee_server_sha }}
+          FRONTEND_SHA: ${{ steps.ee.outputs.ee_frontend_sha }}
+        run: |
+          fail() { echo "::error::$1"; printf '%s\n' "$1" > "$RUNNER_TEMP/reason"; exit 1; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH="version-bump-$TAG-$(date +%s)"
+
+          # Only ever on the branch this run was started from
+          [ "$(git rev-parse --abbrev-ref HEAD)" = "$GITHUB_REF_NAME" ] \
+            || fail "Checked out $(git rev-parse --abbrev-ref HEAD), expected $GITHUB_REF_NAME"
+
+          git checkout -b "$BRANCH"
+          for f in .version server/.version frontend/.version; do echo "$VERSION" > "$f"; done
+          git add .version server/.version frontend/.version
+          # Point the submodules at the ee commits without cloning the private repos
+          git update-index --add --cacheinfo "160000,$SERVER_SHA,server/ee"
+          git update-index --add --cacheinfo "160000,$FRONTEND_SHA,frontend/ee"
+
+          # Reused version and no new ee commits: nothing to change, release the branch as it is
+          if git diff --cached --quiet; then
+            echo "Version files and submodules are already up to date - no version bump PR needed"
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            echo "url=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git commit -q -m "Version bump to $TAG" \
+                        -m "- .version files -> $VERSION" \
+                        -m "- server/ee -> $SERVER_SHA" \
+                        -m "- frontend/ee -> $FRONTEND_SHA"
+          git push -q origin "$BRANCH"
+
+          url=$(gh pr create --base "$GITHUB_REF_NAME" --head "$BRANCH" --title "Version bump to $TAG" \
+                  --body "Release $TAG, started by @$GITHUB_ACTOR. Merged automatically by the Release workflow.") \
+            || fail "Could not open the version bump PR"
+          base=$(gh pr view "$url" --json baseRefName --jq .baseRefName)
+          [ "$base" = "$GITHUB_REF_NAME" ] || fail "Version bump PR $url targets $base, not $GITHUB_REF_NAME - not merged."
+          merged=""
+          for attempt in 1 2 3 4 5; do
+            if GH_TOKEN="$PR_TOKEN" gh pr merge "$url" --squash --admin; then merged=yes; break; fi
+            sleep 6
+          done
+          [ -n "$merged" ] || fail "Could not merge the version bump PR $url. Merge it by hand, then create the draft release by hand."
+          gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$BRANCH" >/dev/null 2>&1 || true
+
+          sha=$(gh pr view "$url" --json mergeCommit --jq .mergeCommit.oid)
+          echo "Merged $url into $GITHUB_REF_NAME as $sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      # 5. Same tag on ee-server and ee-frontend, at the commits the bump pinned
+      - name: Tag ee-server and ee-frontend
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+          TAG: ${{ steps.version.outputs.tag }}
+          REUSE: ${{ steps.version.outputs.reuse }}
+          SERVER_SHA: ${{ steps.ee.outputs.ee_server_sha }}
+          FRONTEND_SHA: ${{ steps.ee.outputs.ee_frontend_sha }}
+        run: |
+          fail() { echo "::error::$1"; printf '%s\n' "$1" > "$RUNNER_TEMP/reason"; exit 1; }
+          tag_repo() {
+            local repo="$1" sha="$2" ref type obj
+            if ref=$(gh api "repos/ToolJet/$repo/git/ref/tags/$TAG" --jq '"\(.object.type) \(.object.sha)"' 2>/dev/null); then
+              read -r type obj <<< "$ref"
+              # Annotated tag: look through to its commit
+              [ "$type" = "tag" ] && obj=$(gh api "repos/ToolJet/$repo/git/tags/$obj" --jq .object.sha)
+              [ "$obj" = "$sha" ] && { echo "$repo already has $TAG at $sha"; return 0; }
+              # Reused version: this tag came from the run whose draft was deleted (never released) - move it
+              if [ "$REUSE" = "true" ]; then
+                gh api -X PATCH "repos/ToolJet/$repo/git/refs/tags/$TAG" -f sha="$sha" -F force=true >/dev/null \
+                  || fail "Could not move $repo tag $TAG to $sha."
+                echo "Moved $repo $TAG from $obj to $sha (earlier draft was deleted)"; return 0
+              fi
+              fail "$repo already has $TAG at $obj, not $sha. The version bump is merged but no draft was made. Delete the wrong tag, then tag $repo and create the draft by hand."
+            fi
+            gh api -X POST "repos/ToolJet/$repo/git/refs" -f ref="refs/tags/$TAG" -f sha="$sha" >/dev/null \
+              || fail "Could not tag $repo. The version bump is merged but no draft was made."
+            echo "Tagged $repo at $sha"
+          }
+          tag_repo ee-server   "$SERVER_SHA"
+          tag_repo ee-frontend "$FRONTEND_SHA"
+
+      # 6. Draft release with ToolJet's notes only
+      - name: Create the draft release
+        id: draft
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          PREV: ${{ steps.version.outputs.prev }}
+          SHA: ${{ steps.bump.outputs.sha }}
+        run: |
+          fail() { echo "::error::$1"; printf '%s\n' "$1" > "$RUNNER_TEMP/reason"; exit 1; }
+          notes=$(gh api -X POST "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
+            -f tag_name="$TAG" -f previous_tag_name="$PREV" -f target_commitish="$SHA" \
+            --jq .body) || fail "Could not generate the release notes"
+          # Leave the workflow's own version bump PRs out of the notes
+          printf '%s\n' "$notes" | grep -vE '^\* Version bump to v[^ ]+ by @github-actions(\[bot\])? in ' > release-notes.md || true
+
+          args=(--draft --target "$SHA" --title "$TAG" --notes-file release-notes.md)
+          [[ "$TAG" == *-beta* ]] && args+=(--prerelease)
+          url=$(gh release create "$TAG" "${args[@]}") \
+            || fail "Could not create the draft. The version bump is merged; create the draft for $TAG by hand."
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Tell the lead on Slack
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          NOTE: ${{ steps.version.outputs.note }}
+          DRAFT: ${{ steps.draft.outputs.url }}
+          BUMP_PR: ${{ steps.bump.outputs.url }}
+        run: |
+          if [[ "$TAG" == *-lts* ]]; then TICK='keep "Set as the latest release" ticked'; else TICK='keep "Set as a pre-release" ticked'; fi
+          TEXT="${MENTION} :memo: Draft *$TAG* (\`$GITHUB_REF_NAME\`) is ready."
+          [ -z "$NOTE" ] || TEXT+=$'\n'":warning: $NOTE"
+          TEXT+=$'\n'"Version bump PR (merged into \`$GITHUB_REF_NAME\`): ${BUMP_PR:-not needed, .version and submodules were already up to date}"
+          TEXT+=$'\n\n'"Check the draft and click *Publish release* ($TICK): $DRAFT"
+          printf '### %s\n' "$TEXT" >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then echo "No Slack webhook - message was:"; echo "$TEXT"; exit 0; fi
+          jq -n --arg t "$TEXT" '{text:$t}' | curl -fsS -X POST -H 'Content-type: application/json' --data @- "$SLACK_WEBHOOK_URL"
+
+      # Any failure after the lead check: tell that lead why
+      - name: Tell the lead the run failed
+        if: failure() && env.MENTION != ''
+        run: |
+          RUN="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          REASON=$(cat "$RUNNER_TEMP/reason" 2>/dev/null || echo "See the run log.")
+          TEXT="${MENTION} :x: Release on \`$GITHUB_REF_NAME\` stopped: $REASON"$'\n'"Run log: $RUN"
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then echo "No Slack webhook - message was:"; echo "$TEXT"; exit 0; fi
+          jq -n --arg t "$TEXT" '{text:$t}' | curl -fsS -X POST -H 'Content-type: application/json' --data @- "$SLACK_WEBHOOK_URL"
