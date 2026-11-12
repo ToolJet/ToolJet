@@ -126,11 +126,20 @@ describe('useConstantForm — create', () => {
     expect(result.current.availableEnvironments.find((e) => e.id === 'stg')).toMatchObject({ enabled: false });
   });
 
-  it('reports all environments added once every enabled environment has a row, ignoring locked ones', () => {
+  it('does not report all environments added while a locked environment has no value', () => {
     const envs = [ENVS[0], { ...ENVS[1], enabled: false }];
     const { result } = setup({ environments: envs });
-    expect(result.current.allEnvironmentsAdded).toBe(false);
     act(() => result.current.addEnvironment('dev'));
+    expect(result.current.allEnvironmentsAdded).toBe(false);
+    expect(result.current.availableEnvironments.map((e) => e.id)).toEqual(['stg']);
+  });
+
+  it('reports all environments added once every environment has a row', () => {
+    const envs = [ENVS[0], ENVS[1]];
+    const { result } = setup({ environments: envs });
+    act(() => result.current.addEnvironment('dev'));
+    expect(result.current.allEnvironmentsAdded).toBe(false);
+    act(() => result.current.addEnvironment('stg'));
     expect(result.current.allEnvironmentsAdded).toBe(true);
   });
 

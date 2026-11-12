@@ -1,12 +1,10 @@
 import React, { forwardRef, useRef, useState, type ButtonHTMLAttributes, type KeyboardEvent } from 'react';
-import { ArrowDownWideNarrow, ChevronDown, Funnel, X } from 'lucide-react';
+import { ArrowDownWideNarrow, Funnel, X } from 'lucide-react';
 import type { ConstantSort, ConstantSource } from '@/_services/types/organizationConstantsV2.types';
-import { cn } from '@/lib/utils';
 import { Button, Input } from '@/components/ui/Rocket';
 import DropdownMenu, { type DropdownMenuSection } from '@/components/ui/Rocket/DropdownMenu';
 import Tooltip from '@/components/ui/Rocket/Tooltip';
 import { CONSTANT_SOURCES, DEFAULT_SORT } from '../hooks/useConstantsListQueryParams';
-import type { ConstantEnvironment } from './ConstantModal/useConstantForm';
 
 interface Option<Value extends string> {
   value: Value;
@@ -64,8 +62,6 @@ const IconTrigger = forwardRef<HTMLButtonElement, IconTriggerProps>(function Ico
     </Tooltip>
   );
 });
-// The design's rows are 30px; the shared menu default is 32px.
-const MENU_CLASSES = { item: 'tw-h-[30px]' };
 // Rows of a menu with a search input also highlight on hover: while the input is focused they cannot take focus to
 // show it. The design's group labels are 30px rows like the options.
 const SEARCHABLE_MENU_CLASSES = {
@@ -73,85 +69,6 @@ const SEARCHABLE_MENU_CLASSES = {
   item: 'tw-h-[30px] hover:tw-bg-interactive-hover',
   label: 'tw-flex tw-h-[30px] tw-items-center tw-py-0',
 };
-
-const ENV_DOT_COLORS: Record<string, string> = {
-  development: 'tw-bg-background-accent-strong',
-  staging: 'tw-bg-background-warning-strong',
-  production: 'tw-bg-background-success-strong',
-};
-
-// The design's environment marker: 6px on the trigger, 8px in the menu rows. Names outside the three defaults get a
-// neutral dot.
-function EnvDot({ name, className }: { name?: string; className?: string }) {
-  return (
-    <span
-      aria-hidden
-      className={cn(
-        'tw-shrink-0 tw-rounded-full',
-        ENV_DOT_COLORS[name?.toLowerCase() ?? ''] ?? 'tw-bg-icon-weak',
-        className
-      )}
-    />
-  );
-}
-
-const EnvOption = ({ name }: { name: string }) => (
-  <span className="tw-flex tw-items-center tw-gap-2">
-    <EnvDot name={name} className="tw-size-2" />
-    {name}
-  </span>
-);
-
-// Same hand-off as IconTrigger: the menu's props and ref land on the button, the tooltip adds its own on top.
-const EnvTrigger = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement> & { name?: string }>(
-  function EnvTrigger({ name, ...props }, ref) {
-    return (
-      <Tooltip content="Choose which environment’s values the list shows." arrow classes={ENV_TOOLTIP_CLASSES}>
-        <Button
-          ref={ref}
-          variant="ghost"
-          size="medium"
-          aria-label="Environment"
-          leadingVisual={<EnvDot name={name} className="tw-size-1.5" />}
-          trailingVisual={<ChevronDown size={ICON_SIZE} />}
-          {...props}
-        >
-          {name}
-        </Button>
-      </Tooltip>
-    );
-  }
-);
-
-// The design's text wraps at 120px; the bubble adds 12px of padding on each side.
-const ENV_TOOLTIP_CLASSES = { content: 'tw-max-w-[144px] tw-text-center' };
-
-interface EnvSelectProps {
-  environments: ConstantEnvironment[];
-  environmentId: string | undefined;
-  onEnvChange: (environmentId: string) => void;
-}
-
-function EnvSelect({ environments, environmentId, onEnvChange }: EnvSelectProps) {
-  const current = environments.find((environment) => environment.id === environmentId);
-  return (
-    <DropdownMenu
-      compact
-      align="end"
-      classes={MENU_CLASSES}
-      sections={[
-        {
-          id: 'environment',
-          type: 'radio',
-          value: environmentId,
-          onValueChange: onEnvChange,
-          items: environments.map(({ id, name }) => ({ value: id, label: <EnvOption name={name} /> })),
-        },
-      ]}
-      trigger={<EnvTrigger name={current?.name} />}
-    />
-  );
-}
 
 // State shared by the menus that start with a search input.
 function useMenuSearch() {
@@ -368,16 +285,11 @@ function AppliedFilters({ source, onSourceChange }: FilterMenuProps) {
   );
 }
 
-// Controls for the list view. State lives in useConstantsListQueryParams; this component only renders it.
-interface ConstantsListControlsProps extends EnvSelectProps, FilterMenuProps, SortMenuProps {
-  showEnv: boolean;
-}
+// Controls for the list view. State lives in useConstantsListQueryParams; this component only renders it. The
+// environment select is in the header (`useHeaderEnvironmentSelect`).
+interface ConstantsListControlsProps extends FilterMenuProps, SortMenuProps {}
 
 export default function ConstantsListControls({
-  showEnv,
-  environments,
-  environmentId,
-  onEnvChange,
   sort,
   onSortChange,
   source,
@@ -386,7 +298,6 @@ export default function ConstantsListControls({
   return (
     <div className="tw-ml-auto tw-flex tw-items-center tw-gap-1">
       <AppliedFilters source={source} onSourceChange={onSourceChange} />
-      {showEnv && <EnvSelect environments={environments} environmentId={environmentId} onEnvChange={onEnvChange} />}
       <FilterMenu source={source} onSourceChange={onSourceChange} />
       <SortMenu sort={sort} onSortChange={onSortChange} />
     </div>

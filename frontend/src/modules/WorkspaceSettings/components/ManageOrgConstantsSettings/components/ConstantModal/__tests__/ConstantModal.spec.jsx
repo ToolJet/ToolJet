@@ -129,23 +129,48 @@ describe('ConstantModal — create', () => {
     expect(screen.queryByText('Value is required')).not.toBeInTheDocument();
   });
 
-  it('shows a locked environment as disabled and names the plan in its tooltip', async () => {
+  it('sets the name box and the value box in the same 12px type as the labels', async () => {
+    const { user } = setup();
+    await user.click(screen.getByRole('button', { name: /Development/ }));
+    // md:tw-text-base undoes the shared input base, which drops to 11px on desktop.
+    [screen.getByLabelText('Name'), valueBox('Development')].forEach((box) =>
+      expect(box).toHaveClass('tw-font-body-default', 'md:tw-text-base')
+    );
+  });
+
+  it('opens with the given default type selected', () => {
+    setup({ defaultType: 'Secret' });
+    expect(screen.getByRole('radio', { name: /Secrets/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /Global constants/ })).not.toBeChecked();
+  });
+
+  it('shows a locked environment as disabled with a plan tooltip', async () => {
     const envs = [ENVS[0], { ...ENVS[1], enabled: false }, ENVS[2]];
-    const { user } = setup({ environments: envs, lockedPlanName: 'Business' });
+    const { user } = setup({ environments: envs });
     await user.click(screen.getByRole('button', { name: /Add environment/ }));
     const item = await screen.findByRole('menuitem', { name: /Staging/ });
     expect(item).toHaveAttribute('aria-disabled', 'true');
     await user.hover(item.parentElement);
-    expect((await screen.findAllByText('Available on Business plan')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Not available in your current plan')).length).toBeGreaterThan(0);
   });
 
-  it('falls back to a generic tooltip when no plan name is given', async () => {
-    const envs = [ENVS[0], { ...ENVS[1], enabled: false }];
+  it('gives each locked environment its own full-width menu row', async () => {
+    const envs = [ENVS[0], { ...ENVS[1], enabled: false }, { ...ENVS[2], enabled: false }];
     const { user } = setup({ environments: envs });
     await user.click(screen.getByRole('button', { name: /Add environment/ }));
-    const item = await screen.findByRole('menuitem', { name: /Staging/ });
-    await user.hover(item.parentElement);
-    expect((await screen.findAllByText('Upgrade your plan to use this environment')).length).toBeGreaterThan(0);
+    const staging = await screen.findByRole('menuitem', { name: /Staging/ });
+    const production = await screen.findByRole('menuitem', { name: /Production/ });
+    [staging, production].forEach((item) => expect(item.parentElement).toHaveClass('tw-block', 'tw-w-full'));
+  });
+
+  it('keeps the Add environment menu, with the locked environments, once every covered environment has a value', async () => {
+    const envs = [ENVS[0], { ...ENVS[1], enabled: false }, { ...ENVS[2], enabled: false }];
+    const { user } = setup({ environments: envs });
+    await user.click(screen.getByRole('button', { name: /Development/ }));
+    expect(screen.queryByText('All environments added')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Add environment/ }));
+    expect(await screen.findByRole('menuitem', { name: /Staging/ })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('menuitem', { name: /Production/ })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('offers quick-add chips only for environments the plan covers', () => {
@@ -168,7 +193,8 @@ describe('ConstantModal — create', () => {
   it('allows only one row without multi-environment support', async () => {
     const { user } = setup({ multiEnvironment: false });
     await user.click(screen.getByRole('button', { name: /Development/ }));
-    expect(screen.getByRole('button', { name: /Add environment/ })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: /Add environment/ }));
+    expect(await screen.findByRole('menuitem', { name: /Staging/ })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('shows a pending state and blocks a second submit while saving', async () => {
@@ -346,7 +372,7 @@ describe('ConstantModal — edit', () => {
   it('shows a value the plan no longer covers as not accessible and never sends it', async () => {
     const envs = [ENVS[0], { ...ENVS[1], enabled: false }, ENVS[2]];
     const { user, onSubmit } = setup({ mode: 'edit', constant: globalConstant(), environments: envs });
-    expect(screen.getByText('Not accessible')).toBeInTheDocument();
+    expect(screen.getByText('Not available in your current plan')).toBeInTheDocument();
     expect(valueBox('Staging')).toBeDisabled();
     expect(valueBox('Staging')).toHaveValue('');
     expect(screen.queryByRole('button', { name: 'Remove Staging value' })).not.toBeInTheDocument();

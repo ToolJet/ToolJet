@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import ManageOrgConstantsSettings from '../ManageOrgConstantsSettings';
+import HeaderEnvironmentSelect from '@/_ui/Header/HeaderEnvironmentSelect';
 import { useConstantsListStore } from '../store/constantsListStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { useSearchStore } from '@/_stores/searchStore';
@@ -60,6 +61,8 @@ const LocationProbe = () => <output data-testid="url-search">{useLocation().sear
 const renderPage = (route = '/?tab=Global') =>
   render(
     <MemoryRouter initialEntries={[route]}>
+      {/* The environment select is rendered by the app header, outside the page. */}
+      <HeaderEnvironmentSelect />
       <ManageOrgConstantsSettings />
       <LocationProbe />
     </MemoryRouter>
@@ -177,6 +180,73 @@ describe('ManageOrgConstantsSettings', () => {
   });
 });
 
+describe('ManageOrgConstantsSettings create from a tab', () => {
+  const detail = (type) => ({
+    id: 'new',
+    name: 'NEW',
+    type,
+    values: ENVIRONMENTS.map((env) => ({
+      environment_id: env.id,
+      environment_name: env.name,
+      has_value: env.id === 'env-prod',
+      value: env.id === 'env-prod' ? 'v' : null,
+    })),
+  });
+
+  it.each([
+    ['Secret', /Secrets/],
+    ['Global', /Global constants/],
+  ])('opens the create modal with the %s type selected when that tab is open', async (tab, radio) => {
+    mockApi(() => HttpResponse.json(page([item('api_url', tab)])));
+    renderPage(`/?tab=${tab}`);
+    await screen.findByText('API_URL');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Create constant' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('radio', { name: radio })).toBeChecked();
+  });
+
+  it('switches to the tab of the type that was created', async () => {
+    const requests = mockApi(() => HttpResponse.json(page([item('api_key', 'Secret')])));
+    server.use(
+      http.post(`${API}/v2/organization-constants`, () => HttpResponse.json(detail('Global'), { status: 201 }))
+    );
+    renderPage('/?tab=Secret');
+    await screen.findByText('API_KEY');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Create constant' }));
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('radio', { name: /Global constants/ }));
+    await userEvent.type(within(dialog).getByLabelText('Name'), 'NEW');
+    await userEvent.click(within(dialog).getByRole('button', { name: /^Production/ }));
+    await userEvent.type(await within(dialog).findByRole('textbox', { name: 'Production value' }), 'v');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Add constant' }));
+
+    await waitFor(() => expect(screen.getByTestId('url-search')).toHaveTextContent('tab=Global'));
+    await waitFor(() => expect(requests.at(-1)).toMatchObject({ type: 'Global' }));
+    expect(screen.getByRole('tab', { name: /Globals/ })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('stays on the tab when the created type is the open one', async () => {
+    mockApi(() => HttpResponse.json(page([item('api_key', 'Secret')])));
+    server.use(
+      http.post(`${API}/v2/organization-constants`, () => HttpResponse.json(detail('Secret'), { status: 201 }))
+    );
+    renderPage('/?tab=Secret');
+    await screen.findByText('API_KEY');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Create constant' }));
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.type(within(dialog).getByLabelText('Name'), 'NEW');
+    await userEvent.click(within(dialog).getByRole('button', { name: /^Production/ }));
+    await userEvent.type(await within(dialog).findByRole('textbox', { name: 'Production value' }), 'v');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Add constant' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByTestId('url-search')).toHaveTextContent('tab=Secret');
+  });
+});
+
 describe('ManageOrgConstantsSettings without per-environment values', () => {
   beforeEach(() => fetchEdition.mockReturnValue('ce'));
 
@@ -190,7 +260,8 @@ describe('ManageOrgConstantsSettings without per-environment values', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: /^Development/ }));
 
     expect(within(dialog).getByRole('textbox', { name: 'Development value' })).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: /Add environment/ })).toBeDisabled();
+    await userEvent.click(within(dialog).getByRole('button', { name: /Add environment/ }));
+    expect(await screen.findByRole('menuitem', { name: /Production/ })).toHaveAttribute('aria-disabled', 'true');
   });
 
   const mockStoredInEveryEnvironment = () => {
@@ -285,7 +356,7 @@ describe('ManageOrgConstantsSettings header controls', () => {
     await screen.findByText('API_URL');
 
     await userEvent.click(screen.getByRole('button', { name: 'Environment' }));
-    await userEvent.click(await screen.findByRole('menuitemradio', { name: 'Development' }));
+    await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Development' }));
 
     await waitFor(() => expect(requests.at(-1)).toMatchObject({ environment_id: 'env-dev' }));
     expect(screen.getByRole('button', { name: 'Environment' })).toHaveTextContent('Development');

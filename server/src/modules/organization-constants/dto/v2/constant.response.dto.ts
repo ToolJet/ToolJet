@@ -40,6 +40,10 @@ export class ConstantListItemDto {
   @Expose()
   value: string | null;
 
+  // False when the constant has no value in the selected environment; `value` is then null.
+  @Expose({ name: 'has_value' })
+  hasValue: boolean;
+
   @Expose({ name: 'environments_with_value' })
   environmentsWithValue: string[];
 

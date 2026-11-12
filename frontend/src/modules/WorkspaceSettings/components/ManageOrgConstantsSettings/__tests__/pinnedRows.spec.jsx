@@ -65,18 +65,18 @@ const order = () =>
 beforeEach(() => sessionStorage.clear());
 
 describe('pinned rows on the constants page', () => {
-  it('pins a row from its menu and moves it to the top', async () => {
+  it('pins a row from its pin button, moves it to the top, and unpins it from the same button', async () => {
     mockApi();
     renderPage();
     await screen.findByText('CHARLIE');
 
-    await userEvent.click(screen.getByRole('button', { name: 'More actions for CHARLIE' }));
-    await userEvent.click(await screen.findByRole('menuitem', { name: 'Pin' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Pin CHARLIE' }));
 
     expect(order()).toEqual(['c', 'a', 'b', 'env:Global:ENVVAR']);
-    expect(
-      within(screen.getByRole('row', { name: /CHARLIE/ })).getByRole('img', { name: 'Pinned' })
-    ).toBeInTheDocument();
+    await userEvent.click(
+      within(screen.getByRole('row', { name: /CHARLIE/ })).getByRole('button', { name: 'Unpin CHARLIE' })
+    );
+    expect(order()).toEqual(['a', 'b', 'c', 'env:Global:ENVVAR']);
   });
 
   it('shows the selection bar for the selected rows and pins them in sort order', async () => {
@@ -169,7 +169,7 @@ describe('pinned rows on the constants page', () => {
       renderPage('/?tab=Global&source=workspace');
       await screen.findByText('CHARLIE');
       act(() => store().pinConstants('Global', ['a', 'b'], 'name_asc'));
-      expect(screen.getAllByRole('img', { name: 'Pinned' })).toHaveLength(2);
+      expect(screen.getAllByRole('button', { name: /^Unpin / })).toHaveLength(2);
       expect(screen.queryByRole('button', { name: /^Reorder / })).toBeNull();
     });
   });

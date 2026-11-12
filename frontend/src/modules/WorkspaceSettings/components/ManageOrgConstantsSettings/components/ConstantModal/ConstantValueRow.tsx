@@ -93,7 +93,9 @@ export default function ConstantValueRow({
             aria-hidden
             className={cn('tw-size-3', locked ? 'tw-text-icon-disabled' : 'tw-text-icon-success')}
           />
-          {locked && <span className="tw-font-body-small tw-text-text-placeholder">Not accessible</span>}
+          {locked && (
+            <span className="tw-font-body-small tw-text-text-placeholder">Not available in your current plan</span>
+          )}
         </div>
 
         {!locked && (
@@ -132,7 +134,8 @@ export default function ConstantValueRow({
         disabled={locked}
         aria-invalid={Boolean(error)}
         className={cn(
-          'tw-h-[86px] tw-min-h-[86px] tw-resize-y tw-px-2 tw-py-[7px]',
+          // md:tw-text-base undoes the shared textarea base, which drops to 11px on desktop; the design's is 12px.
+          'tw-h-[86px] tw-min-h-[86px] tw-resize-y tw-px-2 tw-py-[7px] tw-font-body-default md:tw-text-base',
           masked && 'placeholder:tw-text-text-default'
         )}
         onChange={(e) => onChange(e.target.value)}

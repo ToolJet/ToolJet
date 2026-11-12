@@ -45,7 +45,7 @@ Owns **Workspace Constants** and **Workspace Secrets**: named values that apps r
 - The list is built in memory because `.env` constants live in process memory. This is fine up to a few thousand constants per Workspace. Past that, move filter, sort and paging into SQL for database rows and merge `.env` rows after.
 - The v1 controller declares `GET :appId`, which shadows any static GET path added after it. That is why v2 is a separate controller with its own version prefix.
 - The `.env` cache is never invalidated; a change to the variables needs a restart.
-- Constants with no value in the selected environment are left out of the list; they still exist and show in `GET /:id`.
+- Every workspace constant is listed in every environment. One with no value in the selected environment has `has_value: false` and `value: null`; tab counts and `total` include it. An `.env` constant exists only where its variable is set, so it is left out of an environment where it has no value (and then does not hide a workspace constant of the same name).
 - In e2e tests a failed statement (the 409 case) aborts the suite transaction until the next test's savepoint rolls back. Put the follow-up request in a separate `it`.
 
 ## Related modules

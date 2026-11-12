@@ -62,21 +62,22 @@ function TypeOption({ value, label, description }: TypeOptionData) {
   );
 }
 
+const LOCKED_ENVIRONMENT_TOOLTIP = 'Not available in your current plan';
+// The tooltip's wrapper is inline-block by default, which would put locked rows side by side.
+const LOCKED_ROW_TOOLTIP_CLASSES = { trigger: 'tw-block tw-w-full' };
+
 // Design: a 196px menu (180px rows) with 10px corners; `compact` brings the elevation-300 shadow and 8px padding.
 const ENVIRONMENT_MENU_CLASSES = { content: 'tw-w-[196px] tw-rounded-large' };
 const ENVIRONMENT_ICON_CLASS = 'tw-text-icon-default';
 
 type ConstantForm = ReturnType<typeof useConstantForm>;
 
-function AddEnvironmentMenu({ form, lockedPlanName }: { form: ConstantForm; lockedPlanName?: string }) {
-  const lockedTooltip = lockedPlanName
-    ? `Available on ${lockedPlanName} plan`
-    : 'Upgrade your plan to use this environment';
-
+function AddEnvironmentMenu({ form }: { form: ConstantForm }) {
   const items: DropdownMenuItem[] = form.availableEnvironments.map((env) => ({
     id: env.id,
     label: env.name,
-    disabled: !env.enabled,
+    // Enabled environments are also unselectable once a single-value licence already has its one value.
+    disabled: !env.enabled || !form.canAddEnvironment,
     onSelect: () => form.addEnvironment(env.id),
     render: ({ children }: { children: ReactNode }) => (
       <span className="tw-flex tw-w-full tw-items-center tw-justify-between">
@@ -91,7 +92,11 @@ function AddEnvironmentMenu({ form, lockedPlanName }: { form: ConstantForm; lock
     wrapper: env.enabled
       ? undefined
       : (node: ReactElement) => (
-          <Tooltip content={lockedTooltip} isTooltipForInteractiveDisabledElement>
+          <Tooltip
+            content={LOCKED_ENVIRONMENT_TOOLTIP}
+            classes={LOCKED_ROW_TOOLTIP_CLASSES}
+            isTooltipForInteractiveDisabledElement
+          >
             {node}
           </Tooltip>
         ),
@@ -100,13 +105,7 @@ function AddEnvironmentMenu({ form, lockedPlanName }: { form: ConstantForm; lock
   return (
     <DropdownMenu
       trigger={
-        <Button
-          variant="outline"
-          size="medium"
-          leadingVisual={<Plus size={14} />}
-          disabled={!form.canAddEnvironment}
-          data-cy="add-environment-button"
-        >
+        <Button variant="outline" size="medium" leadingVisual={<Plus size={14} />} data-cy="add-environment-button">
           Add environment
         </Button>
       }
@@ -156,10 +155,10 @@ export interface ConstantModalProps {
   /** The constant being edited. */
   constant?: ConstantDetail | null;
   environments: ConstantEnvironment[];
-  /** Names the plan that covers a locked environment, for its tooltip. */
-  lockedPlanName?: string;
   /** False when the licence allows one value for every environment only. */
   multiEnvironment?: boolean;
+  /** The type a new constant starts with (the open tab). */
+  defaultType?: ConstantType;
   onSubmit: (body: CreateConstantBody | UpdateConstantBody) => Promise<unknown>;
 }
 
@@ -169,12 +168,12 @@ function ConstantModalDialog({
   onOpenChange,
   constant,
   environments,
-  lockedPlanName,
   multiEnvironment = true,
+  defaultType,
   onSubmit,
 }: ConstantModalProps) {
   const isEdit = mode === 'edit';
-  const form = useConstantForm({ mode, constant, environments, multiEnvironment });
+  const form = useConstantForm({ mode, constant, environments, multiEnvironment, defaultType });
   const [pending, setPending] = useState(false);
   const [duplicateName, setDuplicateName] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -252,6 +251,8 @@ function ConstantModalDialog({
             id="constant-name"
             data-cy="constant-name-input"
             placeholder="EXAMPLE_API_KEY"
+            // md:tw-text-base undoes the shared input base, which drops to 11px on desktop; the design's is 12px.
+            className="tw-font-body-default md:tw-text-base"
             value={form.name}
             disabled={isEdit}
             aria-invalid={Boolean(nameError)}
@@ -289,7 +290,7 @@ function ConstantModalDialog({
                 All environments added
               </span>
             ) : (
-              <AddEnvironmentMenu form={form} lockedPlanName={lockedPlanName} />
+              <AddEnvironmentMenu form={form} />
             )}
           </div>
 

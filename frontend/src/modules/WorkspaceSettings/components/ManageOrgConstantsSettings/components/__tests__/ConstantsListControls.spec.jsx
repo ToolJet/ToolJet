@@ -3,56 +3,20 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ConstantsListControls from '../ConstantsListControls';
 
-const ENVIRONMENTS = [
-  { id: 'env-dev', name: 'Development' },
-  { id: 'env-prod', name: 'Production' },
-];
-
 const setup = (props = {}) => {
-  const handlers = { onEnvChange: jest.fn(), onSortChange: jest.fn(), onSourceChange: jest.fn() };
-  render(
-    <ConstantsListControls
-      showEnv
-      environments={ENVIRONMENTS}
-      environmentId="env-prod"
-      sort="name_asc"
-      source={['workspace', 'env']}
-      {...handlers}
-      {...props}
-    />
-  );
+  const handlers = { onSortChange: jest.fn(), onSourceChange: jest.fn() };
+  render(<ConstantsListControls sort="name_asc" source={['workspace', 'env']} {...handlers} {...props} />);
   return handlers;
 };
 
 const open = (name) => userEvent.click(screen.getByRole('button', { name }));
 
 describe('ConstantsListControls', () => {
-  describe('environment select', () => {
-    it('shows the current environment as the button label', () => {
-      setup();
-      expect(screen.getByRole('button', { name: 'Environment' })).toHaveTextContent('Production');
-    });
-
-    it('lists every environment and marks the current one', async () => {
-      setup();
-      await open('Environment');
-      expect(await screen.findByRole('menuitemradio', { name: 'Production' })).toHaveAttribute('aria-checked', 'true');
-      expect(screen.getByRole('menuitemradio', { name: 'Development' })).toHaveAttribute('aria-checked', 'false');
-    });
-
-    it('reports the chosen environment id', async () => {
-      const { onEnvChange } = setup();
-      await open('Environment');
-      await userEvent.click(await screen.findByRole('menuitemradio', { name: 'Development' }));
-      expect(onEnvChange).toHaveBeenCalledWith('env-dev');
-    });
-
-    it('is not rendered when environments cannot be switched', () => {
-      setup({ showEnv: false });
-      expect(screen.queryByRole('button', { name: 'Environment' })).not.toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Filter' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Sort' })).toBeInTheDocument();
-    });
+  it('has no environment select: the header owns it', () => {
+    setup();
+    expect(screen.queryByRole('button', { name: 'Environment' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Filter' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sort' })).toBeInTheDocument();
   });
 
   describe('sort menu', () => {
@@ -218,7 +182,7 @@ describe('ConstantsListControls', () => {
     });
 
     it('Clear all leaves the view alone when every source is already shown', async () => {
-      const { onSourceChange, onSortChange, onEnvChange } = setup();
+      const { onSourceChange, onSortChange } = setup();
       await open('Filter');
       const input = await screen.findByRole('textbox', { name: 'Filter by' });
       await userEvent.type(input, 'work');
@@ -226,7 +190,6 @@ describe('ConstantsListControls', () => {
       expect(input).toHaveValue('');
       expect(onSourceChange).not.toHaveBeenCalled();
       expect(onSortChange).not.toHaveBeenCalled();
-      expect(onEnvChange).not.toHaveBeenCalled();
     });
 
     it('forgets the search text when the menu closes', async () => {
@@ -267,11 +230,10 @@ describe('ConstantsListControls', () => {
       expect(onSourceChange).toHaveBeenCalledWith(['workspace', 'env']);
     });
 
-    it('does not touch the sort or the environment', async () => {
-      const { onSortChange, onEnvChange } = setup({ source: ['env'] });
+    it('does not touch the sort', async () => {
+      const { onSortChange } = setup({ source: ['env'] });
       await userEvent.click(screen.getByRole('button', { name: 'Clear all filters' }));
       expect(onSortChange).not.toHaveBeenCalled();
-      expect(onEnvChange).not.toHaveBeenCalled();
     });
   });
 

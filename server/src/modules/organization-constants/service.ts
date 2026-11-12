@@ -44,6 +44,7 @@ function toListItemPayload(row: ConstantListRow, value: string | null): Constant
     type: row.type,
     source: row.source,
     value,
+    has_value: row.hasValue,
     environments_with_value: row.environmentIdsWithValue,
     last_modified_at: row.lastModifiedAt?.toISOString() ?? null,
     owner: row.owner,
@@ -80,10 +81,9 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
       this.organizationConstantRepository.findWithValuesAndUsers(organizationId),
       this.listEnvironmentConstants(organizationId),
     ]);
-    const workspaceRows = records
-      .map((record) => toWorkspaceConstantRow(record, query.environment_id))
-      .filter((row): row is ConstantListRow => row !== null);
-    // An .env constant only hides a database one when it has a value in this environment.
+    // A workspace constant is listed in every environment; one with no value there is marked, not left out.
+    const workspaceRows = records.map((record) => toWorkspaceConstantRow(record, query.environment_id));
+    // An .env constant exists only where its variable is set, and only then hides a database one.
     const envRows = envConstants
       .map((constant) => toEnvironmentConstantRow(constant, query.environment_id))
       .filter((row): row is ConstantListRow => row !== null);
@@ -107,7 +107,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
 
   // Secrets resolve to null: their plaintext must not leave the server. `.env` values are already plaintext.
   private async resolveListValue(organizationId: string, row: ConstantListRow): Promise<string | null> {
-    if (row.type !== OrganizationConstantType.GLOBAL) return null;
+    if (row.type !== OrganizationConstantType.GLOBAL || !row.hasValue) return null;
     if (row.source === ConstantSource.ENV) return row.value;
     return this.organizationConstantsUtilService.decryptSecret(organizationId, row.value);
   }

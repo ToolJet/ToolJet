@@ -18,6 +18,7 @@ const row = (overrides: Partial<ConstantListRow> & { name: string }): ConstantLi
   type: GLOBAL,
   source: ConstantSource.WORKSPACE,
   value: 'v',
+  hasValue: true,
   environmentIdsWithValue: ['env-1'],
   lastModifiedAt: new Date('2026-01-01T00:00:00Z'),
   owner: null,
@@ -239,6 +240,7 @@ describe('constants list calculation', () => {
         type: GLOBAL,
         source: ConstantSource.WORKSPACE,
         value: 'enc-1',
+        hasValue: true,
         environmentIdsWithValue: ['env-1', 'env-3'],
         lastModifiedAt: baseRecord.updatedAt,
         owner: { id: 'u1', name: 'Ada Lovelace' },
@@ -246,9 +248,18 @@ describe('constants list calculation', () => {
       });
     });
 
-    it('should return null when the constant has no value in the selected environment', () => {
-      expect(toWorkspaceConstantRow(baseRecord, 'env-2')).toBeNull();
-      expect(toWorkspaceConstantRow(baseRecord, 'env-unknown')).toBeNull();
+    it('should still return the constant, with no value, when it has none in the selected environment', () => {
+      const expected = {
+        id: 'c1',
+        name: 'api_key',
+        value: null,
+        hasValue: false,
+        environmentIdsWithValue: ['env-1', 'env-3'],
+        lastModifiedAt: baseRecord.updatedAt,
+      };
+
+      expect(toWorkspaceConstantRow(baseRecord, 'env-2')).toMatchObject(expected);
+      expect(toWorkspaceConstantRow(baseRecord, 'env-unknown')).toMatchObject(expected);
     });
 
     it('should map missing users to null', () => {
@@ -279,6 +290,7 @@ describe('constants list calculation', () => {
         type: GLOBAL,
         source: ConstantSource.ENV,
         value: 'http://dev',
+        hasValue: true,
         environmentIdsWithValue: ['env-1'],
         lastModifiedAt: null,
         owner: null,

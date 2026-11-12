@@ -50,6 +50,7 @@ export interface ConstantListItemPayload {
   type: OrganizationConstantType;
   source: 'workspace' | 'env';
   value: string | null;
+  has_value: boolean;
   environments_with_value: string[];
   last_modified_at: string | null;
   owner: ConstantUserRef | null;

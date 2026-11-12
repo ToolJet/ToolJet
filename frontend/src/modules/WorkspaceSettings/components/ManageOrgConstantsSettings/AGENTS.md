@@ -6,7 +6,7 @@ The Workspace Constants page (route `/workspace-constants`): lists, creates, edi
 
 - **Constant Type**: `Global` or `Secret` (a tab). A Global and a Secret can share a name.
 - **Constant Source**: `workspace` (database row) or `env` (server environment variable, read-only). Shown as Workspace and `.env`. Not an Environment (dev/staging/prod).
-- **Pinned Constant**: a row held at the top of its tab; kept in the store only.
+- **Pinned Constant**: a row held at the top of its tab; kept in the store only. The pin button after the name pins and unpins; the row menu holds only Delete.
 
 ## Key files
 
@@ -15,7 +15,8 @@ The Workspace Constants page (route `/workspace-constants`): lists, creates, edi
 | `ManageOrgConstantsSettings.jsx` | The page. Wires the URL hook, the store, environments, the modal and the delete flow. Mounted by `frontend/src/WorkspaceConstants/index.jsx`. |
 | `hooks/useConstantsListQueryParams.ts` | Environment, tab, sort and source in the URL, seeded from `sessionStorage` on mount. |
 | `store/constantsListStore.ts` | Zustand store: page, search, rows, selection, pins, and the list, create, update and delete calls. |
-| `components/` | Table, controls, footer, selection bar, row menu, delete dialog, empty state, pin reorder. |
+| `components/` | Table, controls (filter, sort), footer, selection bar, row menu, delete dialog, empty state, pin reorder. |
+| `frontend/src/_ui/Header/HeaderEnvironmentSelect.tsx` | The environment select: a pill in the header right of the search. The page fills it through `useHeaderEnvironmentSelect` (`_hooks/`, store `_stores/headerEnvironmentStore.ts`) and it is removed when the page unmounts. |
 | `components/ConstantModal/` | Create and edit modal. `useConstantForm.ts` holds the form rules. |
 | `helpers/` | `pinOrder.ts` (pin slots), `pageWindow.ts`, `constants.ts` (masks, tooltip text), `errors.ts`, `constantType.ts`, `constantReference.ts`, `highlightMatch.ts`. |
 | `frontend/src/_services/organization_constants_v2.service.ts` | v2 requests; types in `_services/types/organizationConstantsV2.types.ts`. |
@@ -27,8 +28,9 @@ The Workspace Constants page (route `/workspace-constants`): lists, creates, edi
 - Pins live in memory (`pins` in the store) and reset on reload. They cover the loaded page only, and reordering is off while a search or a source filter is active.
 - A Secret's value is never in the client. The list and detail APIs return `null` for it; the table shows a fixed mask and the edit field shows the mask as a placeholder, so the only Secret text the client holds is what the user types.
 - The list is paged by the server (50 per page). `.env` rows are read-only: no edit, and they are never sent to bulk delete (they can still be selected to pin).
+- Creating a constant opens the modal on the open tab's type and, once saved, switches to the tab of the type created.
 - Without the multi-environment license the page passes `multiEnvironment={false}` to the modal: create and edit take one value, which the server writes to every environment. Environment switching is hidden then too.
-- A constant with no value in the viewed environment is not listed. After a save that leaves none there, the toast says so.
+- Every workspace constant is listed in every Environment. One with no value in the viewed Environment has `has_value: false` and shows "No value in <environment>" in place of the mask and the eye; Edit still works.
 
 ## Gotchas
 

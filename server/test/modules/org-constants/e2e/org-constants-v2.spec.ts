@@ -168,6 +168,7 @@ describe('OrgConstantsControllerV2', () => {
         type: 'Global',
         source: 'workspace',
         value: GLOBAL_PLAINTEXT,
+        has_value: true,
         environments_with_value: expect.arrayContaining(environments.map((env) => env.id)),
         last_modified_at: expect.any(String),
         owner: { id: adminId, name: 'Ada Lovelace' },
@@ -187,11 +188,14 @@ describe('OrgConstantsControllerV2', () => {
       expect(JSON.stringify(globals.body)).not.toContain(SECRET_PLAINTEXT);
     });
 
-    it('should leave out constants with no value in the selected environment', async () => {
+    it('should list constants with no value in the selected environment, marked as having none', async () => {
       const response = await get(`?environment_id=${environments[1].id}&type=Global`, adminCookie).expect(200);
 
-      expect(response.body.items.map((item: { name: string }) => item.name)).toEqual(['api_url']);
-      expect(response.body).toMatchObject({ total: 1, counts: { secrets: 1, globals: 1 } });
+      expect(response.body.items).toEqual([
+        expect.objectContaining({ name: 'api_url', has_value: true }),
+        expect.objectContaining({ name: 'dev_only', has_value: false, value: null }),
+      ]);
+      expect(response.body).toMatchObject({ total: 2, counts: { secrets: 1, globals: 2 } });
     });
 
     it('should make the counts follow the search', async () => {

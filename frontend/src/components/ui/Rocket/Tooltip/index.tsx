@@ -8,7 +8,7 @@ export interface TooltipProps {
   children: ReactElement;
   /** Nothing is shown when empty. */
   content?: ReactNode;
-  classes?: { content?: string };
+  classes?: { content?: string; trigger?: string };
   arrow?: boolean;
   /** Wraps the child so a disabled button can still trigger the tooltip. */
   isTooltipForInteractiveDisabledElement?: boolean;
@@ -30,7 +30,7 @@ export default function TooltipComp({
   }
 
   const triggerElement = isTooltipForInteractiveDisabledElement ? (
-    <div className="tw-inline-block tw-w-fit">{children}</div>
+    <div className={cn('tw-inline-block tw-w-fit', classes?.trigger)}>{children}</div>
   ) : (
     children
   );

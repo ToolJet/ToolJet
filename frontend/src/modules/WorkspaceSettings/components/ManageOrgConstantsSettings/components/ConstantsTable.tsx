@@ -163,11 +163,51 @@ function SkeletonRows() {
 const REVEAL_ACTIONS_CLASS =
   'tw-opacity-0 group-hover:tw-opacity-100 group-focus-within:tw-opacity-100 group-has-[[data-state=open]]:tw-opacity-100';
 
+// One icon button for both directions (Figma: filled when pinned, outline when not; hover and pressed fills are the
+// interactive-hover and interactive-selected tokens). A pinned row always shows it; the
+// others reveal it with the row's hover or focus.
+function PinToggle({ name, isPinned, onToggle }: { name: string; isPinned: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={`${isPinned ? 'Unpin' : 'Pin'} ${name}`}
+      onClick={onToggle}
+      className={cn(
+        'tw-flex tw-size-5 tw-shrink-0 tw-cursor-pointer tw-items-center tw-justify-center tw-rounded tw-border-0 tw-bg-transparent tw-p-0',
+        'hover:tw-bg-interactive-hover active:tw-bg-interactive-selected',
+        'focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline',
+        !isPinned && REVEAL_ACTIONS_CLASS
+      )}
+    >
+      <Pin
+        aria-hidden
+        size={12}
+        fill={isPinned ? 'currentColor' : 'none'}
+        className={isPinned ? 'tw-text-icon-default' : 'tw-text-icon-weak'}
+      />
+    </button>
+  );
+}
+
 // Secrets are always masked and have no eye, so their value starts at the column edge.
-function ValueCell({ item }: { item: ConstantListItem }) {
+function ValueCell({ item, environmentName }: { item: ConstantListItem; environmentName: string }) {
   const [revealed, setRevealed] = useState(false);
   const isSecret = item.type === ConstantTypes.Secret;
   const text = !revealed ? SECRET_MASK : (item.value ?? EMPTY_CELL);
+
+  // Every constant is listed in every environment; one with nothing set here says so.
+  if (item.has_value === false) {
+    return (
+      <div className="tw-flex tw-min-w-0 tw-items-center tw-gap-2.5">
+        <span className="tw-flex tw-size-7 tw-shrink-0 tw-items-center tw-justify-center">
+          <Info aria-hidden size={14} className="tw-text-icon-strong" />
+        </span>
+        <span className="tw-truncate tw-font-body-default tw-text-text-placeholder">
+          No value in {environmentName || 'this environment'}
+        </span>
+      </div>
+    );
+  }
 
   // An .env Secret has no value in ToolJet, so a mask would imply one.
   if (isSecret && item.source === 'env') {
@@ -216,13 +256,11 @@ function ValueCell({ item }: { item: ConstantListItem }) {
 interface RowActionsProps {
   item: ConstantListItem;
   variant: ConstantType;
-  isPinned: boolean;
   onEdit: (item: ConstantListItem) => Promise<unknown> | void;
-  onTogglePin: () => void;
   onDelete: () => void;
 }
 
-function RowActions({ item, variant, isPinned, onEdit, onTogglePin, onDelete }: RowActionsProps) {
+function RowActions({ item, variant, onEdit, onDelete }: RowActionsProps) {
   const [loadingEdit, setLoadingEdit] = useState(false);
   const isEnv = item.source === 'env';
 
@@ -265,14 +303,16 @@ function RowActions({ item, variant, isPinned, onEdit, onTogglePin, onDelete }: 
       >
         <Copy size={14} className="tw-text-icon-strong" />
       </Button>
-      <RowActionsMenu item={item} variant={variant} isPinned={isPinned} onTogglePin={onTogglePin} onDelete={onDelete} />
+      <RowActionsMenu item={item} variant={variant} onDelete={onDelete} />
     </div>
   );
 }
 
-interface ConstantRowProps extends Omit<RowActionsProps, 'isPinned'> {
+interface ConstantRowProps extends RowActionsProps {
   searchKey: string;
+  environmentName: string;
   isPinned: boolean;
+  onTogglePin: () => void;
   isSelected: boolean;
   hasSelection: boolean;
   onSelectedChange: (selected: boolean) => void;
@@ -282,6 +322,7 @@ function ConstantRow({
   item,
   variant,
   searchKey,
+  environmentName,
   isPinned,
   isSelected,
   hasSelection,
@@ -365,24 +406,9 @@ function ConstantRow({
                       )
                     )}
                   </TruncatedText>
-                  {isPinned && (
-                    <span
-                      role="img"
-                      aria-label="Pinned"
-                      className="tw-flex tw-size-5 tw-shrink-0 tw-items-center tw-justify-center"
-                    >
-                      <Pin aria-hidden size={12} fill="currentColor" className="tw-text-icon-default" />
-                    </span>
-                  )}
+                  <PinToggle name={item.name} isPinned={isPinned} onToggle={onTogglePin} />
                 </div>
-                <RowActions
-                  item={item}
-                  variant={variant}
-                  isPinned={isPinned}
-                  onEdit={onEdit}
-                  onTogglePin={onTogglePin}
-                  onDelete={onDelete}
-                />
+                <RowActions item={item} variant={variant} onEdit={onEdit} onDelete={onDelete} />
               </div>
             </TableCell>
           );
@@ -390,7 +416,7 @@ function ConstantRow({
         if (key === 'value') {
           return (
             <TableCell key={key} className={cellClass(index)}>
-              <ValueCell item={item} />
+              <ValueCell item={item} environmentName={environmentName} />
             </TableCell>
           );
         }
@@ -445,6 +471,8 @@ interface ConstantsTableProps {
   /** The tab: which type of constant the list shows. */
   variant: ConstantType;
   searchKey: string;
+  /** The viewed environment, for the "No value in …" text. */
+  environmentName?: string;
   isSourceFiltered?: boolean;
   pinnedIds?: string[];
   rowSelection?: RowSelectionState;
@@ -464,6 +492,7 @@ type ConstantsGridProps = Required<
     | 'items'
     | 'variant'
     | 'searchKey'
+    | 'environmentName'
     | 'isSourceFiltered'
     | 'pinnedIds'
     | 'rowSelection'
@@ -481,6 +510,7 @@ function ConstantsGrid({
   isLoading,
   variant,
   searchKey,
+  environmentName,
   isSourceFiltered,
   pinnedIds,
   rowSelection,
@@ -543,6 +573,7 @@ function ConstantsGrid({
                       item={item}
                       variant={variant}
                       searchKey={searchKey}
+                      environmentName={environmentName}
                       isPinned={isPinned}
                       isSelected={Boolean(rowSelection[item.id])}
                       hasSelection={hasSelection}
@@ -581,6 +612,7 @@ export default function ConstantsTable({
   status,
   variant,
   searchKey,
+  environmentName = '',
   isSourceFiltered = false,
   pinnedIds = [],
   rowSelection = {},
@@ -612,6 +644,7 @@ export default function ConstantsTable({
       isLoading={isLoading}
       variant={variant}
       searchKey={searchKey}
+      environmentName={environmentName}
       isSourceFiltered={isSourceFiltered}
       pinnedIds={pinnedIds}
       rowSelection={rowSelection}

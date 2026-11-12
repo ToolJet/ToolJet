@@ -10,6 +10,7 @@ import { isMultiEnvLicenseInvalid } from '@/_helpers/multiEnvLicense';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { useSearchStore } from '@/_stores/searchStore';
 import { useHeaderSearchConfig } from '@/_hooks/useHeaderSearchConfig';
+import { useHeaderEnvironmentSelect } from '@/_hooks/useHeaderEnvironmentSelect';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import ConstantModal from './components/ConstantModal';
 import ConstantsListControls from './components/ConstantsListControls';
@@ -124,6 +125,13 @@ const ManageOrgConstantsSettings = () => {
     [environments]
   );
 
+  // The select lives in the header, right of the search; nothing is shown when switching is not available.
+  const headerEnvironmentSelect = useMemo(
+    () => (showEnv ? { environments: modalEnvironments, environmentId, onChange: setEnv } : null),
+    [showEnv, modalEnvironments, environmentId, setEnv]
+  );
+  useHeaderEnvironmentSelect(headerEnvironmentSelect);
+
   const counts = meta?.counts;
 
   const status = environmentsFailed ? 'error' : listStatus;
@@ -144,26 +152,17 @@ const ManageOrgConstantsSettings = () => {
     if (listScrollRef.current) listScrollRef.current.scrollTop = 0;
   };
 
-  // The list only shows constants that have a value in the viewed environment, so a save that leaves none there
-  // would otherwise look as if nothing happened.
-  const notListedHint = (constant) => {
-    const listed = constant.values?.some((value) => value.environment_id === environmentId && value.has_value);
-    if (!constant.values || listed) return null;
-    const viewed = modalEnvironments.find((e) => e.id === environmentId)?.name;
-    return `It has no value in ${viewed}, so it isn’t listed here.`;
-  };
-
   const handleCreate = async (body) => {
     const constant = await createConstant(body);
-    const hint = notListedHint(constant);
-    toast.success(hint ? `${body.type} constant created. ${hint}` : `${body.type} constant created successfully!`);
+    // The new constant is on its own type's tab, so follow it there.
+    if (constant.type !== tab) setTab(constant.type);
+    toast.success(`${body.type} constant created successfully!`);
     return constant;
   };
 
   const handleUpdate = async (id, body) => {
     const constant = await updateConstant(id, body);
-    const hint = notListedHint(constant);
-    toast.success(hint ? `Constant updated. ${hint}` : 'Constant updated successfully');
+    toast.success('Constant updated successfully');
     return constant;
   };
 
@@ -202,16 +201,7 @@ const ManageOrgConstantsSettings = () => {
                 {tabLabel('Globals', counts?.globals)}
               </TabsTrigger>
             </TabsList>
-            <ConstantsListControls
-              showEnv={showEnv}
-              environments={modalEnvironments}
-              environmentId={environmentId}
-              onEnvChange={setEnv}
-              sort={sort}
-              onSortChange={setSort}
-              source={source}
-              onSourceChange={setSource}
-            />
+            <ConstantsListControls sort={sort} onSortChange={setSort} source={source} onSourceChange={setSource} />
           </div>
         </Tabs>
         {/* flex-1 lets an empty or error state centre in the space left above the footer. The row checkbox and drag
@@ -226,6 +216,7 @@ const ManageOrgConstantsSettings = () => {
             status={status}
             variant={tab}
             searchKey={searchKey}
+            environmentName={environment?.name}
             isSourceFiltered={source.length < CONSTANT_SOURCES.length}
             pinnedIds={pinnedIds}
             rowSelection={rowSelection}
@@ -271,6 +262,7 @@ const ManageOrgConstantsSettings = () => {
         onOpenChange={setCreating}
         environments={modalEnvironments}
         multiEnvironment={showEnv}
+        defaultType={tab}
         onSubmit={handleCreate}
       />
       {editing && (

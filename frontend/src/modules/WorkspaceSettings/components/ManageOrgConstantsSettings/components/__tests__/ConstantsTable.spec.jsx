@@ -215,11 +215,11 @@ describe('ConstantsTable', () => {
   describe('row actions', () => {
     const nameCell = (name) => Array.from(screen.getByRole('row', { name: new RegExp(name) }).children)[1];
 
-    it('orders Edit, Copy and the menu after the name, and the pin icon', () => {
+    it('orders Edit, Copy and the menu after the name, and the pin button', () => {
       renderTable({ items: [globalItem], pinnedIds: ['c1'] });
       const cell = within(nameCell('API_URL'));
       const sequence = [
-        cell.getByRole('img', { name: 'Pinned' }),
+        cell.getByRole('button', { name: 'Unpin API_URL' }),
         cell.getByRole('button', { name: 'Edit API_URL' }),
         cell.getByRole('button', { name: 'Copy reference to API_URL' }),
         cell.getByRole('button', { name: 'More actions for API_URL' }),
@@ -283,14 +283,43 @@ describe('ConstantsTable', () => {
     });
   });
 
+  describe('a constant with no value in the viewed environment', () => {
+    const missing = { ...globalItem, value: null, has_value: false };
+
+    it('says so, in place of the mask and the eye', () => {
+      renderTable({ items: [missing], environmentName: 'production' });
+      const row = screen.getByRole('row', { name: /API_URL/ });
+      expect(within(row).getByText('No value in production')).toBeInTheDocument();
+      expect(within(row).queryByText(SECRET_MASK)).toBeNull();
+      expect(within(row).queryByRole('button', { name: /value of API_URL/ })).toBeNull();
+    });
+
+    it('says so for a Secret too, and still offers Edit', () => {
+      renderTable({
+        items: [{ ...missing, id: 'c3', name: 'STRIPE', type: 'Secret' }],
+        variant: 'Secret',
+        environmentName: 'staging',
+      });
+      const row = screen.getByRole('row', { name: /STRIPE/ });
+      expect(within(row).getByText('No value in staging')).toBeInTheDocument();
+      expect(within(row).getByRole('button', { name: 'Edit STRIPE' })).toBeEnabled();
+    });
+
+    it('still shows a Global that has a value as usual', () => {
+      renderTable({ items: [{ ...globalItem, has_value: true }], environmentName: 'production' });
+      expect(screen.queryByText(/No value in/)).toBeNull();
+      expect(screen.getByRole('button', { name: 'Show value of API_URL' })).toBeInTheDocument();
+    });
+  });
+
   describe('row menu placement', () => {
-    it('sits in the Name cell after the name and pin icon, not in the Source cell', () => {
+    it('sits in the Name cell after the name and pin button, not in the Source cell', () => {
       renderTable({ items: [globalItem], pinnedIds: ['c1'] });
       const row = screen.getByRole('row', { name: /API_URL/ });
       const [nameCell, , , , , sourceCell] = Array.from(row.children).slice(1);
       const content = within(nameCell);
       const name = content.getByText('API_URL');
-      const pin = content.getByRole('img', { name: 'Pinned' });
+      const pin = content.getByRole('button', { name: 'Unpin API_URL' });
       const menu = content.getByRole('button', { name: 'More actions for API_URL' });
       expect(name.compareDocumentPosition(pin) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       expect(pin.compareDocumentPosition(menu) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -311,12 +340,36 @@ describe('ConstantsTable', () => {
       expect(rowNames()).toEqual(['c', 'a', 'b']);
     });
 
-    it('marks pinned rows with a pin icon', () => {
+    it('gives a pinned row an Unpin button and every other row a Pin button', () => {
       renderTable({ items: rows, pinnedIds: ['b'] });
       expect(
-        within(screen.getByRole('row', { name: /BRAVO/ })).getByRole('img', { name: 'Pinned' })
+        within(screen.getByRole('row', { name: /BRAVO/ })).getByRole('button', { name: 'Unpin BRAVO' })
       ).toBeInTheDocument();
-      expect(within(screen.getByRole('row', { name: /ALPHA/ })).queryByRole('img', { name: 'Pinned' })).toBeNull();
+      expect(
+        within(screen.getByRole('row', { name: /ALPHA/ })).getByRole('button', { name: 'Pin ALPHA' })
+      ).toBeInTheDocument();
+      expect(
+        within(screen.getByRole('row', { name: /ALPHA/ })).queryByRole('button', { name: 'Unpin ALPHA' })
+      ).toBeNull();
+    });
+
+    it('keeps the pin visible on a pinned row and reveals it on hover for the others', () => {
+      renderTable({ items: rows, pinnedIds: ['b'] });
+      expect(screen.getByRole('button', { name: 'Unpin BRAVO' })).not.toHaveClass('tw-opacity-0');
+      expect(screen.getByRole('button', { name: 'Pin ALPHA' })).toHaveClass(
+        'tw-opacity-0',
+        'group-hover:tw-opacity-100'
+      );
+    });
+
+    it('pins and unpins from the same icon button', async () => {
+      const onPin = jest.fn();
+      const onUnpin = jest.fn();
+      renderTable({ items: rows, pinnedIds: ['b'], onPin, onUnpin });
+      await userEvent.click(screen.getByRole('button', { name: 'Pin ALPHA' }));
+      expect(onPin).toHaveBeenCalledWith(['a']);
+      await userEvent.click(screen.getByRole('button', { name: 'Unpin BRAVO' }));
+      expect(onUnpin).toHaveBeenCalledWith(['b']);
     });
 
     it('puts a divider row between the pinned rows and the rest, only while unpinned rows follow', () => {
@@ -454,31 +507,6 @@ describe('ConstantsTable', () => {
       expect(await screen.findByRole('dialog', { name: 'Delete workspace constant?' })).toBeInTheDocument();
       await userEvent.click(screen.getByRole('button', { name: 'Delete constant' }));
       expect(onDelete).toHaveBeenCalledWith(['c1']);
-    });
-
-    it('pins and unpins from the row menu', async () => {
-      const onPin = jest.fn();
-      const onUnpin = jest.fn();
-      const { rerender } = renderTable({ items: [globalItem], onPin, onUnpin });
-
-      await userEvent.click(screen.getByRole('button', { name: 'More actions for API_URL' }));
-      await userEvent.click(await screen.findByRole('menuitem', { name: 'Pin' }));
-      expect(onPin).toHaveBeenCalledWith(['c1']);
-
-      rerender(
-        <ConstantsTable
-          items={[globalItem]}
-          status="success"
-          variant="Global"
-          searchKey=""
-          pinnedIds={['c1']}
-          onPin={onPin}
-          onUnpin={onUnpin}
-        />
-      );
-      await userEvent.click(screen.getByRole('button', { name: 'More actions for API_URL' }));
-      await userEvent.click(await screen.findByRole('menuitem', { name: 'Unpin' }));
-      expect(onUnpin).toHaveBeenCalledWith(['c1']);
     });
   });
 });

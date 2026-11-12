@@ -18,6 +18,8 @@ export interface ConstantListItem {
   source: ConstantSource;
   /** Plain value of a Global in the viewed environment. Null for a Secret. */
   value: string | null;
+  /** False when the constant has no value in the viewed environment. Optional for older payloads. */
+  has_value?: boolean;
   environments_with_value: string[];
   last_modified_at: string | null;
   owner: ConstantUserRef | null;

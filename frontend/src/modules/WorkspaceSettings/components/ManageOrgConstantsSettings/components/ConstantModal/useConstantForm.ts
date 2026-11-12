@@ -46,6 +46,8 @@ export interface UseConstantFormOptions {
   environments: ConstantEnvironment[];
   /** False when the licence allows one value for every environment only. */
   multiEnvironment?: boolean;
+  /** The type a new constant starts with; an edited constant keeps its own. */
+  defaultType?: ConstantType;
 }
 
 const getNameError = (name: string): string | null => {
@@ -94,12 +96,16 @@ const buildInitialRows = (
   return multiEnvironment ? rows : keepOneRow(rows, environments);
 };
 
-export function useConstantForm({ mode, constant, environments, multiEnvironment = true }: UseConstantFormOptions) {
+export function useConstantForm({
+  mode,
+  constant,
+  environments,
+  multiEnvironment = true,
+  defaultType = ConstantTypes.Global,
+}: UseConstantFormOptions) {
   const isEdit = mode === 'edit';
   const [name, setNameState] = useState<string>(isEdit ? (constant?.name ?? '') : '');
-  const [type, setTypeState] = useState<ConstantType>(
-    isEdit ? (constant?.type ?? ConstantTypes.Global) : ConstantTypes.Global
-  );
+  const [type, setTypeState] = useState<ConstantType>(isEdit ? (constant?.type ?? ConstantTypes.Global) : defaultType);
   const [rowMap, setRowMap] = useState<Record<string, StoredRow>>(() =>
     isEdit ? buildInitialRows(constant, environments, multiEnvironment) : {}
   );
@@ -145,9 +151,8 @@ export function useConstantForm({ mode, constant, environments, multiEnvironment
   const canAddEnvironment = multiEnvironment || rows.every((r) => r.removed);
 
   const availableEnvironments = environments.filter((e) => !rowMap[e.id] || rowMap[e.id].removed);
-  const allEnvironmentsAdded = environments
-    .filter((e) => e.enabled)
-    .every((e) => rowMap[e.id] && !rowMap[e.id].removed);
+  // Locked environments count: until they have a value too, the Add environment menu stays so they can be seen.
+  const allEnvironmentsAdded = environments.every((e) => rowMap[e.id] && !rowMap[e.id].removed);
 
   const addEnvironment = (envId: string) => {
     const env = environments.find((e) => e.id === envId);

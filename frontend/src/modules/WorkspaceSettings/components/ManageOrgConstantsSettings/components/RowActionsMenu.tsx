@@ -1,5 +1,5 @@
 import React from 'react';
-import { EllipsisVertical, Pin, PinOff, Trash } from 'lucide-react';
+import { EllipsisVertical, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/Rocket';
 import DropdownMenu from '@/components/ui/Rocket/DropdownMenu';
 import Tooltip from '@/components/ui/Rocket/Tooltip';
@@ -13,27 +13,13 @@ const MENU_CLASSES = { content: 'tw-w-44' };
 interface RowActionsMenuProps {
   item: Pick<ConstantListItem, 'name' | 'source'>;
   variant: ConstantType;
-  isPinned: boolean;
-  onTogglePin: () => void;
   onDelete: () => void;
 }
 
-// `.env` constants can be pinned but not deleted: their Delete shows as disabled and says why.
-export default function RowActionsMenu({ item, variant, isPinned, onTogglePin, onDelete }: RowActionsMenuProps) {
+// `.env` constants cannot be deleted: their Delete shows as disabled and says why.
+export default function RowActionsMenu({ item, variant, onDelete }: RowActionsMenuProps) {
   const isEnv = item.source === 'env';
-  const PinIcon = isPinned ? PinOff : Pin;
   const sections = [
-    {
-      id: 'pin',
-      items: [
-        {
-          id: 'pin',
-          label: isPinned ? 'Unpin' : 'Pin',
-          icon: <PinIcon size={MENU_ICON_SIZE} />,
-          onSelect: onTogglePin,
-        },
-      ],
-    },
     {
       id: 'danger',
       items: [

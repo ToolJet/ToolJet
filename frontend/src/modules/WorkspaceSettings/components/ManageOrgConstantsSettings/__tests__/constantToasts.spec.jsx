@@ -105,20 +105,6 @@ describe('success toasts', () => {
     await waitFor(() => expect(successToast).toHaveBeenCalledWith('Global constant created successfully!'));
   });
 
-  it('says when the created constant is not listed because the viewed environment has no value for it', async () => {
-    mockApi({ create: () => HttpResponse.json(detail('new', ['env-dev']), { status: 201 }) });
-    renderPage();
-    await screen.findByText('A');
-
-    await createWithValueIn('Development');
-
-    await waitFor(() =>
-      expect(successToast).toHaveBeenCalledWith(
-        'Global constant created. It has no value in Production, so it isn’t listed here.'
-      )
-    );
-  });
-
   it('confirms an updated constant', async () => {
     mockApi();
     renderPage();
@@ -127,20 +113,6 @@ describe('success toasts', () => {
     await editAndSave();
 
     await waitFor(() => expect(successToast).toHaveBeenCalledWith('Constant updated successfully'));
-  });
-
-  it('says when an update leaves the constant with no value in the viewed environment', async () => {
-    mockApi({ update: () => HttpResponse.json(detail('a', ['env-dev'])) });
-    renderPage();
-    await screen.findByText('A');
-
-    await editAndSave();
-
-    await waitFor(() =>
-      expect(successToast).toHaveBeenCalledWith(
-        'Constant updated. It has no value in Production, so it isn’t listed here.'
-      )
-    );
   });
 
   it('confirms a deleted constant', async () => {

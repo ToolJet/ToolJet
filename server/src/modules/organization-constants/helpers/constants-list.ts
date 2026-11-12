@@ -7,7 +7,8 @@ import { ConstantUserRef, ConstantWithEnvironmentValues } from '../types';
 /**
  * One constant as it appears in the list for a single environment. Rows hold no plaintext Secret value:
  * `value` is the stored (encrypted) value for workspace rows, the plaintext for `.env` Globals, and null
- * for `.env` Secrets.
+ * for `.env` Secrets. A constant with no value in the environment is still a row: `hasValue` is false and
+ * `value` is null.
  */
 export interface ConstantListRow {
   id: string;
@@ -15,6 +16,7 @@ export interface ConstantListRow {
   type: OrganizationConstantType;
   source: ConstantSource;
   value: string | null;
+  hasValue: boolean;
   environmentIdsWithValue: string[];
   lastModifiedAt: Date | null;
   owner: ConstantUserRef | null;
@@ -51,17 +53,17 @@ const hasValue = (value: unknown): boolean => value !== undefined && value !== n
 // `.env` values parsed from JSON can be numbers or booleans.
 const valueToString = (value: unknown): string => (typeof value === 'string' ? value : JSON.stringify(value));
 
-/** Null when the constant has no value in the environment: such constants are left out of the list. */
-export function toWorkspaceConstantRow(record: WorkspaceConstantRecord, environmentId: string): ConstantListRow | null {
+export function toWorkspaceConstantRow(record: WorkspaceConstantRecord, environmentId: string): ConstantListRow {
   const selected = record.orgEnvironmentConstantValues.find((v) => v.environmentId === environmentId);
-  if (!selected || !hasValue(selected.value)) return null;
+  const hasSelectedValue = hasValue(selected?.value);
 
   return {
     id: record.id,
     name: record.constantName,
     type: record.type,
     source: ConstantSource.WORKSPACE,
-    value: selected.value,
+    value: hasSelectedValue ? selected.value : null,
+    hasValue: hasSelectedValue,
     environmentIdsWithValue: record.orgEnvironmentConstantValues
       .filter((v) => hasValue(v.value))
       .map((v) => v.environmentId),
@@ -73,7 +75,8 @@ export function toWorkspaceConstantRow(record: WorkspaceConstantRecord, environm
 
 /**
  * Reads a `.env` constant without mutating it (the source objects belong to a process-level cache).
- * Null when it has no value in the environment. A Secret's value is dropped here so it cannot leak later.
+ * Null when it has no value in the environment: a variable that is not set there is not a constant there.
+ * A Secret's value is dropped here so it cannot leak later.
  */
 export function toEnvironmentConstantRow(
   constant: ConstantWithEnvironmentValues,
@@ -88,6 +91,7 @@ export function toEnvironmentConstantRow(
     type: constant.type,
     source: ConstantSource.ENV,
     value: constant.type === OrganizationConstantType.GLOBAL ? valueToString(selected.value) : null,
+    hasValue: true,
     environmentIdsWithValue: constant.values.filter((v) => v.id && hasValue(v.value)).map((v) => v.id),
     lastModifiedAt: null,
     owner: null,
