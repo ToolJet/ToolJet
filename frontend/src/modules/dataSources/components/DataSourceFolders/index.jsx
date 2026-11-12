@@ -21,9 +21,9 @@ export const DataSourceFolders = ({
   const { folders, expandedFolderIds, toggleFolderExpanded, canUpdateDataSourceFolder, canDeleteDataSourceFolder } =
     useContext(GlobalDataSourcesContext);
 
-  // Delete rides a workspace-wide flag, but a granular "Edit folder" grant can be scoped to
-  // individual folders — so rename is asked per folder, at the point of render.
-  const canDelete = canDeleteDataSourceFolder();
+  // Both rename and delete are asked per folder, at the point of render: a granular "Edit folder"
+  // grant can be scoped to individual folders, and the folder's own creator may delete it even
+  // without the coarse flag (FoldersService.checkFolderManagePermission).
 
   const searchActive = (searchValue ?? '').trim().length > 0;
 
@@ -54,7 +54,7 @@ export const DataSourceFolders = ({
             onMoveDataSource={onMoveDataSource}
             updateSelectedDatasource={updateSelectedDatasource}
             canRename={canUpdateDataSourceFolder(folder)}
-            canDelete={canDelete}
+            canDelete={canDeleteDataSourceFolder(folder)}
             darkMode={darkMode}
           />
         );

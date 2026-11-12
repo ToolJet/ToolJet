@@ -116,10 +116,12 @@ jobs:
       # run; the runner checkout itself has no submodules.
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
+        env:
+          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         run: |
           echo "Building EE Docker image..."
-          # main's Dockerfile reads the token as a build arg, lts-3.16's as a BuildKit
-          # secret; pass both so label runs work for PRs into either branch.
+          # PR branches cut before the secret change still read the token as a build arg;
+          # pass both until they've all merged it. The image is --load only, never pushed.
           CUSTOM_GITHUB_TOKEN="${{ secrets.CUSTOM_GITHUB_TOKEN }}" docker buildx build \
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
@@ -169,6 +171,7 @@ jobs:
           echo "ENABLE_EXTERNAL_API=true" >> .env
           echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
           echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
+          echo "WORKER=true" >> .env
 
       - name: clean up old docker containers
         run: |
