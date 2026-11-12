@@ -1,5 +1,13 @@
 // ponytail: ported from the apps dashboard; dedupe once that lands on main
-import React, { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -46,21 +54,33 @@ const SCREEN_READER_INSTRUCTIONS = {
     'To reorder a pinned constant, press Space or Enter to pick it up, use the arrow keys to move it, and press Space or Enter to drop it. Press Escape to cancel.',
 };
 
-// Pointer: the pinned row whose vertical span holds the pointer, tagged with the half the pointer is in. x is ignored:
-// a drag started from the handle stays over the gutter, which lies outside every row's rect. Keyboard (no pointer):
-// the row moved to. Only enabled droppables have a rect, so unpinned rows are never targets.
+// Pointer: the pinned row whose vertical span holds the pointer, tagged with the half the pointer is in. Above the
+// first pinned row or below the last, the pointer clamps to the first row's top or the last row's bottom, so the
+// indicator stays put over the header, the divider and the unpinned rows, and a drop there lands first or last. x is
+// ignored: a drag started from the handle stays over the gutter, which lies outside every row's rect. Keyboard (no
+// pointer): the row moved to. Only enabled droppables have a rect, so unpinned rows are never targets.
 export const detectPinnedRow: CollisionDetection = (args) => {
   const { pointerCoordinates, droppableRects, droppableContainers } = args;
   if (!pointerCoordinates) return closestCenter(args);
 
   const { y } = pointerCoordinates;
   const collisions: Collision[] = [];
+  let first: { container: (typeof droppableContainers)[number]; top: number } | null = null;
+  let last: { container: (typeof droppableContainers)[number]; bottom: number } | null = null;
   for (const container of droppableContainers) {
     const rect = droppableRects.get(container.id);
-    if (!rect || y < rect.top || y >= rect.bottom) continue;
+    if (!rect) continue;
+    if (!first || rect.top < first.top) first = { container, top: rect.top };
+    if (!last || rect.bottom > last.bottom) last = { container, bottom: rect.bottom };
+    if (y < rect.top || y >= rect.bottom) continue;
     const side = y < rect.top + rect.height / 2 ? 'before' : 'after';
     collisions.push({ id: container.id, data: { droppableContainer: container, side } });
   }
+  if (collisions.length > 0) return collisions;
+  if (first && y < first.top)
+    return [{ id: first.container.id, data: { droppableContainer: first.container, side: 'before' } }];
+  if (last && y >= last.bottom)
+    return [{ id: last.container.id, data: { droppableContainer: last.container, side: 'after' } }];
   return collisions;
 };
 
@@ -142,6 +162,10 @@ export function PinReorderProvider({ pinnedRows, isEnabled, onMove, children }: 
         onDragEnd={dropActiveRow}
         onDragCancel={endDrag}
       >
+        {/* The pointer leaves the handle during a drag, so without this it flips between arrow, hand and text. */}
+        {activeId && (
+          <style>{'*, *::before, *::after { cursor: grabbing !important; user-select: none !important; }'}</style>
+        )}
         <SortableContext items={pinnedIds}>{children}</SortableContext>
         {/* A translucent tint bar the size of the row, without its content. */}
         <DragOverlay modifiers={MODIFIERS} dropAnimation={null} className="tw-cursor-grabbing">
@@ -152,9 +176,50 @@ export function PinReorderProvider({ pinnedRows, isEnabled, onMove, children }: 
   );
 }
 
+// The insertion line, drawn at the boundary between two rows rather than on either row's edge: "before" the row below
+// and "after" the row above are the same spot, so it neither jumps nor follows the rows' rounded corners. A hollow
+// circle caps its start. `containerRef` is the positioned ancestor holding the table, and the line scrolls with it.
+export function PinDropIndicator({ containerRef }: { containerRef: RefObject<HTMLElement> }) {
+  const { dropTarget } = useContext(PinReorderContext);
+  const [box, setBox] = useState<{ top: number; left: number; width: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const row =
+      dropTarget && container
+        ? [...container.querySelectorAll<HTMLElement>('tr[data-row-id]')].find(
+            (candidate) => candidate.dataset.rowId === String(dropTarget.overId)
+          )
+        : undefined;
+    if (!dropTarget || !container || !row) {
+      setBox(null);
+      return;
+    }
+    const containerRect = container.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    setBox({
+      top: (dropTarget.side === 'before' ? rowRect.top : rowRect.bottom) - containerRect.top,
+      left: rowRect.left - containerRect.left,
+      width: rowRect.width,
+    });
+  }, [dropTarget, containerRef]);
+
+  if (!box) return null;
+  return (
+    <div
+      aria-hidden
+      data-testid="pin-drop-indicator"
+      className="tw-pointer-events-none tw-absolute tw-z-[2] tw-h-0.5 tw--translate-y-1/2 tw-bg-border-accent-strong"
+      style={{ top: box.top, left: box.left, width: box.width }}
+    >
+      <span className="tw-absolute tw--left-1 tw-top-1/2 tw-size-2 tw--translate-y-1/2 tw-rounded-full tw-border-2 tw-border-solid tw-border-border-accent-strong tw-bg-page-default" />
+    </div>
+  );
+}
+
 // Sortable wiring for one `<tr>`. Only a pinned row can be dragged while reordering is allowed.
 export function useSortableRow(id: string, isPinned: boolean) {
-  const { isEnabled, activeId, dropTarget } = useContext(PinReorderContext);
+  const { isEnabled, activeId } = useContext(PinReorderContext);
   const canDrag = isEnabled && isPinned;
   // Object form: a boolean `disabled` stops only dragging, leaving unpinned rows as drop targets.
   const { setNodeRef, setActivatorNodeRef, listeners, attributes } = useSortable({
@@ -166,7 +231,5 @@ export function useSortableRow(id: string, isPinned: boolean) {
     rowRef: setNodeRef,
     dragHandle: canDrag ? { ref: setActivatorNodeRef, listeners, attributes } : undefined,
     isDragging: activeId === id,
-    // Which edge of this row the insertion line sits on, while it is the drop target.
-    dropSide: dropTarget?.overId === id ? dropTarget.side : undefined,
   };
 }

@@ -1,7 +1,7 @@
 // ponytail: ported from the apps dashboard; dedupe once that lands on main
-import React, { Fragment, useMemo, useState } from 'react';
+import React, { Fragment, useMemo, useRef, useState } from 'react';
 import type { OnChangeFn, RowSelectionState } from '@tanstack/react-table';
-import { CircleAlert, Copy, Eye, EyeClosed, GripVertical, Pin, SquarePen } from 'lucide-react';
+import { CircleAlert, Copy, Eye, EyeClosed, GripVertical, Info, Pin, SquarePen } from 'lucide-react';
 import {
   Button,
   Checkbox,
@@ -25,14 +25,19 @@ import { cn } from '@/lib/utils';
 import moment from 'moment';
 import type { ConstantListItem, ConstantSource } from '@/_services/types/organizationConstantsV2.types';
 import type { ConstantsListStatus } from '@/_stores/types/constantsListStore';
-import { ENV_CONSTANT_TOOLTIP, ENV_CONSTANT_TOOLTIP_CLASSES, SECRET_MASK } from '../helpers/constants';
+import {
+  ENV_CONSTANT_TOOLTIP,
+  ENV_CONSTANT_TOOLTIP_CLASSES,
+  SECRET_VALUE_TOOLTIP,
+  SECRET_MASK,
+} from '../helpers/constants';
 import { ConstantTypes, type ConstantType } from '../helpers/constantType';
 import { copyConstantReference } from '../helpers/constantReference';
 import { highlightMatch } from '../helpers/highlightMatch';
-import { canReorderPins, orderRows, type DropSide } from '../helpers/pinOrder';
+import { canReorderPins, orderRows } from '../helpers/pinOrder';
 import ConstantsEmptyState from './ConstantsEmptyState';
 import DeleteConstantsDialog from './DeleteConstantsDialog';
-import { PinReorderProvider, useSortableRow } from './PinReorder';
+import { PinDropIndicator, PinReorderProvider, useSortableRow } from './PinReorder';
 import RowActionsMenu from './RowActionsMenu';
 
 const SKELETON_ROW_COUNT = 8;
@@ -78,13 +83,6 @@ const REVEAL_ON_HOVER_CLASS =
   'tw-opacity-0 focus-visible:tw-opacity-100 group-hover:tw-opacity-100 group-has-[[data-state=open]]:tw-opacity-100';
 // The dragged row keeps its hover look and its handle while it is moving.
 const REVEAL_WHILE_DRAGGING_CLASS = 'group-data-[dragging=true]:tw-opacity-100';
-// 2px accent line on one edge of the row under the drag, drawn as a pseudo-element so no row moves.
-const DROP_LINE_CLASSES: Record<DropSide, string> = {
-  before:
-    "before:tw-absolute before:tw-inset-x-0 before:tw--top-px before:tw-z-[2] before:tw-h-0.5 before:tw-bg-border-accent-strong before:tw-content-['']",
-  after:
-    "after:tw-absolute after:tw-inset-x-0 after:tw-bottom-0 after:tw-z-[2] after:tw-h-0.5 after:tw-bg-border-accent-strong after:tw-content-['']",
-};
 
 // Figma: a 12px band between the pinned rows and the rest, with a straight 1px line across the content width.
 // It is its own row. As a border on the last pinned row, the line would follow that row's rounded corner.
@@ -165,17 +163,29 @@ function SkeletonRows() {
 const REVEAL_ACTIONS_CLASS =
   'tw-opacity-0 group-hover:tw-opacity-100 group-focus-within:tw-opacity-100 group-has-[[data-state=open]]:tw-opacity-100';
 
-// Secrets are always masked and have no eye, so the spacer keeps their text in line with the Globals column.
+// Secrets are always masked and have no eye, so their value starts at the column edge.
 function ValueCell({ item }: { item: ConstantListItem }) {
   const [revealed, setRevealed] = useState(false);
   const isSecret = item.type === ConstantTypes.Secret;
   const text = !revealed ? SECRET_MASK : (item.value ?? EMPTY_CELL);
 
+  // An .env Secret has no value in ToolJet, so a mask would imply one.
+  if (isSecret && item.source === 'env') {
+    return (
+      <div className="tw-flex tw-min-w-0 tw-items-center">
+        <Tooltip content={SECRET_VALUE_TOOLTIP} arrow classes={ENV_CONSTANT_TOOLTIP_CLASSES}>
+          <span className="tw-inline-flex tw-items-center tw-gap-1 tw-whitespace-nowrap tw-rounded-full tw-bg-background-warning-weak tw-px-2 tw-py-0.5 tw-font-title-small tw-text-text-warning">
+            <Info size={12} className="tw-shrink-0 tw-text-icon-warning" />
+            Not stored in ToolJet
+          </span>
+        </Tooltip>
+      </div>
+    );
+  }
+
   return (
     <div className="tw-flex tw-min-w-0 tw-items-center tw-gap-2.5">
-      {isSecret ? (
-        <span aria-hidden className="tw-size-7 tw-shrink-0" />
-      ) : (
+      {!isSecret && (
         <Button
           variant="ghost"
           iconOnly
@@ -193,9 +203,11 @@ function ValueCell({ item }: { item: ConstantListItem }) {
         </Button>
       )}
       {/* The title would otherwise leak a masked value. */}
-      <span title={revealed ? text : undefined} className="tw-truncate tw-font-body-default tw-text-text-placeholder">
-        {text}
-      </span>
+      <Tooltip content={isSecret ? SECRET_VALUE_TOOLTIP : undefined} arrow classes={ENV_CONSTANT_TOOLTIP_CLASSES}>
+        <span title={revealed ? text : undefined} className="tw-truncate tw-font-body-default tw-text-text-placeholder">
+          {text}
+        </span>
+      </Tooltip>
     </div>
   );
 }
@@ -278,7 +290,7 @@ function ConstantRow({
   onTogglePin,
   onDelete,
 }: ConstantRowProps) {
-  const { rowRef, dragHandle, isDragging, dropSide } = useSortableRow(item.id, isPinned);
+  const { rowRef, dragHandle, isDragging } = useSortableRow(item.id, isPinned);
   const cells = [
     item.name,
     // Rendered by ValueCell, which owns the mask.
@@ -296,10 +308,8 @@ function ConstantRow({
       ref={rowRef}
       data-row-id={item.id}
       data-dragging={isDragging || undefined}
-      data-drop-side={dropSide}
       className={cn(
-        'tw-group tw-relative tw-transition-colors hover:tw-bg-interactive-hover has-[[data-state=open]]:tw-bg-interactive-hover data-[dragging=true]:tw-bg-interactive-hover',
-        dropSide && DROP_LINE_CLASSES[dropSide]
+        'tw-group tw-relative tw-transition-colors hover:tw-bg-interactive-hover has-[[data-state=open]]:tw-bg-interactive-hover data-[dragging=true]:tw-bg-interactive-hover'
       )}
     >
       <TableCell className={BODY_GUTTER_CELL_CLASS}>
@@ -491,6 +501,7 @@ function ConstantsGrid({
     [rows, pinnedCount]
   );
   const canReorder = canReorderPins({ searchKey, isSourceFiltered, pinnedRowCount: pinnedCount });
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedCount = rows.filter((item) => rowSelection[item.id]).length;
   const hasSelection = Object.values(rowSelection).some(Boolean);
@@ -511,7 +522,7 @@ function ConstantsGrid({
 
   return (
     // Rocket's table wrapper clips horizontally, which would cut off the selection gutter hanging into the page padding.
-    <div className="[&_[data-slot=table-container]]:tw-overflow-visible">
+    <div ref={containerRef} className="tw-relative [&_[data-slot=table-container]]:tw-overflow-visible">
       <PinReorderProvider pinnedRows={pinnedRows} isEnabled={canReorder} onMove={onMovePin}>
         <Table aria-busy={isLoading} className="tw-table-fixed">
           <TableHeaderRow
@@ -548,6 +559,7 @@ function ConstantsGrid({
             )}
           </TableBody>
         </Table>
+        <PinDropIndicator containerRef={containerRef} />
       </PinReorderProvider>
       {deleteTarget && (
         <DeleteConstantsDialog

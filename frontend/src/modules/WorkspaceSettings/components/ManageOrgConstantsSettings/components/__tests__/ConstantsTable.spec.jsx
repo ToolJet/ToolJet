@@ -86,11 +86,31 @@ describe('ConstantsTable', () => {
       now.mockRestore();
     });
 
-    it('masks the value of a Secret and labels environment-sourced constants', () => {
-      renderTable({ items: [secretItem], variant: 'Secret' });
+    it('masks the value of a workspace Secret', () => {
+      renderTable({ items: [{ ...secretItem, source: 'workspace' }], variant: 'Secret' });
       const row = screen.getByRole('row', { name: /STRIPE_KEY/ });
       expect(within(row).getByText(SECRET_MASK)).toBeInTheDocument();
+      expect(within(row).queryByText('Not stored in ToolJet')).not.toBeInTheDocument();
+    });
+
+    it('tags an .env Secret as not stored in ToolJet instead of masking it', () => {
+      renderTable({ items: [secretItem], variant: 'Secret' });
+      const row = screen.getByRole('row', { name: /STRIPE_KEY/ });
+      expect(within(row).getByText('Not stored in ToolJet')).toBeInTheDocument();
+      expect(within(row).queryByText(SECRET_MASK)).not.toBeInTheDocument();
       expect(within(row).getByText('.env')).toBeInTheDocument();
+    });
+
+    it('explains the masked value of a workspace Secret on hover', async () => {
+      renderTable({ items: [{ ...secretItem, source: 'workspace' }], variant: 'Secret' });
+      await userEvent.hover(screen.getByText(SECRET_MASK));
+      expect((await screen.findAllByText('Fetched at runtime', {}, { timeout: 3000 })).length).toBeGreaterThan(0);
+    });
+
+    it('explains the not-stored tag of an .env Secret on hover', async () => {
+      renderTable({ items: [secretItem], variant: 'Secret' });
+      await userEvent.hover(screen.getByText('Not stored in ToolJet'));
+      expect((await screen.findAllByText('Fetched at runtime', {}, { timeout: 3000 })).length).toBeGreaterThan(0);
     });
 
     it('shows a dash for a missing owner, modifier or date', () => {

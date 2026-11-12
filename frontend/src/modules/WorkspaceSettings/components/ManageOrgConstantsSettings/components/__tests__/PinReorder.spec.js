@@ -40,9 +40,30 @@ describe('detectPinnedRow', () => {
     expect(detect({ x: 80, y: 140 })[0].id).toBe('b');
   });
 
-  test('finds nothing when y is outside every row', () => {
-    expect(detect({ x: 400, y: 50 })).toEqual([]);
-    expect(detect({ x: 400, y: 220 })).toEqual([]);
+  test('clamps a pointer above the first row to the top of the first row', () => {
+    const [hit, ...rest] = detect({ x: 400, y: 50 });
+    expect(hit.id).toBe('a');
+    expect(hit.data.side).toBe('before');
+    expect(rest).toEqual([]);
+  });
+
+  test('clamps a pointer below the last row to the bottom of the last row', () => {
+    const [hit, ...rest] = detect({ x: 400, y: 220 });
+    expect(hit.id).toBe('c');
+    expect(hit.data.side).toBe('after');
+    expect(rest).toEqual([]);
+  });
+
+  test('finds nothing when there are no pinned rows to drop on', () => {
+    expect(
+      detectPinnedRow({
+        active: { id: 'a' },
+        collisionRect: rect(100),
+        droppableRects: new Map(),
+        droppableContainers: [],
+        pointerCoordinates: { x: 400, y: 50 },
+      })
+    ).toEqual([]);
   });
 
   test('falls back to the closest row for a keyboard drag, which has no pointer', () => {

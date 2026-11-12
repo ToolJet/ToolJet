@@ -9,3 +9,6 @@ export const ENV_CONSTANT_TOOLTIP = 'Constants created from environment variable
 export const ENV_CONSTANT_TOOLTIP_CLASSES: { content: string } = {
   content: 'tw-max-w-[144px] tw-rounded-large tw-text-center',
 };
+
+// Shown when a Secret's value cell is hovered: its value is never sent to the browser.
+export const SECRET_VALUE_TOOLTIP = 'Fetched at runtime';
