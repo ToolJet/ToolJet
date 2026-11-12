@@ -3,6 +3,7 @@ import {
   humanSelector,
   approvalSelector,
   executionsSelector,
+  executionsFilterSelector,
 } from "Selectors/platform/workflows";
 import { humanWorkflowDefinition } from "Support/utils/workflows/workFlows";
 import { humanText } from "Texts/platform/workflows";
@@ -242,3 +243,16 @@ export const deleteApproverUsers = (emails) =>
   cy.runSqlQueryOnDB(
     `CALL delete_users(ARRAY['${emails.join("','")}']::text[]);`
   );
+
+export const filterExecutionsByWorkflow = (workflowName) => {
+  pickSelectOption(
+    `${executionsFilterSelector.workflow} .react-select__control`,
+    workflowName
+  );
+};
+
+export const visitExecutionsOf = (workflowName) => {
+  visitExecutions();
+  filterExecutionsByWorkflow(workflowName);
+  cy.get(executionsFilterSelector.anyRow, { timeout: 30000 }).should("exist");
+};

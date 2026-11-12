@@ -1,0 +1,430 @@
+import { fake } from "Fixtures/fake";
+import {
+  workflowSelector,
+  inputsSelector,
+  executionsFilterSelector,
+} from "Selectors/platform/workflows";
+import { inputsText } from "Texts/platform/workflows";
+import {
+  wfStartNode,
+  wfResponseNode,
+  wfEdge,
+  wfInput,
+  workflowDefinition,
+  cleanupWorkflows,
+  openLeftDrawer,
+  runFromEditor,
+  releaseWorkflow,
+} from "Support/utils/workflows/workFlows";
+import {
+  visitExecutionsOf,
+  pickSelectOption,
+  openWorkflowEditor,
+} from "Support/utils/workflows/workflowApprovals";
+
+const SLOW_API = {
+  responseTimeout: 60000,
+  requestTimeout: 60000,
+  pageLoadTimeout: 120000,
+  defaultCommandTimeout: 45000,
+};
+
+const data = {};
+
+const paramsDefinition = (workflowInputs) =>
+  workflowDefinition({
+    nodes: [
+      wfStartNode(),
+      wfResponseNode("response", "return startTrigger.params"),
+    ],
+    edges: [wfEdge("start", "response")],
+    workflowInputs,
+  });
+
+const seedInputsWorkflow = (workflowInputs) => {
+  cy.apiCreateWorkflowApp(data.workflowName);
+  cy.apiFetchWorkflowContext();
+  cy.apiSaveWorkflowDefinition(paramsDefinition(workflowInputs));
+};
+
+const card = (index) => cy.get(inputsSelector.card).eq(index);
+
+const cardNamed = (name) =>
+  cy
+    .get(inputsSelector.card)
+    .filter((_, element) => element.querySelector(inputsSelector.name).value === name);
+
+const savedInputs = () =>
+  cy.apiGetWorkflowDefinition().then((definition) => definition.workflowInputs);
+
+const openInputsPanel = () => {
+  cy.openWorkflow();
+  openLeftDrawer(inputsSelector.icon);
+};
+
+const addInputCard = (name, type, defaultValue, required) => {
+  cy.get(inputsSelector.add).click();
+  card(0).find(inputsSelector.name).type(name);
+  if (type !== "string") {
+    pickSelectOption(
+      `${inputsSelector.card}:eq(0) ${inputsSelector.typeControl}`,
+      type
+    );
+  }
+  if (defaultValue !== undefined) {
+    card(0)
+      .find(inputsSelector.defaultValue)
+      .type(defaultValue, { parseSpecialCharSequences: false });
+  }
+  if (required) card(0).find(inputsSelector.required).check();
+};
+
+const runLastWithOverrides = (overrides) => {
+  runFromEditor();
+  cy.get(inputsSelector.runDialogTitle).should(
+    "have.text",
+    inputsText.runDialogTitle
+  );
+  Object.entries(overrides).forEach(([key, value]) => {
+    cy.contains(inputsSelector.overrideRow, key)
+      .find(inputsSelector.overrideToggle)
+      .check();
+    if (value !== null) {
+      cy.contains(inputsSelector.overrideRow, key)
+        .find("> input")
+        .clear()
+        .type(value);
+    }
+  });
+  cy.get(inputsSelector.runDialogConfirm).click();
+  return waitForEditorRun();
+};
+
+const waitForEditorRun = () =>
+  cy.wait("@editorRun", { responseTimeout: 60000 }).then((interception) => {
+    Cypress.env("executionId", interception.response.body.result?.executionId);
+    return interception;
+  });
+
+describe("Workflows - workflow inputs", SLOW_API, () => {
+  beforeEach(() => {
+    cy.apiLogin();
+    cy.visit("/");
+    data.workflowName = `${fake.lastName.toLowerCase()}-inp`;
+  });
+
+  afterEach(() => {
+    cleanupWorkflows([data.workflowName]);
+  });
+
+  it("Inputs of every type can be added with defaults and Required, and survive a reload", () => {
+    cy.apiCreateWorkflowApp(data.workflowName);
+    cy.apiFetchWorkflowContext();
+    cy.apiSaveWorkflowDefinition(paramsDefinition([]));
+    openInputsPanel();
+
+    cy.get(inputsSelector.addFirst).click();
+    card(0).find(inputsSelector.name).type("region");
+    card(0).find(inputsSelector.defaultValue).type("eu");
+    card(0).find(inputsSelector.required).check();
+    addInputCard("limit", "number", "25");
+    addInputCard("verbose", "boolean", "true", true);
+    addInputCard("filters", "object", '{"team":"ops"}');
+    addInputCard("ids", "array", "[1,2,3]");
+
+    cy.apiWaitForWorkflowDefinition(
+      (definition) => definition.workflowInputs?.length === 5,
+      "the five inputs to be saved"
+    );
+    savedInputs().then((inputs) => {
+      const byKey = Object.fromEntries(inputs.map((input) => [input.key, input]));
+      expect(byKey.region).to.deep.include({
+        type: "string",
+        defaultValue: "eu",
+        required: true,
+      });
+      expect(byKey.limit).to.deep.include({ type: "number", defaultValue: 25 });
+      expect(byKey.verbose).to.deep.include({
+        type: "boolean",
+        defaultValue: true,
+        required: true,
+      });
+      expect(byKey.filters).to.deep.include({ type: "object" });
+      expect(byKey.filters.defaultValue).to.deep.equal({ team: "ops" });
+      expect(byKey.ids.defaultValue).to.deep.equal([1, 2, 3]);
+    });
+
+    cy.reload();
+    openLeftDrawer(inputsSelector.icon);
+    cy.get(inputsSelector.card).should("have.length", 5);
+    cardNamed("region").within(() => {
+      cy.get(inputsSelector.defaultValue).should("have.value", "eu");
+      cy.get(inputsSelector.required).should("be.checked");
+      cy.get(inputsSelector.typeControl).should("contain.text", "string");
+    });
+    cardNamed("limit").within(() => {
+      cy.get(inputsSelector.defaultValue).should("have.value", "25");
+      cy.get(inputsSelector.required).should("not.be.checked");
+      cy.get(inputsSelector.typeControl).should("contain.text", "number");
+    });
+    cardNamed("verbose").within(() => {
+      cy.get(inputsSelector.defaultValue).should("have.value", "true");
+      cy.get(inputsSelector.required).should("be.checked");
+      cy.get(inputsSelector.typeControl).should("contain.text", "boolean");
+    });
+    cardNamed("filters").within(() => {
+      cy.get(inputsSelector.defaultValue).should("have.value", '{"team":"ops"}');
+      cy.get(inputsSelector.typeControl).should("contain.text", "object");
+    });
+    cardNamed("ids").within(() => {
+      cy.get(inputsSelector.defaultValue).should("have.value", "[1,2,3]");
+      cy.get(inputsSelector.typeControl).should("contain.text", "array");
+    });
+  });
+
+  it("Blank, duplicate and invalid-default inputs show a clear message and are not saved", () => {
+    seedInputsWorkflow([wfInput("keeper", "string", { defaultValue: "k" })]);
+    openInputsPanel();
+
+    cy.get(inputsSelector.add).click();
+    card(0).find(inputsSelector.error).should("contain.text", inputsText.nameRequired);
+
+    card(0).find(inputsSelector.name).type("KEEPER");
+    card(0).find(inputsSelector.error).should("contain.text", inputsText.namesUnique);
+    card(1).find(inputsSelector.error).should("contain.text", inputsText.namesUnique);
+
+    card(0).find(inputsSelector.name).clear().type("limit");
+    card(0).find(inputsSelector.error).should("not.exist");
+    pickSelectOption(
+      `${inputsSelector.card}:eq(0) ${inputsSelector.typeControl}`,
+      "number"
+    );
+    card(0).find(inputsSelector.defaultValue).type("abc");
+    card(0).find(inputsSelector.error).should("contain.text", inputsText.numberDefault);
+
+    pickSelectOption(
+      `${inputsSelector.card}:eq(0) ${inputsSelector.typeControl}`,
+      "boolean"
+    );
+    card(0).find(inputsSelector.defaultValue).type("yes");
+    card(0).find(inputsSelector.error).should("contain.text", inputsText.booleanDefault);
+
+    pickSelectOption(
+      `${inputsSelector.card}:eq(0) ${inputsSelector.typeControl}`,
+      "array"
+    );
+    card(0).find(inputsSelector.defaultValue).type("{{}");
+    card(0).find(inputsSelector.error).should("contain.text", inputsText.arrayDefault);
+
+    pickSelectOption(
+      `${inputsSelector.card}:eq(0) ${inputsSelector.typeControl}`,
+      "object"
+    );
+    card(0).find(inputsSelector.defaultValue).type("[1]");
+    card(0).find(inputsSelector.error).should("be.visible");
+
+    cy.apiWaitForWorkflowDefinition(
+      (definition) => definition.workflowInputs?.some((input) => input.key === "limit"),
+      "the new input to be saved"
+    );
+    savedInputs().then((inputs) => {
+      const limit = inputs.find((input) => input.key === "limit");
+      expect(limit.defaultValue, "invalid default").to.equal(undefined);
+    });
+
+    card(0).find(inputsSelector.name).clear();
+    cy.apiWaitForWorkflowDefinition(
+      (definition) => definition.workflowInputs?.length === 1,
+      "the blank input to be left out of the save"
+    );
+    savedInputs().then((inputs) => {
+      expect(inputs.map((input) => input.key)).to.deep.equal(["keeper"]);
+    });
+  });
+
+  it("The inputs panel is read-only on a released version", () => {
+    seedInputsWorkflow([
+      wfInput("region", "string", { defaultValue: "eu", required: true }),
+    ]);
+    releaseWorkflow(data.workflowName);
+    openInputsPanel();
+
+    cy.get(workflowSelector.versionLockBanner).should("be.visible");
+    cy.get(inputsSelector.card).should("have.length", 1);
+    cy.get(inputsSelector.add).should("not.exist");
+    cy.get(inputsSelector.remove).should("not.exist");
+    card(0).find(inputsSelector.name).should("be.disabled").and("have.value", "region");
+    card(0).find(inputsSelector.defaultValue).should("be.disabled");
+    card(0).find(inputsSelector.required).should("be.disabled").and("be.checked");
+  });
+
+  it("The Run dialog lists the inputs, a ticked value overrides the default and an unticked one uses it", () => {
+    seedInputsWorkflow([
+      wfInput("region", "string", { defaultValue: "eu" }),
+      wfInput("limit", "number", { defaultValue: 10 }),
+    ]);
+    openWorkflowEditor();
+
+    runLastWithOverrides({ region: "us" }).then(({ response }) => {
+      expect(response.statusCode).to.equal(201);
+      cy.apiWaitForExecutionStatus("success");
+      cy.apiGetExecutionNode("response1").then((node) => {
+        expect(node.result.data).to.deep.equal({ region: "us", limit: 10 });
+      });
+    });
+  });
+
+  it("The Run dialog opens with every input listed and nothing ticked", () => {
+    seedInputsWorkflow([
+      wfInput("region", "string", { defaultValue: "eu" }),
+      wfInput("limit", "number", { required: true }),
+    ]);
+    openWorkflowEditor();
+    runFromEditor();
+
+    cy.get(inputsSelector.runDialogTitle).should("have.text", inputsText.runDialogTitle);
+    cy.get(inputsSelector.overrideRow).should("have.length", 2);
+    cy.contains(inputsSelector.overrideRow, "region").should("contain.text", "string");
+    cy.contains(inputsSelector.overrideRow, "limit").should("contain.text", "number · required");
+    cy.get(inputsSelector.overrideToggle).each(($toggle) =>
+      cy.wrap($toggle).should("not.be.checked")
+    );
+
+    cy.contains(inputsSelector.overrideRow, "region")
+      .find(inputsSelector.overrideToggle)
+      .check();
+    cy.contains(inputsSelector.overrideRow, "region")
+      .find("> input")
+      .should("have.value", "eu")
+      .and("have.attr", "placeholder", "Default: eu");
+  });
+
+  it("A required input with no default and no value starts the run and fails it at Start", () => {
+    seedInputsWorkflow([wfInput("region", "string", { required: true })]);
+    openWorkflowEditor();
+
+    runLastWithOverrides({}).then(({ response }) => {
+      expect(response.statusCode).to.equal(201);
+    });
+    cy.apiWaitForExecutionStatus("failure");
+    cy.get(workflowSelector.workflowLogErrorRow, { timeout: 30000 })
+      .should("contain.text", inputsText.startFailed)
+      .and("contain.text", inputsText.requiredError("region"));
+    cy.apiGetExecutionNode("response1").its("executed").should("equal", false);
+  });
+
+  it("A workflow without inputs runs straight away without a Run dialog", () => {
+    seedInputsWorkflow([]);
+    openWorkflowEditor();
+    runFromEditor();
+
+    waitForEditorRun().its("response.statusCode").should("equal", 201);
+    cy.get(inputsSelector.runDialogTitle).should("not.exist");
+    cy.apiWaitForExecutionStatus("success");
+    cy.get(workflowSelector.workflowLogs).should(
+      "contain.text",
+      "A few seconds ago"
+    );
+  });
+
+  describe("webhook calls", () => {
+    const webhookInputs = [
+      wfInput("region", "string", { defaultValue: "eu" }),
+      wfInput("limit", "number", { defaultValue: 10 }),
+      wfInput("mode", "string", { required: true }),
+    ];
+
+    const enableWebhook = () => {
+      cy.apiSetWorkflowWebhookEnabled(true);
+      cy.apiGetWorkflowToken().then((token) => (data.token = token));
+    };
+
+    const draftQuery = () => ({
+      version: Cypress.env("editingVersionName"),
+      environment: "development",
+    });
+
+    beforeEach(() => {
+      seedInputsWorkflow(webhookInputs);
+      enableWebhook();
+    });
+
+    it("A sync webhook fills in defaults and drops keys that are not declared inputs", () => {
+      cy.then(() =>
+        cy
+          .apiTriggerWorkflowWebhook({
+            token: data.token,
+            qs: draftQuery(),
+            body: { mode: "fast", surplus: "dropped" },
+          })
+          .then((res) => {
+            expect(res.status).to.be.oneOf([200, 201]);
+            expect(res.body).to.deep.equal({ region: "eu", limit: 10, mode: "fast" });
+            expect(res.body).to.not.have.property("surplus");
+          })
+      );
+    });
+
+    it("A sync webhook missing a required input or sending a wrong type is refused and logged as a failed run", () => {
+      cy.then(() =>
+        cy
+          .apiTriggerWorkflowWebhook({ token: data.token, qs: draftQuery(), body: {} })
+          .then((res) => {
+            expect(res.status).to.equal(400);
+            expect(res.body.message).to.equal(inputsText.requiredError("mode"));
+          })
+      );
+      cy.then(() =>
+        cy
+          .apiTriggerWorkflowWebhook({
+            token: data.token,
+            qs: draftQuery(),
+            body: { mode: "fast", limit: "ten" },
+          })
+          .then((res) => {
+            expect(res.status).to.equal(400);
+            expect(res.body.message).to.equal(inputsText.datatypeError("limit"));
+          })
+      );
+
+      visitExecutionsOf(data.workflowName);
+      cy.get(executionsFilterSelector.anyRow)
+        .should("have.length", 2)
+        .each(($row) => {
+          cy.wrap($row)
+            .should("contain.text", data.workflowName)
+            .and("contain.text", "Failed")
+            .and("contain.text", "Webhook");
+        });
+    });
+
+    it("An async webhook accepts the call and fails the run at Start when the inputs are invalid", () => {
+      cy.then(() =>
+        cy
+          .apiTriggerWorkflowWebhook({
+            token: data.token,
+            qs: draftQuery(),
+            body: {},
+            async: true,
+          })
+          .then((res) => {
+            expect(res.status).to.be.oneOf([200, 201, 202]);
+            data.executionId = res.body.workflow_execution_id;
+            expect(data.executionId, "execution id").to.be.a("string");
+          })
+      );
+      cy.then(() => {
+        cy.apiWaitForExecutionStatus("failure", data.executionId);
+        cy.apiGetExecutionNode("response1", data.executionId)
+          .its("executed")
+          .should("equal", false);
+      });
+
+      visitExecutionsOf(data.workflowName);
+      cy.get(executionsFilterSelector.anyRow)
+        .first()
+        .should("contain.text", data.workflowName)
+        .and("contain.text", "Failed");
+    });
+  });
+});

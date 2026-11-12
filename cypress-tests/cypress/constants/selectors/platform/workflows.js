@@ -155,3 +155,130 @@ export const executionsSelector = {
   stop: (id) => `[data-cy="executions-stop-${id}"]`,
   refresh: '[data-cy="executions-refresh"]',
 };
+
+export const inputsSelector = {
+  icon: '[data-cy="icon-inputs"]',
+  add: ".workflow-input-add",
+  addFirst: ".workflow-inputs-empty",
+  card: ".workflow-input-card",
+  error: ".workflow-input-error",
+  name: 'input[placeholder="region"]',
+  defaultValue: 'input[placeholder="Optional"]',
+  required: ".workflow-input-required input",
+  typeControl: ".react-select__control",
+  remove: ".workflow-input-delete",
+  runDialog: ".modal-base",
+  runDialogTitle: '[data-cy="modal-title"]',
+  runDialogConfirm: '[data-cy="confirm-button"]',
+  overrideRow: ".workflow-input-value",
+  overrideToggle: ".workflow-input-value-toggle input",
+  overrideValue: '.workflow-input-value > input[type="text"], .workflow-input-value > input:not([type])',
+  startNodeEmpty: ".next-run-params-empty",
+};
+
+export const controlFlowSelector = {
+  waitDurationValue: '[data-cy="wait-duration-value"]',
+  waitDurationUnit: ".duration-input .react-select__control",
+  waitInvalid: ".duration-input--invalid",
+  waitError: ".field-error",
+  filterInput: '[data-cy="input-filter-array-expression"] .cm-content[contenteditable="true"]',
+  filterPredicate: '[data-cy="input-filter-predicate-expression"] .cm-content[contenteditable="true"]',
+  filterError: ".filter-node-modal-content .field-error",
+  previewButton: '[data-cy="preview-button"]',
+  nodePreviewButton: ".header-preview-btn",
+  nodeResultBody: ".result-section .result-body",
+  ifModal: '[data-cy="if-condition-modal"]',
+  ifCondition: (index) =>
+    `.if-branch:eq(${index}) .cm-content[contenteditable="true"]`,
+  ifBranch: ".if-branch",
+  ifBranchRemove: ".if-branch-remove",
+  ifAddElseIf: ".if-branch-actions button",
+  ifHandleLabel: ".if-handle-label",
+  ifHandle: (nodeName, branchId) =>
+    `[data-cy="${cyParamName(nodeName)}-node-handle-right-${branchId}"]`,
+  anyIfHandle: (nodeName) =>
+    `[data-cy^="${cyParamName(nodeName)}-node-handle-right-"]`,
+  resultBody: '[data-cy="result-body"]',
+  blockOptions: ".block-option-container",
+  sidebarWait: '[data-cy="workflow-node-wait"]',
+  sidebarFilter: '[data-cy="workflow-node-filter"]',
+  sidebarIf: '[data-cy="workflow-node-if-condition"]',
+  nodesIcon: '[data-cy="icon-nodes"]',
+  nodeHandleLeft: (nodeName) =>
+    `[data-cy="${cyParamName(nodeName)}-node-handle-left"]`,
+  nodeHandleRight: (nodeName) =>
+    `[data-cy="${cyParamName(nodeName)}-node-handle-right"]`,
+  nodeColumnItem: (nodeName) => `[data-cy="${cyParamName(nodeName)}-node-name"]`,
+};
+
+export const schedulesSelector = {
+  icon: '[data-cy="icon-schedule"]',
+  drawer: ".schedule-inline-content",
+  title: '[data-cy="trigger-title-row"] .title-text',
+  newButton: '[data-cy="new-schedule-button"]',
+  search: 'input[aria-label="Search schedules by name"]',
+  environmentFilter: '[aria-label="Filter schedules by environment"]',
+  versionFilter: '[aria-label="Filter schedules by version"]',
+  filterWrapper: ".schedule-icon-filter",
+  item: ".schedule-item",
+  itemName: ".schedule-label p",
+  itemMetadata: ".schedule-metadata",
+  toggle: ".schedule-toggle input",
+  noResults: ".schedule-no-results",
+  emptyNote: ".schedule-popup-note",
+  loadFailed: '[role="alert"]',
+  pagination: ".schedule-pagination",
+  pageNext: 'button[aria-label="Next page"]',
+  pagePrev: 'button[aria-label="Previous page"]',
+  editor: ".schedule-inline-editor",
+  name: '[data-cy="workflow-schedule-name"]',
+  fieldError: ".schedule-field-error",
+  fieldLabels:
+    ".schedule-name-label, .schedule-environment-label, .workflow-input-values-title, .schedule-type-label",
+  environmentDropdown: ".schedule-environment:has(.schedule-environment-label)",
+  versionDropdown: '[data-cy="schedule-version"]',
+  typeTab: ".schedule-type-tab",
+  createButton: ".schedule-create-button",
+  saveButton: ".schedule-save-button",
+  deleteButton: 'button[aria-label="Delete schedule"]',
+  backButton: 'button[aria-label="Back to schedules"]',
+  summary: ".schedule-body-content ~ *, .schedule-body",
+};
+
+export const usedBySelector = {
+  icon: '[data-cy="icon-usedBy"]',
+  drawer: '[data-cy="used-by-drawer"]',
+  group: (type) => `[data-cy="used-by-${type}"]`,
+  item: '[data-cy="used-by-item"]',
+};
+
+export const upcomingSelector = {
+  panel: '[data-cy="upcoming-runs"]',
+  toggle: '[data-cy="upcoming-runs-toggle"]',
+  count: '[data-cy="upcoming-runs-count"]',
+  empty: '[data-cy="upcoming-runs-empty"]',
+  error: '[data-cy="upcoming-runs-error"]',
+  row: '[data-cy="upcoming-run-row"]',
+  times: '[data-cy="upcoming-run-times"]',
+  time: ".upcoming-run-time",
+  unregistered: '[data-cy="upcoming-run-unregistered"]',
+  unresolvable: '[data-cy="upcoming-run-unresolvable"]',
+};
+
+export const executionsFilterSelector = {
+  environment: '[data-cy="executions-environment-select"]',
+  workflow: '[data-cy="executions-workflow-select"]',
+  trigger: '[data-cy="executions-filter-trigger"]',
+  count: '[data-cy="executions-filter-count"]',
+  apply: '[data-cy="executions-filter-apply"]',
+  reset: '[data-cy="executions-filter-reset"]',
+  category: (key) => `[data-cy="executions-filter-category-${key}"]`,
+  status: (value) => `[data-cy="executions-filter-status-${value}"]`,
+  triggerType: (value) => `[data-cy="executions-filter-trigger-${value}"]`,
+  from: '[data-cy="executions-filter-from"]',
+  to: '[data-cy="executions-filter-to"]',
+  empty: '[data-cy="executions-empty"]',
+  recordCount: '[data-cy="executions-record-count"]',
+  anyRow: '[data-cy^="executions-row-"]',
+  refresh: '[data-cy="executions-refresh"]',
+};

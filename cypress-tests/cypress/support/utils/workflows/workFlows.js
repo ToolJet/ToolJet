@@ -1,7 +1,7 @@
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { workflowsText } from "Texts/platform/workflows";
-import { workflowSelector } from "Selectors/platform/workflows";
+import { workflowSelector, cyParamName } from "Selectors/platform/workflows";
 import { dashboardSelector } from "Selectors/platform/dashboard";
 import { dataSourceSelector } from "Selectors/marketplace/dataSource";
 import { postgreSqlSelector } from "Selectors/marketplace/postgreSql";
@@ -641,6 +641,7 @@ export const workflowDefinition = ({
   defaultParams = "{}",
   webhookParams = [],
   setupScript = { javascript: "" },
+  workflowInputs,
 }) => ({
   nodes,
   edges,
@@ -649,6 +650,7 @@ export const workflowDefinition = ({
   defaultParams,
   dependencies: { javascript: { dependencies: {} } },
   setupScript,
+  ...(workflowInputs ? { workflowInputs } : {}),
 });
 
 // Query nodes are named by definition.handle (the query name).
@@ -750,4 +752,100 @@ export const humanWorkflowDefinition = ({
       ...keys.map((key) => wfEdge(humanName, `resp-${key}`, key)),
     ],
   });
+};
+
+export const wfWaitNode = (id, durationSeconds, nodeName = "wait1") => ({
+  id,
+  type: "wait",
+  data: { nodeType: "wait", label: "Wait", nodeName, durationSeconds },
+  position: { x: 400, y: 250 },
+  sourcePosition: "right",
+  targetPosition: "left",
+});
+
+export const wfFilterNode = (
+  id,
+  inputExpression,
+  predicateExpression,
+  nodeName = "filter1"
+) => ({
+  id,
+  type: "filter",
+  data: {
+    nodeType: "filter",
+    label: "Filter",
+    nodeName,
+    inputExpression,
+    predicateExpression,
+  },
+  position: { x: 400, y: 250 },
+  sourcePosition: "right",
+  targetPosition: "left",
+});
+
+// Branch handles are `true` (If), `else-if-N` and `false` (Else).
+export const wfMultiIfNode = (
+  id,
+  codes,
+  { elseEnabled = true, nodeName = "ifCondition1" } = {}
+) => {
+  const conditions = codes.map((code, index) => ({
+    id: index === 0 ? "true" : `else-if-${index}`,
+    label: index === 0 ? "If" : `Else if ${index}`,
+    code,
+  }));
+  return {
+    id,
+    type: "if-condition",
+    data: {
+      code: codes[0],
+      label: "If condition",
+      nodeName,
+      conditions,
+      elseBranch: { enabled: elseEnabled, label: "Else" },
+    },
+    position: { x: 400, y: 250 },
+    sourcePosition: "right",
+    targetPosition: "left",
+  };
+};
+
+export const wfInput = (key, type = "string", extra = {}) => ({
+  key,
+  type,
+  required: false,
+  ...extra,
+});
+
+export const openLeftDrawer = (iconSelector) => {
+  cy.get(iconSelector).click();
+};
+
+export const runFromEditor = () => {
+  cy.intercept("POST", "/api/workflow_executions/*/trigger").as("editorRun");
+  cy.get(workflowSelector.workflowRunButton).should("not.be.disabled").click();
+};
+
+export const apiRunAndWait = (params = {}, status = "success") => {
+  cy.apiRunWorkflow({ params }).its("status").should("equal", 201);
+  return cy.apiWaitForExecutionStatus(status);
+};
+
+export const addNodeFromHandle = (handleSelector, label) => {
+  cy.get(handleSelector).trigger("mousedown", { button: 0, force: true });
+  cy.get(".react-flow__pane")
+    .trigger("mousemove", { clientX: 700, clientY: 350, force: true })
+    .wait(500)
+    .trigger("mouseup", { force: true });
+  cy.get(".block-option-container", { timeout: 10000 })
+    .contains(label)
+    .scrollIntoView()
+    .click({ force: true });
+};
+
+// Skipped nodes stay listed in the logs panel but carry .not-executed.
+export const assertNodeRan = (nodeName, ran = true) => {
+  cy.get(`[data-cy="${cyParamName(nodeName)}-node-name"]`, { timeout: 30000 })
+    .closest(".row-content")
+    .should(ran ? "not.have.class" : "have.class", "not-executed");
 };

@@ -545,6 +545,7 @@ Cypress.Commands.add(
     timezone = "Asia/Calcutta",
     appVersionId = Cypress.env("editingVersionId"),
     environmentId = Cypress.env("environmentId"),
+    params,
   } = {}) => {
     return cy.getAuthHeaders().then((headers) =>
       cy.request({
@@ -559,6 +560,7 @@ Cypress.Commands.add(
           type,
           timezone,
           details,
+          ...(params ? { params } : {}),
         },
         failOnStatusCode: false,
       })
@@ -792,4 +794,25 @@ Cypress.Commands.add(
       (executions) => executions.length >= count,
       `${count} run(s) of version ${versionId}`
     )
+);
+
+Cypress.Commands.add(
+  "apiWaitForWorkflowDefinition",
+  (isDone, description = "the workflow definition to be saved") =>
+    pollUntil(
+      () => cy.apiGetWorkflowDefinition(),
+      (definition) => !!definition && isDone(definition),
+      description
+    )
+);
+
+Cypress.Commands.add("apiTerminateExecution", (executionId = Cypress.env("executionId")) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy.request({
+      method: "DELETE",
+      url: `${Cypress.env("server_host")}/api/workflow_executions/${executionId}/terminate`,
+      headers,
+      failOnStatusCode: false,
+    })
+  )
 );

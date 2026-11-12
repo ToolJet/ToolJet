@@ -61,12 +61,15 @@ describe("Workflows - approvals access by role", SLOW_API, () => {
     cy.apiLogin();
     cy.visit("/");
     data.workflowName = `${fake.lastName.toLowerCase()}-hacc`;
+    data.otherWorkflowName = null;
   });
 
   afterEach(() => {
     cy.apiLogin();
     cy.visit("/");
-    cleanupWorkflows([data.workflowName]);
+    cleanupWorkflows(
+      [data.workflowName, data.otherWorkflowName].filter(Boolean)
+    );
   });
 
   it("An admin sees the Workflows, Approvals and Executions tabs and can open each", () => {
@@ -82,7 +85,7 @@ describe("Workflows - approvals access by role", SLOW_API, () => {
     cy.url().should("include", "/workflows/executions");
   });
 
-  it("An end user sees neither the Approvals nor the Executions tab and is redirected from a direct link", () => {
+  it("An end user who is not an approver sees neither the Approvals nor the Executions tab and is redirected from a direct link", () => {
     asUser(users.endUser.email);
     cy.visit(`/${Cypress.env("workspaceId")}/workflows`);
     cy.get(approvalSelector.workflowsTab, { timeout: 30000 }).should("be.visible");
@@ -92,6 +95,43 @@ describe("Workflows - approvals access by role", SLOW_API, () => {
     cy.visit(`/${Cypress.env("workspaceId")}/workflows/approvals`);
     cy.url().should("not.include", "/workflows/approvals");
     cy.get(approvalSelector.page).should("not.exist");
+  });
+
+  it("A listed end-user approver sees the Approvals tab with only their own requests, no Executions tab, and resolves the request", () => {
+    data.otherWorkflowName = `${data.workflowName}-other`;
+    createHumanWorkflow(data.otherWorkflowName, {
+      human: { approvers: approversOf(users.listedBuilder.id) },
+    });
+    runUntilWaiting().then((otherRequest) => {
+      createHumanWorkflow(data.workflowName, {
+        human: { approvers: approversOf(users.endUser.id) },
+      });
+      runUntilWaiting().then((request) => {
+        asUser(users.endUser.email);
+        cy.visit(`/${Cypress.env("workspaceId")}/workflows`);
+        cy.get(approvalSelector.workflowsTab, { timeout: 30000 }).should("be.visible");
+        cy.get(approvalSelector.tab).should("be.visible");
+        cy.get(approvalSelector.executionsTab).should("not.exist");
+
+        visitApprovals();
+        cy.get(approvalSelector.row(request.id)).should("be.visible");
+        cy.get(approvalSelector.row(otherRequest.id)).should("not.exist");
+
+        cy.visit(`/${Cypress.env("workspaceId")}/workflows/executions`);
+        cy.url().should("not.include", "/workflows/executions");
+
+        visitApprovals();
+        openApprovalRequest(request.id);
+        chooseOutcomeInDialog("approved")
+          .its("response.statusCode")
+          .should("equal", 201);
+        cy.get(approvalSelector.row(request.id)).should("not.exist");
+
+        cy.apiLogout();
+        cy.apiLogin();
+        cy.apiWaitForExecutionStatus("success");
+      });
+    });
   });
 
   it("A listed approver resolves the request from the Approvals tab", () => {
@@ -156,7 +196,7 @@ describe("Workflows - approvals access by role", SLOW_API, () => {
     });
   });
 
-  it("An end user cannot resolve a request or list approvals, and the request stays pending", () => {
+  it("An end user who is not an approver cannot resolve a request or list approvals, and the request stays pending", () => {
     createHumanWorkflow(data.workflowName, {
       human: { approvers: approversOf(users.listedBuilder.id) },
     });

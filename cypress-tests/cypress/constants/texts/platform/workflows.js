@@ -126,3 +126,82 @@ export const humanText = {
   approvalEmailSubject: (workflowName) => `Approval requested: ${workflowName}`,
   approvalEmailCta: "Open approval dashboard",
 };
+
+export const inputsText = {
+  nameRequired: "Input name is required",
+  namesUnique: "Input names must be unique",
+  numberDefault: "Default value must be a number",
+  booleanDefault: "Default value must be true or false",
+  arrayDefault: "Default value must be a valid JSON array",
+  objectDefault: "Default value must be a valid JSON object",
+  runDialogTitle: "Run workflow",
+  noInputsConfigured: "No workflow inputs configured",
+  requiredError: (name) => `Parameter "${name}" is required`,
+  datatypeError: (name) => `Parameter "${name}" has an incorrect datatype`,
+  startFailed: "Start node execution failed",
+};
+
+export const controlFlowText = {
+  waitRangeError: "Enter a duration between 1 second and 30 days.",
+  waitServerRangeError: "Wait duration must be between 1 second and 30 days",
+  waitingRunLabel: "Waiting",
+  waitingBanner: "Waiting before continuing",
+  filterNotArray: "Filter input must resolve to an array",
+  filterEmptyCondition: "Filter condition cannot be empty",
+  filterEmptyInput: "Filter input expression cannot be empty",
+  filterNoInput: "Filter requires one upstream input connection",
+  filterManyInputs: "Filter accepts exactly one upstream input connection",
+  filterTwoConnectionsHint:
+    "Filter accepts exactly one input connection. Remove the additional connections.",
+  filterEmptyPreview: "Preview the filter to inspect matching items.",
+  ifEmptyCondition: (label) => `If condition "${label}" cannot be empty`,
+  removeElseIfConfirm: (label, edges) =>
+    `Removing "${label}" will also delete ${edges} connected edge(s). Continue?`,
+  addElseIf: "+ Add else if",
+  addElse: "+ Add else",
+};
+
+export const schedulesText = {
+  panelTitle: "Schedules",
+  createTitle: "Create schedule",
+  editTitle: "Edit schedule",
+  emptyList:
+    "This workflow is not scheduled. Add a schedule to run this workflow in your preferred interval",
+  noMatch: "No schedules match these filters.",
+  everyMinute: "Every minute",
+  duplicateName: "A schedule with this name already exists.",
+  nameTooLong: "Schedule name must be 100 characters or fewer.",
+  fieldOrder: [
+    "Schedule name",
+    "Environment",
+    "Version",
+    "Input overrides",
+    "Schedule type",
+  ],
+};
+
+export const executionsText = {
+  noMatch: "No executions match these filters.",
+  noSchedules: "No active schedules in this workspace.",
+  noSchedulesScoped: "No active schedules match this view.",
+  notScheduled: "Not scheduled",
+  unresolvable: "Unresolvable",
+  columns: [
+    "Name",
+    "Status",
+    "Trigger",
+    "Schedule",
+    "Started at",
+    "Duration",
+    "Version",
+    "Environment",
+    "Actions",
+  ],
+  statusWaiting: "Waiting",
+  statusStopped: "Stopped",
+  statusSuccess: "Success",
+  statusFailed: "Failed",
+  allWorkflows: "All workflows",
+  usedByEmpty: "No app or workflow in this workspace calls this workflow yet.",
+  usedByLoadFailed: "Couldn't load where this workflow is used",
+};

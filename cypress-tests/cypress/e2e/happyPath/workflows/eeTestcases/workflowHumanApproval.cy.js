@@ -333,7 +333,9 @@ describe("Workflows - Human step reached through a webhook or an app", SLOW_API,
     releaseWorkflow(data.workflowName);
     cy.apiCreateApp(data.appName);
     cy.openApp();
+    cy.intercept("PATCH", "/api/data-queries/*").as("querySave");
     cy.addWorkflowInApp(data.workflowName);
+    cy.wait("@querySave");
 
     cy.intercept("POST", "/api/workflow_executions/*/trigger").as(
       "appWorkflowRun"
