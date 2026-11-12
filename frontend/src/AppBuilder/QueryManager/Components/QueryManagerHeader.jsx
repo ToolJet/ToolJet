@@ -1,7 +1,5 @@
-import React, { useState, forwardRef, useRef, useEffect, useCallback } from 'react';
-import RenameIcon from '../Icons/RenameIcon';
+import React, { useState, forwardRef, useRef, useEffect } from 'react';
 import cx from 'classnames';
-import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { DATA_SOURCE_TYPE, INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 import {
@@ -11,23 +9,29 @@ import {
 } from '@/AppBuilder/QueryManager/constants';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components';
-import { Button } from 'react-bootstrap';
-import { decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useContainerWidth } from '@/_hooks/useContainerWidth';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
-import { debounce } from 'lodash';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
 import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 import { useWriteQueryEntry } from '@/AppBuilder/QueryManager/_hooks/useWriteQueryEntry';
+import {
+  getQueryHeaderClassName,
+  getQueryHeaderControlPresentation,
+  getQueryTabClassName,
+  getQueryTabsStyle,
+} from '@/AppBuilder/panelLayout';
+import { DataSourceTypes } from '@/modules/common/components/DataSourceComponents';
+import { getQueryDocumentation } from '@/AppBuilder/QueryManager/utils';
+import { QueryInlineNameEditor } from './QueryInlineNameEditor';
 
 const ICON_ONLY_BUTTON_BREAKPOINT = 700;
 
-export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
+export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab, surface = 'bottom' }, ref) => {
   const { moduleId, isModuleEditor } = useModuleContext();
   const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
   const previewQuery = useStore((state) => state.queryPanel.previewQuery);
@@ -60,14 +64,13 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
 
     const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
     if (isNewQueryNameAlreadyExists) {
-      toast.error('Query name already exists');
-      return false;
+      return 'Query name already exists';
     }
 
     if (newName) {
       renameQuery(selectedQuery?.id, newName);
       updateQuerySuggestions(name, newName);
-      return true;
+      return '';
     }
   };
 
@@ -117,21 +120,27 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
   ];
 
   const iconOnly = headerWidth > 0 && headerWidth < ICON_ONLY_BUTTON_BREAKPOINT;
+  const dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedDataSource?.kind);
+  const queryDocumentation = getQueryDocumentation({ dataSourceMeta, selectedDataSource });
 
   return (
-    <div className="row header" style={{ padding: '8px 16px' }} ref={headerRef}>
+    <div
+      className={getQueryHeaderClassName(surface)}
+      style={surface === 'right' ? undefined : { padding: '8px 16px' }}
+      ref={headerRef}
+    >
       <div className="col font-weight-500 p-0">
         {selectedQuery && (
           <NameInput
             onInput={executeQueryNameUpdation}
             selectedQuery={selectedQuery}
             value={queryName}
-            darkMode={darkMode}
             isDiabled={shouldFreeze}
+            queryDocumentation={queryDocumentation}
           />
         )}
         {selectedQuery && (
-          <div className="d-flex" style={{ marginBottom: '-15px', gap: '3px' }}>
+          <div className="query-manager-tabs d-flex" style={getQueryTabsStyle(surface)} role="tablist">
             {tabs.map(
               (tab) =>
                 (tab.condition === undefined || tab.condition) && (
@@ -139,15 +148,23 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
                     key={tab.id}
                     data-cy={`query-tab-${tab.label.toLowerCase()}`}
                     data-tab-key={tab.key}
-                    aria-selected={activeTab === tab.id}
-                    className="m-0 d-flex align-items-center h-100"
+                    className={cx(
+                      'm-0 d-flex align-items-center h-100',
+                      getQueryTabClassName(surface, activeTab === tab.id)
+                    )}
                     onClick={() => setActiveTab(tab.id)}
-                    style={{
-                      borderBottom: activeTab === tab.id ? '2px solid #3E63DD' : '',
-                      cursor: 'pointer',
-                      padding: '0px 8px 6px 8px',
-                      color: activeTab === tab.id ? 'var(--text-default)' : 'var(--text-placeholder)',
-                    }}
+                    role="tab"
+                    aria-selected={activeTab === tab.id}
+                    style={
+                      surface === 'right'
+                        ? undefined
+                        : {
+                            borderBottom: activeTab === tab.id ? '2px solid #3E63DD' : '',
+                            cursor: 'pointer',
+                            padding: '0px 8px 6px 8px',
+                            color: activeTab === tab.id ? 'var(--text-default)' : 'var(--text-placeholder)',
+                          }
+                    }
                   >
                     {tab.label}
                   </p>
@@ -166,6 +183,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
               disabled={shouldFreeze}
               onClick={previewButtonOnClick}
               buttonLoadingState={buttonLoadingState}
+              surface={surface}
             />
           </>
         )}
@@ -174,12 +192,11 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
   );
 });
 
-const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
+const NameInput = ({ onInput, value, isDiabled, selectedQuery, queryDocumentation }) => {
   const { isModuleEditor } = useModuleContext();
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const isFocused = useStore((state) => state.queryPanel.nameInputFocused, shallow);
   const setIsFocused = useStore((state) => state.queryPanel.setNameInputFocused, shallow);
-  const [name, setName] = useState(value);
   const selectedDataSourceScope = useStore((state) => state.queryPanel.selectedDataSource?.scope, shallow);
   const hasPermissions =
     selectedDataSourceScope === 'global'
@@ -187,90 +204,22 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
         canReadDataSource(selectedQuery?.data_source_id) ||
         canDeleteDataSource()
       : true;
-  const inputRef = useRef();
-
-  useEffect(() => {
-    setName(value);
-  }, [value]);
-
-  useEffect(() => {
-    if (isFocused) {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }
-  }, [isFocused]);
-
-  const debouncedHandleInput = useCallback(
-    debounce((newName) => {
-      onInput(newName);
-    }, 300),
-    [onInput]
-  );
-
-  const handleChange = (event) => {
-    const sanitizedValue = event.target.value.replace(/[ \t&]/g, '');
-    setName(sanitizedValue);
-    // debouncedHandleInput(sanitizedValue);
-  };
-
   return (
     <div data-param="name" className="query-name-breadcrum d-flex align-items-center ms-1">
-      <span
-        className="query-manager-header-query-name font-weight-400"
-        data-cy={`query-name-label`}
-        style={{ width: '150px' }}
-      >
-        {isFocused ? (
-          <input
-            data-cy={`query-rename-input`}
-            type="text"
-            className={cx('border-indigo-09 bg-transparent query-rename-input py-1 px-2 rounded', {
-              'text-white': darkMode,
-            })}
-            autoFocus
-            ref={inputRef}
-            onChange={handleChange}
-            value={name}
-            onKeyDown={(event) => {
-              event.persist();
-              if (event.keyCode === 13) {
-                setIsFocused(false);
-                debouncedHandleInput(event.target.value);
-              }
-            }}
-            onBlur={({ target }) => {
-              setIsFocused(false);
-              debouncedHandleInput(target.value);
-            }}
-          />
-        ) : (
-          <Button
-            size="sm"
-            onClick={isDiabled ? null : () => setIsFocused(true)}
-            disabled={isDiabled}
-            className={cx(
-              'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500',
-              {
-                disabled: shouldFreeze || !hasPermissions,
-              }
-            )}
-          >
-            <span className="text-truncate">{decodeEntities(name)} </span>
-            <span
-              // className={cx('breadcrum-rename-query-icon', { 'd-none': isFocused && isVersionReleased })}
-              className={cx('breadcrum-rename-query-icon', { 'd-none': isFocused })}
-              style={{ minWidth: 14 }}
-            >
-              {(!isDiabled || !hasPermissions) && <RenameIcon />}
-            </span>
-          </Button>
-        )}
-      </span>
+      <QueryInlineNameEditor
+        value={value}
+        isEditing={isFocused}
+        onEditingChange={setIsFocused}
+        onSave={onInput}
+        disabled={isDiabled || shouldFreeze || !hasPermissions}
+        queryDocumentation={queryDocumentation}
+      />
     </div>
   );
 };
 
 const RunButton = ({ buttonLoadingState, iconOnly }) => {
+  const control = getQueryHeaderControlPresentation('run');
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const runQuery = useStore((state) => state.queryPanel.runQuery);
   const isInDraft = selectedQuery?.status === 'draft';
@@ -287,14 +236,14 @@ const RunButton = ({ buttonLoadingState, iconOnly }) => {
       <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
         <ButtonComponent
           isLucid
-          size="medium"
+          size={control.size}
           variant="secondary"
           onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true, undefined, true)}
           leadingIcon="play"
           disabled={isInDraft || isActive}
           isLoading={isLoading}
           iconOnly={iconOnly}
-          className={iconOnly ? '' : isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'}
+          className={cx(control.className, !iconOnly && (isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'))}
           data-cy="query-run-button"
         >
           {!iconOnly && (
@@ -355,7 +304,8 @@ const GenerateQueryButton = ({ iconOnly }) => {
   );
 };
 
-const PreviewButton = ({ buttonLoadingState, onClick }) => {
+const PreviewButton = ({ buttonLoadingState, onClick, surface }) => {
+  const control = getQueryHeaderControlPresentation('preview', surface);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
   const hasPermissions =
@@ -378,12 +328,14 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   return (
     <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
       <ButtonComponent
-        size="medium"
+        size={control.size}
         variant="outline"
         onClick={onClick}
         // className="!tw-w-[100px]"
         disabled={!hasPermissions || isActive}
         isLoading={isPreviewQueryLoading}
+        className={control.className}
+        style={control.style}
         data-cy={'query-preview-button'}
       >
         Preview

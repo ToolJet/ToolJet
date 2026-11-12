@@ -1,0 +1,35 @@
+// Header for left-sidebar panels that use the `inspector-header` markup (Dependencies, the legacy
+// Inspector). Each consumer imports this file itself, so the header never depends on another panel
+// having loaded its styles. Sizing matches the Queries panel header: a 48px title row, then a
+// padded row for search (or a breadcrumb).
+.inspector-header {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--border-weak);
+
+  .inspector-header-top {
+    display: flex;
+    flex: 0 0 48px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    height: 48px;
+    padding: 8px 10px 8px 16px;
+  }
+
+  .inspector-header-title {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-default);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .inspector-header-search {
+    width: 100%;
+    padding: 0 10px 10px;
+  }
+}

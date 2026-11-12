@@ -136,12 +136,12 @@ export const EditorHeader = ({ darkMode, appType }) => {
                   className={cx('d-flex version-manager-container p-0  align-items-center gap-0', headerLockClass)}
                   aria-disabled={isGitSyncLicenseLocked || undefined}
                 >
-                  {!isModuleEditor && <PreviewAndShareIcons />}
                   {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}
                   <VersionManagerErrorBoundary>
                     <VersionManagerDropdown darkMode={darkMode} />
                   </VersionManagerErrorBoundary>
                   <RightTopHeaderButtons isModuleEditor={isModuleEditor} isAppUnsyncedToGit={showSyncButton} />
+                  {!isModuleEditor && <PreviewAndShareIcons />}
                 </div>
               </div>
             </div>

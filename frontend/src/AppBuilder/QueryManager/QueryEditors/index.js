@@ -13,6 +13,7 @@ import Grpcv2 from './GRPCv2';
 import tooljetDbOperations from './TooljetDatabase/operations.json';
 
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import { getQueryPluginSchemaForSurface } from '@/AppBuilder/QueryManager/utils';
 
 const computeSelectStyles = (width) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -24,7 +25,8 @@ export const allSources = {
     accumulator[currentValue] = (props) => (
       <div className="query-editor-dynamic-form-container">
         <DynamicForm
-          schema={allOperations[currentValue]}
+          animateSelectMenus={props.surface === 'right'}
+          schema={getQueryPluginSchemaForSurface(allOperations[currentValue], props.surface)}
           {...props}
           computeSelectStyles={computeSelectStyles}
           layout="horizontal"
@@ -33,7 +35,14 @@ export const allSources = {
     );
     return accumulator;
   }, {}),
-  Tooljetdb: (props) => <DynamicForm schema={tooljetDbOperations} {...props} layout="horizontal" />,
+  Tooljetdb: (props) => (
+    <DynamicForm
+      animateSelectMenus={props.surface === 'right'}
+      schema={tooljetDbOperations}
+      {...props}
+      layout="horizontal"
+    />
+  ),
   Restapi,
   Runjs,
   Runpy,
@@ -45,6 +54,12 @@ export const allSources = {
 
 export const source = (props) => (
   <div className="query-editor-dynamic-form-container">
-    <DynamicForm schema={props.pluginSchema} {...props} computeSelectStyles={computeSelectStyles} layout="horizontal" />
+    <DynamicForm
+      animateSelectMenus={props.surface === 'right'}
+      schema={props.pluginSchema}
+      {...props}
+      computeSelectStyles={computeSelectStyles}
+      layout="horizontal"
+    />
   </div>
 );

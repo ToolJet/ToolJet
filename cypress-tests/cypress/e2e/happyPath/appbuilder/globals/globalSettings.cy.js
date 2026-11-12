@@ -22,10 +22,10 @@ describe(
       data.backgroundColor = fake.randomRgba;
       cy.get("[data-cy='left-sidebar-settings-button']").click();
 
-      // Source: GlobalSettingsHeader.jsx:8 — header title is a span.global-settings-header-title (no data-cy)
+      // Source: GlobalSettingsHeader.jsx:21 — header title is a span.global-settings-header-title (no data-cy)
       cy.get(".global-settings-header-title").verifyVisibleElement(
         "have.text",
-        "Global settings"
+        "App settings"
       );
       cy.hideTooltip();
 

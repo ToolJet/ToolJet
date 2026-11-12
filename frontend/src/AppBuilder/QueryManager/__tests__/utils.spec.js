@@ -2,7 +2,13 @@
  * @jest-environment node
  */
 
-const { resolveQueryEditor } = require('@/AppBuilder/QueryManager/utils');
+const {
+  getQueryDocumentation,
+  getQueryDocumentationLabel,
+  getRestApiRequestPresentation,
+  getQueryPluginSchemaForSurface,
+  resolveQueryEditor,
+} = require('@/AppBuilder/QueryManager/utils');
 
 // A query as the server actually returns it. `data_queries` has no plugin_id column and
 // neither serializer emits one, so the plugin binding is reachable only via the data source.
@@ -105,5 +111,85 @@ describe('resolveQueryEditor', () => {
         selectedQuery: existingMarketplaceQuery,
       })
     ).toEqual({ type: 'none' });
+  });
+});
+
+describe('getQueryDocumentationLabel', () => {
+  // Break this catches: the compact docs link falls back to an opaque kind such as `restapi`.
+  test('identifies a built-in data source by its human-readable type', () => {
+    expect(
+      getQueryDocumentationLabel({
+        dataSourceMeta: { name: 'REST API' },
+        selectedDataSource: { kind: 'restapi', name: 'Production API' },
+      })
+    ).toBe('REST API documentation');
+  });
+
+  // Break this catches: marketplace query documentation shows the connection name instead of its source type.
+  test('identifies a marketplace data source by its plugin type', () => {
+    expect(
+      getQueryDocumentationLabel({
+        selectedDataSource: { kind: 'xero', name: 'Finance', plugin: { name: 'Xero' } },
+      })
+    ).toBe('Xero documentation');
+  });
+});
+
+describe('getQueryDocumentation', () => {
+  // Break this catches: moving documentation into the header loses the source-specific destination.
+  test('returns compact header metadata for the selected data-source type', () => {
+    expect(
+      getQueryDocumentation({
+        dataSourceMeta: { name: 'REST API' },
+        selectedDataSource: { kind: 'restapi', type: 'static' },
+      })
+    ).toEqual({
+      href: 'https://docs.tooljet.com/docs/data-sources/restapi/querying-rest-api',
+      label: 'REST API documentation',
+      tooltipClassName: 'query-documentation-tooltip',
+      tooltipPlacement: 'bottom',
+    });
+  });
+});
+
+describe('getRestApiRequestPresentation', () => {
+  // Break this catches: the right REST editor restores the redundant Request heading or horizontal fields.
+  test('uses two explicit stacked request fields only in right-side query configuration', () => {
+    expect(getRestApiRequestPresentation('right', false)).toEqual({
+      fieldsClassName: 'rest-api-request-fields rest-api-request-fields--stacked',
+      methodLabel: 'Request method',
+      showSectionLabel: false,
+      urlLabel: 'Request URL',
+    });
+    expect(getRestApiRequestPresentation('bottom', false)).toEqual({
+      fieldsClassName: 'rest-api-request-fields d-flex flex-row',
+      methodLabel: 'Method',
+      showSectionLabel: true,
+      urlLabel: 'URL',
+    });
+    expect(getRestApiRequestPresentation('right', true).showSectionLabel).toBe(true);
+  });
+});
+
+describe('getQueryPluginSchemaForSurface', () => {
+  const databaseSchema = {
+    type: 'database',
+    properties: {
+      mode: {
+        key: 'mode',
+        label: '',
+        list: [
+          { name: 'SQL mode', value: 'sql' },
+          { name: 'GUI mode', value: 'gui' },
+        ],
+        type: 'dropdown-component-flip',
+      },
+    },
+  };
+
+  // Break this catches: PostgreSQL-like mode selectors render without the shared Mode label.
+  test('labels GUI/SQL mode selectors in right-side database query configuration', () => {
+    expect(getQueryPluginSchemaForSurface(databaseSchema, 'right').properties.mode.label).toBe('Mode');
+    expect(getQueryPluginSchemaForSurface(databaseSchema, 'bottom')).toBe(databaseSchema);
   });
 });

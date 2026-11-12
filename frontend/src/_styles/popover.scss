@@ -11,9 +11,9 @@
   border-right: 2px solid var(--slate6, #313538);
 
 
+  // Scrolling comes from getLeftPanelOverflow: the chat scrolls its own messages.
   &.tooljetai {
     width: 440px;
-    overflow: auto !important;
   }
 
   select {
@@ -52,7 +52,7 @@
 
 div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
   margin-top: 48px;
-  margin-left: 48px !important;
+  margin-left: 54px !important;
   transform: none !important;
   z-index: 2 !important;
 }

@@ -45,6 +45,42 @@
   }
 }
 
+// The legacy tile rules live under `.editor-sidebar`. The component picker now also
+// renders in the left panel, so keep its visual contract local to that surface rather
+// than depending on which side of the editor owns it.
+.components-container--left {
+  .component-image-holder {
+    box-sizing: border-box;
+    border-radius: 4px;
+    background-color: var(--slate3);
+    transition: background-color 160ms ease, border-color 160ms ease;
+
+    &:hover {
+      border: 1px solid var(--slate4);
+      background-color: var(--slate4);
+    }
+
+    &:active {
+      border: 1px solid var(--slate6);
+      background-color: var(--slate4);
+    }
+  }
+
+  .component-title {
+    width: 72px;
+    height: 26px;
+    max-width: 100%;
+    margin-top: 4px;
+    color: var(--slate12);
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 13px;
+    text-align: center;
+    overflow-wrap: break-word;
+  }
+}
+
 .custom-component-inspector-multiline {
   .codehinter-container {
     .cm-editor {

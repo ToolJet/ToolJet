@@ -10,6 +10,7 @@ const useCanvasResizing = ({
   currentLayout,
   canvasMaxWidth,
   isRightSidebarOpen,
+  rightPanelReservedWidth,
   isViewerSidebarPinned,
   position,
   currentMode,
@@ -48,7 +49,7 @@ const useCanvasResizing = ({
       window.removeEventListener('resize', handleResize);
       handleResize.cancel();
     };
-  }, [handleResizeImmediate, currentLayout, canvasMaxWidth, moduleId, isRightSidebarOpen]);
+  }, [handleResizeImmediate, currentLayout, canvasMaxWidth, moduleId, isRightSidebarOpen, rightPanelReservedWidth]);
 
   // Update grid width based on the state of page menu navigation bar
   // Also, prevents visual jumps between component/canvas width change during page menu animations
