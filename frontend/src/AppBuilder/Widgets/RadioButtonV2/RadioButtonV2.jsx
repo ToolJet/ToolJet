@@ -264,8 +264,10 @@ export const RadioButtonV2 = ({
         aria-required={isMandatory}
         aria-invalid={!isValid}
         aria-label={!labelAutoWidth && labelWidth == 0 && label?.length != 0 ? label : undefined}
+        aria-labelledby={!!label && (labelWidth > 0 || labelAutoWidth) ? `component-${id}-label` : undefined}
       >
         <Label
+          id={`component-${id}-label`}
           dataCy={`${dataCy}`}
           label={label}
           width={labelWidth}
