@@ -12,6 +12,7 @@ import {
   wfInput,
   wfWorkflowNode,
   getWorkflowReference,
+  humanWorkflowDefinition,
   workflowDefinition,
   cleanupWorkflows,
   openLeftDrawer,
@@ -492,9 +493,56 @@ describe("Workflows - inputs passed to a child workflow", SLOW_API, () => {
     });
   });
 
+  it("A parent workflow whose child contains a Human step is refused with a clear message", () => {
+    cy.apiSaveWorkflowDefinition(humanWorkflowDefinition());
+    seedParent(data.childName, data.childId, [{ key: "", value: "" }]);
+    cy.apiRunWorkflow();
+    cy.apiWaitForExecutionStatus("failure");
+    cy.apiGetWorkflowExecution().then((execution) => {
+      expect(JSON.stringify(execution)).to.include(
+        "Human nodes are not supported in workflows called from another workflow"
+      );
+    });
+    cy.apiListApprovals({ status: "pending", app_id: data.childId })
+      .its("body.requests")
+      .should("have.length", 0);
+  });
+
   it("A parent workflow that leaves out the child's required input fails the run", () => {
     seedParent(data.childName, data.childId, [{ key: "", value: "" }]);
     cy.apiRunWorkflow();
     cy.apiWaitForExecutionStatus("failure");
+  });
+});
+
+describe("Workflows - input and legacy parameter with the same name", SLOW_API, () => {
+  beforeEach(() => {
+    cy.apiLogin();
+    cy.visit("/");
+    data.workflowName = `${fake.lastName.toLowerCase()}-clash`;
+    cy.apiCreateWorkflowApp(data.workflowName);
+    cy.apiFetchWorkflowContext();
+    cy.apiSaveWorkflowDefinition(
+      workflowDefinition({
+        nodes: [wfStartNode(), wfResponseNode("response", "return startTrigger.params.region")],
+        edges: [wfEdge("start", "response")],
+        workflowInputs: [wfInput("region", "string", { defaultValue: "from-input" })],
+        defaultParams: JSON.stringify({ region: "from-legacy" }),
+      })
+    );
+  });
+
+  afterEach(() => {
+    cleanupWorkflows([data.workflowName]);
+  });
+
+  it("The workflow input's default wins over a legacy Test JSON key of the same name, and a given value wins over both", () => {
+    cy.apiRunWorkflow().then((res) => {
+      expect(res.status).to.equal(201);
+      expect(res.body.result.data).to.equal("from-input");
+    });
+    cy.apiRunWorkflow({ params: { region: "given" } }).then((res) => {
+      expect(res.body.result.data).to.equal("given");
+    });
   });
 });

@@ -392,6 +392,29 @@ describe("Workflows - approval resolve link (token API)", SLOW_API, () => {
     });
   });
 
+  // Suspected bug: validateInput rejects '' for an optional number or yes/no field instead of treating it as blank.
+  it("An approver can leave optional number and yes/no inputs blank and the run continues", () => {
+    raiseRequest({
+      inputSchema: [
+        { name: "amount", type: "number", label: "Amount", required: false, default: "" },
+        { name: "confirmed", type: "boolean", label: "Confirmed", required: false, default: "" },
+      ],
+    }).then(({ token }) => {
+      cy.apiResolveApprovalByToken(token, {
+        outcome: "approved",
+        input: { amount: "", confirmed: "" },
+      })
+        .its("status")
+        .should("equal", 201);
+      cy.apiLogin();
+      cy.apiWaitForExecutionStatus("success");
+      cy.apiGetExecutionNode("response_approved").then((node) => {
+        expect(node.result.data.input).to.not.have.property("amount");
+        expect(node.result.data.input).to.not.have.property("confirmed");
+      });
+    });
+  });
+
   it("Input keys the step does not declare are dropped and defaults fill what was left out", () => {
     raiseRequest({
       inputSchema: [

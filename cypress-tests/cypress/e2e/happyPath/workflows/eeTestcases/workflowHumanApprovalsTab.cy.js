@@ -17,6 +17,8 @@ import {
   pickSelectOption,
   runFromEditorUntilWaiting,
   openWorkflowEditor,
+  createApproverGroup,
+  deleteApproverGroup,
 } from "Support/utils/workflows/workflowApprovals";
 
 const SLOW_API = {
@@ -52,6 +54,10 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
   afterEach(() => {
     cleanupWorkflows([data.workflowName, data.otherName]);
     cleanupFolders([data.folderName]);
+    if (data.groupId) {
+      deleteApproverGroup(data.groupId);
+      data.groupId = undefined;
+    }
   });
 
   it("The list opens on Pending requests, newest first, and leaves resolved ones out", () => {
@@ -201,6 +207,45 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
         cy.get(".react-select__option")
           .should("contain.text", data.workflowName)
           .and("not.contain.text", data.otherName);
+      });
+    });
+  });
+
+  // Suspected bug: the approver filter matches approver ids and emails (repository ILIKE on the snapshot), not displayed names.
+  it("The approver filter finds a request by the displayed name of a listed user or group", () => {
+    data.groupName = `hitl-grp-${Date.now()}`;
+    createApproverGroup(data.groupName, [Cypress.env("user_id")]).then((groupId) => {
+      data.groupId = groupId;
+      createHumanWorkflow(data.workflowName, {
+        human: {
+          approvers: {
+            users: [Cypress.env("user_id")],
+            groups: [groupId],
+            dynamic: "",
+            tokenBypass: true,
+          },
+        },
+      });
+      runUntilWaiting().then((request) => {
+        cy.apiListApprovals({ status: "pending", app_id: Cypress.env("workflowId") })
+          .its("body.requests.0.approversSnapshot")
+          .then((snapshot) => {
+            const userLabel = snapshot.users[0].label;
+            const groupLabel = snapshot.groups[0].label;
+            expect(groupLabel).to.equal(data.groupName);
+
+            visitApprovals();
+            cy.get(approvalSelector.row(request.id)).should("be.visible");
+
+            cy.get(approvalSelector.filterApprover).type(groupLabel);
+            cy.get(approvalSelector.row(request.id)).should("be.visible");
+            cy.get(approvalSelector.filterApprover).clear().type(userLabel);
+            cy.get(approvalSelector.row(request.id)).should("be.visible");
+
+            cy.get(approvalSelector.filterApprover).clear().type("no-such-approver-name");
+            cy.get(approvalSelector.row(request.id)).should("not.exist");
+            cy.get(approvalSelector.empty).should("contain.text", humanText.noApprovalsMatch);
+          });
       });
     });
   });
