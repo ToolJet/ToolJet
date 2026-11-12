@@ -20,8 +20,9 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
   const [showConfirmation, setShowConfirmation] = useState(false);
   const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
   const { isReleaseVersionEnabled } = getCanPromoteAndRelease();
-  const { isVersionReleased, updateReleasedVersionId, appId, versionToBeReleased, name } = useStore(
+  const { isVersionReleased, updateReleasedVersionId, appId, versionToBeReleased, name, releasedVersionId } = useStore(
     (state) => ({
+      releasedVersionId: state.releasedVersionId,
       isVersionReleased: version
         ? state.releasedVersionId === version.id
         : state.releasedVersionId === state.selectedVersion?.id,
@@ -39,7 +40,7 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
   const releaseVersion = () => {
     setIsReleasing(true);
     appsService
-      .releaseVersion(appId, versionToBeReleased)
+      .releaseVersion(appId, versionToBeReleased, releasedVersionId ?? '')
       .then(() => {
         toast(`Version ${name} released`, {
           icon: '🚀',
@@ -51,6 +52,17 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
         setShowConfirmation(false);
       })
       .catch((error) => {
+        // Someone released another version while this confirmation was open: show it what it would replace now,
+        // rather than replacing that release unseen.
+        if (error?.statusCode === 409) {
+          setIsReleasing(false);
+          toast.error(error.error);
+          appsService
+            .getApp(appId)
+            .then((app) => updateReleasedVersionId(app?.current_version_id ?? null))
+            .catch(() => {});
+          return;
+        }
         const rawError = error?.error || error?.message;
         const errorMessage =
           typeof rawError === 'object'
