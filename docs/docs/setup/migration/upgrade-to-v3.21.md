@@ -29,6 +29,8 @@ ToolJet 3.21 is the new LTS release. It includes **breaking changes** to environ
 | The Git repository was a directory structure of apps. | The repository is broken down to individual components and queries, so conflicts are raised only when the same element is edited. | Create a new, empty repository and sync all your apps to it again to continue using GitSync. |
 | Multiple draft versions were allowed when GitSync was enabled. | Only one draft version is allowed when GitSync is enabled, because the draft is the tip of `main` and there can be only one tip. | Save all draft versions except one so that the app syncs to Git. |
 
+For step-by-step instructions on connecting a new repository and syncing your applications again, refer to the [GitSync Migration Guide](./gitsync-migration.md).
+
 Refer to [GitHub configuration](../../development-lifecycle/gitsync/connect-to-git-repo/github-config.md), [GitLab configuration](../../development-lifecycle/gitsync/connect-to-git-repo/gitlab-config.md), and [Version Control with Git](../../development-lifecycle/gitsync/versioning.md).
 
 ## App Builder Changes
