@@ -5,6 +5,8 @@ import { App } from '@entities/app.entity';
 import { AppsRepository } from '@modules/apps/repository';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
+import { WorkflowExecution } from '@entities/workflow_execution.entity';
+import { AppVersion } from '@entities/app_version.entity';
 import { ApprovalListFilters, ApprovalListRow } from '../types/approval-list';
 
 const APPROVER_SNAPSHOT_KEYS = ['users', 'groups', 'emails', 'notificationEmails'] as const;
@@ -78,8 +80,23 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
       organizationId,
       rows.map((row) => row.app).filter((app): app is App => !!app)
     );
+    await this.fillNamesFromRunVersions(rows);
 
     return { rows, total };
+  }
+
+  private async fillNamesFromRunVersions(rows: ApprovalListRow[]): Promise<void> {
+    const unnamed = rows.filter((row) => row.app && !row.app.name);
+    if (!unnamed.length) return;
+    const found: { id: string; appName: string | null }[] = await this.manager
+      .createQueryBuilder(WorkflowExecution, 'execution')
+      .innerJoin(AppVersion, 'version', 'version.id = execution.app_version_id')
+      .select('execution.id', 'id')
+      .addSelect('version.app_name', 'appName')
+      .where('execution.id IN (:...ids)', { ids: unnamed.map((row) => row.workflowExecutionId) })
+      .getRawMany();
+    const names = new Map(found.map((row) => [row.id, row.appName]));
+    for (const row of unnamed) row.app.name = names.get(row.workflowExecutionId) || row.app.name;
   }
 
   private applyListFilters(query: SelectQueryBuilder<WorkflowApprovalRequest>, filters: ApprovalListFilters): void {
