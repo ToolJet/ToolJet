@@ -97,6 +97,14 @@ export class UpdateGroupPermissionDto {
 
   @IsBoolean()
   @IsOptional()
+  patCreate: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  patRevoke: boolean;
+
+  @IsBoolean()
+  @IsOptional()
   allowRoleChange: boolean;
 }
 

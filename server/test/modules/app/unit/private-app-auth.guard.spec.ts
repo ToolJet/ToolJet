@@ -1,8 +1,8 @@
 // server/test/modules/app/unit/private-app-auth.guard.spec.ts
 import { NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { ExecutionContext } from '@nestjs/common';
 import { PrivateAppAuthGuard } from '@modules/apps/guards/private-app-auth.guard';
 import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
+import { makeExecutionContext } from 'test-helper';
 
 /** @group platform */
 describe('PrivateAppAuthGuard', () => {
@@ -15,16 +15,8 @@ describe('PrivateAppAuthGuard', () => {
   let mockOrgRepository: { findOne: jest.Mock };
   let mockAppUtilService: object;
 
-  const makeContext = (
-    slug: string,
-    headers: Record<string, string> = {},
-    query: Record<string, string> = {}
-  ): ExecutionContext => {
-    const request: Record<string, any> = { params: { slug }, headers: { ...headers }, query: { ...query } };
-    return {
-      switchToHttp: () => ({ getRequest: () => request }),
-    } as unknown as ExecutionContext;
-  };
+  const makeContext = (slug: string, headers: Record<string, string> = {}, query: Record<string, string> = {}) =>
+    makeExecutionContext({ request: { params: { slug }, headers: { ...headers }, query: { ...query } } });
 
   const makeApp = (overrides = {}) => ({
     id: 'app-uuid-1',
@@ -158,9 +150,7 @@ describe('PrivateAppAuthGuard', () => {
       mockOrgRepository.findOne.mockResolvedValue(makeOrg({ id: 'real-org-uuid' }));
 
       const req: Record<string, any> = { params: { slug: 'my-app' }, headers: {}, query: {} };
-      const ctx = {
-        switchToHttp: () => ({ getRequest: () => req }),
-      } as unknown as ExecutionContext;
+      const ctx = makeExecutionContext({ request: req });
 
       await guard.canActivate(ctx);
 

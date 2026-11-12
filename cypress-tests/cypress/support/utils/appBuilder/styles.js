@@ -53,6 +53,9 @@ export const selectColourFromColourPicker = (
   // react-color SketchPicker (no rc-editable-input fields). Click the
   // "Color picker" toggle (`togglr-button-color`, ToggleGroupItem.jsx:13) so
   // the editable hex/rgba inputs are present before we type into them.
+  // Wait for the popover to render (toggle or inputs) first — a body snapshot
+  // taken too early sees no toggle, skips the click, and leaves it on "Theme".
+  cy.get('[data-cy="togglr-button-color"]:visible, [id*="rc-editable-input-"]:visible').should("exist");
   cy.get("body").then(($b) => {
     if ($b.find('[data-cy="togglr-button-color"]:visible').length > 0) {
       cy.get('[data-cy="togglr-button-color"]').click();
