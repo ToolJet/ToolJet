@@ -425,7 +425,7 @@ export const PageMenuItem = withRouter(
                 <Overlay
                   target={optionBtnRef.current}
                   show={showEditPopover && newPagePopupConfig?.mode == 'edit' && isEditingPage}
-                  placement="left-start"
+                  placement="right-start"
                   rootClose={!nestedPopoverOpen}
                   onHide={() => {
                     setEditingPage(null);

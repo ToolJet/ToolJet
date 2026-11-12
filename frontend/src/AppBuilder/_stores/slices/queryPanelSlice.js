@@ -13,6 +13,7 @@ import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { QUERY_PANEL_RESIZE, parseStoredQueryPanelWidth } from '@/AppBuilder/panelLayout';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const runtimePanelPreferences = JSON.parse(localStorage.getItem('runtimePanelPreferences')) ?? {};
 
@@ -139,8 +140,12 @@ export const createQueryPanelSlice = (set, get) => ({
         'setQueryPanelHeight'
       );
     }, // updateQueryPanelHeight
-    setSelectedQuery: (queryId, moduleId = 'canvas') => {
+    // Selecting a different query also shows its editor in the right panel. Selections the editor makes
+    // by itself (first query on load or version switch, next query after a delete) pass `reveal: false`
+    // so they never open the right panel or replace what the user has open there.
+    setSelectedQuery: (queryId, moduleId = 'canvas', { reveal = true } = {}) => {
       set((state) => {
+        const isNewSelection = state.queryPanel.selectedQuery?.id !== queryId;
         if (queryId === null) {
           state.queryPanel.selectedQuery = null;
           state.queryPanel.selectedDataSource = null;
@@ -160,7 +165,10 @@ export const createQueryPanelSlice = (set, get) => ({
         // never render against a stale datasource.
         state.queryPanel.selectedQuery = query;
         state.queryPanel.selectedDataSource = get().queryPanel.resolveDataSourceForQuery(query);
-        return;
+        if (reveal && isNewSelection) {
+          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.QUERY;
+          state.isRightSidebarOpen = true;
+        }
       });
     },
     // Resolves the datasource a query belongs to from the loaded datasource lists, falling back to the

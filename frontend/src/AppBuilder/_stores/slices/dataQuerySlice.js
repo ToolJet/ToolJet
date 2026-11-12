@@ -253,7 +253,7 @@ export const createDataQuerySlice = (set, get) => ({
           const setSelectedQuery = get().queryPanel.setSelectedQuery;
           const setSelectedDataSource = get().queryPanel.setSelectedDataSource;
           const selectedQuery = get().queryPanel.selectedQuery;
-          setSelectedQuery(newSelectedQuery?.id || null);
+          setSelectedQuery(newSelectedQuery?.id || null, moduleId, { reveal: false });
           get().deleteQueryMapping(selectedQuery?.name, selectedQuery?.id, moduleId);
 
           if (!newSelectedQuery?.id) {

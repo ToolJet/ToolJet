@@ -22,4 +22,12 @@ describe('CustomJSONViewer', () => {
     expect(screen.queryByLabelText('Copy path of statusCode')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Copy value of statusCode')).toBeInTheDocument();
   });
+
+  // Break this catches: the Inspector shows a variable or query result that is null and the whole
+  // runtime panel crashes (Object.entries(null)) until the page is reloaded.
+  it('should render a null value instead of crashing', () => {
+    render(<CustomJSONViewer absolutePath="variables.vNull" data={null} />);
+
+    expect(screen.getByText('null')).toBeInTheDocument();
+  });
 });

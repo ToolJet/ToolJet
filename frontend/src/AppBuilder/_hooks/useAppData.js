@@ -755,7 +755,7 @@ const useAppData = (
         setQueries(dataQueries, moduleId);
 
         if (dataQueries?.length > 0) {
-          !moduleMode && setSelectedQuery(dataQueries[0]?.id);
+          !moduleMode && setSelectedQuery(dataQueries[0]?.id, 'canvas', { reveal: false });
           initialiseResolvedQuery(
             dataQueries.map((query) => query.id),
             moduleId
@@ -1169,7 +1169,7 @@ const useAppData = (
         setQueries(dataQueries, moduleId);
 
         if (dataQueries?.length > 0) {
-          setSelectedQuery(dataQueries[0]?.id);
+          setSelectedQuery(dataQueries[0]?.id, 'canvas', { reveal: false });
           initialiseResolvedQuery(dataQueries.map((query) => query.id));
         }
 
