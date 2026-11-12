@@ -277,6 +277,28 @@ export const ChartFrame = ({
   </div>
 );
 
+/**
+ * Dims every mark but the clicked one with a CSS rule. Charts whose marks Recharts redraws on a changed child (Pie,
+ * Scatter) dim this way, not with Cell props: a redrawn mark under the second click of a double click made the browser
+ * fire no double click (RK-15). `marks` selects every mark's shape, `hit` the clicked one's (null: none in the data).
+ */
+export const DimOthers = ({
+  active,
+  marks,
+  hit,
+  dimmed,
+  kept = 1,
+}: {
+  active: boolean;
+  marks: string;
+  hit: string | null;
+  dimmed: number;
+  kept?: number;
+}) =>
+  active ? (
+    <style>{`${marks} { fill-opacity: ${dimmed}; }${hit ? ` ${hit} { fill-opacity: ${kept}; }` : ''}`}</style>
+  ) : null;
+
 // ---- Clicks ----------------------------------------------------------------------------------------------------------
 
 /** The clicked datum and the chart's events and actions: a click on a datum exposes it (clickedDataPoint) and fires
