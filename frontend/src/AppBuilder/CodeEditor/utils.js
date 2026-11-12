@@ -168,6 +168,7 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
           'components',
           'queries',
           'globals',
+          'dataSources',
           'page',
           'input',
           'constants',
@@ -183,6 +184,7 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
         isJsCode ? components : undefined,
         isJsCode ? state?.queries : undefined,
         isJsCode ? state?.globals : undefined,
+        isJsCode ? state?.dataSources : undefined,
         isJsCode ? state?.page : undefined,
         isJsCode ? state?.input : undefined,
         state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.

@@ -90,11 +90,15 @@ function del(id, versionId) {
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, resolvedOptions, options, versionId, environmentId, mode, signal) {
+function run(queryId, resolvedOptions, options, versionId, environmentId, mode, signal, dataSourceId) {
   const body = {
     resolvedOptions: resolvedOptions,
     options: options,
   };
+
+  if (dataSourceId) {
+    body.data_source_id = dataSourceId;
+  }
 
   let url = `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run${
     environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
@@ -115,12 +119,16 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode, 
   return fetch(url, requestOptions).then(handleResponse);
 }
 
-function preview(query, options, versionId, environmentId, signal) {
+function preview(query, options, versionId, environmentId, signal, dataSourceId) {
   const body = {
     query,
     options: options,
     app_version_id: versionId,
   };
+
+  if (dataSourceId) {
+    body.data_source_id = dataSourceId;
+  }
 
   const requestOptions = {
     method: 'POST',
