@@ -56,15 +56,8 @@ export default class CohereService implements QueryService {
     const cohere = await this.getConnection(sourceOptions);
 
     try {
-      await cohere.chat({
-        model: 'command-r-plus-08-2024',
-        messages: [
-          {
-            role: 'user',
-            content: 'hello world!',
-          },
-        ],
-      });
+      // Listing models validates the key without depending on any specific model
+      await cohere.models.list({ pageSize: 1 });
     } catch (error: any) {
       const errorMessage = error.message || 'Unknown error occurred';
       throw new QueryError('Connection could not be established', errorMessage, {
