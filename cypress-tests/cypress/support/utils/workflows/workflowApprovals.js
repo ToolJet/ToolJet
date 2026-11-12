@@ -240,9 +240,18 @@ export const archiveApproverUser = (email) =>
     );
 
 export const deleteApproverUsers = (emails) =>
-  cy.runSqlQueryOnDB(
-    `CALL delete_users(ARRAY['${emails.join("','")}']::text[]);`
-  );
+  cy
+    .task("dbConnection", {
+      dbconfig: Cypress.env("app_db"),
+      sql: "SELECT 1 FROM pg_proc WHERE proname = 'delete_users'",
+    })
+    .then((result) => {
+      if (result.rows.length) {
+        cy.runSqlQueryOnDB(
+          `CALL delete_users(ARRAY['${emails.join("','")}']::text[]);`
+        );
+      }
+    });
 
 export const filterExecutionsByWorkflow = (workflowName) => {
   pickSelectOption(

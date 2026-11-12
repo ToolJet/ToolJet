@@ -88,16 +88,8 @@ export const deleteAppandWorkflowAfterExecution = (workflowName, appName) => {
 export const verifyPreviewOutputText = (expectedOutput) => {
   cy.focused().blur();
   cy.wait(1500);
-  cy.get('[data-cy="preview-button"]').click();
-  cy.wait(2000);
-  cy.get('[data-cy="inspector-node-data"]')
-    .parents(".json-node-element")
-    .find(".json-tree-node-icon")
-    .click({ force: true });
-
-  cy.get('[data-cy="inspector-node-key"] .json-tree-valuetype', {
-    timeout: 5000,
-  })
+  cy.get(".header-preview-btn").first().click();
+  cy.get(".result-section .result-body", { timeout: 20000 })
     .invoke("text")
     .should("include", expectedOutput);
 };

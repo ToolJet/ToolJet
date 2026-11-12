@@ -1,7 +1,5 @@
 import { fake } from "Fixtures/fake";
-import { commonSelectors } from "Selectors/common";
 import { workflowSelector } from "Selectors/platform/workflows";
-import { commonText } from "Texts/common";
 import { workflowsText } from "Texts/platform/workflows";
 import {
   buildLinearWorkflow,
@@ -31,6 +29,12 @@ describe("Workflows - node menu", () => {
     cy.visit("/");
     data.workflowName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     cy.apiCreateWorkflow(data.workflowName);
+    cy.window().then((win) =>
+      win.localStorage.setItem(
+        `tj_workflow_canvas_locked_${Cypress.env("workflowId")}`,
+        "false"
+      )
+    );
     cy.openWorkflow();
 
     buildLinearWorkflow({
@@ -65,12 +69,12 @@ describe("Workflows - node menu", () => {
 
     openNodeMenu(workflowsText.runjs);
     cy.get(workflowSelector.nodeMenuDelete).click({ force: true });
-    cy.get(commonSelectors.modalComponent)
+    cy.get(workflowSelector.nodeDeleteMessage)
       .should("be.visible")
       .and("contain.text", workflowsText.nodeDeleteConfirmMessage);
 
-    cy.get(commonSelectors.buttonSelector(commonText.cancelButton)).click();
-    cy.get(commonSelectors.modalComponent).should("not.exist");
+    cy.get(workflowSelector.nodeDeleteCancel).click();
+    cy.get(workflowSelector.nodeDeleteMessage).should("not.exist");
     cy.get(workflowSelector.nodeName(workflowsText.runjs)).should("exist");
     cy.get("@edgesBefore").then((before) => {
       cy.get(workflowSelector.canvasEdge).should("have.length", before);
@@ -78,7 +82,7 @@ describe("Workflows - node menu", () => {
 
     openNodeMenu(workflowsText.runjs);
     cy.get(workflowSelector.nodeMenuDelete).click({ force: true });
-    cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+    cy.get(workflowSelector.nodeDeleteConfirm).click();
     cy.get(workflowSelector.nodeName(workflowsText.runjs)).should("not.exist");
     cy.get("@edgesBefore").then((before) => {
       cy.get("body").then(($body) => {

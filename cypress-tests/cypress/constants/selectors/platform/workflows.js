@@ -52,6 +52,9 @@ export const workflowSelector = {
   nodeMenuCopy: '[data-cy="node-menu-copy"]',
   nodeMenuDuplicate: '[data-cy="node-menu-duplicate"]',
   nodeMenuDelete: '[data-cy="node-menu-delete"]',
+  nodeDeleteMessage: '[data-cy="modal-message"]',
+  nodeDeleteCancel: '[data-cy="modal-cancel-button"]',
+  nodeDeleteConfirm: '[data-cy="modal-confirm-button"]',
   // Rows of the selected run in the logs panel; failed rows carry .log-red.
   workflowLogErrorRow: '[data-cy="options-column"] .log-red',
 

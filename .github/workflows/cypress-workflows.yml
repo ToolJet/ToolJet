@@ -183,9 +183,16 @@ jobs:
       - name: Update docker-compose file
         run: |
           sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+          cat > mailhog.compose.yaml <<'EOF'
+          services:
+            mailhog:
+              image: mailhog/mailhog:v1.0.1
+              ports:
+                - 8025:8025
+          EOF
 
       - name: view docker-compose file
-        run: cat docker-compose.yaml
+        run: cat docker-compose.yaml mailhog.compose.yaml
 
       - name: Install Docker Compose
         run: |
@@ -193,7 +200,7 @@ jobs:
           chmod +x /usr/local/bin/docker-compose
 
       - name: Run docker-compose file
-        run: docker-compose up -d
+        run: docker-compose -f docker-compose.yaml -f mailhog.compose.yaml up -d
 
       - name: Checking containers
         run: docker ps -a
@@ -305,6 +312,8 @@ jobs:
           BROWSER: chrome
           CONFIG_FILE: cypress-workflows.config.js
           CYPRESS_CONFIG: "baseUrl=http://localhost:3000"
+          CYPRESS_mailhog_smtp_host: mailhog
+          CYPRESS_mailHogUrl: http://localhost:8025
         run: node cy-ci-run.js
 
       - name: Ensure run summary exists
