@@ -185,31 +185,39 @@ describe("Workflows - workflow inputs", SLOW_API, () => {
     });
   });
 
-  it("Blank, duplicate and invalid-default inputs show a clear message and are not saved", () => {
-    const keeper = wfInput("keeper", "string", { defaultValue: "k" });
-    const typeControl = `${inputsSelector.card}:eq(0) ${inputsSelector.typeControl}`;
-    const savedStaysUnchanged = () => {
-      cy.wait(2500);
-      savedInputs().then((inputs) => {
-        expect(inputs.map(({ key, defaultValue }) => ({ key, defaultValue }))).to.deep.equal([
-          { key: "keeper", defaultValue: "k" },
-        ]);
-      });
-    };
+  const keeperInput = () => wfInput("keeper", "string", { defaultValue: "k" });
+  const savedStaysUnchanged = () => {
+    cy.wait(2500);
+    savedInputs().then((inputs) => {
+      expect(inputs.map(({ key, defaultValue }) => ({ key, defaultValue }))).to.deep.equal([
+        { key: "keeper", defaultValue: "k" },
+      ]);
+    });
+  };
 
-    seedInputsWorkflow([keeper]);
+  it("A duplicate input name shows a clear message and the saved inputs stay unchanged", () => {
+    seedInputsWorkflow([keeperInput()]);
+    openInputsPanel();
+
+    cy.get(inputsSelector.add).click();
+    // Suspected bug: a duplicate name (ignoring case) overwrites the saved input.
+    card(0).find(inputsSelector.name).type("KEEPER");
+    card(0).find(inputsSelector.error).should("contain.text", inputsText.namesUnique);
+    card(1).find(inputsSelector.error).should("contain.text", inputsText.namesUnique);
+    savedStaysUnchanged();
+  });
+
+  it("Blank and invalid-default inputs show a clear message and are not saved", () => {
+    const typeControl = `${inputsSelector.card}:eq(0) ${inputsSelector.typeControl}`;
+
+    seedInputsWorkflow([keeperInput()]);
     openInputsPanel();
 
     cy.get(inputsSelector.add).click();
     card(0).find(inputsSelector.error).should("contain.text", inputsText.nameRequired);
     savedStaysUnchanged();
 
-    card(0).find(inputsSelector.name).type("KEEPER");
-    card(0).find(inputsSelector.error).should("contain.text", inputsText.namesUnique);
-    card(1).find(inputsSelector.error).should("contain.text", inputsText.namesUnique);
-    savedStaysUnchanged();
-
-    card(0).find(inputsSelector.name).clear().type("limit");
+    card(0).find(inputsSelector.name).type("limit");
     card(0).find(inputsSelector.error).should("not.exist");
     pickSelectOption(typeControl, "number");
     card(0).find(inputsSelector.defaultValue).type("abc");

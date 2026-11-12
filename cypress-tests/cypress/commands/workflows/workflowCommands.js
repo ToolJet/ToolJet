@@ -178,5 +178,7 @@ Cypress.Commands.add("addWorkflowInApp", (workflowName) => {
   .find('.react-select__control')
   .click();
   cy.get(workflowSelector.workflowSelectInput).realType(workflowName);
-  cy.get(workflowSelector.workflowSelectOption).contains(workflowName).click();
+  cy.get(workflowSelector.workflowSelectOption)
+    .contains(new RegExp(`^${workflowName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
+    .click();
 });

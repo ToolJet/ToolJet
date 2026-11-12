@@ -54,6 +54,7 @@ describe("Workflows - approvals API negatives", SLOW_API, () => {
   it("A user who is not an approver gets 403 when resolving or cancelling someone else's request, and it stays pending", () => {
     data.email = fake.email.toLowerCase();
     cy.apiFullUserOnboarding(fake.firstName, data.email, "end-user");
+    cy.apiLogin();
     createHumanWorkflow(data.workflowName, {
       human: {
         approvers: {

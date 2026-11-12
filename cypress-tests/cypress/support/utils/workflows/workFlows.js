@@ -88,15 +88,15 @@ export const deleteAppandWorkflowAfterExecution = (workflowName, appName) => {
 export const verifyPreviewOutputText = (expectedOutput) => {
   cy.focused().blur();
   cy.wait(1500);
+  cy.intercept("POST", "**/previewQueryNode").as("previewNode");
   cy.get(".header-preview-btn:not(.run-workflow-btn)").click();
+  cy.wait("@previewNode")
+    .its("response.body")
+    .then((body) => expect(JSON.stringify(body)).to.include(expectedOutput));
   cy.get(".result-section .result-body", { timeout: 20000 }).should(
     "contain.text",
     "status"
   );
-  cy.get('.result-section [data-cy="inspector-data-label"]').click();
-  cy.get(".result-section .result-body")
-    .invoke("text")
-    .should("include", expectedOutput);
 };
 
 // ---------------------------------------------------------------------------
