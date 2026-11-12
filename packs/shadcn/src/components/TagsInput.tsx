@@ -345,7 +345,9 @@ export const TagsInput = () => {
                   onOpenAutoFocus={(e) => e.preventDefault()}
                   onCloseAutoFocus={(e) => e.preventDefault()}
                   onInteractOutside={(e) => {
-                    if (e.target instanceof Node && boxRef.current?.contains(e.target)) e.preventDefault();
+                    // In the shadow root the document sees the host as the target; the composed path keeps the real one.
+                    const path = e.detail.originalEvent.composedPath?.() ?? [];
+                    if (boxRef.current && path.includes(boxRef.current)) e.preventDefault();
                     else setDismissed(true);
                   }}
                   onEscapeKeyDown={() => setDismissed(true)}

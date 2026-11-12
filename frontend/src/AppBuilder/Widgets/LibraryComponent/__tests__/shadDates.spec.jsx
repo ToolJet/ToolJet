@@ -267,6 +267,21 @@ describe('a Dialog', () => {
     return { dialog, view };
   };
 
+  it('stays open in the editor while the builder uses the panels, with no backdrop over them', async () => {
+    const panel = document.createElement('button');
+    panel.textContent = 'Components panel';
+    document.body.appendChild(panel);
+    const { dialog } = await openDialog(makeHost('Dialog', { editing: true }));
+    await tick();
+    expect(layer().querySelector('.ui-dialog-overlay')).toBeNull();
+    press(panel);
+    act(() => panel.focus());
+    await tick();
+    expect(dialogContent()).toBeTruthy();
+    expect(dialog.events).not.toContain('onCancel');
+    expect(document.activeElement).toBe(panel);
+  });
+
   it('confirms while its owner takes input', async () => {
     const { dialog } = await openDialog(makeHost('Dialog'));
     expect(button('Confirm test').disabled).toBe(false);

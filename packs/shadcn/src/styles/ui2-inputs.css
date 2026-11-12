@@ -17,6 +17,8 @@
 
 .ui2-in .ui-field--invalid {
   --lk-invalid: var(--lk-error, var(--ui-destructive));
+  /* Re-resolved here: on .ui2-in, --lk-invalid is still unset, so every border under the field kept the grey. */
+  --ui2-edge: var(--lk-invalid, var(--lk-border, var(--ui-border)));
 }
 
 /* ---- The control's box: background, text, placeholder, border, radius, error border, a 1px accent focus ring ---- */
@@ -824,6 +826,25 @@ button.ui2-addon:disabled {
   margin: 0;
   font-size: 12px;
   color: var(--lk-hint, var(--ui-muted-fg));
+}
+/* In a fixed box the field stops at the box and scrolls, so every row and its remove button can be reached. */
+.ui2-fu > .ui-field {
+  max-height: 100%;
+  overflow-y: auto;
+}
+/* A squeezed list would collapse to 0px, so with files the field scrolls instead. */
+.ui2-fu .ui2-files-head,
+.ui2-fu .ui2-files {
+  flex-shrink: 0;
+}
+/* No files: the drop zone shrinks (never grows) so its border stays whole in the default box. */
+.ui2-fu.is-empty .ui2-drop {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+.ui2-fu.is-empty .ui2-drop > * {
+  flex-shrink: 0;
 }
 .ui2-files-head {
   display: flex;

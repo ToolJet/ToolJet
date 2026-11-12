@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import useStore from '@/AppBuilder/_stores/store';
 import { pasteComponents, copyComponents } from './copyPasteWidgetsUtils';
-import useKeyHooks from '@/_hooks/useKeyHooks';
+import useKeyHooks, { isFromShadowTree } from '@/_hooks/useKeyHooks';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
@@ -40,14 +40,14 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
     (e) => {
       if (!isEditorReadOnly) handleUndo(e);
     },
-    { enabled: mode === 'edit' && !overlayOpen }
+    { enabled: mode === 'edit' && !overlayOpen, ignoreEventWhen: isFromShadowTree }
   );
   useHotkeys(
     'meta+shift+z, control+shift+z',
     (e) => {
       if (!isEditorReadOnly) handleRedo(e);
     },
-    { enabled: mode === 'edit' && !overlayOpen }
+    { enabled: mode === 'edit' && !overlayOpen, ignoreEventWhen: isFromShadowTree }
   );
 
   const paste = async () => {

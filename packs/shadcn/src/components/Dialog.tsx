@@ -10,6 +10,7 @@ import { POPUP_LAYER, popupLayerOf } from '../lib/popupLayer';
 import { LoadingBox, LoadingFrame, useLoading } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import { useValueSetter } from '../lib/sameValue';
+import { displayText } from '../lib/displayText';
 import { useKeptPopupSlot } from '../lib/keptPopupSlot';
 
 // The overlay's and the dialog's own levels in ui.css (.ui-dialog-overlay, .ui-dialog); popups opened from the body
@@ -17,7 +18,7 @@ import { useKeptPopupSlot } from '../lib/keptPopupSlot';
 const OVERLAY_Z = 1000;
 
 export const Dialog = () => {
-  const [triggerText] = ToolJet.useStateString({
+  const [rawTriggerText] = ToolJet.useStateString({
     name: 'triggerText',
     label: 'Button label',
     initialValue: 'Delete account',
@@ -29,18 +30,26 @@ export const Dialog = () => {
     initialValue: 'outline',
     section: 'Appearance',
   });
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Are you absolutely sure?' });
-  const [description] = ToolJet.useStateString({
+  const [rawTitle] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Are you absolutely sure?' });
+  const [rawDescription] = ToolJet.useStateString({
     name: 'description',
     label: 'Description',
     initialValue: 'This action cannot be undone. This will permanently delete your account and remove your data.',
   });
-  const [confirmText] = ToolJet.useStateString({
+  const [rawConfirmText] = ToolJet.useStateString({
     name: 'confirmText',
     label: 'Confirm label',
     initialValue: 'Continue',
   });
-  const [cancelText] = ToolJet.useStateString({ name: 'cancelText', label: 'Cancel label', initialValue: 'Cancel' });
+  const [rawCancelText] = ToolJet.useStateString({ name: 'cancelText', label: 'Cancel label', initialValue: 'Cancel' });
+  // An object bound to a text property would throw as a React child and replace the whole Dialog.
+  const [triggerText, title, description, confirmText, cancelText] = [
+    rawTriggerText,
+    rawTitle,
+    rawDescription,
+    rawConfirmText,
+    rawCancelText,
+  ].map(displayText);
   const [destructive] = ToolJet.useStateBoolean({
     name: 'destructive',
     label: 'Destructive confirm',
@@ -49,6 +58,9 @@ export const Dialog = () => {
   });
   // Exposed as show, UI 2.0's Modal name.
   const [open, setOpen] = ToolJet.useStateBoolean({ name: 'show', initialValue: false, inspector: 'hidden' });
+  // In the editor it draws no backdrop and stays open on outside presses, so the builder can use the panels and drop
+  // components into its body while it is open.
+  const editing = ToolJet.useEditing();
   // Built in: the body is a canvas of ToolJet components (a form, details), under the description.
   const [showBody] = ToolJet.useStateBoolean({ name: 'showBody', label: 'Components in the body', initialValue: true });
   const [showFooter] = ToolJet.useStateBoolean({
@@ -215,16 +227,18 @@ export const Dialog = () => {
           </DialogPrimitive.Trigger>
           {container ? (
             <DialogPrimitive.Portal container={container}>
-              {/* Radix draws its overlay only for a modal dialog. */}
-              <div
-                ref={overlayRef}
-                data-state={open ? 'open' : 'closed'}
-                onPointerDown={(e) => {
-                  backdropPress.current = e.nativeEvent;
-                }}
-                className="ui-dialog-overlay"
-                style={base === undefined ? undefined : { zIndex: layer }}
-              />
+              {/* Radix draws its overlay only for a modal dialog. None in the editor: it would cover the panels. */}
+              {editing ? null : (
+                <div
+                  ref={overlayRef}
+                  data-state={open ? 'open' : 'closed'}
+                  onPointerDown={(e) => {
+                    backdropPress.current = e.nativeEvent;
+                  }}
+                  className="ui-dialog-overlay"
+                  style={base === undefined ? undefined : { zIndex: layer }}
+                />
+              )}
               <DialogPrimitive.Content
                 ref={contentRef}
                 // The host keeps Tab inside the open dialog (packFocus): it is not Radix's modal mode, which traps.
@@ -236,7 +250,7 @@ export const Dialog = () => {
                   ...(base === undefined ? {} : { zIndex: layer + 1 }),
                   [POPUP_LAYER as string]: layer + 2,
                 }}
-                onPointerDownOutside={keepUnlessBackdrop}
+                onPointerDownOutside={editing ? (e) => e.preventDefault() : keepUnlessBackdrop}
                 // Focus moving to a field above it (a ToolJet Modal's, another pack's dialog's) is not a dismissal.
                 onFocusOutside={(e) => e.preventDefault()}
                 onEscapeKeyDown={(e) => {

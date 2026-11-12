@@ -34,8 +34,9 @@ export const useHostValidation = (latest, value, present, rule) => {
   if (exposed && judged) {
     let key = exposed.has('value') && Object.is(exposed.get('value'), value) ? 'value' : null;
     if (!key) for (const [k, v] of exposed) if (k !== 'isValid' && k !== 'isMandatory' && Object.is(v, value)) key = k;
-    judged.current = { key: key ?? judged.current.key, value };
+    judged.current = { ...judged.current, key: key ?? judged.current.key, value };
   }
+  const published = useRef(undefined);
   const status =
     (typeof validate === 'function' ? validate((present ?? filled(value)) ? value : undefined) : null) || {};
   const isValid = status.isValid !== false && !rule;
@@ -45,12 +46,19 @@ export const useHostValidation = (latest, value, present, rule) => {
   // A Form around the field shows its message after a failed submit, and clearForm hides it again.
   useShowValidationOnFormSubmit(setTouched);
   useFormClear(() => setTouched(false));
-  // Again for each new value: an event fired as the value changed set isValid from the Validation section alone
-  // (fireHostEvent), so a component's own rule (a minimum length, a date out of range) that still failed left it true.
+  // Every render, not on a change of isValid: an event-time write (fireHostEvent, section only) can leave a stale true,
+  // so it writes again when the last write differs or the value changed.
   const valueKey = typeof value === 'object' && value !== null ? JSON.stringify(value) : value;
+  const judgedKey = useRef(undefined);
   useEffect(() => {
+    const last = judged ? judged.current.published : published.current;
+    const newValue = !Object.is(judgedKey.current, valueKey);
+    judgedKey.current = valueKey;
+    if (last === isValid && !newValue) return;
+    if (judged) judged.current.published = isValid;
+    else published.current = isValid;
     setExposedVariable('isValid', isValid);
-  }, [isValid, rule, valueKey, setExposedVariable]);
+  });
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
   }, [isMandatory, setExposedVariable]);
@@ -422,6 +430,7 @@ export const usePackHost = (
   const { id, validate, validation, setExposedVariable, fireEvent, width, height, currentLayout, darkMode } = props;
   const { moduleId } = useModuleContext();
   const resolveRow = useRowResolve(moduleId);
+  const editing = useStore((state) => state.modeStore?.modules?.[moduleId]?.currentMode === 'edit');
   // The latest value of each variable the component exposed, and the value its validation last judged.
   const exposed = useRef(new Map());
   const judged = useRef({ key: null, value: undefined });
@@ -465,6 +474,7 @@ export const usePackHost = (
           // Only the Validation section can judge the new value here: the component's own rule (useValidation's
           // `rule`) is worked out as it renders, so it applies once the component draws the new value.
           const status = judge(filled(now) ? now : undefined) || {};
+          judged.current.published = status.isValid !== false;
           latest.current.setExposedVariable('isValid', status.isValid !== false);
         }
       }
@@ -516,6 +526,7 @@ export const usePackHost = (
       markRowScoped,
       resolveRow,
       widgetId: id,
+      editing,
       // As the native Button: a click announces itself, and the Form whose buttonToSubmit it is submits.
       submitForm: () =>
         document.dispatchEvent(
@@ -534,6 +545,7 @@ export const usePackHost = (
       markRowScoped,
       resolveRow,
       moduleId,
+      editing,
     ]
   );
   return { host, light, popupSlotNames, exposeVariable, fireHostEvent };
