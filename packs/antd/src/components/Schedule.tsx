@@ -480,6 +480,8 @@ export const Schedule = () => {
     '--lk-accent': accentColor,
     '--lk-now': nowColor,
     '--tj-ant-border-radius': borderRadius,
+    // The frame takes the large radius: the Radius value itself, or it stayed 8px whatever Radius was (AD-29).
+    '--tj-ant-border-radius-lg': borderRadius,
   });
   const shown = resourceList.slice(0, shownCount);
   const remaining = resourceList.length - shownCount;

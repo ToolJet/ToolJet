@@ -17,11 +17,13 @@ const FALLBACKS: Record<string, string> = {
 };
 
 const withFallback = (value: string) =>
-  value.replace(/var\((--cc-[\w-]+)\)/g, (match, name: string) => (FALLBACKS[name] ? `var(${name}, ${FALLBACKS[name]})` : match));
+  value.replace(/var\((--cc-[\w-]+)\)/g, (match, name: string) =>
+    FALLBACKS[name] ? `var(${name}, ${FALLBACKS[name]})` : match
+  );
 
 export const isSet = (v: unknown): v is string | number => v !== undefined && v !== null && v !== '';
 
-const PX_VARS = new Set(['--tj-ant-border-radius', '--lk-cell']);
+const PX_VARS = new Set(['--tj-ant-border-radius', '--tj-ant-border-radius-lg', '--lk-cell']);
 
 /** CSS variables from { '--var': style value }: unset styles are left out. A radius or size takes a number of px. */
 export const lookVars = (map: Record<string, unknown>): CSSProperties => {
@@ -36,7 +38,8 @@ export const lookVars = (map: Record<string, unknown>): CSSProperties => {
     const css = withFallback(String(value));
     vars[name] = css;
     // The focus ring follows the accent, as themeVars derives it.
-    if (name === '--tj-ant-color-primary') vars['--tj-ant-control-outline'] = `color-mix(in srgb, ${css} 18%, transparent)`;
+    if (name === '--tj-ant-color-primary')
+      vars['--tj-ant-control-outline'] = `color-mix(in srgb, ${css} 18%, transparent)`;
   }
   return vars as CSSProperties;
 };
@@ -105,7 +108,12 @@ export const useFocusEvents = (onFocus: () => void, onBlur: () => void, touch?: 
 /** Drops selected keys whose option was there and is gone, so a removed choice does not come back selected when an option
  *  of that value reappears. A key never seen stays (a default whose options are still loading); with `keep` (server-side
  *  search) nothing is dropped. */
-export const useDropRemovedChoices = (optionKeys: string[], selected: string[], drop: (gone: Set<string>) => void, keep: boolean) => {
+export const useDropRemovedChoices = (
+  optionKeys: string[],
+  selected: string[],
+  drop: (gone: Set<string>) => void,
+  keep: boolean
+) => {
   const seen = useRef<Set<string>>(new Set());
   const latest = useRef({ selected, drop, keep });
   latest.current = { selected, drop, keep };
