@@ -50,7 +50,6 @@ const asV2Conflict = async <T>(work: () => Promise<T>): Promise<T> => {
   }
 };
 
-// Only a super admin sees every workspace; anyone else sees the ones they are an active member of.
 const isScopedViewer = (viewer?: User): viewer is User => !!viewer && !isSuperAdmin(viewer);
 
 @Injectable()
@@ -197,8 +196,6 @@ export class OrganizationsService implements IOrganizationsService {
     }, manager);
   }
 
-  // The one write path for a workspace's name, slug and status, used by the dashboard and the External API.
-  // Reactivating a workspace counts against the plan's workspace and user limits (451 when exceeded).
   async updateWorkspace(organizationId: string, changes: WorkspaceChanges, manager?: EntityManager): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const updatable: WorkspaceChanges = {};
@@ -245,9 +242,6 @@ export class OrganizationsService implements IOrganizationsService {
   async setDefaultWorkspace(organizationId: string, manager?: EntityManager): Promise<void> {
     throw new NotImplementedException('This feature is only available in Enterprise Edition');
   }
-
-  // External API v2. These add the v2 contract (identifier lookup, 409/422 rules, response shape)
-  // on top of the shared writes above.
 
   async listWorkspacesV2(query: ListWorkspacesV2QueryDto, viewer?: User): Promise<ListWorkspacesV2ResponseDto> {
     const page = query.page ?? 1;
@@ -339,8 +333,7 @@ export class OrganizationsService implements IOrganizationsService {
     });
   }
 
-  // Reuses the dashboard's uniqueness check one field at a time, so a clash on either field is caught,
-  // and skips fields that keep their current value.
+  // One field per call: checkWorkspaceUniqueness matches name AND slug together.
   async checkWorkspaceFieldsAvailableV2(
     { name, slug }: { name?: string; slug?: string },
     current?: Pick<Organization, 'name' | 'slug'>

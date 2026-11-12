@@ -6,7 +6,7 @@ interface Pagination {
   totalCount: number;
 }
 
-// Builds the RFC 8288 Link value for a paginated list, keeping the caller's other query parameters.
+// RFC 8288 Link; keeps the caller's other query parameters.
 export const buildPaginationLink = (
   path: string,
   query: Record<string, unknown>,
@@ -29,7 +29,6 @@ export const buildPaginationLink = (
   return links.join(', ');
 };
 
-// v2 list responses also carry their pagination as headers: X-Total-Count and Link.
 export const setPaginationHeaders = (request: Request, response: Response, pagination: Pagination): void => {
   response.setHeader('X-Total-Count', String(pagination.totalCount));
   const link = buildPaginationLink(request.originalUrl.split('?')[0], request.query, pagination);

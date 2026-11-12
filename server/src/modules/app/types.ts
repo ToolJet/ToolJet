@@ -23,7 +23,6 @@ export interface FeatureConfig {
   isSuperAdminFeature?: boolean;
   shouldNotSkipPublicApp?: boolean;
   allowFailedAuditLogs?: boolean;
-  // Audit-event spec for this route (src/modules/audit-logs/events). Separate from the legacy auditLogsKey.
   audit?: AuditRouteSpec;
 }
 

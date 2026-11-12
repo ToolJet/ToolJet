@@ -26,8 +26,7 @@ export class UpdateWorkspaceV2Dto {
   @IsEnum(WORKSPACE_STATUS)
   status?: WORKSPACE_STATUS;
 
-  // Only true is accepted: it makes this the platform default. A default is removed by making
-  // another workspace the default.
+  // true only; false is 422, move the default by setting it on another workspace
   @IsOptional()
   @IsBoolean()
   default?: boolean;

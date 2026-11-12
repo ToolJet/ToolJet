@@ -42,8 +42,7 @@ export abstract class AbilityGuard implements CanActivate {
     return;
   }
 
-  // External API shared secret (set by ExternalApiAuthGuard): there is no user, so only the instance
-  // licence applies — the behaviour these routes had when their features were isPublic.
+  // Shared secret: no user, so only the instance licence applies.
   private async allowSharedSecret(module: MODULES, features: string[] | undefined): Promise<boolean> {
     if (!features?.length) return false;
     for (const feature of features) {
@@ -61,8 +60,6 @@ export abstract class AbilityGuard implements CanActivate {
     return true;
   }
 
-  // Records an audit `denied` event for routes that have an audit spec. Only permission decisions
-  // call this; plan, ban and business-rule rejections are not denials. Never blocks the 403.
   private async recordDenied(context: ExecutionContext): Promise<void> {
     try {
       const engine = this.moduleRef.get(IAuditEngine, { strict: false });

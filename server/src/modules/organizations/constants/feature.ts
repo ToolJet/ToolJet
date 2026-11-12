@@ -25,9 +25,6 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
     },
     [FEATURE_KEY.SET_DEFAULT]: {},
-    // External API v2: a PAT or the shared secret (ExternalApiAuthGuard). Not isPublic, so PAT callers go
-    // through CASL below; shared-secret callers get the instance-licence check in AbilityGuard.
-    // Audited through audit_events (`audit`), so the legacy audit_logs row is skipped.
     [FEATURE_KEY.CREATE_WORKSPACE_V2]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       skipAuditLogs: true,

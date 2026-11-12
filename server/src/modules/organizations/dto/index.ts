@@ -42,7 +42,6 @@ export class AllowedCharactersValidator implements ValidatorConstraintInterface 
 
 const SanitizeAndTrim = () => Transform(({ value }) => sanitizeInput(value)?.trim() || '');
 
-// Shared by the dashboard and External API v2, so a workspace name or slug means the same thing on both.
 export const WorkspaceNameField = () =>
   applyDecorators(
     IsString(),

@@ -12,7 +12,6 @@ import { User } from '@entities/user.entity';
 
 type Subjects = InferSubjects<typeof Organization> | 'all';
 
-// The workspace named in the URL (resolved by ExternalApiAuthGuard) is the caller's own workspace.
 const targetsOwnWorkspace = (request: AuditableRequest | undefined, user: User): boolean =>
   !!request?.tj_workspace && request.tj_workspace.id === user.organizationId;
 

@@ -5,12 +5,9 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { UserEntity } from '@modules/app/decorators/user.decorator';
 import { ListWorkspacesV2QueryDto, UpdateWorkspaceV2Dto } from './dto/v2';
 
-// External API v2 Workspaces, beside the dashboard's organizations routes so both share one service.
-// Create lives in setup-organization, next to the dashboard's create.
 @Controller({ path: 'ext', version: '2' })
 @InitModule(MODULES.ORGANIZATIONS)
-// No class-level guards: @UseGuards metadata is inherited and appended, so guards declared here would run
-// before the Enterprise controller's ExternalApiAuthGuard. The CE stub registers no routes.
+// No @UseGuards here: inherited guards would run before the Enterprise auth guard.
 @UseInterceptors(ClassSerializerInterceptor)
 export class OrganizationsWorkspacesControllerV2 {
   listWorkspaces(

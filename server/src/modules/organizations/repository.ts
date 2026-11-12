@@ -126,7 +126,6 @@ export class OrganizationRepository extends Repository<Organization> {
     return organization;
   }
 
-  // Resolves a workspace by id, then slug, then name.
   async findByIdentifier(identifier: string, manager?: EntityManager): Promise<Organization> {
     const m = manager ?? this.manager;
     const isUuid = UUID_PATTERN.test(identifier);

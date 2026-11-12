@@ -10,10 +10,6 @@ import { PAT_TOKEN_PREFIX } from '../constants';
 
 export const hashPat = (rawToken: string): string => `sha256:${createHash('sha256').update(rawToken).digest('hex')}`;
 
-/**
- * Authenticates a `Bearer tj_pat_…` request and attaches the token's owner. Shared by every guard
- * that accepts a workspace PAT directly. The user acts in the token's workspace.
- */
 export type PatAuthenticatedRequest = Request & { user?: User; personalAccessToken?: UserPersonalAccessToken };
 
 export async function authenticatePatRequest(request: PatAuthenticatedRequest): Promise<UserPersonalAccessToken> {

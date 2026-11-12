@@ -49,8 +49,6 @@ export class SetupOrganizationsService implements ISetupOrganizationsService {
     return organization;
   }
 
-  // External API v2. Same setup as a dashboard-created workspace; a PAT caller becomes its admin.
-  // The first workspace on the platform becomes the default.
   async createWorkspaceV2(dto: CreateWorkspaceV2Dto, user?: User): Promise<WorkspaceV2ResponseDto> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       await this.organizationsService.checkWorkspaceFieldsAvailableV2(dto);
