@@ -263,19 +263,22 @@ export const Frame = ({
 };
 
 // Where a value label sits: inside a bar or slice, or above a point (on the point it hid the marker). Labels that
-// would overlap are dropped, so a dense Column draws a readable row of labels instead of an unreadable band.
-const valueLabel = (text: (d: Row) => string, fill: string, at: 'inside' | 'top') => ({
+// would overlap are dropped, so a dense Column draws a readable row of labels instead of an unreadable band. G2's 'top'
+// hangs the label from the top of the mark's box, so on a Scatter's point it covered the marker (QA DVRL-80): 'above'
+// stands it on that edge instead.
+const valueLabel = (text: (d: Row) => string, fill: string, at: 'inside' | 'top' | 'above') => ({
   text,
   fill,
-  position: at,
+  position: at === 'inside' ? 'inside' : 'top',
   ...(at === 'top' ? { dy: -8 } : {}),
+  ...(at === 'above' ? { textBaseline: 'bottom', dy: -4 } : {}),
   transform: [{ type: 'overlapHide' }],
 });
 
 const useCommon = (
   p: ReturnType<typeof useChartProps>,
   theme: Theme,
-  series: { color?: string; y: string; labelAt?: 'inside' | 'top' },
+  series: { color?: string; y: string; labelAt?: 'inside' | 'top' | 'above' },
   tips?: HTMLElement
 ) => {
   const common = useMemo(() => {
@@ -304,6 +307,8 @@ const useCommon = (
       tooltip: { items: [{ channel: 'y', valueFormatter: fmt }] },
       interaction: tooltipInteraction(tips),
       label: p.label ? valueLabel((d: Row) => fmt(d[series.y]), theme.text, series.labelAt ?? 'inside') : undefined,
+      // Room above the highest point for its label, which stands above it: it was drawn above the chart, cut off.
+      ...(p.label && series.labelAt === 'above' ? { insetTop: 20 } : {}),
       viewStyle: { viewFill: 'transparent' },
       onReady: p.onChartReady,
     };
@@ -851,6 +856,9 @@ export const Funnel = () => {
   // so 50 after 0 read 5000% (QA AD-46).
   const first = rows[0]?.[y] as number;
   const share = (v: number) => (first > 0 ? ` (${Math.round((v / first) * 100)}%)` : '');
+  // With every value 0 the stages have no width and G2 put them, and their labels, at the plot's left edge, the labels
+  // half outside it (QA DVRL-83); a scale around 0 keeps them in the middle.
+  const flat = !rows.some((r) => (r[y] as number) > 0);
   const fmt = (v: unknown) => {
     const n = toNumber(v);
     return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency, null, p.locale);
@@ -864,7 +872,7 @@ export const Funnel = () => {
           data={rows}
           xField={p.xField}
           yField={y}
-          scale={{ color: { range: theme.palette } }}
+          scale={{ color: { range: theme.palette }, ...(flat ? { y: { domain: [-1, 1] } } : {}) }}
           legend={false}
           label={{
             text: (d: Row) => `${str(d[p.xField])}  ${fmt(d[y])}${share(d[y] as number)}`,
@@ -908,6 +916,13 @@ export const Gauge = () => {
     enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'],
     initialValue: 'auto',
   });
+  // As the other charts with a currency formatter have (the figure was always in USD, QA DVRL-82).
+  const [currency] = ToolJet.useStateString({
+    name: 'currency',
+    label: 'Currency',
+    initialValue: 'USD',
+    visibleWhen: { key: 'formatter', value: 'currency' },
+  });
   const [locale] = ToolJet.useStateString({
     name: 'locale',
     label: 'Locale',
@@ -921,13 +936,25 @@ export const Gauge = () => {
     fit: false,
     loading: 'own',
     usage:
-      "Ant's Gauge: target (the value), total (the end of the scale), name, thresholds (ends of colour bands, e.g. [40, 70, 100]), formatter.",
+      "Ant's Gauge: target (the value), total (the end of the scale), name, thresholds (ends of colour bands, e.g. [40, 70, 100]), formatter, currency.",
     roleProps: { value: 'target', max: 'total', label: 'title' },
     defaultWidth: 12,
     defaultHeight: 28,
   });
   const ref = useRef<HTMLDivElement>(null);
   const theme = useChartTheme(ref);
+  // The chart's box, to size the figure to the dial.
+  const [room, setRoom] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const measure = () => setRoom(Math.min(el.clientWidth, el.clientHeight));
+    measure();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   const t = toNumber(target) ?? 0;
   const max = Math.max(1, toNumber(total) ?? 100);
   const bands = toArray(thresholds)
@@ -935,8 +962,12 @@ export const Gauge = () => {
     .filter((v): v is number => v !== null);
   const shown =
     formatter === 'percent'
-      ? formatNumber(t / max, 'percent', 'USD', null, locale)
-      : formatNumber(t, formatter as 'auto', 'USD', null, locale);
+      ? formatNumber(t / max, 'percent', currency, null, locale)
+      : formatNumber(t, formatter as 'auto', currency, null, locale);
+  // The figure stands under the needle's hub (centred at 60% of the height it overlapped the hub of a small gauge) and
+  // is sized to the middle of the dial, about half the box at 0.6em a character: '$1,234,567.00' ran over the dial and
+  // its end ticks to the box's edge (QA DVRL-82).
+  const fontSize = room > 0 ? Math.max(10, Math.min(28, Math.floor((room * 0.5) / (shown.length * 0.6)))) : 28;
   return (
     <AntProvider tokens={tokens} fill>
       <Frame title={title} empty={false} loading={loading} chartRef={ref} ready={theme.ready}>
@@ -962,7 +993,15 @@ export const Gauge = () => {
                   : [theme.brand],
             },
           }}
-          style={{ textContent: () => shown, textFill: theme.text, textFontSize: 28 }}
+          // G2 reads the text's style from the `text` keys with the prefix taken off: textTextBaseline is its textBaseline.
+          style={{
+            textContent: () => shown,
+            textFill: theme.text,
+            textFontSize: fontSize,
+            textY: '50%',
+            textTextBaseline: 'top',
+            textDy: 16,
+          }}
           legend={false}
         />
       </Frame>
@@ -1066,7 +1105,7 @@ export const Scatter = () => {
     [p.xField]: toNumber(r[p.xField]) ?? r[p.xField],
     [y]: toNumber(r[y]) ?? r[y],
   }));
-  const common = useCommon(p, theme, { color: p.colorField || undefined, y, labelAt: 'top' }, tips);
+  const common = useCommon(p, theme, { color: p.colorField || undefined, y, labelAt: 'above' }, tips);
   return (
     <AntProvider tokens={tokens} fill>
       <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>

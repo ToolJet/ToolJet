@@ -73,6 +73,17 @@ const SETTERS = [
   ['shadcn', 'Combobox', 'selectOption', ['ca'], 'onSelect'],
   ['shadcn', 'RadioGroup', 'selectOption', ['Premium'], 'onSelectionChange'],
   ['shadcn', 'ToggleGroup', 'setValue', ['Open'], 'onChange'],
+  // QA DVRL-103: these fired nothing even when they changed the value.
+  ['shadcn', 'ToggleGroup', 'setSelected', ['Open'], 'onChange'],
+  ['shadcn', 'ButtonGroup', 'setSelected', ['month'], 'onChange'],
+  ['shadcn', 'DatePicker', 'setValue', ['2026-01-15'], 'onSelect'],
+  ['shadcn', 'DatePicker', 'setDate', ['2026-01-15'], 'onSelect'],
+  ['shadcn', 'DatePicker', 'setValueInTimestamp', [new Date(2026, 0, 15).getTime()], 'onSelect'],
+  ['shadcn', 'DatePicker', 'setDateRange', ['2026-01-15', '2026-01-20'], 'onSelect', { mode: 'range' }],
+  ['shadcn', 'DatePicker', 'setStartDate', ['2026-01-15'], 'onSelect', { mode: 'range' }],
+  ['shadcn', 'DatePicker', 'setEndDate', ['2026-01-20'], 'onSelect', { mode: 'range' }],
+  ['shadcn', 'Calendar', 'selectDate', ['2026-01-15'], 'onSelect'],
+  ['shadcn', 'TimePicker', 'setValue', ['09:30'], 'onSelect'],
   ['shadcn', 'Slider', 'setValue', [30], 'onChange'],
   ['shadcn', 'Switch', 'setValue', [true], 'onChange'],
   ['shadcn', 'Accordion', 'expand', [1], 'onExpand'],
@@ -183,6 +194,30 @@ describe('a value setter fires once for a new value and nothing for the same one
     w.events.length = 0;
     await act(async () => w.actions.get('setText')('7.0'));
     expect(w.events.filter((e) => e === 'onChange')).toHaveLength(0);
+  });
+
+  // QA DVRL-103: these clears fired nothing when they emptied a value.
+  const RANGE = ['2026-01-15', '2026-01-20'];
+  test.each([
+    ['shadcn', 'ToggleGroup', 'setValue', ['Open'], 'clear', 'onChange'],
+    ['shadcn', 'ButtonGroup', 'setSelected', ['month'], 'clear', 'onChange'],
+    ['shadcn', 'DatePicker', 'setValue', ['2026-01-15'], 'clearValue', 'onSelect'],
+    ['shadcn', 'DatePicker', 'setDateRange', RANGE, 'clearDateRange', 'onSelect', { mode: 'range' }],
+    ['shadcn', 'DatePicker', 'setDateRange', RANGE, 'clearStartDate', 'onSelect', { mode: 'range' }],
+    ['shadcn', 'DatePicker', 'setDateRange', RANGE, 'clearEndDate', 'onSelect', { mode: 'range' }],
+    ['shadcn', 'Calendar', 'selectDate', ['2026-01-15'], 'clear', 'onSelect'],
+    ['shadcn', 'TimePicker', 'setValue', ['09:30'], 'clearValue', 'onSelect'],
+  ])('%s %s: %s %j, then %s fires once', async (...row) => {
+    const [pack, name, setter, args, clear, event, props] = row;
+    const w = await mount(pack, name, { props });
+    await waitFor(() => expect(w.actions.has(clear)).toBe(true));
+    await act(async () => w.actions.get(setter)(...args));
+    w.events.length = 0;
+    await act(async () => w.actions.get(clear)());
+    expect(w.events.filter((e) => e === event)).toHaveLength(1);
+    w.events.length = 0;
+    await act(async () => w.actions.get(clear)());
+    expect(w.events.filter((e) => e === event)).toHaveLength(0);
   });
 });
 

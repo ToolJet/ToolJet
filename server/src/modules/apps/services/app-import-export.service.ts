@@ -620,7 +620,8 @@ export class AppImportExportService {
           : [];
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
       const moduleAppIds = appModules.map((moduleComponent) => ({
-        moduleId: moduleComponent.properties?.moduleAppId.value,
+        // A ModuleViewer saved without a module has no moduleAppId; the dedupe below drops it (QA DVRL-1).
+        moduleId: moduleComponent.properties?.moduleAppId?.value,
         // moduleVersionId.value holds the version's co_relation_id (portable git identity).
         // The git-sync adapter writes co_relation_id as the version `id` in exported JSON,
         // so pulled/imported data and locally-created refs both use co_relation_id.

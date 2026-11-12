@@ -153,17 +153,19 @@ export const ToggleGroup = () => {
       raw === undefined || raw === null || typeof raw === 'object' ? null : keyForValue(options, raw, choiceKey);
     if (k !== null && byKey.has(k)) change(k, fire);
   };
-  // The native Button group's actions: setSelected picks an option (a value no option has changes nothing).
+  // The native Button group's actions: setSelected picks an option (a value no option has changes nothing). Like every
+  // value action, setSelected and clear fire onChange when they change the selection, and nothing when they do not
+  // (product decision 2026-10-25; they fired nothing, QA DVRL-103).
   ToolJet.useAction(
     {
       name: 'setSelected',
       displayName: 'Set selected',
       params: [{ handle: 'selected', displayName: 'Value (or a list)' }],
     },
-    (v) => (multiple ? pickMany(v, false) : pickOne(v, false))
+    (v) => (multiple ? pickMany(v, true) : pickOne(v, true))
   );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () =>
-    multiple ? changeMany([], false) : change('', false)
+    multiple ? changeMany([], true) : change('', true)
   );
   ToolJet.useAction(
     {

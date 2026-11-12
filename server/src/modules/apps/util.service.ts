@@ -1376,7 +1376,11 @@ export class AppsUtilService implements IAppsUtilService {
         )
         .getMany();
 
-      const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
+      // A ModuleViewer saved without a module (properties {}) has nothing to load; reading its moduleAppId failed the
+      // whole app load with a 500 (QA DVRL-1).
+      const moduleAppIds = moduleComponents
+        .map((moduleComponent) => moduleComponent.properties?.moduleAppId?.value)
+        .filter(Boolean);
       if (moduleAppIds.length === 0) return [];
 
       const modules = await manager

@@ -35,6 +35,9 @@ const endOf = (sel: Selection, end: 'from' | 'to'): Date | undefined => (sel ins
 const dayOf = (sel: Selection): Date | undefined => (sel instanceof Date ? sel : undefined);
 const blank = (v: unknown) => v === undefined || v === null || v === '';
 const unix = (d: Date | undefined) => (d ? d.getTime() : null);
+// A selection by its days: two selections on the same days are the same value.
+const daysOf = (sel: Selection): string =>
+  sel instanceof Date ? ymd(sel) : sel ? `${ymd(sel.from)}~${ymd(sel.to)}` : '';
 
 export const DatePicker = () => {
   const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Date' });
@@ -201,6 +204,9 @@ export const DatePicker = () => {
     expose(next);
     if (fire) onSelect();
   };
+  // Like every value action, the date actions fire onSelect when they change the selection, and nothing when they do
+  // not (product decision 2026-10-25; they fired nothing, QA DVRL-103).
+  const set = (next: Selection) => commit(next, daysOf(next) !== daysOf(selectedRef.current));
   // A date from an action's argument: read with the format given, else the display format, else ISO.
   const parse = (v: unknown, fmt: unknown) => {
     const explicit = typeof fmt === 'string' && !!fmt.trim();
@@ -210,12 +216,12 @@ export const DatePicker = () => {
   const setEnd = (end: 'from' | 'to', v: unknown, fmt: unknown) => {
     if (!range) return;
     const d = parse(v, fmt);
-    if (d || blank(v)) commit({ ...((selectedRef.current as Range) || {}), [end]: d });
+    if (d || blank(v)) set({ ...((selectedRef.current as Range) || {}), [end]: d });
   };
   const singleSet = (v: unknown, fmt: unknown) => {
     if (range) return;
     const d = parse(v, fmt);
-    if (d || blank(v)) commit(d);
+    if (d || blank(v)) set(d);
   };
   ToolJet.useAction(
     {
@@ -228,7 +234,7 @@ export const DatePicker = () => {
     },
     singleSet
   );
-  ToolJet.useAction({ name: 'clearValue', displayName: 'Clear value' }, () => commit(range ? {} : undefined));
+  ToolJet.useAction({ name: 'clearValue', displayName: 'Clear value' }, () => set(range ? {} : undefined));
   ToolJet.useAction(
     {
       name: 'setValueInTimestamp',
@@ -237,7 +243,7 @@ export const DatePicker = () => {
     },
     (ts) => {
       const n = Number(ts);
-      if (!range && !blank(ts) && Number.isFinite(n)) commit(startOfDay(new Date(n)));
+      if (!range && !blank(ts) && Number.isFinite(n)) set(startOfDay(new Date(n)));
     }
   );
   ToolJet.useAction(
@@ -276,18 +282,17 @@ export const DatePicker = () => {
       if (!range) return;
       const from = parse(a, f);
       const to = parse(b, f);
-      if ((from || blank(a)) && (to || blank(b)))
-        commit(from && to && to < from ? { from: to, to: from } : { from, to });
+      if ((from || blank(a)) && (to || blank(b))) set(from && to && to < from ? { from: to, to: from } : { from, to });
     }
   );
   ToolJet.useAction({ name: 'clearStartDate', displayName: 'Clear start date' }, () => {
-    if (range) commit({ ...((selectedRef.current as Range) || {}), from: undefined });
+    if (range) set({ ...((selectedRef.current as Range) || {}), from: undefined });
   });
   ToolJet.useAction({ name: 'clearEndDate', displayName: 'Clear end date' }, () => {
-    if (range) commit({ ...((selectedRef.current as Range) || {}), to: undefined });
+    if (range) set({ ...((selectedRef.current as Range) || {}), to: undefined });
   });
   ToolJet.useAction({ name: 'clearDateRange', displayName: 'Clear date range' }, () => {
-    if (range) commit({});
+    if (range) set({});
   });
   ToolJet.useAction(
     { name: 'setMinDate', displayName: 'Set min date', params: [{ handle: 'value', displayName: 'Value' }] },
