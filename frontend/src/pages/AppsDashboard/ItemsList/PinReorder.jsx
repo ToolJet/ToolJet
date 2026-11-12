@@ -92,6 +92,8 @@ export function PinReorderProvider({ appType, items, pinnedTotal, children }) {
   };
 
   const accessibility = {
+    // Portal the live region out of the treegrid, whose only allowed children are rows and rowgroups.
+    container: document.body,
     screenReaderInstructions: SCREEN_READER_INSTRUCTIONS,
     announcements: {
       onDragStart: ({ active }) => `Picked up ${nameOf(active.id)}.`,
