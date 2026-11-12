@@ -141,4 +141,86 @@ describe('a property that takes an array on purpose', () => {
     const { exposed } = await mount('antd', 'Cascader', { value: ['asia', 'japan'] }, ARRAY_VALUE);
     await waitFor(() => expect(exposed.value).toEqual(['asia', 'japan']));
   });
+
+  // QA NEW-1 and DVRL-56: these are declared as text and take a list too. Missing from the list of such properties,
+  // a bound list was emptied: nothing pressed, no range, no facts, no sparkline.
+  it("keeps a multiple Ant ButtonGroup's values", async () => {
+    const { exposed } = await mount('antd', 'ButtonGroup', { mode: 'multiple', value: ['day', 'week'] }, [
+      { name: 'mode', type: 'enumeration' },
+      { name: 'value', type: 'string' },
+    ]);
+    await waitFor(() => expect(exposed.value).toEqual(['day', 'week']));
+  });
+
+  it("keeps a multiple Rocket ButtonGroup's default selection", async () => {
+    const { exposed } = await mount('shadcn', 'ButtonGroup', { mode: 'multiple', defaultValue: ['day', 'month'] }, [
+      { name: 'mode', type: 'enumeration' },
+      { name: 'defaultValue', type: 'string' },
+    ]);
+    await waitFor(() => expect(exposed.selected).toEqual(['day', 'month']));
+  });
+
+  it("keeps a Rocket Calendar range's start and end", async () => {
+    const { exposed } = await mount(
+      'shadcn',
+      'Calendar',
+      { mode: 'range', defaultValue: ['2026-03-02', '2026-03-05'] },
+      [
+        { name: 'mode', type: 'enumeration' },
+        { name: 'defaultValue', type: 'string' },
+      ]
+    );
+    await waitFor(() => expect([exposed.startDate, exposed.endDate]).toEqual(['2026-03-02', '2026-03-05']));
+  });
+
+  it("keeps a Rocket Hero's aside facts", async () => {
+    const { root } = await mount('shadcn', 'Hero', { asideValue: ['Fact A', 'Fact B'] }, [
+      { name: 'asideValue', type: 'string' },
+    ]);
+    await waitFor(() => expect(textOf(root)).toContain('Fact A'));
+    expect(textOf(root)).toContain('Fact B');
+  });
+
+  it.each([
+    ['numbers', [3, 5, 4, 8]],
+    [
+      'points',
+      [
+        { x: 1, y: 3 },
+        { x: 2, y: 5 },
+        { x: 3, y: 4 },
+        { x: 4, y: 8 },
+      ],
+    ],
+  ])("draws a Rocket Stat's trend from a list of %s", async (_, trendData) => {
+    const { root } = await mount('shadcn', 'Stat', { trendData }, [{ name: 'trendData', type: 'string' }]);
+    await waitFor(() => expect(root.querySelector('.ui-stat-spark path')?.getAttribute('d')).toBeTruthy());
+  });
+});
+
+// The other properties declared as text that the packs read as a list as well (a field list, values to highlight),
+// found by reading every pack component for one: a bound list reaches them as it is.
+describe.each([
+  ['shadcn', 'AreaChart', 'yFields'],
+  ['shadcn', 'BarChart', 'yFields'],
+  ['shadcn', 'BarChart', 'highlight'],
+  ['shadcn', 'LineChart', 'yFields'],
+  ['shadcn', 'LineChart', 'dashedFields'],
+  ['shadcn', 'RadarChart', 'yFields'],
+  ['shadcn', 'ComboChart', 'barFields'],
+  ['shadcn', 'ComboChart', 'lineFields'],
+  ['shadcn', 'CardGrid', 'badgeFields'],
+  ['shadcn', 'CardGrid', 'metaFields'],
+  ['shadcn', 'RecordList', 'metaFields'],
+  ['mui', 'RecordList', 'metaFields'],
+  ['shadcn', 'Map', 'popupFields'],
+  ['antd', 'Map', 'popupFields'],
+])('%s %s %s bound to a list', (pack, component, prop) => {
+  it('takes the list as it is', () => {
+    const { props, errors } = typedPackProps(pack, component, [{ name: prop, type: 'string' }], {
+      [prop]: ['revenue', 'cost'],
+    });
+    expect(props[prop]).toEqual(['revenue', 'cost']);
+    expect(errors).toEqual([]);
+  });
 });
