@@ -1,124 +1,76 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from '@modules/app/module';
-import { ResourceType, USER_ROLE } from '@modules/group-permissions/constants';
-import { DEFAULT_GRANULAR_PERMISSIONS_NAME } from '@modules/group-permissions/constants/granular_permissions';
-import { GranularPermissions } from '@entities/granular_permissions.entity';
-import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
-import { LicenseInitService } from '@modules/licensing/interfaces/IService';
-import { getTooljetEdition } from '@helpers/utils.helper';
-import { TOOLJET_EDITIONS } from '@modules/app/constants';
+
+const MIGRATION_NAME = 'AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups1784551394230';
+const RESOURCE_TYPE = 'module_folder';
+const PERMISSION_NAME = 'Module folders';
+
+// What a new workspace's default groups get (DEFAULT_GROUP_PERMISSIONS + DEFAULT_RESOURCE_PERMISSIONS in
+// src/modules/group-permissions/constants). Copied as literals: those constants can change after this ships.
+// end_user gets nothing: modules, and so module folders, are never end-user assignable.
+const SEEDS = [{ roles: ['admin', 'builder'], setCreateDelete: true, canEditFolder: true, canViewApps: false }];
 
 /**
- * Backward-compatibility rule for existing orgs:
- * - Free plan (basic/starter, incl. CE which always resolves to 'basic'): admin AND builder
- *   default groups get moduleFolderCreate/Delete + a real MODULE_FOLDER granular permission,
- *   matching DEFAULT_RESOURCE_PERMISSIONS' admin+builder-only spec for this resource.
- * - Paid plan: admin only — builder/end_user default groups are left untouched.
- * - Custom groups: never touched, on either plan (queries are scoped to type = 'default').
- * - end_user is never touched either way — there's no default-permission spec for it at all
- *   (modules, and by extension module folders, are never end-user-assignable).
+ * Gives the default groups of every existing workspace the module-folder permissions a new
+ * workspace gets, on every plan and edition:
+ * - admin, builder: module_folder_create/delete = true and "Edit folder" on all module folders
+ * - end_user: nothing
  *
- * Plan resolution: data migrations run under migrationsTransactionMode: 'all', so DB work goes
- * through `queryRunner.manager` (the shared batch transaction) to stay on the right side of the
- * DDL locks earlier migrations hold. The plan is read via the license init service:
- * - self-hosted (CE/EE): instance-level, resolved once (getPlanForMigration, reuses initForMigration);
- * - cloud: per-organization, from the organization_license table (getPlanForMigrationCloud).
- * Both read through the same shared manager.
+ * No licence check. On a restricted plan or with custom groups off, EE resolves permissions from a
+ * hardcoded role and never reads these rows, so they grant nothing there. They take effect if the
+ * workspace later gets custom groups, the same as for a new workspace. Custom groups are never touched.
+ *
+ * Idempotent: a group that already has a module_folder granular permission is skipped, flags
+ * included, so a re-run keeps whatever an admin changed since.
+ *
+ * The other two folder backfills use the same rule:
+ * 1784112436513-AddWorkflowFolderGranularPermissionsToExistingAdminGroups,
+ * 1793250000600-AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups.
  */
 export class AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups1784551394230 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
+    const [{ total }] = await queryRunner.query(
+      `SELECT count(*)::int AS total FROM permission_groups pg
+       WHERE pg.type = 'default' AND pg.name = ANY($1)
+         AND NOT EXISTS (SELECT 1 FROM granular_permissions gp WHERE gp.group_id = pg.id AND gp.type = '${RESOURCE_TYPE}')`,
+      [SEEDS.flatMap((seed) => seed.roles)]
+    );
+    console.log(`${MIGRATION_NAME}: [START] Seeding module-folder permissions on default groups: ${total}`);
 
-    try {
-      const licenseInitService = nestApp.get(LicenseInitService);
-      const manager = queryRunner.manager;
-      const isCloud = getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
-
-      const organizationsCount = await manager.count('organizations');
-      if (organizationsCount === 0) {
-        console.log('No organizations found, skipping migration.');
-        return;
-      }
-
-      // Self-hosted plan is instance-level — resolve it once. Cloud is per-org (resolved in the loop).
-      let isSelfHostedFreePlan = false;
-      if (!isCloud) {
-        const { isValid } = await licenseInitService.initForMigration(manager);
-        isSelfHostedFreePlan = !isValid;
-      }
-
-      const organizations = await manager.query(`SELECT id FROM organizations`);
-
-      for (const { id: organizationId } of organizations) {
-        let isFreePlan = isSelfHostedFreePlan;
-        if (isCloud) {
-          const plan = await licenseInitService.getPlanForMigrationCloud(manager, organizationId);
-          isFreePlan = plan === 'basic' || plan === 'starter';
-        }
-        const roleNamesToUpdate = isFreePlan ? [USER_ROLE.ADMIN, USER_ROLE.BUILDER] : [USER_ROLE.ADMIN];
-
-        const groups = await manager.query(
-          `
-            SELECT id
-            FROM permission_groups
-            WHERE organization_id = $1 AND name = ANY($2) AND type = 'default'
-          `,
-          [organizationId, roleNamesToUpdate]
-        );
-
-        for (const group of groups) {
-          const { id: groupId } = group;
-
-          await manager.query(
-            `
-              UPDATE permission_groups
-              SET module_folder_create = true, module_folder_delete = true
-              WHERE id = $1
-            `,
-            [groupId]
-          );
-
-          const existingPermission = await manager.find(GranularPermissions, {
-            where: { groupId, type: ResourceType.MODULE_FOLDER },
-          });
-
-          if (existingPermission.length > 0) {
-            console.log(`Module folder granular permission already exists for group ${groupId}, skipping.`);
-            continue;
-          }
-
-          const granularPermissions = manager.create(GranularPermissions, {
-            name: DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.MODULE_FOLDER],
-            type: ResourceType.MODULE_FOLDER,
-            groupId,
-            isAll: true,
-          });
-
-          const savedGranularPermissions = await manager.save(granularPermissions);
-
-          const foldersGroupPermissions = manager.create(FoldersGroupPermissions, {
-            granularPermissionId: savedGranularPermissions.id,
-            canEditFolder: true,
-            canEditApps: false,
-            canViewApps: false,
-          });
-
-          await manager.save(foldersGroupPermissions);
-
-          console.log(
-            `Created module folder granular permission and folders group permission for group ${groupId} (org ${organizationId}, isFreePlan ${isFreePlan}).`
-          );
-        }
-      }
-
-      console.log(
-        'Successfully added module folder granular permissions to admin (and builder, on free-plan orgs) default groups.'
+    let seeded = 0;
+    for (const seed of SEEDS) {
+      const rows = await queryRunner.query(
+        `
+          WITH targets AS (
+            SELECT pg.id FROM permission_groups pg
+            WHERE pg.type = 'default' AND pg.name = ANY($1)
+              AND NOT EXISTS (
+                SELECT 1 FROM granular_permissions gp WHERE gp.group_id = pg.id AND gp.type = '${RESOURCE_TYPE}'
+              )
+          ),
+          flags AS (
+            UPDATE permission_groups
+            SET module_folder_create = true, module_folder_delete = true
+            WHERE $2::boolean AND id IN (SELECT id FROM targets)
+          ),
+          new_granular AS (
+            INSERT INTO granular_permissions (name, type, group_id, is_all)
+            SELECT '${PERMISSION_NAME}', '${RESOURCE_TYPE}', id, true FROM targets
+            RETURNING id
+          )
+          INSERT INTO folders_group_permissions (granular_permission_id, can_edit_folder, can_edit_apps, can_view_apps)
+          SELECT id, $3::boolean, false, $4::boolean FROM new_granular
+          RETURNING id
+        `,
+        [seed.roles, seed.setCreateDelete, seed.canEditFolder, seed.canViewApps]
       );
-    } finally {
-      await nestApp.close();
+      seeded += rows.length;
+      console.log(`${MIGRATION_NAME}: [PROGRESS] ${seeded}/${total} (${seed.roles.join(', ')})`);
     }
+
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Seeding module-folder permissions finished. Seeded: ${seeded}`);
   }
 
-  public async down(_queryRunner: QueryRunner): Promise<void> {}
+  public async down(_queryRunner: QueryRunner): Promise<void> {
+    // Not reversible: the seeded rows can't be told apart from ones an admin created or edited since.
+  }
 }

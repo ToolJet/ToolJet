@@ -263,19 +263,19 @@ export class VersionRepository extends Repository<AppVersion> {
     return m.delete(AppVersion, { id: versionId });
   }
 
-  async findAppFromVersion(id: string, organizationId: string, manager?: EntityManager): Promise<App> {
+  async findAppFromVersion(id: string, organizationId: string, manager?: EntityManager): Promise<App | null> {
     const m = manager ?? this.manager;
-    const appVersion = await m.findOneOrFail(AppVersion, {
+    const appVersion = await m.findOne(AppVersion, {
       where: { id, app: { organizationId } },
       relations: ['app'],
     });
-    const app = appVersion.app;
+    const app = appVersion?.app;
     // Every app type, including workflows, carries metadata on the version row.
     // The version is already in scope — overlay its own metadata directly.
     if (app) {
       this.overlayMetadata(app, appVersion);
     }
-    return app;
+    return app ?? null;
   }
 
   // Returns the workspace's default branch id, or null when git-sync is off.
@@ -362,10 +362,8 @@ export class VersionRepository extends Repository<AppVersion> {
    * surface the correct branch's `name / slug / icon / is_public` instead of the
    * stale `apps.*` columns.
    *
-   * Resolution order (workflows are skipped — they keep metadata on apps.*):
-   *   - branchId supplied (header / param) → that branch's app_versions row.
-   *   - branchId absent, git enabled       → default branch's app_versions row.
-   *   - branchId absent, git off           → any slug-bearing row (most recent).
+   * overlayMetadata() runs unconditionally for every app type, including workflows —
+   * metadata is always sourced from the resolved AppVersion row.
    */
   async getAppVersionById(versionId: string, branchId?: string) {
     const version = await this.manager.findOneOrFail(AppVersion, {

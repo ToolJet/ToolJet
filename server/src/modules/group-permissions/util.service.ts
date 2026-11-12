@@ -81,6 +81,13 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         const fp = granularPerm.foldersGroupPermissions;
         if (fp?.canEditFolder || fp?.canEditApps) return true;
       }
+      // Data-source folders cascade configure/build-with onto the folder's data sources, so unlike
+      // plain/workflow folders (where view-only stays end-user-safe) even a "Build with" (canViewApps)
+      // grant is builder-level. A restrict-query-run-only row (all three levels false) stays end-user-safe.
+      if (granularPerm.type === ResourceType.DATA_SOURCE_FOLDER) {
+        const fp = granularPerm.foldersGroupPermissions;
+        if (fp?.canEditFolder || fp?.canEditApps || fp?.canViewApps) return true;
+      }
     }
     return false;
   }
@@ -351,6 +358,24 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       if (users?.length !== new Set(userIds).size) {
         // Some users are not present in organization
         throw new BadRequestException(ERROR_HANDLER.ADD_GROUP_USER_NON_EXISTING_USER);
+      }
+
+      // One DEFAULT group per user per workspace: runs after the end-user and unknown-user checks above
+      if (group.type === GROUP_PERMISSIONS_TYPE.DEFAULT) {
+        const otherDefaultGroups = await manager.find(GroupPermissions, {
+          where: { organizationId, type: GROUP_PERMISSIONS_TYPE.DEFAULT, id: Not(groupId) },
+          select: ['id', 'name'],
+        });
+        const adminGroup = otherDefaultGroups.find((g) => g.name === USER_ROLE.ADMIN);
+        if (adminGroup) {
+          await this.roleUtilService.assertActiveAdminRemains(organizationId, adminGroup.id, userIds, manager);
+        }
+        if (otherDefaultGroups.length) {
+          await manager.delete(GroupUsers, {
+            userId: In(userIds),
+            groupId: In(otherDefaultGroups.map((g) => g.id)),
+          });
+        }
       }
 
       const existingRelations = await manager.find(GroupUsers, {

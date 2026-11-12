@@ -1,3 +1,4 @@
+import { EntityManager } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { IOrganizationEnvRegistryService } from '@modules/organization-env/interfaces/IService';
 import { ResolveOutcome } from '@modules/organization-env/types';
@@ -18,7 +19,7 @@ export class OrganizationEnvRegistryService implements IOrganizationEnvRegistryS
     return undefined;
   }
 
-  async ensureResolved(_organizationId: string): Promise<ResolveOutcome> {
+  async ensureResolved(_organizationId: string, _manager?: EntityManager): Promise<ResolveOutcome> {
     return 'unknown';
   }
 

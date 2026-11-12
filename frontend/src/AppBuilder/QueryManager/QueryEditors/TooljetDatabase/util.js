@@ -35,6 +35,25 @@ export const hasNullValueInFilters = (queryOptions, operation) => {
   return false;
 };
 
+/**
+ * Resolves a column's displayed name against a live column list: match by columnId first
+ * (matches the backend's resolution order in tooljet-db-data-operations.service.ts), falling
+ * back to the stored name string when there's no id, or the id no longer matches any column
+ * (column deleted). Keeps pre-migration saved queries (no columnId) rendering unchanged.
+ */
+export const resolveColumnDisplayName = (columns, name, columnId, nameField = 'accessor', idField = 'column_id') => {
+  if (columnId) {
+    const match = columns?.find((col) => col?.[idField] === columnId);
+    if (match) return match[nameField];
+  }
+  return name;
+};
+
+// Depends on DropDownSelect/SelectBox forwarding the full selected option object to onChange
+// (not a normalized {value,label} pair) - if that ever changes, columnId silently stops flowing
+// everywhere this is used. See resolveColumnDisplayName for the read-side counterpart.
+export const columnIdOf = (selectedOption) => selectedOption?.columnId;
+
 export const isOperatorOptions = [
   { value: 'null', label: 'null' },
   { value: 'notNull', label: 'not null' },

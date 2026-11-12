@@ -113,6 +113,10 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Query Editor** | The right configuration panel for writing and configuring the selected query | — |
 | **ToolJet Database** | ToolJet's built-in PostgreSQL-backed database offering | TJDB (informal shorthand in docs) |
 | **Internal Table** | A table within ToolJet Database | — |
+| **Internal Table Relation** | An Internal Table's physical presence at one (Environment, Workspace Branch) pair — carries the physical Postgres relation's identity and per-relation configuration (`internal_table_relations`) | Relation (short form, context-dependent) |
+| **Internal Table Migration** | An immutable recorded schema change for an Internal Table — authored (`structured`/`raw_sql`) or synthesized for a pre-existing table (`baseline`) (`internal_table_migrations`) | — |
+| **Baseline** | A synthesized `internal_table_migration` recording the shape a pre-existing physical table already has, so it has a migration history to promote/replay from without ever running DDL | — |
+| **Internal Table Migration Application** | The record that one Internal Table Migration has been applied to one Internal Table Relation (`internal_table_migration_applications`) | — |
 | **Run JavaScript** | A special query type that executes JavaScript code instead of querying a data source | RunJS (code shorthand) |
 | **Run Python** | A special query type that executes Python code instead of querying a data source | RunPy (code shorthand) |
 | **REST API** | Built-in data source type for making HTTP requests to external APIs | — |
@@ -125,6 +129,8 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Folder** | A container for organizing apps within a workspace | — |
 | **Public App** | An app accessible without authentication via its shareable URL | — |
 | **Shareable URL** | The public URL for a released app that can be shared with end users | — |
+| **SSRF allowlist** | Hostnames, IP addresses and CIDR ranges a Super Admin permits through SSRF protection (EE, Settings -> Security -> Outbound requests); a match skips all SSRF checks | Outbound request allowlist, Allowed addresses (`SSRF_ALLOWED_ADDRESSES` setting) |
+| **SSRF protection** | Blocking outbound requests from data sources and queries to private network addresses; on EE a Super Admin toggles it under Settings -> Security | Outbound requests, "Block requests to private networks" (UI); `ssrf` in code, setting keys and API routes |
 | **Embeddable Link** | A URL for embedding a ToolJet app in an iframe within another application | — |
 | **Thread** | A spatially-positioned comment thread on an app canvas (x/y coordinates) | — |
 | **Comment** | An individual message within a thread | — |
@@ -226,3 +232,5 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 - **"Data Source" scope** is often unclear. A **Global Data Source** is workspace-level and shared across apps. An **App-Level Data Source** (code: "local" type) belongs to a single app. The distinction matters for permissions and environment configuration.
 
 - **"Custom Styling" vs. "Custom CSS" vs. "Theme"** are three related but distinct concepts: **Custom Styling** is per-component conditional styles. **Custom CSS** is free-form CSS at app level. **Theme** is a workspace-wide color/font scheme (EE). Don't conflate them.
+
+- **"Seed" vs. "Reference Data"** (ToolJet Database environments — *designed, not yet built*; no code identifiers exist for these yet, so they have no glossary rows above). **Seed** is copying rows between an Internal Table's environments: unrecorded, disposable, and permitted only from a higher-priority Environment to a lower one. **Reference Data** is inserting rows every Environment must hold identically (statuses, tiers, config rows) — a recorded migration step that promotes forward and travels between instances. The two share no properties, so never say "seed" for reference data: doing so leads someone to the row-copy path, and the reference rows then never reach production because nothing recorded them. Disposable per-environment test rows are a third thing again — neither of these, just SQL query mode (`sqlExecution`).

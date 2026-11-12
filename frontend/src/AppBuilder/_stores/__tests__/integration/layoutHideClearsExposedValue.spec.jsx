@@ -117,7 +117,7 @@ describe('a widget hidden by a layout switch', () => {
 
     // Break this catches: layoutSlice.setCurrentLayout not clearing a
     // now-hidden component's exposed value when the widget unmounts.
-    expect(useStore.getState().getExposedValueOfComponent('radio1').value).toBeUndefined();
+    expect(useStore.getState().getExposedValueOfComponent('radio1').value).toBeNull();
   });
 
   test('recomputes correctly after switching back to a layout where it is shown again', async () => {

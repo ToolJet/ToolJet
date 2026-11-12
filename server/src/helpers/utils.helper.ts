@@ -1,3 +1,4 @@
+import { isValidSSODomain as allowsSSODomain, isValidPasswordDomain as allowsPasswordDomain } from './login-domain';
 import { QueryError } from '@modules/data-sources/types';
 import * as sanitizeHtml from 'sanitize-html';
 import { isEmpty } from 'lodash';
@@ -9,6 +10,9 @@ import { decamelizeKeys } from 'humps';
 import * as semver from 'semver';
 import { BadRequestException } from '@nestjs/common';
 import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
+import { EntityManager } from 'typeorm';
+import { AppEnvironment } from '@entities/app_environments.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#$%^&*()_+\-={}[\]:;"',.?/\\|]+$/;
 
@@ -181,6 +185,29 @@ export const defaultAppEnvironments = [
 ];
 
 export const ceAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
+
+/**
+ * Every organization needs the 3 app_environments rows and a default workspace branch to have
+ * anything to key an internal_table_relations row against. Idempotent so
+ * it's safe to call from every organization-creation path and from a backfill migration alike —
+ * no license check here, gating happens at read time, not at creation.
+ */
+export async function seedOrgEnvironmentsAndDefaultBranch(
+  organizationId: string,
+  manager: EntityManager
+): Promise<void> {
+  const environmentCount = await manager.count(AppEnvironment, { where: { organizationId } });
+  if (!environmentCount) {
+    for (const env of defaultAppEnvironments) {
+      await manager.save(manager.create(AppEnvironment, { organizationId, ...env }));
+    }
+  }
+
+  const defaultBranchCount = await manager.count(WorkspaceBranch, { where: { organizationId, isDefault: true } });
+  if (!defaultBranchCount) {
+    await manager.save(manager.create(WorkspaceBranch, { organizationId, name: 'main', isDefault: true }));
+  }
+}
 
 export const isSuperAdmin = (user) => {
   return !!(user?.userType === USER_TYPE.INSTANCE);
@@ -477,115 +504,11 @@ export const isValidDomain = (email: string, restrictedDomain: string): boolean 
  * @param instanceAllowedDomains - Instance level SSO allowed domains
  * @returns true if domain is valid, false otherwise
  */
-export const isValidSSODomain = (
-  email: string,
-  orgDomain: string | null | undefined,
-  instanceAllowedDomains: string | null | undefined
-): boolean => {
-  // Skip validation for CE edition, validate for EE edition
-  if (getTooljetEdition() === 'ce') {
-    return true;
-  }
+export const isValidSSODomain = (...args: Parameters<typeof allowsSSODomain>): boolean =>
+  getTooljetEdition() === 'ce' || allowsSSODomain(...args);
 
-  if (!email) {
-    return false;
-  }
-
-  // Use organization domain if present (overrides instance), otherwise use instance setting
-  const allowedDomains = orgDomain || instanceAllowedDomains;
-
-  // If no domain restriction, allow all
-  if (!allowedDomains || !allowedDomains.trim()) {
-    return true;
-  }
-
-  const domain = email.substring(email.lastIndexOf('@') + 1);
-  if (!domain) {
-    return false;
-  }
-
-  // Check if domain is in allowed list
-  const allowedDomainList = allowedDomains
-    .split(',')
-    .map((e) => e && e.trim())
-    .filter((e) => !!e);
-
-  return allowedDomainList.includes(domain);
-};
-
-/**
- * Validates email domain for password sign-in with organization/instance hierarchy.
- * Organization domain settings override instance settings.
- * Supports both allowed domains (whitelist) and restricted domains (blacklist).
- * This feature is only available in EE edition. For CE edition, always returns true.
- * @param email - User email address
- * @param orgAllowedDomains - Organization level password allowed domains
- * @param orgRestrictedDomains - Organization level password restricted domains
- * @param instanceAllowedDomains - Instance level password allowed domains
- * @param instanceRestrictedDomains - Instance level password restricted domains
- * @returns true if domain is valid, false otherwise
- */
-export const isValidPasswordDomain = (
-  email: string,
-  orgAllowedDomains: string | null | undefined,
-  orgRestrictedDomains: string | null | undefined,
-  instanceAllowedDomains: string | null | undefined,
-  instanceRestrictedDomains: string | null | undefined
-): boolean => {
-  // Skip validation for CE edition, validate for EE edition
-  if (getTooljetEdition() === 'ce') {
-    return true;
-  }
-
-  if (!email) {
-    return false;
-  }
-
-  const domain = email.substring(email.lastIndexOf('@') + 1);
-  if (!domain) {
-    return false;
-  }
-
-  // Use organization settings if present (overrides instance), otherwise use instance settings
-  const allowedDomains = orgAllowedDomains || instanceAllowedDomains;
-
-  // Check restricted domains from both org and instance (blacklist takes precedence)
-  // If domain is restricted in either org or instance, deny access
-  if (orgRestrictedDomains && orgRestrictedDomains.trim()) {
-    const orgRestrictedDomainList = orgRestrictedDomains
-      .split(',')
-      .map((e) => e && e.trim())
-      .filter((e) => !!e);
-
-    if (orgRestrictedDomainList.includes(domain)) {
-      return false;
-    }
-  }
-
-  if (instanceRestrictedDomains && instanceRestrictedDomains.trim()) {
-    const instanceRestrictedDomainList = instanceRestrictedDomains
-      .split(',')
-      .map((e) => e && e.trim())
-      .filter((e) => !!e);
-
-    if (instanceRestrictedDomainList.includes(domain)) {
-      return false;
-    }
-  }
-
-  // Check allowed domains (whitelist)
-  if (allowedDomains && allowedDomains.trim()) {
-    const allowedDomainList = allowedDomains
-      .split(',')
-      .map((e) => e && e.trim())
-      .filter((e) => !!e);
-
-    return allowedDomainList.includes(domain);
-  }
-
-  // If no restrictions configured, allow all
-  return true;
-};
+export const isValidPasswordDomain = (...args: Parameters<typeof allowsPasswordDomain>): boolean =>
+  getTooljetEdition() === 'ce' || allowsPasswordDomain(...args);
 
 export const isHttpsEnabled = () => {
   return !!process.env.TOOLJET_HOST?.startsWith('https');
@@ -674,6 +597,12 @@ export function decamelizeKeysExcept(obj: any, ignoreKeys: string[]): any {
   if (Array.isArray(obj)) {
     return obj.map((item) => decamelizeKeysExcept(item, ignoreKeys));
   }
+
+  // A Date has no own enumerable properties, so the `for...in` below would silently turn it into
+  // `{}` — humps' decamelizeKeys (used elsewhere in this file) already guards against exactly this
+  // for Date/RegExp/Boolean/Function; this hand-rolled variant needs the same guard for the one
+  // type that actually reaches it (entity timestamp columns).
+  if (obj instanceof Date) return obj;
 
   if (obj !== null && typeof obj === 'object') {
     const result: Record<string, any> = {};
@@ -883,4 +812,28 @@ export async function resolveSourceOptionsForOAuth(
   }
 
   return resolvedOptions;
+}
+
+// Scrubs resolved secret values by value anywhere in a tree (metadata headers, URL params, resolved URL).
+export function redactSecretValues<T>(value: T, secretValues: string[] = []): T {
+  const valuesToRedact = (secretValues || []).filter(
+    (secret): secret is string => typeof secret === 'string' && secret.length > 0
+  );
+  if (valuesToRedact.length === 0 || value === undefined || value === null) return value;
+
+  let serialized: string;
+  try {
+    serialized = JSON.stringify(value);
+  } catch {
+    return value;
+  }
+  if (serialized === undefined) return value;
+
+  const redacted = valuesToRedact.reduce((acc, secret) => acc.split(secret).join('[REDACTED]'), serialized);
+
+  try {
+    return JSON.parse(redacted) as T;
+  } catch {
+    return value;
+  }
 }

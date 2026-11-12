@@ -10,6 +10,7 @@ import '@/_styles/workspace-pull-conflict-modal.scss';
 const TYPE_ICON_MAP = {
   app: 'apps',
   module: 'module',
+  workflow: 'workflows',
   datasource: 'datasource',
   folder: 'folder',
 };
@@ -19,6 +20,7 @@ const CONFLICT_SECTION_HEADER_MAP = {
   'app-slug': 'App slug',
   'module-name': 'Module name',
   'module-slug': 'Module slug',
+  'workflow-name': 'Workflow name',
   'folder-folder': 'Folder name',
   'datasource-name': 'Data source name',
   // Deleted/deactivated by git but still referenced locally — pull can't proceed
@@ -30,6 +32,7 @@ const CONFLICT_SECTION_HEADER_MAP = {
   // Just the resource type: the section heading already says "Invalid name".
   'app-invalid_name': 'App',
   'module-invalid_name': 'Module',
+  'workflow-invalid_name': 'Workflow',
   'datasource-invalid_name': 'Data source',
 };
 

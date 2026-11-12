@@ -23,6 +23,7 @@ const currentSessionSubject = new BehaviorSubject({
   folder_group_permissions: null,
   workflow_folder_group_permissions: null,
   module_folder_group_permissions: null,
+  data_source_folder_group_permissions: null,
   role: null,
   organizations: [],
   isUserLoggingIn: false,
@@ -320,7 +321,12 @@ function signInViaOAuth(configId, ssoType, ssoResponse, mcpContext) {
   const redirectTo = mcpContext ? mcpContext.redirectTo : getCookie('redirectPath');
   const requestOptions = {
     method: 'POST',
-    headers: mcpContext ? authHeader(false, organizationId) : authHeader(),
+    headers:
+      mcpContext?.organizationId === null
+        ? { 'Content-Type': 'application/json' }
+        : mcpContext
+          ? authHeader(false, organizationId)
+          : authHeader(),
     credentials: 'include',
     body: JSON.stringify({ ...ssoResponse, organizationId, signupOrganizationId, invitationToken, redirectTo }),
   };

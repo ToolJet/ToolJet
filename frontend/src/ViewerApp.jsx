@@ -238,7 +238,7 @@ const ViewerApp = () => {
         )}
       </div>
 
-      <Toast toastOptions={toastOptions} />
+      <Toast toastOptions={toastOptions} groupErrors />
     </>
   );
 };
