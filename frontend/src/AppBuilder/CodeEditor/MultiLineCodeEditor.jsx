@@ -80,7 +80,6 @@ const MultiLineCodeEditor = (props) => {
     onInputChange, // Added this prop to immediately handle value changes
     foldGutter = true, // controls the left gray bar
     componentId,
-    usePortalEditor = true, // the "pop out code editor" button, as in SingleLineCodeEditor
   } = props;
   const { moduleId: contextModuleId } = useModuleContext();
   const moduleId = props.moduleId || contextModuleId || 'canvas';
