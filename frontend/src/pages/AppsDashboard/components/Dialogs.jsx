@@ -121,6 +121,7 @@ export default function Dialogs({
     <>
       {isChangeIconDialogOpen && (
         <ChangeIconDialog
+          appType={appType}
           open={isChangeIconDialogOpen}
           onClose={resetAppDialogState}
           appDetails={appDialogState.appDetails}

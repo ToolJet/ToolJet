@@ -233,9 +233,8 @@ export function useDeleteApp() {
 export function useChangeAppIcon() {
   const queryClient = useQueryClient();
 
-  const currentPage = useAppsStore((state) => state.currentPage);
-
   return useMutation({
+    /** @param {{ icon: string, appId: string, appType?: TAppType }} variables */
     mutationFn: ({ icon, appId }) => appsService.changeIcon(icon, appId),
     onError: (error) => {
       toast.error(error?.error ?? '');
@@ -243,7 +242,8 @@ export function useChangeAppIcon() {
     onSuccess: (response, variables) => {
       toast.success('Icon updated.');
 
-      queryClient.invalidateQueries({ queryKey: ['appsV2', { pageNo: currentPage, appType: variables.appType }] });
+      // Every list showing the app (root, folders, other pages) must pick up the new icon.
+      queryClient.invalidateQueries({ queryKey: ['appsV2', { appType: variables.appType }] });
     },
   });
 }
