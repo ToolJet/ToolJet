@@ -1,3 +1,4 @@
+import { commonSelectors } from 'Selectors/common';
 import { cleanAllUsers } from 'Support/utils/manageUsers';
 import {
   RESOURCES,
@@ -5,7 +6,10 @@ import {
   apiCreateItem,
   apiFolderAction,
   apiGetGranularPermissions,
+  expectFolderListed,
+  expectFolderMenuAbsent,
   loginAs,
+  openAppsDashboard,
   phase,
 } from 'Support/utils/platform/folderPermissions';
 
@@ -168,6 +172,15 @@ describe('Basic Plan — Default Role Access to Folders Created by Others', { re
       );
     });
 
+    // End users only reach the apps dashboard, so app folders are the only UI check.
+    if (roleKey === 'endUser' && key === 'app') {
+      phase("endUser: apps dashboard shows the admin's folder read-only");
+      openAppsDashboard();
+      expectFolderMenuAbsent(names.withItem);
+      expectFolderListed(names.empty, false);
+      cy.get(commonSelectors.createNewFolderButton).should('not.exist');
+    }
+
     if (ITEM_KEYS.includes(key)) {
       phase(`${roleKey}: add and remove items in the admin's folder`);
       apiFolderAction('POST', itemPath(key), addBody(key, ids.withItem, builderItems[key])).then((res) =>
@@ -189,6 +202,7 @@ describe('Basic Plan — Default Role Access to Folders Created by Others', { re
 
   before(() => {
     loginAsAdmin();
+    apiFolderAction('GET', '/session').then((res) => Cypress.env('workspaceSlug', res.body.current_organization_slug));
     cleanAllUsers();
     cy.apiDeleteAllApps();
     cy.apiDeleteAllWorkflows();
