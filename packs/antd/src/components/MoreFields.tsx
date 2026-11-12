@@ -258,7 +258,7 @@ export const OTP = (props: Record<string, unknown>) => {
               ref={ref as never}
               length={n}
               value={value}
-               mask={mask ? '•' : false}
+              mask={mask ? '•' : false}
               disabled={disabled}
               variant={look.variant}
               size={look.size}
@@ -568,8 +568,15 @@ export const PhoneInput = (props: Record<string, unknown>) => {
     defaultHeight: 6,
   });
   const countries = useMemo(() => phoneCountries(onlyCountries), [onlyCountries]);
-  const fallback: Country = countryOf(defaultCountry) ?? countries[0]!;
+  // Only a country Only countries offers is ever picked: a Default country outside it starts on the first offered one,
+  // as Rocket 2.0's does (AD-24).
+  const offered = (c: Country | null) => (c && countries.includes(c) ? c : null);
+  const fallback: Country = offered(countryOf(defaultCountry)) ?? countries[0]!;
   const [picked, setPicked] = useState<Country>(() => phoneCountry(value, countries, fallback) ?? fallback);
+  useEffect(() => {
+    if (!countries.includes(picked)) setPicked(fallback);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countries]);
   useEffect(() => {
     const c = phoneCountry(value, countries, picked);
     if (c && c !== picked) setPicked(c);
@@ -609,7 +616,7 @@ export const PhoneInput = (props: Record<string, unknown>) => {
       params: [{ handle: 'country', displayName: 'Country (ISO code)' }],
     },
     (code) => {
-      const c = countryOf(code);
+      const c = offered(countryOf(code));
       if (c) {
         setPicked(c);
         commit(national, c);
