@@ -21,7 +21,7 @@ import dayjs from 'dayjs';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, usePopupTheme, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { SkeletonSwap, SpinOver } from '../lib/Loading';
-import { str, toArray, toKeyedItems, type Row } from '../lib/data';
+import { oneOf, str, toArray, toKeyedItems, type Row } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { toTree } from './MoreInputs';
 import { boundedTree } from '../lib/tree';
@@ -1288,7 +1288,7 @@ export const QRCode = () => {
           {...colors}
           value={value}
           size={px}
-          errorLevel={errorLevel as 'M'}
+          errorLevel={oneOf(errorLevel, ['L', 'M', 'Q', 'H'] as const, 'M')}
           icon={icon || undefined}
           bordered={bordered}
           status={loading ? 'loading' : 'active'}
