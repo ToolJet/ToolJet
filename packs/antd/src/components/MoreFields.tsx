@@ -189,6 +189,18 @@ export const Combobox = (props: Record<string, unknown>) => {
 
 // Ant's Input.OTP: label, length, mask (hide the characters), characters (numeric, alphanumeric), value; isComplete
 // exposed; events onChange (every character), onComplete (all filled); actions setFieldValue, resetFields, focus.
+// Ant selects a box's character on focus, click and key so typing replaces it, but only when document.activeElement is
+// the box: inside the pack's shadow root it is the host, so nothing was selected, the box took two characters and Ant
+// read them as a paste (box 3 of 123456 typed 9 gave 1293: AD-22). The same select, from the shadow root's focus.
+const selectFocusedBox = (e: React.SyntheticEvent<HTMLElement>) => {
+  const wrapper = e.currentTarget;
+  const root = wrapper.getRootNode() as Document | ShadowRoot;
+  requestAnimationFrame(() => {
+    const box = root.activeElement;
+    if (box instanceof HTMLInputElement && wrapper.contains(box)) box.select();
+  });
+};
+
 export const OTP = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Verification code' });
   const [length] = ToolJet.useStateNumber({ name: 'length', label: 'Length', initialValue: 6, min: 2, max: 12 });
@@ -221,6 +233,7 @@ export const OTP = (props: Record<string, unknown>) => {
     defaultHeight: 6,
   });
   const n = Math.max(2, Math.min(12, Number(length) || 6));
+  const takes = (key: string) => (characters === 'numeric' ? /\d/ : /[\da-z]/i).test(key);
   const ref = useRef<InputRef>(null);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
@@ -230,6 +243,16 @@ export const OTP = (props: Record<string, unknown>) => {
     setIsComplete(next.length === n);
     onChange();
     if (next.length === n) onComplete();
+  };
+  // Each box keeps its place: Ant holds the boxes while they are typed in (an emptied box 3 of 123456 stays empty, and
+  // 4 to 6 stay put), and the code only fills them again when it changes from outside (a binding, Set value, Clear, a
+  // Form's clear). Handing Ant back the typed code ('12456', no gap) moved 4 to 6 into box 3 (AD-22).
+  const [boxes, setBoxes] = useState({ code: value, given: value, key: 0 });
+  if (value !== boxes.code) setBoxes({ code: value, given: value, key: boxes.key + 1 });
+  const typed = (cells: string[]) => {
+    const code = cells.join('');
+    setBoxes((b) => ({ ...b, code }));
+    change(code);
   };
   // isComplete follows the code however it changes: set only on typing, a Form's clearForm (or an emptied binding)
   // left isComplete true over empty boxes (SP-33).
@@ -253,21 +276,30 @@ export const OTP = (props: Record<string, unknown>) => {
             onBlur={(e) => {
               if (!e.currentTarget.contains(e.relatedTarget as Node | null)) check.touch();
             }}
+            onFocus={selectFocusedBox}
+            onMouseUp={selectFocusedBox}
+            onKeyUp={selectFocusedBox}
+            // A character the code does not take (a letter in a numeric code) is refused before it replaces the
+            // selected one: Ant's formatter dropped it and left the box empty (box 4 of 123456 typed a gave 12356).
+            onKeyDown={(e) => {
+              if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && !takes(e.key)) e.preventDefault();
+            }}
           >
             <Input.OTP
+              key={boxes.key}
               ref={ref as never}
               length={n}
-              value={value}
+              value={boxes.given}
               mask={mask ? '•' : false}
               disabled={disabled}
               variant={look.variant}
               size={look.size}
               status={check.error ? 'error' : undefined}
+              // The space is Ant's mark for an empty box: dropping it moved the boxes after it one place left.
               formatter={(s) =>
-                characters === 'numeric' ? s.replace(/\D/g, '') : s.replace(/[^\da-z]/gi, '').toUpperCase()
+                characters === 'numeric' ? s.replace(/[^\d ]/g, '') : s.replace(/[^\da-z ]/gi, '').toUpperCase()
               }
-              onInput={(cells) => change(cells.join(''))}
-              onChange={(v) => v !== value && change(v)}
+              onInput={typed}
             />
           </span>
         </SpinOver>
