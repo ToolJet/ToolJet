@@ -23,7 +23,8 @@ export async function readApp(session: Session, appId: string, versionId?: strin
   const version = app.editing_version ?? {};
   return {
     id: app.id,
-    name: app.name,
+    // Under git sync branching the name is the branch draft's (app_name); the app's own is empty.
+    name: app.name ?? version.app_name ?? version.appName,
     slug: app.slug,
     versionId: version.id,
     versionStatus: version.status,

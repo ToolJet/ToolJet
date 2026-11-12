@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { ApiError, type Session } from './session';
-import { Project, GEN_FILE, Snapshot } from './project';
+import { Project, GEN_FILE, Snapshot, type AppJson } from './project';
 import { listVersions, pickVersion, pullSnapshot, readApp, VersionInfo } from './remote';
 import { scaffoldApp } from './scaffold';
 import { repairSdk } from './sdk';
@@ -44,8 +44,12 @@ export interface CloneResult {
 
 /** A new project folder linked to an existing app: app.json from its code page and routes, then a pull. */
 export async function cloneApp(session: Session, appId: string, dir?: string): Promise<CloneResult> {
-  const remote = await readApp(session, appId);
-  const target = dir ?? remote.slug ?? remote.id;
+  const listed = await readApp(session, appId);
+  const target = dir ?? listed.slug ?? listed.id;
+  // Under git sync branching an app's name and pages live on each branch's draft, and a read that names no branch
+  // has neither. Read the draft the project will work on: the one `pull` and `dev` pick for this folder.
+  const { version } = (await workingApp(session, path.dirname(path.resolve(target)), { appId } as AppJson)).app;
+  const remote = version ? await readApp(session, appId, version.id) : listed;
   scaffoldApp(target, remote.name);
   const project = new Project(path.resolve(target));
   const app = project.readApp();

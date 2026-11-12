@@ -57,14 +57,23 @@ const storedFiles = [
   { path: 'frontend/src/routes/orders.tsx', content: 'export const Orders = () => null;\n' },
 ];
 
-function fakeSession(stored: StoredCode = 'none'): Session & { calls: string[] } {
+/*
+  `onBranch`: git sync with branching, the app open on a feature branch. The app's name lives on each branch's draft,
+  so reading the app without naming a branch gives no name and no editing version, as ToolJet does.
+*/
+function fakeSession(stored: StoredCode = 'none', { onBranch = false } = {}): Session & { calls: string[] } {
   const calls: string[] = [];
   const source = '/code-mode-source/app-1/versions/ver-2';
   const summary = { exists: true, revision: 2, owner: 'platform', contentHash: 'hash-2' };
   const routes: Record<string, unknown> = {
     // A workspace without git sync: no branch, so the editing version.
-    '/code-mode-source/app-1/branch-draft': { branch: null, version: null },
-    '/apps/app-1': v2,
+    '/code-mode-source/app-1/branch-draft': onBranch
+      ? {
+          branch: { id: 'br-1', name: 'feature-x', isDefault: false },
+          version: { id: 'ver-2', name: 'feature-x', status: 'DRAFT' },
+        }
+      : { branch: null, version: null },
+    '/apps/app-1': onBranch ? { ...v2, name: null, editing_version: null, pages: [], data_queries: [] } : v2,
     '/v2/apps/app-1/versions/ver-2': v2,
     '/v2/apps/app-1/versions/ver-1': v1,
     '/apps/app-1/versions': { versions: [{ id: 'ver-2', name: 'v2', status: 'DRAFT' }, { id: 'ver-1', name: 'v1', status: 'RELEASED' }] },
@@ -149,6 +158,17 @@ describe('tooljet app clone, pull and checkout', () => {
     const result = await cloneApp(session, 'app-1', 'talent-pipeline');
     expect(result.project.readApp()).to.include({ name, appId: 'app-1' });
     expect(result.project.readLibraryConfig().libraryName).to.equal(name);
+  });
+
+  it('clone of an app on a git sync branch takes its name and code page from that branch draft', async () => {
+    const session = fakeSession('none', { onBranch: true });
+    const result = await cloneApp(session, 'app-1');
+    expect(result.dir).to.equal('orders-desk');
+    expect(result.hasCodePage).to.equal(true);
+    expect(result.project.readApp()).to.include({ name: 'Orders Desk', appId: 'app-1' });
+    expect(result.project.readApp().routes.map((r) => r.id)).to.deep.equal(['orders', 'order']);
+    expect(result.project.readLibraryConfig().libraryName).to.equal('Orders Desk');
+    expect(session.calls).to.include('GET /v2/apps/app-1/versions/ver-2');
   });
 
   it('clone writes the code ToolJet stores for the editing version and records it', async () => {
