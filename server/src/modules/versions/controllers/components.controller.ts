@@ -4,9 +4,13 @@ import { Body, Controller, Delete, Post, Put, UseGuards, UseInterceptors } from 
 import { FEATURE_KEY } from '../constants';
 import { App as AppEntity } from '@entities/app.entity';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
+import { Body, Controller, Delete, Post, Put, UseGuards } from '@nestjs/common';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { FeatureAbilityGuard } from '../ability/guard';
+import { FEATURE_KEY } from '../constants';
+import { App as AppEntity } from '@entities/app.entity';
+import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { ComponentsService } from '@modules/apps/services/component.service';
 import {
@@ -20,6 +24,7 @@ import { IComponentsController } from '../interfaces/controllers/IComponentsCont
 import { GitSyncEditGuard } from '../guards/git-sync-edit.guard';
 import { GitDirtyFlagInterceptor } from '@modules/git-sync-configs/interceptors/git-dirty-flag.interceptor';
 import { MarksAppVersionDirty } from '@modules/git-sync-configs/decorators/marks-git-dirty.decorator';
+import { MutableAppVersionGuard } from '@modules/apps/guards/mutable-app-version.guard';
 
 @InitModule(MODULES.VERSION)
 @Controller({
@@ -30,7 +35,7 @@ export class ComponentsController implements IComponentsController {
   constructor(protected readonly componentsService: ComponentsService) {}
 
   @InitFeature(FEATURE_KEY.CREATE_COMPONENTS)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Post(':id/versions/:versionId/components')
@@ -40,7 +45,7 @@ export class ComponentsController implements IComponentsController {
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_COMPONENTS)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Put(':id/versions/:versionId/components')
@@ -50,7 +55,7 @@ export class ComponentsController implements IComponentsController {
   }
 
   @InitFeature(FEATURE_KEY.DELETE_COMPONENTS)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Delete(':id/versions/:versionId/components')
@@ -63,7 +68,7 @@ export class ComponentsController implements IComponentsController {
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_COMPONENT_LAYOUT)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Put(':id/versions/:versionId/components/layout')
@@ -72,7 +77,7 @@ export class ComponentsController implements IComponentsController {
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_COMPONENTS)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Put(':id/versions/:versionId/components/batch')

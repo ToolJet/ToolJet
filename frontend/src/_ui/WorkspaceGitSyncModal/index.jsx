@@ -284,8 +284,13 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
   const handlePull = async () => {
     try {
       // Pull hydrates in the background — reloading now would only show stale data
-      await actions.pullWorkspace();
-      toast.success('Pulling latest changes.');
+      const result = await actions.pullWorkspace();
+      // Server skips the pull when the remote HEAD hasn't moved since the last full pull
+      if (result?.upToDate) {
+        toast.success(`Already up to date. There are no new commits on ${currentBranchName} to pull.`);
+      } else {
+        toast.success('Pulling latest changes.');
+      }
       onClose();
     } catch (error) {
       if (error?.statusCode === 409) {

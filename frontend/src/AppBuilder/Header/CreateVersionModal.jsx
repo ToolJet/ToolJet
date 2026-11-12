@@ -11,6 +11,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { AlertCircle } from 'lucide-react';
+import NestedWorkflowPinsBlockedDialog, { NESTED_WORKFLOW_PINS_BLOCKED } from './NestedWorkflowPinsBlockedDialog';
 import '../../_styles/version-modal.scss';
 
 // AppGitVersionService.saveVersion (server/ee/app-git/services/versions.service.ts) throws a 409
@@ -41,6 +42,7 @@ const CreateVersionModal = ({
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
+  const [pinsBlocked, setPinsBlocked] = useState(null);
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
   const [showUncommittedChangesModal, setShowUncommittedChangesModal] = useState(false);
@@ -308,7 +310,12 @@ const CreateVersionModal = ({
         const errorMessage =
           typeof rawError === 'object' ? rawError.error : rawError || 'Error while creating version. Please try again.';
         const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
-        toast.error(errorMessage);
+        if (rawError?.code === NESTED_WORKFLOW_PINS_BLOCKED) {
+          setPinsBlocked(rawError);
+          setShowCreateAppVersion(false);
+        } else {
+          toast.error(errorMessage);
+        }
         useStore.getState().debugger.log({
           logLevel: 'error',
           type: 'component',
@@ -352,6 +359,9 @@ const CreateVersionModal = ({
       setIsAutoCommitting(false);
     }
   };
+
+  if (pinsBlocked)
+    return <NestedWorkflowPinsBlockedDialog blocked={pinsBlocked} onClose={() => setPinsBlocked(null)} />;
 
   return (
     <>

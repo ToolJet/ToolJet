@@ -1,5 +1,6 @@
 import { MODULES } from '@modules/app/constants/modules';
 import { InitModule } from '@modules/app/decorators/init-module';
+import { Body, Controller, Delete, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { Body, Controller, Delete, Param, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { IPagesController } from '../interfaces/controllers/IPagesController';
 import { GitSyncEditGuard } from '../guards/git-sync-edit.guard';
 import { GitDirtyFlagInterceptor } from '@modules/git-sync-configs/interceptors/git-dirty-flag.interceptor';
 import { MarksAppVersionDirty } from '@modules/git-sync-configs/decorators/marks-git-dirty.decorator';
+import { MutableAppVersionGuard } from '@modules/apps/guards/mutable-app-version.guard';
 
 @InitModule(MODULES.VERSION)
 @Controller({
@@ -24,7 +26,7 @@ export class PagesController implements IPagesController {
   constructor(protected readonly pageService: PageService) {}
 
   @InitFeature(FEATURE_KEY.UPDATE_PAGES)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Put(':id/versions/:versionId/pages')
@@ -34,7 +36,7 @@ export class PagesController implements IPagesController {
   }
 
   @InitFeature(FEATURE_KEY.CREATE_PAGES)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Post(':id/versions/:versionId/pages')
@@ -44,7 +46,7 @@ export class PagesController implements IPagesController {
   }
 
   @InitFeature(FEATURE_KEY.CLONE_PAGES)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Post(':id/versions/:versionId/pages/:pageId/clone')
@@ -53,7 +55,7 @@ export class PagesController implements IPagesController {
   }
 
   @InitFeature(FEATURE_KEY.REORDER_PAGES)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Put(':id/versions/:versionId/pages/reorder')
@@ -62,7 +64,7 @@ export class PagesController implements IPagesController {
   }
 
   @InitFeature(FEATURE_KEY.DELETE_PAGE)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, GitSyncEditGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Delete(':id/versions/:versionId/pages')

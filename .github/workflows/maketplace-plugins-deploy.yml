@@ -17,10 +17,22 @@ jobs:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'deploy-marketplace-plugin' }}
     runs-on: ubuntu-latest
     permissions:
-      contents: read          # nothing else — this job runs fork code
+      contents: read
 
     steps:
-      - name: Checkout PR code (fork or same-repo)
+      # Security: fork PRs are not allowed (their code could poison the shared Actions cache).
+      # Runs before any PR code is checked out.
+      - name: Block pull requests from forks
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "❌ Pull requests from forks cannot be deployed to stage ($HEAD_REPO)."
+            echo "A maintainer can open a PR from a branch in $GITHUB_REPOSITORY with the contributor's changes and label that one."
+            exit 1
+          fi
+
+      - name: Checkout PR code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -90,13 +102,33 @@ jobs:
           path: /tmp/artifact
 
       # ── Treat the artifact as hostile data ──────────────────────────────────
-      - name: Validate artifact paths (reject traversal / absolute paths)
+      # Only normal files and folders with safe names under plugins/. Also blocks symlinks
+      - name: Validate artifact (paths, names and file types)
         run: |
-          if tar -tzf /tmp/artifact/plugin-dist.tar.gz | grep -E '(^/|(^|/)\.\.(/|$))'; then
-            echo "❌ Artifact contains unsafe paths (absolute or ../). Aborting."
-            exit 1
-          fi
-          echo "✅ Artifact paths look safe."
+          python3 - /tmp/artifact/plugin-dist.tar.gz <<'PY'
+          import re, sys, tarfile
+          bad_chars = re.compile(r'[\x00-\x1f\x7f]')  # line breaks and other control characters
+          safe_plugin = re.compile(r'^[A-Za-z0-9_-]+$')
+          problems = []
+          with tarfile.open(sys.argv[1]) as archive:
+              for item in archive:
+                  name = item.name
+                  parts = name.split('/')
+                  if not (item.isfile() or item.isdir()):
+                      problems.append(f'{name!r}: not a normal file or folder (link or special file)')
+                  elif name.startswith('/') or '..' in parts or bad_chars.search(name):
+                      problems.append(f'{name!r}: unsafe name or path')
+                  elif parts[0] != 'plugins':
+                      problems.append(f'{name!r}: outside plugins/')
+                  elif len(parts) > 1 and not safe_plugin.match(parts[1]):
+                      problems.append(f'{name!r}: plugin folder name may only use letters, numbers, - and _')
+          if problems:
+              print('❌ Artifact failed the safety check. Aborting.')
+              for p in problems[:50]:
+                  print('  -', p)
+              sys.exit(1)
+          print('✅ Artifact looks safe.')
+          PY
 
       - name: Extract artifact into ISOLATED staging dir
         run: |
@@ -142,10 +174,11 @@ jobs:
         id: upload_summary
         run: |
           SUMMARY=$(awk '/UPLOAD SUMMARY/,0' marketplace/upload_summary.log)
+          DELIM="EOF_$(openssl rand -hex 16)"
           {
-            echo "UPLOAD_SUMMARY<<EOF"
+            echo "UPLOAD_SUMMARY<<$DELIM"
             echo "$SUMMARY"
-            echo "EOF"
+            echo "$DELIM"
           } >> "$GITHUB_ENV"
 
       - name: Comment on success

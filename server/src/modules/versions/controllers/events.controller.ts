@@ -4,6 +4,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseI
 import { FEATURE_KEY } from '../constants';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
+import { MutableAppVersionGuard } from '@modules/apps/guards/mutable-app-version.guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { FeatureAbilityGuard } from '../ability/guard';
 import { EventsService } from '@modules/apps/services/event.service';
@@ -35,7 +36,7 @@ export class EventsController implements IEventsController {
   }
 
   @InitFeature(FEATURE_KEY.CREATE_EVENT)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Post(':id/versions/:versionId/events')
@@ -45,7 +46,7 @@ export class EventsController implements IEventsController {
   }
 
   @InitFeature(FEATURE_KEY.CREATE_EVENT)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Post(':id/versions/:versionId/events/bulk')
@@ -55,7 +56,7 @@ export class EventsController implements IEventsController {
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_EVENT)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Put(':id/versions/:versionId/events')
@@ -66,7 +67,7 @@ export class EventsController implements IEventsController {
   }
 
   @InitFeature(FEATURE_KEY.DELETE_EVENT)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, MutableAppVersionGuard)
   @UseInterceptors(GitDirtyFlagInterceptor)
   @MarksAppVersionDirty()
   @Delete(':id/versions/:versionId/events/:eventId')

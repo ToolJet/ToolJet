@@ -229,13 +229,23 @@ export const GlobalDataSourcesPage = (props) => {
     });
   };
 
-  // Folder permission gates. Create/delete ride the coarse group flags; rename is decided PER
-  // FOLDER, because a granular "Edit folder" grant can be scoped to specific folders. See
-  // modules/dataSources/helpers/dataSourceFolderPermissions.js for how each mirrors the server.
+  // Folder permission gates. Creating a NEW folder has no folder to scope to, so it stays on the
+  // coarse group flag; rename and delete are decided PER FOLDER, because a granular "Edit folder"
+  // grant can be scoped to specific folders and a folder's creator may always manage their own.
+  // See modules/dataSources/helpers/dataSourceFolderPermissions.js for how each mirrors the server.
   const canCreateDataSourceFolder = () => canCreateDataSourceFolderFor(authenticationService.currentSessionValue);
-  const canDeleteDataSourceFolder = () => canDeleteDataSourceFolderFor(authenticationService.currentSessionValue);
   const canUpdateDataSourceFolder = (folder) =>
     canRenameDataSourceFolderFor(authenticationService.currentSessionValue, folder, { isBranchingEnabled });
+  // The listing now also shows folders the user holds no grant on, revealed only because they hold
+  // a data source the user can see — the coarse flag alone would offer Delete on those. Ownership
+  // is added here because FoldersService.checkFolderManagePermission returns early for the
+  // folder's creator on 'delete' too, so hiding it would conceal a delete the API allows.
+  const canDeleteDataSourceFolder = (folder) => {
+    const session = authenticationService.currentSessionValue;
+    const currentUserId = session?.current_user?.id;
+    const isOwner = currentUserId != null && folder?.created_by === currentUserId;
+    return canDeleteDataSourceFolderFor(session) || isOwner;
+  };
 
   const fetchFolders = async (searchKey = '') => {
     setFoldersLoading(true);
