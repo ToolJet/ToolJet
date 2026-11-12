@@ -1079,10 +1079,11 @@ export const getBlockers = ({
 //                   (V'.currentBottom + canonicalGap(V', T))
 //     T.newTop   = max(proposedTop, otherMax, T.canonical.top)
 //
-//   Grow (delta > 0): proposedTop wins, T pushes down by delta regardless of
-//     what other blockers look like. That's the "push no matter what" rule —
-//     if one blocker above T grew, T moves down by that amount even if a
-//     different blocker was already farther down.
+//   Grow (delta > 0): T stays at least where it is, and otherMax (which
+//     includes the grown widget's new bottom) pushes it down. Adding delta to
+//     T's current top instead summed the growths of side-by-side widgets: two
+//     texts above T that each grew pushed T by both growths, not by the lower
+//     one's.
 //   Shrink (delta < 0): proposedTop drops. If another in-flow blocker was
 //     holding T at a higher position, otherMax takes over and T stops there.
 //     Canonical top floors the pull-up — we never go above authored
@@ -1334,7 +1335,9 @@ export const buildReflowPatch = ({
       // Delta from the changed widget only applies when that widget is in
       // flow (grow/shrink). When it's out of flow (hide), slot subtraction
       // and structural constraints do all the work.
-      const effectiveDelta = isChangedOutOfFlow ? 0 : delta;
+      // A grow never adds to T's current top: T may already sit below a side-by-side widget that grew earlier, and
+      // adding this growth on top of that push summed both. The grown widget's own constraint in otherMax places T.
+      const effectiveDelta = isChangedOutOfFlow || delta > 0 ? 0 : delta;
       const proposedTop = baseTop + effectiveDelta;
 
       // Max over every in-flow blocker (INCLUDING the changed widget). Each
