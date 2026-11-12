@@ -478,6 +478,14 @@ const openLdapModal = () => {
   cy.intercept("GET", "/api/license/access").as("ldapLicenseAccess");
   cy.get(ssoSelector.ldap).click();
   cy.wait("@ldapLicenseAccess");
+  cy.get(ssoSelector.ldapTitle).should("be.visible");
+  cy.wait(1000);
+};
+
+const enableLdapToggle = () => {
+  cy.get(ssoSelector.ldapEnableToggle).should("be.visible");
+  cy.get(ssoSelector.ldapEnableToggle).click();
+  cy.get('[data-cy="ldap-toggle-input"] input').should("be.checked");
 };
 
 export const ldapSSOPageElements = () => {
@@ -490,7 +498,7 @@ export const ldapSSOPageElements = () => {
     .eq(0)
     .should("be.visible")
     .and("have.text", "Disabled");
-  cy.get(ssoSelector.ldapEnableToggle).should("be.visible").click();
+  enableLdapToggle();
   cy.get(ssoSelector.saveButton).eq(1).click();
 
   cy.clearAndType(ssoSelector.nameInput, ssoText.ldapName);
@@ -500,7 +508,7 @@ export const ldapSSOPageElements = () => {
 
   cy.get(ssoSelector.cancelButton).eq(1).click();
   openLdapModal();
-  cy.get(ssoSelector.ldapEnableToggle).click();
+  enableLdapToggle();
 
   cy.get(ssoSelector.nameInput).should("have.value", "");
   cy.get(ssoSelector.hostInput).should("have.value", "");
