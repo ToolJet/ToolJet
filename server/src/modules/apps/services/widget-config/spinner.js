@@ -4,7 +4,7 @@ export const spinnerConfig = {
   description: 'Indicate loading state',
   component: 'Spinner',
   defaultSize: {
-    width: 4,
+    width: 1,
     height: 30,
   },
   others: {

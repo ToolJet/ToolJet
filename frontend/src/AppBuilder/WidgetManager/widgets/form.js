@@ -3,7 +3,7 @@ export const formConfig = {
   displayName: 'Form',
   description: 'Wrapper for multiple components',
   defaultSize: {
-    width: 15,
+    width: 4,
     height: 450,
   },
   defaultChildren: [
