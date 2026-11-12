@@ -19,6 +19,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], permissions: UserAllPermissions): void {
     // Every member's code pages run under the policy, so every member reads it; only admins change it.
     can(FEATURE_KEY.GET_CODE_PAGE_SECURITY, CodePageSecuritySubject);
-    if (permissions.superAdmin || permissions.isAdmin) can(FEATURE_KEY.UPDATE_CODE_PAGE_SECURITY, CodePageSecuritySubject);
+    if (permissions.superAdmin || permissions.isAdmin)
+      can(FEATURE_KEY.UPDATE_CODE_PAGE_SECURITY, CodePageSecuritySubject);
   }
 }

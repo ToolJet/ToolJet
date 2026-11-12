@@ -284,7 +284,11 @@ describe('PatScopeInterceptor', () => {
           return orgs[params[0]] ? [{ organization_id: orgs[params[0]] }] : [];
         }
         // library-ownership.ts: owners (stored code links) and references (components, pins) answer alike here.
-        return params[1] === 'lib-other' ? [{ appId: 'app-other' }] : params[1] === 'lib-own' ? [{ appId: AI_APP }] : [];
+        return params[1] === 'lib-other'
+          ? [{ appId: 'app-other' }]
+          : params[1] === 'lib-own'
+            ? [{ appId: AI_APP }]
+            : [];
       },
     };
     const libraryInterceptor = (feature: string) =>
@@ -304,8 +308,12 @@ describe('PatScopeInterceptor', () => {
       lastValueFrom(libraryInterceptor(feature).intercept(contextFor(user, 'http', request), handled) as any);
 
     it('lets it create and publish its own app library', async () => {
-      await expect(run('FIND_OR_CREATE_LIBRARY', aiSession(), { body: { correlationId: 'lib-new' } })).resolves.toBe('HANDLED');
-      await expect(run('UPLOAD_DEV_BUNDLE', aiSession(), { params: { correlationId: 'lib-own' } })).resolves.toBe('HANDLED');
+      await expect(run('FIND_OR_CREATE_LIBRARY', aiSession(), { body: { correlationId: 'lib-new' } })).resolves.toBe(
+        'HANDLED'
+      );
+      await expect(run('UPLOAD_DEV_BUNDLE', aiSession(), { params: { correlationId: 'lib-own' } })).resolves.toBe(
+        'HANDLED'
+      );
       await expect(run('LIST_LIBRARIES', aiSession())).resolves.toBe('HANDLED');
     });
 
@@ -317,7 +325,10 @@ describe('PatScopeInterceptor', () => {
 
     it('refuses another workspace', async () => {
       await expect(
-        run('FIND_OR_CREATE_LIBRARY', aiSession(), { headers: { 'tj-workspace-id': 'ws-2' }, body: { correlationId: 'lib-new' } })
+        run('FIND_OR_CREATE_LIBRARY', aiSession(), {
+          headers: { 'tj-workspace-id': 'ws-2' },
+          body: { correlationId: 'lib-new' },
+        })
       ).rejects.toThrow(/its own workspace/);
       await expect(
         run('FIND_OR_CREATE_LIBRARY', aiSession({ aiAppId: 'app-other-ws' }), { body: { correlationId: 'lib-new' } })
@@ -325,14 +336,20 @@ describe('PatScopeInterceptor', () => {
     });
 
     it('refuses a session with no app, and routes it does not need', async () => {
-      await expect(run('FIND_OR_CREATE_LIBRARY', aiSession({ aiAppId: undefined }), { body: { correlationId: 'lib-new' } })).rejects.toThrow(
-        /not tied to an app/
-      );
+      await expect(
+        run('FIND_OR_CREATE_LIBRARY', aiSession({ aiAppId: undefined }), { body: { correlationId: 'lib-new' } })
+      ).rejects.toThrow(/not tied to an app/);
       await expect(run('DELETE_LIBRARY', aiSession())).rejects.toThrow(ForbiddenException);
     });
 
     it('holds every other workspace token to the library features a token may use (the routes check the owning app)', () => {
-      for (const feature of ['CREATE_LIBRARY', 'FIND_OR_CREATE_LIBRARY', 'GET_LIBRARY', 'UPLOAD_DEV_BUNDLE', 'PUBLISH_REVISION']) {
+      for (const feature of [
+        'CREATE_LIBRARY',
+        'FIND_OR_CREATE_LIBRARY',
+        'GET_LIBRARY',
+        'UPLOAD_DEV_BUNDLE',
+        'PUBLISH_REVISION',
+      ]) {
         expect(libraryInterceptor(feature).intercept(contextFor({ isPATLogin: true }), handled)).toBeDefined();
       }
       for (const feature of ['DELETE_LIBRARY', 'STREAM_DEV_BUNDLE']) {

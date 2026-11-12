@@ -55,7 +55,7 @@ export function resolveCodeModeIsolation(env: NodeJS.ProcessEnv = process.env): 
   } else if (mode === 'off') {
     messages.push({
       level: 'warn',
-      text: "CODE_MODE_ISOLATION=off: code apps run on the ToolJet origin, with the session of whoever opens them. Use it only where every app builder is trusted.",
+      text: 'CODE_MODE_ISOLATION=off: code apps run on the ToolJet origin, with the session of whoever opens them. Use it only where every app builder is trusted.',
     });
   }
 
