@@ -12,7 +12,8 @@ import { useLibraryManifest } from '@/AppBuilder/Widgets/hooks/useLibraryManifes
 import useStore from '@/AppBuilder/_stores/store';
 import { offersDynamicHeight } from '@/AppBuilder/_helpers/sdkComponentTypes';
 import { useBuiltinPack, usePackManifest } from '@/_stores/builtinPacksStore';
-import { packIdentityRows } from './packIdentity';
+import { packIdentity, type PackIdentity } from './packIdentity';
+import { PackIdentityStrip } from './PackIdentityStrip';
 import type { ManifestComponent } from '@/AppBuilder/types/libraryComponent.types';
 import {
   DISABLED_STATE_META,
@@ -45,7 +46,8 @@ const resolveLive = (value: unknown): unknown =>
 
 // Manifest-driven Properties tab for a component built with the custom-component SDK (LibraryComponent, PackComponent;
 // LLD §5.6, ModuleViewerInspector pattern). Which component the instance draws lives ONLY in definition.properties —
-// never rendered as editable fields. `identityRows` is read-only context shown first (a library's revision).
+// never rendered as editable fields. `identityRows` is read-only context shown first (a library's revision);
+// `identity` is a pack instance's library and component, shown as one line above the accordions.
 const ManifestPropertiesPanel = ({
   componentMeta,
   darkMode,
@@ -60,7 +62,12 @@ const ManifestPropertiesPanel = ({
   pages,
   componentManifest,
   identityRows = [],
-}: LibraryComponentPropertiesProps & { componentManifest?: ManifestComponent; identityRows?: [string, string?][] }) => {
+  identity = null,
+}: LibraryComponentPropertiesProps & {
+  componentManifest?: ManifestComponent;
+  identityRows?: [string, string?][];
+  identity?: PackIdentity | null;
+}) => {
   const props = componentManifest?.props ?? [];
   const shownComponent = withManifestDefaults(component, 'properties', props);
   // visibleWhen is checked against shownComponent so a driver the instance never stored counts as its default.
@@ -261,7 +268,12 @@ const ManifestPropertiesPanel = ({
     ),
   });
 
-  return <AccordionComponent items={items} />;
+  return (
+    <>
+      {identity && <PackIdentityStrip {...identity} />}
+      <AccordionComponent items={items} />
+    </>
+  );
 };
 
 // F4b: a custom-component library's instance. Props and events come from the PINNED revision's manifest (public,
@@ -287,7 +299,7 @@ export const LibraryComponentProperties = (props: LibraryComponentPropertiesProp
 
 // A pack component, like a native widget: the build the release ships, with nothing to pick.
 export const PackComponentProperties = (props: LibraryComponentPropertiesProps) => {
-  const { pack, componentName } = packIdentity(props.component);
+  const { pack, componentName } = packInstance(props.component);
   const manifest = usePackManifest(pack);
   const shipped = useBuiltinPack(pack);
   const componentManifest = componentName ? manifest?.components?.[componentName] : undefined;
@@ -295,12 +307,12 @@ export const PackComponentProperties = (props: LibraryComponentPropertiesProps) 
     <ManifestPropertiesPanel
       {...props}
       componentManifest={componentManifest}
-      identityRows={packIdentityRows(pack, componentName, componentManifest, shipped?.displayName)}
+      identity={packIdentity(pack, componentName, componentManifest, shipped?.displayName)}
     />
   );
 };
 
-const packIdentity = (component: LibraryComponentPropertiesProps['component']) => {
+const packInstance = (component: LibraryComponentPropertiesProps['component']) => {
   const properties = (component as any)?.component?.definition?.properties ?? {};
   return {
     pack: properties.pack?.value as string | undefined,
@@ -395,7 +407,7 @@ export const LibraryComponentStyles = (props: LibraryComponentStylesProps) => {
 };
 
 export const PackComponentStyles = (props: LibraryComponentStylesProps) => {
-  const { pack, componentName } = packIdentity(props.component);
+  const { pack, componentName } = packInstance(props.component);
   const manifest = usePackManifest(pack);
   return (
     <ManifestStylesPanel

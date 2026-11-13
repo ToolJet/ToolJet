@@ -58,3 +58,84 @@
     }
   }
 }
+
+// A pack component's Properties tab opens with its library and component name (design option D):
+// [icon] Library · Component, on the layer-02 surface, in placeholder-tone text.
+//
+// When both names don't fit, the library name gives way first, so the component name stays whole. The library keeps
+// at least min(its full name, 40% of the strip): once it is down to that, the component name is cut too, so it never
+// takes more than about 60% while the library is cut. A short library name is never cut, so a long component name may
+// then use the rest. CSS can't write min(max-content, 40%), so two hidden, zero-height copies of the library name
+// (attr(title)) size its box: ::before sets its full width and adds nothing to its minimum; ::after sets the minimum.
+.pack-identity-strip {
+  container-type: inline-size;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 16px;
+  background: var(--background-surface-layer-02);
+  color: var(--text-placeholder);
+  font-size: 13px;
+  line-height: 18px;
+
+  .pack-identity-strip-text {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Shrinks before the component name does (a far larger flex-shrink), down to its content minimum.
+  .pack-identity-strip-library {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 100000 auto;
+  }
+
+  .pack-identity-strip-icon,
+  .pack-identity-strip-dot {
+    flex: none;
+  }
+
+  // Its minimum is its ::after: min(full name, what is left of 40% after the icon, the dot and their gaps).
+  .pack-identity-strip-library-name {
+    display: grid;
+    flex: 0 1 auto;
+
+    > .pack-identity-strip-text {
+      grid-area: 1 / 1;
+      // Sized by the grid cell, never by its own text, so it adds nothing to the box's minimum.
+      width: 0;
+      min-width: 100%;
+    }
+
+    &::before,
+    &::after {
+      content: attr(title);
+      grid-area: 1 / 1;
+      height: 0;
+      // clip, not hidden: a scroll container's minimum is 0, so hidden would drop the 40% floor.
+      overflow: clip;
+      visibility: hidden;
+    }
+
+    // Full width when there is room; breaks anywhere, so its minimum is a single character.
+    &::before {
+      word-break: break-all;
+    }
+
+    &::after {
+      // 40% of the strip, less the icon and the two gaps around the dot and the dot itself (36px), so a cut-off
+      // component name gets 60%.
+      max-width: calc(40cqw - 36px);
+      white-space: nowrap;
+    }
+  }
+
+  .pack-identity-strip-component {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+}

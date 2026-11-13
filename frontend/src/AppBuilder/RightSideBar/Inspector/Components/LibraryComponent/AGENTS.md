@@ -14,3 +14,11 @@ column, so they keep the shared flex layout with the switch at the right edge, a
 
 Editor metadata and list editing tests live in `__tests__/`. Verify actual label/control
 geometry in the browser; Jest does not compute CSS layout.
+
+A pack instance's Properties tab opens with `PackIdentityStrip` (design option D): one shared Lucide `Library` icon,
+the library name, a `·`, and the component name, built by `packIdentity()`. Custom libraries keep their
+Component and Revision rows.
+When the names don't fit, the library name is cut first and the component name stays whole; the library keeps
+at least min(its full name, 40%), so a cut component name never takes more than 60% while the library is cut.
+This is CSS only (styles.scss): two hidden attr(title) copies size the library name, so keep its title equal to
+the name.
