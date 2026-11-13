@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 
 import { Organization } from './organization.entity';
+import { User } from './user.entity';
 import { OrgEnvironmentConstantValue } from './org_environment_constant_values.entity';
 import { OrganizationConstantType } from '@modules/organization-constants/constants';
 
@@ -40,10 +41,24 @@ export class OrganizationConstant extends BaseEntity {
   })
   type: OrganizationConstantType;
 
+  @Column({ name: 'created_by', type: 'uuid', nullable: true })
+  createdBy: string | null;
+
+  @Column({ name: 'updated_by', type: 'uuid', nullable: true })
+  updatedBy: string | null;
+
   @OneToMany(() => OrgEnvironmentConstantValue, (oe) => oe.organizationConstant)
   orgEnvironmentConstantValues: OrgEnvironmentConstantValue[];
 
   @ManyToOne(() => Organization, (organization) => organization.id)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
+
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'created_by' })
+  createdByUser: User | null;
+
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'updated_by' })
+  updatedByUser: User | null;
 }

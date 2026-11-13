@@ -23,7 +23,7 @@ export class OrganizationConstantController implements IOrganizationConstantCont
   @InitFeature(FEATURE_KEY.GET_DECRYPTED_CONSTANTS)
   @Get('decrypted')
   async getDecryptedConstants(@User() user, @Query('type') type: OrganizationConstantType) {
-    const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId, true, type);
+    const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId, type);
     return { constants: result };
   }
 
@@ -33,7 +33,6 @@ export class OrganizationConstantController implements IOrganizationConstantCont
   async getAllSecrets(@User() user) {
     const result = await this.organizationConstantsService.allEnvironmentConstants(
       user.organizationId,
-      false,
       OrganizationConstantType.SECRET
     );
     return { constants: result };
@@ -83,7 +82,11 @@ export class OrganizationConstantController implements IOrganizationConstantCont
   @InitFeature(FEATURE_KEY.CREATE)
   async create(@User() user, @Body() createOrganizationConstantDto: CreateOrganizationConstantDto) {
     const { organizationId } = user;
-    const result = await this.organizationConstantsService.create(createOrganizationConstantDto, organizationId);
+    const result = await this.organizationConstantsService.create(
+      createOrganizationConstantDto,
+      organizationId,
+      user.id
+    );
 
     return decamelizeKeys({ constant: result });
   }
@@ -93,7 +96,7 @@ export class OrganizationConstantController implements IOrganizationConstantCont
   @InitFeature(FEATURE_KEY.UPDATE)
   async update(@Body() body: UpdateOrganizationConstantDto, @User() user, @Param('id') constantId) {
     const { organizationId } = user;
-    const result = await this.organizationConstantsService.update(constantId, organizationId, body);
+    const result = await this.organizationConstantsService.update(constantId, organizationId, body, user.id);
 
     return decamelizeKeys({ constant: result });
   }
@@ -104,7 +107,7 @@ export class OrganizationConstantController implements IOrganizationConstantCont
   async delete(@User() user, @Param('id') constantId, @Query('environmentId') environmentId) {
     const { organizationId } = user;
 
-    await this.organizationConstantsService.delete(constantId, organizationId);
+    await this.organizationConstantsService.delete(constantId, organizationId, user.id);
 
     return { statusCode: 204 };
   }

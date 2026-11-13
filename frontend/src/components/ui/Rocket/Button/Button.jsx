@@ -51,11 +51,13 @@ const buttonVariants = cva(
           'active:tw-bg-button-outline-pressed',
         ],
       },
+      // `tw-text-*` stays so it replaces the shadcn base size; `tw-font-title-*` adds the Figma letter spacing (same size and line height).
+      // Icon sizes follow the Figma component: large 20, default 16 (shadcn base), medium 14, small 12.
       size: {
-        large: 'tw-h-10 tw-px-4 tw-text-lg tw-gap-1.5',
-        default: 'tw-h-8 tw-px-3 tw-text-base tw-gap-1.5',
-        medium: 'tw-h-7 tw-px-3 tw-text-base tw-gap-1',
-        small: 'tw-h-5 tw-px-2 tw-text-sm tw-gap-1',
+        large: 'tw-h-10 tw-px-4 tw-text-lg tw-font-title-large tw-gap-1.5 [&_svg]:tw-size-5',
+        default: 'tw-h-8 tw-px-3 tw-text-base tw-font-title-default tw-gap-1.5',
+        medium: 'tw-h-7 tw-px-2.5 tw-text-base tw-font-title-default tw-gap-1.5 [&_svg]:tw-size-3.5',
+        small: 'tw-h-5 tw-px-2 tw-text-sm tw-font-title-small tw-gap-1 [&_svg]:tw-size-3',
       },
       danger: {
         true: '',

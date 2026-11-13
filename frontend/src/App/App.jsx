@@ -71,6 +71,7 @@ import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
 import UpgradePlanModal from '@/modules/common/components/UpgradePlanModal';
+import ReactQueryClientProvider from './ReactQueryClientProvider';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
 
@@ -86,14 +87,17 @@ const AppWrapper = (props) => {
   // NOTE: BrowserRouter removed - now handled by RootRouter.jsx
   // App.jsx is now wrapped by RootRouter which provides the router context
   return (
-    <Suspense fallback={null}>
-      <AppWithRouter
-        props={props}
-        isAppDarkMode={isAppDarkMode} // This is the dark mode only for appbuilder's canvas + viewer
-        darkMode={isTJDarkMode} // This is the dark mode of entire platform
-        updateIsTJDarkMode={updateIsTJDarkMode}
-      />
-    </Suspense>
+    // As we are not using react-query for viewer, so have added provider here. In future we can move it higher if required
+    <ReactQueryClientProvider>
+      <Suspense fallback={null}>
+        <AppWithRouter
+          props={props}
+          isAppDarkMode={isAppDarkMode} // This is the dark mode only for appbuilder's canvas + viewer
+          darkMode={isTJDarkMode} // This is the dark mode of entire platform
+          updateIsTJDarkMode={updateIsTJDarkMode}
+        />
+      </Suspense>
+    </ReactQueryClientProvider>
   );
 };
 

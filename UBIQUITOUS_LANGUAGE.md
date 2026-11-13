@@ -74,7 +74,11 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Exposed Variable** | An auto-generated, read-only variable holding component state (e.g., `components.textinput1.value`) | — |
 | **Workspace Constant** | A reusable, non-secret value available across all apps in a workspace; resolved server-side; syntax: `{{constants.name}}` | Global Constant (acceptable), Workspace Variable / Environment Variable (deprecated docs terms) |
 | **Workspace Secret** | An encrypted workspace constant for sensitive data; masked in frontend; syntax: `{{secrets.name}}` | — |
-| **Environment-Specific Configuration** | Constants and secrets can hold different values per environment (dev/staging/prod) | — |
+| **Environment-Specific Configuration** | Constants and secrets can hold different values per environment (dev/staging/prod). Each environment's value is reported with `has_value`; a constant with no value in the viewed environment is not listed. Without the multi-environment license a constant takes one value, written to every environment | — |
+| **Constant Type** | `Global` (`{{constants.name}}`) or `Secret` (`{{secrets.name}}`) (`OrganizationConstantType`). A Global and a Secret may share a name: the unique key is name + workspace + type | — |
+| **Constant Source** | Where a constant comes from (`ConstantSource`): `workspace` (a database row, editable) or `env` (a server environment variable, read-only, id `env:<type>:<name>`, enterprise edition only). The Constants page labels them Workspace and `.env`. Not an Environment, and not a Write Source | `.env` constant |
+| **Pinned Constant** | A constant the user pins to the top of its tab on the Constants page (`pins` in `constantsListStore`). Kept in memory only, so pins reset on reload; never stored on the server | — |
+| **Bulk Delete Result** | The response of `POST /v2/organization-constants/bulk-delete`: `deleted_ids` and `skipped_ids`. An id is skipped when it is not a constant of the workspace, which includes every `.env` constant | — |
 | **Inspector** | The App-Builder panel for viewing all runtime state (sections: Queries, Components, Globals, Variables, Page, Constants) | Debugger (separate panel) |
 | **Debugger** | The App-Builder panel for debugging code execution errors | Console (the browser console is separate) |
 | **Transformation** | A JavaScript/Python transform applied to query results before binding to components | — |
@@ -217,6 +221,8 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 - **"Widget"** appears as the docs folder name (`docs/docs/widgets/`) but the content inside consistently says **"Components"**. The `widgets` folder name is historical. Use **Component** everywhere.
 
 - **"Editor" / "Viewer"** appear in license code (`editor` count, `NumberOfEditor`, `viewer` count) but user-facing terminology is **Builder** and **End User** respectively. Use the user-facing terms.
+
+- **".env" (Constant Source) vs. "Environment"**: a `.env` constant is a **Workspace Constant** read from a server environment variable (**Constant Source** `env`). An **Environment** is dev/staging/production. A `.env` constant can still carry a value per Environment, but the two words name different things: never call the source "Environment".
 
 - **"Workspace Variable" / "Environment Variable"** appear in legacy docs and some code paths but the current canonical terms are **Workspace Constant** (non-secret) and **Workspace Secret** (encrypted). The variable terminology is deprecated.
 

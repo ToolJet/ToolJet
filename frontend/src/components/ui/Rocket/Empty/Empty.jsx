@@ -115,7 +115,17 @@ const emptyTitleVariants = cva('tw-text-text-default', {
 
 const EmptyTitle = forwardRef(function EmptyTitle({ className, ...props }, ref) {
   const size = useContext(EmptySizeContext);
-  return <ShadcnEmptyTitle ref={ref} className={cn(emptyTitleVariants({ size }), className)} {...props} />;
+  return (
+    <ShadcnEmptyTitle
+      ref={ref}
+      className={cn(
+        'tw-font-title-default tw-text-text-default tw-text-center',
+        emptyTitleVariants({ size }),
+        className
+      )}
+      {...props}
+    />
+  );
 });
 EmptyTitle.displayName = 'EmptyTitle';
 
@@ -139,7 +149,17 @@ const emptyDescriptionVariants = cva(
 
 const EmptyDescription = forwardRef(function EmptyDescription({ className, ...props }, ref) {
   const size = useContext(EmptySizeContext);
-  return <ShadcnEmptyDescription ref={ref} className={cn(emptyDescriptionVariants({ size }), className)} {...props} />;
+  return (
+    <ShadcnEmptyDescription
+      ref={ref}
+      className={cn(
+        'tw-font-body-default tw-text-text-placeholder tw-text-center',
+        emptyDescriptionVariants({ size }),
+        className
+      )}
+      {...props}
+    />
+  );
 });
 EmptyDescription.displayName = 'EmptyDescription';
 

@@ -4,6 +4,9 @@ import { FeaturesConfig } from '../types';
 
 export const FEATURES: FeaturesConfig = {
   [MODULES.ORGANIZATION_CONSTANT]: {
+    [FEATURE_KEY.LIST]: {},
+    [FEATURE_KEY.GET]: {},
+    [FEATURE_KEY.BULK_DELETE]: {},
     [FEATURE_KEY.GET_PUBLIC]: {},
     [FEATURE_KEY.GET_FROM_APP]: {},
     [FEATURE_KEY.GET_FROM_ENVIRONMENT]: {},
