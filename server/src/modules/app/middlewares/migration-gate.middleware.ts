@@ -95,10 +95,15 @@ export class MigrationGateMiddleware implements NestMiddleware {
     const path = (parseurl.original(req)?.pathname ?? '/').toLowerCase();
     const apiPath = this.gatedApiPath(path);
     // Blocking mode stays as it was before the gate: old pods serve everything while a new pod migrates.
-    if (!this.enabled || !this.asyncMode || apiPath === null || this.passesAsyncGate(apiPath, req.method))
-      return next();
+    if (!this.enabled || !this.asyncMode || apiPath === null || SAFE_METHODS.has(req.method)) return next();
     const { state } = await this.migrationRuns.status();
     if (!REFUSALS[state]) return next();
+    if (ASYNC_MODE_WRITE_ALLOWLIST.some((pattern) => pattern.test(apiPath))) {
+      // Passes, but writes are paused: an editor query run skips saving its options, which would
+      // wait on the data phase's row locks until lock_timeout.
+      res.locals.writesPaused = true;
+      return next();
+    }
     this.refuse(req, res, state);
   }
 
@@ -117,11 +122,6 @@ export class MigrationGateMiddleware implements NestMiddleware {
   /** The path below the API prefix, or null for non-API paths. Health and metrics are reads, so they always pass. */
   private gatedApiPath(path: string): string | null {
     return path.startsWith(this.apiPrefix) ? path.slice(this.apiPrefix.length) : null;
-  }
-
-  /** Async mode lets reads and end-user writes through. */
-  private passesAsyncGate(apiPath: string, method: string): boolean {
-    return SAFE_METHODS.has(method) || ASYNC_MODE_WRITE_ALLOWLIST.some((pattern) => pattern.test(apiPath));
   }
 
   private logRejection(req: Request, state: MigrationState): void {

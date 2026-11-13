@@ -336,7 +336,9 @@ export class DataQueriesService implements IDataQueriesService {
       !isEmpty(options) &&
       (await this.isGitSyncEditAllowed(user.organizationId, dataQuery.appVersion))
     ) {
-      await this.dataQueryRepository.updateOne(dataQueryId, { options });
+      // The upgrade gate pauses writes (migration-gate.middleware.ts): the save would wait on the data
+      // phase's row locks until lock_timeout, so the run uses the posted options without saving them.
+      if (!response?.locals?.writesPaused) await this.dataQueryRepository.updateOne(dataQueryId, { options });
       dataQuery['options'] = options;
     }
 
