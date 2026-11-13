@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { EntityManager } from 'typeorm';
 import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
@@ -360,7 +361,7 @@ export class PageService implements IPageService {
             id: newComponentId,
             pageId: clonePageId,
             parent: null,
-            co_relation_id: undefined,
+            co_relation_id: randomUUID(),
             createdAt: undefined,
             updatedAt: undefined,
           });
