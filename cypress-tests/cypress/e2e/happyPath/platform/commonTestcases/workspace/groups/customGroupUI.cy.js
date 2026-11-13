@@ -282,8 +282,8 @@ describe("Custom groups UI and Functionality verification", () => {
   let groupId3;
 
   beforeEach(() => {
-    data.workspaceName = fake.firstName;
-    data.workspaceSlug = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.workspaceName = `${fake.firstName}${Date.now()}`;
+    data.workspaceSlug = data.workspaceName.toLowerCase();
 
     cy.apiLogin();
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then((response) => {

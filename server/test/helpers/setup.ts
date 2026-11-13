@@ -7,6 +7,7 @@ import { DataSource as TypeOrmDataSource, QueryRunner } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { AppModule } from '@modules/app/module';
 import { WorkflowsModule } from '@modules/workflows/module';
+import { SsrfModule } from '@modules/ssrf/module';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { Logger } from 'nestjs-pino';
@@ -461,6 +462,8 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
       await AppModule.register({ IS_GET_CONTEXT: true }),
       // AppModule skips WorkflowsModule when IS_GET_CONTEXT is set, so mount its controllers here.
       await WorkflowsModule.register({ IS_GET_CONTEXT: true }, true),
+      // Same for SsrfModule: mounts the settings API; the runtime config publisher stays out (unit-tested).
+      await SsrfModule.register({ IS_GET_CONTEXT: true }, true),
       ...((await extraModules?.()) ?? []),
     ],
   });
