@@ -331,6 +331,30 @@ describe('ModalV2: Escape key', () => {
     await waitFor(() => expect(exposed()).toBe(false));
   });
 
+  test('[ModalV2-ESC-004] Escape pressed inside an editor overlay does not close the modal or fire On close', async () => {
+    // Break this catches: the modal's document-level Escape listener reacting to a keypress that
+    // started in the editor's review/compare overlay (a portaled `[data-editor-overlay]` the modal
+    // knows nothing about), closing the modal behind it and running its On close actions.
+    renderModal({ properties: { hideOnEsc: binding('{{true}}') } });
+    await openModal();
+    const overlay = document.createElement('div');
+    overlay.setAttribute('data-editor-overlay', '');
+    const comment = document.createElement('textarea');
+    overlay.appendChild(comment);
+    document.body.appendChild(overlay);
+
+    try {
+      const notPrevented = rtlFireEvent.keyDown(comment, { key: 'Escape', code: 'Escape' });
+
+      // Left untouched, so the overlay's own Escape handling still sees a live event.
+      expect(notPrevented).toBe(true);
+      expect(exposed()).toBe(true);
+      expect(modalBody()).toBeInTheDocument();
+    } finally {
+      overlay.remove();
+    }
+  });
+
   test('[ModalV2-ESC-002] hideOnEsc: false keeps the modal open on Escape', async () => {
     // Break this catches: Components/Modal.jsx's onEscapeKeyDown dropping its
     // `if (hideOnEsc)` guard.
