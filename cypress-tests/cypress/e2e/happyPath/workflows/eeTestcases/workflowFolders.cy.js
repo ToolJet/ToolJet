@@ -103,7 +103,7 @@ describe("Workflows - folders and folder movement", () => {
     cy.get(commonSelectors.deleteFolderOption(data.folderName)).click();
     cy.get(commonSelectors.modalComponent)
       .should("be.visible")
-      .and("contain.text", workflowsText.folderDeletePrefix(data.folderName));
+      .and("contain.text", workflowsText.folderDeleteMessage(data.folderName));
 
     // Cancelling keeps the folder.
     cancelModal(commonText.cancelButton);

@@ -1,10 +1,12 @@
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { ListSchedulesDto } from '@modules/workflows/dto/list-schedules.dto';
 
 export interface IWorkflowSchedulesController {
   create(
     user: any,
     createWorkflowScheduleDto: {
       workflowId: string;
+      name: string;
       active: boolean;
       environmentId: string;
       type: string;
@@ -18,7 +20,10 @@ export interface IWorkflowSchedulesController {
     }
   ): Promise<WorkflowSchedule>;
 
-  findAll(user: any, appId: string): Promise<WorkflowSchedule[]>;
+  findAll(
+    user: any,
+    query: ListSchedulesDto
+  ): Promise<WorkflowSchedule[] | { data: WorkflowSchedule[]; total: number; page: number; limit: number }>;
 
   findOne(user: any, id: string): Promise<WorkflowSchedule>;
 
@@ -27,6 +32,7 @@ export interface IWorkflowSchedulesController {
     id: string,
     updateWorkflowScheduleDto: Partial<{
       environmentId: string;
+      name: string;
       workflowId: string;
       type: string;
       timezone: string;

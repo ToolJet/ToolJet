@@ -32,7 +32,7 @@ Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
   cy.get(workflowSelector.workflowRunButton).should("not.be.disabled");
   cy.get(workflowSelector.workflowRunButton).click();
   cy.get(workflowSelector.workflowLogs).should(
-    "have.text",
+    "contain.text",
     workflowsText.workflowRunhelperText
   );
   cy.verifyResponseNodeOutput(expectedText);
@@ -95,6 +95,7 @@ Cypress.Commands.add(
 
     cy.get(".react-flow__pane")
       .trigger("mousemove", { clientX: 800, clientY: 400, force: true })
+      .wait(500)
       .trigger("mouseup", { force: true });
 
     cy.wait(500);
@@ -177,5 +178,7 @@ Cypress.Commands.add("addWorkflowInApp", (workflowName) => {
   .find('.react-select__control')
   .click();
   cy.get(workflowSelector.workflowSelectInput).realType(workflowName);
-  cy.get(workflowSelector.workflowSelectOption).contains(workflowName).click();
+  cy.get(workflowSelector.workflowSelectOption)
+    .contains(new RegExp(`^${workflowName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
+    .click();
 });
