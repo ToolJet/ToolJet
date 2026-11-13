@@ -25,3 +25,5 @@ GitSync allows multiple builders to work on the same applications without overwr
 ## Resources Synced to Git
 
 Applications, modules, datasources, and their folder assignments are synced to Git. Workflows and ToolJet Database tables are not synced yet.
+
+For apps built in [Code mode](/docs/app-builder/code-mode/overview), the app's React project is also committed, in a `code/` folder beside the app definition. See [Git Sync in Code Mode](/docs/app-builder/code-mode/versions-and-history#git-sync).
