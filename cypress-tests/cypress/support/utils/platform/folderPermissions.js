@@ -90,6 +90,18 @@ export const apiRemoveItemFromFolder = (resource, itemId, folderId) => {
   return cy.apiRemoveAppFromFolder(itemId, folderId);
 };
 
+export const apiFolderAction = (method, path, body) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy.request({
+      method,
+      url: `${Cypress.env('server_host')}/api${path}`,
+      headers,
+      body,
+      failOnStatusCode: false,
+      log: false,
+    })
+  );
+
 export const apiGrantFolderTier = (resource, groupName, name, tier, folderIds, isAll = false) =>
   cy.apiCreateGranularPermission(groupName, name, resource.granularType, tier, folderIds, isAll);
 
