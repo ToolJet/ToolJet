@@ -541,9 +541,11 @@ Cypress.Commands.add(
   ({
     type = "interval",
     details = { frequency: "hour", minutes: 15 },
+    name = `schedule-${Cypress._.uniqueId()}-${Date.now()}`,
     timezone = "Asia/Calcutta",
     appVersionId = Cypress.env("editingVersionId"),
     environmentId = Cypress.env("environmentId"),
+    params,
   } = {}) => {
     return cy.getAuthHeaders().then((headers) =>
       cy.request({
@@ -552,11 +554,13 @@ Cypress.Commands.add(
         headers,
         body: {
           workflowId: appVersionId,
+          name,
           active: false,
           environmentId,
           type,
           timezone,
           details,
+          ...(params ? { params } : {}),
         },
         failOnStatusCode: false,
       })
@@ -602,3 +606,213 @@ Cypress.Commands.add("apiDeleteWorkflowSchedule", (scheduleId) => {
       .should("equal", 204);
   });
 });
+
+const pollUntil = (read, isDone, description, retries = 120, intervalMs = 500) => {
+  let accepted;
+  const attempt = (count) =>
+    read().then((value) => {
+      if (isDone(value)) {
+        accepted = value;
+        return;
+      }
+      if (count >= retries) {
+        throw new Error(`Timed out waiting for ${description}`);
+      }
+      return cy
+        .wrap(null, { log: false })
+        .then(() => Cypress.Promise.delay(intervalMs))
+        .then(() => attempt(count + 1));
+    });
+  return attempt(0).then(() => accepted);
+};
+
+const jsonHeaders = (headers) => ({
+  ...headers,
+  "Content-Type": "application/json",
+  "tj-workspace-id": Cypress.env("workspaceId"),
+});
+
+Cypress.Commands.add(
+  "apiGetWorkflowDefinition",
+  (
+    workflowId = Cypress.env("workflowId"),
+    versionId = Cypress.env("editingVersionId")
+  ) =>
+    cy.getAuthHeaders().then((headers) =>
+      cy
+        .request({
+          url: `${Cypress.env("server_host")}/api/v2/apps/${workflowId}/versions/${versionId}`,
+          headers,
+          log: false,
+        })
+        .then((res) => res.body.editing_version?.definition ?? null)
+    )
+);
+
+Cypress.Commands.add("apiListApprovals", (query = {}) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        url: `${Cypress.env("server_host")}/api/workflow-approvals`,
+        headers,
+        qs: { page: 1, per_page: 50, ...query },
+        failOnStatusCode: false,
+        log: false,
+      })
+  )
+);
+
+Cypress.Commands.add(
+  "apiWaitForApproval",
+  ({
+    executionId = Cypress.env("executionId"),
+    workflowId = Cypress.env("workflowId"),
+    status = "pending",
+    nodeName,
+  } = {}) =>
+    pollUntil(
+      () =>
+        cy
+          .apiListApprovals({ status, app_id: workflowId })
+          .then(
+            (res) =>
+              (res.body.requests || []).find(
+                (request) =>
+                  request.executionId === executionId &&
+                  (!nodeName || request.nodeName === nodeName)
+              ) ?? null
+          ),
+      (request) => !!request,
+      `a ${status} approval request for execution ${executionId}`
+    )
+);
+
+Cypress.Commands.add(
+  "apiResolveApproval",
+  (requestId, outcome, input = {}) =>
+    cy.getAuthHeaders().then((headers) =>
+      cy.request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/workflow-approvals/by-id/${requestId}/resolve`,
+        headers: jsonHeaders(headers),
+        body: { outcome, input },
+        failOnStatusCode: false,
+      })
+    )
+);
+
+Cypress.Commands.add("apiCancelApproval", (requestId) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy.request({
+      method: "POST",
+      url: `${Cypress.env("server_host")}/api/workflow-approvals/${requestId}/cancel`,
+      headers: jsonHeaders(headers),
+      failOnStatusCode: false,
+    })
+  )
+);
+
+// The list API never returns the token, so it is read from the approvals table.
+Cypress.Commands.add("apiGetApprovalToken", (requestId) =>
+  cy
+    .task("dbConnection", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `SELECT token FROM workflow_approval_requests WHERE id = '${requestId}'`,
+    })
+    .then((result) => result.rows[0].token)
+);
+
+// Clear cookies first so cy.request does not send the logged-in session.
+Cypress.Commands.add("apiGetApprovalByToken", (token) => {
+  cy.clearCookies({ log: false });
+  return cy.request({
+    url: `${Cypress.env("server_host")}/api/workflow-approvals/${token}`,
+    failOnStatusCode: false,
+  });
+});
+
+Cypress.Commands.add("apiResolveApprovalByToken", (token, body) => {
+  cy.clearCookies({ log: false });
+  return cy.request({
+    method: "POST",
+    url: `${Cypress.env("server_host")}/api/workflow-approvals/${token}/resolve`,
+    body,
+    failOnStatusCode: false,
+  });
+});
+
+Cypress.Commands.add(
+  "apiWaitForExecutionStatus",
+  (status, executionId = Cypress.env("executionId")) =>
+    pollUntil(
+      () => cy.apiGetWorkflowExecution(executionId),
+      (execution) => execution.status === status,
+      `execution ${executionId} to reach ${status}`
+    )
+);
+
+Cypress.Commands.add(
+  "apiGetExecutionNode",
+  (nodeName, executionId = Cypress.env("executionId")) =>
+    cy
+      .apiGetWorkflowExecutionNodes(executionId)
+      .then((nodes) =>
+        nodes.find((node) => node.definition?.nodeName === nodeName)
+      )
+);
+
+Cypress.Commands.add(
+  "apiWaitForHumanNodeData",
+  (isDone, nodeId = "human1", description = "the Human node to be saved") =>
+    pollUntil(
+      () =>
+        cy
+          .apiGetWorkflowDefinition()
+          .then(
+            (definition) =>
+              (definition?.nodes || []).find((node) => node.id === nodeId || node.data?.nodeName === nodeId)?.data ?? null
+          ),
+      (data) => !!data && isDone(data),
+      description
+    )
+);
+
+Cypress.Commands.add(
+  "apiWaitForVersionExecutions",
+  (versionId, count = 1) =>
+    pollUntil(
+      () =>
+        cy.getAuthHeaders().then((headers) =>
+          cy
+            .request({
+              url: `${Cypress.env("server_host")}/api/workflow_executions?appVersionId=${versionId}&page=1&per_page=10`,
+              headers,
+              log: false,
+            })
+            .then((res) => res.body.data || res.body.executions || [])
+        ),
+      (executions) => executions.length >= count,
+      `${count} run(s) of version ${versionId}`
+    )
+);
+
+Cypress.Commands.add(
+  "apiWaitForWorkflowDefinition",
+  (isDone, description = "the workflow definition to be saved") =>
+    pollUntil(
+      () => cy.apiGetWorkflowDefinition(),
+      (definition) => !!definition && isDone(definition),
+      description
+    )
+);
+
+Cypress.Commands.add("apiTerminateExecution", (executionId = Cypress.env("executionId")) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy.request({
+      method: "DELETE",
+      url: `${Cypress.env("server_host")}/api/workflow_executions/${executionId}/terminate`,
+      headers,
+      failOnStatusCode: false,
+    })
+  )
+);
