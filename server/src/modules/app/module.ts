@@ -56,6 +56,7 @@ import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { WorkflowsModule } from '@modules/workflows/module';
 import { AiModule } from '@modules/ai/module';
 import { CustomStylesModule } from '@modules/custom-styles/module';
+import { CodeModeSourceModule } from '@modules/code-mode-source/module';
 import { CustomComponentLibrariesModule } from '@modules/custom-component-libraries/module';
 import { BuiltinPacksModule } from '@modules/builtin-packs/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
@@ -166,6 +167,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await ModulesModule.register(configs, true),
       await AiModule.register(configs, true),
       await CustomStylesModule.register(configs, true),
+      await CodeModeSourceModule.register(configs, true),
       await CustomComponentLibrariesModule.register(configs, true),
       await BuiltinPacksModule.register(configs, true),
       await AppPermissionsModule.register(configs, true),

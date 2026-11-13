@@ -57,4 +57,5 @@ export enum MODULES {
   PERSONAL_ACCESS_TOKENS = 'PersonalAccessTokens',
   FRONTEND_METRICS = 'FrontendMetrics',
   CUSTOM_COMPONENT_LIBRARIES = 'CustomComponentLibraries',
+  CODE_MODE_SOURCE = 'CodeModeSource',
 }

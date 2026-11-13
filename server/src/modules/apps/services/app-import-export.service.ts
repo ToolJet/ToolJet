@@ -1342,7 +1342,7 @@ export class AppImportExportService {
     manager?: EntityManager,
     branchId?: string,
     isTemplateApp = false
-  ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
+  ): Promise<{ newApp: App; resourceMapping: AppResourceMappings; codeMissing: boolean }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
         throw new BadRequestException('Invalid params for app import');
@@ -1409,6 +1409,10 @@ export class AppImportExportService {
         isTemplateApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
+      // Git sync carries an app's code in its own folder; every other import reads it from the file.
+      const { codeMissing } = isGitApp
+        ? { codeMissing: false }
+        : await this.restoreCodeModeApp(manager, user, appParams, importedApp.id, appName, resourceMapping, cloning);
       await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
       // Update latest version as editing version
@@ -1426,7 +1430,7 @@ export class AppImportExportService {
       const newApp = await manager.findOne(App, {
         where: { id: importedApp.id },
       });
-      return { newApp, resourceMapping };
+      return { newApp, resourceMapping, codeMissing };
     }, manager);
   }
 
@@ -1656,6 +1660,24 @@ export class AppImportExportService {
     resourceMapping: AppResourceMappings
   ): Promise<void> {
     return;
+  }
+
+  /** Adds an app's stored code to its export definition (ee). `limited`: the result has to fit an import request. */
+  async addCodeToExport(_user: User, _definition: { appV2: App }, _limited: boolean): Promise<void> {
+    return;
+  }
+
+  /** Restores an app's stored code from its import definition (ee). codeMissing: the file should have had code and did not. */
+  protected async restoreCodeModeApp(
+    _manager: EntityManager,
+    _user: User,
+    _appParams: Record<string, any>,
+    _appId: string,
+    _appName: string,
+    _resourceMapping: AppResourceMappings,
+    _cloning: boolean
+  ): Promise<{ codeMissing: boolean }> {
+    return { codeMissing: false };
   }
 
   async createImportedAppForUser(
