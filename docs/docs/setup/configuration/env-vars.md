@@ -328,11 +328,7 @@ The license key can be configured via an environment variable to avoid re-enteri
 
 ### Code Mode
 
-:::warning BETA
-[Code mode](/docs/app-builder/code-mode/overview) is in beta and not recommended for production use.
-:::
-
-These variables configure apps built in Code mode.
+These variables configure apps built in [Code mode](/docs/app-builder/code-mode/overview).
 
 #### Code App Isolation
 

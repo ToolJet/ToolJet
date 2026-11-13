@@ -14,10 +14,6 @@ sidebar_label: Overview
  <span>Paid feature</span>
 </div>
 
-:::caution BETA
-Code mode is in beta and not recommended for production use.
-:::
-
 **Code mode** lets you build a ToolJet app as a React and TypeScript project instead of dragging components onto a canvas. You write the screens in code, with ToolJet's AI, in the ToolJet editor, or in your own editor and coding agent. ToolJet still handles sign-in, permissions, environments, data sources and queries, so the code only draws the screens and calls queries by name.
 
 Use Code mode when you need a layout, interaction or styling that is easier to write than to assemble from components, or when your team wants to review and version the app as code.
