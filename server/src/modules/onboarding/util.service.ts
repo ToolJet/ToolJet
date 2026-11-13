@@ -150,27 +150,6 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     }
     return nameObj;
   }
-  private async activateUserWithPassword(
-    existingUser: User,
-    params: { password: string; firstName?: string; lastName?: string },
-    targetOrg?: Organization,
-    manager?: EntityManager
-  ): Promise<void> {
-    await this.userRepository.updateOne(
-      existingUser.id,
-      {
-        password: params.password,
-        status: USER_STATUS.ACTIVE,
-        invitationToken: null,
-        ...(params.firstName && { firstName: params.firstName }),
-        ...(params.lastName && { lastName: params.lastName }),
-      },
-      manager
-    );
-    existingUser.status = USER_STATUS.ACTIVE;
-    existingUser.password = params.password;
-  }
-
   whatIfTheSignUpIsAtTheWorkspaceLevel = async (
     existingUser: User,
     signingUpOrganization: Organization,

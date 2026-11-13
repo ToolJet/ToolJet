@@ -700,7 +700,7 @@ export class AppsService implements IAppsService {
     context?: string
   ): Promise<{ apps: AppListItem[]; totalCount: number; folderCount: number }> {
     if (folderId) {
-      const folder = await this.foldersUtilService.findOne(folderId, manager);
+      const folder = await this.foldersUtilService.findOne(folderId, user.organizationId, manager);
       // page=0 signals "return all" — used when isGetAll=true to skip pagination
       const pageArg = isGetAll ? 0 : page;
       const [{ viewableApps, totalCount: folderCount }, totalCount] = await Promise.all([
