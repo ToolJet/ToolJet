@@ -6,7 +6,8 @@ import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 // checks. The menu is opened first: its version rows hold those buttons.
 export const VERSION_ACTION_EVENT = 'tooljet:version-action';
 
-// `action`: 'promote' or 'release'. Asks until the version's row has mounted and answered, for up to two seconds.
+// `action`: 'promote', 'release' or 'save' (a draft's Save version). Asks until the version's row has mounted and
+// answered, for up to two seconds.
 export const requestVersionAction = (action, versionId) => {
   useVersionManagerStore.getState().setDropdownOpen?.(true);
   const started = Date.now();

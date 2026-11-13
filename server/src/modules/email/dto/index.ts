@@ -85,7 +85,8 @@ export interface SendVersionReviewEmailPayload {
     | 'changes_requested'
     | 'released'
     | 'overridden'
-    | 'rereview_requested';
+    | 'rereview_requested'
+    | 'approvals_reset';
   /** The comment, note or reason with mentions written as @Name; null when there is none. */
   note: string | null;
   appName: string;

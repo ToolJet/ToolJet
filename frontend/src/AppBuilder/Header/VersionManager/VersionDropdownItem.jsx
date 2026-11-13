@@ -15,6 +15,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
 import { IconArrowBarToDown } from '@tabler/icons-react';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useVersionActionRequest } from '@/AppBuilder/_utils/versionActions';
 
 const VersionDropdownItem = ({
   version,
@@ -150,6 +151,12 @@ const VersionDropdownItem = ({
   }, [customComponentLibraries]);
 
   const isSaveVersionBlockedByDevPin = canCreateVersion && devPinnedLibrariesCount > 0;
+  // The review panel's next step after an approval of a draft: the same Save version this row's button does.
+  useVersionActionRequest(
+    'save',
+    version.id,
+    () => canCreateVersion && !isEditorReadOnly && !isSaveVersionBlockedByDevPin && onCreateVersion?.(version)
+  );
 
   const renderMenu = (
     <Popover
