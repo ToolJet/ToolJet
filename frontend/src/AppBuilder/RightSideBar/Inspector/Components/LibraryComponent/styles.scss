@@ -42,6 +42,17 @@
         padding-left: 0;
         padding-right: 0;
       }
+
+      // A dropdown renders `.row.fx-container > .field` (no `.col`), so it keeps the row's
+      // 8px gutter padding, and its control has a fixed 144px width. Fill the column exactly.
+      &.row.fx-container > .field {
+        padding-left: 0;
+        padding-right: 0;
+
+        .react-select__control {
+          width: 100%;
+        }
+      }
     }
   }
 }
