@@ -224,6 +224,19 @@ const sidebars = {
             "build-with-ai/mcp/security"
           ]
         },
+        {
+          "type": "category",
+          "label": "Code Mode",
+          "link": {
+            "type": "doc",
+            "id": "app-builder/code-mode/overview"
+          },
+          "items": [
+            "app-builder/code-mode/overview",
+            "app-builder/code-mode/create-app",
+            "app-builder/code-mode/editor"
+          ]
+        },
         "build-with-ai/privacy"
       ]
     },
