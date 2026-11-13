@@ -29,3 +29,43 @@ describe.each(PACKS)('%s Card Grid badges', (pack) => {
     expect(badges(pack, rows, { badgeField: 'tags', badgeFields: [] })).toEqual([['2026', 'Q1']]);
   });
 });
+
+// QA AD-40, reopened: Badge fields typed as text (category, tags), not bound as an array, showed only the Badge field's
+// badge on the Ant Design and Material UI Card Grids. The property is an array, and text that is not JSON became [];
+// Rocket 2.0's Card Grid already took the text, which the model splits on commas. The props go through the host's
+// conversion (typedPackProps) as SdkComponentHost does, then into the Card Grid's model.
+const { typedPackProps } = require('@/AppBuilder/Widgets/LibraryComponent/packPropertyTypes');
+
+const CARD_GRID_PROPS = [
+  { name: 'badgeField', type: 'string' },
+  { name: 'badgeFields', type: 'array' },
+  { name: 'metaFields', type: 'array' },
+];
+
+describe.each(['antd', 'mui'])('%s Card Grid fields typed as text', (pack) => {
+  test('[PackComponent-BADGELIST-003] Badge fields "category, tags" give a badge per field and per tag', () => {
+    const { props, errors } = typedPackProps(pack, 'CardGrid', CARD_GRID_PROPS, {
+      badgeField: 'category',
+      badgeFields: 'category, tags',
+    });
+
+    expect(errors).toEqual([]);
+    expect(badges(pack, ROWS, props)).toEqual([['Dinner', 'Easy', 'Quick'], ['Dessert', 'Sweet'], ['Lunch']]);
+  });
+
+  test('[PackComponent-BADGELIST-004] Meta fields typed as text are kept as text', () => {
+    const { props, errors } = typedPackProps(pack, 'CardGrid', CARD_GRID_PROPS, { metaFields: 'category, title' });
+
+    expect(errors).toEqual([]);
+    expect(props.metaFields).toBe('category, title');
+  });
+});
+
+test('[PackComponent-BADGELIST-005] the Ant Design Record list takes Meta fields as text too', () => {
+  const { props, errors } = typedPackProps('antd', 'RecordList', [{ name: 'metaFields', type: 'array' }], {
+    metaFields: 'status, owner',
+  });
+
+  expect(errors).toEqual([]);
+  expect(props.metaFields).toBe('status, owner');
+});

@@ -55,6 +55,13 @@ const ACCEPTS: Record<string, PropertyType[]> = {
       'shadcn.CardGrid.metaFields',
       'shadcn.RecordList.metaFields',
       'mui.RecordList.metaFields',
+      // Field names typed as text (category, tags), which the lists model splits on commas: as text an array
+      // property emptied them, and the Ant and MUI Card Grids drew only the Badge field's badge (QA AD-40).
+      'antd.CardGrid.badgeFields',
+      'antd.CardGrid.metaFields',
+      'antd.RecordList.metaFields',
+      'mui.CardGrid.badgeFields',
+      'mui.CardGrid.metaFields',
       'shadcn.Map.popupFields',
       'antd.Map.popupFields',
     ].map((key) => [key, ['string', 'array'] as PropertyType[]])

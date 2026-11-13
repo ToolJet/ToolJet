@@ -84,4 +84,75 @@ describe('Ant Design TreeSelect, Cascader and Combobox: a value no option offers
 
     expect(v.exposed.value).toBe('zzz');
   });
+
+  // QA AD-57, reopened: the dropped value stayed dropped. With Value qa and options that do not offer it the field showed
+  // the placeholder (as it should), but once the options were edited to offer qa the field still showed the placeholder
+  // and exposed "", because the Value property itself never changed again. ToolJet's own Dropdown takes its default
+  // again when its options change; here the value that was dropped comes back once an option offers it.
+  test('[PackComponent-UNKNOWNVALUE-008] TreeSelect: a dropped value comes back when the tree offers it, firing nothing', async () => {
+    const v = await mountPack('antd', 'TreeSelect', { value: 'qa' });
+    await settle();
+    expect(v.exposed.value).toBe('');
+
+    await v.update({
+      props: {
+        value: 'qa',
+        treeData: [
+          { title: 'QA', value: 'qa' },
+          { title: 'Ops', value: 'ops' },
+        ],
+      },
+    });
+    await settle();
+
+    expect(v.exposed.value).toBe('qa');
+    expect(v.events).toEqual([]);
+  });
+
+  test('[PackComponent-UNKNOWNVALUE-009] Cascader: a dropped path comes back when the options hold it', async () => {
+    const v = await mountPack('antd', 'Cascader', { value: ['qa', 'lab'] });
+    await settle();
+    expect(v.exposed.value).toEqual([]);
+
+    await v.update({
+      props: {
+        value: ['qa', 'lab'],
+        options: [{ label: 'QA', value: 'qa', children: [{ label: 'Lab', value: 'lab' }] }],
+      },
+    });
+    await settle();
+
+    expect(v.exposed.value).toEqual(['qa', 'lab']);
+    expect(v.events).toEqual([]);
+  });
+
+  test('[PackComponent-UNKNOWNVALUE-010] Combobox: a dropped value comes back with its label', async () => {
+    const v = await mountPack('antd', 'Combobox', { value: 'qa' });
+    await settle();
+    expect(v.exposed.value).toBe('');
+
+    await v.update({ props: { value: 'qa', options: [{ label: 'QA team', value: 'qa' }] } });
+    await settle();
+
+    expect(v.exposed.value).toBe('qa');
+    expect(v.exposed.selectedLabel).toBe('QA team');
+    expect(v.events).toEqual([]);
+  });
+
+  // Characterization: what was set after the value was dropped stays; the dropped value does not overwrite it.
+  test('[PackComponent-UNKNOWNVALUE-011] a value set after the drop is kept when the options change', async () => {
+    const v = await mountPack('antd', 'TreeSelect', { value: 'qa' });
+    await settle();
+    await v.run('setFieldValue', 'frontend');
+    expect(v.exposed.value).toBe('frontend');
+
+    const tree = [
+      { title: 'QA', value: 'qa' },
+      { title: 'Frontend', value: 'frontend' },
+    ];
+    await v.update({ props: { value: 'qa', treeData: tree } });
+    await settle();
+
+    expect(v.exposed.value).toBe('frontend');
+  });
 });

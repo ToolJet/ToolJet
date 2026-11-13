@@ -20,6 +20,7 @@ import {
   type Country,
 } from '../lib/ui2/inputs/phone';
 import { useValueSetter } from '../lib/sameValue';
+import { useOfferedValue } from '../lib/offeredValue';
 
 const useFocusActions = (ref: React.RefObject<{ focus: () => void; blur: () => void }>) => {
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
@@ -109,14 +110,20 @@ export const Combobox = (props: Record<string, unknown>) => {
   const key = value === '' ? '' : keyForValue(options, value);
   // A value no option offers shows the placeholder, as in the Select: Ant drew it as bare text (QA AD-35).
   const known = key !== '' && options.some((o) => o.value === key);
-  // It is dropped too, as the Select drops it: it showed the placeholder but stayed exposed (QA AD-57). Not while the
-  // options are empty or loading, so a default waits for them, nor when a query fetches them as the user searches
-  // (Filter option off): they hold only the last search's matches. Fires no event.
+  // It is dropped too, as the Select drops it, and comes back when an option offers it (lib/offeredValue, QA AD-57). Not
+  // while the options are empty or loading, so a default waits for them, nor when a query fetches them as the user
+  // searches (Filter option off): they hold only the last search's matches. Fires no event.
   const prune = filterOption !== false && options.length > 0 && !loading;
-  useEffect(() => {
-    if (prune && value !== '' && !known) setValue('' as never);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prune, known, JSON.stringify(value)]);
+  const offers = (v: unknown) => {
+    const k = v === '' ? '' : keyForValue(options, v);
+    return k !== '' && options.some((o) => o.value === k);
+  };
+  useOfferedValue<unknown>(
+    value,
+    (next) => setValue(next as never),
+    (v) => (prune && v !== '' && !offers(v) ? '' : v),
+    `${prune}|${JSON.stringify(options)}`
+  );
   const expose = (next: unknown) => {
     const k = next === '' ? '' : keyForValue(options, next);
     const opt = k === '' ? undefined : options.find((o) => o.value === k);
