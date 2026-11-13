@@ -9,9 +9,10 @@ The **Generate file** action constructs a CSV, text, or PDF file on the fly and 
 
 | Parameter | Description | Default |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-| Type      | Type of file to be generated. Types: `CSV`, `Text` and `PDF`                                                                                                | — |
-| File name | Name of the file to be generated                                                                                                                            | — |
+| Type      | Type of file to be generated. Types: `CSV`, `Text` and `PDF`                                                                                                | CSV |
+| File name | Name of the file to be generated, including its extension, for example `orders.csv`. If left empty, the file is named `data.txt`, whatever the type.        | Empty |
 | Data      | Data that will be used to construct the file. Its format will depend on the file type, as specified in the following section                                | — |
+| Run Only If | Optional condition. The action runs only when it resolves to a truthy value, for example `{{components.checkbox1.value}}`. Wrap the condition in `{{ }}`. See [Run Only If](/docs/app-builder/events/event-triggers#run-only-if). | Empty |
 | Debounce  | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 <img className="screenshot-full img-s" src="/img/actions/generate-file/generate-file.png" alt="ToolJet - Action reference - generate-file" />
@@ -23,14 +24,10 @@ To use the `CSV` file format, the data field should contain an array of objects.
 Example:
 
 ```javascript
-{
-  {
-    [
-      { name: "John", email: "john@tooljet.com" },
-      { name: "Sarah", email: "sarah@tooljet.com" },
-    ];
-  }
-}
+{{[
+  { name: "John", email: "john@tooljet.com" },
+  { name: "Sarah", email: "sarah@tooljet.com" },
+]}}
 ```
 
 Using the above code snippet will generate a CSV file with the following content:
@@ -59,7 +56,9 @@ The PDF data format supports two types of input: either a `string` or an `array 
 actions.generateFile('<fileName>', '<fileType>', '<data>');
 ```
 
-`fileName` is the name to give the file (string), `fileType` is one of `csv`, `plaintext`, or `pdf`, and `data` is the data to store in the file.
+`fileName` is the name to give the file (string), `fileType` is one of `csv`, `plaintext`, or `pdf`, and `data` is the data to store in the file. Use `plaintext` for text files: `text` isn't accepted.
+
+All three arguments are required. If one is missing or empty, the file isn't generated and you'll see the error *Action failed: fileName, fileType and data are required*.
 
 ```js
 // CSV

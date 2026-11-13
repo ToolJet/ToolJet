@@ -14,6 +14,7 @@ You can find the list of CSAs available for a specific component in that compone
 | Component | The target component whose CSA you want to invoke | — |
 | Action | The CSA to invoke on the selected component (e.g. `Set text`, `Clear`) | — |
 | Action-specific fields | Additional fields depend on the CSA selected (e.g. the `Text` field for `Set text`) | — |
+| Run Only If | Optional condition. The action runs only when it resolves to a truthy value, for example `{{components.checkbox1.value}}`. Wrap the condition in `{{ }}`. See [Run Only If](/docs/app-builder/events/event-triggers#run-only-if). | Empty |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 <img className="screenshot-full img-s" src="/img/actions/controlcomponent/event.png" alt="ToolJet - Action reference -  Control Component"/>

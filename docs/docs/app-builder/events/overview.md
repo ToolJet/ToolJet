@@ -16,7 +16,7 @@ For example, when a user clicks a **Button**, it can trigger a query to refresh 
 
 ## Actions
 
-Actions specify the outcome when an event is triggered. ToolJet supports a wide range of actions such as running queries, showing alerts, navigating between pages, copying text to the clipboard, and more. You can configure actions directly within event handlers or [dynamically using JavaScript](/docs/app-builder/custom-code/control-components) via RunJS queries. For a complete list of available actions, refer to the [Action Reference](/docs/actions/run-query) guide.
+Actions specify the outcome when an event is triggered. ToolJet supports a wide range of actions such as running queries, showing alerts, navigating between pages, copying text to the clipboard, and more. You can configure actions directly within event handlers or [dynamically using JavaScript](/docs/app-builder/custom-code/control-components) via RunJS queries. For a complete list of available actions, refer to the [Action Reference](/docs/actions/overview) guide.
 
 <img className="screenshot-full img-l" src="/img/app-builder/events/overview/actions.png" alt="Events Architecture Diagram"/>
 
