@@ -346,10 +346,37 @@
     font-weight: 500;
   }
 
+  &__list {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
   &__names {
     margin-top: 2px;
     font-family: var(--font-mono, monospace);
     word-break: break-word;
+  }
+
+  &__row {
+    display: flex;
+    flex-direction: column;
+    padding: 4px 0;
+  }
+
+  &__name {
+    font-family: var(--font-mono, monospace);
+    word-break: break-word;
+  }
+
+  &__hint {
+    color: var(--text-placeholder, var(--slate11));
+  }
+
+  &__action {
+    display: flex;
+    margin: 8px 0 0 auto;
+    white-space: nowrap;
   }
 
   &__help {

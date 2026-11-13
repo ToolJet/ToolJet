@@ -86,3 +86,88 @@ it('promotes and closes when both steps go through', async () => {
   expect(mockServices.promoteTable).toHaveBeenCalledWith('org-1', 't-1', 'env-dev');
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });
+
+describe('the Promote tables button in the banner', () => {
+  const observations = { id: 't-obs', name: 'observations', needed_by_app: false, depends_on: [] };
+  const actions = { id: 't-act', name: 'actions', needed_by_app: true, depends_on: ['t-obs'] };
+  const sites = { id: 't-sit', name: 'sites', needed_by_app: true, depends_on: [] };
+
+  beforeEach(() => {
+    mockServices.getMissingTablesForPromote.mockResolvedValue({ tables: [observations, sites, actions] });
+  });
+
+  it('shows what each table needs and what needs it, with one button for all of them', async () => {
+    render(<PromoteConfirmationModal data={data} onClose={jest.fn()} />);
+    const alert = await screen.findByRole('alert');
+    expect(await screen.findAllByRole('button', { name: 'Promote tables' })).toHaveLength(1);
+    expect(alert).toHaveTextContent('Needed by actions');
+    expect(alert).toHaveTextContent('Promotes observations first');
+  });
+
+  it('says Promote table when only one table is listed', async () => {
+    mockServices.getMissingTablesForPromote.mockResolvedValue({ tables: [sites] });
+    render(<PromoteConfirmationModal data={data} onClose={jest.fn()} />);
+    expect(await screen.findByRole('button', { name: 'Promote table' })).toBeInTheDocument();
+  });
+
+  it('promotes every listed table in list order without the app, and drops the banner once the server lists none', async () => {
+    render(<PromoteConfirmationModal data={data} onClose={jest.fn()} />);
+    const button = await screen.findByRole('button', { name: 'Promote tables' });
+    mockServices.getMissingTablesForPromote.mockResolvedValue({ tables: [] });
+    await userEvent.click(button);
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+    expect(mockServices.promoteTable.mock.calls).toEqual([
+      ['org-1', 't-obs', 'env-dev'],
+      ['org-1', 't-sit', 'env-dev'],
+      ['org-1', 't-act', 'env-dev'],
+    ]);
+    expect(screen.getByRole('button', { name: /^Promote$/ })).toBeInTheDocument();
+    expect(mockState.promoteAppVersionAction).not.toHaveBeenCalled();
+  });
+
+  it('holds the footer button and Cancel while tables are being promoted, so nothing runs alongside', async () => {
+    let finishPromote;
+    mockServices.promoteTable.mockReturnValue(new Promise((resolve) => (finishPromote = resolve)));
+    const onClose = jest.fn();
+    render(<PromoteConfirmationModal data={data} onClose={onClose} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Promote tables' }));
+
+    expect(screen.getByRole('button', { name: /Promote tables and app/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Promote tables' })).toBeDisabled();
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onClose).not.toHaveBeenCalled();
+
+    finishPromote({});
+    await waitFor(() => expect(screen.getByRole('button', { name: /Promote tables and app/ })).toBeEnabled());
+  });
+
+  it('keeps the tables in the banner and says why when one cannot be promoted', async () => {
+    mockServices.promoteTable
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ error: { message: 'no access to staging' } });
+    render(<PromoteConfirmationModal data={data} onClose={jest.fn()} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Promote tables' }));
+    expect(await screen.findByText(/Couldn't promote sites: no access to staging/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Promote tables' })).toBeInTheDocument();
+  });
+});
+
+describe('in the workflow editor, which keeps its app under the workflow slot', () => {
+  const canvasApp = mockState.appStore;
+
+  afterEach(() => {
+    mockState.appStore = canvasApp;
+  });
+
+  it('asks which tables the workflow needs when the dialog opens', async () => {
+    mockState.appStore = {
+      modules: { canvas: { app: { creationMode: 'DEFAULT' } }, workflow: { app: { appId: 'wf-1' } } },
+    };
+    mockServices.getMissingTablesForPromote.mockResolvedValue({
+      tables: [{ id: 't-1', name: 'expenses', needed_by_app: true, depends_on: [] }],
+    });
+    render(<PromoteConfirmationModal data={data} onClose={jest.fn()} />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('expenses');
+    expect(mockServices.getMissingTablesForPromote).toHaveBeenCalledWith('wf-1', 'v-1');
+  });
+});
