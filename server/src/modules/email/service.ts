@@ -394,6 +394,10 @@ export class EmailService implements IEmailService {
         `${actorName} made the changes and asked you to review ${versionName} of ${appName} again`,
         'Review changes',
       ],
+      approvals_reset: [
+        `${versionName} of ${appName} was changed after it was approved, so its approval was reset`,
+        'Open the review',
+      ],
     }[reason];
     if (!copy) return;
     const [headline, buttonText] = copy;
