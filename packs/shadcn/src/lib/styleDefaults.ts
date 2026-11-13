@@ -63,19 +63,3 @@ export const useBlankNumber = (name: string, label: string, placeholder: string,
  */
 export const useThemeRadius = (name: string, label: string, options: StyleOptions = {}) =>
   useBlankNumber(name, label, 'Theme radius', { inspector: 'numberInput', description: 'Blank follows the theme radius.', ...options });
-
-/**
- * A radius whose default is the word "auto", which follows the theme radius: the field says so instead of looking
- * empty. Reads '' while it is "auto" (or blank), else the number typed.
- */
-export const useAutoRadius = (name: string, label: string, options: StyleOptions = {}): number | '' => {
-  const raw = ToolJet.useStyleString({
-    name,
-    label,
-    initialValue: 'auto',
-    description: 'auto follows the theme radius. Enter a number to set it in px.',
-    ...options,
-  }) as unknown;
-  const text = typeof raw === 'string' || typeof raw === 'number' ? String(raw).trim() : '';
-  return text !== '' && Number.isFinite(Number(text)) ? Number(text) : '';
-};

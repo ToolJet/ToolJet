@@ -128,7 +128,7 @@ manifestOrSkip('style fields default to what they draw', () => {
         if (s.type === 'number' && (s.default === undefined || s.default === '') && !s.placeholder)
           missing.push(`${name}.${s.name}`);
     expect(missing).toEqual([]);
-    expect(styles('Button').find((s) => s.name === 'borderRadius').default).toBe('auto');
+    expect(styles('Button').find((s) => s.name === 'borderRadius').placeholder).toBe('Theme radius');
     expect(styles('Kanban').find((s) => s.name === 'columnGap').default).toBe(16);
   });
 
