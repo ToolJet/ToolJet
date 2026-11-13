@@ -14,10 +14,6 @@ sidebar_label: Work Locally
  <span>Paid feature</span>
 </div>
 
-:::caution BETA
-Code mode is in beta and not recommended for production use.
-:::
-
 You can work on a Code mode app on your own computer, in your own editor or with a coding agent. The ToolJet CLI clones the app's React project into a folder, builds it on every save, and shows the result live on your canvas in the ToolJet editor. Queries, data sources, permissions and environments stay in ToolJet.
 
 Work locally when you want your own editor, your own tools (linters, formatters, git), or a coding agent such as Claude Code, Codex, Cursor or Windsurf. For small changes, the [Code panel](/docs/app-builder/code-mode/editor) in the editor is quicker.

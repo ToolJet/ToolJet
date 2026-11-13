@@ -14,10 +14,6 @@ sidebar_label: Access Control
  <span>Paid feature</span>
 </div>
 
-:::caution BETA
-Code mode is in beta and not recommended for production use.
-:::
-
 A Code mode app uses ToolJet's permissions, like any other app. Who can open the app is set in workspace settings. Inside the app, you control two things:
 
 - **Who can open each screen.** A restricted screen is hidden from everyone outside its groups.
