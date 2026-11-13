@@ -14,10 +14,6 @@ sidebar_label: Versions, History and Git
  <span>Paid feature</span>
 </div>
 
-:::caution BETA
-Code mode is in beta and not recommended for production use.
-:::
-
 A Code mode app uses ToolJet's usual [draft and saved versions](/docs/development-lifecycle/release/version-control), environments and releases. On top of that, ToolJet keeps the app's code with each version, records every change to it, and can sync it with git. This page explains how.
 
 ## Drafts and Saved Versions

@@ -14,10 +14,6 @@ sidebar_label: Project Structure
  <span>Paid feature</span>
 </div>
 
-:::caution BETA
-Code mode is in beta and not recommended for production use.
-:::
-
 A Code mode app is a React and TypeScript project. `app.json` names the app and its screens, and `frontend/` holds the source. ToolJet keeps sign-in, permissions, environments, data sources and queries. This page describes the files in a project, the rules ToolJet applies to them, and what ToolJet stores.
 
 You get a project when you clone an app or create one with the CLI. See [Work Locally](/docs/app-builder/code-mode/local-development).
