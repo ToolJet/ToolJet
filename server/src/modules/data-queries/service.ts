@@ -313,8 +313,7 @@ export class DataQueriesService implements IDataQueriesService {
     dataSource: DataSource,
     response: Response,
     mode?: string,
-    app?: App,
-    appAbility?: AppAbility
+    app?: App
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
@@ -325,9 +324,8 @@ export class DataQueriesService implements IDataQueriesService {
 
     // Persisting options on run is an EDITOR authoring convenience.
     // This endpoint is also hit by app preview, and there the user is consuming, not editing,
-    // so the loaded options must NOT be written back. An app-pinned session (a PAT, an AI connection) is read-only
-    // whatever the mode, and only an editor of the app writes: a viewer who may use the data source runs the query
-    // (RUN_EDITOR) but does not change it for everyone.
+    // so the loaded options must NOT be written back. An app-pinned session (an app token, or an AI connection made
+    // for one app) is read-only whatever the mode.
     // The released version (App.currentVersionId) is frozen too: a non-UI client (MCP/PAT) can hit
     // this endpoint directly, so skip the write-back when the query's version is the released one.
     // Only the authoring persist is gated — the query still executes below.
@@ -336,7 +334,6 @@ export class DataQueriesService implements IDataQueriesService {
       mode !== 'view' &&
       !user.patAppId &&
       !user.oauthAppId &&
-      !!appAbility?.can(FEATURE_KEY.UPDATE_ONE, App) &&
       !isReleasedVersion &&
       ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) &&
       !isEmpty(options) &&

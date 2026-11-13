@@ -51,9 +51,7 @@ export interface IDataQueriesService {
     ability: object,
     dataSource: DataSource,
     response: Response,
-    mode?: string,
-    app?: App,
-    appAbility?: object
+    mode?: string
   ): Promise<object>;
 
   runQueryForApp(

@@ -2,31 +2,9 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as constants from '@modules/app/constants';
-import { setSecurityHeaders, setupEditionEarlyRoutes } from '../../../../src/helpers/bootstrap.helper';
+import { setupEditionEarlyRoutes } from '../../../../src/helpers/bootstrap.helper';
 
 /** @group platform */
-describe('setSecurityHeaders | CORS for an opaque origin', () => {
-  const corsOrigin = (env: Record<string, string>) => {
-    let options: any;
-    const app: any = { use: jest.fn(), enableCors: jest.fn((o) => (options = o)), get: jest.fn() };
-    const config: any = { get: (key: string) => ({ TOOLJET_HOST: 'https://tooljet.example.com', ...env })[key] };
-    setSecurityHeaders(app, config, { log: jest.fn(), warn: jest.fn(), error: jest.fn() });
-    return (origin: string | undefined) =>
-      new Promise<boolean | string | undefined>((resolve) => options.origin(origin, (_err, allow) => resolve(allow)));
-  };
-
-  // A Code mode app's isolated frame has the origin "null": a credentialed answer would hand it the viewer's session.
-  it('should refuse the "null" origin, even with ENABLE_CORS', async () => {
-    expect(await corsOrigin({ ENABLE_CORS: 'true' })('null')).toBe(false);
-    expect(await corsOrigin({})('null')).toBe(false);
-  });
-
-  it('should still allow the instance and, with ENABLE_CORS, other sites', async () => {
-    expect(await corsOrigin({})('https://tooljet.example.com')).toBe(true);
-    expect(await corsOrigin({ ENABLE_CORS: 'true' })('https://elsewhere.example.org')).toBe(true);
-  });
-});
-
 describe('setupEditionEarlyRoutes | the isolated frame route', () => {
   afterEach(() => jest.restoreAllMocks());
 

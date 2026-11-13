@@ -525,12 +525,6 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
           return callback(null, true);
         }
 
-        // "null" is an opaque origin: a sandboxed frame (a Code mode app's isolated frame) or a file. It is never a page of
-        // this instance, and with ENABLE_CORS a credentialed answer to it would hand the viewer's session to app code.
-        if (requestOrigin === 'null') {
-          return callback(null, false);
-        }
-
         // If ENABLE_CORS is true, allow all origins
         if (corsWildcard) {
           return callback(null, true);
