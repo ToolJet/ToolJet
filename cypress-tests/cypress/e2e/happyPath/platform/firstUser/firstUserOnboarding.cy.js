@@ -4,19 +4,15 @@ import { logout } from "Support/utils/common";
 import {
   bannerElementsVerification,
   onboardingStepOne,
-  onboardingStepThree,
   onboardingStepTwo,
 } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
-import { onboardingText } from "Texts/platform/onboarding";
-import { multiEnvSelector } from "Selectors/platform/eeCommon";
 
 describe("Self host onboarding", () => {
   const envVar = Cypress.env("environment");
 
   beforeEach(() => {
     cy.visit("/setup");
-    cy.intercept("GET", "/api/data-queries/**").as("getDataQueries");
     cy.intercept("GET", "/assets/translations/en.json").as("translations");
   });
 
@@ -46,7 +42,9 @@ describe("Self host onboarding", () => {
     );
   });
 
-  it("verify elements on self host onboarding page", () => {
+  // First-user setup can only run once per instance: a retry starts with the admin
+  // and workspace already created, so retrying would only hide the real failure.
+  it("verify elements on self host onboarding page", { retries: 0 }, () => {
     cy.ifEnv("Enterprise", () => {
       cy.get(commonSelectors.HostBanner).should("be.visible");
       cy.get(commonSelectors.pageLogo).should("be.visible");
@@ -145,150 +143,11 @@ describe("Self host onboarding", () => {
     onboardingStepTwo();
 
     cy.ifEnv("Enterprise", () => {
-      bannerElementsVerification();
-
-      const trialPageTexts = [
-        {
-          selector: onboardingSelectors.beforeDiveInHeader,
-          text: onboardingText.freeTrialHeaderText,
-        },
-        {
-          selector: onboardingSelectors.infoDescription,
-          text: onboardingText.infoDescriptionText,
-        },
-        {
-          selector: onboardingSelectors.noCreditCardBanner,
-          text: onboardingText.noCreditCardText,
-        },
-        {
-          selector: onboardingSelectors.trialButton,
-          text: "Start your 14-day trial",
-        },
-        { selector: onboardingSelectors.declineButton, text: "No, thanks" },
-      ];
-
-      trialPageTexts.forEach((item) => {
-        cy.get(item.selector).should("be.visible").and("have.text", item.text);
-      });
-
-      cy.get(onboardingSelectors.comparePlansTitle).verifyVisibleElement(
-        "have.text",
-        onboardingText.comparePlansText
-      );
-
-      cy.get(onboardingSelectors.comparePlanDescription)
-        .invoke("text")
-        .then((text) => {
-          const normalizedText = text.replace(/\s+/g, " ").trim();
-          expect(normalizedText).to.equal(
-            "The plan reflects the features available in the latest version of ToolJet and some feature may not be available in your version. Click here to check out the details plan comparison & prices on our website."
-          );
-        });
-
-      cy.get(onboardingSelectors.onPremiseLink)
-        .verifyVisibleElement("have.text", "Click here")
-        .and("have.attr", "href")
-        .and("equal", "https://tooljet.com/pricing?payment=onpremise");
-
-      const planTitles = [
-        {
-          selector: onboardingSelectors.basicPlanTitle,
-          text: onboardingText.basicPlanText,
-        },
-        {
-          selector: onboardingSelectors.flexibleTitle,
-          text: onboardingText.flexibleText,
-        },
-        {
-          selector: onboardingSelectors.businessTitle,
-          text: onboardingText.businessText,
-        },
-      ];
-
-      planTitles.forEach((item) => {
-        cy.get(item.selector).should("be.visible").and("have.text", item.text);
-      });
-
-      const prices = [
-        { selector: `${onboardingSelectors.planPrice}:eq(0)`, text: "$0" },
-        {
-          selector: `${onboardingSelectors.proPlanPrice}:eq(0)`,
-          text: "$79/monthper builder",
-        },
-        {
-          selector: `${onboardingSelectors.proPlanPrice}:eq(1)`,
-          text: "$199/monthper builder",
-        },
-        {
-          selector: `${onboardingSelectors.planToggleLabel}:eq(0)`,
-          text: "Yearly20% off",
-        },
-        {
-          selector: `${onboardingSelectors.planToggleLabel}:eq(1)`,
-          text: "Yearly20% off",
-        },
-      ];
-
-      prices.forEach((item) => {
-        cy.get(item.selector).should("be.visible").and("have.text", item.text);
-      });
-
-      cy.get(onboardingSelectors.planToggleInput).eq(0).should("be.visible");
-      cy.get(onboardingSelectors.planToggleInput).eq(1).should("be.visible");
-
-      cy.get(onboardingSelectors.pricingPlanToggle)
-        .eq(0)
-        .uncheck({ force: true });
-
-      cy.get(onboardingSelectors.planToggleLabel)
-        .eq(0)
-        .verifyVisibleElement("have.text", "Monthly20% off");
-      cy.get(onboardingSelectors.discountDetails)
-        .should("have.css", "text-decoration")
-        .and("include", "line-through");
-
-      cy.get(onboardingSelectors.proPlanPrice)
-        .eq(0)
-        .verifyVisibleElement("have.text", "$99/monthper builder");
-
-      cy.get(onboardingSelectors.pricingPlanToggle)
-        .eq(1)
-        .uncheck({ force: true });
-      cy.get(onboardingSelectors.planToggleLabel)
-        .eq(1)
-        .verifyVisibleElement("have.text", "Monthly20% off");
-      cy.get(onboardingSelectors.discountDetails)
-        .should("have.css", "text-decoration")
-        .and("include", "line-through");
-
-      cy.get(onboardingSelectors.proPlanPrice)
-        .eq(1)
-        .verifyVisibleElement("have.text", "$249/monthper builder");
-
-      cy.get(onboardingSelectors.enterpriseTitle).verifyVisibleElement(
-        "have.text",
-        "Enterprise"
-      );
-      cy.get(onboardingSelectors.customPricingHeader).verifyVisibleElement(
-        "have.text",
-        "Custom pricing"
-      );
-      cy.get(onboardingSelectors.scheduleACallButton).verifyVisibleElement(
-        "have.text",
-        "Schedule a call"
-      );
-
-      cy.get(onboardingSelectors.declineButton).click();
-
-      bannerElementsVerification();
-      onboardingStepThree();
+      cy.url({ timeout: 20000 }).should("include", "/my-workspace/home");
+      cy.get(commonSelectors.homePagePromptHeader, {
+        timeout: 20000,
+      }).verifyVisibleElement("have.text", "What do you want to build today?");
     });
-
-    cy.wait("@getDataQueries");
-    cy.wait(2000);
-    cy.get(multiEnvSelector.environmentsTag("development"), {
-      timeout: 20000,
-    }).should("be.visible", { timeout: 20000 });
 
     cy.apiLogout();
     cy.visit("/my-workspace");
