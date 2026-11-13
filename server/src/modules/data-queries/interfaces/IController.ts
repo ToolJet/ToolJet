@@ -41,7 +41,8 @@ export interface IDataQueriesController {
     ability: AppAbility,
     dataSource: DataSourceEntity,
     response: Response,
-    mode?: string
+    mode?: string,
+    appAbility?: AppAbility
   ): Promise<object>;
 
   runQuery(

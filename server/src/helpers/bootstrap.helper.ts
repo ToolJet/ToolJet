@@ -378,7 +378,12 @@ export async function setupEditionEarlyRoutes(app: NestExpressApplication, confi
       },
       logger,
     });
-  } catch {
+  } catch (error) {
+    // The community edition has no frame route: nothing to serve. Anything else (a stale server/ee, a bad setting) is
+    // a failure to report: the frame then doesn't load, which keeps app code off the page, but nobody would know why.
+    const missing = error?.code === 'MODULE_NOT_FOUND' && String(error?.message ?? '').includes('code-page-security');
+    if (!missing)
+      logger.error?.("Code mode: the isolated frame's route failed to start; apps won't load isolated:", error);
     return;
   }
   app.use(middleware);
@@ -518,6 +523,12 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
         // Allow requests with no origin (same-origin, server-to-server, curl, etc.)
         if (!requestOrigin) {
           return callback(null, true);
+        }
+
+        // "null" is an opaque origin: a sandboxed frame (a Code mode app's isolated frame) or a file. It is never a page of
+        // this instance, and with ENABLE_CORS a credentialed answer to it would hand the viewer's session to app code.
+        if (requestOrigin === 'null') {
+          return callback(null, false);
         }
 
         // If ENABLE_CORS is true, allow all origins

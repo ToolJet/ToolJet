@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable } from '@nestjs/common';
 import { FeatureAbilityFactory } from '.';
 import { AbilityGuard } from '@modules/app/guards/ability.guard';
 import { MODULES } from '@modules/app/constants/modules';
@@ -41,5 +41,14 @@ export class FeatureAbilityGuard extends AbilityGuard {
 
   protected forwardAbility(): boolean {
     return true;
+  }
+
+  // The data source guard that runs after this one replaces tj_ability; the app's own ability stays here, for what
+  // only an editor of the app may do (QueryAppAbility).
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const allowed = await super.canActivate(context);
+    const request = context.switchToHttp().getRequest();
+    request.tj_query_app_ability = request.tj_ability;
+    return allowed;
   }
 }

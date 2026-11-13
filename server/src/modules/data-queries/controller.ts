@@ -19,6 +19,7 @@ import { ValidateQueryAppGuard } from './guards/validate-query-app.guard';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { FeatureAbilityGuard as AppFeatureAbilityGuard } from './ability/app/guard';
+import { QueryAppAbility } from '@modules/data-queries/ability/app/query-app-ability.decorator';
 import { FeatureAbilityGuard as DataSourceFeatureAbilityGuard } from './ability/data-source/guard';
 import { ValidateQuerySourceGuard } from './guards/validate-query-source.guard';
 import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-version.guard';
@@ -148,7 +149,8 @@ export class DataQueriesController implements IDataQueriesController {
     @Ability() ability: AppAbility,
     @DataSource() dataSource: DataSourceEntity,
     @Res({ passthrough: true }) response: Response,
-    @Query('mode') mode?: string
+    @Query('mode') mode?: string,
+    @QueryAppAbility() appAbility?: AppAbility
   ) {
     return this.dataQueriesService.runQueryOnBuilder(
       user,
@@ -159,7 +161,8 @@ export class DataQueriesController implements IDataQueriesController {
       dataSource,
       response,
       mode,
-      app
+      app,
+      appAbility
     );
   }
 

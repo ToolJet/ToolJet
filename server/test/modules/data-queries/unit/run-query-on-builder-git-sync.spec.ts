@@ -23,7 +23,8 @@ describe('DataQueriesService', () => {
 
     async function run(
       appVersion: { branchId: string; isSynced: boolean; status: AppVersionStatus },
-      user: object = {}
+      user: object = {},
+      appEditor = true
     ) {
       const repository = module.get(DataQueryRepository) as unknown as { getOneById: jest.Mock };
       repository.getOneById.mockResolvedValue({ id: 'query-1', options: {}, appVersion });
@@ -35,7 +36,9 @@ describe('DataQueriesService', () => {
         { can: () => true } as never,
         { id: 'data-source-1' } as never,
         {} as never,
-        'edit'
+        'edit',
+        undefined,
+        { can: () => appEditor } as never
       );
     }
 
@@ -77,6 +80,23 @@ describe('DataQueriesService', () => {
 
     it('should run without saving options on an app-pinned session', async () => {
       await run({ branchId: FEATURE_BRANCH_ID, isSynced: true, status: AppVersionStatus.DRAFT }, { patAppId: 'app-1' });
+
+      expect(updateOne).not.toHaveBeenCalled();
+      expect(runAndGetResult).toHaveBeenCalled();
+    });
+
+    it('should run without saving options on an AI connection session', async () => {
+      await run(
+        { branchId: FEATURE_BRANCH_ID, isSynced: true, status: AppVersionStatus.DRAFT },
+        { oauthAppId: 'app-1' }
+      );
+
+      expect(updateOne).not.toHaveBeenCalled();
+      expect(runAndGetResult).toHaveBeenCalled();
+    });
+
+    it('should run without saving options for someone who may use the data source but not edit the app', async () => {
+      await run({ branchId: FEATURE_BRANCH_ID, isSynced: true, status: AppVersionStatus.DRAFT }, {}, false);
 
       expect(updateOne).not.toHaveBeenCalled();
       expect(runAndGetResult).toHaveBeenCalled();

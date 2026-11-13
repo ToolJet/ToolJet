@@ -40,7 +40,8 @@ describe('DataQueriesService.runQueryOnBuilder on the released version', () => {
       dataSource,
       {} as Response,
       undefined,
-      app
+      app,
+      ability
     );
   };
 
