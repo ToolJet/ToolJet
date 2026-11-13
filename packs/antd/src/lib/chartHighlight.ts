@@ -58,22 +58,23 @@ type Opacity = (d: unknown) => number;
 
 /**
  * Highlight clicked point for Ant's charts: style callbacks that keep the clicked mark at full strength and fade the
- * rest, or null while it is off or nothing is clicked (the chart then draws exactly as before). The callbacks are the
- * same functions until the click changes: Ant redraws a chart whose config differs (functions by reference), so new
- * callbacks each render would redraw it each render.
+ * rest. While it is off or nothing is clicked (`active` false) every mark gets `base`, so the chart draws as without
+ * it. The callbacks are always given, never left out: Ant merges a new config into the last one and keeps a key it is
+ * not given, so the faded marks stayed faded after Highlight was turned off or the click cleared. They are the same
+ * functions until the click changes: Ant redraws a chart whose config differs (functions by reference).
  */
 export const useClickHighlight = (on: unknown, clicked: unknown) => {
   const active = on === true && hasClicked(clicked);
   return useMemo(() => {
-    if (!active) return null;
     const made = new Map<string, Opacity>();
     return {
-      /** An opacity callback: `base` for the clicked mark, `base * off` for the rest. */
+      active,
+      /** An opacity callback: `base` for the clicked mark, `base * off` for the rest; `base` for all while inactive. */
       opacity: (by: MatchBy, base = 1, off = FADED): Opacity => {
         const id = JSON.stringify([by.keys, by.series ?? '', !!by.rowOnly, base, off]);
         let fn = made.get(id);
         if (!fn) {
-          fn = (d: unknown) => (isClicked(d, clicked, by) ? base : base * off);
+          fn = active ? (d: unknown) => (isClicked(d, clicked, by) ? base : base * off) : () => base;
           made.set(id, fn);
         }
         return fn;

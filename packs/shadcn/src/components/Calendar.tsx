@@ -282,6 +282,9 @@ export const Calendar = () => {
     },
     (date, endDate) => {
       const { m: mode2, selected: current } = live.current;
+      // Text that is not a date is ignored (it cleared the selection); the Clear action still clears.
+      const first = Array.isArray(date) ? date[0] : date;
+      if (mode2 !== 'multiple' && first != null && first !== '' && !toDay(first as string)) return;
       // A day the calendar does not let a user pick (before Min date, after Max date, a disabled date or weekday) is
       // not selected by the action either (it was, with nothing to tell it apart).
       const ruledOut = (d: unknown) => {

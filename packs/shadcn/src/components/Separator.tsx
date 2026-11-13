@@ -22,7 +22,12 @@ export const Separator = () => {
     inspector: 'color',
     initialValue: 'var(--cc-default-border)',
   });
-  const thickness = ToolJet.useStyleNumber({ name: 'thickness', label: 'Thickness', initialValue: 1 });
+  const thickness = ToolJet.useStyleNumber({
+    name: 'thickness',
+    label: 'Thickness',
+    initialValue: 1,
+    inspector: 'numberInput',
+  });
   ToolJet.useComponentSettings({ role: 'separator', fit: false, loading: 'own', defaultWidth: 20, defaultHeight: 3 });
 
   const label = displayText(rawLabel);

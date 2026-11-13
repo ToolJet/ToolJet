@@ -52,6 +52,7 @@ export const AccordionContainer = () => {
     name: 'panelHeight',
     label: 'Section height',
     initialValue: 160,
+    inspector: 'numberInput',
   });
   const headerColor = ToolJet.useStyleString({
     name: 'headerColor',
@@ -75,6 +76,7 @@ export const AccordionContainer = () => {
     name: 'padding',
     label: 'Padding',
     initialValue: 12,
+    inspector: 'numberInput',
     section: 'Spacing',
   });
   ToolJet.useComponentSettings({ role: 'accordion-container', fit: false, defaultWidth: 16, defaultHeight: 60 });

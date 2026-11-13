@@ -198,6 +198,32 @@ const makeStateHook = (hookName: string, cleared?: () => unknown) =>
     return [value, setAndSync] as const;
   };
 
+// Every colour style runs this on every render; a page reuses few distinct values, so each is checked once.
+const colourChecks = new Map<string, boolean>();
+const COLOUR_CHECKS_MAX = 500;
+const isColour = (value: string) => {
+  if (typeof CSS === 'undefined' || typeof CSS.supports !== 'function') return true;
+  let ok = colourChecks.get(value);
+  if (ok === undefined) {
+    ok = CSS.supports('color', value);
+    if (colourChecks.size >= COLOUR_CHECKS_MAX) colourChecks.clear();
+    colourChecks.set(value, ok);
+  }
+  return ok;
+};
+
+// A negative size is one CSS drops, so the part shrank to nothing (a 0px divider, a square corner).
+const SIZE_STYLE = /radius|width|height|gap|padding|thickness|size/i;
+
+// CSS drops a value it cannot read, so the part drew transparent, black or square instead of its default.
+const cannotDraw = (hookName: string, name: string, inspector: string | undefined, raw: unknown) => {
+  if (inspector === 'color' && typeof raw === 'string' && !isColour(raw.trim())) return true;
+  const isNumberStyle = hookName === 'useStyleNumber';
+  const n = typeof raw === 'number' || (typeof raw === 'string' && raw.trim() !== '') ? Number(raw) : NaN;
+  if (isNumberStyle && !Number.isFinite(n)) return true;
+  return (/radius/i.test(name) || (isNumberStyle && SIZE_STYLE.test(name))) && Number.isFinite(n) && n < 0;
+};
+
 // Styles are builder-controlled: the hook returns the Inspector value, or initialValue while it is unset.
 // `expose: true` also reports that value as a read-only exposed variable; by default styles stay private.
 const makeStyleHook = (hookName: string) =>
@@ -206,11 +232,13 @@ const makeStyleHook = (hookName: string) =>
     initialValue,
     expose,
     enumDefinition,
+    inspector,
   }: {
     name: string;
     initialValue?: unknown;
     expose?: boolean;
     enumDefinition?: unknown[];
+    inspector?: string;
   }) {
     const instance = useLibraryInstance(hookName);
     const raw = instance.styles[name];
@@ -218,7 +246,13 @@ const makeStyleHook = (hookName: string) =>
     // not list. Both fall back to initialValue: a vendor component given null or an unknown colour name can throw
     // (MUI Tabs' textColor took the whole viewer down).
     const unknownOption = Array.isArray(enumDefinition) && raw != null && raw !== '' && !enumDefinition.includes(raw);
-    const value = raw === undefined || raw === null || raw === '' || unknownOption ? initialValue : raw;
+    const value =
+      raw === undefined || raw === null || raw === '' || unknownOption || cannotDraw(hookName, name, inspector, raw)
+        ? initialValue
+        : // The number field saves text ("200"); CSS drops a size with no unit, so a number style hands over a number.
+          hookName === 'useStyleNumber' && typeof raw === 'string'
+          ? Number(raw)
+          : raw;
     // The instance object changes with every prop change; report only when the value itself changes.
     const instanceRef = React.useRef(instance);
     instanceRef.current = instance;

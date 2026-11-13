@@ -21,7 +21,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { THEME_COLOR, useThemeColor } from '../lib/themeStyles';
 import { SkeletonSwap, SpinOver, TextBone } from '../lib/Loading';
-import { str, toArray, type Row } from '../lib/data';
+import { oneOf, str, toArray, type Row } from '../lib/data';
 import { formatCell, formatFigure, formatNumber, parseFormat, toNumber, type NumberFormat } from '../lib/format';
 import { LOCALE_HINT } from '../lib/locale';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
@@ -241,7 +241,7 @@ export const Alert = () => {
         <AntAlert
           message={message || description}
           description={message && description ? description : undefined}
-          type={(custom ? 'info' : type) as 'info'}
+          type={custom ? 'info' : oneOf(type, ['info', 'success', 'warning', 'error'] as const, 'info')}
           showIcon={showIcon}
           closable={closable}
           banner={banner}
@@ -760,6 +760,7 @@ export const Empty = () => {
 };
 
 // Ant's Result: status (success, error, info, warning, 404, 403, 500), title, subTitle.
+const RESULT_STATUSES = ['success', 'info', 'warning', 'error', '404', '403', '500'] as const;
 export const Result = () => {
   const [status] = ToolJet.useStateEnumeration({
     name: 'status',
@@ -786,7 +787,11 @@ export const Result = () => {
   return (
     <AntProvider tokens={tokens}>
       <SpinOver loading={loading} as="block">
-        <AntResult status={status as 'info'} title={title || undefined} subTitle={subTitle || undefined} />
+        <AntResult
+          status={oneOf(status, RESULT_STATUSES, 'info')}
+          title={title || undefined}
+          subTitle={subTitle || undefined}
+        />
       </SpinOver>
     </AntProvider>
   );

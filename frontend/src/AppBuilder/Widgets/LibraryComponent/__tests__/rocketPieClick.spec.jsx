@@ -81,8 +81,9 @@ describe('a Rocket PieChart slice click', () => {
     });
     clickSlice(root, 1);
     await waitFor(() => expect(events).toContain('onClick'));
-    const opacity = (i) => root.querySelectorAll('.recharts-pie-sector path')[i].getAttribute('fill-opacity');
-    await waitFor(() => expect(opacity(0)).toBe('0.35'));
-    expect(opacity(1)).toBe('1');
+    // Slices dim by a CSS rule, not a Cell prop (RK-15): a redrawn slice under a double click fired no double click.
+    const rules = () => [...root.querySelectorAll('style')].map((s) => s.textContent).join('\n');
+    await waitFor(() => expect(rules()).toContain('.recharts-pie-sector path { fill-opacity: 0.35; }'));
+    expect(rules()).toContain('.recharts-pie-sector:nth-child(2) path { fill-opacity: 1; }');
   });
 });

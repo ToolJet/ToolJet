@@ -910,7 +910,7 @@
   overflow: hidden;
   border: 0;
   border-left: 3px solid var(--bk-tone);
-  border-radius: calc(var(--ant-border-radius) - 2px);
+  border-radius: var(--lk-event-radius, calc(var(--ant-border-radius) - 2px));
   background: color-mix(in srgb, var(--bk-tone) 14%, var(--ant-color-bg-container));
   color: color-mix(in srgb, var(--bk-tone) 70%, var(--ant-color-text));
   font: inherit;

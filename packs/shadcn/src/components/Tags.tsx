@@ -168,9 +168,11 @@ export const Tags = () => {
 
   if (!items.length)
     return (
-      <div className="ui ui2-tags" style={vars}>
-        <span className="ui-description">—</span>
-      </div>
+      <LoadingFrame loading={ld.loading} minHeight={32} look={ld.skeleton ? <ChipsSkel /> : <LoadingBox />}>
+        <div className="ui ui2-tags" style={vars}>
+          <span className="ui-description">—</span>
+        </div>
+      </LoadingFrame>
     );
   return (
     <LoadingFrame loading={ld.loading} minHeight={32} look={ld.skeleton ? <ChipsSkel /> : <LoadingBox />}>
