@@ -369,6 +369,18 @@ class HomePageComponent extends React.Component {
         searchedAppCount: appSearchKey ? data.apps.length : this.state.currentFolder.count,
         isLoading: false,
       });
+      // Aggregate header-tag signal, one flag per resource type (this page serves all three).
+      const anyUncommitted = (data.apps || []).some(
+        (a) => a?.has_uncommitted_changes === true || a?.hasUncommittedChanges === true
+      );
+      const branchActions = useWorkspaceBranchesStore.getState().actions;
+      if (this.props.appType === 'module') {
+        branchActions.setHasUncommittedModules(anyUncommitted);
+      } else if (this.props.appType === 'workflow') {
+        branchActions.setHasUncommittedWorkflows(anyUncommitted);
+      } else {
+        branchActions.setHasUncommittedApps(anyUncommitted);
+      }
     });
   };
 

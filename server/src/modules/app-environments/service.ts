@@ -268,6 +268,7 @@ export class AppEnvironmentService implements IAppEnvironmentService {
           'publishedAt',
           'releasedAt',
           'isSynced',
+          'hasUncommittedChanges',
         ],
       });
 
