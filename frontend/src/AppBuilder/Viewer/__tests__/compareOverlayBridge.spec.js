@@ -112,3 +112,63 @@ describe('switching the compared page in a running frame', () => {
     expect(switchPage).not.toHaveBeenCalled();
   });
 });
+
+// A dialog covers the compared page (one the app opened on page load, or one the compare view opened to show a
+// change), and the reviewer has to be able to close it with its close button.
+describe('dismissing open dialogs', () => {
+  const { dismissAppOverlays } = require('../useCompareOverlayBridge');
+  const PAGE_LOAD = '33333333-3333-4333-8333-333333333333';
+  const SHUT = '44444444-4444-4444-8444-444444444444';
+  const pageComponents = {
+    ...components,
+    [PAGE_LOAD]: { component: { name: 'welcome', component: 'ModalV2', parent: null } },
+    [SHUT]: { component: { name: 'shutDialog', component: 'Modal', parent: null } },
+  };
+  const setup = () => {
+    const actions = {};
+    [DIALOG, PAGE_LOAD, SHUT].forEach((id) => {
+      actions[id] = { show: id !== SHUT, open: jest.fn(() => (actions[id].show = true)), close: jest.fn() };
+      actions[id].close.mockImplementation(() => (actions[id].show = false));
+    });
+    const getState = () => ({
+      getCurrentPageComponents: () => pageComponents,
+      getExposedValueOfComponent: (id) => actions[id],
+    });
+    return { actions, getState };
+  };
+
+  // Break this catches: the dialog's own onClose event running the app's actions when the reviewer closes it.
+  it('closes an open dialog with its events muted first', () => {
+    const { actions, getState } = setup();
+    actions[PAGE_LOAD].close.mockImplementation(() => expect(isCompareMuted(PAGE_LOAD)).toBe(true));
+
+    dismissAppOverlays(getState);
+
+    expect(actions[PAGE_LOAD].close).toHaveBeenCalledTimes(1);
+  });
+
+  // Break this catches: a dialog that was closed once, or that the compare view opened, ignoring the close button.
+  it('closes a dialog the compare view opened, and again each time it is reopened', () => {
+    const { actions, getState } = setup();
+    actions[DIALOG].show = false;
+    const handle = createCompareOverlayHandler(getState);
+
+    handle(['historyTable']);
+    dismissAppOverlays(getState);
+    handle(['closeButton']);
+    dismissAppOverlays(getState);
+
+    expect(actions[DIALOG].open).toHaveBeenCalledTimes(2);
+    expect(actions[DIALOG].close).toHaveBeenCalledTimes(2);
+  });
+
+  // Break this catches: dismissing touching dialogs that are not open.
+  it('leaves a dialog that is not open alone', () => {
+    const { actions, getState } = setup();
+
+    dismissAppOverlays(getState);
+
+    expect(actions[SHUT].close).not.toHaveBeenCalled();
+    expect(isCompareMuted(SHUT)).toBe(false);
+  });
+});

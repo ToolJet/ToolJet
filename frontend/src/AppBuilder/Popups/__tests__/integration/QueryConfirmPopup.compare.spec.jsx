@@ -1,11 +1,11 @@
 /**
  * The compare (review) view renders each version through the viewer in a read-only frame (?compare=1). An on-load
- * query that asks for confirmation queues a QueryConfirmPopup inside that frame, and the reviewer has to be able to
- * dismiss it to see the rest of the page. Confirming must stay impossible there: it would run the query of a version
- * that is only being previewed, and comparing must never run the app's actions.
+ * query that asks for confirmation queues a QueryConfirmPopup inside that frame, and the reviewer answers it like the
+ * app's own user would: Cancel dismisses it and leaves the query unrun, Yes runs the query.
  *
  * Nothing is mocked: the real store, the real Popups and the real react-bootstrap Modal. The only controlled
- * boundary is the browser's frame context (window.parent and the URL), which is what makes a document a compare frame.
+ * boundary is the browser's frame context (window.parent and the URL), which is what makes a document a compare frame,
+ * and the query run itself, which would otherwise call the network.
  */
 import React from 'react';
 import { render, screen, act, userEvent } from '@/test/test-utils';
@@ -25,6 +25,12 @@ const queueConfirmation = () =>
       },
     }));
   });
+
+const stubRunQuery = () => {
+  const runQuery = jest.fn();
+  useStore.setState((s) => ({ queryPanel: { ...s.queryPanel, runQuery } }));
+  return runQuery;
+};
 
 const queued = () => state().dataQuery.queryConfirmationList.map((q) => q.queryName);
 
@@ -50,27 +56,54 @@ describe('QueryConfirmPopup in a compare frame', () => {
     window.history.replaceState({}, '', '/');
   });
 
-  // Break this catches: the frame keeps the Yes button, so the reviewer can run an on-load query of a version that is
-  // only being previewed.
-  it('offers no way to run the query', async () => {
+  // Break this catches: the frame drops Yes or renames Cancel, so the reviewer cannot answer both ways.
+  it('offers both Cancel and Yes', async () => {
     becomeCompareFrame();
     render(<Popups darkMode={false} />);
     await queueConfirmation();
 
     expect(screen.getByText('Load?')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Yes' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Yes' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument();
   });
 
   // Break this catches: nothing in the frame can dismiss the popup, so it covers the page for good.
-  it('lets the reviewer dismiss it with the Close button, and the query stays unrun', async () => {
+  it('lets the reviewer dismiss it with Cancel, and the query stays unrun', async () => {
     becomeCompareFrame();
+    const runQuery = stubRunQuery();
     render(<Popups darkMode={false} />);
     await queueConfirmation();
 
-    await user.click(screen.getByRole('button', { name: 'Close' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(queued()).toEqual([]);
+    expect(runQuery).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  // Break this catches: Yes being inert in the frame, so confirming never runs the query.
+  it('runs the query when the reviewer clicks Yes', async () => {
+    becomeCompareFrame();
+    const runQuery = stubRunQuery();
+    render(<Popups darkMode={false} />);
+    await queueConfirmation();
+
+    await user.click(screen.getByRole('button', { name: 'Yes' }));
+
+    expect(queued()).toEqual([]);
+    expect(runQuery).toHaveBeenCalledWith(
+      'q1',
+      'loadOrders',
+      true,
+      'edit',
+      {},
+      undefined,
+      undefined,
+      undefined,
+      false,
+      'canvas'
+    );
   });
 
   // Break this catches: Escape being swallowed or the popup being kept open by the frame's own settings.
