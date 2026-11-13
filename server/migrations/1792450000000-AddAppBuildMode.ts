@@ -1,3 +1,4 @@
+// migration-lint: allow-destructive the check only covers build_mode, a column this migration adds; its default satisfies it
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 // apps.build_mode: 'visual' (default) or 'code'. Existing apps are visual.

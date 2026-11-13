@@ -2,6 +2,7 @@ import { createHash } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { isServerMode } from '../server-mode';
 import { Session } from './session';
 import {
   applyStoredSource,
@@ -12,6 +13,7 @@ import {
   readSourceState,
   SourceState,
   StoredSource,
+  trustFileChanges,
   writeSourceState,
 } from './source-upload';
 
@@ -77,6 +79,8 @@ export type PullResult =
   | { kind: 'same-files'; revision: number }
   /** Nothing was written: these local files differ from ToolJet's and a pull would lose them. */
   | { kind: 'local-changes'; revision: number; files: string[] }
+  /** Nothing was written: the pull changes what a build runs on this machine (build config, packages, ...). */
+  | { kind: 'untrusted'; revision: number; files: string[] }
   | { kind: 'pulled'; revision: number; written: number; removed: number; keptIn?: string; kept: number };
 
 const keepCopies = (root: string, files: string[], revision: number): string => {
@@ -98,7 +102,9 @@ export async function pullStoredCode(
   root: string,
   where: { appId: string; versionId: string },
   summary: StoredSource,
-  force: boolean
+  force: boolean,
+  /** Pull even a change to what a build runs here (`--trust-remote-config`). Server mode runs none of it. */
+  trust = false
 ): Promise<PullResult> {
   const local = readSourceState(root);
   const check = compareWithStored(local, where.versionId, summary, hashProjectSource(root));
@@ -113,6 +119,9 @@ export async function pullStoredCode(
     return { kind: 'same-files', revision };
   }
   const stored = await fetchStoredSource(session, where, true);
+  // Someone else's edit to what a build runs does not run here by itself, as in tooljet app dev.
+  const untrusted = trust || isServerMode() ? [] : trustFileChanges(root, stored);
+  if (untrusted.length) return { kind: 'untrusted', revision, files: untrusted };
   const changed = check.clean ? [] : filesAPullWouldChange(root, stored);
   if (changed.length && !force) return { kind: 'local-changes', revision, files: changed };
   const keptIn = changed.length ? keepCopies(root, changed, revision) : undefined;

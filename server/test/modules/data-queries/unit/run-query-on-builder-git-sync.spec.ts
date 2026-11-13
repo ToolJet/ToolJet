@@ -82,6 +82,16 @@ describe('DataQueriesService', () => {
       expect(runAndGetResult).toHaveBeenCalled();
     });
 
+    it('should run without saving options on an AI connection session made for one app', async () => {
+      await run(
+        { branchId: FEATURE_BRANCH_ID, isSynced: true, status: AppVersionStatus.DRAFT },
+        { oauthAppId: 'app-1' }
+      );
+
+      expect(updateOne).not.toHaveBeenCalled();
+      expect(runAndGetResult).toHaveBeenCalled();
+    });
+
     it('should save options on a feature branch', async () => {
       await run({ branchId: FEATURE_BRANCH_ID, isSynced: true, status: AppVersionStatus.DRAFT });
 

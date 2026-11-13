@@ -168,6 +168,35 @@ for (const mode of ['local', 'server'] as const) {
       expect(await buildError(dirs.root)).to.include('Refused tsconfig.json');
     }).timeout(60_000);
 
+    // A package-style extends climbs out of node_modules: TypeScript finds nothing there, esbuild reads the file.
+    it('refuses a tsconfig that extends a package path climbing out of the project', async () => {
+      entry(dirs.root, 'export const a = 1;\n');
+      fs.writeFileSync(path.join(dirs.outside, 'server.env'), `${SECRET}=1\n`);
+      const tsconfig = JSON.parse(fs.readFileSync(path.join(dirs.root, 'tsconfig.json'), 'utf8'));
+      for (const extendsPath of ['x/../../../elsewhere/server.env', 'x/../../../../project/../elsewhere/server.env']) {
+        fs.writeFileSync(path.join(dirs.root, 'tsconfig.json'), JSON.stringify({ ...tsconfig, extends: extendsPath }));
+        expect(await buildError(dirs.root))
+          .to.include('Refused tsconfig.json')
+          .and.not.include(SECRET);
+      }
+    }).timeout(60_000);
+
+    it(`${
+      mode === 'server' ? 'refuses' : 'allows'
+    } a tsconfig that extends a package installed above the project`, async () => {
+      entry(dirs.root, 'export const a = 1;\n');
+      const pkg = path.join(dirs.base, 'node_modules', 'shared-config');
+      fs.mkdirSync(pkg, { recursive: true });
+      fs.writeFileSync(path.join(pkg, 'tsconfig.json'), JSON.stringify({ compilerOptions: { strict: true } }));
+      const tsconfig = JSON.parse(fs.readFileSync(path.join(dirs.root, 'tsconfig.json'), 'utf8'));
+      fs.writeFileSync(
+        path.join(dirs.root, 'tsconfig.json'),
+        JSON.stringify({ ...tsconfig, extends: 'shared-config' })
+      );
+      if (mode === 'server') expect(await buildError(dirs.root)).to.include('Refused tsconfig.json');
+      else await build(dirs.root);
+    }).timeout(60_000);
+
     it('leaves a symlinked file outside the project out of the manifest source', () => {
       fs.writeFileSync(path.join(dirs.root, 'src', 'index.ts'), 'export const a = 1;\n');
       fs.symlinkSync(path.join(dirs.outside, 'helper.ts'), path.join(dirs.root, 'src', 'linked.ts'));

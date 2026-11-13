@@ -1,3 +1,4 @@
+// migration-lint: allow-destructive replaces the origin check with a wider one (adds 'copy'), so it stays valid for released code
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 // Records which stored source a dev bundle and a library revision were built from, and allows the 'copy' revision

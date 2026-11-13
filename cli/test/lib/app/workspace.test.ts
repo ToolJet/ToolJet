@@ -5,7 +5,7 @@ import * as path from 'path';
 
 import { Project } from '../../../src/lib/app/project';
 import { pickVersion } from '../../../src/lib/app/remote';
-import { checkoutVersion, cloneApp, pullProject } from '../../../src/lib/app/workspace';
+import { checkoutVersion, cloneApp, cloneFolder, pullProject } from '../../../src/lib/app/workspace';
 import { ApiError, type Session } from '../../../src/lib/app/session';
 import { readSourceState } from '../../../src/lib/app/source-upload';
 
@@ -21,7 +21,12 @@ const codeRoot = {
       properties: {
         codePage: { value: '{{true}}' },
         correlationId: { value: 'corr-1234' },
-        routes: { value: JSON.stringify([{ id: 'orders', path: '/', title: 'Orders', pageId: 'p2' }, { id: 'order', path: '/orders/:id', pageId: 'p3' }]) },
+        routes: {
+          value: JSON.stringify([
+            { id: 'orders', path: '/', title: 'Orders', pageId: 'p2' },
+            { id: 'order', path: '/orders/:id', pageId: 'p3' },
+          ]),
+        },
       },
     },
   },
@@ -38,7 +43,11 @@ const v2 = {
   ],
   data_queries: [
     { name: 'orders', kind: 'tooljetdb', options: { operation: 'list_rows', table_id: 't1' } },
-    { name: 'setStatus', kind: 'tooljetdb', options: { operation: 'update_rows', table_id: 't1', parameters: [{ name: 'id' }, { name: 'status' }] } },
+    {
+      name: 'setStatus',
+      kind: 'tooljetdb',
+      options: { operation: 'update_rows', table_id: 't1', parameters: [{ name: 'id' }, { name: 'status' }] },
+    },
   ],
 };
 
@@ -76,7 +85,12 @@ function fakeSession(stored: StoredCode = 'none', { onBranch = false } = {}): Se
     '/apps/app-1': onBranch ? { ...v2, name: null, editing_version: null, pages: [], data_queries: [] } : v2,
     '/v2/apps/app-1/versions/ver-2': v2,
     '/v2/apps/app-1/versions/ver-1': v1,
-    '/apps/app-1/versions': { versions: [{ id: 'ver-2', name: 'v2', status: 'DRAFT' }, { id: 'ver-1', name: 'v1', status: 'RELEASED' }] },
+    '/apps/app-1/versions': {
+      versions: [
+        { id: 'ver-2', name: 'v2', status: 'DRAFT' },
+        { id: 'ver-1', name: 'v1', status: 'RELEASED' },
+      ],
+    },
     ...(stored === 'none' ? { [source]: { exists: false } } : {}),
     ...(stored === 'stored' ? { [source]: summary, [`${source}?content=1`]: { ...summary, files: storedFiles } } : {}),
     '/tooljet-db/organizations/org-1/tables': { result: [{ id: 't1', table_name: 'orders' }] },
@@ -128,9 +142,14 @@ describe('tooljet app clone, pull and checkout', () => {
     const app = result.project.readApp();
     expect(app).to.include({ name: 'Orders Desk', appId: 'app-1' });
     expect(app.codePage).to.deep.equal({ handle: 'home', name: 'Orders' });
-    expect(app.routes).to.deep.equal([{ id: 'orders', path: '/', title: 'Orders' }, { id: 'order', path: '/orders/:id' }]);
+    expect(app.routes).to.deep.equal([
+      { id: 'orders', path: '/', title: 'Orders' },
+      { id: 'order', path: '/orders/:id' },
+    ]);
     expect(app.version).to.equal(undefined);
-    const config = JSON.parse(fs.readFileSync(path.join(tmp, 'orders-desk', 'frontend', '.tooljet', 'config.json'), 'utf8'));
+    const config = JSON.parse(
+      fs.readFileSync(path.join(tmp, 'orders-desk', 'frontend', '.tooljet', 'config.json'), 'utf8')
+    );
     expect(config.correlationId).to.equal('corr-1234');
     const gen = fs.readFileSync(path.join(tmp, 'orders-desk', 'frontend', 'src', 'tooljet.gen.ts'), 'utf8');
     expect(gen).to.match(/\bsetStatus: \{ data: /);
@@ -141,7 +160,9 @@ describe('tooljet app clone, pull and checkout', () => {
   it('clone records the instance the app came from, which the project then uses', async () => {
     const result = await cloneApp(fakeSession(), 'app-1');
     expect(result.instance).to.equal('http://tooljet.test');
-    expect(JSON.parse(fs.readFileSync(path.join(tmp, 'orders-desk', '.tooljet', 'instance.json'), 'utf8'))).to.deep.equal({
+    expect(
+      JSON.parse(fs.readFileSync(path.join(tmp, 'orders-desk', '.tooljet', 'instance.json'), 'utf8'))
+    ).to.deep.equal({
       url: 'http://tooljet.test',
     });
     expect(fs.readFileSync(path.join(tmp, 'orders-desk', '.gitignore'), 'utf8')).to.contain('.tooljet/instance.json');
@@ -252,7 +273,15 @@ describe('tooljet app clone, pull and checkout', () => {
   it('app.json rejects a malformed version', () => {
     const dir = path.join(tmp, 'p');
     fs.mkdirSync(dir);
-    fs.writeFileSync(path.join(dir, 'app.json'), JSON.stringify({ name: 'x', codePage: { handle: 'home', name: 'Home' }, routes: [{ id: 'a', path: '/' }], version: 'v1' }));
+    fs.writeFileSync(
+      path.join(dir, 'app.json'),
+      JSON.stringify({
+        name: 'x',
+        codePage: { handle: 'home', name: 'Home' },
+        routes: [{ id: 'a', path: '/' }],
+        version: 'v1',
+      })
+    );
     expect(() => new Project(dir).readApp()).to.throw('"version" must be');
   });
 });
@@ -291,7 +320,12 @@ describe('resolveTarget with an in-product session', () => {
     process.env.TOOLJET_URL = 'http://localhost:3055/';
     process.env.TOOLJET_SESSION_TOKEN = 'header.eyJzdWIiOiJhQGIuYyJ9.sig';
     process.env.TOOLJET_WORKSPACE_ID = 'org-1';
-    expect(resolveTarget()).to.deep.equal({ url: 'http://localhost:3055', token: 'header.eyJzdWIiOiJhQGIuYyJ9.sig', kind: 'session', workspaceId: 'org-1' });
+    expect(resolveTarget()).to.deep.equal({
+      url: 'http://localhost:3055',
+      token: 'header.eyJzdWIiOiJhQGIuYyJ9.sig',
+      kind: 'session',
+      workspaceId: 'org-1',
+    });
   });
 
   it('prefers a personal access token, and needs the workspace with a session', () => {
@@ -304,5 +338,25 @@ describe('resolveTarget with an in-product session', () => {
     delete process.env.TOOLJET_PAT;
     delete process.env.TOOLJET_WORKSPACE_ID;
     expect(() => resolveTarget()).to.throw(/TOOLJET_WORKSPACE_ID/);
+  });
+});
+
+describe('cloneFolder', () => {
+  it('uses the app slug as the folder', () => {
+    expect(cloneFolder('orders-app', 'a1')).to.equal('orders-app');
+  });
+
+  it('keeps a slug from choosing a folder outside the working directory', () => {
+    for (const slug of ['../../x', '/etc/cron.d', '..', '.', 'a/../../b', '..\\..\\x']) {
+      const folder = cloneFolder(slug, 'a1');
+      expect(folder, slug).to.not.match(/[\\/]/);
+      expect(['.', '..'], slug).to.not.include(folder);
+      expect(path.resolve('/work', folder).startsWith('/work/'), slug).to.equal(true);
+    }
+  });
+
+  it('falls back to the app id when the slug has nothing usable', () => {
+    expect(cloneFolder(null, 'e20ed034-8688')).to.equal('e20ed034-8688');
+    expect(cloneFolder('../..', 'e20ed034-8688')).to.equal('e20ed034-8688');
   });
 });

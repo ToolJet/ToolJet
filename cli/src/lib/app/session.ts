@@ -2,6 +2,7 @@ import fetch = require('node-fetch');
 
 import { Auth } from '../library/auth';
 import { validateOriginUrl } from '../library/target-validation';
+import { ensureCompatible } from '../compatibility';
 
 /*
   How `tooljet app` reaches a ToolJet instance. The target is, in order: --url and --token, then TOOLJET_URL and
@@ -109,6 +110,7 @@ const envOverrideNote = (url: string): string =>
     : '';
 
 export async function openSession(target: Target): Promise<Session> {
+  await ensureCompatible(target.url);
   if (target.kind === 'session' && target.workspaceId) {
     // Already a session: no exchange, and the user is the token's subject.
     return {

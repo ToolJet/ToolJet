@@ -3,6 +3,7 @@ import FormData = require('form-data');
 
 import { buildUploadFormData } from './upload-form';
 import { parseApiErrorMessage } from '../api-error';
+import { ensureCompatible } from '../compatibility';
 
 export class ApiClient {
   private readonly baseUrl: string;
@@ -35,6 +36,7 @@ export class ApiClient {
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+    await ensureCompatible(this.baseUrl);
     const res = await fetch(`${this.baseUrl}/api${path}`, {
       method,
       headers: {
@@ -50,7 +52,8 @@ export class ApiClient {
   // Attaching the 'error' listener before starting the fetch is what matters here — a stream
   // failure while reading a file (deleted mid-upload, permission error) surfaces as a rejected
   // promise instead of an unhandled 'error' event that would crash the process.
-  private sendForm<T>(method: string, path: string, form: FormData): Promise<T> {
+  private async sendForm<T>(method: string, path: string, form: FormData): Promise<T> {
+    await ensureCompatible(this.baseUrl);
     return new Promise<T>((resolve, reject) => {
       form.once('error', (err: unknown) => reject(err instanceof Error ? err : new Error(String(err))));
 
@@ -72,6 +75,7 @@ export class ApiClient {
   // GET /api/custom-component-libraries/:correlationId — reports whether the library exists,
   // rather than throwing on a 404, so callers can decide whether to offer to create it.
   async verifyLibrary(correlationId: string): Promise<{ exists: boolean }> {
+    await ensureCompatible(this.baseUrl);
     const res = await fetch(`${this.baseUrl}/api/custom-component-libraries/${correlationId}`, {
       method: 'GET',
       headers: this.authHeaders(),

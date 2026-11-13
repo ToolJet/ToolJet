@@ -378,7 +378,12 @@ export async function setupEditionEarlyRoutes(app: NestExpressApplication, confi
       },
       logger,
     });
-  } catch {
+  } catch (error) {
+    // The community edition has no frame route: nothing to serve. Anything else (a stale server/ee, a bad setting) is
+    // a failure to report: the frame then doesn't load, which keeps app code off the page, but nobody would know why.
+    const missing = error?.code === 'MODULE_NOT_FOUND' && String(error?.message ?? '').includes('code-page-security');
+    if (!missing)
+      logger.error?.("Code mode: the isolated frame's route failed to start; apps won't load isolated:", error);
     return;
   }
   app.use(middleware);

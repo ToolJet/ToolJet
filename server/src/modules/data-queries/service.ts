@@ -324,7 +324,8 @@ export class DataQueriesService implements IDataQueriesService {
 
     // Persisting options on run is an EDITOR authoring convenience.
     // This endpoint is also hit by app preview, and there the user is consuming, not editing,
-    // so the loaded options must NOT be written back. An app-pinned session is read-only whatever the mode.
+    // so the loaded options must NOT be written back. An app-pinned session (an app token, or an AI connection made
+    // for one app) is read-only whatever the mode.
     // The released version (App.currentVersionId) is frozen too: a non-UI client (MCP/PAT) can hit
     // this endpoint directly, so skip the write-back when the query's version is the released one.
     // Only the authoring persist is gated — the query still executes below.
@@ -332,6 +333,7 @@ export class DataQueriesService implements IDataQueriesService {
     if (
       mode !== 'view' &&
       !user.patAppId &&
+      !user.oauthAppId &&
       !isReleasedVersion &&
       ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) &&
       !isEmpty(options) &&

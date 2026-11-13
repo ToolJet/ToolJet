@@ -42,10 +42,22 @@ export interface CloneResult {
   instance: string;
 }
 
+/**
+ * The folder a clone goes into when none is given: the app's slug, as one plain folder name. The slug comes from the
+ * server and any editor of the app sets it, so `../../x` or `/etc` must not pick where files are written.
+ */
+export const cloneFolder = (slug: string | null | undefined, appId: string): string => {
+  const name = (slug ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^[.-]+|[.-]+$/g, '');
+  return name || appId.replace(/[^A-Za-z0-9-]+/g, '-');
+};
+
 /** A new project folder linked to an existing app: app.json from its code page and routes, then a pull. */
 export async function cloneApp(session: Session, appId: string, dir?: string): Promise<CloneResult> {
   const listed = await readApp(session, appId);
-  const target = dir ?? listed.slug ?? listed.id;
+  const target = dir ?? cloneFolder(listed.slug, listed.id ?? appId);
   // Under git sync branching an app's name and pages live on each branch's draft, and a read that names no branch
   // has neither. Read the draft the project will work on: the one `pull` and `dev` pick for this folder.
   const { version } = (await workingApp(session, path.dirname(path.resolve(target)), { appId } as AppJson)).app;
@@ -57,7 +69,8 @@ export async function cloneApp(session: Session, appId: string, dir?: string): P
   if (code) {
     app.codePage = { handle: code.page.handle, name: code.page.name };
     const routes = parseRegistry(code.component);
-    if (routes.length) app.routes = routes.map(({ id, path: p, title }) => ({ id, path: p, ...(title ? { title } : {}) }));
+    if (routes.length)
+      app.routes = routes.map(({ id, path: p, title }) => ({ id, path: p, ...(title ? { title } : {}) }));
     const correlationId = code.component.definition?.properties?.correlationId?.value;
     if (correlationId) {
       const configFile = path.join(project.frontend, '.tooljet', 'config.json');
@@ -69,7 +82,15 @@ export async function cloneApp(session: Session, appId: string, dir?: string): P
   writeProjectInstance(project.root, session.url);
   const snapshot = await pullProject(session, project);
   const source = code ? await pullStoredSource(session, project, remote.id, snapshot.versionId) : null;
-  return { dir: target, project, name: remote.name, snapshot, hasCodePage: !!code, source, instance: new URL(session.url).origin };
+  return {
+    dir: target,
+    project,
+    name: remote.name,
+    snapshot,
+    hasCodePage: !!code,
+    source,
+    instance: new URL(session.url).origin,
+  };
 }
 
 /** Writes the version's stored code over the starter template (and records it in .tooljet/source.json). */
@@ -104,7 +125,11 @@ export interface CheckoutResult {
  * Points the project at one ToolJet version (by name or id), or back at the editing version (`wanted` null), and
  * pulls it. A checked-out version wins over the git branch the folder is on (see branch.ts).
  */
-export async function checkoutVersion(session: Session, project: Project, wanted: string | null): Promise<CheckoutResult> {
+export async function checkoutVersion(
+  session: Session,
+  project: Project,
+  wanted: string | null
+): Promise<CheckoutResult> {
   const app = project.readApp();
   if (!app.appId) throw new Error('app.json has no appId: create the app (tooljet app init --create) or clone one.');
   let version: VersionInfo | null = null;

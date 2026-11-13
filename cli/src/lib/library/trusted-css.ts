@@ -3,7 +3,7 @@ import * as path from 'path';
 
 /*
   Server mode's CSS pipeline: this CLI's own PostCSS, Tailwind and Autoprefixer with the app template's Tailwind config
-  (src/_templates/library/code-app/tailwind.ejs.t; test/lib/trusted-css.test.ts keeps them the same). Nothing is
+  (src/_templates/library/code-app/tailwind.ejs.t; test/lib/server-mode.test.ts keeps them the same). Nothing is
   resolved from the project: its node_modules can hold any package its package.json names, and require() runs it.
 */
 const color = (token: string) => `color-mix(in srgb, var(--${token}) calc(<alpha-value> * 100%), transparent)`;

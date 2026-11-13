@@ -14,12 +14,21 @@ export default class AppSourcePull extends Command {
   static description =
     "Bring the source stored on ToolJet (edits saved in the ToolJet editor) into this project when it is newer than the project's last upload or pull";
 
-  static examples = ['$ tooljet app source-pull', '$ tooljet app source-pull --force'];
+  static examples = [
+    '$ tooljet app source-pull',
+    '$ tooljet app source-pull --force',
+    '$ tooljet app source-pull --trust-remote-config',
+  ];
 
   static flags = {
     ...targetFlags,
     force: Flags.boolean({
       description: "Take ToolJet's code over files changed here, keeping a copy of them in .tooljet/before-pull",
+      default: false,
+    }),
+    'trust-remote-config': Flags.boolean({
+      description:
+        'Pull even when the code on ToolJet changes what a build runs on this machine: build config, package.json, the lockfile, .npmrc, or files a build config loads',
       default: false,
     }),
   };
@@ -45,7 +54,25 @@ export default class AppSourcePull extends Command {
         this.log(formatSuccess(`Already at revision ${summary.revision}`));
         return;
       }
-      const result = await pullStoredCode(session, project.root, where, summary, flags.force);
+      const result = await pullStoredCode(
+        session,
+        project.root,
+        where,
+        summary,
+        flags.force,
+        flags['trust-remote-config']
+      );
+      if (result.kind === 'untrusted') {
+        this.log(
+          formatError(
+            `Not pulled. Revision ${result.revision} on ToolJet changes ${result.files.join(
+              ', '
+            )}, which a build runs on this machine. ` +
+              'Check the change in the editor, then run tooljet app source-pull --trust-remote-config to pull it.'
+          )
+        );
+        process.exit(1);
+      }
       if (result.kind === 'same-files') {
         this.log(formatSuccess(`Already at revision ${result.revision}`));
         return;

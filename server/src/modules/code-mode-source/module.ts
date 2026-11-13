@@ -26,7 +26,9 @@ export class CodeModeSourceModule extends SubModule {
     const { GitSyncConfigsUtilService } = await this.getProviders(configs, 'git-sync-configs', ['util.service']);
     return this.cacheModule(cacheKey, {
       module: CodeModeSourceModule,
-      imports: [await AppSecurityModule.register(configs), await GitSyncConfigsModule.register(configs)],
+      // The main import of AppSecurityModule (the one AppModule registers), not a second one: its service keeps the
+      // automatic checks' timers and concurrency caps in memory, so a second instance would double both.
+      imports: [await AppSecurityModule.register(configs, true), await GitSyncConfigsModule.register(configs)],
       providers: [
         // The edition's service, under the public class as its token.
         { provide: CodeModeSourceServiceBase, useClass: CodeModeSourceService },
