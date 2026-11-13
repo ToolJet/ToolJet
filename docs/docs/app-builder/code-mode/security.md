@@ -14,10 +14,6 @@ sidebar_label: App Security
  <span>Paid feature</span>
 </div>
 
-:::caution BETA
-Code mode is in beta and not recommended for production use.
-:::
-
 A Code mode app ships code that your builders, the AI or a coding agent wrote, along with the npm packages it uses. ToolJet protects the app in two ways:
 
 - **Isolation.** The app's code runs in a sandboxed frame. It can't read the viewer's session or cookies, and by default it can reach only the ToolJet instance, so its data goes through the app's queries.

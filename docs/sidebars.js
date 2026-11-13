@@ -224,17 +224,6 @@ const sidebars = {
             "build-with-ai/mcp/security"
           ]
         },
-        "build-with-ai/privacy"
-      ]
-    },
-    {
-      "type": "category",
-      "label": "App Builder",
-      "collapsed": false,
-      "collapsible": false,
-      "className": "category-as-header app-builder-header",
-      "items": [
-        "app-builder/overview",
         {
           "type": "category",
           "label": "Code Mode",
@@ -255,6 +244,17 @@ const sidebars = {
             "app-builder/code-mode/cli-reference"
           ]
         },
+        "build-with-ai/privacy"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "App Builder",
+      "collapsed": false,
+      "collapsible": false,
+      "className": "category-as-header app-builder-header",
+      "items": [
+        "app-builder/overview",
         {
           "type": "category",
           "label": "UI and Themes",

@@ -14,10 +14,6 @@ sidebar_label: CLI Reference
  <span>Paid feature</span>
 </div>
 
-:::caution BETA
-Code mode is in beta and not recommended for production use.
-:::
-
 This page lists the ToolJet CLI commands, flags, environment variables and files for Code mode apps. For a walkthrough, see [Work Locally](/docs/app-builder/code-mode/local-development).
 
 ## Install

@@ -328,10 +328,6 @@ The license key can be configured via an environment variable to avoid re-enteri
 
 #### Version Reviews
 
-:::warning BETA
-This feature is currently in beta and is not recommended for production use.
-:::
-
 Require an approved [version review](/docs/development-lifecycle/release/version-reviews) before a version is released or promoted. Reviews are available on the Pro plan and above.
 
 | **Variable** | **Description** | **Default** |
@@ -341,11 +337,7 @@ Require an approved [version review](/docs/development-lifecycle/release/version
 
 ### Code Mode
 
-:::warning BETA
-[Code mode](/docs/app-builder/code-mode/overview) is in beta and not recommended for production use.
-:::
-
-These variables configure apps built in Code mode.
+These variables configure apps built in [Code mode](/docs/app-builder/code-mode/overview).
 
 #### Code App Isolation
 

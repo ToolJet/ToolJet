@@ -14,10 +14,6 @@ sidebar_label: Runtime API
  <span>Paid feature</span>
 </div>
 
-:::caution BETA
-Code mode is in beta and not recommended for production use.
-:::
-
 A Code mode app's code talks to ToolJet through the `ToolJet` object and a few hooks. With them, the code runs the app's queries, reads the signed-in user and environment, moves between screens, and follows the app theme. This page lists each one.
 
 ## Imports

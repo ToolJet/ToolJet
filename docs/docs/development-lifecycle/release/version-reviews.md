@@ -13,10 +13,6 @@ title: Compare and Review Versions
  <span>Paid feature</span>
 </div>
 
-:::caution BETA
-Compare versions and version reviews are in beta and not recommended for production use.
-:::
-
 **Compare versions** shows what changed between two versions of an app: its screens side by side, its queries, settings and, for Code mode apps, its code and access. A **version review** asks a teammate to approve a saved version before it's released. Use reviews when a second pair of eyes should sign off on every change that reaches your users.
 
 Both work for visual and Code mode apps. They aren't available for workflows or modules.
