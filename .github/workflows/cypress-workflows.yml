@@ -22,8 +22,9 @@ jobs:
   Build-Image:
     name: 'Build image · cypress'
     runs-on: ubuntu-22.04
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-workflows-ee')
+    if: github.event.pull_request.head.repo.full_name == github.repository && (
+      contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-workflows-ee'))
     outputs:
       digest: ${{ steps.build.outputs.digest }}
     steps:
