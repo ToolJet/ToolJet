@@ -26,7 +26,7 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
   (`migrations/1790600000000-AddWorkflowRunHistoryForeignKeyIndexes.ts`: `parent_execution_id`,
   `parent_node_id`, `schedule_id`, approval `workflow_execution_id` / `execution_node_id`). The
   pending-only partial unique index cannot serve cascade lookups. Pinned by
-  `e2e/workflow-foreign-key-indexes.spec.ts`; add new run-history FKs to both.
+  the foreign-key index describe in `e2e/workflow-runs.spec.ts`; add new run-history FKs to both.
 - **Execution status `waiting`** — a suspended run's DB `status` is `waiting`, non-terminal,
   `executed` stays `false`. Mapped to the frontend display state by `mapDbStatusToDisplayState`
   (`constants/queue-config.ts`).
@@ -176,11 +176,9 @@ demand.
 **Tests (root `server/test/modules/workflows/`):**
 `unit/approval-timeout-scheduler.spec.ts`, `unit/approval-timeout-processor.spec.ts`,
 `unit/approval-notification-dispatch.spec.ts`, `unit/approvals-ability.spec.ts`,
-`unit/approval-date-range.spec.ts`, `e2e/workflow-approvals-service.spec.ts`,
-`e2e/workflow-approvals-controller.spec.ts`, `e2e/workflow-approvals-list-controller.spec.ts`,
-`e2e/workflow-approvals-list-query.spec.ts`, `e2e/workflow-approvals-list-service.spec.ts`,
-`e2e/workflow-approvals-resolve-by-id.spec.ts`, `e2e/workflow-approvals-cancel.spec.ts`,
-`e2e/workflow-approval-{expire,cascade,request-entity}.spec.ts`.
+`unit/approval-date-range.spec.ts`, `e2e/workflow-approvals-controller.spec.ts`, and
+`e2e/workflow-approvals.spec.ts` (one nested describe each for the service, list controller, list
+query, list service, resolve-by-id, cancel, expire, cascade, queue outage and request entity).
 
 Frontend: `frontend/ee/modules/Workflows/pages/ApprovalsPage/__tests__/` (filter bar, detail panel,
 input form) and `frontend/src/_services/__tests__/workflow_approvals.service.spec.js`.
@@ -244,7 +242,7 @@ input form) and `frontend/src/_services/__tests__/workflow_approvals.service.spe
   and no organization comparison — any builder in any workspace could cancel any request id, and
   the approvals list hands out those ids. `cancel` now enforces workspace scope (404) then
   `isApprovalAdmin` (403) before its state check. Covered by
-  `e2e/workflow-approvals-cancel.spec.ts`.
+  the cancel describe in `e2e/workflow-approvals.spec.ts`.
 - **`resolveById` was not organization-scoped.** It looked the request up by id alone and
   authorized against the *request's* org, so anyone whose id or email appeared in a workspace's
   `approversSnapshot` — free text, trivially arranged — could resolve it from an unrelated

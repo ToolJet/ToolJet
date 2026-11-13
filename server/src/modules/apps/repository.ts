@@ -435,7 +435,8 @@ export class AppsRepository extends Repository<App> {
   // Apps, modules and workflows with a Workflow query calling this workflow, in any version.
   async findWorkflowConsumers(
     organizationId: string,
-    workflowId: string
+    workflowId: string,
+    branchId?: string
   ): Promise<{ id: string; name: string; type: string }[]> {
     // Queries store the workflow's co_relation_id (git identity); older ones its id. Match both, as
     // resolveWorkflowRef does at run time, under either option key readWorkflowQueryRefs reads.
@@ -445,6 +446,22 @@ export class AppsRepository extends Repository<App> {
     });
     const refs = [workflowId, workflow?.co_relation_id].filter(Boolean);
     const qb = await this.canonicalAppNamesQuery(organizationId);
+    if (branchId) {
+      qb.select(['app.id AS id'])
+        .addSelect('COALESCE(av_branch.app_name, av_meta.app_name, app.name) AS name')
+        .innerJoin(
+          'app_versions',
+          'av_branch',
+          `av_branch.app_id = app.id AND av_branch.branch_id = :activeBranchId
+             AND av_branch.id = (
+               SELECT av_pick.id FROM app_versions av_pick
+               WHERE av_pick.app_id = app.id AND av_pick.branch_id = :activeBranchId
+               ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
+               LIMIT 1
+             )`,
+          { activeBranchId: branchId }
+        );
+    }
     return await qb
       .addSelect('app.type AS type')
       .andWhere('app.id != :workflowId', { workflowId })
@@ -460,7 +477,10 @@ export class AppsRepository extends Repository<App> {
         // Separate binding: a shared one is typed uuid and fails against JSON text.
         { workflowRefs: refs }
       )
-      .orderBy('COALESCE(av_meta.app_name, app.name)', 'ASC')
+      .orderBy(
+        branchId ? 'COALESCE(av_branch.app_name, av_meta.app_name, app.name)' : 'COALESCE(av_meta.app_name, app.name)',
+        'ASC'
+      )
       .getRawMany();
   }
 

@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: "30 6 * * 1"
 
+permissions:
+  contents: read
+
 jobs:
   PeriodicVulnerability-CheckOn-docker-image-lts:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'

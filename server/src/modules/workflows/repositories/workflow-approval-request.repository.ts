@@ -5,6 +5,8 @@ import { App } from '@entities/app.entity';
 import { AppsRepository } from '@modules/apps/repository';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
+import { WorkflowExecution } from '@entities/workflow_execution.entity';
+import { AppVersion } from '@entities/app_version.entity';
 import { ApprovalListFilters, ApprovalListRow } from '../types/approval-list';
 
 const APPROVER_SNAPSHOT_KEYS = ['users', 'groups', 'emails', 'notificationEmails'] as const;
@@ -78,8 +80,23 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
       organizationId,
       rows.map((row) => row.app).filter((app): app is App => !!app)
     );
+    await this.fillNamesFromRunVersions(rows);
 
     return { rows, total };
+  }
+
+  private async fillNamesFromRunVersions(rows: ApprovalListRow[]): Promise<void> {
+    const unnamed = rows.filter((row) => row.app && !row.app.name);
+    if (!unnamed.length) return;
+    const found: { id: string; appName: string | null }[] = await this.manager
+      .createQueryBuilder(WorkflowExecution, 'execution')
+      .innerJoin(AppVersion, 'version', 'version.id = execution.app_version_id')
+      .select('execution.id', 'id')
+      .addSelect('version.app_name', 'appName')
+      .where('execution.id IN (:...ids)', { ids: unnamed.map((row) => row.workflowExecutionId) })
+      .getRawMany();
+    const names = new Map(found.map((row) => [row.id, row.appName]));
+    for (const row of unnamed) row.app.name = names.get(row.workflowExecutionId) || row.app.name;
   }
 
   private applyListFilters(query: SelectQueryBuilder<WorkflowApprovalRequest>, filters: ApprovalListFilters): void {
@@ -124,8 +141,18 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
     }
     if (filters.approver) {
       query.andWhere(
-        `EXISTS (SELECT 1 FROM jsonb_array_elements_text(${approverValuesSql('request.approvers_snapshot')}) AS approver_value
-          WHERE approver_value ILIKE :approver ESCAPE '\\')`,
+        `(EXISTS (SELECT 1 FROM jsonb_array_elements_text(${approverValuesSql('request.approvers_snapshot')}) AS approver_value
+            WHERE approver_value ILIKE :approver ESCAPE '\\')
+          OR EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'users')} AS approver_user
+            JOIN users ON users.id::text = approver_user
+            JOIN organization_users ON organization_users.user_id = users.id
+              AND organization_users.organization_id = request.organization_id
+            WHERE concat_ws(' ', users.first_name, users.last_name) ILIKE :approver ESCAPE '\\'
+              OR users.email ILIKE :approver ESCAPE '\\')
+          OR EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'groups')} AS approver_group
+            JOIN permission_groups ON permission_groups.id::text = approver_group
+              AND permission_groups.organization_id = request.organization_id
+            WHERE permission_groups.name ILIKE :approver ESCAPE '\\'))`,
         { approver: `%${escapeLikePattern(filters.approver)}%` }
       );
     }

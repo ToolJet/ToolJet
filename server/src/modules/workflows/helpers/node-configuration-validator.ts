@@ -14,6 +14,8 @@ export class WorkflowNodeConfigurationError extends Error {
   }
 }
 
+const atLeastOneSecond = (value: unknown): boolean => typeof value === 'number' && Number.isFinite(value) && value >= 1;
+
 const isNonBlankString = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0;
 
 export function validateReachedNodeConfiguration({
@@ -79,6 +81,21 @@ export function validateReachedNodeConfiguration({
       if (!isResume) {
         if (!Array.isArray(definition.outcomes) || definition.outcomes.length === 0) {
           throw new WorkflowNodeConfigurationError('Human approval requires at least one outcome');
+        }
+        const timeout = (definition.timeout ?? {}) as {
+          enabled?: boolean;
+          durationSeconds?: unknown;
+          reminders?: unknown;
+        };
+        if (timeout.enabled === true && !atLeastOneSecond(timeout.durationSeconds)) {
+          throw new WorkflowNodeConfigurationError('Human approval timeout must be at least 1 second');
+        }
+        const reminders = [
+          ...(Array.isArray(definition.reminders) ? definition.reminders : []),
+          ...(Array.isArray(timeout.reminders) ? timeout.reminders : []),
+        ];
+        if (reminders.some((reminder) => !atLeastOneSecond(reminder?.afterSeconds))) {
+          throw new WorkflowNodeConfigurationError('Human approval reminders must be at least 1 second');
         }
         const approvers = definition.approvers;
         if (approvers && typeof approvers === 'object' && !Array.isArray(approvers)) {

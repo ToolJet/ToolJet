@@ -68,6 +68,21 @@ describe('validateReachedNodeConfiguration', () => {
       'Human approval requires at least one outcome',
     ],
     [
+      {
+        type: 'human',
+        definition: { outcomes: [{ key: 'yes' }], timeout: { enabled: true, durationSeconds: 0 } },
+      },
+      'Human approval timeout must be at least 1 second',
+    ],
+    [
+      { type: 'human', definition: { outcomes: [{ key: 'yes' }], reminders: [{ afterSeconds: 0 }] } },
+      'Human approval reminders must be at least 1 second',
+    ],
+    [
+      { type: 'human', definition: { outcomes: [{ key: 'yes' }], timeout: { reminders: [{ afterSeconds: 0 }] } } },
+      'Human approval reminders must be at least 1 second',
+    ],
+    [
       { type: 'query', definition: { looped: true, iterationValuesCode: ' ' } },
       'Loop array expression cannot be empty',
     ],
@@ -98,6 +113,18 @@ describe('validateReachedNodeConfiguration', () => {
     { type: 'response', definition: { code: '', statusCode: { value: '' } } },
     { type: 'wait', definition: { durationSeconds: 0 }, isResume: true },
     { type: 'human', definition: { approvers: { tokenBypass: false }, outcomes: [] }, isResume: true },
+    {
+      type: 'human',
+      definition: {
+        outcomes: [{ key: 'yes' }],
+        timeout: { enabled: true, durationSeconds: 1 },
+        reminders: [{ afterSeconds: 1 }],
+      },
+    },
+    {
+      type: 'human',
+      definition: { outcomes: [{ key: 'yes' }], timeout: { enabled: false, durationSeconds: 0 } },
+    },
   ])('accepts %j', (input) => {
     expect(() => validateReachedNodeConfiguration(input)).not.toThrow();
   });

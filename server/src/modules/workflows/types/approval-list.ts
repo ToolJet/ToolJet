@@ -8,7 +8,7 @@ export interface ApprovalListFilters {
   /** Folder membership only; folder_apps.branch_id ignored (workflows are not git-synced). */
   folderId?: string;
   environmentId?: string;
-  /** Free-text match against the approvers snapshot (user id, group id or email). */
+  /** Free-text match against approver ids and emails, and the user or group names the list shows. */
   approver?: string;
   from?: Date;
   to?: Date;

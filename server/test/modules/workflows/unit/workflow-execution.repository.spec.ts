@@ -12,7 +12,7 @@ import {
 import { ListExecutionsDto, EXECUTION_STATUS_FILTERS } from '@modules/workflows/dto/list-executions.dto';
 
 // A QueryBuilder test double recording andWhere calls. The status predicates run against Postgres
-// in e2e/workflow-executions-list-query.spec.ts.
+// in the executions list query describe of e2e/workflow-runs.spec.ts.
 type RecordingQueryBuilder = {
   calls: Array<{ clause: string; params: Record<string, unknown> }>;
   andWhere: (clause: string, params?: Record<string, unknown>) => RecordingQueryBuilder;

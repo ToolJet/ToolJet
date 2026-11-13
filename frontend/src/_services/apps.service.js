@@ -119,7 +119,9 @@ function createApp(body = {}) {
 
 function getWorkflowConsumers(workflowId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/workflows/${workflowId}/consumers`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/workflows/${workflowId}/consumers`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function createWorkflow(requestOptions) {
