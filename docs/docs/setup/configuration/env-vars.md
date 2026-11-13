@@ -326,6 +326,67 @@ The license key can be configured via an environment variable to avoid re-enteri
 
 <img className="screenshot-full img-m" src="/img/env-vars/prefilled-license-key.png" alt="Prefilled License Key" />
 
+### Code Mode
+
+:::warning BETA
+[Code mode](/docs/app-builder/code-mode/overview) is in beta and not recommended for production use.
+:::
+
+These variables configure apps built in Code mode.
+
+#### Code App Isolation
+
+A Code mode app's code runs in a frame that the browser treats as a separate origin. It reaches ToolJet only through a message channel that the page checks, so it can't read the viewer's session, cookies or the ToolJet page, and it runs queries with the viewer's permissions. Isolation is on by default.
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `CODE_MODE_ISOLATION` | `on`: released apps, Preview, the editor canvas and version comparisons all run isolated. `viewer`: only released apps and Preview run isolated; the editor and comparisons, where admins and builders open other people's code, run on the ToolJet origin. `off`: no isolation. `viewer` and `off` are for self-hosted instances where every app builder is trusted, and log a warning at startup. Any other value means `on`, with a warning. ToolJet Cloud always runs `on`. The in-browser build always runs in its own sandboxed frame. | `on` |
+| `CODE_MODE_SANDBOX_URL` | An optional second domain for the app frame. It must use `https`, must not share a site with `TOOLJET_HOST`, and must route to this server. `https://sandbox.example.com` serves the frame from that domain, and every app still runs on the browser's `null` origin. `https://*.example-usercontent.com` gives each app an origin of its own, `a<app id without dashes>.example-usercontent.com`, which needs wildcard DNS and a wildcard certificate. When unset, the frame comes from this server on the `null` origin. An invalid value is ignored with a warning in the server log. Has no effect while isolation is `off`. | Unset |
+| `CODE_MODE_STRICT_BINDINGS` | Strict mode for isolated Code mode apps. Set `false` to turn it off, only for a self-hosted pilot with trusted authors. ToolJet Cloud ignores it. Visual apps are never affected. See [Isolation](/docs/app-builder/code-mode/security#isolation) for what strict mode blocks. | On whenever the app is isolated |
+| `CODE_MODE_CDN_URL` | The package CDN the in-browser build fetches packages from. Point it at an address that answers directly: the build follows no redirects. | `https://esm.sh` |
+
+The second domain serves only the frame document. Every other path on it returns 404, and it sets and reads no cookies. With a per-app domain and `ENABLE_CUSTOM_DOMAINS=true`, an app's frame accepts code only from `TOOLJET_HOST` and the custom domain of the workspace that owns the app.
+
+:::caution
+Isolation protects the viewer's session, not the data the app is given. App code still sees what its queries return, and it can send that out by opening a popup or by navigating its own frame. It isn't data-loss prevention. What an app may read and write is controlled by query permissions on the server. Popups an app opens stay sandboxed; web links in an app open in a normal new tab, with no opener and no referrer.
+:::
+
+#### Code App Security Checks
+
+ToolJet checks every Code mode app version before release. See [App Security](/docs/app-builder/code-mode/security).
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `TOOLJET_APP_SCANNER_BIN` | Path to the security scanner's `tj-app-scan.js`. Set it when the scanner isn't installed next to the server. Without a scanner, server-side checks fail and Code mode versions can't pass the release gate. | Found next to the server |
+| `TOOLJET_APP_SCAN_OFFLINE` | `true` makes the scanner contact no network. Checks that need the network report as not run. | `false` |
+| `TOOLJET_APP_SCAN_OSV_URL` | A mirror of the OSV vulnerability database. | `https://api.osv.dev` |
+| `TOOLJET_APP_SCAN_REGISTRY_URL` | A mirror of the npm registry. Lockfiles that resolve from it are also allowed. | `https://registry.npmjs.org` |
+| `TOOLJET_APP_SCAN_RETIRE_URL` | A mirror of the retire.js vulnerability repository. | The retire.js repository on GitHub |
+| `TOOLJET_APP_SCAN_SOCKET_TOKEN` | A Socket.dev API token. Turns on the **Supply-chain alerts (Socket)** check. | Unset |
+| `TOOLJET_APP_SCAN_NETWORK_TIMEOUT_MS` | Timeout for each network request the scanner makes, in milliseconds. | `20000` |
+| `TOOLJET_APP_SCAN_AUTO_DELAY_MS` | How long to wait after a code change before checking it automatically, in milliseconds. | `3000` |
+| `TOOLJET_APP_SCAN_MAX_CONCURRENT` | Automatic checks that run at once on each server instance. | `4` |
+| `TOOLJET_APP_SCAN_MAX_CONCURRENT_PER_WORKSPACE` | Automatic checks that run at once for each workspace. | `2` |
+| `TOOLJET_APP_SCAN_RECHECK_MINUTES` | Re-check released versions' packages for new advisories every this many minutes (minimum 5). | Off |
+
+#### Code Storage and Packages
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `TOOLJET_CODE_SOURCE_REVISIONS_KEEP` | Code revisions kept for each app version. Older revisions leave App history and can't be restored. `0` keeps all. | `500` |
+| `TOOLJET_CODE_BUILDS_KEEP` | Saved builds kept for each Code mode app, in addition to every build a version uses. `0` keeps all. | `50` |
+| `TOOLJET_CODE_NPM_REGISTRIES` | Extra npm registries, comma-separated, that a Code mode project's lockfile may resolve packages from. The npm registry is always allowed. | Unset |
+
+#### ToolJet CLI
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `TOOLJET_CLI_TOKEN_DAYS` | How long a personal access token created by `tooljet auth login` lasts, in days (1–90). | `30` |
+| `TOOLJET_CLI_TARBALL` | Path to the CLI package the server offers at `/api/code-mode/cli/tooljet-cli.tgz`. | The package built into the image |
+| `TOOLJET_SDK_TARBALL` | Path to the component SDK package the server offers at `/api/code-mode/cli/custom-component-sdk.tgz`. | The package built into the image, if any |
+
+Browser sign-in for the CLI (`tooljet auth login`) needs [Redis](#redis-configuration).
+
 ### Third-Party Integrations
 
 #### Slack
