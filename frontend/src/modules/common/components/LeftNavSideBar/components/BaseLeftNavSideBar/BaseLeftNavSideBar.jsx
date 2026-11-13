@@ -38,6 +38,7 @@ const BaseLeftNavSideBar = ({
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('home'), event)}
                 className={routeLinkClassName(router.pathname === getPrivateRoute('home'))}
                 data-cy="icon-home"
+                aria-label="Home"
               >
                 <Home size={16} />
               </Link>
@@ -53,6 +54,7 @@ const BaseLeftNavSideBar = ({
                 router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')
               )}
               data-cy="icon-dashboard"
+              aria-label="Apps"
             >
               <Blocks size={16} />
             </Link>
@@ -67,6 +69,7 @@ const BaseLeftNavSideBar = ({
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('modules'), event)}
                 className={routeLinkClassName(router.pathname === getPrivateRoute('modules'))}
                 data-cy="icon-modules"
+                aria-label="Modules"
               >
                 <ToyBrick size={16} />
               </Link>
@@ -81,6 +84,7 @@ const BaseLeftNavSideBar = ({
                 to={appendBranchName(getPrivateRoute('workflows'))}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workflows'), event)}
                 className={routeLinkClassName(router.pathname === getPrivateRoute('workflows'))}
+                aria-label="Workflows"
               >
                 <Workflow size={16} />
               </Link>
@@ -96,6 +100,7 @@ const BaseLeftNavSideBar = ({
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('database'), event)}
                 className={routeLinkClassName(router.pathname === getPrivateRoute('database'))}
                 data-cy="icon-database"
+                aria-label="ToolJet Database"
               >
                 <Table2 size={16} />
               </Link>
@@ -112,6 +117,7 @@ const BaseLeftNavSideBar = ({
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('data_sources'), event)}
                 className={routeLinkClassName(router.pathname === getPrivateRoute('data_sources'))}
                 data-cy="icon-global-datasources"
+                aria-label="Data sources"
               >
                 <Puzzle size={16} />
               </Link>
@@ -126,6 +132,7 @@ const BaseLeftNavSideBar = ({
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_constants'), event)}
                 className={routeLinkClassName(router.pathname === getPrivateRoute('workspace_constants'))}
                 data-cy="icon-workspace-constants"
+                aria-label="Workspace constants"
               >
                 <KeyRound size={16} />
               </Link>
@@ -140,6 +147,7 @@ const BaseLeftNavSideBar = ({
               className="cursor-pointer tj-leftsidebar-icon-items"
               onClick={() => switchDarkMode(!darkMode)}
               data-cy="mode-switch-button"
+              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {darkMode ? <Sun size={16} /> : <Moon size={16} />}
             </button>

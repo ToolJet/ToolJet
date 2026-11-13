@@ -157,6 +157,7 @@ export const NotificationCenter = ({ darkMode }) => {
           <ToolTip message="Notifications" placement="right">
             <button
               type="button"
+              aria-label="Notifications"
               className={cn('tw-relative cursor-pointer tj-leftsidebar-icon-items', {
                 active: showOverlay,
               })}

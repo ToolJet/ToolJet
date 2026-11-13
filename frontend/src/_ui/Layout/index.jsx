@@ -147,6 +147,7 @@ function Layout({
             <div className="application-brand" data-cy={`home-page-logo`}>
               <Link
                 to={isEndUser ? getPrivateRoute('dashboard') : getPrivateRoute('home')}
+                aria-label={isEndUser ? 'Apps' : 'Home'}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               >
                 {isWhiteLabellingDataLoading ? (
@@ -155,6 +156,7 @@ function Layout({
                   <img
                     width="18"
                     height="18"
+                    alt=""
                     src={logo}
                     onError={(e) => {
                       e.currentTarget.onerror = null; // prevent infinite loop
@@ -193,7 +195,7 @@ function Layout({
 
         {shouldWrapContentBody ? (
           // The old header is fixed and needs this padding to clear it; the new header sits in normal flow.
-          <div className={cn(!showNewHeader && 'tw-pt-12', classes?.contentBody)}>{children}</div>
+          <main className={cn(!showNewHeader && 'tw-pt-12', classes?.contentBody)}>{children}</main>
         ) : (
           children
         )}
