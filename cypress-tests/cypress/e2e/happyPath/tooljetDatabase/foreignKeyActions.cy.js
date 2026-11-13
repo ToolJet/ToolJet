@@ -87,11 +87,16 @@ describe('ToolJet Database - foreign key actions', () => {
         const dropdown = (index) => cy.get('[data-cy="show-ds-popover-button"]').eq(index);
         const choose = (index, label) => {
           dropdown(index).click();
-          cy.get('.popover').contains(label).click();
+          // exact match, so the dropdown's screen-reader live region is never picked
+          cy.get('.popover')
+            .contains(new RegExp(`^${label}$`))
+            .click();
         };
 
         cy.visit('/my-workspace/database');
         cy.get(tooljetDatabaseSelectors.tableItem(child.name), { timeout: 20000 }).click();
+        // the relation form needs the loaded columns, so wait for the grid
+        cy.get(tooljetDatabaseSelectors.columnHeader('parent_id')).should('be.visible');
         cy.get(tooljetDatabaseSelectors.tableItem(child.name)).trigger('mouseover');
         cy.get(tooljetDatabaseSelectors.tableItem(child.name)).find(tooljetDatabaseSelectors.tableKebabIcon).click();
         cy.get(tooljetDatabaseSelectors.renameTableOption).click();

@@ -160,8 +160,13 @@ export const apiCreateResource = (type, name) =>
     }));
   });
 
-// adds a "list rows" query on the table to the editing version
-export const apiAddTableQuery = (resource, tableId, queryName) =>
+// adds a tooljetdb query to the editing version, defaults to "list rows", yields the query id
+export const apiAddTableQuery = (
+  resource,
+  tableId,
+  queryName,
+  operationOptions = { operation: 'list_rows', list_rows: {} }
+) =>
   serverApi(
     'GET',
     `/data-sources/${Cypress.env('workspaceId')}/environments/${resource.environmentId}/versions/${resource.versionId}`
@@ -172,13 +177,38 @@ export const apiAddTableQuery = (resource, tableId, queryName) =>
       app_version_id: resource.versionId,
       name: queryName,
       kind: 'tooljetdb',
-      options: { operation: 'list_rows', table_id: tableId, list_rows: {} },
+      options: { table_id: tableId, ...operationOptions },
       data_source_id: dataSource.id,
       plugin_id: null,
     }).then((created) => {
       expect(created.status, `add query ${queryName}`).to.eq(201);
+      return created.body.id;
     });
   });
+
+// runs a saved query as the app would in the given environment, never fails on a non-2xx status
+export const apiRunTableQuery = (resource, queryId, environmentId) =>
+  serverApi('POST', `/data-queries/${queryId}/versions/${resource.versionId}/run/${environmentId}`, {});
+
+// promotes the editing version one step up from the given environment
+export const apiPromoteAppVersion = (resource, currentEnvironmentId) =>
+  serverApi('PUT', `/v2/apps/${resource.id}/versions/${resource.versionId}/promote`, { currentEnvironmentId });
+
+// a draft version has to be saved before it can be promoted
+export const apiPublishVersion = (resource, versionName) =>
+  serverApi('PUT', `/v2/apps/${resource.id}/versions/${resource.versionId}`, {
+    is_user_switched_version: false,
+    name: versionName,
+    description: '',
+    status: 'PUBLISHED',
+  });
+
+// the internal tables live in the app database, so tests that need a broken state write to it directly
+export const dbQuery = (sql) => cy.task('dbConnection', { dbconfig: Cypress.env('app_db'), sql }, { log: false });
+
+export const apiBaselineReport = () => tooljetDatabaseRequest('GET', '/baseline-report');
+
+export const apiRepairBaseline = (tableId) => tooljetDatabaseRequest('POST', `/table/${tableId}/baseline/repair`);
 
 export const apiDeleteResource = (resourceId) => serverApi('DELETE', `/apps/${resourceId}`);
 
