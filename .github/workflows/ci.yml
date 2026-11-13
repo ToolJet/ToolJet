@@ -1045,9 +1045,8 @@ jobs:
           --health-timeout 3s
           --health-retries 5
     env:
-      # key the snapshot's stored credentials were encrypted with; data migrations decrypt them.
-      # lts.sql and main.sql come from different databases, so each has its own key.
-      LOCKBOX_MASTER_KEY: ${{ (startsWith(github.base_ref, 'lts') && secrets.MIGRATION_SNAPSHOT_LTS_LOCKBOX_MASTER_KEY) || secrets.MIGRATION_SNAPSHOT_LOCKBOX_MASTER_KEY || 'lockbox-master-key' }}
+      # key the snapshot's stored credentials were encrypted with; data migrations decrypt them
+      LOCKBOX_MASTER_KEY: ${{ secrets.MIGRATION_SNAPSHOT_LOCKBOX_MASTER_KEY || 'lockbox-master-key' }}
       SECRET_KEY_BASE: secret-key-base
       REDIS_HOST: redis
       REDIS_PORT: 6379
