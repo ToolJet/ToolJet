@@ -66,7 +66,7 @@ Custom Component Libraries are a paid feature. On the Community edition, the **C
 To build a library, you need:
 
 - **Node.js** and **npm**.
-- **The ToolJet CLI**: `npm i @tooljet/cli@0.0.15-beta.1`.
+- **The ToolJet CLI**: The beta release, installed with `npm install -g @tooljet/cli@0.0.15-beta.1`. It requires Node.js 18 or later.
 - **React 18**. The scaffold pins `^18.2.0`. ToolJet provides React to the component at runtime, so your components must not bundle their own copy.
 
 :::info

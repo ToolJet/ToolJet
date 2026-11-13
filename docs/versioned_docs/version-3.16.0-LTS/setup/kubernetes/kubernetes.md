@@ -22,7 +22,20 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
 
 2. **Create a Kubernetes secret with name `server`**
 
-   Configure all required environment variables for ToolJet deployment:
+   The deployment template reads these keys from the `server` secret:
+
+   ```bash
+   kubectl create secret generic server \
+     --from-literal=pg_host=<postgresql-database-host> \
+     --from-literal=pg_user=<username> \
+     --from-literal=pg_password=<password> \
+     --from-literal=pg_db=tooljet_production \
+     --from-literal=lockbox_key=$(openssl rand -hex 32) \
+     --from-literal=secret_key_base=$(openssl rand -hex 64) \
+     --from-literal=tj_host=<Endpoint url>
+   ```
+
+   The template sets the ToolJet Database and PostgREST variables directly in `deployment.yaml`, so you edit those in the next step. The variables ToolJet needs are:
 
    #### Application Configuration
 
@@ -81,7 +94,7 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
    PGRST_HOST=localhost:3001
    PGRST_LOG_LEVEL=info
    PGRST_DB_PRE_CONFIG=postgrest.pre_config
-   PGRST_SERVER_PORT=3001
+   PGRST_SERVER_PORT=3001 # must match the port in PGRST_HOST
    PGRST_JWT_SECRET=<generate using openssl rand -hex 32>
    PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
    ```
@@ -93,7 +106,9 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
 3. Create a Kubernetes deployment
 
    ```bash
-   kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
+   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
+   # Replace the TOOLJET_DB_USER, TOOLJET_DB_HOST, TOOLJET_DB_PASS and PGRST_JWT_SECRET placeholders and set PGRST_DB_URI, then:
+   kubectl apply -f deployment.yaml
    ```
 
    :::info
@@ -177,7 +192,16 @@ This example deployment creates:
 - A Secret for optional password authentication
 
 :::info
-Update the **redis-secret** in the Redis deployment YAML with a secure password before deploying to production.
+The template stores a password in `redis-secret`, but its `redis-server` command doesn't use it, so Redis starts without authentication. To require a password, set a secure value in `redis-secret` and change two commands in the Redis container:
+
+```yaml
+command: ["sh", "-c", "exec redis-server /etc/redis/redis.conf --requirepass \"$REDIS_PASSWORD\""]
+readinessProbe:
+  exec:
+    command: ["sh", "-c", "REDISCLI_AUTH=\"$REDIS_PASSWORD\" redis-cli ping"]
+```
+
+Set the same value in ToolJet's `REDIS_PASSWORD`.
 
 This is an example configuration that you can customize to your needs. However, **AOF (Append Only File) persistence** and **`maxmemory-policy noeviction`** are critical settings that must be maintained for BullMQ job queue reliability.
 :::
@@ -204,7 +228,7 @@ REDIS_PASSWORD=your-secure-redis-password-here  # Match the password in redis-se
 If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
 :::
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. LTS tags use the format `vX.Y.Z-lts`, for example `tooljet/tooljet:v3.20.251-lts`. The `tooljet/tooljet:ee-lts-latest` tag always points to the newest LTS release.
 
 ### Prerequisites for Upgrading
 
