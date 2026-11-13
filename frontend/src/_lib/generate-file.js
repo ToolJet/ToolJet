@@ -22,10 +22,7 @@ export default async function generateFile(filename, data, fileType) {
 
 async function generatePDF(filename, data) {
   // eslint-disable-next-line import/no-unresolved
-  const [jsPDFNamespace, jsPDFAutoTableNamespace] = await Promise.all([
-    import('jspdf'),
-    import('jspdf-autotable'),
-  ]);
+  const [jsPDFNamespace, jsPDFAutoTableNamespace] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
   const jsPDF = jsPDFNamespace.jsPDF || jsPDFNamespace.default;
   const autoTable = jsPDFAutoTableNamespace.autoTable || jsPDFAutoTableNamespace.default;
   const doc = new jsPDF();
