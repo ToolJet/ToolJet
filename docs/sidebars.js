@@ -122,6 +122,7 @@ const sidebars = {
       "items": [
         "build-with-ai/overview",
         "build-with-ai/generate-applications",
+        "build-with-ai/supported-models",
         "build-with-ai/ai-docs-assistant"
       ]
     },
