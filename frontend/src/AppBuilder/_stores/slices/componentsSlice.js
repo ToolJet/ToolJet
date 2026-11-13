@@ -1502,6 +1502,8 @@ export const createComponentsSlice = (set, get) => ({
         return acc;
       }, {});
       const flexChildOrderUpdates = {};
+      // The names the ids had before this add (a cut pasted again reuses its id), read before the write replaces them.
+      const oldNames = newComponents.map((newComponent) => getComponentNameFromId(newComponent.id, moduleId));
 
       // One store write for all of them: a duplicate or paste of a container with children is one undo step.
       set(
@@ -1529,9 +1531,9 @@ export const createComponentsSlice = (set, get) => ({
         'addComponentToCurrentPage'
       );
 
-      newComponents.forEach((newComponent) => {
+      newComponents.forEach((newComponent, index) => {
         // Have added this condition to delete the oldName from the mapping if it exists due to cut pasting multiple times
-        const oldName = getComponentNameFromId(newComponent.id, moduleId);
+        const oldName = oldNames[index];
         if (oldName) {
           deleteComponentNameIdMapping(oldName, moduleId);
         }

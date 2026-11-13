@@ -95,6 +95,24 @@ describe('undoing a duplicated container with children', () => {
     expect(childOrder).toEqual([CHILD_A_ID, CHILD_B_ID]);
   });
 
+  // Break this catches: the old name read after the component is replaced, so it reads the new name. Cut, undo and
+  // paste reuses the component's id under a new name; the old name stayed mapped to it beside the new one.
+  test('[UNDO-DUP-006] a component added again under a new name drops its old name', async () => {
+    await state().addComponentToCurrentPage([componentDefinition(CHILD_A_ID, 'text1', 'Text')], 'canvas', {
+      saveAfterAction: false,
+      skipFormUpdate: true,
+    });
+
+    await state().addComponentToCurrentPage([componentDefinition(CHILD_A_ID, 'text2', 'Text')], 'canvas', {
+      saveAfterAction: false,
+      skipFormUpdate: true,
+    });
+
+    const mapping = state().getComponentNameIdMapping();
+    expect(mapping.text2).toBe(CHILD_A_ID);
+    expect(mapping).not.toHaveProperty('text1');
+  });
+
   // Break this catches: names or resolved values of the new children not registered.
   test('[UNDO-DUP-005] the new children are registered by name', async () => {
     await duplicate('Container');
