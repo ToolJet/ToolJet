@@ -14,10 +14,6 @@ sidebar_label: Create an App
  <span>Paid feature</span>
 </div>
 
-:::caution BETA
-Code mode is in beta and not recommended for production use.
-:::
-
 You choose an app's build mode when you create it. An app keeps the mode it is created in: you can't switch a visual app to Code mode later, or a Code mode app back to visual. This page covers the ways to create a Code mode app and what happens on its first build.
 
 ## Create a Blank App
