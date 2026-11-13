@@ -252,7 +252,7 @@ Add these to your **.env** file to connect to the external Redis:
 # Redis - Note: Only REDIS_HOST and REDIS_PORT are required. Authentication and TLS are optional.
 REDIS_HOST=redis
 REDIS_PORT=6379
-REDIS_USER=default
+REDIS_USERNAME=default
 REDIS_PASSWORD=
 # REDIS_DB=0                   # Optional: Redis database number (default: 0)
 # REDIS_TLS=false              # Optional: Enable TLS/SSL (set to 'true')

@@ -100,7 +100,7 @@ There are certain restrictions on the usage of webhook triggers that are configu
 - Number of parallel executions
 - Execution time per workflow
 
-For limiting parallel executions, the following environment variables can be used:
+To rate-limit incoming webhook requests from each client IP address, use the following environment variables:
 
 | <div style={{ width:"200px"}}> Environment Variable </div> | <div style={{ width:"100px"}}> Value </div> | <div style={{ width:"100px"}}> Description </div> |
 | -------------------- | ----- | ----------- |
