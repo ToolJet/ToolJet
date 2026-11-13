@@ -245,7 +245,9 @@ const sidebars = {
           "items": [
             "app-builder/code-mode/overview",
             "app-builder/code-mode/create-app",
-            "app-builder/code-mode/editor"
+            "app-builder/code-mode/editor",
+            "app-builder/code-mode/local-development",
+            "app-builder/code-mode/cli-reference"
           ]
         },
         {
