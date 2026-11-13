@@ -7,6 +7,7 @@ import { Auth, keptDefaultNote } from '../../lib/library/auth';
 import { ApiClient } from '../../lib/library/api-client';
 import { validateOriginUrl } from '../../lib/library/target-validation';
 import { deviceLogin } from '../../lib/app/device-login';
+import { ensureCompatible } from '../../lib/compatibility';
 import { formatError, formatSuccess } from '../../lib/log';
 
 const openInBrowser = (url: string) => {
@@ -46,6 +47,8 @@ export default class AuthLogin extends Command {
       const valid = validateOriginUrl(flags.url);
       if (valid !== true) throw new Error(valid);
       const origin = new URL(flags.url).origin;
+      // Before the browser sign-in, so a mismatch is not found only after approving it.
+      await ensureCompatible(origin);
       const result = await deviceLogin({
         url: origin,
         clientName: `tooljet CLI on ${os.hostname().replace(/\.local$/, '')}`,
