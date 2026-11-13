@@ -53,5 +53,9 @@ export const routesWithTags = (pathEnd: string) => {
 
 export const isWorkspaceGitPage = (pathname: string) => {
   const parts = pathname.split('/').filter(Boolean);
-  return parts.length === 1 || (parts.length >= 2 && ['data-sources', 'modules', 'workflows'].includes(parts[1]));
+  return (
+    parts.length === 1 ||
+    (parts.length >= 2 &&
+      ['data-sources', 'modules', 'workflows', 'old-modules', 'old-apps', 'old-workflows'].includes(parts[1])) // TODO: remove new values later on
+  );
 };

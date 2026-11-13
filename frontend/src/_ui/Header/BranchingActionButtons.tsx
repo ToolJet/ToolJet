@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { WorkspaceBranchDropdown } from '@/_ui/WorkspaceBranchDropdown';
 import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
+import { Separator } from '@/components/ui/Rocket/Separator/Separator';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services/authentication.service';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
@@ -40,18 +41,18 @@ export default function BranchingActionButtons() {
   if (!showBranchingBtns) return null;
 
   return (
-    // When configured-but-unlicensed the controls stay visible but frozen (the whole
-    // workspace is read-only until git is turned off).
     <div
-      className={cn('tw-flex tw-items-center tw-gap-3', {
+      className={cn('tw-flex tw-items-center tw-gap-1', {
         'tw-pointer-events-none tw-opacity-50': gitLicenseLocked,
       })}
-      aria-disabled={gitLicenseLocked || undefined}
     >
       <WorkspaceBranchDropdown />
+
+      <Separator orientation="vertical" className="tw-h-4 tw-hidden has-[+*]:tw-block" />
+
       {/* Single "Pull commit" button. WorkspaceGitCTA decides whether the modal
-          offers push based on the page + branch state (push only on the data-sources
-          page, and never on the multi-branch default branch). */}
+      offers push based on the page + branch state (push only on the data-sources
+      page, and never on the multi-branch default branch). */}
       <WorkspaceGitCTA isDataSourcesPage={location.pathname.split('/').includes('data-sources')} />
     </div>
   );

@@ -26,6 +26,5 @@ describe('Header', () => {
     renderHeader({ showNewHeader: true });
     expect(screen.getByTestId('new-header')).toBeInTheDocument();
     expect(screen.queryByText('Data sources')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('git-controls')).not.toBeInTheDocument();
   });
 });

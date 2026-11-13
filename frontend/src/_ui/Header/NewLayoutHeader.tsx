@@ -9,6 +9,7 @@ import type { IFeatureAccess } from '@/_stores/types/licenseStore';
 import { useHeaderSearch } from './useHeaderSearch';
 import SearchInput from './SearchInput';
 import HeaderEnvironmentSelect from './HeaderEnvironmentSelect';
+import BranchingActionButtons from './BranchingActionButtons';
 
 export default function NewLayoutHeader({ featureAccess }: { featureAccess: IFeatureAccess }) {
   const searchProps = useHeaderSearch();
@@ -24,6 +25,8 @@ export default function NewLayoutHeader({ featureAccess }: { featureAccess: IFea
       <SearchInput {...searchProps} />
 
       <div className="tw-flex tw-items-center tw-justify-end tw-gap-2.5">
+        {/* Shared by several pages: BranchingActionButtons decides for itself where git controls show. */}
+        <BranchingActionButtons />
         {Object.keys(featureAccess).length > 0 && <LicenseBanner showNavBarActions limits={featureAccess} />}
         {/* The header's own 12px padding keeps it off the edge; the page that wants an environment select provides it. */}
         <HeaderEnvironmentSelect />
