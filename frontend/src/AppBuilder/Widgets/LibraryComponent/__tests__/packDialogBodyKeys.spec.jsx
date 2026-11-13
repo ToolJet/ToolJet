@@ -65,7 +65,7 @@ afterEach(() => {
 
 let mounts = 0;
 // A pack dialog after a field on the page, with a text field in its body (as a ToolJet Text Input dropped there).
-const mount = async (pack, name, props = {}) => {
+const mount = async (pack, name, props = {}, body = () => <input aria-label="Body field" />) => {
   loadLibraryModule.mockResolvedValue(packs[pack]);
   mounts += 1;
   const exposed = {};
@@ -90,7 +90,7 @@ const mount = async (pack, name, props = {}) => {
         host={makeHost(`${name}${mounts}`, {})}
         dataCy={`dialog-${mounts}`}
         popupSlotNames={['body']}
-        renderPopupSlot={() => <input aria-label="Body field" />}
+        renderPopupSlot={body}
       />
     </div>
   );
@@ -98,7 +98,7 @@ const mount = async (pack, name, props = {}) => {
   return { exposed, events, actions, before: view.getByLabelText('Before') };
 };
 
-const bodyField = () => document.querySelector('.tj-cc-popup-host input[aria-label="Body field"]');
+const bodyField = () => document.querySelector('.tj-cc-popup-host [aria-label="Body field"]');
 const openDialog = () =>
   document.querySelector('.tj-cc-popup-host')?.shadowRoot?.querySelector('[data-tj-modal="open"]');
 
@@ -199,6 +199,35 @@ describe('Escape in a body component closes an Ant dialog, as it does a MUI or R
     await open(w, 'show');
     const used = (e) => e.key === 'Escape' && e.preventDefault();
     bodyField().addEventListener('keydown', used);
+
+    await escape(bodyField());
+
+    expect(w.exposed.open).toBe(true);
+    expect(w.events).not.toContain('onCancel');
+  });
+
+  // An expanded control that opens no popup (a disclosure: a Kanban card's "Show less", an open accordion header) does
+  // not take Escape: the guard for an open list matched any aria-expanded="true", so the dialog stayed open.
+  test('[PackComponent-DLGKEYS-007] Ant Modal: closes from an expanded disclosure button in its body', async () => {
+    const w = await mount('antd', 'Modal', {}, () => (
+      <button type="button" aria-label="Body field" aria-expanded="true">
+        Show less
+      </button>
+    ));
+    await open(w, 'show');
+
+    await escape(bodyField());
+
+    await waitFor(() => expect(w.exposed.open).toBe(false));
+    expect(w.events.filter((e) => e === 'onCancel')).toHaveLength(1);
+  });
+
+  // An open list's combobox keeps the Escape for its list even when it does not mark the key used.
+  test('[PackComponent-DLGKEYS-008] Ant Modal: stays open from an expanded combobox in its body', async () => {
+    const w = await mount('antd', 'Modal', {}, () => (
+      <input aria-label="Body field" role="combobox" aria-expanded="true" />
+    ));
+    await open(w, 'show');
 
     await escape(bodyField());
 

@@ -7,6 +7,9 @@ import type { RefObject } from 'react';
 // decided once the key is handled: a press an inner popup takes (its combobox was expanded, or a field used the key, as
 // a search box clearing itself) leaves the dialog open. A collapsed combobox is not using it: ToolJet's Select prevents
 // the default of every Escape, its menu open or not. Keys from the dialog's own elements are left to Ant.
+const EXPANDED_POPUP =
+  '[aria-expanded="true"][role="combobox"], [aria-expanded="true"][aria-haspopup]:not([aria-haspopup="false"])';
+
 export const useProjectedEscape = (dialogRef: RefObject<HTMLElement | null>, active: boolean, close: () => void) => {
   const closeRef = useRef(close);
   closeRef.current = close;
@@ -20,7 +23,9 @@ export const useProjectedEscape = (dialogRef: RefObject<HTMLElement | null>, act
       const path = e.composedPath();
       const origin = path[0];
       if (!path.includes(dialog) || !(origin instanceof Node) || origin.getRootNode() === dialog.getRootNode()) return;
-      if (origin instanceof Element && origin.closest('[aria-expanded="true"]')) return;
+      // An open popup's control (a combobox, a menu button) keeps the key for its list. An expanded disclosure (a Kanban
+      // card's "Show less", an open accordion header) opens no popup and does not.
+      if (origin instanceof Element && origin.closest(EXPANDED_POPUP)) return;
       const collapsed = origin instanceof Element && origin.getAttribute('aria-expanded') === 'false';
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
