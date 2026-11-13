@@ -151,3 +151,23 @@ describe('the Promote tables button in the banner', () => {
     expect(screen.getByRole('button', { name: 'Promote tables' })).toBeInTheDocument();
   });
 });
+
+describe('in the workflow editor, which keeps its app under the workflow slot', () => {
+  const canvasApp = mockState.appStore;
+
+  afterEach(() => {
+    mockState.appStore = canvasApp;
+  });
+
+  it('asks which tables the workflow needs when the dialog opens', async () => {
+    mockState.appStore = {
+      modules: { canvas: { app: { creationMode: 'DEFAULT' } }, workflow: { app: { appId: 'wf-1' } } },
+    };
+    mockServices.getMissingTablesForPromote.mockResolvedValue({
+      tables: [{ id: 't-1', name: 'expenses', needed_by_app: true, depends_on: [] }],
+    });
+    render(<PromoteConfirmationModal data={data} onClose={jest.fn()} />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('expenses');
+    expect(mockServices.getMissingTablesForPromote).toHaveBeenCalledWith('wf-1', 'v-1');
+  });
+});

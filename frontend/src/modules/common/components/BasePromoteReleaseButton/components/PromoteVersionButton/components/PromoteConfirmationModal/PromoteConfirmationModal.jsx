@@ -34,7 +34,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
 
   const { promoteAppVersionAction, selectedVersion, creationMode, versions, appId, releasedVersionId } = useStore(
     (state) => ({
-      appId: state.appStore.modules[moduleId].app.appId,
+      appId: state.appStore.modules[moduleId].app.appId || state.appStore.modules.workflow?.app?.appId,
       releasedVersionId: state.releasedVersionId,
       promoteAppVersionAction: state.promoteAppVersionAction,
       selectedVersion: state.selectedVersion,
