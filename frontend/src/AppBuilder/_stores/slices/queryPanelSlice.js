@@ -513,15 +513,17 @@ export const createQueryPanelSlice = (set, get) => ({
           confirmationMessage,
         };
 
-        if (!queryConfirmationList.some((query) => queryId === query.queryId) && confirmed === undefined) {
+        if (confirmed === undefined) {
           setPreviewLoading(false);
-          set(
-            (state) => {
-              state.dataQuery.queryConfirmationList = [...queryConfirmationList, queryConfirmation];
-            },
-            false,
-            'setQueryConfirmationList'
-          );
+          if (!queryConfirmationList.some((query) => queryId === query.queryId)) {
+            set(
+              (state) => {
+                state.dataQuery.queryConfirmationList = [...queryConfirmationList, queryConfirmation];
+              },
+              false,
+              'setQueryConfirmationList'
+            );
+          }
           return;
         }
       }
