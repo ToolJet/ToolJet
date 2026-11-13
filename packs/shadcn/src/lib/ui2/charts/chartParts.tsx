@@ -233,6 +233,23 @@ interface FrameProps {
   children: React.ReactElement | (() => React.ReactNode);
 }
 
+/** The host clips the widget box, so a tooltip wider than a narrow chart was cut (RK-29). The CSS makes the tooltip
+ *  fixed, which leaves the clip; --tip-x/--tip-y move it from its fixed origin back onto the chart, in unzoomed px. */
+const placeTips = (box: HTMLElement) => {
+  box.querySelectorAll<HTMLElement>('.recharts-wrapper').forEach((chart) => {
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;left:0;top:0;width:100px;height:100px;visibility:hidden';
+    chart.appendChild(probe);
+    const origin = probe.getBoundingClientRect();
+    probe.remove();
+    const at = chart.getBoundingClientRect();
+    const zoomX = origin.width / 100 || 1;
+    const zoomY = origin.height / 100 || 1;
+    chart.style.setProperty('--tip-x', `${(at.left - origin.left) / zoomX}px`);
+    chart.style.setProperty('--tip-y', `${(at.top - origin.top) / zoomY}px`);
+  });
+};
+
 /** The chart's box: the empty look, the drawn chart (one image for assistive tech) and the notes under it. */
 export const ChartFrame = ({
   empty,
@@ -255,6 +272,8 @@ export const ChartFrame = ({
     style={lookVars(looks)}
     onClick={onClick}
     onDoubleClick={onDoubleClick}
+    onPointerEnter={(e) => placeTips(e.currentTarget)}
+    onFocus={(e) => placeTips(e.currentTarget)}
   >
     <div className="ui2-chart-plot">
       {empty ? (

@@ -12,6 +12,9 @@ const Bar = ({ width, height = 16, round }: { width: string | number; height?: n
 const LINE = 16;
 const LINE_GAP = 8;
 
+// 10px at the default 6px theme radius, square at Border radius 0 (it ignored Border radius).
+const CARD_RADIUS = 'calc(var(--ui-radius) + min(4px, var(--ui-radius) * 4))';
+
 export const Skeleton = () => {
   const [shape] = ToolJet.useStateEnumeration({
     name: 'shape',
@@ -77,7 +80,7 @@ export const Skeleton = () => {
       ) : null}
       {shape === 'card' ? (
         <>
-          <div className="ui-skeleton ui2-skeleton" style={{ flex: 1, minHeight: 60, borderRadius: 10 }} />
+          <div className="ui-skeleton ui2-skeleton" style={{ flex: 1, minHeight: 60, borderRadius: CARD_RADIUS }} />
           <Bar width="80%" />
           <Bar width="55%" />
         </>

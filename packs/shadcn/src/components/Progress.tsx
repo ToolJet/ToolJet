@@ -26,7 +26,7 @@ export const Progress = () => {
 
   ToolJet.useAction(
     { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
-    (next) => setValue(Number(next) || 0)
+    (next) => setValue(Math.min(100, Math.max(0, Number(next) || 0)))
   );
   const barColor = useThemeColor('barColor', 'Bar color', TOKEN.brand);
   const trackColor = useThemeColor('trackColor', 'Track color', TOKEN.brand);
@@ -53,7 +53,9 @@ export const Progress = () => {
       <div className="ui ui2-progress" style={vars}>
         {label || showValue ? (
           <div className="ui2-progress-head">
-            <span className="ui2-progress-label">{label}</span>
+            <span className="ui2-progress-label" title={label || undefined}>
+              {label}
+            </span>
             {showValue ? <span className="ui2-progress-value">{Math.round(pct)}%</span> : null}
           </div>
         ) : null}

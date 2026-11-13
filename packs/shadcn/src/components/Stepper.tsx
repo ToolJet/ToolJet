@@ -170,7 +170,7 @@ export const Stepper = () => {
           disabled={disabled}
           onClick={() => (isLast ? finish() : goTo(index + 1))}
         >
-          {isLast ? finishLabel : nextLabel || 'Next'}
+          {isLast ? finishLabel || 'Finish' : nextLabel || 'Next'}
         </button>
       </div>
     </div>

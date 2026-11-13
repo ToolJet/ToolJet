@@ -105,8 +105,17 @@ export const Steps = () => {
     if (i >= 0 && i !== live.current.index) moveTo(i);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, shown]);
+  // Hiding or showing another step keeps the step you are on, not its position (showing Gamma moved Delta to Gamma).
+  const currentId = useRef<string | null>(null);
   useEffect(() => {
-    setCurrentStepId(shown[index] ? String(shown[index].id) : '');
+    const id = currentId.current;
+    const i = id === null ? -1 : shown.findIndex((s) => String(s.id) === id);
+    if (i >= 0 && i !== live.current.index) moveTo(i);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shown]);
+  useEffect(() => {
+    currentId.current = shown[index] ? String(shown[index].id) : null;
+    setCurrentStepId(currentId.current ?? '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, all]);
 
