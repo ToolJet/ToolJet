@@ -352,18 +352,16 @@
     list-style: none;
   }
 
-  &__row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 4px 0;
+  &__names {
+    margin-top: 2px;
+    font-family: var(--font-mono, monospace);
+    word-break: break-word;
   }
 
-  &__row-text {
+  &__row {
     display: flex;
     flex-direction: column;
-    min-width: 0;
+    padding: 4px 0;
   }
 
   &__name {
@@ -375,8 +373,9 @@
     color: var(--text-placeholder, var(--slate11));
   }
 
-  &__button {
-    flex-shrink: 0;
+  &__action {
+    display: flex;
+    margin: 8px 0 0 auto;
     white-space: nowrap;
   }
 
