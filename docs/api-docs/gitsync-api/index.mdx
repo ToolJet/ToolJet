@@ -12,6 +12,18 @@ The GitSync API lets you programmatically manage the full lifecycle of ToolJet a
 
 Integrate these APIs into Jenkins, GitHub Actions, GitLab CI, or any other pipeline tool.
 
+## Typical workflow
+
+Here's the usual order you'll call these in:
+
+1. **[Add Git Configuration](/api/gitsync-api/add-git-config)**: a one-time setup step that connects a GitHub App to your ToolJet organization.
+2. **[Create App from GitHub](/api/gitsync-api/create-app-from-git)** or **[Sync and Pull App from Git](/api/gitsync-api/sync-pull-app)**: import a new app that's tracked in the repo, or pull the latest changes into one that's already linked.
+3. **[Save App Version](/api/gitsync-api/save-app-version)**: turn the app's current draft into a saved version, tagged in git.
+4. **[Commit and Push App Version](/api/gitsync-api/push-app-version)**: send changes you made in ToolJet back to the repo.
+5. **[Release App Version](/api/gitsync-api/release-app-version)**: mark a specific version as the live one.
+
+A "GitHub App" is simply an integration you install on your GitHub repository. It grants ToolJet permission to read and write code on your behalf. You create it once in GitHub, then reuse it across all the steps above.
+
 ## Authentication
 
 All requests require a `Basic` access token in the `Authorization` header.
@@ -32,7 +44,7 @@ https://{your-domain}/api/ext
 |:---------|:------------|
 | [`POST /organizations/git`](/api/gitsync-api/add-git-config) | Configure GitHub HTTPS git settings for an organization |
 | [`POST /apps/{appId}/versions/{versionId}/git-sync/push`](/api/gitsync-api/push-app-version) | Push an app version to the configured GitHub repository |
+| [`POST /apps/{appIdOrSlug}/versions/save`](/api/gitsync-api/save-app-version) | Turn an app's current draft into a saved version, tagged in git |
 | [`POST /apps?createMode=git`](/api/gitsync-api/create-app-from-git) | Create a new ToolJet app from a GitHub repository |
 | [`PUT /apps/{appId}?createMode=git`](/api/gitsync-api/sync-pull-app) | Sync and pull the latest changes from GitHub for an existing app |
-| [`POST /apps/{appId}/promote`](/api/gitsync-api/auto-promote-app) | Pull latest changes from Git and promote the app to the next environment |
 | [`POST /apps/{appIdOrSlug}/git-sync/release`](/api/gitsync-api/release-app-version) | Set a specific version as the live released version for an app |
