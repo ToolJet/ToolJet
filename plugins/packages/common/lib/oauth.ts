@@ -211,10 +211,7 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
 
     // Apply SSRF protection options (custom DNS lookup + redirect validation)
     const requestOptions = {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        ...(Object.keys(headersObject).length > 0 && headersObject),
-      },
+      headers,
       form: bodyData,
       responseType: 'json',
     };
