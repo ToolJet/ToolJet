@@ -1,3 +1,4 @@
+// migration-lint: allow-destructive app_version_scans is created by 1792460000000 in the same unreleased Code mode line, so no released code writes 'external'
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 // Uploaded CI results are called what they are: "ci" replaces "external" as a scan source.

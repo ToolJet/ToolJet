@@ -1,3 +1,4 @@
+// migration-lint: allow-destructive the unique index is on scan_exceptions, a table this migration creates
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 // Scans of app versions, their findings, exceptions to findings, and each workspace's scan policy.
