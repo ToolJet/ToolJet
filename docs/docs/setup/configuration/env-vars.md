@@ -326,6 +326,15 @@ The license key can be configured via an environment variable to avoid re-enteri
 
 <img className="screenshot-full img-m" src="/img/env-vars/prefilled-license-key.png" alt="Prefilled License Key" />
 
+#### Version Reviews
+
+Require an approved [version review](/docs/development-lifecycle/release/version-reviews) before a version is released or promoted. Reviews are available on the Pro plan and above.
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `TOOLJET_VERSION_REVIEW_REQUIRED` | `release` requires an approved review to release a version. `promote` requires one to promote into production. `release,promote` or `all` requires both. With `off`, no review is required, but a version with an open, unapproved review still can't move on. | `off` |
+| `TOOLJET_VERSION_REVIEW_APPROVALS` | The number of approvals a review needs. | `1` |
+
 ### Code Mode
 
 These variables configure apps built in [Code mode](/docs/app-builder/code-mode/overview).
