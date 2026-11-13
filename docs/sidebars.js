@@ -236,6 +236,8 @@ const sidebars = {
             "app-builder/code-mode/create-app",
             "app-builder/code-mode/editor",
             "app-builder/code-mode/local-development",
+            "app-builder/code-mode/project-structure",
+            "app-builder/code-mode/runtime-api",
             "app-builder/code-mode/cli-reference"
           ]
         },
