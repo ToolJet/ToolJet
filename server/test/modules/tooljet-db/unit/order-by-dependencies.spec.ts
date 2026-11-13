@@ -1,6 +1,5 @@
 import { orderByDependencies } from '@modules/tooljet-db/services/tooljet-db-promote.service';
 
-// A table cannot reach the target before the tables it references, so the promote list has parents first.
 describe('orderByDependencies', () => {
   const deps = (entries: Record<string, string[]>) => new Map(Object.entries(entries));
 

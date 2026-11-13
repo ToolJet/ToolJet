@@ -114,7 +114,6 @@ describe('the Promote table button on each missing table', () => {
       ['org-1', 't-obs', 'env-dev'],
       ['org-1', 't-act', 'env-dev'],
     ]);
-    // Only sites is left: the server said so, so the banner shows it alone.
     await waitFor(() => expect(screen.getAllByRole('button', { name: 'Promote table' })).toHaveLength(1));
 
     mockServices.getMissingTablesForPromote.mockResolvedValue({ tables: [] });

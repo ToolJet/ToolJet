@@ -44,7 +44,6 @@ describe('promote blocked on tables the target environment does not have', () =>
 });
 
 describe('tablesToPromoteFor', () => {
-  // The server lists tables parents first and says which listed tables each one references.
   const observations = { id: 't-obs', name: 'observations', depends_on: [] };
   const actions = { id: 't-act', name: 'actions', depends_on: ['t-obs'] };
   const reports = { id: 't-rep', name: 'reports', depends_on: ['t-act'] };

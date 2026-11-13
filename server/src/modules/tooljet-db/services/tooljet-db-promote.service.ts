@@ -105,12 +105,8 @@ export function referencedTablesOf(migrations: InternalTableMigration[]): {
 }
 
 /**
- * The tables `internalTable`'s missing migrations reference that have no relation in the target
- * environment yet - what has to be promoted before `internalTable` can be.
- *
- * Read-only and lock-free. A table referencing itself is satisfied by the relation promote is about
- * to create, so it never counts. A pending application a crashed promote left on the target counts as
- * still missing, which only over-includes references the target already satisfies.
+ * The tables `internalTable`'s missing migrations reference that the target environment lacks.
+ * A self-reference never counts; a crashed promote's pending application counts as missing, which only over-includes.
  */
 export async function findUnpromotedReferences(
   organizationId: string,
@@ -148,12 +144,8 @@ export async function findUnpromotedReferences(
 }
 
 /**
- * `ids` with every table after the tables it depends on (`dependsOn`: table id -> ids of the tables
- * it references), so promoting them one by one in this order never hits a missing parent.
- *
- * Pure. Ties keep the incoming order. Tables that depend on each other (a cycle) cannot be ordered:
- * they are appended in incoming order and the promote itself rejects them with the real reason.
- * Dependencies outside `ids` are ignored.
+ * `ids` with every table after the tables it depends on (`dependsOn`: id -> ids it references).
+ * Tables in a cycle can't be ordered: they are appended in incoming order and the promote rejects them with the real reason.
  */
 export function orderByDependencies(ids: string[], dependsOn: Map<string, string[]>): string[] {
   const inList = new Set(ids);

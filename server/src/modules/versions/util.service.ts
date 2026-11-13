@@ -44,11 +44,9 @@ import { VersionSettingsWrite } from '@modules/app-validation/types';
 /** A table that resolves in the target environment but hasn't caught up on all its migrations yet. */
 export type TableBehindWarning = { tableId: string; tableName: string; missingCount: number };
 
-// A ToolJet Database table a promote has to move, whether the app itself queries it (false: only a table the
-// app's tables reference), and the ids of the listed tables it references - promoted before it.
+// `neededByApp` is false for a table only the app's tables reference.
 export type PromotableTable = { table: InternalTable; neededByApp: boolean; dependsOn: string[] };
 
-// The shape the promote dialog reads, from both the missing-tables endpoint and the promote block.
 export const promotableTablesPayload = (promotable: PromotableTable[]) =>
   promotable.map(({ table, neededByApp, dependsOn }) => ({
     id: table.id,
@@ -938,9 +936,7 @@ export class VersionUtilService implements IVersionUtilService {
   // The version's ToolJet Database tables with no relation in the target environment. `resolved` is null
   // when the version uses no tables.
   //
-  // `offenders` are the tables the app queries; they alone block the promote. `promotable` is what has to
-  // be promoted for the app to follow: the offenders plus every table they (transitively) reference that
-  // the target does not have either, parents first - promoting in this order never hits a missing parent.
+  // `offenders` alone block the promote; `promotable` adds the tables they reference, parents first.
   async findTablesMissingInEnvironment(
     appId: string,
     versionId: string,
@@ -956,18 +952,24 @@ export class VersionUtilService implements IVersionUtilService {
     const resolved = await this.relationResolverService.resolve(organizationId, tableIds, targetEnvironmentId, manager);
     const offenderIds = tableIds.filter((id) => !resolved.has(id));
     const offenders = offenderIds.length ? await manager.find(InternalTable, { where: { id: In(offenderIds) } }) : [];
-    const promotable = await this.orderWithReferencedTables(
-      offenders,
-      targetEnvironmentId,
-      sourceEnvironmentId,
-      organizationId,
-      manager
-    );
+    let promotable: PromotableTable[];
+    try {
+      promotable = await this.orderWithReferencedTables(
+        offenders,
+        targetEnvironmentId,
+        sourceEnvironmentId,
+        organizationId,
+        manager
+      );
+    } catch (error) {
+      if (error instanceof ForbiddenException) throw error;
+      // Best effort: without the referenced tables the block still names the tables the app queries.
+      this.logger.warn(`Could not look up the tables referenced by the missing tables: ${error?.message ?? error}`);
+      promotable = offenders.map((table) => ({ table, neededByApp: true, dependsOn: [] }));
+    }
     return { resolved, offenders, promotable };
   }
 
-  // Walks the references of `offenders` one level at a time (one source-relation lookup per level) until no
-  // new table turns up, then orders the whole set parents first.
   private async orderWithReferencedTables(
     offenders: InternalTable[],
     targetEnvironmentId: string,

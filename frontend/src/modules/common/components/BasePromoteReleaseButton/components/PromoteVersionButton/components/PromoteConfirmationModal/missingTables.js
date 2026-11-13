@@ -7,9 +7,7 @@ export const missingTablesFrom = (error) => {
   return null;
 };
 
-// What promoting one listed table takes: the listed tables it references (and theirs), then the table itself. The
-// server lists tables parents first and says which listed tables each one references (`depends_on`), so list order
-// is the promote order.
+// Relies on the server listing parents first, so list order is the promote order.
 export const tablesToPromoteFor = (table, tables) => {
   const byId = new Map(tables.map((listed) => [listed.id, listed]));
   const needed = new Set();

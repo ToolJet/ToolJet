@@ -21,7 +21,6 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
   const [promoteLocked, setPromoteLocked] = useState(false);
   const [missingTables, setMissingTables] = useState(null);
   const [tablePromoteError, setTablePromoteError] = useState(null);
-  // The table whose own "Promote table" button is running; every table button waits while one runs.
   const [promotingTableId, setPromotingTableId] = useState(null);
   // Tables this dialog already promoted, so a failed app step says they are in the target without the app.
   const [promotedTables, setPromotedTables] = useState(null);
@@ -74,7 +73,6 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
   // A full-screen view opened from this dialog needs the focus and the Escape key.
   const overlayOpen = useStore((state) => state.isEditorOverlayOpen);
 
-  // Anything moving tables or the app: the dialog stays open and nothing else starts until it finishes.
   const busy = promotingEnvironment || !!promotingTableId;
 
   const handleClose = useCallback(() => {
@@ -169,8 +167,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
     );
   };
 
-  // Asks the server what is still missing, so the banner shows what the server says rather than a local guess. If the
-  // ask fails, drops the tables just promoted instead; a table left in the banner by mistake promotes again as a no-op.
+  // If the ask fails, drops the tables just promoted instead; one wrongly left in the banner promotes again as a no-op.
   const refreshMissingTables = async (promotedIds) => {
     try {
       const response = await appVersionService.getMissingTablesForPromote(appId, versionIdToPromote);
@@ -183,7 +180,6 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
     }
   };
 
-  // One table's own button: the tables it references go first, so it never hits a missing parent.
   const handlePromoteTable = async (table) => {
     setPromotingTableId(table.id);
     setTablePromoteError(null);

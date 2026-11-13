@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { VersionUtilService } from '@modules/versions/util.service';
 import { InternalTable } from '@entities/internal_table.entity';
 import { findUnpromotedReferences } from '@modules/tooljet-db/services/tooljet-db-promote.service';
@@ -26,7 +26,7 @@ describe('VersionUtilService.checkTablesPromotableToEnvironment', () => {
   // `resolvedIds` are the tables that already have a relation in the target; the source has every table.
   const build = (resolvedIds: string[]) => {
     const service = Object.create(VersionUtilService.prototype) as any;
-    service.logger = { error: jest.fn() };
+    service.logger = { error: jest.fn(), warn: jest.fn() };
     service.appsUtilService = {
       findTooljetDbTables: jest.fn().mockResolvedValue([{ table_id: 't-1' }, { table_id: 't-2' }]),
     };
@@ -85,7 +85,6 @@ describe('VersionUtilService.checkTablesPromotableToEnvironment', () => {
   });
 
   describe('a missing table that references a table the target does not have either', () => {
-    // vendors (queried) references parents (not queried): parents has to reach the target first.
     const vendorsNeedParents = () =>
       mockedReferences.mockImplementation(async (_org: string, table: { id: string }) =>
         table.id === 't-1' ? [tableRows['p-1']] : []
@@ -122,6 +121,36 @@ describe('VersionUtilService.checkTablesPromotableToEnvironment', () => {
         { id: 'p-1', name: 'parents', needed_by_app: false, depends_on: [] },
         { id: 't-1', name: 'vendors', needed_by_app: true, depends_on: ['p-1'] },
       ]);
+    });
+
+    it('still blocks with the plain list of the tables the app queries when the lookup of referenced tables fails', async () => {
+      mockedReferences.mockRejectedValue(new Error('connection lost'));
+      const { service, manager } = build([]);
+      const error = await service
+        .checkTablesPromotableToEnvironment('app-1', 'v-1', 'env-staging', 'staging', 'env-dev', 'org-1', manager)
+        .catch((e) => e);
+      expect(error).toBeInstanceOf(BadRequestException);
+      const body = (error as BadRequestException).getResponse() as any;
+      expect(body.message.code).toBe('TABLES_NOT_IN_TARGET_ENVIRONMENT');
+      expect(body.message.tables).toEqual([
+        { id: 't-1', name: 'vendors', needed_by_app: true, depends_on: [] },
+        { id: 't-2', name: 'activity', needed_by_app: true, depends_on: [] },
+      ]);
+      expect(service.logger.warn).toHaveBeenCalled();
+    });
+
+    it('still lets a licence error from the lookup through as a 403', async () => {
+      const { service, manager } = build([]);
+      service.relationResolverService.resolve.mockImplementation(
+        async (_org: string, _ids: string[], environmentId: string) => {
+          if (environmentId === 'env-dev') throw new ForbiddenException('Multi-environment is not enabled');
+          return new Map();
+        }
+      );
+      const error = await service
+        .checkTablesPromotableToEnvironment('app-1', 'v-1', 'env-staging', 'staging', 'env-dev', 'org-1', manager)
+        .catch((e) => e);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('finds a referenced table that is only reachable through another referenced table', async () => {
