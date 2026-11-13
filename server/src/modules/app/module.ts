@@ -10,6 +10,7 @@ import { AppModuleLoader } from './loader';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
+import { SsrfModule } from '@modules/ssrf/module';
 import { AbilityModule } from '@modules/ability/module';
 import { LicenseModule } from '@modules/licensing/module';
 import { AppConfigModule } from '@modules/configs/module';
@@ -198,6 +199,13 @@ export class AppModule implements OnModuleInit, NestModule {
     ];
 
     const conditionalImports = [];
+
+    // Outbound requests (SSRF) settings and their runtime publisher. Left out of the migration app context:
+    // migrations send no outbound requests, and the publisher's boot read of instance_settings would wait on
+    // the migration transaction's own lock forever (fresh install / db:reset hang).
+    if (!configs.IS_GET_CONTEXT) {
+      conditionalImports.push(await SsrfModule.register(configs, true));
+    }
 
     if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
       // BullBoard's root instance ('bull_board_instance') must exist whenever any
