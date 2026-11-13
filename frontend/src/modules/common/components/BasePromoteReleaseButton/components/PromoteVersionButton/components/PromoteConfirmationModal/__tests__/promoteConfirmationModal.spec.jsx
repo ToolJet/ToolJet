@@ -86,3 +86,67 @@ it('promotes and closes when both steps go through', async () => {
   expect(mockServices.promoteTable).toHaveBeenCalledWith('org-1', 't-1', 'env-dev');
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });
+
+describe('the Promote table button on each missing table', () => {
+  const observations = { id: 't-obs', name: 'observations', needed_by_app: false, depends_on: [] };
+  const actions = { id: 't-act', name: 'actions', needed_by_app: true, depends_on: ['t-obs'] };
+  const sites = { id: 't-sit', name: 'sites', needed_by_app: true, depends_on: [] };
+
+  beforeEach(() => {
+    mockServices.getMissingTablesForPromote.mockResolvedValue({ tables: [observations, sites, actions] });
+  });
+
+  it('shows one button per table, with what a table needs and what needs it', async () => {
+    render(<PromoteConfirmationModal data={data} onClose={jest.fn()} />);
+    const alert = await screen.findByRole('alert');
+    expect(await screen.findAllByRole('button', { name: 'Promote table' })).toHaveLength(3);
+    expect(alert).toHaveTextContent('Needed by actions');
+    expect(alert).toHaveTextContent('Promotes observations first');
+  });
+
+  it('promotes the tables a table references first, then the table, and drops the banner once the server lists none', async () => {
+    render(<PromoteConfirmationModal data={data} onClose={jest.fn()} />);
+    const buttons = await screen.findAllByRole('button', { name: 'Promote table' });
+    mockServices.getMissingTablesForPromote.mockResolvedValue({ tables: [sites] });
+    await userEvent.click(buttons[2]);
+    await waitFor(() => expect(mockServices.promoteTable).toHaveBeenCalledTimes(2));
+    expect(mockServices.promoteTable.mock.calls).toEqual([
+      ['org-1', 't-obs', 'env-dev'],
+      ['org-1', 't-act', 'env-dev'],
+    ]);
+    // Only sites is left: the server said so, so the banner shows it alone.
+    await waitFor(() => expect(screen.getAllByRole('button', { name: 'Promote table' })).toHaveLength(1));
+
+    mockServices.getMissingTablesForPromote.mockResolvedValue({ tables: [] });
+    await userEvent.click(screen.getByRole('button', { name: 'Promote table' }));
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /^Promote$/ })).toBeInTheDocument();
+    expect(mockState.promoteAppVersionAction).not.toHaveBeenCalled();
+  });
+
+  it('holds the footer button and Cancel while a table is being promoted, so nothing runs alongside it', async () => {
+    let finishPromote;
+    mockServices.promoteTable.mockReturnValue(new Promise((resolve) => (finishPromote = resolve)));
+    const onClose = jest.fn();
+    render(<PromoteConfirmationModal data={data} onClose={onClose} />);
+    const buttons = await screen.findAllByRole('button', { name: 'Promote table' });
+    await userEvent.click(buttons[1]);
+
+    expect(screen.getByRole('button', { name: /Promote tables and app/ })).toBeDisabled();
+    screen.getAllByRole('button', { name: 'Promote table' }).forEach((button) => expect(button).toBeDisabled());
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onClose).not.toHaveBeenCalled();
+
+    finishPromote({});
+    await waitFor(() => expect(screen.getByRole('button', { name: /Promote tables and app/ })).toBeEnabled());
+  });
+
+  it('keeps the table in the banner and says why when it cannot be promoted', async () => {
+    mockServices.promoteTable.mockResolvedValue({ error: { message: 'no access to staging' } });
+    render(<PromoteConfirmationModal data={data} onClose={jest.fn()} />);
+    const buttons = await screen.findAllByRole('button', { name: 'Promote table' });
+    await userEvent.click(buttons[1]);
+    expect(await screen.findByText(/Couldn't promote sites: no access to staging/)).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Promote table' })).toHaveLength(3);
+  });
+});

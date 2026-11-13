@@ -19,7 +19,7 @@ import { VIEWER_LICENSE_FIELDS } from '@modules/apps/app-data-revision';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
-import { VersionUtilService } from './util.service';
+import { VersionUtilService, promotableTablesPayload } from './util.service';
 import { listModuleVersions, resolveModuleRef } from './module-ref.util';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { AppEnvironment } from '@entities/app_environments.entity';
@@ -514,16 +514,17 @@ export class VersionService implements IVersionService {
           order: { priority: 'ASC' },
         }));
       if (!nextEnvironment) return { tables: [] };
-      const { offenders } = await this.versionsUtilService.findTablesMissingInEnvironment(
+      const { promotable } = await this.versionsUtilService.findTablesMissingInEnvironment(
         app.id,
         version.id,
         nextEnvironment.id,
+        currentEnvironment.id,
         user.organizationId,
         manager
       );
       return {
         target_environment: { id: nextEnvironment.id, name: nextEnvironment.name },
-        tables: offenders.map((t) => ({ id: t.id, name: t.tableName })),
+        tables: promotableTablesPayload(promotable),
       };
     });
   }

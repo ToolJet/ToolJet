@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
+import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
 import { InternalTableMigrationApplication } from '@entities/internal_table_migration_application.entity';
@@ -101,6 +102,76 @@ export function referencedTablesOf(migrations: InternalTableMigration[]): {
     }
   }
   return { tableNames: [...tableNames], coRelationIds: [...coRelationIds] };
+}
+
+/**
+ * The tables `internalTable`'s missing migrations reference that have no relation in the target
+ * environment yet - what has to be promoted before `internalTable` can be.
+ *
+ * Read-only and lock-free. A table referencing itself is satisfied by the relation promote is about
+ * to create, so it never counts. A pending application a crashed promote left on the target counts as
+ * still missing, which only over-includes references the target already satisfies.
+ */
+export async function findUnpromotedReferences(
+  organizationId: string,
+  internalTable: InternalTable,
+  sourceRelation: InternalTableRelation,
+  targetEnvironmentId: string,
+  branchId: string,
+  manager: EntityManager
+): Promise<InternalTable[]> {
+  const existingTarget = await manager.findOne(InternalTableRelation, {
+    where: { internalTableId: internalTable.id, environmentId: targetEnvironmentId, branchId },
+  });
+  const missing = await computeMissingMigrations(internalTable.id, sourceRelation, existingTarget, manager);
+  const { tableNames, coRelationIds } = referencedTablesOf(missing);
+  const referenceFilters = [
+    ...(tableNames.length ? [{ organizationId, tableName: In(tableNames) }] : []),
+    ...(coRelationIds.length ? [{ organizationId, co_relation_id: In(coRelationIds) }] : []),
+  ];
+  if (!referenceFilters.length) return [];
+
+  const referencedTables = (await manager.find(InternalTable, { where: referenceFilters })).filter(
+    (table) => table.id !== internalTable.id
+  );
+  if (!referencedTables.length) return [];
+
+  const targetRelations = await manager.find(InternalTableRelation, {
+    where: {
+      internalTableId: In(referencedTables.map((table) => table.id)),
+      environmentId: targetEnvironmentId,
+      branchId,
+    },
+  });
+  const promotedTableIds = new Set(targetRelations.map((relation) => relation.internalTableId));
+  return referencedTables.filter((table) => !promotedTableIds.has(table.id));
+}
+
+/**
+ * `ids` with every table after the tables it depends on (`dependsOn`: table id -> ids of the tables
+ * it references), so promoting them one by one in this order never hits a missing parent.
+ *
+ * Pure. Ties keep the incoming order. Tables that depend on each other (a cycle) cannot be ordered:
+ * they are appended in incoming order and the promote itself rejects them with the real reason.
+ * Dependencies outside `ids` are ignored.
+ */
+export function orderByDependencies(ids: string[], dependsOn: Map<string, string[]>): string[] {
+  const inList = new Set(ids);
+  const waitingOn = new Map(ids.map((id) => [id, new Set((dependsOn.get(id) ?? []).filter((dep) => inList.has(dep)))]));
+  const ordered: string[] = [];
+  const placed = new Set<string>();
+
+  let progressed = true;
+  while (progressed) {
+    progressed = false;
+    for (const id of ids) {
+      if (placed.has(id) || [...waitingOn.get(id)].some((dep) => !placed.has(dep))) continue;
+      ordered.push(id);
+      placed.add(id);
+      progressed = true;
+    }
+  }
+  return [...ordered, ...ids.filter((id) => !placed.has(id))];
 }
 
 /**

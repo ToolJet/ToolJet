@@ -134,6 +134,7 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   baseline/raw-SQL `refs` by co_relation_id) - all-or-nothing on FK order; (2) if replay still fails, deletes the
   target relation only when no physical table backs it (`discardRelationIfNothingMaterialized`) - a relation
   backing a real table is never deleted, its id is the physical name. The frontend refetches tables and migrations on a failed promote too.
+  The reference lookup is `findUnpromotedReferences` (CE, `tooljet-db-promote.service.ts`); the EE gate and the app-promote dialog's table list (`orderByDependencies`, parents first) both call it, so they cannot disagree on what a table is waiting on.
 - **No per-environment access control.** TJDB has no environment permissions yet: admins and Builders reach every
   environment. `promote` / `promote/preview` gate on licence only - never on the app's granular `environmentAccess`.
 - HTTP `/proxy/*` serves only admins/builders (dashboard, App Builder editor). App queries reach

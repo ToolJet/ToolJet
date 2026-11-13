@@ -7,6 +7,21 @@ export const missingTablesFrom = (error) => {
   return null;
 };
 
+// What promoting one listed table takes: the listed tables it references (and theirs), then the table itself. The
+// server lists tables parents first and says which listed tables each one references (`depends_on`), so list order
+// is the promote order.
+export const tablesToPromoteFor = (table, tables) => {
+  const byId = new Map(tables.map((listed) => [listed.id, listed]));
+  const needed = new Set();
+  const collect = (current) => {
+    if (needed.has(current.id)) return;
+    needed.add(current.id);
+    (current.depends_on || []).forEach((parentId) => byId.has(parentId) && collect(byId.get(parentId)));
+  };
+  collect(table);
+  return tables.filter((listed) => needed.has(listed.id));
+};
+
 // Promotes each table's structure (no rows) one environment up from the source, in order. Resolves with the name of
 // the first table that failed and its error, or null when all went through.
 export const promoteTablesOneUp = async (promoteTable, organizationId, tables, sourceEnvironmentId) => {

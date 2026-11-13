@@ -2,7 +2,11 @@ import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_vers
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
-import { computeMissingMigrations } from '@modules/tooljet-db/services/tooljet-db-promote.service';
+import {
+  computeMissingMigrations,
+  findUnpromotedReferences,
+  orderByDependencies,
+} from '@modules/tooljet-db/services/tooljet-db-promote.service';
 import { VersionRepository } from './repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
@@ -39,6 +43,19 @@ import { VersionSettingsWrite } from '@modules/app-validation/types';
 
 /** A table that resolves in the target environment but hasn't caught up on all its migrations yet. */
 export type TableBehindWarning = { tableId: string; tableName: string; missingCount: number };
+
+// A ToolJet Database table a promote has to move, whether the app itself queries it (false: only a table the
+// app's tables reference), and the ids of the listed tables it references - promoted before it.
+export type PromotableTable = { table: InternalTable; neededByApp: boolean; dependsOn: string[] };
+
+// The shape the promote dialog reads, from both the missing-tables endpoint and the promote block.
+export const promotableTablesPayload = (promotable: PromotableTable[]) =>
+  promotable.map(({ table, neededByApp, dependsOn }) => ({
+    id: table.id,
+    name: table.tableName,
+    needed_by_app: neededByApp,
+    depends_on: dependsOn,
+  }));
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -920,21 +937,93 @@ export class VersionUtilService implements IVersionUtilService {
 
   // The version's ToolJet Database tables with no relation in the target environment. `resolved` is null
   // when the version uses no tables.
+  //
+  // `offenders` are the tables the app queries; they alone block the promote. `promotable` is what has to
+  // be promoted for the app to follow: the offenders plus every table they (transitively) reference that
+  // the target does not have either, parents first - promoting in this order never hits a missing parent.
   async findTablesMissingInEnvironment(
     appId: string,
     versionId: string,
     targetEnvironmentId: string,
+    sourceEnvironmentId: string,
     organizationId: string,
     manager: EntityManager
-  ): Promise<{ resolved: Map<string, string> | null; offenders: InternalTable[] }> {
+  ): Promise<{ resolved: Map<string, string> | null; offenders: InternalTable[]; promotable: PromotableTable[] }> {
     const tables = await this.appsUtilService.findTooljetDbTables(appId, versionId);
-    if (!tables.length) return { resolved: null, offenders: [] };
+    if (!tables.length) return { resolved: null, offenders: [], promotable: [] };
 
     const tableIds = tables.map((t) => t.table_id);
     const resolved = await this.relationResolverService.resolve(organizationId, tableIds, targetEnvironmentId, manager);
     const offenderIds = tableIds.filter((id) => !resolved.has(id));
     const offenders = offenderIds.length ? await manager.find(InternalTable, { where: { id: In(offenderIds) } }) : [];
-    return { resolved, offenders };
+    const promotable = await this.orderWithReferencedTables(
+      offenders,
+      targetEnvironmentId,
+      sourceEnvironmentId,
+      organizationId,
+      manager
+    );
+    return { resolved, offenders, promotable };
+  }
+
+  // Walks the references of `offenders` one level at a time (one source-relation lookup per level) until no
+  // new table turns up, then orders the whole set parents first.
+  private async orderWithReferencedTables(
+    offenders: InternalTable[],
+    targetEnvironmentId: string,
+    sourceEnvironmentId: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<PromotableTable[]> {
+    const tableById = new Map(offenders.map((table) => [table.id, table]));
+    const dependsOn = new Map<string, string[]>();
+
+    let level = offenders;
+    while (level.length) {
+      const sourceRelationIds = await this.relationResolverService.resolve(
+        organizationId,
+        level.map((table) => table.id),
+        sourceEnvironmentId,
+        manager
+      );
+      const sourceRelations = sourceRelationIds.size
+        ? await manager.find(InternalTableRelation, { where: { id: In([...sourceRelationIds.values()]) } })
+        : [];
+      const sourceRelationById = new Map(sourceRelations.map((relation) => [relation.id, relation]));
+
+      const nextLevel: InternalTable[] = [];
+      for (const table of level) {
+        // No source relation: nothing to replay from, so nothing it could be waiting on.
+        const sourceRelation = sourceRelationById.get(sourceRelationIds.get(table.id));
+        const parents = sourceRelation
+          ? await findUnpromotedReferences(
+              organizationId,
+              table,
+              sourceRelation,
+              targetEnvironmentId,
+              sourceRelation.branchId,
+              manager
+            )
+          : [];
+        dependsOn.set(
+          table.id,
+          parents.map((parent) => parent.id)
+        );
+        for (const parent of parents) {
+          if (tableById.has(parent.id)) continue;
+          tableById.set(parent.id, parent);
+          nextLevel.push(parent);
+        }
+      }
+      level = nextLevel;
+    }
+
+    const offenderIds = new Set(offenders.map((table) => table.id));
+    return orderByDependencies([...tableById.keys()], dependsOn).map((id) => ({
+      table: tableById.get(id),
+      neededByApp: offenderIds.has(id),
+      dependsOn: dependsOn.get(id) ?? [],
+    }));
   }
 
   /**
@@ -962,10 +1051,11 @@ export class VersionUtilService implements IVersionUtilService {
     manager: EntityManager
   ): Promise<{ warnings: TableBehindWarning[] }> {
     try {
-      const { resolved, offenders } = await this.findTablesMissingInEnvironment(
+      const { resolved, offenders, promotable } = await this.findTablesMissingInEnvironment(
         appId,
         versionId,
         targetEnvironmentId,
+        sourceEnvironmentId,
         organizationId,
         manager
       );
@@ -982,7 +1072,7 @@ export class VersionUtilService implements IVersionUtilService {
             error: message,
             details: tableList,
             code: 'TABLES_NOT_IN_TARGET_ENVIRONMENT',
-            tables: offenders.map((t) => ({ id: t.id, name: t.tableName })),
+            tables: promotableTablesPayload(promotable),
           },
         });
       }

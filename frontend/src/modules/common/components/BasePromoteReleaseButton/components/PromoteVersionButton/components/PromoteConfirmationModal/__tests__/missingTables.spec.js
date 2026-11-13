@@ -1,4 +1,4 @@
-import { missingTablesFrom, promoteErrorMessage, promoteTablesOneUp } from '../missingTables';
+import { missingTablesFrom, promoteErrorMessage, promoteTablesOneUp, tablesToPromoteFor } from '../missingTables';
 
 describe('promote blocked on tables the target environment does not have', () => {
   const blocked = {
@@ -40,6 +40,32 @@ describe('promote blocked on tables the target environment does not have', () =>
       name: 'activity',
       reason: 'no access to staging',
     });
+  });
+});
+
+describe('tablesToPromoteFor', () => {
+  // The server lists tables parents first and says which listed tables each one references.
+  const observations = { id: 't-obs', name: 'observations', depends_on: [] };
+  const actions = { id: 't-act', name: 'actions', depends_on: ['t-obs'] };
+  const reports = { id: 't-rep', name: 'reports', depends_on: ['t-act'] };
+  const sites = { id: 't-sit', name: 'sites', depends_on: [] };
+  const listed = [observations, sites, actions, reports];
+
+  it('is just the table when it references none of the listed tables', () => {
+    expect(tablesToPromoteFor(sites, listed)).toEqual([sites]);
+  });
+
+  it('puts the tables it references first', () => {
+    expect(tablesToPromoteFor(actions, listed)).toEqual([observations, actions]);
+  });
+
+  it('follows references through other tables, in list order, and leaves unrelated tables out', () => {
+    expect(tablesToPromoteFor(reports, listed)).toEqual([observations, actions, reports]);
+  });
+
+  it('ignores a reference to a table that is not listed', () => {
+    const orphan = { id: 'x', name: 'x', depends_on: ['gone'] };
+    expect(tablesToPromoteFor(orphan, [...listed, orphan])).toEqual([orphan]);
   });
 });
 
