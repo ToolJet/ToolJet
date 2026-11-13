@@ -14,10 +14,6 @@ sidebar_label: Editor
  <span>Paid feature</span>
 </div>
 
-:::caution BETA
-Code mode is in beta and not recommended for production use.
-:::
-
 A Code mode app opens in the same App Builder as a visual app, with tools for working on code instead of components. This page walks through what's different: the header, the **Code** panel, the canvas, the style inspector and the sidebars.
 
 ## What Changes in Code Mode
