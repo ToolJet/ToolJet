@@ -1,4 +1,5 @@
-# Run the affected server tests before pushing (changed-scope, same as CI's run-ci-changed lane).
+# Lint + typecheck the server before pushing (CI hard-fails on both).
+# Unit/e2e tests are not run here — CI's run-ci gate runs them (`npm run ci:changed` runs them locally).
 # Emergency bypass: git push --no-verify — CI still gates the PR.
 
 # Drain the ref list git writes on stdin; leaving it unread can EPIPE/SIGPIPE the
@@ -19,4 +20,4 @@ fi
 command -v node >/dev/null 2>&1 || export PATH="$PATH:/usr/local/bin:/opt/homebrew/bin"
 
 bash server/scripts/check-ee-leak.sh || exit 1
-npm run ci:changed --silent
+PRE_PUSH=true npm run ci:changed --silent
