@@ -23,7 +23,7 @@ const withFallback = (value: string) =>
 
 export const isSet = (v: unknown): v is string | number => v !== undefined && v !== null && v !== '';
 
-const PX_VARS = new Set(['--tj-ant-border-radius', '--tj-ant-border-radius-lg', '--lk-cell']);
+const PX_VARS = new Set(['--tj-ant-border-radius', '--tj-ant-border-radius-lg', '--lk-event-radius', '--lk-cell']);
 
 /** CSS variables from { '--var': style value }: unset styles are left out. A radius or size takes a number of px. */
 export const lookVars = (map: Record<string, unknown>): CSSProperties => {

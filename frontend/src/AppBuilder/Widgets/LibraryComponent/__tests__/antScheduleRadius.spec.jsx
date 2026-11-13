@@ -18,7 +18,8 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-// The radii the Schedule sets: its frame reads the large one (--ant-border-radius-lg), the bookings the base one.
+// The radii the Schedule sets: Container radius rounds the frame (--ant-border-radius-lg), Event radius the bookings.
+const VARS = ['--tj-ant-border-radius-lg', '--lk-event-radius', '--tj-ant-border-radius'];
 const radii = async (styles) => {
   loadLibraryModule.mockResolvedValue(pack);
   render(
@@ -40,19 +41,20 @@ const radii = async (styles) => {
   const root = () => document.querySelector('[data-cy="ant-schedule"]').shadowRoot;
   await waitFor(() => expect(root().querySelector('.ucs')).toBeTruthy());
   const style = root().querySelector('.ucs').style;
-  return [style.getPropertyValue('--tj-ant-border-radius'), style.getPropertyValue('--tj-ant-border-radius-lg')];
+  return VARS.map((name) => style.getPropertyValue(name));
 };
 
-// Radius rounds the outer frame too, by the same value, not a fixed 8px (AD-29).
-describe('Ant Schedule Radius', () => {
+// One Radius used to round the frame and the bookings alike: each now has its own.
+describe('Ant Schedule radii', () => {
   it.each([
-    [0, ['0px', '0px']],
-    [20, ['20px', '20px']],
-  ])('Radius %s sets the bookings and the frame radius', async (r, expected) => {
-    expect(await radii({ borderRadius: r })).toEqual(expected);
+    [{ borderRadius: 20 }, ['20px', '', '']],
+    [{ eventRadius: 12 }, ['', '12px', '']],
+    [{ borderRadius: 0, eventRadius: 20 }, ['0px', '20px', '']],
+  ])('%j sets only its own radius', async (styles, expected) => {
+    expect(await radii(styles)).toEqual(expected);
   });
 
-  it("leaves both to the theme when Radius is not set (the frame keeps Ant's 8px)", async () => {
-    expect(await radii({})).toEqual(['', '']);
+  it("leaves both to the theme when neither is set (the frame keeps Ant's 8px)", async () => {
+    expect(await radii({})).toEqual(['', '', '']);
   });
 });
