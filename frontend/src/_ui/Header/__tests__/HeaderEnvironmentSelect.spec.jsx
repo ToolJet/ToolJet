@@ -48,6 +48,19 @@ describe('HeaderEnvironmentSelect', () => {
     expect(screen.queryByRole('menuitemradio')).not.toBeInTheDocument();
   });
 
+  it('marks the current environment with an accent tick, not a checkbox', async () => {
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: /environment$/i }));
+    const current = await screen.findByRole('menuitemcheckbox', { name: 'Production' });
+    const other = screen.getByRole('menuitemcheckbox', { name: 'Development' });
+
+    expect(current.querySelector('svg.tw-text-icon-accent')).toBeInTheDocument();
+    expect(other.querySelector('svg.tw-text-icon-accent')).not.toBeInTheDocument();
+    // The checkbox box is a decorative span; none should be drawn.
+    expect(current.querySelector('span[aria-hidden][data-state]')).not.toBeInTheDocument();
+    expect(other.querySelector('span[aria-hidden][data-state]')).not.toBeInTheDocument();
+  });
+
   it('reports the chosen environment id', async () => {
     const { onChange } = setup();
     await userEvent.click(screen.getByRole('button', { name: /environment$/i }));

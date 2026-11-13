@@ -59,6 +59,8 @@ export interface DropdownMenuItem {
   /** Wraps the whole item, for example in a tooltip. */
   wrapper?: (item: ReactElement) => ReactNode;
   type?: 'checkbox';
+  /** How a checkbox item shows it is selected: a box (default) or an accent tick, both before the label. */
+  indicator?: 'checkbox' | 'check';
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
   /** Keeps the menu open when the item is selected. */
@@ -140,6 +142,7 @@ export default function DropdownMenuComp({
       wrapper,
       render,
       type,
+      indicator = 'checkbox',
       checked,
       keepOpen,
       onCheckedChange,
@@ -157,7 +160,13 @@ export default function DropdownMenuComp({
           className={cn(ITEM_CLASS, SELECTABLE_ITEM_CLASS, classes?.item)}
           {...itemProps}
         >
-          <CheckboxVisual checked={checked} />
+          {indicator === 'checkbox' && <CheckboxVisual checked={checked} />}
+          {/* Keeps the slot where the box would be, so labels line up whether or not the row is selected. */}
+          {indicator === 'check' && (
+            <span aria-hidden className="tw-flex tw-size-4 tw-shrink-0 tw-items-center tw-justify-center">
+              {checked && <Check className="tw-size-4 tw-text-icon-accent" />}
+            </span>
+          )}
           {label}
         </DropdownMenuCheckboxItem>
       );

@@ -39,7 +39,8 @@ const EnvOption = ({ name }: { name: string }) => (
 const ENV_TOOLTIP_CLASSES = { content: 'tw-max-w-[144px] tw-text-center' };
 // The design's pill: an outlined, lifted button, like the version and environment pill in the App Builder header.
 const PILL_CLASS = 'tw-shadow-elevation-100';
-const MENU_CLASSES = { item: 'tw-h-[30px]' };
+// The tick sits 8px from the menu's edge: 1px border, 4px group padding and 4px row padding.
+const MENU_CLASSES = { item: 'tw-h-[30px] tw-px-1', group: 'tw-p-1' };
 
 // The menu hands its props and ref to this component, which passes them on to the button; the tooltip then adds its
 // own on top.
@@ -95,10 +96,11 @@ export default function HeaderEnvironmentSelect() {
       sections={[
         {
           id: 'environment',
-          // One environment at a time: a checkbox list that ignores unchecking the current one, as the sort menu does.
+          // One environment at a time: a list that ignores unchecking the current one, with a tick on the current one.
           items: environments.map(({ id, name }) => ({
             id,
             type: 'checkbox' as const,
+            indicator: 'check' as const,
             label: <EnvOption name={name} />,
             checked: id === environmentId,
             onCheckedChange: (checked: boolean) => checked && onChange(id),
