@@ -70,6 +70,7 @@
   "apps | VERSION | GET_EVENTS | GET | /apps/:id/versions/:versionId/events | version=2 | src/modules/versions/controllers/events.controller.ts | EventsController.getEvents",
   "apps | VERSION | GET_ONE | GET | /apps/:id/versions/:versionId | version=2 | src/modules/versions/controller.v2.ts | VersionControllerV2.getVersion",
   "apps | VERSION | GET_ONE | GET | /apps/module/by-correlation/:coRelationId/version | version=2 | src/modules/versions/controller.v2.ts | VersionControllerV2.getModuleVersionByStableIds",
+  "apps | VERSION | PROMOTE | GET | /apps/:id/versions/:versionId/promote/missing-tables | version=2 | src/modules/versions/controller.v2.ts | VersionControllerV2.missingTablesForPromote",
   "apps | VERSION | PROMOTE | PUT | /apps/:id/versions/:versionId/promote | version=2 | src/modules/versions/controller.v2.ts | VersionControllerV2.promoteVersion",
   "apps | VERSION | REORDER_PAGES | PUT | /apps/:id/versions/:versionId/pages/reorder | version=2 | src/modules/versions/controllers/pages.controller.ts | PagesController.reorderPages",
   "apps | VERSION | UPDATE_COMPONENTS | PUT | /apps/:id/versions/:versionId/components | version=2 | src/modules/versions/controllers/components.controller.ts | ComponentsController.updateComponent",

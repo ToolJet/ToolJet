@@ -40,8 +40,10 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.UPDATE_SETTINGS]: {
       auditLogsKey: 'APP_UPDATE',
     },
+    // Promoting, and reading what a promote would need (missing tables): a public app must not widen who may do either.
     [FEATURE_KEY.PROMOTE]: {
       license: LICENSE_FIELD.VALID,
+      shouldNotSkipPublicApp: true,
       auditLogsKey: 'APP_PROMOTE',
     },
     [FEATURE_KEY.CREATE_COMPONENTS]: {},

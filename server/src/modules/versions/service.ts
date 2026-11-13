@@ -501,6 +501,33 @@ export class VersionService implements IVersionService {
     return;
   }
 
+  // Read-only: the ToolJet Database tables the version uses that the next environment does not have yet,
+  // so the promote dialog can offer to promote them before the first click.
+  async missingTablesForPromote(app: App, user: User) {
+    const version = app.appVersions[0];
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const currentEnvironment = await manager.findOne(AppEnvironment, { where: { id: version.currentEnvironmentId } });
+      const nextEnvironment =
+        currentEnvironment &&
+        (await manager.findOne(AppEnvironment, {
+          where: { priority: MoreThan(currentEnvironment.priority), organizationId: user.organizationId },
+          order: { priority: 'ASC' },
+        }));
+      if (!nextEnvironment) return { tables: [] };
+      const { offenders } = await this.versionsUtilService.findTablesMissingInEnvironment(
+        app.id,
+        version.id,
+        nextEnvironment.id,
+        user.organizationId,
+        manager
+      );
+      return {
+        target_environment: { id: nextEnvironment.id, name: nextEnvironment.name },
+        tables: offenders.map((t) => ({ id: t.id, name: t.tableName })),
+      };
+    });
+  }
+
   promoteVersion(app: App, user: User, promoteVersionDto: PromoteVersionDto) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const { currentEnvironmentId } = promoteVersionDto;
