@@ -32,8 +32,11 @@ export class PostgrestProxyService {
   async proxy(req, res, next) {
     const organizationId = req.headers['tj-workspace-id'] || req.dataQuery?.app?.organizationId;
 
-    if (req.method === 'POST' && (await this.tableOperationsService.isRowLimitReached(organizationId))) {
-      throw new HttpException("You've reached your limit of rows in ToolJet database tables. Upgrade for more.", 451);
+    if (req.method === 'POST') {
+      const rowsToAdd = Array.isArray(req.body) ? req.body.length : 1;
+      if ((await this.tableOperationsService.getRemainingRowCapacity(organizationId)) < rowsToAdd) {
+        throw new HttpException("You've reached your limit of rows in ToolJet database tables. Upgrade for more.", 451);
+      }
     }
 
     const { dbUser, dbSchema } = isSQLModeDisabled()
@@ -82,13 +85,7 @@ export class PostgrestProxyService {
 
     if (['PATCH', 'POST'].includes(req.method)) {
       const { path: resolvedTableId } = extractTableRefs(rewrittenUrl);
-      const updatedRequestBody = await this.validateJSONBInputs(
-        organizationId,
-        tableInfo[resolvedTableId],
-        req.body,
-        environmentId
-      );
-      req.body = { ...req.body, ...updatedRequestBody };
+      req.body = await this.validateJSONBInputs(organizationId, tableInfo[resolvedTableId], req.body, environmentId);
     }
 
     return this.httpProxy(req, res, next);
@@ -141,13 +138,12 @@ export class PostgrestProxyService {
 
       if (['PATCH', 'POST'].includes(method)) {
         const { path: resolvedTableId } = extractTableRefs(rewrittenPath);
-        const updatedRequestBody = await this.validateJSONBInputs(
+        body = await this.validateJSONBInputs(
           headers['tj-workspace-id'],
           tableInfo[resolvedTableId],
           body,
           environmentId
         );
-        body = { ...body, ...updatedRequestBody };
       }
 
       const reqHeaders = {
@@ -357,6 +353,7 @@ export class PostgrestProxyService {
     throw new NotFoundException('Internal table not found: ' + tableNamesNotInOrg);
   }
 
+  // Parses JSONB values per row; a list body (bulk insert) stays a list.
   protected async validateJSONBInputs(organizationId, tableName, body, environmentId: string | undefined) {
     const tableDetails = await this.tableOperationsService.perform(
       organizationId,
@@ -371,10 +368,11 @@ export class PostgrestProxyService {
       .filter((column) => column.data_type === 'jsonb')
       .map((column) => column.column_name);
 
-    if (jsonbColumns.length) {
+    if (!jsonbColumns.length) return body;
+    const validateRow = (row) => {
       const { inValidValueColumnsList: inValidJsonbColumns, updatedRequestBody } = validateTjdbJSONBColumnInputs(
         jsonbColumns,
-        body
+        row
       );
       if (inValidJsonbColumns.length) {
         throw new HttpException(
@@ -383,8 +381,8 @@ export class PostgrestProxyService {
         );
       }
       return updatedRequestBody;
-    }
-    return body;
+    };
+    return Array.isArray(body) ? body.map(validateRow) : validateRow(body);
   }
 }
 
