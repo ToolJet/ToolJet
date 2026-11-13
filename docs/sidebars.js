@@ -1167,6 +1167,7 @@ const sidebars = {
           "label": "Release Management",
           "items": [
             "development-lifecycle/release/version-control",
+            "development-lifecycle/release/version-reviews",
             "development-lifecycle/release/release-rollback",
             "development-lifecycle/release/share-app"
           ]
