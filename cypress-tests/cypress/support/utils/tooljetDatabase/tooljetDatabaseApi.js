@@ -119,6 +119,18 @@ export const apiSelectRows = (tableId, environmentId) =>
     return response.body.result.data;
   });
 
+export const apiAddForeignKey = (tableName, foreignKey) =>
+  tooljetDatabaseRequest('POST', `/table/${tableName}/foreignkey`, { foreign_keys: [foreignKey] });
+
+export const apiUpdateForeignKey = (tableName, foreignKeyId, foreignKey) =>
+  tooljetDatabaseRequest('PUT', `/table/${tableName}/foreignkey`, {
+    foreign_keys: [foreignKey],
+    foreign_key_id: foreignKeyId,
+  });
+
+export const apiDeleteForeignKey = (tableName, foreignKeyId) =>
+  tooljetDatabaseRequest('DELETE', `/table/${tableName}/foreignkey/${foreignKeyId}`);
+
 export const apiDropTable = (tableName) => tooljetDatabaseRequest('DELETE', `/table/${tableName}`);
 
 export const apiDependents = (tableId) => tooljetDatabaseRequest('GET', `/table/${tableId}/dependents`);
