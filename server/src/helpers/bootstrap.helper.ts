@@ -330,7 +330,11 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
  * The active custom domain of the workspace that owns one app, as origins. Read only; an unknown app has none. Never
  * another workspace's domain: a per-app frame trusts only its own workspace's pages.
  */
-export async function fetchAppWorkspaceDomainOrigins(dataSource: DataSource, appId: string, logger: any): Promise<string[]> {
+export async function fetchAppWorkspaceDomainOrigins(
+  dataSource: DataSource,
+  appId: string,
+  logger: any
+): Promise<string[]> {
   if (!UUID.test(appId ?? '')) return [];
   try {
     const rows: { domain: string }[] = await dataSource.query(

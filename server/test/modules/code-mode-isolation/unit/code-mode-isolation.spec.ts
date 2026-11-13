@@ -13,7 +13,9 @@ describe('CODE_MODE_ISOLATION', () => {
     expect(resolve({ CODE_MODE_ISOLATION: 'on' })).toMatchObject({ mode: 'on', messages: [] });
     const viewer = resolve({ CODE_MODE_ISOLATION: 'Viewer' });
     expect(viewer.mode).toBe('viewer');
-    expect(viewer.messages).toEqual([expect.objectContaining({ level: 'warn', text: expect.stringMatching(/editor/) })]);
+    expect(viewer.messages).toEqual([
+      expect.objectContaining({ level: 'warn', text: expect.stringMatching(/editor/) }),
+    ]);
     const off = resolve({ CODE_MODE_ISOLATION: 'OFF ' });
     expect(off.mode).toBe('off');
     expect(off.messages[0].level).toBe('warn');
@@ -22,13 +24,17 @@ describe('CODE_MODE_ISOLATION', () => {
   it.each(['opaque', 'per-app', 'true', 'false', '0', 'disabled'])('fails closed on an unknown value: %s', (value) => {
     const resolved = resolve({ CODE_MODE_ISOLATION: value });
     expect(resolved.mode).toBe('on');
-    expect(resolved.messages).toEqual([expect.objectContaining({ level: 'warn', text: expect.stringContaining(value) })]);
+    expect(resolved.messages).toEqual([
+      expect.objectContaining({ level: 'warn', text: expect.stringContaining(value) }),
+    ]);
   });
 
   it.each(['off', 'viewer'])('cloud runs on whatever it says (%s), and logs an error', (value) => {
     const resolved = resolve({ TOOLJET_EDITION: 'cloud', CODE_MODE_ISOLATION: value });
     expect(resolved.mode).toBe('on');
-    expect(resolved.messages).toEqual([expect.objectContaining({ level: 'error', text: expect.stringContaining('cloud') })]);
+    expect(resolved.messages).toEqual([
+      expect.objectContaining({ level: 'error', text: expect.stringContaining('cloud') }),
+    ]);
   });
 
   it('cloud with an unknown value or none runs on too', () => {
@@ -37,7 +43,11 @@ describe('CODE_MODE_ISOLATION', () => {
   });
 
   it('cloud keeps strict bindings on', () => {
-    const resolved = resolve({ TOOLJET_EDITION: 'Cloud', CODE_MODE_ISOLATION: 'on', CODE_MODE_STRICT_BINDINGS: 'false' });
+    const resolved = resolve({
+      TOOLJET_EDITION: 'Cloud',
+      CODE_MODE_ISOLATION: 'on',
+      CODE_MODE_STRICT_BINDINGS: 'false',
+    });
     expect(resolved.strictBindings).toBe(true);
     expect(resolved.messages).toEqual([expect.objectContaining({ level: 'error' })]);
   });

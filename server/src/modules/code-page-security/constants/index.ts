@@ -4,7 +4,15 @@ export enum FEATURE_KEY {
 }
 
 /** The directives an admin may extend, as the policy names them. */
-export const CSP_DIRECTIVES = ['connect-src', 'img-src', 'font-src', 'media-src', 'style-src', 'script-src', 'frame-src'] as const;
+export const CSP_DIRECTIVES = [
+  'connect-src',
+  'img-src',
+  'font-src',
+  'media-src',
+  'style-src',
+  'script-src',
+  'frame-src',
+] as const;
 export type CspDirective = (typeof CSP_DIRECTIVES)[number];
 
 export const MAX_ORIGINS_PER_DIRECTIVE = 25;

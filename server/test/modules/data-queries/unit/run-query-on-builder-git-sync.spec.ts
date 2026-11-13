@@ -21,7 +21,10 @@ describe('DataQueriesService', () => {
     let getDetails: jest.Mock;
     let runAndGetResult: jest.SpyInstance;
 
-    async function run(appVersion: { branchId: string; isSynced: boolean; status: AppVersionStatus }, user: object = {}) {
+    async function run(
+      appVersion: { branchId: string; isSynced: boolean; status: AppVersionStatus },
+      user: object = {}
+    ) {
       const repository = module.get(DataQueryRepository) as unknown as { getOneById: jest.Mock };
       repository.getOneById.mockResolvedValue({ id: 'query-1', options: {}, appVersion });
       await service.runQueryOnBuilder(
