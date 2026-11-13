@@ -30,6 +30,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppBase } from '@entities/app_base.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { componentTypes } from './services/widget-config';
+import { dropNewContainerDefaults } from '@tooljet/widget-definitions';
 import { cloneDeep, isArray, isPlainObject, merge, mergeWith } from 'lodash';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
@@ -533,7 +534,10 @@ export class AppsUtilService implements IAppsUtilService {
     cleanObject(versionParams);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Setting current_version_id releases a version, so it passes the same release hooks.
+      const isNewRelease = !!appParams.currentVersionId && currentVersionId !== lastReleasedVersion;
       if (appParams.currentVersionId) {
+        if (isNewRelease) await this.beforeVersionRelease(manager, appId, currentVersionId);
         //check if the app version is eligible for release
         const currentEnvironment: AppEnvironment = await this.getEnvironmentOfVersion(currentVersionId, manager);
 
@@ -781,11 +785,32 @@ export class AppsUtilService implements IAppsUtilService {
 
       // Write app-level fields to apps table
       if (Object.keys(appParams).length > 0) {
-        return await catchDbException(async () => {
+        const result = await catchDbException(async () => {
           return await manager.update(App, appId, appParams);
         }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
+        if (isNewRelease) await this.afterVersionRelease(manager, appId, currentVersionId);
+        return result;
       }
     }, manager);
+  }
+
+  /**
+   * Hook called before a version becomes the released version - override in EE
+   */
+  protected async beforeVersionRelease(manager: EntityManager, appId: string, versionId: string): Promise<void> {
+    // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after a version becomes the released version - override in EE
+   */
+  protected async afterVersionRelease(
+    manager: EntityManager,
+    appId: string,
+    versionId: string,
+    userId?: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides
   }
 
   async updateWorflowVersion(version: AppVersion, body: AppVersionUpdateDto, app: App) {
@@ -1273,36 +1298,40 @@ export class AppsUtilService implements IAppsUtilService {
 
       const mergedDefinition = {
         // ...componentMeta.definition,
-        properties: mergeWith(
-          componentMeta.definition.properties,
-          currentComponentData?.component?.definition?.properties,
-          (objValue, srcValue) => {
-            if (['Table', 'KeyValuePair'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
-              // Stored array wins: merging it with the widget defaults leaks default entries back in
-              if (isArray(srcValue)) return srcValue;
-              // Older apps can persist the array as an object keyed by index
-              if (isPlainObject(srcValue)) return Object.values(srcValue);
-              // Anything else (an fx expression, for instance) is left to lodash, which replaces it wholesale
-            } else if (
-              [
-                'DropdownV2',
-                'MultiselectV2',
-                'PopoverMenu',
-                'Steps',
-                'Tabs',
-                'RadioButtonV2',
-                'Tags',
-                'TagsInput',
-                'TreeSelect',
-                'Cascader',
-                'Navigation',
-                'ButtonGroupV2',
-              ].includes(currentComponentData?.component?.component) &&
-              isArray(objValue)
-            ) {
-              return isArray(srcValue) ? srcValue : Object.values(srcValue);
+        properties: dropNewContainerDefaults(
+          currentComponentData?.component?.component,
+          mergeWith(
+            componentMeta.definition.properties,
+            currentComponentData?.component?.definition?.properties,
+            (objValue, srcValue) => {
+              if (['Table', 'KeyValuePair'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
+                // Stored array wins: merging it with the widget defaults leaks default entries back in
+                if (isArray(srcValue)) return srcValue;
+                // Older apps can persist the array as an object keyed by index
+                if (isPlainObject(srcValue)) return Object.values(srcValue);
+                // Anything else (an fx expression, for instance) is left to lodash, which replaces it wholesale
+              } else if (
+                [
+                  'DropdownV2',
+                  'MultiselectV2',
+                  'PopoverMenu',
+                  'Steps',
+                  'Tabs',
+                  'RadioButtonV2',
+                  'Tags',
+                  'TagsInput',
+                  'TreeSelect',
+                  'Cascader',
+                  'Navigation',
+                  'ButtonGroupV2',
+                ].includes(currentComponentData?.component?.component) &&
+                isArray(objValue)
+              ) {
+                return isArray(srcValue) ? srcValue : Object.values(srcValue);
+              }
             }
-          }
+          ),
+          currentComponentData?.component?.definition?.properties
         ),
         styles: merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
         generalStyles: merge(
@@ -1355,7 +1384,11 @@ export class AppsUtilService implements IAppsUtilService {
         )
         .getMany();
 
-      const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
+      // A ModuleViewer saved without a module (properties {}) has nothing to load; reading its moduleAppId failed the
+      // whole app load with a 500 (QA DVRL-1).
+      const moduleAppIds = moduleComponents
+        .map((moduleComponent) => moduleComponent.properties?.moduleAppId?.value)
+        .filter(Boolean);
       if (moduleAppIds.length === 0) return [];
 
       const modules = await manager

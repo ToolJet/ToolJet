@@ -1,0 +1,1244 @@
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  AutoComplete as AntAutoComplete,
+  Button,
+  Cascader as AntCascader,
+  ColorPicker as AntColorPicker,
+  DatePicker,
+  Grid,
+  Spin,
+  TimePicker as AntTimePicker,
+  Transfer as AntTransfer,
+  TreeSelect as AntTreeSelect,
+  Upload as AntUpload,
+} from 'antd';
+import type { UploadFile } from 'antd';
+import { InboxOutlined, UploadOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
+import { ToolJet } from '@tooljet/custom-component-sdk';
+import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
+import { ControlSkeleton, SpinOver } from '../lib/Loading';
+import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
+import { str, toArray, toOptions, type Row } from '../lib/data';
+import { closesOnEscape, useOwnedPopup } from '../lib/useOwnerGuard';
+import { useFormValue } from '../lib/formValue';
+import { boundedTree } from '../lib/tree';
+import { useValueSetter } from '../lib/sameValue';
+import { useOfferedValue } from '../lib/offeredValue';
+import { isBlankDate, parseDate as strictDate, parseTime } from '../lib/dates';
+import '../styles/controls.css';
+
+const useFieldActions = (change: (v: unknown) => void, initial: unknown) => {
+  ToolJet.useAction(
+    { name: 'setFieldValue', displayName: 'Set field value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (next) => change(next)
+  );
+  ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(initial));
+};
+
+// Strict: text that names no real date or time (2026-13-45, 25:99) is no value, not a rolled-over one (lib/dates).
+const COLOR_TEXT =
+  /^(#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|(rgba?|hsla?|hsba?|hsva?)\(\s*[-+\d.%]+(\s*[,\s/]\s*[-+\d.%]+){2,3}\s*\))$/i;
+const parseDate = (v: unknown, format?: string): Dayjs | null =>
+  format ? parseTime(v, [format, format.replace(/^HH/, 'H')]) : strictDate(v);
+
+// The panel before the one `end` is in, for each picker: Ant's Range Picker opens the end field there when the range
+// spans panels, so the end shows in its second panel.
+const panelBefore = (picker: string, end: Dayjs, shown: Dayjs) => {
+  if (picker === 'year') return Math.floor(shown.year() / 10) === Math.floor(end.year() / 10) - 1;
+  if (picker === 'month' || picker === 'quarter') return shown.year() === end.year() - 1;
+  return shown.isSame(end.subtract(1, 'month'), 'month');
+};
+
+type FileInfo = { uid: string; name: string; size: number; type: string; base64: string; content: string };
+// A file's text, for the text-like types: UTF-8, as a query sends it on (atob alone gave every non-ASCII character as
+// its raw bytes, café as cafÃ©).
+const textOf = (base64: string) => {
+  try {
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    return typeof TextDecoder === 'undefined' ? atob(base64) : new TextDecoder('utf-8').decode(bytes);
+  } catch {
+    return '';
+  }
+};
+let fileSeq = 0;
+// Every reader in flight is kept in `track`, so a newer single-file choice, a clear or an unmount aborts it (as the
+// shadcn pack's FileUpload does). An aborted read settles as null.
+const readFile = (file: File, track: Set<FileReader>): Promise<(FileInfo & { file: File }) | null> =>
+  new Promise((resolve) => {
+    const reader = new FileReader();
+    let settled = false;
+    const settle = (value: (FileInfo & { file: File }) | null) => {
+      if (settled) return;
+      settled = true;
+      track.delete(reader);
+      resolve(value);
+    };
+    const done = (url: string) => {
+      const base64 = url.slice(url.indexOf(',') + 1);
+      const content = /^text\/|json|csv|xml/.test(file.type) && file.size < 2_000_000 ? textOf(base64) : '';
+      // The same file picked twice is two entries: a uid of its name, size and date alone removed both at once.
+      fileSeq += 1;
+      settle({
+        uid: `${file.name}-${file.size}-${file.lastModified}-${fileSeq}`,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        base64,
+        content,
+        file,
+      });
+    };
+    reader.onload = () => done(String(reader.result ?? ''));
+    // An unreadable file still settles, empty, so the rest of its batch is not held up.
+    reader.onerror = () => done('');
+    reader.onabort = () => settle(null);
+    track.add(reader);
+    reader.readAsDataURL(file);
+  });
+// At most this many files are read at once; the rest of an admitted batch waits its turn.
+const READ_CONCURRENCY = 4;
+const readAll = async (files: File[], track: Set<FileReader>, owned: () => boolean) => {
+  const out: ((FileInfo & { file: File }) | null)[] = new Array(files.length).fill(null);
+  let next = 0;
+  const worker = async () => {
+    while (next < files.length && owned()) {
+      const at = next++;
+      out[at] = await readFile(files[at], track);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(READ_CONCURRENCY, files.length) }, worker));
+  return out.filter((f): f is FileInfo & { file: File } => !!f);
+};
+
+// Ant's Upload (Upload.Dragger by default): the files stay in the browser (no action URL); fileList exposes each as
+// { uid, name, size, type, base64, content (text files) } for a query to send. accept, multiple, maxCount, listType,
+// text and hint (the dragger's two lines); events onChange, onRemove; resetFields and clearFiles empty the list (Clear
+// all under two or more files). Past maxCount the extra files are turned away with a message, as UI 2.0's File upload
+// does, not swapped for the oldest; a maxCount of 1 keeps Ant's rule that a new pick replaces the file.
+export const Upload = () => {
+  const field = useFieldProps({ label: 'Attachment' });
+  const [type] = ToolJet.useStateEnumeration({
+    name: 'type',
+    label: 'Type',
+    enumDefinition: ['drag', 'select'],
+    enumLabels: { drag: 'Drag area', select: 'Button' },
+    initialValue: 'drag',
+  });
+  const [text] = ToolJet.useStateString({
+    name: 'text',
+    label: 'Text',
+    initialValue: 'Click or drag a file to this area',
+  });
+  const [hint] = ToolJet.useStateString({ name: 'hint', label: 'Hint', initialValue: '' });
+  const [accept] = ToolJet.useStateString({
+    name: 'accept',
+    label: 'Accept',
+    description: 'e.g. .csv,.xlsx or image/*',
+    initialValue: '',
+  });
+  const [multiple] = ToolJet.useStateBoolean({ name: 'multiple', label: 'Multiple', initialValue: false });
+  const [maxCount] = ToolJet.useStateNumber({
+    name: 'maxCount',
+    label: 'Max count',
+    description: '0 for no limit.',
+    initialValue: 0,
+    min: 0,
+  });
+  const [listType] = ToolJet.useStateEnumeration({
+    name: 'listType',
+    label: 'List type',
+    enumDefinition: ['text', 'picture'],
+    initialValue: 'text',
+  });
+  const [fileList, setFileList] = ToolJet.useStateArray({ name: 'fileList', initialValue: [], inspector: 'hidden' });
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const onRemove = ToolJet.useEventCallback({ name: 'onRemove' });
+  const { disabled, loading } = ToolJet.useControlState();
+  const files = toArray(fileList) as FileInfo[];
+  const check = ToolJet.useValidation({
+    kind: 'choice',
+    value: files.length ? 'files' : '',
+    present: files.length > 0,
+  });
+  const tokens = useTokenStyles();
+  ToolJet.useComponentSettings({
+    role: 'filepicker',
+    fit: false,
+    loading: 'own',
+    usage:
+      "Ant's Upload: type drag (Upload.Dragger area, fills the box) or select (a button); text, hint, accept, multiple, maxCount, listType. Files stay in the browser: fileList exposes [{uid, name, size, type, base64, content}] for a query; onChange, onRemove; resetFields clears.",
+    roleProps: {
+      files: 'fileList',
+      instructionText: 'text',
+      fileType: 'accept',
+      enableMultiple: 'multiple',
+      maxFileCount: 'maxCount',
+    },
+    roleEvents: { onFileSelected: 'onChange', onFileDeselected: 'onRemove' },
+    roleActions: { clearFiles: 'resetFields', clear: 'resetFields' },
+    defaultWidth: 14,
+    defaultHeight: 16,
+  });
+  const [uiFiles, setUiFiles] = useState<UploadFile[]>([]);
+  // Why the last pick was not taken whole (past maxCount), shown as the field's message until the files change again.
+  const [rejected, setRejected] = useState('');
+  // The files as of the latest change, for reads that finish later: a pick merged into the files as they were when it
+  // started, so a slow read dropped the files a quicker pick had added meanwhile, and a pick that finished after a clear
+  // (a Form's clearForm, resetFields) put the cleared files back (SP-11). `generation` changes on a clear, a newer
+  // single-file choice and unmount, and aborts every read in flight: a read only lands in its own generation, so an
+  // older choice whose read finishes last cannot replace the newer one (Codex review CODE-03, 2026-10-25). `pending`
+  // counts the files of the live generation still being read: they hold their place under maxCount, so files past it
+  // are turned away before any is read (CODE-04).
+  const latest = useRef<(FileInfo & { file?: File })[]>([]);
+  const generation = useRef(0);
+  const readers = useRef(new Set<FileReader>());
+  const pending = useRef(0);
+  const stopReads = () => {
+    generation.current += 1;
+    pending.current = 0;
+    const inFlight = Array.from(readers.current);
+    readers.current.clear();
+    inFlight.forEach((r) => r.abort());
+  };
+  useEffect(() => stopReads, []);
+  useEffect(() => {
+    // The files as the app set them (a binding, an action): reads append to these.
+    if (toArray(fileList).length !== latest.current.length) latest.current = toArray(fileList) as FileInfo[];
+  }, [fileList]);
+
+  const publishValue = useFormValue(fileList, 'array');
+  const set = (next: (FileInfo & { file?: File })[]) => {
+    // Clearing an empty list changes nothing and fires nothing.
+    if (!next.length && !latest.current.length) return;
+    latest.current = next;
+    const exposed = next.map(({ file: _f, ...rest }) => rest);
+    setFileList(exposed);
+    publishValue(exposed);
+    setUiFiles(
+      next.map((f) => ({
+        uid: f.uid,
+        name: f.name,
+        status: 'done',
+        size: f.size,
+        type: f.type,
+        originFileObj: f.file as never,
+        thumbUrl: f.type.startsWith('image/') ? `data:${f.type};base64,${f.base64}` : undefined,
+      }))
+    );
+    check.touch();
+    onChange();
+  };
+  const clearFiles = () => {
+    stopReads();
+    setRejected('');
+    set([]);
+  };
+  ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, clearFiles);
+  ToolJet.useAction({ name: 'clearFiles', displayName: 'Clear files' }, clearFiles);
+  // A Form's clearForm empties the files (the host clears only `value`), and drops the reads still under way.
+  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => {
+    stopReads();
+    latest.current = [];
+    setFileList([]);
+    setUiFiles([]);
+    setRejected('');
+  });
+
+  const limit = Number(maxCount) > 0 ? Number(maxCount) : undefined;
+  const live = useRef({ maxCount });
+  live.current = { maxCount };
+  const props = {
+    accept: accept || undefined,
+    multiple,
+    maxCount: limit,
+    // Ant reads listType as text (startsWith('picture')); a binding that gives anything else lists as text.
+    listType: (listType === 'picture' ? 'picture' : 'text') as 'picture' | 'text',
+    disabled,
+    fileList: uiFiles,
+    beforeUpload: async (_file: File, batch: File[]) => {
+      // Ant calls this once per file with the whole batch; take the batch once, on its first file.
+      if (batch[0] !== _file) return false;
+      // Admitted before anything is read, under the limit as it is now: a single-file field takes the last file and
+      // replaces the one still being read; otherwise the room left after the files kept and those still being read.
+      const now = Number(live.current.maxCount) > 0 ? Number(live.current.maxCount) : undefined;
+      const single = now === 1;
+      const room = single ? 1 : now ? Math.max(0, now - latest.current.length - pending.current) : batch.length;
+      const taking = single ? batch.slice(-1) : batch.slice(0, room);
+      setRejected(
+        !single && taking.length < batch.length ? `You can upload up to ${now} file${now === 1 ? '' : 's'}` : ''
+      );
+      if (!taking.length) return false;
+      if (single) stopReads();
+      const mine = generation.current;
+      pending.current += taking.length;
+      const read = await readAll(taking, readers.current, () => mine === generation.current);
+      if (mine !== generation.current) return false;
+      pending.current -= taking.length;
+      if (!read.length) return false;
+      if (single) set(read.slice(-1));
+      else {
+        // Merged into the files as they are now, under the limit as it is now (it may have been lowered meanwhile).
+        const cap = Number(live.current.maxCount) > 0 ? Number(live.current.maxCount) : Infinity;
+        const merged = [...latest.current, ...read].slice(0, Math.max(latest.current.length, cap));
+        if (merged.length < latest.current.length + read.length)
+          setRejected(`You can upload up to ${cap} file${cap === 1 ? '' : 's'}`);
+        if (merged.length > latest.current.length) set(merged);
+      }
+      return false;
+    },
+    onRemove: (f: UploadFile) => {
+      setRejected('');
+      set(latest.current.filter((x) => x.uid !== f.uid));
+      onRemove();
+      return true;
+    },
+  };
+  const shownCheck = rejected ? { ...check, error: rejected } : check;
+  return (
+    <AntProvider tokens={tokens} fill={type === 'drag'} className="tj-ant-upload">
+      <FormField {...field} check={shownCheck}>
+        <SpinOver loading={loading} as="fill">
+          <div className="tj-ant-upload-body">
+            {type === 'drag' ? (
+              <AntUpload.Dragger {...props}>
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                {text ? <p className="ant-upload-text">{text}</p> : null}
+                {hint ? <p className="ant-upload-hint">{hint}</p> : null}
+              </AntUpload.Dragger>
+            ) : (
+              <AntUpload {...props}>
+                <Button icon={<UploadOutlined />} disabled={disabled}>
+                  {text || 'Select file'}
+                </Button>
+              </AntUpload>
+            )}
+            {files.length >= 2 ? (
+              <Button type="link" size="small" className="tj-ant-upload-clear" disabled={disabled} onClick={clearFiles}>
+                Clear all
+              </Button>
+            ) : null}
+          </div>
+        </SpinOver>
+      </FormField>
+    </AntProvider>
+  );
+};
+
+// A display format on the 12-hour clock: 24-hour hours (H, HH) as 12-hour ones (h), and AM/PM added when it has none.
+// Text in [brackets] is literal (dayjs).
+const twelveHourFormat = (format: string) => {
+  const parts = format.split(/(\[[^\]]*\])/);
+  const tokens = parts.filter((_, i) => i % 2 === 0).join('');
+  const out = parts.map((p, i) => (i % 2 ? p : p.replace(/H{1,2}/g, 'h'))).join('');
+  return /[aA]/.test(tokens) ? out : `${out} A`;
+};
+
+// Ant's TimePicker: value as text in valueFormat (HH:mm by default), format (display), use12Hours, hourStep,
+// minuteStep, placeholder, allowClear; event onChange.
+export const TimePicker = (props: Record<string, unknown>) => {
+  const field = useFieldProps({ label: 'Time' });
+  const [value, setValue] = ToolJet.useStateString({
+    name: 'value',
+    label: 'Value',
+    description: 'e.g. 09:30',
+    initialValue: '',
+  });
+  const [format] = ToolJet.useStateString({
+    name: 'format',
+    label: 'Format',
+    description: 'HH:mm, HH:mm:ss or h:mm a',
+    initialValue: 'HH:mm',
+  });
+  const [use12Hours] = ToolJet.useStateBoolean({ name: 'use12Hours', label: 'Use 12 hours', initialValue: false });
+  const [hourStep] = ToolJet.useStateNumber({ name: 'hourStep', label: 'Hour step', initialValue: 1, min: 1, max: 12 });
+  const [minuteStep] = ToolJet.useStateNumber({
+    name: 'minuteStep',
+    label: 'Minute step',
+    initialValue: 1,
+    min: 1,
+    max: 30,
+  });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Pick a time',
+  });
+  const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: true });
+  const look = useControlLook();
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const { disabled, loading } = ToolJet.useControlState();
+  const fieldId = ToolJet.useFieldId();
+  const check = ToolJet.useValidation({ kind: 'date', value });
+  const tokens = useTokenStyles();
+  ToolJet.useComponentSettings({
+    role: 'timepicker',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's TimePicker: label, value as 24-hour text (HH:mm, or HH:mm:ss when format has seconds), format (display), use12Hours, minuteStep; onChange.",
+    roleProps: { description: 'extra' },
+    roleEvents: { onSelect: 'onChange' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
+  const given = str(format).trim();
+  // A 12-hour Format (h, a or A outside [literal] text) is a 12-hour clock without Use 12 hours too: Ant's popup listed
+  // hours 00-23 and no AM/PM for h:mm a. Use 12 hours shows a 24-hour Format (HH:mm, the default) on the 12-hour clock,
+  // with AM/PM when it has none: it showed 14:05 beside a 12-hour popup (QA AD-32).
+  const twelve = use12Hours || /[haA]/.test(given.replace(/\[[^\]]*\]/g, ''));
+  const fmt = !given ? (use12Hours ? 'h:mm a' : 'HH:mm') : twelve ? twelveHourFormat(given) : given;
+  // The value keeps 24-hour text whatever the display, so queries read one shape.
+  const valueFormat = /s/.test(fmt) ? 'HH:mm:ss' : 'HH:mm';
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  const change = (d: Dayjs | null) => {
+    if (!valueSetter.set(d ? d.format(valueFormat) : '')) return;
+    onChange();
+  };
+  // Text that names no time is refused (the value stays); an empty one clears.
+  useFieldActions((v) => {
+    const d = parseDate(v, 'HH:mm:ss') ?? parseDate(v, 'HH:mm');
+    if (d || isBlankDate(v)) change(d);
+  }, props.value);
+  const current = parseDate(value, valueFormat) ?? parseDate(value, 'HH:mm');
+  const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
+  return (
+    <AntProvider tokens={tokens} ownerRef={panel.anchor}>
+      <FormField {...field} check={check} htmlFor={fieldId}>
+        <ControlSkeleton loading={loading} size={look.size}>
+          <WithPopupTheme>
+            {(popup) => (
+              <AntTimePicker
+                id={fieldId}
+                style={{ width: '100%' }}
+                value={current}
+                format={fmt}
+                use12Hours={twelve}
+                hourStep={Math.max(1, Number(hourStep) || 1) as 1}
+                minuteStep={Math.max(1, Number(minuteStep) || 1) as 1}
+                placeholder={placeholder || undefined}
+                allowClear={allowClear}
+                disabled={disabled}
+                variant={look.variant}
+                size={look.size}
+                status={check.error ? 'error' : undefined}
+                popupClassName={popup.className}
+                popupStyle={popup.style}
+                open={panel.open}
+                onOpenChange={panel.onOpenChange}
+                panelRender={closesOnEscape(() => panel.onOpenChange(false))}
+                onChange={(d) => panel.available() && change(d as Dayjs | null)}
+              />
+            )}
+          </WithPopupTheme>
+        </ControlSkeleton>
+      </FormField>
+    </AntProvider>
+  );
+};
+
+// Ant's DatePicker.RangePicker: value [start, end] as YYYY-MM-DD text (startDate and endDate exposed too), format,
+// picker, minDate, maxDate, placeholder [start, end], allowClear; event onChange.
+export const RangePicker = (props: Record<string, unknown>) => {
+  const field = useFieldProps({ label: 'Date range' });
+  const [value, setValue] = ToolJet.useStateArray({
+    name: 'value',
+    label: 'Value',
+    description: "['2026-01-01', '2026-01-31']",
+    initialValue: [],
+  });
+  const [format] = ToolJet.useStateString({ name: 'format', label: 'Format', initialValue: 'YYYY-MM-DD' });
+  const [picker] = ToolJet.useStateEnumeration({
+    name: 'picker',
+    label: 'Picker',
+    enumDefinition: ['date', 'week', 'month', 'quarter', 'year'],
+    initialValue: 'date',
+  });
+  const [minDate] = ToolJet.useStateString({ name: 'minDate', label: 'Min date', initialValue: '' });
+  const [maxDate] = ToolJet.useStateString({ name: 'maxDate', label: 'Max date', initialValue: '' });
+  const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: true });
+  const [, setStartDate] = ToolJet.useStateString({ name: 'startDate', initialValue: '', inspector: 'hidden' });
+  const [, setEndDate] = ToolJet.useStateString({ name: 'endDate', initialValue: '', inspector: 'hidden' });
+  const look = useControlLook();
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const { disabled, loading } = ToolJet.useControlState();
+  const fieldId = ToolJet.useFieldId();
+  // The same dates while the value is the same: Ant resets the shown panel whenever the value it is given changes, and
+  // the one-panel correction below answers each reset (a new pair each render reset it again, without end).
+  const pair = React.useMemo(() => toArray(value).map((v) => parseDate(v)), [JSON.stringify(value)]); // eslint-disable-line react-hooks/exhaustive-deps
+  // A range whose start is after its end (a default or setFieldValue; a pick is always in order) is not valid.
+  const reversed = !!pair[0] && !!pair[1] && pair[0].isAfter(pair[1]);
+  // A range is filled only with both dates: a required one with no end date is invalid, as ToolJet's own Date range
+  // picker (AD-27). The field still shows the start date it exposes as startDate.
+  const check = ToolJet.useValidation({
+    kind: 'date',
+    value: pair[0] && pair[1] ? str(toArray(value)[0]) : '',
+    rule: reversed ? 'The start date is after the end date' : '',
+  });
+  const tokens = useTokenStyles();
+  ToolJet.useComponentSettings({
+    role: 'daterangepicker',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's DatePicker.RangePicker: label, value [start, end] as YYYY-MM-DD (startDate and endDate also exposed), format, picker, minDate, maxDate; onChange.",
+    roleProps: { description: 'extra' },
+    roleEvents: { onSelect: 'onChange' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 14,
+    defaultHeight: 6,
+  });
+  React.useEffect(() => {
+    setStartDate(pair[0] ? pair[0].format('YYYY-MM-DD') : '');
+    setEndDate(pair[1] ? pair[1].format('YYYY-MM-DD') : '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(value)]);
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  const change = (next: unknown) => {
+    const arr = toArray(next).map((v) => (dayjs.isDayjs(v) ? v : parseDate(v)));
+    if (valueSetter.set(arr.length === 2 && arr[0] && arr[1] ? arr.map((d) => (d as Dayjs).format('YYYY-MM-DD')) : []))
+      onChange();
+  };
+  useFieldActions(change, props.value);
+  const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
+  // Ant has no phone layout: its two panels side by side (576px) ran off a phone screen (QA item 22). On Ant's xs
+  // screens (below its sm breakpoint, 576px) one panel shows (controls.css). Ant opens the end field a panel early
+  // when the range spans panels, to show the end in the second one; with one shown, it opens on the end's own panel.
+  const single = Grid.useBreakpoint().xs === true;
+  const [shownPanels, setShownPanels] = useState<[Dayjs, Dayjs] | undefined>();
+  const onePanel = single
+    ? {
+        pickerValue: shownPanels,
+        onPickerValueChange: (next: [Dayjs, Dayjs], info: { source: string; range?: string }) => {
+          const end = pair[1];
+          const early =
+            info.source === 'reset' && info.range === 'end' && end && panelBefore(str(picker), end, next[1]);
+          setShownPanels(early ? [next[0], end as Dayjs] : next);
+        },
+      }
+    : {};
+  return (
+    <AntProvider tokens={tokens} ownerRef={panel.anchor}>
+      <FormField {...field} check={check} htmlFor={fieldId}>
+        <ControlSkeleton loading={loading} size={look.size}>
+          <WithPopupTheme>
+            {(popup) => (
+              <DatePicker.RangePicker
+                {...onePanel}
+                id={fieldId as never}
+                style={{ width: '100%' }}
+                value={pair[0] || pair[1] ? [pair[0] ?? null, pair[1] ?? null] : null}
+                format={str(format).trim() || 'YYYY-MM-DD'}
+                picker={picker as 'date'}
+                minDate={parseDate(minDate) ?? undefined}
+                maxDate={parseDate(maxDate) ?? undefined}
+                allowClear={allowClear}
+                disabled={disabled}
+                variant={look.variant}
+                size={look.size}
+                status={check.error ? 'error' : undefined}
+                popupClassName={single ? `${popup.className ?? ''} tj-ant-range--single`.trim() : popup.className}
+                popupStyle={popup.style}
+                open={panel.open}
+                onOpenChange={panel.onOpenChange}
+                panelRender={closesOnEscape(() => panel.onOpenChange(false))}
+                onChange={(dates) => panel.available() && change(dates ?? [])}
+              />
+            )}
+          </WithPopupTheme>
+        </ControlSkeleton>
+      </FormField>
+    </AntProvider>
+  );
+};
+
+// Ant's AutoComplete: free text with suggestions. options [{ label, value }] (or strings), value, placeholder,
+// filterOption (match typed text), allowClear; events onChange, onSelect, onSearch.
+export const AutoComplete = (props: Record<string, unknown>) => {
+  const field = useFieldProps({ label: 'Product' });
+  const [rawOptions] = ToolJet.useStateArray({
+    name: 'options',
+    label: 'Options',
+    inspector: 'options',
+    description: 'Plain values or [{ label, value, disabled? }].',
+    initialValue: [
+      { label: 'Laptop stand', value: 'Laptop stand' },
+      { label: 'Mechanical keyboard', value: 'Mechanical keyboard' },
+      { label: 'Monitor arm', value: 'Monitor arm' },
+      { label: 'USB-C hub', value: 'USB-C hub' },
+      { label: 'Wireless mouse', value: 'Wireless mouse' },
+    ],
+  });
+  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Start typing',
+  });
+  const [filterOption] = ToolJet.useStateBoolean({
+    name: 'filterOption',
+    label: 'Filter option',
+    description: 'Show only the options matching the text.',
+    initialValue: true,
+  });
+  const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
+  const look = useControlLook();
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const onSelect = ToolJet.useEventCallback({ name: 'onSelect' });
+  const onSearch = ToolJet.useEventCallback({ name: 'onSearch' });
+  const { disabled, loading } = ToolJet.useControlState();
+  const fieldId = ToolJet.useFieldId();
+  const check = ToolJet.useValidation({ kind: 'text', value });
+  const tokens = useTokenStyles();
+  ToolJet.useComponentSettings({
+    role: 'autocomplete',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's AutoComplete: free text with suggestions; label, options [{label, value}] or strings, value, placeholder, filterOption; onChange, onSelect, onSearch.",
+    roleProps: { description: 'extra' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  const change = (v: unknown) => {
+    if (!valueSetter.set(str(v))) return;
+    onChange();
+  };
+  useFieldActions(change, props.value);
+  const list = useOwnedPopup(disabled);
+  return (
+    <AntProvider tokens={tokens} ownerRef={list.anchor}>
+      <FormField {...field} check={check} htmlFor={fieldId}>
+        <ControlSkeleton loading={loading} size={look.size}>
+          <WithPopupTheme>
+            {(popup) => (
+              <AntAutoComplete
+                id={fieldId}
+                style={{ width: '100%' }}
+                // Free text: an option fills in its value as text. Each keeps a React key of its own (lib/data Option), so
+                // options with one text (1 and '1', or a repeat) draw apart.
+                options={toOptions(rawOptions, 'AutoComplete').map((o) => ({
+                  key: o.key,
+                  label: o.label,
+                  value: str(o.data),
+                  disabled: o.disabled,
+                }))}
+                value={value}
+                placeholder={placeholder || undefined}
+                filterOption={
+                  filterOption
+                    ? (input, option) =>
+                        str(option?.label ?? option?.value)
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                    : false
+                }
+                allowClear={allowClear}
+                disabled={disabled}
+                notFoundContent={loading ? <Spin size="small" /> : undefined}
+                variant={look.variant}
+                size={look.size}
+                status={check.error ? 'error' : undefined}
+                classNames={{ popup: { root: popup.className } }}
+                styles={{ popup: { root: popup.style } }}
+                open={list.open}
+                onOpenChange={list.onOpenChange}
+                onChange={(v) => list.available() && change(v)}
+                onSelect={() => list.available() && onSelect()}
+                onSearch={() => onSearch()}
+                onBlur={() => check.touch()}
+              />
+            )}
+          </WithPopupTheme>
+        </ControlSkeleton>
+      </FormField>
+    </AntProvider>
+  );
+};
+
+type TreeNode = { title: string; value: string; key: string; disabled?: boolean; children?: TreeNode[] };
+// Ant's treeData: [{ title, value, disabled, children }]; also { label } for title and { key } for value. A node marked
+// disabled cannot be picked (the mark was dropped, QA AD-36).
+// Bounded by lib/tree (depth, size, cycles), as everything built from it is: TreeSelect, Cascader, Navigation's Tree.
+export const toTree = (raw: unknown): TreeNode[] =>
+  boundedTree<TreeNode>(raw, (o, _i, kids) => {
+    if (typeof o === 'string') return o ? { title: o, value: o, key: o } : null;
+    if (!o || typeof o !== 'object') return null;
+    const r = o as Row;
+    const value = str(r.value ?? r.key ?? r.title ?? r.label);
+    if (value === '') return null;
+    const children = kids();
+    return {
+      title: str(r.title ?? r.label ?? value),
+      value,
+      key: value,
+      ...(r.disabled ? { disabled: true } : {}),
+      ...(children.length ? { children } : {}),
+    };
+  });
+
+// Every value a tree offers, at any depth.
+const treeValues = (nodes: TreeNode[], into = new Set<string>()): Set<string> => {
+  nodes.forEach((n) => {
+    into.add(n.value);
+    if (n.children) treeValues(n.children, into);
+  });
+  return into;
+};
+
+// Ant's TreeSelect: treeData, value (an array when multiple or treeCheckable), placeholder, showSearch,
+// treeDefaultExpandAll, allowClear; event onChange.
+export const TreeSelect = (props: Record<string, unknown>) => {
+  const field = useFieldProps({ label: 'Team' });
+  const [treeData] = ToolJet.useStateArray({
+    name: 'treeData',
+    label: 'Tree data',
+    description: '[{ title, value, children: [...] }]',
+    initialValue: [
+      {
+        title: 'Engineering',
+        value: 'engineering',
+        children: [
+          { title: 'Frontend', value: 'frontend' },
+          { title: 'Backend', value: 'backend' },
+          { title: 'Platform', value: 'platform' },
+        ],
+      },
+      {
+        title: 'Operations',
+        value: 'operations',
+        children: [
+          { title: 'Finance', value: 'finance' },
+          { title: 'People', value: 'people' },
+        ],
+      },
+    ],
+  });
+  const [value, setValue] = ToolJet.useStateString({
+    name: 'value',
+    label: 'Value',
+    description: 'A value, or an array of values when multiple.',
+    initialValue: '',
+  });
+  const [multiple] = ToolJet.useStateBoolean({ name: 'multiple', label: 'Multiple', initialValue: false });
+  const [treeCheckable] = ToolJet.useStateBoolean({
+    name: 'treeCheckable',
+    label: 'Tree checkable',
+    initialValue: false,
+  });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Pick a team',
+  });
+  const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: true });
+  const [treeDefaultExpandAll] = ToolJet.useStateBoolean({
+    name: 'treeDefaultExpandAll',
+    label: 'Expand all',
+    initialValue: false,
+  });
+  const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: true });
+  const look = useControlLook();
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const { disabled, loading } = ToolJet.useControlState();
+  const fieldId = ToolJet.useFieldId();
+  const many = multiple || treeCheckable;
+  const current: unknown = value as unknown;
+  const values = Array.isArray(current)
+    ? current.map(str)
+    : current === '' || current === undefined || current === null
+      ? []
+      : [str(current)];
+  const check = ToolJet.useValidation({ kind: 'choice', value: values.join(','), present: values.length > 0 });
+  const tokens = useTokenStyles();
+  ToolJet.useComponentSettings({
+    role: 'treeselect',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's TreeSelect: label, treeData [{title, value, children}], value (an array when multiple or treeCheckable), placeholder, showSearch, treeDefaultExpandAll; onChange.",
+    roleProps: { description: 'extra', options: 'treeData', data: 'treeData' },
+    roleEvents: { onSelect: 'onChange' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  const change = (v: unknown) => {
+    const arr = Array.isArray(v) ? v.map(str) : v === undefined || v === null || v === '' ? [] : [str(v)];
+    if (valueSetter.set(many ? arr : (arr[0] ?? ''))) onChange();
+  };
+  // The value takes the shape Multiple asks for: multiple to single kept the whole array while one item showed, single to
+  // multiple kept text. It holds only values the tree offers, and a value it dropped comes back when the tree offers it
+  // (lib/offeredValue, QA AD-57). Not while the tree is empty or loading (data a query has not fetched yet), so a default
+  // waits for it. Fires no event.
+  const tree = toTree(treeData);
+  const offered = treeValues(tree);
+  const prune = tree.length > 0 && !loading;
+  useOfferedValue<unknown>(
+    value,
+    (next) => setValue(next as never),
+    (v) => {
+      const all = Array.isArray(v) ? v.map(str) : v === '' || v === undefined || v === null ? [] : [str(v)];
+      const kept = prune ? all.filter((x) => offered.has(x)) : all;
+      return many ? kept : (kept[0] ?? '');
+    },
+    `${prune}|${many}|${[...offered].join('\u0000')}`
+  );
+  // A cleared Form empties a multiple TreeSelect to no values ([]), not to the '' the host clears text values to.
+  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(
+    () => many && setValue([] as unknown as string)
+  );
+  useFieldActions(change, props.value);
+  const list = useOwnedPopup(disabled, (open) => !open && check.touch());
+  // A value no node offers shows the placeholder, as in the Select: Ant drew it as bare text (QA AD-35).
+  const shown = many ? values.filter((v) => offered.has(v)) : offered.has(values[0] ?? '') ? values[0] : undefined;
+  return (
+    <AntProvider tokens={tokens} ownerRef={list.anchor}>
+      <FormField {...field} check={check} htmlFor={fieldId}>
+        <WithPopupTheme>
+          {(popup) => (
+            <AntTreeSelect
+              id={fieldId}
+              style={{ width: '100%' }}
+              treeData={tree}
+              value={shown}
+              multiple={multiple}
+              treeCheckable={treeCheckable}
+              placeholder={placeholder || undefined}
+              showSearch={showSearch}
+              treeNodeFilterProp="title"
+              treeDefaultExpandAll={treeDefaultExpandAll}
+              allowClear={allowClear}
+              disabled={disabled}
+              loading={loading}
+              notFoundContent={loading ? <Spin size="small" /> : undefined}
+              variant={look.variant}
+              size={look.size}
+              status={check.error ? 'error' : undefined}
+              classNames={{ popup: { root: popup.className } }}
+              styles={{ popup: { root: popup.style } }}
+              open={list.open}
+              onOpenChange={list.onOpenChange}
+              onChange={(v) => list.available() && change(v)}
+            />
+          )}
+        </WithPopupTheme>
+      </FormField>
+    </AntProvider>
+  );
+};
+
+// Ant's Cascader: options [{ label, value, children }], value (the path, an array), placeholder, expandTrigger,
+// changeOnSelect, showSearch; event onChange.
+export const Cascader = (props: Record<string, unknown>) => {
+  const field = useFieldProps({ label: 'Location' });
+  const [rawOptions] = ToolJet.useStateArray({
+    name: 'options',
+    label: 'Options',
+    description: '[{ label, value, children: [...] }]',
+    initialValue: [
+      {
+        label: 'Europe',
+        value: 'europe',
+        children: [
+          {
+            label: 'Germany',
+            value: 'germany',
+            children: [
+              { label: 'Berlin', value: 'berlin' },
+              { label: 'Munich', value: 'munich' },
+            ],
+          },
+          {
+            label: 'Portugal',
+            value: 'portugal',
+            children: [
+              { label: 'Lisbon', value: 'lisbon' },
+              { label: 'Porto', value: 'porto' },
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Asia',
+        value: 'asia',
+        children: [
+          {
+            label: 'Japan',
+            value: 'japan',
+            children: [
+              { label: 'Osaka', value: 'osaka' },
+              { label: 'Tokyo', value: 'tokyo' },
+            ],
+          },
+          { label: 'Singapore', value: 'singapore' },
+        ],
+      },
+    ],
+  });
+  const [value, setValue] = ToolJet.useStateArray({
+    name: 'value',
+    label: 'Value',
+    description: "The path: ['asia', 'japan']",
+    initialValue: [],
+  });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Pick a city',
+  });
+  const [expandTrigger] = ToolJet.useStateEnumeration({
+    name: 'expandTrigger',
+    label: 'Expand trigger',
+    enumDefinition: ['click', 'hover'],
+    initialValue: 'click',
+  });
+  const [changeOnSelect] = ToolJet.useStateBoolean({
+    name: 'changeOnSelect',
+    label: 'Change on select',
+    description: 'Any level can be picked, not only leaves.',
+    initialValue: false,
+  });
+  const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: false });
+  const look = useControlLook();
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const { disabled, loading } = ToolJet.useControlState();
+  const fieldId = ToolJet.useFieldId();
+  const path = toArray(value).map(str);
+  const check = ToolJet.useValidation({ kind: 'choice', value: path.join('/'), present: path.length > 0 });
+  const tokens = useTokenStyles();
+  ToolJet.useComponentSettings({
+    role: 'cascader',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's Cascader: label, options [{label, value, children}], value (the path array), changeOnSelect, expandTrigger; onChange.",
+    roleProps: { description: 'extra' },
+    roleEvents: { onSelect: 'onChange' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
+  type Cascade = { label: string; value: string; disabled?: boolean; children?: Cascade[] };
+  const toCascade = (raw: unknown): Cascade[] =>
+    toTree(raw).map(function map(n): Cascade {
+      return {
+        label: n.title,
+        value: n.value,
+        ...(n.disabled ? { disabled: true } : {}),
+        ...(n.children ? { children: n.children.map(map) } : {}),
+      };
+    });
+  const cascade = toCascade(rawOptions);
+  // A path the options do not hold, step by step, shows the placeholder, as in the Select: Ant drew it as bare text
+  // (nope / x, QA AD-35).
+  const holds = (level: Cascade[], steps: string[]): boolean => {
+    if (!steps.length) return true;
+    const hit = level.find((o) => o.value === steps[0]);
+    return !!hit && holds(hit.children ?? [], steps.slice(1));
+  };
+  const known = path.length > 0 && holds(cascade, path);
+  // A path the options do not hold is dropped, as the Select drops a value no option offers, and comes back when they
+  // hold it (lib/offeredValue, QA AD-57). Not while the options are empty or loading, so a default waits for them.
+  // Fires no event.
+  const prune = cascade.length > 0 && !loading;
+  useOfferedValue<string[]>(
+    path,
+    (next) => setValue(next as never),
+    (p) => (prune && p.length > 0 && !holds(cascade, p) ? [] : p),
+    `${prune}|${JSON.stringify(cascade)}`
+  );
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  const change = (v: unknown) => {
+    if (!valueSetter.set(toArray(v).map(str))) return;
+    onChange();
+  };
+  useFieldActions(change, props.value);
+  const list = useOwnedPopup(disabled, (open) => !open && check.touch());
+  return (
+    <AntProvider tokens={tokens} ownerRef={list.anchor}>
+      <FormField {...field} check={check} htmlFor={fieldId}>
+        <WithPopupTheme>
+          {(popup) => (
+            <AntCascader
+              id={fieldId}
+              style={{ width: '100%' }}
+              options={cascade as never}
+              value={known ? (path as never) : undefined}
+              placeholder={placeholder || undefined}
+              expandTrigger={expandTrigger as 'click'}
+              changeOnSelect={changeOnSelect}
+              showSearch={showSearch}
+              disabled={disabled}
+              loading={loading}
+              notFoundContent={loading ? <Spin size="small" /> : undefined}
+              variant={look.variant}
+              size={look.size}
+              status={check.error ? 'error' : undefined}
+              classNames={{ popup: { root: popup.className } }}
+              styles={{ popup: { root: popup.style } }}
+              open={list.open}
+              onOpenChange={list.onOpenChange}
+              onChange={(v) => list.available() && change(v)}
+            />
+          )}
+        </WithPopupTheme>
+      </FormField>
+    </AntProvider>
+  );
+};
+
+// Ant's ColorPicker: value (hex, or rgb text), format (hex, rgb), showText, allowClear, disabledAlpha, presets
+// [{ label, colors }]; events onChange, onChangeComplete.
+export const ColorPicker = (props: Record<string, unknown>) => {
+  const field = useFieldProps({ label: 'Color' });
+  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
+  const [format] = ToolJet.useStateEnumeration({
+    name: 'format',
+    label: 'Format',
+    enumDefinition: ['hex', 'rgb'],
+    initialValue: 'hex',
+  });
+  const [showText] = ToolJet.useStateBoolean({ name: 'showText', label: 'Show text', initialValue: true });
+  const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
+  const [disabledAlpha] = ToolJet.useStateBoolean({
+    name: 'disabledAlpha',
+    label: 'Disable alpha',
+    initialValue: true,
+  });
+  const [presets] = ToolJet.useStateArray({
+    name: 'presets',
+    label: 'Presets',
+    description: "[{ label: 'Brand', colors: ['#1677ff'] }]",
+    initialValue: [],
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'middle', 'large'],
+    initialValue: 'middle',
+  });
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const onChangeComplete = ToolJet.useEventCallback({ name: 'onChangeComplete' });
+  const { disabled, loading } = ToolJet.useControlState();
+  const check = ToolJet.useValidation({ kind: 'text', value });
+  const tokens = useTokenStyles();
+  ToolJet.useComponentSettings({
+    role: 'colorpicker',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's ColorPicker: label, value (hex, or rgb() with format rgb), showText, presets [{label, colors}], allowClear; onChange while picking, onChangeComplete when done.",
+    roleProps: { description: 'extra' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  // A colour the picker can read (hex, rgb(), hsl(), hsb()): anything else showed as #000000 while value kept the text.
+  // A value it cannot read is not kept; setFieldValue refuses it.
+  const readable = (v: unknown) => str(v).trim() === '' || COLOR_TEXT.test(str(v).trim());
+  useFieldActions((v) => {
+    if (!readable(v)) return;
+    if (valueSetter.set(str(v))) onChange();
+  }, props.value);
+  const valueReadable = readable(value);
+  useEffect(() => {
+    if (!valueReadable) setValue('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [valueReadable]);
+  const presetList = toArray(presets)
+    .map((p) =>
+      p && typeof p === 'object' ? { label: str((p as Row).label), colors: toArray((p as Row).colors).map(str) } : null
+    )
+    .filter((p): p is { label: string; colors: string[] } => !!p && p.colors.length > 0);
+  const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
+  return (
+    <AntProvider tokens={tokens} ownerRef={panel.anchor}>
+      <FormField {...field} check={check}>
+        <SpinOver loading={loading} as="inline">
+          <WithPopupTheme>
+            {(popup) => (
+              <AntColorPicker
+                value={value || undefined}
+                format={format as 'hex'}
+                showText={showText}
+                allowClear={allowClear}
+                disabledAlpha={disabledAlpha}
+                presets={presetList.length ? presetList : undefined}
+                size={size as 'middle'}
+                disabled={disabled}
+                rootClassName={popup.className}
+                // Ant gives styles.popup to the popover's own style prop, which its root does not draw; the panel's body
+                // carries the tokens to everything inside it.
+                styles={{ popup: popup.style, popupOverlayInner: popup.style } as never}
+                open={panel.open}
+                onOpenChange={panel.onOpenChange}
+                // Ant's swatch is a plain div, so Tab skipped the picker (a ToolJet Color picker takes it): it takes
+                // Tab, Enter or Space opens the panel, and Tab closes it on the way out. A click focuses it too (the
+                // editor's canvas keeps a press from doing so), or Tab went on with the panel left open.
+                {...({
+                  tabIndex: disabled ? -1 : 0,
+                  role: 'button',
+                  'aria-label': field.label || 'Color',
+                  'aria-haspopup': 'dialog',
+                  'aria-expanded': !!panel.open,
+                  onClick: (e: React.MouseEvent<HTMLElement>) => e.currentTarget.focus(),
+                  onKeyDown: (e: React.KeyboardEvent) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      panel.onOpenChange(!panel.open);
+                    } else if (e.key === 'Tab' && panel.open) panel.onOpenChange(false);
+                  },
+                } as object)}
+                onChange={(c, css) => {
+                  if (!panel.available()) return;
+                  setValue(c.cleared ? '' : format === 'rgb' ? css : c.toHexString());
+                  onChange();
+                }}
+                onChangeComplete={() => panel.available() && onChangeComplete()}
+                onClear={() => {
+                  setValue('');
+                  check.touch();
+                  onChange();
+                }}
+              />
+            )}
+          </WithPopupTheme>
+        </SpinOver>
+      </FormField>
+    </AntProvider>
+  );
+};
+
+// Ant's Transfer: dataSource [{ key, title }], targetKeys (the chosen keys), titles [left, right], showSearch,
+// oneWay; event onChange.
+export const Transfer = (props: Record<string, unknown>) => {
+  const [dataSource] = ToolJet.useStateArray({
+    name: 'dataSource',
+    label: 'Data source',
+    description: '[{ key, title }]',
+    initialValue: [
+      { key: 'orders', title: 'Orders' },
+      { key: 'invoices', title: 'Invoices' },
+      { key: 'customers', title: 'Customers' },
+      { key: 'products', title: 'Products' },
+      { key: 'shipments', title: 'Shipments' },
+      { key: 'returns', title: 'Returns' },
+    ],
+  });
+  const [targetKeys, setTargetKeys] = ToolJet.useStateArray({
+    name: 'targetKeys',
+    label: 'Target keys',
+    initialValue: [],
+  });
+  const publishValue = useFormValue(targetKeys, 'array');
+  const [titles] = ToolJet.useStateArray({ name: 'titles', label: 'Titles', initialValue: ['Available', 'Selected'] });
+  const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: true });
+  const [oneWay] = ToolJet.useStateBoolean({ name: 'oneWay', label: 'One way', initialValue: false });
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const { disabled, loading } = ToolJet.useControlState();
+  const chosen = toArray(targetKeys);
+  // Ant's Transfer holds keys as text.
+  const keys = chosen.map(str);
+  const check = ToolJet.useValidation({ kind: 'choice', value: keys.join(','), present: keys.length > 0 });
+  const tokens = useTokenStyles();
+  ToolJet.useComponentSettings({
+    role: 'transfer',
+    fit: false,
+    loading: 'own',
+    usage:
+      "Ant's Transfer: two lists; dataSource [{key, title, disabled?}], targetKeys (the chosen keys, exposed), titles, showSearch, oneWay; onChange.",
+    roleProps: { data: 'dataSource', value: 'targetKeys' },
+    roleActions: { setValue: 'setFieldValue' },
+    defaultWidth: 24,
+    defaultHeight: 30,
+  });
+  // Each item's key as the data gives it (1 stays a number), by its text. An item marked disabled cannot be ticked or
+  // moved: the mark was dropped, and it moved like any other (QA AD-33).
+  const given = new Map<string, unknown>();
+  const items = toArray(dataSource)
+    .map((o) => {
+      if (typeof o === 'string') {
+        given.set(o, o);
+        return { key: o, title: o };
+      }
+      const r = (o ?? {}) as Row;
+      const key = str(r.key ?? r.value ?? r.id);
+      if (!key) return null;
+      given.set(key, r.key ?? r.value ?? r.id);
+      return {
+        key,
+        title: str(r.title ?? r.label ?? key),
+        description: str(r.description) || undefined,
+        ...(r.disabled ? { disabled: true } : {}),
+      };
+    })
+    .filter((x): x is { key: string; title: string; description?: string; disabled?: boolean } => !!x);
+  // Keys as the data has them, else as they were given: Ant's text keys were exposed as they were, so the number keys 1
+  // and 2 came back as '2' and '1' after a move (QA AD-34).
+  const asGiven = (k: unknown) => (given.has(str(k)) ? given.get(str(k)) : k);
+  // targetKeys and the Form's value published together before onChange; the keys it already has fire nothing.
+  const keysSetter = useValueSetter<unknown[]>(chosen, (next) => {
+    setTargetKeys(next);
+    publishValue(next);
+  });
+  const change = (next: unknown[]) => {
+    if (!keysSetter.set(next)) return;
+    check.touch();
+    onChange();
+  };
+  useFieldActions((v) => change(toArray(v).map(asGiven)), props.targetKeys);
+  // Ant gives the moved keys first: the chosen keys are kept in the data's order, then any no item has, as they were.
+  const move = (next: React.Key[]) => {
+    const picked = new Set(next.map(str));
+    const known = items.filter((i) => picked.has(i.key)).map((i) => asGiven(i.key));
+    const unknown = chosen.filter((k) => picked.has(str(k)) && !given.has(str(k)));
+    change([...known, ...unknown]);
+  };
+  // A Form's clearForm moves every item back, and starts Ant's Transfer again: its ticked items and search text are its
+  // own state, and the ticks stayed on the items that moved back.
+  const [epoch, setEpoch] = useState(0);
+  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => {
+    keysSetter.set([]);
+    setEpoch((n) => n + 1);
+  });
+  return (
+    <AntProvider tokens={tokens} fill className="tj-ant-transfer">
+      <SpinOver loading={loading} as="fill">
+        <AntTransfer
+          key={epoch}
+          dataSource={items}
+          targetKeys={keys}
+          status={check.error ? 'error' : undefined}
+          titles={toArray(titles).map(str).slice(0, 2)}
+          showSearch={showSearch}
+          // Ant's own search matches case-sensitively ('rev' missed 'Revenue').
+          filterOption={(input, item) => str(item.title).toLowerCase().includes(str(input).toLowerCase())}
+          oneWay={oneWay}
+          disabled={disabled}
+          render={(item) => item.title}
+          onChange={(next) => move(next)}
+        />
+        {check.error ? (
+          <div className="tj-ant-transfer-error" role="alert">
+            {check.error}
+          </div>
+        ) : null}
+      </SpinOver>
+    </AntProvider>
+  );
+};

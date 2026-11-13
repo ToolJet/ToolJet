@@ -73,4 +73,5 @@ module.exports = defineConfig([{
     "@typescript-eslint/no-wrapper-object-types": "error", 
     "@typescript-eslint/no-empty-object-type": "error",
   },
-}, globalIgnores(["**/dist", "**/migrations"])]);
+  // ee/packages are standalone packages that tsconfig.json excludes, so the type-aware parser cannot read them.
+}, globalIgnores(["**/dist", "**/migrations", "ee/packages/**"])]);

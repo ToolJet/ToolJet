@@ -10,6 +10,7 @@ import { staticDataSources } from '@/AppBuilder/QueryManager/constants';
 import { getDateTimeFormat } from './appUtils';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
 import { materializeFileHandleRefs } from '@/AppBuilder/_utils/fileHandleRegistry';
 
@@ -101,7 +102,7 @@ export function resolveCode(code, state, customObjects = {}, withError = false, 
     error = `Cannot resolve function call ${code}`;
   } else {
     try {
-      const evalFunction = Function(
+      const evalFunction = (strictMode.isStrict?.() ? strictMode.compileBinding : Function)(
         [
           'variables',
           'components',
@@ -1076,6 +1077,7 @@ export const validateName = (
       ':workspaceId',
       'confirm-invite',
       'oauth2',
+      'cli',
       'applications',
       'integrations',
       'login',
@@ -1479,6 +1481,7 @@ export function utilityFuncForNameSeed(componentDef) {
   const component = componentDef.component.component;
   switch (component) {
     case 'LibraryComponent':
+    case 'PackComponent':
       return componentDef.component.definition?.properties?.componentName?.value ?? componentDef.component.component;
     default:
       return componentDef.component.component;

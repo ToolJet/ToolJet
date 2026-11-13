@@ -202,6 +202,7 @@ function constructWorkspaceSettingsLinks(extraLinks) {
       conditions: ['admin', 'wsLoginEnabled'],
     },
     ...(extraLinks ? extraLinks : []),
+    { id: 'app-security', name: 'App security', route: 'app-security', conditions: ['admin'] },
   ];
   return commonLinks;
 }

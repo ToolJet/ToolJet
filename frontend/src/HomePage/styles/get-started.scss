@@ -106,8 +106,9 @@
   &-outer {
     position: absolute;
     left: 0;
-    top: 0;
-    height: 1.25rem;
+    // Level with the first line of the editor under it (.cm-content's 4px top padding), not 4px above it.
+    top: 4px;
+    height: 20px;
     width: calc(100% - 32px);
     overflow: hidden;
     pointer-events: none;
@@ -125,6 +126,9 @@
     position: relative;
     display: flex;
     align-items: center;
+    // Exactly one 20px row each: PromptInput steps the list by 20px per prompt.
+    height: 20px;
+    flex-shrink: 0;
     opacity: 0.3;
     transition: opacity 0.4s ease;
     font-size: var(--font-size-large);
@@ -133,6 +137,13 @@
     &.active {
       opacity: 1;
     }
+  }
+
+  &-text {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   &-caret {

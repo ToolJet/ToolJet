@@ -1,0 +1,30 @@
+/* Upload: the dropzone (or button) and its list, then Clear all under them, in the space the box gives. */
+.tj-ant-upload .tj-ant-upload-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.tj-ant-upload.tj-ant--fill .tj-ant-upload-body {
+  height: 100%;
+}
+.tj-ant-upload .tj-ant-upload-body > .ant-upload-wrapper {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+.tj-ant-upload .tj-ant-upload-clear {
+  flex: none;
+  align-self: flex-end;
+  padding-inline: 0;
+}
+
+/* Range Picker on Ant's xs screens (the popup carries tj-ant-range--single, MoreInputs.tsx): one panel, not two side by
+   side (576px) that ran off a phone screen (QA item 22). Ant hides the first panel's next arrows (inline visibility,
+   the second panel had them); they page it now. */
+.tj-ant-range--single .ant-picker-panels > .ant-picker-panel + .ant-picker-panel {
+  display: none;
+}
+.tj-ant-range--single .ant-picker-panels > .ant-picker-panel:first-child .ant-picker-header-next-btn,
+.tj-ant-range--single .ant-picker-panels > .ant-picker-panel:first-child .ant-picker-header-super-next-btn {
+  visibility: visible !important;
+}

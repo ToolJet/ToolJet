@@ -14,5 +14,8 @@
   ],
   "ts-node": {
     "transpileOnly": true
-  }
+  },
+  "exclude": [
+    "src/app-template"
+  ]
 }

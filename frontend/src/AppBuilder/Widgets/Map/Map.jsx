@@ -89,9 +89,15 @@ export default function Map({
     libraries: MAP_LIBRARIES,
   });
 
+  // In ToolJet UI 2.0 apps (styles.mapLook 'shadcn') the map sits in the pack's frame: theme radius, hairline border
+  // and card surface from the pack's tokens (styles.scss). The map itself behaves the same in both looks.
+  const shadcnLook = styles?.mapLook === 'shadcn';
+  const apiKey = window.public_config?.GOOGLE_MAPS_API_KEY;
+  const hasApiKey = typeof apiKey === 'string' && apiKey.trim() !== '';
+
   const containerStyle = {
     width: '100%',
-    height,
+    height: shadcnLook ? '100%' : height,
   };
 
   useEffect(() => {
@@ -242,64 +248,87 @@ export default function Map({
         event.stopPropagation();
         onComponentClick(id);
       }}
-      className="map-widget"
+      className={`map-widget${shadcnLook ? ' tj-shad-tokens tj-map-look-shadcn' : ''}`}
       data-cy={dataCy}
     >
-      <div
-        className="map-center"
-        style={{
-          right: width * 0.5 - 18,
-          top: height * 0.5 - 50,
-        }}
-      >
-        <img className="mx-2" src="assets/images/icons/marker.svg" width="24" height="64" />
-      </div>
-      {isLoaded ? (
-        <GoogleMap
-          center={mapCenter}
-          mapContainerStyle={containerStyle}
-          zoom={12}
-          options={{
-            styles: darkMode === true ? darkModeStyles : '',
-            streetViewControl: false,
-            mapTypeControl: false,
-            draggable: true,
-          }}
-          onLoad={onLoad}
-          onClick={handleMapClick}
-          onIdle={handleIdle}
-        >
-          {canSearch && (
-            <Autocomplete onPlaceChanged={onPlaceChanged} onLoad={onAutocompleteLoad}>
-              <input
-                type="text"
-                placeholder={t('globals.search', 'Search')}
-                disabled={parsedDisabledState}
-                className={`place-search-input ${darkMode && 'text-light bg-dark dark-theme-placeholder'}`}
-              />
-            </Autocomplete>
-          )}
-          {renderableMarkers.map(({ marker, position }, index) => (
-            <Marker key={index} position={position} label={marker?.label} onClick={() => handleMarkerClick(marker)} />
-          ))}
-          {polygonPoints.length > 1 && (
-            <Polygon
-              path={polygonPoints}
-              onClick={() => {
-                fireEvent('onPolygonClick');
-              }}
+      {hasApiKey ? null : (
+        // Without a key Google draws an error over a grey box; say what is missing instead.
+        <div className="map-widget-no-key" role="note">
+          <span className="map-widget-no-key-title">
+            {t('widget.map.noApiKey', 'Add a Google Maps API key to show this map')}
+          </span>
+          <span className="map-widget-no-key-hint">
+            {t(
+              'widget.map.noApiKeyHint',
+              'Set GOOGLE_MAPS_API_KEY in the server environment, or use the ToolJet UI 2.0 Map, which needs no key.'
+            )}
+          </span>
+        </div>
+      )}
+      {hasApiKey && (
+        <>
+          <div
+            className="map-center"
+            style={{
+              right: width * 0.5 - 18,
+              top: height * 0.5 - 50,
+            }}
+          >
+            <img className="mx-2" src="assets/images/icons/marker.svg" width="24" height="64" />
+          </div>
+          {isLoaded ? (
+            <GoogleMap
+              center={mapCenter}
+              mapContainerStyle={containerStyle}
+              zoom={12}
               options={{
-                strokeColor: '#4d72fa',
-                strokeOpacity: 1,
-                strokeWeight: 2,
-                fillColor: '#4d72fa',
-                fillOpacity: 0.5,
+                styles: darkMode === true ? darkModeStyles : '',
+                streetViewControl: false,
+                mapTypeControl: false,
+                draggable: true,
               }}
-            />
+              onLoad={onLoad}
+              onClick={handleMapClick}
+              onIdle={handleIdle}
+            >
+              {canSearch && (
+                <Autocomplete onPlaceChanged={onPlaceChanged} onLoad={onAutocompleteLoad}>
+                  <input
+                    type="text"
+                    placeholder={t('globals.search', 'Search')}
+                    disabled={parsedDisabledState}
+                    className={`place-search-input ${darkMode && 'text-light bg-dark dark-theme-placeholder'}`}
+                  />
+                </Autocomplete>
+              )}
+              {renderableMarkers.map(({ marker, position }, index) => (
+                <Marker
+                  key={index}
+                  position={position}
+                  label={marker?.label}
+                  onClick={() => handleMarkerClick(marker)}
+                />
+              ))}
+              {polygonPoints.length > 1 && (
+                <Polygon
+                  path={polygonPoints}
+                  onClick={() => {
+                    fireEvent('onPolygonClick');
+                  }}
+                  options={{
+                    strokeColor: '#4d72fa',
+                    strokeOpacity: 1,
+                    strokeWeight: 2,
+                    fillColor: '#4d72fa',
+                    fillOpacity: 0.5,
+                  }}
+                />
+              )}
+            </GoogleMap>
+          ) : (
+            <div className="map-loading-placeholder">{t('globals.loading', 'Loading...')}</div>
           )}
-        </GoogleMap>
-      ) : (
-        <div className="map-loading-placeholder">{t('globals.loading', 'Loading...')}</div>
+        </>
       )}
     </div>
   );

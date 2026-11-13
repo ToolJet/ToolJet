@@ -7,6 +7,7 @@ import HeaderActions from './HeaderActions';
 import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
 import RightTopHeaderButtons, { PreviewAndShareIcons } from './RightTopHeaderButtons/RightTopHeaderButtons';
+import CompareVersionsButton from './CompareVersionsButton';
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { BranchDropdown } from './BranchDropdown';
@@ -14,9 +15,16 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import './styles/style.scss';
 
 import SaveIndicator from './SaveIndicator';
+import {
+  useCodeMode,
+  LocalChangesNote,
+  LocalBehindNote,
+  SecurityStatusChip,
+} from '@/AppBuilder/_helpers/codeModeHooks';
 
 export const EditorHeader = ({ darkMode, appType }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
+  const codeMode = useCodeMode();
   const {
     isSaving,
     saveError,
@@ -107,7 +115,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
                       {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
                       <EditAppName />
                     </div>
-                    {!isEditorReadOnly && (
+                    {!isEditorReadOnly && !codeMode && (
                       <div>
                         <span
                           className={cx('autosave-indicator tj-text-xsm', {
@@ -138,9 +146,17 @@ export const EditorHeader = ({ darkMode, appType }) => {
                 >
                   {!isModuleEditor && <PreviewAndShareIcons />}
                   {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}
+                  {!isModuleEditor && <CompareVersionsButton darkMode={darkMode} />}
                   <VersionManagerErrorBoundary>
                     <VersionManagerDropdown darkMode={darkMode} />
                   </VersionManagerErrorBoundary>
+                  {!isModuleEditor && codeMode && (
+                    <div className="tj-code-status-slot" data-cy="code-status-slot">
+                      <LocalChangesNote />
+                      <LocalBehindNote />
+                      <SecurityStatusChip appId={appId} versionId={selectedVersion?.id} />
+                    </div>
+                  )}
                   <RightTopHeaderButtons isModuleEditor={isModuleEditor} isAppUnsyncedToGit={showSyncButton} />
                 </div>
               </div>

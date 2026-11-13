@@ -92,6 +92,10 @@ async function main() {
     throw new Error(`vendor self-check FAILED: ${failed.map(([k]) => k).join(', ')}`);
   }
   console.log(`custom-component vendor bundles written to ${outDir} (react ${react.version}) — self-check passed`);
+
+  // The enterprise edition's frame runtime is generated the same way, when that module is here.
+  const eeRuntime = path.join(frontendDir, 'ee', 'modules', 'CodeMode', 'frameRuntime', 'build.cjs');
+  if (fs.existsSync(eeRuntime)) await require(eeRuntime)();
 }
 
 main().catch((err) => {

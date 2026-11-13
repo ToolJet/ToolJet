@@ -26,6 +26,45 @@ import { MODULES } from '@modules/app/constants/modules';
 import { AppsRepository } from '../repository';
 import * as _ from 'lodash';
 
+// Components whose list properties are sent whole by the editor; an incoming list replaces the stored one.
+const WHOLE_ARRAY_TYPES = [
+  'DropdownV2',
+  'MultiselectV2',
+  'PopoverMenu',
+  'ModuleContainer',
+  'Tabs',
+  'Steps',
+  'RadioButtonV2',
+  'Tags',
+  'TagsInput',
+  'Navigation',
+  'TreeSelect',
+  'Cascader',
+  'ButtonGroupV2',
+];
+
+// Pack components (built-in packs and custom component libraries) store every property as a plain value.
+const PACK_TYPES = ['PackComponent', 'LibraryComponent'];
+
+/** One definition column (properties, styles, ...) of a stored component with an update's values merged in: a deep
+ *  merge, with arrays merged by position except where a component type sends them whole. */
+export function mergeComponentDefinitionColumn(type: string, stored: unknown, incoming: unknown) {
+  return _.mergeWith(stored, incoming, (objValue, srcValue) => {
+    if ((type === 'Table' || type === 'Form' || type === 'KeyValuePair') && _.isArray(objValue)) {
+      // Arrays are sent whole, so replace: merging keeps stored tail entries and resurrects deletions
+      return srcValue;
+    } else if (type === 'Form' && _.isObject(srcValue)) {
+      // Handle Form component with object srcValue like JSONData & JSONSchema
+      return srcValue;
+    } else if (WHOLE_ARRAY_TYPES.includes(type) && _.isArray(objValue)) {
+      return _.isArray(srcValue) ? srcValue : Object.values(srcValue);
+    } else if (PACK_TYPES.includes(type) && _.isArray(objValue) && _.isArray(srcValue)) {
+      // A pack's tabs, steps or rows come whole: merged by position, a removed item came back
+      return srcValue;
+    }
+  });
+}
+
 @Injectable()
 export class ComponentsService implements IComponentsService {
   constructor(
@@ -357,13 +396,15 @@ export class ComponentsService implements IComponentsService {
         height: number;
         widthPx?: number;
         fillWidth?: boolean;
+        grow?: number;
+        minWidthPx?: number;
         updatedAt: Date | null;
       }
     > = {};
 
     layoutData.forEach((layout) => {
       if (layout && layout.type) {
-        const { type, top, left, width, height, widthPx, fillWidth, updatedAt } = layout;
+        const { type, top, left, width, height, widthPx, fillWidth, grow, minWidthPx, updatedAt } = layout;
 
         // Note: adjustedLeftValue logic will be handled BEFORE calling this function
         // so 'left' here is already the final desired value for the output.
@@ -378,6 +419,8 @@ export class ComponentsService implements IComponentsService {
           updatedAt: updatedAt ?? null,
           ...(widthPx != null ? { widthPx } : {}),
           ...(fillWidth != null ? { fillWidth } : {}),
+          ...(grow != null ? { grow } : {}),
+          ...(minWidthPx != null ? { minWidthPx } : {}),
         };
       }
     });
@@ -761,6 +804,8 @@ export class ComponentsService implements IComponentsService {
           newLayout.height = layout.height;
           if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
           if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
+          if (layout.grow != null) newLayout.grow = layout.grow;
+          if (layout.minWidthPx != null) newLayout.minWidthPx = layout.minWidthPx;
           newLayout.component = component;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 
@@ -788,6 +833,8 @@ export class ComponentsService implements IComponentsService {
               height: layout.height,
               widthPx: layout.widthPx,
               fillWidth: layout.fillWidth,
+              grow: layout.grow,
+              minWidthPx: layout.minWidthPx,
               dimensionUnit: layout.dimensionUnit,
             }
           );
@@ -860,42 +907,10 @@ export class ComponentsService implements IComponentsService {
         const columnsUpdated = Object.keys(updatedDefinition);
 
         const newComponentsData = columnsUpdated.reduce((acc, column) => {
-          const newColumnData = _.mergeWith(
+          const newColumnData = mergeComponentDefinitionColumn(
+            componentData.type,
             componentData[column === 'others' ? 'displayPreferences' : column],
-            updatedDefinition[column],
-            (objValue, srcValue) => {
-              if (
-                (componentData.type === 'Table' ||
-                  componentData.type === 'Form' ||
-                  componentData.type === 'KeyValuePair') &&
-                _.isArray(objValue)
-              ) {
-                // Arrays are sent whole, so replace: merging keeps stored tail entries and resurrects deletions
-                return srcValue;
-              } else if (componentData.type === 'Form' && _.isObject(srcValue)) {
-                // Handle Form component with object srcValue like JSONData & JSONSchema
-                return srcValue;
-              } else if (
-                [
-                  'DropdownV2',
-                  'MultiselectV2',
-                  'PopoverMenu',
-                  'ModuleContainer',
-                  'Tabs',
-                  'Steps',
-                  'RadioButtonV2',
-                  'Tags',
-                  'TagsInput',
-                  'Navigation',
-                  'TreeSelect',
-                  'Cascader',
-                  'ButtonGroupV2',
-                ].includes(componentData.type) &&
-                _.isArray(objValue)
-              ) {
-                return _.isArray(srcValue) ? srcValue : Object.values(srcValue);
-              }
-            }
+            updatedDefinition[column]
           );
 
           if (column === 'others') {

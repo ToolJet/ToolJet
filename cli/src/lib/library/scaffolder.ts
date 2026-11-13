@@ -7,11 +7,21 @@ const Logger = require('hygen/dist/logger').default;
 export interface ScaffoldOptions {
   libraryName: string;
   correlationId: string;
+  /** Ship the source tree in the manifest (the builder's Code panel); on for code apps. */
+  includeSource?: boolean;
 }
 
+/** The project templates `library init` offers: a plain React library, or a code app on shadcn + Tailwind. */
+export const TEMPLATES = ['new', 'code-app'] as const;
+export type TemplateName = (typeof TEMPLATES)[number];
+
 // Scaffolds a new component library directory via hygen templates.
-export async function scaffoldTemplate(name: string, displayName: string): Promise<void> {
-  const hygenArgs = ['library', 'new', '--name', name, '--display_name', displayName];
+export async function scaffoldTemplate(
+  name: string,
+  displayName: string,
+  template: TemplateName = 'new'
+): Promise<void> {
+  const hygenArgs = ['library', template, '--name', name, '--display_name', displayName];
 
   const result = await runner(hygenArgs, {
     templates: path.join(__dirname, '..', '..', '_templates'),
@@ -34,10 +44,10 @@ export async function scaffoldTemplate(name: string, displayName: string): Promi
 // across every workspace this project gets deployed to — there's nothing per-workspace
 // left to store, since existence in any given workspace is checked live against the server.
 export function writeLibraryConfig(name: string, options: ScaffoldOptions): void {
-  const { libraryName, correlationId } = options;
+  const { libraryName, correlationId, includeSource } = options;
 
   const configPath = path.join(name, '.tooljet', 'config.json');
-  const config = { libraryName, correlationId };
+  const config = { libraryName, correlationId, ...(includeSource ? { includeSource: true } : {}) };
 
   fs.mkdirSync(path.join(name, '.tooljet'), { recursive: true });
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));

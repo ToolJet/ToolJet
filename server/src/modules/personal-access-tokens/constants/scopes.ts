@@ -5,8 +5,10 @@ import { FEATURE_KEY as AUTH_FEATURE } from '@modules/auth/constants';
 import { FEATURE_KEY as ORGANIZATION_CONSTANT_FEATURE } from '@modules/organization-constants/constants';
 import { FEATURE_KEY as VERSION_FEATURE } from '@modules/versions/constants';
 import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
+import { FEATURE_KEY as LIBRARY_FEATURE } from '@modules/custom-component-libraries/constants';
 import { FEATURE_KEY as APP_FEATURE } from '@modules/apps/constants';
 import { FEATURE_KEY as DATA_QUERY_FOLDER_FEATURE } from '@modules/data-query-folders/constants';
+import { FEATURE_KEY as APP_SECURITY_FEATURE } from '@modules/app-security/constants';
 
 /**
  * What a WORKSPACE personal access token may reach.
@@ -49,6 +51,12 @@ export const PAT_BUNDLE_MODULES: Record<PAT_BUNDLE, MODULES[]> = {
     MODULES.THREAD,
     MODULES.FILE,
     MODULES.ORGANIZATION_THEMES,
+    // Scan an app version and upload SARIF from CI; per-app edit permission still applies. Releasing past a failed
+    // gate is not reachable (PAT_DENIED_FEATURES).
+    MODULES.APP_SECURITY,
+    // An app's stored source: read and written with the app's own permissions. Import, publish and dev uploads act
+    // only on a library no other app uses (checked in the service, for every caller).
+    MODULES.CODE_MODE_SOURCE,
   ],
   [PAT_BUNDLE.DATA]: [
     MODULES.DATA_QUERY,
@@ -117,6 +125,10 @@ export const PAT_UNASSIGNED_MODULES: MODULES[] = [
   MODULES.FRONTEND_METRICS, // browser telemetry ingestion, not required by automation clients
   MODULES.CUSTOM_COMPONENT_LIBRARIES, // uploads code that runs inside apps; not granted pending a decision
   MODULES.ROOT, // health and version
+  // Widens what pages may reach (their Content Security Policy); an admin's decision in the browser only.
+  MODULES.CODE_PAGE_SECURITY,
+  // Scan policy and exceptions decide what may ship; an admin's decision in the browser only.
+  MODULES.APP_SECURITY_POLICY,
   MODULES.SSRF, // outbound request settings: super admin in the UI only, never a token
   // Uploads and publishes JS bundles that execute inside every app that uses them.
   MODULES.CUSTOM_COMPONENT_LIBRARIES,
@@ -244,6 +256,18 @@ const PAT_ALLOWED_FEATURES: Partial<Record<MODULES, ReadonlySet<string>>> = {
   ]),
 };
 
+/**
+ * Features a token never reaches inside a module it may otherwise use: decisions a person makes in the browser,
+ * because each one decides what may ship. A deny set rather than an allowlist, so the rest of each module stays
+ * reachable and a new feature there is not silently dropped.
+ */
+export const PAT_DENIED_FEATURES: Partial<Record<MODULES, ReadonlySet<string>>> = {
+  // "Release anyway" past a failed security gate.
+  [MODULES.APP_SECURITY]: new Set<string>([APP_SECURITY_FEATURE.OVERRIDE_GATE]),
+  // Approving a review, and releasing without one. Review reads, comments and the rest stay available.
+  [MODULES.VERSION]: new Set<string>([VERSION_FEATURE.REVIEW_APPROVE, VERSION_FEATURE.REVIEW_OVERRIDE]),
+};
+
 /** Which bundle a module belongs to, for the denial message. Undefined if unassigned. */
 export function patBundleOf(module: MODULES): PAT_BUNDLE | undefined {
   return (Object.keys(PAT_BUNDLE_MODULES) as PAT_BUNDLE[]).find((b) => PAT_BUNDLE_MODULES[b].includes(module));
@@ -253,6 +277,20 @@ export function patBundleOf(module: MODULES): PAT_BUNDLE | undefined {
  * Fails CLOSED: a route whose controller carries no @InitModule is denied rather than exempt, so a
  * new endpoint is locked down by default instead of silently escaping the allowlist.
  */
+/**
+ * The library routes a workspace token reaches, raw or exchanged: what the CLI needs (`tooljet app dev|publish` upload
+ * the app's build to its library, `tooljet library` publishes a visual library). The routes themselves hold a Code mode
+ * app's library to people who can edit that app (ee/custom-component-libraries/controller.ts), and CASL to builders.
+ * Deleting a library and its live stream stay out of tokens.
+ */
+export const PAT_LIBRARY_FEATURES: ReadonlySet<string> = new Set([
+  LIBRARY_FEATURE.CREATE_LIBRARY,
+  LIBRARY_FEATURE.FIND_OR_CREATE_LIBRARY,
+  LIBRARY_FEATURE.GET_LIBRARY,
+  LIBRARY_FEATURE.UPLOAD_DEV_BUNDLE,
+  LIBRARY_FEATURE.PUBLISH_REVISION,
+]);
+
 export function patCanAccess(module: MODULES | undefined, feature?: string): boolean {
   if (!module) return false;
   // Installed API specs are read-only datasource metadata. Keep plugin administration in its
@@ -260,7 +298,17 @@ export function patCanAccess(module: MODULES | undefined, feature?: string): boo
   if (module === MODULES.PLUGINS && feature === PLUGIN_FEATURE.GET_SPEC) {
     return PAT_ALLOWED_BUNDLES.includes(PAT_BUNDLE.DATA);
   }
+  // The workspace's installed component packs (their manifests) are read-only component metadata the MCP builds its
+  // catalogue from. The library authoring a token may do is PAT_LIBRARY_FEATURES, the same whether the token is sent
+  // itself or exchanged for a session. An app's own library is also published through code-mode-source (APPS bundle).
+  if (module === MODULES.CUSTOM_COMPONENT_LIBRARIES) {
+    return (
+      (feature === LIBRARY_FEATURE.LIST_LIBRARIES || PAT_LIBRARY_FEATURES.has(feature)) &&
+      PAT_ALLOWED_BUNDLES.includes(PAT_BUNDLE.APPS)
+    );
+  }
   if (!ALLOWED_MODULES.has(module)) return false;
+  if (feature && PAT_DENIED_FEATURES[module]?.has(feature)) return false;
   const allowedFeatures = PAT_ALLOWED_FEATURES[module];
   return !allowedFeatures || (!!feature && allowedFeatures.has(feature));
 }

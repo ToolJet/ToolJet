@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme tokens live in ../../styles/theme.css; app-wide overrides in ../../styles/global.css. */
+@layer base {
+  body,
+  .app-root {
+    @apply bg-background text-foreground font-sans text-sm antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  .app-root * {
+    @apply border-border;
+  }
+}
+
+/* Reduced motion, on by default: tailwindcss-animate and every transition stop for people who ask their system for less. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}

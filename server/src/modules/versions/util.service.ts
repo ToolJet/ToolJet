@@ -949,6 +949,25 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
+  // The version's ToolJet Database tables with no relation in the target environment. `resolved` is null
+  // when the version uses no tables.
+  async findTablesMissingInEnvironment(
+    appId: string,
+    versionId: string,
+    targetEnvironmentId: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<{ resolved: Map<string, string> | null; offenders: InternalTable[] }> {
+    const tables = await this.appsUtilService.findTooljetDbTables(appId, versionId);
+    if (!tables.length) return { resolved: null, offenders: [] };
+
+    const tableIds = tables.map((t) => t.table_id);
+    const resolved = await this.relationResolverService.resolve(organizationId, tableIds, targetEnvironmentId, manager);
+    const offenderIds = tableIds.filter((id) => !resolved.has(id));
+    const offenders = offenderIds.length ? await manager.find(InternalTable, { where: { id: In(offenderIds) } }) : [];
+    return { resolved, offenders };
+  }
+
   /**
    * Second dependency type promote must validate, same shape as checkModulesPromotableToEnvironment:
    * a query against a ToolJet DB table that hasn't reached the target environment yet would 404 at
@@ -974,19 +993,15 @@ export class VersionUtilService implements IVersionUtilService {
     manager: EntityManager
   ): Promise<{ warnings: TableBehindWarning[] }> {
     try {
-      const tables = await this.appsUtilService.findTooljetDbTables(appId, versionId);
-      if (!tables.length) return { warnings: [] };
-
-      const tableIds = tables.map((t) => t.table_id);
-      const resolved = await this.relationResolverService.resolve(
-        organizationId,
-        tableIds,
+      const { resolved, offenders } = await this.findTablesMissingInEnvironment(
+        appId,
+        versionId,
         targetEnvironmentId,
+        organizationId,
         manager
       );
-      const offenderIds = tableIds.filter((id) => !resolved.has(id));
-      if (offenderIds.length) {
-        const offenders = await manager.find(InternalTable, { where: { id: In(offenderIds) } });
+      if (!resolved) return { warnings: [] };
+      if (offenders.length) {
         const names = offenders.map((t) => t.tableName);
         const tableList = names.join(', ');
         const message =
@@ -994,7 +1009,12 @@ export class VersionUtilService implements IVersionUtilService {
             ? `Promote blocked - table "${names[0]}" not available in ${targetEnvironmentName}. Promote the table first.`
             : `Promote blocked - ${names.length} tables not available in ${targetEnvironmentName}: ${tableList}. Promote the tables first.`;
         throw new BadRequestException({
-          message: { error: message, details: tableList },
+          message: {
+            error: message,
+            details: tableList,
+            code: 'TABLES_NOT_IN_TARGET_ENVIRONMENT',
+            tables: offenders.map((t) => ({ id: t.id, name: t.tableName })),
+          },
         });
       }
 
