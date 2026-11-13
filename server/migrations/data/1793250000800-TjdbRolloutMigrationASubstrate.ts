@@ -30,35 +30,8 @@ export class TjdbRolloutMigrationASubstrate1793250000800 implements MigrationInt
     await this.copyRelationConfigurationsToInternalTables(queryRunner, { onlyMissing: true });
     await this.dedupeAndLockDownCoRelationId(queryRunner);
 
-    const tooljetDbConnection = new DataSource({ ...tooljetDbOrmconfig, name: `${MIGRATION_NAME}Tjdb` } as any);
-    await tooljetDbConnection.initialize();
-    const tjdbQueryRunner = tooljetDbConnection.createQueryRunner();
-    try {
-      await this.repairAndBaselineEveryTable(queryRunner, tjdbQueryRunner);
-    } finally {
-      await tjdbQueryRunner.release();
-      await tooljetDbConnection.destroy();
-    }
-
-    // Every internal_tables row must leave with a relation carrying its configurations.
-    // repairAndBaselineOneTable can return (missing dev env/branch) or throw (per-row failure,
-    // caught in the caller) without ever writing that row's relation — enforce the precondition
-    // instead of trusting it, so a bad row rolls back the whole run (migrationsTransactionMode:
-    // 'all') instead of leaving a table the new code cannot resolve.
-    const orphans: { id: string; table_name: string; organization_id: string }[] = await queryRunner.query(`
-      SELECT it.id, it.table_name, it.organization_id
-      FROM internal_tables it
-      WHERE NOT EXISTS (SELECT 1 FROM internal_table_relations r WHERE r.internal_table_id = it.id)
-      ORDER BY it.organization_id, it.table_name
-      LIMIT 50
-    `);
-    if (orphans.length) {
-      throw new Error(
-        `${MIGRATION_NAME}: ${orphans.length} internal_tables row(s) have no relation; refusing to finish ` +
-          `the environments rollout. Each is also logged above by id/org, matched here by name for ` +
-          `triage (showing up to 50): ${JSON.stringify(orphans)}`
-      );
-    }
+    await this.withTjdb((tjdbQueryRunner) => this.repairAndBaselineEveryTable(queryRunner, tjdbQueryRunner));
+    await this.refuseOrphans(queryRunner);
 
     // internal_tables.configurations stays: the previous release still reads it, so dropping it here
     // breaks a rollback. Drop it a release later, once no shipped code reads it.
@@ -143,16 +116,67 @@ export class TjdbRolloutMigrationASubstrate1793250000800 implements MigrationInt
   // SHARE lock on internal_tables until commit, so built last: old pods keep creating tables meanwhile.
   // Live tables only, like organization_id_table_name_unique: drop_table soft-deletes the row and it
   // keeps its co_relation_id, which a later import or git pull of the same table reuses.
+  // The index's SHARE lock also holds new tables back until commit, so the second pass after it
+  // catches every table 3.21.58 servers created after up()'s pass: none is left without a relation.
+  // ponytail: late tables in licensed workspaces stay in development (Migration B ran before them).
   public async beforeCommit(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE UNIQUE INDEX IF NOT EXISTS organization_id_co_relation_id_unique
       ON internal_tables (organization_id, co_relation_id)
       WHERE deleted_at IS NULL
     `);
+    await this.withTjdb((tjdbQueryRunner) =>
+      this.repairAndBaselineEveryTable(queryRunner, tjdbQueryRunner, { onlyMissing: true })
+    );
+    await this.refuseOrphans(queryRunner);
   }
 
-  private async repairAndBaselineEveryTable(queryRunner: QueryRunner, tjdbQueryRunner: QueryRunner): Promise<void> {
-    const [{ count }] = await queryRunner.query(`SELECT COUNT(*) FROM internal_tables`);
+  /** Every internal_tables row must leave with a relation; see the comment inside. */
+  private async refuseOrphans(queryRunner: QueryRunner): Promise<void> {
+    // Every internal_tables row must leave with a relation carrying its configurations.
+    // repairAndBaselineOneTable can return (missing dev env/branch) or throw (per-row failure,
+    // caught in the caller) without ever writing that row's relation — enforce the precondition
+    // instead of trusting it, so a bad row rolls back the whole run (migrationsTransactionMode:
+    // 'all') instead of leaving a table the new code cannot resolve.
+    const orphans: { id: string; table_name: string; organization_id: string }[] = await queryRunner.query(`
+      SELECT it.id, it.table_name, it.organization_id
+      FROM internal_tables it
+      WHERE NOT EXISTS (SELECT 1 FROM internal_table_relations r WHERE r.internal_table_id = it.id)
+      ORDER BY it.organization_id, it.table_name
+      LIMIT 50
+    `);
+    if (orphans.length) {
+      throw new Error(
+        `${MIGRATION_NAME}: ${orphans.length} internal_tables row(s) have no relation; refusing to finish ` +
+          `the environments rollout. Each is also logged above by id/org, matched here by name for ` +
+          `triage (showing up to 50): ${JSON.stringify(orphans)}`
+      );
+    }
+  }
+
+  private async withTjdb(work: (tjdbQueryRunner: QueryRunner) => Promise<void>): Promise<void> {
+    const tooljetDbConnection = new DataSource({ ...tooljetDbOrmconfig, name: `${MIGRATION_NAME}Tjdb` } as any);
+    await tooljetDbConnection.initialize();
+    const tjdbQueryRunner = tooljetDbConnection.createQueryRunner();
+    try {
+      await work(tjdbQueryRunner);
+    } finally {
+      await tjdbQueryRunner.release();
+      await tooljetDbConnection.destroy();
+    }
+  }
+
+
+  private async repairAndBaselineEveryTable(
+    queryRunner: QueryRunner,
+    tjdbQueryRunner: QueryRunner,
+    { onlyMissing = false } = {}
+  ): Promise<void> {
+    // onlyMissing: no inserts land meanwhile (beforeCommit holds them back), so OFFSET paging stays stable.
+    const missing = onlyMissing
+      ? 'WHERE NOT EXISTS (SELECT 1 FROM internal_table_relations r WHERE r.internal_table_id = internal_tables.id)'
+      : '';
+    const [{ count }] = await queryRunner.query(`SELECT COUNT(*) FROM internal_tables ${missing}`);
     const total = parseInt(count, 10);
     console.log(`${MIGRATION_NAME}: [START] Building relations + baselines for ${total} internal table(s).`);
     const progress = new MigrationProgress(MIGRATION_NAME, total || 1);
@@ -173,7 +197,7 @@ export class TjdbRolloutMigrationASubstrate1793250000800 implements MigrationInt
 
     const getBatch = (_em, skip: number, take: number): Promise<InternalTableRow[]> =>
       queryRunner.query(
-        `SELECT id, organization_id, configurations FROM internal_tables ORDER BY id LIMIT $1 OFFSET $2`,
+        `SELECT id, organization_id, configurations FROM internal_tables ${missing} ORDER BY id LIMIT $1 OFFSET $2`,
         [take, skip]
       );
 
