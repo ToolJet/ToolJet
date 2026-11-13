@@ -6,15 +6,15 @@ import fetch = require('node-fetch');
 import { Auth, keptDefaultNote } from '../../lib/library/auth';
 import { ApiClient } from '../../lib/library/api-client';
 import { validateOriginUrl } from '../../lib/library/target-validation';
-import { deviceLogin } from '../../lib/app/device-login';
+import { browserCommand, deviceLogin } from '../../lib/app/device-login';
 import { ensureCompatible } from '../../lib/compatibility';
 import { formatError, formatSuccess } from '../../lib/log';
 
 const openInBrowser = (url: string) => {
-  const command = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'cmd' : 'xdg-open';
-  const args = process.platform === 'win32' ? ['/c', 'start', '', url] : [url];
+  const open = browserCommand(url, process.platform);
+  if (!open) return;
   try {
-    const child = spawn(command, args, { stdio: 'ignore', detached: true });
+    const child = spawn(open.command, open.args, { stdio: 'ignore', detached: true });
     child.on('error', () => {});
     child.unref();
   } catch {

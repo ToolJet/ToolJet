@@ -86,7 +86,10 @@ describe('dev keeps in step with code the ToolJet editor owns', () => {
         revision: 1,
       });
       // The draft's code did move on: that is newer, and local changes hold it back.
-      expect(checkAgainstStored(clone, 'draft', stored(2, 'h2'), 'edited')).to.include({ kind: 'behind', clean: false });
+      expect(checkAgainstStored(clone, 'draft', stored(2, 'h2'), 'edited')).to.include({
+        kind: 'behind',
+        clean: false,
+      });
     });
 
     it('only moves the recorded revision on when the files already match the stored code', () => {
@@ -163,6 +166,31 @@ describe('dev keeps in step with code the ToolJet editor owns', () => {
       expect(fs.existsSync(path.join(root, 'frontend/src/mine.tsx'))).to.equal(false);
       // The copies aren't project source: the next upload and comparison ignore them.
       expect(hashProjectSource(root)).to.equal(hashOf(newer));
+    });
+
+    it('refuses a pull that changes what a build runs here, unless trusted', async () => {
+      write('frontend/src/a.tsx', 'base');
+      synced('base');
+      const files = [
+        ...newer,
+        { path: 'frontend/tailwind.config.js', content: "module.exports = { content: ['./src/**/*.tsx'] };" },
+      ];
+      const stored = remote(files);
+      const summary = { ...stored, files: undefined };
+      expect(await pullStoredCode(sessionWith(stored), root, where, summary, false)).to.deep.equal({
+        kind: 'untrusted',
+        revision: 9,
+        files: ['frontend/tailwind.config.js'],
+      });
+      // force is about local edits, not about running someone else's config
+      expect(await pullStoredCode(sessionWith(stored), root, where, summary, true)).to.include({ kind: 'untrusted' });
+      expect(fs.existsSync(path.join(root, 'frontend/tailwind.config.js'))).to.equal(false);
+      expect(readSourceState(root)?.revision).to.equal(3);
+
+      expect(await pullStoredCode(sessionWith(stored), root, where, summary, false, true)).to.include({
+        kind: 'pulled',
+      });
+      expect(fs.existsSync(path.join(root, 'frontend/tailwind.config.js'))).to.equal(true);
     });
 
     it('only records the revision when the files already match', async () => {

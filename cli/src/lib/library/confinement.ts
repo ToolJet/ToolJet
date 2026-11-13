@@ -93,10 +93,54 @@ export const confinementPlugin = (confinement: Confinement): esbuild.Plugin => (
   },
 });
 
+const isPathSpec = (spec: string) => path.isAbsolute(spec) || /^\.\.?([\\/]|$)/.test(spec);
+
+/** The files a tsconfig `extends` entry may name, in the order a resolver tries them (esbuild reads the first that exists). */
+const extendsCandidates = (spec: string, fromDir: string): string[] => {
+  const withJson = (file: string) =>
+    file.endsWith('.json') ? [file] : [file, `${file}.json`, path.join(file, 'tsconfig.json')];
+  if (isPathSpec(spec)) return withJson(path.resolve(fromDir, spec));
+  const candidates: string[] = [];
+  for (let dir = fromDir; ; dir = path.dirname(dir)) {
+    candidates.push(...withJson(path.join(dir, 'node_modules', spec)));
+    if (path.dirname(dir) === dir) return candidates;
+  }
+};
+
+/**
+ * Follows the `extends` chain the way esbuild does and throws on a config outside the confinement. TypeScript's own
+ * parse (below) only sees files inside, so an outside file is "missing" to it while esbuild, which reads tsconfig.json
+ * itself, would read it and quote it in an error: a package name that climbs out (`x/../../../host.env`) did that.
+ */
+const assertExtendsConfined = (ts: typeof TS, confinement: Confinement, configPath: string, seen: Set<string>) => {
+  if (seen.has(configPath)) return;
+  seen.add(configPath);
+  const { config } = ts.readConfigFile(configPath, ts.sys.readFile);
+  const raw = config?.extends;
+  const specs = (Array.isArray(raw) ? raw : [raw]).filter((spec): spec is string => typeof spec === 'string');
+  for (const spec of specs) {
+    // A package name never has . or .. segments: one that does climbs out of node_modules.
+    if (!isPathSpec(spec) && spec.split(/[\\/]/).some((segment) => segment === '.' || segment === '..'))
+      throw new Error(`Refused tsconfig.json: it extends "${spec}", a package path that leaves node_modules.`);
+    const found = extendsCandidates(spec, path.dirname(configPath)).find((file) => {
+      try {
+        return fs.statSync(file).isFile();
+      } catch {
+        return false;
+      }
+    });
+    if (!found) continue; // the build reports a missing base config itself
+    const denial = confinementDenial(confinement, found);
+    if (denial) throw new Error(`Refused tsconfig.json: it extends ${denial}`);
+    assertExtendsConfined(ts, confinement, found, seen);
+  }
+};
+
 /** Throws when tsconfig.json, or a config it extends, or a file it includes, is outside the confinement. */
 export function assertTsconfigConfined(ts: typeof TS, confinement: Confinement, tsconfigPath: string): void {
   const denial = confinementDenial(confinement, tsconfigPath);
   if (denial) throw new Error(`Refused tsconfig.json: ${denial}`);
+  assertExtendsConfined(ts, confinement, tsconfigPath, new Set());
   const { config, error } = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
   if (error || !config) return; // the build reports an unreadable tsconfig itself
   const refused: string[] = [];

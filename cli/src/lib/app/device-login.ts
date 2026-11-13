@@ -51,6 +51,26 @@ export const approvePage = (verificationUri: string, apiOrigin: string): string 
   return `${page.origin}${page.pathname}`;
 };
 
+/**
+ * How to open the approve page in the browser, or undefined to leave it to the printed address. The address comes from
+ * the server, so it never goes through a shell: on Windows `cmd /c start` would run a command written after an `&` in
+ * it, so rundll32 hands it to the default browser instead. Only http and https addresses open.
+ */
+export function browserCommand(
+  url: string,
+  platform: NodeJS.Platform
+): { command: string; args: string[] } | undefined {
+  let page: URL;
+  try {
+    page = new URL(url);
+  } catch {
+    return undefined;
+  }
+  if (page.protocol !== 'http:' && page.protocol !== 'https:') return undefined;
+  if (platform === 'win32') return { command: 'rundll32', args: ['url.dll,FileProtocolHandler', page.href] };
+  return { command: platform === 'darwin' ? 'open' : 'xdg-open', args: [page.href] };
+}
+
 export async function deviceLogin(options: DeviceLoginOptions): Promise<DeviceLoginResult> {
   const sleep = options.sleep ?? ((ms: number) => new Promise((r) => setTimeout(r, ms)));
   const now = options.now ?? Date.now;

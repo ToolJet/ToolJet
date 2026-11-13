@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { approvePage, deviceLogin } from '../../../src/lib/app/device-login';
+import { approvePage, browserCommand, deviceLogin } from '../../../src/lib/app/device-login';
 
 const reply = (status: number, body: unknown) => ({
   ok: status < 400,
@@ -116,5 +116,26 @@ describe('tooljet auth login (device login)', () => {
       (e) => (error = e)
     );
     expect(error?.message).to.contain('tooljet login');
+  });
+});
+
+describe('browserCommand', () => {
+  it('opens the page on Windows without a shell, so an & in the address runs nothing', () => {
+    const open = browserCommand('http://tooljet.test/cli/activate&calc.exe', 'win32');
+    expect(open).to.deep.equal({
+      command: 'rundll32',
+      args: ['url.dll,FileProtocolHandler', 'http://tooljet.test/cli/activate&calc.exe'],
+    });
+  });
+
+  it('uses open on macOS and xdg-open elsewhere', () => {
+    expect(browserCommand('https://tooljet.test/cli/activate', 'darwin')?.command).to.equal('open');
+    expect(browserCommand('https://tooljet.test/cli/activate', 'linux')?.command).to.equal('xdg-open');
+  });
+
+  it('opens only http and https addresses', () => {
+    expect(browserCommand('file:///etc/passwd', 'win32')).to.equal(undefined);
+    expect(browserCommand('javascript:alert(1)', 'darwin')).to.equal(undefined);
+    expect(browserCommand('not a url', 'linux')).to.equal(undefined);
   });
 });
