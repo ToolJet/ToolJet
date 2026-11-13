@@ -1,10 +1,10 @@
 ---
-id: upgrade-to-v3.21
-title: ToolJet 3.21 Migration Guide
-slug: /setup/upgrade-to-v3.21/
+id: upgrade-to-v4
+title: ToolJet v4 Migration Guide
+slug: /setup/upgrade-to-v4/
 ---
 
-ToolJet 3.21 is the new LTS release. It includes **breaking changes** to environments, GitSync, and the App Builder. This guide lists how each area behaved in the previous LTS, how it behaves in 3.21, and what to do after upgrading.
+ToolJet v4 is the new LTS release. It includes **breaking changes** to environments, GitSync, and the App Builder. This guide lists how each area behaved in the previous LTS, how it behaves in v4, and what to do after upgrading.
 
 :::warning Before upgrading
 - Back up both PostgreSQL databases, **PG_DB** and **TOOLJET_DB**. Refer to [Upgrading ToolJet to the LTS Version](./upgrade-to-lts.md#prerequisites).
@@ -15,7 +15,7 @@ ToolJet 3.21 is the new LTS release. It includes **breaking changes** to environ
 
 ### Environments for Modules, ToolJet Database, and Workflows
 
-| Previous LTS | ToolJet 3.21 | Action required |
+| Previous LTS | ToolJet v4 | Action required |
 | :----------- | :----------- | :-------------- |
 | Modules, ToolJet Database, and workflows did not have multiple environments. The single existing environment was used in all environments of an application. | The previous single environment is considered the production environment and is released. | None. Production apps work as before. To continue editing, create a new draft. |
 
@@ -23,7 +23,7 @@ ToolJet 3.21 is the new LTS release. It includes **breaking changes** to environ
 
 <PlanBadge type="team" />
 
-| Previous LTS | ToolJet 3.21 | Action required |
+| Previous LTS | ToolJet v4 | Action required |
 | :----------- | :----------- | :-------------- |
 | GitSync could connect over SSH. | Git SSH is no longer supported. Create a GitHub or GitLab app to connect ToolJet. Support for Bitbucket and Azure is coming soon. | If you use GitHub or GitLab, reconnect GitSync by setting up the app. If you use any other provider, stay on the current LTS until support for your provider is available. |
 | The Git repository was a directory structure of apps. | The repository is broken down to individual components and queries, so conflicts are raised only when the same element is edited. | Create a new, empty repository and sync all your apps to it again to continue using GitSync. |
@@ -37,7 +37,7 @@ Refer to [GitHub configuration](../../development-lifecycle/gitsync/connect-to-g
 
 Mobile auto layout has been reworked.
 
-| Previous LTS | ToolJet 3.21 |
+| Previous LTS | ToolJet v4 |
 | :----------- | :----------- |
 | Auto layout runs only in the App Builder's mobile view. Root-level components are moved up to fill gaps, keeping their desktop position and width, and the result is saved. The app renders the saved mobile layout as is. | Every component visible on mobile is stacked full width with 10 px gaps, including inside containers. Components hidden on mobile are left out. The app rebuilds this layout every time it renders auto layout pages, ignoring saved mobile layouts. Opening mobile view in the App Builder overwrites and saves the mobile layout. |
 
@@ -51,7 +51,7 @@ Your previous mobile arrangement isn't restored.
 
 RunJS now gives you direct access to the values that queries expose.
 
-| Previous LTS | ToolJet 3.21 |
+| Previous LTS | ToolJet v4 |
 | :----------- | :----------- |
 | `queries` in RunJS is a copy taken when the script starts. Values stay stale after `await run()`, and you can assign to it or change it in place. | Fields in `queries` are read-only and always return the latest value, including after `await run()`. Assignments are silently ignored, and changing data in place, for example with `push`, `sort`, or `splice`, is likely to throw an error. Resetting or running a query also clears `error`, `metadata`, `request`, and `response`. |
 
@@ -70,7 +70,7 @@ RunJS now gives you direct access to the values that queries expose.
 
 The modal's `open()` now resolves after its children have mounted.
 
-| Previous LTS | ToolJet 3.21 |
+| Previous LTS | ToolJet v4 |
 | :----------- | :----------- |
 | `await components.modal1.open()` resolves immediately with `undefined`, before the modal's children mount. `components` in RunJS is a copy taken when the script starts. | `open()` resolves `true` after the modal finishes opening (up to 1 second), or `false` if the modal closes first. `components` in RunJS always returns the latest value. |
 
