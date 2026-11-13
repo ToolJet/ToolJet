@@ -11,20 +11,6 @@ import { formatNumber, toNumber } from '../lib/format';
 import { useFitSquare, useNarrow } from '../lib/fitText';
 import { useChartFit } from '../lib/chartFit';
 
-// G2's default categorical palette (antd's charts).
-const G2 = [
-  '#1783FF',
-  '#00C9C9',
-  '#F0884D',
-  '#D580FF',
-  '#7863FF',
-  '#60C42D',
-  '#BD8F24',
-  '#FF80CA',
-  '#2491B3',
-  '#17C76F',
-];
-
 const numbersOf = (data: unknown, field: string): number[] =>
   toArray(data)
     .map((d) =>
@@ -240,7 +226,7 @@ export const RadialChart = () => {
         <ChartVeil loading={loading}>
           <RadialCategories
             rows={rows}
-            palette={palette.length ? palette : G2}
+            palette={palette}
             showLegend={showLegend}
             onPick={(d) => {
               setClickedDataPoint(d);
@@ -298,6 +284,9 @@ const RadialCategories = ({
   const onChartReady = useElementClick(onPick);
   // A legend at the right of a narrow box left the rings a sliver; under them, the rings keep the width (as the Pie's).
   const ref = useRef<HTMLDivElement>(null);
+  // The rings take the chart theme's palette (the app theme's brand colours, live), as the Pie does, unless Colors is
+  // set; they stayed G2's stock blue, cyan and orange under any theme (AD-26). Drawn once read, in their final colours.
+  const theme = useChartTheme(ref);
   const narrow = useNarrow(ref, 320);
   const fit = useChartFit(ref);
   // One onReady for both: the chart re-fits its box (useChartFit) and a click on a ring picks it (useElementClick).
@@ -313,7 +302,7 @@ const RadialCategories = ({
     <div ref={ref} className="tj-ant-chart-fill">
       {!rows.length ? (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" />
-      ) : (
+      ) : !theme.ready ? null : (
         <RadialBar
           autoFit
           onReady={onReady}
@@ -325,7 +314,7 @@ const RadialCategories = ({
           maxAngle={270}
           radius={1}
           innerRadius={0.25}
-          scale={{ color: { range: palette } }}
+          scale={{ color: { range: palette.length ? palette : theme.palette } }}
           legend={showLegend ? { color: { position: narrow ? 'bottom' : 'right' } } : false}
           style={{ radius: 26 }}
         />
