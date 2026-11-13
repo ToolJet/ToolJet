@@ -21,8 +21,12 @@ const ACCEPTS: Record<string, PropertyType[]> = {
   'mui.Slider.value': ['number', 'array'],
   // One value, or several (a multi-select group, a date range).
   'shadcn.ButtonGroup.value': ['string', 'array'],
+  'shadcn.ButtonGroup.defaultValue': ['string', 'array'],
+  'antd.ButtonGroup.value': ['string', 'array'],
   'shadcn.DatePicker.defaultValue': ['string', 'array'],
   'shadcn.DatePicker.value': ['string', 'array'],
+  // A date, several, or a range as [start, end] or { from, to }.
+  'shadcn.Calendar.defaultValue': ['string', 'array', 'object'],
   'antd.Select.value': ['string', 'array'],
   'antd.TreeSelect.value': ['string', 'array'],
   'mui.ToggleButtonGroup.value': ['string', 'array'],
@@ -33,6 +37,35 @@ const ACCEPTS: Record<string, PropertyType[]> = {
   'shadcn.Tags.tags': ['array', 'string', 'number'],
   'shadcn.TagsInput.defaultValue': ['array', 'string'],
   'shadcn.TagsInput.values': ['array', 'string'],
+  // A figure, or a list: a Hero's aside facts, a Stat's trend points (numbers or [{ x, y }]).
+  'shadcn.Hero.asideValue': ['string', 'array'],
+  'shadcn.Stat.trendData': ['string', 'array'],
+  // Field names, or values to highlight: one, a comma list as text, or a list.
+  ...Object.fromEntries(
+    [
+      'shadcn.AreaChart.yFields',
+      'shadcn.BarChart.yFields',
+      'shadcn.BarChart.highlight',
+      'shadcn.LineChart.yFields',
+      'shadcn.LineChart.dashedFields',
+      'shadcn.RadarChart.yFields',
+      'shadcn.ComboChart.barFields',
+      'shadcn.ComboChart.lineFields',
+      'shadcn.CardGrid.badgeFields',
+      'shadcn.CardGrid.metaFields',
+      'shadcn.RecordList.metaFields',
+      'mui.RecordList.metaFields',
+      // Field names typed as text (category, tags), which the lists model splits on commas: as text an array
+      // property emptied them, and the Ant and MUI Card Grids drew only the Badge field's badge (QA AD-40).
+      'antd.CardGrid.badgeFields',
+      'antd.CardGrid.metaFields',
+      'antd.RecordList.metaFields',
+      'mui.CardGrid.badgeFields',
+      'mui.CardGrid.metaFields',
+      'shadcn.Map.popupFields',
+      'antd.Map.popupFields',
+    ].map((key) => [key, ['string', 'array'] as PropertyType[]])
+  ),
   // A figure, as a number (formatted by the component) or as text ("12%", "$1,200").
   'shadcn.Stat.value': ['string', 'number'],
   'antd.Statistic.value': ['string', 'number'],

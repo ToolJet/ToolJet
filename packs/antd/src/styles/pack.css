@@ -386,9 +386,13 @@
 .tj-ant-otp {
   display: inline-block;
 }
+/* The label sits over the dropzone in the vertical layout and beside it in the horizontal one, as on the other fields:
+   the column was forced on both, so Layout horizontal did nothing for the Drag area (QA AD-39). */
 .tj-ant-upload.tj-ant--fill .ant-form-item-row {
-  flex-direction: column;
   flex-wrap: nowrap;
+}
+.tj-ant-upload.tj-ant--fill .ant-form-item-vertical .ant-form-item-row {
+  flex-direction: column;
 }
 .tj-ant-upload.tj-ant--fill .ant-form-item-control {
   flex: 1;

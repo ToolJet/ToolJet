@@ -127,7 +127,11 @@ export const IFrame = function IFrame({
           key={exposedVariablesTemporaryState.url}
           width={width - 4}
           height={height}
-          src={strictMode.strictFrameUrl ? strictMode.strictFrameUrl(exposedVariablesTemporaryState.url) : exposedVariablesTemporaryState.url}
+          src={
+            strictMode.strictFrameUrl
+              ? strictMode.strictFrameUrl(exposedVariablesTemporaryState.url)
+              : exposedVariablesTemporaryState.url
+          }
           title="IFrame Widget"
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

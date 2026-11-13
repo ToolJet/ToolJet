@@ -749,7 +749,9 @@ export const createQueryPanelSlice = (set, get) => ({
             // queries under an open editor, only a run from the query panel (Run, or its shortcut) sends them:
             // page-load, event and code runs send none, so this editor's copy, which can be older than the stored
             // query, never overwrites it. Visual apps keep sending them, as before.
-            shouldSetPreviewData || get().appStore.modules[moduleId]?.app?.buildMode !== 'code' ? query?.options : undefined,
+            shouldSetPreviewData || get().appStore.modules[moduleId]?.app?.buildMode !== 'code'
+              ? query?.options
+              : undefined,
             versionId,
             (() => {
               // send undefined if Public/Private released app

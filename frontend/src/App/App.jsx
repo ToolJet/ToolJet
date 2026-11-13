@@ -17,7 +17,9 @@ const TooljetDatabase = React.lazy(() => import('@/TooljetDatabase'));
 
 const ProfileSettingsPage = React.lazy(() => import('@/SettingsPage'));
 const CliActivate = React.lazy(() =>
-  import('@ee/modules/CodeMode/CliActivate').then((m) => (typeof m.default === 'function' ? m : { default: () => null }))
+  import('@ee/modules/CodeMode/CliActivate').then((m) =>
+    typeof m.default === 'function' ? m : { default: () => null }
+  )
 );
 
 const MarketplacePage = React.lazy(() => import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage'));

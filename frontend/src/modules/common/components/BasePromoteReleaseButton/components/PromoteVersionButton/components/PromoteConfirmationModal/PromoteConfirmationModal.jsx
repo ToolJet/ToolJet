@@ -292,7 +292,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
             </div>
             {tablePromoteError && (
               <div className="promote-missing-tables__error" data-cy="promote-table-error">
-                Couldn't promote {tablePromoteError.name}: {tablePromoteError.reason}
+                Couldn&apos;t promote {tablePromoteError.name}: {tablePromoteError.reason}
               </div>
             )}
           </div>

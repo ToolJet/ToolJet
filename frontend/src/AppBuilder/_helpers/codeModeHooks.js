@@ -26,7 +26,8 @@ export const useOpenRequest = ee.useOpenRequest ?? Nothing;
 export const CodeBuildError = ee.CodeBuildError ?? class CodeBuildError extends Error {};
 export const codeSaveRefusal = ee.codeSaveRefusal ?? Nothing;
 export const saveErrorMessage =
-  ee.saveErrorMessage ?? ((error) => error?.message || error?.error || 'Error while creating version. Please try again.');
+  ee.saveErrorMessage ??
+  ((error) => error?.message || error?.error || 'Error while creating version. Please try again.');
 export const saveVersionWithBuild = ee.saveVersionWithBuild ?? ((save) => save());
 export const useSaveVersionCodeCheck = ee.useSaveVersionCodeCheck ?? (() => ({ checking: false, error: null }));
 export const blocksSave = ee.blocksSave ?? (() => false);

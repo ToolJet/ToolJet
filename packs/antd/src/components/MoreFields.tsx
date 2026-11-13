@@ -20,6 +20,7 @@ import {
   type Country,
 } from '../lib/ui2/inputs/phone';
 import { useValueSetter } from '../lib/sameValue';
+import { useOfferedValue } from '../lib/offeredValue';
 
 const useFocusActions = (ref: React.RefObject<{ focus: () => void; blur: () => void }>) => {
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
@@ -109,6 +110,20 @@ export const Combobox = (props: Record<string, unknown>) => {
   const key = value === '' ? '' : keyForValue(options, value);
   // A value no option offers shows the placeholder, as in the Select: Ant drew it as bare text (QA AD-35).
   const known = key !== '' && options.some((o) => o.value === key);
+  // It is dropped too, as the Select drops it, and comes back when an option offers it (lib/offeredValue, QA AD-57). Not
+  // while the options are empty or loading, so a default waits for them, nor when a query fetches them as the user
+  // searches (Filter option off): they hold only the last search's matches. Fires no event.
+  const prune = filterOption !== false && options.length > 0 && !loading;
+  const offers = (v: unknown) => {
+    const k = v === '' ? '' : keyForValue(options, v);
+    return k !== '' && options.some((o) => o.value === k);
+  };
+  useOfferedValue<unknown>(
+    value,
+    (next) => setValue(next as never),
+    (v) => (prune && v !== '' && !offers(v) ? '' : v),
+    `${prune}|${JSON.stringify(options)}`
+  );
   const expose = (next: unknown) => {
     const k = next === '' ? '' : keyForValue(options, next);
     const opt = k === '' ? undefined : options.find((o) => o.value === k);
@@ -235,10 +250,21 @@ export const OTP = (props: Record<string, unknown>) => {
   const n = Math.max(2, Math.min(12, Number(length) || 6));
   const takes = (key: string) => (characters === 'numeric' ? /\d/ : /[\da-z]/i).test(key);
   const ref = useRef<InputRef>(null);
+  // The characters a code may hold, as typing them gives them (letters in upper case), up to Length.
+  const clean = (s: string) =>
+    (characters === 'numeric' ? s.replace(/\D/g, '') : s.replace(/[^\da-z]/gi, '').toUpperCase()).slice(0, n);
+  // A value set from outside (a binding, a default) is cleaned as typing is: the boxes showed the first six of
+  // 12345678 while value stayed 12345678 and isComplete false, and ab12 stayed lower case (QA AD-48). No event fires:
+  // nothing was typed.
+  const code = clean(value);
+  useEffect(() => {
+    if (code !== value) setValue(code);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, value]);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
-  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  const valueSetter = useValueSetter<unknown>(code, (v) => setValue(v as never));
   const change = (v: string) => {
-    const next = v.slice(0, n);
+    const next = clean(v);
     if (!valueSetter.set(next)) return;
     setIsComplete(next.length === n);
     onChange();
@@ -246,20 +272,22 @@ export const OTP = (props: Record<string, unknown>) => {
   };
   // Each box keeps its place: Ant holds the boxes while they are typed in (an emptied box 3 of 123456 stays empty, and
   // 4 to 6 stay put), and the code only fills them again when it changes from outside (a binding, Set value, Clear, a
-  // Form's clear). Handing Ant back the typed code ('12456', no gap) moved 4 to 6 into box 3 (AD-22).
-  const [boxes, setBoxes] = useState({ code: value, given: value, key: 0 });
-  if (value !== boxes.code) setBoxes({ code: value, given: value, key: boxes.key + 1 });
+  // Form's clear). Handing Ant back the typed code ('12456', no gap) moved 4 to 6 into box 3 (AD-22). The boxes follow
+  // the cleaned code (AD-48), and what is typed is held as it is cleaned, so a gap typed in does not count as a change
+  // from outside.
+  const [boxes, setBoxes] = useState({ code, given: code, key: 0 });
+  if (code !== boxes.code) setBoxes({ code, given: code, key: boxes.key + 1 });
   const typed = (cells: string[]) => {
-    const code = cells.join('');
-    setBoxes((b) => ({ ...b, code }));
-    change(code);
+    const typedCode = cells.join('');
+    setBoxes((b) => ({ ...b, code: clean(typedCode) }));
+    change(typedCode);
   };
   // isComplete follows the code however it changes: set only on typing, a Form's clearForm (or an emptied binding)
   // left isComplete true over empty boxes (SP-33).
   useEffect(() => {
-    setIsComplete(value.length === n);
+    setIsComplete(code.length === n);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, n]);
+  }, [code, n]);
   ToolJet.useAction(
     { name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
     (v) => change(str(v))
@@ -428,6 +456,13 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
     setFormattedValue(n === null ? '' : fmt ? fmt.format(n) : String(n));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [n, fmt]);
+  // Whether the field has the focus, and whether its text holds an amount (blank text holds none): see the formatter.
+  const editing = useRef(false);
+  const holdsAmount = (text: string, v: unknown) => {
+    const typed = text.trim() === '' ? null : parseLocaleNumber(text, locale);
+    const given = v === undefined || v === null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v);
+    return typed === given;
+  };
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   // Every value has Precision's decimals, as typed ones do: a default or setFieldValue of 12.345 stayed 12.345 while the
@@ -491,8 +526,13 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
                 </WithPopupTheme>
               ) : undefined
             }
+            // While the field has the focus its text stays as typed. rc-input-number formats it again when the value
+            // comes back from ToolJet (after the key is up) and on each render, and the padding to Precision then put a
+            // deleted digit back as 0 and turned the decimals into whole digits: Backspace in 1,234,567.89 ended at
+            // 12,345,670,000.00 (QA AD-58). The text takes Precision's decimals once the focus leaves, or when the value
+            // changes to one the text does not hold (setFieldValue).
             formatter={(v, info) =>
-              info.userTyping
+              info.userTyping || (editing.current && holdsAmount(info.input, v))
                 ? info.input
                 : v === undefined || v === null || v === ('' as never) || !Number.isFinite(Number(v))
                   ? ''
@@ -512,8 +552,12 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
             status={check.error ? 'error' : undefined}
             onChange={(v) => change(typeof v === 'number' ? v : toNumber(v))}
             onPressEnter={() => onPressEnter()}
-            onFocus={() => onFocus()}
+            onFocus={() => {
+              editing.current = true;
+              onFocus();
+            }}
             onBlur={() => {
+              editing.current = false;
               check.touch();
               onBlur();
             }}
@@ -758,7 +802,14 @@ export const Password = (props: Record<string, unknown>) => {
   const ref = useRef<InputRef>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ kind: 'text', value });
+  // Shorter than Min length is not valid, as under the Validation section's Min length: it was only a hint, and
+  // isValid stayed true for abc under 8 (QA AD-50). The hint shows until the field is touched, then the message.
+  const short = Number(minLength) > 0 && value.length > 0 && value.length < Number(minLength);
+  const check = ToolJet.useValidation({
+    kind: 'text',
+    value,
+    rule: short ? `At least ${Number(minLength)} characters` : '',
+  });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'passwordinput',
@@ -779,7 +830,6 @@ export const Password = (props: Record<string, unknown>) => {
     defaultHeight: 6,
   });
   const st = strengthOf(value);
-  const short = Number(minLength) > 0 && value.length > 0 && value.length < Number(minLength);
   useEffect(() => {
     setStrength(st.label);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -807,7 +857,7 @@ export const Password = (props: Record<string, unknown>) => {
     <AntProvider tokens={tokens}>
       <FormField
         {...field}
-        extra={short ? `At least ${Number(minLength)} characters` : field.extra}
+        extra={short && !check.error ? `At least ${Number(minLength)} characters` : field.extra}
         check={check}
         htmlFor={fieldId}
       >

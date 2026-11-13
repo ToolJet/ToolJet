@@ -348,27 +348,32 @@ describe('ButtonGroup: Variant and Loading', () => {
 });
 
 describe('ToggleGroup: actions with Allow multiple', () => {
-  test('setSelected takes a list or one value, setValue fires onChange, clear empties', async () => {
+  test('setSelected takes a list or one value, clear empties, and each fires onChange when it changes the selection', async () => {
+    // Product decision 2026-10-25: a value action fires its change event when it changes the value. setSelected and
+    // clear fired nothing while setValue fired onChange (QA DVRL-103).
     const t = await mount('ToggleGroup', { multiple: true });
+    const changes = () => t.events.filter((e) => e.event === 'onChange').length;
     await t.run('setSelected', ['Open', 'Closed']);
     await waitFor(() => expect(t.exposed.values).toEqual(['Open', 'Closed']));
     expect(Array.from(t.root().querySelectorAll('[data-state="on"]')).map((b) => b.textContent)).toEqual([
       'Open',
       'Closed',
     ]);
-    expect(t.events).toEqual([]);
+    expect(changes()).toBe(1);
     await t.run('setSelected', 'All');
     await waitFor(() => expect(t.exposed.values).toEqual(['All']));
+    expect(changes()).toBe(2);
     await t.run('setValue', ['Open']);
     await waitFor(() => expect(t.exposed.values).toEqual(['Open']));
-    expect(t.events.map((e) => e.event)).toEqual(['onChange']);
+    expect(changes()).toBe(3);
     await t.run('setValue', 'Open');
-    expect(t.events).toHaveLength(1);
     await t.run('setSelected', ['Nope']);
     expect(t.exposed.values).toEqual(['Open']);
+    expect(changes()).toBe(3);
     await t.run('clear');
     await waitFor(() => expect(t.exposed.values).toEqual([]));
     expect(t.root().querySelectorAll('[data-state="on"]')).toHaveLength(0);
+    expect(changes()).toBe(4);
   });
 
   test('single mode keeps its actions, and a list picks its first value', async () => {

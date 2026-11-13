@@ -188,6 +188,13 @@ export const ButtonGroup = () => {
     onClick();
     if (changed) onChange();
   };
+  // Like every value action, setSelected and clear fire onChange when they change the selection, and nothing when they
+  // do not (product decision 2026-10-25; they fired nothing, QA DVRL-103).
+  const applyFromAction = (next: string[]) => {
+    const changed = next.join('\u0000') !== live.current.keys.join('\u0000');
+    apply(next);
+    if (changed) onChange();
+  };
   ToolJet.useAction(
     {
       name: 'setSelected',
@@ -199,10 +206,10 @@ export const ButtonGroup = () => {
       // A value no button has is refused, leaving the selection as it was (it cleared it); an empty one clears.
       const asked = Array.isArray(v) ? v.length > 0 : !(v === '' || v === undefined || v === null);
       if (asked && !next.length) return;
-      apply(next);
+      applyFromAction(next);
     }
   );
-  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => apply([]));
+  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => applyFromAction([]));
 
   const look = VARIANTS.includes(variant) ? variant : 'outline';
   const vertical = orientation === 'vertical';

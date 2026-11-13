@@ -641,22 +641,30 @@ export const DataTable = () => {
     expose(kept, focus);
   }, [entries]);
 
-  // `keep` never deselects: pressing a button on the selected row is not a click to deselect it.
+  // `keep` never deselects: pressing a button on the selected row is not a click to deselect it. A click selects or
+  // deselects its row as ToolJet's Table does (TableData handleRowClick toggles the row, in bulk mode too) and is always
+  // a row click: in bulk mode it changed selectedRow without selecting anything (QA DVRL-95), and a deselecting click
+  // fired no onRowClicked (QA DVRL-96).
   const clickRow = (entry: Entry, { keep = false }: { keep?: boolean } = {}) => {
     if (disabled) return;
-    if (allowSelection && !bulk) {
+    if (allowSelection) {
       const already = selected.has(entry.key);
       if (already && (keep || disableRowDeselection !== false)) {
+        // The clicked row is the one a handler reads (a bulk selection may have another in focus).
+        if (bulk && focusKey !== entry.key) select(new Set(selected), entry.key);
         onRowClicked();
         return;
       }
-      select(already ? new Set() : new Set([entry.key]), already ? null : entry.key);
-      // A deselecting click is a selection change, not a row click.
-      if (!already) onRowClicked();
+      const keys = bulk ? new Set(selected) : new Set<string>();
+      if (already) keys.delete(entry.key);
+      else keys.add(entry.key);
+      // Single mode: a deselected row leaves nothing selected. Bulk mode: selectedRow is the row clicked, as natively.
+      select(keys, bulk || !already ? entry.key : null);
+      onRowClicked();
       onSelectionChanged();
       return;
     }
-    // Bulk mode or no selection: the clicked row is still exposed for the handler.
+    // No selection: the clicked row is still exposed for the handler.
     setFocusKey(entry.key);
     setSelectedRow(entry.row);
     setSelectedRowId(entry.index);

@@ -442,13 +442,11 @@ export const useKanban = (o: KanbanOptions) => {
   };
   const doAdd = (card: unknown, columnId: unknown) => {
     const { board: cols, statusField: sf, idField: idf } = live.current;
-    const result = addCard(
-      cols,
-      card && typeof card === 'object' ? card : {},
-      isSet(columnId) ? String(columnId) : undefined,
-      sf,
-      idf
-    );
+    const row = card && typeof card === 'object' ? (card as Record<string, unknown>) : {};
+    // No column id and no status on the card: the first column. It went to a new column with no name, its status ''
+    // (QA AD-41).
+    const column = isSet(columnId) ? String(columnId) : isSet(row[sf]) ? undefined : cols[0]?.id;
+    const result = addCard(cols, row, column, sf, idf);
     commit(result.columns, () => setLastAddedCard(result.card), onCardAdded);
   };
   const doUpdate = (id: unknown, values: unknown) => {
@@ -713,11 +711,13 @@ export const useKanban = (o: KanbanOptions) => {
       const at = before === null ? cards.length : cards.findIndex((c) => c.__key === before);
       return !(before === moving || cards[at - 1]?.__key === moving);
     };
-    // A column's width: its share of the board (fill), or the author's width, never under the minimum.
+    // A column's width: its share of the board (fill, never under the minimum), or the author's width as set, the board
+    // scrolling sideways when the columns are wider than it. A set width grew and shrank with the board as a fill column
+    // does, so Column width did nothing (QA AD-42).
     const style: React.CSSProperties | undefined = isCollapsed
       ? undefined
       : columnWidth
-        ? { width: columnWidth, flex: `1 1 ${columnWidth}`, minWidth: `min(${columnWidth}, ${minColumn}px)` }
+        ? { width: columnWidth, flex: `0 0 ${columnWidth}` }
         : { minWidth: `${minColumn}px` };
     return {
       column,

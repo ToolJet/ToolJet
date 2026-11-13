@@ -582,13 +582,11 @@ export const Kanban = () => {
   };
   const doAdd = (card: unknown, columnId: unknown) => {
     const { board: cols, statusField: sf, idField: idf } = live.current;
-    const result = addCard(
-      cols,
-      card && typeof card === 'object' ? card : {},
-      isSet(columnId) ? String(columnId) : undefined,
-      sf,
-      idf
-    );
+    const row = card && typeof card === 'object' ? (card as Record<string, unknown>) : {};
+    // No column id and no status on the card: the first column. It went to a new column with no name, its status ''
+    // (QA AD-41).
+    const column = isSet(columnId) ? String(columnId) : isSet(row[sf]) ? undefined : cols[0]?.id;
+    const result = addCard(cols, row, column, sf, idf);
     commit(result.columns, () => setLastAddedCard(result.card), onCardAdded);
   };
   const doUpdate = (id: unknown, values: unknown) => {
@@ -908,15 +906,13 @@ export const Kanban = () => {
                 !isCollapsed && !columnWidth && 'is-fill',
                 over && 'is-over'
               )}
+              // A set Column width is kept as set, the board scrolling sideways when the columns are wider than it: it
+              // grew and shrank with the board as a fill column does, so it did nothing (QA AD-42).
               style={
                 isCollapsed
                   ? undefined
                   : columnWidth
-                    ? {
-                        width: columnWidth,
-                        flex: `1 1 ${columnWidth}`,
-                        minWidth: `min(${columnWidth}, ${minColumn}px)`,
-                      }
+                    ? { width: columnWidth, flex: `0 0 ${columnWidth}` }
                     : { minWidth: `${minColumn}px` }
               }
               {...(isCollapsed

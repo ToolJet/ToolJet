@@ -263,6 +263,23 @@ export const Calendar = () => {
     setSelected(next);
     expose(next, live.current.m);
   };
+  // Like every value action, selectDate and clear fire onSelect when they change the selection, and nothing when they
+  // do not (product decision 2026-10-25; they fired nothing, QA DVRL-103).
+  const daysOf = (sel: Selection): string =>
+    sel instanceof Date
+      ? ymd(sel)
+      : Array.isArray(sel)
+        ? sel.map(ymd).join(',')
+        : sel
+          ? `${ymd(sel.from)}~${ymd(sel.to)}`
+          : '';
+  const publishFromAction = (next: Selection) => {
+    const changed = daysOf(next) !== daysOf(live.current.selected);
+    publish(next);
+    // A second call before the next render compares with this one.
+    live.current.selected = next;
+    if (changed) onSelect();
+  };
   const showMonth = (date: Date | undefined, fire: boolean) => {
     if (!date) return;
     const { months: n, min: lo, max: hi } = live.current;
@@ -306,12 +323,12 @@ export const Calendar = () => {
         if (ruledOut(Array.isArray(date) ? date[0] : date)) return;
         next = selectionOf(date, 'single');
       }
-      publish(next);
+      publishFromAction(next);
       showMonth(toDay(Array.isArray(date) ? date[0] : date), false);
     }
   );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () =>
-    publish(live.current.m === 'multiple' ? [] : undefined)
+    publishFromAction(live.current.m === 'multiple' ? [] : undefined)
   );
   ToolJet.useAction(
     { name: 'setMonth', displayName: 'Set month', params: [{ handle: 'date', displayName: 'Date' }] },

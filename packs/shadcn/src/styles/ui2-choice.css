@@ -868,7 +868,8 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 1.35;
-  color: var(--ui-fg);
+  /* Label color reaches the room names too, as it does the time labels and captions (QA AD-56). */
+  color: var(--lk-fg, var(--ui-fg));
 }
 .ucs-res-caption {
   font-size: 12px;
