@@ -1,0 +1,1069 @@
+{
+    "globals": {
+        "readDocumentation": "閱讀說明文件",
+        "cancel": "取消",
+        "save": "儲存",
+        "savechanges": "儲存變更",
+        "execute": "執行",
+        "Build": "建置",
+        "back": "上一步",
+        "edit": "編輯",
+        "search": "搜尋",
+        "update": "更新",
+        "delete": "刪除",
+        "remove": "移除",
+        "add": "新增",
+        "view": "檢視",
+        "create": "建立",
+        "enabled": "已啟用",
+        "disabled": "已停用",
+        "yes": "是",
+        "submit": "送出",
+        "select": "選取",
+        "environmentVar": "工作區常數/變數",
+        "saving": "儲存中...",
+        "saveDatasource": "儲存資料來源",
+        "authorize": "授權",
+        "connect": "連線",
+        "reconnect": "重新連線",
+        "components": "元件",
+        "send": "傳送",
+        "noConnection": "無法連線",
+        "connectionVerified": "已驗證連線",
+        "left": "靠左",
+        "center": "置中",
+        "right": "靠右",
+        "justified": "左右對齊",
+        "host": "主機",
+        "operation": "操作",
+        "header": "標頭",
+        "path": "路徑",
+        "query": "查詢",
+        "requestBody": "請求主體",
+        "page": "頁面",
+        "searchItem": "在此工作區搜尋應用程式",
+        "workflowsSearchItem": "在此工作區搜尋工作流程",
+        "searchComponents": "搜尋元件",
+        "promote": "升級",
+        "release": "發佈"
+    },
+    "errorBoundary": "發生錯誤。",
+    "viewer": "抱歉！此應用程式正在維護中",
+    "app": {
+        "updateAvailable": "有可用更新",
+        "newVersionReleased": "ToolJet 已發佈新版本。",
+        "readReleaseNotes": "閱讀版本說明並更新",
+        "skipVersion": "略過此版本"
+    },
+    "stripe": "請稍候，正在載入 Stripe 的 OpenAPI 規格。",
+    "openApi": {
+        "noValidOpenApi": "無可用的有效 OpenAPI 規格！",
+        "selectHost": "選取主機",
+        "selectOperation": "選取操作"
+    },
+    "slack": {
+        "authorize": "授權",
+        "connectToolJetToSlack": "{{whiteLabelText}} 可連線至 Slack 以列出使用者、傳送訊息等。請選取適當的權限範圍。",
+        "chatWrite": "chat:write",
+        "listUsersAndSendMessage": "{{whiteLabelText}} 應用程式將能列出使用者，並向使用者與頻道傳送訊息。",
+        "connectSlack": "連線至 Slack"
+    },
+    "googleSheets": {
+        "readOnly": "唯讀",
+        "enableReadAndWrite": "若希望 {{whiteLabelText}} 應用程式能修改 Google 試算表，請務必選取讀取和寫入存取權限",
+        "readDataFromSheets": "{{whiteLabelText}} 應用程式僅能從 Google 試算表讀取資料",
+        "readWrite": "讀取和寫入",
+        "readModifySheets": "{{whiteLabelText}} 應用程式可讀取試算表資料、修改試算表及執行更多操作。",
+        "toGoogleSheets": "至 Google Sheets"
+    },
+    "zendesk": {
+        "enableReadAndWrite": "若希望 {{whiteLabelText}} 應用程式能修改 Zendesk 資源，請務必選取讀取和寫入存取權限",
+        "readDataFromResources": "{{whiteLabelText}} 應用程式僅能從資源讀取資料",
+        "readModifySheets": "{{whiteLabelText}} 應用程式可讀取資源資料、修改資源及執行更多操作。"
+    },
+    "profile": {
+        "profileSettings": "個人資料設定"
+    },
+    "verificationSuccessPage": {
+        "workEmail": "電子郵件",
+        "enterFullName": "請輸入全名",
+        "enterNewPassword": "請輸入新密碼",
+        "name": "姓名",
+        "password": "密碼",
+        "acceptInvite": "接受邀請",
+        "successfullyVerifiedEmail": "已成功驗證電子郵件",
+        "setupTooljet": "設定 {{whiteLabelText}}"
+    },
+    "loginSignupPage": {
+        "forgotPassword": "忘記密碼",
+        "emailAddress": "電子郵件地址",
+        "enterEmail": "請輸入電子郵件",
+        "dontHaveAccount": "還沒有帳號？",
+        "enterBusinessEmail": "請輸入公司電子郵件",
+        "alreadyHaveAnAccount": "已經有帳號了？",
+        "resetPassword": "重設密碼",
+        "signIn": "登入",
+        "signUp": "註冊",
+        "createToolJetAccount": "建立帳號",
+        "password": "密碼",
+        "showPassword": "顯示密碼",
+        "loginTo": "登入",
+        "yourAccount": "帳號",
+        "noLoginMethodsEnabled": "此工作區未啟用任何登入方式",
+        "emailConfirmLink": "請查看電子郵件中的確認連結",
+        "newPassword": "新密碼",
+        "passwordConfirmation": "確認密碼",
+        "newToTooljet": "第一次使用 {{whiteLabelText}}？",
+        "newToWorkspace": "第一次使用此工作區？",
+        "enterWorkEmail": "請輸入工作電子郵件",
+        "enterPassword": "請輸入密碼",
+        "forgot": "忘記了？",
+        "workEmail": "電子郵件",
+        "joinTooljet": "加入 {{whiteLabelText}}",
+        "getStartedForFree": "免費開始使用",
+        "passwordCharacter": "密碼至少需要 5 個字元",
+        "enterFullName": "請輸入全名",
+        "enterNewPassword": "請輸入新密碼"
+    },
+    "editor": {
+        "preview": "預覽",
+        "share": "分享",
+        "shareModal": {
+            "makeApplicationPublic": "將應用程式設為公開",
+            "shareableLink": "可分享的應用程式連結",
+            "copy": "複製",
+            "embeddableLink": "可嵌入的應用程式連結",
+            "manageUsers": "使用者"
+        },
+        "appVersionManager": {
+            "version": "版本",
+            "currentlyReleased": "目前已發佈",
+            "createVersion": "建立版本",
+            "saveVersion": "儲存版本",
+            "createDraftVersion": "建立草稿版本",
+            "versionName": "版本名稱",
+            "versionDescription": "版本描述",
+            "createVersionFrom": "從版本建立",
+            "save": "儲存",
+            "create": "建立版本",
+            "editVersion": "編輯版本",
+            "deleteVersion": "確定要刪除此版本 ({{version}}) 嗎？",
+            "enterVersionName": "請輸入版本名稱",
+            "enterVersionDescription": "請輸入版本描述",
+            "versionNameHelper": "版本名稱不得包含空格、特殊字元，且不得超過 25 個字元",
+            "versionDescriptionHelper": "描述最多 500 個字元",
+            "versionAlreadyReleased": "無法對已發佈的版本進行變更。\n若要修改，請建立新版本或切換至其他版本。"
+        },
+        "queries": "查詢",
+        "inspectComponent": "請選取要檢視的元件",
+        "release": "發佈",
+        "searchQueries": "搜尋查詢",
+        "createQuery": "建立查詢",
+        "queryManager": {
+            "general": "一般",
+            "advanced": "進階",
+            "preview": "預覽",
+            "Save": "儲存",
+            "selectDatasource": "選取資料來源",
+            "addDatasource": "新增資料來源",
+            "dataSourceManager": {
+                "toast": {
+                    "success": {
+                        "dataSourceAdded": "已新增資料來源",
+                        "dataSourceSaved": "已儲存資料來源"
+                    },
+                    "error": {
+                        "noEmptyDsName": "資料來源名稱不得為空"
+                    }
+                },
+                "suggestDataSource": "建議資料來源",
+                "suggestAnIntegration": "建議新增整合",
+                "whatLookingFor": "請告訴我們想找什麼？",
+                "noResultFound": "找不到想找的內容嗎？",
+                "suggest": "建議",
+                "addNewDataSource": "新增資料來源",
+                "whiteListIP": "若資料來源無法公開存取，請將我們的 IP 位址加入白名單",
+                "copied": "已複製",
+                "copy": "複製",
+                "saving": "儲存中",
+                "noResultsFor": "找不到相關結果",
+                "noteTaken": "感謝，我們已記錄下來！",
+                "goToAllDatasources": "前往所有資料來源",
+                "send": "傳送"
+            },
+            "runQueryOnApplicationLoad": "在應用程式載入時執行此查詢",
+            "confirmBeforeQueryRun": "執行查詢前先確認",
+            "notificationOnSuccess": "成功時顯示通知",
+            "runOnDependencyChange": "當相依性變更時執行此查詢",
+            "successMessage": "成功訊息",
+            "queryRanSuccessfully": "查詢已成功執行",
+            "notificationDuration": "通知持續時間 (秒)",
+            "events": "事件",
+            "transformation": {
+                "transformationToolTip": "可在查詢上啟用轉換以轉換查詢結果。ToolJet 允許使用 JavaScript 和 Python 兩種程式語言來轉換查詢結果",
+                "transformations": "轉換"
+            }
+        },
+        "inspector": {
+            "eventManager": {
+                "event": "事件",
+                "action": "動作",
+                "debounce": "防抖",
+                "actionOptions": "動作選項",
+                "message": "訊息",
+                "alertType": "警示類型",
+                "url": "URL",
+                "modal": "對話框",
+                "text": "文字",
+                "query": "查詢",
+                "key": "鍵",
+                "value": "值",
+                "type": "類型",
+                "fileName": "檔案名稱",
+                "data": "資料",
+                "table": "表格",
+                "pageIndex": "頁面索引",
+                "component": "元件",
+                "addHandler": "新增事件處理程式",
+                "addNewEvent": "新增事件",
+                "addEventHandler": "+ 新增事件處理程式",
+                "emptyMessage": "此 {{componentName}} 沒有任何事件處理程式",
+                "page": "頁面",
+                "addKeyValueParam": "新增 {{parameter}}"
+            }
+        }
+    },
+    "header": {
+        "darkModeToggle": {
+            "activateLightMode": "切換為淺色模式",
+            "activateDarkMode": "切換為深色模式"
+        },
+        "languageSelection": {
+            "changeLanguage": "變更語言",
+            "searchLanguage": "搜尋語言"
+        },
+        "notificationCenter": {
+            "notifications": "通知",
+            "markAllAs": "全部標示為",
+            "read": "已讀",
+            "un": "未",
+            "youDontHaveany": "目前沒有任何",
+            "youAreCaughtUp": "所有通知都已讀完！",
+            "view": "檢視"
+        },
+        "organization": {
+            "addNewWorkSpace": "新增工作區",
+            "loadOrganizations": "載入組織",
+            "createWorkspace": "建立工作區",
+            "workspaceName": "工作區名稱",
+            "editWorkspace": "編輯工作區",
+            "menus": {
+                "addWorkspace": "新增工作區",
+                "instanceLogout": {
+                    "title": "執行個體登出",
+                    "customLogoutUrl": {
+                        "label": "自訂登出 URL",
+                        "helperText": "為登出此執行個體的使用者設定個人化登出 URL。"
+                    }
+                },
+                "menusList": {
+                    "manageUsers": "使用者",
+                    "manageGroups": "群組",
+                    "manageSso": "SSO",
+                    "manageEnv": "工作區變數"
+                },
+                "manageUsers": {
+                    "usersAndPermission": "使用者與權限",
+                    "inviteNewUser": "邀請一位使用者",
+                    "inviteUsers": "邀請使用者",
+                    "name": "姓名",
+                    "email": "電子郵件",
+                    "status": "狀態",
+                    "archive": "封存",
+                    "unarchive": "取消封存",
+                    "addNewUser": "新增使用者",
+                    "emailAddress": "電子郵件地址",
+                    "createUser": "建立使用者",
+                    "enterFirstName": "請輸入名字",
+                    "enterLastName": "請輸入姓氏",
+                    "enterEmail": "請輸入電子郵件",
+                    "enterFullName": "請輸入全名",
+                    "inviteNewUsers": "邀請新使用者"
+                },
+                "manageGroups": {
+                    "permissions": {
+                        "userGroups": "使用者群組",
+                        "createNewGroup": "建立新群組",
+                        "updateGroup": "更新群組",
+                        "addNewGroup": "新增群組",
+                        "enterName": "請輸入群組名稱",
+                        "createGroup": "建立群組",
+                        "name": "名稱"
+                    },
+                    "permissionResources": {
+                        "userGroup": "使用者群組",
+                        "apps": "應用程式",
+                        "workflows": "工作流程",
+                        "users": "使用者",
+                        "permissions": "權限",
+                        "addAppsToGroup": "選取要加入群組的應用程式",
+                        "addWorkflowsToGroup": "選取要加入群組的工作流程",
+                        "name": "名稱",
+                        "addUsersToGroup": "選取要加入群組的使用者",
+                        "email": "電子郵件",
+                        "resource": "資源",
+                        "createUpdateDelete": "建立/更新/刪除",
+                        "folder": "資料夾",
+                        "dataSource": "資料來源"
+                    },
+                    "groupOptions": {
+                        "deleteGroup": "刪除群組",
+                        "duplicateGroup": "複製群組"
+                    }
+                },
+                "manageSSO": {
+                    "manageSso": "SSO",
+                    "generalSettings": {
+                        "title": "一般設定",
+                        "enableSignup": "啟用註冊",
+                        "newAccountWillBeCreated": "使用者首次透過 SSO 登入時將建立新帳號",
+                        "allowedDomains": "允許的網域",
+                        "enterDomains": "請輸入網域",
+                        "supportMultiDomains": "支援多個網域。請以逗號分隔網域名稱。範例：tooljet.com,tooljet.io,yourorganization.com",
+                        "loginUrl": "登入 URL",
+                        "workspaceLogin": "使用此 URL 直接登入此工作區",
+                        "allowDefaultSso": "允許預設 SSO",
+                        "ssoAuth": "允許使用者透過預設 SSO 進行身分驗證。工作區層級的 SSO 可覆寫預設 SSO 設定。",
+                        "customLogoutUrl": "自訂登出 URL"
+                    },
+                    "google": {
+                        "title": "Google",
+                        "enabled": "已啟用",
+                        "disabled": "已停用",
+                        "clientId": "用戶端 ID",
+                        "enterClientId": "請輸入用戶端 ID",
+                        "redirectUrl": "重新導向 URL"
+                    },
+                    "github": {
+                        "title": "GitHub",
+                        "hostName": "主機名稱",
+                        "enterHostName": "請輸入主機名稱",
+                        "requiredGithub": "若 GitHub 為自架主機則為必填",
+                        "clientId": "用戶端 ID",
+                        "enterClientId": "請輸入用戶端 ID",
+                        "clientSecret": "用戶端密鑰",
+                        "enterClientSecret": "請輸入用戶端密鑰",
+                        "encrypted": "已加密",
+                        "redirectUrl": "重新導向 URL"
+                    },
+                    "passwordLogin": "密碼登入",
+                    "environmentVar": {
+                        "noEnvConfig": "尚未設定任何工作區變數，請按一下 [新增變數] 按鈕來建立",
+                        "envWillBeDeleted": "變數將被刪除，確定要繼續嗎？",
+                        "addNewVariable": "新增變數",
+                        "variableForm": {
+                            "addNewVariable": "新增變數",
+                            "updatevariable": "更新變數",
+                            "name": "名稱",
+                            "value": "值",
+                            "enterVariableName": "請輸入變數名稱",
+                            "enterValue": "請輸入值",
+                            "type": "類型",
+                            "enableEncryption": "啟用加密",
+                            "addVariable": "新增變數"
+                        },
+                        "variableTable": {
+                            "name": "名稱",
+                            "value": "值",
+                            "type": "類型",
+                            "secret": "機密"
+                        }
+                    }
+                }
+            }
+        },
+        "profileSettingPage": {
+            "profileSettings": "個人資料設定",
+            "firstName": "名字",
+            "lastName": "姓氏",
+            "enterFirstName": "請輸入名字",
+            "enterLastName": "請輸入姓氏",
+            "email": "電子郵件地址",
+            "avatar": "大頭貼",
+            "update": "更新",
+            "profile": "個人資料",
+            "changePassword": "變更密碼",
+            "currentPassword": "目前密碼",
+            "newPassword": "新密碼",
+            "confirmNewPassword": "確認新密碼",
+            "enterCurrentPassword": "請輸入目前密碼",
+            "enterNewPassword": "請輸入新密碼",
+            "inviteUsers": "邀請使用者"
+        },
+        "profile": "個人資料",
+        "logout": "登出"
+    },
+    "homePage": {
+        "appCard": {
+            "changeIcon": "變更圖示",
+            "addToFolder": "新增至資料夾",
+            "move": "移動",
+            "to": "至",
+            "selectFolder": "選取資料夾",
+            "deleteApp": "刪除應用程式",
+            "exportApp": "匯出應用程式",
+            "cloneApp": "複製應用程式",
+            "launch": "啟動",
+            "maintenance": "維護中",
+            "noDeployedVersion": "應用程式尚無已部署的版本",
+            "openInAppViewer": "在應用程式檢視器中開啟",
+            "removeFromFolder": "從資料夾中移除"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "歡迎使用全新的 ToolJet 工作區",
+            "getStartedCreateNewApp": "可透過建立新應用程式，或使用 ToolJet 範本庫中的範本來開始使用。",
+            "importApplication": "匯入應用程式"
+        },
+        "foldersSection": {
+            "allApplications": "所有應用程式",
+            "folders": "資料夾",
+            "createNewFolder": "+ 新增",
+            "noFolders": "尚未建立任何資料夾。使用資料夾來整理應用程式",
+            "createFolder": "建立資料夾",
+            "updateFolder": "更新資料夾",
+            "editFolder": "編輯資料夾",
+            "deleteFolder": "刪除資料夾",
+            "folderName": "資料夾名稱",
+            "wishToDeleteFolder": "確定要刪除資料夾「{{folderName}}」嗎？資料夾內的應用程式不會被刪除。"
+        },
+        "header": {
+            "createNewApplication": "建立應用程式",
+            "import": "從裝置匯入",
+            "chooseFromTemplate": "從範本選取"
+        },
+        "pagination": {
+            "showing": "顯示",
+            "of": "共",
+            "to": "至"
+        },
+        "noApplicationFound": "找不到任何應用程式",
+        "noWorkflowFound": "找不到任何工作流程",
+        "thisFolderIsEmpty": "此資料夾是空的",
+        "nonAccessibleFolderApps": "無法存取此資料夾中的任何應用程式。",
+        "deleteAppAndData": "應用程式「{{appName}}」及相關資料將被永久刪除，確定要繼續嗎？",
+        "deleteWorkflowAndData": "工作流程「{{appName}}」及相關資料將被永久刪除，確定要繼續嗎？",
+        "removeAppFromFolder": "應用程式將從此資料夾中移除，確定要繼續嗎？",
+        "change": "變更",
+        "templateCard": {
+            "use": "使用",
+            "preview": "預覽",
+            "leadGeneretion": "潛在客戶開發"
+        },
+        "templateLibraryModal": {
+            "select": "選取範本",
+            "createAppfromTemplate": "從範本建立應用程式"
+        }
+    },
+    "workflowsDashboard": {
+        "appCard": {
+            "run": "執行",
+            "openInWorkflowEditor": "在工作流程編輯器中開啟"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "歡迎使用全新的 ToolJet 工作區",
+            "getStartedCreateNewApp": "可透過建立新應用程式，或使用 ToolJet 範本庫中的範本來開始使用。",
+            "importApplication": "匯入應用程式"
+        },
+        "foldersSection": {
+            "allApplications": "所有工作流程",
+            "folders": "資料夾",
+            "createNewFolder": "+ 新增",
+            "noFolders": "尚未建立任何資料夾。使用資料夾來整理應用程式",
+            "createFolder": "建立資料夾",
+            "updateFolder": "更新資料夾",
+            "editFolder": "編輯資料夾",
+            "deleteFolder": "刪除資料夾",
+            "folderName": "資料夾名稱",
+            "wishToDeleteFolder": "確定要刪除此資料夾嗎？資料夾內的應用程式不會被刪除。"
+        },
+        "header": {
+            "createNewApplication": "建立新工作流程",
+            "import": "匯入",
+            "chooseFromTemplate": "從範本選取"
+        },
+        "pagination": {
+            "showing": "顯示",
+            "of": "共",
+            "to": "至"
+        },
+        "noApplicationFound": "找不到任何應用程式",
+        "thisFolderIsEmpty": "此資料夾是空的",
+        "deleteAppAndData": "應用程式及相關資料將被永久刪除，確定要繼續嗎？",
+        "removeAppFromFolder": "應用程式將從此資料夾中移除，確定要繼續嗎？",
+        "change": "變更",
+        "templateCard": {
+            "use": "使用",
+            "preview": "預覽",
+            "leadGeneretion": "潛在客戶開發"
+        },
+        "templateLibraryModal": {
+            "select": "選取範本",
+            "createAppfromTemplate": "從範本建立應用程式"
+        }
+    },
+    "confirmationPage": {
+        "setupAccount": "設定帳號",
+        "signupWithGoogle": "使用 Google 註冊",
+        "signupWithGitHub": "使用 GitHub 註冊",
+        "signupWithOpenid": "使用以下方式註冊",
+        "or": "或",
+        "firstName": "名字",
+        "lastName": "姓氏",
+        "company": "公司",
+        "role": "角色",
+        "pleaseSelect": "請選取",
+        "password": "密碼",
+        "confirmPassword": "確認密碼",
+        "clickAndAgree": "按一下下方按鈕，即表示同意我們的",
+        "termsAndConditions": "服務條款",
+        "finishAccountSetup": "完成帳號設定",
+        "acceptInvite": "接受邀請",
+        "accountExists": "已經有帳號了？",
+        "and": "和"
+    },
+    "onBoarding": {
+        "finishToolJetInstallation": "完成 ToolJet 安裝",
+        "organization": "組織",
+        "name": "姓名",
+        "email": "電子郵件",
+        "receiveUpdatesFromToolJet": "將收到 ToolJet 團隊的更新通知（每月 1-2 封電子郵件，不會傳送垃圾郵件）",
+        "finishSetup": "完成設定",
+        "skip": "略過"
+    },
+    "redirectSso": {
+        "upgradingTov1.13.0": "升級至 v1.13.0 及以上版本。",
+        "fromV1.13.0": "從 v1.13.0 起，已引入",
+        "multiWorkspace": "多工作區",
+        "singleSignOnConfig": "單一登入相關設定已從工作區變數移至資料庫。請參閱此",
+        "link": "連結",
+        "toConfigureSSO": "以設定 SSO。",
+        "haveGoogleGithubSSo": "若升級前已設定 Google 或 GitHub SSO 並停用多工作區，則 SSO 設定將於升級時一併遷移，但必須在 SSO 供應商端重新設定重新導向 URL。各 SSO 的重新導向 URL 如下所示。",
+        "isMultiWorkspaceEnabled": "若已啟用多工作區，則 SSO 設定不會在升級時遷移，必須在對應的工作區下重新設定 SSO。",
+        "youHaveEnabled": "已啟用",
+        "setupSsoWorkspace": "請以密碼登入，並可透過工作區設定 SSO",
+        "manageSsoMenu": "管理 SSO 選單。",
+        "youHaveDisabled": "已停用",
+        "configureRedirectUrl": "請在 SSO 供應商端設定重新導向 URL。",
+        "google": "Google",
+        "redirectUrl": "重新導向 URL：",
+        "gitHub": "GitHub"
+    },
+    "oAuth2": {
+        "pleaseWait": "請稍候...",
+        "authSuccess": "授權成功，現在可以關閉此分頁。",
+        "authFailed": "授權失敗"
+    },
+    "widgetManager": {
+        "commonlyUsed": "常用",
+        "layouts": "版面配置",
+        "forms": "表單",
+        "integrations": "整合",
+        "others": "其他",
+        "noResults": "找不到結果",
+        "tryAdjustingFilterMessage": "請嘗試調整搜尋或篩選條件以找到所需內容。",
+        "clearQuery": "清除搜尋"
+    },
+    "widget": {
+        "common": {
+            "properties": "屬性",
+            "events": "事件",
+            "layout": "版面配置",
+            "devices": "裝置",
+            "styles": "樣式",
+            "general": "一般",
+            "validation": "驗證",
+            "structure": "結構",
+            "data": "資料",
+            "additionalActions": "其他動作",
+            "documentation": "閱讀 {{componentMeta}} 說明文件",
+            "widgetNameEmptyError": "元件名稱不得為空",
+            "componentNameExistsError": "元件名稱已存在",
+            "invalidWidgetName": "無效的元件名稱。應具唯一性，且僅可包含字母、數字和底線。"
+        },
+        "commonProperties": {
+            "visibility": "可見性",
+            "disable": "停用",
+            "borderRadius": "邊框圓角",
+            "transformation": "轉換",
+            "boxShadow": "方塊陰影",
+            "tooltip": "提示",
+            "showOnDesktop": "在桌面顯示",
+            "showOnMobile": "在行動裝置上顯示",
+            "showLoadingState": "顯示載入狀態",
+            "backgroundColor": "背景顏色",
+            "textColor": "文字顏色",
+            "loaderColor": "載入器顏色",
+            "defaultValue": "預設值",
+            "placeholder": "佔位字元",
+            "label": "標籤",
+            "title": "標題",
+            "code": "程式碼",
+            "data": "資料",
+            "tableData": "表格資料",
+            "tableColumns": "表格欄位",
+            "loadingState": "載入狀態",
+            "serverSidePagination": "伺服器端分頁",
+            "clientSidePagination": "用戶端分頁",
+            "serverSideSearch": "伺服器端搜尋",
+            "showSearchBox": "顯示搜尋方塊",
+            "showDownloadButton": "顯示下載按鈕",
+            "showFilterButton": "顯示篩選按鈕",
+            "showBulkUpdateActions": "顯示更新按鈕",
+            "bulkSelection": "批次選取",
+            "highlightSelectedRow": "醒目標示已選取列",
+            "actionButtonRadius": "動作按鈕圓角",
+            "tableType": "表格類型",
+            "cellSize": "儲存格大小",
+            "setPage": "設定頁面",
+            "page": "頁面",
+            "buttonText": "按鈕文字",
+            "click": "按一下",
+            "setText": "設定文字",
+            "text": "文字",
+            "markerColor": "標記顏色",
+            "showAxes": "顯示軸線",
+            "showGridLines": "顯示格線",
+            "chartType": "圖表類型",
+            "jsonDescription": "JSON 描述",
+            "usePlotlyJsonSchema": "使用 Plotly JSON 架構",
+            "padding": "內距",
+            "hideTitleBar": "隱藏標題列",
+            "hideCloseButton": "隱藏關閉按鈕",
+            "hideOnEscape": "按 Esc 鍵時隱藏",
+            "modalSize": "對話框大小",
+            "open": "開啟",
+            "close": "關閉",
+            "regex": "正規表示式",
+            "minLength": "最小長度",
+            "maxLength": "最大長度",
+            "customValidation": "自訂驗證",
+            "clear": "清除",
+            "minimumValue": "最小值",
+            "maximumValue": "最大值",
+            "format": "格式",
+            "enableTimeSelection": "啟用時間選取？",
+            "enableDateSelection": "啟用日期選取？",
+            "disabledDates": "停用的日期",
+            "minDate": "最早日期",
+            "maxDate": "最晚日期",
+            "makeThisFieldMandatory": "將此欄位設為必填",
+            "setChecked": "設為已勾選",
+            "status": "狀態",
+            "defaultStatus": "預設狀態",
+            "checkboxColor": "核取方塊顏色",
+            "optionValues": "選項值",
+            "optionLabels": "選項標籤",
+            "activeColor": "啟用顏色",
+            "selectOption": "選取選項",
+            "option": "選項",
+            "toggleSwitchColor": "切換開關顏色",
+            "defaultStartDate": "預設開始日期",
+            "defaultEndDate": "預設結束日期",
+            "textSize": "文字大小",
+            "alignText": "對齊文字",
+            "url": "URL",
+            "alternativeText": "替代文字",
+            "zoomButton": "縮放按鈕",
+            "borderType": "邊框類型",
+            "imageFit": "圖片適應方式",
+            "optionsLoadingState": "選項載入狀態",
+            "selectedTextColor": "已選取文字顏色",
+            "select": "選取",
+            "deselectOption": "取消選取選項",
+            "clearSelections": "清除選取",
+            "enableSelectAllOption": "啟用全選選項",
+            "initialLocation": "初始位置",
+            "defaultMarkers": "預設標記",
+            "addNewMarkers": "新增標記",
+            "searchForPlaces": "搜尋地點",
+            "setLocation": "設定位置",
+            "latitude": "緯度",
+            "longitude": "經度",
+            "numberOfStars": "星星數量",
+            "defaultNoOfSelectedStars": "預設已選取的星星數量",
+            "enableHalfStar": "啟用半星",
+            "tooltips": "提示",
+            "starColor": "星星顏色",
+            "labelColor": "標籤顏色",
+            "dividerColor": "分隔線顏色",
+            "clearFiles": "清除檔案",
+            "instructionText": "指示文字",
+            "useDropZone": "使用拖放區域",
+            "useFilePicker": "使用檔案選取器",
+            "pickMultipleFiles": "選取多個檔案",
+            "maxFileCount": "檔案數量上限",
+            "acceptFileTypes": "接受的檔案類型",
+            "maxSizeLimitBytes": "大小上限 (位元組)",
+            "minSizeLimitBytes": "大小下限 (位元組)",
+            "parseContent": "剖析內容",
+            "fileType": "檔案類型",
+            "dateFormat": "日期格式",
+            "timeFormat": "時間格式",
+            "displayIn": "顯示時區",
+            "storeIn": "儲存時區",
+            "defaultDate": "預設日期",
+            "events": "事件",
+            "resources": "資源",
+            "defaultView": "預設檢視",
+            "startTimeOnWeekAndDayView": "週檢視和日檢視的開始時間",
+            "endTimeOnWeekAndDayView": "週檢視和日檢視的結束時間",
+            "showToolbar": "顯示工具列",
+            "showViewSwitcher": "顯示檢視切換器",
+            "highlightToday": "醒目標示今天",
+            "showPopoverWhenEventIsClicked": "按一下事件時顯示彈出視窗",
+            "cellSizeInViewsClassifiedByResource": "依資源分類的檢視中儲存格大小",
+            "headerDateFormatOnWeekView": "週檢視標頭的日期格式",
+            "showLineNumber": "顯示行號",
+            "mode": "模式",
+            "tabs": "分頁標籤",
+            "defaultTab": "預設分頁標籤",
+            "hideTabs": "隱藏分頁標籤",
+            "highlightColor": "醒目標示顏色",
+            "tabWidth": "分頁標籤寬度",
+            "setCurrentTab": "設定目前分頁標籤",
+            "id": "ID",
+            "timerType": "計時器類型",
+            "listData": "清單資料",
+            "rowHeight": "列高",
+            "showBottomBorder": "顯示底部邊框",
+            "tags": "標記",
+            "numberOfPages": "頁面數量",
+            "defaultPageIndex": "預設頁面索引",
+            "progress": "進度",
+            "color": "顏色",
+            "strokeWidth": "線條寬度",
+            "counterClockwise": "逆時針",
+            "circleRatio": "圓形比例",
+            "colour": "顏色",
+            "size": "大小",
+            "primaryValueLabel": "主要值標籤",
+            "primaryValue": "主要值",
+            "hideSecondaryValue": "隱藏次要值",
+            "secondaryValueLabel": "次要值標籤",
+            "secondaryValue": "次要值",
+            "secondarySignDisplay": "次要符號顯示",
+            "primaryLabelColour": "主要標籤顏色",
+            "primaryTextColour": "主要文字顏色",
+            "secondaryLabelColour": "次要標籤顏色",
+            "secondaryTextColour": "次要文字顏色",
+            "min": "最小值",
+            "max": "最大值",
+            "value": "值",
+            "twoHandles": "雙滑桿",
+            "lineColor": "線條顏色",
+            "handleColor": "滑桿顏色",
+            "trackColor": "軌道顏色",
+            "timelineData": "時間軸資料",
+            "hideDate": "隱藏日期",
+            "svgData": "SVG 資料",
+            "rawHtml": "原始 HTML",
+            "values": "值",
+            "labels": "標籤",
+            "defaultSelected": "預設已選取",
+            "enableMultipleSelection": "啟用多重選取",
+            "selectedTextColour": "已選取文字顏色",
+            "selectedBackgroundColor": "已選取背景顏色",
+            "fileUrl": "檔案 URL",
+            "scalePageToWidth": "依寬度縮放頁面",
+            "showPageControls": "顯示頁面控制項",
+            "steps": "步驟",
+            "currentStep": "目前步驟",
+            "stepsSelectable": "可選取的步驟",
+            "theme": "佈景主題",
+            "columns": "欄位",
+            "cardData": "卡片資料",
+            "enableAddCard": "啟用新增卡片",
+            "width": "寬度",
+            "minWidth": "最小寬度",
+            "accentColor": "強調色",
+            "defaultColor": "預設顏色",
+            "setColor": "設定顏色",
+            "structure": "結構",
+            "checkedValues": "已勾選的值",
+            "expandedValues": "已展開的值"
+        },
+        "Table": {
+            "displayName": "表格",
+            "description": "顯示分頁的表格資料",
+            "columnType": "欄位類型",
+            "columnName": "欄位名稱",
+            "overflow": "溢出",
+            "key": "鍵",
+            "textColor": "文字顏色",
+            "validation": "驗證",
+            "regex": "正規表示式",
+            "minLength": "最小長度",
+            "maxLength": "最大長度",
+            "customRule": "自訂規則",
+            "values": "值",
+            "labels": "標籤",
+            "cellBgColor": "儲存格背景顏色",
+            "dateDisplayformat": "日期格式",
+            "dateParseformat": "日期",
+            "showTime": "顯示時間",
+            "makeEditable": "設為可編輯",
+            "buttonText": "按鈕文字",
+            "buttonPosition": "按鈕位置",
+            "remove": "移除",
+            "addButton": "+ 新增按鈕",
+            "addColumn": "新增欄位",
+            "addNewColumn": "新增欄位",
+            "noActionMessage": "此表格沒有任何動作按鈕",
+            "horizontalAlignment": "水平對齊",
+            "textAlignment": "文字對齊",
+            "deciamalPlaces": "小數位數",
+            "imageFit": "圖片適應方式"
+        },
+        "Button": {
+            "displayName": "按鈕",
+            "description": "觸發動作：查詢、警示、設定變數等"
+        },
+        "Chart": {
+            "displayName": "圖表",
+            "description": "視覺化資料呈現"
+        },
+        "Modal": {
+            "displayName": "對話框",
+            "description": "顯示彈出視窗"
+        },
+        "TextInput": {
+            "displayName": "文字輸入",
+            "description": "使用者文字輸入欄位"
+        },
+        "NumberInput": {
+            "displayName": "數字輸入",
+            "description": "數字輸入欄位"
+        },
+        "PasswordInput": {
+            "displayName": "密碼輸入",
+            "description": "安全文字輸入"
+        },
+        "Datepicker": {
+            "displayName": "日期選取器",
+            "description": "選擇日期和時間"
+        },
+        "Checkbox": {
+            "displayName": "核取方塊",
+            "description": "單一核取方塊切換"
+        },
+        "Radio-button": {
+            "displayName": "單選按鈕",
+            "description": "從多個選項中選取一個"
+        },
+        "ToggleSwitch": {
+            "displayName": "切換開關",
+            "description": "使用者控制的開關"
+        },
+        "Textarea": {
+            "displayName": "多行文字輸入",
+            "description": "多行文字輸入"
+        },
+        "DateRangePicker": {
+            "displayName": "日期範圍選取器",
+            "description": "選擇日期範圍"
+        },
+        "Text": {
+            "displayName": "文字",
+            "description": "顯示文字或 HTML"
+        },
+        "Image": {
+            "displayName": "圖片",
+            "description": "顯示圖片檔案"
+        },
+        "Container": {
+            "displayName": "容器",
+            "description": "群組化元件"
+        },
+        "Dropdown": {
+            "displayName": "下拉式選單",
+            "description": "單一選項選取器"
+        },
+        "Multiselect": {
+            "displayName": "多重選取",
+            "description": "多重選取器"
+        },
+        "RichTextEditor": {
+            "displayName": "文字編輯器",
+            "description": "富文字編輯器"
+        },
+        "Map": {
+            "displayName": "地圖",
+            "description": "顯示地圖位置"
+        },
+        "QrScanner": {
+            "displayName": "QR 掃描器",
+            "description": "掃描 QR 碼並儲存其資料"
+        },
+        "StarRating": {
+            "displayName": "星等評分",
+            "description": "星星評分"
+        },
+        "Divider": {
+            "displayName": "分隔線",
+            "description": "元件之間的分隔線"
+        },
+        "FilePicker": {
+            "displayName": "檔案選取器",
+            "description": "檔案選取器"
+        },
+        "Calendar": {
+            "displayName": "行事曆",
+            "description": "顯示行事曆事件"
+        },
+        "Iframe": {
+            "displayName": "Iframe",
+            "description": "嵌入外部內容"
+        },
+        "CodeEditor": {
+            "displayName": "程式碼編輯器",
+            "description": "編輯原始碼"
+        },
+        "Tabs": {
+            "displayName": "分頁標籤",
+            "description": "以分頁標籤整理內容"
+        },
+        "Timer": {
+            "displayName": "計時器",
+            "description": "倒數計時或碼表"
+        },
+        "Listview": {
+            "displayName": "清單檢視",
+            "description": "列出多筆資料"
+        },
+        "Tags": {
+            "displayName": "標記",
+            "description": "顯示標記標籤"
+        },
+        "Pagination": {
+            "displayName": "分頁",
+            "description": "瀏覽頁面"
+        },
+        "CircularProgressbar": {
+            "displayName": "環形進度列",
+            "description": "顯示環形進度"
+        },
+        "Spinner": {
+            "displayName": "載入指示器",
+            "description": "指示載入狀態"
+        },
+        "Statistics": {
+            "displayName": "統計資料",
+            "description": "顯示關鍵指標"
+        },
+        "RangeSlider": {
+            "displayName": "範圍滑桿",
+            "description": "調整數值範圍"
+        },
+        "Timeline": {
+            "displayName": "時間軸",
+            "description": "顯示事件時間軸"
+        },
+        "SvgImage": {
+            "displayName": "SVG 圖片",
+            "description": "顯示 SVG 圖形"
+        },
+        "Html": {
+            "displayName": "HTML 檢視器",
+            "description": "檢視 HTML 內容"
+        },
+        "VerticalDivider": {
+            "displayName": "垂直分隔線",
+            "description": "垂直線條分隔符"
+        },
+        "CustomComponent": {
+            "displayName": "自訂元件",
+            "description": "建立 React 元件"
+        },
+        "ButtonGroup": {
+            "displayName": "按鈕群組",
+            "description": "一組按鈕"
+        },
+        "PDF": {
+            "displayName": "PDF",
+            "description": "嵌入 PDF 文件"
+        },
+        "Steps": {
+            "displayName": "步驟",
+            "description": "逐步導覽輔助"
+        },
+        "KanbanBoard": {
+            "displayName": "看板",
+            "description": "任務管理看板"
+        },
+        "ColorPicker": {
+            "displayName": "色彩選取器",
+            "description": "從色盤中選取顏色"
+        },
+        "TreeSelect": {
+            "displayName": "樹狀選取",
+            "description": "階層式選取器"
+        }
+    },
+    "leftSidebar": {
+        "Inspector": {
+            "text": "檢視器",
+            "tip": "檢視器"
+        },
+        "Sources": {
+            "text": "來源",
+            "tip": "新增或編輯資料來源",
+            "dataSources": "資料來源",
+            "addDataSource": "+ 新增資料來源"
+        },
+        "Debugger": {
+            "text": "偵錯工具",
+            "tip": "偵錯工具",
+            "errors": "錯誤",
+            "noErrors": "找不到任何錯誤",
+            "noLogs": "找不到任何記錄",
+            "clear": "清除"
+        },
+        "Comments": {
+            "text": "留言",
+            "tip": "切換留言",
+            "commentBody": "目前沒有留言可顯示",
+            "typeComment": "在此輸入留言"
+        },
+        "Settings": {
+            "text": "觸發器",
+            "tip": "全域設定",
+            "hideHeader": "已啟動的應用程式隱藏標頭",
+            "maintenanceMode": "維護模式",
+            "maxWidthOfCanvas": "畫布最大寬度",
+            "maxHeightOfCanvas": "畫布最大高度",
+            "backgroundColorOfCanvas": "畫布背景",
+            "appMode": "應用程式模式",
+            "exportApp": "匯出應用程式"
+        },
+        "Back": {
+            "text": "上一步",
+            "tip": "回到首頁"
+        }
+    },
+    "datepicker": {
+        "months": {
+            "january": "一月",
+            "february": "二月",
+            "march": "三月",
+            "april": "四月",
+            "may": "五月",
+            "june": "六月",
+            "july": "七月",
+            "august": "八月",
+            "september": "九月",
+            "october": "十月",
+            "november": "十一月",
+            "december": "十二月"
+        }
+    }
+}
