@@ -17,6 +17,10 @@ Teams across engineering, product, operations, and business can build applicatio
 
 In this guide, you’ll walk through each step and see how they fit together to bring your application to life.
 
+:::tip Prefer to write code?
+On Enterprise Edition and ToolJet Cloud, you can also build an app in [Code mode](/docs/app-builder/code-mode/overview): a React and TypeScript project that you write with the AI, in the ToolJet editor or in your own editor, while ToolJet keeps handling data, queries, permissions and releases.
+:::
+
 <div style={{textAlign: 'center', marginBottom:'15px'}}> <img className="screenshot-full img-full" src="/img/app-builder/overview/banner.png" alt="Components Preview" /> </div>
 
 
