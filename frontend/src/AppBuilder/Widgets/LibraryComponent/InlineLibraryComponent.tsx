@@ -83,7 +83,9 @@ const TOKEN_CSS = `
   --tj-on-brand: var(--cc-on-primary-brand, #ffffff);
   --tj-brand: var(--cc-primary-brand, #4368e3);
   --tj-brand-strong: var(--cc-primary-brand-strong, var(--cc-primary-brand, #4368e3));
+  --tj-page: var(--cc-appBackground-surface, #f6f6f6);
   --tj-surface: var(--cc-surface1-surface, #ffffff);
+  --tj-surface-alt: var(--cc-surface2-surface, #f6f8fa);
   --tj-surface-muted: var(--cc-surface3-surface, var(--cc-surface2-surface, #f1f3f5));
   --tj-text: var(--cc-primary-text, #1b1f24);
   --tj-text-muted: var(--cc-placeholder-text, #6a727c);
@@ -92,6 +94,7 @@ const TOKEN_CSS = `
   --tj-danger: var(--cc-error-systemStatus, #d72d39);
   --tj-success: var(--cc-success-systemStatus, #1e823b);
   --tj-warning: var(--cc-warning-systemStatus, #b54708);
+  --tj-font: var(--cc-font-family);
 }
 /* A host without tj-themed resets them: custom properties inherit through a drop area, so an Ant or MUI component in a
    Rocket container (themed) took the container's tokens and drew in ToolJet's colours, font and radius there, and in its
@@ -103,7 +106,9 @@ const TOKEN_CSS = `
   --tj-on-brand: initial;
   --tj-brand: initial;
   --tj-brand-strong: initial;
+  --tj-page: initial;
   --tj-surface: initial;
+  --tj-surface-alt: initial;
   --tj-surface-muted: initial;
   --tj-text: initial;
   --tj-text-muted: initial;
@@ -112,6 +117,7 @@ const TOKEN_CSS = `
   --tj-danger: initial;
   --tj-success: initial;
   --tj-warning: initial;
+  --tj-font: initial;
 }
 `;
 

@@ -11,13 +11,15 @@ import GlobalSettingsHeader from './GlobalSettingsHeader';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import Accordion from '@/_ui/Accordion';
 import './styles.scss';
+import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const GlobalSettings = ({ darkMode, onClose, onBackToSearch, isModuleEditor = false }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const codeMode = useCodeMode();
 
   const canvasStylesContent = (
     <>
-      <CanvasSettings darkMode={darkMode} isModuleEditor={isModuleEditor} />
+      {!codeMode && <CanvasSettings darkMode={darkMode} isModuleEditor={isModuleEditor} />}
       <AppModeToggle darkMode={darkMode} isModuleEditor={isModuleEditor} />
       <ThemeSelect darkMode={darkMode} />
     </>
@@ -25,7 +27,7 @@ const GlobalSettings = ({ darkMode, onClose, onBackToSearch, isModuleEditor = fa
 
   const accordionItems = [
     {
-      title: 'Canvas styles',
+      title: codeMode ? 'Theme' : 'Canvas styles',
       isOpen: true,
       children: canvasStylesContent,
     },

@@ -221,6 +221,8 @@ const VersionPicker = ({ library }) => {
   const globalSettingsChanged = useStore((state) => state.globalSettingsChanged);
 
   const currentUserId = authenticationService.currentSessionValue?.current_user?.id;
+  // Dev previews are named by user id; the signed-in user's own one by their email.
+  const devPreviewEmails = useCustomComponentLibrariesStore((state) => state.devPreviewEmailsByUserId);
 
   const { current, pin, latest } = useLibraryCurrentRevision(library);
   const isDevPin = Boolean(current?.startsWith?.('dev:'));
@@ -291,7 +293,7 @@ const VersionPicker = ({ library }) => {
             <DropdownMenuSeparator className="version-menu-divider" />
           )}
 
-          {library?.devBundles?.map(({ userId, userEmail }) => (
+          {library?.devBundles?.map(({ userId }) => (
             <DropdownMenuItem key={userId} className="version-menu-row" onSelect={() => selectDevPreview(userId)}>
               <span className="version-menu-main">
                 <span className="version-menu-check">
@@ -314,7 +316,7 @@ const VersionPicker = ({ library }) => {
                     )}
                   </span>
                   <span className="version-menu-subtitle">
-                    {userEmail ?? userId}
+                    {devPreviewEmails?.[userId] ?? userId}
                     {current === `dev:${userId}` ? ' · current' : ''}
                   </span>
                 </span>

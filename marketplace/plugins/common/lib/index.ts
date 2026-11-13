@@ -3,6 +3,8 @@ import { QueryResult } from './query_result.type';
 import { QueryService } from './query_service.interface';
 import {
   cacheConnection,
+  cacheConnectionWithConfiguration,
+  generateSourceOptionsHash,
   getCachedConnection,
   parseJson,
   cleanSensitiveData,
@@ -33,6 +35,8 @@ export {
   QueryResult,
   QueryService,
   cacheConnection,
+  cacheConnectionWithConfiguration,
+  generateSourceOptionsHash,
   getCachedConnection,
   parseJson,
   ConnectionTestResult,

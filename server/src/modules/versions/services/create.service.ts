@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
@@ -29,6 +29,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
 import { DatasourceUserTokenData } from '@entities/data_source_user_token.entity';
 import { EncryptionService } from '@modules/encryption/service';
+import { CodeModeSourceService } from '@modules/code-mode-source/service';
 import {
   parseParentIdAndSuffix,
   SLOTTED_PARENT_TYPES,
@@ -39,6 +40,9 @@ import {
 
 @Injectable()
 export class VersionsCreateService implements IVersionsCreateService {
+  // Property injection, so the edition subclass keeps its constructor.
+  @Optional() @Inject(CodeModeSourceService) protected readonly codeModeSourceService?: CodeModeSourceService;
+
   constructor(
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly dataSourceUtilService: DataSourcesUtilService,
@@ -100,6 +104,12 @@ export class VersionsCreateService implements IVersionsCreateService {
       if (app?.type === APP_TYPES.WORKFLOW) {
         await this.copyWorkflowBundlesForVersion(manager, appVersion.id, versionFrom.id);
       }
+      await this.codeModeSourceService?.afterVersionCopied(
+        manager,
+        versionFrom.id,
+        appVersion.id,
+        oldPageToNewPageMapping ?? {}
+      );
     }, manager);
   }
 
@@ -135,11 +145,13 @@ export class VersionsCreateService implements IVersionsCreateService {
       if (dataSources?.length > 0) {
         for (const dataSource of dataSources) {
           const dataSourceParams: Partial<DataSource> = {
-            name: dataSource.name,
+            // The copy's default DSV takes this name, and (name, branch_id) is unique per workspace.
+            name: await this.dataSourceUtilService.generateUniqueName(dataSource.name, organizationId, manager),
             kind: dataSource.kind,
             type: dataSource.type,
             co_relation_id: dataSource?.co_relation_id,
             appVersionId: appVersion.id,
+            organizationId,
           };
           const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
           dataSourceMapping[dataSource.id] = newDataSource.id;

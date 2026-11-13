@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useCodeMode, CodeModeHeaderTools } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPreviewBtn = true }) {
   const { isModuleEditor } = useModuleContext();
@@ -45,19 +46,27 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
     }
   }, [clearSelectedComponents]);
   const appPreviewLink = useAppPreviewLink();
+  const codeMode = useCodeMode();
   return (
     <div
       className={cx('tw-flex tw-gap-2 tw-items-center tw-justify-center editor-header-actions', {
         'w-100': showFullWidth,
       })}
     >
-      {showToggleLayoutBtn && (
+      {showToggleLayoutBtn && !codeMode && (
         <ToggleLayoutButtons
           currentLayout={currentLayout}
           toggleCurrentLayout={toggleCurrentLayout}
           clearSelectionBorder={clearSelectionBorder}
           showFullWidth={showFullWidth}
           darkMode={darkMode}
+        />
+      )}
+      {codeMode && (
+        <CodeModeHeaderTools
+          darkMode={darkMode}
+          currentLayout={currentLayout}
+          toggleCurrentLayout={toggleCurrentLayout}
         />
       )}
       {showPreviewBtn && (

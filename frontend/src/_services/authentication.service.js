@@ -321,7 +321,12 @@ function signInViaOAuth(configId, ssoType, ssoResponse, mcpContext) {
   const redirectTo = mcpContext ? mcpContext.redirectTo : getCookie('redirectPath');
   const requestOptions = {
     method: 'POST',
-    headers: mcpContext ? authHeader(false, organizationId) : authHeader(),
+    headers:
+      mcpContext?.organizationId === null
+        ? { 'Content-Type': 'application/json' }
+        : mcpContext
+          ? authHeader(false, organizationId)
+          : authHeader(),
     credentials: 'include',
     body: JSON.stringify({ ...ssoResponse, organizationId, signupOrganizationId, invitationToken, redirectTo }),
   };

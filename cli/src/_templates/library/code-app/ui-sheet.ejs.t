@@ -1,0 +1,90 @@
+---
+to: <%= name %>/src/components/ui/sheet.tsx
+---
+import * as React from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { X } from 'lucide-react';
+import { cn } from '../../lib/utils';
+
+const Sheet = DialogPrimitive.Root;
+const SheetTrigger = DialogPrimitive.Trigger;
+const SheetClose = DialogPrimitive.Close;
+
+/**
+ * A side panel. `container` is the host's popup layer (lib/portal.ts); without it Radix uses document.body.
+ * `closeLabel` names the close button for screen readers: pass it in the screen's language.
+ * Closing it (Escape, the close button, Cancel) puts focus back on what opened it, also when it is opened by `open`
+ * state from a plain button rather than a SheetTrigger, so a keyboard user carries on where they were.
+ */
+const SheetContent = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    container?: HTMLElement;
+    side?: 'right' | 'left';
+    closeLabel?: string;
+  }
+>(({ className, children, container, side = 'right', closeLabel = 'Close', onOpenAutoFocus, onCloseAutoFocus, ...props }, ref) => {
+  const opener = React.useRef<HTMLElement | null>(null);
+  return (
+  <DialogPrimitive.Portal container={container}>
+    <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+    <DialogPrimitive.Content
+      ref={ref}
+      className={cn(
+        'fixed z-50 flex h-full w-full max-w-md flex-col gap-4 border-l bg-background p-6 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-300',
+        side === 'right'
+          ? 'inset-y-0 right-0 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right'
+          : 'inset-y-0 left-0 border-l-0 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
+        className
+      )}
+      onOpenAutoFocus={(event) => {
+        const active = document.activeElement;
+        opener.current = active instanceof HTMLElement && active !== document.body ? active : null;
+        onOpenAutoFocus?.(event);
+      }}
+      onCloseAutoFocus={(event) => {
+        onCloseAutoFocus?.(event);
+        const target = opener.current;
+        opener.current = null;
+        if (event.defaultPrevented || !target?.isConnected) return;
+        event.preventDefault();
+        target.focus();
+      }}
+      {...props}
+    >
+      {children}
+      {/* 40 px, so it can be tapped on a phone; the icon stays 16 px. */}
+      <DialogPrimitive.Close
+        aria-label={closeLabel}
+        className="absolute right-2 top-2 inline-flex h-10 w-10 items-center justify-center rounded-md opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+      >
+        <X className="h-4 w-4" aria-hidden="true" />
+      </DialogPrimitive.Close>
+    </DialogPrimitive.Content>
+  </DialogPrimitive.Portal>
+  );
+});
+SheetContent.displayName = 'SheetContent';
+
+const SheetHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn('flex flex-col space-y-1.5', className)} {...props} />
+);
+const SheetFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn('mt-auto flex flex-wrap gap-2', className)} {...props} />
+);
+const SheetTitle = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title ref={ref} className={cn('text-lg font-semibold text-foreground', className)} {...props} />
+));
+SheetTitle.displayName = 'SheetTitle';
+const SheetDescription = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
+));
+SheetDescription.displayName = 'SheetDescription';
+
+export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetFooter, SheetTitle, SheetDescription };

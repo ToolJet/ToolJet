@@ -17,7 +17,7 @@ set -o pipefail
 
 JEST_CONFIG="./test/jest-e2e.config.ts"
 NODE_OPTS="--max-old-space-size=8192"
-SHARDS=3
+SHARDS=5
 
 start_time=$SECONDS
 

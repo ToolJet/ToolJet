@@ -34,6 +34,10 @@ export const AI_CHAT_WIDTH = 400;
 
 export const LEFT_SIDEBAR_WIDTH = {
   tooljetai: AI_CHAT_WIDTH,
+  // Wider than the default: see `.PopoverContent.security`. The canvas has to clear it or it covers the app.
+  security: 520,
+  // `.PopoverContent.access` is 420 wide: at the default the panel covered the app's left edge and the locked banner.
+  access: 420,
   default: 350,
 };
 
@@ -145,3 +149,6 @@ export const PAGE_CANVAS_HEADER_HEIGHT = 60;
 export const PAGE_CANVAS_FOOTER_HEIGHT = 60;
 
 export const PAGE_CANVAS_HEADER_FOOTER_PADDING = 5;
+
+// Progress widgets whose label property is seeded with the widget's own value binding on drop.
+export const PROGRESS_LABEL_KEYS = { CircularProgressBar: 'text', ProgressBar: 'label' };

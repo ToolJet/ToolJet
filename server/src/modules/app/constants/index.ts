@@ -52,6 +52,7 @@ export enum FEATURE_KEY {
   MIGRATION_STATUS = 'migration-status',
   MIGRATION_RUNS = 'migration-runs',
   ROOT = 'root',
+  CLI_COMPATIBILITY = 'cli-compatibility',
 }
 
 export const AUDIT_LOGS_REQUEST_CONTEXT_KEY = 'tj_audit_logs_meta_data';

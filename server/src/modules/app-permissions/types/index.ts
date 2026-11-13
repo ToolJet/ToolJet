@@ -5,6 +5,7 @@ import { MODULES } from '@modules/app/constants/modules';
 interface Features {
   [FEATURE_KEY.FETCH_USERS]: FeatureConfig;
   [FEATURE_KEY.FETCH_USER_GROUPS]: FeatureConfig;
+  [FEATURE_KEY.FETCH_APP_MEMBERS]: FeatureConfig;
   [FEATURE_KEY.FETCH_PAGE_PERMISSIONS]: FeatureConfig;
   [FEATURE_KEY.CREATE_PAGE_PERMISSIONS]: FeatureConfig;
   [FEATURE_KEY.UPDATE_PAGE_PERMISSIONS]: FeatureConfig;
