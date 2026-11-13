@@ -30,6 +30,7 @@ import {
 import { formatCell } from '../lib/format';
 import { slotNames } from '../lib/slots';
 import { useDialogOwner } from '../lib/useOwnerGuard';
+import { useProjectedEscape } from '../lib/useProjectedEscape';
 import { useValueSetter } from '../lib/sameValue';
 import VirtualList, { type ListRef } from 'rc-virtual-list';
 import { VIRTUAL_MIN_ROWS, useVirtualBody } from '../lib/virtualRows';
@@ -347,6 +348,8 @@ const ModalBody = ({
   // color, Container background and Border radius changed nothing on the open modal (QA AD-18). display: contents
   // keeps it out of the layout.
   const [scope, setScope] = useState<HTMLDivElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  useProjectedEscape(dialogRef, !!props.open, () => (props.onCancel as (() => void) | undefined)?.());
   // Portal only once the popup layer is known: antd would otherwise mount the modal on document.body, unstyled.
   if (!popup.container) return null;
   return (
@@ -362,7 +365,11 @@ const ModalBody = ({
           forceRender
           // The host keeps Tab inside an open dialog (packFocus): antd's own trap reads document.activeElement, which a
           // shadow root hides.
-          modalRender={(node) => <div data-tj-modal={props.open ? 'open' : 'closed'}>{node}</div>}
+          modalRender={(node) => (
+            <div ref={dialogRef} data-tj-modal={props.open ? 'open' : 'closed'}>
+              {node}
+            </div>
+          )}
         >
           {content ? <p className="tj-ant-modal-content">{content}</p> : null}
           {bodyHeight > 0 ? <ToolJet.PopupSlot name="body" style={{ height: bodyHeight }} /> : null}

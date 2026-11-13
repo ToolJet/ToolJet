@@ -29,6 +29,7 @@ import { slotNames } from '../lib/slots';
 import { ownerAvailable, useOwnedPopup, useOwnerShown } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
 import { useMenuLookup } from '../lib/menuLookup';
+import { useProjectedEscape } from '../lib/useProjectedEscape';
 
 type MenuItem = {
   key: string;
@@ -673,6 +674,8 @@ const DrawerBody = (props: React.ComponentProps<typeof AntDrawer>) => {
   // order: hidden once the close has animated, shown again as it opens.
   const [shown, setShown] = React.useState(!!props.open);
   if (props.open && !shown) setShown(true);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  useProjectedEscape(dialogRef, !!props.open, () => (props.onClose as (() => void) | undefined)?.());
   if (!popup.container) return null;
   return (
     <AntDrawer
@@ -688,7 +691,7 @@ const DrawerBody = (props: React.ComponentProps<typeof AntDrawer>) => {
       // The host keeps Tab inside an open drawer (packFocus): antd's own trap reads document.activeElement, which a
       // shadow root hides.
       drawerRender={(node) => (
-        <div data-tj-modal={props.open ? 'open' : 'closed'} style={{ height: '100%' }}>
+        <div ref={dialogRef} data-tj-modal={props.open ? 'open' : 'closed'} style={{ height: '100%' }}>
           {node}
         </div>
       )}
