@@ -82,6 +82,17 @@ jobs:
             exit 1
           fi
 
+      - name: Debug labels and matrix edition
+        run: |
+          if [ -n "$HEAD_REPO" ] && [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::Cypress runs are not allowed for pull requests from forks ($HEAD_REPO)."
+            exit 1
+          fi
+          if ! printf '%s' "$BRANCH_NAME" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+            echo "::error::Branch name may only contain letters, numbers, '.', '_', '/' and '-'."
+            exit 1
+          fi
+
       - name: Free up disk space
         run: |
           echo "Available disk space before cleanup:"
@@ -118,6 +129,41 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=${BRANCH_NAME//\//-}" >> "$GITHUB_ENV"
+
+      - name: Log selected matrix
+        run: |
+          echo "Selected edition: ${{ matrix.edition }}"
+          echo "Matrix: ${{ toJSON(matrix) }}"
+
+      # The EE image is what brings the private ToolJet Database environment code into the
+      # run; the runner checkout itself has no submodules.
+      - name: Build EE Docker image
+        if: matrix.edition == 'ee'
+        env:
+          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --secret id=github_token,env=CUSTOM_GITHUB_TOKEN \
+            --build-arg BRANCH_NAME="$BRANCH_NAME" \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Set up environment variables
         run: |
