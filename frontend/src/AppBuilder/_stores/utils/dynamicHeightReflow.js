@@ -1098,6 +1098,33 @@ export const getBlockers = ({
 //     in-flow blockers, T collapses into the topmost vacated slot.
 //   This path is needed because hide/show is a per-T structural collapse,
 //   not a uniform delta the way grow/shrink is.
+// How much the widgets drawn between a blocker and its target changed the stack's height, from each one's
+// { top, bottom (drawn), delta (current − drawn height), fitted }. Widgets one under another add up. Widgets side by
+// side (drawn rows overlapping) move what is below them by the most any of them changed, not by the sum: two pack
+// texts that grew pushed the widget below by both growths. Only a row holding a fitted (pack) widget is taken that
+// way; a row of native widgets adds up as it always has.
+const stackedHeightChange = (widgets) => {
+  const sorted = [...widgets].sort((a, b) => a.top - b.top);
+  let total = 0;
+  let row = null;
+  const closeRow = () => {
+    if (!row) return;
+    total += row.fitted ? Math.max(...row.deltas) : row.deltas.reduce((sum, d) => sum + d, 0);
+  };
+  for (const w of sorted) {
+    if (row && w.top < row.bottom) {
+      row.deltas.push(w.delta);
+      row.bottom = Math.max(row.bottom, w.bottom);
+      row.fitted = row.fitted || w.fitted;
+    } else {
+      closeRow();
+      row = { bottom: w.bottom, deltas: [w.delta], fitted: w.fitted };
+    }
+  }
+  closeRow();
+  return total;
+};
+
 export const buildReflowPatch = ({
   changedComponentId,
   componentIds,
@@ -1391,13 +1418,22 @@ export const buildReflowPatch = ({
       let fittedBetweenShadower = 0;
       if (shadower) {
         const shadowerCanonicalBottom = shadowerCanonicalTop + getEffectiveCanonicalHeight(shadower.id);
+        const fittedBetween = [];
         for (const w of blockers) {
           if (!w.isInFlow || w.id === shadower.id) continue;
           const wTop = w.canonicalLayout?.top ?? 0;
           if (wTop < shadowerCanonicalBottom || wTop >= targetTopCanonical) continue;
           if (!keepsFittedHeightWhenMoved(currentPageComponents?.[w.id]?.component?.component)) continue;
-          fittedBetweenShadower += w.currentBottom - w.currentTop - getEffectiveCanonicalHeight(w.id);
+          const wCanonicalHeight = getEffectiveCanonicalHeight(w.id);
+          fittedBetween.push({
+            top: wTop,
+            bottom: wTop + wCanonicalHeight,
+            delta: w.currentBottom - w.currentTop - wCanonicalHeight,
+            fitted: true,
+          });
         }
+        // Side-by-side fitted widgets change the gap by the most any of them changed, not the sum (stackedHeightChange).
+        fittedBetweenShadower = stackedHeightChange(fittedBetween);
       }
       let otherMax = pullUpFromBlockers ? 0 : effectiveCollapsedCanonical + fittedBetweenShadower;
       let hasInFlowBlocker = false;
@@ -1449,7 +1485,7 @@ export const buildReflowPatch = ({
         // shrinkage subtracted from V's gap — e.g., when Accordion
         // collapses next to a tall Container, Container's constraint on
         // a downstream Button must not be reduced by Accordion's shrink.
-        let inFlowDelta = 0;
+        const between = [];
         for (let wi = vi + 1; wi < blockers.length; wi++) {
           const w = blockers[wi];
           if (!w.isInFlow) continue;
@@ -1468,8 +1504,14 @@ export const buildReflowPatch = ({
           // case (V above → W=changed top-label input → T below) would
           // re-introduce the same push that the other call sites fixed.
           const wCanonicalHeight = getEffectiveCanonicalHeight(w.id);
-          inFlowDelta += wCurrentHeight - wCanonicalHeight;
+          between.push({
+            top: wTop,
+            bottom: wTop + wCanonicalHeight,
+            delta: wCurrentHeight - wCanonicalHeight,
+            fitted: keepsFittedHeightWhenMoved(wComponentType),
+          });
         }
+        const inFlowDelta = stackedHeightChange(between);
         const canonicalGap = targetTopCanonical - vCanonicalBottomForGap - subtraction;
         const constraint = v.currentBottom + canonicalGap + inFlowDelta;
         if (constraint > otherMax) otherMax = constraint;
