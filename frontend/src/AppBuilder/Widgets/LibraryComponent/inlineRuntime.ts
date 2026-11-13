@@ -200,13 +200,16 @@ const isColour = (value: string) => {
   return ok;
 };
 
+// A negative size is one CSS drops, so the part shrank to nothing (a 0px divider, a square corner).
+const SIZE_STYLE = /radius|width|height|gap|padding|thickness|size/i;
+
 // CSS drops a value it cannot read, so the part drew transparent, black or square instead of its default.
 const cannotDraw = (hookName: string, name: string, inspector: string | undefined, raw: unknown) => {
   if (inspector === 'color' && typeof raw === 'string' && !isColour(raw.trim())) return true;
   const isNumberStyle = hookName === 'useStyleNumber';
   const n = typeof raw === 'number' || (typeof raw === 'string' && raw.trim() !== '') ? Number(raw) : NaN;
   if (isNumberStyle && !Number.isFinite(n)) return true;
-  return /radius/i.test(name) && Number.isFinite(n) && n < 0;
+  return (/radius/i.test(name) || (isNumberStyle && SIZE_STYLE.test(name))) && Number.isFinite(n) && n < 0;
 };
 
 // Styles are builder-controlled: the hook returns the Inspector value, or initialValue while it is unset.
@@ -234,7 +237,10 @@ const makeStyleHook = (hookName: string) =>
     const value =
       raw === undefined || raw === null || raw === '' || unknownOption || cannotDraw(hookName, name, inspector, raw)
         ? initialValue
-        : raw;
+        : // The number field saves text ("200"); CSS drops a size with no unit, so a number style hands over a number.
+          hookName === 'useStyleNumber' && typeof raw === 'string'
+          ? Number(raw)
+          : raw;
     // The instance object changes with every prop change; report only when the value itself changes.
     const instanceRef = React.useRef(instance);
     instanceRef.current = instance;

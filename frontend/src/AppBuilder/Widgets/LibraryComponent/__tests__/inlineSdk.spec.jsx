@@ -275,4 +275,52 @@ describe('inline SDK: style values the style cannot draw', () => {
     rerenderWith({ componentStyles: { borderRadius: 10 } });
     expect(card().dataset.radius).toBe('10');
   });
+
+  it('[LibraryComponent-STYLE-006] a negative size in a number style falls back to initialValue', async () => {
+    // Break this catches: a divider width of -5 reaching CSS as -5px, which CSS drops, so the divider has no width
+    // and cannot be dragged (Rocket RK-38).
+    loadLibraryModule.mockResolvedValue({
+      Card: () => {
+        const height = ToolJet.useStyleNumber({ name: 'panelHeight', initialValue: 160 });
+        const padding = ToolJet.useStyleNumber({ name: 'padding', initialValue: 16 });
+        const gap = ToolJet.useStyleNumber({ name: 'gap', initialValue: 6 });
+        const thickness = ToolJet.useStyleNumber({ name: 'thickness', initialValue: 1 });
+        const offset = ToolJet.useStyleNumber({ name: 'offset', initialValue: 0 });
+        return (
+          <div
+            data-testid="card"
+            data-height={height}
+            data-padding={padding}
+            data-gap={gap}
+            data-thickness={thickness}
+            data-offset={offset}
+          />
+        );
+      },
+    });
+    const { card, rerenderWith } = renderCard({
+      componentStyles: { panelHeight: -20, padding: '-4', gap: -5, thickness: -1, offset: -3 },
+    });
+    await waitFor(() => expect(card()).not.toBeNull());
+    expect(card().dataset).toMatchObject({ height: '160', padding: '16', gap: '6', thickness: '1', offset: '-3' });
+    rerenderWith({ componentStyles: { panelHeight: 200, padding: '30', gap: 0 } });
+    expect(card().dataset).toMatchObject({ height: '200', padding: '30', gap: '0' });
+  });
+
+  it('[LibraryComponent-STYLE-007] a number style typed in the number field reaches the component as a number', async () => {
+    // Break this catches: the number field saving "200", which a component puts in style.height; CSS drops a size with
+    // no unit, so the Accordion section collapsed to 0 (Rocket RK-28).
+    let seen;
+    loadLibraryModule.mockResolvedValue({
+      Card: () => {
+        seen = ToolJet.useStyleNumber({ name: 'panelHeight', initialValue: 160, inspector: 'numberInput' });
+        return <div data-testid="card" />;
+      },
+    });
+    const { card, rerenderWith } = renderCard({ componentStyles: { panelHeight: '200' } });
+    await waitFor(() => expect(card()).not.toBeNull());
+    expect(seen).toBe(200);
+    rerenderWith({ componentStyles: { panelHeight: ' 12.5 ' } });
+    expect(seen).toBe(12.5);
+  });
 });

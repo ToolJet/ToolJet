@@ -26,7 +26,13 @@ export const Card = () => {
     initialValue: 'var(--cc-primary-brand)',
   });
   const radius = useThemeRadius('borderRadius', 'Border radius');
-  const padding = ToolJet.useStyleNumber({ name: 'padding', label: 'Padding', initialValue: 16, section: 'Spacing' });
+  const padding = ToolJet.useStyleNumber({
+    name: 'padding',
+    label: 'Padding',
+    initialValue: 16,
+    section: 'Spacing',
+    inspector: 'numberInput',
+  });
   ToolJet.useComponentSettings({ role: 'card', fit: false, defaultWidth: 16, defaultHeight: 40 });
   const title = displayText(rawTitle);
   const description = displayText(rawDescription);

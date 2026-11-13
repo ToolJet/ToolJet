@@ -65,7 +65,7 @@ export const useLooks = (looks: Look[]): CSSProperties => {
       ? ToolJet.useStyleNumber({
           name,
           label,
-          ...(drawn === 'px' ? themeRadius : { initialValue: initialValue as number }),
+          ...(drawn === 'px' ? themeRadius : { initialValue: initialValue as number, inspector: 'numberInput' }),
         })
       : ToolJet.useStyleString({ name, label, inspector: 'color', initialValue: initialValue as string });
     const value = unlessDefault(raw ?? '', initialValue);

@@ -35,6 +35,7 @@ export const SplitPane = () => {
     name: 'gap',
     label: 'Divider width',
     initialValue: 6,
+    inspector: 'numberInput',
   });
   // The container's own surface, like a native container: without it the canvas grid shows through
   // around the drop areas while a component is dragged in.
@@ -49,6 +50,7 @@ export const SplitPane = () => {
     name: 'padding',
     label: 'Padding',
     initialValue: 12,
+    inspector: 'numberInput',
     section: 'Spacing',
   });
   ToolJet.useComponentSettings({ role: 'split-pane', fit: false, defaultWidth: 24, defaultHeight: 40 });

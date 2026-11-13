@@ -66,6 +66,7 @@ export const Stepper = () => {
     name: 'padding',
     label: 'Padding',
     initialValue: 12,
+    inspector: 'numberInput',
     section: 'Spacing',
   });
   ToolJet.useComponentSettings({ role: 'stepper', fit: false, defaultWidth: 20, defaultHeight: 50 });

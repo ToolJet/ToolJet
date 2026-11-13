@@ -41,7 +41,7 @@ export const useThemeColor = (name: string, label: string, token: Token, options
 
 /** A number style (px) with the value it draws as its default. */
 export const useDrawnNumber = (name: string, label: string, drawn: number, options: StyleOptions = {}) =>
-  unlessDefault(ToolJet.useStyleNumber({ name, label, initialValue: drawn, ...options }), drawn) as number | '';
+  unlessDefault(ToolJet.useStyleNumber({ name, label, initialValue: drawn, inspector: 'numberInput', ...options }), drawn) as number | '';
 
 /**
  * A number style with no stored default, only a placeholder naming what it draws while unset. A '' default was saved
