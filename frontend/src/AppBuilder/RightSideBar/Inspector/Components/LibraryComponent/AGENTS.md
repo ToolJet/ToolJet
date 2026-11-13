@@ -9,6 +9,8 @@ and active expression editors retain the shared renderer's layout. Keep these ru
 to `.library-style-field` so native and custom inspectors are unaffected. Controls render
 `.row.fx-container` with either `> .col` (toggle, colour) or `> .field` directly (dropdown); reset the row's 8px
 gutter padding for both, and let fixed-width controls (the 144px dropdown) fill the column.
+Switch (boolean) rows stay out of the grid: a switch is content-width and would sit at the left of the
+column, so they keep the shared flex layout with the switch at the right edge, as on the Properties tab.
 
 Editor metadata and list editing tests live in `__tests__/`. Verify actual label/control
 geometry in the browser; Jest does not compute CSS layout.
