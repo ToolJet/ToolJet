@@ -52,6 +52,10 @@ flowchart TD
 
 Custom Component Libraries are a paid feature. On the Community edition, the **Custom** tab in the App Builder and the **Custom component libraries** page in workspace settings are hidden.
 
+:::info Self-hosted storage
+On self-hosted deployments, ToolJet stores published library files on the server's filesystem, in the directory set by `CUSTOM_COMPONENT_STORAGE_PATH` (default `/data/custom-components`). Mount a persistent volume there, and share it across all server replicas. See [Custom Component Libraries environment variables](/docs/setup/env-vars#custom-component-libraries).
+:::
+
 ### Roles and Permissions
 
 | <div style={{ width:"300px"}}> Action </div> | <div style={{ width:"250px"}}> Required Role </div> |
