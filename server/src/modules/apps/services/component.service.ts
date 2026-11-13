@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
@@ -301,6 +302,8 @@ export class ComponentsService implements IComponentsService {
 
       const transformedComponent: Component = new Component();
       transformedComponent.id = componentId;
+      // The component's identity across versions; never taken from the client, so a paste gets its own.
+      transformedComponent.co_relation_id = randomUUID();
       transformedComponent.name = componentData.name;
       transformedComponent.type = componentData.type;
       transformedComponent.parent = componentData.parent || null;

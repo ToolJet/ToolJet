@@ -14,6 +14,7 @@ import { Page } from '@entities/page.entity';
 import { Component } from '@entities/component.entity';
 import { Layout } from '@entities/layout.entity';
 import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
+import { assignMissingComponentCoRelationIds } from 'src/helpers/co_relation_id.helper';
 import { isEmpty, set } from 'lodash';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { AppResourceMappings } from '@modules/apps/types';
@@ -519,6 +520,8 @@ export class VersionsCreateService implements IVersionsCreateService {
         (component) => !shouldSkipComponentOnVersionCopy(component)
       );
       const validComponentIds = new Set(page.components.map((component) => component.id));
+
+      await assignMissingComponentCoRelationIds(originalPageComponents, manager);
 
       const tempNewComponents: Component[] = [];
       for (const component of originalPageComponents) {
