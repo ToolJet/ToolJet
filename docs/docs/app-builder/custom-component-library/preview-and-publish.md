@@ -32,8 +32,8 @@ The CLI watches `src/`, rebuilds on every save, and uploads the result to your *
 
 To see your dev build in the App Builder:
 
-1. Open the **Custom** tab in the component library.
-2. Open the library's version picker.
+1. In the **Components** panel, click the library picker at the top and choose your library under **Custom libraries**.
+2. Open the library's **Version** picker.
 3. Select the **Dev preview** entry. It is labelled with your email and marked **preview only**.
 
 Keep these points in mind:
@@ -89,4 +89,4 @@ tooljet library publish --version 1.2.0 --url https://app.tooljet.ai --token <yo
 
 ## Next Steps
 
-Your library is now available in the **Custom** tab. See [Use Custom Components in the App Builder](/docs/app-builder/custom-component-library/use-in-app-builder).
+Your library is now available under **Custom libraries** in the **Components** panel's library picker. See [Use Custom Components in the App Builder](/docs/app-builder/custom-component-library/use-in-app-builder).

@@ -73,7 +73,7 @@ tooljet library init my-components
 
 The argument is the **directory name**. It must start with a letter and can contain only letters, numbers, hyphens and underscores.
 
-The command then asks for a **display name**. App builders see this name in the **Custom** tab. The display name must start with a letter, can contain letters, numbers, spaces, hyphens and underscores, and can be up to 100 characters long.
+The command then asks for a **display name**. App builders see this name under **Custom libraries** in the **Components** panel's library picker. The display name must start with a letter, can contain letters, numbers, spaces, hyphens and underscores, and can be up to 100 characters long.
 
 `init` registers the library in your workspace and creates the project in a new local directory. If either step fails, the CLI removes the directory so no half-created project is left behind.
 

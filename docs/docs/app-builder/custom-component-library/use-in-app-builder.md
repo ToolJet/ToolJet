@@ -22,7 +22,7 @@ Once a library is published to your workspace, its components are available to e
 
 ## Find Custom Components
 
-Open the component library on the right and switch to the **Custom** tab. Each library appears as a collapsible section with its name and a version label. Inside each section is a card for every component, showing its display name and description.
+Open the component library on the right, click the library picker at the top of the **Components** panel, and choose a library under **Custom libraries**. The panel shows the library's **Version** and a card for every component, with its display name and description. See [Choose a Component Library](/docs/app-builder/building-ui/component-library#choose-a-component-library).
 
 Search in the component library matches both library names and component names.
 
@@ -52,7 +52,7 @@ Actions declared by the author appear wherever you choose component actions. For
 Each app pins one version of each library. The pinned version is saved with the app version, so it carries over when you release, clone, export or import the app.
 
 - The first time you drop a component from a library into an app, the app pins the **latest** version.
-- To change the version, open the version picker on the library header in the **Custom** tab. The list shows each version with its date, a ✓ next to the current one, and a **New** badge when a newer version exists.
+- To change the version, open the **Version** picker at the top of the library in the **Components** panel. The list shows each version with its date, a ✓ next to the current one, and a **New** badge when a newer version exists.
 - An icon on the library header tells you when the pinned version is behind the latest version.
 - **Changing the version updates every component from that library in the app at once.** It only happens when you choose a version. Publishing a new version never changes a running app.
 - Previewed and released apps always render the pinned version.
