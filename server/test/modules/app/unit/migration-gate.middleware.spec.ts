@@ -23,6 +23,7 @@ function buildResponse() {
     setHeader: jest.fn(),
     status: jest.fn().mockReturnThis(),
     json: jest.fn().mockReturnThis(),
+    locals: {} as Record<string, unknown>,
   };
   return res as unknown as Response & typeof res;
 }
@@ -252,6 +253,24 @@ describe('MigrationGateMiddleware', () => {
       await middleware.use(buildRequest(path, method), buildResponse(), next);
 
       expect(next).toHaveBeenCalled();
+    });
+
+    it('should tell a write it lets through that writes are paused, so the query run skips its save', async () => {
+      const { middleware } = buildMiddleware('running');
+      const res = buildResponse();
+
+      await middleware.use(buildRequest('/api/data-queries/q1/versions/v1/run/e1', 'POST'), res, jest.fn());
+
+      expect(res.locals.writesPaused).toBe(true);
+    });
+
+    it('should not mark writes as paused once the migrations succeeded', async () => {
+      const { middleware } = buildMiddleware('idle');
+      const res = buildResponse();
+
+      await middleware.use(buildRequest('/api/data-queries/q1/versions/v1/run/e1', 'POST'), res, jest.fn());
+
+      expect(res.locals.writesPaused).toBeUndefined();
     });
 
     it.each([
