@@ -93,7 +93,7 @@ Cypress.Commands.add(
     appId = Cypress.env("appId"),
     componentSelector = "[data-cy='drag-and-drop-a-component-label']"
   ) => {
-    cy.intercept("GET", "/api/apps/*").as("getAppData");
+    cy.intercept({ method: "GET", pathname: `/api/apps/${appId}` }).as("getAppData");
 
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
