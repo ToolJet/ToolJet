@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { ConfigHandle } from '@/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle';
@@ -47,6 +47,8 @@ export const ModalWidget = ({ ...restProps }) => {
     return state.temporaryLayouts?.[getDynamicLayoutKey(id, subContainerIndex, '-body', moduleId)];
   }, shallow);
   const [needsBodyScroll, setNeedsBodyScroll] = useState(false);
+  // react-bootstrap calls onHide right after onEscapeKeyDown unless the event was default-prevented
+  const skipHideRef = useRef(false);
   const _modalHeight = isFullScreen ? '100vh' : `${modalHeight}px`;
 
   const headerMaxHeight = isFullScreen
@@ -163,6 +165,13 @@ export const ModalWidget = ({ ...restProps }) => {
   return (
     <BootstrapModal
       {...restProps}
+      onHide={(...args) => {
+        if (skipHideRef.current) {
+          skipHideRef.current = false;
+          return;
+        }
+        restProps.onHide?.(...args);
+      }}
       contentClassName={classNames(
         `modal-component tj-modal--container tj-modal-widget-content tj-modal-content-${id}`,
         isDynamicHeightEnabled && `dynamic-${id}`,
@@ -178,6 +187,13 @@ export const ModalWidget = ({ ...restProps }) => {
       animation={true}
       onEntered={onModalEntered}
       onEscapeKeyDown={(e) => {
+        // Escape from an editor overlay (e.g. the version review) isn't for this modal. Leave the
+        // event un-prevented so the overlay's own Escape handling still runs, and skip the onHide
+        // react-bootstrap fires right after for an un-prevented Escape.
+        if (e.target?.closest?.('[data-editor-overlay]')) {
+          skipHideRef.current = !e.defaultPrevented;
+          return;
+        }
         // A nested Radix overlay (PopoverMenu / Select) dismisses on Escape in the
         // capture phase and calls preventDefault() on the same event; this handler
         // runs later in the bubble phase, so `defaultPrevented` tells us the inner
