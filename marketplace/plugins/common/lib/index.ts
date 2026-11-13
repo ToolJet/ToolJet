@@ -3,6 +3,8 @@ import { QueryResult } from './query_result.type';
 import { QueryService } from './query_service.interface';
 import {
   cacheConnection,
+  cacheConnectionWithConfiguration,
+  generateSourceOptionsHash,
   getCachedConnection,
   parseJson,
   cleanSensitiveData,
@@ -25,7 +27,7 @@ import {
   validateAndSetRequestOptionsBasedOnAuthType,
   initializeOAuth,
 } from './oauth';
-import { validateUrlForSSRF, getSSRFProtectionOptions } from './ssrf-protection';
+import { validateUrlForSSRF, getSSRFProtectionOptions, queryErrorMessage } from './ssrf-protection';
 
 export {
   QueryError,
@@ -33,6 +35,8 @@ export {
   QueryResult,
   QueryService,
   cacheConnection,
+  cacheConnectionWithConfiguration,
+  generateSourceOptionsHash,
   getCachedConnection,
   parseJson,
   ConnectionTestResult,
@@ -55,4 +59,5 @@ export {
   initializeOAuth,
   validateUrlForSSRF,
   getSSRFProtectionOptions,
+  queryErrorMessage,
 };

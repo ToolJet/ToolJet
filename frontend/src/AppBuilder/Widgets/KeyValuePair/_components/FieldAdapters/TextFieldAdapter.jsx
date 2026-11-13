@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { TextRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/TextRenderer';
 import { useTextValidation } from '@/AppBuilder/Shared/DataTypes/hooks/useValidation';
 
@@ -22,12 +22,9 @@ export const TextField = ({
   field,
   onValidationChange,
 }) => {
+  // Committed-value fallback; TextRenderer itself reports the effective (draft-while-editing,
+  // committed otherwise) validation state back via onValidationChange.
   const { isValid, validationError } = useTextValidation(field, value);
-
-  // Expose validation state to parent
-  useEffect(() => {
-    onValidationChange?.({ isValid, validationError });
-  }, [isValid, validationError, onValidationChange]);
 
   return (
     <TextRenderer
@@ -45,6 +42,8 @@ export const TextField = ({
       isEditing={isEditing}
       id={id}
       widgetType="KeyValuePair"
+      validationConfig={field}
+      onValidationChange={onValidationChange}
     />
   );
 };

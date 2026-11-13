@@ -21,6 +21,8 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
   moduleDelete: false,
   appPromote: false,
   appRelease: false,
+  patCreate: false,
+  patRevoke: false,
   dataSourceCreate: false,
   dataSourceDelete: false,
 

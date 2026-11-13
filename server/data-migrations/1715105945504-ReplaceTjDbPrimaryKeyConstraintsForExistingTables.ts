@@ -1,4 +1,3 @@
-import { InternalTable } from '@entities/internal_table.entity';
 import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
 import { DataSource, EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 import { tooljetDbOrmconfig } from 'ormconfig';
@@ -45,7 +44,7 @@ export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 impl
               skip,
             ]);
           },
-          async (entityManager: EntityManager, internalTables: Pick<InternalTable, 'id'>[]) => {
+          async (entityManager: EntityManager, internalTables: { id: string }[]) => {
             await this.recreatePrimaryKeys(tooljetDbManager, internalTables, migrationProgress);
           },
           batchSize
@@ -61,7 +60,7 @@ export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 impl
 
   private async recreatePrimaryKeys(
     tooljetDbManager: EntityManager,
-    internalTables: Pick<InternalTable, 'id'>[],
+    internalTables: { id: string }[],
     migrationProgress: MigrationProgress
   ) {
     for (const internalTable of internalTables) {
