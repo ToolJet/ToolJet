@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import './styles.scss';
 import i18next from 'i18next';
 
 import Accordion from '@/_ui/Accordion';
@@ -332,7 +333,7 @@ const ManifestStylesPanel = ({
       children: (
         <>
           {sectionStyles.map((style) => (
-            <React.Fragment key={style.name}>
+            <div key={style.name} className="library-style-field">
               {renderElement(
                 shownComponent,
                 componentMeta,
@@ -348,7 +349,7 @@ const ManifestStylesPanel = ({
                 null,
                 styleFieldMeta(style) as any // see the same cast in LibraryComponentProperties
               )}
-            </React.Fragment>
+            </div>
           ))}
         </>
       ),
