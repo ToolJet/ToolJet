@@ -263,13 +263,14 @@ export const Frame = ({
 };
 
 // Where a value label sits: inside a bar or slice, or above a point (on the point it hid the marker). Labels that
-// would overlap are dropped, so a dense Column draws a readable row of labels instead of an unreadable band.
+// would overlap are dropped, so a dense Column draws a readable row of labels instead of an unreadable band. A label
+// above the first or last point is pulled back inside the chart: centred on it, half of it was cut off.
 const valueLabel = (text: (d: Row) => string, fill: string, at: 'inside' | 'top') => ({
   text,
   fill,
   position: at,
   ...(at === 'top' ? { dy: -8 } : {}),
-  transform: [{ type: 'overlapHide' }],
+  transform: [...(at === 'top' ? [{ type: 'exceedAdjust' }] : []), { type: 'overlapHide' }],
 });
 
 const useCommon = (
