@@ -1,16 +1,24 @@
 import React, { useMemo } from 'react';
 import { Cell, Label, Legend, Pie, PieChart as RPieChart, Tooltip } from 'recharts';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { ChartFrame, ChartTooltip, LegendContent, seriesColor, useChartClick } from '../lib/ui2/charts/chartParts';
+import {
+  ChartFrame,
+  ChartTooltip,
+  DimOthers,
+  LegendContent,
+  seriesColor,
+  useChartClick,
+} from '../lib/ui2/charts/chartParts';
 import {
   affixFormatter,
   animated,
   centreValueFit,
-  emphasis,
+  DIMMED,
   hiddenNote,
   isRecord,
   isSet,
   list,
+  sameDatum,
   statusColors,
 } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
@@ -76,9 +84,16 @@ export const PieChart = () => {
   const isDonut = donut !== false;
   const format = affixFormatter({ valuePrefix, valueSuffix }, false);
   const highlighted = click.highlighted;
+  const hit = highlighted == null ? -1 : rows.findIndex((row) => sameDatum(row, highlighted));
 
   return (
     <LoadingFrame loading={ld.loading} look={blockLook(ld.skeleton)}>
+      <DimOthers
+        active={highlighted != null}
+        marks=".recharts-pie-sector path"
+        hit={hit >= 0 ? `.recharts-pie-sector:nth-child(${hit + 1}) path` : null}
+        dimmed={DIMMED}
+      />
       <ChartFrame
         empty={!slices.length}
         emptyText={emptyText}
@@ -110,7 +125,7 @@ export const PieChart = () => {
             isAnimationActive={animated(true, slices.length)}
           >
             {slices.map((d, i) => (
-              <Cell key={i} fill={d.fill} fillOpacity={emphasis(rows[i], highlighted)} className="ui2-pointer" />
+              <Cell key={i} fill={d.fill} className="ui2-pointer" />
             ))}
             {isDonut && (centerValue || centerLabel) ? (
               <Label

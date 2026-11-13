@@ -36,6 +36,7 @@ import {
   escapeHtml,
   geocode,
   HeatLayer,
+  imageShown,
   markerIcon,
   markerPopupOffset,
   paint,
@@ -56,6 +57,7 @@ import '../styles/ui2-charts-map.css';
 const SAMPLE = [
   {
     id: 'S-101',
+    name: 'Ferry Building Market',
     customer: 'Ferry Building Market',
     address: '1 Ferry Building',
     status: 'Delivered',
@@ -66,6 +68,7 @@ const SAMPLE = [
   },
   {
     id: 'S-102',
+    name: 'Dolores Bakery',
     customer: 'Dolores Bakery',
     address: '3498 18th St',
     status: 'Delivered',
@@ -76,6 +79,7 @@ const SAMPLE = [
   },
   {
     id: 'S-103',
+    name: 'Mission Bay Labs',
     customer: 'Mission Bay Labs',
     address: '1700 Owens St',
     status: 'In transit',
@@ -86,6 +90,7 @@ const SAMPLE = [
   },
   {
     id: 'S-104',
+    name: 'Sunset Florist',
     customer: 'Sunset Florist',
     address: '1101 Irving St',
     status: 'Delayed',
@@ -96,6 +101,7 @@ const SAMPLE = [
   },
   {
     id: 'S-105',
+    name: 'Wharf Seafood Co.',
     customer: 'Wharf Seafood Co.',
     address: '2800 Leavenworth St',
     status: 'Scheduled',
@@ -106,6 +112,7 @@ const SAMPLE = [
   },
   {
     id: 'S-106',
+    name: 'Union Square Books',
     customer: 'Union Square Books',
     address: '345 Stockton St',
     status: 'Failed',
@@ -116,6 +123,7 @@ const SAMPLE = [
   },
   {
     id: 'S-107',
+    name: 'Hayes Valley Cafe',
     customer: 'Hayes Valley Cafe',
     address: '432 Octavia St',
     status: 'Delivered',
@@ -126,6 +134,7 @@ const SAMPLE = [
   },
   {
     id: 'S-108',
+    name: 'Presidio Outfitters',
     customer: 'Presidio Outfitters',
     address: '50 Moraga Ave',
     status: 'Pending',
@@ -687,7 +696,7 @@ export const Map = () => {
       const color = 'point' in item ? colorFor(item.point) : null;
       const sig =
         'point' in item
-          ? `${item.point.lat},${item.point.lng}|${item.point.tone}|${color}|${item.point.label}|${item.point.icon}|${pointTitle(item.point)}|${isSel}|${size}|${item.point.heading}|${item.point.image}`
+          ? `${item.point.lat},${item.point.lng}|${item.point.tone}|${color}|${item.point.label}|${item.point.icon}|${pointTitle(item.point)}|${isSel}|${size}|${item.point.heading}|${imageShown(item.point)}`
           : `c${item.cluster.count}@${item.lat},${item.lng}`;
       const existing = drawn.current.get(item.key);
       if (existing && existing.sig === sig) return;

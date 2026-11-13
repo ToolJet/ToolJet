@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { isSet, lookVars, px } from '../lib/ui2/nav/look';
-import { TOKEN, useAutoRadius, useThemeColor } from '../lib/styleDefaults';
+import { TOKEN, useThemeRadius, useThemeColor } from '../lib/styleDefaults';
 import { onPointerIn } from '../lib/pointerEnter';
 import '../styles/ui2-nav.css';
 
@@ -103,7 +103,7 @@ export const Button = () => {
   const hoverBackgroundColor = useThemeColor('hoverBackgroundColor', 'Button hover background', TOKEN.brand);
   const textColor = useThemeColor('textColor', 'Button text color', TOKEN.surface);
   const borderColor = useThemeColor('borderColor', 'Button border color', 'transparent');
-  const radius = useAutoRadius('borderRadius', 'Button radius');
+  const radius = useThemeRadius('borderRadius', 'Button radius');
   ToolJet.useComponentSettings({ role: 'button', fit: false, loading: 'own', defaultWidth: 6, defaultHeight: 4 });
 
   const look = oneOf(VARIANTS, variant);

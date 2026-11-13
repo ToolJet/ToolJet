@@ -7,7 +7,7 @@ import type { GroupButton } from '../lib/ui2/nav/model';
 import { isSet, lookVars, px } from '../lib/ui2/nav/look';
 import { useStable } from '../lib/ui2/nav/hooks';
 import { Icon } from '../lib/ui2/nav/parts';
-import { TOKEN, useAutoRadius, useThemeColor } from '../lib/styleDefaults';
+import { TOKEN, useThemeRadius, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 const VARIANTS = ['outline', 'secondary', 'default', 'ghost'];
@@ -104,7 +104,7 @@ export const ButtonGroup = () => {
   const selectedText = useThemeColor('selectedTextColor', 'Selected text color', TOKEN.surface);
   const iconColor = useThemeColor('iconColor', 'Icon color', TOKEN.text);
   const labelColor = useThemeColor('labelColor', 'Label color', TOKEN.text);
-  const radius = useAutoRadius('borderRadius', 'Group radius');
+  const radius = useThemeRadius('borderRadius', 'Group radius');
   ToolJet.useComponentSettings({ role: 'buttongroup', fit: true, loading: 'own', defaultWidth: 10, defaultHeight: 4 });
 
   const kind = mode === 'none' ? 'actions' : mode;

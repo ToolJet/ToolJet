@@ -185,6 +185,10 @@ const RadialBody = ({
 };
 
 // "progress": one value against Max value as a ring or gauge. "categories": concentric bars, one per data row.
+/** The Value suffix drawn: "auto" (new charts) is % only in Progress mode; a stored suffix is kept as written. */
+export const radialSuffix = (suffix: string, progress: boolean): string =>
+  suffix === 'auto' ? (progress ? '%' : '') : suffix;
+
 export const RadialChart = () => {
   const [mode] = ToolJet.useStateEnumeration({
     name: 'mode',
@@ -236,7 +240,12 @@ export const RadialChart = () => {
   const [rounded] = ToolJet.useStateBoolean({ name: 'rounded', label: 'Rounded ends', initialValue: true });
   const [showTrack] = ToolJet.useStateBoolean({ name: 'showTrack', label: 'Track', initialValue: true });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
-  const [valueSuffix] = ToolJet.useStateString({ name: 'valueSuffix', label: 'Value suffix', initialValue: '%' });
+  const [valueSuffix] = ToolJet.useStateString({
+    name: 'valueSuffix',
+    label: 'Value suffix',
+    initialValue: 'auto',
+    description: 'auto: % in Progress mode, nothing in Categories mode.',
+  });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
   const [animate] = ToolJet.useStateBoolean({ name: 'animate', label: 'Animate', initialValue: true });
   const [showLegend] = ToolJet.useStateBoolean({
@@ -267,7 +276,8 @@ export const RadialChart = () => {
   });
 
   const progress = mode !== 'categories';
-  const format = formatter({ prefix: valuePrefix, suffix: valueSuffix });
+  const suffix = radialSuffix(valueSuffix, progress);
+  const format = formatter({ prefix: valuePrefix, suffix });
   const { rings, centre } = useMemo(() => {
     const label = isSet(centerLabel) ? String(centerLabel) : '';
     if (!progress) {
