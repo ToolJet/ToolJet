@@ -6,6 +6,7 @@ import { clampInt, own, safeUrl } from '../lib/ui2/nav/model';
 import { lookVars } from '../lib/ui2/nav/look';
 import { LineSkel, LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor } from '../lib/styleDefaults';
+import { onPointerIn } from '../lib/pointerEnter';
 import '../styles/ui2-nav.css';
 
 // The underline values UI 2.0 and the pack's earlier names map to.
@@ -23,6 +24,13 @@ const JUSTIFY: Record<string, string> = {
   left: 'n2-justify-left',
   center: 'n2-justify-center',
   right: 'n2-justify-right',
+};
+
+// A bare host ("tooljet.com", "www.a.io/x?y") is a web address; the browser would read it as a path under the app.
+const HOST_ONLY = /^[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?([/?#].*)?$/i;
+const linkHref = (target: unknown): string => {
+  const raw = typeof target === 'string' ? target.trim() : '';
+  return safeUrl(HOST_ONLY.test(raw) ? `https://${raw}` : raw);
 };
 
 // UI 2.0 Link: an anchor (a script URL is no link: the text shows as a button instead).
@@ -85,7 +93,7 @@ export const Link = () => {
   ToolJet.useComponentSettings({ role: 'link', fit: false, loading: 'own', defaultWidth: 6, defaultHeight: 3 });
 
   // setLinkTarget and setLinkText hold until the Link target and Text properties themselves change (the state hooks).
-  const href = safeUrl(linkTarget);
+  const href = linkHref(linkTarget);
   const label = String(linkText ?? '');
   const anchorRef = useRef<HTMLAnchorElement>(null);
   const busy = useRef(disabled);
@@ -135,7 +143,7 @@ export const Link = () => {
             tabIndex={disabled ? -1 : undefined}
             className={className}
             style={style}
-            onMouseEnter={onHover}
+            onMouseOver={onPointerIn(onHover)}
             onClick={(e) => {
               if (disabled) {
                 e.preventDefault();
@@ -152,7 +160,7 @@ export const Link = () => {
             disabled={disabled}
             className={className}
             style={style}
-            onMouseEnter={onHover}
+            onMouseOver={onPointerIn(onHover)}
             onClick={onClick}
           >
             {content}

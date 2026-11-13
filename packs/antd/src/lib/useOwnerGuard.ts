@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import { createElement, useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 
 // Ant portals every popup (a Select's list, a picker's panel, a Dropdown's menu, an Image preview) into the shared popup
 // layer, outside the widget's own subtree, so the host's disabled, loading or hidden state (inert or aria-disabled on
@@ -138,3 +138,22 @@ export const useOwnedPopup = (disabled: boolean, onChange?: (open: boolean) => v
   const anchor = useRef<HTMLElement | null>(null);
   return { anchor, ...usePopupOwner(anchor, disabled, onChange) };
 };
+
+/**
+ * A picker's panelRender that closes it on Escape pressed in its panel (QA item 56). Ant handles Escape on the field,
+ * but a click on a day (or a time) moves focus to the panel, and Escape there did nothing: the popup stayed open. The
+ * close goes through the owner's path (exposed state, touch, onOpenChange); a dialog around the field stays open.
+ */
+export const closesOnEscape = (close: () => void) => (panel: ReactNode) =>
+  createElement(
+    'div',
+    {
+      style: { display: 'contents' },
+      onKeyDown: (e: { key: string; stopPropagation: () => void }) => {
+        if (e.key !== 'Escape') return;
+        e.stopPropagation();
+        close();
+      },
+    },
+    panel
+  );

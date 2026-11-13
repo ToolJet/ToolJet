@@ -157,6 +157,8 @@ export const PasswordInput = () => {
                 className="ui2-end-btn"
                 aria-label={visible ? 'Hide password' : 'Show password'}
                 aria-pressed={visible}
+                // No Tab stop, as the eye of ToolJet's Password input: Tab goes on to the next component.
+                tabIndex={-1}
                 disabled={disabled}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => setRevealed((v) => !v)}

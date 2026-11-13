@@ -259,6 +259,8 @@ export const DropdownMenu = () => {
               `ui-btn--${look}`,
               size !== 'default' && `ui-btn--${size}`,
               iconOnly ? 'n2-btn--icon' : fullWidth ? 'is-full' : 'ui-btn--auto',
+              // A text trigger takes its box's height, as the Button does (QA item 9); an icon one stays square.
+              !iconOnly && 'n2-btn-fill',
               isSet(backgroundColor) && 'has-bg',
               isSet(hoverBackgroundColor) && 'has-hover',
               isSet(textColor) && 'has-fg',

@@ -92,3 +92,17 @@ export const usePackManifest = (packId: string | undefined): LibraryManifest | n
   }, [packId]);
   return manifest ?? null;
 };
+
+/** Starts listing the packs, and fetching the manifest of each pack the app's pages draw, as soon as the app
+    definition arrives: otherwise nothing asks until the first pack widget renders (after its lazy chunk loads). */
+export const prefetchPacksForPages = (pages: any[] | undefined): void => {
+  const packIds = new Set<string>();
+  pages?.forEach((page) =>
+    Object.values(page?.components ?? {}).forEach((c: any) => {
+      if (c?.component?.component !== 'PackComponent') return;
+      const pack = c.component.definition?.properties?.pack?.value;
+      if (typeof pack === 'string' && pack) packIds.add(pack);
+    })
+  );
+  packIds.forEach((pack) => useBuiltinPacksStore.getState().fetchManifest(pack));
+};

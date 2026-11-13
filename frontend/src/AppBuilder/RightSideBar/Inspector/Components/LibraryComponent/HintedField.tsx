@@ -11,7 +11,7 @@ import { IconPicker } from './fields';
 import { readLiteralCode, writeLiteralCode } from './literal';
 import { OptionsEditor } from './OptionsEditor';
 import type { InspectorComponent, LibraryEditorHint, ParamUpdated } from './types';
-import { fieldMeta } from './utils';
+import { fieldMeta, hasOptionDefault } from './utils';
 
 const ToolTipComponent = ToolTip as React.ComponentType<any>;
 const FxButtonComponent = FxButton as React.ComponentType<any>;
@@ -74,6 +74,7 @@ export const HintedField = ({
             onChange={write}
             darkMode={darkMode}
             cyLabel={cyLabel}
+            defaultToggle={hasOptionDefault(properties.pack?.value, properties.componentName?.value)}
           />
         );
       case 'columns':

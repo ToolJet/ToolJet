@@ -148,9 +148,10 @@ export interface GroupButton {
   disabled: boolean;
   variant: string;
   tooltip: string;
+  isDefault: boolean;
 }
 
-/** Buttons as `{ label, value, icon, disabled, variant, tooltip }`. Every button is kept: buttons sharing a value (by
+/** Buttons as `{ label, value, icon, disabled, variant, tooltip, default }`. Every button is kept: buttons sharing a value (by
  *  its text) are one choice drawn twice, selected together, so the caller keys them by position. */
 export const groupButtons = (buttons: unknown): GroupButton[] => {
   const out: GroupButton[] = [];
@@ -166,9 +167,17 @@ export const groupButtons = (buttons: unknown): GroupButton[] => {
       disabled: entry.disabled,
       variant: BUTTON_VARIANTS.includes(String(o.variant)) ? String(o.variant) : '',
       tooltip: text(o.tooltip),
+      isDefault: flag(o.default),
     });
   }
   return out;
+};
+
+/** The keys the buttons marked default select: all of them for 'multiple', the first for 'single', none for 'actions'. */
+export const defaultSelection = (buttons: readonly GroupButton[], mode: string): string[] => {
+  if (mode !== 'single' && mode !== 'multiple') return [];
+  const marked = [...new Set(buttons.filter((b) => b.isDefault).map((b) => String(b.value)))];
+  return mode === 'single' ? marked.slice(0, 1) : marked;
 };
 
 /** The selected keys from a default value: one value for 'single', a list for 'multiple', none for 'actions'. */

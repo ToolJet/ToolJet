@@ -533,7 +533,14 @@
 }
 .u2l-list-item.is-canvas {
   display: block;
+  height: var(--lv-row-height);
   padding: 0;
+}
+/* With Dynamic height (the host's tj-cc-fit) the host draws each row's canvas at its components' height, never below
+   the item height: the item grows with it instead of clipping it. */
+.tj-cc-fit .u2l-list-item.is-canvas {
+  height: auto;
+  min-height: var(--lv-row-height);
 }
 /* A framed row of ToolJet components (the Outlined card look, or an item border colour) keeps its content off the
    frame, as a UI 2.0 card does: the components sat 4px from the left border and ran into the right one. Sideways only:

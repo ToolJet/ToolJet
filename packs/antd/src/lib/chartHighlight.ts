@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
 type Row = Record<string, unknown>;
 
@@ -6,6 +6,25 @@ type Row = Record<string, unknown>;
 const firstRow = (d: unknown): Row | null => {
   const row = Array.isArray(d) ? d[0] : d;
   return row && typeof row === 'object' ? (row as Row) : null;
+};
+
+type ClickEvent = { data?: { data?: Row } };
+type Emitter = { on?: (name: string, handler: (event: ClickEvent) => void) => void };
+
+/**
+ * A chart's onReady that reports each clicked element's row. G2 emits a click on a bar, slice or point as
+ * 'element:click', but Ant's chart passes G2's events on (and to onEvent) under the pointer event's own type, 'click',
+ * so a check for 'element:click' never matched and On element click never fired. The element event is listened for by
+ * its name on the G2 chart itself (the Ant chart's `chart`). onReady runs once, when the chart is made, so the latest
+ * onClick is read when a click comes.
+ */
+export const useElementClick = (onClick: (datum: Row) => void) => {
+  const latest = useRef(onClick);
+  latest.current = onClick;
+  return useCallback((plot: unknown) => {
+    const chart = (plot as { chart?: Emitter } | null)?.chart;
+    chart?.on?.('element:click', (event) => latest.current(event?.data?.data ?? {}));
+  }, []);
 };
 
 /** Whether a clicked datum was set (a cleared one is {}). */

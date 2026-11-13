@@ -14,33 +14,10 @@ const PackComponent = ({ properties = {}, ...props }: { properties?: Record<stri
   const pack = useBuiltinPack(packId);
   const manifest = usePackManifest(packId);
   const packsListed = useBuiltinPacksStore((state: { packs: unknown[] | null }) => state.packs !== null);
-  const missingComponent = !!pack && !!manifest?.components && !!componentName && !manifest.components[componentName];
-  if (packsListed && (!pack || missingComponent)) {
-    const message = !packId
-      ? 'This component names no pack.'
-      : !pack
-        ? `This component's pack ("${packId}") isn't installed on this ToolJet.`
-        : `The pack "${packId}" has no component "${componentName}".`;
-    return (
-      <div
-        role="alert"
-        data-cy="pack-component-error"
-        style={{
-          width: '100%',
-          height: '100%',
-          padding: 12,
-          overflow: 'auto',
-          font: '12px/1.4 monospace',
-          color: 'var(--text-danger, #d72d39)',
-          border: '1px dashed var(--text-danger, #d72d39)',
-          borderRadius: 6,
-          background: 'var(--surfaces-surface-01, transparent)',
-        }}
-      >
-        {message}
-      </div>
-    );
-  }
+  // Until the pack list arrives (or while it failed) nothing says the pack is missing: a neutral box, not the Slot.
+  const listing = !packsListed;
+  // The packs are listed and this one is not among them (a pack this release doesn't ship): it never draws.
+  const unavailable = packsListed && (!pack || !componentName);
 
   const source =
     pack && componentName
@@ -55,7 +32,17 @@ const PackComponent = ({ properties = {}, ...props }: { properties?: Record<stri
         }
       : null;
 
-  return <SdkComponentHost {...(props as any)} properties={properties} source={source} metaKeys={META_KEYS} />;
+  return (
+    <SdkComponentHost
+      {...(props as any)}
+      properties={properties}
+      source={source}
+      pending={listing}
+      metaKeys={META_KEYS}
+      pack={pack?.pack}
+      unavailable={unavailable}
+    />
+  );
 };
 
 export default PackComponent;

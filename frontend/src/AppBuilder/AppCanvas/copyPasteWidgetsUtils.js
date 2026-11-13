@@ -295,7 +295,9 @@ export function resolvePastedComponentName({
       return originalName;
     }
   }
-  return computeComponentName(utilityFuncForNameSeed(componentDef), mergedComponents);
+  return computeComponentName(utilityFuncForNameSeed(componentDef), mergedComponents, undefined, {
+    skipRegistry: isSdkComponentType(componentDef.component?.component),
+  });
 }
 
 export async function pasteComponents(targetParentId, copiedComponentObj) {
@@ -441,7 +443,7 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
   });
   const canAddToParent = useStore.getState().canAddToParent;
   const fc = finalComponents.filter((component) => {
-    return canAddToParent(component?.component.parent, component?.component.component);
+    return canAddToParent(component?.component.parent, component?.component.component, undefined, component?.component);
   });
   const filteredFinalComponents = fc.map((component) => {
     if (formComponentIds.has(component.id)) {

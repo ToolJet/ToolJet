@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Button as AntButton } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { safeUrl } from '../lib/ui2/display/chat/values';
 
 // Ant's Button (5.21+ API): its text is its children; color (primary, default, danger) and variant (solid, outlined,
 // dashed, filled, text, link) together make the look; size, shape, block, href / target; event onClick.
@@ -37,12 +38,14 @@ export const Button = () => {
     description: 'Fill the width of the box.',
     initialValue: true,
   });
-  const [href] = ToolJet.useStateString({
+  const [rawHref] = ToolJet.useStateString({
     name: 'href',
     label: 'Href',
     description: 'Makes the button a link.',
     initialValue: '',
   });
+  // A javascript: or data: href would run script on click; only web, mail and phone links are kept.
+  const href = safeUrl(rawHref);
   const [target] = ToolJet.useStateEnumeration({
     name: 'target',
     label: 'Target',
@@ -89,6 +92,7 @@ export const Button = () => {
     <AntProvider tokens={tokens} fill className="tj-ant-center">
       <AntButton
         ref={ref}
+        className="tj-ant-fill"
         color={color as 'primary'}
         variant={variant as 'solid'}
         size={size as 'middle'}
@@ -96,9 +100,11 @@ export const Button = () => {
         block={block}
         href={href || undefined}
         target={href ? target : undefined}
-        disabled={disabled}
+        // Disabled only by the host, which dims the widget to half and makes it inert, as a native Button: Ant's own
+        // disabled look dimmed it a second time, its label nearly gone. It keeps its look and says it is disabled.
+        aria-disabled={disabled || undefined}
         loading={loading}
-        onClick={() => onClick()}
+        onClick={() => !disabled && onClick()}
       >
         {children}
       </AntButton>

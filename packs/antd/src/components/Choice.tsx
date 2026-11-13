@@ -120,46 +120,56 @@ export const RadioGroup = (props: Record<string, unknown>) => {
   // A radio's own key, picked by a click.
   const pick = (k: unknown) => change(k === '' ? '' : valueForKey(options, k));
   useValueActions(change, props.value);
+  // A value no option offers is not kept while nothing shows picked; not while the options are empty or loading (a
+  // query not yet run), so a default waits for them. Fires no event.
+  const offered = value === '' || options.some((o) => o.value === key);
+  React.useEffect(() => {
+    if (!offered && options.length > 0 && !loading) setValue('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offered, options.length, loading]);
 
   return (
     <AntProvider tokens={tokens}>
       <FormField {...field} check={check} htmlFor={fieldId}>
         <SpinOver loading={loading} as="inline">
-          <Radio.Group
-            id={fieldId}
-            value={key || undefined}
-            optionType={optionType as 'default'}
-            buttonStyle={buttonStyle as 'solid'}
-            size={size as 'middle'}
-            disabled={disabled}
-            style={
-              vertical && optionType === 'default' ? { display: 'flex', flexDirection: 'column', gap: 8 } : undefined
-            }
-            onChange={(e) => pick(e.target.value)}
-          >
-            {/* The radios are drawn here, not from Ant's options, so each has a React key of its own (two options
+          {/* Read as one group named by its label (the label's htmlFor names no group; Ant's group has no role). */}
+          <div role="radiogroup" aria-label={field.label || undefined} style={{ display: 'contents' }}>
+            <Radio.Group
+              id={fieldId}
+              value={key || undefined}
+              optionType={optionType as 'default'}
+              buttonStyle={buttonStyle as 'solid'}
+              size={size as 'middle'}
+              disabled={disabled}
+              style={
+                vertical && optionType === 'default' ? { display: 'flex', flexDirection: 'column', gap: 8 } : undefined
+              }
+              onChange={(e) => pick(e.target.value)}
+            >
+              {/* The radios are drawn here, not from Ant's options, so each has a React key of its own (two options
                 with one value drew with one key). Ant fires no onChange for a click on the checked radio, so
                 deselecting is the option's own click (Ant's Radio reports one click for the label and its input). */}
-            {options.map((o) => {
-              const Item = optionType === 'button' ? Radio.Button : Radio;
-              return (
-                <Item
-                  key={o.key}
-                  value={o.value}
-                  disabled={o.disabled}
-                  onClick={
-                    allowDeselect === true
-                      ? () => {
-                          if (!disabled && !o.disabled && o.value === key) change('');
-                        }
-                      : undefined
-                  }
-                >
-                  {o.label}
-                </Item>
-              );
-            })}
-          </Radio.Group>
+              {options.map((o) => {
+                const Item = optionType === 'button' ? Radio.Button : Radio;
+                return (
+                  <Item
+                    key={o.key}
+                    value={o.value}
+                    disabled={o.disabled}
+                    onClick={
+                      allowDeselect === true
+                        ? () => {
+                            if (!disabled && !o.disabled && o.value === key) change('');
+                          }
+                        : undefined
+                    }
+                  >
+                    {o.label}
+                  </Item>
+                );
+              })}
+            </Radio.Group>
+          </div>
         </SpinOver>
       </FormField>
     </AntProvider>
@@ -246,12 +256,16 @@ export const Segmented = (props: Record<string, unknown>) => {
           <SpinOver loading={loading} as="inline">
             {options.length ? (
               <AntSegmented
+                aria-label={field.label || undefined}
                 options={items}
                 value={current}
                 block={block}
                 vertical={vertical}
                 size={size as 'middle'}
                 disabled={disabled}
+                // One Tab stop, the radio that takes the arrow keys: rc-segmented also makes its frame a stop, where
+                // the arrow keys do nothing.
+                tabIndex={-1}
                 onChange={(v) => change(options.find((o) => o.key === v)?.data ?? '')}
               />
             ) : (
@@ -313,12 +327,15 @@ export const Rate = (props: Record<string, unknown>) => {
       <FormField {...field} check={check}>
         <SpinOver loading={loading} as="inline">
           <AntRate
+            aria-label={field.label || undefined}
             value={drawn ?? 0}
             count={stars}
             allowHalf={allowHalf}
             allowClear={allowClear}
             tooltips={tips.length ? tips : undefined}
             disabled={disabled}
+            // A Tab stop per star, as ToolJet's Rating; the row of stars itself is none.
+            tabIndex={-1}
             onChange={(v) => change(v)}
           />
         </SpinOver>

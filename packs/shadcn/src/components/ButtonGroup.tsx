@@ -2,12 +2,12 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { Field } from '../lib/Field';
 import { cn } from '../lib/cn';
-import { groupButtons, initialSelection, list, selectionExposed, toggleSelection } from '../lib/ui2/nav/model';
+import { defaultSelection, groupButtons, initialSelection, list, selectionExposed, toggleSelection } from '../lib/ui2/nav/model';
 import type { GroupButton } from '../lib/ui2/nav/model';
 import { isSet, lookVars, px } from '../lib/ui2/nav/look';
 import { useStable } from '../lib/ui2/nav/hooks';
 import { Icon } from '../lib/ui2/nav/parts';
-import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
+import { TOKEN, useAutoRadius, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 const VARIANTS = ['outline', 'secondary', 'default', 'ghost'];
@@ -21,10 +21,10 @@ export const ButtonGroup = () => {
     label: 'Buttons',
     inspector: 'options',
     description:
-      'Array of { label, value, icon, disabled, variant, tooltip } objects, or plain strings. An empty label with an icon is an icon button.',
+      'Array of { label, value, icon, disabled, variant, tooltip, default } objects, or plain strings. An empty label with an icon is an icon button. A button marked default starts selected: all of them in Multiple, the first in Single.',
     initialValue: [
       { label: 'Day', value: 'day' },
-      { label: 'Week', value: 'week' },
+      { label: 'Week', value: 'week', default: true },
       { label: 'Month', value: 'month' },
     ],
   });
@@ -41,17 +41,20 @@ export const ButtonGroup = () => {
     name: 'defaultValue',
     label: 'Default selected (value, or a list when multiple)',
     initialValue: '',
+    inspector: 'hidden',
   });
   // Exposed: the selected value (single), the list of them (multiple), '' with none. Read back only as a button's value.
   const [value, setValue] = ToolJet.useStateString({
     name: 'value',
     label: 'Selected value (single)',
-    initialValue: 'week',
+    initialValue: '',
+    inspector: 'hidden',
   });
   const [selected, setSelected] = ToolJet.useStateArray({
     name: 'selected',
     label: 'Selected values (multiple)',
     initialValue: [],
+    inspector: 'hidden',
   });
   const [allowDeselect] = ToolJet.useStateBoolean({
     name: 'allowDeselect',
@@ -64,7 +67,6 @@ export const ButtonGroup = () => {
     enumDefinition: ['outline', 'secondary', 'default', 'ghost'],
     enumLabels: { outline: 'Outline', secondary: 'Secondary', default: 'Default', ghost: 'Ghost' },
     initialValue: 'outline',
-    inspector: 'switch',
   });
   const [size] = ToolJet.useStateEnumeration({
     name: 'size',
@@ -102,7 +104,7 @@ export const ButtonGroup = () => {
   const selectedText = useThemeColor('selectedTextColor', 'Selected text color', TOKEN.surface);
   const iconColor = useThemeColor('iconColor', 'Icon color', TOKEN.text);
   const labelColor = useThemeColor('labelColor', 'Label color', TOKEN.text);
-  const radius = useThemeRadius('borderRadius', 'Group radius');
+  const radius = useAutoRadius('borderRadius', 'Group radius');
   ToolJet.useComponentSettings({ role: 'buttongroup', fit: true, loading: 'own', defaultWidth: 10, defaultHeight: 4 });
 
   const kind = mode === 'none' ? 'actions' : mode;
@@ -124,7 +126,8 @@ export const ButtonGroup = () => {
   // value and selected as `keys` publishes them (multiple: value is the list too).
   const exposedFor = (next: string[]) => {
     const e = selectionExposed(next, live.current.kind, live.current.items);
-    return { value: live.current.kind === 'multiple' ? e.value : String(e.value), selected: e.selected };
+    // The buttons' values as they give them: a numeric value stays a number in single mode (it was made text).
+    return { value: e.value, selected: e.selected };
   };
   const shown = useRef({ value: value as unknown, selected: selected as unknown });
   shown.current = { value, selected };
@@ -135,19 +138,27 @@ export const ButtonGroup = () => {
     setValue(e.value as unknown as string);
     setSelected(e.selected);
   };
-  // A new Default selected (or mode) starts the selection again, as UI 2.0's does.
+  // The buttons marked default start selected; a new default (or mode) starts the selection again. An app that
+  // saved the earlier Default selected field keeps it.
+  const hasSavedDefault = !(defaultValue === '' || defaultValue == null);
+  const marked = items.some((b) => b.isDefault);
+  const markedSignature = JSON.stringify(defaultSelection(items, kind));
   const firstRun = useRef(true);
   const stableDefault = useStable(defaultValue);
   useEffect(() => {
     if (firstRun.current) {
       firstRun.current = false;
-      if (defaultValue === '' || defaultValue == null) return;
+      if (!hasSavedDefault && !marked) return;
     }
     const raw =
       typeof defaultValue === 'string' && defaultValue.trim().startsWith('[') ? safeJson(defaultValue) : defaultValue;
-    apply(initialSelection(raw, live.current.kind, live.current.items));
+    apply(
+      hasSavedDefault
+        ? initialSelection(raw, live.current.kind, live.current.items)
+        : defaultSelection(live.current.items, live.current.kind)
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stableDefault, kind]);
+  }, [markedSignature, stableDefault, kind]);
 
   // Once there are buttons, the exposed value and selected follow the selection they hold: a value no button has
   // empties, and in Multiple mode value is the list. No event: nothing was picked. (With no buttons yet, a list still
@@ -165,7 +176,8 @@ export const ButtonGroup = () => {
     value: kind === 'multiple' ? keys : (keys[0] ?? ''),
     present: keys.length > 0,
   });
-  const disabled = control.disabled || legacyDisabled === true;
+  // Loading draws its own spinner (loading: 'own'), so the group is inert while it shows: disabled in look and in action.
+  const disabled = control.disabled || legacyDisabled === true || control.loading;
   const click = (button: GroupButton) => {
     if (disabled || button.disabled) return;
     setLastClicked({ label: button.label, value: button.value });
@@ -183,7 +195,11 @@ export const ButtonGroup = () => {
       params: [{ handle: 'selected', displayName: 'Value (or a list)' }],
     },
     (v) => {
-      apply(initialSelection(v, live.current.kind, live.current.items));
+      const next = initialSelection(v, live.current.kind, live.current.items);
+      // A value no button has is refused, leaving the selection as it was (it cleared it); an empty one clears.
+      const asked = Array.isArray(v) ? v.length > 0 : !(v === '' || v === undefined || v === null);
+      if (asked && !next.length) return;
+      apply(next);
     }
   );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => apply([]));

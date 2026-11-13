@@ -234,6 +234,8 @@ export const PhoneInput = () => {
                     type="button"
                     className="ui2-addon"
                     disabled={disabled}
+                    // One Tab stop for the field, as ToolJet's Phone input: the number.
+                    tabIndex={-1}
                     aria-label={`Country: ${P.countryName(country)}`}
                   >
                     {current}
@@ -286,6 +288,8 @@ export const PhoneInput = () => {
                               key={c.code}
                               type="button"
                               role="option"
+                              // The search's arrow keys move through the countries; Tab leaves the list.
+                              tabIndex={-1}
                               aria-selected={c === country}
                               data-active={i === active || undefined}
                               className={cn('ui2-pop-item', c === country && 'is-selected')}

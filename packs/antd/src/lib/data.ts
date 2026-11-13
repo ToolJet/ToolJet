@@ -128,6 +128,19 @@ export const rowKeyOf = (row: Row, field: string, index: number): string => {
   return v === undefined || v === null || v === '' ? String(index) : String(v);
 };
 
+/** Each row's own key: its id, a repeated id suffixed by its occurrence (1, then 1~1), so two records that share an id
+ *  are told apart: both drew selected, and a refresh moved the selection to the first of them. */
+export const occurrenceKeys = (rows: Row[], field: string): string[] => {
+  const seen = new Set<string>();
+  return rows.map((r, i) => {
+    const base = rowKeyOf(r, field, i);
+    let key = base;
+    for (let n = 1; seen.has(key); n += 1) key = `${base}~${n}`;
+    seen.add(key);
+    return key;
+  });
+};
+
 /** A row's identity as the data has it, for exposing: the named field, else id / key (a number stays a number), else
  *  the index. rowKeyOf is the same as text, for matching. */
 export const rowIdOf = (row: Row, field: string, index: number): unknown => {

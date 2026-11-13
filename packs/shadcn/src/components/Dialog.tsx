@@ -10,6 +10,7 @@ import { POPUP_LAYER, popupLayerOf } from '../lib/popupLayer';
 import { LoadingBox, LoadingFrame, useLoading } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import { useValueSetter } from '../lib/sameValue';
+import { displayText } from '../lib/displayText';
 import { useKeptPopupSlot } from '../lib/keptPopupSlot';
 
 // The overlay's and the dialog's own levels in ui.css (.ui-dialog-overlay, .ui-dialog); popups opened from the body
@@ -17,7 +18,7 @@ import { useKeptPopupSlot } from '../lib/keptPopupSlot';
 const OVERLAY_Z = 1000;
 
 export const Dialog = () => {
-  const [triggerText] = ToolJet.useStateString({
+  const [rawTriggerText] = ToolJet.useStateString({
     name: 'triggerText',
     label: 'Button label',
     initialValue: 'Delete account',
@@ -29,18 +30,26 @@ export const Dialog = () => {
     initialValue: 'outline',
     section: 'Appearance',
   });
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Are you absolutely sure?' });
-  const [description] = ToolJet.useStateString({
+  const [rawTitle] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Are you absolutely sure?' });
+  const [rawDescription] = ToolJet.useStateString({
     name: 'description',
     label: 'Description',
     initialValue: 'This action cannot be undone. This will permanently delete your account and remove your data.',
   });
-  const [confirmText] = ToolJet.useStateString({
+  const [rawConfirmText] = ToolJet.useStateString({
     name: 'confirmText',
     label: 'Confirm label',
     initialValue: 'Continue',
   });
-  const [cancelText] = ToolJet.useStateString({ name: 'cancelText', label: 'Cancel label', initialValue: 'Cancel' });
+  const [rawCancelText] = ToolJet.useStateString({ name: 'cancelText', label: 'Cancel label', initialValue: 'Cancel' });
+  // An object bound to a text property would throw as a React child and replace the whole Dialog.
+  const [triggerText, title, description, confirmText, cancelText] = [
+    rawTriggerText,
+    rawTitle,
+    rawDescription,
+    rawConfirmText,
+    rawCancelText,
+  ].map(displayText);
   const [destructive] = ToolJet.useStateBoolean({
     name: 'destructive',
     label: 'Destructive confirm',
@@ -49,6 +58,9 @@ export const Dialog = () => {
   });
   // Exposed as show, UI 2.0's Modal name.
   const [open, setOpen] = ToolJet.useStateBoolean({ name: 'show', initialValue: false, inspector: 'hidden' });
+  // In the editor it draws no backdrop and stays open on outside presses, so the builder can use the panels and drop
+  // components into its body while it is open.
+  const editing = ToolJet.useEditing();
   // Built in: the body is a canvas of ToolJet components (a form, details), under the description.
   const [showBody] = ToolJet.useStateBoolean({ name: 'showBody', label: 'Components in the body', initialValue: true });
   const [showFooter] = ToolJet.useStateBoolean({
@@ -108,12 +120,40 @@ export const Dialog = () => {
   // The body's components are not inside the dialog in React's tree (the host renders them in the popup layer's light
   // DOM, projected through the body's <slot>) and their popups portal beside it, so Radix took a press on any of them
   // for one outside and cancelled the dialog: a DatePicker's trigger in the body dismissed it and lost the typed draft
-  // (SP-28; a text field survived only because the host stops its mousedown). A modal dialog leaves the page no
-  // pointer events, so a press outside its content reaches either its own backdrop or a popup opened from its body:
-  // only the backdrop dismisses.
+  // (SP-28; a text field survived only because the host stops its mousedown). Only a press on its own backdrop
+  // dismisses it.
+  // It is not a Radix modal: that set pointer-events: none on the page's body and pulled focus back into itself, so
+  // what opens above it from elsewhere (a ToolJet Dropdown's menu, a ToolJet Modal, another pack's dialog) took no
+  // click and kept no focus (PKB-04, -05, -06). Its backdrop, drawn here, blocks what is under it instead.
   // Radix decides on the click that ends the press, when the pointerdown's composedPath() is already empty, so the
   // overlay notes the press it took and the check compares the event itself.
   const backdropPress = React.useRef<Event | null>(null);
+  // An Escape pressed in a dialog above this one (another pack's popup layer, a ToolJet Modal) closes that one only:
+  // Radix listens on the document and took it for this dialog's too, leaving the one above open alone (PKB-06).
+  // Radix marks every Escape it handles with preventDefault, and the dialog above may skip a marked one (a ToolJet
+  // Modal does, taking it for a nested popup's), so the event is left unmarked: its preventDefault does nothing for this
+  // event, and the close Radix then asks for is ignored.
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const escapeAbove = React.useRef<Event | null>(null);
+  const leaveEscapeToAbove = (event: KeyboardEvent) => {
+    escapeAbove.current = event;
+    Object.defineProperty(event, 'preventDefault', { value: () => {}, configurable: true });
+    setTimeout(() => {
+      if (escapeAbove.current === event) escapeAbove.current = null;
+    }, 0);
+  };
+  const escapeFromAbove = (event: KeyboardEvent) => {
+    const root = contentRef.current?.getRootNode();
+    const ownLayer = root instanceof ShadowRoot ? root.host : null;
+    return event
+      .composedPath()
+      .some(
+        (node) =>
+          node instanceof HTMLElement &&
+          node !== ownLayer &&
+          (node.classList.contains('tj-cc-popup-host') || node.classList.contains('modal'))
+      );
+  };
   const keepUnlessBackdrop = (event: { detail: { originalEvent: Event }; preventDefault: () => void }) => {
     const press = event.detail.originalEvent;
     const overlay = overlayRef.current;
@@ -145,7 +185,8 @@ export const Dialog = () => {
   // and a close action, as in the Ant and MUI packs (BN-01). Clearing them stays explicit (clearForm, an action).
   const [bodyKeeper, bodyPlace] = useKeptPopupSlot('body', {
     enabled: !!showBody,
-    style: { height: Math.min(2000, Math.max(40, Number(bodyHeight) || 240)) },
+    // At its own height when the dialog is capped at the screen: the dialog scrolls rather than squeeze the body.
+    style: { height: Math.min(2000, Math.max(40, Number(bodyHeight) || 240)), flexShrink: 0 },
   });
   ToolJet.useComponentSettings({
     role: 'dialog',
@@ -166,28 +207,42 @@ export const Dialog = () => {
         style={{ display: 'flex', alignItems: 'center', ...themeVars({ buttonColor, buttonText }) }}
       >
         <DialogPrimitive.Root
+          modal={false}
           open={open}
           onOpenChange={(next) => {
             if (next) show();
+            else if (escapeAbove.current) escapeAbove.current = null;
             else close(false);
           }}
         >
           <DialogPrimitive.Trigger asChild>
-            <button type="button" className={cn('ui-btn', `ui-btn--${triggerVariant}`)} disabled={!!disabled}>
+            <button
+              type="button"
+              // n2-btn-fill: the trigger takes its box's height, as the Button does (QA item 9).
+              className={cn('ui-btn n2-btn-fill', `ui-btn--${triggerVariant}`)}
+              disabled={!!disabled}
+            >
               {triggerText}
             </button>
           </DialogPrimitive.Trigger>
           {container ? (
             <DialogPrimitive.Portal container={container}>
-              <DialogPrimitive.Overlay
-                ref={overlayRef}
-                onPointerDown={(e) => {
-                  backdropPress.current = e.nativeEvent;
-                }}
-                className="ui-dialog-overlay"
-                style={base === undefined ? undefined : { zIndex: layer }}
-              />
+              {/* Radix draws its overlay only for a modal dialog. None in the editor: it would cover the panels. */}
+              {editing ? null : (
+                <div
+                  ref={overlayRef}
+                  data-state={open ? 'open' : 'closed'}
+                  onPointerDown={(e) => {
+                    backdropPress.current = e.nativeEvent;
+                  }}
+                  className="ui-dialog-overlay"
+                  style={base === undefined ? undefined : { zIndex: layer }}
+                />
+              )}
               <DialogPrimitive.Content
+                ref={contentRef}
+                // The host keeps Tab inside the open dialog (packFocus): it is not Radix's modal mode, which traps.
+                data-tj-modal={open ? 'open' : 'closed'}
                 className="ui-popup ui-dialog"
                 style={{
                   ...themeVars({ bg: background }),
@@ -195,7 +250,12 @@ export const Dialog = () => {
                   ...(base === undefined ? {} : { zIndex: layer + 1 }),
                   [POPUP_LAYER as string]: layer + 2,
                 }}
-                onPointerDownOutside={keepUnlessBackdrop}
+                onPointerDownOutside={editing ? (e) => e.preventDefault() : keepUnlessBackdrop}
+                // Focus moving to a field above it (a ToolJet Modal's, another pack's dialog's) is not a dismissal.
+                onFocusOutside={(e) => e.preventDefault()}
+                onEscapeKeyDown={(e) => {
+                  if (escapeFromAbove(e)) leaveEscapeToAbove(e);
+                }}
               >
                 <div>
                   <DialogPrimitive.Title className="ui-dialog-title">{title}</DialogPrimitive.Title>

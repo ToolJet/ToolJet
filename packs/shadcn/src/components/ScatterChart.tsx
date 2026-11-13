@@ -40,6 +40,8 @@ import {
   isSet,
   list,
   num,
+  percentScale,
+  scaled,
   sampledNote,
   seriesLabel,
   type Row,
@@ -235,15 +237,19 @@ export const ScatterChart = () => {
     } = scatterGroups(data, { xField, yField, sizeField, groupField, nameField });
     const xFormat = { format: xAxisFormat, currency, locale };
     const yFormat = { format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix };
-    const yTick = formatter(yFormat, true);
+    // Fractions (0.25) read as 25% on a percent format, as the Line chart does.
+    const pts = groups.flatMap((g) => g.points);
+    const xScale = percentScale(xAxisFormat, pts.map((pt) => pt.x));
+    const yScale = percentScale(yAxisFormat, pts.map((pt) => pt.y));
+    const yTick = scaled(formatter(yFormat, true), yScale);
     return {
       groups,
       notes: [sampledNote(sampled, rowCount, 'points'), hiddenNote(hiddenGroups, 'group')],
       fills: groups.map((_, i) => seriesColor(colors, chartColor, i)),
-      fxTick: formatter(xFormat, true),
+      fxTick: scaled(formatter(xFormat, true), xScale),
       fyTick: yTick,
-      fx: formatter(xFormat, false),
-      fy: formatter(yFormat, false),
+      fx: scaled(formatter(xFormat, false), xScale),
+      fy: scaled(formatter(yFormat, false), yScale),
       yWidth: axisWidthFor(
         groups.flatMap((g) => g.points.map((pt) => pt.y)),
         yTick

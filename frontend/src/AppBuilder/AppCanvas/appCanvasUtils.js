@@ -49,7 +49,8 @@ export const addNewWidgetToTheEditor = (
   const componentName = computeComponentName(
     libraryComponentInfo?.componentName ?? componentType,
     useStore.getState().getCurrentPageComponents(),
-    moduleInfo?.moduleName
+    moduleInfo?.moduleName,
+    { skipRegistry: !!libraryComponentInfo }
   );
   const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
@@ -74,7 +75,11 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.properties.componentName = { value: libraryComponentInfo.componentName };
     // Manifest prop defaults land as instance values so the Inspector's fields arrive
     // pre-filled (module input_items precedent below).
+    // A hidden prop has no Inspector field: it is the component's own state (a field's value) or an earlier name it
+    // still honours when an app sets it. Saving its sample would set it, so a Number Input whose Default value is
+    // later emptied kept showing the sample 1 after a reload.
     for (const prop of libraryComponentInfo.props ?? []) {
+      if (prop.inspector === 'hidden') continue;
       componentData.definition.properties[prop.name] = { value: manifestDefaultToDefinitionValue(prop) };
     }
     for (const style of libraryComponentInfo.styles ?? []) {
@@ -105,7 +110,9 @@ export const addNewWidgetToTheEditor = (
   const gridWidth = subContainerWidths[targetCanvasId] || fallbackGridWidth;
   let [left, top] = snapToGrid(gridWidth * NO_OF_GRIDS, _left, _top + scrollTop);
 
-  left = Math.round(left / gridWidth);
+  // A drop whose pointer sits left of the target's first column (near the left edge of a pack slot, whose box starts
+  // inside its card's padding) starts at column 0: it saved a negative left and the widget was cut off.
+  left = Math.max(0, Math.round(left / gridWidth));
 
   // Adjust widget width based on the dropping canvas width
   const mainCanvasGridWidth = subContainerWidths.canvas || gridWidth;
@@ -323,12 +330,15 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
   return childrenWidgets;
 }
 
-export function computeComponentName(componentType, currentComponents, moduleName) {
+// skipRegistry: the seed is a library or pack component's own name, not a native widget type, so it is not looked up
+// in the widget registry (a pack's ButtonGroup would take the native widget's name, ButtonGroupLegacy).
+export function computeComponentName(componentType, currentComponents, moduleName, { skipRegistry = false } = {}) {
   // Fall back to the raw string for non-registry seeds (e.g. Custom-tab drops name
   // instances after the LIBRARY component: 'HelloWorld' → helloworld1)
   // The UI 2.0 pack's types start with "Shad", an internal name users should not see: a new line chart is linechart1.
   const widgetConfigName = (
-    componentTypes.find((component) => component?.component === componentType)?.name ?? componentType
+    (skipRegistry ? undefined : componentTypes.find((component) => component?.component === componentType)?.name) ??
+    componentType
   )?.replace(/^Shad(?=[A-Z])/, '');
   const rawBase = moduleName || widgetConfigName || '';
   let sanitizedBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();

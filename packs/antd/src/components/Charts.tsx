@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as Plots from '@ant-design/plots';
 import { Empty, Typography } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
@@ -7,9 +7,10 @@ import { ChartLoader } from '../lib/Loading';
 import { str, toArray, toRows, type Row } from '../lib/data';
 import { formatNumber, toNumber } from '../lib/format';
 import { LOCALE_HINT } from '../lib/locale';
-import { useClickHighlight } from '../lib/chartHighlight';
+import { useClickHighlight, useElementClick } from '../lib/chartHighlight';
 import { mixRgb, tooltipInteraction, useChartTheme, useTooltipLayer, type Theme } from '../lib/chartTheme';
 import { useNarrow } from '../lib/fitText';
+import { useChartFit } from '../lib/chartFit';
 
 // @ant-design/plots' chart props are too deep for TypeScript to check here (TS2589), so the charts are untyped.
 type Chart = React.ComponentType<Record<string, unknown>>;
@@ -108,7 +109,11 @@ const useClicked = () => {
   const onElementClick = ToolJet.useEventCallback({ name: 'onElementClick' });
   ToolJet.useAction({ name: 'clearClickedPoint', displayName: 'Clear clicked point' }, () => setSelectedDatum({}));
   const highlight = useClickHighlight(highlightClicked, selectedDatum);
-  return { highlight, highlightOn: highlightClicked === true, setSelectedDatum, onElementClick };
+  const onChartReady = useElementClick((datum) => {
+    setSelectedDatum(datum);
+    onElementClick();
+  });
+  return { highlight, highlightOn: highlightClicked === true, setSelectedDatum, onElementClick, onChartReady };
 };
 
 // data is the sample a fresh drop shows, keyed by the default fields.
@@ -163,7 +168,7 @@ const useChartProps = (defaults: { x?: string; y?: string; ys?: string[]; data?:
     description: LOCALE_HINT,
     initialValue: '',
   });
-  const { highlight, highlightOn, setSelectedDatum, onElementClick } = useClicked();
+  const { highlight, highlightOn, setSelectedDatum, onElementClick, onChartReady } = useClicked();
   const { loading } = ToolJet.useControlState();
   return {
     loading,
@@ -179,6 +184,7 @@ const useChartProps = (defaults: { x?: string; y?: string; ys?: string[]; data?:
     locale,
     setSelectedDatum,
     onElementClick,
+    onChartReady,
     highlight,
     highlightOn,
   };
@@ -206,7 +212,7 @@ const toSeries = (rows: Row[], xField: string, yFields: string[], colorField: st
 };
 
 // While loading, the chart's own loader covers the chart, which stays mounted.
-const Frame = ({
+export const Frame = ({
   title,
   empty,
   loading,
@@ -221,28 +227,55 @@ const Frame = ({
   /** The chart theme is read (useChartTheme): the plot draws, and animates in, in its final colours. */
   ready?: boolean;
   children: React.ReactNode;
-}) => (
-  <div className="tj-ant-chart" ref={chartRef}>
-    {title ? (
-      <Typography.Title level={5} style={{ margin: 0 }}>
-        {title}
-      </Typography.Title>
-    ) : null}
-    <div className="tj-ant-chart-body">
-      {empty && !loading ? (
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" />
-      ) : ready ? (
-        children
+}) => {
+  const fit = useChartFit(chartRef);
+  const own = React.isValidElement<{ onReady?: (c: unknown) => void }>(children) ? children.props.onReady : undefined;
+  // Stable, so the plot does not see a new onReady each render; the chart's own (the shared config's) still runs.
+  const ownRef = useRef(own);
+  ownRef.current = own;
+  const onReady = React.useCallback(
+    (c: unknown) => {
+      fit(c as never);
+      ownRef.current?.(c);
+    },
+    [fit]
+  );
+  const chart = React.isValidElement(children)
+    ? React.cloneElement(children as React.ReactElement, { onReady })
+    : children;
+  return (
+    <div className="tj-ant-chart" ref={chartRef}>
+      {title ? (
+        <Typography.Title level={5} style={{ margin: 0 }}>
+          {title}
+        </Typography.Title>
       ) : null}
-      {loading ? <ChartLoader /> : null}
+      <div className="tj-ant-chart-body">
+        {empty && !loading ? (
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" />
+        ) : ready ? (
+          chart
+        ) : null}
+        {loading ? <ChartLoader /> : null}
+      </div>
     </div>
-  </div>
-);
+  );
+};
+
+// Where a value label sits: inside a bar or slice, or above a point (on the point it hid the marker). Labels that
+// would overlap are dropped, so a dense Column draws a readable row of labels instead of an unreadable band.
+const valueLabel = (text: (d: Row) => string, fill: string, at: 'inside' | 'top') => ({
+  text,
+  fill,
+  position: at,
+  ...(at === 'top' ? { dy: -8 } : {}),
+  transform: [{ type: 'overlapHide' }],
+});
 
 const useCommon = (
   p: ReturnType<typeof useChartProps>,
   theme: Theme,
-  series: { color?: string; y: string },
+  series: { color?: string; y: string; labelAt?: 'inside' | 'top' },
   tips?: HTMLElement
 ) => {
   const common = useMemo(() => {
@@ -270,16 +303,23 @@ const useCommon = (
       // category twice and no value on a Column.
       tooltip: { items: [{ channel: 'y', valueFormatter: fmt }] },
       interaction: tooltipInteraction(tips),
-      label: p.label ? { text: (d: Row) => fmt(d[series.y]), fill: theme.text, position: 'inside' } : undefined,
+      label: p.label ? valueLabel((d: Row) => fmt(d[series.y]), theme.text, series.labelAt ?? 'inside') : undefined,
       viewStyle: { viewFill: 'transparent' },
-      onEvent: (_chart: unknown, event: { type?: string; data?: { data?: Row } }) => {
-        if (event?.type === 'element:click') {
-          p.setSelectedDatum(event.data?.data ?? {});
-          p.onElementClick();
-        }
-      },
+      onReady: p.onChartReady,
     };
-  }, [p.yFormatter, p.currency, p.locale, p.legend, p.label, theme, series.color, series.y, tips]);
+  }, [
+    p.yFormatter,
+    p.currency,
+    p.locale,
+    p.legend,
+    p.label,
+    p.onChartReady,
+    theme,
+    series.color,
+    series.y,
+    series.labelAt,
+    tips,
+  ]);
   // A fresh scale on every render: Ant's charts write into the scale they are given (a Line of all zeros sets
   // y.domainMax 1), and a memoised one kept that limit once the real data came, drawing the lines off the plot.
   // Ant compares configs by content, so a new object with the same content does not redraw the chart.
@@ -323,11 +363,32 @@ export const Column = () => {
   const r = Math.max(0, Number(radius) || 0);
   const Chart = horizontal ? AntBar : AntColumn;
   const marked = p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [s.x, s.color] }) } : {};
+  // With Label on, one category in so many is labelled, so labels get about 28px each along the axis: every bar's label
+  // made an unreadable band on a dense chart (G2's overlap filter keeps labels drawn at different heights).
+  const [span, setSpan] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const measure = () => setSpan(horizontal ? el.clientHeight : el.clientWidth);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [horizontal]);
+  const categories = [...new Set(s.data.map((d) => str((d as Row)[s.x])))];
+  const every = span > 0 ? Math.max(1, Math.ceil((categories.length * 28) / span)) : 1;
+  const place = new Map(categories.map((c, i) => [c, i]));
+  const baseLabel = (common as { label?: { text: (d: Row) => string } }).label;
+  const label =
+    baseLabel && every > 1
+      ? { ...baseLabel, text: (d: Row) => ((place.get(str(d[s.x])) ?? 0) % every === 0 ? baseLabel.text(d) : '') }
+      : baseLabel;
   return (
     <AntProvider tokens={tokens} fill>
       <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <Chart
           {...(common as object)}
+          label={label}
           data={s.data}
           xField={s.x}
           yField={s.y}
@@ -370,7 +431,7 @@ export const Line = () => {
   const tips = useTooltipLayer(ref, theme.dark);
   const rows = toRows(p.rawData);
   const s = toSeries(rows, p.xField, yFields(p.yField), p.colorField);
-  const common = useCommon(p, theme, s, tips);
+  const common = useCommon(p, theme, { ...s, labelAt: 'top' }, tips);
   // Highlighted: the clicked line stays and the others fade; a clicked point is marked. With Point off the points are
   // there to be clicked but drawn only once clicked.
   const h = p.highlight;
@@ -422,9 +483,10 @@ export const Area = () => {
   const tips = useTooltipLayer(ref, theme.dark);
   const rows = toRows(p.rawData);
   const s = toSeries(rows, p.xField, yFields(p.yField), p.colorField);
-  const common = useCommon(p, theme, s, tips);
+  const common = useCommon(p, theme, { ...s, labelAt: 'top' }, tips);
   // Highlighted: the clicked area (its series) stays and the others fade.
   const h = p.highlight;
+  const single = new Set(s.data.map((r) => str((r as Row)[s.x]))).size === 1;
   const bySeries = { keys: [s.color], series: s.color };
   const fillOpacity = s.color && !stack ? 0.25 : 0.4;
   return (
@@ -449,6 +511,12 @@ export const Area = () => {
               ...(h ? { strokeOpacity: h.opacity(bySeries) } : {}),
             },
           }}
+          // An area needs two points; one row drew nothing but a floating value label. It shows as a point.
+          point={
+            single
+              ? { sizeField: 4, style: { fill: s.color ? undefined : theme.brand, stroke: theme.brand, lineWidth: 1 } }
+              : undefined
+          }
         />
       </Frame>
     </AntProvider>
@@ -520,7 +588,7 @@ export const Pie = () => {
     description: LOCALE_HINT,
     initialValue: '',
   });
-  const { highlight, setSelectedDatum, onElementClick } = useClicked();
+  const { highlight, onChartReady } = useClicked();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'piechart',
@@ -584,12 +652,7 @@ export const Pie = () => {
             lineWidth: 2,
             ...(highlight ? { fillOpacity: highlight.opacity({ keys: [colorField] }) } : {}),
           }}
-          onEvent={(_chart: unknown, event: { type?: string; data?: { data?: Row } }) => {
-            if (event?.type === 'element:click') {
-              setSelectedDatum(event.data?.data ?? {});
-              onElementClick();
-            }
-          }}
+          onReady={onChartReady}
         />
       </Frame>
     </AntProvider>
@@ -707,10 +770,14 @@ export const DualAxes = () => {
     sharedAxis ? { independent: false, ...shared } : { independent: side === 'right' };
   const yAxis = (side: 'left' | 'right') =>
     side === 'right' && sharedAxis ? false : { position: side, ...axisStyle, grid: side === 'left' };
+  // Label on draws each series' values, above the line or inside the bars (label was not passed to the layers).
+  const labelOf = (field: string, kind: string) =>
+    p.label ? valueLabel((d: Row) => fmt(d[field]), theme.text, kind === 'line' ? 'top' : 'inside') : undefined;
   const layer = (field: string, kind: string, color: string, side: 'left' | 'right') =>
     kind === 'line'
       ? {
           type: 'line',
+          label: labelOf(field, kind),
           yField: field,
           shapeField: 'smooth',
           style: { stroke: color, lineWidth: 2 },
@@ -719,6 +786,7 @@ export const DualAxes = () => {
         }
       : {
           type: 'interval',
+          label: labelOf(field, kind),
           yField: field,
           style: {
             fill: color,
@@ -746,7 +814,7 @@ export const DualAxes = () => {
           // their colours only through style, so the left series' marker was G2's default blue next to brand bars.
           scale={{ color: { range: [theme.brand, dualSecond(theme)] } }}
           interaction={tooltipInteraction(tips)}
-          onEvent={(common as { onEvent: unknown }).onEvent as never}
+          onReady={(common as { onReady: unknown }).onReady as never}
           children={
             [
               layer(left, kinds[0] || 'column', theme.brand, 'left'),
@@ -799,16 +867,14 @@ export const Funnel = () => {
             text: (d: Row) => `${str(d[p.xField])}  ${fmt(d[y])} (${Math.round(((d[y] as number) / first) * 100)}%)`,
             fill: '#fff',
             position: 'inside',
+            // White text on a stage too narrow to hold it fell on the light background; the colour now turns dark
+            // there (G2 picks the readable one against what is behind the label).
+            transform: [{ type: 'contrastReverse' }],
           }}
           tooltip={{ items: [{ field: y, valueFormatter: fmt }] }}
           interaction={tooltipInteraction(tips)}
           style={p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [p.xField] }) } : undefined}
-          onEvent={(_c: unknown, e: { type?: string; data?: { data?: Row } }) => {
-            if (e?.type === 'element:click') {
-              p.setSelectedDatum(e.data?.data ?? {});
-              p.onElementClick();
-            }
-          }}
+          onReady={p.onChartReady}
         />
       </Frame>
     </AntProvider>
@@ -874,7 +940,14 @@ export const Gauge = () => {
         <AntGauge
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}
-          data={{ target: t, total: max, name: name || 'value', ...(bands.length ? { thresholds: bands } : {}) }}
+          // The arc and needle stop at the ends of the scale (a target above total wrapped the arc past the end and
+          // pointed the needle near 0); the figure in the middle still shows the real value.
+          data={{
+            target: Math.min(max, Math.max(0, t)),
+            total: max,
+            name: name || 'value',
+            ...(bands.length ? { thresholds: bands } : {}),
+          }}
           scale={{
             color: {
               range:
@@ -990,7 +1063,7 @@ export const Scatter = () => {
     [p.xField]: toNumber(r[p.xField]) ?? r[p.xField],
     [y]: toNumber(r[y]) ?? r[y],
   }));
-  const common = useCommon(p, theme, { color: p.colorField || undefined, y }, tips);
+  const common = useCommon(p, theme, { color: p.colorField || undefined, y, labelAt: 'top' }, tips);
   return (
     <AntProvider tokens={tokens} fill>
       <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
@@ -1053,7 +1126,7 @@ export const Heatmap = () => {
   });
   const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
   const [label] = ToolJet.useStateBoolean({ name: 'label', label: 'Label', initialValue: false });
-  const { highlight, setSelectedDatum, onElementClick } = useClicked();
+  const { highlight, onChartReady } = useClicked();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'heatmapchart',
@@ -1092,15 +1165,15 @@ export const Heatmap = () => {
             x: { labelFill: theme.axis, labelFillOpacity: 1, tick: false, line: false },
             y: { labelFill: theme.axis, labelFillOpacity: 1, tick: false, line: false },
           }}
-          legend={{ color: { itemLabelFill: theme.text } }}
+          // The shade legend is a continuous one, which reads title* and label* styles, not the itemLabelFill a
+          // category legend reads: its title stayed G2's #2C3542 and its numbers near-black, under Text color and on a
+          // dark theme (QA AD-15). Its numbers at full opacity, as the axis labels, or a colour set shows pale.
+          legend={{
+            color: { itemLabelFill: theme.text, titleFill: theme.text, labelFill: theme.text, labelFillOpacity: 1 },
+          }}
           interaction={tooltipInteraction(tips)}
           label={label ? { text: colorField, fill: theme.text, position: 'inside' } : undefined}
-          onEvent={(_c: unknown, e: { type?: string; data?: { data?: Row } }) => {
-            if (e?.type === 'element:click') {
-              setSelectedDatum(e.data?.data ?? {});
-              onElementClick();
-            }
-          }}
+          onReady={onChartReady}
         />
       </Frame>
     </AntProvider>

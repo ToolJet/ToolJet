@@ -36,11 +36,13 @@ const stopPress = (e: React.SyntheticEvent) => {
   e.stopPropagation();
 };
 
-/** The x that empties a field: a round 20px button named Clear. */
+/** The x that empties a field: a round 20px button named Clear. Like the x of ToolJet's own dropdowns it is no Tab stop:
+ *  Tab goes from the field to the next component, and Backspace or Delete in the field clears it. */
 export const ClearX = ({ onClear, label = 'Clear', className }: { onClear: () => void; label?: string; className?: string }) => (
   <button
     type="button"
     aria-label={label}
+    tabIndex={-1}
     className={cn('uc-clear', className)}
     onPointerDown={stopPress}
     onClick={(e) => {
@@ -56,9 +58,11 @@ export const Chip = ({ label, onRemove, removeLabel }: { label: ReactNode; onRem
   <span className={cn('uc-chip', onRemove && 'has-remove')}>
     <span className="uc-chip-text">{label}</span>
     {onRemove ? (
+      // No Tab stop either (Backspace in the field removes the last chip), as a ToolJet Multiselect's chips.
       <button
         type="button"
         aria-label={removeLabel}
+        tabIndex={-1}
         className="uc-chip-remove"
         onPointerDown={stopPress}
         onClick={(e) => {

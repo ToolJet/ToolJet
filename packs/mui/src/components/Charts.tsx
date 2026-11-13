@@ -128,8 +128,13 @@ const useCartesian = () => {
   const [hideLegend] = ToolJet.useStateBoolean({ name: 'hideLegend', label: 'Hide legend', initialValue: false });
   const [, setClickedItem] = ToolJet.useStateObject({ name: 'clickedItem', initialValue: {}, inspector: 'hidden' });
   const { loading } = ToolJet.useControlState();
-  const rows = useMemo(() => toRows(dataset), [dataset]);
-  const axis = toAxis(xAxis, rows);
+  const allRows = useMemo(() => toRows(dataset), [dataset]);
+  const axis = toAxis(xAxis, allRows);
+  // A row with no x value has no place on the axis: it showed as an 'undefined' or 'null' category.
+  const rows = useMemo(
+    () => allRows.filter((r) => readField(r, axis.dataKey) !== undefined && readField(r, axis.dataKey) !== null),
+    [allRows, axis.dataKey]
+  );
   const list = toSeries(series, rows, axis.dataKey);
   const data = useMemo(() => numericRows(rows, list), [rows, JSON.stringify(list)]); // eslint-disable-line react-hooks/exhaustive-deps
   const format = (v: number | null) =>
@@ -137,9 +142,10 @@ const useCartesian = () => {
   // Axis ticks have a narrow, fixed width: from 10,000 up they are compact (2M, $1.2K), where the full figure was cut
   // to "2,000,..."; tooltips keep the full format.
   const tick = (v: number | null) => {
-    if (v === null || v === undefined || valueFormat === 'percent' || Math.abs(v) < 10000) return format(v);
+    // Currency ticks are all compact ($0, $500, $1.2K): the zero tick showed as $0.00 among them.
+    const money = valueFormat === 'currency' && /^[a-z]{3}$/i.test(str(currency));
+    if (v === null || v === undefined || valueFormat === 'percent' || (!money && Math.abs(v) < 10000)) return format(v);
     try {
-      const money = valueFormat === 'currency' && /^[a-z]{3}$/i.test(str(currency));
       return numberFormat(localeFor(str(currency), locale), {
         notation: 'compact',
         maximumFractionDigits: 1,
@@ -176,6 +182,8 @@ const SeriesColors = ({
 
 const muiSeries = (c: ReturnType<typeof useCartesian>, extra: Record<string, unknown> = {}) =>
   c.list.map((s) => ({
+    // The series' own key as its id: clickedSeries exposed MUI's 'auto-generated-id-0'.
+    id: s.dataKey,
     dataKey: s.dataKey,
     label: s.label ?? humanize(s.dataKey),
     color: s.color,
@@ -229,6 +237,10 @@ export const BarChart = () => {
   });
   const horizontal = layout === 'horizontal';
   const band = [{ dataKey: c.axis.dataKey, label: c.axis.label, scaleType: 'band' as const }];
+  // A horizontal chart's category axis is as wide as its longest label (about 7px a character), up to 240px: a fixed
+  // 90px cut every label to about 10 characters.
+  const longest = c.data.reduce((n, r) => Math.max(n, str(readField(r, c.axis.dataKey)).length), 0);
+  const bandWidth = Math.max(60, Math.min(240, longest * 7 + 16));
   const values = [{ valueFormatter: (v: number | null) => c.tick(v) }];
   return (
     <MuiProvider overrides={overrides} fill>
@@ -243,7 +255,7 @@ export const BarChart = () => {
               dataset={c.data}
               layout={layout as 'vertical'}
               xAxis={horizontal ? values : band}
-              yAxis={horizontal ? [{ ...band[0], width: 90 }] : [{ ...values[0], width: 56 }]}
+              yAxis={horizontal ? [{ ...band[0], width: bandWidth }] : [{ ...values[0], width: 56 }]}
               series={muiSeries(c, highlight.on ? { highlightScope: { highlight: 'item', fade: 'global' } } : {})}
               colors={colors}
               // The Border radius style rounds the bars (x-charts' borderRadius); none: MUI's square bars.
@@ -311,6 +323,8 @@ const LineView = ({
       dataset={c.data}
       xAxis={[{ dataKey: c.axis.dataKey, label: c.axis.label, scaleType: (c.axis.scaleType as 'point') || 'point' }]}
       yAxis={[{ valueFormatter: (v: number | null) => c.tick(v), width: 56 }]}
+      // Room for the last x label, centred on the plot's right edge (it was cut there).
+      margin={{ right: 24 }}
       series={muiSeries(c, {
         curve: l.curve,
         showMark: markAt(l.showMark, l.highlight.on, l.clickedIndex),

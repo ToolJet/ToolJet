@@ -24,6 +24,30 @@
 .tj-mui-block {
   display: block;
 }
+/* A button never grows past its box: the Large size (42px) in a 40px box ends at the box's edge. */
+.tj-mui-center > .MuiButton-root {
+  max-height: 100%;
+}
+/* A button drawn in its box (Button, the Dialog and Menu triggers) takes the box's height, as a native Button does:
+   its Size sets the text and padding (QA item 9). */
+.MuiButton-root.tj-mui-fill {
+  height: 100%;
+}
+/* The Tooltip's wrapper around a button takes the box's width at most, so the button shrinks to it and its label ends
+   in an ellipsis, and the box's height, so the cap above holds. */
+.tj-mui-fit {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.tj-mui-fit--full {
+  width: 100%;
+}
+.tj-mui-fit > .MuiButton-root {
+  max-height: 100%;
+}
 .tj-mui-field--outlined-label {
   padding-top: 9px;
 }
@@ -73,6 +97,12 @@
 .tj-mui-loading--fill,
 .tj-mui-loading--fill > .tj-mui-loading__content {
   height: 100%;
+}
+/* A full-width control (ToggleButtonGroup's Full width): the wrapper takes the box's width, so the control's 100% does
+   too (the wrapper shrank to the buttons, and Full width did nothing). */
+.tj-mui-loading--wide,
+.tj-mui-loading--wide > .tj-mui-loading__content {
+  width: 100%;
 }
 .tj-mui-loading--on > .tj-mui-loading__content {
   visibility: hidden;

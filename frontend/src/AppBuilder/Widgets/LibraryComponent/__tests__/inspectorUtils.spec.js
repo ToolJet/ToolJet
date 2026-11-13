@@ -12,6 +12,7 @@ import {
   styleFieldMeta,
   withManifestDefaults,
 } from '@/AppBuilder/RightSideBar/Inspector/Components/LibraryComponent/utils';
+import { offersDynamicHeight } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 describe('fieldMeta', () => {
   it('[LibraryComponent-FIELDMETA-001] gives a boolean prop a boolean schema', () => {
@@ -109,6 +110,61 @@ describe('additionalActionProps', () => {
       },
     };
     expect(additionalActionProps(componentMeta)).toEqual(['visibility', 'loadingState']);
+  });
+
+  it('[LibraryComponent-ADDITIONALACTIONS-005] hides Dynamic height for a component that cannot size to its content', () => {
+    // Break this catches: a Dynamic height toggle on a fit: false component (e.g. Button), which changes nothing.
+    const componentMeta = {
+      properties: {
+        visibility: { section: 'additionalActions' },
+        dynamicHeight: { section: 'additionalActions' },
+      },
+    };
+    expect(additionalActionProps(componentMeta)).toEqual(['visibility']);
+    expect(additionalActionProps(componentMeta, false, false)).toEqual(['visibility']);
+  });
+
+  it('[LibraryComponent-ADDITIONALACTIONS-006] keeps Dynamic height, in declaration order, for a component that fits its content', () => {
+    // Break this catches: hiding Dynamic height on fit: true components (e.g. Button Group, Accordion) that honour it.
+    const componentMeta = {
+      properties: {
+        visibility: { section: 'additionalActions' },
+        dynamicHeight: { section: 'additionalActions' },
+        loadingState: { section: 'additionalActions' },
+      },
+    };
+    expect(additionalActionProps(componentMeta, false, true)).toEqual(['visibility', 'dynamicHeight', 'loadingState']);
+  });
+
+  const hostMeta = {
+    properties: {
+      visibility: { section: 'additionalActions' },
+      dynamicHeight: { section: 'additionalActions' },
+    },
+  };
+
+  it('[LibraryComponent-ADDITIONALACTIONS-007] offers Dynamic height to a container whose drop areas sit in it (a Card, Tabs), whatever its fit', () => {
+    // Break this catches: a pack Card (fit: false) without the Dynamic height toggle, so it could never grow with the
+    // components dropped into it (QA: Dynamic height does nothing on pack containers).
+    const card = { fit: false, slots: [{ name: 'body', kind: 'slot' }] };
+    expect(additionalActionProps(hostMeta, false, offersDynamicHeight(card))).toEqual(['visibility', 'dynamicHeight']);
+  });
+
+  it("[LibraryComponent-ADDITIONALACTIONS-008] offers Dynamic height to a dialog, whose body grows with its components as a native Modal's", () => {
+    // Break this catches: a pack Dialog, Modal or Drawer without the toggle, its body held at its Body height and
+    // scrolling whatever its components need (QA: Dynamic height missing on pack sub containers).
+    const dialog = { fit: false, slots: [{ name: 'body', kind: 'popup' }] };
+    expect(additionalActionProps(hostMeta, false, offersDynamicHeight(dialog))).toEqual([
+      'visibility',
+      'dynamicHeight',
+    ]);
+  });
+
+  it('[LibraryComponent-ADDITIONALACTIONS-009] keeps Dynamic height off a board whose cards its code draws and that cannot fit (a Kanban)', () => {
+    // Break this catches: the toggle on a Kanban, which keeps its box and scrolls its columns as UI 2.0's (no Dynamic
+    // height there), while its cards already grow with their components.
+    const board = { fit: false, slots: [{ name: 'card', kind: 'rows' }] };
+    expect(additionalActionProps(hostMeta, false, offersDynamicHeight(board))).toEqual(['visibility']);
   });
 });
 
@@ -335,11 +391,11 @@ describe('additionalActionProps with controlState', () => {
 
   it('[LibraryComponent-CONTROLSTATE-001] hides disabledState from a component that does not declare controlState', () => {
     // Break this catches: a Disable toggle on a component that never reads it, so it silently does nothing.
-    expect(additionalActionProps(hostMeta)).toEqual(['visibility', 'dynamicHeight']);
+    expect(additionalActionProps(hostMeta, false, true)).toEqual(['visibility', 'dynamicHeight']);
   });
 
   it('[LibraryComponent-CONTROLSTATE-002] shows disabledState in its declared place for a controlState component', () => {
-    expect(additionalActionProps(hostMeta, true)).toEqual(['visibility', 'disabledState', 'dynamicHeight']);
+    expect(additionalActionProps(hostMeta, true, true)).toEqual(['visibility', 'disabledState', 'dynamicHeight']);
   });
 
   it('[LibraryComponent-CONTROLSTATE-003] still lists disabledState when the host config lacks it', () => {

@@ -5,6 +5,7 @@ import { cn } from '../lib/cn';
 import { px as pxValue, styleVars } from '../lib/ui2/display/lists/model';
 import { InPlace, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
+import { onPointerIn } from '../lib/pointerEnter';
 import '../styles/ui2-display.css';
 
 // UI 2.0's tone colours (the Icon color style wins). 'danger' stays as the pack's old name for destructive.
@@ -112,7 +113,7 @@ export const Icon = () => {
           className={cn('ui2-icon', shape !== 'none' && `is-${shape}`)}
           style={{ width: box, height: box }}
           onClick={onClick}
-          onMouseEnter={onHover}
+          onMouseOver={onPointerIn(onHover)}
         >
           {Glyph ? (
             <Glyph size={glyphPx} strokeWidth={stroke} aria-hidden="true" />

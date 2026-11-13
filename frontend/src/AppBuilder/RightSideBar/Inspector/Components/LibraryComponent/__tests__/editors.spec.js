@@ -1,5 +1,5 @@
 import { readLiteralCode, writeLiteralCode } from '../literal';
-import { editorHint, fieldMeta } from '../utils';
+import { editorHint, fieldMeta, hasOptionDefault, styleFieldMeta } from '../utils';
 import { withField, newEntry } from '../OptionsEditor';
 import { columnsFromData, newColumn, withColumnField } from '../ColumnsEditor';
 
@@ -62,5 +62,36 @@ describe('LibraryComponent inspector editors', () => {
     expect(newColumn([{ key: 'id' }], ['id', 'name'])).toEqual({ key: 'name', name: 'name' });
     expect(newColumn([{ key: 'id' }], ['id'])).toEqual({ key: 'column_2', name: 'Column 2' });
     expect(withColumnField({ key: 'a', currency: 'EUR' }, 'currency', '')).toEqual({ key: 'a' });
+  });
+
+  it('offers the Default switch only on the pack components that read it', () => {
+    expect(hasOptionDefault('shadcn', 'ButtonGroup')).toBe(true);
+    expect(hasOptionDefault('antd', 'ButtonGroup')).toBe(false);
+    expect(hasOptionDefault('shadcn', 'Select')).toBe(false);
+    expect(hasOptionDefault(undefined, undefined)).toBe(false);
+  });
+
+  it('stores an option marked default and drops the mark when it is turned off', () => {
+    const marked = withField({ label: 'Week', value: 'week' }, 'default', true);
+    expect(marked).toEqual({ label: 'Week', value: 'week', default: true });
+    expect(withField(marked, 'default', false)).toEqual({ label: 'Week', value: 'week' });
+  });
+
+  it('puts a style with a long label on its own line, and keeps a short one beside its control', () => {
+    const long = styleFieldMeta({
+      name: 'primary',
+      label: 'Primary (palette.primary.main)',
+      type: 'string',
+      inspector: 'color',
+    });
+    expect(long).toEqual(expect.objectContaining({ type: 'colorSwatches', newLine: true }));
+    const radius = styleFieldMeta({
+      name: 'borderRadius',
+      label: 'Border radius (shape.borderRadius)',
+      type: 'number',
+    });
+    expect(radius.newLine).toBe(true);
+    const short = styleFieldMeta({ name: 'textColor', label: 'Text color', type: 'string', inspector: 'color' });
+    expect(short.newLine).toBeUndefined();
   });
 });

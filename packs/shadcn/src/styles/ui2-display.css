@@ -298,6 +298,12 @@ button.ui2-tag:focus-visible {
   color: var(--ui-fg);
   overflow-wrap: anywhere;
 }
+/* Safe centring plus a scroll: text taller than a fixed box scrolls, not cut at the top and bottom (the host clips). */
+.ui-text-wrap.ui2-text-box {
+  align-items: safe center;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
 .ui2-text {
   white-space: pre-line;
 }
@@ -1001,4 +1007,12 @@ button.ui2-tag:focus-visible {
 }
 .ui2-strip-caption.is-spacer {
   visibility: hidden;
+}
+
+/* Under Dynamic height a heading grows to its whole text: the line clamp worked out from its box at the first render
+   (one line in the default box) kept it at that many lines, so the widget never grew. */
+.tj-cc-root.tj-cc-fit:not(.tj-cc-stretch) .ui2-heading {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  overflow: visible !important;
 }

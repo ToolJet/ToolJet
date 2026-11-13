@@ -43,8 +43,10 @@ import {
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
+import { packSlotRestrictionType, restrictedTypeOf } from '@/AppBuilder/_helpers/packDropRestrictions';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
 import { isCompareFrame, withoutCompareNavigation } from '@/AppBuilder/_utils/compareFrame';
+import { utilityFuncForNameSeed } from '@/_helpers/utils';
 import * as pageRoots from '@ee/modules/CodeMode/AppBuilder/_hooks/codePageRoot';
 
 const withoutCodePageRoots = pageRoots.withoutCodePageRoots ?? ((ids) => ids || []);
@@ -1434,20 +1436,25 @@ export const createComponentsSlice = (set, get) => ({
     });
     setResolvedValueForOthers(resolvedValues, moduleId);
   },
-  canAddToParent: (parentId, currentWidget, moduleId = 'canvas') => {
+  // `currentComponent` (the widget's component, with its definition) lets a component pack's widget be checked as the
+  // ToolJet widget it stands for (its manifest role), as a pack widget's slots are.
+  canAddToParent: (parentId, currentWidget, moduleId = 'canvas', currentComponent) => {
     const { getComponentTypeFromId, getComponentDefinition, getBaseParentId } = get();
     const transformedParentId = parentId?.length > 36 ? parentId.slice(0, 36) : parentId;
     let parentType = getComponentTypeFromId(transformedParentId, moduleId);
-    const parentWidget = getParentWidgetFromId(parentType, parentId);
+    const parentWidget =
+      packSlotRestrictionType(getComponentDefinition(transformedParentId, moduleId)?.component) ??
+      getParentWidgetFromId(parentType, parentId);
     const parentSlotType = parentId ? parentId.split('-').pop() : undefined;
     const restrictedWidgets = [
       ...(RESTRICTED_WIDGETS_CONFIG?.[parentWidget] || []),
       ...(['header', 'footer'].includes(parentSlotType) ? RESTRICTED_WIDGET_SLOTS_CONFIG : []),
     ];
-    const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
+    const restrictedType = (currentComponent && restrictedTypeOf(currentComponent)) || currentWidget;
+    const isParentChangeAllowed = !restrictedWidgets.includes(restrictedType);
     if (!isParentChangeAllowed) {
       toast.error(
-        `${currentWidget} is not compatible as a child component of ${getDropTargetLabel(parentWidget, parentSlotType)}`
+        `${restrictedType} is not compatible as a child component of ${getDropTargetLabel(parentWidget, parentSlotType)}`
       );
       return false;
     }
@@ -1501,7 +1508,8 @@ export const createComponentsSlice = (set, get) => ({
         canAddToParent(
           componentDefinitions[0].component.parent,
           componentDefinitions[0].component.component,
-          moduleId
+          moduleId,
+          componentDefinitions[0].component
         ) === false
       ) {
         resolve(false);
@@ -3529,7 +3537,9 @@ export const createComponentsSlice = (set, get) => ({
       // If name is valid then use the same name but if not then fallback to old flow and compute component name
       const componentName = !isExistingName
         ? initialComponentName
-        : computeComponentName(componentDefinition.component.component, currentComponents);
+        : computeComponentName(utilityFuncForNameSeed(componentDefinition), currentComponents, undefined, {
+            skipRegistry: isSdkComponentType(componentDefinition.component.component),
+          });
 
       // A freshly dropped progress widget seeds its label with its own value binding. Only an empty
       // label is seeded: paste, duplicate, undo and multiplayer adds carry the author's label through.
