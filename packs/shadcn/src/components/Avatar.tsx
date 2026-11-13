@@ -38,7 +38,8 @@ const NAMED: Record<string, number> = { sm: 32, md: 40, lg: 56 };
 export const Avatar = () => {
   const [names] = ToolJet.useStateString({
     name: 'names',
-    label: 'Names (one or many; or [{ name, src }])',
+    label: 'Names',
+    description: 'Comma-separated names, or [{ name, src }].',
     initialValue: 'Ada Lovelace',
   });
   const [src] = ToolJet.useStateString({ name: 'src', label: 'Image URL (single avatar)', initialValue: '' });
@@ -51,10 +52,16 @@ export const Avatar = () => {
   // The pack's own single-person card: a name and subtitle beside one avatar. Used when Names is empty.
   const [imageUrl] = ToolJet.useStateString({
     name: 'imageUrl',
-    label: 'Image URL (when Names is empty)',
+    label: 'Image URL',
+    description: 'Photo for a single avatar.',
     initialValue: '',
   });
-  const [name] = ToolJet.useStateString({ name: 'name', label: 'Name (when Names is empty)', initialValue: '' });
+  const [name] = ToolJet.useStateString({
+    name: 'name',
+    label: 'Name',
+    description: 'Used when Names is empty.',
+    initialValue: '',
+  });
   const [subtitle] = ToolJet.useStateString({ name: 'subtitle', label: 'Subtitle', initialValue: '' });
   const [showDetails] = ToolJet.useStateBoolean({
     name: 'showDetails',
@@ -73,7 +80,9 @@ export const Avatar = () => {
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const backgroundColor = useThemeColor('backgroundColor', 'Initials background', TOKEN.muted);
   const textColor = useThemeColor('textColor', 'Initials color', TOKEN.text);
-  const ringColor = useThemeColor('ringColor', 'Ring color (between stacked avatars)', TOKEN.surface);
+  const ringColor = useThemeColor('ringColor', 'Ring color', TOKEN.surface, {
+    description: 'The gap between stacked avatars.',
+  });
   const fallbackColor = ToolJet.useStyleString({
     name: 'fallbackColor',
     label: 'Initials background (old name)',

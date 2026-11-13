@@ -37,7 +37,8 @@ export const Icon = () => {
   const [strokeWidth] = ToolJet.useStateNumber({ name: 'strokeWidth', label: 'Stroke width', initialValue: 2 });
   const [tone] = ToolJet.useStateEnumeration({
     name: 'tone',
-    label: 'Tone (unless Icon color is set)',
+    label: 'Tone',
+    description: 'Ignored once Icon color is changed.',
     enumDefinition: ['default', 'muted', 'primary', 'success', 'warning', 'destructive'],
     initialValue: 'primary',
   });
@@ -51,13 +52,16 @@ export const Icon = () => {
   });
   const [chipSize] = ToolJet.useStateString({
     name: 'chipSize',
-    label: 'Chip size (px, empty: icon x 2)',
+    label: 'Chip size (px)',
+    description: 'Leave empty for twice the icon size.',
     initialValue: '',
   });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onHover = ToolJet.useEventCallback({ name: 'onHover' });
   const iconColor = useThemeColor('iconColor', 'Icon color', TOKEN.brand);
-  const chipColor = useThemeColor('chipColor', 'Chip background (default: icon color tint)', TOKEN.brand);
+  const chipColor = useThemeColor('chipColor', 'Chip background', TOKEN.brand, {
+    description: 'A tint of the icon color unless changed.',
+  });
   const chipRadius = useThemeRadius('chipRadius', 'Chip radius (square chip)');
   const alignment = ToolJet.useStyleEnumeration({
     name: 'alignment',

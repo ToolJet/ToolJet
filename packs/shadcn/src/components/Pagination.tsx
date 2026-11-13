@@ -28,12 +28,14 @@ export const Pagination = () => {
   });
   const [totalRecords] = ToolJet.useStateString({
     name: 'totalRecords',
-    label: 'Total records (instead of pages)',
+    label: 'Total records',
+    description: 'Overrides Number of pages.',
     initialValue: '',
   });
   const [pageSize] = ToolJet.useStateNumber({
     name: 'pageSize',
-    label: 'Page size (with total records)',
+    label: 'Page size',
+    description: 'Used with Total records.',
     initialValue: 10,
   });
   const [defaultPageIndex] = ToolJet.useStateNumber({

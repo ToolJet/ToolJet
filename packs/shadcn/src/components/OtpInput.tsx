@@ -48,7 +48,8 @@ export const OtpInput = () => {
   const [masked] = ToolJet.useStateBoolean({ name: 'masked', label: 'Mask characters', initialValue: false });
   const [placeholder] = ToolJet.useStateString({
     name: 'placeholder',
-    label: 'Placeholder (one character per box)',
+    label: 'Placeholder',
+    description: 'One character per box, or one for all.',
     initialValue: '',
   });
   const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Default value', initialValue: '' });

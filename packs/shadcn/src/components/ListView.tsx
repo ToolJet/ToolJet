@@ -75,24 +75,28 @@ export const ListView = () => {
   });
   const [imageField] = ToolJet.useStateString({
     name: 'imageField',
-    label: 'Avatar field (image URL or a name)',
+    label: 'Avatar field',
+    description: 'An image URL or a name.',
     initialValue: 'image',
   });
   const [showAvatar] = ToolJet.useStateBoolean({ name: 'showAvatar', label: 'Show avatar', initialValue: true });
   const [badgeField] = ToolJet.useStateString({
     name: 'badgeField',
-    label: 'Badge field (a chip toned by its words)',
+    label: 'Badge field',
+    description: 'Shown as a chip colored by its text.',
     initialValue: 'role',
   });
   const [metaField] = ToolJet.useStateString({ name: 'metaField', label: 'Right-side field', initialValue: '' });
   const [actionLabel] = ToolJet.useStateString({
     name: 'actionLabel',
-    label: 'Action button label (empty hides it)',
+    label: 'Action button label',
+    description: 'Leave empty to hide the button.',
     initialValue: 'View',
   });
   const [idField] = ToolJet.useStateString({
     name: 'idField',
-    label: 'Id field (for selection across data changes)',
+    label: 'Id field',
+    description: 'Keeps the selection when the data changes.',
     initialValue: 'id',
   });
   const [showBorder] = ToolJet.useStateBoolean({
@@ -113,7 +117,8 @@ export const ListView = () => {
   const [rowsPerPage] = ToolJet.useStateNumber({ name: 'rowsPerPage', label: 'Items per page', initialValue: 10 });
   const [serverSidePagination] = ToolJet.useStateBoolean({
     name: 'serverSidePagination',
-    label: 'Server-side pagination (data is one page)',
+    label: 'Server-side pagination',
+    description: 'Data holds one page at a time.',
     initialValue: false,
   });
   const [totalRecords] = ToolJet.useStateNumber({
@@ -143,7 +148,9 @@ export const ListView = () => {
   const onRecordClicked = ToolJet.useEventCallback({ name: 'onRecordClicked' });
   const onPageChanged = ToolJet.useEventCallback({ name: 'onPageChanged' });
   const onActionClicked = ToolJet.useEventCallback({ name: 'onActionClicked' });
-  const accent = useThemeColor('accentColor', 'Accent (selected outline, pagination)', TOKEN.brand);
+  const accent = useThemeColor('accentColor', 'Accent', TOKEN.brand, {
+    description: 'Used for the selected outline and pagination.',
+  });
   const background = useThemeColor('backgroundColor', 'List background', 'transparent');
   const itemBackground = useThemeColor('itemBackgroundColor', 'Item background', TOKEN.surface);
   const hoverBackground = useThemeColor('itemHoverBackgroundColor', 'Item hover background', TOKEN.muted);

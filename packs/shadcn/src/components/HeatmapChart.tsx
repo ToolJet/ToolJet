@@ -125,7 +125,9 @@ export const HeatmapChart = () => {
     initialValue: false,
   });
   const click = useChartClick(highlightClicked);
-  const chartColor = useThemeColor('chartColor', 'Chart color (the strongest cell)', TOKEN.brand);
+  const chartColor = useThemeColor('chartColor', 'Chart color', TOKEN.brand, {
+    description: 'Shade of the highest values.',
+  });
   const axisTextColor = useThemeColor('axisTextColor', 'Label color', TOKEN.mutedText);
   const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
   const ld = useLoadingLook();

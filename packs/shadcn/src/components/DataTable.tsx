@@ -120,10 +120,10 @@ export const DataTable = () => {
   });
   const [rawColumns] = ToolJet.useStateArray({
     name: 'columns',
-    label: 'Columns (empty: from the data)',
+    label: 'Columns',
     inspector: 'columns',
     description:
-      'Array of { key, name, columnType, horizontalAlignment, columnSize, columnVisibility, sortable, searchable, wrap, decimalPlaces, currency, locale, dateFormat, prefix, suffix, badgeColors, options, buttons, textColor, cellBackgroundColor, fontWeight, conditionalStyles, transformation }. columnType: string, number, currency, date, datetime, badge, tags, boolean, link, image, avatar, progress, button, json, html. transformation is what the cell shows, a per-row binding such as {{cellValue * 100}} or {{rowData.first_name}}; search, sort and filters keep the data value.',
+      'Leave empty to build them from the data. Array of { key, name, columnType, horizontalAlignment, columnSize, columnVisibility, sortable, searchable, wrap, decimalPlaces, currency, locale, dateFormat, prefix, suffix, badgeColors, options, buttons, textColor, cellBackgroundColor, fontWeight, conditionalStyles, transformation }. columnType: string, number, currency, date, datetime, badge, tags, boolean, link, image, avatar, progress, button, json, html. transformation is what the cell shows, a per-row binding such as {{cellValue * 100}} or {{rowData.first_name}}; search, sort and filters keep the data value.',
     placeholder:
       "[{ key: 'name', name: 'Name' }, { key: 'status', name: 'Status', columnType: 'badge' }, { key: 'amount', name: 'Amount', columnType: 'currency' }]",
     // Empty, so a table bound to its data shows that data's fields: four sample columns stayed on a freshly bound
@@ -149,7 +149,8 @@ export const DataTable = () => {
   });
   const [serverSidePagination] = ToolJet.useStateBoolean({
     name: 'serverSidePagination',
-    label: 'Server-side pagination (data is one page)',
+    label: 'Server-side pagination',
+    description: 'Data holds one page at a time.',
     initialValue: false,
     section: 'Pagination',
     visibleWhen: { key: 'enablePagination', value: true },
@@ -275,7 +276,8 @@ export const DataTable = () => {
   });
   const [defaultSelectedRow] = ToolJet.useStateObject({
     name: 'defaultSelectedRow',
-    label: 'Default selected row ({ key: value })',
+    label: 'Default selected row',
+    description: 'Match a row, like { id: 1 }.',
     initialValue: {},
     section: 'Row selection',
     visibleWhen: { key: 'allowSelection', value: true },
@@ -326,7 +328,8 @@ export const DataTable = () => {
   });
   const [stickyHeader] = ToolJet.useStateBoolean({
     name: 'stickyHeader',
-    label: 'Sticky header (scrolls inside)',
+    label: 'Sticky header',
+    description: 'Keeps the header visible while the table scrolls.',
     initialValue: true,
     section: 'Appearance',
   });
@@ -334,7 +337,7 @@ export const DataTable = () => {
   // Table-wide defaults: a column's own currency, locale, date format or badge colours win over them.
   const [currency] = ToolJet.useStateString({
     name: 'currency',
-    label: 'Currency (currency columns)',
+    label: 'Currency',
     description: "The default for currency columns. A column's own currency overrides it.",
     initialValue: 'USD',
     section: 'Default formats',
@@ -441,12 +444,16 @@ export const DataTable = () => {
     inspector: 'boxShadow',
     initialValue: '0px 0px 0px 0px #00000040',
   });
-  const accentColor = useThemeColor('accentColor', 'Accent (checkboxes, focus, active page)', TOKEN.brand);
+  const accentColor = useThemeColor('accentColor', 'Accent', TOKEN.brand, {
+    description: 'Used for checkboxes, focus and the active page.',
+  });
   const backgroundColor = useThemeColor('backgroundColor', 'Table background', TOKEN.surface);
   const headerBackgroundColor = useThemeColor('headerBackgroundColor', 'Header row background', TOKEN.surface);
   const headerTextColor = useThemeColor('headerTextColor', 'Header text color', TOKEN.mutedText);
   const textColor = useThemeColor('textColor', 'Cell text color', TOKEN.text);
-  const mutedTextColor = useThemeColor('mutedTextColor', 'Secondary text color (footer, empty state)', TOKEN.mutedText);
+  const mutedTextColor = useThemeColor('mutedTextColor', 'Secondary text color', TOKEN.mutedText, {
+    description: 'Used for headers, the footer and empty state.',
+  });
   const borderColor = useThemeColor('borderColor', 'Border and row divider color', TOKEN.border);
   const rowHoverColor = useThemeColor('rowHoverColor', 'Row hover background', TOKEN.muted);
   const selectedRowColor = useThemeColor('selectedRowColor', 'Selected row background', TOKEN.brand);

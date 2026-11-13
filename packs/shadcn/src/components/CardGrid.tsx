@@ -57,17 +57,20 @@ export const CardGrid = () => {
   const [badgeField] = ToolJet.useStateString({ name: 'badgeField', label: 'Badge field', initialValue: 'cuisine' });
   const [badgeFields] = ToolJet.useStateString({
     name: 'badgeFields',
-    label: "More badge fields (comma list, e.g. 'diet, spice')",
+    label: 'More badge fields',
+    description: 'Comma-separated, like diet, spice.',
     initialValue: '',
   });
   const [eyebrowField] = ToolJet.useStateString({
     name: 'eyebrowField',
-    label: 'Eyebrow field (a small line above the title)',
+    label: 'Eyebrow field',
+    description: 'A small line above the title.',
     initialValue: '',
   });
   const [avatarField] = ToolJet.useStateString({
     name: 'avatarField',
-    label: 'Avatar field (image URL or a name)',
+    label: 'Avatar field',
+    description: 'An image URL or a name.',
     initialValue: '',
   });
   const [descriptionField] = ToolJet.useStateString({
@@ -77,12 +80,14 @@ export const CardGrid = () => {
   });
   const [progressField] = ToolJet.useStateString({
     name: 'progressField',
-    label: 'Progress field (a percentage, 0 to 100)',
+    label: 'Progress field',
+    description: 'A percentage from 0 to 100.',
     initialValue: '',
   });
   const [metaFields] = ToolJet.useStateString({
     name: 'metaFields',
-    label: "Meta fields (comma list; 'prep:{} min')",
+    label: 'Meta fields',
+    description: 'Comma-separated, like prep:{} min.',
     initialValue: 'prep:{} min, serves:Serves',
   });
   const [idField] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
@@ -95,7 +100,8 @@ export const CardGrid = () => {
   });
   const [columns] = ToolJet.useStateNumber({
     name: 'columns',
-    label: 'Columns (0 fits as many as the width allows)',
+    label: 'Columns',
+    description: '0 fits as many as the width allows.',
     initialValue: 3,
   });
   const [minCardWidth] = ToolJet.useStateNumber({

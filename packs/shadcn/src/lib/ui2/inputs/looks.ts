@@ -8,8 +8,9 @@ import { TOKEN, unlessDefault } from '../../styleDefaults';
 // styles/ui2-inputs.css reads with the theme as the fallback, so an unset style keeps the theme's look.
 
 /** [style name, Inspector label, CSS variable ('accent': the focus ring and selection), what it draws unset]: a colour's
- *  theme token (styleDefaults TOKEN), or for a size 'px' (it follows the theme radius) or the px number it draws. */
-export type Look = [name: string, label: string, cssVar: string, drawn?: string | number];
+ *  theme token (styleDefaults TOKEN), or for a size 'px' (it follows the theme radius) or the px number it draws,
+ *  then the Inspector tooltip, if any. */
+export type Look = [name: string, label: string, cssVar: string, drawn?: string | number, description?: string];
 
 const isPx = (drawn: Look[3]) => drawn === 'px' || typeof drawn === 'number';
 
@@ -20,8 +21,8 @@ export const FIELD: Look[] = [
   ['textColor', 'Field text color', '--lk-fg', TOKEN.text],
   ['placeholderColor', 'Placeholder color', '--lk-placeholder', TOKEN.mutedText],
   ['borderColor', 'Field border color', '--lk-border', TOKEN.border],
-  ['accentColor', 'Accent (focus ring, selection)', 'accent', TOKEN.brand],
-  ['errorColor', 'Error color (message and border)', '--lk-error', TOKEN.error],
+  ['accentColor', 'Accent', 'accent', TOKEN.brand, 'Used for the focus ring and selection.'],
+  ['errorColor', 'Error color', '--lk-error', TOKEN.error, 'Used for the error message and border.'],
   ['borderRadius', 'Field radius', '--lk-radius', 'px'],
 ];
 
@@ -31,17 +32,22 @@ export const POPOVER: Look[] = [
   ['popoverTextColor', 'Popover text color', '--lk-pop-fg', TOKEN.text],
   ['hoverColor', 'Popover item hover background', '--lk-pop-hover', TOKEN.muted],
   // inherit: the selected row's text, the brand fill's text colour
-  ['selectedTextColor', 'Selected item text color (on the accent)', '--lk-pop-selected', TOKEN.surface],
+  [
+    'selectedTextColor',
+    'Selected item text color',
+    '--lk-pop-selected',
+    TOKEN.surface,
+    'Applies to the selected option.',
+  ],
 ];
 
-/** FIELD with some labels as the widget words them. */
-export const field = (labels: Record<string, string> = {}, omit: string[] = []): Look[] =>
-  FIELD.filter(([name]) => !omit.includes(name)).map(([name, label, cssVar, drawn]) => [
-    name,
-    labels[name] ?? label,
-    cssVar,
-    drawn,
-  ]);
+/** FIELD with some labels as the widget words them: a label, or [label, tooltip]. */
+export const field = (labels: Record<string, string | [string, string]> = {}, omit: string[] = []): Look[] =>
+  FIELD.filter(([name]) => !omit.includes(name)).map(([name, label, cssVar, drawn, description]) => {
+    const own = labels[name];
+    if (own === undefined) return [name, label, cssVar, drawn, description];
+    return typeof own === 'string' ? [name, own, cssVar, drawn] : [name, own[0], cssVar, drawn, own[1]];
+  });
 
 const isSet = (v: unknown) => v !== undefined && v !== null && v !== '';
 
@@ -49,7 +55,7 @@ const isSet = (v: unknown) => v !== undefined && v !== null && v !== '';
 export const useLooks = (looks: Look[]): CSSProperties => {
   const vars: Record<string, string> = {};
   let accent: string | undefined;
-  for (const [name, label, cssVar, drawn] of looks) {
+  for (const [name, label, cssVar, drawn, description] of looks) {
     // The list is fixed per component, so the hook order is too. Each declares what it draws unset as its default
     // and reads back '' at that default, so the look is unchanged. A theme radius has no number: no default (a ''
     // default was saved on drop as {{""}}, code in an invalid field), and the field's placeholder says so. It is drawn as
@@ -59,7 +65,7 @@ export const useLooks = (looks: Look[]): CSSProperties => {
     const themeRadius = {
       placeholder: 'Theme radius',
       inspector: 'numberInput',
-      description: 'Blank follows the theme radius.',
+      description: 'Blank value falls back to the theme radius.',
     } as const;
     const raw = px
       ? ToolJet.useStyleNumber({
@@ -67,7 +73,13 @@ export const useLooks = (looks: Look[]): CSSProperties => {
           label,
           ...(drawn === 'px' ? themeRadius : { initialValue: initialValue as number }),
         })
-      : ToolJet.useStyleString({ name, label, inspector: 'color', initialValue: initialValue as string });
+      : ToolJet.useStyleString({
+          name,
+          label,
+          inspector: 'color',
+          initialValue: initialValue as string,
+          ...(description && { description }),
+        });
     const value = unlessDefault(raw ?? '', initialValue);
     if (!isSet(value)) continue;
     if (cssVar === 'accent') accent = String(value);

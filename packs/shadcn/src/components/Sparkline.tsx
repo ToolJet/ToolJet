@@ -93,10 +93,16 @@ export const Sparkline = () => {
   const [showBand] = ToolJet.useStateBoolean({ name: 'showBand', label: 'Min/max band', initialValue: false });
   const [bandMin] = ToolJet.useStateString({
     name: 'bandMin',
-    label: 'Band from (blank = data min)',
+    label: 'Band from',
+    description: 'Leave empty to start at the lowest value.',
     initialValue: '',
   });
-  const [bandMax] = ToolJet.useStateString({ name: 'bandMax', label: 'Band to (blank = data max)', initialValue: '' });
+  const [bandMax] = ToolJet.useStateString({
+    name: 'bandMax',
+    label: 'Band to',
+    description: 'Leave empty to end at the highest value.',
+    initialValue: '',
+  });
   const [showTooltip] = ToolJet.useStateBoolean({ name: 'showTooltip', label: 'Tooltip', initialValue: false });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
   const [valueSuffix] = ToolJet.useStateString({ name: 'valueSuffix', label: 'Value suffix', initialValue: '' });

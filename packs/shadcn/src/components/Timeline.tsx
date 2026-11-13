@@ -78,8 +78,8 @@ export const Timeline = () => {
   });
   const [dateFormat] = ToolJet.useStateString({
     name: 'dateFormat',
-    label: 'Date format for ISO times (empty: as given)',
-    description: 'dayjs tokens, e.g. D MMM, HH:mm.',
+    label: 'Date format for ISO times',
+    description: 'Leave empty to show dates as given.',
     initialValue: '',
   });
   const [statusColors] = ToolJet.useStateObject({
@@ -97,12 +97,16 @@ export const Timeline = () => {
   // UI 2.0's name only: the pack's earlier onItemClick fired alongside it.
   const onItemClicked = ToolJet.useEventCallback({ name: 'onItemClicked' });
   const { disabled } = ToolJet.useControlState();
-  const markerColor = useThemeColor('markerColor', 'Marker color (items without status)', TOKEN.brand);
+  const markerColor = useThemeColor('markerColor', 'Marker color', TOKEN.brand, {
+    description: 'Used for items without a status color.',
+  });
   const lineColor = useThemeColor('lineColor', 'Connecting line color', TOKEN.border);
   const titleColor = useThemeColor('titleColor', 'Title color', TOKEN.text);
   const descriptionColor = useThemeColor('descriptionColor', 'Description color', TOKEN.mutedText);
   const timeColor = useThemeColor('timeColor', 'Time color', TOKEN.mutedText);
-  const accent = useThemeColor('accentColor', 'Accent (current items)', TOKEN.brand);
+  const accent = useThemeColor('accentColor', 'Accent', TOKEN.brand, {
+    description: 'Used for items whose status is current or active.',
+  });
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ role: 'timeline', fit: true, loading: 'own', defaultWidth: 12, defaultHeight: 36 });
 

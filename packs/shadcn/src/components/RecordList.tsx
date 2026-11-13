@@ -43,22 +43,26 @@ export const RecordList = () => {
   const [titleField] = ToolJet.useStateString({ name: 'titleField', label: 'Title field', initialValue: 'customer' });
   const [avatarField] = ToolJet.useStateString({
     name: 'avatarField',
-    label: 'Avatar field (image URL or a name; empty uses the title)',
+    label: 'Avatar field',
+    description: 'An image URL or a name. Leave empty to use the title.',
     initialValue: '',
   });
   const [metaFields] = ToolJet.useStateString({
     name: 'metaFields',
-    label: "Meta fields (comma list; 'total|currency', 'due|date:Due {}')",
+    label: 'Meta fields',
+    description: 'Comma-separated, like total|currency, due|date:Due {}.',
     initialValue: 'contact, due|date:Due {}',
   });
   const [statusField] = ToolJet.useStateString({
     name: 'statusField',
-    label: 'Status field (a chip toned by its words)',
+    label: 'Status field',
+    description: 'Shown as a chip colored by its text.',
     initialValue: 'status',
   });
   const [progressField] = ToolJet.useStateString({
     name: 'progressField',
-    label: 'Progress field (a percentage, 0 to 100)',
+    label: 'Progress field',
+    description: 'A percentage from 0 to 100.',
     initialValue: '',
   });
   const [valueField] = ToolJet.useStateString({
@@ -74,7 +78,8 @@ export const RecordList = () => {
   });
   const [currency] = ToolJet.useStateString({
     name: 'currency',
-    label: 'Currency (ISO code, e.g. USD)',
+    label: 'Currency',
+    description: 'A currency code, like USD.',
     initialValue: 'USD',
   });
   const [locale] = ToolJet.useStateString({

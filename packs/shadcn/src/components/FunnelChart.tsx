@@ -140,7 +140,9 @@ export const FunnelChart = () => {
     initialValue: false,
   });
   const click = useChartClick(highlightClicked);
-  const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
+  const chartColor = useThemeColor('chartColor', 'Chart color', TOKEN.brand, {
+    description: 'Leads the series colors unless Series colors sets them.',
+  });
   const axisTextColor = useThemeColor('axisTextColor', 'Stage label color', TOKEN.mutedText);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({

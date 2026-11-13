@@ -159,7 +159,12 @@ const pointArgs = (lat: unknown, lng: unknown): LatLng | null =>
     : toLatLng(lat, lng);
 
 export const Map = () => {
-  const [data] = ToolJet.useStateArray({ name: 'data', label: 'Data (rows with coordinates)', initialValue: SAMPLE });
+  const [data] = ToolJet.useStateArray({
+    name: 'data',
+    label: 'Data',
+    description: 'Rows with coordinates.',
+    initialValue: SAMPLE,
+  });
   const [latField] = ToolJet.useStateString({ name: 'latField', label: 'Latitude field', initialValue: 'lat' });
   const [lngField] = ToolJet.useStateString({ name: 'lngField', label: 'Longitude field', initialValue: 'lng' });
   const [titleField] = ToolJet.useStateString({ name: 'titleField', label: 'Title field', initialValue: 'name' });
@@ -170,40 +175,47 @@ export const Map = () => {
   });
   const [statusField] = ToolJet.useStateString({
     name: 'statusField',
-    label: 'Status field (pin colour, toned by its words)',
+    label: 'Status field',
+    description: 'Colors the pin based on its text.',
     initialValue: 'status',
   });
   const [statusColors] = ToolJet.useStateObject({
     name: 'statusColors',
-    label: 'Status colours ({ Open: "#2563eb" } or tone names)',
+    label: 'Status colors',
+    description: 'A color or tone per status, like { Open: "#2563eb" }.',
     initialValue: {},
   });
   const [idField] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
   const [labelField] = ToolJet.useStateString({
     name: 'labelField',
-    label: 'Pin label field (a stop number, a price)',
+    label: 'Pin label field',
+    description: 'Like a stop number or a price.',
     initialValue: '',
   });
   const [iconField] = ToolJet.useStateString({
     name: 'iconField',
-    label: 'Pin icon field (a lucide icon name)',
+    label: 'Pin icon field',
+    description: 'Holds a Lucide icon name.',
     initialValue: '',
   });
   const [markerIconName] = ToolJet.useStateString({
     name: 'markerIcon',
-    label: 'Icon for every pin (a lucide icon name)',
+    label: 'Icon for every pin',
+    description: 'A Lucide icon name.',
     initialValue: '',
     inspector: 'icon',
     iconSet: 'lucide',
   });
   const [headingField] = ToolJet.useStateString({
     name: 'headingField',
-    label: 'Heading field (degrees, 0 is north; turns the icon)',
+    label: 'Heading field',
+    description: 'Degrees from north that rotate the marker.',
     initialValue: '',
   });
   const [imageField] = ToolJet.useStateString({
     name: 'imageField',
-    label: 'Marker image field (an image URL in place of the pin)',
+    label: 'Marker image field',
+    description: 'An image URL shown instead of the pin.',
     initialValue: '',
   });
   const [markerSizeValue] = ToolJet.useStateEnumeration({
@@ -215,12 +227,14 @@ export const Map = () => {
   });
   const [popupFields] = ToolJet.useStateString({
     name: 'popupFields',
-    label: "Popup fields (comma list; 'eta:ETA {}', 'total|currency')",
+    label: 'Popup fields',
+    description: 'Comma-separated, like eta:ETA {}, total|currency.',
     initialValue: 'eta:ETA {}, driver',
   });
   const [currency] = ToolJet.useStateString({
     name: 'currency',
-    label: 'Currency (ISO code, e.g. USD)',
+    label: 'Currency',
+    description: 'A currency code, like USD.',
     initialValue: 'USD',
   });
   const [locale] = ToolJet.useStateString({
@@ -251,7 +265,8 @@ export const Map = () => {
   });
   const [routeField] = ToolJet.useStateString({
     name: 'routeField',
-    label: 'Route field (one line per value)',
+    label: 'Route field',
+    description: 'One line per value, when markers are connected.',
     initialValue: '',
   });
   const [routeOrderField] = ToolJet.useStateString({
@@ -261,18 +276,26 @@ export const Map = () => {
   });
   const [routeStart] = ToolJet.useStateString({
     name: 'routeStart',
-    label: 'Routes start at ({ lat, lng })',
+    label: 'Routes start at',
+    description: '{ lat, lng } where each connected route begins.',
     initialValue: '',
   });
-  const [routes] = ToolJet.useStateArray({ name: 'routes', label: 'Route lines (rows with a path)', initialValue: [] });
+  const [routes] = ToolJet.useStateArray({
+    name: 'routes',
+    label: 'Route lines',
+    description: 'Rows with a path.',
+    initialValue: [],
+  });
   const [routeColors] = ToolJet.useStateObject({
     name: 'routeColors',
-    label: 'Route colours ({ "Van 1": "#4f46e5" })',
+    label: 'Route colors',
+    description: 'A color per route, like { "Van 1": "#4f46e5" }.',
     initialValue: {},
   });
   const [areas] = ToolJet.useStateArray({
     name: 'areas',
-    label: 'Areas (zones, territories, geofences)',
+    label: 'Areas',
+    description: 'Zones, territories or geofences.',
     initialValue: [],
   });
   const [areaShapeField] = ToolJet.useStateString({
@@ -292,7 +315,8 @@ export const Map = () => {
   });
   const [areaRadiusField] = ToolJet.useStateString({
     name: 'areaRadiusField',
-    label: 'Area radius field (metres, with lat and lng)',
+    label: 'Area radius field',
+    description: 'Radius in meters, used with lat and lng.',
     initialValue: 'radius',
   });
   const [displayValue] = ToolJet.useStateEnumeration({
@@ -304,7 +328,8 @@ export const Map = () => {
   });
   const [heatField] = ToolJet.useStateString({
     name: 'heatField',
-    label: 'Heat weight field (empty: each row counts once)',
+    label: 'Heat weight field',
+    description: 'Leave empty to count each row once.',
     initialValue: '',
   });
   const [heatRadiusValue] = ToolJet.useStateNumber({ name: 'heatRadius', label: 'Heat radius (px)', initialValue: 28 });
@@ -315,7 +340,8 @@ export const Map = () => {
   });
   const [defaultPickedLocation] = ToolJet.useStateString({
     name: 'defaultPickedLocation',
-    label: 'Picked location to start with ({ lat, lng })',
+    label: 'Default picked location',
+    description: '{ lat, lng }, when users can pick a location.',
     initialValue: '',
   });
   const [showSearch] = ToolJet.useStateBoolean({
@@ -330,12 +356,14 @@ export const Map = () => {
   });
   const [geocoderUrl] = ToolJet.useStateString({
     name: 'geocoderUrl',
-    label: 'Geocoder URL ({query}; empty for OpenStreetMap Nominatim)',
+    label: 'Geocoder URL',
+    description: 'Use {query} for the search text. Leave empty for OpenStreetMap.',
     initialValue: '',
   });
   const [reverseGeocoderUrl] = ToolJet.useStateString({
     name: 'reverseGeocoderUrl',
-    label: 'Reverse geocoder URL ({lat}, {lng})',
+    label: 'Reverse geocoder URL',
+    description: 'Use {lat} and {lng}. Leave empty for OpenStreetMap.',
     initialValue: '',
   });
   const [fitToMarkers] = ToolJet.useStateBoolean({
@@ -345,7 +373,8 @@ export const Map = () => {
   });
   const [defaultCenter] = ToolJet.useStateString({
     name: 'defaultCenter',
-    label: 'Default center ({ lat, lng })',
+    label: 'Default center',
+    description: "{ lat, lng }, used when the view isn't fitted.",
     initialValue: '',
   });
   const [defaultZoom] = ToolJet.useStateNumber({
@@ -383,7 +412,8 @@ export const Map = () => {
   });
   const [tileUrl] = ToolJet.useStateString({
     name: 'tileUrl',
-    label: 'Tile URL (empty for the default basemap)',
+    label: 'Tile URL',
+    description: 'Leave empty for the default map.',
     initialValue: '',
   });
   const [tileAttribution] = ToolJet.useStateString({
@@ -425,9 +455,13 @@ export const Map = () => {
   const onShapeClicked = ToolJet.useEventCallback({ name: 'onShapeClicked' });
   const onLocationPicked = ToolJet.useEventCallback({ name: 'onLocationPicked' });
   const onBoundsChange = ToolJet.useEventCallback({ name: 'onBoundsChange' });
-  const backgroundColor = useThemeColor('backgroundColor', 'Background (behind the tiles)', TOKEN.muted);
+  const backgroundColor = useThemeColor('backgroundColor', 'Background', TOKEN.muted, {
+    description: 'Shows behind the map tiles.',
+  });
   const borderColor = useThemeColor('borderColor', 'Border color', TOKEN.border);
-  const accent = useThemeColor('accentColor', 'Accent (pins without a status, the selection)', TOKEN.brand);
+  const accent = useThemeColor('accentColor', 'Accent', TOKEN.brand, {
+    description: 'Used for the selection and pins without a status color.',
+  });
   const clusterColor = useThemeColor('clusterColor', 'Group count color', TOKEN.text);
   const radius = useThemeRadius('borderRadius', 'Radius');
   const loadingNow = useLoading();

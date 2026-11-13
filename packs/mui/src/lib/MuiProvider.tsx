@@ -45,13 +45,14 @@ const isSet = (v: unknown) => v !== undefined && v !== null && v !== '';
  * since a stored number would replace the app theme's radius.
  */
 export const useThemeStyles = (): ThemeOverrides => {
-  const primary = useColorStyle({ name: 'primary', label: 'Primary (palette.primary.main)', token: THEME_TOKEN.brand });
-  const textPrimary = useColorStyle({ name: 'textPrimary', label: 'Text (palette.text.primary)', token: THEME_TOKEN.text });
-  const backgroundPaper = useColorStyle({ name: 'backgroundPaper', label: 'Paper (palette.background.paper)', token: THEME_TOKEN.surface });
-  const divider = useColorStyle({ name: 'divider', label: 'Divider (palette.divider)', token: THEME_TOKEN.borderWeak });
+  const primary = useColorStyle({ name: 'primary', label: 'Primary', description: 'palette.primary.main', token: THEME_TOKEN.brand });
+  const textPrimary = useColorStyle({ name: 'textPrimary', label: 'Text', description: 'palette.text.primary', token: THEME_TOKEN.text });
+  const backgroundPaper = useColorStyle({ name: 'backgroundPaper', label: 'Paper', description: 'palette.background.paper', token: THEME_TOKEN.surface });
+  const divider = useColorStyle({ name: 'divider', label: 'Divider', description: 'palette.divider', token: THEME_TOKEN.borderWeak });
   const borderRadius = ToolJet.useStyleNumber({
     name: 'borderRadius',
-    label: 'Border radius (shape.borderRadius)',
+    label: 'Border radius',
+    description: 'shape.borderRadius',
     placeholder: 'Theme radius (MUI: 4)',
     // A number field: the code field drew a blank optional number as invalid (red).
     inspector: 'numberInput',

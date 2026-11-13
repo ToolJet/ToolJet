@@ -82,7 +82,8 @@ export const Stat = () => {
   });
   const [currency] = ToolJet.useStateString({
     name: 'currency',
-    label: 'Currency (ISO code, e.g. USD)',
+    label: 'Currency',
+    description: 'A currency code, like USD.',
     initialValue: 'USD',
   });
   const [locale] = ToolJet.useStateString({
@@ -93,7 +94,8 @@ export const Stat = () => {
   });
   const [change, setChange] = ToolJet.useStateString({
     name: 'change',
-    label: 'Change (e.g. +12.5%)',
+    label: 'Change',
+    description: 'Like +12.5%.',
     initialValue: '',
   });
   const [changeFormat] = ToolJet.useStateEnumeration({
@@ -114,16 +116,17 @@ export const Stat = () => {
   });
   const [changeLabel] = ToolJet.useStateString({
     name: 'changeLabel',
-    label: 'Change context (e.g. vs last month)',
+    label: 'Change context',
+    description: 'Like "vs last month".',
     initialValue: '',
   });
   const [footnote] = ToolJet.useStateString({ name: 'footnote', label: 'Footnote', initialValue: '' });
   const [iconName] = ToolJet.useStateString({
     name: 'icon',
-    label: 'Icon (lucide name, e.g. wallet)',
+    label: 'Icon',
     inspector: 'icon',
     iconSet: 'lucide',
-    description: 'Any lucide name (wallet, trending-up, TrendingUp) or Tabler name (IconCurrencyDollar).',
+    description: 'A Lucide or Tabler icon name, like wallet.',
     initialValue: '',
   });
   const [iconPositionProp] = ToolJet.useStateEnumeration({
@@ -144,7 +147,8 @@ export const Stat = () => {
   });
   const [trendData] = ToolJet.useStateString({
     name: 'trendData',
-    label: 'Trend data (numbers or [{ x, y }])',
+    label: 'Trend data',
+    description: 'Numbers, or [{ x, y }].',
     initialValue: '',
   });
   const [sparklineType] = ToolJet.useStateEnumeration({
@@ -259,7 +263,8 @@ export const Stat = () => {
   });
   const labelLetterSpacing = ToolJet.useStyleString({
     name: 'labelLetterSpacing',
-    label: 'Label letter spacing (px, or em like 0.12em)',
+    label: 'Label letter spacing',
+    description: 'Pixels, or em like 0.12em.',
     initialValue: '',
   });
   const ld = useLoadingLook();

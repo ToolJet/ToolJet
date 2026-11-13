@@ -49,7 +49,8 @@ export const SummaryStrip = () => {
   });
   const [currency] = ToolJet.useStateString({
     name: 'currency',
-    label: 'Currency (ISO code, e.g. USD)',
+    label: 'Currency',
+    description: 'A currency code, like USD.',
     initialValue: 'USD',
   });
   const [locale] = ToolJet.useStateString({

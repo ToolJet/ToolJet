@@ -357,7 +357,7 @@ export const Kanban = () => {
   });
   const [cardHeight] = ToolJet.useStateNumber({
     name: 'cardHeight',
-    label: 'Card height (custom content)',
+    label: 'Card height (px)',
     initialValue: 96,
     min: 24,
     max: 1200,
@@ -371,7 +371,8 @@ export const Kanban = () => {
   });
   const [badgeField] = ToolJet.useStateString({
     name: 'badgeField',
-    label: 'Badge field (priority, severity)',
+    label: 'Badge field',
+    description: 'Like priority or severity.',
     initialValue: 'priority',
   });
   const [tagsField] = ToolJet.useStateString({ name: 'tagsField', label: 'Tags field (a list)', initialValue: '' });
@@ -382,7 +383,8 @@ export const Kanban = () => {
   });
   const [metaField] = ToolJet.useStateString({
     name: 'metaField',
-    label: 'Meta field (a date, a count)',
+    label: 'Meta field',
+    description: 'Like a date or a count.',
     initialValue: '',
   });
   const [avatarField] = ToolJet.useStateString({
@@ -392,7 +394,8 @@ export const Kanban = () => {
   });
   const [detailsField] = ToolJet.useStateString({
     name: 'detailsField',
-    label: 'Details field (shown on the clicked card)',
+    label: 'Details field',
+    description: 'Shown when a card is clicked.',
     initialValue: '',
   });
   const [density] = ToolJet.useStateEnumeration({
@@ -405,12 +408,14 @@ export const Kanban = () => {
   });
   const [collapsedHeight] = ToolJet.useStateString({
     name: 'collapsedHeight',
-    label: 'Collapsed card height (px, empty: show all)',
+    label: 'Collapsed card height (px)',
+    description: 'Leave empty to show cards in full.',
     initialValue: '',
   });
   const [columnWidthRaw] = ToolJet.useStateString({
     name: 'columnWidth',
-    label: 'Column width (px, empty: fill the board)',
+    label: 'Column width (px)',
+    description: 'Leave empty for equal-width columns.',
     initialValue: '',
   });
   const [showCount] = ToolJet.useStateBoolean({
@@ -486,7 +491,9 @@ export const Kanban = () => {
   const onCardSelected = ToolJet.useEventCallback({ name: 'onCardSelected' });
   const onUpdate = ToolJet.useEventCallback({ name: 'onUpdate' });
   const styles: Record<string, unknown> = {
-    accentColor: useThemeColor('accentColor', 'Accent (selection, progress, drop line)', TOKEN.brand),
+    accentColor: useThemeColor('accentColor', 'Accent', TOKEN.brand, {
+      description: 'Used for selection, focus, drop line and badges.',
+    }),
     columnBackgroundColor: useThemeColor('columnBackgroundColor', 'Column background', TOKEN.muted),
     columnBorderColor: useThemeColor('columnBorderColor', 'Column border color', 'transparent'),
     columnTitleColor: useThemeColor('columnTitleColor', 'Column title color', TOKEN.text),
@@ -498,7 +505,9 @@ export const Kanban = () => {
     cardBorderColor: useThemeColor('cardBorderColor', 'Card border color', TOKEN.border),
     cardTitleColor: useThemeColor('cardTitleColor', 'Card title color', TOKEN.text),
     cardTextColor: useThemeColor('cardTextColor', 'Card secondary text color', TOKEN.mutedText),
-    progressColor: useThemeColor('progressColor', 'Progress color (else the accent)', TOKEN.brand),
+    progressColor: useThemeColor('progressColor', 'Progress color', TOKEN.brand, {
+      description: 'Follows the Accent color unless changed.',
+    }),
     cardBorderRadius: useThemeRadius('cardBorderRadius', 'Card radius'),
     cardShadow: ToolJet.useStyleEnumeration({
       name: 'cardShadow',

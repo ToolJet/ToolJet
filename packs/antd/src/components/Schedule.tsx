@@ -239,7 +239,8 @@ export const Schedule = () => {
   });
   const [resourceField] = ToolJet.useStateString({
     name: 'resourceField',
-    label: "Resource field (a resource's id or name)",
+    label: 'Resource field',
+    description: 'Matches each booking to a resource by id or name.',
     initialValue: 'room',
   });
   const [startField] = ToolJet.useStateString({ name: 'startField', label: 'Start field', initialValue: 'start' });
@@ -252,7 +253,8 @@ export const Schedule = () => {
   });
   const [statusField] = ToolJet.useStateString({
     name: 'statusField',
-    label: 'Status field (toned by its words)',
+    label: 'Status field',
+    description: 'Colors each booking by its status text.',
     initialValue: 'status',
   });
   const [idField] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
@@ -264,15 +266,22 @@ export const Schedule = () => {
     initialValue: 'hours',
     inspector: 'switch',
   });
-  const [date] = ToolJet.useStateString({ name: 'date', label: 'Date shown (empty for today)', initialValue: '' });
+  const [date] = ToolJet.useStateString({
+    name: 'date',
+    label: 'Date shown',
+    description: 'Leave empty for today.',
+    initialValue: '',
+  });
   const [dayStart] = ToolJet.useStateNumber({
     name: 'dayStart',
-    label: 'Day starts at (hour, or a time such as 09:00)',
+    label: 'Day starts at',
+    description: 'An hour from 0 to 23, for the Hours view.',
     initialValue: 8,
   });
   const [dayEnd] = ToolJet.useStateNumber({
     name: 'dayEnd',
-    label: 'Day ends at (hour, or a time such as 18:00)',
+    label: 'Day ends at',
+    description: 'An hour from 1 to 24, for the Hours view.',
     initialValue: 18,
   });
   const [slotMinutes] = ToolJet.useStateNumber({
@@ -344,8 +353,9 @@ export const Schedule = () => {
   const textColor = useColorStyle('textColor', 'Label color', T.text);
   const accentColor = useColorStyle(
     'accentColor',
-    'Booking accent (bookings without a status, the selection)',
-    T.brand
+    'Booking accent',
+    T.brand,
+    'Used for the selection, today and uncolored bookings.'
   );
   const nowColor = useColorStyle('nowColor', 'Current time line color', T.danger);
   const borderRadius = useThemeNumber('borderRadius', 'Radius', RADIUS_HINT);

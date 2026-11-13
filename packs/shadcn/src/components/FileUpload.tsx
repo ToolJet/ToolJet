@@ -31,7 +31,7 @@ const LOOKS: Look[] = [
   ['iconBackgroundColor', 'Upload icon background', '--lk-icon-bg', TOKEN.muted],
   ['titleColor', 'Title color', '--lk-title', TOKEN.text],
   ['hintColor', 'Hint color', '--lk-hint', TOKEN.mutedText],
-  ['accentColor', 'Accent (drag over, browse link)', 'accent', TOKEN.brand],
+  ['accentColor', 'Accent', 'accent', TOKEN.brand, 'Used for the drop zone while dragging and the browse link.'],
   ['fileItemBackgroundColor', 'File row background', '--lk-item-bg', TOKEN.surface],
   ['fileItemBorderColor', 'File row border color', '--lk-item-border', TOKEN.border],
   ['errorColor', 'Error color', '--lk-error', TOKEN.error],
@@ -129,7 +129,8 @@ export const FileUpload = () => {
   const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Drag & drop files here' });
   const [hint] = ToolJet.useStateString({
     name: 'hint',
-    label: 'Hint (empty: accepted types and size)',
+    label: 'Hint',
+    description: 'Leave empty to list accepted types and limits.',
     initialValue: '',
   });
   const [accept] = ToolJet.useStateString({
@@ -146,7 +147,8 @@ export const FileUpload = () => {
   const [maxFilesProp] = ToolJet.useStateNumber({ name: 'maxFiles', label: 'Max files', initialValue: 5 });
   const [maxSizeProp] = ToolJet.useStateNumber({
     name: 'maxSize',
-    label: 'Max size (bytes, 0 for no limit)',
+    label: 'Max size (bytes)',
+    description: '0 means no limit.',
     initialValue: 5242880,
   });
   const [minSizeProp] = ToolJet.useStateNumber({ name: 'minSize', label: 'Min size (bytes)', initialValue: 0 });
@@ -157,7 +159,8 @@ export const FileUpload = () => {
   });
   const [parse] = ToolJet.useStateBoolean({
     name: 'parseContent',
-    label: 'Parse content (CSV, TSV, JSON)',
+    label: 'Parse content',
+    description: 'Turns CSV, TSV and JSON files into data.',
     initialValue: false,
   });
   const [parseFileType] = ToolJet.useStateEnumeration({

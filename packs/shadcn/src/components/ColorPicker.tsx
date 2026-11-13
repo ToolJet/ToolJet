@@ -17,7 +17,7 @@ import { FieldLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
-  ...field({ accentColor: 'Accent (focus ring)' }, ['errorColor']),
+  ...field({ accentColor: ['Accent', 'Used for the focus ring.'] }, ['errorColor']),
   ['menuBackgroundColor', 'Popover background', '--lk-menu-bg', TOKEN.surface],
 ];
 

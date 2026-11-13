@@ -114,12 +114,14 @@ export const Calendar = () => {
   });
   const [defaultValue] = ToolJet.useStateString({
     name: 'defaultValue',
-    label: 'Default value (YYYY-MM-DD, a list, or [start, end])',
+    label: 'Default value',
+    description: 'A date (YYYY-MM-DD), a list of dates, or [start, end].',
     initialValue: '',
   });
   const [defaultMonth] = ToolJet.useStateString({
     name: 'defaultMonth',
-    label: 'Month to show (date; default: the selection or today)',
+    label: 'Month to show',
+    description: 'Any date in that month. Defaults to the selection or today.',
     initialValue: '',
   });
   const [markers] = ToolJet.useStateArray({
@@ -133,7 +135,8 @@ export const Calendar = () => {
   const [disabledDates] = ToolJet.useStateArray({ name: 'disabledDates', label: 'Disabled dates', initialValue: [] });
   const [disabledDays] = ToolJet.useStateArray({
     name: 'disabledDays',
-    label: 'Disabled weekdays (0 = Sunday)',
+    label: 'Disabled weekdays',
+    description: 'Numbers from 0 (Sunday), or day names.',
     initialValue: [],
   });
   const [weekStartsOn] = ToolJet.useStateEnumeration({

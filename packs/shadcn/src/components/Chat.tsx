@@ -220,7 +220,9 @@ export const Chat = () => {
   const containerBackgroundColor = useThemeColor('containerBackgroundColor', 'Background', TOKEN.surface);
   const borderColorContainer = useThemeColor('borderColorContainer', 'Border', TOKEN.border);
   const borderRadius = useThemeRadius('borderRadius', 'Border radius');
-  const accentColorField = useThemeColor('accentColorField', 'Accent (your messages, send button, focus)', TOKEN.brand);
+  const accentColorField = useThemeColor('accentColorField', 'Accent', TOKEN.brand, {
+    description: 'Used for your messages, the send button and focus.',
+  });
   const responseBubbleColor = useThemeColor('responseBubbleColor', 'Reply bubble background', TOKEN.muted);
   const nameColor = useThemeColor('name', 'Name color', TOKEN.text);
   const messageColor = useThemeColor('message', 'Message text color', TOKEN.text);

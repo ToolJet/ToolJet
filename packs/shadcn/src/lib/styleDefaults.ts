@@ -62,7 +62,7 @@ export const useBlankNumber = (name: string, label: string, placeholder: string,
  * stays for the code (fx) view. The value read back is unchanged.
  */
 export const useThemeRadius = (name: string, label: string, options: StyleOptions = {}) =>
-  useBlankNumber(name, label, 'Theme radius', { inspector: 'numberInput', description: 'Blank follows the theme radius.', ...options });
+  useBlankNumber(name, label, 'Theme radius', { inspector: 'numberInput', description: 'Blank value falls back to the theme radius.', ...options });
 
 /**
  * A radius whose default is the word "auto", which follows the theme radius: the field says so instead of looking

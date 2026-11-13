@@ -54,7 +54,8 @@ export const DatePicker = () => {
   });
   const [defaultValue] = ToolJet.useStateString({
     name: 'defaultValue',
-    label: 'Default (YYYY-MM-DD, or [start, end] for a range)',
+    label: 'Default value',
+    description: 'A date (YYYY-MM-DD), or [start, end] for a range.',
     initialValue: '',
   });
   const [formatProp] = ToolJet.useStateString({ name: 'format', label: 'Display format', initialValue: 'DD MMM YYYY' });

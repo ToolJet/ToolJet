@@ -50,7 +50,9 @@ export const PieChart = () => {
     initialValue: false,
   });
   const click = useChartClick(highlightClicked);
-  const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
+  const chartColor = useThemeColor('chartColor', 'Chart color', TOKEN.brand, {
+    description: 'Leads the series colors unless Series colors sets them.',
+  });
   const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
   const sliceBorderColor = useThemeColor('sliceBorderColor', 'Slice border color', TOKEN.surface);
   const centerValueColor = useThemeColor('centerValueColor', 'Center figure color', TOKEN.text);

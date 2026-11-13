@@ -33,7 +33,7 @@ export const Heading = () => {
   const textColor = useThemeColor('textColor', 'Heading color', TOKEN.text);
   const textAlign = ToolJet.useStyleEnumeration({
     name: 'textAlign',
-    label: 'Text alignment (left, center, right)',
+    label: 'Text alignment',
     enumDefinition: ['left', 'center', 'right'],
     initialValue: 'left',
     inspector: 'switch',
@@ -54,7 +54,8 @@ export const Heading = () => {
   });
   const letterSpacing = ToolJet.useStyleString({
     name: 'letterSpacing',
-    label: 'Letter spacing (px, or em like 0.12em)',
+    label: 'Letter spacing',
+    description: 'Pixels, or em like 0.12em.',
     initialValue: '',
   });
   const textTransform = ToolJet.useStyleEnumeration({
@@ -64,7 +65,9 @@ export const Heading = () => {
     enumLabels: CASE_LABELS,
     initialValue: 'none',
   });
-  const fontSize = useBlankNumber('fontSize', 'Font size (px; default from the level)', 'From the level');
+  const fontSize = useBlankNumber('fontSize', 'Font size (px)', 'From the level', {
+    description: 'Set by the Level unless changed.',
+  });
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ role: 'heading', fit: true, loading: 'own', defaultWidth: 16, defaultHeight: 4 });
 

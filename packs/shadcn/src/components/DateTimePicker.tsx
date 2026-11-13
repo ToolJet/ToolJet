@@ -47,7 +47,8 @@ export const DateTimePicker = () => {
   });
   const [defaultValue] = ToolJet.useStateString({
     name: 'defaultValue',
-    label: 'Default value (YYYY-MM-DD HH:mm)',
+    label: 'Default value',
+    description: 'A date and time, as YYYY-MM-DD HH:mm.',
     initialValue: '',
   });
   const [dateFormatProp] = ToolJet.useStateString({

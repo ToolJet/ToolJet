@@ -155,7 +155,8 @@ export const ScatterChart = () => {
   });
   const [groupField] = ToolJet.useStateString({
     name: 'groupField',
-    label: 'Group field (one colour each)',
+    label: 'Group field',
+    description: 'Each group gets its own color.',
     initialValue: 'segment',
   });
   const [nameField] = ToolJet.useStateString({
@@ -213,7 +214,7 @@ export const ScatterChart = () => {
     initialValue: false,
   });
   const click = useChartClick(highlightClicked);
-  const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
+  const chartColor = useThemeColor('chartColor', 'Chart color', TOKEN.brand, { description: 'Leads the series colors unless Series colors sets them.' });
   const gridColor = useThemeColor('gridColor', 'Grid line color', TOKEN.border);
   const axisTextColor = useThemeColor('axisTextColor', 'Axis label color', TOKEN.mutedText);
   const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);

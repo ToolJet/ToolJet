@@ -74,8 +74,8 @@ const useFit = (
 export const Tags = () => {
   const [tags] = ToolJet.useStateArray({
     name: 'tags',
-    label: 'Tags (array or comma-separated)',
-    description: 'Strings or { label, color } objects.',
+    label: 'Tags',
+    description: 'A list or comma-separated text. Strings or { label, color } objects.',
     initialValue: ['Design', 'Frontend', 'Urgent'],
   });
   const [tagColors] = ToolJet.useStateObject({
@@ -116,8 +116,12 @@ export const Tags = () => {
     inspector: 'hidden',
   });
   const onTagClicked = ToolJet.useEventCallback({ name: 'onTagClicked' });
-  const background = useThemeColor('backgroundColor', 'Tag background (unmapped tags)', TOKEN.muted);
-  const textColor = useThemeColor('textColor', 'Tag text color (unmapped tags)', TOKEN.text);
+  const background = useThemeColor('backgroundColor', 'Tag background', TOKEN.muted, {
+    description: 'Used for tags without their own color.',
+  });
+  const textColor = useThemeColor('textColor', 'Tag text color', TOKEN.text, {
+    description: 'Used for tags without their own color.',
+  });
   const borderColor = useThemeColor('borderColor', 'Tag border color', 'transparent');
   const borderRadius = useThemeRadius('borderRadius', 'Tag radius');
   const ld = useLoadingLook();

@@ -134,7 +134,8 @@ export const BarChart = () => {
   const [showLegend] = ToolJet.useStateBoolean({ name: 'showLegend', label: 'Legend', initialValue: false });
   const [seriesLabels] = ToolJet.useStateObject({
     name: 'seriesLabels',
-    label: 'Series labels ({ field: label })',
+    label: 'Series labels',
+    description: 'Rename series, like { revenue: "Revenue" }.',
     initialValue: {},
   });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
@@ -143,13 +144,14 @@ export const BarChart = () => {
   const [stack] = ToolJet.useStateBoolean({ name: 'stack', label: 'Stack series', initialValue: false });
   const [highlight] = ToolJet.useStateString({
     name: 'highlight',
-    label: 'Highlight (category values, or first, last, max, min)',
-    description: 'Other bars are muted.',
+    label: 'Highlight',
+    description: 'Category values, or first, last, max or min. Other bars are muted.',
     initialValue: '',
   });
   const [categoryColors] = ToolJet.useStateObject({
     name: 'categoryColors',
-    label: 'Category colors ({ category: color })',
+    label: 'Category colors',
+    description: 'A color per category, like { North: "#2563eb" }.',
     initialValue: {},
   });
   const [highlightClicked] = ToolJet.useStateBoolean({
@@ -159,20 +161,18 @@ export const BarChart = () => {
     initialValue: false,
   });
   const click = useChartClick(highlightClicked);
-  const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
+  const chartColor = useThemeColor('chartColor', 'Chart color', TOKEN.brand, {
+    description: 'Leads the series colors unless Series colors sets them.',
+  });
   const gridColor = useThemeColor('gridColor', 'Grid line color', TOKEN.border);
   const axisTextColor = useThemeColor('axisTextColor', 'Axis label color', TOKEN.mutedText);
   const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
-  const highlightColor = useThemeColor(
-    'highlightColor',
-    'Highlighted bar color (default: the series color)',
-    TOKEN.brand
-  );
-  const mutedColor = useThemeColor(
-    'mutedColor',
-    'Other bars color when highlighting (default: the series color, faded)',
-    TOKEN.brand
-  );
+  const highlightColor = useThemeColor('highlightColor', 'Highlighted bar color', TOKEN.brand, {
+    description: 'Bars picked by Highlight use this color.',
+  });
+  const mutedColor = useThemeColor('mutedColor', 'Other bars color', TOKEN.brand, {
+    description: 'Bars not picked by Highlight. Faded unless changed.',
+  });
   const barRadius = useDrawnNumber('barRadius', 'Bar radius', 4);
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ role: 'barchart', fit: false, loading: 'own', defaultWidth: 20, defaultHeight: 28 });

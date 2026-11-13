@@ -29,7 +29,7 @@ export const Text = () => {
   const textColor = useThemeColor('textColor', 'Text color', TOKEN.text);
   const textAlign = ToolJet.useStyleEnumeration({
     name: 'textAlign',
-    label: 'Text alignment (left, center, right)',
+    label: 'Text alignment',
     enumDefinition: ['left', 'center', 'right'],
     initialValue: 'left',
     inspector: 'switch',
@@ -50,7 +50,8 @@ export const Text = () => {
   });
   const letterSpacing = ToolJet.useStyleString({
     name: 'letterSpacing',
-    label: 'Letter spacing (px, or em like 0.12em)',
+    label: 'Letter spacing',
+    description: 'Pixels, or em like 0.12em.',
     initialValue: '',
   });
   const textTransform = ToolJet.useStyleEnumeration({
