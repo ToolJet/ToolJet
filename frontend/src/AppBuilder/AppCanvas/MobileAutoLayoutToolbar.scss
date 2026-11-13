@@ -6,8 +6,10 @@
   z-index: 1050 !important;
 }
 
-// Menus, popovers, selects and tooltips float in their own wrapper (default 50), so inside a lifted dialog they would
-// open underneath it. Radix sets the wrapper's z-index inline, hence the !important.
-[data-radix-popper-content-wrapper] {
+// Rocket menus, popovers, selects and tooltips use the default layer (`tw-z-50`), so inside the lifted dialog above
+// they would open underneath it. Radix copies the content's z-index onto its floating wrapper inline, hence the
+// !important. Only wrappers whose content sits on that default layer match: a popper that sets its own z-index
+// (the Cascader's 1040, the AI builder's menus) or sets none (widget popovers, the binding tooltip) is left alone.
+[data-radix-popper-content-wrapper]:has(> .tw-z-50) {
   z-index: 1060 !important;
 }
