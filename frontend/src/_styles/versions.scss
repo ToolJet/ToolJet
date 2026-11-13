@@ -332,3 +332,33 @@
 	border-bottom-color: #ffffff !important;
 	border-left-color: #ffffff !important;
 }
+.promote-missing-tables {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-warning-weak, var(--amber6));
+  border-radius: 6px;
+  background: var(--background-warning-weak, var(--amber2));
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-default, var(--slate12));
+
+  &__title {
+    font-weight: 500;
+  }
+
+  &__names {
+    margin-top: 2px;
+    font-family: var(--font-mono, monospace);
+    word-break: break-word;
+  }
+
+  &__help {
+    margin-top: 6px;
+    color: var(--text-placeholder, var(--slate11));
+  }
+
+  &__error {
+    margin-top: 6px;
+    color: var(--text-danger, var(--tomato11));
+  }
+}

@@ -20,6 +20,7 @@ import {
   wantedValue,
   type ChoiceOption,
 } from '../lib/ui2/choice/options';
+import { moveRovingFocus } from '../lib/activeElement';
 import { fieldVars, lookVars, useDropRemovedChoices, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
 import { choiceValidationValue } from '../lib/ui2/choice/validationValue';
 import { useBusy, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
@@ -98,8 +99,6 @@ export const Select = () => {
     () => defaultKey(defaultValue, options) || defaultKey(legacyValue, options)
   );
   const [open, setOpen] = useState(false);
-  // A new default value starts the selection again.
-  useResetOn(defaultValue, () => setKey(defaultKey(defaultValue, options)));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
   ToolJet.useFormClear(() => {
     setOpen(false);
@@ -108,6 +107,8 @@ export const Select = () => {
   const selected = byKey.get(key);
   // An option that is removed takes its choice with it, so it does not come back selected when it reappears.
   useDropRemovedChoices(options.map(keyFor), key ? [key] : [], () => setKey(''), false);
+  // After the drop above: with new options and a new default together, the default wins over the dropped choice.
+  useResetOn(defaultValue, () => setKey(defaultKey(defaultValue, options)));
 
   const expose = (option: ChoiceOption | undefined) => {
     setValue((option?.value ?? '') as string);
@@ -184,7 +185,8 @@ export const Select = () => {
         <FieldLoading loading={loading}>
           <div className="uc-wrap">
             <SelectPrimitive.Root
-              value={key}
+              // A key no option has (a default that matches nothing) shows the placeholder, not an empty box.
+              value={selected ? key : ''}
               disabled={disabled}
               open={open}
               onOpenChange={openChange}
@@ -215,7 +217,10 @@ export const Select = () => {
                 }}
               >
                 <span className="uc-truncate">
-                  <SelectPrimitive.Value placeholder={placeholder} />
+                  {/* The chosen label drawn once: options sharing a value each sent theirs ("AB"). */}
+                  <SelectPrimitive.Value placeholder={placeholder}>
+                    {selected ? selected.label : undefined}
+                  </SelectPrimitive.Value>
                 </span>
                 {loading ? (
                   <Spinner />
@@ -232,6 +237,13 @@ export const Select = () => {
                     position="popper"
                     sideOffset={4}
                     style={popVars}
+                    // Radix's arrow focus compares document.activeElement, which stays the shadow host, so it ran to the last option.
+                    onKeyDownCapture={(e) => {
+                      const items = Array.from(e.currentTarget.querySelectorAll<HTMLElement>('[role="option"]')).filter(
+                        (el) => !el.hasAttribute('data-disabled')
+                      );
+                      if (moveRovingFocus(e, items, { orientation: 'vertical' })) e.stopPropagation();
+                    }}
                     onCloseAutoFocus={(e) => {
                       if (ownerClosed.current) e.preventDefault();
                     }}
@@ -273,7 +285,7 @@ export const Select = () => {
                 </SelectPrimitive.Portal>
               ) : null}
             </SelectPrimitive.Root>
-            {clearable && key && !loading ? (
+            {clearable && selected && !loading ? (
               <ClearX
                 label="Clear selection"
                 className="uc-clear-at before-chevron"

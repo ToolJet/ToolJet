@@ -167,6 +167,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
     ':workspaceId',
     'confirm-invite',
     'oauth2',
+    'cli',
     'applications',
     'embed-apps',
     'integrations',

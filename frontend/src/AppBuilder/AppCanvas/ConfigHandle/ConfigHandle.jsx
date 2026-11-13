@@ -40,7 +40,9 @@ export const ConfigHandle = ({
   const { moduleId, isModuleEditor } = useModuleContext();
   const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
   const hasCustomComponentLibrariesAccess = useStore(
-    (state) => state.license?.featureAccess?.customComponentLibraries === true
+    (state) =>
+      state.license?.featureAccess?.customComponentLibraries === true ||
+      state.license?.featureAccess?.codeAppsDevTrack === true
   );
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);

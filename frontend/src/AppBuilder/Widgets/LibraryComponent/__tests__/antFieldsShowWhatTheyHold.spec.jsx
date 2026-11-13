@@ -8,7 +8,7 @@ installBrowserStubs();
 // - a Hero with no action button showed nothing while loading (only the action button had a spinner);
 // - an OTP given 12345678 under Length 6 showed 123456 but exposed 12345678 with isComplete false, and kept ab12 in
 //   lower case where typed letters turn upper case;
-// - a Pagination with Page size 0 drew 10 a page but exposed pageSize 0;
+// - a Pagination with Page size 0 drew the fallback size a page but exposed pageSize 0;
 // - a Password shorter than its Min length property only showed a hint: isValid stayed true.
 // The pack's components, the inline SDK and the host renderer are the real ones; only module and CSS loading is
 // replaced.
@@ -60,19 +60,15 @@ describe('Ant Design OTP: a value set from outside is cleaned as typing is', () 
   });
 });
 
+// The fallback page size is 1, the Pagination's default since #18990; the exposed pageSize is the size drawn.
 describe('Ant Design Pagination: Page size 0', () => {
-  test('[PackComponent-PAGESIZE-001] draws 10 a page and exposes pageSize 10', async () => {
+  test('[PackComponent-PAGESIZE-001] draws 1 a page and exposes pageSize 1', async () => {
     const v = await mountPack('antd', 'Pagination', { total: 50, pageSize: 0 });
     await settle();
 
-    expect([...v.root().querySelectorAll('.ant-pagination-item')].map((e) => e.textContent)).toEqual([
-      '1',
-      '2',
-      '3',
-      '4',
-      '5',
-    ]);
-    expect(v.exposed.pageSize).toBe(10);
+    const pages = [...v.root().querySelectorAll('.ant-pagination-item')].map((e) => e.textContent);
+    expect(pages[pages.length - 1]).toBe('50');
+    expect(v.exposed.pageSize).toBe(1);
   });
 });
 

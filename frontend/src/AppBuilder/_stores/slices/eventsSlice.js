@@ -6,6 +6,7 @@ import { getHostURL, getSubpath } from '@/_helpers/routes';
 import urlJoin from 'url-join';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 import { logoutAction } from '@/AppBuilder/_utils/auth';
 import { isCompareMuted } from '@/AppBuilder/_utils/compareFrame';
 import { awaitSdkAction, getSdkActionReadiness } from '@/AppBuilder/_utils/sdkActionReadiness';
@@ -306,7 +307,7 @@ export const createEventsSlice = (set, get) => ({
       // names are safe here. Return: prevents double-execution for names that ALSO
       // appear in the standard list.
       if (options?.isCustomComponentEvent) {
-        return executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+        return executeActionsForEventId(eventName, events, mode, customVariables, moduleId, sourceSubContainerIndex);
       }
 
       if (eventName === 'onPageLoad') {
@@ -315,7 +316,7 @@ export const createEventsSlice = (set, get) => ({
       }
       if (eventName === 'onTrigger') {
         const { queryPanel, dataQuery } = get();
-        const queries = dataQuery.queries.modules.canvas;
+        const queries = dataQuery.queries.modules[moduleId] ?? dataQuery.queries.modules.canvas;
         const { runQuery } = queryPanel;
         const { queryName, parameters } = options;
         const queryId = queries.filter((query) => query.name === queryName && isQueryRunnable(query))?.[0]?.id;
@@ -401,6 +402,8 @@ export const createEventsSlice = (set, get) => ({
           'onMarkerClick',
           'onPolygonClick',
           'onPageChanged',
+          'onNextPageClicked',
+          'onPreviousPageClicked',
           'onSearch',
           'onChange',
           'onEnterPressed',
@@ -702,6 +705,7 @@ export const createEventsSlice = (set, get) => ({
               //! if resolvecode default value should be the value itself not empty string ... Ask KAVIN
               const resolvedValue = getResolvedValue(event.url, customVariables, moduleId);
               // const url = resolveReferences(event.url, undefined, customVariables);
+              if (strictMode.strictUrlAllowed && !strictMode.strictUrlAllowed(resolvedValue)) return Promise.resolve();
               window.open(resolvedValue, event?.windowTarget === 'currentTab' ? '_self' : '_blank');
               return Promise.resolve();
             }
@@ -790,6 +794,7 @@ export const createEventsSlice = (set, get) => ({
             case 'set-localstorage-value': {
               const key = getResolvedValue(event.key, customVariables, moduleId);
               const value = getResolvedValue(event.value, customVariables, moduleId);
+              if (strictMode.isStrict?.()) return Promise.resolve();
               localStorage.setItem(key, value);
 
               return Promise.resolve();

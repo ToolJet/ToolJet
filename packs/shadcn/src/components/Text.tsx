@@ -80,7 +80,7 @@ export const Text = () => {
   );
   return (
     <LoadingFrame loading={ld.loading} look={ld.skeleton ? <TextSkel /> : <LoadingBox />}>
-      <div className="ui ui-text-wrap">
+      <div className="ui ui-text-wrap ui2-text-box">
         <p
           className={cn(
             'ui2-text',

@@ -33,14 +33,18 @@ export const Breadcrumb = () => {
   const ld = useLoadingLook();
   ToolJet.useComponentSettings({ role: 'breadcrumb', fit: false, loading: 'own', defaultWidth: 14, defaultHeight: 3 });
 
-  const all = list(items);
+  const titleOf = (it: unknown) => (isRecord(it) ? text(it.title ?? it.label ?? it.value) : text(it));
+  // Entries with nothing to show (null, '', {}, a list) are skipped; each keeps its index in Items.
+  const kept = list(items)
+    .map((it, k) => ({ it, k }))
+    .filter(({ it }) => titleOf(it).trim() !== '');
+  const all = kept.map(({ it }) => it);
   const trail: unknown[] = all.length > MAX_CRUMBS ? [all[0], ELLIPSIS, ...all.slice(-(MAX_CRUMBS - 2))] : all;
-  // The index in the whole trail of each drawn item (the ellipsis hides some).
+  // The index in Items of each drawn item (the ellipsis hides some).
   const indexes =
     all.length > MAX_CRUMBS
-      ? [0, -1, ...Array.from({ length: MAX_CRUMBS - 2 }, (_, k) => all.length - (MAX_CRUMBS - 2) + k)]
-      : all.map((_, k) => k);
-  const titleOf = (it: unknown) => (isRecord(it) ? text(it.title ?? it.label ?? it.value) : text(it));
+      ? [kept[0].k, -1, ...kept.slice(-(MAX_CRUMBS - 2)).map(({ k }) => k)]
+      : kept.map(({ k }) => k);
   const click = (it: unknown, index: number) => {
     if (disabled || it === ELLIPSIS) return;
     const entry = isRecord(it) ? it : { title: titleOf(it) };

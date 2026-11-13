@@ -30,6 +30,7 @@ import {
 import { formatCell } from '../lib/format';
 import { slotNames } from '../lib/slots';
 import { useDialogOwner } from '../lib/useOwnerGuard';
+import { useProjectedEscape } from '../lib/useProjectedEscape';
 import { useValueSetter } from '../lib/sameValue';
 import VirtualList, { type ListRef } from 'rc-virtual-list';
 import { VIRTUAL_MIN_ROWS, useVirtualBody } from '../lib/virtualRows';
@@ -289,8 +290,8 @@ export const Modal = () => {
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center" ownerRef={owner}>
       {showTrigger ? (
-        <Button type="primary" block className="tj-ant-fill" disabled={disabled} onClick={() => setOpen(true)}>
-          {triggerText}
+        <Button type="primary" block className="tj-ant-fill" disabled={disabled} loading={loading} onClick={() => setOpen(true)}>
+          {loading ? "" : triggerText}
         </Button>
       ) : null}
       <ModalBody
@@ -306,7 +307,8 @@ export const Modal = () => {
         centered={centered}
         closable={closable}
         maskClosable={maskClosable}
-        confirmLoading={loading}
+        // Not confirmLoading: antd then drops Cancel, the X, the mask and Escape, so Loading only spins OK.
+        okLoading={loading}
         okDisabled={guard.blocked}
         onOk={() => {
           if (!guard.takesInput()) return;
@@ -329,6 +331,7 @@ const ModalBody = ({
   footer,
   okType,
   okDisabled,
+  okLoading,
   ...props
 }: Omit<React.ComponentProps<typeof AntModal>, 'footer' | 'content'> & {
   content: string;
@@ -336,6 +339,7 @@ const ModalBody = ({
   footer: boolean;
   okType: 'primary' | 'danger';
   okDisabled: boolean;
+  okLoading: boolean;
 }) => {
   const popup = usePopupTheme();
   // The modal's own place in the popup layer, carrying the component's token values. antd puts the tj-ant class on the
@@ -344,6 +348,8 @@ const ModalBody = ({
   // color, Container background and Border radius changed nothing on the open modal (QA AD-18). display: contents
   // keeps it out of the layout.
   const [scope, setScope] = useState<HTMLDivElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  useProjectedEscape(dialogRef, !!props.open, () => (props.onCancel as (() => void) | undefined)?.());
   // Portal only once the popup layer is known: antd would otherwise mount the modal on document.body, unstyled.
   if (!popup.container) return null;
   return (
@@ -354,12 +360,16 @@ const ModalBody = ({
           {...props}
           getContainer={scope}
           rootClassName={popup.className}
-          okButtonProps={{ danger: okType === 'danger', disabled: okDisabled }}
+          okButtonProps={{ danger: okType === 'danger', disabled: okDisabled, loading: okLoading }}
           footer={footer ? undefined : null}
           forceRender
           // The host keeps Tab inside an open dialog (packFocus): antd's own trap reads document.activeElement, which a
           // shadow root hides.
-          modalRender={(node) => <div data-tj-modal={props.open ? 'open' : 'closed'}>{node}</div>}
+          modalRender={(node) => (
+            <div ref={dialogRef} data-tj-modal={props.open ? 'open' : 'closed'}>
+              {node}
+            </div>
+          )}
         >
           {content ? <p className="tj-ant-modal-content">{content}</p> : null}
           {bodyHeight > 0 ? <ToolJet.PopupSlot name="body" style={{ height: bodyHeight }} /> : null}

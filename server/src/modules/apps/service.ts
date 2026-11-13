@@ -1094,6 +1094,7 @@ export class AppsService implements IAppsService {
 
       await this.appsUtilService.checkModulesReleasedInApp(versionToBeReleased, user.organizationId, manager);
       await assertReleaseBaseline(manager, appId, versionReleaseDto.expectedReleasedVersionId);
+      await this.appsUtilService.checkWorkflowsReleasedInApp(versionToBeReleased, user.organizationId, manager);
       await this.beforeVersionRelease(manager, appId, versionToBeReleased);
 
       // Get version details for audit log

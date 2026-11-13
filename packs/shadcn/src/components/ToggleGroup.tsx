@@ -20,7 +20,7 @@ import {
 import { lookVars, useDropRemovedChoices, useResetOn } from '../lib/ui2/choice/looks';
 import { moveRovingFocus, rovingEntry } from '../lib/activeElement';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
-import { TOKEN, useThemeRadius } from '../lib/styleDefaults';
+import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import { InlineLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-choice.css';
 
@@ -70,7 +70,9 @@ export const ToggleGroup = () => {
     inspector: 'hidden',
   });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
-  const backgroundColor = useColorStyle('backgroundColor', 'Group background', TOKEN.muted);
+  // Only the Segmented look has a group bar to colour, so Group background shows only for it.
+  const segmentedOnly = { visibleWhen: { key: 'variant', value: 'segmented' } };
+  const backgroundColor = useThemeColor('backgroundColor', 'Group background', TOKEN.muted, segmentedOnly);
   const textColor = useColorStyle('textColor', 'Option text color', TOKEN.mutedText);
   const selectedBackgroundColor = useColorStyle('selectedBackgroundColor', 'Selected option background', TOKEN.surface);
   const selectedTextColor = useColorStyle('selectedTextColor', 'Selected option text color', TOKEN.text);
@@ -95,9 +97,10 @@ export const ToggleGroup = () => {
     return byKey.has(k) || legacyValue === '' || legacyValue === undefined ? k : defaultKey(legacyValue, options);
   });
   const [keys, setKeys] = useState<string[]>(() => keysFor(defaultValues));
-  useResetOn(defaultValue, () => setKey(defaultKey(defaultValue, options)));
   useResetOn(defaultValues, () => setKeys(keysFor(defaultValues)));
   useDropRemovedChoices(options.map(keyFor), key ? [key] : [], () => setKey(''), false);
+  // After the drop above: with new options and a new default together, the default wins over the dropped choice.
+  useResetOn(defaultValue, () => setKey(defaultKey(defaultValue, options)));
   const selected = byKey.get(key);
   const pickedValues = keys.map((k) => byKey.get(k)?.value).filter((v) => v !== undefined);
   // Live, as keyRef below: an action reads the multiple selection as last set.

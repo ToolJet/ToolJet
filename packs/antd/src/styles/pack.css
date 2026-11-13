@@ -103,6 +103,23 @@
 .ant-space-compact.tj-ant-fill > .ant-btn {
   height: 100%;
 }
+/* A button drawn in its box never grows past it: a long label ends in an ellipsis, a Dropdown's arrow stays in (AD-12).
+   A flex item's min-width (auto) and antd's nowrap had held it at its text's width (a 295px Dropdown in a 186px box). */
+.ant-btn.tj-ant-fill,
+.ant-space-compact.tj-ant-fill {
+  min-width: 0;
+  max-width: 100%;
+}
+.ant-space-compact.tj-ant-fill > .ant-btn:first-child {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.ant-btn.tj-ant-fill > span:not(.anticon),
+.ant-space-compact.tj-ant-fill > .ant-btn:first-child > span:not(.anticon) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .tj-ant-required {
   color: var(--ant-color-error);
 }

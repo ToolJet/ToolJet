@@ -21,7 +21,7 @@ import dayjs from 'dayjs';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, usePopupTheme, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { SkeletonSwap, SpinOver } from '../lib/Loading';
-import { str, toArray, toKeyedItems, type Row } from '../lib/data';
+import { oneOf, str, toArray, toKeyedItems, type Row } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { toTree } from './MoreInputs';
 import { boundedTree } from '../lib/tree';
@@ -29,6 +29,7 @@ import { slotNames } from '../lib/slots';
 import { ownerAvailable, useOwnedPopup, useOwnerShown } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
 import { useMenuLookup } from '../lib/menuLookup';
+import { useProjectedEscape } from '../lib/useProjectedEscape';
 
 type MenuItem = {
   key: string;
@@ -486,7 +487,7 @@ export const Pagination = () => {
   const [pageSize, setPageSize] = ToolJet.useStateNumber({
     name: 'pageSize',
     label: 'Page size',
-    initialValue: 10,
+    initialValue: 1,
     min: 1,
   });
   const [total] = ToolJet.useStateNumber({ name: 'total', label: 'Total', initialValue: 50, min: 0 });
@@ -531,8 +532,8 @@ export const Pagination = () => {
   });
   // current is a page that exists: an action past the last page goes to the last, and when the total shrinks under the
   // page shown, current follows the page Ant draws (no onChange: the user did not change it).
-  // pageSize is the size drawn too: a Page size of 0 drew 10 a page while pageSize stayed 0 (QA AD-49).
-  const sizeDrawn = Math.max(1, Number(pageSize) || 10);
+  // pageSize is the size drawn too: a Page size of 0 drew the fallback size a page while pageSize stayed 0 (QA AD-49).
+  const sizeDrawn = Math.max(1, Number(pageSize) || 1);
   useEffect(() => {
     if (Number(pageSize) !== sizeDrawn) setPageSize(sizeDrawn);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -553,7 +554,8 @@ export const Pagination = () => {
   );
   return (
     <AntProvider tokens={tokens}>
-      <SpinOver loading={loading}>
+      {/* Full width, so align has room to move the buttons (an inline wrapper shrank to them: AD-23). */}
+      <SpinOver loading={loading} as="block">
         <WithPopupTheme>
           {(popup) => (
             <AntPagination
@@ -684,6 +686,8 @@ const DrawerBody = (props: React.ComponentProps<typeof AntDrawer>) => {
   // order: hidden once the close has animated, shown again as it opens.
   const [shown, setShown] = React.useState(!!props.open);
   if (props.open && !shown) setShown(true);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  useProjectedEscape(dialogRef, !!props.open, () => (props.onClose as (() => void) | undefined)?.());
   if (!popup.container) return null;
   return (
     <AntDrawer
@@ -699,7 +703,7 @@ const DrawerBody = (props: React.ComponentProps<typeof AntDrawer>) => {
       // The host keeps Tab inside an open drawer (packFocus): antd's own trap reads document.activeElement, which a
       // shadow root hides.
       drawerRender={(node) => (
-        <div data-tj-modal={props.open ? 'open' : 'closed'} style={{ height: '100%' }}>
+        <div ref={dialogRef} data-tj-modal={props.open ? 'open' : 'closed'} style={{ height: '100%' }}>
           {node}
         </div>
       )}
@@ -1272,10 +1276,21 @@ export const QRCode = () => {
   });
   const px = Math.max(48, Math.min(600, toNumber(size) ?? 160));
   const fits = useMemo(() => !value || fitsQrCode(value, String(errorLevel)), [value, errorLevel]);
+  // Ant fills the modules from its JS token (light mode's black) as an SVG attribute, which the pack's dark mode and
+  // theme colours (CSS variables) never reach (AD-25). currentColor follows the box's CSS colour instead, and the box
+  // takes the container background (it was transparent, so Container background did nothing). A set Color or
+  // Background still wins; with only a Background set, the modules keep Ant's dark default (light on a white Background
+  // would vanish).
+  const colors = {
+    color: color || (bgColor ? undefined : 'currentColor'),
+    bgColor: bgColor || undefined,
+    style: { color: 'var(--ant-color-text)', backgroundColor: bgColor || 'var(--ant-color-bg-container)' },
+  };
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center">
       {value && !fits ? (
         <AntQRCode
+          {...colors}
           value="-"
           size={px}
           status="expired"
@@ -1285,20 +1300,20 @@ export const QRCode = () => {
         />
       ) : value ? (
         <AntQRCode
+          {...colors}
           value={value}
           size={px}
-          color={color || undefined}
-          bgColor={bgColor || undefined}
-          errorLevel={errorLevel as 'M'}
+          errorLevel={oneOf(errorLevel, ['L', 'M', 'Q', 'H'] as const, 'M')}
           icon={icon || undefined}
           bordered={bordered}
           status={loading ? 'loading' : 'active'}
           type="svg"
         />
       ) : loading ? (
-        <AntQRCode value="-" size={px} status="loading" bordered={bordered} type="svg" />
+        <AntQRCode {...colors} value="-" size={px} status="loading" bordered={bordered} type="svg" />
       ) : (
         <AntQRCode
+          {...colors}
           value="-"
           size={px}
           status="expired"

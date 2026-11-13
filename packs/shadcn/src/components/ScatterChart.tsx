@@ -1,7 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   CartesianGrid,
-  Cell,
   Legend,
   ReferenceLine,
   Scatter,
@@ -17,6 +16,7 @@ import {
   AXIS,
   AXIS_FILL,
   ChartFrame,
+  DimOthers,
   GRID,
   LegendContent,
   REF,
@@ -31,7 +31,7 @@ import {
   axisLabel,
   axisWidthFor,
   clamp,
-  emphasis,
+  DIMMED,
   evenSample,
   formatter,
   hiddenNote,
@@ -40,6 +40,9 @@ import {
   isSet,
   list,
   num,
+  percentScale,
+  sameDatum,
+  scaled,
   sampledNote,
   seriesLabel,
   type Row,
@@ -235,15 +238,25 @@ export const ScatterChart = () => {
     } = scatterGroups(data, { xField, yField, sizeField, groupField, nameField });
     const xFormat = { format: xAxisFormat, currency, locale };
     const yFormat = { format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix };
-    const yTick = formatter(yFormat, true);
+    // Fractions (0.25) read as 25% on a percent format, as the Line chart does.
+    const pts = groups.flatMap((g) => g.points);
+    const xScale = percentScale(
+      xAxisFormat,
+      pts.map((pt) => pt.x)
+    );
+    const yScale = percentScale(
+      yAxisFormat,
+      pts.map((pt) => pt.y)
+    );
+    const yTick = scaled(formatter(yFormat, true), yScale);
     return {
       groups,
       notes: [sampledNote(sampled, rowCount, 'points'), hiddenNote(hiddenGroups, 'group')],
       fills: groups.map((_, i) => seriesColor(colors, chartColor, i)),
-      fxTick: formatter(xFormat, true),
+      fxTick: scaled(formatter(xFormat, true), xScale),
       fyTick: yTick,
-      fx: formatter(xFormat, false),
-      fy: formatter(yFormat, false),
+      fx: scaled(formatter(xFormat, false), xScale),
+      fy: scaled(formatter(yFormat, false), yScale),
       yWidth: axisWidthFor(
         groups.flatMap((g) => g.points.map((pt) => pt.y)),
         yTick
@@ -289,8 +302,99 @@ export const ScatterChart = () => {
         }
       : undefined;
 
+  // The chart element is kept while only the click changes: Recharts Scatter redrew every point on any new child (its
+  // points carry the axis scales), so the second click of a double click hit another node and no double click fired.
+  const pick = useRef(click.pick);
+  pick.current = click.pick;
+  const plot = useMemo(
+    () => (
+      <RScatterChart margin={{ left: 4, right: 16, top: 12, bottom: 0 }}>
+        {showGrid !== false && !compact ? <CartesianGrid stroke={GRID} /> : null}
+        <XAxis
+          type="number"
+          dataKey="x"
+          name={String(xLabel || xField || 'x')}
+          {...AXIS}
+          hide={compact}
+          domain={['auto', 'auto']}
+          tickFormatter={m.fxTick}
+          height={isSet(xLabel) && !compact ? 46 : 30}
+          label={axisTitle(xLabel, 'x')}
+        />
+        <YAxis
+          type="number"
+          dataKey="y"
+          {...AXIS}
+          hide={compact}
+          domain={['auto', 'auto']}
+          width={m.yWidth + (isSet(yLabel) ? 18 : 0)}
+          tickFormatter={m.fyTick}
+          label={axisTitle(yLabel, 'y')}
+        />
+        {bubbles ? (
+          <ZAxis type="number" dataKey="z" range={[size * 8, size * 120]} />
+        ) : (
+          <ZAxis range={[size * size * 3, size * size * 3]} />
+        )}
+        <Tooltip
+          cursor={{ strokeDasharray: '3 3', stroke: 'var(--ui-border)' }}
+          content={<ScatterTip rows={tipRows} />}
+        />
+        {showLegend !== false && m.groups.length > 1 && !compact ? <Legend content={<LegendContent />} /> : null}
+        {refX !== null ? <ReferenceLine x={refX} stroke={REF} strokeDasharray="4 4" ifOverflow="extendDomain" /> : null}
+        {refY !== null ? <ReferenceLine y={refY} stroke={REF} strokeDasharray="4 4" ifOverflow="extendDomain" /> : null}
+        {m.groups.map((g, i) => (
+          <Scatter
+            key={String(g.name) || 'points'}
+            name={String(g.name || seriesLabel(yField))}
+            data={g.points}
+            fill={m.fills[i]}
+            fillOpacity={opacity}
+            stroke={bubbles ? m.fills[i] : 'none'}
+            className={`ui2-pointer ui2-series-${i}`}
+            isAnimationActive={animated(animate, total)}
+            onClick={(pt: { payload?: Point; row?: Row }) => pick.current(pt?.payload?.row ?? pt?.row)}
+          />
+        ))}
+      </RScatterChart>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- tipRows and axisTitle derive from these
+    [
+      m,
+      showGrid,
+      compact,
+      xLabel,
+      yLabel,
+      xField,
+      yField,
+      sizeField,
+      bubbles,
+      size,
+      showLegend,
+      refX,
+      refY,
+      opacity,
+      animate,
+      total,
+    ]
+  );
+
+  const highlighted = click.highlighted;
+  const hitSeries =
+    highlighted == null ? -1 : m.groups.findIndex((g) => g.points.some((pt) => sameDatum(pt.row, highlighted)));
+  const hitPoint = hitSeries < 0 ? -1 : m.groups[hitSeries].points.findIndex((pt) => sameDatum(pt.row, highlighted));
+
   return (
     <LoadingFrame loading={ld.loading} look={blockLook(ld.skeleton)}>
+      <DimOthers
+        active={highlighted != null}
+        marks=".recharts-scatter-symbol path"
+        hit={
+          hitSeries >= 0 ? `.ui2-series-${hitSeries} .recharts-scatter-symbol:nth-child(${hitPoint + 1}) path` : null
+        }
+        dimmed={opacity * DIMMED}
+        kept={opacity}
+      />
       <ChartFrame
         boxRef={box.ref}
         empty={!m.groups.length}
@@ -306,65 +410,7 @@ export const ScatterChart = () => {
         }}
         onDoubleClick={click.doubleClick}
       >
-        <RScatterChart margin={{ left: 4, right: 16, top: 12, bottom: 0 }}>
-          {showGrid !== false && !compact ? <CartesianGrid stroke={GRID} /> : null}
-          <XAxis
-            type="number"
-            dataKey="x"
-            name={String(xLabel || xField || 'x')}
-            {...AXIS}
-            hide={compact}
-            domain={['auto', 'auto']}
-            tickFormatter={m.fxTick}
-            height={isSet(xLabel) && !compact ? 46 : 30}
-            label={axisTitle(xLabel, 'x')}
-          />
-          <YAxis
-            type="number"
-            dataKey="y"
-            {...AXIS}
-            hide={compact}
-            domain={['auto', 'auto']}
-            width={m.yWidth + (isSet(yLabel) ? 18 : 0)}
-            tickFormatter={m.fyTick}
-            label={axisTitle(yLabel, 'y')}
-          />
-          {bubbles ? (
-            <ZAxis type="number" dataKey="z" range={[size * 8, size * 120]} />
-          ) : (
-            <ZAxis range={[size * size * 3, size * size * 3]} />
-          )}
-          <Tooltip
-            cursor={{ strokeDasharray: '3 3', stroke: 'var(--ui-border)' }}
-            content={<ScatterTip rows={tipRows} />}
-          />
-          {showLegend !== false && m.groups.length > 1 && !compact ? <Legend content={<LegendContent />} /> : null}
-          {refX !== null ? (
-            <ReferenceLine x={refX} stroke={REF} strokeDasharray="4 4" ifOverflow="extendDomain" />
-          ) : null}
-          {refY !== null ? (
-            <ReferenceLine y={refY} stroke={REF} strokeDasharray="4 4" ifOverflow="extendDomain" />
-          ) : null}
-          {m.groups.map((g, i) => (
-            <Scatter
-              key={String(g.name) || 'points'}
-              name={String(g.name || seriesLabel(yField))}
-              data={g.points}
-              fill={m.fills[i]}
-              fillOpacity={opacity}
-              stroke={bubbles ? m.fills[i] : 'none'}
-              className="ui2-pointer"
-              isAnimationActive={animated(animate, total)}
-              onClick={(pt: { payload?: Point; row?: Row }) => click.pick(pt?.payload?.row ?? pt?.row)}
-            >
-              {click.highlighted
-                ? g.points.map((pt, d) => (
-                    <Cell key={d} fill={m.fills[i]} fillOpacity={opacity * emphasis(pt.row, click.highlighted)} />
-                  ))
-                : null}
-            </Scatter>
-          ))}
-        </RScatterChart>
+        {plot}
       </ChartFrame>
     </LoadingFrame>
   );

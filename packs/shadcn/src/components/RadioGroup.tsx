@@ -94,10 +94,11 @@ export const RadioGroup = () => {
     const k = isScalar(defaultValue) ? defaultKey(defaultValue, options) : '';
     return byKey.has(k) || !isScalar(legacyValue) || legacyValue === '' ? k : defaultKey(legacyValue, options);
   });
-  useResetOn(defaultValue, () => setKey(defaultKey(defaultValue, options)));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
   ToolJet.useFormClear(() => setKey(''));
   useDropRemovedChoices(options.map(keyFor), key ? [key] : [], () => setKey(''), false);
+  // After the drop above: with new options and a new default together, the default wins over the dropped choice.
+  useResetOn(defaultValue, () => setKey(defaultKey(defaultValue, options)));
   const selected = byKey.get(key);
   useEffect(() => {
     setValue((selected?.value ?? '') as string);

@@ -5,6 +5,17 @@ import * as ReactJSXRuntime from 'react/jsx-runtime';
 import { init as initLexer, parse as parseImports } from 'es-module-lexer';
 
 import FormSignalContext from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
+import {
+  compareText,
+  debugApi,
+  devRuntime,
+  useCodeAppGlobals,
+  useCodeAppNavigation,
+  useCodeAppQuery,
+  useCodeAppTheme,
+  useCodeAppWorkspaceUsers,
+} from './runtimeExtensions';
 
 /* POC: run a published custom-component bundle in the host page instead of the sandboxed shell iframe.
 
@@ -25,6 +36,7 @@ const RUNTIME_STORAGE_KEY = 'tj-cc-runtime';
 // Every library runs inline for now; the sandboxed iframe stays available behind
 // localStorage.setItem('tj-cc-runtime', 'iframe').
 export const getLibraryComponentRuntime = (): LibraryRuntime => {
+  if (strictMode.isStrict?.()) return 'iframe';
   try {
     return window.localStorage.getItem(RUNTIME_STORAGE_KEY) === 'iframe' ? 'iframe' : 'inline';
   } catch {
@@ -88,6 +100,8 @@ export interface PackHost {
   submitForm?: () => void;
   /** The widget's component id. */
   widgetId?: string;
+  /** The app is open in the editor, not in a viewer or a released app. */
+  editing?: boolean;
 }
 
 export interface RowContext {
@@ -184,6 +198,32 @@ const makeStateHook = (hookName: string, cleared?: () => unknown) =>
     return [value, setAndSync] as const;
   };
 
+// Every colour style runs this on every render; a page reuses few distinct values, so each is checked once.
+const colourChecks = new Map<string, boolean>();
+const COLOUR_CHECKS_MAX = 500;
+const isColour = (value: string) => {
+  if (typeof CSS === 'undefined' || typeof CSS.supports !== 'function') return true;
+  let ok = colourChecks.get(value);
+  if (ok === undefined) {
+    ok = CSS.supports('color', value);
+    if (colourChecks.size >= COLOUR_CHECKS_MAX) colourChecks.clear();
+    colourChecks.set(value, ok);
+  }
+  return ok;
+};
+
+// A negative size is one CSS drops, so the part shrank to nothing (a 0px divider, a square corner).
+const SIZE_STYLE = /radius|width|height|gap|padding|thickness|size/i;
+
+// CSS drops a value it cannot read, so the part drew transparent, black or square instead of its default.
+const cannotDraw = (hookName: string, name: string, inspector: string | undefined, raw: unknown) => {
+  if (inspector === 'color' && typeof raw === 'string' && !isColour(raw.trim())) return true;
+  const isNumberStyle = hookName === 'useStyleNumber';
+  const n = typeof raw === 'number' || (typeof raw === 'string' && raw.trim() !== '') ? Number(raw) : NaN;
+  if (isNumberStyle && !Number.isFinite(n)) return true;
+  return (/radius/i.test(name) || (isNumberStyle && SIZE_STYLE.test(name))) && Number.isFinite(n) && n < 0;
+};
+
 // Styles are builder-controlled: the hook returns the Inspector value, or initialValue while it is unset.
 // `expose: true` also reports that value as a read-only exposed variable; by default styles stay private.
 const makeStyleHook = (hookName: string) =>
@@ -192,11 +232,13 @@ const makeStyleHook = (hookName: string) =>
     initialValue,
     expose,
     enumDefinition,
+    inspector,
   }: {
     name: string;
     initialValue?: unknown;
     expose?: boolean;
     enumDefinition?: unknown[];
+    inspector?: string;
   }) {
     const instance = useLibraryInstance(hookName);
     const raw = instance.styles[name];
@@ -204,7 +246,13 @@ const makeStyleHook = (hookName: string) =>
     // not list. Both fall back to initialValue: a vendor component given null or an unknown colour name can throw
     // (MUI Tabs' textColor took the whole viewer down).
     const unknownOption = Array.isArray(enumDefinition) && raw != null && raw !== '' && !enumDefinition.includes(raw);
-    const value = raw === undefined || raw === null || raw === '' || unknownOption ? initialValue : raw;
+    const value =
+      raw === undefined || raw === null || raw === '' || unknownOption || cannotDraw(hookName, name, inspector, raw)
+        ? initialValue
+        : // The number field saves text ("200"); CSS drops a size with no unit, so a number style hands over a number.
+          hookName === 'useStyleNumber' && typeof raw === 'string'
+          ? Number(raw)
+          : raw;
     // The instance object changes with every prop change; report only when the value itself changes.
     const instanceRef = React.useRef(instance);
     instanceRef.current = instance;
@@ -317,6 +365,8 @@ const v2Hooks = {
   },
   /** The widget's component id (what a Form's buttonToSubmit or an event's target names). */
   useWidgetId: (): string | undefined => useHost()?.widgetId,
+  /** True in the editor: a popup stays open while the builder uses the panels around the canvas. */
+  useEditing: (): boolean => !!useHost()?.editing,
   /** A drop area inside a popup (a dialog's body): a ToolJet canvas projected into the page's popup layer. */
   PopupSlot: ({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) => {
     const host = useHost();
@@ -340,7 +390,23 @@ export const toolJetSdk = {
   useStateEnumeration: makeStateHook('useStateEnumeration', () => ''),
   useEventCallback: function useTjEvent({ name }: { name: string }) {
     const instance = useLibraryInstance('useEventCallback');
-    return React.useCallback(() => instance.fireEvent(name), [instance, name]);
+    return React.useCallback(
+      (payload?: unknown) => {
+        const isDomEvent = !!payload && typeof payload === 'object' && 'nativeEvent' in (payload as object);
+        if (payload !== undefined && !isDomEvent) instance.setExposedVariable('lastEvent', { name, payload });
+        instance.fireEvent(name);
+      },
+      [instance, name]
+    );
+  },
+  useQuery: (name: string, options?: { enabled?: boolean }) => useCodeAppQuery(name, options),
+  useGlobals: () => useCodeAppGlobals(),
+  useTheme: () => useCodeAppTheme(),
+  useWorkspaceUsers: (options?: { search?: string; limit?: number; offset?: number }) =>
+    useCodeAppWorkspaceUsers(options),
+  useNavigation: function useTjNavigation() {
+    const instance = React.useContext(LibraryInstanceContext);
+    return useCodeAppNavigation(instance?.props);
   },
   useAction: function useTjAction({ name }: { name: string }, handler: ActionHandler) {
     const instance = useLibraryInstance('useAction');
@@ -371,6 +437,7 @@ const HOST_MODULES: Record<string, Record<string, unknown>> = {
   'react-dom': ReactDOM,
   'react-dom/client': ReactDOMClient,
   'react/jsx-runtime': ReactJSXRuntime,
+  'react/jsx-dev-runtime': devRuntime,
 };
 
 const installGlobals = () => {
@@ -382,6 +449,7 @@ const installGlobals = () => {
   w.__tj_React = React;
   w.__tj_ReactDOM = ReactDOMClient;
   w.__tj_ReactJSXRuntime = ReactJSXRuntime;
+  w.__tjDebug = debugApi;
 };
 
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
@@ -413,7 +481,7 @@ const rewriteBareImports = async (source: string): Promise<string> => {
     if (imp.n === undefined || imp.n === null) continue;
     if (!HOST_MODULES[imp.n]) {
       if (!imp.n.startsWith('blob:') && !/^(https?:|\.{0,2}\/)/.test(imp.n)) {
-        throw new Error(`bundle imports "${imp.n}", which the host does not provide`);
+        throw new Error(`the code imports "${imp.n}", which ToolJet does not provide`);
       }
       continue;
     }
@@ -425,6 +493,64 @@ const rewriteBareImports = async (source: string): Promise<string> => {
   return out + source.slice(last);
 };
 
+export const installGlobalsOn = (win: Window) => {
+  installGlobals();
+  const w = win as any;
+  w.__tj_hostModules = HOST_MODULES;
+  w.__tj_ToolJet = toolJetSdk;
+  w.__tj_React = React;
+  w.__tj_ReactDOM = ReactDOMClient;
+  w.__tj_ReactJSXRuntime = ReactJSXRuntime;
+  w.__tjDebug = debugApi;
+};
+
+export const fetchBundleText = async (bundleUrl: string, options: LoadOptions): Promise<string> => {
+  const preloaded = compareText(bundleUrl);
+  if (preloaded !== null) return preloaded;
+  const res = await fetch(bundleUrl, fetchInit(options));
+  // The status lets a host tell a missing bundle from any other failure, and say what that means where it is shown.
+  if (!res.ok) throw Object.assign(new Error(`couldn't fetch this code (HTTP ${res.status})`), { status: res.status });
+  return res.text();
+};
+
+export const loadLibraryModuleIn = async (
+  win: Window,
+  bundleUrl: string,
+  options: LoadOptions = {}
+): Promise<Record<string, unknown>> => {
+  installGlobalsOn(win);
+  const source = await rewriteBareImports(await fetchBundleText(bundleUrl, options));
+  const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
+  const w = win as any;
+  const loads = (w.__tjModuleLoads ??= {}) as Record<
+    string,
+    { resolve: (m: any) => void; reject: (e: unknown) => void }
+  >;
+  const id = `m${Math.random().toString(36).slice(2)}`;
+  const slot = `window.__tjModuleLoads[${JSON.stringify(id)}]`;
+  const loader = URL.createObjectURL(
+    new Blob([`import(${JSON.stringify(url)}).then((m) => ${slot}.resolve(m), (e) => ${slot}.reject(e));`], {
+      type: 'text/javascript',
+    })
+  );
+  const script = win.document.createElement('script');
+  try {
+    return await new Promise<Record<string, unknown>>((resolve, reject) => {
+      loads[id] = { resolve, reject };
+      script.type = 'module';
+      script.src = loader;
+      script.onerror = () =>
+        reject(new Error("the app's code could not be started (a blocked request in the Debugger may say why)"));
+      win.document.head.appendChild(script);
+    });
+  } finally {
+    delete loads[id];
+    script.remove();
+    URL.revokeObjectURL(loader);
+    URL.revokeObjectURL(url);
+  }
+};
+
 const moduleCache = new Map<string, Promise<Record<string, unknown>>>();
 const cssCache = new Map<string, Promise<string | null>>();
 
@@ -434,8 +560,11 @@ interface LoadOptions {
   isDevBuild?: boolean;
 }
 
-const fetchInit = ({ isDevBuild = false }: LoadOptions): RequestInit | undefined =>
-  isDevBuild ? { cache: 'no-store' } : undefined;
+// credentials: a private app's bundle needs the session, also when the API is on another origin.
+const fetchInit = ({ isDevBuild = false }: LoadOptions): RequestInit => ({
+  credentials: 'include',
+  ...(isDevBuild ? { cache: 'no-store' } : {}),
+});
 
 // cacheKey: published revisions are immutable; a dev slot appends its push nonce so a push re-imports.
 export const loadLibraryModule = (
@@ -447,9 +576,7 @@ export const loadLibraryModule = (
   let pending = moduleCache.get(cacheKey);
   if (!pending) {
     pending = (async () => {
-      const res = await fetch(bundleUrl, fetchInit(options));
-      if (!res.ok) throw new Error(`failed to fetch bundle (${res.status})`);
-      const source = await rewriteBareImports(await res.text());
+      const source = await rewriteBareImports(await fetchBundleText(bundleUrl, options));
       const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
       try {
         return await import(/* webpackIgnore: true */ url);
@@ -468,17 +595,21 @@ export const loadLibraryCss = (cssUrl: string, cacheKey: string, options: LoadOp
   if (!pending) {
     // A library with no stylesheet answers 404, kept as "no stylesheet". Any other failure (a server error, a dropped
     // connection) is let go, so the next load (a retry, another instance) fetches it again (QA item 19).
+    const preloaded = compareText(cssUrl);
     let failed = false;
-    pending = fetch(cssUrl, fetchInit(options))
-      .then((r) => {
-        if (r.ok) return r.text();
-        failed = r.status !== 404;
-        return null;
-      })
-      .catch(() => {
-        failed = true;
-        return null;
-      });
+    pending =
+      preloaded !== null
+        ? Promise.resolve(preloaded)
+        : fetch(cssUrl, fetchInit(options))
+            .then((r) => {
+              if (r.ok) return r.text();
+              failed = r.status !== 404;
+              return null;
+            })
+            .catch(() => {
+              failed = true;
+              return null;
+            });
     const settled = pending;
     settled.then(() => {
       if (failed && cssCache.get(cacheKey) === settled) cssCache.delete(cacheKey);

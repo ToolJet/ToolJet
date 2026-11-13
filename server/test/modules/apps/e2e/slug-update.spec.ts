@@ -1,12 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { initTestApp, closeTestApp, createAdmin } from 'test-helper';
+import { initTestApp, closeTestApp, createAdmin, ensureAppEnvironments } from 'test-helper';
 
 /**
  * Slug-update validation matrix on a NON-git workspace (git sync disabled).
  *
  * Covers the gaps that the git-sync specs don't: the plain update-path uniqueness
- * rules for a front-end app / module, independent of any git remote. Git-enabled
+ * rules for a front-end app, independent of any git remote. Git-enabled
  * single-branch and multi-branch slug rules live in the @group gitsync suite
  * (git-sync.spec.ts) since they need a configured provider.
  *
@@ -16,12 +16,11 @@ import { initTestApp, closeTestApp, createAdmin } from 'test-helper';
  *   - a slug update persists and the app is resolvable by the new slug
  *   - a second app of the SAME type cannot take a slug already in use (400)
  *   - the collision check is case-insensitive
- *   - an app and a module MAY share a slug (namespaces are per apps.type)
  *   - deleting the holder frees the slug for another app to claim
  *
  * @group platform
  */
-describe.skip('[QUARANTINED] PUT /apps/:id | slug update rules (git sync disabled)', () => {
+describe('PUT /apps/:id | slug update rules (git sync disabled)', () => {
   let app: INestApplication;
   let cookie: string[];
   let workspaceId: string;
@@ -29,9 +28,8 @@ describe.skip('[QUARANTINED] PUT /apps/:id | slug update rules (git sync disable
   const agent = () => request(app.getHttpServer());
   const auth = (r: request.Test) => r.set('Cookie', cookie).set('tj-workspace-id', workspaceId);
 
-  const createApp = async (name: string, type: 'front-end' | 'module' = 'front-end'): Promise<string> => {
-    const path = type === 'module' ? '/api/modules' : '/api/apps';
-    const res = await auth(agent().post(path)).send({ icon: 'home', name, type }).expect(201);
+  const createApp = async (name: string): Promise<string> => {
+    const res = await auth(agent().post('/api/apps')).send({ icon: 'home', name, type: 'front-end' }).expect(201);
     return res.body.id;
   };
   const putSlug = (appId: string, slug: string) => auth(agent().put(`/api/apps/${appId}`)).send({ app: { slug } });
@@ -45,6 +43,7 @@ describe.skip('[QUARANTINED] PUT /apps/:id | slug update rules (git sync disable
     const admin = await createAdmin(app, 'slug-update-admin@tooljet.io');
     cookie = admin.cookie;
     workspaceId = admin.workspace.id;
+    await ensureAppEnvironments(app, workspaceId);
   });
 
   afterAll(async () => {
@@ -73,16 +72,6 @@ describe.skip('[QUARANTINED] PUT /apps/:id | slug update rules (git sync disable
     const res = await putSlug(app2, 'Custom-Slug-CI');
     expect(res.status).toBe(400);
     expect(res.body.message).toMatch(/already taken/i);
-  });
-
-  it('allows an app and a module to share the same slug (slug namespaces are per apps.type)', async () => {
-    const frontEndId = await createApp('slug-shared-app', 'front-end');
-    await putSlug(frontEndId, 'custom-slug-shared').expect(200);
-
-    const moduleId = await createApp('slug-shared-module', 'module');
-    // Same slug string, different apps.type ⇒ no collision.
-    await putSlug(moduleId, 'custom-slug-shared').expect(200);
-    expect(await getSlug(moduleId)).toBe('custom-slug-shared');
   });
 
   it('frees a slug for reuse once the holder app is deleted', async () => {

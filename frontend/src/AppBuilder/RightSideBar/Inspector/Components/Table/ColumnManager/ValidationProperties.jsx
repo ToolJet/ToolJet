@@ -17,6 +17,14 @@ const getDate = (date, format) => {
   }
 };
 
+// Minimum/Maximum date & time render as two side-by-side columns inside a popover that can be
+// as narrow as ~280px (KeyValuePair). A left-aligned calendar opened from the right-hand "Maximum"
+// column is wider than the room left to its right, so it overflows onto whatever UI sits next to
+// the popover. Anchoring the "Maximum" field's calendar to its own right edge instead keeps it
+// extending back over the popover's own content.
+const getDatePickerPopperPlacement = (property) =>
+  property?.toLowerCase().includes('max') ? 'bottom-end' : 'bottom-start';
+
 export const ValidationProperties = ({
   item,
   itemType,
@@ -148,7 +156,7 @@ export const ValidationProperties = ({
           property: 'disabledDates',
           dateCy: 'input-and-label-custom-rule',
           label: 'Disabled dates',
-          placeholder: '{{[]}}',
+          placeholder: '{{["MM/DD/YYYY"]}}',
         });
 
         properties.push({
@@ -179,6 +187,7 @@ export const ValidationProperties = ({
             data-cy={validation.dataCy}
             className="field flex-fill inspector-validation-date-picker"
             key={validation.property}
+            onClick={(e) => e.stopPropagation()}
           >
             <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
             <ReactDatePicker
@@ -190,6 +199,8 @@ export const ValidationProperties = ({
               popperClassName={cx('tj-table-datepicker', {
                 'theme-dark dark-theme': darkMode,
               })}
+              popperPlacement={getDatePickerPopperPlacement(validation.property)}
+              portalId="table-column-datepicker-portal"
             />
           </div>
         );
@@ -199,6 +210,7 @@ export const ValidationProperties = ({
             data-cy={validation.dataCy}
             className="field flex-fill inspector-validation-date-picker"
             key={validation.property}
+            onClick={(e) => e.stopPropagation()}
           >
             <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
             <Timepicker
@@ -207,6 +219,8 @@ export const ValidationProperties = ({
               placeholderText={validation?.placeholder ?? ''}
               timeFormat={'HH:mm'}
               darkMode={darkMode}
+              popperPlacement={getDatePickerPopperPlacement(validation.property)}
+              portalId="table-column-datepicker-portal"
             />
           </div>
         );

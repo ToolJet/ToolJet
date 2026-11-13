@@ -13,6 +13,7 @@ export enum PERMISSION_ENTITY_TYPE {
 export enum FEATURE_KEY {
   FETCH_USERS = 'fetch_users',
   FETCH_USER_GROUPS = 'fetch_user_groups',
+  FETCH_APP_MEMBERS = 'fetch_app_members',
   FETCH_PAGE_PERMISSIONS = 'fetch_page_permissions',
   CREATE_PAGE_PERMISSIONS = 'create_page_permissions',
   UPDATE_PAGE_PERMISSIONS = 'update_page_permissions',

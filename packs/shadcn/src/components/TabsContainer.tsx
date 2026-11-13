@@ -117,7 +117,13 @@ export const TabsContainer = () => {
   const radius = useThemeRadius('borderRadius', 'Radius');
   const tabFontSize = useDrawnNumber('tabFontSize', 'Tab font size', 14);
   const showBorder = ToolJet.useStyleBoolean({ name: 'showBorder', label: 'Border around tabs', initialValue: true });
-  const padding = ToolJet.useStyleNumber({ name: 'padding', label: 'Padding', initialValue: 12, section: 'Spacing' });
+  const padding = ToolJet.useStyleNumber({
+    name: 'padding',
+    label: 'Padding',
+    initialValue: 12,
+    section: 'Spacing',
+    inspector: 'numberInput',
+  });
   const ld = useLoadingLook();
   const idBase = useTabIdBase(ToolJet.useFieldId());
   ToolJet.useComponentSettings({

@@ -326,9 +326,7 @@ export const ModalV2 = function Modal({
         <WidgetTooltip {...tooltipProps} darkMode={darkMode}>
           <button
             disabled={isDisabledTrigger}
-            className={`jet-btn btn btn-primary overflow-hidden focus-visible:!tw-outline focus-visible:!tw-outline-2 focus-visible:!tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2${
-              skin ? ' tj-shad-trigger' : ''
-            }`}
+            className={`jet-btn btn btn-primary overflow-hidden focus-visible:!tw-outline focus-visible:!tw-outline-2 focus-visible:!tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2${skin ? ' tj-shad-trigger' : ''}`}
             style={customStyles.buttonStyles}
             onClick={(event) => {
               /**** Start - Logic to reduce the zIndex of modal control box ****/

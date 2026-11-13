@@ -7,6 +7,8 @@ import invitationsStore from '@/modules/onboarding/stores/invitationsStore';
 import { LinkExpiredPage } from '@/ConfirmationPage/LinkExpiredPage';
 import { LinkExpiredCard } from '@/modules/common/components';
 import { utils } from '@/modules/common/helpers';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+import { getPostSignupPath } from './postSignupPath';
 import { getSubpath } from '@/_helpers/routes';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import useOnboardingStore from '@/modules/common/helpers/onboardingStoreHelper';
@@ -73,7 +75,11 @@ export const InvitationPage = (darkMode = false) => {
             organizationToken,
             source,
           }).then((data) => {
-            const toGo = redirectTo || '/';
+            const toGo = getPostSignupPath({
+              edition: fetchEdition(),
+              organizationSlug: data?.current_organization_slug,
+              redirectTo,
+            });
             const path = getSubpath() ? `${getSubpath()}${toGo}` : `${toGo}`;
             window.location.href = path;
           });

@@ -98,7 +98,12 @@ export const Form = () => {
     inspector: 'color',
     initialValue: 'var(--cc-primary-brand)',
   });
-  const fieldGap = ToolJet.useStyleNumber({ name: 'fieldGap', label: 'Field spacing', initialValue: 12 });
+  const fieldGap = ToolJet.useStyleNumber({
+    name: 'fieldGap',
+    label: 'Field spacing',
+    initialValue: 12,
+    inspector: 'numberInput',
+  });
   const labelPosition = ToolJet.useStyleEnumeration({
     name: 'labelPosition',
     label: 'Label position',

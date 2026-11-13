@@ -2,12 +2,14 @@ import React, { useRef } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import useStore from '@/AppBuilder/_stores/store';
 import { pasteComponents, copyComponents } from './copyPasteWidgetsUtils';
-import useKeyHooks from '@/_hooks/useKeyHooks';
+import useKeyHooks, { isFromShadowTree } from '@/_hooks/useKeyHooks';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, isModuleMode }) => {
-  const { isModuleEditor } = useModuleContext();
+  const { isModuleEditor, moduleId } = useModuleContext();
+  const codeMode = useCodeMode(moduleId);
   const canvasRef = useRef(null);
   const focusedParentId = useStore((state) => state.focusedParentId, shallow);
   const handleUndo = useStore((state) => state.handleUndo);
@@ -40,14 +42,14 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
     (e) => {
       if (!isEditorReadOnly) handleUndo(e);
     },
-    { enabled: mode === 'edit' && !overlayOpen }
+    { enabled: mode === 'edit' && !overlayOpen, ignoreEventWhen: isFromShadowTree }
   );
   useHotkeys(
     'meta+shift+z, control+shift+z',
     (e) => {
       if (!isEditorReadOnly) handleRedo(e);
     },
-    { enabled: mode === 'edit' && !overlayOpen }
+    { enabled: mode === 'edit' && !overlayOpen, ignoreEventWhen: isFromShadowTree }
   );
 
   const paste = async () => {
@@ -110,6 +112,8 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
         }
       }
     }
+
+    if (codeMode && key !== 'Escape') return;
 
     switch (key) {
       case 'Escape':

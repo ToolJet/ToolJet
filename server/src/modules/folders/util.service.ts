@@ -36,6 +36,7 @@ export class FoldersUtilService implements IFoldersUtilService {
     const branches = await manager.find(WorkspaceBranch, {
       where: { id: In(branchIds) },
       select: ['name'],
+      order: { name: 'ASC' },
     });
     return branches.map((branch) => branch.name);
   }
@@ -54,6 +55,7 @@ export class FoldersUtilService implements IFoldersUtilService {
     const branches = await manager.find(WorkspaceBranch, {
       where: { id: In(branchIds) },
       select: ['name'],
+      order: { name: 'ASC' },
     });
     return branches.map((branch) => branch.name);
   }

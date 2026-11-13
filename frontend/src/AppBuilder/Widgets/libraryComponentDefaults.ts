@@ -19,5 +19,7 @@ export const manifestDefaultToDefinitionValue = (prop: ManifestProp): unknown =>
   if (prop.default === undefined) return prop.type === 'boolean' ? '{{false}}' : '';
   if (prop.type === 'boolean') return `{{${prop.default}}}`;
   if (prop.type === 'enumeration' || prop.type === 'string') return prop.default;
+  // The number field shows {{160}} as code, where a builder can type 200px; a plain number keeps the number field.
+  if (prop.type === 'number' && prop.inspector === 'numberInput') return prop.default;
   return `{{${JSON.stringify(prop.default)}}}`; // number | object | array
 };

@@ -382,7 +382,7 @@ export const FileUpload = () => {
     [
       M.acceptHint(accept) || 'Any file',
       maxSize ? `up to ${M.formatBytes(maxSize)}` : '',
-      multiple ? `max ${maxFiles} files` : '',
+      multiple ? `max ${maxFiles} file${maxFiles === 1 ? '' : 's'}` : '',
     ]
       .filter(Boolean)
       .join(' · ');
@@ -394,7 +394,7 @@ export const FileUpload = () => {
   const error = rejectError || rule.error;
 
   return (
-    <div className="ui ui2-in" style={looks}>
+    <div className={cn('ui ui2-in ui2-fu', !files.length && 'is-empty')} style={looks}>
       <Field label={label} description={description} error={error} required={rule.required}>
         <div
           role="button"

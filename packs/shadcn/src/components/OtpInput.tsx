@@ -18,6 +18,9 @@ const LOOKS: Look[] = [
   ['slotSize', 'Box size', '--lk-slot', 36],
 ];
 
+/** A code as one character per box ('' for an empty one). */
+const cellsOf = (code: string, size: number) => Array.from({ length: size }, (_, i) => code[i] ?? '');
+
 // One hidden input over the boxes takes the typing, pasting and the phone's one-time-code autofill (UI 2.0's input-otp
 // way); the boxes only draw it.
 export const OtpInput = () => {
@@ -88,10 +91,68 @@ export const OtpInput = () => {
     onChange();
     if (next.length === size) onComplete();
   };
+  // One entry per box, so a box emptied in the middle stays empty and the boxes after it keep their places (as Ant's
+  // OTP: delete box 3 of 123456 and type 7 gives 127456, not 124567). `code` is the boxes' characters without the
+  // gaps; the boxes are only filled again from `code` when it changes from outside (a binding, setText, clear).
+  const [boxes, setBoxes] = useState(() => ({ code, cells: cellsOf(code, size) }));
+  if (code !== boxes.code || boxes.cells.length !== size) setBoxes({ code, cells: cellsOf(code, size) });
+  const cells = boxes.cells;
+  /** The box typing goes into: a clicked one, else the first empty one. */
+  const [at, setAt] = useState(0);
+  const put = (next: string[], nextAt: number) => {
+    const joined = next.join('');
+    setBoxes({ code: joined, cells: next });
+    setAt(Math.max(0, Math.min(size - 1, nextAt)));
+    if (!codeSetter.set(joined)) return;
+    onChange();
+    if (next.every(Boolean)) onComplete();
+  };
+  const takes = (ch: string) => (kind === 'numeric' ? /^\d$/ : /^[A-Za-z0-9]$/).test(ch);
+  const onKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return; // paste, select all, undo: the input's own way
+    const next = [...cells];
+    if (e.key.length === 1) {
+      e.preventDefault();
+      if (!takes(e.key)) return; // a letter in a numeric code changes nothing
+      next[at] = kind === 'alphanumeric' ? e.key.toUpperCase() : e.key;
+      put(next, at + 1);
+    } else if (e.key === 'Backspace') {
+      e.preventDefault();
+      // An empty box steps back and empties the one before it, as typing backwards does.
+      const i = next[at] ? at : at - 1;
+      if (i < 0) return;
+      next[i] = '';
+      put(next, i);
+    } else if (e.key === 'Delete') {
+      e.preventDefault();
+      next[at] = '';
+      put(next, at);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      setAt((i) => Math.max(0, Math.min(size - 1, i + (e.key === 'ArrowLeft' ? -1 : 1))));
+    }
+  };
+  /** The box under the pointer (the input lies over the boxes), or -1. */
+  const boxAt = (x: number) =>
+    [...(inputRef.current?.parentElement?.querySelectorAll<HTMLElement>('[data-slot="otp"]') ?? [])].findIndex((el) => {
+      const r = el.getBoundingClientRect();
+      return x >= r.left && x < r.right;
+    });
+  /** The box a click landed on, for the focus that follows it. */
+  const clicked = useRef(-1);
+  const firstEmpty = () => {
+    const i = cells.findIndex((c) => !c);
+    return i < 0 ? size - 1 : i;
+  };
   // A new default starts the code again, an empty one included (useReseed already leaves an app's own `value` alone
   // on mount when the default is empty); a new length or kind of character keeps what was typed, cut to fit.
-  useReseed(defaultValue, () => publish(M.otpSanitize(defaultValue, size, kind)));
-  useReseed([size, kind], () => publish(M.otpSanitize(rawValue, size, kind)), { onMount: false });
+  useReseed(defaultValue, () => {
+    const next = M.otpSanitize(defaultValue, size, kind);
+    codeSetter.latest.current = next;
+    publish(next);
+  });
+  // From `latest`, not rawValue: a default that changed in the same render has just been published.
+  useReseed([size, kind], () => publish(M.otpSanitize(codeSetter.latest.current, size, kind)), { onMount: false });
   // A Form's clear empties `value` itself, without publish(), and would leave isComplete true over an empty code.
   ToolJet.useFormClear(() => publish(''));
 
@@ -119,7 +180,7 @@ export const OtpInput = () => {
   // character fills every box, so '-' still draws a dash in each.
   const hints = Array.from(String(placeholder ?? ''));
   const hintAt = (i: number) => (hints.length === 1 ? hints[0] : (hints[i] ?? ''));
-  const active = focused ? Math.min(code.length, size - 1) : -1;
+  const active = focused ? at : -1;
   const half = Math.ceil(size / 2);
   const groups =
     separator === true
@@ -129,7 +190,7 @@ export const OtpInput = () => {
         ]
       : [[0, size]];
   const slot = (i: number) => {
-    const char = code[i];
+    const char = cells[i];
     const hint = hintAt(i);
     return (
       <div key={i} data-slot="otp" className={cn('ui2-otp-slot', i === active && 'is-active')}>
@@ -167,9 +228,27 @@ export const OtpInput = () => {
               className="ui2-otp-input"
               value={code}
               disabled={disabled}
-              onChange={(e) => change(e.target.value)}
+              // Paste, the phone's code autofill and a keyboard that sends no key (some phones): the code fills from
+              // the first box. One character added after the code goes in the box typing is at.
+              onChange={(e) => {
+                const raw = e.target.value;
+                const added = raw.length === code.length + 1 && raw.startsWith(code) ? raw.slice(-1) : '';
+                if (added && takes(added) && cells.some((c) => !c)) {
+                  const next = [...cells];
+                  next[at] = kind === 'alphanumeric' ? added.toUpperCase() : added;
+                  put(next, at + 1);
+                } else change(raw);
+              }}
+              onKeyDown={onKey}
+              onMouseDown={(e) => {
+                clicked.current = boxAt(e.clientX);
+                if (clicked.current >= 0) setAt(clicked.current);
+              }}
               onFocus={() => {
                 setFocused(true);
+                // A click types into the clicked box; Tab or a focus action into the first empty one.
+                setAt(clicked.current >= 0 ? clicked.current : firstEmpty());
+                clicked.current = -1;
                 onFocus();
               }}
               onBlur={() => {

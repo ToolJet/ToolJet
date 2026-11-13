@@ -21,7 +21,9 @@ import {
   isSet,
   list,
   num,
+  percentScale,
   resolveChartFields,
+  scaled,
   type Row,
 } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
@@ -153,11 +155,18 @@ export const FunnelChart = () => {
   const { stages } = drawn;
   const format = useMemo(
     () =>
-      formatter(
-        { format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix },
-        yAxisFormat === 'compact'
+      // Fractions (0.25) read as 25% on a percent format, as the Line chart does.
+      scaled(
+        formatter(
+          { format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix },
+          yAxisFormat === 'compact'
+        ),
+        percentScale(
+          yAxisFormat,
+          stages.map((s) => s.value)
+        )
       ),
-    [yAxisFormat, currency, locale, valuePrefix, valueSuffix]
+    [yAxisFormat, currency, locale, valuePrefix, valueSuffix, stages]
   );
   const conversion = showConversion !== false;
   const labelWidth = Math.min(180, Math.max(56, Math.max(0, ...stages.map((s) => String(s.label).length)) * 7 + 12));

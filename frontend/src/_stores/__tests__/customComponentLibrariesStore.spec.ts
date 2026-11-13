@@ -4,7 +4,7 @@ import { customComponentLibrariesService } from '@/_services/customComponentLibr
 // jest.mock calls are hoisted above these imports by babel-plugin-jest-hoist regardless
 // of where they're written, so placing them after the imports is safe.
 jest.mock('@/_services/authentication.service', () => ({
-  authenticationService: { currentSessionValue: { current_user: { id: 'user-1' } } },
+  authenticationService: { currentSessionValue: { current_user: { id: 'user-1', email: 'dev@tooljet.io' } } },
 }));
 
 jest.mock('@/_services/customComponentLibraries.service', () => ({
@@ -23,7 +23,7 @@ const library = {
   correlationId: CORRELATION_ID,
   name: 'lib',
   revisions: [],
-  devBundles: [{ userId: 'user-1', userEmail: 'dev@tooljet.io' }],
+  devBundles: [{ userId: 'user-1' }],
 };
 
 describe('customComponentLibrariesStore', () => {
@@ -43,11 +43,9 @@ describe('customComponentLibrariesStore', () => {
   });
 
   describe('fetchLibraries', () => {
-    it("[FetchLibraries-001] populates devPreviewEmailsByUserId from every library's devBundles", () => {
-      // Break this catches: the exact bug this design targets — email resolution used to
-      // live inside syncDevPinStreams (gated behind license/stream access), so without a
-      // CCL license the "dev: <email>" badge fell back to showing a raw userId. Deriving
-      // it here instead — straight from the list response — makes it license-independent.
+    it("[FetchLibraries-001] names the signed-in user's own dev preview by their email, from the session", () => {
+      // The badge reads this map whatever the license, so it is filled here rather than in syncDevPinStreams. The list
+      // names dev builds by user id only (every workspace member reads it), so the email comes from the session.
       (customComponentLibrariesService.list as jest.Mock).mockResolvedValue([library]);
 
       return useCustomComponentLibrariesStore
@@ -60,13 +58,13 @@ describe('customComponentLibrariesStore', () => {
         });
     });
 
-    it('[FetchLibraries-002] merges emails across multiple libraries/devBundles', () => {
+    it("[FetchLibraries-002] knows no one else's email: their dev previews show the user id", () => {
       const otherLibrary = {
         id: 'lib-2',
         correlationId: 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff',
         name: 'other-lib',
         revisions: [],
-        devBundles: [{ userId: 'user-2', userEmail: 'other@tooljet.io' }],
+        devBundles: [{ userId: 'user-2', userEmail: 'stale-server@tooljet.io' }],
       };
       (customComponentLibrariesService.list as jest.Mock).mockResolvedValue([library, otherLibrary]);
 
@@ -76,7 +74,29 @@ describe('customComponentLibrariesStore', () => {
         .then(() => {
           expect(useCustomComponentLibrariesStore.getState().devPreviewEmailsByUserId).toEqual({
             'user-1': 'dev@tooljet.io',
-            'user-2': 'other@tooljet.io',
+          });
+        });
+    });
+
+    it('[FetchLibraries-003] seeds the latest manifest, except one whose source the list left out', () => {
+      const plain = { ...library, revisions: [{ id: 'r1', version: '1.0.0' }], manifest: { components: { A: {} } } };
+      const codeApp = {
+        id: 'lib-code',
+        correlationId: 'cccccccc-dddd-eeee-ffff-000000000000',
+        name: 'code-app',
+        revisions: [{ id: 'r2', version: '2.0.0' }],
+        manifest: { components: { App: {} } },
+        manifestSourceOmitted: true,
+      };
+      (customComponentLibrariesService.list as jest.Mock).mockResolvedValue([plain, codeApp]);
+
+      return useCustomComponentLibrariesStore
+        .getState()
+        .fetchLibraries()
+        .then(() => {
+          // The code app's manifest is fetched from its manifest file instead, which keeps the files.
+          expect(useCustomComponentLibrariesStore.getState().manifests).toEqual({
+            [`${LIBRARY_ID}@1.0.0`]: { components: { A: {} } },
           });
         });
     });

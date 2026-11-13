@@ -33,6 +33,7 @@ import {
   ROW_SCOPED_WIDGET_TYPES,
   NESTING_LEVEL_LIMITS,
   isRowScopedParent,
+  PROGRESS_LABEL_KEYS,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
   calculateInputCanvasHeight,
@@ -46,6 +47,9 @@ import { packSlotRestrictionType, restrictedTypeOf } from '@/AppBuilder/_helpers
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
 import { isCompareFrame, withoutCompareNavigation } from '@/AppBuilder/_utils/compareFrame';
 import { utilityFuncForNameSeed } from '@/_helpers/utils';
+import * as pageRoots from '@ee/modules/CodeMode/AppBuilder/_hooks/codePageRoot';
+
+const withoutCodePageRoots = pageRoots.withoutCodePageRoots ?? ((ids) => ids || []);
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
 const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
@@ -121,6 +125,11 @@ const hasDynamicValue = (value) => {
 
 // Arrays are objects too, so entries that are themselves arrays do not count as per-key resolvable values
 const hasObjectEntry = (items) => items.some((item) => item && typeof item === 'object' && !Array.isArray(item));
+
+// KeyValuePair field validation rules reference `cellValue`, which only exists when the field is validated,
+// so they must reach the adapter unresolved (like Table column rules) instead of collapsing to '' here.
+const isKeyValuePairFieldCustomRule = (componentType, property) =>
+  componentType === 'KeyValuePair' && /^fields\[\d+\]\.customRule$/.test(property);
 
 // Build the per-row components overlay used when resolving expressions inside
 // a ListView. Without this overlay, `components.<sibling>` is the per-row array
@@ -441,7 +450,8 @@ export const createComponentsSlice = (set, get) => ({
     component,
     componentResolvedValues = {},
     updatePassedValue = true,
-    moduleId
+    moduleId,
+    skipResolve = false
   ) => {
     const {
       getCustomResolvableReference,
@@ -482,7 +492,7 @@ export const createComponentsSlice = (set, get) => ({
 
       customResolvables = getCustomResolvables(nearestRowScopedAncestorId, null, moduleId, parentIndices);
     }
-    if (typeof value === 'string' && value?.includes('{{') && value?.includes('}}')) {
+    if (!skipResolve && typeof value === 'string' && value?.includes('{{') && value?.includes('}}')) {
       let valueWithId, allRefs, valueWithBrackets;
       if (value === '{{true}}' || value === '{{false}}') {
         valueWithId = value;
@@ -583,7 +593,10 @@ export const createComponentsSlice = (set, get) => ({
         lodashSet(
           componentResolvedValues,
           [componentId, idx, paramType, ...keys],
-          getComponentTypeFromId(componentId, moduleId) === 'Table' ? value : resolvedValue
+          getComponentTypeFromId(componentId, moduleId) === 'Table' ||
+            isKeyValuePairFieldCustomRule(getComponentTypeFromId(componentId, moduleId), property)
+            ? value
+            : resolvedValue
         );
       } else {
         componentResolvedValues[componentId][idx][paramType][property] = resolvedValue;
@@ -611,7 +624,10 @@ export const createComponentsSlice = (set, get) => ({
           lodashSet(
             componentResolvedValues,
             [componentId, paramType, ...keys],
-            getComponentTypeFromId(componentId, moduleId) === 'Table' ? value : resolvedValue
+            getComponentTypeFromId(componentId, moduleId) === 'Table' ||
+              isKeyValuePairFieldCustomRule(getComponentTypeFromId(componentId, moduleId), property)
+              ? value
+              : resolvedValue
           );
         } else {
           componentResolvedValues[componentId][paramType][property] = resolvedValue;
@@ -1158,7 +1174,7 @@ export const createComponentsSlice = (set, get) => ({
     resolvedComponentValues = {},
     paramType
   ) => {
-    const { checkValueAndResolve, setAllValueToComponent } = get();
+    const { checkValueAndResolve, updateResolvedValues } = get();
     if (component.definition[paramType] === undefined) return;
     Object.entries(component.definition[paramType]).forEach(([property, value]) => {
       if (!value?.skipResolve) {
@@ -1173,8 +1189,18 @@ export const createComponentsSlice = (set, get) => ({
           moduleId
         );
       } else {
-        const componentDetails = { componentId, paramType, property };
-        setAllValueToComponent(componentDetails, value?.value, false, null, {}, resolvedComponentValues, moduleId);
+        // Stored as-is, but per row like any plain value, so a component inside a ListView still gets it
+        updateResolvedValues(
+          componentId,
+          paramType,
+          property,
+          value?.value,
+          component,
+          resolvedComponentValues,
+          true,
+          moduleId,
+          true
+        );
       }
     });
   },
@@ -1502,10 +1528,38 @@ export const createComponentsSlice = (set, get) => ({
         return acc;
       }, {});
       const flexChildOrderUpdates = {};
+      // The names the ids had before this add (a cut pasted again reuses its id), read before the write replaces them.
+      const oldNames = newComponents.map((newComponent) => getComponentNameFromId(newComponent.id, moduleId));
 
-      newComponents.forEach((newComponent) => {
+      // One store write for all of them: a duplicate or paste of a container with children is one undo step.
+      set(
+        withUndoRedo((state) => {
+          const page = state.modules[moduleId].pages.find((page) => page.id === currentPageId);
+          newComponents.forEach((newComponent) => {
+            const parentId = newComponent.component.parent || 'canvas';
+            if (!state.containerChildrenMapping[parentId]) {
+              state.containerChildrenMapping[parentId] = [];
+            }
+            if (!state.containerChildrenMapping[parentId].includes(newComponent.id)) {
+              state.containerChildrenMapping[parentId].push(newComponent.id);
+            }
+            page.components[newComponent.id] = newComponent;
+            get().addFlexContainerChildOrderToDraft({
+              state,
+              page,
+              parentId,
+              childId: newComponent.id,
+              flexChildOrderUpdates,
+            });
+          });
+        }, skipUndoRedo),
+        false,
+        'addComponentToCurrentPage'
+      );
+
+      newComponents.forEach((newComponent, index) => {
         // Have added this condition to delete the oldName from the mapping if it exists due to cut pasting multiple times
-        const oldName = getComponentNameFromId(newComponent.id, moduleId);
+        const oldName = oldNames[index];
         if (oldName) {
           deleteComponentNameIdMapping(oldName, moduleId);
         }
@@ -1543,27 +1597,6 @@ export const createComponentsSlice = (set, get) => ({
         const parentId = newComponent.component.parent || 'canvas';
         // Check if parent is a Form and add the component to form fields if needed
         !skipFormUpdate && checkIfParentIsFormAndAddField(newComponent.id, newComponent, parentId, moduleId);
-        set(
-          withUndoRedo((state) => {
-            if (!state.containerChildrenMapping[parentId]) {
-              state.containerChildrenMapping[parentId] = [];
-            }
-            if (!state.containerChildrenMapping[parentId].includes(newComponent.id)) {
-              state.containerChildrenMapping[parentId].push(newComponent.id);
-            }
-            const page = state.modules[moduleId].pages.find((page) => page.id === currentPageId);
-            page.components[newComponent.id] = newComponent;
-            get().addFlexContainerChildOrderToDraft({
-              state,
-              page,
-              parentId,
-              childId: newComponent.id,
-              flexChildOrderUpdates,
-            });
-          }, skipUndoRedo),
-          false,
-          'addComponentToCurrentPage'
-        );
       });
 
       if (!skipFormUpdate) {
@@ -2744,6 +2777,13 @@ export const createComponentsSlice = (set, get) => ({
     });
   },
   setWidgetDeleteConfirmation: (value, second = null) => {
+    if (value) {
+      const components = get().getCurrentPageComponents?.() ?? {};
+      const requested = Array.isArray(second) ? second : (get().selectedComponents ?? []);
+      const allowed = withoutCodePageRoots(requested, components);
+      if (requested.length && !allowed.length) return;
+      if (Array.isArray(second)) second = allowed;
+    }
     set((state) => {
       state.showWidgetDeleteConfirmation = value;
       if (!value) {
@@ -2943,6 +2983,7 @@ export const createComponentsSlice = (set, get) => ({
     // logic to handle the key like options[0].visible. It will resolve the visible directly and update the resolved store
     if (hasArrayNotation(key)) {
       const keys = parsePropertyPath(key);
+      if (isKeyValuePairFieldCustomRule(getComponentTypeFromId(entityId, moduleId), key)) return;
       // Triggering a re-render of the table component if any of the dependent component is updated
       // This is done to calculate the callValues in the table component
       // Need to find a better way to handle this
@@ -3507,20 +3548,15 @@ export const createComponentsSlice = (set, get) => ({
             skipRegistry: isSdkComponentType(componentDefinition.component.component),
           });
 
+      // A freshly dropped progress widget seeds its label with its own value binding. Only an empty
+      // label is seeded: paste, duplicate, undo and multiplayer adds carry the author's label through.
       const getComponentProperties = (componentDefinition) => {
         const properties = componentDefinition.component.definition?.properties;
-        const componentType = componentDefinition.component.component;
-        if (componentType === 'CircularProgressBar') {
+        const labelKey = PROGRESS_LABEL_KEYS[componentDefinition.component.component];
+        if (labelKey && !properties?.[labelKey]?.value) {
           return {
             ...properties,
-            text: {
-              value: `{{components.${componentDefinition.id}.value}}%`,
-            },
-          };
-        } else if (componentType === 'ProgressBar') {
-          return {
-            ...properties,
-            label: {
+            [labelKey]: {
               value: `{{components.${componentDefinition.id}.value}}%`,
             },
           };

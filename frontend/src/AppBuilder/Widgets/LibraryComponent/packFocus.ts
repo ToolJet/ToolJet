@@ -39,8 +39,11 @@ const NATIVE_FOCUSABLE =
 const skipsSubtree = (el: Element): boolean => {
   if (el.hasAttribute('inert') || el.hasAttribute('hidden') || el.getAttribute('aria-hidden') === 'true') return true;
   const view = el as HTMLElement & { checkVisibility?: (o?: object) => boolean };
-  // jsdom has no layout; a browser drops what is not drawn (display: none, a closed details).
-  return typeof view.checkVisibility === 'function' ? !view.checkVisibility({ visibilityProperty: true }) : false;
+  // jsdom has no layout; a browser drops what is not drawn (display: none, a closed details). checkVisibility() is also
+  // false for an element with no box of its own while what it holds is drawn: a <slot> (a dialog's body canvas) and a
+  // display: contents wrapper (Rocket's kept body). Those are looked through, and their children checked on their own.
+  if (typeof view.checkVisibility !== 'function' || view.checkVisibility({ visibilityProperty: true })) return false;
+  return el instanceof HTMLSlotElement ? false : getComputedStyle(el).display !== 'contents';
 };
 
 const isTabbable = (el: Element): el is HTMLElement => {

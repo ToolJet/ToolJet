@@ -9,6 +9,9 @@ import { FEATURES as FOLDER_APPS_FEATURES } from '@modules/folder-apps/constants
 import { FEATURES as FOLDER_DATA_SOURCES_FEATURES } from '@modules/folder-data-sources/constants/feature';
 import { FEATURES as CUSTOM_STYLES_FEATURES } from '@modules/custom-styles/constants/feature';
 import { FEATURES as CUSTOM_COMPONENT_LIBRARIES_FEATURES } from '@modules/custom-component-libraries/constants/feature';
+import { FEATURES as CODE_PAGE_SECURITY_FEATURES } from '@modules/code-page-security/constants/feature';
+import { FEATURES as APP_SECURITY_FEATURES } from '@modules/app-security/constants/feature';
+import { FEATURES as CODE_MODE_SOURCE_FEATURES } from '@modules/code-mode-source/constants/feature';
 import { FEATURES as VERSION_FEATURES } from '@modules/versions/constants/features';
 import { FEATURES as SMTP_FEATURES } from '@modules/smtp/constants/features';
 import { FEATURES as GLOBAL_DATA_SOURCE_FEATURES } from '@modules/data-sources/constants/feature';
@@ -28,6 +31,7 @@ import { FEATURES as APP_ENVIRONMENTS_FEATURES } from '@modules/app-environments
 import { FEATURES as LICENSING_FEATURES } from '@modules/licensing/constants/features';
 import { FEATURES as WORKFLOW_FEATURES } from '@modules/workflows/constants/feature';
 import { FEATURES as INSTANCE_SETTINGS_FEATURES } from '@modules/instance-settings/constants/features';
+import { FEATURES as SSRF_FEATURES } from '@modules/ssrf/constants/features';
 import { FEATURES as ORGANIZATION_THEMES_FEATURES } from '@modules/organization-themes/constants/feature';
 import { FEATURES as PLUGINS_FEATURES } from '@modules/plugins/constants/features';
 import { FEATURES as TOOLJET_DATABASE_FEATURES } from '@modules/tooljet-db/constants/features';
@@ -74,6 +78,9 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...FOLDER_DATA_SOURCES_FEATURES,
   ...CUSTOM_STYLES_FEATURES,
   ...CUSTOM_COMPONENT_LIBRARIES_FEATURES,
+  ...CODE_PAGE_SECURITY_FEATURES,
+  ...APP_SECURITY_FEATURES,
+  ...CODE_MODE_SOURCE_FEATURES,
   ...VERSION_FEATURES,
   ...SMTP_FEATURES,
   ...GLOBAL_DATA_SOURCE_FEATURES,
@@ -90,6 +97,7 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...LICENSING_FEATURES,
   ...WORKFLOW_FEATURES,
   ...INSTANCE_SETTINGS_FEATURES,
+  ...SSRF_FEATURES,
   ...ORGANIZATION_THEMES_FEATURES,
   ...PLUGINS_FEATURES,
   ...TOOLJET_DATABASE_FEATURES,

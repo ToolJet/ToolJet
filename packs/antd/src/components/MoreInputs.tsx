@@ -473,9 +473,11 @@ export const RangePicker = (props: Record<string, unknown>) => {
   const pair = React.useMemo(() => toArray(value).map((v) => parseDate(v)), [JSON.stringify(value)]); // eslint-disable-line react-hooks/exhaustive-deps
   // A range whose start is after its end (a default or setFieldValue; a pick is always in order) is not valid.
   const reversed = !!pair[0] && !!pair[1] && pair[0].isAfter(pair[1]);
+  // A range is filled only with both dates: a required one with no end date is invalid, as ToolJet's own Date range
+  // picker (AD-27). The field still shows the start date it exposes as startDate.
   const check = ToolJet.useValidation({
     kind: 'date',
-    value: pair[0] ? str(toArray(value)[0]) : '',
+    value: pair[0] && pair[1] ? str(toArray(value)[0]) : '',
     rule: reversed ? 'The start date is after the end date' : '',
   });
   const tokens = useTokenStyles();
@@ -531,7 +533,7 @@ export const RangePicker = (props: Record<string, unknown>) => {
                 {...onePanel}
                 id={fieldId as never}
                 style={{ width: '100%' }}
-                value={pair[0] && pair[1] ? [pair[0], pair[1]] : null}
+                value={pair[0] || pair[1] ? [pair[0] ?? null, pair[1] ?? null] : null}
                 format={str(format).trim() || 'YYYY-MM-DD'}
                 picker={picker as 'date'}
                 minDate={parseDate(minDate) ?? undefined}

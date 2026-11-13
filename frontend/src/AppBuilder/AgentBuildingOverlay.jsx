@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 
 import useStore from '@/AppBuilder/_stores/store';
+import { selectAgentBuilding } from '@/AppBuilder/_helpers/agentBuilding';
 import { AI_CHAT_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 // The redesigned canvas views ship with the AI builder (ee); without it the plain card below stays.
 import { CanvasBuildOverlay } from '@ee/modules/AiBuilder/components/CanvasBuild';
@@ -23,7 +24,7 @@ const TOOLBAR_W = 48; // ToolJet left icon strip width
 const HEADER_H = 48; // editor header height
 
 const AgentBuildingOverlay = () => {
-  const isBuilding = useStore((state) => Boolean(state.ai?.isLoading && state.ai?.currentConversation === 'generate'));
+  const isBuilding = useStore(selectAgentBuilding);
 
   useEffect(() => {
     if (!isBuilding) return undefined;

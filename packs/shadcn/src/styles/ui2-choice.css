@@ -194,6 +194,9 @@
   border-radius: var(--ui-radius);
   background: var(--lk-menu-bg, var(--ui-bg));
   color: var(--lk-menu-fg, var(--ui-fg));
+  /* Popover text color reaches the calendar too; unset, both stay invalid and the calendar keeps its own colours. */
+  --lk-cal-fg: var(--lk-menu-fg);
+  --lk-cal-muted: color-mix(in srgb, var(--lk-menu-fg) 60%, transparent);
   box-shadow: var(--ui-shadow-lg);
   outline: none;
   animation: ui-pop-in 0.12s ease-out;
@@ -471,6 +474,10 @@
   color: var(--lk-on-fg, var(--ui-fg));
   box-shadow: var(--ui-shadow);
 }
+/* Option text color in the outline and plain looks; unset, the theme text colour. */
+.uc-toggles .ui-toggle:not([data-state='on']) {
+  color: var(--lk-fg, var(--ui-fg));
+}
 .uc-toggles .ui-toggle[data-state='on'] {
   background: var(--lk-on-bg, var(--ui-muted));
   color: var(--lk-on-fg, var(--ui-fg));
@@ -539,7 +546,7 @@
   margin-bottom: 12px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--lk-title, var(--ui-fg));
+  color: var(--lk-cal-fg, var(--lk-title, var(--ui-fg)));
 }
 .uc-cal-row {
   display: flex;
@@ -549,7 +556,7 @@
   font-size: 12.8px;
   line-height: 20px;
   text-align: center;
-  color: var(--lk-muted, var(--ui-muted-fg));
+  color: var(--lk-cal-muted, var(--lk-muted, var(--ui-muted-fg)));
 }
 .uc-cal-cell {
   position: relative;
@@ -584,7 +591,7 @@
   border: 0;
   border-radius: calc(var(--ui-radius) - 2px);
   background: transparent;
-  color: var(--lk-fg, var(--ui-fg));
+  color: var(--lk-cal-fg, var(--lk-fg, var(--ui-fg)));
   font: inherit;
   font-size: 14px;
   font-variant-numeric: tabular-nums;
@@ -599,7 +606,7 @@
 }
 .uc-cal-day.is-outside,
 .uc-cal-day:disabled {
-  color: var(--lk-muted, var(--ui-muted-fg));
+  color: var(--lk-cal-muted, var(--lk-muted, var(--ui-muted-fg)));
 }
 .uc-cal-day:disabled {
   opacity: 0.5;
@@ -716,11 +723,11 @@
 }
 .uc-time-row-label {
   margin-right: auto;
-  color: var(--ui-muted-fg);
+  color: var(--lk-cal-muted, var(--ui-muted-fg));
 }
 .uc-time-row > svg {
   flex-shrink: 0;
-  color: var(--ui-muted-fg);
+  color: var(--lk-cal-muted, var(--ui-muted-fg));
 }
 .uc-small-select {
   width: 68px;
@@ -769,7 +776,8 @@
   min-height: 0;
   overflow: hidden;
   border: 1px solid var(--lk-border, var(--ui-border));
-  border-radius: var(--ui-radius-lg, calc(var(--ui-radius) + 4px));
+  /* Radius 0 gives a square frame; any other radius keeps its 4px larger frame. */
+  border-radius: var(--ui-radius-lg, calc(var(--ui-radius) + min(4px, var(--ui-radius) * 4)));
   background: var(--lk-bg, var(--ui-bg));
 }
 .ucs-scroll {

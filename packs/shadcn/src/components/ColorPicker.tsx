@@ -4,6 +4,7 @@ import { Check, Pipette } from 'lucide-react';
 import { Field } from '../lib/Field';
 import { cn } from '../lib/cn';
 import { usePortalContainer } from '../lib/usePortalContainer';
+import { popupLayerStyle } from '../lib/popupLayer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { field, useLooks } from '../lib/ui2/inputs/looks';
@@ -299,7 +300,7 @@ export const ColorPicker = () => {
                 <Popover.Content
                   aria-label="Choose a colour"
                   className="ui-popup ui2-in ui2-pop ui2-color-pop"
-                  style={looks}
+                  style={{ ...looks, ...popupLayerStyle(anchorRef.current) }}
                   align="start"
                   sideOffset={4}
                 >

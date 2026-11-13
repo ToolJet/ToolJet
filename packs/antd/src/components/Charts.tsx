@@ -265,14 +265,15 @@ export const Frame = ({
 // Where a value label sits: inside a bar or slice, or above a point (on the point it hid the marker). Labels that
 // would overlap are dropped, so a dense Column draws a readable row of labels instead of an unreadable band. G2's 'top'
 // hangs the label from the top of the mark's box, so on a Scatter's point it covered the marker (QA DVRL-80): 'above'
-// stands it on that edge instead.
+// stands it on that edge instead. A label above the first or last point is pulled back inside the chart: centred on
+// it, half of it was cut off.
 const valueLabel = (text: (d: Row) => string, fill: string, at: 'inside' | 'top' | 'above') => ({
   text,
   fill,
   position: at === 'inside' ? 'inside' : 'top',
   ...(at === 'top' ? { dy: -8 } : {}),
   ...(at === 'above' ? { textBaseline: 'bottom', dy: -4 } : {}),
-  transform: [{ type: 'overlapHide' }],
+  transform: [...(at !== 'inside' ? [{ type: 'exceedAdjust' }] : []), { type: 'overlapHide' }],
 });
 
 const useCommon = (
@@ -306,7 +307,9 @@ const useCommon = (
       // category twice and no value on a Column.
       tooltip: { items: [{ channel: 'y', valueFormatter: fmt }] },
       interaction: tooltipInteraction(tips),
-      label: p.label ? valueLabel((d: Row) => fmt(d[series.y]), theme.text, series.labelAt ?? 'inside') : undefined,
+      // false, not undefined: Ant merges a new config into the last one and skips undefined, so Label off kept the
+      // labels drawn (as the Pie's label does).
+      label: p.label ? valueLabel((d: Row) => fmt(d[series.y]), theme.text, series.labelAt ?? 'inside') : false,
       // Room above the highest point for its label, which stands above it: it was drawn above the chart, cut off.
       ...(p.label && series.labelAt === 'above' ? { insetTop: 20 } : {}),
       viewStyle: { viewFill: 'transparent' },
@@ -444,7 +447,7 @@ export const Line = () => {
   const points = point
     ? { shapeField: 'circle', sizeField: 3, ...(h ? { style: { opacity: h.opacity(dot) } } : {}) }
     : p.highlightOn
-      ? { shapeField: 'circle', sizeField: 4, style: { opacity: h ? h.opacity(dot, 1, 0) : 0 } }
+      ? { shapeField: 'circle', sizeField: 4, style: { opacity: h.active ? h.opacity(dot, 1, 0) : 0 } }
       : undefined;
   return (
     <AntProvider tokens={tokens} fill>
@@ -777,24 +780,38 @@ export const DualAxes = () => {
     side === 'right' && sharedAxis ? false : { position: side, ...axisStyle, grid: side === 'left' };
   // Label on draws each series' values, above the line or inside the bars (label was not passed to the layers).
   const labelOf = (field: string, kind: string) =>
-    p.label ? valueLabel((d: Row) => fmt(d[field]), theme.text, kind === 'line' ? 'top' : 'inside') : undefined;
+    p.label ? valueLabel((d: Row) => fmt(d[field]), theme.text, kind === 'line' ? 'top' : 'inside') : false;
+  // Color field splits each series into one per value (North, South), in the theme's colours, the bars side by side
+  // and one line each, as the Column and Line charts do; it was never read (AD-13). Without it, a series is one colour.
+  const split = str(p.colorField).trim();
+  // The tooltip writes values as the axis does (Y formatter): it showed the raw 0.25 beside a 25% axis (AD-14). Each
+  // item is named by its group when Color field splits the series (North 10, South 6), else by its field (y, y2).
+  const tooltipOf = (field: string) => ({
+    items: [split ? (d: Row) => ({ name: str(d[split]), value: fmt(d[field]) }) : { field, valueFormatter: fmt }],
+  });
+  const byGroup = split ? { colorField: split } : {};
   const layer = (field: string, kind: string, color: string, side: 'left' | 'right') =>
     kind === 'line'
       ? {
           type: 'line',
           label: labelOf(field, kind),
+          tooltip: tooltipOf(field),
           yField: field,
+          ...byGroup,
           shapeField: 'smooth',
-          style: { stroke: color, lineWidth: 2 },
+          style: { ...(split ? {} : { stroke: color }), lineWidth: 2 },
           scale: { y: yScale(side) },
           axis: { y: yAxis(side) },
         }
       : {
           type: 'interval',
           label: labelOf(field, kind),
+          tooltip: tooltipOf(field),
           yField: field,
+          ...byGroup,
+          ...(split ? { transform: [{ type: 'dodgeX' }] } : {}),
           style: {
-            fill: color,
+            ...(split ? {} : { fill: color }),
             radiusTopLeft: 4,
             radiusTopRight: 4,
             maxWidth: 40,
@@ -807,6 +824,10 @@ export const DualAxes = () => {
     <AntProvider tokens={tokens} fill>
       <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <AntDualAxes
+          // Ant merges a new config into the chart's last one, so a setting turned off kept its old effect: labels
+          // stayed after Label off, the shared range after Shared axis off, the groups after Color field was emptied.
+          // A new chart for each of them draws from the current config only.
+          key={`${!!p.label}|${sharedAxis}|${split}`}
           autoFit
           theme={(common as { theme: string }).theme}
           data={data}
@@ -817,7 +838,7 @@ export const DualAxes = () => {
           legend={p.legend === 'none' ? false : { color: { position: p.legend, itemLabelFill: theme.text } }}
           // The legend's markers come from the colour scale (one entry per y field, in layer order); the layers set
           // their colours only through style, so the left series' marker was G2's default blue next to brand bars.
-          scale={{ color: { range: [theme.brand, dualSecond(theme)] } }}
+          scale={{ color: { range: split ? theme.palette : [theme.brand, dualSecond(theme)] } }}
           interaction={tooltipInteraction(tips)}
           onReady={(common as { onReady: unknown }).onReady as never}
           children={
@@ -1214,7 +1235,7 @@ export const Heatmap = () => {
             color: { itemLabelFill: theme.text, titleFill: theme.text, labelFill: theme.text, labelFillOpacity: 1 },
           }}
           interaction={tooltipInteraction(tips)}
-          label={label ? { text: colorField, fill: theme.text, position: 'inside' } : undefined}
+          label={label ? { text: colorField, fill: theme.text, position: 'inside' } : false}
           onReady={onChartReady}
         />
       </Frame>

@@ -133,12 +133,18 @@ describe('Button', () => {
 });
 
 manifestOrSkip('Theme radius styles draw as the number field', () => {
-  test('Button radius: a text field that says "auto" while it follows the theme radius', () => {
-    const radius = manifest().components.Button.styles.find((s) => s.name === 'borderRadius');
-    expect(radius.default).toBe('auto');
-    expect(radius.inspector).not.toBe('numberInput');
-    expect(fieldMeta(radius).tip).toMatch(/theme radius/i);
-  });
+  test.each(['Button', 'ButtonGroup'])(
+    '%s radius: the px number field, blank while it follows the theme radius',
+    (name) => {
+      // Break this catches: Button and Button Group keeping a text field that says "auto" while every other radius is
+      // the px number field (Rocket QA, 2026-11-13).
+      const radius = manifest().components[name].styles.find((s) => s.name === 'borderRadius');
+      expect(radius.default).toBeUndefined();
+      expect(radius.inspector).toBe('numberInput');
+      expect(radius.placeholder).toBe('Theme radius');
+      expect(fieldMeta(radius).tip).toMatch(/theme radius/i);
+    }
+  );
 
   test('every shadcn style with the Theme radius placeholder does the same', () => {
     const radii = Object.entries(manifest().components).flatMap(([name, c]) =>

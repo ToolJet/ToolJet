@@ -540,11 +540,12 @@
 .n2-nav.is-horizontal.is-underline {
   border-bottom: 1px solid var(--lk-sep, var(--ui-border));
 }
+/* Safe: an overflowing row keeps its first items reachable by scrolling instead of centring them off the left edge. */
 .n2-nav.is-horizontal.is-align-center {
-  justify-content: center;
+  justify-content: safe center;
 }
 .n2-nav.is-horizontal.is-align-end {
-  justify-content: flex-end;
+  justify-content: safe flex-end;
 }
 .n2-nav.has-bg.is-vertical {
   padding: 8px;
