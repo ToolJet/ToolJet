@@ -271,6 +271,8 @@ jobs:
           echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
           echo "TJ_AI_GATEWAY_URL=${{ secrets.TJ_AI_GATEWAY_URL }}" >> .env
           echo "AI_SERVER_URL=${{ secrets.AI_SERVER_URL }}" >> .env
+          # Git sync branch create/pull/delete run as queue jobs, which only a worker process picks up.
+          if [ "${{ matrix.label }}" = "gitsync" ]; then echo "WORKER=true" >> .env; fi
 
       - name: clean up old docker containers
         run: |
@@ -497,9 +499,10 @@ jobs:
           dir: "./cypress-tests"
 
       # The first machine onboards through the UI (firstUserOnboarding.cy.js), which
-      # needs a ToolJet with no admin yet. Every other machine is set up by API instead.
+      # needs a ToolJet with no admin yet. Every other machine, and the git sync run, is
+      # set up by API instead.
       - name: Seeding (Setup Super Admin)
-        if: strategy.job-index != 0
+        if: strategy.job-index != 0 || matrix.label == 'gitsync'
         run: |
           curl --fail-with-body 'http://localhost:3000/api/onboarding/setup-super-admin' \
             -H 'Content-Type: application/json' \
@@ -512,7 +515,7 @@ jobs:
             }'
 
       - name: Seeding (Authenticate)
-        if: strategy.job-index != 0
+        if: strategy.job-index != 0 || matrix.label == 'gitsync'
         run: |
           AUTH_RESPONSE=$(curl --fail-with-body \
             -c /tmp/tj_cookies.txt \
@@ -527,7 +530,7 @@ jobs:
           echo "TJ_ORG_ID=$ORG_ID" >> $GITHUB_ENV
 
       - name: Seeding (Complete Onboarding)
-        if: strategy.job-index != 0
+        if: strategy.job-index != 0 || matrix.label == 'gitsync'
         run: |
           # Without this the frontend redirects every page visit to /setup.
           curl --fail-with-body \
@@ -539,7 +542,7 @@ jobs:
             --data-raw '{"region": "us"}'
 
       - name: Seeding (Update License)
-        if: strategy.job-index != 0 && matrix.edition == 'ee'
+        if: (strategy.job-index != 0 || matrix.label == 'gitsync') && matrix.edition == 'ee'
         run: |
           # Same call as updateLicense.cy.js. The key is part of a larger secret, so
           # GitHub doesn't mask it on its own.
