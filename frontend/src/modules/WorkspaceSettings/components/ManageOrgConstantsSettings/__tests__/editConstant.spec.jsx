@@ -94,6 +94,34 @@ describe('editing a constant from the list', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
+  it('returns focus to the Edit button when the modal closes', async () => {
+    let release;
+    const gate = new Promise((resolve) => (release = resolve));
+    mockApi(async () => {
+      await gate;
+      return HttpResponse.json(DETAIL);
+    });
+    renderPage();
+    await screen.findByText('ALPHA');
+    const editButton = screen.getByRole('button', { name: 'Edit ALPHA' });
+    editButton.focus();
+
+    await userEvent.click(editButton);
+    // Browsers drop focus from a button that turns disabled while it loads; jsdom keeps it, and ignores blur() on a
+    // disabled element, so lift the attribute for the blur.
+    editButton.disabled = false;
+    editButton.blur();
+    editButton.disabled = true;
+    expect(document.body).toHaveFocus();
+    release();
+    const dialog = await screen.findByRole('dialog', { name: 'Edit constant' });
+    expect(dialog).toContainElement(document.activeElement);
+    await userEvent.keyboard('{Escape}');
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('button', { name: 'Edit ALPHA' })).toHaveFocus();
+  });
+
   it('shows an error toast, and no modal, when the constant cannot be loaded', async () => {
     const errorToast = jest.spyOn(toast, 'error').mockImplementation(() => {});
     mockApi(() => HttpResponse.json({ message: 'boom' }, { status: 500 }));

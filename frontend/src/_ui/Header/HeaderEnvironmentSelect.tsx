@@ -59,7 +59,7 @@ const EnvTrigger = forwardRef<
         ref={ref}
         variant="outline"
         size="medium"
-        aria-label="Environment"
+        aria-label={name ? `${name} environment` : 'Environment'}
         className={PILL_CLASS}
         leadingVisual={<EnvDot name={name} className="tw-size-1.5" />}
         trailingVisual={<ChevronDown size={14} />}

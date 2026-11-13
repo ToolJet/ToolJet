@@ -62,9 +62,19 @@ const dialogContentVariants = cva(
 );
 
 const DialogContent = forwardRef(function DialogContent(
-  { className, children, size, showCloseButton = true, preventClose = false, ...props },
+  {
+    className,
+    children,
+    size,
+    showCloseButton = true,
+    preventClose = false,
+    onOpenAutoFocus,
+    onCloseAutoFocus,
+    ...props
+  },
   ref
 ) {
+  const openerRef = useRef(null);
   const [bodyOverflowing, setBodyOverflowing] = useState(false);
   const overflowCtx = useMemo(
     () => ({ overflowing: bodyOverflowing, setOverflowing: setBodyOverflowing }),
@@ -82,6 +92,21 @@ const DialogContent = forwardRef(function DialogContent(
     props.onEscapeKeyDown?.(e);
   };
 
+  // Radix only restores focus to a DialogTrigger. A dialog opened from state has none, so remember the opener here.
+  const handleOpenAutoFocus = (e) => {
+    openerRef.current = document.activeElement;
+    onOpenAutoFocus?.(e);
+  };
+
+  const handleCloseAutoFocus = (e) => {
+    onCloseAutoFocus?.(e);
+    const opener = openerRef.current;
+    if (!e.defaultPrevented && opener && opener !== document.body && opener.isConnected) {
+      e.preventDefault();
+      opener.focus();
+    }
+  };
+
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -90,6 +115,8 @@ const DialogContent = forwardRef(function DialogContent(
         data-slot="dialog-content"
         onInteractOutside={handleInteractOutside}
         onEscapeKeyDown={handleEscapeKeyDown}
+        onOpenAutoFocus={handleOpenAutoFocus}
+        onCloseAutoFocus={handleCloseAutoFocus}
         className={cn(
           'tw-fixed tw-inset-0 tw-z-50 tw-m-auto tw-h-fit tw-w-full tw-max-w-[calc(100%-2rem)] tw-outline-none',
           'data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0 data-[state=closed]:tw-zoom-out-95 data-[state=open]:tw-zoom-in-95',

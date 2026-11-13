@@ -160,6 +160,8 @@ export interface ConstantModalProps {
   /** The type a new constant starts with (the open tab). */
   defaultType?: ConstantType;
   onSubmit: (body: CreateConstantBody | UpdateConstantBody) => Promise<unknown>;
+  /** Where focus goes when the modal closes, for an opener that is not focused when the modal opens. */
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
 function ConstantModalDialog({
@@ -171,6 +173,7 @@ function ConstantModalDialog({
   multiEnvironment = true,
   defaultType,
   onSubmit,
+  onCloseAutoFocus,
 }: ConstantModalProps) {
   const isEdit = mode === 'edit';
   const form = useConstantForm({ mode, constant, environments, multiEnvironment, defaultType });
@@ -217,6 +220,7 @@ function ConstantModalDialog({
       title={isEdit ? 'Edit constant' : 'Create constant'}
       showCloseButton
       showCancelButton={false}
+      onCloseAutoFocus={onCloseAutoFocus}
       classes={{
         dialogContent: 'tw-max-w-[min(1056px,calc(100vw-2rem))] tw-border-0',
         dialogHeader: 'tw-h-[72px] tw-px-8 tw-py-3',
@@ -256,10 +260,13 @@ function ConstantModalDialog({
             value={form.name}
             disabled={isEdit}
             aria-invalid={Boolean(nameError)}
+            aria-describedby={nameError ? 'constant-name-error' : undefined}
             onChange={(e) => handleNameChange(e.target.value)}
           />
           {nameError ? (
-            <FieldError className="tw-pl-0.5">{nameError}</FieldError>
+            <FieldError id="constant-name-error" className="tw-pl-0.5">
+              {nameError}
+            </FieldError>
           ) : (
             !isEdit && (
               <FieldDescription className="tw-pl-0.5">Name must be unique and max 50 characters</FieldDescription>

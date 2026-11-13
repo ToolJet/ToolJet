@@ -11,6 +11,8 @@ interface DeleteConstantsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => Promise<unknown>;
+  /** Where focus goes when the dialog closes, for an opener that is gone by then. */
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
 export default function DeleteConstantsDialog({
@@ -18,6 +20,7 @@ export default function DeleteConstantsDialog({
   open,
   onOpenChange,
   onConfirm,
+  onCloseAutoFocus,
 }: DeleteConstantsDialogProps) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +49,7 @@ export default function DeleteConstantsDialog({
     <ActionDialog
       open={open}
       handleOpenChange={(next: boolean) => !next && close()}
+      onCloseAutoFocus={onCloseAutoFocus}
       classes={{ dialogContent: 'tw-max-w-[459px] tw-border-0', dialogBody: 'tw-pb-0' }}
       cancelBtnProps={{ onClick: close, disabled: pending, 'data-cy': 'cancel-button' }}
       submitActions={[

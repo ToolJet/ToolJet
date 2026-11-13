@@ -1,5 +1,5 @@
 /// <reference lib="es2021.intl" />
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { Info, LockKeyhole, Trash } from 'lucide-react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Button, FieldError, Popover, PopoverContent, PopoverTrigger, Textarea } from '@/components/ui/Rocket';
@@ -83,6 +83,7 @@ export default function ConstantValueRow({
   const { environmentName, value, locked, masked, error } = row;
   const label = `${environmentName} value`;
   const [confirmingRemove, setConfirmingRemove] = useState(false);
+  const errorId = useId();
 
   return (
     <div className="tw-flex tw-flex-col tw-gap-0.5">
@@ -133,6 +134,7 @@ export default function ConstantValueRow({
         placeholder={masked || locked ? SECRET_MASK : 'Enter value'}
         disabled={locked}
         aria-invalid={Boolean(error)}
+        aria-describedby={error ? errorId : undefined}
         className={cn(
           // md:tw-text-base undoes the shared textarea base, which drops to 11px on desktop; the design's is 12px.
           'tw-h-[86px] tw-min-h-[86px] tw-resize-y tw-px-2 tw-py-[7px] tw-font-body-default md:tw-text-base',
@@ -141,7 +143,7 @@ export default function ConstantValueRow({
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
       />
-      {error && <FieldError>{error}</FieldError>}
+      {error && <FieldError id={errorId}>{error}</FieldError>}
     </div>
   );
 }

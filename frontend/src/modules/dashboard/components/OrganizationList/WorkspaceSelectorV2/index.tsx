@@ -88,6 +88,7 @@ export default function WorkspaceSelectorV2({
       >
         <ComboboxTrigger
           data-cy="workspace-selector-trigger"
+          aria-label={`Workspace: ${decodeEntities(currentWorkspaceDetails?.name ?? '')}`}
           className="tw-flex tw-h-8 tw-w-full tw-max-w-40 tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-py-1 tw-text-text-default tw-font-title-default tw-shadow-none hover:tw-bg-interactive-hover data-[popup-open]:tw-bg-interactive-selected"
         >
           <p data-cy="workspace-name" className="tw-truncate tw-font-title-default tw-mb-0 tw-min-w-0">

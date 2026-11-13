@@ -96,7 +96,8 @@ export default function SearchInput({
         onMouseDown={(event: MouseEvent) => event.preventDefault()}
         onClick={clearSearch}
         className={cn(
-          'tw-absolute tw-right-3 tw-top-1/2 -tw-translate-y-1/2 tw-rounded tw-text-icon-strong tw-transition-[opacity,visibility]',
+          // 24px, the minimum pointer target size
+          'tw-absolute tw-right-3 tw-top-1/2 tw-size-6 -tw-translate-y-1/2 tw-rounded tw-text-icon-strong tw-transition-[opacity,visibility]',
           motionClasses,
           !value && 'tw-invisible tw-opacity-0'
         )}

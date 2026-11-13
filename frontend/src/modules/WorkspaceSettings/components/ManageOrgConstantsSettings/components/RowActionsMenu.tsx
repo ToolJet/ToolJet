@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { EllipsisVertical, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/Rocket';
 import DropdownMenu from '@/components/ui/Rocket/DropdownMenu';
@@ -13,12 +13,14 @@ const MENU_CLASSES = { content: 'tw-w-44' };
 interface RowActionsMenuProps {
   item: Pick<ConstantListItem, 'name' | 'source'>;
   variant: ConstantType;
-  onDelete: () => void;
+  /** Gets the menu button, so the page can return focus to it once the delete dialog closes. */
+  onDelete: (opener: HTMLElement | null) => void;
 }
 
 // `.env` constants cannot be deleted: their Delete shows as disabled and says why.
 export default function RowActionsMenu({ item, variant, onDelete }: RowActionsMenuProps) {
   const isEnv = item.source === 'env';
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const sections = [
     {
       id: 'danger',
@@ -29,7 +31,7 @@ export default function RowActionsMenu({ item, variant, onDelete }: RowActionsMe
           icon: <Trash size={MENU_ICON_SIZE} />,
           destructive: true,
           disabled: isEnv,
-          onSelect: onDelete,
+          onSelect: () => onDelete(triggerRef.current),
           wrapper: isEnv
             ? (node: React.ReactElement) => (
                 <Tooltip
@@ -55,6 +57,7 @@ export default function RowActionsMenu({ item, variant, onDelete }: RowActionsMe
       sections={sections}
       trigger={
         <Button
+          ref={triggerRef}
           variant="ghost"
           iconOnly
           size="medium"

@@ -101,6 +101,15 @@ describe('ManageOrgConstantsSettings', () => {
     expect(screen.getByText('Showing 1-2 of 2 items')).toBeInTheDocument();
   });
 
+  it('labels the list as the tab panel of the open tab and keeps the panel out of the tab order', async () => {
+    mockApi(() => HttpResponse.json(page([item('api_url')], { secrets: 0, globals: 1 })));
+    renderPage();
+    await screen.findByText('API_URL');
+    const panel = screen.getByRole('tabpanel', { name: /Globals/ });
+    expect(screen.getByRole('tab', { name: /Globals/ })).toHaveAttribute('aria-controls', panel.id);
+    expect(panel).toHaveAttribute('tabindex', '-1');
+  });
+
   it('opens on Secrets when the URL names no tab', async () => {
     const requests = mockApi(() => HttpResponse.json(page([item('api_key', 'Secret')])));
     renderPage('/');
@@ -355,11 +364,11 @@ describe('ManageOrgConstantsSettings header controls', () => {
     renderPage();
     await screen.findByText('API_URL');
 
-    await userEvent.click(screen.getByRole('button', { name: 'Environment' }));
+    await userEvent.click(screen.getByRole('button', { name: /environment$/i }));
     await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Development' }));
 
     await waitFor(() => expect(requests.at(-1)).toMatchObject({ environment_id: 'env-dev' }));
-    expect(screen.getByRole('button', { name: 'Environment' })).toHaveTextContent('Development');
+    expect(screen.getByRole('button', { name: /environment$/i })).toHaveTextContent('Development');
   });
 
   it('lists the most recently modified first until another sort is chosen', async () => {
@@ -404,7 +413,7 @@ describe('ManageOrgConstantsSettings header controls', () => {
     renderPage('/?env=env-dev');
     await screen.findByText('API_URL');
 
-    expect(screen.queryByRole('button', { name: 'Environment' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /environment$/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Filter' })).toBeInTheDocument();
     expect(requests.every((request) => request.environment_id === 'env-prod')).toBe(true);
   });

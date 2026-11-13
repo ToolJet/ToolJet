@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { SECRET_MASK } from '../../helpers/constants';
@@ -507,6 +507,20 @@ describe('ConstantsTable', () => {
       expect(await screen.findByRole('dialog', { name: 'Delete workspace constant?' })).toBeInTheDocument();
       await userEvent.click(screen.getByRole('button', { name: 'Delete constant' }));
       expect(onDelete).toHaveBeenCalledWith(['c1']);
+    });
+
+    it('returns focus to the row menu button when the dialog is dismissed', async () => {
+      renderTable({ items: [globalItem], onDelete: jest.fn() });
+      const menuButton = screen.getByRole('button', { name: 'More actions for API_URL' });
+      menuButton.focus();
+      await userEvent.keyboard('{Enter}');
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'Delete constant' }));
+      await screen.findByRole('dialog', { name: 'Delete workspace constant?' });
+
+      await userEvent.keyboard('{Escape}');
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      expect(menuButton).toHaveFocus();
     });
   });
 });

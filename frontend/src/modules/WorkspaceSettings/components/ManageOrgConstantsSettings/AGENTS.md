@@ -38,6 +38,10 @@ The Workspace Constants page (route `/workspace-constants`): lists, creates, edi
 - The page height is `100vh` minus the header (`3rem`) and `--dynamic-margin-2` (the banner height set in `App.jsx`). A different header height needs a change in both the header and this calc.
 - Search text comes from the header search store (`useHeaderSearchConfig`); the page clears it on unmount.
 - A Rocket primitive imported from a `.ts` or `.tsx` file needs a `.d.ts` next to its `.jsx` (see `components/ui/Rocket/Button/Button.d.ts`). Some primitives have none yet.
+- `ConstantModal` is lazy-loaded (`React.lazy`) and the create modal is mounted on first open only; once opened it stays mounted so it can animate out. The edit modal mounts when a constant is loaded for editing.
+- The list sits in a `TabsContent` so each tab's `aria-controls` resolves. Rocket removes the panel's outline, so the panel has `tabIndex={-1}`; do not make it a tab stop.
+- Radix returns focus only to a `DialogTrigger`. The Rocket `Dialog` returns focus to the element that was focused when it opened. Openers that lose focus first need to say where focus goes: the Edit button is disabled while the constant loads (the page passes `onCloseAutoFocus`), and the row menu closes before the delete dialog (the table hands over the menu button).
+- Import services from their own file (`@/_services/app_environment.service`), not the `@/_services` barrel. `organization_constants_v2.service` is deliberately not in the barrel, so it stays in the page's chunk and out of the main bundle.
 - The glossary terms above are in `UBIQUITOUS_LANGUAGE.md`.
 
 ## Related modules

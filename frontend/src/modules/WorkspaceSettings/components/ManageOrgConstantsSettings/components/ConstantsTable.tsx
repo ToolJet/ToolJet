@@ -257,7 +257,7 @@ interface RowActionsProps {
   item: ConstantListItem;
   variant: ConstantType;
   onEdit: (item: ConstantListItem) => Promise<unknown> | void;
-  onDelete: () => void;
+  onDelete: (opener: HTMLElement | null) => void;
 }
 
 function RowActions({ item, variant, onEdit, onDelete }: RowActionsProps) {
@@ -522,6 +522,8 @@ function ConstantsGrid({
   onDelete,
 }: ConstantsGridProps) {
   const [deleteTarget, setDeleteTarget] = useState<ConstantListItem | null>(null);
+  // The row menu closes before the dialog does, so the menu button is handed over to take focus back.
+  const deleteOpener = useRef<HTMLElement | null>(null);
 
   // Pinned rows lead, then the rest in server order. Only the loaded page is ordered; a pin on another page waits
   // until its row is loaded.
@@ -580,7 +582,10 @@ function ConstantsGrid({
                       onSelectedChange={(checked) => toggleRow(item.id, checked)}
                       onEdit={onEdit}
                       onTogglePin={() => (isPinned ? onUnpin([item.id]) : onPin([item.id]))}
-                      onDelete={() => setDeleteTarget(item)}
+                      onDelete={(opener) => {
+                        deleteOpener.current = opener;
+                        setDeleteTarget(item);
+                      }}
                     />
                     {/* The divider only separates pinned rows from the rows that follow them. */}
                     {isPinned && index === pinnedCount - 1 && pinnedCount < rows.length && <PinDivider />}
@@ -598,6 +603,12 @@ function ConstantsGrid({
           constants={[deleteTarget.name]}
           onOpenChange={(open: boolean) => !open && setDeleteTarget(null)}
           onConfirm={() => onDelete([deleteTarget.id])}
+          onCloseAutoFocus={(event) => {
+            if (deleteOpener.current?.isConnected) {
+              event.preventDefault();
+              deleteOpener.current.focus();
+            }
+          }}
         />
       )}
     </div>

@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { capitalize } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { KeyRound, Lock } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Rocket';
-import { appEnvironmentService } from '@/_services';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Rocket';
+import { appEnvironmentService } from '@/_services/app_environment.service';
 import { orgConstantsV2Service } from '@/_services/organization_constants_v2.service';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { isMultiEnvLicenseInvalid } from '@/_helpers/multiEnvLicense';
@@ -12,7 +12,6 @@ import { useSearchStore } from '@/_stores/searchStore';
 import { useHeaderSearchConfig } from '@/_hooks/useHeaderSearchConfig';
 import { useHeaderEnvironmentSelect } from '@/_hooks/useHeaderEnvironmentSelect';
 import { fetchEdition } from '@/modules/common/helpers/utils';
-import ConstantModal from './components/ConstantModal';
 import ConstantsListControls from './components/ConstantsListControls';
 import ConstantsPageHeader from './components/ConstantsPageHeader';
 import ConstantsTable from './components/ConstantsTable';
@@ -21,6 +20,8 @@ import { ConstantTypes } from './helpers/constantType';
 import SelectionBar from './components/SelectionBar';
 import { CONSTANT_SOURCES, useConstantsListQueryParams } from './hooks/useConstantsListQueryParams';
 import { useConstantsListStore } from './store/constantsListStore';
+
+const ConstantModal = lazy(() => import('./components/ConstantModal'));
 
 // The list API rejects a longer `search`.
 const MAX_SEARCH_LENGTH = 50;
@@ -57,6 +58,10 @@ const ManageOrgConstantsSettings = () => {
   const [editing, setEditing] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
   const listScrollRef = useRef(null);
+  const createOpened = useRef(false);
+  // The Edit button is disabled while the constant loads, which drops focus before the modal opens.
+  const editOpener = useRef(null);
+  if (creating) createOpened.current = true;
 
   const loadEnvironments = useCallback(() => {
     setEnvironmentsFailed(false);
@@ -138,11 +143,20 @@ const ManageOrgConstantsSettings = () => {
 
   // The list row has no per-environment values, so the full constant is fetched before the modal opens.
   const openEdit = async (item) => {
+    editOpener.current = document.activeElement;
     try {
       setEditing(await orgConstantsV2Service.get(item.id));
       setEditOpen(true);
     } catch (error) {
       toast.error(error?.error || 'Could not load the constant. Please try again.');
+    }
+  };
+
+  const restoreEditOpenerFocus = (event) => {
+    const opener = editOpener.current;
+    if (opener?.isConnected) {
+      event.preventDefault();
+      opener.focus();
     }
   };
 
@@ -190,7 +204,7 @@ const ManageOrgConstantsSettings = () => {
     <div className="tw-flex tw-h-[calc(100vh_-_3rem_-_var(--dynamic-margin-2,0px))] tw-flex-col tw-overflow-hidden tw-bg-background-surface-layer-01">
       <div className="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-px-[70px] tw-pb-4 tw-pt-10">
         <ConstantsPageHeader onCreate={() => setCreating(true)} />
-        <Tabs value={tab} onValueChange={setTab} className="tw-mt-4">
+        <Tabs value={tab} onValueChange={setTab} className="tw-mt-4 tw-min-h-0 tw-flex-1 tw-gap-0">
           {/* The full-width rule sits on this row, not the list, so the controls can share it */}
           <div className="tw-flex tw-h-10 tw-items-center tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
             <TabsList className="tw-border-b-0">
@@ -203,33 +217,36 @@ const ManageOrgConstantsSettings = () => {
             </TabsList>
             <ConstantsListControls sort={sort} onSortChange={setSort} source={source} onSourceChange={setSource} />
           </div>
-        </Tabs>
-        {/* flex-1 lets an empty or error state centre in the space left above the footer. The row checkbox and drag
+          {/* flex-1 lets an empty or error state centre in the space left above the footer. The row checkbox and drag
             handle sit left of the table, so the scroll box reaches into the page padding to keep them visible. */}
-        <div
-          ref={listScrollRef}
-          data-testid="constants-list-scroll"
-          className="-tw-mx-[70px] tw-mt-2.5 tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-y-auto tw-px-[70px]"
-        >
-          <ConstantsTable
-            items={items}
-            status={status}
-            variant={tab}
-            searchKey={searchKey}
-            environmentName={environment?.name}
-            isSourceFiltered={source.length < CONSTANT_SOURCES.length}
-            pinnedIds={pinnedIds}
-            rowSelection={rowSelection}
-            onSelectionChange={setRowSelection}
-            onPin={pin}
-            onUnpin={unpin}
-            onMovePin={(id, toIndex) => movePin(tab, id, toIndex)}
-            onEdit={openEdit}
-            onDelete={handleDelete}
-            onCreate={() => setCreating(true)}
-            onRetry={environmentsFailed ? loadEnvironments : loadList}
-          />
-        </div>
+          {/* The panel holds focusable controls, and Rocket removes its outline, so it must not be a tab stop itself. */}
+          <TabsContent value={tab} tabIndex={-1} className="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col">
+            <div
+              ref={listScrollRef}
+              data-testid="constants-list-scroll"
+              className="-tw-mx-[70px] tw-mt-2.5 tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-y-auto tw-px-[70px]"
+            >
+              <ConstantsTable
+                items={items}
+                status={status}
+                variant={tab}
+                searchKey={searchKey}
+                environmentName={environment?.name}
+                isSourceFiltered={source.length < CONSTANT_SOURCES.length}
+                pinnedIds={pinnedIds}
+                rowSelection={rowSelection}
+                onSelectionChange={setRowSelection}
+                onPin={pin}
+                onUnpin={unpin}
+                onMovePin={(id, toIndex) => movePin(tab, id, toIndex)}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+                onCreate={() => setCreating(true)}
+                onRetry={environmentsFailed ? loadEnvironments : loadList}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
       {selectedItems.length > 0 && (
         // Zero height, so the bar adds nothing to the layout; it floats 16px above the footer.
@@ -256,26 +273,32 @@ const ManageOrgConstantsSettings = () => {
         </div>
       )}
       <ConstantsTableFooter status={status} meta={meta} itemCount={items.length} onPageChange={changePage} />
-      <ConstantModal
-        mode="create"
-        open={creating}
-        onOpenChange={setCreating}
-        environments={modalEnvironments}
-        multiEnvironment={showEnv}
-        defaultType={tab}
-        onSubmit={handleCreate}
-      />
-      {editing && (
-        <ConstantModal
-          mode="edit"
-          constant={editing}
-          open={editOpen}
-          onOpenChange={setEditOpen}
-          environments={modalEnvironments}
-          multiEnvironment={showEnv}
-          onSubmit={(body) => handleUpdate(editing.id, body)}
-        />
-      )}
+      {/* The modal chunk loads on first use. Once opened, the create modal stays mounted so it can animate out. */}
+      <Suspense fallback={null}>
+        {createOpened.current && (
+          <ConstantModal
+            mode="create"
+            open={creating}
+            onOpenChange={setCreating}
+            environments={modalEnvironments}
+            multiEnvironment={showEnv}
+            defaultType={tab}
+            onSubmit={handleCreate}
+          />
+        )}
+        {editing && (
+          <ConstantModal
+            mode="edit"
+            constant={editing}
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            environments={modalEnvironments}
+            multiEnvironment={showEnv}
+            onSubmit={(body) => handleUpdate(editing.id, body)}
+            onCloseAutoFocus={restoreEditOpenerFocus}
+          />
+        )}
+      </Suspense>
     </div>
   );
 };

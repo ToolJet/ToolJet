@@ -38,6 +38,8 @@ export interface ActionDialogProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   footerStart?: ReactNode;
   showCloseButton?: boolean;
   showCancelButton?: boolean;
+  /** Runs as the dialog closes; call `preventDefault()` and focus an element to choose where focus goes. */
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
 export default function ActionDialog({
@@ -54,6 +56,7 @@ export default function ActionDialog({
   footerStart = null,
   showCloseButton = false,
   showCancelButton = true,
+  onCloseAutoFocus,
   ...dialogBodyProps
 }: ActionDialogProps) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -67,6 +70,7 @@ export default function ActionDialog({
       <DialogContent
         data-cy="modal-component"
         showCloseButton={false}
+        onCloseAutoFocus={onCloseAutoFocus}
         className={cn(
           'tw-w-full tw-max-w-96 tw-p-0 tw-gap-0 tw-border-border-weak',
           { 'dark-theme theme-dark': darkMode },
@@ -94,6 +98,7 @@ export default function ActionDialog({
                 iconOnly
                 variant="ghost"
                 size="default"
+                aria-label="Close"
                 {...(cancelBtnProps?.onClick && { onClick: cancelBtnProps.onClick })}
               >
                 <X size={16} />

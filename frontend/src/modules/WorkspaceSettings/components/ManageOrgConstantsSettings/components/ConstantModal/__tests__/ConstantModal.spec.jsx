@@ -95,6 +95,9 @@ describe('ConstantModal — create', () => {
     const { user } = setup();
     await user.type(screen.getByPlaceholderText('EXAMPLE_API_KEY'), '1bad');
     expect(screen.getByText(/letters, numbers and underscores/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('EXAMPLE_API_KEY')).toHaveAccessibleDescription(
+      /letters, numbers and underscores/i
+    );
     expect(screen.getByRole('button', { name: 'Add constant' })).toBeDisabled();
   });
 
@@ -293,6 +296,7 @@ describe('ConstantModal — edit', () => {
     await user.clear(valueBox('Staging'));
     expect(screen.getByText('Value is required')).toBeInTheDocument();
     expect(valueBox('Staging')).toHaveAttribute('aria-invalid', 'true');
+    expect(valueBox('Staging')).toHaveAccessibleDescription('Value is required');
     expect(valueBox('Development')).not.toHaveAttribute('aria-invalid', 'true');
     expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
   });

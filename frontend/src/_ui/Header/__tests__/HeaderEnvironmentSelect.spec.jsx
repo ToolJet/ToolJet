@@ -32,17 +32,17 @@ beforeEach(() => act(() => useHeaderEnvironmentStore.getState().setSelect(null))
 describe('HeaderEnvironmentSelect', () => {
   it('renders nothing until a page provides an environment select', () => {
     render(<HeaderEnvironmentSelect />);
-    expect(screen.queryByRole('button', { name: 'Environment' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /environment$/i })).not.toBeInTheDocument();
   });
 
   it('shows the current environment as the button label', () => {
     setup();
-    expect(screen.getByRole('button', { name: 'Environment' })).toHaveTextContent('Production');
+    expect(screen.getByRole('button', { name: /environment$/i })).toHaveTextContent('Production');
   });
 
   it('lists every environment as a checkbox and marks the current one', async () => {
     setup();
-    await userEvent.click(screen.getByRole('button', { name: 'Environment' }));
+    await userEvent.click(screen.getByRole('button', { name: /environment$/i }));
     expect(await screen.findByRole('menuitemcheckbox', { name: 'Production' })).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByRole('menuitemcheckbox', { name: 'Development' })).toHaveAttribute('aria-checked', 'false');
     expect(screen.queryByRole('menuitemradio')).not.toBeInTheDocument();
@@ -50,34 +50,34 @@ describe('HeaderEnvironmentSelect', () => {
 
   it('reports the chosen environment id', async () => {
     const { onChange } = setup();
-    await userEvent.click(screen.getByRole('button', { name: 'Environment' }));
+    await userEvent.click(screen.getByRole('button', { name: /environment$/i }));
     await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Development' }));
     expect(onChange).toHaveBeenCalledWith('env-dev');
   });
 
   it('keeps the current environment when its checkbox is clicked again', async () => {
     const { onChange } = setup();
-    await userEvent.click(screen.getByRole('button', { name: 'Environment' }));
+    await userEvent.click(screen.getByRole('button', { name: /environment$/i }));
     await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Production' }));
     expect(onChange).not.toHaveBeenCalled();
   });
 
   it('shows no tooltip while the menu is open or right after it is dismissed', async () => {
     setup();
-    await userEvent.click(screen.getByRole('button', { name: 'Environment' }));
+    await userEvent.click(screen.getByRole('button', { name: /environment$/i }));
     await screen.findByRole('menuitemcheckbox', { name: 'Production' });
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
 
     // Dismissing returns focus to the pill, which must not open its tooltip.
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByRole('menuitemcheckbox', { name: 'Production' })).not.toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'Environment' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: /environment$/i })).toHaveFocus();
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 
   it('still shows the tooltip when the pill is hovered', async () => {
     setup();
-    await userEvent.hover(screen.getByRole('button', { name: 'Environment' }));
+    await userEvent.hover(screen.getByRole('button', { name: /environment$/i }));
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Choose which environment’s values the list shows.');
   });
 
@@ -95,9 +95,9 @@ describe('HeaderEnvironmentSelect', () => {
         <Page onChange={onChange} environmentId="env-dev" />
       </>
     );
-    expect(screen.getByRole('button', { name: 'Environment' })).toHaveTextContent('Development');
+    expect(screen.getByRole('button', { name: /environment$/i })).toHaveTextContent('Development');
 
     rerender(<HeaderEnvironmentSelect />);
-    expect(screen.queryByRole('button', { name: 'Environment' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /environment$/i })).not.toBeInTheDocument();
   });
 });

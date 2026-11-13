@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 
