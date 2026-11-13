@@ -240,6 +240,7 @@ const sidebars = {
             "app-builder/code-mode/runtime-api",
             "app-builder/code-mode/access-control",
             "app-builder/code-mode/versions-and-history",
+            "app-builder/code-mode/security",
             "app-builder/code-mode/cli-reference"
           ]
         },
