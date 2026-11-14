@@ -11,6 +11,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
 import NestedWorkflowPinsBlockedDialog, { NESTED_WORKFLOW_PINS_BLOCKED } from './NestedWorkflowPinsBlockedDialog';
 import '../../_styles/version-modal.scss';
+import { suggestVersionName } from '@/AppBuilder/_helpers/versionNames';
 
 const CreateVersionModal = ({
   showCreateAppVersion,
@@ -138,7 +139,7 @@ const CreateVersionModal = ({
     const isUuidPlaceholderName = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       version.name || ''
     );
-    setVersionName(isUuidPlaceholderName ? '' : version.name);
+    setVersionName(isUuidPlaceholderName ? '' : suggestVersionName(version.name, developmentVersions));
     setVersionDescription(isUuidPlaceholderName ? '' : version.description || '');
   };
 
