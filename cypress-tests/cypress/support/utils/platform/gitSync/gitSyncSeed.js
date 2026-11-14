@@ -290,7 +290,7 @@ export const importCompleteFlowViaAPI = (branch, suffix) => {
       const wf = workflowExport.app[0].definition.appV2;
       const ds = wf.dataSources.find((d) => d.name === "cf-rest");
       Object.assign(dataSourceIds, { [ds.id]: crypto.randomUUID(), '"cf-rest"': `"${names.dataSource}"` });
-      // Fresh ids so imports in one workspace never share a slug or a git identity.
+      // The import keeps co_relation_id (git identity) and slug (= the fixture's id), so both must be fresh per import.
       flow.fixtureWorkflowCoRel = wf.co_relation_id;
       const fresh = replaceIds(workflowExport, {
         ...dataSourceIds,

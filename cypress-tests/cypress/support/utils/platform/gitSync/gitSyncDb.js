@@ -8,7 +8,11 @@
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const runQuery = (sql) => cy.task("dbConnection", { dbconfig: Cypress.env("app_db"), sql });
+// app_db_name points the reads at another database of the same server (e.g. a tj worktree's isolated DB).
+const dbConfig = () =>
+  Cypress.env("app_db_name") ? { ...Cypress.env("app_db"), database: Cypress.env("app_db_name") } : Cypress.env("app_db");
+
+const runQuery = (sql) => cy.task("dbConnection", { dbconfig: dbConfig(), sql });
 
 /**
  * Every app_versions row of an app on one workspace branch (all branches when

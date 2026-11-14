@@ -107,8 +107,12 @@ export const syncAppConflictFromGitRemoteViaUI = (appName) => {
   cy.contains(GS.conflictRowHeader, gitSyncText.conflictAppNameRow(appName))
     .find(GS.conflictRowCheckbox)
     .check();
+  cy.intercept("POST", "**/api/workspace-branches/resolve-conflicts").as("resolveConflicts");
   cy.get(GS.conflictSyncSelectedBtn)
     .should("contain.text", gitSyncText.syncSelected(1))
     .and("be.enabled")
     .click();
+  cy.wait("@resolveConflicts").then(({ request, response }) => {
+    expect(response.statusCode, `resolve-conflicts ${JSON.stringify(request.body)} → ${JSON.stringify(response.body)}`).to.be.oneOf([200, 201]);
+  });
 };

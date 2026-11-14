@@ -92,7 +92,10 @@ describe("Git Sync — Complete Flow (Single Branch)", { retries: 0 }, () => {
     visitGitSyncPage(ctx, { branch: ctx.baseBranch, page: "data-sources" });
     cy.contains(flow.names.dataSource, { timeout: 30000 }).should("be.visible");
 
-    // The app follows the module's and workflow's latest content, so the GitHub edits show.
+    verifyModuleDraftViaUI(ctx, ctx.baseBranch, flow.names.module, "beta", "alpha");
+    verifyWorkflowDraftViaUI(ctx, ctx.baseBranch, flow.names.workflow, "getTodo2", todoTitles[3]);
+
+    // The unpinned app follows the module's and workflow's latest content, so the GitHub edits show.
     openAppFromDashboardViaUI(ctx, ctx.baseBranch, flow.names.app);
     verifyPagesInEditor({ module: "beta", workflow: todoTitles[3] });
   });

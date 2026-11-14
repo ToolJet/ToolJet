@@ -188,10 +188,12 @@ export const openAppFromDashboardViaUI = (ctx, branch, appName, { page = "" } = 
   cy.contains('[data-cy$="-card"]', appName, { timeout: 30000 })
     .should("be.visible")
     .realHover();
-  cy.contains('[data-cy$="-card"]', appName).contains("a", "Edit").should("be.visible").click();
+  // The unsynced icon can keep the card from showing its hover buttons; the Edit link is what matters here.
+  cy.contains('[data-cy$="-card"]', appName).contains("a", "Edit").click({ force: true });
   cy.url({ timeout: 30000 }).should("include", "/apps/");
-  // Modules and workflows lose the Commit CTA once a version is saved on the branch.
-  cy.get(page ? GS.editorBranchHeader : GS.lifecycleCta, { timeout: 60000 }).should("be.visible");
+  // Editors differ by type and mode (no branch menu in single-branch, no Commit once a version is saved).
+  const editorReady = page ? [GS.editorBranchHeader, GS.lifecycleCta, GS.workflowGitButton].join(", ") : GS.lifecycleCta;
+  cy.get(editorReady, { timeout: 60000 }).filter(":visible").should("have.length.at.least", 1);
 };
 
 /**
@@ -261,7 +263,8 @@ export const pullCommitInEditorViaUI = () => {
  */
 export const runWorkflowAndReadNodeOutputViaUI = (nodeName) => {
   const node = nodeName.toLowerCase();
-  cy.intercept("POST", "**/api/workflow_executions").as("workflowRun");
+  // source: frontend/src/_services/workflow_executions.service.js triggerEditor
+  cy.intercept("POST", "**/api/workflow_executions/*/trigger").as("workflowRun");
   cy.get(GS.workflowRunButton, { timeout: 60000 }).should("be.enabled").click();
   cy.wait("@workflowRun", { timeout: 60000 }).its("response.statusCode").should("be.oneOf", [200, 201]);
   cy.get(GS.workflowLogsPanel).within(() => {
