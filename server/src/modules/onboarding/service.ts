@@ -54,7 +54,6 @@ import { OnboardingUtilService } from './util.service';
 import { SessionUtilService } from '../session/util.service';
 import { OrganizationUsersUtilService } from '../organization-users/util.service';
 import { OrganizationUsersRepository } from '../organization-users/repository';
-import { MAX_CLOUD_WORKSPACES_PER_USER } from '../organization-users/constants';
 import { LicenseUserService } from '../licensing/services/user.service';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { MetadataUtilService } from '@modules/meta/util.service';
@@ -438,9 +437,10 @@ export class OnboardingService implements IOnboardingService {
           user.id,
           manager
         );
-        if (activeOrganizationsCount >= MAX_CLOUD_WORKSPACES_PER_USER) {
+        const workspaceLimit = await this.organizationUsersRepository.getCloudWorkspaceLimit(user.id, manager);
+        if (activeOrganizationsCount >= workspaceLimit) {
           throw new HttpException(
-            `You have reached the number of workspaces (${activeOrganizationsCount}/${MAX_CLOUD_WORKSPACES_PER_USER}) which can be created in ToolJet Cloud. Contact us at support@tooljet.com to increase this limit.`,
+            `You have reached the number of workspaces (${activeOrganizationsCount}/${workspaceLimit}) which can be created in ToolJet Cloud. Contact us at support@tooljet.com to increase this limit.`,
             451
           );
         }
