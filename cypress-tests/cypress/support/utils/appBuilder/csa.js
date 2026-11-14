@@ -25,6 +25,7 @@ import {
   addSupportCSAData,
   selectCSA,
   selectEvent,
+  waitForEventSavesToSettle,
 } from "Support/utils/appBuilder/events";
 
 /**
@@ -133,11 +134,20 @@ export const addCSA = (componentName, actions) => {
     // Rows of 5 between the open Components panel (left) and the config panel (right).
     const xOffset = 350 + (index % 5) * 150;
     const yOffset = 300 + Math.floor(index / 5) * 100;
+    // Buttons auto-name button1..N in drop order, so index+1 is the one just
+    // dropped. The real CDP drag occasionally doesn't land; dragAndDropWidget
+    // doesn't verify the drop, so re-drop once if the button isn't on the canvas.
+    const buttonName = `button${index + 1}`;
     cy.dragAndDropWidget(buttonText.defaultWidgetText, xOffset, yOffset);
+    cy.wait(1000);
+    cy.get("body").then(($b) => {
+      if (!$b.find(`[data-cy=draggable-widget-${buttonName}]`).length) {
+        cy.dragAndDropWidget(buttonText.defaultWidgetText, xOffset, yOffset);
+      }
+    });
     // `add-event-handler` only renders once the dropped button's inspector is
-    // open (a bare drop no longer auto-opens it). Buttons auto-name button1..N
-    // in drop order, so index+1 is the one just dropped.
-    openEditorSidebar(`button${index + 1}`);
+    // open (a bare drop no longer auto-opens it).
+    openEditorSidebar(buttonName);
     selectEvent(action.event, "Control Component");
     selectCSA(componentName, action.action);
     cy.waitForAutoSave();
@@ -150,8 +160,12 @@ export const addCSA = (componentName, actions) => {
     // detaches the typed subject (probe-confirmed).
     const rawValue = action.value ?? action.valueToggle;
     if (rawValue !== undefined) {
-      cy.wait(600);
       const toggleSel = '[data-cy^="event-"][data-cy$="-toggle-button"]:visible';
+      const textSel = '[data-cy="action-options-text-input-field"]:visible';
+      // Wait for the param field to render before branching on its type — a
+      // one-off body snapshot taken too early sees neither field and wrongly
+      // falls through to the CodeHinter branch for a toggle param (slow CI).
+      cy.get(`${toggleSel}, ${textSel}`).should("exist");
       cy.get("body").then(($b) => {
         if ($b.find(toggleSel).length) {
           const desired = rawValue !== "{{false}}" && rawValue !== false;
@@ -168,10 +182,13 @@ export const addCSA = (componentName, actions) => {
           cy.get(toggleSel).should(desired ? "be.checked" : "not.be.checked");
         } else {
           // Plain get (no `.last()`) so Cypress can auto-requery on re-render.
-          cy.get('[data-cy="action-options-text-input-field"]:visible')
-            .clearAndTypeOnCodeMirror(rawValue);
+          cy.get(textSel).clearAndTypeOnCodeMirror(rawValue);
         }
       });
     }
+    // Commit the handler and let its saves land before the next button is dropped —
+    // otherwise a late save can land on a half-configured handler.
+    cy.forceClickOnCanvas();
+    waitForEventSavesToSettle(800);
   });
 };

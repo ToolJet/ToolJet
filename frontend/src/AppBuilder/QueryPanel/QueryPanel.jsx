@@ -37,9 +37,6 @@ export const QueryPanel = ({ darkMode }) => {
   const queryPanelWidth = useStore((state) => state.queryPanel.queryPanelWidth);
   const unreadErrorCount = useStore((state) => state.debugger.unreadErrorCount);
   const resetUnreadErrorCount = useStore((state) => state.debugger.resetUnreadErrorCount);
-  const selectedQueryId = useStore((state) => state.queryPanel.selectedQuery?.id);
-  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
-  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const activeTab = useStore((state) => state.queryPanel.runtimePanelTab);
   const setActiveTab = useStore((state) => state.queryPanel.setRuntimePanelTab);
   // -1 / 1 when moving left / right across the tabs; drives the content's enter slide.
@@ -86,12 +83,6 @@ export const QueryPanel = ({ darkMode }) => {
     const exitTimer = window.setTimeout(() => setRenderPanelContent(false), PANEL_MOTION.durationMs);
     return () => window.clearTimeout(exitTimer);
   }, [isQueryPaneExpanded]);
-
-  useEffect(() => {
-    if (!selectedQueryId) return;
-    setActiveRightSideBarTab('query');
-    setRightSidebarOpen(true);
-  }, [selectedQueryId, setActiveRightSideBarTab, setRightSidebarOpen]);
 
   const persistPanel = useCallback((expanded, panelTop) => {
     panelPreferences.current = { isExpanded: expanded, panelTop: panelTop ?? panelPreferences.current.panelTop };

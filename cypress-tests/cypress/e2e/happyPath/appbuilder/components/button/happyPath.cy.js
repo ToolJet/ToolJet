@@ -4,6 +4,7 @@ import { fake } from "Fixtures/fake";
 import { commonWidgetText } from "Texts/common";
 
 import { verifyControlComponentAction } from "Support/utils/appBuilder/components/button";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 import {
   openAccordion,
@@ -74,6 +75,7 @@ describe(
   it.skip("should verify position of component after dragging", () => {
     const data = {};
     data.widgetName = buttonText.defaultWidgetName;
+    resizeQueryPanel(0);
 
     cy.getPosition(data.widgetName).then((position) => {
       const [clientX, clientY] = position;
@@ -89,6 +91,7 @@ describe(
       expect(clientY).to.be.closeTo(100, 10);
     });
     cy.reload();
+    resizeQueryPanel(0);
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
       "be.visible"
     );
@@ -497,6 +500,7 @@ describe(
   // Requires a SHARED drag/popover fix (commands.js dragAndDropWidget +
   // events.js post-popover re-arm).
   it.skip("Should verify csa", () => {
+    cy.get('[data-cy="query-manager-toggle-button"]').click();
     selectEvent("On click", "Show alert");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
@@ -567,7 +571,7 @@ describe(
     openEditorSidebar(buttonText.defaultWidgetName);
     cy.get('[data-cy="component-inspector-options"]').click();
     cy.get('[data-cy="component-inspector-delete-button"]').click();
-    cy.get('[data-cy="entity-delete-confirm"]').click();
+    cy.get(commonSelectors.entityDeleteConfirm).click();
     // Assert only the platform-agnostic prefix: the undo hint renders as
     // "(⌘ + Z to undo)" on macOS but "(Ctrl + Z to undo)" on Linux CI
     // (componentsSlice.js isMac branch), so matching the full string is flaky.
@@ -585,7 +589,7 @@ describe(
     // selected, but click to be deterministic, then delete via keyboard.
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.realPress("Backspace");
-    cy.get('[data-cy="entity-delete-confirm"]').click();
+    cy.get(commonSelectors.entityDeleteConfirm).click();
     // Assert only the platform-agnostic prefix: the undo hint renders as
     // "(⌘ + Z to undo)" on macOS but "(Ctrl + Z to undo)" on Linux CI
     // (componentsSlice.js isMac branch), so matching the full string is flaky.

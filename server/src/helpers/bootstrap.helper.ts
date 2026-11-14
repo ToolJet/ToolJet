@@ -11,6 +11,7 @@ import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService'
 import { getTooljetEdition } from '@helpers/utils.helper';
 import * as Sentry from '@sentry/nestjs';
 import { DataSource } from 'typeorm';
+import { LoggerService } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 
 /**
@@ -73,16 +74,38 @@ export async function handleLicensingInit(app: NestExpressApplication, logger: a
 
     logger.log('Validating hostname and subpath...');
     licenseUtilService.validateHostnameSubpath(license.Instance()?.domains);
-
-    const licenseInfo = license.Instance();
     logger.log(`✅ License validation completed`);
-    logger.log(`License valid: ${licenseInfo.isValid}`);
-    logger.log(`License terms: ${JSON.stringify(licenseInfo.terms)}`);
-
-    console.log(`License valid : ${licenseInfo.isValid} License Terms : ${JSON.stringify(licenseInfo.terms)} 🚀`);
   } catch (error) {
     logger.error('❌ Failed to initialize licensing:', error);
     throw error;
+  }
+}
+
+/**
+ * Re-points sample data sources when their connection settings changed since the last start.
+ * Non-fatal. If the restricted role can't be set up, sample SQL is disabled; `npm run db:sample:reset` forces a sync.
+ */
+export async function handleSampleDataSourceSync(app: NestExpressApplication, logger: LoggerService) {
+  try {
+    const importPath = await getImportPath(false, getTooljetEdition() as TOOLJET_EDITIONS);
+    const { SampleDataSourceService } = await import(`${importPath}/data-sources/services/sample-ds.service`);
+    const updated = await app.get(SampleDataSourceService).syncSampleDataSources();
+    logger.log(updated ? '✅ Sample data sources updated' : '✅ Sample data sources up to date');
+  } catch (error) {
+    logger.error('Failed to sync sample data source credentials:', error);
+  }
+}
+
+export async function warnIfDatabaseSuperuser(app: NestExpressApplication, logger: LoggerService) {
+  try {
+    const [{ is_superuser }] = await app
+      .get(DataSource)
+      .query("SELECT current_setting('is_superuser') AS is_superuser");
+    if (is_superuser === 'on') {
+      logger.warn('Application database user has superuser rights; a least-privilege user is recommended');
+    }
+  } catch (error) {
+    logger.error('Could not check application database user privileges:', error);
   }
 }
 

@@ -95,3 +95,23 @@ test('cancels without saving when the cancel button is clicked', async () => {
   expect(onSave).not.toHaveBeenCalled();
   await waitFor(() => expect(isEditing()).toBe(false));
 });
+
+// Break this catches: creating a query selects it and opens its name editor in one step, and the box
+// kept the previously selected query's name, so Enter failed with "Query name already exists".
+test('shows the new query name when the query changes as editing starts', () => {
+  const props = { onEditingChange: jest.fn(), onSave: jest.fn() };
+  const { rerender } = render(<QueryInlineNameEditor value="otherQuery" isEditing={false} {...props} />);
+
+  rerender(<QueryInlineNameEditor value="runjs3" isEditing={true} {...props} />);
+
+  expect(screen.getByRole('textbox', { name: 'Query name' })).toHaveValue('runjs3');
+});
+
+test('shows the new query name when the query changes while its name is being edited', () => {
+  const props = { onEditingChange: jest.fn(), onSave: jest.fn() };
+  const { rerender } = render(<QueryInlineNameEditor value="otherQuery" isEditing={true} {...props} />);
+
+  rerender(<QueryInlineNameEditor value="runjs3" isEditing={true} {...props} />);
+
+  expect(screen.getByRole('textbox', { name: 'Query name' })).toHaveValue('runjs3');
+});

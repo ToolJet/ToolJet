@@ -9,7 +9,7 @@
 #   RESULT_UNIT, RESULT_E2E, RESULT_CYPRESS_{PLATFORM,MARKETPLACE}, RESULT_VULN_GATE  — full lane
 #   RESULT_CHANGED                     — changed lane
 #   RESULT_FRONTEND                    — both lanes
-#   UNIT_JSON, E2E_JSON_DIR, UNIT_STEP_URL, E2E_STEP_URL — for render-failed-tests.mjs
+#   UNIT_JSON, UNIT_JSON_DIR, E2E_JSON_DIR, UNIT_STEP_URL, E2E_STEP_URL — for render-failed-tests.mjs
 #   COVERAGE_MD — coverage gate section from coverage-gate.sh, full lane only
 
 set -euo pipefail
@@ -33,7 +33,11 @@ cell() {
 row() {
   local rendered
   rendered=$(node "$SCRIPT_DIR/render-failed-tests.mjs" row "$1" || true)
-  if [ -n "$rendered" ]; then echo "$rendered"; else cell "$2"; fi
+  # a shard killed before writing its JSON leaves the others' counts looking clean:
+  # when the job did not succeed, the job result wins over a ✅ count
+  if [ -n "$rendered" ] && [ "$2" != "success" ] && [ "${rendered#✅ }" != "$rendered" ]; then
+    echo "$(cell "$2") · ${rendered#✅ }"
+  elif [ -n "$rendered" ]; then echo "$rendered"; else cell "$2"; fi
 }
 
 if [ "$MODE" = "full" ]; then

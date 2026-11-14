@@ -38,7 +38,8 @@ describe('DataQueriesService version scoping', () => {
     dataQueryRepository as any,
     dataQueryUtilService as any,
     null as any,
-    appValidationService as any
+    appValidationService as any,
+    null as any
   );
 
   beforeEach(() => jest.clearAllMocks());

@@ -74,12 +74,12 @@ const MultiLineCodeEditor = (props) => {
     delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
     readOnly = false,
     editable = true,
+    usePortalEditor = true, // honoured the same way as in SingleLineCodeEditor
     renderCopilot,
     setCodeEditorView,
     onInputChange, // Added this prop to immediately handle value changes
     foldGutter = true, // controls the left gray bar
     componentId,
-    usePortalEditor = true, // the "pop out code editor" button, as in SingleLineCodeEditor
   } = props;
   const { moduleId: contextModuleId } = useModuleContext();
   const moduleId = props.moduleId || contextModuleId || 'canvas';
@@ -331,6 +331,8 @@ const MultiLineCodeEditor = (props) => {
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
         <CodeHinterBtns view={editorView} isPanelOpen={isSearchPanelOpen} copilotBtnSlot={copilotBtnSlot} />
 
+        {/* The portal renders into document.body, so it escapes any parent `inert` wrapper.
+            Callers that must stay uneditable opt out here. */}
         {usePortalEditor && (
           <CodeHinter.PopupIcon
             callback={handleTogglePopupExapand}

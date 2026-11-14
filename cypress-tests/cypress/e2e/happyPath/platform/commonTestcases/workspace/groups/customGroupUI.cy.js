@@ -50,11 +50,11 @@ describe("Custom groups UI and Functionality verification", () => {
   const appPermissionName = "Apps";
   const workflowPermissionName = "Workflows";
   const datasourcePermissionName = "  Data sources";
-  const folderPermissionName = "Folders";
+  const folderPermissionName = "App folders";
   const permissionName2 = "Permission2";
   const data = {
     firstName: fake.firstName,
-    email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
+    email: `${fake.firstName.toLowerCase()}${Date.now()}@example.com`,
   };
 
   const visitGroupsSettingsPage = () => {
@@ -309,78 +309,78 @@ describe("Custom groups UI and Functionality verification", () => {
     verifyGroupRemovedFromSidebar(newGroupname);
   });
 
-  // it("should create custom group, verify empty states, add permissions, and manage granular access", () => {
-  //   apiCreateGroup(groupName2);
+  it("should create custom group, verify empty states, add permissions, and manage granular access", () => {
+    apiCreateGroup(groupName2);
 
-  //   seedResourcesForGroup(groupName);
+    seedResourcesForGroup(groupName);
 
-  //   visitGroupsSettingsPage();
+    visitGroupsSettingsPage();
 
-  //   openGroupAndValidateEmptyStates(groupName2);
-  //   configureInitialGranularPermissions();
+    openGroupAndValidateEmptyStates(groupName2);
+    configureInitialGranularPermissions();
 
-  //   cy.wait(1000) // need to add alias to avoid flakiness
-  //   verifyAppGranularModalFlow(groupName2);
-  //   verifyEnterpriseGranularModalFlows();
+    cy.wait(1000) // need to add alias to avoid flakiness
+    verifyAppGranularModalFlow(groupName2);
+    verifyEnterpriseGranularModalFlows();
 
-  //   apiDeleteGroup(groupName2);
-  // });
+    apiDeleteGroup(groupName2);
+  });
 
-  // it("should create group via API, add permissions, duplicate group and verify all permissions are copied", () => {
-  //   cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
-  //   cy.apiLogout();
+  it("should create group via API, add permissions, duplicate group and verify all permissions are copied", () => {
+    cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
+    cy.apiLogout();
 
-  //   cy.apiLogin();
-  //   seedResourcesForGroup(groupName3);
+    cy.apiLogin();
+    seedResourcesForGroup(groupName3);
 
-  //   apiCreateGroup(groupName3).then((groupId) => {
-  //     groupId3 = groupId;
-  //     apiAddUserToGroup(groupId3, data.email);
-  //     cy.apiCreateGranularPermission(
-  //       groupName3,
-  //       "Apps",
-  //       "app",
-  //       { canEdit: true, canView: false, hideFromDashboard: false },
-  //       []
-  //     );
+    apiCreateGroup(groupName3).then((groupId) => {
+      groupId3 = groupId;
+      apiAddUserToGroup(groupId3, data.email);
+      cy.apiCreateGranularPermission(
+        groupName3,
+        "Apps",
+        "app",
+        { canEdit: true, canView: false, hideFromDashboard: false },
+        []
+      );
 
 
-  //     cy.ifEnv("Enterprise", () => {
-  //       cy.apiCreateGranularPermission(
-  //         groupName3,
-  //         "Workflows",
-  //         "workflow",
-  //         { canEdit: true, canView: false, hideFromDashboard: false },
-  //         []
-  //       );
-  //       cy.apiCreateGranularPermission(
-  //         groupName3,
-  //         "Data sources",
-  //         "datasource",
-  //         { canUse: false, canConfigure: true },
-  //         []
-  //       );
-  //       cy.apiCreateGranularPermission(
-  //         groupName3,
-  //         "Folders",
-  //         "folder",
-  //         { canEditFolder: true, canEditApps: false, canViewApps: false },
-  //         []
-  //       );
-  //     });
-  //   });
+      cy.ifEnv("Enterprise", () => {
+        cy.apiCreateGranularPermission(
+          groupName3,
+          "Workflows",
+          "workflow",
+          { canEdit: true, canView: false, hideFromDashboard: false },
+          []
+        );
+        cy.apiCreateGranularPermission(
+          groupName3,
+          "Data sources",
+          "datasource",
+          { canUse: false, canConfigure: true },
+          []
+        );
+        cy.apiCreateGranularPermission(
+          groupName3,
+          "App folders",
+          "folder",
+          { canEditFolder: true, canEditApps: false, canViewApps: false },
+          []
+        );
+      });
+    });
 
-  //   cy.apiUpdateGroupPermission(
-  //     groupName3,
-  //     getGroupPermissionInput(isEnterprise, true)
-  //   );
+    cy.apiUpdateGroupPermission(
+      groupName3,
+      getGroupPermissionInput(isEnterprise, true)
+    );
 
-  //   visitGroupsSettingsPage();
-  //   duplicateGroupAndValidate(groupName3, duplicatedGroupName, data);
+    visitGroupsSettingsPage();
+    duplicateGroupAndValidate(groupName3, duplicatedGroupName, data);
 
-  //   apiDeleteGroup(duplicatedGroupName);
-  //   apiDeleteGroup(groupName3);
-  // });
+    apiDeleteGroup(duplicatedGroupName);
+    apiDeleteGroup(groupName3);
+  });
 
   it("Group admins tab renders for a workspace admin (visibility, tab order, empty state, users-table column)", () => {
     visitGroupsSettingsPage();

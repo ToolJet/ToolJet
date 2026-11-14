@@ -39,7 +39,9 @@ export interface IDataQueriesUtilService {
     organization_id: string,
     environmentId?: string,
     user?: User,
-    opts?: DataQueryExecutionOptions
+    opts?: DataQueryExecutionOptions,
+    dataSourceOptionId?: string,
+    collectedSecretValues?: string[]
   ): Promise<{
     service: any;
     sourceOptions: object;
@@ -54,6 +56,7 @@ export interface IDataQueriesUtilService {
     organization_id: string,
     environmentId?: string,
     user?: User,
-    opts?: DataQueryExecutionOptions
+    opts?: DataQueryExecutionOptions,
+    collectedSecretValues?: string[]
   ): Promise<object>;
 }

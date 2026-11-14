@@ -98,6 +98,8 @@ const useInspectedValue = (path) => {
   if (!path) return undefined;
   if (path.startsWith('components.')) {
     const componentId = getComponentIdFromName(path.split('.')[1]);
+    // Deleted, or on another page: nothing to show (and no component for Go to / Delete to act on).
+    if (!componentId) return undefined;
     const parentId = getComponentDefinition(componentId)?.component?.parent;
     const parentType = parentId && getComponentDefinition(parentId)?.component?.component;
     if (parentType === 'Form') return { id: componentId };
@@ -371,7 +373,7 @@ const RuntimeInspector = ({ darkMode, moduleId, appType, onClose }) => {
         </nav>
 
         <section className="runtime-inspector__detail" aria-label="Selected value">
-          {selectedPath ? (
+          {selectedPath && selectedValue !== undefined ? (
             <>
               <DetailHeader path={selectedPath} />
               <div className="runtime-inspector__values" key={selectedPath}>

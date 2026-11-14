@@ -139,7 +139,7 @@ export function AddNewPageMenu({ darkMode }) {
       <Overlay
         target={newPageBtnRef.current}
         show={newPagePopupConfig.show && newPagePopupConfig?.mode == 'add'}
-        placement="left-start"
+        placement="right-start"
         rootClose
         onHide={() => {
           setNewPagePopupConfig({ show: false, mode: null, type: null });

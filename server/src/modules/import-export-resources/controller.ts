@@ -27,6 +27,9 @@ export class ImportExportResourcesController {
   @UseGuards(JwtAuthGuard, AppFeatureAbilityGuard)
   @Post('/export')
   async export(@User() user, @Body() exportResourcesDto: ExportResourcesDto) {
+    // Resolve the export workspace from the session, not the body (prevents cross-workspace
+    // export of ToolJet-DB schema). Internal callers like git-sync invoke the service directly.
+    exportResourcesDto.organization_id = user.organizationId;
     const result = await this.importExportResourcesService.export(user, exportResourcesDto, user.branchId);
     return {
       ...result,

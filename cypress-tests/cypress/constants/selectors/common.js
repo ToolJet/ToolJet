@@ -9,6 +9,9 @@ export const commonSelectors = {
   workFlowNameInputField: '[data-cy="app-name-input"]',
   toastMessage: ".go4109123758",
   oldToastMessage: ".go318386747",
+  // Component delete confirmation (AppBuilder/Shared/EntityDelete/EntityDeleteDialog.tsx)
+  entityDeleteModal: '[data-cy="entity-delete-modal"]',
+  entityDeleteConfirm: '[data-cy="entity-delete-confirm"]',
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',
   newToastMessage:
     '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > .go3958317564',

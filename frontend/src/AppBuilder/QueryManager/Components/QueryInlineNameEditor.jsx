@@ -30,8 +30,11 @@ export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSav
   // Set the moment editing starts to close, so a blur from the same action can't save a second time.
   const isClosingRef = useRef(false);
 
+  // Also while editing: creating a query selects it and opens this editor in one step, and the box
+  // must show the new query's name, not the one that was selected before.
   useEffect(() => {
-    if (!isEditing) setDraftName(value);
+    setDraftName(value);
+    setErrorText('');
   }, [isEditing, value]);
 
   useEffect(() => () => window.clearTimeout(exitTimeoutRef.current), []);

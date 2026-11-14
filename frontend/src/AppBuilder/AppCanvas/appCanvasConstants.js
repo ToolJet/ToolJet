@@ -87,3 +87,6 @@ export const PAGE_CANVAS_HEADER_HEIGHT = 60;
 export const PAGE_CANVAS_FOOTER_HEIGHT = 60;
 
 export const PAGE_CANVAS_HEADER_FOOTER_PADDING = 5;
+
+// Progress widgets whose label property is seeded with the widget's own value binding on drop.
+export const PROGRESS_LABEL_KEYS = { CircularProgressBar: 'text', ProgressBar: 'label' };

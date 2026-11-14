@@ -12,17 +12,11 @@ export const SortForm = ({ filters, setFilters, index, column = '', order = '' }
   ];
 
   const handleColumnChange = (value) => {
-    const prevFilters = { ...filters };
-    prevFilters[index].column = value;
-
-    setFilters(prevFilters);
+    setFilters({ ...filters, [index]: { ...filters[index], column: value } });
   };
 
   const handleFilterChange = (value) => {
-    const prevFilters = { ...filters };
-    prevFilters[index].order = value;
-
-    setFilters(prevFilters);
+    setFilters({ ...filters, [index]: { ...filters[index], order: value } });
   };
 
   const handleDelete = () => {

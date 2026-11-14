@@ -642,7 +642,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           );
           get().setQueryMapping(moduleId);
           if (dataQueries?.length > 0) {
-            get().queryPanel.setSelectedQuery(dataQueries[0]?.id, moduleId);
+            get().queryPanel.setSelectedQuery(dataQueries[0]?.id, moduleId, { reveal: false });
           }
         }
 
@@ -753,6 +753,17 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       // Check if user has access to the promoted environment
       const hasAccessToPromotedEnv = response.hasAccessToPromotedEnvironment !== false; // default to true if not specified
       const promotedToEnvironment = response.promotedToEnvironment;
+
+      // Promote is not blocked by a table that is behind on migrations - the app now reads an older
+      // schema there, so say which tables and how far behind.
+      response.tableWarnings?.forEach(({ tableName, missingCount }) =>
+        toast(
+          `ToolJet Database table "${tableName}" is ${missingCount} migration${missingCount === 1 ? '' : 's'} behind in ${
+            response.editorEnvironment?.name
+          }. Run the pending migrations from the table's migration history.`,
+          { icon: '⚠️', duration: 8000 }
+        )
+      );
 
       set((state) => ({
         ...state,
