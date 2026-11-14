@@ -59,7 +59,7 @@
  * with a key genuinely ABSENT (D-18's omitted `visible`) build the literal by
  * hand instead.
  */
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import {
   createWidgetHarness,
   binding,
@@ -1835,5 +1835,65 @@ describe('DropdownV2 styles, CSS class and Form lifecycle', () => {
       expect(widget.exposed().isValid).toBe(false);
       expect(errorNode()).not.toBeInTheDocument();
     }, 30000);
+  });
+
+  describe('closed-value label width (module first-paint race)', () => {
+    // Bug: inside a Module, the closed label's `maxWidth` was read from a
+    // stale ref (`ref.current.offsetWidth`) that never triggers a
+    // re-render, so it stuck too small on first paint (e.g. "Option 1"
+    // rendered as "o.") until an unrelated click forced one. Fix: track
+    // the width via `ResizeObserver` state instead. jsdom does no real
+    // layout, so the race is simulated directly: `getBoundingClientRect`
+    // is stubbed small, then the captured `ResizeObserver` callback is
+    // fired with the "real" width — no click involved.
+    const SINGLE_OPTION = { value: [option('Option 1', 'a', { isDefault: true })] };
+    const singleValue = (container) => container.querySelector('[class*="-singleValue"]');
+    let restoreRect;
+    let restoreResizeObserver;
+
+    beforeEach(() => {
+      widget.setup();
+      const rectDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'getBoundingClientRect');
+      Object.defineProperty(Element.prototype, 'getBoundingClientRect', {
+        configurable: true,
+        value: () => ({ width: 70, height: 40, top: 0, left: 0, right: 70, bottom: 40 }),
+      });
+      restoreRect = () => Object.defineProperty(Element.prototype, 'getBoundingClientRect', rectDescriptor);
+
+      const originalResizeObserver = window.ResizeObserver;
+      restoreResizeObserver = () => {
+        window.ResizeObserver = originalResizeObserver;
+      };
+    });
+
+    afterEach(() => {
+      restoreRect();
+      restoreResizeObserver();
+      widget.teardown();
+    });
+
+    test('the label width constraint corrects itself once the trigger is measured, with no interaction', async () => {
+      let resizeCallback;
+      window.ResizeObserver = class {
+        constructor(callback) {
+          resizeCallback = callback;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      };
+
+      const { container } = widget.render({ properties: { options: SINGLE_OPTION } });
+
+      await waitFor(() => expect(singleValue(container)).toBeInTheDocument());
+      // First paint: still reading the small stale width.
+      expect(getComputedStyle(singleValue(container)).maxWidth).toBe('10px');
+
+      // Must have registered an observer to ever learn the real size.
+      expect(resizeCallback).toBeInstanceOf(Function);
+      act(() => resizeCallback([{ contentRect: { width: 300 } }]));
+
+      await waitFor(() => expect(getComputedStyle(singleValue(container)).maxWidth).toBe('240px'));
+    });
   });
 });
