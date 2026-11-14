@@ -419,5 +419,17 @@
     "tags": [
       "AI"
     ]
+  },
+  {
+    "name": "Dropbox",
+    "description": "Integrate with Dropbox to manage files, folders, search, sharing, uploads, and downloads",
+    "version": "1.0.0",
+    "id": "dropbox",
+    "author": "Tejas Kadam",
+    "timestamp": "Fri, 09 Oct 2026 00:00:00 GMT",
+    "repo": "",
+    "tags": [
+      "Cloud Storage"
+    ]
   }
 ]

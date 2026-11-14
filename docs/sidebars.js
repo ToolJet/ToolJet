@@ -404,6 +404,7 @@ const sidebars = {
                 'marketplace/plugins/marketplace-plugin-Presto',
                 'marketplace/plugins/marketplace-plugin-jira',
                 'marketplace/plugins/marketplace-plugin-confluence',
+                'marketplace/plugins/marketplace-plugin-dropbox',
                 'marketplace/plugins/marketplace-plugin-sharepoint',
                 'marketplace/plugins/marketplace-plugin-pinecone',
                 'marketplace/plugins/marketplace-plugin-gemini',
