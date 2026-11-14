@@ -27,7 +27,7 @@ import {
 import { SAMPLE } from '../lib/samples';
 import { FieldSkeleton, Loading } from '../lib/loading';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
-import { useValueSetter } from '../lib/sameValue';
+import { sameValue, useValueSetter } from '../lib/sameValue';
 
 /** An option given as its value, as an option object, or as a label: the matching option, else null. A value finds
  *  the option of its own type first (1 and '1' are two options, lib/data Option). */
@@ -479,6 +479,13 @@ export const Autocomplete = () => {
     defaultHeight: 7,
   });
 
+  // A bound bare value reads as the picked option, the shape a pick or setValue writes, without a change event. A
+  // value no option offers yet is kept for when the options arrive.
+  useEffect(() => {
+    const shaped = picked ? pickedValue(picked) : null;
+    if (shaped && !sameValue(shaped, value)) setValue(shaped as never);
+  });
+
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: { label: string; value: unknown } | null) => {
@@ -611,6 +618,15 @@ export const AutocompleteMultiple = () => {
     roleActions: { selectOptions: 'setValue', setValues: 'setValue', setFocus: 'focus' },
     defaultWidth: 12,
     defaultHeight: 7,
+  });
+
+  // Bound bare values read as the picked options, the shape a pick or setValue writes, without a change event. A list
+  // with a value no option offers yet is kept as it is for when the options arrive.
+  useEffect(() => {
+    const given = toArray(value);
+    if (!given.every((v) => findOption(p.options, v))) return;
+    const shaped = picked.map(pickedValue);
+    if (!sameValue(shaped, value)) setValue(shaped as never);
   });
 
   // A value it already has changes nothing and fires nothing (lib/sameValue).

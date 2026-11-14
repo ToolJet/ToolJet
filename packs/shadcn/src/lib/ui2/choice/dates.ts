@@ -146,7 +146,10 @@ export const parseInFormat = (text: string, format: string): Date | null => {
   if (month < 0 || month > 11 || hour > 23 || minute > 59 || second > 59) return null;
   const d = new Date(year, month, day, hour, minute, second);
   // A day that does not exist (30 February) or a time the clocks skip comes back as another one.
-  if (d.getFullYear() !== year || d.getMonth() !== month || d.getDate() !== day || d.getHours() !== hour || d.getMinutes() !== minute) return null;
+  // Date-only text keeps its day when the clocks skip that midnight (00:00 becomes 01:00).
+  const hasTime = fields.some((t) => /^[Hhms]/.test(t));
+  if (d.getFullYear() !== year || d.getMonth() !== month || d.getDate() !== day) return null;
+  if (hasTime && (d.getHours() !== hour || d.getMinutes() !== minute)) return null;
   return d;
 };
 

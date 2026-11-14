@@ -358,7 +358,7 @@ export const SelectRenderer = ({
 
   const handleChange = useCallback(
     (newValue) => {
-      setIsFocused(false);
+      if (!isMulti) setIsFocused(false);
       if (!isMulti && newValue === selectedValue?.value) {
         onChange('');
       } else {

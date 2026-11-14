@@ -19,6 +19,10 @@ export const toRows = (raw: unknown): Row[] =>
   toArray(raw).map((r) => (r && typeof r === 'object' && !Array.isArray(r) ? (r as Row) : { value: r }));
 
 export const str = (v: unknown): string => (v === undefined || v === null ? '' : typeof v === 'object' ? JSON.stringify(v) : String(v));
+/** One of `list` (matched by text, so a query's 404 is '404'), or `fallback`: antd looks an enumeration up in a table and
+ *  crashed the widget on a value it does not list (AD-28). The pack's enumerations take any value a binding gives. */
+export const oneOf = <T extends string>(value: unknown, list: readonly T[], fallback: T): T =>
+  list.find((option) => option === str(value).trim()) ?? fallback;
 
 export type OptionValue = string | number | boolean;
 

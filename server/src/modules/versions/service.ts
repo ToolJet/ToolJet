@@ -36,9 +36,15 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { Inject, Optional } from '@nestjs/common';
+import { CodeModeSourceService } from '@modules/code-mode-source/service';
+import { draftVersionName } from './helpers/draft-version-name.helper';
 
 @Injectable()
 export class VersionService implements IVersionService {
+  // Property injection, so the enterprise subclass's constructor stays as it is. Hooks around a version update.
+  @Optional() @Inject(CodeModeSourceService) protected readonly codeModeSourceService?: CodeModeSourceService;
+
   constructor(
     protected readonly versionRepository: VersionRepository,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
@@ -399,6 +405,7 @@ export class VersionService implements IVersionService {
 
   async update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
     const context = await this.beforeVersionUpdate(app, user, appVersionUpdateDto);
+    const hookState = await this.codeModeSourceService?.beforeVersionUpdate(app, user, appVersionUpdateDto);
 
     const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
       const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id, undefined, manager);
@@ -463,6 +470,8 @@ export class VersionService implements IVersionService {
       await this.eventEmitter.emit('version-rename-commit', versionRenameDto);
     }
 
+    if (hookState) this.codeModeSourceService.afterVersionUpdate(app, user, appVersion.id, hookState);
+
     const operationTimestamp = Date.now();
     this.afterVersionUpdate(context, app, user, appVersionUpdateDto, user.id, operationTimestamp).catch((err) =>
       console.error('[AppHistory] Fire-and-forget afterVersionUpdate failed:', err.message)
@@ -499,6 +508,33 @@ export class VersionService implements IVersionService {
       metadata: { data: { updatedGlobalSettings: appVersion } },
     });
     return;
+  }
+
+  // Read-only: the ToolJet Database tables the version uses that the next environment does not have yet,
+  // so the promote dialog can offer to promote them before the first click.
+  async missingTablesForPromote(app: App, user: User) {
+    const version = app.appVersions[0];
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const currentEnvironment = await manager.findOne(AppEnvironment, { where: { id: version.currentEnvironmentId } });
+      const nextEnvironment =
+        currentEnvironment &&
+        (await manager.findOne(AppEnvironment, {
+          where: { priority: MoreThan(currentEnvironment.priority), organizationId: user.organizationId },
+          order: { priority: 'ASC' },
+        }));
+      if (!nextEnvironment) return { tables: [] };
+      const { offenders } = await this.versionsUtilService.findTablesMissingInEnvironment(
+        app.id,
+        version.id,
+        nextEnvironment.id,
+        user.organizationId,
+        manager
+      );
+      return {
+        target_environment: { id: nextEnvironment.id, name: nextEnvironment.name },
+        tables: offenders.map((t) => ({ id: t.id, name: t.tableName })),
+      };
+    });
   }
 
   promoteVersion(app: App, user: User, promoteVersionDto: PromoteVersionDto) {
@@ -580,9 +616,12 @@ export class VersionService implements IVersionService {
     const parentVersion = await this.versionRepository.findVersion(versionFromId);
     const childVersionApps = await this.versionRepository.findParentVersionApps(versionFromId);
     const childVersionAppsCount = childVersionApps.length;
+    const appVersionNames = parentVersion?.appId
+      ? (await this.versionRepository.getAllVersions(parentVersion.appId, manager)).map((v) => v.name)
+      : [];
     const createVersionDto: VersionCreateDto = {
       ...draftVersionDto,
-      versionName: `${parentVersion?.name}_${childVersionAppsCount + 1}`,
+      versionName: draftVersionName(parentVersion?.name, childVersionAppsCount, appVersionNames),
       versionDescription: '',
       versionType: versionType,
     };

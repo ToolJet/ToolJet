@@ -26,9 +26,12 @@ import { MigrationRunsService } from '@modules/app/migration-runs/service';
 // Import helper functions
 import {
   handleLicensingInit,
+  handleSampleDataSourceSync,
+  warnIfDatabaseSuperuser,
   replaceSubpathPlaceHoldersInStaticAssets,
   setupCsrfOriginCheck,
   setSecurityHeaders,
+  setupEditionEarlyRoutes,
   buildVersion,
   rawBodyBuffer,
   setupGlobalAgent,
@@ -89,6 +92,8 @@ async function bootstrap() {
     await handleLicensingInit(app, appLogger);
     appLogger.log('✅ Licensing initialization completed');
 
+    await warnIfDatabaseSuperuser(app, appLogger);
+
     // Initialize OTEL
     await initializeOtel(app, appLogger);
 
@@ -124,6 +129,8 @@ async function bootstrap() {
       defaultVersion: VERSION_NEUTRAL,
     });
     appLogger.log('✅ API versioning enabled');
+
+    await setupEditionEarlyRoutes(app, configService, appLogger);
 
     // Setup security headers
     appLogger.log('Setting up security headers...');
@@ -168,6 +175,10 @@ async function bootstrap() {
     await app.listen(port, listen_addr, async function () {
       logStartupInfo(configService, appLogger);
     });
+
+    // Off the readiness path: first sync after upgrade rewrites every workspace's sample source.
+    void handleSampleDataSourceSync(app, appLogger);
+
     // Tracking is best-effort: a failure here must not take down a serving process.
     await app
       .get(MigrationRunsService)

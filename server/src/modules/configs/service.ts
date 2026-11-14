@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { IConfigService } from './interfaces/IService';
 import { getMcpOAuthPublicConfig } from './mcp-oauth-public-config';
 import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
+import { resolveCodeModeIsolation } from '@helpers/code-mode-isolation.helper';
 
 // Instance-wide (not per-user/per-org) settings + env vars. Concurrent calls (the bootstrap burst on
 // page load) share one lookup, which is dropped as soon as it settles: a setting saved through the API,
@@ -56,6 +57,11 @@ export class ConfigService implements IConfigService {
       publicConfigVars.ENABLE_MARKETPLACE_DEV_MODE = process.env.ENABLE_MARKETPLACE_DEV_MODE || 'false';
     }
 
+    // Always sent, resolved: the browser never sees a raw value it would have to guess about.
+    const isolation = resolveCodeModeIsolation(process.env);
+    publicConfigVars.CODE_MODE_ISOLATION = isolation.mode;
+    publicConfigVars.CODE_MODE_STRICT_BINDINGS = isolation.strictBindings ? 'true' : 'false';
+
     return { ...publicConfigVars, ...getMcpOAuthPublicConfig(process.env) };
   }
 
@@ -79,6 +85,11 @@ export class ConfigService implements IConfigService {
       'ENABLE_OTEL_FRONTEND',
       'OTEL_FRONTEND_FLUSH_INTERVAL_SECONDS',
       'TOOLJET_DB_DISABLE_BUILDER_EDIT',
+      // ESM CDN the editor's in-browser build fetches packages from (default esm.sh); set a mirror when offline.
+      'CODE_MODE_CDN_URL',
+      'CODE_MODE_ISOLATION',
+      'CODE_MODE_SANDBOX_URL',
+      'CODE_MODE_STRICT_BINDINGS',
     ];
   }
 

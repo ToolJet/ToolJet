@@ -385,7 +385,7 @@ export const FileUpload = () => {
     [
       M.acceptHint(accept) || 'Any file',
       maxSize ? `up to ${M.formatBytes(maxSize)}` : '',
-      multiple ? `max ${maxFiles} files` : '',
+      multiple ? `max ${maxFiles} file${maxFiles === 1 ? '' : 's'}` : '',
     ]
       .filter(Boolean)
       .join(' · ');

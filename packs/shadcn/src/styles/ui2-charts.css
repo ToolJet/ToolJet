@@ -54,7 +54,12 @@
   white-space: nowrap;
 }
 
-/* Tooltip card */
+/* Tooltip card. Fixed so it leaves the host's clip of the widget box; ChartFrame sets the offset (RK-29). */
+.ui2-chart .recharts-tooltip-wrapper {
+  position: fixed !important;
+  left: var(--tip-x, 0) !important;
+  top: var(--tip-y, 0) !important;
+}
 .ui2-chart-tip {
   display: grid;
   min-width: 8rem;

@@ -203,6 +203,7 @@ export const Hero = () => {
   const facts = heroMeta(meta);
   const aside = heroAside(asideValue, asideLabel);
   const Glyph = toText(icon) ? iconFor(icon) : null;
+  const { disabled } = ToolJet.useControlState();
   const primary = toText(actionLabel);
   const secondary = toText(secondaryActionLabel);
   const grid = !!aside && !center;
@@ -229,6 +230,7 @@ export const Hero = () => {
             type="button"
             className="ui-btn ui-btn--outline ui-btn--auto ui2-hero-secondary"
             onClick={onSecondaryActionClicked}
+            disabled={disabled}
           >
             {secondary}
           </button>
@@ -238,6 +240,7 @@ export const Hero = () => {
             type="button"
             className={cn('ui-btn ui-btn--default ui-btn--auto ui2-hero-primary', accent && 'has-accent')}
             onClick={onActionClicked}
+            disabled={disabled}
           >
             {primary}
           </button>

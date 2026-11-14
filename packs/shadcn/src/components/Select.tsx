@@ -185,7 +185,8 @@ export const Select = () => {
         <FieldLoading loading={loading}>
           <div className="uc-wrap">
             <SelectPrimitive.Root
-              value={key}
+              // A key no option has (a default that matches nothing) shows the placeholder, not an empty box.
+              value={selected ? key : ''}
               disabled={disabled}
               open={open}
               onOpenChange={openChange}
@@ -216,7 +217,10 @@ export const Select = () => {
                 }}
               >
                 <span className="uc-truncate">
-                  <SelectPrimitive.Value placeholder={placeholder} />
+                  {/* The chosen label drawn once: options sharing a value each sent theirs ("AB"). */}
+                  <SelectPrimitive.Value placeholder={placeholder}>
+                    {selected ? selected.label : undefined}
+                  </SelectPrimitive.Value>
                 </span>
                 {loading ? (
                   <Spinner />
@@ -281,7 +285,7 @@ export const Select = () => {
                 </SelectPrimitive.Portal>
               ) : null}
             </SelectPrimitive.Root>
-            {clearable && key && !loading ? (
+            {clearable && selected && !loading ? (
               <ClearX
                 label="Clear selection"
                 className="uc-clear-at before-chevron"

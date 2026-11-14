@@ -138,7 +138,8 @@ describe('numbers and figures', () => {
     expect(mui.formatNumber(1.2, 'percent')).toBe('120%');
   });
 
-  test('SummaryStrip: its own items show whole percent points, and a missing value shows a dash', async () => {
+  // Its own items are fractions now (QA AD-43): Refund rate 0.021 and the Revenue delta 0.12 still read 2.1% and +12.0%.
+  test('SummaryStrip: its own items show their percents, and a missing value shows a dash', async () => {
     const v = await mountPack('antd', 'SummaryStrip', {});
     const text = v.root().textContent;
     expect(text).toContain('2.1%');

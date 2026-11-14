@@ -70,6 +70,8 @@ type Entry = MenuEntry | { separatorOnly: true } | null;
  *  group }`. The pack's own `{ separator: true }` and `{ heading }` rows are read too. */
 export const menuEntry = (o: unknown): Entry => {
   if (isScalar(o)) {
+    // An empty text has nothing to show: no blank row.
+    if (String(o).trim() === '') return null;
     return { label: String(o), value: o, icon: '', description: '', shortcut: '', disabled: false, visible: true, destructive: false, separator: false, group: '' };
   }
   if (!isRecord(o)) return null;

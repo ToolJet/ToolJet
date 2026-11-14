@@ -385,7 +385,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
     return this.manager.find(DataSource, { where: { pluginId }, relations: ['dataQueries'] });
   }
 
-  getQueriesByDatasourceId(datasourceId: string, branchId?: string | null) {
+  getQueriesByDatasourceId(datasourceId: string, organizationId: string, branchId?: string | null) {
     if (branchId) {
       return this.manager
         .createQueryBuilder(DataSource, 'ds')
@@ -396,8 +396,9 @@ export class DataSourcesRepository extends Repository<DataSource> {
           { branchId }
         )
         .where('ds.id = :datasourceId', { datasourceId })
+        .andWhere('ds.organization_id = :organizationId', { organizationId })
         .getMany();
     }
-    return this.manager.find(DataSource, { where: { id: datasourceId }, relations: ['dataQueries'] });
+    return this.manager.find(DataSource, { where: { id: datasourceId, organizationId }, relations: ['dataQueries'] });
   }
 }

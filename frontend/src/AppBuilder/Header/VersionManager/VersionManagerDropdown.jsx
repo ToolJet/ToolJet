@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Overlay, Popover } from 'react-bootstrap';
+import { openPanelHeaderRects, panelHeaderClearance } from './panelHeaderClearance';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { shallow } from 'zustand/shallow';
@@ -12,6 +13,7 @@ import VersionDropdownItem from './VersionDropdownItem';
 import CreateDraftButton from './CreateDraftButton';
 import VersionItemSkeleton from './VersionItemSkeleton';
 import { CreateVersionModal, CreateDraftVersionModal, EditVersionModal } from '.';
+import NestedWorkflowPinsBlockedDialog from '../NestedWorkflowPinsBlockedDialog';
 import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
@@ -75,6 +77,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     setSelectedEnvironmentFilter,
     fetchVersionsForEnvironment,
     refreshVersions,
+    pinsBlocked,
+    setPinsBlocked,
   } = useVersionManagerStore();
 
   const { currentBranch, pullApp: pullAppAction } = useWorkspaceBranchesStore(
@@ -713,7 +717,11 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
             {
               name: 'offset',
               options: {
-                offset: [0, 4],
+                // Below any open panel's header it would cover (the Inspector's close button), else just under the button.
+                offset: ({ popper }) => [
+                  0,
+                  4 + panelHeaderClearance(buttonRef.current?.getBoundingClientRect(), popper, openPanelHeaderRects()),
+                ],
               },
             },
           ],
@@ -852,6 +860,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           </div>,
           document.body
         )}
+      <NestedWorkflowPinsBlockedDialog blocked={pinsBlocked} onClose={() => setPinsBlocked(null)} />
     </>
   );
 };

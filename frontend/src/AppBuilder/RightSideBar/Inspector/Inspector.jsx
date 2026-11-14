@@ -63,6 +63,7 @@ import { PackIdentityStrip } from './Components/LibraryComponent/PackIdentityStr
 import { componentIdentity } from './componentIdentity';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
+import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -186,6 +187,7 @@ export const Inspector = ({
   const [tabsPropertiesPanelKey, setTabsPropertiesPanelKey] = useState(uuidv4());
   // The Inspector isn't remounted on selection, so the tab is kept per component: selecting another
   // component opens on Properties, as when the tabs were uncontrolled.
+  const codeMode = useCodeMode();
   const [tab, setTab] = useState({ componentId: selectedComponentId, key: 'properties' });
   const activeTab = tab.componentId === selectedComponentId ? tab.key : 'properties';
   const setActiveTab = (key) => setTab({ componentId: selectedComponentId, key });
@@ -705,6 +707,7 @@ export const Inspector = ({
   };
 
   const renderTabs = () => {
+    if (codeMode && (isPackComponent || component.component.component === 'LibraryComponent')) return propertiesTab;
     return (
       <Tabs activeKey={activeTab} onSelect={setActiveTab} id="inspector" hidden={isModuleContainer}>
         <Tab eventKey="properties" title="Properties">

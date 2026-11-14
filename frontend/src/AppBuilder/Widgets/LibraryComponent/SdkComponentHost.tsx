@@ -20,6 +20,7 @@ import type { LibraryRuntime } from './inlineRuntime';
 import useThemeAccess from '@/AppBuilder/_hooks/useThemeAccess';
 import { baseTheme } from '@/AppBuilder/_stores/utils';
 import { canUseTheme } from '@/AppBuilder/_utils/themeAccess';
+import { FrameLibraryComponent } from '@/AppBuilder/_helpers/codeModeHooks';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const Loader = LoaderJs as React.ComponentType<any>;
@@ -38,6 +39,7 @@ export interface SdkComponentSource {
   key: string;
   /** Shared by every instance drawing from the same bundle, so it is evaluated once. */
   cacheKey: string;
+  frameKey?: string;
   bundleUrl: string;
   cssUrl: string;
   componentName: string;
@@ -128,8 +130,9 @@ const SdkComponentHost = ({
 
   // Mirrors every other widget's setVisibility/setLoading CSA — local state, flippable
   // imperatively via the action, independent of the properties bindings WidgetWrapper reads.
-  const resolvedVisibility = properties.visibility ?? true;
-  const resolvedLoading = properties.loadingState ?? false;
+  const isCodePage = properties.codePage === true || properties.codePage === 'true';
+  const resolvedVisibility = isCodePage ? true : (properties.visibility ?? true);
+  const resolvedLoading = isCodePage ? false : (properties.loadingState ?? false);
 
   const resolvedDisabled = properties.disabledState === true;
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
@@ -227,7 +230,8 @@ const SdkComponentHost = ({
   }, [sourceKey, resetExposedVariables, setExposedVariables, setExposedVariable]);
 
   const configured = !!source;
-  const isInline = source?.runtime !== 'iframe';
+  // A code page has its own frame, whichever runtime the instance's other library components use.
+  const isInline = source?.runtime !== 'iframe' || isCodePage;
   // Inline mode: ToolJet.useAction handlers register here directly, no postMessage round trip.
   const [inlineActions] = useState(createActionRegistry);
 
@@ -508,7 +512,8 @@ const SdkComponentHost = ({
   );
 
   // Pack contract v2: the control state, validation, fitted height, list rows and popup drop areas.
-  const isLoading = !!exposedVariablesTemporaryState.isLoading;
+  const isLoading = !isCodePage && !!exposedVariablesTemporaryState.isLoading;
+  const isShown = isCodePage || !!exposedVariablesTemporaryState.isVisible;
   // "own": the component draws its loading look from useControlState().loading, so the host draws no overlay and a
   // loading component is not also drawn disabled.
   const ownLoading = isInline && manifestComponent?.loading === 'own';
@@ -523,7 +528,7 @@ const SdkComponentHost = ({
       rowVariable: manifestComponent?.slots?.find?.((slot) => slot.kind === 'rows')?.variable,
       fit,
       fitDropAreas: fitsSlots || fitsPopups,
-      visibility: exposedVariablesTemporaryState.isVisible,
+      visibility: isShown,
       // A field (a validation section) takes part in a Form's clearForm.
       formField: !!manifestComponent?.validation,
       markRowScoped,
@@ -558,7 +563,7 @@ const SdkComponentHost = ({
     value: fitValue,
     currentLayout: hostProps.currentLayout,
     width: hostProps.width,
-    visibility: exposedVariablesTemporaryState.isVisible,
+    visibility: isShown,
     subContainerIndex: hostProps.subContainerIndex,
   });
 
@@ -572,7 +577,7 @@ const SdkComponentHost = ({
         data-cy={dataCy}
         aria-busy="true"
         className="tw-w-full"
-        style={{ height: safeHeight, display: exposedVariablesTemporaryState.isVisible ? 'block' : 'none' }}
+        style={{ height: safeHeight, display: isShown ? 'block' : 'none' }}
       />
     );
   }
@@ -588,7 +593,7 @@ const SdkComponentHost = ({
         style={{
           background: 'color-mix(in srgb, var(--cc-primary-brand) 8%, transparent)',
           height: safeHeight,
-          display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
+          display: isShown ? 'flex' : 'none',
         }}
       >
         Slot
@@ -604,7 +609,7 @@ const SdkComponentHost = ({
       })}
       style={{
         height: fit ? (stretch ? '100%' : 'auto') : safeHeight,
-        display: exposedVariablesTemporaryState.isVisible ? 'block' : 'none',
+        display: isShown ? 'block' : 'none',
       }}
       // While loading or disabled the component stays mounted (what was typed, selected or scrolled is kept) and
       // takes no input; loading shows a spinner over it, unless the component draws its own loading look.
@@ -619,6 +624,24 @@ const SdkComponentHost = ({
         <div className="tw-flex tw-items-center tw-justify-center tw-h-full">
           <Loader width="16" absolute={false} />
         </div>
+      ) : isInline && (properties.codePage === true || properties.codePage === 'true') ? (
+        <FrameLibraryComponent
+          key={source.frameKey ?? source.key}
+          bundleUrl={source.bundleUrl}
+          cssUrl={source.cssUrl}
+          cacheKey={source.cacheKey}
+          isDevBuild={!!source.isDevBuild}
+          componentName={source.componentName}
+          componentProps={componentProps}
+          componentStyles={componentStyles}
+          setExposedVariable={exposeVariable}
+          fireEvent={fireHostEvent}
+          actions={inlineActions}
+          host={host}
+          darkMode={darkMode}
+          dataCy={dataCy}
+          eventNames={manifestComponent?.events?.map((event) => event.name)}
+        />
       ) : isInline ? (
         <InlineLibraryComponent
           key={source.key}

@@ -6,10 +6,13 @@ import { toast } from 'react-hot-toast';
 import _, { debounce } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
-import { NO_OF_GRIDS, isTabsType, isModalType } from './appCanvasConstants';
+import { NO_OF_GRIDS, PROGRESS_LABEL_KEYS, isTabsType, isModalType } from './appCanvasConstants';
 import { computeComponentName, getAllChildComponents } from './appCanvasUtils';
 import { utilityFuncForNameSeed } from '@/_helpers/utils';
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
+import * as pageRoots from '@ee/modules/CodeMode/AppBuilder/_hooks/codePageRoot';
+
+const withoutCodePageRoots = pageRoots.withoutCodePageRoots ?? ((ids) => ids || []);
 
 const getSelectedText = () => {
   let selectedText = '';
@@ -100,11 +103,11 @@ export const copyComponents = ({ isCut = false, isCloning = false }) => {
     toast.success('Component cloned successfully');
   } else if (isCut) {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
-    useStore.getState().deleteComponents(
+    const cutIds = withoutCodePageRoots(
       selectedComponents.map((component) => component.id),
-      'canvas',
-      { isCut }
+      useStore.getState().getCurrentPageComponents?.() ?? {}
     );
+    if (cutIds.length) useStore.getState().deleteComponents(cutIds, 'canvas', { isCut });
   } else {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
     const successMessage =
@@ -363,6 +366,18 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     const pastedColumns = component.component?.definition?.properties?.columns;
     if (componentData?.component === 'Table' && pastedColumns) {
       componentData.definition.properties.columns = deepClone(pastedColumns);
+    }
+    // A progress label still holding the source's own seeded binding follows the copy; any other label is kept.
+    const labelKey = PROGRESS_LABEL_KEYS[componentData?.component];
+    const pastedLabel = labelKey && componentData.definition?.properties?.[labelKey];
+    if (pastedLabel?.value === `{{components.${component.id}.value}}%`) {
+      pastedLabel.value = `{{components.${newComponentId}.value}}%`;
+    }
+    // Same array-index-merge issue affects any widget storing options as an array of objects
+    // (RadioButtonV2, DropdownV2, MultiselectV2) - override with the pasted value directly.
+    const pastedOptions = component.component?.definition?.properties?.options;
+    if (Array.isArray(pastedOptions?.value) && componentData?.definition?.properties?.options) {
+      componentData.definition.properties.options = deepClone(pastedOptions);
     }
     if (targetParentId && !componentData.parent) {
       isChild = component.component.parent;

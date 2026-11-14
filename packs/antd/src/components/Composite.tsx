@@ -150,60 +150,64 @@ export const Hero = () => {
   const level = size === 'large' ? 1 : size === 'compact' ? 3 : 2;
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-hero-root tj-ant-scroll">
-      <div
-        className={`tj-ant-hero is-${background} is-${size} is-${align}${onDark ? ' on-dark' : ''}`}
-        style={
-          background === 'image' && imageUrl
-            ? { backgroundImage: `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.55)), url("${imageUrl}")` }
-            : undefined
-        }
-      >
-        <div className="tj-ant-hero-main">
-          {Icon ? (
-            <span className="tj-ant-hero-icon">
-              <Icon />
-            </span>
-          ) : null}
-          {eyebrow ? <div className="tj-ant-hero-eyebrow">{eyebrow}</div> : null}
-          {title ? (
-            <Typography.Title level={level} style={{ margin: 0 }}>
-              {title}
-            </Typography.Title>
-          ) : null}
-          {subTitle ? <Typography.Paragraph className="tj-ant-hero-sub">{subTitle}</Typography.Paragraph> : null}
-          {meta ? <div className="tj-ant-hero-meta">{meta}</div> : null}
-          {actionLabel || secondaryActionLabel ? (
-            <Space wrap className="tj-ant-hero-actions">
-              {actionLabel ? (
-                <Button
-                  type="primary"
-                  size={size === 'large' ? 'large' : 'middle'}
-                  disabled={disabled}
-                  loading={loading}
-                  onClick={() => onActionClicked()}
-                >
-                  {actionLabel}
-                </Button>
-              ) : null}
-              {secondaryActionLabel ? (
-                <Button
-                  size={size === 'large' ? 'large' : 'middle'}
-                  ghost={onDark}
-                  disabled={disabled}
-                  onClick={() => onSecondaryActionClicked()}
-                >
-                  {secondaryActionLabel}
-                </Button>
-              ) : null}
-            </Space>
+      {/* Loading draws Ant's Spin over the whole hero: only the action button showed it, so a hero with no action
+          showed no loading at all (QA AD-47). */}
+      <SpinOver loading={loading} as="fill">
+        <div
+          className={`tj-ant-hero is-${background} is-${size} is-${align}${onDark ? ' on-dark' : ''}`}
+          style={
+            background === 'image' && imageUrl
+              ? { backgroundImage: `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.55)), url("${imageUrl}")` }
+              : undefined
+          }
+        >
+          <div className="tj-ant-hero-main">
+            {Icon ? (
+              <span className="tj-ant-hero-icon">
+                <Icon />
+              </span>
+            ) : null}
+            {eyebrow ? <div className="tj-ant-hero-eyebrow">{eyebrow}</div> : null}
+            {title ? (
+              <Typography.Title level={level} style={{ margin: 0 }}>
+                {title}
+              </Typography.Title>
+            ) : null}
+            {subTitle ? <Typography.Paragraph className="tj-ant-hero-sub">{subTitle}</Typography.Paragraph> : null}
+            {meta ? <div className="tj-ant-hero-meta">{meta}</div> : null}
+            {actionLabel || secondaryActionLabel ? (
+              <Space wrap className="tj-ant-hero-actions">
+                {actionLabel ? (
+                  <Button
+                    type="primary"
+                    size={size === 'large' ? 'large' : 'middle'}
+                    disabled={disabled}
+                    loading={loading}
+                    onClick={() => onActionClicked()}
+                  >
+                    {actionLabel}
+                  </Button>
+                ) : null}
+                {secondaryActionLabel ? (
+                  <Button
+                    size={size === 'large' ? 'large' : 'middle'}
+                    ghost={onDark}
+                    disabled={disabled}
+                    onClick={() => onSecondaryActionClicked()}
+                  >
+                    {secondaryActionLabel}
+                  </Button>
+                ) : null}
+              </Space>
+            ) : null}
+          </div>
+          {asideValue ? (
+            <div className="tj-ant-hero-aside">
+              <Statistic title={asideLabel || undefined} value={asideValue} />
+            </div>
           ) : null}
         </div>
-        {asideValue ? (
-          <div className="tj-ant-hero-aside">
-            <Statistic title={asideLabel || undefined} value={asideValue} />
-          </div>
-        ) : null}
-      </div>
+      </SpinOver>
     </AntProvider>
   );
 };
@@ -216,17 +220,17 @@ export const SummaryStrip = () => {
   const [items] = ToolJet.useStateArray({
     name: 'items',
     label: 'Items',
-    description: "[{ label, value, delta: 12 (percent points), caption: 'vs last month' }]",
+    description: "[{ label, value, delta: 0.12 (a fraction: +12%), caption: 'vs last month' }]",
     initialValue: [
-      // Percents in whole points (2.1 is 2.1%), as UI 2.0's Summary strip takes them: the fractions these were showed
-      // 100 times too small.
-      { label: 'Revenue', value: 48250, format: 'currency', delta: 12, caption: 'vs last month' },
-      { label: 'Orders', value: 1284, delta: 8, caption: 'vs last month' },
+      // Percents are fractions (0.021 is 2.1%, a delta of 0.12 is +12%), as Ant's Descriptions and Statistic read them
+      // (QA AD-43).
+      { label: 'Revenue', value: 48250, format: 'currency', delta: 0.12, caption: 'vs last month' },
+      { label: 'Orders', value: 1284, delta: 0.08, caption: 'vs last month' },
       {
         label: 'Refund rate',
-        value: 2.1,
+        value: 0.021,
         format: 'percent',
-        delta: -0.4,
+        delta: -0.004,
         deltaFormat: 'number',
         lowerIsBetter: true,
         caption: 'vs last month',
@@ -680,8 +684,9 @@ export const CardGrid = () => {
                 ) : null}
                 {it.badges.length ? (
                   <div className="tj-ant-kanban-tags">
-                    {it.badges.map((b) => (
-                      <Tag key={b} color={toneTag(b)}>
+                    {/* Keyed by place too: a list in a badge field can repeat a value. */}
+                    {it.badges.map((b, i) => (
+                      <Tag key={`${b}-${i}`} color={toneTag(b)}>
                         {chipLabel(b)}
                       </Tag>
                     ))}

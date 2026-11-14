@@ -13,6 +13,8 @@ import useStore from '@/AppBuilder/_stores/store';
 import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useVersionActionRequest } from '@/AppBuilder/_utils/versionActions';
+import { NESTED_WORKFLOW_PINS_BLOCKED } from '@/AppBuilder/Header/NestedWorkflowPinsBlockedDialog';
+import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 
 const ReleaseVersionButton = function DeployVersionButton({ version = null, variant = 'default', darkMode = false }) {
   const { moduleId } = useModuleContext();
@@ -57,7 +59,11 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
             ? rawError.error
             : rawError || `${name} could not be released. Please try again!`;
         const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
-        toast.error(errorMessage);
+        if (rawError?.code === NESTED_WORKFLOW_PINS_BLOCKED) {
+          useVersionManagerStore.getState().setPinsBlocked(rawError);
+        } else {
+          toast.error(errorMessage);
+        }
         setIsReleasing(false);
         setShowConfirmation(false);
         try {

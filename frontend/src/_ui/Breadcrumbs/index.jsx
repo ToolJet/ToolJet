@@ -32,6 +32,12 @@ const routes = [
 import useBreadcrumbs from 'use-react-router-breadcrumbs';
 import { decodeEntities } from '@/_helpers/utils';
 
+/** Whether the page title repeats the route's own label, so the breadcrumb would read "Home > Home". */
+export const isSameAsSection = (routeLabel, pageTitle) =>
+  typeof routeLabel === 'string' &&
+  typeof pageTitle === 'string' &&
+  routeLabel.trim().toLowerCase() === pageTitle.trim().toLowerCase();
+
 export const Breadcrumbs = ({ darkMode, dataCy }) => {
   const { sidebarNav } = useContext(BreadCrumbContext);
   const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
@@ -39,8 +45,18 @@ export const Breadcrumbs = ({ darkMode, dataCy }) => {
   const search = location.search || '';
   return (
     <ol className="breadcrumb breadcrumb-arrows">
-      {breadcrumbs.map(({ breadcrumb, beta }, i) => {
+      {breadcrumbs.map(({ breadcrumb, beta, match }, i) => {
         if (i === 1 || breadcrumbs?.length === 1) {
+          // A page whose title is its section's name (Home) shows it once, not as "Home > Home".
+          if (breadcrumb && sidebarNav?.length > 0 && isSameAsSection(match?.route?.breadcrumb, sidebarNav)) {
+            return (
+              <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
+                <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
+                  {decodeEntities(sidebarNav)}
+                </li>
+              </div>
+            );
+          }
           return (
             breadcrumb &&
             sidebarNav?.length > 0 && (

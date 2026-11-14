@@ -284,6 +284,9 @@ export const RadioGroup = () => {
         >
           <MuiRadioGroup
             id={fieldId}
+            // The label is the fieldset's legend, which names the fieldset but not the radiogroup in it: a screen
+            // reader announces a radio's group by the radiogroup's name.
+            aria-label={field.label || undefined}
             row={row}
             value={key}
             onChange={(e) => {
@@ -297,17 +300,22 @@ export const RadioGroup = () => {
                 value={o.value}
                 label={o.label}
                 disabled={o.disabled}
-                // A click on the checked radio fires no change, so deselecting is its own click (a click on the label
-                // reaches the input once).
+                // A click on the checked radio fires no change, so deselecting is its own click: the input's, which
+                // every click on the option reaches exactly once. On the Radio's root a click on the circle (its icon)
+                // came twice, as itself and as the label's click on the input, which picked the option back.
                 control={
                   <Radio
                     color={color as 'primary'}
                     size={size as 'medium'}
-                    onClick={() => {
-                      if (allowDeselect === true && !disabled && !o.disabled && o.value === key) {
-                        change('');
-                        check.touch();
-                      }
+                    slotProps={{
+                      input: {
+                        onClick: () => {
+                          if (allowDeselect === true && !disabled && !o.disabled && o.value === key) {
+                            change('');
+                            check.touch();
+                          }
+                        },
+                      },
                     }}
                   />
                 }

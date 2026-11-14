@@ -63,7 +63,7 @@ const glyphTurn = (p: MapPoint): number | null => (p.heading === null ? null : (
 
 // Images that failed to load draw their pin from then on.
 const FAILED = new Set<string>();
-const imageShown = (p: MapPoint): string => (p.image && !FAILED.has(p.image) ? p.image : '');
+export const imageShown = (p: MapPoint): string => (p.image && !FAILED.has(p.image) ? p.image : '');
 
 /** A pin (the teardrop with a dot, a short label or an icon in it), a price pill for a longer label, or the row's
  *  image with a ring of its status colour. Colours arrive as --pin. */

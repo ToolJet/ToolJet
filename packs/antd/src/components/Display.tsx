@@ -21,7 +21,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { THEME_COLOR, useThemeColor } from '../lib/themeStyles';
 import { SkeletonSwap, SpinOver, TextBone } from '../lib/Loading';
-import { str, toArray, type Row } from '../lib/data';
+import { oneOf, str, toArray, type Row } from '../lib/data';
 import { formatCell, formatFigure, formatNumber, parseFormat, toNumber, type NumberFormat } from '../lib/format';
 import { LOCALE_HINT } from '../lib/locale';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
@@ -38,7 +38,7 @@ const TONE_TAG_STATUS: Record<string, string | undefined> = {
 };
 
 // Ant's Tag: its text is its children; color (a status preset, a palette name, or any CSS colour), bordered, closable;
-// event onClose.
+// closed exposed; event onClose; action reopen.
 export const Tag = () => {
   const [children] = ToolJet.useStateString({ name: 'children', label: 'Text', initialValue: 'Tag' });
   const [color] = ToolJet.useStateString({
@@ -51,6 +51,10 @@ export const Tag = () => {
   const [bordered] = ToolJet.useStateBoolean({ name: 'bordered', label: 'Bordered', initialValue: true });
   const [closable] = ToolJet.useStateBoolean({ name: 'closable', label: 'Closable', initialValue: false });
   const onClose = ToolJet.useEventCallback({ name: 'onClose' });
+  // A tag closed with its x stays hidden until the reopen action, and says so: Ant hid it itself, for good (a hide and
+  // show of the widget left it hidden), and nothing told the app it was closed (QA DVRL-13).
+  const [closed, setClosed] = ToolJet.useStateBoolean({ name: 'closed', initialValue: false, inspector: 'hidden' });
+  ToolJet.useAction({ name: 'reopen', displayName: 'Reopen' }, () => setClosed(false));
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
@@ -58,7 +62,7 @@ export const Tag = () => {
     fit: true,
     loading: 'own',
     usage:
-      "Ant's Tag: children is its text; color is a status (success, processing, warning, error), a palette name (blue, gold, purple...) or any CSS colour.",
+      "Ant's Tag: children is its text; color is a status (success, processing, warning, error), a palette name (blue, gold, purple...) or any CSS colour; closable: its x hides it (closed, onClose) until the reopen action.",
     roleProps: { text: 'children', variant: 'color' },
     roleValues: {
       color: {
@@ -77,12 +81,17 @@ export const Tag = () => {
   return (
     <AntProvider tokens={tokens}>
       <SkeletonSwap loading={loading} look={<Skeleton.Button active size="small" />}>
-        {children ? (
+        {children && !closed ? (
           <AntTag
             color={c && c !== 'default' ? c : undefined}
             bordered={bordered}
             closable={closable}
-            onClose={() => onClose()}
+            onClose={(e) => {
+              // The tag is hidden here, not by Ant, so the reopen action can show it again.
+              e.preventDefault();
+              setClosed(true);
+              onClose();
+            }}
             style={{ marginInlineEnd: 0 }}
           >
             {children}
@@ -241,7 +250,7 @@ export const Alert = () => {
         <AntAlert
           message={message || description}
           description={message && description ? description : undefined}
-          type={(custom ? 'info' : type) as 'info'}
+          type={custom ? 'info' : oneOf(type, ['info', 'success', 'warning', 'error'] as const, 'info')}
           showIcon={showIcon}
           closable={closable}
           banner={banner}
@@ -760,6 +769,7 @@ export const Empty = () => {
 };
 
 // Ant's Result: status (success, error, info, warning, 404, 403, 500), title, subTitle.
+const RESULT_STATUSES = ['success', 'info', 'warning', 'error', '404', '403', '500'] as const;
 export const Result = () => {
   const [status] = ToolJet.useStateEnumeration({
     name: 'status',
@@ -786,7 +796,11 @@ export const Result = () => {
   return (
     <AntProvider tokens={tokens}>
       <SpinOver loading={loading} as="block">
-        <AntResult status={status as 'info'} title={title || undefined} subTitle={subTitle || undefined} />
+        <AntResult
+          status={oneOf(status, RESULT_STATUSES, 'info')}
+          title={title || undefined}
+          subTitle={subTitle || undefined}
+        />
       </SpinOver>
     </AntProvider>
   );

@@ -13,9 +13,13 @@ export interface LibraryListItem {
   /** Shipped with ToolJet (builtin-packs): installed in every workspace, not deletable. */
   builtIn?: boolean;
   createdAt: Date;
-  manifest: Record<string, any> | null; // latest revision's; null = nothing published yet
+  // The latest revision's, without its embedded `source`; null = nothing published yet.
+  manifest: Record<string, any> | null;
+  // Set when that manifest had a `source` this list left out: its manifest file still has it.
+  manifestSourceOmitted?: boolean;
   revisions: { id: string; version: string; message: string | null; createdAt: Date }[]; // newest first
-  devBundles: { userId: string; userEmail: string | null; uploadedAt: Date }[]; // "Dev preview @email"
+  // Who built each dev preview, by user id; sourceContentHash: the source the build was made from, null when unknown.
+  devBundles: { userId: string; uploadedAt: Date; sourceContentHash: string | null }[];
 }
 
 export interface ICustomComponentLibrariesService {

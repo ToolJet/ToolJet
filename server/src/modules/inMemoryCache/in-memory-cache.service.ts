@@ -1,26 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { ICacheService } from './interfaces/IUtilService';
 
+// Entries without an explicit ttl still expire, so a key that is never read again can't stay forever
+const DEFAULT_TTL_MS = 5 * 60_000;
+// Process-wide store; past this, the oldest entry is dropped
+const MAX_ENTRIES = 1000;
+
 interface CacheEntry {
   value: Promise<any>;
-  expiresAt: number | null;
+  expiresAt: number;
 }
 
 @Injectable()
 export class InMemoryCacheService implements ICacheService {
   private static cacheStore: Map<string, CacheEntry> = new Map();
 
-  set(key: string, value: Promise<any>, ttlMs?: number): void {
-    InMemoryCacheService.cacheStore.set(key, {
-      value,
-      expiresAt: ttlMs != null ? Date.now() + ttlMs : null,
-    });
+  set(key: string, value: Promise<any>, ttlMs: number = DEFAULT_TTL_MS): void {
+    const store = InMemoryCacheService.cacheStore;
+    store.delete(key);
+    if (store.size >= MAX_ENTRIES) store.delete(store.keys().next().value);
+    store.set(key, { value, expiresAt: Date.now() + ttlMs });
   }
 
   get(key: string): Promise<any> | undefined {
     const entry = InMemoryCacheService.cacheStore.get(key);
     if (!entry) return undefined;
-    if (entry.expiresAt != null && Date.now() > entry.expiresAt) {
+    if (Date.now() > entry.expiresAt) {
       InMemoryCacheService.cacheStore.delete(key);
       return undefined;
     }

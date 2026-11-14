@@ -127,6 +127,28 @@ describe('LibraryComponent drop-time identity stamping', () => {
     expect(properties.accentColor).toBeUndefined();
   });
 
+  it('[LibraryComponent-DROP-004] stamps a number-field style default as a plain number, not as code', () => {
+    // Break this catches: {{160}} stamped for a numberInput style, which opens the field in code mode, where a
+    // builder types 200px and the style falls back to its default (Rocket RK-28).
+    const dropped = addNewWidgetToTheEditor('LibraryComponent', 'desktop', realCanvas, 'canvas', undefined, {
+      libraryId: 'lib-42',
+      correlationId: '11111111-2222-3333-4444-555555555555',
+      libraryName: 'My UI Library',
+      componentName: 'Card',
+      props: [],
+      styles: [
+        { name: 'panelHeight', type: 'number', inspector: 'numberInput', default: 160 },
+        { name: 'radius', type: 'number', inspector: 'numberInput' },
+        { name: 'padding', type: 'number', default: 16 },
+      ],
+    });
+
+    const { styles } = dropped.component.definition;
+    expect(styles.panelHeight.value).toBe(160);
+    expect(styles.radius.value).toBe('');
+    expect(styles.padding.value).toBe('{{16}}');
+  });
+
   // A pack component is named after its own name. The widget registry has native widgets under some of the same
   // component names with a different registry name (ButtonGroup is ButtonGroupLegacy), which named it buttongrouplegacy1.
   it.each([

@@ -66,6 +66,7 @@ export const Stepper = () => {
     name: 'padding',
     label: 'Padding',
     initialValue: 12,
+    inspector: 'numberInput',
     section: 'Spacing',
   });
   ToolJet.useComponentSettings({ role: 'stepper', fit: false, defaultWidth: 20, defaultHeight: 50 });
@@ -170,7 +171,7 @@ export const Stepper = () => {
           disabled={disabled}
           onClick={() => (isLast ? finish() : goTo(index + 1))}
         >
-          {isLast ? finishLabel : nextLabel || 'Next'}
+          {isLast ? finishLabel || 'Finish' : nextLabel || 'Next'}
         </button>
       </div>
     </div>

@@ -380,7 +380,7 @@ export class PostgrestProxyService {
           400
         );
       }
-      return updatedRequestBody;
+      return { ...row, ...updatedRequestBody };
     };
     return Array.isArray(body) ? body.map(validateRow) : validateRow(body);
   }

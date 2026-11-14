@@ -140,9 +140,21 @@ export const TimePicker = () => {
     expose(m);
     onSelect();
   };
+  // Like every value action, setValue and clearValue fire onSelect when they change the time, and nothing when they do
+  // not (product decision 2026-10-25; they fired nothing, QA DVRL-103). The ref is the time as last set, ahead of the
+  // next render, so a second call in one batch compares with the first.
+  const actionMinutes = useRef(minutes);
+  actionMinutes.current = minutes;
+  const setFromAction = (m: number | null) => {
+    if (m === actionMinutes.current) return;
+    actionMinutes.current = m;
+    setMinutes(m);
+    expose(m);
+    onSelect();
+  };
   const setTime = (t: unknown, format: unknown) => {
     const m = parseTimeArg(t, format);
-    if (m !== null || t === '' || t === null || t === undefined) setMinutes(m);
+    if (m !== null || t === '' || t === null || t === undefined) setFromAction(m);
   };
   ToolJet.useAction(
     {
@@ -155,7 +167,7 @@ export const TimePicker = () => {
     },
     setTime
   );
-  ToolJet.useAction({ name: 'clearValue', displayName: 'Clear value' }, () => setMinutes(null));
+  ToolJet.useAction({ name: 'clearValue', displayName: 'Clear value' }, () => setFromAction(null));
   ToolJet.useAction(
     { name: 'setMinTime', displayName: 'Set min time', params: [{ handle: 'value', displayName: 'Value' }] },
     (t) => setMinTime(t ? String(t) : '')

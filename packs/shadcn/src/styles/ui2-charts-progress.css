@@ -16,6 +16,10 @@
   line-height: 20px;
 }
 .ui2-progress-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 500;
   color: var(--pg-label, var(--ui-fg));
 }

@@ -3,7 +3,7 @@ import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { lookVars, useStable } from '../lib/ui2/choice/looks';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
-import { RADIUS_HINT, THEME_COLOR as T, useThemeNumber } from '../lib/themeStyles';
+import { RADIUS_LG_HINT, THEME_COLOR as T, useThemeNumber } from '../lib/themeStyles';
 import {
   MAX_ROW_BOOKINGS,
   avatarHue,
@@ -358,7 +358,12 @@ export const Schedule = () => {
     'Used for the selection, today and uncolored bookings.'
   );
   const nowColor = useColorStyle('nowColor', 'Current time line color', T.danger);
-  const borderRadius = useThemeNumber('borderRadius', 'Radius', RADIUS_HINT);
+  const borderRadius = useThemeNumber('borderRadius', 'Border radius', RADIUS_LG_HINT, {
+    description: 'Rounds the corners of the schedule container, in px.',
+  });
+  const eventRadius = useThemeNumber('eventRadius', 'Event radius', 'Theme radius - 2 (4 in stock Ant)', {
+    description: 'Rounds the corners of the bookings inside the schedule, in px.',
+  });
   ToolJet.useComponentSettings({
     role: 'schedule',
     fit: false,
@@ -489,7 +494,9 @@ export const Schedule = () => {
     '--lk-fg': textColor,
     '--lk-accent': accentColor,
     '--lk-now': nowColor,
-    '--tj-ant-border-radius': borderRadius,
+    // Container radius rounds the frame, Event radius the bookings, each its exact value (AD-29).
+    '--tj-ant-border-radius-lg': borderRadius,
+    '--lk-event-radius': eventRadius,
   });
   const shown = resourceList.slice(0, shownCount);
   const remaining = resourceList.length - shownCount;

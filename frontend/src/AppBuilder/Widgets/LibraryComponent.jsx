@@ -7,6 +7,7 @@ import { useLibraryManifest } from './hooks/useLibraryManifest';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import { getLibraryComponentRuntime } from './LibraryComponent/inlineRuntime';
 import SdkComponentHost from './LibraryComponent/SdkComponentHost';
+import { compareBundleFor } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const DevBadge = ({ label }) => (
   <div className="tw-absolute tw-left-0 -tw-bottom-6 tw-h-5 tw-inline-flex tw-items-center tw-px-1 tw-py-0.5 tw-rounded-md tw-text-white tw-text-sm tw-font-medium tw-whitespace-nowrap tw-pointer-events-none tw-z-10 tw-bg-background-success-strong">
@@ -22,7 +23,11 @@ const LibraryComponent = ({ properties = {}, ...props }) => {
   const { libraryId, correlationId, componentName } = properties;
 
   const currentMode = useStore((state) => state.modeStore?.modules?.canvas?.currentMode ?? 'view');
-  const licensed = useStore((state) => state.license?.featureAccess?.customComponentLibraries === true);
+  const licensed = useStore(
+    (state) =>
+      state.license?.featureAccess?.customComponentLibraries === true ||
+      state.license?.featureAccess?.codeAppsDevTrack === true
+  );
 
   const effectiveRevision = useEffectiveLibraryRevision(correlationId);
   const isDevPin = Boolean(effectiveRevision?.startsWith?.('dev:'));
@@ -38,19 +43,34 @@ const LibraryComponent = ({ properties = {}, ...props }) => {
   const [runtime] = useState(() => getLibraryComponentRuntime());
   const manifest = useLibraryManifest(libraryId, effectiveRevision);
 
+  const [compare] = useState(() => compareBundleFor(correlationId));
+
   const configured = Boolean(libraryId && componentName && effectiveRevision);
-  const source = configured
-    ? {
-        key: `${libraryId}|${effectiveRevision}|${componentName}|${devNonce ?? ''}`,
-        cacheKey: `${libraryId}|${effectiveRevision}|${devNonce ?? ''}`,
-        bundleUrl: libraryFileUrl(libraryId, effectiveRevision, 'index.js'),
-        cssUrl: libraryFileUrl(libraryId, effectiveRevision, 'index.css'),
-        componentName,
-        manifest,
-        runtime,
-        isDevBuild: isDevPin,
-      }
-    : null;
+  const source =
+    compare && libraryId && componentName
+      ? {
+          key: `${libraryId}|compare|${compare.cacheKey}|${componentName}`,
+          cacheKey: `${libraryId}|compare|${compare.cacheKey}`,
+          bundleUrl: compare.bundleUrl,
+          cssUrl: compare.cssUrl,
+          componentName,
+          manifest,
+          runtime,
+          isDevBuild: !!compare.isDevBuild,
+        }
+      : configured
+        ? {
+            key: `${libraryId}|${effectiveRevision}|${componentName}|${devNonce ?? ''}`,
+            frameKey: `${libraryId}|${effectiveRevision}|${componentName}`,
+            cacheKey: `${libraryId}|${effectiveRevision}|${devNonce ?? ''}`,
+            bundleUrl: libraryFileUrl(libraryId, effectiveRevision, 'index.js'),
+            cssUrl: libraryFileUrl(libraryId, effectiveRevision, 'index.css'),
+            componentName,
+            manifest,
+            runtime,
+            isDevBuild: isDevPin,
+          }
+        : null;
 
   return (
     <SdkComponentHost

@@ -47,6 +47,7 @@ import {
   AppActionModal,
   OrganizationList,
   ConsultationBanner,
+  SsrfNoticeBanner,
   AppTypeTab,
 } from '@/modules/dashboard/components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -419,7 +420,8 @@ class HomePageComponent extends React.Component {
     return 'app';
   };
 
-  createApp = async (appName, type, prompt, taggedResources) => {
+  // buildMode comes from the enterprise "Create app" dialog (Visual or Code mode); without it the server builds visually.
+  createApp = async (appName, type, prompt, taggedResources, buildMode) => {
     const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
     if (currentBranch && this.props.appType !== 'workflow') {
       try {
@@ -444,7 +446,12 @@ class HomePageComponent extends React.Component {
         name: appName,
         type: this.props.appType,
         prompt,
+        ...(buildMode && { buildMode }),
       });
+      // Never a silent downgrade: an app asked for in Code mode that the server stored as visual says so.
+      if (buildMode === 'code' && (data?.buildMode ?? data?.build_mode) !== 'code') {
+        toast.error('This server created the app in Visual mode. Ask an admin to update ToolJet to use Code mode.');
+      }
       /* Posthog Event */
       posthogHelper.captureEvent('click_new_app', {
         workspace_id:
@@ -719,6 +726,12 @@ class HomePageComponent extends React.Component {
 
       const data = await appsService.importResource(requestBody, this.props.appType);
       toast.success(`${this.getAppType()} imported successfully.`);
+      if (data.imports.app?.[0]?.codeMissing) {
+        toast.error(
+          "This file doesn't include the app's code: it was exported before exports carried it. Export the app again from the original and import the new file.",
+          { duration: 10000, style: { maxWidth: '425px' } }
+        );
+      }
       this.setState({ isImportingApp: false });
 
       if (!isEmpty(data.imports.app)) {
@@ -1838,7 +1851,7 @@ class HomePageComponent extends React.Component {
       create: {
         modalType: 'create',
         closeModal: this.closeCreateAppModal,
-        processApp: (name) => this.createApp(name),
+        processApp: (name, buildMode) => this.createApp(name, undefined, undefined, undefined, buildMode),
         show: this.openCreateAppModal,
         title: `Create ${this.getAppType().toLocaleLowerCase()}`,
         actionButton: `+ Create ${this.getAppType().toLocaleLowerCase()}`,
@@ -2562,6 +2575,8 @@ class HomePageComponent extends React.Component {
                     classes={`${this.props.darkMode ? 'theme-dark dark-theme m-3 trial-banner' : 'm-3 trial-banner'}`}
                   />
                 )}
+
+              <SsrfNoticeBanner />
 
               <OrganizationList customStyle={{ marginBottom: isAdmin || isBuilder ? '' : '0px' }} />
             </div>

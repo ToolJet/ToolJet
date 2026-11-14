@@ -10,6 +10,7 @@ import { AppModuleLoader } from './loader';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
+import { SsrfModule } from '@modules/ssrf/module';
 import { AbilityModule } from '@modules/ability/module';
 import { LicenseModule } from '@modules/licensing/module';
 import { AppConfigModule } from '@modules/configs/module';
@@ -56,6 +57,9 @@ import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { WorkflowsModule } from '@modules/workflows/module';
 import { AiModule } from '@modules/ai/module';
 import { CustomStylesModule } from '@modules/custom-styles/module';
+import { CodePageSecurityModule } from '@modules/code-page-security/module';
+import { AppSecurityModule } from '@modules/app-security/module';
+import { CodeModeSourceModule } from '@modules/code-mode-source/module';
 import { CustomComponentLibrariesModule } from '@modules/custom-component-libraries/module';
 import { BuiltinPacksModule } from '@modules/builtin-packs/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
@@ -166,6 +170,9 @@ export class AppModule implements OnModuleInit, NestModule {
       await ModulesModule.register(configs, true),
       await AiModule.register(configs, true),
       await CustomStylesModule.register(configs, true),
+      await CodePageSecurityModule.register(configs, true),
+      await AppSecurityModule.register(configs, true),
+      await CodeModeSourceModule.register(configs, true),
       await CustomComponentLibrariesModule.register(configs, true),
       await BuiltinPacksModule.register(configs, true),
       await AppPermissionsModule.register(configs, true),
@@ -192,6 +199,13 @@ export class AppModule implements OnModuleInit, NestModule {
     ];
 
     const conditionalImports = [];
+
+    // Outbound requests (SSRF) settings and their runtime publisher. Left out of the migration app context:
+    // migrations send no outbound requests, and the publisher's boot read of instance_settings would wait on
+    // the migration transaction's own lock forever (fresh install / db:reset hang).
+    if (!configs.IS_GET_CONTEXT) {
+      conditionalImports.push(await SsrfModule.register(configs, true));
+    }
 
     if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
       // BullBoard's root instance ('bull_board_instance') must exist whenever any

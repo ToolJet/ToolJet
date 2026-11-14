@@ -9,12 +9,10 @@ RUN npm cache clean --force
 
 WORKDIR /app
 
-# Set GitHub token and branch as build arguments
-ARG CUSTOM_GITHUB_TOKEN
+# GitHub token is a BuildKit secret (--secret id=github_token), mounted only for the steps that
+# fetch private repos and passed to git via env, so it never lands in a layer, the image config
+# or the build provenance like a build arg does.
 ARG BRANCH_NAME
-
-# Clone and checkout the frontend repository
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
@@ -23,17 +21,13 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 # The branch name needs to be changed the branch with modularisation in CE repo
 RUN git checkout ${BRANCH_NAME}
 
-RUN git submodule update --init --recursive
-
-# Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
-RUN git submodule foreach " \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
-  else \
-    echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to lts-3.16'; \
-    git checkout lts-3.16; \
-  fi"
+# Checkout the same branch in submodules if it exists, otherwise the branch .gitmodules tracks
+COPY ./docker/LTS/submodule-checkout.sh /tmp/submodule-checkout.sh
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git submodule update --init --recursive && \
+    git submodule foreach 'sh /tmp/submodule-checkout.sh'
 
 # Scripts for building
 COPY ./package.json ./package.json
@@ -75,6 +69,9 @@ RUN npm --prefix server run build
 COPY ./cli/ ./cli/
 COPY ./packs/ ./packs/
 RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
+# The same CLI, packed for GET /api/code-mode/cli/tooljet-cli.tgz: `npm i -g` from the instance installs the CLI
+# that matches this server (server/scripts/pack-cli.sh).
+RUN server/scripts/pack-cli.sh
 
 FROM debian:12
 
@@ -144,6 +141,7 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 COPY --from=builder /app/server/builtin-packs ./app/server/builtin-packs
+COPY --from=builder /app/server/code-mode-cli ./app/server/code-mode-cli
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 
 COPY ./docker/LTS/cloud/cloud-entrypoint.sh ./app/server/cloud-entrypoint.sh
@@ -170,6 +168,6 @@ USER appuser
 
 WORKDIR /app
 # Dependencies for scripts outside nestjs
-RUN npm install dotenv@10.0.0 joi@17.4.1
+RUN npm install dotenv@10.0.0 joi@17.13.8
 
 ENTRYPOINT ["./server/cloud-entrypoint.sh"]

@@ -5,6 +5,9 @@ import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import * as codeModeHelpers from '@ee/modules/CodeMode/_helpers/codeMode';
+
+const withCodeModeParam = codeModeHelpers.withCodeModeParam ?? ((query = '') => query);
 
 export function useAppPreviewLink() {
   const { moduleId } = useModuleContext();
@@ -49,13 +52,14 @@ export function useAppPreviewLink() {
     // branch (a branch-type version's slug lives on its feature branch, not the default), so the
     // preview of a branch version needs the branch context to resolve — without it the guard's
     // slug lookup misses and the app can't be found.
-    const previewQuery = queryString.stringify({
-      version: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
-      ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
-      // Carry the editor's mobile view into preview so it opens in mobile too.
-      ...(currentLayout === 'mobile' ? { layout: 'mobile' } : {}),
-      ...(currentBranch ? { branch: currentBranch.name } : {}),
-    });
+    const previewQuery = withCodeModeParam(
+      queryString.stringify({
+        version: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
+        ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
+        ...(currentLayout === 'mobile' ? { layout: 'mobile' } : {}),
+        ...(currentBranch ? { branch: currentBranch.name } : {}),
+      })
+    );
 
     const link = editingVersion
       ? `/applications/${slug || appId}/${currentPageHandle}${!isEmpty(previewQuery) ? `?${previewQuery}` : ''}`

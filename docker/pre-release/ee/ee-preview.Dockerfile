@@ -1,8 +1,10 @@
 # tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827). Same as ee-production,
-# but follows BRANCH_NAME like the submodules do, falling back to main.
+# but follows BRANCH_NAME like the submodules do, falling back to the pinned TOOLJET_MCP_REF (never a moving branch).
+# A release bumps TOOLJET_MCP_REF deliberately, to the tooljet-mcp commit it ships.
 FROM node:22.23.4 AS mcp-builder
 WORKDIR /mcp
 ARG BRANCH_NAME
+ARG TOOLJET_MCP_REF=2058f6545386ed48bcfb5a41af04660269a8e85f
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
@@ -10,9 +12,31 @@ RUN --mount=type=secret,id=github_token \
     if [ -n "${BRANCH_NAME}" ] && git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then \
       git checkout "${BRANCH_NAME}"; \
     else \
-      echo "Branch ${BRANCH_NAME} not found in tooljet-mcp, falling back to main"; \
+      echo "Branch ${BRANCH_NAME} not found in tooljet-mcp, using ${TOOLJET_MCP_REF}" && \
+      git checkout --detach "${TOOLJET_MCP_REF}"; \
     fi
 RUN npm ci && npm run build:plugin
+
+# Custom component SDK (private), packed for app projects (TOOLJET_SDK_SPEC below) and served to a teammate's
+# `tooljet app install` at /api/code-mode/cli/custom-component-sdk.tgz: npm's published SDK is older. Follows BRANCH_NAME
+# like tooljet-mcp, falling back to the pinned CUSTOM_COMPONENT_SDK_REF (never a moving branch). A release bumps it
+# deliberately, to the SDK commit it ships.
+FROM node:22.23.4 AS sdk-builder
+WORKDIR /sdk
+ARG BRANCH_NAME
+ARG CUSTOM_COMPONENT_SDK_REF=f03662cd1396760249af8cd7b72ebca6af7ff040
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git clone https://github.com/ToolJet/custom-component-sdk.git . && \
+    if [ -n "${BRANCH_NAME}" ] && git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then \
+      git checkout "${BRANCH_NAME}"; \
+    else \
+      echo "Branch ${BRANCH_NAME} not found in custom-component-sdk, using ${CUSTOM_COMPONENT_SDK_REF}" && \
+      git checkout --detach "${CUSTOM_COMPONENT_SDK_REF}"; \
+    fi
+RUN npm ci && npm run build && mkdir -p /out && \
+    mv "/out/$(npm pack --ignore-scripts --silent --pack-destination /out | tail -n 1)" /out/custom-component-sdk.tgz
 
 FROM node:22.23.4 AS builder
 # Fix for JS heap limit allocation issue
@@ -63,16 +87,17 @@ RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools 
 RUN mkdir -p /app
 WORKDIR /app
 
-# Set GitHub token, branch and repository URL as build arguments
-ARG CUSTOM_GITHUB_TOKEN
+# GitHub token is a BuildKit secret (--secret id=github_token), mounted only for the steps that
+# fetch private repos and passed to git via env, so it never lands in a layer, the image config
+# or the build provenance like a build arg does.
 ARG BRANCH_NAME
 ARG REPO_URL=https://github.com/ToolJet/ToolJet.git
 
-# Clone and checkout the frontend repository
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
+# The branch head, fetched on every build: the clone below is otherwise a cached layer (its command never changes),
+# and a push that only moves the branch rebuilt nothing (2026-11-08, frontend/ee bump 0140d8cf served the old app).
+ADD https://api.github.com/repos/ToolJet/ToolJet/git/refs/heads/${BRANCH_NAME} /tmp/branch-head.json
 RUN git clone ${REPO_URL} .
 
 # The branch name needs to be changed the branch with modularisation in CE repo
@@ -85,7 +110,10 @@ RUN if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
     fi
 
 # Handle submodules - try normal submodule update first, if it fails clone directly from base repo
-RUN if git submodule update --init --recursive; then \
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    if git submodule update --init --recursive; then \
   echo "Submodules initialized successfully"; \
   # Follow a same-named submodule branch only when it contains the pinned commit (HEAD after
   # update), else keep the pin: a stale branch builds EE code older than this checkout.
@@ -101,12 +129,12 @@ else \
   # Clone frontend/ee submodule directly
   if [ ! -d "frontend/ee" ]; then \
     mkdir -p frontend/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git frontend/ee; \
+    git clone https://github.com/ToolJet/ee-frontend.git frontend/ee; \
   fi; \
   # Clone server/ee submodule directly  
   if [ ! -d "server/ee" ]; then \
     mkdir -p server/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git server/ee; \
+    git clone https://github.com/ToolJet/ee-server.git server/ee; \
   fi; \
   # Checkout the same branch in EE submodules if it exists, otherwise fallback to main
   cd frontend/ee && \
@@ -171,6 +199,11 @@ RUN npm --prefix server run build
 COPY ./cli/ ./cli/
 COPY ./packs/ ./packs/
 RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
+# The same CLI, packed for GET /api/code-mode/cli/tooljet-cli.tgz: `npm i -g` from the instance installs the CLI
+# that matches this server (server/scripts/pack-cli.sh).
+RUN server/scripts/pack-cli.sh
+# The security scanner for Code mode apps (ee/app-security runs it in a child process).
+RUN npm --prefix server/ee/packages/app-scanner ci --omit=dev
 
 FROM node:22.23.4-bookworm
 
@@ -238,6 +271,7 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 COPY --from=builder /app/server/builtin-packs ./app/server/builtin-packs
+COPY --from=builder /app/server/code-mode-cli ./app/server/code-mode-cli
 # Copy nsjail configuration for Python sandboxing
 COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
 # tooljet-mcp bundle for the socket relay. data/ must sit next to mcp/, not inside it (bundle
@@ -246,6 +280,21 @@ COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/ns
 COPY --from=mcp-builder /mcp/bundle/ ./app/mcp/
 COPY --from=mcp-builder /mcp/package.json ./app/mcp/package.json
 COPY --from=mcp-builder /mcp/data ./app/data
+# Code mode: the MCP's code app tools run the `tooljet` CLI, install the SDK into each project and keep projects
+# under TOOLJET_CODE_APP_ROOT; the server scans Code mode apps with the app scanner. The render check stays off
+# (no browser in this image).
+COPY --from=builder /app/server/ee/packages/app-scanner ./app/server/ee/packages/app-scanner
+# The SDK as a folder, not the tarball: npm links a folder, and the app scanner skips links, while a tarball entry
+# resolves outside the registry and fails its lockfile host check (the SDK has no dependencies of its own).
+COPY --from=sdk-builder /out/custom-component-sdk.tgz /tmp/custom-component-sdk.tgz
+RUN mkdir -p /app/code-mode/custom-component-sdk /app/code-mode/apps && \
+    tar -xzf /tmp/custom-component-sdk.tgz -C /app/code-mode/custom-component-sdk --strip-components=1 && \
+    mv /tmp/custom-component-sdk.tgz ./app/server/code-mode-cli/custom-component-sdk.tgz && \
+    npm install -g ./app/server/code-mode-cli/tooljet-cli.tgz && tooljet --version
+ENV TOOLJET_SDK_SPEC=file:/app/code-mode/custom-component-sdk \
+    TOOLJET_CODE_APP_ROOT=/app/code-mode/apps \
+    TOOLJET_APP_SCANNER_BIN=/app/server/ee/packages/app-scanner/bin/tj-app-scan.js \
+    MCP_RENDER_AUDIT_ENABLED=false
 
 WORKDIR /app
 

@@ -67,6 +67,8 @@ const asTags = (value: unknown): string[] =>
     .filter(Boolean);
 // A card's text: a stored ISO date or timestamp as a short date, anything else as written.
 const shown = (value: unknown): string => cardDateLabel(value) ?? String(value);
+// A field holding an object or a list (a JSON column) is left out; it drew "[object Object]".
+const plain = (value: unknown): unknown => (value !== null && typeof value === 'object' ? undefined : value);
 
 const CardBody = ({
   card,
@@ -79,19 +81,18 @@ const CardBody = ({
   badgeColors: unknown;
   expanded: boolean;
 }) => {
-  const badge = fields.badge ? card[fields.badge] : undefined;
-  const avatar = fields.avatar ? card[fields.avatar] : undefined;
-  const meta = fields.meta ? card[fields.meta] : undefined;
+  const badge = fields.badge ? plain(card[fields.badge]) : undefined;
+  const avatar = fields.avatar ? plain(card[fields.avatar]) : undefined;
+  const meta = fields.meta ? plain(card[fields.meta]) : undefined;
+  const description = fields.description ? plain(card[fields.description]) : undefined;
   const tags = fields.tags ? asTags(card[fields.tags]) : [];
   const progress = fields.progress && isSet(card[fields.progress]) ? Number(card[fields.progress]) : NaN;
   const details = expanded && fields.details ? cardDetails(card[fields.details]) : [];
   const mapped = isSet(badge) ? badgeLook(badge, badgeColors) : null;
   return (
     <>
-      <p className="ui2-kb-card-title">{String(card[fields.title] ?? '')}</p>
-      {fields.description && isSet(card[fields.description]) ? (
-        <p className="ui2-kb-card-text">{shown(card[fields.description])}</p>
-      ) : null}
+      <p className="ui2-kb-card-title">{String(plain(card[fields.title]) ?? '')}</p>
+      {isSet(description) ? <p className="ui2-kb-card-text">{shown(description)}</p> : null}
       {tags.length ? (
         <div className="ui2-kb-tags">
           {tags.map((tag) => (
@@ -590,13 +591,11 @@ export const Kanban = () => {
   };
   const doAdd = (card: unknown, columnId: unknown) => {
     const { board: cols, statusField: sf, idField: idf } = live.current;
-    const result = addCard(
-      cols,
-      card && typeof card === 'object' ? card : {},
-      isSet(columnId) ? String(columnId) : undefined,
-      sf,
-      idf
-    );
+    const row = card && typeof card === 'object' ? (card as Record<string, unknown>) : {};
+    // No column id and no status on the card: the first column. It went to a new column with no name, its status ''
+    // (QA AD-41).
+    const column = isSet(columnId) ? String(columnId) : isSet(row[sf]) ? undefined : cols[0]?.id;
+    const result = addCard(cols, row, column, sf, idf);
     commit(result.columns, () => setLastAddedCard(result.card), onCardAdded);
   };
   const doUpdate = (id: unknown, values: unknown) => {
@@ -916,15 +915,13 @@ export const Kanban = () => {
                 !isCollapsed && !columnWidth && 'is-fill',
                 over && 'is-over'
               )}
+              // A set Column width is kept as set, the board scrolling sideways when the columns are wider than it: it
+              // grew and shrank with the board as a fill column does, so it did nothing (QA AD-42).
               style={
                 isCollapsed
                   ? undefined
                   : columnWidth
-                    ? {
-                        width: columnWidth,
-                        flex: `1 1 ${columnWidth}`,
-                        minWidth: `min(${columnWidth}, ${minColumn}px)`,
-                      }
+                    ? { width: columnWidth, flex: `0 0 ${columnWidth}` }
                     : { minWidth: `${minColumn}px` }
               }
               {...(isCollapsed

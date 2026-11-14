@@ -32,6 +32,11 @@ export class AppCreateDto {
   @IsOptional()
   @IsUUID()
   branchId?: string;
+
+  /** How the app is built; default 'visual'. 'code' only where the edition supports it. */
+  @IsOptional()
+  @IsIn(['visual', 'code'], { message: 'buildMode must be visual or code.' })
+  buildMode?: 'visual' | 'code';
 }
 
 export class AppUpdateDto {

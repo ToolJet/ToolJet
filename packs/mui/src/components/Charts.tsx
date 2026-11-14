@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
+import { useTheme } from '@mui/material/styles';
 import { BarChart as MuiBarChart } from '@mui/x-charts/BarChart';
-import { LineChart as MuiLineChart } from '@mui/x-charts/LineChart';
+import { LineChart as MuiLineChart, MarkElement, type MarkElementProps } from '@mui/x-charts/LineChart';
 import { PieChart as MuiPieChart } from '@mui/x-charts/PieChart';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
@@ -302,10 +303,36 @@ const useLineProps = (c: ReturnType<typeof useCartesian>) => {
   return { curve, showMark, clickedIndex, setClickedIndex, onAxisClick, highlight };
 };
 
-/** Show mark, and with Highlight clicked point the clicked x's marks on every line until cleared. */
-const markAt = (showMark: boolean, on: boolean, index: unknown) => {
-  const at = typeof index === 'number' && index >= 0 ? index : -1;
-  return on && at >= 0 && !showMark ? ({ index: i }: { index: number }) => i === at : showMark;
+/** The clicked x while Highlight clicked point is on, else -1. */
+const pinnedAt = (on: boolean, index: unknown) => (on && typeof index === 'number' && index >= 0 ? index : -1);
+
+/** Show mark, and with a clicked x (Highlight clicked point) that x's marks on every line until cleared. */
+const markAt = (showMark: boolean, pinned: number) =>
+  pinned >= 0 && !showMark ? ({ index }: { index: number }) => index === pinned : showMark;
+
+/**
+ * A line mark with a clicked x (Highlight clicked point): drawn there as x-charts draws a highlighted point, filled and
+ * ringed in the background colour (so it shows on an area too), and faded at every other x.
+ */
+const PinnedMark = ({ pinned, style, ...props }: MarkElementProps & { pinned?: number }) => {
+  const theme = useTheme();
+  const look =
+    props.hidden || pinned === undefined
+      ? undefined
+      : props.dataIndex === pinned
+        ? { fill: props.color, stroke: theme.palette.background.paper, strokeWidth: 2 }
+        : { opacity: 0.4 };
+  return <MarkElement {...props} style={{ ...style, ...look }} />;
+};
+
+// An x tick label's width as x-charts draws it: 12px in the theme's font, with the caption's 0.03333em letter spacing.
+let ruler: CanvasRenderingContext2D | null | undefined;
+const tickLabelWidth = (text: string, fontFamily: string | undefined) => {
+  if (ruler === undefined)
+    ruler = typeof document === 'undefined' ? null : document.createElement('canvas').getContext('2d');
+  if (!ruler) return text.length * 7;
+  ruler.font = `12px ${fontFamily || 'sans-serif'}`;
+  return ruler.measureText(text).width + text.length * 0.4;
 };
 
 const LineView = ({
@@ -318,19 +345,27 @@ const LineView = ({
   area: boolean;
 }) => {
   const colors = useSeriesColors(c.colors);
+  const theme = useTheme();
+  const pinned = pinnedAt(l.highlight.on, l.clickedIndex);
+  const last = c.data.length ? str(readField(c.data[c.data.length - 1], c.axis.dataKey)) : '';
   return (
     <MuiLineChart
       dataset={c.data}
       xAxis={[{ dataKey: c.axis.dataKey, label: c.axis.label, scaleType: (c.axis.scaleType as 'point') || 'point' }]}
       yAxis={[{ valueFormatter: (v: number | null) => c.tick(v), width: 56 }]}
-      // Room for the last x label, centred on the plot's right edge (it was cut there).
-      margin={{ right: 24 }}
+      // The last x label is centred on the plot's right edge, and x-charts cuts a label that runs past the chart: the
+      // right margin is half that label, up to 120px ('Week 12' was cut to 'Week…' in a fixed 24px).
+      margin={{
+        right: Math.min(120, Math.max(24, Math.ceil(tickLabelWidth(last, theme.typography.fontFamily) / 2) + 4)),
+      }}
       series={muiSeries(c, {
         curve: l.curve,
-        showMark: markAt(l.showMark, l.highlight.on, l.clickedIndex),
+        showMark: markAt(l.showMark, pinned),
         area,
         connectNulls: true,
       })}
+      // A clicked x stands out among the marks (with Show mark on, every mark had looked the same).
+      {...(pinned >= 0 ? { slots: { mark: PinnedMark }, slotProps: { mark: { pinned } as never } } : {})}
       colors={colors}
       grid={{ horizontal: c.grid }}
       hideLegend={c.hideLegend || c.list.length < 2}
