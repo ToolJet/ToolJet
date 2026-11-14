@@ -1,0 +1,338 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Freshservice datasource",
+  "description": "A schema defining Freshservice datasource operations",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select an operation",
+      "list": [
+        { "value": "list_tickets",             "name": "List tickets" },
+        { "value": "get_ticket",               "name": "Get ticket" },
+        { "value": "create_ticket",            "name": "Create ticket" },
+        { "value": "update_ticket",            "name": "Update ticket" },
+        { "value": "delete_ticket",            "name": "Delete ticket" },
+        { "value": "add_note_to_ticket",       "name": "Add note to ticket" },
+        { "value": "reply_to_ticket",          "name": "Reply to ticket" },
+        { "value": "list_requesters",          "name": "List requesters" },
+        { "value": "list_agents",              "name": "List agents" },
+        { "value": "list_assets",              "name": "List assets" },
+        { "value": "create_asset",             "name": "Create asset" },
+        { "value": "list_changes",             "name": "List changes" },
+        { "value": "list_problems",            "name": "List problems" },
+        { "value": "list_service_catalog_items", "name": "List service catalog items" }
+      ]
+    },
+
+    "list_tickets": {
+      "page": {
+        "label": "Page",
+        "key": "page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Page number (default: 1)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "1"
+      },
+      "per_page": {
+        "label": "Per page",
+        "key": "per_page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Number of records per page (max 100, default: 30)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "30"
+      }
+    },
+
+    "get_ticket": {
+      "ticket_id": {
+        "label": "Ticket ID",
+        "key": "ticket_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "ID of the ticket to retrieve",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "42"
+      }
+    },
+
+    "create_ticket": {
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Ticket fields as a JSON object",
+        "placeholder": "{\n  \"subject\": \"Printer not working\",\n  \"description\": \"The office printer on floor 3 is not responding.\",\n  \"email\": \"requester@example.com\",\n  \"priority\": 2,\n  \"status\": 2,\n  \"source\": 2\n}",
+        "height": "200px"
+      }
+    },
+
+    "update_ticket": {
+      "ticket_id": {
+        "label": "Ticket ID",
+        "key": "ticket_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "ID of the ticket to update",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "42"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Fields to update as a JSON object",
+        "placeholder": "{\n  \"priority\": 3,\n  \"status\": 3\n}",
+        "height": "200px"
+      }
+    },
+
+    "delete_ticket": {
+      "ticket_id": {
+        "label": "Ticket ID",
+        "key": "ticket_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "ID of the ticket to delete",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "42"
+      }
+    },
+
+    "add_note_to_ticket": {
+      "ticket_id": {
+        "label": "Ticket ID",
+        "key": "ticket_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "ID of the ticket to add a note to",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "42"
+      },
+      "note_body": {
+        "label": "Note body",
+        "key": "note_body",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Text content of the note (HTML supported)",
+        "height": "100px",
+        "placeholder": "Thanks for reaching out. We are investigating the issue."
+      },
+      "note_private": {
+        "label": "Private note",
+        "key": "note_private",
+        "type": "dropdown",
+        "className": "col-4",
+        "description": "Whether the note is private (visible only to agents) or public",
+        "list": [
+          { "value": "true",  "name": "Private (agents only)" },
+          { "value": "false", "name": "Public (visible to requester)" }
+        ]
+      }
+    },
+
+    "reply_to_ticket": {
+      "ticket_id": {
+        "label": "Ticket ID",
+        "key": "ticket_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "ID of the ticket to reply to",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "42"
+      },
+      "reply_body": {
+        "label": "Reply body",
+        "key": "reply_body",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "HTML content of the reply email sent to the requester",
+        "height": "100px",
+        "placeholder": "Hi, your request has been received and we will get back to you shortly."
+      }
+    },
+
+    "list_requesters": {
+      "page": {
+        "label": "Page",
+        "key": "page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Page number (default: 1)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "1"
+      },
+      "per_page": {
+        "label": "Per page",
+        "key": "per_page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Number of records per page (max 100, default: 30)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "30"
+      }
+    },
+
+    "list_agents": {
+      "page": {
+        "label": "Page",
+        "key": "page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Page number (default: 1)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "1"
+      },
+      "per_page": {
+        "label": "Per page",
+        "key": "per_page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Number of records per page (max 100, default: 30)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "30"
+      }
+    },
+
+    "list_assets": {
+      "page": {
+        "label": "Page",
+        "key": "page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Page number (default: 1)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "1"
+      },
+      "per_page": {
+        "label": "Per page",
+        "key": "per_page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Number of records per page (max 100, default: 30)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "30"
+      }
+    },
+
+    "create_asset": {
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Asset fields as a JSON object",
+        "placeholder": "{\n  \"asset_type_id\": 11,\n  \"name\": \"Dell Laptop\",\n  \"asset_tag\": \"ASSET-1001\",\n  \"description\": \"Laptop assigned to new hire\"\n}",
+        "height": "200px"
+      }
+    },
+
+    "list_changes": {
+      "page": {
+        "label": "Page",
+        "key": "page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Page number (default: 1)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "1"
+      },
+      "per_page": {
+        "label": "Per page",
+        "key": "per_page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Number of records per page (max 100, default: 30)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "30"
+      }
+    },
+
+    "list_problems": {
+      "page": {
+        "label": "Page",
+        "key": "page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Page number (default: 1)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "1"
+      },
+      "per_page": {
+        "label": "Per page",
+        "key": "per_page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Number of records per page (max 100, default: 30)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "30"
+      }
+    },
+
+    "list_service_catalog_items": {
+      "page": {
+        "label": "Page",
+        "key": "page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Page number (default: 1)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "1"
+      },
+      "per_page": {
+        "label": "Per page",
+        "key": "per_page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Number of records per page (max 100, default: 30)",
+        "width": "160px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "30"
+      }
+    }
+  }
+}

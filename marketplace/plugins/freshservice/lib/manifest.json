@@ -1,0 +1,66 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Freshservice datasource",
+  "description": "A schema defining Freshservice datasource",
+  "type": "api",
+  "source": {
+    "name": "Freshservice",
+    "kind": "freshservice",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "customTesting": false,
+    "options": {
+      "domain": {
+        "type": "string"
+      },
+      "api_key": {
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "auth_type": {
+      "value": "api_key"
+    }
+  },
+  "properties": {
+    "credentials": {
+      "label": "Authentication",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "description": "A single select dropdown to choose credentials",
+      "list": [
+        {
+          "value": "api_key",
+          "name": "API Key"
+        }
+      ],
+      "commonFields": {
+        "domain": {
+          "label": "Domain",
+          "key": "domain",
+          "type": "text",
+          "description": "yourcompany.freshservice.com",
+          "hint": "Enter your Freshservice domain (e.g. yourcompany.freshservice.com)"
+        }
+      }
+    },
+    "api_key": {
+      "api_key": {
+        "label": "API Key",
+        "key": "api_key",
+        "type": "password",
+        "description": "Enter your Freshservice API key",
+        "hint": "Find your API key at Profile Settings → API Key in your Freshservice account.",
+        "encrypted": true
+      }
+    }
+  },
+  "required": [
+    "domain",
+    "api_key"
+  ]
+}

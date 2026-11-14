@@ -419,5 +419,17 @@
     "tags": [
       "AI"
     ]
+  },
+  {
+    "name": "Freshservice",
+    "description": "Connect to Freshservice ITSM to manage tickets, assets, changes, problems, and service catalog items",
+    "version": "1.0.0",
+    "id": "freshservice",
+    "author": "Tooljet",
+    "timestamp": "Tue, 28 Oct 2026 00:00:00 GMT",
+    "repo": "",
+    "tags": [
+      "IT Service Management"
+    ]
   }
 ]
