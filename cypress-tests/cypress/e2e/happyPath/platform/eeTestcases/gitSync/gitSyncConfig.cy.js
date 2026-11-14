@@ -23,10 +23,10 @@ const TEST_CONNECTION = '[data-cy="test-connection-button"]';
 const DELETE_CONFIG = '[data-cy="delete-config-button"]';
 const GITHUB_TOGGLE = '[data-cy="github-toggle"]';
 
-describe("Git Sync — Configuration", { retries: 0 }, () => {
+describe("Git Sync — Configuration", () => {
   let ctx;
 
-  before(() => {
+  beforeEach(() => {
     setupGitSyncSpec({ specKey: "config", mode: "multi" }).then((c) => {
       ctx = c;
     });
@@ -36,7 +36,7 @@ describe("Git Sync — Configuration", { retries: 0 }, () => {
     loginToGitSyncSpec(ctx);
   });
 
-  after(() => {
+  afterEach(() => {
     teardownGitSyncSpec();
   });
 

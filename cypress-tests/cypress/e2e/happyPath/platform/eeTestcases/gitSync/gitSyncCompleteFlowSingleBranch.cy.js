@@ -33,7 +33,7 @@ import {
 } from "Support/utils/platform/gitSync/gitSyncUI";
 import { waitForPullToFinish } from "Support/utils/platform/gitSync/workspaceBranch";
 
-describe("Git Sync — Complete Flow (Single Branch)", { retries: 0 }, () => {
+describe("Git Sync — Complete Flow (Single Branch)", () => {
   let ctx;
   let flow;
   const tagPrefixes = [];
@@ -54,7 +54,7 @@ describe("Git Sync — Complete Flow (Single Branch)", { retries: 0 }, () => {
     cy.reload();
   };
 
-  before(() => {
+  beforeEach(() => {
     setupGitSyncSpec({ specKey: "flowsb", mode: "single" }).then((c) => {
       ctx = c;
     });
@@ -72,8 +72,8 @@ describe("Git Sync — Complete Flow (Single Branch)", { retries: 0 }, () => {
     });
   });
 
-  after(() => {
-    tagPrefixes.forEach((prefix) => deleteTagsByPrefixViaAPI(prefix));
+  afterEach(() => {
+    tagPrefixes.splice(0).forEach((prefix) => deleteTagsByPrefixViaAPI(prefix));
     teardownGitSyncSpec();
   });
 

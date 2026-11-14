@@ -15,7 +15,7 @@ import { createBranchViaAPI } from "Support/utils/platform/gitSync/workspaceBran
 import { gitSyncText } from "Texts/platform/gitSync";
 
 // Saving a version creates the GitHub tag `<co_relation_id>/<version name>`.
-describe("Git Sync — Version Tags", { retries: 0 }, () => {
+describe("Git Sync — Version Tags", () => {
   let ctx;
   const coRelIds = [];
 
@@ -57,7 +57,7 @@ describe("Git Sync — Version Tags", { retries: 0 }, () => {
     );
   };
 
-  before(() => {
+  beforeEach(() => {
     setupGitSyncSpec({ specKey: "versions", mode: "multi" }).then((c) => {
       ctx = c;
     });
@@ -67,8 +67,8 @@ describe("Git Sync — Version Tags", { retries: 0 }, () => {
     loginToGitSyncSpec(ctx);
   });
 
-  after(() => {
-    coRelIds.forEach((id) => deleteTagsByPrefixViaAPI(id));
+  afterEach(() => {
+    coRelIds.splice(0).forEach((id) => deleteTagsByPrefixViaAPI(id));
     teardownGitSyncSpec();
   });
 

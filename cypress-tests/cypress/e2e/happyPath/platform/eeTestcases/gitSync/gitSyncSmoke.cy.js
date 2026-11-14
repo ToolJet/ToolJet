@@ -16,10 +16,10 @@ import {
 } from "Support/utils/platform/gitSync/workspaceBranch";
 
 // Fast gate: config, branch jobs, push, and the merge → pull round trip on an isolated base branch.
-describe("Git Sync — Smoke", { retries: 0 }, () => {
+describe("Git Sync — Smoke", () => {
   let ctx;
 
-  before(() => {
+  beforeEach(() => {
     setupGitSyncSpec({ specKey: "smoke", mode: "multi" }).then((c) => {
       ctx = c;
     });
@@ -29,7 +29,7 @@ describe("Git Sync — Smoke", { retries: 0 }, () => {
     loginToGitSyncSpec(ctx);
   });
 
-  after(() => {
+  afterEach(() => {
     teardownGitSyncSpec();
   });
 

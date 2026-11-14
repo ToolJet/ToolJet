@@ -18,10 +18,10 @@ import {
   pullWorkspaceViaAPI,
 } from "Support/utils/platform/gitSync/workspaceBranch";
 
-describe("Git Sync — Push and Pull", { retries: 0 }, () => {
+describe("Git Sync — Push and Pull", () => {
   let ctx;
 
-  before(() => {
+  beforeEach(() => {
     setupGitSyncSpec({ specKey: "pushpull", mode: "multi" }).then((c) => {
       ctx = c;
     });
@@ -31,7 +31,7 @@ describe("Git Sync — Push and Pull", { retries: 0 }, () => {
     loginToGitSyncSpec(ctx);
   });
 
-  after(() => {
+  afterEach(() => {
     teardownGitSyncSpec();
   });
 

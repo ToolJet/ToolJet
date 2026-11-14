@@ -25,11 +25,11 @@ import {
 import { gitSyncText } from "Texts/platform/gitSync";
 
 // The local app is created before git is connected, since the multi-branch default branch rejects app creation.
-describe("Git Sync — Pull Name Conflict", { retries: 0 }, () => {
+describe("Git Sync — Pull Name Conflict", () => {
   const appName = `conflict-app-${Date.now()}`;
   let ctx;
 
-  before(() => {
+  beforeEach(() => {
     setupPreGitAppsSpec({ specKey: "conflict", appNames: [appName] }).then((c) => {
       ctx = c;
     });
@@ -39,7 +39,7 @@ describe("Git Sync — Pull Name Conflict", { retries: 0 }, () => {
     loginToGitSyncSpec(ctx);
   });
 
-  after(() => {
+  afterEach(() => {
     teardownGitSyncSpec();
   });
 

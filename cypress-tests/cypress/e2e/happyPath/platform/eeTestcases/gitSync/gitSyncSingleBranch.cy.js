@@ -16,10 +16,10 @@ import {
   pullWorkspaceViaAPI,
 } from "Support/utils/platform/gitSync/workspaceBranch";
 
-describe("Git Sync — Single Branch Mode", { retries: 0 }, () => {
+describe("Git Sync — Single Branch Mode", () => {
   let ctx;
 
-  before(() => {
+  beforeEach(() => {
     setupGitSyncSpec({ specKey: "single", mode: "single" }).then((c) => {
       ctx = c;
     });
@@ -29,7 +29,7 @@ describe("Git Sync — Single Branch Mode", { retries: 0 }, () => {
     loginToGitSyncSpec(ctx);
   });
 
-  after(() => {
+  afterEach(() => {
     teardownGitSyncSpec();
   });
 

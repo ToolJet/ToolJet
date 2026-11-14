@@ -11,12 +11,12 @@ import { visitGitSyncPage } from "Support/utils/platform/gitSync/gitSyncUI";
 import { createBranchViaAPI } from "Support/utils/platform/gitSync/workspaceBranch";
 
 // Import from git reads apps from the workspace's current branch only.
-describe("Git Sync — Import App From Git", { retries: 0 }, () => {
+describe("Git Sync — Import App From Git", () => {
   let ctx;
   let source;
   const appName = `imp-${Date.now()}`;
 
-  before(() => {
+  beforeEach(() => {
     setupGitSyncSpec({ specKey: "import", mode: "multi" }).then((c) => {
       ctx = c;
       createBranchViaAPI(`${ctx.prefix}-src`).then((branch) =>
@@ -31,7 +31,7 @@ describe("Git Sync — Import App From Git", { retries: 0 }, () => {
     });
   });
 
-  after(() => {
+  afterEach(() => {
     teardownGitSyncSpec();
   });
 

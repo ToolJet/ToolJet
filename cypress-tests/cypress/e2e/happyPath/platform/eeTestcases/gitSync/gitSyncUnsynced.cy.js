@@ -19,13 +19,13 @@ import { pullWorkspaceViaAPI } from "Support/utils/platform/gitSync/workspaceBra
 import { gitSyncText } from "Texts/platform/gitSync";
 
 // Pre-git apps stay unsynced until pushed, merged and pulled back; the push alone doesn't sync them.
-describe("Git Sync — Unsynced Apps", { retries: 0 }, () => {
+describe("Git Sync — Unsynced Apps", () => {
   const runId = Date.now();
   const editableApp = `unsynced-edit-${runId}`;
   const pushedApp = `unsynced-push-${runId}`;
   let ctx;
 
-  before(() => {
+  beforeEach(() => {
     setupPreGitAppsSpec({ specKey: "unsynced", appNames: [editableApp, pushedApp] }).then((c) => {
       ctx = c;
     });
@@ -35,7 +35,7 @@ describe("Git Sync — Unsynced Apps", { retries: 0 }, () => {
     loginToGitSyncSpec(ctx);
   });
 
-  after(() => {
+  afterEach(() => {
     teardownGitSyncSpec();
   });
 

@@ -22,7 +22,7 @@ const FIXTURE = "gitSync/fixture-app.json";
 const FIXTURE_DS = "restapi";
 const FIXTURE_DS_URL = "{{constants.API_BASE_URL}}";
 
-describe("Git Sync — Repo Content", { retries: 0 }, () => {
+describe("Git Sync — Repo Content", () => {
   let ctx;
 
   // Branch + fixture app on it, pushed once. Yields everything a case needs.
@@ -46,7 +46,7 @@ describe("Git Sync — Repo Content", { retries: 0 }, () => {
 
   const push = (s, message) => pushAppViaAPI({ ...s, commitMessage: message });
 
-  before(() => {
+  beforeEach(() => {
     setupGitSyncSpec({ specKey: "content", mode: "multi" }).then((c) => {
       ctx = c;
       cy.apiCreateWorkspaceConstant(
@@ -62,7 +62,7 @@ describe("Git Sync — Repo Content", { retries: 0 }, () => {
     loginToGitSyncSpec(ctx);
   });
 
-  after(() => {
+  afterEach(() => {
     teardownGitSyncSpec();
   });
 

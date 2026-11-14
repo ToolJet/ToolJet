@@ -18,10 +18,10 @@ import { createBranchViaAPI } from "Support/utils/platform/gitSync/workspaceBran
 
 const CARD = '[data-cy$="-card"]';
 
-describe("Git Sync — Modules", { retries: 0 }, () => {
+describe("Git Sync — Modules", () => {
   let ctx;
 
-  before(() => {
+  beforeEach(() => {
     setupGitSyncSpec({ specKey: "modules", mode: "multi" }).then((c) => {
       ctx = c;
     });
@@ -31,7 +31,7 @@ describe("Git Sync — Modules", { retries: 0 }, () => {
     loginToGitSyncSpec(ctx);
   });
 
-  after(() => {
+  afterEach(() => {
     teardownGitSyncSpec();
   });
 

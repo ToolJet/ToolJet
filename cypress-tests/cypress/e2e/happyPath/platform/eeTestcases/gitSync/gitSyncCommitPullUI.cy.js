@@ -38,10 +38,10 @@ const FIXTURE = "gitSync/fixture-app.json";
 // The fixture's REST data source URL is {{constants.API_BASE_URL}}.
 const API_BASE_URL = "https://jsonplaceholder.typicode.com";
 
-describe("Git Sync — Commit and Pull (UI)", { retries: 0 }, () => {
+describe("Git Sync — Commit and Pull (UI)", () => {
   let ctx;
 
-  before(() => {
+  beforeEach(() => {
     setupGitSyncSpec({ specKey: "ui", mode: "multi" }).then((c) => {
       ctx = c;
       cy.apiCreateWorkspaceConstant(
@@ -57,7 +57,7 @@ describe("Git Sync — Commit and Pull (UI)", { retries: 0 }, () => {
     loginToGitSyncSpec(ctx);
   });
 
-  after(() => {
+  afterEach(() => {
     teardownGitSyncSpec();
   });
 

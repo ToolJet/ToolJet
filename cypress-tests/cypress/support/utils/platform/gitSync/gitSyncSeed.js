@@ -14,7 +14,7 @@ import {
 
 /**
  * Create an isolated workspace configured with git sync on its own base branch.
- * Call in `before()`; pair with `teardownGitSyncSpec()` in `after()`.
+ * Call in `beforeEach()` so every test attempt gets its own; pair with `teardownGitSyncSpec()` in `afterEach()`.
  * Pass `baseBranch` to attach a second workspace to an existing base branch
  * (same repo, same default branch — cross-workspace pull/import cases).
  *
@@ -93,7 +93,7 @@ export const loginToGitSyncSpec = (ctx) => {
 
 /**
  * Delete every git ref under each set-up workspace's prefix and archive the
- * workspaces created by `setupGitSyncSpec` in this spec. Teardown only.
+ * workspaces registered since the last call (one test attempt). Safe after a partial setup. Use in `afterEach()`.
  *
  * @tjType gitSyncSpec.teardown
  * @tjBlock gitSync

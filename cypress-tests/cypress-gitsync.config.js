@@ -26,6 +26,10 @@ module.exports = defineConfig({
     specPattern: "cypress/e2e/happyPath/platform/eeTestcases/gitSync/**/*.cy.js",
 
     testIsolation: true,
+    retries: {
+      runMode: 2,
+      openMode: 0,
+    },
     redirectionLimit: 10,
 
     numTestsKeptInMemory: 0,

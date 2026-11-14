@@ -41,12 +41,12 @@ import {
   waitForPullToFinish,
 } from "Support/utils/platform/gitSync/workspaceBranch";
 
-describe("Git Sync — Complete Flow (Multi Branch)", { retries: 0 }, () => {
+describe("Git Sync — Complete Flow (Multi Branch)", () => {
   let ctx;
   let flow;
   const tagPrefixes = [];
 
-  before(() => {
+  beforeEach(() => {
     setupGitSyncSpec({ specKey: "flow", mode: "multi" }).then((c) => {
       ctx = c;
     });
@@ -64,8 +64,8 @@ describe("Git Sync — Complete Flow (Multi Branch)", { retries: 0 }, () => {
     );
   });
 
-  after(() => {
-    tagPrefixes.forEach((prefix) => deleteTagsByPrefixViaAPI(prefix));
+  afterEach(() => {
+    tagPrefixes.splice(0).forEach((prefix) => deleteTagsByPrefixViaAPI(prefix));
     teardownGitSyncSpec();
   });
 

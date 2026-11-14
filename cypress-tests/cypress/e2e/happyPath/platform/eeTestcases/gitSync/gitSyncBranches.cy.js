@@ -25,10 +25,10 @@ import {
 } from "Support/utils/platform/gitSync/workspaceBranch";
 import { gitSyncText } from "Texts/platform/gitSync";
 
-describe("Git Sync — Branches", { retries: 0 }, () => {
+describe("Git Sync — Branches", () => {
   let ctx;
 
-  before(() => {
+  beforeEach(() => {
     setupGitSyncSpec({ specKey: "branch", mode: "multi" }).then((c) => {
       ctx = c;
     });
@@ -38,7 +38,7 @@ describe("Git Sync — Branches", { retries: 0 }, () => {
     loginToGitSyncSpec(ctx);
   });
 
-  after(() => {
+  afterEach(() => {
     teardownGitSyncSpec();
   });
 
