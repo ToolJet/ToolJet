@@ -25,7 +25,7 @@ import {
 const contentClasses = [
   'tw-bg-background-surface-layer-01',
   'tw-border-solid tw-border-border-default',
-  'tw-shadow-[var(--elevation-300-box-shadow)]',
+  'tw-shadow-[shadow:var(--elevation-300-box-shadow)]',
   'tw-rounded-lg',
   'tw-text-text-default',
 ].join(' ');
@@ -46,8 +46,11 @@ DropdownMenuContent.propTypes = {
 const itemClasses = [
   'tw-text-text-default',
   'tw-rounded-md',
-  'focus:tw-bg-interactive-hover focus:tw-text-text-default',
-  'data-[disabled]:tw-opacity-50 data-[disabled]:tw-pointer-events-none',
+  // Radix focuses items on pointer hover, so focus: is hover and focus-visible: is keyboard focus
+  'focus:tw-bg-interactive-default focus:tw-text-text-default',
+  'focus-visible:tw-bg-transparent focus-visible:tw-shadow-interactive-focus-outline',
+  'active:tw-bg-interactive-hover',
+  'data-[disabled]:tw-text-text-placeholder data-[disabled]:tw-opacity-100 data-[disabled]:tw-pointer-events-none',
 ].join(' ');
 
 const DropdownMenuItem = forwardRef(function DropdownMenuItem({ className, inset, destructive, ...props }, ref) {

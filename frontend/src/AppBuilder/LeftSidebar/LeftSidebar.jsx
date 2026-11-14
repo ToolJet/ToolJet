@@ -13,7 +13,8 @@ import Debugger from './Debugger/Debugger';
 import DependencyViewer from './Dependencies/DependencyViewer';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
+import EeLeftSidebar from '@ee/modules/AiBuilder/components/Sidebar/Sidebar';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
 import { SquareDashedMousePointer, Bug, Bolt, History, Waypoints, Search } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -410,4 +411,8 @@ const AvatarGroupWrapper = ({ darkMode, maxDisplay }) => {
   return <AvatarGroup avatars={transformedAvatars} maxDisplay={maxDisplay} variant="multiplayer" darkMode={darkMode} />;
 };
 
-export const LeftSidebar = withEditionSpecificComponent(BaseLeftSidebar, 'AiBuilder');
+export const LeftSidebar = pickEditionSpecificComponent({
+  ce: BaseLeftSidebar,
+  ee: EeLeftSidebar,
+  cloudSameAsEE: true,
+});

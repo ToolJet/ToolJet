@@ -6,7 +6,6 @@ import { libraryAppService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -25,14 +24,12 @@ const identifyUniqueCategories = (templates) =>
   }));
 
 export default function TemplateLibraryModal(props) {
-  const navigate = useNavigate();
   const [libraryApps, setLibraryApps] = useState([]);
   const [selectedCategory, selectCategory] = useState({ id: 'all', count: 0 });
   const filteredApps = libraryApps.filter(
     (app) => selectedCategory.id === 'all' || app.category === selectedCategory.id
   );
   const [selectedApp, selectApp] = useState(undefined);
-  const [showCreateAppFromTemplateModal, setShowCreateAppFromTemplateModal] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -135,8 +132,7 @@ export default function TemplateLibraryModal(props) {
                             return;
                           }
                           props.openCreateAppFromTemplateModal(selectedApp);
-                          setShowCreateAppFromTemplateModal(false);
-                          props.onCloseButtonClick();
+                          // props.onCloseButtonClick();
                           posthogHelper.captureEvent('create_application_from_template', {
                             workspace_id:
                               authenticationService?.currentUserValue?.organization_id ||
