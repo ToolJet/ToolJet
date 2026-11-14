@@ -50,8 +50,7 @@ export const setupGitSyncSpec = ({ specKey, mode = "multi", baseBranch, skipConf
   // Recorded up front so teardown can clean partial setups (see teardownGitSyncSpec).
   Cypress.env("gitSyncCtxs", [...(Cypress.env("gitSyncCtxs") || []), ctx]);
 
-  // Sweep refs leaked by crashed runs first — they slow every branch create/list. A second
-  // workspace on an existing base branch (baseBranch given) shares the first one's branch.
+  // Sweep refs leaked by crashed runs first; a second workspace on an existing base branch shares it.
   const base = baseBranch
     ? cy.wrap({ baseBranch }, { log: false })
     : deleteStaleRunRefsViaAPI().then(() => prepareRepoViaAPI(prefix));
@@ -199,12 +198,12 @@ export const addAppToFolderViaAPI = (folderId, appId, branchId) =>
  *
  * @tjType app.waitOnBranch
  * @tjBlock gitSync
- * @tjUsage waitForAppOnBranchViaAPI(branch.id, appName).then((app) => app.id)
+ * @tjUsage waitForAppOnBranchViaAPI(branch.id, appName[, "module"]).then((app) => app.id)
  * @tjDom none - polls GET /api/apps?branch_id=
  */
-export const waitForAppOnBranchViaAPI = (branchId, appName) =>
+export const waitForAppOnBranchViaAPI = (branchId, appName, type = "front-end") =>
   pollUntil(
-    () => listAppsOnBranchViaAPI(branchId),
+    () => listAppsOnBranchViaAPI(branchId, type),
     (apps) => apps.some((a) => a.name === appName),
     { label: `${appName} on branch ${branchId}` },
   ).then((apps) => apps.find((a) => a.name === appName));
@@ -231,29 +230,134 @@ export const attemptCreateAppOnBranchViaAPI = (name, branchId) =>
  * @tjUsage importFixtureAppViaAPI("gitSync/fixture-app.json", appName, branch.id)
  * @tjDom none - POST /api/v2/resources/import
  */
+export const importExportViaAPI = (exported, appName, branchId) =>
+  // ?branch_id overrides body.branchId (import-export-resources/controller.ts:45-47), so send both.
+  tjRequest("POST", "/v2/resources/import", {
+    qs: { branch_id: branchId },
+    body: {
+      ...exported,
+      organization_id: Cypress.env("workspaceId"),
+      branchId,
+      app: (exported.app || []).map((app) => ({
+        ...app,
+        appName,
+        definition: app.definition?.appV2
+          ? { ...app.definition, appV2: { ...app.definition.appV2, name: appName } }
+          : app.definition,
+      })),
+    },
+  }).then((res) => {
+    expect(res.status, `import ${appName}`).to.equal(201);
+    return res.body?.imports?.app?.[0]?.id;
+  });
+
 export const importFixtureAppViaAPI = (fixturePath, appName, branchId) =>
-  cy.fixture(fixturePath).then((fixture) =>
-    // user.branchId (from ?branch_id) overrides body.branchId
-    // (server/src/modules/import-export-resources/controller.ts:45-47), so send both.
-    tjRequest("POST", "/v2/resources/import", {
-      qs: { branch_id: branchId },
-      body: {
-        ...fixture,
-        organization_id: Cypress.env("workspaceId"),
-        branchId,
-        app: (fixture.app || []).map((app) => ({
-          ...app,
-          appName,
-          definition: app.definition?.appV2
-            ? { ...app.definition, appV2: { ...app.definition.appV2, name: appName } }
-            : app.definition,
-        })),
-      },
-    }).then((res) => {
-      expect(res.status, `import ${appName}`).to.equal(201);
-      return res.body?.imports?.app?.[0]?.id;
-    }),
+  cy.fixture(fixturePath).then((fixture) => importExportViaAPI(fixture, appName, branchId));
+
+const COMPLETE_FLOW = "gitSync/complete-flow";
+
+const replaceIds = (exported, ids) =>
+  JSON.parse(
+    Object.entries(ids).reduce((text, [from, to]) => text.split(from).join(to), JSON.stringify(exported)),
   );
+
+/**
+ * Import the complete-flow fixture (cypress/fixtures/gitSync/complete-flow, rebuilt by
+ * tools/gitsync-fixtures/build-complete-flow.mjs) onto a branch under unique names, and put the
+ * app in its own folder. The app's module is imported with the app; the workflow is imported
+ * first because app exports don't carry workflows.
+ *
+ * @tjType gitSyncSpec.importCompleteFlow
+ * @tjBlock gitSync
+ * @tjUsage importCompleteFlowViaAPI(branch, "mb1").then((flow) => flow.names.app)
+ * @tjDom none - POST /api/v2/resources/import (workflow, then app) + folder
+ * @returns {Cypress.Chainable<{appId, workflowId, coRel:{module, workflow}, names:{app, module, workflow, folder, dataSource}}>}
+ */
+export const importCompleteFlowViaAPI = (branch, suffix) => {
+  const names = {
+    app: `cf-app-${suffix}`,
+    module: `cf-mod-${suffix}`,
+    workflow: `cf-wf-${suffix}`,
+    folder: `cf-folder-${suffix}`,
+    dataSource: `cf-rest-${suffix}`,
+  };
+  const flow = { names };
+  // The workflow and the app share one global data source: same fresh id and name in both imports.
+  const dataSourceIds = {};
+
+  return cy
+    .fixture(`${COMPLETE_FLOW}/workflow.json`)
+    .then((workflowExport) => {
+      const wf = workflowExport.app[0].definition.appV2;
+      const ds = wf.dataSources.find((d) => d.name === "cf-rest");
+      Object.assign(dataSourceIds, { [ds.id]: crypto.randomUUID(), '"cf-rest"': `"${names.dataSource}"` });
+      // Fresh ids so imports in one workspace never share a slug or a git identity.
+      flow.fixtureWorkflowCoRel = wf.co_relation_id;
+      const fresh = replaceIds(workflowExport, {
+        ...dataSourceIds,
+        [wf.id]: crypto.randomUUID(),
+        [wf.co_relation_id]: crypto.randomUUID(),
+      });
+      return importExportViaAPI(fresh, names.workflow, branch.id);
+    })
+    .then((workflowId) => {
+      flow.workflowId = workflowId;
+      return getAppOnBranchViaAPI(workflowId, branch.id);
+    })
+    .then((workflow) => cy.fixture(`${COMPLETE_FLOW}/app.json`).then((appExport) => ({ workflow, appExport })))
+    .then(({ workflow, appExport }) => {
+      const app = appExport.app[0].definition.appV2;
+      const mod = app.modules[0].appV2;
+      flow.coRel = { module: crypto.randomUUID(), workflow: workflow.co_relation_id };
+      const fresh = replaceIds(appExport, {
+        ...dataSourceIds,
+        [app.id]: crypto.randomUUID(),
+        [app.co_relation_id]: crypto.randomUUID(),
+        [mod.id]: crypto.randomUUID(),
+        [mod.co_relation_id]: flow.coRel.module,
+        [flow.fixtureWorkflowCoRel]: workflow.co_relation_id,
+      });
+      fresh.app[0].definition.appV2.modules[0].appV2.name = names.module;
+      return importExportViaAPI(fresh, names.app, branch.id);
+    })
+    .then((appId) => {
+      flow.appId = appId;
+      return cy.apiCreateFolder(names.folder);
+    })
+    .then((folder) => addAppToFolderViaAPI(folder.id, flow.appId, branch.id))
+    .then(() => flow);
+};
+
+/**
+ * Push everything the complete-flow import created on `branch`: the app (its module and
+ * workflow are written with it the first time) and the workspace (data sources).
+ *
+ * @tjType gitSyncSpec.pushCompleteFlow
+ * @tjBlock gitSync
+ * @tjUsage pushCompleteFlowViaAPI(flow, branch)
+ * @tjDom none - POST /api/app-git/gitpush + POST /api/workspace-branches/push
+ */
+export const pushCompleteFlowViaAPI = (flow, branch, { singleBranch = false } = {}) =>
+  getAppOnBranchViaAPI(flow.appId, branch.id)
+    .then((app) =>
+      pushAppViaAPI({
+        appId: flow.appId,
+        versionId: app.editing_version.id,
+        appName: flow.names.app,
+        branch,
+        singleBranch,
+        commitMessage: `feat: add ${flow.names.app}`,
+      }),
+    )
+    .then(() =>
+      tjRequest("POST", "/workspace-branches/push", {
+        body: { branchId: branch.id, commitMessage: `feat: workspace ${flow.names.app}` },
+        failOnStatusCode: false,
+      }),
+    )
+    .then((res) => {
+      expect(res.status, `workspace push: ${JSON.stringify(res.body)}`).to.be.oneOf([200, 201]);
+    });
 
 /**
  * @tjType app.getOnBranch
@@ -263,6 +367,34 @@ export const importFixtureAppViaAPI = (fixturePath, appName, branchId) =>
  */
 export const getAppOnBranchViaAPI = (appId, branchId) =>
   tjRequest("GET", `/apps/${appId}`, { qs: { branch_id: branchId } }).then((res) => res.body);
+
+/**
+ * Release a saved (non-draft) version of an app on a branch. Yields the app's slug for the
+ * released URL `/applications/<slug>`.
+ *
+ * @tjType app.releaseSavedVersion
+ * @tjBlock gitSync
+ * @tjUsage releaseSavedVersionViaAPI(appName, ctx.defaultBranch, "v1").then((slug) => ...)
+ * @tjDom none - GET /api/apps/:id/versions + PUT /api/apps/:id/release
+ */
+export const releaseSavedVersionViaAPI = (appName, branch, versionName) =>
+  listAppsOnBranchViaAPI(branch.id).then((apps) => {
+    const app = apps.find((a) => a.name === appName);
+    expect(app, `${appName} on ${branch.name}`).to.exist;
+    return tjRequest("GET", `/apps/${app.id}/versions`, { qs: { branch_id: branch.id } })
+      .then((res) => {
+        const version = (res.body.versions || []).find((v) => v.name === versionName && v.status !== "DRAFT");
+        expect(version, `saved ${versionName} of ${appName} on ${branch.name}`).to.exist;
+        return tjRequest("PUT", `/apps/${app.id}/release`, {
+          body: { versionToBeReleased: version.id },
+          failOnStatusCode: false,
+        });
+      })
+      .then((res) => {
+        expect(res.status, `release ${appName} ${versionName}: ${JSON.stringify(res.body)}`).to.be.oneOf([200, 201]);
+        return getAppOnBranchViaAPI(app.id, branch.id).then((body) => body.slug);
+      });
+  });
 
 /**
  * @tjType app.listOnBranch
@@ -369,6 +501,54 @@ export const seedPushedAppViaAPI = ({ branch, appName, fixture, commitMessage = 
     }),
   );
 };
+
+/**
+ * Global data source on a branch, read for one environment: options are
+ * `{ <key>: { value, encrypted, credential_id? } }`.
+ * source: server/src/modules/data-sources/controller.ts:45-53, :119-129
+ *
+ * @tjType dataSource.getOnBranch
+ * @tjBlock gitSync
+ * @tjUsage getDataSourceOnBranchViaAPI("restapi", branch.id, "staging").then((ds) => ds.options.url.value)
+ * @tjDom none - GET /api/data-sources/:orgId?branch_id= + GET /api/data-sources/:id/environment/:envId?branch_id=
+ */
+export const getDataSourceOnBranchViaAPI = (name, branchId, envName) =>
+  cy.apiGetEnvironments().then((environments) => {
+    const env = environments.find((e) => e.name === envName);
+    expect(env, `environment ${envName}`).to.exist;
+    return tjRequest("GET", `/data-sources/${Cypress.env("workspaceId")}`, { qs: { branch_id: branchId } })
+      .then((res) => {
+        const ds = (res.body?.data_sources || []).find((d) => d.name === name);
+        expect(ds, `data source ${name} on branch`).to.exist;
+        return tjRequest("GET", `/data-sources/${ds.id}/environment/${env.id}`, { qs: { branch_id: branchId } });
+      })
+      .then((res) => ({ ...res.body, environmentId: env.id }));
+  });
+
+/**
+ * Change option values of a data source for one environment on a branch, the way the
+ * data source form saves: every current option is sent back (encrypted values left
+ * empty keep their stored credential — server/src/modules/data-sources/util.service.ts:918-952).
+ *
+ * @tjType dataSource.updateOnBranch
+ * @tjBlock gitSync
+ * @tjUsage updateDataSourceOnBranchViaAPI({ name: "restapi", branchId, envName: "staging", values: { url: "https://x" } })
+ * @tjDom none - PUT /api/data-sources/:id?environment_id=&branch_id=
+ */
+export const updateDataSourceOnBranchViaAPI = ({ name, branchId, envName, values }) =>
+  getDataSourceOnBranchViaAPI(name, branchId, envName).then((ds) => {
+    const options = Object.entries({ ...ds.options, ...values }).map(([key, opt]) =>
+      key in values
+        ? { key, value: values[key], encrypted: !!ds.options?.[key]?.encrypted }
+        : { key, value: opt?.encrypted ? "" : opt?.value, encrypted: !!opt?.encrypted },
+    );
+    return tjRequest("PUT", `/data-sources/${ds.id}`, {
+      qs: { environment_id: ds.environmentId, branch_id: branchId },
+      body: { name, options },
+    }).then((res) => {
+      expect(res.status, `update ${name} (${envName})`).to.equal(200);
+    });
+  });
 
 /**
  * PR `featureBranch` into the spec's base branch, merge it, switch to the

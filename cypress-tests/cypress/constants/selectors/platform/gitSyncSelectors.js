@@ -1,5 +1,4 @@
-// Selectors for the rewritten git sync suite. Each entry cites the component
-// that renders it. The legacy `gitsync.js` stays until the old specs are retired.
+// Git sync selectors; each entry cites the component that renders it.
 
 export const gitSyncSelectors = {
   // source: frontend/src/_ui/WorkspaceBranchDropdown/index.jsx:591
@@ -57,4 +56,70 @@ export const gitSyncSelectors = {
   lockedBanner: '[data-cy="locked-branch-banner"]',
   // source: frontend/src/AppBuilder/Header/LifecycleCTAButton.jsx (lifecycle-cta-button)
   lifecycleCta: '[data-cy="lifecycle-cta-button"]',
+
+  // source: frontend/src/AppBuilder/Header/BranchDropdown.jsx:836
+  editorBranchHeader: '[data-cy="branch-dropdown-header"]',
+  // source: frontend/src/AppBuilder/Header/BranchDropdown.jsx:789
+  saveVersionBtn: '[data-cy="save-version-btn"]',
+  // source: frontend/src/AppBuilder/Header/CreateVersionModal.jsx:365
+  versionNameInput: '[data-cy="version-name-input-field"]',
+  // source: frontend/src/AppBuilder/Header/CreateVersionModal.jsx:487
+  createVersionSaveBtn: '[data-cy="create-version-save-button"]',
+  // source: frontend/src/AppBuilder/QueryManager/QueryEditors/Workflows.jsx:225 (select rendered next to it)
+  workflowVersionSelect: '[data-cy="workflow-version-select"]',
+
+  // source: frontend/src/HomePage/AppCard.jsx:364
+  appCard: (name) => `[data-cy="${name.toLowerCase().replace(/\s+/g, "-")}-card"]`,
+  // source: frontend/src/HomePage/AppCard.jsx:414 (red refresh icon, card not hovered)
+  unsyncedBadgeIdle: '[data-cy="unsynced-badge-idle"]',
+  // source: frontend/src/HomePage/AppCard.jsx:394 (same icon while the card is hovered)
+  unsyncedBadge: '[data-cy="unsynced-badge"]',
+  // source: frontend/ee/modules/Appbuilder/components/VersionLockBanner/VersionLockBanner.jsx:152
+  versionLockBanner: '[data-cy="version-lock-banner"]',
+
+  // source: frontend/ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal.jsx:271 (contentClassName, no data-cy)
+  pushAppsModal: ".git-sync-modal",
+  // source: frontend/ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal.jsx:274
+  pushAppsModalTitle: '[data-cy="push-apps-modal-title"]',
+  // source: frontend/ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal.jsx:378
+  pushAppsBranchInput: '[data-cy="push-apps-branch-input"]',
+  // source: frontend/ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal.jsx:453
+  pushAppsCreateBranch: '[data-cy="push-apps-create-branch"]',
+  // source: frontend/ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal.jsx:495
+  pushAppsSubmit: '[data-cy="push-apps-submit"]',
+
+  // source: frontend/src/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal.jsx:299 (no data-cy, class names)
+  pullConflictModal: ".pull-conflict-modal",
+  // source: frontend/src/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal.jsx:312
+  conflictTitle: ".conflict-title",
+  // source: frontend/src/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal.jsx:418
+  conflictCategoryTitle: ".conflict-category-title",
+  // source: frontend/src/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal.jsx:115
+  conflictRowHeader: ".conflict-row-header",
+  // source: frontend/src/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal.jsx:129
+  conflictRowCheckbox: ".conflict-row-checkbox",
+  // source: frontend/src/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal.jsx:167
+  conflictItem: ".conflict-item",
+  // source: frontend/src/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal.jsx:467
+  conflictSyncSelectedBtn: '[data-cy="conflict-sync-selected-button"]',
+
+  // source: frontend/src/HomePage/HomePage.jsx:2461 (create-new-${apps|modules|workflows}-button)
+  createNewAppButton: '[data-cy="create-new-apps-button"]',
+  // source: frontend/src/HomePage/HomePage.jsx:2487
+  importDropdownToggle: '[data-cy="import-dropdown-menu"]',
+  // source: frontend/src/modules/common/components/BaseImportAppMenu/BaseImportAppMenu.jsx:42
+  chooseFromTemplateButton: '[data-cy="choose-from-template-button"]',
+  // source: frontend/src/modules/common/components/BaseImportAppMenu/BaseImportAppMenu.jsx:50
+  importFromDeviceOption: '[data-cy="import-option-label"]',
+
+  // source: frontend/ee/modules/Workflows/pages/WorkflowEditorPage/components/Header/index.jsx:151
+  workflowRunButton: '[data-cy="workflow-run-button"]',
+  // source: frontend/ee/modules/Workflows/pages/WorkflowEditorPage/components/Header/WorkflowGitCTA.jsx:116
+  workflowGitButton: '[data-cy="workflow-git-commit-button"]',
+  // source: frontend/ee/modules/Workflows/pages/WorkflowEditorPage/components/LogsPanel/index.jsx:230
+  workflowLogsPanel: '[data-cy="logs-panel"]',
+  // source: frontend/src/AppBuilder/Header/VersionManager/VersionSwitcherButton.jsx:44
+  versionSwitcherButton: '[data-cy="version-switcher-button"]',
+  // source: frontend/src/AppBuilder/Header/VersionManager/VersionDropdownItem.jsx:454 (<version-name>-save-version-button)
+  versionRowSaveButton: '[data-cy$="-save-version-button"]',
 };

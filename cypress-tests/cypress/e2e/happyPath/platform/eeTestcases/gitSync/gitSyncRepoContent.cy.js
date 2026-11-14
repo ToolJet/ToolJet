@@ -19,8 +19,6 @@ import {
 } from "Support/utils/platform/gitSync/gitRepoReader";
 
 // What a push writes to GitHub, compared against the app's own export.
-// Layout source: server/ee/app-git/shared/app-git-file-operations.util.ts,
-// server/ee/git-sync/data-source-fs.util.ts.
 const FIXTURE = "gitSync/fixture-app.json";
 // source: cypress/fixtures/gitSync/fixture-app.json (data source "restapi", url {{constants.API_BASE_URL}})
 const FIXTURE_DS = "restapi";

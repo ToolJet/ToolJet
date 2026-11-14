@@ -30,6 +30,11 @@ const normalizeBranch = (b) => ({
   name: b.name ?? b.branch_name,
   isDefault: b.is_default ?? b.isDefault ?? false,
   lastSyncedCommit: b.last_synced_commit ?? b.lastSyncedCommit ?? null,
+  // Category tree SHAs, stored per category on a clean pull (workspace_branch.entity.ts:36-53).
+  appsGitTreeSha: b.apps_git_tree_sha ?? b.appsGitTreeSha ?? null,
+  modulesGitTreeSha: b.modules_git_tree_sha ?? b.modulesGitTreeSha ?? null,
+  dataSourcesGitTreeSha: b.data_sources_git_tree_sha ?? b.dataSourcesGitTreeSha ?? null,
+  workflowsGitTreeSha: b.workflows_git_tree_sha ?? b.workflowsGitTreeSha ?? null,
   sourceBranchId: b.source_branch_id ?? b.sourceBranchId ?? null,
   raw: b,
 });
@@ -190,27 +195,44 @@ export const attemptPullWorkspaceViaAPI = (branchId) =>
 /**
  * Pull `branch` from git and wait until ToolJet has recorded the remote head
  * as its last synced commit (set when the pull job finishes —
- * server/ee/workspace-branches/service.ts `lastSyncedCommit`).
+ * server/ee/workspace-branches/service.ts `lastSyncedCommit`). When the remote
+ * head has not moved the server skips the pull and answers `{ upToDate: true }`
+ * (server/ee/workspace-branches/service.ts:1056-1058).
  *
  * @tjType workspaceBranch.pull
  * @tjBlock gitSync
- * @tjUsage pullWorkspaceViaAPI(defaultBranch)
+ * @tjUsage pullWorkspaceViaAPI(defaultBranch).then(({ upToDate, branch }) => ...)
  * @tjDom none - POST /api/workspace-branches/pull, then polls list
  * @param {{id:string, name:string}} branch
+ * @returns {Cypress.Chainable<{upToDate:boolean, body:object, branch:object}>} branch is the refreshed row
  */
 export const pullWorkspaceViaAPI = (branch) =>
   getBranchHeadViaAPI(branch.name).then((remoteHead) =>
-    attemptPullWorkspaceViaAPI(branch.id)
-      .then((res) => {
-        expect(res.status, `pull ${branch.name}: ${JSON.stringify(res.body)}`).to.be.oneOf([200, 201, 202]);
-      })
-      .then(() =>
-        pollUntil(
-          () => getBranchViaAPI(branch.name),
-          (b) => !!b && b.lastSyncedCommit === remoteHead,
-          { label: `pull of ${branch.name} at ${remoteHead?.slice(0, 7)} finished` },
-        ),
-      ),
+    attemptPullWorkspaceViaAPI(branch.id).then((res) => {
+      expect(res.status, `pull ${branch.name}: ${JSON.stringify(res.body)}`).to.be.oneOf([200, 201, 202]);
+      const body = res.body || {};
+      return waitForPullToFinish(branch.name, remoteHead).then((refreshed) => ({
+        upToDate: body.upToDate === true,
+        body,
+        branch: refreshed,
+      }));
+    }),
+  );
+
+/**
+ * Wait for the background pull job: ToolJet records the remote head as the
+ * branch's last synced commit when the pull finishes. UI pulls return before that.
+ *
+ * @tjType workspaceBranch.waitForPull
+ * @tjBlock gitSync
+ * @tjUsage waitForPullToFinish(ctx.baseBranch, mergedHead)
+ * @tjDom none - polls GET /api/workspace-branches
+ */
+export const waitForPullToFinish = (branchName, remoteHead) =>
+  pollUntil(
+    () => getBranchViaAPI(branchName),
+    (b) => !!b && b.lastSyncedCommit === remoteHead,
+    { label: `pull of ${branchName} at ${remoteHead?.slice(0, 7)} finished` },
   );
 
 /**

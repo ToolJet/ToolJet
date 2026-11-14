@@ -1,4 +1,5 @@
 import { gitSyncSelectors as GS } from "Selectors/platform/gitSyncSelectors";
+import { gitSyncText } from "Texts/platform/gitSync";
 
 /**
  * Dashboard-level git sync UI helpers (branch dropdown, create/switch modals,
@@ -98,8 +99,7 @@ export const pullWorkspaceViaUI = () => {
   cy.get(GS.pullButton, { timeout: 30000 }).should("be.enabled").click();
 };
 
-// Configure-git page. Provider modal inputs have no data-cy; placeholders are
-// the stable hook (frontend/ee/modules/WorkspaceSettings/pages/GitSync/providers/GithubHTTPS/GithubHTTPSModal.jsx:861-973).
+// Provider modal inputs have no data-cy; placeholders are the stable hook (GithubHTTPSModal.jsx:861-973).
 const githubField = {
   gitUrl: 'input[placeholder="Enter HTTPS repo URL"]',
   branchName: 'input[placeholder="Enter Branch Name"]',
@@ -110,8 +110,7 @@ const githubField = {
   githubAppPrivateKey: 'textarea[placeholder="Enter GitHub app private key"], input[placeholder="Enter GitHub app private key"]',
 };
 
-// Credential fields are plain text inputs: type them without a command-log entry and mask
-// them in the test browser so screenshots and videos never show the values.
+// Credentials are typed without a log entry and masked so screenshots never show them.
 const credentialFields = ["githubAppId", "githubAppInstallationId", "githubAppPrivateKey"];
 
 /**
@@ -122,15 +121,11 @@ const credentialFields = ["githubAppId", "githubAppInstallationId", "githubAppPr
  */
 export const openGithubConfigModal = (ws) => {
   cy.visit(`/${ws.workspaceSlug}/workspace-settings/configure-git`, { redirectionLimit: 20 });
-  // source: .../GitSync/components/RepositoryConnections/RepositoryConnections.jsx (`${name}-git-card`)
-  // The card only opens the modal once license/feature access has loaded; until
-  // then its edit icon is visibility:hidden (RepositoryConnections.jsx:214, 257-262).
-  // The icon's relative src may not load, so check its style rather than visibility.
+  // The card's edit icon stays visibility:hidden until licence access loads (RepositoryConnections.jsx:214).
   cy.get('[data-cy="github-edit-icon"]', { timeout: 30000 }).should(($img) => {
     expect($img[0].style.visibility, "provider card enabled").to.not.equal("hidden");
   });
-  // The page refetches license + git config after mount and the re-render can drop
-  // the modal's open state, so click until the modal is actually up.
+  // A re-render after mount can drop the modal, so click until it is up.
   const openModal = (attempt) => {
     cy.get('[data-cy="github-git-card"]').click();
     cy.wait(1500, { log: false }); // let the modal mount before deciding to retry
@@ -185,15 +180,178 @@ export const githubFieldError = (key) =>
  *
  * @tjType gitSyncUI.openApp
  * @tjBlock gitSync
- * @tjUsage openAppFromDashboardViaUI(ctx, branch.name, appName)
+ * @tjUsage openAppFromDashboardViaUI(ctx, branch.name, appName) / (ctx, branch.name, moduleName, { page: "modules" })
  * @tjDom [data-cy$="-card"] → a "Edit"
  */
-export const openAppFromDashboardViaUI = (ctx, branch, appName) => {
-  visitGitSyncPage(ctx, { branch });
+export const openAppFromDashboardViaUI = (ctx, branch, appName, { page = "" } = {}) => {
+  visitGitSyncPage(ctx, { branch, page });
   cy.contains('[data-cy$="-card"]', appName, { timeout: 30000 })
     .should("be.visible")
     .realHover();
   cy.contains('[data-cy$="-card"]', appName).contains("a", "Edit").should("be.visible").click();
   cy.url({ timeout: 30000 }).should("include", "/apps/");
-  cy.get('[data-cy="lifecycle-cta-button"]', { timeout: 60000 }).should("be.visible");
+  // Modules and workflows lose the Commit CTA once a version is saved on the branch.
+  cy.get(page ? GS.editorBranchHeader : GS.lifecycleCta, { timeout: 60000 }).should("be.visible");
+};
+
+/**
+ * Save the open app, module or workflow as a named version from the editor's branch
+ * dropdown. In branch mode this also tags `<co_relation_id>/<name>` on GitHub and
+ * locks the resource on the current branch.
+ *
+ * @tjType gitSyncUI.saveVersion
+ * @tjBlock gitSync
+ * Single-branch mode has no Save version in the branch dropdown; pass { via: "versionMenu" }.
+ *
+ * @tjUsage saveVersionViaUI("v1") / saveVersionViaUI("v1", { via: "versionMenu" })
+ * @tjDom [data-cy="branch-dropdown-header"] → [data-cy="save-version-btn"] → [data-cy="create-version-save-button"]
+ */
+export const saveVersionViaUI = (name, { via = "branchMenu" } = {}) => {
+  if (via === "versionMenu") {
+    cy.get(GS.versionSwitcherButton).should("be.visible").click();
+    cy.get(GS.versionRowSaveButton).filter(":visible").first().should("be.enabled").click();
+  } else {
+    cy.get(GS.editorBranchHeader).should("be.visible").click();
+    cy.get(GS.saveVersionBtn).should("be.visible").click();
+  }
+  cy.get(GS.versionNameInput).should("be.visible").clear().type(name);
+  cy.get(GS.createVersionSaveBtn).should("be.enabled").click();
+  cy.contains(`Version ${name} saved successfully`, { timeout: 30000 }).should("be.visible");
+};
+
+/**
+ * Commit the open app from the app builder header.
+ *
+ * @tjType gitSyncUI.commitApp
+ * @tjBlock gitSync
+ * @tjUsage commitAppViaUI("feat: pin v1")
+ * @tjDom [data-cy="lifecycle-cta-button"] → [data-cy="commit-message-input"] → [data-cy="commit-button"]
+ */
+export const commitAppViaUI = (message) => {
+  // Commit enables before the modal's app-git config loads (catalogue F-02): wait for it.
+  cy.intercept("GET", "**/api/app-git/*/app/*").as("appGitConfig");
+  cy.get(GS.lifecycleCta).should("contain.text", "Commit").click();
+  cy.wait("@appGitConfig").its("response.statusCode").should("eq", 200);
+  cy.get(GS.commitMessageInput).should("be.visible").type(message);
+  cy.get(GS.commitButton).should("be.enabled").click();
+};
+
+/**
+ * Pull the open app or module from git with the editor's "Pull commit" on the default branch.
+ *
+ * @tjType gitSyncUI.pullCommitInEditor
+ * @tjBlock gitSync
+ * @tjUsage pullCommitInEditorViaUI()
+ * @tjDom [data-cy="lifecycle-cta-button"] → [data-cy="pull-button"]
+ */
+export const pullCommitInEditorViaUI = () => {
+  cy.get(GS.lifecycleCta).should("contain.text", "Pull commit").click();
+  cy.get(GS.pullButton, { timeout: 60000 }).should("be.enabled").click();
+  cy.contains(gitSyncText.editorPullSuccess, { timeout: 60000 }).should("be.visible");
+};
+
+/**
+ * Run the open workflow from its editor and read one node's output from the logs panel.
+ *
+ * @tjType gitSyncUI.runWorkflowNode
+ * @tjBlock gitSync
+ * @tjUsage runWorkflowAndReadNodeOutputViaUI("getTodo2").then((text) => ...)
+ * @tjDom [data-cy="workflow-run-button"] → [data-cy="<node>-node-name"] → [data-cy="tab-output"]
+ * @returns {Cypress.Chainable<string>} the logs panel text with the node's output expanded
+ */
+export const runWorkflowAndReadNodeOutputViaUI = (nodeName) => {
+  const node = nodeName.toLowerCase();
+  cy.intercept("POST", "**/api/workflow_executions").as("workflowRun");
+  cy.get(GS.workflowRunButton, { timeout: 60000 }).should("be.enabled").click();
+  cy.wait("@workflowRun", { timeout: 60000 }).its("response.statusCode").should("be.oneOf", [200, 201]);
+  cy.get(GS.workflowLogsPanel).within(() => {
+    cy.contains(`${nodeName}:`, { timeout: 60000 }).should("exist");
+    cy.contains("Execution succeeded", { timeout: 60000 }).should("exist");
+    cy.get(`[data-cy="${node}-node-name"]`).click();
+    cy.get('[data-cy="tab-output"]').click();
+    // The output tree is collapsed; its "data" key toggles the response body open.
+    cy.contains(/^data$/).click();
+  });
+  return cy.get(GS.workflowLogsPanel).invoke("text");
+};
+
+/**
+ * Pull the open workflow from git with its editor's "Pull commit" on the default branch.
+ *
+ * @tjType gitSyncUI.pullCommitInWorkflow
+ * @tjBlock gitSync
+ * @tjUsage pullCommitInWorkflowViaUI()
+ * @tjDom [data-cy="workflow-git-commit-button"] → [data-cy="pull-button"]
+ */
+export const pullCommitInWorkflowViaUI = () => {
+  cy.get(GS.workflowGitButton).should("contain.text", "Pull commit").click();
+  cy.get(GS.pullButton, { timeout: 60000 }).should("be.enabled").click();
+  cy.contains(gitSyncText.editorPullSuccess, { timeout: 60000 }).should("be.visible");
+};
+
+/**
+ * Select a widget on the canvas and open its Properties panel.
+ *
+ * @tjType gitSyncUI.openWidgetInspector
+ * @tjBlock gitSync
+ * @tjUsage openWidgetInspectorViaUI("moduleViewer1")
+ * @tjDom [data-cy="draggable-widget-<name>"] → config handle "<name>"
+ */
+export const openWidgetInspectorViaUI = (widgetName) => {
+  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).click(5, 5, { force: true });
+  cy.contains(".config-handle", widgetName).should("be.visible").click();
+};
+
+// ModuleViewer Version has no data-cy (ModuleViewerInspector.jsx:373) and reads as hidden when locked.
+const moduleVersionField = () => cy.contains(".field", /^Version/, { timeout: 30000 }).first();
+
+/**
+ * Pin a ModuleViewer to a saved module version in the inspector.
+ *
+ * @tjType gitSyncUI.pinModuleVersion
+ * @tjBlock gitSync
+ * @tjUsage pinModuleViewerVersionViaUI("moduleViewer1", "v1")
+ * @tjDom inspector .field "Version" → option "<version>"
+ */
+export const pinModuleViewerVersionViaUI = (widgetName, version) => {
+  openWidgetInspectorViaUI(widgetName);
+  moduleVersionField().find("label").next().click();
+  cy.contains("Versions").should("be.visible");
+  moduleVersionField().contains(new RegExp(`^${version}$`)).click();
+  moduleVersionField().should("contain.text", version);
+};
+
+/**
+ * @tjType gitSyncUI.verifyModuleVersion
+ * @tjBlock gitSync
+ * @tjUsage verifyModuleViewerVersion("moduleViewer1", "v1")
+ */
+export const verifyModuleViewerVersion = (widgetName, version) => {
+  openWidgetInspectorViaUI(widgetName);
+  moduleVersionField().find("label").next().should("contain.text", version);
+};
+
+/**
+ * Pin a workflows query to a saved workflow version in the query editor.
+ *
+ * @tjType gitSyncUI.pinWorkflowVersion
+ * @tjBlock gitSync
+ * @tjUsage pinWorkflowQueryVersionViaUI("runWf", "v1")
+ * @tjDom [data-cy="list-query-<query>"] → [data-cy="workflow-version-select"] → option "<version>"
+ */
+export const pinWorkflowQueryVersionViaUI = (queryName, version) => {
+  cy.get(`[data-cy="list-query-${queryName.toLowerCase()}"]`).should("be.visible").click();
+  cy.get(GS.workflowVersionSelect).should("be.visible").children().first().click();
+  cy.get(GS.workflowVersionSelect).contains(new RegExp(`^${version}$`)).click();
+  cy.get(GS.workflowVersionSelect).children().first().should("contain.text", version);
+};
+
+/**
+ * @tjType gitSyncUI.verifyWorkflowVersion
+ * @tjBlock gitSync
+ * @tjUsage verifyWorkflowQueryVersion("runWf", "v1")
+ */
+export const verifyWorkflowQueryVersion = (queryName, version) => {
+  cy.get(`[data-cy="list-query-${queryName.toLowerCase()}"]`).should("be.visible").click();
+  cy.get(GS.workflowVersionSelect).children().first().should("contain.text", version);
 };

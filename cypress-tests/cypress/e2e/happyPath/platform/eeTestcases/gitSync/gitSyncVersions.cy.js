@@ -12,9 +12,9 @@ import {
   deleteTagsByPrefixViaAPI,
 } from "Support/utils/platform/gitSync/gitHubRepo";
 import { pollUntil } from "Support/utils/platform/gitSync/poll";
+import { gitSyncText } from "Texts/platform/gitSync";
 
-// Saving a version creates a GitHub tag `<co_relation_id>/<version name>`
-// (server/ee/app-git/shared/branching-business.util.ts; server/ee/app-git/services/versions.service.ts).
+// Saving a version creates the GitHub tag `<co_relation_id>/<version name>`.
 describe("Git Sync — Version Tags", { retries: 0 }, () => {
   let ctx;
   const coRelIds = [];
@@ -24,8 +24,7 @@ describe("Git Sync — Version Tags", { retries: 0 }, () => {
       cy.request({ method, url: `${Cypress.env("server_host")}/api${path}`, headers, failOnStatusCode: false, ...opts }),
     );
 
-  // Save (publish) a version the way the app builder does
-  // (frontend/src/_services/git_sync.service.js saveVersion → PUT /app-git/:appId/versions/:versionId).
+  // Save a version the way the app builder does (PUT /app-git/:appId/versions/:versionId).
   const saveVersionViaAPI = (appId, versionId, name, branchId, description) =>
     tjRequest("PUT", `/app-git/${appId}/versions/${versionId}`, {
       qs: { branch_id: branchId },
@@ -108,6 +107,37 @@ describe("Git Sync — Version Tags", { retries: 0 }, () => {
       saveVersionViaAPI(s.appId, s.versionId, "v1", s.branch.id);
       waitForVersionOnDefault(s.appId, "v1").then((v1) => {
         expect(v1.status, "saved version is published").to.equal("PUBLISHED");
+      });
+    });
+  });
+
+  // Saved versions can't be renamed (versions/service.ts:441), so the tag must stay as saved.
+  it("should keep the GitHub tag unchanged when renaming a saved version is rejected", () => {
+    const renamed = "v1-renamed";
+    seedBranchApp("rename").then((s) => {
+      saveVersionViaAPI(s.appId, s.versionId, "v1", s.branch.id);
+      waitForTagViaAPI(`${s.coRelationId}/v1`).then((savedTag) => {
+        waitForVersionOnDefault(s.appId, "v1").then((v1) => {
+          tjRequest("PUT", `/v2/apps/${s.appId}/versions/${v1.id}`, {
+            qs: { branch_id: ctx.defaultBranch.id },
+            body: { name: renamed },
+          }).then((res) => {
+            expect(res.status, `rename v1: ${JSON.stringify(res.body)}`).to.equal(400);
+            expect(JSON.stringify(res.body), "rename rejected").to.include(gitSyncText.savedVersionRenameBlocked);
+          });
+          listVersionsViaAPI(s.appId, ctx.defaultBranch.id).then((versions) => {
+            const names = versions.map((v) => v.name);
+            expect(names, "saved version keeps its name").to.include("v1");
+            expect(names, "no renamed version").to.not.include(renamed);
+          });
+        });
+        getTagViaAPI(`${s.coRelationId}/v1`).then((tag) => {
+          expect(tag, "original tag kept").to.not.equal(null);
+          expect(tag.sha, "original tag still on the saved commit").to.equal(savedTag.sha);
+        });
+        getTagViaAPI(`${s.coRelationId}/${renamed}`).then((tag) => {
+          expect(tag, "no tag for the rejected name").to.equal(null);
+        });
       });
     });
   });

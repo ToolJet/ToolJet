@@ -62,6 +62,15 @@ describe("Git Sync — Configuration", { retries: 0 }, () => {
         githubConfigPayload(ctx.baseBranch).gitUrl,
       );
       cy.get('input[placeholder="Enter Branch Name"]').should("have.value", ctx.baseBranch);
+
+      // A new connection starts in single-branch mode; enabling branching flips it.
+      listBranchesViaAPI().then(({ isMultiBranchingEnabled }) => {
+        expect(isMultiBranchingEnabled, "new config is single-branch").to.equal(false);
+      });
+      getGitSyncStatusViaAPI().then((status) => setBranchingViaAPI(status.id, true));
+      listBranchesViaAPI().then(({ isMultiBranchingEnabled }) => {
+        expect(isMultiBranchingEnabled, "branching enabled").to.equal(true);
+      });
     });
   });
 

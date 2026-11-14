@@ -1,5 +1,4 @@
-// Git sync user-facing strings. Every value cites its source line; update the
-// citation when the source moves. Paths are relative to the repo root.
+// Git sync user-facing strings; each value cites its source line.
 
 export const gitSyncText = {
   // source: frontend/src/AppBuilder/Header/LockedBranchBanner.jsx:36
@@ -71,4 +70,35 @@ export const gitSyncText = {
   gitSyncDisabled: "Git sync disabled successfully",
   // source: frontend/ee/modules/WorkspaceSettings/pages/GitSync/components/RepositoryConnections/RepositoryConnections.jsx:321
   oneProviderAtATime: "Only one git sync configuration can be active at a time",
+
+  // source: frontend/src/AppBuilder/Header/LifecycleCTAButton.jsx:141
+  lifecycleSync: "Sync",
+  // source: frontend/ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal.jsx:78 (resourceType "app")
+  pushUnsyncedAppsTitle: "Push unsynced apps to git",
+  // source: frontend/ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal.jsx:163
+  pushUnsyncedCommitMessage: (appName) => `Committed ${appName}`,
+  // source: frontend/ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal.jsx:230
+  pushUnsyncedSuccess: (defaultBranch) =>
+    `Resource(s) pushed successfully. Merge this branch to ${defaultBranch} to complete sync`,
+
+  // source: frontend/src/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal.jsx:232
+  pullConflictTitle: "Cannot pull branch",
+  // source: frontend/src/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal.jsx:418
+  syncFromGitRemoteCategory: "Duplicate data: Sync from git remote",
+  // source: frontend/src/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal.jsx:19, 141-143
+  conflictAppNameRow: (appName) => `App name - '${appName}'`,
+  // source: frontend/src/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal.jsx:53
+  conflictRemoteBadge: "Remote",
+  // source: frontend/src/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal.jsx:51
+  conflictLocalBadge: "Local",
+  // source: frontend/src/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal.jsx:469
+  syncSelected: (count) => `Sync selected (${count})`,
+  // source: frontend/src/_ui/WorkspaceGitSyncModal/index.jsx:304 (shown by App.jsx after the reload)
+  conflictSyncedToast: "Resource(s) synced successfully!",
+
+  // source: frontend/src/_ui/WorkspaceGitSyncModal/index.jsx:271
+  workspacePullUpToDate: (branchName) =>
+    `Already up to date. There are no new commits on ${branchName} to pull.`,
+  // source: server/src/modules/versions/service.ts:441
+  savedVersionRenameBlocked: "Cannot edit name or description of a saved version.",
 };

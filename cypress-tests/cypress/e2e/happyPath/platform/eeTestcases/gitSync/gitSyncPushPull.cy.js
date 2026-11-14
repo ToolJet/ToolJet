@@ -18,8 +18,6 @@ import {
 import { listGitResources } from "Support/utils/platform/gitSync/gitRepoReader";
 import { pollUntil } from "Support/utils/platform/gitSync/poll";
 
-// Branch → push → GitHub PR merge → pull, for the changes a team makes most:
-// add, rename and delete an app, two branches merged in turn, and a second workspace.
 describe("Git Sync — Push and Pull", { retries: 0 }, () => {
   let ctx;
 

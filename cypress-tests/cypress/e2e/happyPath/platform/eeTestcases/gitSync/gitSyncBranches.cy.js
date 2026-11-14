@@ -97,6 +97,44 @@ describe("Git Sync — Branches", { retries: 0 }, () => {
     cy.get(GS.wsPullButton).should("be.visible");
   });
 
+  it("should open the branch picker with Create branch instead of creating an app from every create entry point on the locked default branch", () => {
+    // Each entry point opens the Switch branch modal (HomePage.jsx:1907); git import isn't gated.
+    const entryPoints = [
+      { label: "Create new app", open: () => cy.get(GS.createNewAppButton).should("be.visible").click() },
+      {
+        label: "Choose from template",
+        open: () => {
+          cy.get(GS.importDropdownToggle).should("be.visible").click();
+          cy.get(GS.chooseFromTemplateButton).should("be.visible").click();
+        },
+      },
+      {
+        label: "Import from device",
+        open: () => {
+          cy.get(GS.importDropdownToggle).should("be.visible").click();
+          cy.get(GS.importFromDeviceOption).should("be.visible").click();
+        },
+      },
+    ];
+
+    listAppsOnBranchViaAPI(ctx.defaultBranch.id).then((before) => {
+      entryPoints.forEach(({ label, open }) => {
+        visitGitSyncPage(ctx, { branch: ctx.baseBranch });
+        cy.get(GS.lockedBanner).should("be.visible");
+        open();
+        cy.log(`entry point: ${label}`);
+        // source: frontend/src/_ui/WorkspaceBranchDropdown/SwitchBranchModal.jsx:240-244 (Alert has no data-cy)
+        cy.contains(gitSyncText.switchBranchLocked).should("be.visible");
+        cy.get(GS.switchCreateBranchBtn).should("be.visible").click();
+        cy.get(GS.branchNameInput).should("be.visible");
+        cy.get(GS.createBranchButton).should("be.visible");
+      });
+      listAppsOnBranchViaAPI(ctx.defaultBranch.id).then((after) => {
+        expect(after.length, "no app created on the default branch").to.equal(before.length);
+      });
+    });
+  });
+
   it("should import a branch that exists only on GitHub after confirmation", () => {
     const name = `${ctx.prefix}-remote-only`;
     createRemoteBranchViaAPI(name, ctx.baseBranch);

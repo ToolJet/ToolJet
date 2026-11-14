@@ -274,6 +274,35 @@ export const commitFilesViaAPI = (branch, files, message) =>
   );
 
 /**
+ * Edit files on GitHub the way a developer would outside ToolJet: every JSON file under
+ * `dir` that contains `from` gets it replaced with `to`, in one commit.
+ *
+ * @tjType gitHub.rewriteFiles
+ * @tjBlock gitSync
+ * @tjUsage rewriteRepoFilesViaAPI(base, "modules/cf-mod-x", '"alpha"', '"beta"', "edit module")
+ * @tjDom none - GitHub tree + contents + commitFilesViaAPI
+ * @returns {Cypress.Chainable<string>} the new commit sha
+ */
+export const rewriteRepoFilesViaAPI = (branch, dir, from, to, message) =>
+  listRepoPathsViaAPI(branch).then((paths) => {
+    const edited = {};
+    const reads = paths
+      .filter((p) => p.startsWith(`${dir}/`) && p.endsWith(".json"))
+      .map((p) => () =>
+        readRepoJsonViaAPI(branch, p).then((json) => {
+          const text = JSON.stringify(json, null, 2);
+          if (text.includes(from)) edited[p] = text.split(from).join(to);
+        }),
+      );
+    return reads
+      .reduce((chain, read) => chain.then(read), cy.wrap(null, { log: false }))
+      .then(() => {
+        expect(Object.keys(edited), `files under ${dir} containing ${from}`).to.not.be.empty;
+        return commitFilesViaAPI(branch, edited, message);
+      });
+  });
+
+/**
  * @tjType gitHub.listTree
  * @tjBlock gitSync
  * @tjUsage listRepoPathsViaAPI(branch).then((paths) => ...)
@@ -286,6 +315,34 @@ export const listRepoPathsViaAPI = (branch) =>
       (res.body.tree || []).filter((e) => e.type === "blob").map((e) => e.path),
     ),
   );
+
+/**
+ * Git tree SHA of a folder on `branch` (e.g. "apps", "apps/<name>", "data-sources"),
+ * walked one level at a time from the head commit's root tree. Git object SHAs are
+ * content hashes, so they equal the tree SHAs ToolJet stores on pull.
+ *
+ * @tjType gitHub.getTreeSha
+ * @tjBlock gitSync
+ * @tjUsage getTreeShaViaAPI(ctx.baseBranch, `apps/${appName}`).then((sha) => ...)
+ * @tjDom none - GET /git/commits/:head + GET /git/trees/:sha per path segment
+ * @returns {Cypress.Chainable<string|null>} tree sha, null when the branch or folder is absent
+ */
+export const getTreeShaViaAPI = (branch, folderPath) =>
+  getBranchHeadViaAPI(branch).then((head) => {
+    if (!head) return null;
+    return ghRequest("GET", `/git/commits/${head}`).then((commitRes) => {
+      expect(commitRes.status, `read commit ${head} on ${branch}`).to.equal(200);
+      const segments = folderPath.split("/").filter(Boolean);
+      const walk = (treeSha, rest) => {
+        if (!rest.length) return cy.wrap(treeSha, { log: false });
+        return ghRequest("GET", `/git/trees/${treeSha}`).then((treeRes) => {
+          const entry = (treeRes.body.tree || []).find((e) => e.path === rest[0] && e.type === "tree");
+          return entry ? walk(entry.sha, rest.slice(1)) : null;
+        });
+      };
+      return walk(commitRes.body.tree.sha, segments);
+    });
+  });
 
 /**
  * @tjType gitHub.readJson
