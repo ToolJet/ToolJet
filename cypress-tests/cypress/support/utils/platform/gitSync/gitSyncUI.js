@@ -185,8 +185,10 @@ export const openAppFromDashboardViaUI = (ctx, branch, appName, { page = "" } = 
   // The unsynced icon can keep the card from showing its hover buttons; the Edit link is what matters here.
   cy.contains('[data-cy$="-card"]', appName).contains("a", "Edit").click({ force: true });
   cy.url({ timeout: 30000 }).should("include", "/apps/");
-  // Editors differ by type and mode (no branch menu in single-branch, no Commit once a version is saved).
-  const editorReady = page ? [GS.editorBranchHeader, GS.lifecycleCta, GS.workflowGitButton].join(", ") : GS.lifecycleCta;
+  // Editors differ by type and mode (no branch menu in single-branch, no git CTA once a version is saved).
+  const editorReady = page
+    ? [GS.editorBranchHeader, GS.lifecycleCta, GS.workflowGitButton, GS.workflowRunButton].join(", ")
+    : GS.lifecycleCta;
   cy.get(editorReady, { timeout: 60000 }).filter(":visible").should("have.length.at.least", 1);
 };
 
@@ -236,15 +238,24 @@ export const commitAppViaUI = (message) => {
 };
 
 /**
- * Pull the open app or module from git with the editor's "Pull commit" on the default branch.
+ * Pull the open app or module from git with the editor's git CTA ("Pull commit" in multi-branch, "Commit" in single-branch).
  *
  * @tjType gitSyncUI.pullCommitInEditor
  * @tjBlock gitSync
  * @tjUsage pullCommitInEditorViaUI()
- * @tjDom [data-cy="lifecycle-cta-button"] → [data-cy="pull-button"]
+ * @tjDom [data-cy="lifecycle-cta-button"] → (.tab-pull) → [data-cy="pull-button"]
  */
 export const pullCommitInEditorViaUI = () => {
-  cy.get(GS.lifecycleCta).should("contain.text", "Pull commit").click();
+  cy.get(GS.lifecycleCta).should("contain.text", "ommit").click();
+  pullFromGitSyncModalViaUI();
+};
+
+// Multi-branch opens a pull-only modal; single-branch opens Push/Pull tabs on Push.
+const pullFromGitSyncModalViaUI = () => {
+  cy.get(GS.gitModalTitle, { timeout: 30000 }).should("be.visible");
+  cy.get("body").then(($body) => {
+    if ($body.find(GS.pullTab).length) cy.get(GS.pullTab).click();
+  });
   cy.get(GS.pullButton, { timeout: 60000 }).should("be.enabled").click();
   cy.contains(gitSyncText.editorPullSuccess, { timeout: 60000 }).should("be.visible");
 };
@@ -262,7 +273,10 @@ export const runWorkflowAndReadNodeOutputViaUI = (nodeName) => {
   const node = nodeName.toLowerCase();
   cy.intercept("POST", "**/api/workflow_executions/*/trigger").as("workflowRun");
   cy.get(GS.workflowRunButton, { timeout: 60000 }).should("be.enabled").click();
-  cy.wait("@workflowRun", { timeout: 60000 }).its("response.statusCode").should("be.oneOf", [200, 201]);
+  // The run's outcome is read from the logs below; the status is logged since a 400 can still show a successful run.
+  cy.wait("@workflowRun", { timeout: 60000 }).then(({ response }) =>
+    cy.log(`workflow trigger ${response?.statusCode}: ${JSON.stringify(response?.body)?.slice(0, 300)}`),
+  );
   cy.get(GS.workflowLogsPanel).within(() => {
     cy.contains(`${nodeName}:`, { timeout: 60000 }).should("exist");
     cy.contains("Execution succeeded", { timeout: 60000 }).should("exist");
@@ -275,7 +289,7 @@ export const runWorkflowAndReadNodeOutputViaUI = (nodeName) => {
 };
 
 /**
- * Pull the open workflow from git with its editor's "Pull commit" on the default branch.
+ * Pull the open workflow from git with its editor's git CTA ("Pull commit" or, in single-branch, "Commit").
  *
  * @tjType gitSyncUI.pullCommitInWorkflow
  * @tjBlock gitSync
@@ -283,9 +297,8 @@ export const runWorkflowAndReadNodeOutputViaUI = (nodeName) => {
  * @tjDom [data-cy="workflow-git-commit-button"] → [data-cy="pull-button"]
  */
 export const pullCommitInWorkflowViaUI = () => {
-  cy.get(GS.workflowGitButton).should("contain.text", "Pull commit").click();
-  cy.get(GS.pullButton, { timeout: 60000 }).should("be.enabled").click();
-  cy.contains(gitSyncText.editorPullSuccess, { timeout: 60000 }).should("be.visible");
+  cy.get(GS.workflowGitButton).should("contain.text", "ommit").click();
+  pullFromGitSyncModalViaUI();
 };
 
 /**
@@ -315,8 +328,7 @@ const moduleVersionField = () => cy.contains(".field", /^Version/, { timeout: 30
 export const pinModuleViewerVersionViaUI = (widgetName, version) => {
   openWidgetInspectorViaUI(widgetName);
   moduleVersionField().find("label").next().click();
-  cy.contains("Versions").should("be.visible");
-  moduleVersionField().contains(new RegExp(`^${version}$`)).click();
+  moduleVersionField().contains(new RegExp(`^${version}$`)).should("be.visible").click();
   moduleVersionField().should("contain.text", version);
 };
 

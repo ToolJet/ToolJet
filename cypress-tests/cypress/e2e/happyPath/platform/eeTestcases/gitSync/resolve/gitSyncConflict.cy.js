@@ -14,6 +14,7 @@ import {
   listAppsOnBranchViaAPI,
   loginToGitSyncSpec,
   seedPushedAppViaAPI,
+  setupGitSyncSpec,
   teardownGitSyncSpec,
 } from "Support/utils/platform/gitSync/gitSyncSeed";
 import { pullWorkspaceViaUI, visitGitSyncPage } from "Support/utils/platform/gitSync/gitSyncUI";
@@ -51,12 +52,15 @@ describe("Git Sync — Pull Name Conflict", () => {
       const localCoRelationId = localApp.co_relation_id;
       expect(localCoRelationId, "local app has a co_relation_id").to.be.a("string");
 
-      createBranchViaAPI(`${ctx.prefix}-seed`)
+      // The git app comes from another workspace: a branch app in this one would already own its co_relation_id.
+      setupGitSyncSpec({ specKey: "conflict-src", baseBranch: ctx.baseBranch })
+        .then((source) => createBranchViaAPI(`${source.prefix}-seed`))
         .then((branch) =>
           seedPushedAppViaAPI({ branch, appName }).then(() =>
             mergeBranchViaAPI(branch.name, ctx.baseBranch),
           ),
         )
+        .then(() => loginToGitSyncSpec(ctx))
         .then(() => readRepoJsonViaAPI(ctx.baseBranch, appJsonPath))
         .then((appJson) => {
           expect(appJson, `${appJsonPath} on ${ctx.baseBranch}`).to.not.equal(null);

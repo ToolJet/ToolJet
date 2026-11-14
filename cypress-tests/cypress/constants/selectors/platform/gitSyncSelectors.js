@@ -25,6 +25,8 @@ export const gitSyncSelectors = {
   commitMessageInput: '[data-cy="commit-message-input"]',
   commitButton: '[data-cy="commit-button"]',
   pullButton: '[data-cy="pull-button"]',
+  // Single-branch editors open a Push/Pull modal; the Pull tab has no data-cy.
+  pullTab: ".push-pull-tabs .tab-pull button",
   viewLatestCommitLabel: '[data-cy="view-latest-commit-label"]',
 
   // shared across modals
