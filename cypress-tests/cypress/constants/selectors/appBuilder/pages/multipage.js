@@ -4,9 +4,9 @@
 // (page name / handle / mark-as-home / hide / disable / events) render as plain
 // inputs/switches WITHOUT data-cy, so those are driven via scoped text in utils.
 export const multipageSelector = {
-  // Right-sidebar trigger — SidebarItem.jsx:32 builds data-cy from tip "Page settings"
-  // via generateCypressDataCy => right-sidebar-page-settings-button
-  pageSettingsButton: '[data-cy="right-sidebar-page-settings-button"]',
+  // Left-rail "Pages" trigger — LeftSidebar SidebarItem builds data-cy from tip "Pages"
+  // via generateCypressDataCy => left-sidebar-pages-button
+  pageSettingsButton: '[data-cy="left-sidebar-pages-button"]',
 
   // Pages-and-navigation panel header — PageSettings.jsx:160,169
   panelHeaderTitle: ".pages-settings .panel-header-title",
@@ -24,6 +24,9 @@ export const multipageSelector = {
   pageNameInput: '#add-new-page-popup input.form-control[type="text"]',
   // Handle invalid feedback — AddNewPagePopup.jsx:382
   pageHandleInvalidFeedback: '[data-cy="page-handle-invalid-feedback"]',
+  // Header actions of the page configuration, now shown in the right panel (AddNewPagePopup.jsx)
+  deletePageButton: '[data-cy="delete-page-button"]',
+  closePageConfigurationButton: '[data-cy="close-page-configuration-button"]',
 
   // Delete confirmation modal — DeletePageConfirmationModal.jsx:91,97,99,102
   deleteModalTitle: ".delete-page-modal .modal-title",

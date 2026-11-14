@@ -3009,13 +3009,34 @@ input:focus-visible {
     margin-left: 10px;
     font-weight: 500;
     color: var(--slate12);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   &:hover {
     background: var(--indigo4);
   }
 
+  // Keep the footer one line: a long component name used to push the arrow onto a
+  // second line, and the taller fixed footer then covered the panel's last row.
   a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-width: 0;
+
+    > span:first-child {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+
+    > span:last-child {
+      flex-shrink: 0;
+    }
+
     &:hover {
       text-decoration: none;
     }

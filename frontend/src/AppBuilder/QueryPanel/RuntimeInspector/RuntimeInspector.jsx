@@ -322,7 +322,7 @@ const RuntimeInspector = ({ darkMode, moduleId, appType, onClose }) => {
         {onClose && (
           <RuntimePanelCloseButton
             onClose={onClose}
-            dataCy="inspector-close-button"
+            dataCy="runtime-inspector-close-button"
             className="runtime-inspector__close--end"
           />
         )}

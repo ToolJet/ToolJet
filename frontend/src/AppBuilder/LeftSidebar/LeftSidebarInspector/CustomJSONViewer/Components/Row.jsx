@@ -103,6 +103,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList = [], darkMode, 
                     copyToClipboard(formatPathForCopy(absolutePath), false);
                   }}
                   className="copy-to-clipboard json-viewer-action-icon"
+                  data-cy="copy-path-to-clipboard"
                 >
                   <Link2 size={12} />
                 </button>
