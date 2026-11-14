@@ -104,4 +104,32 @@ describe('ToolJet Database - row operations', () => {
       expect(rows.map((row) => row.name)).to.deep.eq(['ada', 'cy']);
     });
   });
+
+  it('deletes several selected rows at once', () => {
+    seedRows();
+    openTable(table.name);
+
+    selectRow(1);
+    selectRow(3);
+    cy.get(tooljetDatabaseSelectors.deleteRowsButton).click();
+    cy.get('.modal-content').contains('button', 'Delete').click();
+
+    cy.get(tooljetDatabaseSelectors.totalRecords).should('contain.text', '1 records');
+    apiSelectRows(table.id, envs.development).then((rows) => {
+      expect(rows.map((row) => row.name)).to.deep.eq(['bob']);
+    });
+  });
+
+  it('shows a new row in the grid with the values typed in the form', () => {
+    openTable(table.name);
+
+    cy.get(tooljetDatabaseSelectors.addNewDataButton).first().click();
+    cy.get(tooljetDatabaseSelectors.addNewRowOption).click();
+    cy.get(tooljetDatabaseSelectors.rowInput('name')).type('dee');
+    cy.get(tooljetDatabaseSelectors.rowInput('age')).type('55');
+    cy.get(commonSelectors.buttonSelector('Create')).click();
+
+    cy.get(tooljetDatabaseSelectors.cell('1', 'name')).should('contain.text', 'dee');
+    cy.get(tooljetDatabaseSelectors.cell('1', 'age')).should('contain.text', '55');
+  });
 });

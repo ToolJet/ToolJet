@@ -96,7 +96,7 @@ describe('ToolJet Database - queries in apps', () => {
     seedDevelopment("INSERT INTO {{self}} (name) VALUES ('ada'), ('bob')");
     apiAddTableQuery(app, table.id, 'delete_rows', {
       operation: 'delete_rows',
-      delete_rows: { where_filters: { 0: { column: 'name', operator: 'eq', value: 'ada' } }, limit: 1 },
+      delete_rows: { where_filters: { 0: { column: 'name', operator: 'eq', value: 'ada' } }, limit: 1, order_column: 'id' },
     }).then((queryId) => {
       runQuery(queryId, envs.development).its('status').should('eq', 'ok');
       apiSelectRows(table.id, envs.development).then((rows) => {
