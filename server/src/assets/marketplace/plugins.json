@@ -419,5 +419,13 @@
     "tags": [
       "AI"
     ]
+  },
+  {
+    "name": "Resend",
+    "description": "Resend plugin for transactional and marketing email delivery",
+    "version": "1.0.0",
+    "id": "resend",
+    "author": "Tooljet",
+    "timestamp": "Sat, 14 Nov 2026 17:45:00 GMT"
   }
 ]
