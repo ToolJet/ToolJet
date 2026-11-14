@@ -1,0 +1,282 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Lever datasource",
+  "description": "A schema defining Lever datasource operations",
+  "type": "api",
+  "defaults": {
+    "operation": "list_opportunities"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select an operation",
+      "list": [
+        { "value": "list_opportunities", "name": "List opportunities" },
+        { "value": "get_opportunity", "name": "Get opportunity" },
+        { "value": "create_opportunity", "name": "Create opportunity" },
+        { "value": "update_opportunity_stage", "name": "Update opportunity stage" },
+        { "value": "archive_opportunity", "name": "Archive opportunity" },
+        { "value": "unarchive_opportunity", "name": "Unarchive opportunity" },
+        { "value": "add_opportunity_tags", "name": "Add opportunity tags" },
+        { "value": "add_opportunity_note", "name": "Add opportunity note" },
+        { "value": "list_postings", "name": "List postings" },
+        { "value": "get_posting", "name": "Get posting" },
+        { "value": "create_posting", "name": "Create posting" },
+        { "value": "update_posting", "name": "Update posting" },
+        { "value": "list_opportunity_interviews", "name": "List opportunity interviews" },
+        { "value": "list_opportunity_feedback", "name": "List opportunity feedback" },
+        { "value": "list_opportunity_offers", "name": "List opportunity offers" },
+        { "value": "list_stages", "name": "List stages" },
+        { "value": "list_archive_reasons", "name": "List archive reasons" },
+        { "value": "list_users", "name": "List users" },
+        { "value": "list_requisitions", "name": "List requisitions" }
+      ]
+    },
+    "list_opportunities": {
+      "stage_id": { "label": "Stage ID", "key": "stage_id", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "Filter by stage id (use List stages to find ids)" },
+      "posting_id": { "label": "Posting ID", "key": "posting_id", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "Only opportunities on this posting" },
+      "tag": { "label": "Tag", "key": "tag", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "archived": {
+        "label": "Archived",
+        "key": "archived",
+        "type": "dropdown",
+        "mandatory": false,
+        "list": [
+          { "value": "any", "name": "Any" },
+          { "value": "true", "name": "Archived only" },
+          { "value": "false", "name": "Active only" }
+        ]
+      },
+      "archive_reason_id": { "label": "Archive reason ID", "key": "archive_reason_id", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "email": { "label": "Contact email", "key": "email", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "limit": { "label": "Limit", "key": "limit", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "100", "tooltip": "Max 100 per page" },
+      "offset": { "label": "Offset", "key": "offset", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "0" }
+    },
+    "get_opportunity": {
+      "opportunity_id": { "label": "Opportunity ID", "key": "opportunity_id", "type": "codehinter", "lineNumbers": false, "mandatory": true }
+    },
+    "create_opportunity": {
+      "name": { "label": "Name", "key": "name", "type": "codehinter", "lineNumbers": false, "mandatory": true, "placeholder": "Ada Lovelace" },
+      "headline": { "label": "Headline", "key": "headline", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "emails": { "label": "Emails", "key": "emails", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "Comma-separated email addresses" },
+      "phones": { "label": "Phones", "key": "phones", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "Comma-separated phone numbers" },
+      "links": { "label": "Links", "key": "links", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "Comma-separated URLs (LinkedIn, portfolio...)" },
+      "tags": { "label": "Tags", "key": "tags", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "Comma-separated tags" },
+      "sources": { "label": "Sources", "key": "sources", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "Comma-separated source names (must exist in Lever)" },
+      "origin": { "label": "Origin", "key": "origin", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "sourced", "tooltip": "sourced, applied, university, internal or referral" },
+      "stage_id": { "label": "Stage ID", "key": "stage_id", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "owner": { "label": "Owner user ID", "key": "owner", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "postings": { "label": "Posting IDs", "key": "postings", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "Comma-separated posting ids to attach the candidate to" },
+      "location": { "label": "Location", "key": "location", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "perform_as": { "label": "Perform as (user ID)", "key": "perform_as", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "Lever user id the action is attributed to" }
+    },
+    "update_opportunity_stage": {
+      "opportunity_id": { "label": "Opportunity ID", "key": "opportunity_id", "type": "codehinter", "lineNumbers": false, "mandatory": true },
+      "stage_id": { "label": "New stage ID", "key": "stage_id", "type": "codehinter", "lineNumbers": false, "mandatory": true },
+      "perform_as": { "label": "Perform as (user ID)", "key": "perform_as", "type": "codehinter", "lineNumbers": false, "mandatory": false }
+    },
+    "archive_opportunity": {
+      "opportunity_id": { "label": "Opportunity ID", "key": "opportunity_id", "type": "codehinter", "lineNumbers": false, "mandatory": true },
+      "archive_reason_id": { "label": "Archive reason ID", "key": "archive_reason_id", "type": "codehinter", "lineNumbers": false, "mandatory": true, "tooltip": "Use List archive reasons to find ids" },
+      "clean_interviews": {
+        "label": "Delete associated interviews",
+        "key": "clean_interviews",
+        "type": "dropdown",
+        "mandatory": false,
+        "list": [
+          { "value": "false", "name": "No" },
+          { "value": "true", "name": "Yes" }
+        ]
+      },
+      "perform_as": { "label": "Perform as (user ID)", "key": "perform_as", "type": "codehinter", "lineNumbers": false, "mandatory": false }
+    },
+    "unarchive_opportunity": {
+      "opportunity_id": { "label": "Opportunity ID", "key": "opportunity_id", "type": "codehinter", "lineNumbers": false, "mandatory": true },
+      "perform_as": { "label": "Perform as (user ID)", "key": "perform_as", "type": "codehinter", "lineNumbers": false, "mandatory": false }
+    },
+    "add_opportunity_tags": {
+      "opportunity_id": { "label": "Opportunity ID", "key": "opportunity_id", "type": "codehinter", "lineNumbers": false, "mandatory": true },
+      "tags": { "label": "Tags", "key": "tags", "type": "codehinter", "lineNumbers": false, "mandatory": true, "tooltip": "Comma-separated tags to add" },
+      "perform_as": { "label": "Perform as (user ID)", "key": "perform_as", "type": "codehinter", "lineNumbers": false, "mandatory": false }
+    },
+    "add_opportunity_note": {
+      "opportunity_id": { "label": "Opportunity ID", "key": "opportunity_id", "type": "codehinter", "lineNumbers": false, "mandatory": true },
+      "note": { "label": "Note", "key": "note", "type": "codehinter", "height": "80px", "mandatory": true },
+      "perform_as": { "label": "Perform as (user ID)", "key": "perform_as", "type": "codehinter", "lineNumbers": false, "mandatory": true, "tooltip": "Notes require an author: a Lever user id" }
+    },
+    "list_postings": {
+      "state": {
+        "label": "State",
+        "key": "state",
+        "type": "dropdown",
+        "mandatory": false,
+        "list": [
+          { "value": "any", "name": "Any" },
+          { "value": "draft", "name": "Draft" },
+          { "value": "published", "name": "Published" },
+          { "value": "internal", "name": "Internal" },
+          { "value": "closed", "name": "Closed" },
+          { "value": "pending", "name": "Pending" },
+          { "value": "paused", "name": "Paused" }
+        ]
+      },
+      "confidentiality": {
+        "label": "Confidentiality",
+        "key": "confidentiality",
+        "type": "dropdown",
+        "mandatory": false,
+        "list": [
+          { "value": "any", "name": "Any" },
+          { "value": "public", "name": "Public" },
+          { "value": "internal", "name": "Internal" }
+        ]
+      },
+      "limit": { "label": "Limit", "key": "limit", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "100" },
+      "offset": { "label": "Offset", "key": "offset", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "0" }
+    },
+    "get_posting": {
+      "posting_id": { "label": "Posting ID", "key": "posting_id", "type": "codehinter", "lineNumbers": false, "mandatory": true },
+      "distribution": {
+        "label": "Distribution",
+        "key": "distribution",
+        "type": "dropdown",
+        "mandatory": false,
+        "list": [
+          { "value": "any", "name": "Any" },
+          { "value": "internal", "name": "Internal" },
+          { "value": "external", "name": "External" }
+        ]
+      }
+    },
+    "create_posting": {
+      "text": { "label": "Job title", "key": "text", "type": "codehinter", "lineNumbers": false, "mandatory": true },
+      "state": {
+        "label": "State",
+        "key": "state",
+        "type": "dropdown",
+        "mandatory": false,
+        "list": [
+          { "value": "draft", "name": "Draft" },
+          { "value": "published", "name": "Published" },
+          { "value": "internal", "name": "Internal" }
+        ]
+      },
+      "perform_as": { "label": "Perform as (user ID)", "key": "perform_as", "type": "codehinter", "lineNumbers": false, "mandatory": true, "tooltip": "Lever requires the user id creating the posting" },
+      "category_team": { "label": "Team", "key": "category_team", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "category_location": { "label": "Location", "key": "category_location", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "category_department": { "label": "Department", "key": "category_department", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "category_commitment": { "label": "Commitment", "key": "category_commitment", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "Full-time" },
+      "workplace_type": {
+        "label": "Workplace type",
+        "key": "workplace_type",
+        "type": "dropdown",
+        "mandatory": false,
+        "list": [
+          { "value": "any", "name": "Unset" },
+          { "value": "on-site", "name": "On-site" },
+          { "value": "remote", "name": "Remote" },
+          { "value": "hybrid", "name": "Hybrid" }
+        ]
+      },
+      "requisition_codes": { "label": "Requisition codes", "key": "requisition_codes", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "Comma-separated codes" },
+      "tags": { "label": "Tags", "key": "tags", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "Comma-separated tags" },
+      "description_html": { "label": "Description (HTML)", "key": "description_html", "type": "codehinter", "height": "80px", "mandatory": false },
+      "description_plain": { "label": "Description (plain text)", "key": "description_plain", "type": "codehinter", "height": "80px", "mandatory": false },
+      "lists_json": { "label": "Lists (JSON)", "key": "lists_json", "type": "codehinter", "height": "80px", "mandatory": false, "placeholder": "[{\"text\":\"Requirements\",\"content\":\"<ul><li>...</li></ul>\"}]", "tooltip": "Lever's job sections: [{text, content}]" },
+      "additional_html": { "label": "Additional content (HTML)", "key": "additional_html", "type": "codehinter", "height": "80px", "mandatory": false },
+      "additional_plain": { "label": "Additional content (plain text)", "key": "additional_plain", "type": "codehinter", "height": "80px", "mandatory": false }
+    },
+    "update_posting": {
+      "posting_id": { "label": "Posting ID", "key": "posting_id", "type": "codehinter", "lineNumbers": false, "mandatory": true },
+      "perform_as": { "label": "Perform as (user ID)", "key": "perform_as", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "text": { "label": "Job title", "key": "text", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "state": {
+        "label": "State",
+        "key": "state",
+        "type": "dropdown",
+        "mandatory": false,
+        "list": [
+          { "value": "draft", "name": "Draft" },
+          { "value": "published", "name": "Published" },
+          { "value": "internal", "name": "Internal" },
+          { "value": "closed", "name": "Closed" }
+        ]
+      },
+      "category_team": { "label": "Team", "key": "category_team", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "category_location": { "label": "Location", "key": "category_location", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "category_department": { "label": "Department", "key": "category_department", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "category_commitment": { "label": "Commitment", "key": "category_commitment", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "workplace_type": {
+        "label": "Workplace type",
+        "key": "workplace_type",
+        "type": "dropdown",
+        "mandatory": false,
+        "list": [
+          { "value": "any", "name": "Unset" },
+          { "value": "on-site", "name": "On-site" },
+          { "value": "remote", "name": "Remote" },
+          { "value": "hybrid", "name": "Hybrid" }
+        ]
+      },
+      "requisition_codes": { "label": "Requisition codes", "key": "requisition_codes", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "Comma-separated codes" },
+      "tags": { "label": "Tags", "key": "tags", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "Comma-separated tags" },
+      "description_html": { "label": "Description (HTML)", "key": "description_html", "type": "codehinter", "height": "80px", "mandatory": false },
+      "description_plain": { "label": "Description (plain text)", "key": "description_plain", "type": "codehinter", "height": "80px", "mandatory": false },
+      "lists_json": { "label": "Lists (JSON)", "key": "lists_json", "type": "codehinter", "height": "80px", "mandatory": false },
+      "additional_html": { "label": "Additional content (HTML)", "key": "additional_html", "type": "codehinter", "height": "80px", "mandatory": false },
+      "additional_plain": { "label": "Additional content (plain text)", "key": "additional_plain", "type": "codehinter", "height": "80px", "mandatory": false }
+    },
+    "list_opportunity_interviews": {
+      "opportunity_id": { "label": "Opportunity ID", "key": "opportunity_id", "type": "codehinter", "lineNumbers": false, "mandatory": true },
+      "limit": { "label": "Limit", "key": "limit", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "100" },
+      "offset": { "label": "Offset", "key": "offset", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "0" }
+    },
+    "list_opportunity_feedback": {
+      "opportunity_id": { "label": "Opportunity ID", "key": "opportunity_id", "type": "codehinter", "lineNumbers": false, "mandatory": true },
+      "limit": { "label": "Limit", "key": "limit", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "100" },
+      "offset": { "label": "Offset", "key": "offset", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "0" }
+    },
+    "list_opportunity_offers": {
+      "opportunity_id": { "label": "Opportunity ID", "key": "opportunity_id", "type": "codehinter", "lineNumbers": false, "mandatory": true },
+      "limit": { "label": "Limit", "key": "limit", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "100" },
+      "offset": { "label": "Offset", "key": "offset", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "0" }
+    },
+    "list_stages": {},
+    "list_archive_reasons": {
+      "type": {
+        "label": "Type",
+        "key": "type",
+        "type": "dropdown",
+        "mandatory": false,
+        "list": [
+          { "value": "any", "name": "Any" },
+          { "value": "hired", "name": "Hired" },
+          { "value": "non-hired", "name": "Non-hired" }
+        ]
+      }
+    },
+    "list_users": {
+      "limit": { "label": "Limit", "key": "limit", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "100" },
+      "offset": { "label": "Offset", "key": "offset", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "0" }
+    },
+    "list_requisitions": {
+      "status": { "label": "Status", "key": "status", "type": "codehinter", "lineNumbers": false, "mandatory": false, "tooltip": "For example: active" },
+      "requisition_code": { "label": "Requisition code", "key": "requisition_code", "type": "codehinter", "lineNumbers": false, "mandatory": false },
+      "confidentiality": {
+        "label": "Confidentiality",
+        "key": "confidentiality",
+        "type": "dropdown",
+        "mandatory": false,
+        "list": [
+          { "value": "any", "name": "Any" },
+          { "value": "public", "name": "Public" },
+          { "value": "internal", "name": "Internal" }
+        ]
+      },
+      "limit": { "label": "Limit", "key": "limit", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "100" },
+      "offset": { "label": "Offset", "key": "offset", "type": "codehinter", "lineNumbers": false, "mandatory": false, "placeholder": "0" }
+    }
+  }
+}
