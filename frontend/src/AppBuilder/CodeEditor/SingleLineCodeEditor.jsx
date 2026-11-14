@@ -667,6 +667,7 @@ const DynamicEditorBridge = (props) => {
     iconVisibility,
     componentId,
   } = props;
+  const { fieldActions, ...propsForEditor } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
@@ -795,6 +796,7 @@ const DynamicEditorBridge = (props) => {
         {renderedLabel()}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
+            {fieldActions && <div className="fx-button-container show-on-focus-within">{fieldActions}</div>}
             {renderFx()}
           </div>
         </div>
@@ -805,7 +807,7 @@ const DynamicEditorBridge = (props) => {
         <div className={`row custom-row`} style={{ display: codeShow ? 'flex' : 'none' }}>
           <div className={`col code-hinter-col`}>
             <div className="d-flex">
-              <SingleLineCodeEditor {...props} initialValue={modifiedValue} />
+              <SingleLineCodeEditor {...propsForEditor} initialValue={modifiedValue} />
             </div>
           </div>
         </div>
