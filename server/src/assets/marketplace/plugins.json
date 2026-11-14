@@ -392,9 +392,7 @@
     "author": "Tooljet",
     "timestamp": "Fri, 14 Aug 2026 00:00:00 GMT",
     "repo": "",
-    "tags": [
-      "Collaboration"
-    ]
+    "tags": ["Collaboration"]
   },
   {
     "name": "OpenRouter",
@@ -415,6 +413,18 @@
     "id": "typesafe",
     "author": "Tooljet",
     "timestamp": "Sat, 19 Sep 2026 22:30:00 GMT",
+    "repo": "",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "ElevenLabs",
+    "description": "AI audio platform for text to speech, speech to text, voice changing, sound effects and voice cloning",
+    "version": "1.0.0",
+    "id": "elevenlabs",
+    "author": "Tooljet",
+    "timestamp": "Thu, 08 Oct 2026 06:46:31 GMT",
     "repo": "",
     "tags": [
       "AI"

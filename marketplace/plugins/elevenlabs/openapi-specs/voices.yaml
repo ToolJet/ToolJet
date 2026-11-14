@@ -1,0 +1,4386 @@
+openapi: 3.1.0
+info:
+  title: ElevenLabs API Documentation
+  description: 'This is the documentation for the ElevenLabs API. You can use this API to use our service programmatically, this is done by using your API key. You can find your API key in the dashboard at https://elevenlabs.io/app/settings/api-keys.'
+  version: '1.0'
+paths:
+  '/v1/voices/{voice_id}/samples/{sample_id}':
+    delete:
+      tags:
+        - samples
+      summary: Delete Sample
+      description: Removes a sample by its ID.
+      operationId: delete_sample
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+        - name: sample_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Sample ID to be used, you can use GET https://api.elevenlabs.io/v1/voices/{voice_id} to list all the available samples for a voice.'
+            examples:
+              - VW7YKqPnjY4h39yTbx2L
+            title: Sample Id
+          description: 'Sample ID to be used, you can use GET https://api.elevenlabs.io/v1/voices/{voice_id} to list all the available samples for a voice.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSampleResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: samples
+      x-fern-sdk-method-name: delete
+  '/v1/voices/{voice_id}/samples/{sample_id}/audio':
+    get:
+      tags:
+        - samples
+      summary: Get Audio From Sample
+      description: Returns the audio corresponding to a sample attached to a voice.
+      operationId: get_audio_from_sample
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+        - name: sample_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Sample ID to be used, you can use GET https://api.elevenlabs.io/v1/voices/{voice_id} to list all the available samples for a voice.'
+            examples:
+              - VW7YKqPnjY4h39yTbx2L
+            title: Sample Id
+          description: 'Sample ID to be used, you can use GET https://api.elevenlabs.io/v1/voices/{voice_id} to list all the available samples for a voice.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            audio/*: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - samples
+        - audio
+      x-fern-sdk-method-name: get
+  /v1/text-to-voice/create-previews:
+    post:
+      tags:
+        - text-to-voice
+      summary: '[Deprecated] Generate A Voice Preview From Description'
+      description: '**Deprecated.** Use `POST /v1/text-to-voice/design` instead. Generate a custom voice based on voice description. This method returns a list of voice previews. Each preview has a generated_voice_id and a sample of the voice as base64 encoded mp3 audio. To create the voice use `POST /v1/text-to-voice` with the chosen `generated_voice_id`.'
+      operationId: text_to_voice
+      deprecated: true
+      parameters:
+        - name: output_format
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/AllowedOutputFormats'
+            title: Output format of the generated audio.
+            description: 'Output format of the generated audio. Formatted as codec_sample_rate_bitrate. So an mp3 with 22.05kHz sample rate at 32kbs is represented as mp3_22050_32. MP3 with 192kbps bitrate requires you to be subscribed to Creator tier or above. PCM with 44.1kHz sample rate requires you to be subscribed to Pro tier or above. Note that the μ-law format (sometimes written mu-law, often approximated as u-law) is commonly used for Twilio audio inputs.'
+            enum:
+              - mp3_22050_32
+              - mp3_24000_48
+              - mp3_44100_32
+              - mp3_44100_64
+              - mp3_44100_96
+              - mp3_44100_128
+              - mp3_44100_192
+              - pcm_8000
+              - pcm_16000
+              - pcm_22050
+              - pcm_24000
+              - pcm_32000
+              - pcm_44100
+              - pcm_48000
+              - ulaw_8000
+              - alaw_8000
+              - opus_48000_32
+              - opus_48000_64
+              - opus_48000_96
+              - opus_48000_128
+              - opus_48000_192
+            default: mp3_44100_192
+          description: 'Output format of the generated audio. Formatted as codec_sample_rate_bitrate. So an mp3 with 22.05kHz sample rate at 32kbs is represented as mp3_22050_32. MP3 with 192kbps bitrate requires you to be subscribed to Creator tier or above. PCM with 44.1kHz sample rate requires you to be subscribed to Pro tier or above. Note that the μ-law format (sometimes written mu-law, often approximated as u-law) is commonly used for Twilio audio inputs.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoicePreviewsRequestModel'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoicePreviewsResponseModel'
+        '409':
+          description: A generation for this preview is already in progress. Retry the request.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: text_to_voice
+      x-fern-sdk-method-name: create_previews
+  /v1/text-to-voice:
+    post:
+      tags:
+        - text-to-voice
+      summary: Create A New Voice From Voice Preview
+      description: 'Create a voice from previously generated voice preview. This endpoint should be called after you fetched a generated_voice_id using POST /v1/text-to-voice/design or POST /v1/text-to-voice/:voice_id/remix.'
+      operationId: create_voice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Create_a_new_voice_from_voice_preview_v1_text_to_voice_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoiceResponseModel'
+        '409':
+          description: A generation for this preview is already in progress. Retry the request.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: text_to_voice
+      x-fern-sdk-method-name: create
+  /v1/text-to-voice/design:
+    post:
+      tags:
+        - text-to-voice
+      summary: Design A Voice.
+      description: Design a voice via a prompt. This method returns a list of voice previews. Each preview has a generated_voice_id and a sample of the voice as base64 encoded mp3 audio. To create a voice use the generated_voice_id of the preferred preview with the /v1/text-to-voice endpoint.
+      operationId: text_to_voice_design
+      parameters:
+        - name: output_format
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/AllowedOutputFormats'
+            title: Output format of the generated audio.
+            description: 'Output format of the generated audio. Formatted as codec_sample_rate_bitrate. So an mp3 with 22.05kHz sample rate at 32kbs is represented as mp3_22050_32. MP3 with 192kbps bitrate requires you to be subscribed to Creator tier or above. PCM with 44.1kHz sample rate requires you to be subscribed to Pro tier or above. Note that the μ-law format (sometimes written mu-law, often approximated as u-law) is commonly used for Twilio audio inputs.'
+            enum:
+              - mp3_22050_32
+              - mp3_24000_48
+              - mp3_44100_32
+              - mp3_44100_64
+              - mp3_44100_96
+              - mp3_44100_128
+              - mp3_44100_192
+              - pcm_8000
+              - pcm_16000
+              - pcm_22050
+              - pcm_24000
+              - pcm_32000
+              - pcm_44100
+              - pcm_48000
+              - ulaw_8000
+              - alaw_8000
+              - opus_48000_32
+              - opus_48000_64
+              - opus_48000_96
+              - opus_48000_128
+              - opus_48000_192
+            default: mp3_44100_192
+          description: 'Output format of the generated audio. Formatted as codec_sample_rate_bitrate. So an mp3 with 22.05kHz sample rate at 32kbs is represented as mp3_22050_32. MP3 with 192kbps bitrate requires you to be subscribed to Creator tier or above. PCM with 44.1kHz sample rate requires you to be subscribed to Pro tier or above. Note that the μ-law format (sometimes written mu-law, often approximated as u-law) is commonly used for Twilio audio inputs.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoiceDesignRequestModel'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoicePreviewsResponseModel'
+        '409':
+          description: A generation for this preview is already in progress. Retry the request.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: text_to_voice
+      x-fern-sdk-method-name: design
+  '/v1/text-to-voice/{voice_id}/remix':
+    post:
+      tags:
+        - text-to-voice
+      summary: Remix A Voice.
+      description: Remix an existing voice via a prompt. This method returns a list of voice previews. Each preview has a generated_voice_id and a sample of the voice as base64 encoded mp3 audio. To create a voice use the generated_voice_id of the preferred preview with the /v1/text-to-voice endpoint.
+      operationId: text_to_voice_remix
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+        - name: output_format
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/AllowedOutputFormats'
+            title: Output format of the generated audio.
+            description: 'Output format of the generated audio. Formatted as codec_sample_rate_bitrate. So an mp3 with 22.05kHz sample rate at 32kbs is represented as mp3_22050_32. MP3 with 192kbps bitrate requires you to be subscribed to Creator tier or above. PCM with 44.1kHz sample rate requires you to be subscribed to Pro tier or above. Note that the μ-law format (sometimes written mu-law, often approximated as u-law) is commonly used for Twilio audio inputs.'
+            enum:
+              - mp3_22050_32
+              - mp3_24000_48
+              - mp3_44100_32
+              - mp3_44100_64
+              - mp3_44100_96
+              - mp3_44100_128
+              - mp3_44100_192
+              - pcm_8000
+              - pcm_16000
+              - pcm_22050
+              - pcm_24000
+              - pcm_32000
+              - pcm_44100
+              - pcm_48000
+              - ulaw_8000
+              - alaw_8000
+              - opus_48000_32
+              - opus_48000_64
+              - opus_48000_96
+              - opus_48000_128
+              - opus_48000_192
+            default: mp3_44100_192
+          description: 'Output format of the generated audio. Formatted as codec_sample_rate_bitrate. So an mp3 with 22.05kHz sample rate at 32kbs is represented as mp3_22050_32. MP3 with 192kbps bitrate requires you to be subscribed to Creator tier or above. PCM with 44.1kHz sample rate requires you to be subscribed to Pro tier or above. Note that the μ-law format (sometimes written mu-law, often approximated as u-law) is commonly used for Twilio audio inputs.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoiceRemixRequestModel'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoicePreviewsResponseModel'
+        '409':
+          description: A generation for this preview is already in progress. Retry the request.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: text_to_voice
+      x-fern-sdk-method-name: remix
+  '/v1/text-to-voice/{generated_voice_id}/stream':
+    get:
+      tags:
+        - text-to-voice
+      summary: Text To Voice Preview Streaming
+      description: Stream a voice preview that was created via the /v1/text-to-voice/design endpoint.
+      operationId: text_to_voice_preview_stream
+      parameters:
+        - name: generated_voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The generated_voice_id to stream.
+            examples:
+              - 37HceQefKmEi3bGovXjL
+            embed: true
+            title: Generated Voice Id
+          description: The generated_voice_id to stream.
+      responses:
+        '200':
+          description: Streaming audio data
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - text_to_voice
+        - preview
+      x-fern-sdk-method-name: stream
+      x-fern-streaming: true
+  /v1/voices/settings/default:
+    get:
+      tags:
+        - voices
+        - voices
+      summary: Get Default Voice Settings.
+      description: Gets the default settings for voices. "similarity_boost" corresponds to"Clarity + Similarity Enhancement" in the web app and "stability" corresponds to "Stability" slider in the web app.
+      operationId: get_voice_settings_default
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoiceSettingsResponseModel'
+      x-fern-sdk-group-name:
+        - voices
+        - settings
+      x-fern-sdk-method-name: get_default
+  '/v1/voices/{voice_id}/settings':
+    get:
+      tags:
+        - voices
+        - voices
+      summary: Get Voice Settings
+      description: Returns the settings for a specific voice. "similarity_boost" corresponds to"Clarity + Similarity Enhancement" in the web app and "stability" corresponds to "Stability" slider in the web app.
+      operationId: get_voice_settings
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoiceSettingsResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - settings
+      x-fern-sdk-method-name: get
+  '/v1/voices/{voice_id}/settings/edit':
+    post:
+      tags:
+        - voices
+        - voices
+      summary: Edit Voice Settings
+      description: Edit your settings for a specific voice. "similarity_boost" corresponds to "Clarity + Similarity Enhancement" in the web app and "stability" corresponds to "Stability" slider in the web app.
+      operationId: edit_voice_settings
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoiceSettingsResponseModel'
+              description: The settings for a specific voice.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditVoiceSettingsResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - settings
+      x-fern-sdk-method-name: update
+  /v1/voices/accents:
+    get:
+      tags:
+        - voices
+      summary: Get Voice Accents
+      description: Gets the list of available accents in the shared voice library.
+      operationId: get_voice_accents
+      parameters:
+        - name: language
+          in: query
+          required: false
+          schema:
+            description: 'If provided, only accents for this language code are returned.'
+            examples:
+              - en
+            title: Language
+            type: string
+          description: 'If provided, only accents for this language code are returned.'
+        - name: model_id
+          in: query
+          required: false
+          schema:
+            description: 'If provided, returns the accents available for this model. Defaults to the most complete accent list when omitted.'
+            examples:
+              - eleven_v3
+            title: Model Id
+            type: string
+          description: 'If provided, returns the accents available for this model. Defaults to the most complete accent list when omitted.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVoiceAccentsResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - accents
+      x-fern-sdk-method-name: get
+  /v1/voices:
+    get:
+      tags:
+        - voices
+        - voices
+      summary: List Voices
+      description: Returns a list of all available voices for a user. Stops working once the user's workspace exceeds 500 voices.
+      operationId: get_voices
+      parameters:
+        - name: show_legacy
+          in: query
+          required: false
+          schema:
+            description: 'If set to true, legacy premade voices will be included in responses from /v1/voices'
+            examples:
+              - true
+            default: false
+            title: Show Legacy
+            type: boolean
+          description: 'If set to true, legacy premade voices will be included in responses from /v1/voices'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVoicesResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: voices
+      x-fern-sdk-method-name: get_all
+  '/v1/voices/{voice_id}':
+    get:
+      tags:
+        - voices
+        - voices
+      summary: Get Voice
+      description: Returns metadata about a specific voice.
+      operationId: get_voice_by_id
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+        - name: with_settings
+          in: query
+          required: false
+          schema:
+            type: boolean
+            description: This parameter is now deprecated. It is ignored and will be removed in a future version.
+            deprecated: true
+            default: true
+            title: With Settings
+          description: This parameter is now deprecated. It is ignored and will be removed in a future version.
+          deprecated: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoiceResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: voices
+      x-fern-sdk-method-name: get
+    delete:
+      tags:
+        - voices
+        - voices
+      summary: Delete Voice
+      description: Deletes a voice by its ID.
+      operationId: delete_voice
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteVoiceResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: voices
+      x-fern-sdk-method-name: delete
+  '/v1/voices/{voice_id}/edit':
+    post:
+      tags:
+        - voices
+        - voices
+      summary: Edit Voice
+      description: Edit a voice created by you.
+      operationId: edit_voice
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_Edit_voice_v1_voices__voice_id__edit_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditVoiceResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: voices
+      x-fern-sdk-method-name: update
+  /v2/voices:
+    get:
+      tags:
+        - voices
+        - voices
+      summary: Get Voices V2
+      description: 'Gets a list of all available voices for a user with search, filtering and pagination.'
+      operationId: get_user_voices_v2
+      parameters:
+        - name: next_page_token
+          in: query
+          required: false
+          schema:
+            description: The next page token to use for pagination. Returned from the previous request. Use this in combination with the has_more flag for reliable pagination.
+            examples:
+              - '0'
+            title: Next Page Token
+            type: string
+          description: The next page token to use for pagination. Returned from the previous request. Use this in combination with the has_more flag for reliable pagination.
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            description: 'How many voices to return at maximum. Can not exceed 100, defaults to 10. Page 0 may include more voices due to default voices being included.'
+            default: 10
+            title: Page Size
+          description: 'How many voices to return at maximum. Can not exceed 100, defaults to 10. Page 0 may include more voices due to default voices being included.'
+        - name: search
+          in: query
+          required: false
+          schema:
+            description: 'Search term to filter voices by. Searches in name, description, labels, category.'
+            title: Search
+            type: string
+          description: 'Search term to filter voices by. Searches in name, description, labels, category.'
+        - name: sort
+          in: query
+          required: false
+          schema:
+            description: 'Which field to sort by, one of ''created_at_unix'' or ''name''. ''created_at_unix'' may not be available for older voices.'
+            examples:
+              - created_at_unix
+            title: Sort
+            type: string
+          description: 'Which field to sort by, one of ''created_at_unix'' or ''name''. ''created_at_unix'' may not be available for older voices.'
+        - name: sort_direction
+          in: query
+          required: false
+          schema:
+            description: Which direction to sort the voices in. 'asc' or 'desc'.
+            examples:
+              - desc
+            title: Sort Direction
+            type: string
+          description: Which direction to sort the voices in. 'asc' or 'desc'.
+        - name: voice_type
+          in: query
+          required: false
+          schema:
+            description: 'Type of the voice to filter by. One of ''personal'', ''community'', ''default'', ''workspace'', ''non-default'', ''non-community'', ''saved''. ''non-default'' is equal to all but ''default''. ''non-community'' is equal to ''personal'' and ''workspace'' combined (excludes library copies). ''saved'' is equal to non-default, but includes default voices if they have been added to a collection.'
+            title: Voice Type
+            type: string
+          description: 'Type of the voice to filter by. One of ''personal'', ''community'', ''default'', ''workspace'', ''non-default'', ''non-community'', ''saved''. ''non-default'' is equal to all but ''default''. ''non-community'' is equal to ''personal'' and ''workspace'' combined (excludes library copies). ''saved'' is equal to non-default, but includes default voices if they have been added to a collection.'
+        - name: category
+          in: query
+          required: false
+          schema:
+            description: 'Category of the voice to filter by. One of ''premade'', ''cloned'', ''generated'', ''professional'''
+            title: Category
+            type: string
+          description: 'Category of the voice to filter by. One of ''premade'', ''cloned'', ''generated'', ''professional'''
+        - name: fine_tuning_state
+          in: query
+          required: false
+          schema:
+            description: 'State of the voice''s fine tuning to filter by. Applicable only to professional voices clones. One of ''draft'', ''not_verified'', ''not_started'', ''queued'', ''fine_tuning'', ''fine_tuned'', ''failed'', ''delayed'''
+            title: Fine Tuning State
+            type: string
+          description: 'State of the voice''s fine tuning to filter by. Applicable only to professional voices clones. One of ''draft'', ''not_verified'', ''not_started'', ''queued'', ''fine_tuning'', ''fine_tuned'', ''failed'', ''delayed'''
+        - name: collection_id
+          in: query
+          required: false
+          schema:
+            description: Collection ID to filter voices by.
+            title: Collection Id
+            type: string
+          description: Collection ID to filter voices by.
+        - name: gender
+          in: query
+          required: false
+          schema:
+            description: 'Gender used for filtering, based on the voice''s ''gender'' label.'
+            examples:
+              - male
+            title: Gender
+            type: string
+          description: 'Gender used for filtering, based on the voice''s ''gender'' label.'
+        - name: age
+          in: query
+          required: false
+          schema:
+            description: 'Age used for filtering, based on the voice''s ''age'' label.'
+            examples:
+              - young
+            title: Age
+            type: string
+          description: 'Age used for filtering, based on the voice''s ''age'' label.'
+        - name: language
+          in: query
+          required: false
+          schema:
+            description: 'Languages used for filtering, based on the voice''s ''language'' label. Voices matching any of the given languages are returned.'
+            examples:
+              - - en
+                - es
+            title: Language
+            type: array
+            items:
+              type: string
+          description: 'Languages used for filtering, based on the voice''s ''language'' label. Voices matching any of the given languages are returned.'
+        - name: accent
+          in: query
+          required: false
+          schema:
+            description: 'Accent used for filtering, based on the voice''s ''accent'' label.'
+            examples:
+              - american
+            title: Accent
+            type: string
+          description: 'Accent used for filtering, based on the voice''s ''accent'' label.'
+        - name: use_cases
+          in: query
+          required: false
+          schema:
+            description: 'Use cases used for filtering, based on the voice''s ''use_case'' label. Voices matching any of the given use cases are returned.'
+            examples:
+              - - conversational
+                - narrative_story
+            title: Use Cases
+            type: array
+            items:
+              type: string
+          description: 'Use cases used for filtering, based on the voice''s ''use_case'' label. Voices matching any of the given use cases are returned.'
+        - name: min_notice_period_days
+          in: query
+          required: false
+          schema:
+            description: Filter to voices whose sharing notice period is at least the given number of days.
+            examples:
+              - 30
+            title: Min Notice Period Days
+            type: integer
+          description: Filter to voices whose sharing notice period is at least the given number of days.
+        - name: include_custom_rates
+          in: query
+          required: false
+          schema:
+            description: Whether to include voices that have a custom sharing rate. Defaults to including them.
+            examples:
+              - true
+            title: Include Custom Rates
+            type: boolean
+          description: Whether to include voices that have a custom sharing rate. Defaults to including them.
+        - name: include_live_moderated
+          in: query
+          required: false
+          schema:
+            description: Whether to include voices that have live moderation enabled. Defaults to including them.
+            examples:
+              - true
+            title: Include Live Moderated
+            type: boolean
+          description: Whether to include voices that have live moderation enabled. Defaults to including them.
+        - name: high_quality
+          in: query
+          required: false
+          schema:
+            description: 'When true, only return studio-quality voices (those whose category is ''high_quality'').'
+            examples:
+              - true
+            title: High Quality
+            type: boolean
+          description: 'When true, only return studio-quality voices (those whose category is ''high_quality'').'
+        - name: include_total_count
+          in: query
+          required: false
+          schema:
+            type: boolean
+            description: 'Whether to include the total count of voices found in the response. NOTE: The total_count value is a live snapshot and may change between requests as users create, modify, or delete voices. For pagination, rely on the has_more flag instead. Only enable this when you actually need the total count (e.g., for display purposes), as it incurs a performance cost.'
+            examples:
+              - true
+            default: true
+            title: Include Total Count
+          description: 'Whether to include the total count of voices found in the response. NOTE: The total_count value is a live snapshot and may change between requests as users create, modify, or delete voices. For pagination, rely on the has_more flag instead. Only enable this when you actually need the total count (e.g., for display purposes), as it incurs a performance cost.'
+        - name: voice_ids
+          in: query
+          required: false
+          schema:
+            description: Voice IDs to lookup by. Maximum 100 voice IDs.
+            title: Voice Ids
+            type: array
+            items:
+              type: string
+          description: Voice IDs to lookup by. Maximum 100 voice IDs.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVoicesV2ResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: voices
+      x-fern-sdk-method-name: search
+  '/v1/voices/{voice_id}/replicate-to-isolated-environment':
+    post:
+      tags:
+        - voices
+        - voices
+      summary: Replicate Voice To Isolated Environment
+      description: 'Replicates an Instant Voice Clone or Voice Design voice to a workspace in a different data residency. The target workspace must belong to the same consolidated billing group. The user must have VOICES_WRITE in the source workspace, and be an admin on the source voice. Human users (i.e. not service accounts) must also have VOICES_WRITE in the target workspace. This endpoint is available on the central environment only.'
+      operationId: replicate_voice_to_isolated_environment
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplicateVoiceToIsolatedEnvironmentRequestModel'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReplicateVoiceToIsolatedEnvironmentResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: voices
+      x-fern-sdk-method-name: replicate_to_isolated_environment
+  /v1/voices/add:
+    post:
+      tags:
+        - voices
+      summary: Add Voice
+      description: Add a new voice to your collection of voices in VoiceLab.
+      operationId: add_voice
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_Add_voice_v1_voices_add_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddVoiceIVCResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - ivc
+      x-fern-sdk-method-name: create
+  '/v1/voices/add/{public_user_id}/{voice_id}':
+    post:
+      tags:
+        - voices
+      summary: Add Shared Voice
+      description: Add a shared voice to your collection of voices.
+      operationId: add_sharing_voice
+      parameters:
+        - name: public_user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Public user ID used to publicly identify ElevenLabs users.
+            examples:
+              - 63e06b7e7cafdc46be4d2e0b3f045940231ae058d508589653d74d1265a574ca
+            title: Public User Id
+          description: Public user ID used to publicly identify ElevenLabs users.
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Add_shared_voice_v1_voices_add__public_user_id___voice_id__post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddVoiceResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: voices
+      x-fern-sdk-method-name: share
+  /v1/similar-voices:
+    post:
+      tags:
+        - voices
+      summary: Get Similar Library Voices
+      description: 'Returns a list of shared voices similar to the provided audio sample. If neither similarity_threshold nor top_k is provided, we will apply default values.'
+      operationId: get_similar_library_voices
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_Get_similar_library_voices_v1_similar_voices_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLibraryVoicesResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: voices
+      x-fern-sdk-method-name: find_similar_voices
+  /v1/shared-voices:
+    get:
+      tags:
+        - voices
+      summary: Get Voices
+      description: Retrieves a list of shared voices.
+      operationId: get_library_voices
+      parameters:
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            description: 'How many shared voices to return at maximum. Can not exceed 100, defaults to 30.'
+            default: 30
+            title: Page Size
+          description: 'How many shared voices to return at maximum. Can not exceed 100, defaults to 30.'
+        - name: category
+          in: query
+          required: false
+          schema:
+            description: Voice category used for filtering
+            examples:
+              - professional
+            enum:
+              - professional
+              - famous
+              - high_quality
+            title: Category
+            type: string
+          description: Voice category used for filtering
+        - name: gender
+          in: query
+          required: false
+          schema:
+            description: Gender used for filtering
+            examples:
+              - male
+            title: Gender
+            type: string
+          description: Gender used for filtering
+        - name: age
+          in: query
+          required: false
+          schema:
+            description: Age used for filtering
+            examples:
+              - young
+            title: Age
+            type: string
+          description: Age used for filtering
+        - name: accent
+          in: query
+          required: false
+          schema:
+            description: Accent used for filtering
+            examples:
+              - american
+            title: Accent
+            type: string
+          description: Accent used for filtering
+        - name: language
+          in: query
+          required: false
+          schema:
+            description: Language used for filtering
+            examples:
+              - en
+            title: Language
+            type: string
+          description: Language used for filtering
+        - name: locale
+          in: query
+          required: false
+          schema:
+            description: Locale used for filtering
+            examples:
+              - en-US
+            title: Locale
+            type: string
+          description: Locale used for filtering
+        - name: search
+          in: query
+          required: false
+          schema:
+            description: Search term used for filtering
+            examples:
+              - tiktok
+            title: Search
+            type: string
+          description: Search term used for filtering
+        - name: use_cases
+          in: query
+          required: false
+          schema:
+            description: Use-case used for filtering
+            examples:
+              - audiobook
+            title: Use Cases
+            type: array
+            items:
+              type: string
+          description: Use-case used for filtering
+        - name: descriptives
+          in: query
+          required: false
+          schema:
+            description: Search term used for filtering
+            examples:
+              - tiktok
+            title: Descriptives
+            type: array
+            items:
+              type: string
+          description: Search term used for filtering
+        - name: featured
+          in: query
+          required: false
+          schema:
+            type: boolean
+            description: Filter featured voices
+            examples:
+              - true
+            default: false
+            title: Featured
+          description: Filter featured voices
+        - name: min_notice_period_days
+          in: query
+          required: false
+          schema:
+            description: Filter voices with a minimum notice period of the given number of days.
+            examples:
+              - 30
+            title: Min Notice Period Days
+            type: integer
+          description: Filter voices with a minimum notice period of the given number of days.
+        - name: include_custom_rates
+          in: query
+          required: false
+          schema:
+            description: Include/exclude voices with custom rates
+            examples:
+              - true
+            title: Include Custom Rates
+            type: boolean
+          description: Include/exclude voices with custom rates
+        - name: include_live_moderated
+          in: query
+          required: false
+          schema:
+            description: Include/exclude voices that are live moderated
+            examples:
+              - true
+            title: Include Live Moderated
+            type: boolean
+          description: Include/exclude voices that are live moderated
+        - name: reader_app_enabled
+          in: query
+          required: false
+          schema:
+            type: boolean
+            description: Filter voices that are enabled for the reader app
+            examples:
+              - true
+            default: false
+            title: Reader App Enabled
+          description: Filter voices that are enabled for the reader app
+        - name: owner_id
+          in: query
+          required: false
+          schema:
+            description: Filter voices by public owner ID
+            examples:
+              - 7c9fab611d9a0e1fb2e7448a0c294a8804efc2bcc324b0a366a5d5232b7d1532
+            title: Owner Id
+            type: string
+          description: Filter voices by public owner ID
+        - name: sort
+          in: query
+          required: false
+          schema:
+            description: 'Sort criteria. Must be one of: created_date, usage_character_count_1y, trending, cloned_by_count.'
+            examples:
+              - created_date
+            enum:
+              - created_date
+              - usage_character_count_1y
+              - trending
+              - cloned_by_count
+            default: created_date
+            title: Sort
+            type: string
+          description: 'Sort criteria. Must be one of: created_date, usage_character_count_1y, trending, cloned_by_count.'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            title: Page
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLibraryVoicesResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: voices
+      x-fern-sdk-method-name: get_shared
+  /v1/voices/pvc:
+    post:
+      tags:
+        - pvc-voices
+      summary: Create Pvc Voice
+      description: Creates a new PVC voice with metadata but no samples
+      operationId: create_pvc_voice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Create_PVC_voice_v1_voices_pvc_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddVoiceResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+      x-fern-sdk-method-name: create
+  '/v1/voices/pvc/{voice_id}':
+    post:
+      tags:
+        - pvc-voices
+      summary: Edit Pvc Voice
+      description: Edit PVC voice metadata
+      operationId: edit_pvc_voice
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Edit_PVC_voice_v1_voices_pvc__voice_id__post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddVoiceResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+      x-fern-sdk-method-name: update
+  '/v1/voices/pvc/{voice_id}/samples':
+    post:
+      tags:
+        - pvc-voices
+      summary: Add Samples To Pvc Voice
+      description: Add audio samples to a PVC voice
+      operationId: add_pvc_voice_samples
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_Add_samples_to_PVC_voice_v1_voices_pvc__voice_id__samples_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SampleResponseModel'
+                title: Response Add Samples To Pvc Voice V1 Voices Pvc  Voice Id  Samples Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+        - samples
+      x-fern-sdk-method-name: create
+  '/v1/voices/pvc/{voice_id}/samples/{sample_id}':
+    post:
+      tags:
+        - pvc-voices
+      summary: Update Pvc Voice Sample
+      description: 'Update a PVC voice sample - apply noise removal, select speaker, change trim times or file name.'
+      operationId: edit_pvc_voice_sample
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+        - name: sample_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Sample ID to be used
+            examples:
+              - VW7YKqPnjY4h39yTbx2L
+            title: Sample Id
+          description: Sample ID to be used
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Update_PVC_voice_sample_v1_voices_pvc__voice_id__samples__sample_id__post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddVoiceResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+        - samples
+      x-fern-sdk-method-name: update
+    delete:
+      tags:
+        - pvc-voices
+      summary: Delete Pvc Voice Sample
+      description: Delete a sample from a PVC voice.
+      operationId: delete_pvc_voice_sample
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+        - name: sample_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Sample ID to be used
+            examples:
+              - VW7YKqPnjY4h39yTbx2L
+            title: Sample Id
+          description: Sample ID to be used
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteVoiceSampleResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+        - samples
+      x-fern-sdk-method-name: delete
+  '/v1/voices/pvc/{voice_id}/samples/{sample_id}/audio':
+    get:
+      tags:
+        - pvc-voices
+      summary: Retrieve Voice Sample Audio
+      description: Retrieve the first 30 seconds of voice sample audio with or without noise removal.
+      operationId: get_pvc_sample_audio
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+        - name: sample_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Sample ID to be used
+            examples:
+              - VW7YKqPnjY4h39yTbx2L
+            title: Sample Id
+          description: Sample ID to be used
+        - name: remove_background_noise
+          in: query
+          required: false
+          schema:
+            type: boolean
+            description: 'If set will remove background noise for voice samples using our audio isolation model. If the samples do not include background noise, it can make the quality worse.'
+            examples:
+              - true
+            embed: true
+            default: false
+            title: Remove Background Noise
+          description: 'If set will remove background noise for voice samples using our audio isolation model. If the samples do not include background noise, it can make the quality worse.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoiceSamplePreviewResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+        - samples
+        - audio
+      x-fern-sdk-method-name: get
+  '/v1/voices/pvc/{voice_id}/samples/{sample_id}/waveform':
+    get:
+      tags:
+        - pvc-voices
+      summary: Retrieve Voice Sample Visual Waveform
+      description: Retrieve the visual waveform of a voice sample.
+      operationId: get_pvc_sample_visual_waveform
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+        - name: sample_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Sample ID to be used
+            examples:
+              - VW7YKqPnjY4h39yTbx2L
+            title: Sample Id
+          description: Sample ID to be used
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoiceSampleVisualWaveformResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+        - samples
+        - waveform
+      x-fern-sdk-method-name: get
+  '/v1/voices/pvc/{voice_id}/samples/{sample_id}/speakers':
+    get:
+      tags:
+        - pvc-voices
+      summary: Retrieve Speaker Separation Status
+      description: Retrieve the status of the speaker separation process and the list of detected speakers if complete.
+      operationId: get_pvc_sample_speakers
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+        - name: sample_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Sample ID to be used
+            examples:
+              - VW7YKqPnjY4h39yTbx2L
+            title: Sample Id
+          description: Sample ID to be used
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeakerSeparationResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+        - samples
+        - speakers
+      x-fern-sdk-method-name: get
+  '/v1/voices/pvc/{voice_id}/samples/{sample_id}/separate-speakers':
+    post:
+      tags:
+        - pvc-voices
+      summary: Start Speaker Separation
+      description: Start speaker separation process for a sample
+      operationId: start_speaker_separation
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+        - name: sample_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Sample ID to be used
+            examples:
+              - VW7YKqPnjY4h39yTbx2L
+            title: Sample Id
+          description: Sample ID to be used
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartSpeakerSeparationResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+        - samples
+        - speakers
+      x-fern-sdk-method-name: separate
+  '/v1/voices/pvc/{voice_id}/samples/{sample_id}/speakers/{speaker_id}/audio':
+    get:
+      tags:
+        - pvc-voices
+      summary: Retrieve Separated Speaker Audio
+      description: Retrieve the separated audio for a specific speaker.
+      operationId: get_speaker_audio
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+        - name: sample_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Sample ID to be used
+            examples:
+              - VW7YKqPnjY4h39yTbx2L
+            title: Sample Id
+          description: Sample ID to be used
+        - name: speaker_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Speaker ID to be used, you can use GET https://api.elevenlabs.io/v1/voices/{voice_id}/samples/{sample_id}/speakers to list all the available speakers for a sample.'
+            examples:
+              - VW7YKqPnjY4h39yTbx2L
+            title: Speaker Id
+          description: 'Speaker ID to be used, you can use GET https://api.elevenlabs.io/v1/voices/{voice_id}/samples/{sample_id}/speakers to list all the available speakers for a sample.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeakerAudioResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+        - samples
+        - speakers
+        - audio
+      x-fern-sdk-method-name: get
+  '/v1/voices/pvc/{voice_id}/captcha':
+    get:
+      tags:
+        - pvc-voices
+      summary: Get Pvc Voice Captcha
+      description: Get captcha for PVC voice verification.
+      operationId: get_pvc_voice_captcha
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+      responses:
+        '200':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+        - verification
+        - captcha
+      x-fern-sdk-method-name: get
+    post:
+      tags:
+        - pvc-voices
+      summary: Verify Pvc Voice Captcha
+      description: Submit captcha verification for PVC voice.
+      operationId: verify_pvc_voice_captcha
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_Verify_PVC_voice_captcha_v1_voices_pvc__voice_id__captcha_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyPVCVoiceCaptchaResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+        - verification
+        - captcha
+      x-fern-sdk-method-name: verify
+  '/v1/voices/pvc/{voice_id}/train':
+    post:
+      tags:
+        - pvc-voices
+      summary: Run Pvc Training
+      description: Start PVC training process for a voice.
+      operationId: run_pvc_voice_training
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Run_PVC_training_v1_voices_pvc__voice_id__train_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartPVCVoiceTrainingResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+      x-fern-sdk-method-name: train
+  '/v1/voices/pvc/{voice_id}/verification':
+    post:
+      tags:
+        - pvc-voices
+      summary: Request Manual Verification
+      description: Request manual verification for a PVC voice.
+      operationId: request_pvc_manual_verification
+      parameters:
+        - name: voice_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+            examples:
+              - 21m00Tcm4TlvDq8ikWAM
+            title: Voice Id
+          description: 'Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the available voices.'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_Request_manual_verification_v1_voices_pvc__voice_id__verification_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestPVCManualVerificationResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - voices
+        - pvc
+        - verification
+      x-fern-sdk-method-name: request
+components:
+  schemas:
+    RequestPVCManualVerificationResponseModel:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: 'The status of the request PVC manual verification request. If the request was successful, the status will be ''ok''. Otherwise an error message with status 500 will be returned.'
+      type: object
+      required:
+        - status
+      title: RequestPVCManualVerificationResponseModel
+      example:
+        status: ok
+    Body_Request_manual_verification_v1_voices_pvc__voice_id__verification_post:
+      properties:
+        files:
+          items:
+            type: string
+            format: binary
+          type: array
+          title: Files
+          description: Verification documents
+        extra_text:
+          title: Extra Text
+          description: Extra text to be used in the manual verification process.
+          type: string
+      type: object
+      required:
+        - files
+      title: Body_Request_manual_verification_v1_voices_pvc__voice_id__verification_post
+    StartPVCVoiceTrainingResponseModel:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: 'The status of the start PVC voice training request. If the request was successful, the status will be ''ok''. Otherwise an error message with status 500 will be returned.'
+      type: object
+      required:
+        - status
+      title: StartPVCVoiceTrainingResponseModel
+      example:
+        status: ok
+    Body_Run_PVC_training_v1_voices_pvc__voice_id__train_post:
+      properties:
+        model_id:
+          title: Model Id
+          description: The model ID to use for the conversion.
+          examples:
+            - eleven_turbo_v2
+          type: string
+      type: object
+      title: Body_Run_PVC_training_v1_voices_pvc__voice_id__train_post
+    VerifyPVCVoiceCaptchaResponseModel:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: 'The status of the verify PVC captcha request. If the request was successful, the status will be ''ok''. Otherwise an error message with status 500 will be returned.'
+      type: object
+      required:
+        - status
+      title: VerifyPVCVoiceCaptchaResponseModel
+      example:
+        status: ok
+    Body_Verify_PVC_voice_captcha_v1_voices_pvc__voice_id__captcha_post:
+      properties:
+        recording:
+          type: string
+          title: Recording
+          description: Audio recording of the user
+          format: binary
+      type: object
+      required:
+        - recording
+      title: Body_Verify_PVC_voice_captcha_v1_voices_pvc__voice_id__captcha_post
+    SpeakerAudioResponseModel:
+      properties:
+        audio_base_64:
+          type: string
+          title: Audio Base 64
+          description: The base64 encoded audio.
+        media_type:
+          type: string
+          title: Media Type
+          description: The media type of the audio.
+        duration_secs:
+          type: number
+          title: Duration Secs
+          description: The duration of the audio in seconds.
+      type: object
+      required:
+        - audio_base_64
+        - media_type
+        - duration_secs
+      title: SpeakerAudioResponseModel
+      example:
+        audio_base_64: audio_base_64
+        duration_secs: 5
+        media_type: audio/mpeg
+    StartSpeakerSeparationResponseModel:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: 'The status of the start speaker seperation request. If the request was successful, the status will be ''ok''. Otherwise an error message with status 500 will be returned.'
+      type: object
+      required:
+        - status
+      title: StartSpeakerSeparationResponseModel
+      example:
+        status: ok
+    SpeakerSeparationResponseModel:
+      properties:
+        voice_id:
+          type: string
+          title: Voice Id
+          description: The ID of the voice.
+        sample_id:
+          type: string
+          title: Sample Id
+          description: The ID of the sample.
+        status:
+          type: string
+          enum:
+            - not_started
+            - pending
+            - completed
+            - failed
+          title: Status
+          description: The status of the speaker separation.
+        speakers:
+          title: Speakers
+          description: The speakers of the sample.
+          additionalProperties:
+            $ref: '#/components/schemas/SpeakerResponseModel'
+          type: object
+        selected_speaker_ids:
+          title: Selected Speaker Ids
+          description: The IDs of the selected speakers.
+          items:
+            type: string
+          type: array
+      type: object
+      required:
+        - voice_id
+        - sample_id
+        - status
+      title: SpeakerSeparationResponseModel
+      example:
+        sample_id: DCwhRBWXzGAHq8TQ4Fs18
+        status: not_started
+        voice_id: DCwhRBWXzGAHq8TQ4Fs18
+    SpeakerResponseModel:
+      properties:
+        speaker_id:
+          type: string
+          title: Speaker Id
+          description: The ID of the speaker.
+        duration_secs:
+          type: number
+          title: Duration Secs
+          description: The duration of the speaker segment in seconds.
+        utterances:
+          title: Utterances
+          description: The utterances of the speaker.
+          items:
+            $ref: '#/components/schemas/UtteranceResponseModel'
+          type: array
+      type: object
+      required:
+        - speaker_id
+        - duration_secs
+      title: SpeakerResponseModel
+      example:
+        duration_secs: 5
+        speaker_id: DCwhRBWXzGAHq8TQ4Fs18
+    UtteranceResponseModel:
+      properties:
+        start:
+          type: number
+          title: Start
+          description: The start time of the utterance in seconds.
+        end:
+          type: number
+          title: End
+          description: The end time of the utterance in seconds.
+      type: object
+      required:
+        - start
+        - end
+      title: UtteranceResponseModel
+      example:
+        end: 1
+        start: 0
+    VoiceSampleVisualWaveformResponseModel:
+      properties:
+        sample_id:
+          type: string
+          title: Sample Id
+          description: The ID of the sample.
+        visual_waveform:
+          items:
+            type: number
+          type: array
+          title: Visual Waveform
+          description: 'The visual waveform of the sample, represented as a list of floats.'
+      type: object
+      required:
+        - sample_id
+        - visual_waveform
+      title: VoiceSampleVisualWaveformResponseModel
+      example:
+        sample_id: DCwhRBWXzGAHq8TQ4Fs18
+        visual_waveform:
+          - 0.1
+          - 0.2
+          - 0.3
+          - 0.4
+          - 0.5
+    VoiceSamplePreviewResponseModel:
+      properties:
+        audio_base_64:
+          type: string
+          title: Audio Base 64
+          description: The base64 encoded audio.
+        voice_id:
+          type: string
+          title: Voice Id
+          description: The ID of the voice.
+        sample_id:
+          type: string
+          title: Sample Id
+          description: The ID of the sample.
+        media_type:
+          type: string
+          title: Media Type
+          description: The media type of the audio.
+        duration_secs:
+          title: Duration Secs
+          description: The duration of the audio in seconds.
+          type: number
+      type: object
+      required:
+        - audio_base_64
+        - voice_id
+        - sample_id
+        - media_type
+      title: VoiceSamplePreviewResponseModel
+      example:
+        audio_base_64: audio_base_64
+        duration_secs: 5
+        media_type: audio/mpeg
+        sample_id: DCwhRBWXzGAHq8TQ4Fs18
+        voice_id: DCwhRBWXzGAHq8TQ4Fs18
+    DeleteVoiceSampleResponseModel:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: 'The status of the voice sample deletion request. If the request was successful, the status will be ''ok''. Otherwise an error message with status 500 will be returned.'
+      type: object
+      required:
+        - status
+      title: DeleteVoiceSampleResponseModel
+      example:
+        status: ok
+    Body_Update_PVC_voice_sample_v1_voices_pvc__voice_id__samples__sample_id__post:
+      properties:
+        remove_background_noise:
+          type: boolean
+          title: Remove Background Noise
+          description: 'If set will remove background noise for voice samples using our audio isolation model. If the samples do not include background noise, it can make the quality worse.'
+          default: false
+          examples:
+            - true
+        selected_speaker_ids:
+          title: Selected Speaker Ids
+          description: Speaker IDs to be used for PVC training. Make sure you send all the speaker IDs you want to use for PVC training in one request because the last request will override the previous ones.
+          examples:
+            - speaker_0
+          items:
+            type: string
+          type: array
+        trim_start_time:
+          title: Trim Start Time
+          description: The start time of the audio to be used for PVC training. Time should be in milliseconds
+          examples:
+            - 0
+          type: integer
+        trim_end_time:
+          title: Trim End Time
+          description: The end time of the audio to be used for PVC training. Time should be in milliseconds
+          examples:
+            - 10
+          type: integer
+        file_name:
+          title: File Name
+          description: The name of the audio file to be used for PVC training.
+          examples:
+            - sample.mp3
+          type: string
+      type: object
+      title: Body_Update_PVC_voice_sample_v1_voices_pvc__voice_id__samples__sample_id__post
+    SampleResponseModel:
+      properties:
+        sample_id:
+          type: string
+          title: Sample Id
+          description: The ID of the sample.
+        file_name:
+          type: string
+          title: File Name
+          description: The name of the sample file.
+        mime_type:
+          type: string
+          title: Mime Type
+          description: The MIME type of the sample file.
+        size_bytes:
+          type: integer
+          title: Size Bytes
+          description: The size of the sample file in bytes.
+        hash:
+          type: string
+          title: Hash
+          description: The hash of the sample file.
+        duration_secs:
+          title: Duration Secs
+          type: number
+        remove_background_noise:
+          title: Remove Background Noise
+          type: boolean
+        has_isolated_audio:
+          title: Has Isolated Audio
+          type: boolean
+        has_isolated_audio_preview:
+          title: Has Isolated Audio Preview
+          type: boolean
+        speaker_separation:
+          $ref: '#/components/schemas/SpeakerSeparationResponseModel'
+        trim_start:
+          title: Trim Start
+          type: integer
+        trim_end:
+          title: Trim End
+          type: integer
+      type: object
+      required:
+        - sample_id
+        - file_name
+        - mime_type
+        - size_bytes
+        - hash
+      title: SampleResponseModel
+      example:
+        file_name: sample.mp3
+        hash: '1234567890'
+        mime_type: audio/mpeg
+        sample_id: DCwhRBWXzGAHq8TQ4Fs18
+        size_bytes: 1000000
+    Body_Add_samples_to_PVC_voice_v1_voices_pvc__voice_id__samples_post:
+      properties:
+        files:
+          items:
+            type: string
+            format: binary
+          type: array
+          title: Files
+          description: Audio files used to create the voice.
+        remove_background_noise:
+          type: boolean
+          title: Remove Background Noise
+          description: 'If set will remove background noise for voice samples using our audio isolation model. If the samples do not include background noise, it can make the quality worse.'
+          default: false
+          examples:
+            - true
+      type: object
+      required:
+        - files
+      title: Body_Add_samples_to_PVC_voice_v1_voices_pvc__voice_id__samples_post
+    Body_Edit_PVC_voice_v1_voices_pvc__voice_id__post:
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          title: Name
+          description: The name that identifies this voice. This will be displayed in the dropdown of the website.
+          examples:
+            - John Smith
+        language:
+          type: string
+          title: Language
+          description: Language used in the samples.
+          examples:
+            - en
+        description:
+          title: Description
+          description: Description to use for the created voice.
+          examples:
+            - An old American male voice with a slight hoarseness in his throat. Perfect for news.
+          type: string
+          maxLength: 500
+        labels:
+          title: Labels
+          description: 'Labels for the voice. Keys can be language, accent, gender, or age.'
+          examples:
+            - '{"language": "en", "accent": "en-US", "gender": "male", "age": "middle-aged"}'
+          additionalProperties:
+            type: string
+          type: object
+      type: object
+      title: Body_Edit_PVC_voice_v1_voices_pvc__voice_id__post
+    Body_Create_PVC_voice_v1_voices_pvc_post:
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          title: Name
+          description: The name that identifies this voice. This will be displayed in the dropdown of the website.
+          examples:
+            - John Smith
+        language:
+          type: string
+          title: Language
+          description: Language used in the samples.
+          examples:
+            - en
+        description:
+          title: Description
+          description: Description to use for the created voice.
+          examples:
+            - An old American male voice with a slight hoarseness in his throat. Perfect for news.
+          type: string
+          maxLength: 500
+        labels:
+          title: Labels
+          description: 'Labels for the voice. Keys can be language, accent, gender, or age.'
+          examples:
+            - '{"language": "en", "accent": "en-US", "gender": "male", "age": "middle-aged"}'
+          additionalProperties:
+            type: string
+          type: object
+      type: object
+      required:
+        - name
+        - language
+      title: Body_Create_PVC_voice_v1_voices_pvc_post
+    GetLibraryVoicesResponseModel:
+      properties:
+        voices:
+          items:
+            $ref: '#/components/schemas/LibraryVoiceResponseModel'
+          type: array
+          title: Voices
+          description: The list of shared voices
+        has_more:
+          type: boolean
+          title: Has More
+          description: Whether there are more shared voices in subsequent pages.
+        total_count:
+          type: integer
+          title: Total Count
+          description: The total number of shared voices matching the query.
+          default: 0
+        last_sort_id:
+          title: Last Sort Id
+          type: string
+      type: object
+      required:
+        - voices
+        - has_more
+      title: GetLibraryVoicesResponseModel
+      example:
+        has_more: false
+        total_count: 0
+        voices:
+          - accent: american
+            age: young
+            category: professional
+            cloned_by_count: 11
+            date_unix: 1714423232
+            description: 'Perfectly calm, neutral and strong voice. Great for a young female protagonist.'
+            descriptive: calm
+            featured: false
+            free_users_allowed: true
+            gender: Female
+            language: en
+            live_moderation_enabled: false
+            name: Alita
+            play_api_usage_character_count_1y: 12852
+            preview_url: 'https://storage.googleapis.com/eleven-public-prod/wqkMCd9huxXHX1dy5mLJn4QEQHj1/voices/sB1b5zUrxQVAFl2PhZFp/55e71aac-5cb7-4b3d-8241-429388160509.mp3'
+            public_owner_id: 63e84100a6bf7874ba37a1bab9a31828a379ec94b891b401653b655c5110880f
+            rate: 1
+            usage_character_count_1y: 12852
+            usage_character_count_7d: 12852
+            use_case: characters_animation
+            verified_languages:
+              - accent: american
+                language: en
+                locale: en-US
+                model_id: eleven_multilingual_v2
+                preview_url: 'https://storage.googleapis.com/eleven-public-prod/wqkMCd9huxXHX1dy5mLJn4QEQHj1/voices/sB1b5zUrxQVAFl2PhZFp/55e71aac-5cb7-4b3d-8241-429388160509.mp3'
+            voice_id: sB1b5zUrxQVAFl2PhZFp
+    LibraryVoiceResponseModel:
+      properties:
+        public_owner_id:
+          type: string
+          title: Public Owner Id
+          description: The public owner id of the voice.
+        voice_id:
+          type: string
+          title: Voice Id
+          description: The id of the voice.
+        date_unix:
+          type: integer
+          title: Date Unix
+          description: The date the voice was added to the library in Unix time.
+        name:
+          type: string
+          title: Name
+          description: The name of the voice.
+        accent:
+          type: string
+          title: Accent
+          description: The accent of the voice.
+        gender:
+          type: string
+          title: Gender
+          description: The gender of the voice.
+        age:
+          type: string
+          title: Age
+          description: The age of the voice.
+        descriptive:
+          type: string
+          title: Descriptive
+          description: The descriptive of the voice.
+        use_case:
+          type: string
+          title: Use Case
+          description: The use case of the voice.
+        category:
+          type: string
+          enum:
+            - generated
+            - cloned
+            - premade
+            - professional
+            - famous
+            - high_quality
+          title: Category
+          description: The category of the voice.
+        language:
+          title: Language
+          description: The language of the voice.
+          type: string
+        locale:
+          title: Locale
+          description: The locale of the voice.
+          type: string
+        description:
+          title: Description
+          description: The description of the voice.
+          type: string
+        preview_url:
+          title: Preview Url
+          description: The preview URL of the voice.
+          type: string
+        usage_character_count_1y:
+          type: integer
+          title: Usage Character Count 1Y
+          description: The usage character count of the voice in the last year.
+        usage_character_count_7d:
+          type: integer
+          title: Usage Character Count 7D
+          description: The usage character count of the voice in the last 7 days.
+        play_api_usage_character_count_1y:
+          type: integer
+          title: Play Api Usage Character Count 1Y
+          description: The play API usage character count of the voice in the last year.
+        cloned_by_count:
+          type: integer
+          title: Cloned By Count
+          description: The number of times the voice has been cloned.
+        rate:
+          title: Rate
+          description: The rate multiplier of the voice.
+          type: number
+        fiat_rate:
+          title: Fiat Rate
+          description: The rate of the voice in USD per 1000 credits. null if default
+          type: number
+        free_users_allowed:
+          type: boolean
+          title: Free Users Allowed
+          description: Whether free users are allowed to use the voice.
+        live_moderation_enabled:
+          type: boolean
+          title: Live Moderation Enabled
+          description: Whether live moderation is enabled for the voice.
+        featured:
+          type: boolean
+          title: Featured
+          description: Whether the voice is featured.
+        verified_languages:
+          title: Verified Languages
+          description: The verified languages of the voice.
+          items:
+            $ref: '#/components/schemas/VerifiedVoiceLanguageResponseModel'
+          type: array
+        notice_period:
+          title: Notice Period
+          description: The notice period of the voice.
+          type: integer
+        instagram_username:
+          title: Instagram Username
+          description: The Instagram username of the voice.
+          type: string
+        twitter_username:
+          title: Twitter Username
+          description: The Twitter username of the voice.
+          type: string
+        youtube_username:
+          title: Youtube Username
+          description: The YouTube username of the voice.
+          type: string
+        tiktok_username:
+          title: Tiktok Username
+          description: The TikTok username of the voice.
+          type: string
+        image_url:
+          title: Image Url
+          description: The image URL of the voice.
+          type: string
+        is_added_by_user:
+          title: Is Added By User
+          description: Whether the voice was added by the user.
+          type: boolean
+        is_bookmarked:
+          title: Is Bookmarked
+          description: Whether the voice is bookmarked by the current user. Only relevant when is_added_by_user is True.
+          type: boolean
+      type: object
+      required:
+        - public_owner_id
+        - voice_id
+        - date_unix
+        - name
+        - accent
+        - gender
+        - age
+        - descriptive
+        - use_case
+        - category
+        - usage_character_count_1y
+        - usage_character_count_7d
+        - play_api_usage_character_count_1y
+        - cloned_by_count
+        - free_users_allowed
+        - live_moderation_enabled
+        - featured
+      title: LibraryVoiceResponseModel
+      example:
+        accent: american
+        age: young
+        category: professional
+        cloned_by_count: 11
+        date_unix: 1714423232
+        description: 'Perfectly calm, neutral and strong voice. Great for a young female protagonist.'
+        descriptive: calm
+        featured: false
+        free_users_allowed: true
+        gender: Female
+        language: en
+        live_moderation_enabled: false
+        name: Alita
+        play_api_usage_character_count_1y: 12852
+        preview_url: 'https://storage.googleapis.com/eleven-public-prod/wqkMCd9huxXHX1dy5mLJn4QEQHj1/voices/sB1b5zUrxQVAFl2PhZFp/55e71aac-5cb7-4b3d-8241-429388160509.mp3'
+        public_owner_id: 63e84100a6bf7874ba37a1bab9a31828a379ec94b891b401653b655c5110880f
+        rate: 1
+        usage_character_count_1y: 12852
+        usage_character_count_7d: 12852
+        use_case: characters_animation
+        verified_languages:
+          - accent: american
+            language: en
+            locale: en-US
+            model_id: eleven_multilingual_v2
+            preview_url: 'https://storage.googleapis.com/eleven-public-prod/wqkMCd9huxXHX1dy5mLJn4QEQHj1/voices/sB1b5zUrxQVAFl2PhZFp/55e71aac-5cb7-4b3d-8241-429388160509.mp3'
+        voice_id: sB1b5zUrxQVAFl2PhZFp
+    VerifiedVoiceLanguageResponseModel:
+      properties:
+        language:
+          type: string
+          title: Language
+          description: The language of the voice.
+        model_id:
+          type: string
+          title: Model Id
+          description: The voice's model ID.
+        accent:
+          title: Accent
+          description: 'The voice''s accent, if applicable.'
+          type: string
+        locale:
+          title: Locale
+          description: 'The voice''s locale, if applicable.'
+          type: string
+        preview_url:
+          title: Preview Url
+          description: 'The voice''s preview URL, if applicable.'
+          type: string
+      type: object
+      required:
+        - language
+        - model_id
+      title: VerifiedVoiceLanguageResponseModel
+      example:
+        accent: American
+        language: en
+        model_id: eleven_turbo_v2_5
+    Body_Get_similar_library_voices_v1_similar_voices_post:
+      properties:
+        audio_file:
+          type: string
+          title: Audio File
+          format: binary
+        similarity_threshold:
+          title: Similarity Threshold
+          description: Threshold for voice similarity between provided sample and library voices. Values range from 0 to 2. The smaller the value the more similar voices will be returned.
+          examples:
+            - 0.5
+          type: number
+        top_k:
+          title: Top K
+          description: 'Number of most similar voices to return. If similarity_threshold is provided, less than this number of voices may be returned. Values range from 1 to 100.'
+          examples:
+            - 10
+          type: integer
+      type: object
+      title: Body_Get_similar_library_voices_v1_similar_voices_post
+    AddVoiceResponseModel:
+      properties:
+        voice_id:
+          type: string
+          title: Voice Id
+          description: The ID of the voice.
+      type: object
+      required:
+        - voice_id
+      title: AddVoiceResponseModel
+      example:
+        voice_id: b38kUX8pkfYO2kHyqfFy
+    Body_Add_shared_voice_v1_voices_add__public_user_id___voice_id__post:
+      properties:
+        new_name:
+          type: string
+          title: New Name
+          description: The name that identifies this voice. This will be displayed in the dropdown of the website.
+          examples:
+            - John Smith
+        bookmarked:
+          type: boolean
+          title: Bookmarked
+          default: true
+      type: object
+      required:
+        - new_name
+      title: Body_Add_shared_voice_v1_voices_add__public_user_id___voice_id__post
+    AddVoiceIVCResponseModel:
+      properties:
+        voice_id:
+          type: string
+          title: Voice Id
+          description: The ID of the newly created voice.
+        requires_verification:
+          type: boolean
+          title: Requires Verification
+          description: Whether the voice requires verification
+      type: object
+      required:
+        - voice_id
+        - requires_verification
+      title: AddVoiceIVCResponseModel
+      example:
+        requires_verification: false
+        voice_id: c38kUX8pkfYO2kHyqfFy
+    Body_Add_voice_v1_voices_add_post:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: The name that identifies this voice. This will be displayed in the dropdown of the website.
+          examples:
+            - John Smith
+        files:
+          items:
+            type: string
+            format: binary
+          type: array
+          title: Files
+          description: A list of file paths to audio recordings intended for voice cloning.
+        remove_background_noise:
+          type: boolean
+          title: Remove Background Noise
+          description: 'If set will remove background noise for voice samples using our audio isolation model. If the samples do not include background noise, it can make the quality worse.'
+          default: false
+          examples:
+            - true
+        description:
+          title: Description
+          description: A description of the voice.
+          examples:
+            - An old American male voice with a slight hoarseness in his throat. Perfect for news.
+          type: string
+        labels:
+          anyOf:
+            - additionalProperties:
+                type: string
+              type: object
+            - type: string
+          title: Labels
+          description: 'Labels for the voice. Keys can be language, accent, gender, or age.'
+          examples:
+            - '{"language": "en", "accent": "en-US", "gender": "male", "age": "middle-aged"}'
+      type: object
+      required:
+        - name
+        - files
+      title: Body_Add_voice_v1_voices_add_post
+    ReplicateVoiceToIsolatedEnvironmentResponseModel:
+      properties:
+        voice_id:
+          type: string
+          title: Voice Id
+          description: Voice ID of the replicated voice in the target residency.
+      type: object
+      required:
+        - voice_id
+      title: ReplicateVoiceToIsolatedEnvironmentResponseModel
+      example:
+        voice_id: 21m00Tcm4TlvDq8ikWAM
+    ReplicateVoiceToIsolatedEnvironmentRequestModel:
+      properties:
+        target_workspace_id:
+          type: string
+          title: Target Workspace Id
+          description: ID of the workspace to replicate the voice into. It must belong to the same consolidated billing group as the calling workspace; the target's data residency is derived from that link.
+        preserve_voice_id:
+          type: boolean
+          title: Preserve Voice Id
+          description: When true (default) the replicated voice keeps the same voice ID in the target residency; set to false to assign a new voice ID.
+          default: true
+      type: object
+      required:
+        - target_workspace_id
+      title: ReplicateVoiceToIsolatedEnvironmentRequestModel
+    GetVoicesV2ResponseModel:
+      properties:
+        voices:
+          items:
+            $ref: '#/components/schemas/VoiceResponseModel'
+          type: array
+          title: Voices
+          description: The list of voices matching the query.
+        has_more:
+          type: boolean
+          title: Has More
+          description: Indicates whether there are more voices available in subsequent pages. Use this flag (and next_page_token) for reliable pagination instead of relying on total_count.
+        total_count:
+          type: integer
+          title: Total Count
+          description: 'The total count of voices matching the query. This value is a live snapshot that reflects the current state of the database and may change between requests as users create, modify, or delete voices. For reliable pagination, use the has_more flag instead of relying on this value. Only request this field when you actually need the total count (e.g., for display purposes), as calculating it incurs a performance cost.'
+        next_page_token:
+          title: Next Page Token
+          description: Token to retrieve the next page of results. Pass this value to the next request to continue pagination. Null if there are no more results.
+          type: string
+      type: object
+      required:
+        - voices
+        - has_more
+        - total_count
+      title: GetVoicesV2ResponseModel
+    VoiceResponseModel:
+      properties:
+        voice_id:
+          type: string
+          title: Voice Id
+          description: The ID of the voice.
+        name:
+          type: string
+          title: Name
+          description: The name of the voice.
+        samples:
+          title: Samples
+          description: List of samples associated with the voice.
+          items:
+            $ref: '#/components/schemas/SampleResponseModel'
+          type: array
+        category:
+          type: string
+          enum:
+            - generated
+            - cloned
+            - premade
+            - professional
+            - famous
+            - high_quality
+          title: Category
+          description: The category of the voice.
+        fine_tuning:
+          description: Fine-tuning information for the voice.
+          $ref: '#/components/schemas/FineTuningResponseModel'
+        labels:
+          additionalProperties:
+            type: string
+          type: object
+          title: Labels
+          description: Labels associated with the voice.
+        description:
+          title: Description
+          description: The description of the voice.
+          type: string
+        preview_url:
+          title: Preview Url
+          description: The preview URL of the voice.
+          type: string
+        available_for_tiers:
+          items:
+            type: string
+          type: array
+          title: Available For Tiers
+          description: The tiers the voice is available for.
+        settings:
+          description: The settings of the voice.
+          $ref: '#/components/schemas/VoiceSettingsResponseModel'
+        sharing:
+          description: The sharing information of the voice.
+          $ref: '#/components/schemas/VoiceSharingResponseModel'
+        high_quality_base_model_ids:
+          items:
+            type: string
+          type: array
+          title: High Quality Base Model Ids
+          description: The base model IDs for high-quality voices.
+        verified_languages:
+          title: Verified Languages
+          description: The verified languages of the voice.
+          items:
+            $ref: '#/components/schemas/VerifiedVoiceLanguageResponseModel'
+          type: array
+        collection_ids:
+          title: Collection Ids
+          description: The IDs of collections this voice belongs to.
+          items:
+            type: string
+          type: array
+        safety_control:
+          title: Safety Control
+          description: The safety controls of the voice.
+          type: string
+          enum:
+            - NONE
+            - BAN
+            - CAPTCHA
+            - ENTERPRISE_BAN
+            - ENTERPRISE_CAPTCHA
+        voice_verification:
+          description: The voice verification of the voice.
+          $ref: '#/components/schemas/VoiceVerificationResponseModel'
+        permission_on_resource:
+          title: Permission On Resource
+          description: The permission on the resource of the voice.
+          type: string
+        is_owner:
+          title: Is Owner
+          description: Whether the voice is owned by the user.
+          type: boolean
+        is_legacy:
+          type: boolean
+          title: Is Legacy
+          description: Whether the voice is legacy.
+          default: false
+        is_mixed:
+          type: boolean
+          title: Is Mixed
+          description: Whether the voice is mixed.
+          default: false
+        favorited_at_unix:
+          title: Favorited At Unix
+          description: Timestamp when the voice was marked as favorite in Unix time.
+          type: integer
+        created_at_unix:
+          title: Created At Unix
+          description: The creation time of the voice in Unix time.
+          type: integer
+        is_bookmarked:
+          title: Is Bookmarked
+          description: Whether the voice is bookmarked by the current user. Only relevant for community (library-copied) voices.
+          type: boolean
+        recording_quality:
+          title: Recording Quality
+          description: The recording quality of the voice as determined by the review pipeline.
+          type: string
+          enum:
+            - studio
+            - good
+            - ok
+            - poor
+            - bad
+        labelling_status:
+          title: Labelling Status
+          description: The review pipeline status of the voice.
+          type: string
+          enum:
+            - in_review
+            - review_complete
+        recording_quality_reason:
+          title: Recording Quality Reason
+          description: 'The reason for the recording quality assessment, as determined by the review pipeline.'
+          type: string
+      type: object
+      required:
+        - voice_id
+        - name
+        - category
+        - labels
+        - available_for_tiers
+        - high_quality_base_model_ids
+      title: VoiceResponseModel
+      example:
+        available_for_tiers:
+          - creator
+          - enterprise
+        category: professional
+        description: 'A warm, expressive voice with a touch of humor.'
+        fine_tuning:
+          is_allowed_to_fine_tune: true
+          manual_verification_requested: false
+          state:
+            eleven_multilingual_v2: fine_tuned
+          verification_attempts_count: 2
+          verification_failures: []
+        high_quality_base_model_ids:
+          - eleven_v2_flash
+          - eleven_flash_v2
+          - eleven_turbo_v2_5
+          - eleven_multilingual_v2
+          - eleven_v2_5_flash
+          - eleven_flash_v2_5
+          - eleven_turbo_v2
+        is_legacy: false
+        is_mixed: false
+        is_owner: false
+        labels:
+          accent: American
+          age: middle-aged
+          description: expressive
+          gender: female
+          use_case: social media
+        name: Rachel
+        preview_url: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/9BWtsMINqrJLrRacOk9x/405766b8-1f4e-4d3c-aba1-6f25333823ec.mp3'
+        settings:
+          similarity_boost: 1
+          speed: 1
+          stability: 1
+          style: 0
+          use_speaker_boost: true
+        sharing:
+          category: professional
+          cloned_by_count: 50
+          date_unix: 1714204800
+          description: A female voice with a soft and friendly tone.
+          disable_at_unix: 1714204800
+          enabled_in_library: true
+          featured: true
+          financial_rewards_enabled: true
+          free_users_allowed: true
+          history_item_sample_id: DCwhRBWXzGAHq8TQ4Fs18
+          labels:
+            accent: American
+            gender: female
+          liked_by_count: 100
+          live_moderation_enabled: true
+          moderation_check:
+            captcha_checks:
+              - 0.95
+              - 0.98
+            captcha_ids:
+              - captcha1
+              - captcha2
+            date_checked_unix: 1714204800
+            description_check: true
+            description_value: A female voice with a soft and friendly tone.
+            name_check: true
+            name_value: Rachel
+            sample_checks:
+              - 0.95
+              - 0.98
+            sample_ids:
+              - sample1
+              - sample2
+          name: Rachel
+          notice_period: 30
+          original_voice_id: DCwhRBWXzGAHq8TQ4Fs18
+          public_owner_id: DCwhRBWXzGAHq8TQ4Fs18
+          rate: 0.05
+          reader_app_enabled: true
+          reader_restricted_on:
+            - resource_id: FCwhRBWXzGAHq8TQ4Fs18
+              resource_type: read
+          review_status: allowed
+          status: enabled
+          voice_mixing_allowed: false
+          whitelisted_emails:
+            - example@example.com
+        verified_languages:
+          - accent: american
+            language: en
+            locale: en-US
+            model_id: eleven_multilingual_v2
+            preview_url: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/9BWtsMINqrJLrRacOk9x/405766b8-1f4e-4d3c-aba1-6f25333823ec.mp3'
+        voice_id: 21m00Tcm4TlvDq8ikWAM
+        voice_verification:
+          is_verified: true
+          language: en
+          requires_verification: false
+          verification_attempts:
+            - accepted: true
+              date_unix: 1714204800
+              levenshtein_distance: 2
+              recording:
+                mime_type: audio/mpeg
+                recording_id: CwhRBWXzGAHq8TQ4Fs17
+                size_bytes: 1000000
+                transcription: 'Hello, how are you?'
+                upload_date_unix: 1714204800
+              similarity: 0.95
+              text: 'Hello, how are you?'
+          verification_attempts_count: 0
+          verification_failures: []
+    VoiceVerificationResponseModel:
+      properties:
+        requires_verification:
+          type: boolean
+          title: Requires Verification
+          description: Whether the voice requires verification.
+        is_verified:
+          type: boolean
+          title: Is Verified
+          description: Whether the voice has been verified.
+        verification_failures:
+          items:
+            type: string
+          type: array
+          title: Verification Failures
+          description: List of verification failures.
+        verification_attempts_count:
+          type: integer
+          title: Verification Attempts Count
+          description: The number of verification attempts.
+        language:
+          title: Language
+          description: The language of the voice.
+          type: string
+        verification_attempts:
+          title: Verification Attempts
+          description: Number of times a verification was attempted.
+          items:
+            $ref: '#/components/schemas/VerificationAttemptResponseModel'
+          type: array
+      type: object
+      required:
+        - requires_verification
+        - is_verified
+        - verification_failures
+        - verification_attempts_count
+      title: VoiceVerificationResponseModel
+      example:
+        is_verified: true
+        language: en
+        requires_verification: false
+        verification_attempts:
+          - accepted: true
+            date_unix: 1714204800
+            levenshtein_distance: 2
+            recording:
+              mime_type: audio/mpeg
+              recording_id: CwhRBWXzGAHq8TQ4Fs17
+              size_bytes: 1000000
+              transcription: 'Hello, how are you?'
+              upload_date_unix: 1714204800
+            similarity: 0.95
+            text: 'Hello, how are you?'
+        verification_attempts_count: 0
+        verification_failures: []
+    VerificationAttemptResponseModel:
+      properties:
+        text:
+          type: string
+          title: Text
+          description: The text of the verification attempt.
+        date_unix:
+          type: integer
+          title: Date Unix
+          description: The date of the verification attempt in Unix time.
+        accepted:
+          type: boolean
+          title: Accepted
+          description: Whether the verification attempt was accepted.
+        similarity:
+          type: number
+          title: Similarity
+          description: The similarity of the verification attempt.
+        levenshtein_distance:
+          type: number
+          title: Levenshtein Distance
+          description: The Levenshtein distance of the verification attempt.
+        recording:
+          description: The recording of the verification attempt.
+          $ref: '#/components/schemas/RecordingResponseModel'
+      type: object
+      required:
+        - text
+        - date_unix
+        - accepted
+        - similarity
+        - levenshtein_distance
+      title: VerificationAttemptResponseModel
+      example:
+        accepted: true
+        date_unix: 1714204800
+        levenshtein_distance: 2
+        recording:
+          mime_type: audio/mpeg
+          recording_id: CwhRBWXzGAHq8TQ4Fs17
+          size_bytes: 1000000
+          transcription: 'Hello, how are you?'
+          upload_date_unix: 1714204800
+        similarity: 0.95
+        text: 'Hello, how are you?'
+    RecordingResponseModel:
+      properties:
+        recording_id:
+          type: string
+          title: Recording Id
+          description: The ID of the recording.
+        mime_type:
+          type: string
+          title: Mime Type
+          description: The MIME type of the recording.
+        size_bytes:
+          type: integer
+          title: Size Bytes
+          description: The size of the recording in bytes.
+        upload_date_unix:
+          type: integer
+          title: Upload Date Unix
+          description: The date of the recording in Unix time.
+        transcription:
+          type: string
+          title: Transcription
+          description: The transcription of the recording.
+      type: object
+      required:
+        - recording_id
+        - mime_type
+        - size_bytes
+        - upload_date_unix
+        - transcription
+      title: RecordingResponseModel
+      example:
+        mime_type: audio/mpeg
+        recording_id: CwhRBWXzGAHq8TQ4Fs17
+        size_bytes: 1000000
+        transcription: 'Hello, how are you?'
+        upload_date_unix: 1714204800
+    VoiceSharingResponseModel:
+      properties:
+        status:
+          type: string
+          enum:
+            - enabled
+            - disabled
+            - copied
+            - copied_disabled
+          title: Status
+          description: The status of the voice sharing.
+        history_item_sample_id:
+          title: History Item Sample Id
+          description: The sample ID of the history item.
+          type: string
+        date_unix:
+          type: integer
+          title: Date Unix
+          description: The date of the voice sharing in Unix time.
+        whitelisted_emails:
+          items:
+            type: string
+          type: array
+          title: Whitelisted Emails
+          description: A list of whitelisted emails.
+        public_owner_id:
+          type: string
+          title: Public Owner Id
+          description: The ID of the public owner.
+        original_voice_id:
+          type: string
+          title: Original Voice Id
+          description: The ID of the original voice.
+        financial_rewards_enabled:
+          type: boolean
+          title: Financial Rewards Enabled
+          description: Whether financial rewards are enabled.
+        free_users_allowed:
+          type: boolean
+          title: Free Users Allowed
+          description: Whether free users are allowed.
+        live_moderation_enabled:
+          type: boolean
+          title: Live Moderation Enabled
+          description: Whether live moderation is enabled.
+        rate:
+          title: Rate
+          description: The rate of the voice sharing.
+          type: number
+        fiat_rate:
+          title: Fiat Rate
+          description: The rate of the voice sharing in USD per 1000 credits.
+          type: number
+        notice_period:
+          type: integer
+          title: Notice Period
+          description: The notice period of the voice sharing.
+        disable_at_unix:
+          title: Disable At Unix
+          description: The date of the voice sharing in Unix time.
+          type: integer
+        voice_mixing_allowed:
+          type: boolean
+          title: Voice Mixing Allowed
+          description: Whether voice mixing is allowed.
+        featured:
+          type: boolean
+          title: Featured
+          description: Whether the voice is featured.
+        category:
+          type: string
+          enum:
+            - generated
+            - cloned
+            - premade
+            - professional
+            - famous
+            - high_quality
+          title: Category
+          description: The category of the voice.
+        reader_app_enabled:
+          title: Reader App Enabled
+          description: Whether the reader app is enabled.
+          type: boolean
+        image_url:
+          title: Image Url
+          description: The image URL of the voice.
+          type: string
+        ban_reason:
+          title: Ban Reason
+          description: The ban reason of the voice.
+          type: string
+        liked_by_count:
+          type: integer
+          title: Liked By Count
+          description: The number of likes on the voice.
+        cloned_by_count:
+          type: integer
+          title: Cloned By Count
+          description: The number of clones on the voice.
+        name:
+          type: string
+          title: Name
+          description: The name of the voice.
+        description:
+          title: Description
+          description: The description of the voice.
+          type: string
+        labels:
+          additionalProperties:
+            type: string
+          type: object
+          title: Labels
+          description: The labels of the voice.
+        review_status:
+          type: string
+          enum:
+            - not_requested
+            - pending
+            - declined
+            - allowed
+            - allowed_with_changes
+          title: Review Status
+          description: The review status of the voice.
+        review_message:
+          title: Review Message
+          description: The review message of the voice.
+          type: string
+        enabled_in_library:
+          type: boolean
+          title: Enabled In Library
+          description: Whether the voice is enabled in the library.
+        instagram_username:
+          title: Instagram Username
+          description: The Instagram username of the voice.
+          type: string
+        twitter_username:
+          title: Twitter Username
+          description: The Twitter/X username of the voice.
+          type: string
+        youtube_username:
+          title: Youtube Username
+          description: The YouTube username of the voice.
+          type: string
+        tiktok_username:
+          title: Tiktok Username
+          description: The TikTok username of the voice.
+          type: string
+        moderation_check:
+          description: The moderation check of the voice.
+          $ref: '#/components/schemas/VoiceSharingModerationCheckResponseModel'
+        reader_restricted_on:
+          title: Reader Restricted On
+          description: The reader restricted on of the voice.
+          items:
+            $ref: '#/components/schemas/ReaderResourceResponseModel'
+          type: array
+      type: object
+      required:
+        - status
+        - date_unix
+        - whitelisted_emails
+        - public_owner_id
+        - original_voice_id
+        - financial_rewards_enabled
+        - free_users_allowed
+        - live_moderation_enabled
+        - notice_period
+        - voice_mixing_allowed
+        - featured
+        - category
+        - liked_by_count
+        - cloned_by_count
+        - name
+        - labels
+        - review_status
+        - enabled_in_library
+      title: VoiceSharingResponseModel
+      example:
+        category: professional
+        cloned_by_count: 50
+        date_unix: 1714204800
+        description: A female voice with a soft and friendly tone.
+        disable_at_unix: 1714204800
+        enabled_in_library: true
+        featured: true
+        financial_rewards_enabled: true
+        free_users_allowed: true
+        history_item_sample_id: DCwhRBWXzGAHq8TQ4Fs18
+        labels:
+          accent: American
+          gender: female
+        liked_by_count: 100
+        live_moderation_enabled: true
+        moderation_check:
+          captcha_checks:
+            - 0.95
+            - 0.98
+          captcha_ids:
+            - captcha1
+            - captcha2
+          date_checked_unix: 1714204800
+          description_check: true
+          description_value: A female voice with a soft and friendly tone.
+          name_check: true
+          name_value: Rachel
+          sample_checks:
+            - 0.95
+            - 0.98
+          sample_ids:
+            - sample1
+            - sample2
+        name: Rachel
+        notice_period: 30
+        original_voice_id: DCwhRBWXzGAHq8TQ4Fs18
+        public_owner_id: DCwhRBWXzGAHq8TQ4Fs18
+        rate: 0.05
+        reader_app_enabled: true
+        reader_restricted_on:
+          - resource_id: FCwhRBWXzGAHq8TQ4Fs18
+            resource_type: read
+        review_status: allowed
+        status: enabled
+        voice_mixing_allowed: false
+        whitelisted_emails:
+          - example@example.com
+    ReaderResourceResponseModel:
+      properties:
+        resource_type:
+          type: string
+          enum:
+            - read
+            - collection
+          title: Resource Type
+          description: The type of resource.
+        resource_id:
+          type: string
+          title: Resource Id
+          description: The ID of the resource.
+      type: object
+      required:
+        - resource_type
+        - resource_id
+      title: ReaderResourceResponseModel
+      example:
+        resource_id: FCwhRBWXzGAHq8TQ4Fs18
+        resource_type: read
+    VoiceSharingModerationCheckResponseModel:
+      properties:
+        date_checked_unix:
+          title: Date Checked Unix
+          description: The date the moderation check was made in Unix time.
+          type: integer
+        name_value:
+          title: Name Value
+          description: The name value of the voice.
+          type: string
+        name_check:
+          title: Name Check
+          description: Whether the name check was successful.
+          type: boolean
+        description_value:
+          title: Description Value
+          description: The description value of the voice.
+          type: string
+        description_check:
+          title: Description Check
+          description: Whether the description check was successful.
+          type: boolean
+        sample_ids:
+          title: Sample Ids
+          description: A list of sample IDs.
+          items:
+            type: string
+          type: array
+        sample_checks:
+          title: Sample Checks
+          description: A list of sample checks.
+          items:
+            type: number
+          type: array
+        captcha_ids:
+          title: Captcha Ids
+          description: A list of captcha IDs.
+          items:
+            type: string
+          type: array
+        captcha_checks:
+          title: Captcha Checks
+          description: A list of CAPTCHA check values.
+          items:
+            type: number
+          type: array
+      type: object
+      title: VoiceSharingModerationCheckResponseModel
+      example:
+        captcha_checks:
+          - 0.95
+          - 0.98
+        captcha_ids:
+          - captcha1
+          - captcha2
+        date_checked_unix: 1714204800
+        description_check: true
+        description_value: A female voice with a soft and friendly tone.
+        name_check: true
+        name_value: Rachel
+        sample_checks:
+          - 0.95
+          - 0.98
+        sample_ids:
+          - sample1
+          - sample2
+    VoiceSettingsResponseModel:
+      properties:
+        stability:
+          title: Stability
+          description: Determines how stable the voice is and the randomness between each generation. Lower values introduce broader emotional range for the voice. Higher values can result in a monotonous voice with limited emotion.
+          default: 0.5
+          type: number
+          maximum: 1
+          minimum: 0
+        use_speaker_boost:
+          title: Use Speaker Boost
+          description: 'This setting boosts the similarity to the original speaker. Using this setting requires a slightly higher computational load, which in turn increases latency.'
+          default: true
+          type: boolean
+        similarity_boost:
+          title: Similarity Boost
+          description: Determines how closely the AI should adhere to the original voice when attempting to replicate it.
+          default: 0.75
+          type: number
+          maximum: 1
+          minimum: 0
+        style:
+          title: Style
+          description: Determines the style exaggeration of the voice. This setting attempts to amplify the style of the original speaker. It does consume additional computational resources and might increase latency if set to anything other than 0.
+          default: 0
+          type: number
+        speed:
+          title: Speed
+          description: 'Adjusts the speed of the voice. A value of 1.0 is the default speed, while values less than 1.0 slow down the speech, and values greater than 1.0 speed it up.'
+          default: 1
+          type: number
+      type: object
+      title: VoiceSettingsResponseModel
+      example:
+        similarity_boost: 1
+        speed: 1
+        stability: 1
+        style: 0
+        use_speaker_boost: true
+    FineTuningResponseModel:
+      properties:
+        is_allowed_to_fine_tune:
+          type: boolean
+          title: Is Allowed To Fine Tune
+          description: Whether the user is allowed to fine-tune the voice.
+        state:
+          additionalProperties:
+            type: string
+            enum:
+              - not_started
+              - queued
+              - fine_tuning
+              - fine_tuned
+              - failed
+              - delayed
+          type: object
+          title: State
+          description: The state of the fine-tuning process for each model.
+        verification_failures:
+          items:
+            type: string
+          type: array
+          title: Verification Failures
+          description: List of verification failures in the fine-tuning process.
+        verification_attempts_count:
+          type: integer
+          title: Verification Attempts Count
+          description: The number of verification attempts in the fine-tuning process.
+        manual_verification_requested:
+          type: boolean
+          title: Manual Verification Requested
+          description: Whether a manual verification was requested for the fine-tuning process.
+        language:
+          title: Language
+          description: The language of the fine-tuning process.
+          type: string
+        progress:
+          title: Progress
+          description: The progress of the fine-tuning process.
+          additionalProperties:
+            type: number
+          type: object
+        message:
+          title: Message
+          description: The message of the fine-tuning process.
+          additionalProperties:
+            type: string
+          type: object
+        dataset_duration_seconds:
+          title: Dataset Duration Seconds
+          description: The duration of the dataset in seconds.
+          type: number
+        verification_attempts:
+          title: Verification Attempts
+          description: The number of verification attempts.
+          items:
+            $ref: '#/components/schemas/VerificationAttemptResponseModel'
+          type: array
+        slice_ids:
+          title: Slice Ids
+          description: List of slice IDs.
+          items:
+            type: string
+          type: array
+        manual_verification:
+          description: The manual verification of the fine-tuning process.
+          $ref: '#/components/schemas/ManualVerificationResponseModel'
+        max_verification_attempts:
+          title: Max Verification Attempts
+          description: The maximum number of verification attempts.
+          type: integer
+        next_max_verification_attempts_reset_unix_ms:
+          title: Next Max Verification Attempts Reset Unix Ms
+          description: The next maximum verification attempts reset time in Unix milliseconds.
+          type: integer
+      type: object
+      required:
+        - is_allowed_to_fine_tune
+        - state
+        - verification_failures
+        - verification_attempts_count
+        - manual_verification_requested
+      title: FineTuningResponseModel
+      example:
+        is_allowed_to_fine_tune: true
+        manual_verification_requested: false
+        state:
+          eleven_multilingual_v2: fine_tuned
+        verification_attempts_count: 2
+        verification_failures: []
+    ManualVerificationResponseModel:
+      properties:
+        extra_text:
+          type: string
+          title: Extra Text
+          description: The extra text of the manual verification.
+        request_time_unix:
+          type: integer
+          title: Request Time Unix
+          description: The date of the manual verification in Unix time.
+        files:
+          items:
+            $ref: '#/components/schemas/ManualVerificationFileResponseModel'
+          type: array
+          title: Files
+          description: The files of the manual verification.
+      type: object
+      required:
+        - extra_text
+        - request_time_unix
+        - files
+      title: ManualVerificationResponseModel
+      example:
+        extra_text: Please verify the voice is that of a female.
+        files:
+          - file_id: CwhRBWXzGAHq8TQ4Fs18
+            file_name: file.mp3
+            mime_type: audio/mpeg
+            size_bytes: 1000000
+            upload_date_unix: 1714204800
+        request_time_unix: 1714204800
+    ManualVerificationFileResponseModel:
+      properties:
+        file_id:
+          type: string
+          title: File Id
+          description: The ID of the file.
+        file_name:
+          type: string
+          title: File Name
+          description: The name of the file.
+        mime_type:
+          type: string
+          title: Mime Type
+          description: The MIME type of the file.
+        size_bytes:
+          type: integer
+          title: Size Bytes
+          description: The size of the file in bytes.
+        upload_date_unix:
+          type: integer
+          title: Upload Date Unix
+          description: The date of the file in Unix time.
+      type: object
+      required:
+        - file_id
+        - file_name
+        - mime_type
+        - size_bytes
+        - upload_date_unix
+      title: ManualVerificationFileResponseModel
+      example:
+        file_id: CwhRBWXzGAHq8TQ4Fs18
+        file_name: file.mp3
+        mime_type: audio/mpeg
+        size_bytes: 1000000
+        upload_date_unix: 1714204800
+    EditVoiceResponseModel:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: 'The status of the voice edit request. If the request was successful, the status will be ''ok''. Otherwise an error message with status 500 will be returned.'
+      type: object
+      required:
+        - status
+      title: EditVoiceResponseModel
+      example:
+        status: ok
+    Body_Edit_voice_v1_voices__voice_id__edit_post:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: The name that identifies this voice. This will be displayed in the dropdown of the website.
+          examples:
+            - John Smith
+        files:
+          items:
+            type: string
+            format: binary
+          type: array
+          title: Files
+          description: Audio files to add to the voice
+        remove_background_noise:
+          type: boolean
+          title: Remove Background Noise
+          description: 'If set will remove background noise for voice samples using our audio isolation model. If the samples do not include background noise, it can make the quality worse.'
+          default: false
+          examples:
+            - true
+        description:
+          title: Description
+          description: A description of the voice.
+          examples:
+            - An old American male voice with a slight hoarseness in his throat. Perfect for news.
+          type: string
+        labels:
+          anyOf:
+            - additionalProperties:
+                type: string
+              type: object
+            - type: string
+          title: Labels
+          description: 'Labels for the voice. Keys can be language, accent, gender, or age.'
+          examples:
+            - '{"language": "en", "accent": "en-US", "gender": "male", "age": "middle-aged"}'
+        moderate_metadata:
+          type: boolean
+          title: Moderate Metadata
+          description: Run synchronous LLM moderation over the voice name and description when they change. Has no effect unless the voice_library_metadata_moderation feature flag is enabled for the user.
+          default: false
+      type: object
+      required:
+        - name
+      title: Body_Edit_voice_v1_voices__voice_id__edit_post
+    DeleteVoiceResponseModel:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: 'The status of the voice deletion request. If the request was successful, the status will be ''ok''. Otherwise an error message with status 500 will be returned.'
+      type: object
+      required:
+        - status
+      title: DeleteVoiceResponseModel
+      example:
+        status: ok
+    GetVoicesResponseModel:
+      properties:
+        voices:
+          items:
+            $ref: '#/components/schemas/VoiceResponseModel'
+          type: array
+          title: Voices
+          description: A list of available voices.
+      type: object
+      required:
+        - voices
+      title: GetVoicesResponseModel
+      example:
+        voices:
+          - available_for_tiers:
+              - creator
+              - enterprise
+            category: professional
+            description: 'A warm, expressive voice with a touch of humor.'
+            fine_tuning:
+              is_allowed_to_fine_tune: true
+              manual_verification_requested: false
+              state:
+                eleven_multilingual_v2: fine_tuned
+              verification_attempts_count: 2
+              verification_failures: []
+            high_quality_base_model_ids:
+              - eleven_v2_flash
+              - eleven_flash_v2
+              - eleven_turbo_v2_5
+              - eleven_multilingual_v2
+              - eleven_v2_5_flash
+              - eleven_flash_v2_5
+              - eleven_turbo_v2
+            is_legacy: false
+            is_mixed: false
+            is_owner: false
+            labels:
+              accent: American
+              age: middle-aged
+              description: expressive
+              gender: female
+              use_case: social media
+            name: Rachel
+            preview_url: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/9BWtsMINqrJLrRacOk9x/405766b8-1f4e-4d3c-aba1-6f25333823ec.mp3'
+            settings:
+              similarity_boost: 1
+              speed: 1
+              stability: 1
+              style: 0
+              use_speaker_boost: true
+            sharing:
+              category: professional
+              cloned_by_count: 50
+              date_unix: 1714204800
+              description: A female voice with a soft and friendly tone.
+              disable_at_unix: 1714204800
+              enabled_in_library: true
+              featured: true
+              financial_rewards_enabled: true
+              free_users_allowed: true
+              history_item_sample_id: DCwhRBWXzGAHq8TQ4Fs18
+              labels:
+                accent: American
+                gender: female
+              liked_by_count: 100
+              live_moderation_enabled: true
+              moderation_check:
+                captcha_checks:
+                  - 0.95
+                  - 0.98
+                captcha_ids:
+                  - captcha1
+                  - captcha2
+                date_checked_unix: 1714204800
+                description_check: true
+                description_value: A female voice with a soft and friendly tone.
+                name_check: true
+                name_value: Rachel
+                sample_checks:
+                  - 0.95
+                  - 0.98
+                sample_ids:
+                  - sample1
+                  - sample2
+              name: Rachel
+              notice_period: 30
+              original_voice_id: DCwhRBWXzGAHq8TQ4Fs18
+              public_owner_id: DCwhRBWXzGAHq8TQ4Fs18
+              rate: 0.05
+              reader_app_enabled: true
+              reader_restricted_on:
+                - resource_id: FCwhRBWXzGAHq8TQ4Fs18
+                  resource_type: read
+              review_status: allowed
+              status: enabled
+              voice_mixing_allowed: false
+              whitelisted_emails:
+                - example@example.com
+            verified_languages:
+              - accent: american
+                language: en
+                locale: en-US
+                model_id: eleven_multilingual_v2
+                preview_url: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/9BWtsMINqrJLrRacOk9x/405766b8-1f4e-4d3c-aba1-6f25333823ec.mp3'
+            voice_id: 21m00Tcm4TlvDq8ikWAM
+            voice_verification:
+              is_verified: true
+              language: en
+              requires_verification: false
+              verification_attempts:
+                - accepted: true
+                  date_unix: 1714204800
+                  levenshtein_distance: 2
+                  recording:
+                    mime_type: audio/mpeg
+                    recording_id: CwhRBWXzGAHq8TQ4Fs17
+                    size_bytes: 1000000
+                    transcription: 'Hello, how are you?'
+                    upload_date_unix: 1714204800
+                  similarity: 0.95
+                  text: 'Hello, how are you?'
+              verification_attempts_count: 0
+              verification_failures: []
+    GetVoiceAccentsResponseModel:
+      properties:
+        accents:
+          items:
+            $ref: '#/components/schemas/VoiceAccentResponseModel'
+          type: array
+          title: Accents
+          description: A list of available voice accents.
+      type: object
+      required:
+        - accents
+      title: GetVoiceAccentsResponseModel
+      example:
+        accents:
+          - accent: american
+            code: en-american
+            language: en
+            name: American
+    VoiceAccentResponseModel:
+      properties:
+        accent:
+          type: string
+          title: Accent
+          description: The accent value used for filtering shared voices via the `accent` query parameter on `GET /v1/shared-voices`.
+        language:
+          type: string
+          title: Language
+          description: 'The language code this accent belongs to, e.g. `en`.'
+        code:
+          type: string
+          title: Code
+          description: 'The full accent code, e.g. `en-american`.'
+        name:
+          type: string
+          title: Name
+          description: 'The human-readable accent name, e.g. `American`.'
+      type: object
+      required:
+        - accent
+        - language
+        - code
+        - name
+      title: VoiceAccentResponseModel
+      example:
+        accent: american
+        code: en-american
+        language: en
+        name: American
+    EditVoiceSettingsResponseModel:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: 'The status of the voice settings edit request. If the request was successful, the status will be ''ok''. Otherwise an error message with status 500 will be returned.'
+      type: object
+      required:
+        - status
+      title: EditVoiceSettingsResponseModel
+      example:
+        status: ok
+    VoiceRemixRequestModel:
+      properties:
+        voice_description:
+          type: string
+          maxLength: 1000
+          minLength: 5
+          title: Voice Description
+          description: Description of the changes to make to the voice.
+          examples:
+            - Make the voice have a higher pitch.
+        text:
+          title: Text
+          description: 'Text to generate, text length has to be between 100 and 1000.'
+          examples:
+            - 'Every act of kindness, no matter how small, carries value and can make a difference, as no gesture of goodwill is ever wasted.'
+          type: string
+          maxLength: 1000
+          minLength: 100
+        auto_generate_text:
+          type: boolean
+          title: Auto Generate Text
+          description: Whether to automatically generate a text suitable for the voice description.
+          default: false
+        loudness:
+          type: number
+          maximum: 1
+          minimum: -1
+          title: Loudness
+          description: 'Controls the volume level of the generated voice. -1 is quietest, 1 is loudest, 0 corresponds to roughly -24 LUFS.'
+          default: 0.5
+          examples:
+            - 0.5
+        seed:
+          title: Seed
+          description: Random number that controls the voice generation. Same seed with same inputs produces same voice.
+          examples:
+            - 11
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        guidance_scale:
+          type: number
+          maximum: 100
+          minimum: 0
+          title: Guidance Scale
+          description: 'Controls how closely the AI follows the prompt. Lower numbers give the AI more freedom to be creative, while higher numbers force it to stick more to the prompt. High numbers can cause voice to sound artificial or robotic. We recommend to use longer, more detailed prompts at lower Guidance Scale.'
+          default: 2
+          examples:
+            - 5
+        stream_previews:
+          type: boolean
+          title: Stream Previews
+          description: 'Determines whether the Text to Voice previews should be included in the response. If true, only the generated IDs will be returned which can then be streamed via the /v1/text-to-voice/:generated_voice_id/stream endpoint.'
+          default: false
+          examples:
+            - true
+        remixing_session_id:
+          title: Remixing Session Id
+          description: The remixing session id.
+          examples:
+            - '123'
+          type: string
+        remixing_session_iteration_id:
+          title: Remixing Session Iteration Id
+          description: 'The id of the remixing session iteration where these generations should be attached to. If not provided, a new iteration will be created.'
+          examples:
+            - '123'
+          type: string
+        prompt_strength:
+          title: Prompt Strength
+          description: 'Controls the balance of prompt versus reference audio when generating voice samples. 0 means almost no prompt influence, 1 means almost no reference audio influence. Only supported when using the eleven_ttv_v3 model.'
+          examples:
+            - 0.25
+          type: number
+          maximum: 1
+          minimum: 0
+      type: object
+      required:
+        - voice_description
+      title: VoiceRemixRequestModel
+    VoiceDesignRequestModel:
+      properties:
+        voice_description:
+          type: string
+          maxLength: 1000
+          minLength: 20
+          title: Voice Description
+          description: Description to use for the created voice.
+          examples:
+            - A sassy squeaky mouse
+        model_id:
+          type: string
+          enum:
+            - eleven_multilingual_ttv_v2
+            - eleven_ttv_v3
+          title: Model Id
+          description: 'Model to use for the voice generation. Possible values: eleven_multilingual_ttv_v2, eleven_ttv_v3.'
+          default: eleven_multilingual_ttv_v2
+          examples:
+            - eleven_multilingual_ttv_v2
+        text:
+          title: Text
+          description: 'Text to generate, text length has to be between 100 and 1000.'
+          examples:
+            - 'Every act of kindness, no matter how small, carries value and can make a difference, as no gesture of goodwill is ever wasted.'
+          type: string
+          maxLength: 1000
+          minLength: 100
+        auto_generate_text:
+          type: boolean
+          title: Auto Generate Text
+          description: Whether to automatically generate a text suitable for the voice description.
+          default: false
+        loudness:
+          type: number
+          maximum: 1
+          minimum: -1
+          title: Loudness
+          description: 'Controls the volume level of the generated voice. -1 is quietest, 1 is loudest, 0 corresponds to roughly -24 LUFS.'
+          default: 0.5
+          examples:
+            - 0.5
+        seed:
+          title: Seed
+          description: Random number that controls the voice generation. Same seed with same inputs produces same voice.
+          examples:
+            - 11
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        guidance_scale:
+          type: number
+          maximum: 100
+          minimum: 0
+          title: Guidance Scale
+          description: 'Controls how closely the AI follows the prompt. Lower numbers give the AI more freedom to be creative, while higher numbers force it to stick more to the prompt. High numbers can cause voice to sound artificial or robotic. We recommend to use longer, more detailed prompts at lower Guidance Scale.'
+          default: 5
+          examples:
+            - 5
+        stream_previews:
+          type: boolean
+          title: Stream Previews
+          description: 'Determines whether the Text to Voice previews should be included in the response. If true, only the generated IDs will be returned which can then be streamed via the /v1/text-to-voice/:generated_voice_id/stream endpoint.'
+          default: false
+          examples:
+            - true
+        should_enhance:
+          type: boolean
+          title: Should Enhance
+          description: 'Whether to enhance the voice description using AI to add more detail and improve voice generation quality. When enabled, the system will automatically expand simple prompts into more detailed voice descriptions. Defaults to False'
+          default: false
+          examples:
+            - true
+        remixing_session_id:
+          title: Remixing Session Id
+          description: The remixing session id.
+          examples:
+            - '123'
+          type: string
+        remixing_session_iteration_id:
+          title: Remixing Session Iteration Id
+          description: 'The id of the remixing session iteration where these generations should be attached to. If not provided, a new iteration will be created.'
+          examples:
+            - '123'
+          type: string
+        quality:
+          title: Quality
+          description: Higher quality results in better voice output but less variety.
+          examples:
+            - 0.9
+          type: number
+          maximum: 1
+          minimum: -1
+        reference_audio_base64:
+          title: Reference Audio Base64
+          description: Reference audio to use for the voice generation. The audio should be base64 encoded. Only supported when using the  eleven_ttv_v3 model.
+          type: string
+        prompt_strength:
+          title: Prompt Strength
+          description: 'Controls the balance of prompt versus reference audio when generating voice samples. 0 means almost no prompt influence, 1 means almost no reference audio influence. Only supported when using the eleven_ttv_v3 model.'
+          examples:
+            - 0.25
+          type: number
+          maximum: 1
+          minimum: 0
+      type: object
+      required:
+        - voice_description
+      title: VoiceDesignRequestModel
+    Body_Create_a_new_voice_from_voice_preview_v1_text_to_voice_post:
+      properties:
+        voice_name:
+          type: string
+          title: Voice Name
+          description: Name to use for the created voice.
+          examples:
+            - Sassy squeaky mouse
+        voice_description:
+          type: string
+          maxLength: 1000
+          minLength: 20
+          title: Voice Description
+          description: Description to use for the created voice.
+          examples:
+            - A sassy squeaky mouse
+        generated_voice_id:
+          type: string
+          title: Generated Voice Id
+          description: 'The generated_voice_id to create; obtain it from POST /v1/text-to-voice/design, POST /v1/text-to-voice/:voice_id/remix, or the response headers when generating previews.'
+          examples:
+            - 37HceQefKmEi3bGovXjL
+        labels:
+          title: Labels
+          description: 'Optional, metadata to add to the created voice. Defaults to None.'
+          examples:
+            - language: en
+          name: Voice metadata
+          additionalProperties:
+            type: string
+          type: object
+        played_not_selected_voice_ids:
+          title: Played Not Selected Voice Ids
+          description: List of voice ids that the user has played but not selected. Used for RLHF.
+          items:
+            type: string
+          type: array
+      type: object
+      required:
+        - voice_name
+        - voice_description
+        - generated_voice_id
+      title: Body_Create_a_new_voice_from_voice_preview_v1_text_to_voice_post
+    VoicePreviewsResponseModel:
+      properties:
+        previews:
+          items:
+            $ref: '#/components/schemas/VoicePreviewResponseModel'
+          type: array
+          title: Previews
+          description: The previews of the generated voices.
+        text:
+          type: string
+          title: Text
+          description: The text used to preview the voices.
+      type: object
+      required:
+        - previews
+        - text
+      title: VoicePreviewsResponseModel
+    VoicePreviewResponseModel:
+      properties:
+        audio_base_64:
+          type: string
+          title: Audio Base 64
+          description: The base64 encoded audio of the preview.
+        generated_voice_id:
+          type: string
+          title: Generated Voice Id
+          description: The ID of the generated voice. Use it to create a voice from the preview.
+        media_type:
+          type: string
+          title: Media Type
+          description: The media type of the preview.
+        duration_secs:
+          type: number
+          title: Duration Secs
+          description: The duration of the preview in seconds.
+        language:
+          title: Language
+          description: The language of the preview.
+          type: string
+      type: object
+      required:
+        - audio_base_64
+        - generated_voice_id
+        - media_type
+        - duration_secs
+        - language
+      title: VoicePreviewResponseModel
+    VoicePreviewsRequestModel:
+      properties:
+        voice_description:
+          type: string
+          maxLength: 1000
+          minLength: 20
+          title: Voice Description
+          description: Description to use for the created voice.
+          examples:
+            - A sassy squeaky mouse
+        text:
+          title: Text
+          description: 'Text to generate, text length has to be between 100 and 1000.'
+          examples:
+            - 'Every act of kindness, no matter how small, carries value and can make a difference, as no gesture of goodwill is ever wasted.'
+          type: string
+          maxLength: 1000
+          minLength: 100
+        auto_generate_text:
+          type: boolean
+          title: Auto Generate Text
+          description: Whether to automatically generate a text suitable for the voice description.
+          default: false
+        loudness:
+          type: number
+          maximum: 1
+          minimum: -1
+          title: Loudness
+          description: 'Controls the volume level of the generated voice. -1 is quietest, 1 is loudest, 0 corresponds to roughly -24 LUFS.'
+          default: 0.5
+          examples:
+            - 0.5
+        quality:
+          type: number
+          maximum: 1
+          minimum: -1
+          title: Quality
+          description: Higher quality results in better voice output but less variety.
+          default: 0.9
+          examples:
+            - 0.9
+        seed:
+          title: Seed
+          description: Random number that controls the voice generation. Same seed with same inputs produces same voice.
+          examples:
+            - 11
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        guidance_scale:
+          type: number
+          maximum: 100
+          minimum: 0
+          title: Guidance Scale
+          description: 'Controls how closely the AI follows the prompt. Lower numbers give the AI more freedom to be creative, while higher numbers force it to stick more to the prompt. High numbers can cause voice to sound artificial or robotic. We recommend to use longer, more detailed prompts at lower Guidance Scale.'
+          default: 5
+          examples:
+            - 5
+        should_enhance:
+          type: boolean
+          title: Should Enhance
+          description: 'Whether to enhance the voice description using AI to add more detail and improve voice generation quality. When enabled, the system will automatically expand simple prompts into more detailed voice descriptions. Defaults to False'
+          default: false
+          examples:
+            - true
+      type: object
+      required:
+        - voice_description
+      title: VoicePreviewsRequestModel
+    AllowedOutputFormats:
+      type: string
+      enum:
+        - mp3_22050_32
+        - mp3_24000_48
+        - mp3_44100_32
+        - mp3_44100_64
+        - mp3_44100_96
+        - mp3_44100_128
+        - mp3_44100_192
+        - pcm_8000
+        - pcm_16000
+        - pcm_22050
+        - pcm_24000
+        - pcm_32000
+        - pcm_44100
+        - pcm_48000
+        - ulaw_8000
+        - alaw_8000
+        - opus_48000_32
+        - opus_48000_64
+        - opus_48000_96
+        - opus_48000_128
+        - opus_48000_192
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError
+    DeleteSampleResponseModel:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: 'The status of the sample deletion request. If the request was successful, the status will be ''ok''. Otherwise an error message with status 500 will be returned.'
+      type: object
+      required:
+        - status
+      title: DeleteSampleResponseModel
+      example:
+        status: ok
+tags:
+  - name: text-to-speech
+    description: Convert text into lifelike speech using a voice of your choice.
+  - name: speech-to-speech
+    description: Create speech by combining the style and content of an audio file you upload with a voice of your choice.
+  - name: speech-to-text
+    description: Transcribe your audio files with detailed speaker annotations and precise timestamps using our cutting-edge model.
+  - name: forced-alignment
+    description: Force align an audio file to a text transcript to get precise word-level and character level timing information. Response is a list of characters with their start and end times as milliseconds elapsed from the start of the recording.
+  - name: models
+    description: Access the different models of the platform.
+  - name: productions
+    description: Access and manage ElevenProductions orders.
+  - name: voices
+    description: Access to voices created either by you or ElevenLabs.
+  - name: samples
+    description: Access to your samples. A sample is any audio file you attached to a voice. A voice can have one or more samples.
+  - name: speech-history
+    description: Accesses your speech history. Your speech history is a list of all your created audio including its metadata using our text-to-speech and speech-to-speech models.
+  - name: studios
+    description: 'Access, create and convert Studio Projects programmatically, only specifically whitelisted accounts can access the Studio API. If you need access please contact our sales team.'
+  - name: workspace
+    description: Access to workspace related endpoints.
+  - name: text-to-voice
+    description: Design and generate custom voices from a text prompt.
+  - name: text-to-dialogue
+    description: Generate multi-speaker dialogue from a script using different voices.
+  - name: sound-generation
+    description: Generate sound effects and non-speech audio from a text prompt.
+  - name: audio-isolation
+    description: Isolate speech from background noise in an audio file.
+  - name: audio-native
+    description: Embed AI-narrated audio players into your website using Audio Native.
+  - name: music-generation
+    description: Generate music from a text prompt.
+  - name: music-finetunes
+    description: Create and manage music finetunes.
+  - name: video-to-music
+    description: Generate music that matches the content and mood of a video.
+  - name: Speech Engine
+    description: 'Low-latency, real-time speech generation endpoints.'
+  - name: pvc-voices
+    description: Create and manage Professional Voice Clones (PVCs).
+  - name: dubbing
+    description: Dub audio and video content into other languages while preserving the original speaker's voice.
+  - name: resource
+    description: 'Manage dubbing resources, including segments, speakers, and language tracks.'
+  - name: segment
+    description: Manage individual segments within a dubbing resource.
+  - name: studio
+    description: 'Access, create and convert Studio Projects programmatically. Only specifically whitelisted accounts can access the Studio API. If you need access please contact our sales team.'
+  - name: Pronunciation Dictionary
+    description: Manage pronunciation dictionaries that override how specific words are pronounced.
+  - name: Conversational AI
+    description: Build and manage conversational AI agents (legacy tag — see also Agents Platform).
+  - name: Agents Platform
+    description: 'Build, configure and manage Conversational AI agents, knowledge bases, tools, and conversations.'
+  - name: Agents Insights
+    description: Query analytics and insights about agent conversations and performance.
+  - name: Agents Workspace Analytics
+    description: Workspace-level analytics for Conversational AI usage.
+  - name: Single Use Token
+    description: 'Mint short-lived, single-use tokens for client-side use of Conversational AI agents.'
+  - name: api-key
+    description: Manage API keys for your workspace.
+  - name: enterprise
+    description: Endpoints available only to enterprise workspaces.
+  - name: 'access:all'
+    description: Endpoints accessible to all authenticated callers regardless of scope.

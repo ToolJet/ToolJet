@@ -1,0 +1,3769 @@
+openapi: 3.1.0
+info:
+  title: ElevenLabs API Documentation
+  description: 'This is the documentation for the ElevenLabs API. You can use this API to use our service programmatically, this is done by using your API key. You can find your API key in the dashboard at https://elevenlabs.io/app/settings/api-keys.'
+  version: '1.0'
+paths:
+  /v1/dubbing/project:
+    get:
+      tags:
+        - Dubbing
+      summary: List Dubbing Projects
+      description: 'List the dubbing projects in your workspace that you can access, newest first, cursor-paginated. Listed projects carry no `language_ids`; fetch a project, or list its language targets, to see them.'
+      operationId: dubbing_project_list
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            description: Pass the `next_cursor` from a previous response to fetch the page after it. Omit for the first page.
+            title: Cursor
+            type: string
+          description: Pass the `next_cursor` from a previous response to fetch the page after it. Omit for the first page.
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            description: 'Number of projects per page. Clamped to between 1 and 100 rather than rejected, so a larger value returns a full page.'
+            default: 20
+            title: Page Size
+          description: 'Number of projects per page. Clamped to between 1 and 100 rather than rejected, so a larger value returns a full page.'
+        - name: status
+          in: query
+          required: false
+          schema:
+            description: 'Filter to projects in this status: `queued`, `preparing`, `ready`, or `failed`. Omit to return every status.'
+            title: Status
+            type: string
+          description: 'Filter to projects in this status: `queued`, `preparing`, `ready`, or `failed`. Omit to return every status.'
+        - name: sort_direction
+          in: query
+          required: false
+          schema:
+            enum:
+              - ASCENDING
+              - DESCENDING
+            type: string
+            description: Sort by creation time; newest first by default.
+            default: DESCENDING
+            title: Sort Direction
+          description: Sort by creation time; newest first by default.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingProjectListResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+      x-fern-sdk-method-name: list
+      x-fern-examples:
+        - query-parameters:
+            page_size: 20
+          response:
+            body:
+              projects:
+                - project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+                  status: ready
+                  reference: Q3 marketing video
+                  source_language: en
+                  model_id: dubbing_v2
+                  media:
+                    filename: promo.mp4
+                    duration_s: 42.5
+                    has_video: true
+                    mime_type: video/mp4
+                  language_ids:
+                    - lang_1001kwkyxp0je6ktn4knsfrasx5s
+                  webhook_ids: []
+                  revision: 3
+                  warnings:
+                    - type: voices_not_permitted
+                      speaker_ids:
+                        - speaker_1
+                      message: 'Voice cloning was not permitted for speaker speaker_1, so a replacement voice was used.'
+                  created_at: '2026-07-03T10:15:30Z'
+                  updated_at: '2026-07-03T10:17:12Z'
+    post:
+      tags:
+        - Dubbing
+      summary: Create Dubbing Project
+      description: |-
+        Create a dubbing project from an uploaded file (`file`) or a source URL (`source_url`).
+
+        Returns as soon as the project record exists, before the source has been fetched: the project starts `queued` and reaches `ready` once its source has been transcribed. Add a language target to it for each language you want, or pass `target_language` to queue the first one here.
+
+        Creating a project incurs a minimum charge of one language: you are charged for at least one language's dubbing when the project is created, before any output exists. This charge prepays the first language target — the first target you add, or the one queued via `target_language`, consumes it — and each additional language is charged separately.
+
+        Preparation can take minutes on a long source, so we recommend passing `webhook_ids` to be notified when the project turns `ready` or `failed`, rather than polling for it.
+      operationId: dubbing_project_create
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_Create_Dubbing_Project_v1_dubbing_project_post'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingProjectResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+      x-fern-sdk-method-name: create
+      x-fern-examples:
+        - request:
+            source_url: 'https://example.com/promo.mp4'
+            source_language: en
+            reference: Q3 marketing video
+          response:
+            body:
+              project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+              status: queued
+              reference: Q3 marketing video
+              source_language: en
+              model_id: dubbing_v2
+              language_ids: []
+              webhook_ids: []
+              revision: 0
+              warnings: []
+              created_at: '2026-07-03T10:15:30Z'
+              updated_at: '2026-07-03T10:15:30Z'
+  '/v1/dubbing/project/{project_id}':
+    get:
+      tags:
+        - Dubbing
+      summary: Get Dubbing Project
+      description: 'Full project detail, including the IDs of every language target under it. To follow a project to `ready`, we recommend a `webhook_ids` subscription rather than polling this endpoint.'
+      operationId: dubbing_project_get
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the dubbing project to fetch.
+            title: Project Id
+          description: Identifier of the dubbing project to fetch.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingProjectResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+      x-fern-sdk-method-name: get
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+          response:
+            body:
+              project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+              status: ready
+              reference: Q3 marketing video
+              source_language: en
+              model_id: dubbing_v2
+              media:
+                filename: promo.mp4
+                duration_s: 42.5
+                has_video: true
+                mime_type: video/mp4
+              language_ids:
+                - lang_1001kwkyxp0je6ktn4knsfrasx5s
+              webhook_ids: []
+              revision: 3
+              warnings:
+                - type: voices_not_permitted
+                  speaker_ids:
+                    - speaker_1
+                  message: 'Voice cloning was not permitted for speaker speaker_1, so a replacement voice was used.'
+              created_at: '2026-07-03T10:15:30Z'
+              updated_at: '2026-07-03T10:17:12Z'
+    delete:
+      tags:
+        - Dubbing
+      summary: Delete Dubbing Project
+      description: 'Delete a project, every language target under it, and their stored media and outputs. This cannot be undone, and a dub already running is still billed.'
+      operationId: dubbing_project_delete
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the dubbing project to delete.
+            title: Project Id
+          description: Identifier of the dubbing project to delete.
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+      x-fern-sdk-method-name: delete
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+  '/v1/dubbing/project/{project_id}/language':
+    get:
+      tags:
+        - Dubbing
+      summary: List Dubbing Language Targets
+      description: 'List a project''s language targets, cursor-paginated, each with signed output URLs once it has produced an output.'
+      operationId: dubbing_language_list
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the parent dubbing project.
+            title: Project Id
+          description: Identifier of the parent dubbing project.
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            description: Pass the `next_cursor` from a previous response to fetch the page after it. Omit for the first page.
+            title: Cursor
+            type: string
+          description: Pass the `next_cursor` from a previous response to fetch the page after it. Omit for the first page.
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            description: 'Number of language targets per page. Clamped to between 1 and 100 rather than rejected, so a larger value returns a full page.'
+            default: 20
+            title: Page Size
+          description: 'Number of language targets per page. Clamped to between 1 and 100 rather than rejected, so a larger value returns a full page.'
+        - name: status
+          in: query
+          required: false
+          schema:
+            description: 'Filter to targets in this status: `queued`, `processing`, `completed`, `stale`, or `failed`. Omit to return every status.'
+            title: Status
+            type: string
+          description: 'Filter to targets in this status: `queued`, `processing`, `completed`, `stale`, or `failed`. Omit to return every status.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingLanguageListResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+        - language
+      x-fern-sdk-method-name: list
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+          query-parameters:
+            page_size: 20
+          response:
+            body:
+              languages:
+                - language_id: lang_1001kwkyxp0je6ktn4knsfrasx5s
+                  project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+                  target_language: es
+                  status: completed
+                  model_id: dubbing_v2
+                  outputs:
+                    lossless_audio: 'https://storage.googleapis.com/eleven-dubbing/proj_1601kwkyxp0hfzvtmyxwqxx6mcy3/lang_1001kwkyxp0je6ktn4knsfrasx5s/output.flac?X-Goog-Signature=...'
+                  revision: 3
+                  output_revision: 3
+                  warnings: []
+                  created_at: '2026-07-03T10:16:00Z'
+                  updated_at: '2026-07-03T10:20:45Z'
+    post:
+      tags:
+        - Dubbing
+      summary: Create Dubbing Language Target
+      description: |-
+        Add a language to dub a project into, and queue the dub.
+
+        This is the call that produces dubbed audio, and it is billed per generation. The target is created `queued` and starts as soon as the project is `ready`, so it can be added at any point after the project is created. It inherits the project's dubbing model and cannot pick another.
+
+        A project created with `webhook_ids` sends a `dubbing_language_completed` event carrying the output download URLs, so we recommend subscribing rather than polling this target to completion.
+      operationId: dubbing_language_create
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the parent dubbing project.
+            title: Project Id
+          description: Identifier of the parent dubbing project.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Create_Dubbing_Language_Target_v1_dubbing_project__project_id__language_post'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingLanguageResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+        - language
+      x-fern-sdk-method-name: create
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+          request:
+            target_language: es
+          response:
+            body:
+              language_id: lang_1001kwkyxp0je6ktn4knsfrasx5s
+              project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+              target_language: es
+              status: queued
+              model_id: dubbing_v2
+              revision: 0
+              warnings: []
+              created_at: '2026-07-03T10:16:00Z'
+              updated_at: '2026-07-03T10:16:00Z'
+  '/v1/dubbing/project/{project_id}/language/{language_id}':
+    get:
+      tags:
+        - Dubbing
+      summary: Get Dubbing Language Target
+      description: 'Full language-target detail. Once the target reports `completed`, `outputs` carries the signed download URLs. To learn when that happens, we recommend the project''s `webhook_ids` subscription rather than polling this endpoint; fetch here when a delivered URL has expired, or to reconcile after an edit.'
+      operationId: dubbing_language_get
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the parent dubbing project.
+            title: Project Id
+          description: Identifier of the parent dubbing project.
+        - name: language_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the language target to fetch.
+            title: Language Id
+          description: Identifier of the language target to fetch.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingLanguageResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+        - language
+      x-fern-sdk-method-name: get
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+            language_id: lang_1001kwkyxp0je6ktn4knsfrasx5s
+          response:
+            body:
+              language_id: lang_1001kwkyxp0je6ktn4knsfrasx5s
+              project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+              target_language: es
+              status: completed
+              model_id: dubbing_v2
+              outputs:
+                lossless_audio: 'https://storage.googleapis.com/eleven-dubbing/proj_1601kwkyxp0hfzvtmyxwqxx6mcy3/lang_1001kwkyxp0je6ktn4knsfrasx5s/output.flac?X-Goog-Signature=...'
+              revision: 3
+              output_revision: 3
+              warnings: []
+              created_at: '2026-07-03T10:16:00Z'
+              updated_at: '2026-07-03T10:20:45Z'
+    delete:
+      tags:
+        - Dubbing
+      summary: Delete Dubbing Language Target
+      description: 'Delete a language target and its outputs, leaving the project and its other languages intact. This cannot be undone, and a dub already running is still billed.'
+      operationId: dubbing_language_delete
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the parent dubbing project.
+            title: Project Id
+          description: Identifier of the parent dubbing project.
+        - name: language_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the language target to delete.
+            title: Language Id
+          description: Identifier of the language target to delete.
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+        - language
+      x-fern-sdk-method-name: delete
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+            language_id: lang_1001kwkyxp0je6ktn4knsfrasx5s
+  '/v1/dubbing/project/{project_id}/transcript':
+    get:
+      tags:
+        - Dubbing
+      summary: Get Dubbing Transcript
+      description: 'The project''s source transcript, as editable segments. Available once the project is `ready`.'
+      operationId: dubbing_transcript_get
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the dubbing project.
+            title: Project Id
+          description: Identifier of the dubbing project.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingSourceTranscriptResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+        - transcript
+      x-fern-sdk-method-name: get
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+          response:
+            body:
+              language: en
+              segments:
+                - id: 0199a3f0-1c2d-7abc-8def-0123456789ab
+                  text: Welcome to our product demo.
+                  speaker_id: default_speaker
+                  start_s: 0
+                  end_s: 2.5
+              revision: 3
+  '/v1/dubbing/project/{project_id}/transcript/segment/{segment_id}':
+    delete:
+      tags:
+        - Dubbing
+      summary: Delete Dubbing Transcript Segment
+      description: 'Enterprise only. Remove a source segment from the transcript so it is no longer dubbed. Bumps the project''s `revision`, discards the affected translations in every language target, and marks any target that had already completed `stale`. No audio changes until you regenerate a target.'
+      operationId: dubbing_transcript_segment_delete
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the dubbing project.
+            title: Project Id
+          description: Identifier of the dubbing project.
+        - name: segment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the segment to remove.
+            title: Segment Id
+          description: Identifier of the segment to remove.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingTranscriptRevisionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+        - transcript
+      x-fern-sdk-method-name: delete_segment
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+            segment_id: 0199a3f0-1c2d-7abc-8def-0123456789ab
+          response:
+            body:
+              revision: 6
+    patch:
+      tags:
+        - Dubbing
+      summary: Update Dubbing Transcript Segment
+      description: 'Enterprise only. Edit a source segment''s text, speaker, or timing. Omitted fields are left unchanged. Bumps the project''s `revision`, discards the affected translations in every language target, and marks any target that had already completed `stale`. No audio changes until you regenerate a target.'
+      operationId: dubbing_transcript_segment_update
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the dubbing project.
+            title: Project Id
+          description: Identifier of the dubbing project.
+        - name: segment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the segment to edit.
+            title: Segment Id
+          description: Identifier of the segment to edit.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DubbingSegmentUpdateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingSourceSegmentUpdateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+        - transcript
+      x-fern-sdk-method-name: update_segment
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+            segment_id: 0199a3f0-1c2d-7abc-8def-0123456789ab
+          request:
+            text: Welcome to our latest product demo.
+          response:
+            body:
+              segment:
+                id: 0199a3f0-1c2d-7abc-8def-0123456789ab
+                text: Welcome to our latest product demo.
+                speaker_id: default_speaker
+                start_s: 0
+                end_s: 2.5
+              revision: 4
+  '/v1/dubbing/project/{project_id}/transcript/segments':
+    patch:
+      tags:
+        - Dubbing
+      summary: Update Dubbing Transcript Segments
+      description: 'Enterprise only. Edit several source segments'' text, speaker, or timing in one atomic request: every edit applies or none does. Bumps the project''s `revision`, discards the affected translations in every language target, and marks any target that had already completed `stale`. No audio changes until you regenerate a target.'
+      operationId: dubbing_transcript_segments_update
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the dubbing project.
+            title: Project Id
+          description: Identifier of the dubbing project.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DubbingBulkSegmentUpdateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingBulkSourceSegmentUpdateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+        - transcript
+      x-fern-sdk-method-name: update_segments
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+          request:
+            segments:
+              0199a3f0-1c2d-7abc-8def-0123456789ab:
+                text: Welcome to our latest product demo.
+              0199a3f0-3e4f-7abc-8def-0123456789cd:
+                speaker_id: narrator
+          response:
+            body:
+              segments:
+                - id: 0199a3f0-1c2d-7abc-8def-0123456789ab
+                  text: Welcome to our latest product demo.
+                  speaker_id: default_speaker
+                  start_s: 0
+                  end_s: 2.5
+                - id: 0199a3f0-3e4f-7abc-8def-0123456789cd
+                  text: Let's get started.
+                  speaker_id: narrator
+                  start_s: 2.5
+                  end_s: 4
+              revision: 5
+  '/v1/dubbing/project/{project_id}/transcript/segment':
+    post:
+      tags:
+        - Dubbing
+      summary: Add Dubbing Transcript Segment
+      description: 'Enterprise only. Add a new source segment to the transcript. Its span must lie within the source media, last between 0.1 and 25 seconds, and not overlap another segment by the same speaker. Bumps the project''s `revision`, discards the affected translations in every language target, and marks any target that had already completed `stale`. No audio changes until you regenerate a target.'
+      operationId: dubbing_transcript_segment_add
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the dubbing project.
+            title: Project Id
+          description: Identifier of the dubbing project.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DubbingSegmentCreateRequest'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingSourceSegmentUpdateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+        - transcript
+      x-fern-sdk-method-name: create_segment
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+          request:
+            text: Thanks for watching.
+            speaker_id: default_speaker
+            start_s: 42
+            end_s: 44
+          response:
+            body:
+              segment:
+                id: 0199a3f0-1c2d-7abc-8def-0123456789ab
+                text: Thanks for watching.
+                speaker_id: default_speaker
+                start_s: 42
+                end_s: 44
+              revision: 5
+  '/v1/dubbing/project/{project_id}/language/{language_id}/transcript':
+    get:
+      tags:
+        - Dubbing
+      summary: Get Dubbing Target Transcript
+      description: 'A language target''s transcript: source segments with their translations. Available once the target has produced an output. Returns a conflict while the target is still on its first dub, since it has no translations to return yet.'
+      operationId: dubbing_target_transcript_get
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the dubbing project.
+            title: Project Id
+          description: Identifier of the dubbing project.
+        - name: language_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the language target.
+            title: Language Id
+          description: Identifier of the language target.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingTargetTranscriptResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+        - language
+        - transcript
+      x-fern-sdk-method-name: get
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+            language_id: lang_1001kwkyxp0je6ktn4knsfrasx5s
+          response:
+            body:
+              source_language: en
+              target_language: es
+              segments:
+                - id: 0199a3f0-1c2d-7abc-8def-0123456789ab
+                  speaker_id: default_speaker
+                  start_s: 0
+                  end_s: 2.5
+                  source_text: Welcome to our product demo.
+                  translation: Bienvenido a la demostración de nuestro producto.
+              revision: 3
+  '/v1/dubbing/project/{project_id}/language/{language_id}/transcript/segment/{segment_id}':
+    patch:
+      tags:
+        - Dubbing
+      summary: Update Dubbing Target Transcript Segment
+      description: 'Enterprise only. Edit a segment''s translation for a language target. Omitted fields are left unchanged; an explicit null clears the field. Bumps the target''s `revision` and marks it `stale` if it had already completed. The source transcript and the project''s other languages are untouched, and no audio changes until you regenerate the target.'
+      operationId: dubbing_target_transcript_segment_update
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the dubbing project.
+            title: Project Id
+          description: Identifier of the dubbing project.
+        - name: language_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the language target.
+            title: Language Id
+          description: Identifier of the language target.
+        - name: segment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the segment to edit.
+            title: Segment Id
+          description: Identifier of the segment to edit.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DubbingTargetSegmentUpdateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingTargetSegmentUpdateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+        - language
+        - transcript
+      x-fern-sdk-method-name: update_segment
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+            language_id: lang_1001kwkyxp0je6ktn4knsfrasx5s
+            segment_id: 0199a3f0-1c2d-7abc-8def-0123456789ab
+          request:
+            translation: Bienvenido a nuestra última demostración de producto.
+          response:
+            body:
+              segment:
+                id: 0199a3f0-1c2d-7abc-8def-0123456789ab
+                speaker_id: default_speaker
+                start_s: 0
+                end_s: 2.5
+                source_text: Welcome to our product demo.
+                translation: Bienvenido a nuestra última demostración de producto.
+              revision: 4
+  '/v1/dubbing/project/{project_id}/language/{language_id}/transcript/segments':
+    patch:
+      tags:
+        - Dubbing
+      summary: Update Dubbing Target Transcript Segments
+      description: 'Enterprise only. Edit several segments'' translations for a language target in one atomic request: every edit applies or none does. Bumps the target''s `revision` and marks it `stale` if it had already completed. The source transcript and the project''s other languages are untouched, and no audio changes until you regenerate the target.'
+      operationId: dubbing_target_transcript_segments_update
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the dubbing project.
+            title: Project Id
+          description: Identifier of the dubbing project.
+        - name: language_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the language target.
+            title: Language Id
+          description: Identifier of the language target.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DubbingBulkTargetSegmentUpdateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingBulkTargetSegmentUpdateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+        - language
+        - transcript
+      x-fern-sdk-method-name: update_segments
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+            language_id: lang_1001kwkyxp0je6ktn4knsfrasx5s
+          request:
+            segments:
+              0199a3f0-1c2d-7abc-8def-0123456789ab:
+                translation: Bienvenido a nuestra última demostración de producto.
+              0199a3f0-3e4f-7abc-8def-0123456789cd:
+                translation: Empecemos.
+          response:
+            body:
+              segments:
+                - id: 0199a3f0-1c2d-7abc-8def-0123456789ab
+                  speaker_id: default_speaker
+                  start_s: 0
+                  end_s: 2.5
+                  source_text: Welcome to our product demo.
+                  translation: Bienvenido a nuestra última demostración de producto.
+                - id: 0199a3f0-3e4f-7abc-8def-0123456789cd
+                  speaker_id: narrator
+                  start_s: 2.5
+                  end_s: 4
+                  source_text: Let's get started.
+                  translation: Empecemos.
+              revision: 5
+  '/v1/dubbing/project/{project_id}/language/{language_id}/transcript/regenerate':
+    post:
+      tags:
+        - Dubbing
+      summary: Regenerate Dubbing Target
+      description: 'Enterprise only. Re-dub a target from its edited transcript, re-synthesizing only the edited regions (charged like a generation, less the free-regeneration allowance). Accepted asynchronously: the target returns to `processing` and sends a `dubbing_language_completed` event to the project''s `webhook_ids` when the re-dub lands, carrying the new output URLs. Returns a conflict when the target has no edits to apply — nothing is dispatched and nothing is charged.'
+      operationId: dubbing_target_transcript_regenerate
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the dubbing project.
+            title: Project Id
+          description: Identifier of the dubbing project.
+        - name: language_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Identifier of the language target.
+            title: Language Id
+          description: Identifier of the language target.
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingRegenerateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - project
+        - language
+        - transcript
+      x-fern-sdk-method-name: regenerate
+      x-fern-examples:
+        - path-parameters:
+            project_id: proj_1601kwkyxp0hfzvtmyxwqxx6mcy3
+            language_id: lang_1001kwkyxp0je6ktn4knsfrasx5s
+          response:
+            body:
+              regenerated_segment_ids:
+                - 0199a3f0-1c2d-7abc-8def-0123456789ab
+                - 0199a3f0-3e4f-7abc-8def-0123456789cd
+              regenerated_seconds: 4
+              charged_seconds: 0
+              free_regeneration_seconds_remaining: 38
+  '/v1/dubbing/resource/{dubbing_id}':
+    get:
+      tags:
+        - dubbing
+        - dubbing
+        - resource
+        - segment
+        - enterprise
+      summary: Get The Dubbing Resource For An Id.
+      description: 'Given a dubbing ID generated from the ''/v1/dubbing'' endpoint with studio enabled, returns the dubbing resource.'
+      operationId: get_dubbing_resource
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingResource'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - resource
+      x-fern-sdk-method-name: get
+  '/v1/dubbing/resource/{dubbing_id}/language':
+    post:
+      tags:
+        - dubbing
+        - dubbing
+        - resource
+        - segment
+        - enterprise
+      summary: Add A Language To The Resource
+      description: Adds the given ElevenLab Turbo V2/V2.5 language code to the resource. Does not automatically generate transcripts/translations/audio.
+      operationId: add_language
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Add_a_language_to_the_resource_v1_dubbing_resource__dubbing_id__language_post'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageAddedResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - resource
+        - language
+      x-fern-sdk-method-name: add
+  '/v1/dubbing/resource/{dubbing_id}/speaker/{speaker_id}/segment':
+    post:
+      tags:
+        - dubbing
+        - dubbing
+        - resource
+        - segment
+        - enterprise
+      summary: Create A Segment For The Speaker
+      description: Creates a new segment in dubbing resource with a start and end time for the speaker in every available language. Does not automatically generate transcripts/translations/audio.
+      operationId: create_clip
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+        - name: speaker_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the speaker.
+            title: Speaker Id
+          description: ID of the speaker.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SegmentCreatePayload'
+              description: 'The text, and start and end times of a segment.'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SegmentCreateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - resource
+        - speaker
+        - segment
+      x-fern-sdk-method-name: create
+  '/v1/dubbing/resource/{dubbing_id}/segment/{segment_id}/{language}':
+    patch:
+      tags:
+        - dubbing
+        - dubbing
+        - resource
+        - segment
+        - enterprise
+      summary: Modify A Single Segment
+      description: Modifies a single segment with new text and/or start/end times. Will update the values for only a specific language of a segment. Does not automatically regenerate the dub.
+      operationId: update_segment_language
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+        - name: segment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the segment
+            title: Segment Id
+          description: ID of the segment
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the language.
+            title: Language
+          description: ID of the language.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SegmentUpdatePayload'
+              description: 'The text, and start and end times of a segment.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SegmentUpdateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - resource
+        - segment
+      x-fern-sdk-method-name: update
+  '/v1/dubbing/resource/{dubbing_id}/migrate-segments':
+    post:
+      tags:
+        - dubbing
+        - dubbing
+        - resource
+        - segment
+        - enterprise
+      summary: Move Segments Between Speakers
+      description: Change the attribution of one or more segments to a different speaker.
+      operationId: migrate_segments
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Move_segments_between_speakers_v1_dubbing_resource__dubbing_id__migrate_segments_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SegmentMigrationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - resource
+      x-fern-sdk-method-name: migrate_segments
+  '/v1/dubbing/resource/{dubbing_id}/segment/{segment_id}':
+    delete:
+      tags:
+        - dubbing
+        - dubbing
+        - resource
+        - segment
+        - enterprise
+      summary: Deletes A Single Segment
+      description: Deletes a single segment from the dubbing.
+      operationId: delete_segment
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+        - name: segment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the segment
+            title: Segment Id
+          description: ID of the segment
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SegmentDeleteResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - resource
+        - segment
+      x-fern-sdk-method-name: delete
+  '/v1/dubbing/resource/{dubbing_id}/transcribe':
+    post:
+      tags:
+        - dubbing
+        - dubbing
+        - resource
+        - segment
+        - enterprise
+      summary: Transcribes Segments
+      description: Regenerate the transcriptions for the specified segments. Does not automatically regenerate translations or dubs.
+      operationId: transcribe
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Transcribes_segments_v1_dubbing_resource__dubbing_id__transcribe_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SegmentTranscriptionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - resource
+      x-fern-sdk-method-name: transcribe
+  '/v1/dubbing/resource/{dubbing_id}/translate':
+    post:
+      tags:
+        - dubbing
+        - dubbing
+        - resource
+        - segment
+        - enterprise
+      summary: Translates All Or Some Segments And Languages
+      description: Regenerate the translations for either the entire resource or the specified segments/languages. Will automatically transcribe missing transcriptions. Will not automatically regenerate the dubs.
+      operationId: translate
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Translates_all_or_some_segments_and_languages_v1_dubbing_resource__dubbing_id__translate_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SegmentTranslationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - resource
+      x-fern-sdk-method-name: translate
+  '/v1/dubbing/resource/{dubbing_id}/dub':
+    post:
+      tags:
+        - dubbing
+        - dubbing
+        - resource
+        - segment
+        - enterprise
+      summary: Dubs All Or Some Segments And Languages
+      description: Regenerate the dubs for either the entire resource or the specified segments/languages. Will automatically transcribe and translate any missing transcriptions and translations.
+      operationId: dub
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Dubs_all_or_some_segments_and_languages_v1_dubbing_resource__dubbing_id__dub_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SegmentDubResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - resource
+      x-fern-sdk-method-name: dub
+  '/v1/dubbing/resource/{dubbing_id}/speaker/{speaker_id}':
+    patch:
+      tags:
+        - dubbing
+        - dubbing
+        - resource
+        - segment
+        - enterprise
+      summary: Update Metadata For A Speaker
+      description: 'Amend the metadata associated with a speaker, such as their voice. Both voice cloning and using voices from the ElevenLabs library are supported.'
+      operationId: update_speaker
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+        - name: speaker_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the speaker.
+            title: Speaker Id
+          description: ID of the speaker.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Update_metadata_for_a_speaker_v1_dubbing_resource__dubbing_id__speaker__speaker_id__patch'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeakerUpdatedResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - resource
+        - speaker
+      x-fern-sdk-method-name: update
+  '/v1/dubbing/resource/{dubbing_id}/speaker':
+    post:
+      tags:
+        - dubbing
+        - dubbing
+        - resource
+        - segment
+        - enterprise
+      summary: Create A New Speaker
+      description: Creates a new speaker in a dubbing resource. The speaker is added to every available language and can optionally be associated with an ElevenLabs voice and voice settings.
+      operationId: create_speaker
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Create_a_new_speaker_v1_dubbing_resource__dubbing_id__speaker_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeakerCreatedResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - resource
+        - speaker
+      x-fern-sdk-method-name: create
+  '/v1/dubbing/resource/{dubbing_id}/speaker/{speaker_id}/similar-voices':
+    get:
+      tags:
+        - dubbing
+        - dubbing
+        - resource
+        - segment
+        - enterprise
+      summary: Search The Elevenlabs Library For Voices Similar To A Speaker.
+      description: 'Fetch the top 10 similar voices to a speaker, including the voice IDs, names, descriptions, and, where possible, a sample audio recording.'
+      operationId: get_similar_voices_for_speaker
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+        - name: speaker_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the speaker.
+            title: Speaker Id
+          description: ID of the speaker.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimilarVoicesForSpeakerResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - resource
+        - speaker
+      x-fern-sdk-method-name: find_similar_voices
+  '/v1/dubbing/resource/{dubbing_id}/render/{language}':
+    post:
+      tags:
+        - dubbing
+        - dubbing
+        - resource
+        - segment
+        - enterprise
+      summary: Render Audio Or Video For The Given Language
+      description: 'Regenerate the output media for a language using the latest Studio state. Please ensure all segments have been dubbed before rendering, otherwise they will be omitted. Renders are generated asynchronously, and to check the status of all renders please use the ''Get Dubbing Resource'' endpoint.'
+      operationId: render
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'The target language code to render, eg. ''es''. To render the source track use ''original''.'
+            title: Language
+          description: 'The target language code to render, eg. ''es''. To render the source track use ''original''.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_Render_audio_or_video_for_the_given_language_v1_dubbing_resource__dubbing_id__render__language__post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingRenderResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - resource
+      x-fern-sdk-method-name: render
+  /v1/dubbing:
+    get:
+      tags:
+        - dubbing
+        - dubbing
+        - dubbing
+      summary: List Dubs
+      description: List the dubs you have access to.
+      operationId: list_dubs
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            description: Used for fetching next page. Cursor is returned in the response.
+            title: Cursor
+            type: string
+          description: Used for fetching next page. Cursor is returned in the response.
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 200
+            minimum: 1
+            description: 'How many dubs to return at maximum. Can not exceed 200, defaults to 100.'
+            default: 100
+            title: Page Size
+          description: 'How many dubs to return at maximum. Can not exceed 200, defaults to 100.'
+        - name: dubbing_status
+          in: query
+          required: false
+          schema:
+            enum:
+              - dubbing
+              - dubbed
+              - failed
+            type: string
+            description: What state the dub is currently in.
+            embed: true
+            title: Dubbing Status
+          description: What state the dub is currently in.
+        - name: dubbing_statuses
+          in: query
+          required: false
+          schema:
+            description: Filter by dubbing status.
+            title: Dubbing Statuses
+            type: array
+            items:
+              enum:
+                - queued
+                - preparing
+                - dubbing
+                - dubbed
+                - failed
+              type: string
+          description: Filter by dubbing status.
+        - name: dubbing_models
+          in: query
+          required: false
+          schema:
+            description: Filter by dubbing model generation.
+            title: Dubbing Models
+            type: array
+            items:
+              enum:
+                - dubbing_v1
+                - dubbing_v2
+              type: string
+          description: Filter by dubbing model generation.
+        - name: target_language_codes
+          in: query
+          required: false
+          schema:
+            description: Filter by target language code.
+            title: Target Language Codes
+            type: array
+            items:
+              type: string
+          description: Filter by target language code.
+        - name: creation_sources
+          in: query
+          required: false
+          schema:
+            description: Filter by dubbing creation source.
+            title: Creation Sources
+            type: array
+            items:
+              enum:
+                - flow_node
+                - dubbing_ui
+                - dubbing_api
+              type: string
+          description: Filter by dubbing creation source.
+        - name: filter_by_creator
+          in: query
+          required: false
+          schema:
+            enum:
+              - personal
+              - others
+              - all
+            type: string
+            description: 'Filters who created the resources being listed, whether it was the user running the request or someone else that shared the resource with them.'
+            examples:
+              - all
+            default: all
+            title: Filter By Creator
+          description: 'Filters who created the resources being listed, whether it was the user running the request or someone else that shared the resource with them.'
+        - name: order_by
+          in: query
+          required: false
+          schema:
+            enum:
+              - created_at
+              - name
+            type: string
+            description: The field to use for ordering results from this query.
+            default: created_at
+            title: Order By
+          description: The field to use for ordering results from this query.
+        - name: order_direction
+          in: query
+          required: false
+          schema:
+            enum:
+              - DESCENDING
+              - ASCENDING
+            type: string
+            description: The order direction to use for results from this query.
+            default: DESCENDING
+            title: Order Direction
+          description: The order direction to use for results from this query.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingMetadataPageResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: dubbing
+      x-fern-sdk-method-name: list
+    post:
+      tags:
+        - dubbing
+        - dubbing
+        - dubbing
+      summary: Dub A Video Or An Audio File
+      description: Dubs a provided audio or video file into given language.
+      operationId: create_dubbing
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_Dub_a_video_or_an_audio_file_v1_dubbing_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoDubbingResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: dubbing
+      x-fern-sdk-method-name: create
+  '/v1/dubbing/{dubbing_id}':
+    get:
+      tags:
+        - dubbing
+        - dubbing
+        - dubbing
+      summary: Get Dubbing
+      description: 'Returns metadata about a dubbing project, including whether it''s still in progress or not'
+      operationId: get_dubbed_metadata
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: dubbing
+      x-fern-sdk-method-name: get
+    delete:
+      tags:
+        - dubbing
+        - dubbing
+        - dubbing
+      summary: Delete Dubbing
+      description: Deletes a dubbing project.
+      operationId: delete_dubbing
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteDubbingResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: dubbing
+      x-fern-sdk-method-name: delete
+  '/v1/dubbing/{dubbing_id}/audio/{language_code}':
+    get:
+      tags:
+        - dubbing
+        - dubbing
+        - dubbing
+      summary: Get Dubbed File
+      description: Returns dub as a streamed MP3 or MP4 file. If this dub has been edited using Dubbing Studio you need to use the resource render endpoint as this endpoint only returns the original automatic dub result.
+      operationId: get_dubbed_file
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+        - name: language_code
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the language.
+            title: Language Code
+          description: ID of the language.
+      responses:
+        '200':
+          description: The dubbed audio or video file
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+            video/mp4:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              example:
+                error: permission_denied
+                message: User does not have required permissions
+        '404':
+          description: Dubbing not found
+          content:
+            application/json:
+              example:
+                error: dubbing_not_found
+                message: 'There is no dubbing for language {language_code}.'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '425':
+          description: Dubbing not ready
+          content:
+            application/json:
+              example:
+                error: dubbing_not_dubbed
+                message: Dubbing has not finished yet.
+      x-fern-sdk-group-name:
+        - dubbing
+        - audio
+      x-fern-sdk-method-name: get
+  '/v1/dubbing/{dubbing_id}/transcript/{language_code}':
+    get:
+      tags:
+        - dubbing
+        - dubbing
+        - dubbing
+      summary: Get Dubbed Transcript
+      description: Returns transcript for the dub as an SRT or WEBVTT file.
+      operationId: get_dubbed_transcript_file
+      deprecated: true
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+        - name: language_code
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ISO-693 language code to retrieve the transcript for. Use 'source' to fetch the transcript of the original media.
+            examples:
+              - source
+              - en
+              - fra
+            title: Language Code
+          description: ISO-693 language code to retrieve the transcript for. Use 'source' to fetch the transcript of the original media.
+        - name: format_type
+          in: query
+          required: false
+          schema:
+            enum:
+              - srt
+              - webvtt
+              - json
+            type: string
+            description: 'Format to return transcript in. For subtitles use either ''srt'' or ''webvtt'', and for a full transcript use ''json''. The ''json'' format is not yet supported for Dubbing Studio.'
+            embed: true
+            default: srt
+            title: Format Type
+          description: 'Format to return transcript in. For subtitles use either ''srt'' or ''webvtt'', and for a full transcript use ''json''. The ''json'' format is not yet supported for Dubbing Studio.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/DubbingTranscriptResponseModel'
+                  - type: string
+                title: Response Get Dubbed Transcript V1 Dubbing  Dubbing Id  Transcript  Language Code  Get
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                1
+                00:00:01,000 --> 00:00:04,000
+                Hello, this is the first subtitle line
+
+                2
+                00:00:05,000 --> 00:00:07,000
+                And here's the second subtitle line
+        '403':
+          description: Anonymous users cannot use this function
+          content:
+            application/json:
+              example:
+                error: anonymous_not_allowed
+                message: Anonymous users cannot use this function
+        '404':
+          description: Dubbing or transcript not found
+          content:
+            application/json:
+              example:
+                error: transcript_not_found
+                message: No transcript was found for the dub.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '425':
+          description: Dubbing not ready
+          content:
+            application/json:
+              example:
+                error: dubbing_not_dubbed
+                message: Dubbing has not finished yet.
+      x-fern-sdk-group-name:
+        - dubbing
+        - transcript
+      x-fern-sdk-method-name: get
+  '/v1/dubbing/{dubbing_id}/transcripts/{language_code}/format/{format_type}':
+    get:
+      tags:
+        - dubbing
+        - dubbing
+        - dubbing
+      summary: Retrieve A Transcript
+      description: Fetch the transcript for one of the languages in a dub.
+      operationId: get_dubbing_transcripts
+      parameters:
+        - name: dubbing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the dubbing project.
+            title: Dubbing Id
+          description: ID of the dubbing project.
+        - name: language_code
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ISO-693 language code to retrieve the transcript for. Use 'source' to fetch the transcript of the original media.
+            examples:
+              - source
+              - en
+              - fra
+            title: Language Code
+          description: ISO-693 language code to retrieve the transcript for. Use 'source' to fetch the transcript of the original media.
+        - name: format_type
+          in: path
+          required: true
+          schema:
+            enum:
+              - srt
+              - webvtt
+              - json
+            type: string
+            description: 'Format to return transcript in. For subtitles use either ''srt'' or ''webvtt'', and for a full transcript use ''json''. The ''json'' format is not yet supported for Dubbing Studio.'
+            examples:
+              - srt
+              - webvtt
+              - json
+            title: Format Type
+          description: 'Format to return transcript in. For subtitles use either ''srt'' or ''webvtt'', and for a full transcript use ''json''. The ''json'' format is not yet supported for Dubbing Studio.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DubbingTranscriptsResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - dubbing
+        - transcripts
+      x-fern-sdk-method-name: get
+components:
+  schemas:
+    DubbingTranscriptsResponseModel:
+      properties:
+        transcript_format:
+          type: string
+          enum:
+            - srt
+            - webvtt
+            - json
+          title: Transcript Format
+        srt:
+          title: Srt
+          type: string
+        webvtt:
+          title: Webvtt
+          type: string
+        json:
+          $ref: '#/components/schemas/DubbingTranscript'
+      type: object
+      required:
+        - transcript_format
+      title: DubbingTranscriptsResponseModel
+    DubbingTranscript:
+      properties:
+        language:
+          type: string
+          title: Language
+        utterances:
+          items:
+            $ref: '#/components/schemas/DubbingTranscriptUtterance'
+          type: array
+          title: Utterances
+      type: object
+      required:
+        - language
+        - utterances
+      title: DubbingTranscript
+    DubbingTranscriptUtterance:
+      properties:
+        text:
+          type: string
+          title: Text
+          default: ''
+        speaker_id:
+          type: string
+          title: Speaker Id
+          default: unknown
+        start_s:
+          type: number
+          title: Start S
+          default: 0
+        end_s:
+          type: number
+          title: End S
+          default: 0
+        words:
+          items:
+            $ref: '#/components/schemas/DubbingTranscriptWord'
+          type: array
+          title: Words
+      type: object
+      title: DubbingTranscriptUtterance
+    DubbingTranscriptWord:
+      properties:
+        text:
+          type: string
+          title: Text
+          default: ''
+        word_type:
+          type: string
+          title: Word Type
+          default: unknown
+        start_s:
+          type: number
+          title: Start S
+          default: 0
+        end_s:
+          type: number
+          title: End S
+          default: 0
+        characters:
+          items:
+            $ref: '#/components/schemas/DubbingTranscriptCharacter'
+          type: array
+          title: Characters
+      type: object
+      title: DubbingTranscriptWord
+    DubbingTranscriptCharacter:
+      properties:
+        text:
+          type: string
+          title: Text
+          default: ''
+        start_s:
+          type: number
+          title: Start S
+          default: 0
+        end_s:
+          type: number
+          title: End S
+          default: 0
+      type: object
+      title: DubbingTranscriptCharacter
+    DubbingTranscriptResponseModel:
+      properties:
+        language:
+          type: string
+          title: Language
+        utterances:
+          items:
+            $ref: '#/components/schemas/DubbingTranscriptUtterance'
+          type: array
+          title: Utterances
+      type: object
+      required:
+        - language
+        - utterances
+      title: DubbingTranscriptResponseModel
+    DeleteDubbingResponseModel:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: 'The status of the dubbing project. If the request was successful, the status will be ''ok''. Otherwise an error message with status 500 will be returned.'
+      type: object
+      required:
+        - status
+      title: DeleteDubbingResponseModel
+      example:
+        status: ok
+    DubbingMetadataResponse:
+      properties:
+        dubbing_id:
+          type: string
+          title: Dubbing Id
+          description: The ID of the dubbing project.
+        name:
+          type: string
+          title: Name
+          description: The name of the dubbing project.
+        status:
+          type: string
+          title: Status
+          description: The state this dub is in.
+          examples:
+            - preparing
+            - queued
+            - dubbing
+            - dubbed
+            - failed
+            - cloning
+        source_language:
+          title: Source Language
+          description: 'Once dubbing has completed, the ISO-639-1 code of the original media''s source language.'
+          type: string
+        target_languages:
+          items:
+            type: string
+          type: array
+          title: Target Languages
+          description: The ISO-639-1 code of the languages this media has been dubbed into.
+        editable:
+          type: boolean
+          title: Editable
+          description: Whether this dubbing project is editable in Dubbing Studio.
+          default: false
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+          description: Timestamp this dub was created.
+        media_metadata:
+          description: 'Metadata, such as the length in seconds and content type, of the dubbed content.'
+          $ref: '#/components/schemas/DubbingMediaMetadata'
+        error:
+          title: Error
+          description: 'Error message indicate, if this dub has failed, what happened.'
+          type: string
+      type: object
+      required:
+        - dubbing_id
+        - name
+        - status
+        - source_language
+        - target_languages
+        - created_at
+      title: DubbingMetadataResponse
+      example:
+        created_at: '2025-07-15T14:49:41.149000'
+        dubbing_id: 21m00Tcm4TlvDq8ikWAM
+        editable: true
+        media_metadata:
+          content_type: video/mp4
+          duration: 127.5
+        name: My Dubbing Project
+        source_language: en
+        status: dubbed
+        target_languages:
+          - es
+          - fr
+          - de
+    DubbingMediaMetadata:
+      properties:
+        content_type:
+          type: string
+          title: Content Type
+          description: The content type of the media.
+        duration:
+          type: number
+          title: Duration
+          description: The duration of the media in seconds.
+      type: object
+      required:
+        - content_type
+        - duration
+      title: DubbingMediaMetadata
+    DoDubbingResponseModel:
+      properties:
+        dubbing_id:
+          type: string
+          title: Dubbing Id
+          description: The ID of the dubbing project.
+        expected_duration_sec:
+          type: number
+          title: Expected Duration Sec
+          description: The expected duration of the dubbing project in seconds.
+      type: object
+      required:
+        - dubbing_id
+        - expected_duration_sec
+      title: DoDubbingResponseModel
+      example:
+        dubbing_id: 21m00Tcm4TlvDq8ikWAM
+        expected_duration_sec: 127.5
+    Body_Dub_a_video_or_an_audio_file_v1_dubbing_post:
+      properties:
+        file:
+          title: File
+          description: A list of file paths to audio recordings intended for voice cloning
+          type: string
+          format: binary
+        csv_file:
+          title: Csv File
+          description: CSV file containing transcription/translation metadata
+          type: string
+          format: binary
+        foreground_audio_file:
+          title: Foreground Audio File
+          description: For use only with csv input
+          type: string
+          format: binary
+        background_audio_file:
+          title: Background Audio File
+          description: For use only with csv input
+          type: string
+          format: binary
+        name:
+          title: Name
+          description: Name of the dubbing project.
+          type: string
+        source_url:
+          title: Source Url
+          description: URL of the source video/audio file.
+          type: string
+        source_lang:
+          type: string
+          title: Source Lang
+          description: Source language. Expects a valid iso639-1 or iso639-3 language code.
+          default: auto
+        target_lang:
+          title: Target Lang
+          description: The Target language to dub the content into. Expects a valid iso639-1 or iso639-3 language code.
+          type: string
+        target_accent:
+          title: Target Accent
+          description: '[Experimental] An accent to apply when selecting voices from the library and to use to inform translation of the dialect to prefer.'
+          type: string
+        num_speakers:
+          type: integer
+          title: Num Speakers
+          description: Number of speakers to use for the dubbing. Set to 0 to automatically detect the number of speakers
+          default: 0
+        watermark:
+          type: boolean
+          title: Watermark
+          description: Whether to apply watermark to the output video.
+          default: false
+        start_time:
+          title: Start Time
+          description: Start time of the source video/audio file.
+          type: integer
+        end_time:
+          title: End Time
+          description: End time of the source video/audio file.
+          type: integer
+        highest_resolution:
+          type: boolean
+          title: Highest Resolution
+          description: Whether to use the highest resolution available.
+          default: false
+        drop_background_audio:
+          type: boolean
+          title: Drop Background Audio
+          description: An advanced setting. Whether to drop background audio from the final dub. This can improve dub quality where it's known that audio shouldn't have a background track such as for speeches or monologues.
+          default: false
+        use_profanity_filter:
+          title: Use Profanity Filter
+          description: '[BETA] Whether transcripts should have profanities censored with the words ''[censored]'''
+          type: boolean
+        dubbing_studio:
+          type: boolean
+          title: Dubbing Studio
+          description: Whether to prepare dub for edits in dubbing studio or edits as a dubbing resource.
+          default: false
+        disable_voice_cloning:
+          type: boolean
+          title: Disable Voice Cloning
+          description: 'Instead of using a voice clone in dubbing, use a similar voice from the ElevenLabs Voice Library. Voices used from the library will contribute towards a workspace''s custom voices limit, and if there aren''t enough available slots the dub will fail. Using this feature requires the caller to have the ''add_voice_from_voice_library'' permission on their workspace to access new voices.'
+          default: false
+        mode:
+          type: string
+          enum:
+            - automatic
+            - manual
+          title: Mode
+          description: 'The mode in which to run this Dubbing job. Defaults to automatic, use manual if specifically providing a CSV transcript to use. Note that manual mode is experimental and production use is strongly discouraged.'
+          default: automatic
+        csv_fps:
+          title: Csv Fps
+          description: 'Frames per second to use when parsing a CSV file for dubbing. If not provided, FPS will be inferred from timecodes.'
+          type: number
+      type: object
+      title: Body_Dub_a_video_or_an_audio_file_v1_dubbing_post
+    DubbingMetadataPageResponseModel:
+      properties:
+        dubs:
+          items:
+            $ref: '#/components/schemas/DubbingMetadataResponse'
+          type: array
+          title: Dubs
+        next_cursor:
+          title: Next Cursor
+          type: string
+        has_more:
+          type: boolean
+          title: Has More
+      type: object
+      required:
+        - dubs
+        - next_cursor
+        - has_more
+      title: DubbingMetadataPageResponseModel
+    DubbingRenderResponseModel:
+      properties:
+        version:
+          type: integer
+          title: Version
+        render_id:
+          type: string
+          title: Render Id
+      type: object
+      required:
+        - version
+        - render_id
+      title: DubbingRenderResponseModel
+    Body_Render_audio_or_video_for_the_given_language_v1_dubbing_resource__dubbing_id__render__language__post:
+      properties:
+        render_type:
+          $ref: '#/components/schemas/RenderType'
+          description: 'The type of the render. One of [''mp4'', ''aac'', ''mp3'', ''wav'', ''aaf'', ''tracks_zip'', ''clips_zip'']'
+        normalize_volume:
+          title: Normalize Volume
+          description: Whether to normalize the volume of the rendered audio.
+          default: false
+          type: boolean
+      type: object
+      required:
+        - render_type
+      title: Body_Render_audio_or_video_for_the_given_language_v1_dubbing_resource__dubbing_id__render__language__post
+    RenderType:
+      type: string
+      enum:
+        - mp4
+        - aac
+        - mp3
+        - wav
+        - aaf
+        - tracks_zip
+        - clips_zip
+        - zip
+      title: RenderType
+    SimilarVoicesForSpeakerResponse:
+      properties:
+        voices:
+          items:
+            $ref: '#/components/schemas/SimilarVoice'
+          type: array
+          title: Voices
+      type: object
+      required:
+        - voices
+      title: SimilarVoicesForSpeakerResponse
+    SimilarVoice:
+      properties:
+        voice_id:
+          type: string
+          title: Voice Id
+        name:
+          type: string
+          title: Name
+        category:
+          $ref: '#/components/schemas/VOICE_CATEGORY'
+        description:
+          title: Description
+          type: string
+        preview_url:
+          title: Preview Url
+          type: string
+      type: object
+      required:
+        - voice_id
+        - name
+        - category
+      title: SimilarVoice
+    VOICE_CATEGORY:
+      type: string
+      enum:
+        - premade
+        - cloned
+        - generated
+        - professional
+        - famous
+    SpeakerCreatedResponse:
+      properties:
+        version:
+          type: integer
+          title: Version
+        speaker_id:
+          type: string
+          title: Speaker Id
+      type: object
+      required:
+        - version
+        - speaker_id
+      title: SpeakerCreatedResponse
+    Body_Create_a_new_speaker_v1_dubbing_resource__dubbing_id__speaker_post:
+      properties:
+        speaker_name:
+          title: Speaker Name
+          description: Name to attribute to this speaker.
+          type: string
+        voice_id:
+          title: Voice Id
+          description: 'Either the identifier of a voice from the ElevenLabs voice library, or one of [''track-clone'', ''clip-clone''].'
+          type: string
+        voice_stability:
+          title: Voice Stability
+          description: 'For models that support it, the voice similarity value to use. This will default to 0.65, with a valid range of [0.0, 1.0].'
+          type: number
+        voice_similarity:
+          title: Voice Similarity
+          description: 'For models that support it, the voice similarity value to use. This will default to 1.0, with a valid range of [0.0, 1.0].'
+          type: number
+        voice_style:
+          title: Voice Style
+          description: 'For models that support it, the voice style value to use. This will default to 1.0, with a valid range of [0.0, 1.0].'
+          type: number
+      type: object
+      title: Body_Create_a_new_speaker_v1_dubbing_resource__dubbing_id__speaker_post
+    SpeakerUpdatedResponse:
+      properties:
+        version:
+          type: integer
+          title: Version
+      type: object
+      required:
+        - version
+      title: SpeakerUpdatedResponse
+    Body_Update_metadata_for_a_speaker_v1_dubbing_resource__dubbing_id__speaker__speaker_id__patch:
+      properties:
+        speaker_name:
+          title: Speaker Name
+          description: Name to attribute to this speaker.
+          type: string
+        voice_id:
+          title: Voice Id
+          description: 'Either the identifier of a voice from the ElevenLabs voice library, or one of [''track-clone'', ''clip-clone''].'
+          type: string
+        voice_stability:
+          title: Voice Stability
+          description: 'For models that support it, the voice similarity value to use. This will default to 0.65, with a valid range of [0.0, 1.0].'
+          type: number
+        voice_similarity:
+          title: Voice Similarity
+          description: 'For models that support it, the voice similarity value to use. This will default to 1.0, with a valid range of [0.0, 1.0].'
+          type: number
+        voice_style:
+          title: Voice Style
+          description: 'For models that support it, the voice style value to use. This will default to 1.0, with a valid range of [0.0, 1.0].'
+          type: number
+        languages:
+          title: Languages
+          description: 'Languages to apply these changes to. If empty, will apply to all languages.'
+          items:
+            type: string
+          type: array
+      type: object
+      title: Body_Update_metadata_for_a_speaker_v1_dubbing_resource__dubbing_id__speaker__speaker_id__patch
+    SegmentDubResponse:
+      properties:
+        version:
+          type: integer
+          title: Version
+      type: object
+      required:
+        - version
+      title: SegmentDubResponse
+    Body_Dubs_all_or_some_segments_and_languages_v1_dubbing_resource__dubbing_id__dub_post:
+      properties:
+        segments:
+          items:
+            type: string
+          type: array
+          title: Segments
+          description: Dub only this list of segments.
+        languages:
+          title: Languages
+          description: Dub only these languages for each segment.
+          items:
+            type: string
+          type: array
+      type: object
+      required:
+        - segments
+        - languages
+      title: Body_Dubs_all_or_some_segments_and_languages_v1_dubbing_resource__dubbing_id__dub_post
+    SegmentTranslationResponse:
+      properties:
+        version:
+          type: integer
+          title: Version
+      type: object
+      required:
+        - version
+      title: SegmentTranslationResponse
+    Body_Translates_all_or_some_segments_and_languages_v1_dubbing_resource__dubbing_id__translate_post:
+      properties:
+        segments:
+          items:
+            type: string
+          type: array
+          title: Segments
+          description: Translate only this list of segments.
+        languages:
+          title: Languages
+          description: Translate only these languages for each segment.
+          items:
+            type: string
+          type: array
+      type: object
+      required:
+        - segments
+        - languages
+      title: Body_Translates_all_or_some_segments_and_languages_v1_dubbing_resource__dubbing_id__translate_post
+    SegmentTranscriptionResponse:
+      properties:
+        version:
+          type: integer
+          title: Version
+      type: object
+      required:
+        - version
+      title: SegmentTranscriptionResponse
+    Body_Transcribes_segments_v1_dubbing_resource__dubbing_id__transcribe_post:
+      properties:
+        segments:
+          items:
+            type: string
+          type: array
+          title: Segments
+          description: Transcribe this specific list of segments.
+      type: object
+      required:
+        - segments
+      title: Body_Transcribes_segments_v1_dubbing_resource__dubbing_id__transcribe_post
+    SegmentDeleteResponse:
+      properties:
+        version:
+          type: integer
+          title: Version
+      type: object
+      required:
+        - version
+      title: SegmentDeleteResponse
+    SegmentMigrationResponse:
+      properties:
+        version:
+          type: integer
+          title: Version
+      type: object
+      required:
+        - version
+      title: SegmentMigrationResponse
+    Body_Move_segments_between_speakers_v1_dubbing_resource__dubbing_id__migrate_segments_post:
+      properties:
+        segment_ids:
+          items:
+            type: string
+          type: array
+          title: Segment Ids
+        speaker_id:
+          type: string
+          title: Speaker Id
+      type: object
+      required:
+        - segment_ids
+        - speaker_id
+      title: Body_Move_segments_between_speakers_v1_dubbing_resource__dubbing_id__migrate_segments_post
+    SegmentUpdateResponse:
+      properties:
+        version:
+          type: integer
+          title: Version
+      type: object
+      required:
+        - version
+      title: SegmentUpdateResponse
+    SegmentUpdatePayload:
+      properties:
+        start_time:
+          title: Start Time
+          type: number
+        end_time:
+          title: End Time
+          type: number
+        text:
+          title: Text
+          type: string
+      type: object
+      title: SegmentUpdatePayload
+    SegmentCreateResponse:
+      properties:
+        version:
+          type: integer
+          title: Version
+        new_segment:
+          type: string
+          title: New Segment
+      type: object
+      required:
+        - version
+        - new_segment
+      title: SegmentCreateResponse
+    SegmentCreatePayload:
+      properties:
+        start_time:
+          type: number
+          title: Start Time
+        end_time:
+          type: number
+          title: End Time
+        text:
+          title: Text
+          type: string
+        translations:
+          title: Translations
+          additionalProperties:
+            type: string
+          type: object
+      type: object
+      required:
+        - start_time
+        - end_time
+      title: SegmentCreatePayload
+    LanguageAddedResponse:
+      properties:
+        version:
+          type: integer
+          title: Version
+      type: object
+      required:
+        - version
+      title: LanguageAddedResponse
+    Body_Add_a_language_to_the_resource_v1_dubbing_resource__dubbing_id__language_post:
+      properties:
+        language:
+          title: Language
+          description: The Target language.
+          type: string
+      type: object
+      required:
+        - language
+      title: Body_Add_a_language_to_the_resource_v1_dubbing_resource__dubbing_id__language_post
+    DubbingResource:
+      properties:
+        id:
+          type: string
+          title: Id
+        version:
+          type: integer
+          title: Version
+        source_language:
+          type: string
+          title: Source Language
+        target_languages:
+          items:
+            type: string
+          type: array
+          title: Target Languages
+        input:
+          $ref: '#/components/schemas/DubbingMediaReference'
+        background:
+          $ref: '#/components/schemas/DubbingMediaReference'
+        foreground:
+          $ref: '#/components/schemas/DubbingMediaReference'
+        speaker_tracks:
+          additionalProperties:
+            $ref: '#/components/schemas/SpeakerTrack'
+          type: object
+          title: Speaker Tracks
+        speaker_segments:
+          additionalProperties:
+            $ref: '#/components/schemas/SpeakerSegment'
+          type: object
+          title: Speaker Segments
+        renders:
+          additionalProperties:
+            $ref: '#/components/schemas/Render'
+          type: object
+          title: Renders
+      type: object
+      required:
+        - id
+        - version
+        - source_language
+        - target_languages
+        - input
+        - background
+        - foreground
+        - speaker_tracks
+        - speaker_segments
+        - renders
+      title: DubbingResource
+    Render:
+      properties:
+        id:
+          type: string
+          title: Id
+        version:
+          type: integer
+          title: Version
+        language:
+          title: Language
+          type: string
+        type:
+          $ref: '#/components/schemas/RenderType'
+        media_ref:
+          $ref: '#/components/schemas/DubbingMediaReference'
+        status:
+          type: string
+          enum:
+            - complete
+            - processing
+            - failed
+          title: Status
+      type: object
+      required:
+        - id
+        - version
+        - language
+        - type
+        - media_ref
+        - status
+      title: Render
+    DubbingMediaReference:
+      properties:
+        src:
+          type: string
+          title: Src
+        content_type:
+          type: string
+          title: Content Type
+        bucket_name:
+          type: string
+          title: Bucket Name
+        random_path_slug:
+          type: string
+          title: Random Path Slug
+        duration_secs:
+          type: number
+          title: Duration Secs
+        is_audio:
+          type: boolean
+          title: Is Audio
+        url:
+          type: string
+          title: Url
+      type: object
+      required:
+        - src
+        - content_type
+        - bucket_name
+        - random_path_slug
+        - duration_secs
+        - is_audio
+        - url
+      title: DubbingMediaReference
+    SpeakerSegment:
+      properties:
+        id:
+          type: string
+          title: Id
+        start_time:
+          type: number
+          title: Start Time
+        end_time:
+          type: number
+          title: End Time
+        text:
+          type: string
+          title: Text
+        subtitles:
+          items:
+            $ref: '#/components/schemas/SegmentSubtitleFrame'
+          type: array
+          title: Subtitles
+        dubs:
+          additionalProperties:
+            $ref: '#/components/schemas/DubbedSegment'
+          type: object
+          title: Dubs
+      type: object
+      required:
+        - id
+        - start_time
+        - end_time
+        - text
+        - subtitles
+        - dubs
+      title: SpeakerSegment
+    DubbedSegment:
+      properties:
+        start_time:
+          type: number
+          title: Start Time
+        end_time:
+          type: number
+          title: End Time
+        text:
+          title: Text
+          type: string
+        subtitles:
+          items:
+            $ref: '#/components/schemas/SegmentSubtitleFrame'
+          type: array
+          title: Subtitles
+        audio_stale:
+          type: boolean
+          title: Audio Stale
+        media_ref:
+          $ref: '#/components/schemas/DubbingMediaReference'
+      type: object
+      required:
+        - start_time
+        - end_time
+        - text
+        - subtitles
+        - audio_stale
+        - media_ref
+      title: DubbedSegment
+    SegmentSubtitleFrame:
+      properties:
+        start_time:
+          type: number
+          title: Start Time
+        end_time:
+          type: number
+          title: End Time
+        lines:
+          items:
+            type: string
+          type: array
+          title: Lines
+      type: object
+      required:
+        - start_time
+        - end_time
+        - lines
+      title: SegmentSubtitleFrame
+    SpeakerTrack:
+      properties:
+        id:
+          type: string
+          title: Id
+        media_ref:
+          $ref: '#/components/schemas/DubbingMediaReference'
+        speaker_name:
+          type: string
+          title: Speaker Name
+        voices:
+          additionalProperties:
+            type: string
+          type: object
+          title: Voices
+        segments:
+          items:
+            type: string
+          type: array
+          title: Segments
+      type: object
+      required:
+        - id
+        - media_ref
+        - speaker_name
+        - voices
+        - segments
+      title: SpeakerTrack
+    DubbingRegenerateResponse:
+      properties:
+        regenerated_segment_ids:
+          items:
+            type: string
+          type: array
+          title: Regenerated Segment Ids
+          description: 'The segments this re-dub re-synthesizes: those with edits to apply.'
+        regenerated_seconds:
+          type: number
+          title: Regenerated Seconds
+          description: 'Seconds of audio this re-dub covers — the edited regions only, never the whole target. `charged_seconds` is the part of it that was billed.'
+        charged_seconds:
+          type: number
+          title: Charged Seconds
+          description: 'Seconds actually billed, after the free-regeneration allowance. Zero when the re-dub cost nothing — either the allowance covered all of it, or the project''s included generation did.'
+        free_regeneration_seconds_remaining:
+          type: number
+          title: Free Regeneration Seconds Remaining
+          description: Free-regeneration seconds left for this language target after this re-dub. The allowance is the source's own duration.
+      type: object
+      required:
+        - regenerated_segment_ids
+        - regenerated_seconds
+        - charged_seconds
+        - free_regeneration_seconds_remaining
+      title: DubbingRegenerateResponse
+      description: 'The accepted re-dub: what it covers and what it cost.'
+    DubbingBulkTargetSegmentUpdateResponse:
+      properties:
+        segments:
+          items:
+            $ref: '#/components/schemas/DubbingTargetTranscriptSegment'
+          type: array
+          title: Segments
+          description: The edited target segments in their updated state.
+        revision:
+          type: integer
+          title: Revision
+          description: The target's revision after the edits.
+      type: object
+      required:
+        - segments
+        - revision
+      title: DubbingBulkTargetSegmentUpdateResponse
+      description: 'The result of a bulk target edit: the updated segments and the new revision.'
+    DubbingTargetTranscriptSegment:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Stable identifier of the segment (from the source).
+        speaker_id:
+          type: string
+          title: Speaker Id
+          description: Identifier of the segment's speaker.
+        start_s:
+          type: number
+          title: Start S
+          description: 'Start time of the segment, in seconds.'
+        end_s:
+          type: number
+          title: End S
+          description: 'End time of the segment, in seconds.'
+        source_text:
+          type: string
+          title: Source Text
+          description: The source-language text of the segment.
+        translation:
+          title: Translation
+          description: 'The translated text, or null if not translated yet (needs translation).'
+          type: string
+      type: object
+      required:
+        - id
+        - speaker_id
+        - start_s
+        - end_s
+        - source_text
+      title: DubbingTargetTranscriptSegment
+      description: 'One segment of a target transcript: a source segment plus its translation.'
+    DubbingBulkTargetSegmentUpdateRequest:
+      properties:
+        segments:
+          additionalProperties:
+            $ref: '#/components/schemas/DubbingTargetSegmentUpdateRequest'
+          type: object
+          maxProperties: 500
+          minProperties: 1
+          title: Segments
+          description: Map of segment ID to the translation edit to apply to that segment. At least one entry and at most 500.
+      type: object
+      required:
+        - segments
+      title: DubbingBulkTargetSegmentUpdateRequest
+      description: 'Edit several target translations at once, applied atomically (all succeed or none do).'
+    DubbingTargetSegmentUpdateRequest:
+      properties:
+        translation:
+          title: Translation
+          description: 'New translated text, or null to mark the segment for re-translation.'
+          type: string
+      type: object
+      title: DubbingTargetSegmentUpdateRequest
+      description: |-
+        A partial edit to a target segment. An omitted field is left unchanged; a provided `null`
+        clears it (see each field for what clearing means).
+    DubbingTargetSegmentUpdateResponse:
+      properties:
+        segment:
+          $ref: '#/components/schemas/DubbingTargetTranscriptSegment'
+          description: The target segment in its updated state.
+        revision:
+          type: integer
+          title: Revision
+          description: The target's revision after this edit.
+      type: object
+      required:
+        - segment
+        - revision
+      title: DubbingTargetSegmentUpdateResponse
+      description: 'The result of a target-translation edit: the updated segment and the new revision.'
+    DubbingTargetTranscriptResponse:
+      properties:
+        source_language:
+          title: Source Language
+          description: BCP-47 language tag of the source transcript.
+          type: string
+        target_language:
+          type: string
+          title: Target Language
+          description: BCP-47 language tag this target is translated into.
+        segments:
+          items:
+            $ref: '#/components/schemas/DubbingTargetTranscriptSegment'
+          type: array
+          title: Segments
+          description: 'The target segments, in playback order.'
+        revision:
+          type: integer
+          title: Revision
+          description: The target's revision at read time.
+      type: object
+      required:
+        - target_language
+        - segments
+        - revision
+      title: DubbingTargetTranscriptResponse
+    DubbingSegmentCreateRequest:
+      properties:
+        text:
+          type: string
+          title: Text
+          description: The text of the new segment.
+        speaker_id:
+          type: string
+          title: Speaker Id
+          description: Identifier of the segment's speaker.
+        start_s:
+          type: number
+          title: Start S
+          description: 'Start time of the segment, in seconds.'
+        end_s:
+          type: number
+          title: End S
+          description: 'End time of the segment, in seconds.'
+      type: object
+      required:
+        - text
+        - speaker_id
+        - start_s
+        - end_s
+      title: DubbingSegmentCreateRequest
+      description: A new source segment; its ID and word-level alignment are assigned by the server.
+    DubbingBulkSourceSegmentUpdateResponse:
+      properties:
+        segments:
+          items:
+            $ref: '#/components/schemas/DubbingTranscriptSegment'
+          type: array
+          title: Segments
+          description: The edited segments in their updated state.
+        revision:
+          type: integer
+          title: Revision
+          description: The project's source-transcript revision after the edits.
+      type: object
+      required:
+        - segments
+        - revision
+      title: DubbingBulkSourceSegmentUpdateResponse
+      description: 'The result of a bulk source edit: the updated segments and the new revision.'
+    DubbingTranscriptSegment:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: 'Stable identifier of the segment, used to address it in edit requests.'
+        text:
+          type: string
+          title: Text
+          description: The transcribed text of the segment.
+        speaker_id:
+          type: string
+          title: Speaker Id
+          description: Identifier of the segment's speaker.
+        start_s:
+          type: number
+          title: Start S
+          description: 'Start time of the segment, in seconds.'
+        end_s:
+          type: number
+          title: End S
+          description: 'End time of the segment, in seconds.'
+        external_id:
+          title: External Id
+          description: 'The caller-supplied external ID for this segment, if one was provided.'
+          type: string
+      type: object
+      required:
+        - id
+        - text
+        - speaker_id
+        - start_s
+        - end_s
+      title: DubbingTranscriptSegment
+      description: One segment of a source transcript.
+    DubbingBulkSegmentUpdateRequest:
+      properties:
+        segments:
+          additionalProperties:
+            $ref: '#/components/schemas/DubbingSegmentUpdateRequest'
+          type: object
+          maxProperties: 500
+          minProperties: 1
+          title: Segments
+          description: Map of segment ID to the partial update to apply to that segment. At least one entry and at most 500.
+      type: object
+      required:
+        - segments
+      title: DubbingBulkSegmentUpdateRequest
+      description: 'Edit several source segments at once, applied atomically (all succeed or none do).'
+    DubbingSegmentUpdateRequest:
+      properties:
+        text:
+          title: Text
+          description: New text for the segment.
+          type: string
+        speaker_id:
+          title: Speaker Id
+          description: New speaker ID for the segment.
+          type: string
+        start_s:
+          title: Start S
+          description: 'New start time, in seconds.'
+          type: number
+        end_s:
+          title: End S
+          description: 'New end time, in seconds.'
+          type: number
+      type: object
+      title: DubbingSegmentUpdateRequest
+      description: A partial update to a source segment; omitted fields are left unchanged.
+    DubbingSourceSegmentUpdateResponse:
+      properties:
+        segment:
+          $ref: '#/components/schemas/DubbingTranscriptSegment'
+          description: The segment in its updated state.
+        revision:
+          type: integer
+          title: Revision
+          description: The project's source-transcript revision after this edit.
+      type: object
+      required:
+        - segment
+        - revision
+      title: DubbingSourceSegmentUpdateResponse
+      description: 'The result of a source-segment add or edit: the segment and the new revision.'
+    DubbingTranscriptRevisionResponse:
+      properties:
+        revision:
+          type: integer
+          title: Revision
+          description: The project's source-transcript revision after this edit.
+      type: object
+      required:
+        - revision
+      title: DubbingTranscriptRevisionResponse
+      description: 'The new revision after a source edit that returns no segment, such as a delete.'
+    DubbingSourceTranscriptResponse:
+      properties:
+        language:
+          title: Language
+          description: BCP-47 language tag of the source transcript (null if unknown).
+          type: string
+        segments:
+          items:
+            $ref: '#/components/schemas/DubbingTranscriptSegment'
+          type: array
+          title: Segments
+          description: 'The source segments, in playback order.'
+        revision:
+          type: integer
+          title: Revision
+          description: The project's source-transcript revision at read time.
+      type: object
+      required:
+        - segments
+        - revision
+      title: DubbingSourceTranscriptResponse
+    DubbingLanguageResponse:
+      properties:
+        language_id:
+          type: string
+          title: Language Id
+          description: Unique identifier of the language target.
+        project_id:
+          type: string
+          title: Project Id
+          description: Identifier of the parent dubbing project.
+        target_language:
+          type: string
+          title: Target Language
+          description: BCP-47 language tag this target is dubbed into.
+        status:
+          type: string
+          enum:
+            - queued
+            - processing
+            - completed
+            - stale
+            - failed
+          title: Status
+          description: 'Lifecycle status: `queued` (waiting on the project to be ready, or on a worker), `processing` while it is being dubbed, `completed` once its output is available, `stale` when the transcript changed after the output was produced, or `failed`.'
+        model_id:
+          title: Model Id
+          description: 'Dubbing model this target is dubbed with, inherited from the project and not selectable per language.'
+          type: string
+        voice_settings:
+          description: 'Voice settings applied to every speaker in this language, or null if the defaults apply.'
+          $ref: '#/components/schemas/VoiceSettings'
+        outputs:
+          description: 'Signed output URLs; null until the target has produced an output (present once `completed`, and kept while `stale` — compare `output_revision` against `revision` to tell whether the output is up to date).'
+          $ref: '#/components/schemas/DubbingLanguageOutputs'
+        revision:
+          type: integer
+          title: Revision
+          description: 'Monotonic counter incremented whenever this target''s transcript changes (a source edit affecting it, or an edit to its translation).'
+        output_revision:
+          title: Output Revision
+          description: 'The `revision` the current dubbed output was generated from; equal to `revision` when up to date, and lower when `stale`. This is null until a generation has completed.'
+          type: integer
+        error:
+          description: 'Why this language failed; null unless `status` is `failed`, and also null for the few languages that failed before failure reporting was introduced. A code of `project_failed` means the parent project failed, so read the project for the underlying cause.'
+          $ref: '#/components/schemas/DubbingError'
+        warnings:
+          items:
+            $ref: '#/components/schemas/VoicesNotPermittedWarning'
+          type: array
+          title: Warnings
+          description: 'Non-fatal conditions raised while dubbing this language, empty when there are none. Reflects the latest generation. Conditions raised while preparing the source are reported on the project instead.'
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+          description: When the language target was created.
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+          description: When the language target was last updated.
+      type: object
+      required:
+        - language_id
+        - project_id
+        - target_language
+        - status
+        - revision
+        - created_at
+        - updated_at
+      title: DubbingLanguageResponse
+    VoicesNotPermittedWarning:
+      properties:
+        type:
+          type: string
+          const: voices_not_permitted
+          title: Type
+          description: Identifies this warning; branch on it to read the other fields.
+        speaker_ids:
+          items:
+            type: string
+          type: array
+          title: Speaker Ids
+          description: Speakers whose voices were not permitted for cloning. The dub used a replacement voice for each of them; all other speakers are unaffected.
+        message:
+          type: string
+          title: Message
+          description: 'Human-readable description of the warning, for display. The wording may change at any time, so we recommend branching on `type` instead.'
+      type: object
+      required:
+        - type
+        - speaker_ids
+        - message
+      title: VoicesNotPermittedWarning
+    DubbingError:
+      properties:
+        code:
+          type: string
+          title: Code
+          description: 'Stable identifier for the failure, safe to branch on. New codes are added over time, so we recommend treating an unrecognized value as `internal_error`.'
+        message:
+          type: string
+          title: Message
+          description: 'Human-readable description of the failure, for display. The wording may change at any time, so we recommend branching on `code` instead.'
+        retryable:
+          type: boolean
+          title: Retryable
+          description: 'Whether resubmitting the same input could succeed. A value of false means the failure describes the input or the account, so an identical retry will fail the same way.'
+      type: object
+      required:
+        - code
+        - message
+        - retryable
+      title: DubbingError
+    DubbingLanguageOutputs:
+      properties:
+        lossless_audio:
+          title: Lossless Audio
+          description: 'Signed URL for the dubbed lossless audio track, in FLAC. The link expires one hour after it is issued; re-read the language target for a fresh one.'
+          type: string
+      type: object
+      title: DubbingLanguageOutputs
+      description: 'Signed, time-limited download URLs for a language target''s outputs.'
+    VoiceSettings:
+      properties:
+        cloning_strength:
+          type: integer
+          maximum: 10
+          minimum: 0
+          title: Cloning Strength
+          description: 'How strongly the dubbed speakers clone the source voices, 0 to 10.'
+          default: 7
+      type: object
+      title: VoiceSettings
+    Body_Create_Dubbing_Language_Target_v1_dubbing_project__project_id__language_post:
+      properties:
+        target_language:
+          type: string
+          title: Target Language
+          description: 'BCP-47 language tag to dub the project into (for example, `fr` or `es-MX`). Must be one of the [languages the project''s dubbing model supports](https://elevenlabs.io/docs/help-center/product/dubbing/which-languages-are-supported-in-dubbing), and a region-qualified tag must be one of the supported dialects.'
+        voice_settings:
+          description: Voice settings applied to every speaker in this language. Omit to use the defaults.
+          $ref: '#/components/schemas/VoiceSettings'
+        translations:
+          title: Translations
+          description: 'Enterprise only. Optional translations to use instead of machine translation. A map from each source segment''s `external_id` (or its `id`, if you supplied none) to the translated text; every source segment must be covered exactly once. At most 20,000 entries, totaling at most 4 MiB of text. See [Bring your own transcript](https://elevenlabs.io/docs/eleven-api/guides/how-to/dubbing/bring-your-own-transcript).'
+          additionalProperties:
+            type: string
+          type: object
+          maxProperties: 20000
+      type: object
+      required:
+        - target_language
+      title: Body_Create_Dubbing_Language_Target_v1_dubbing_project__project_id__language_post
+    DubbingLanguageListResponse:
+      properties:
+        languages:
+          items:
+            $ref: '#/components/schemas/DubbingLanguageResponse'
+          type: array
+          title: Languages
+          description: The page of language targets for the project.
+        next_cursor:
+          title: Next Cursor
+          description: 'Opaque cursor to pass back as `cursor` for the next page, or null when there are no more results.'
+          type: string
+      type: object
+      required:
+        - languages
+      title: DubbingLanguageListResponse
+    DubbingProjectResponse:
+      properties:
+        project_id:
+          type: string
+          title: Project Id
+          description: Unique identifier of the dubbing project.
+        status:
+          type: string
+          enum:
+            - queued
+            - preparing
+            - processing
+            - ready
+            - failed
+          title: Status
+          description: 'Lifecycle status of the project: `queued` before the source is picked up, `preparing` while it is transcribed, `ready` once transcription is done and language targets can start, or `failed`. A project is never reported as `processing` — that value belongs to language targets.'
+        reference:
+          title: Reference
+          description: 'The free-form string you supplied as `reference` when creating the project, or null if you supplied none.'
+          type: string
+        source_language:
+          title: Source Language
+          description: BCP-47 language tag of the source media (null if auto-detected).
+          type: string
+        model_id:
+          title: Model Id
+          description: Dubbing model every language target of this project is dubbed with. Fixed at create time and not selectable per language.
+          type: string
+        media:
+          description: 'Source media metadata, populated once the source has been fetched and decoded (shortly after create, before the project is `ready`); null until then.'
+          $ref: '#/components/schemas/DubbingSourceMediaInfo'
+        language_ids:
+          items:
+            type: string
+          type: array
+          title: Language Ids
+          description: 'Identifiers of the language targets under this project. Populated when a single project is fetched, and on create when `target_language` creates one. Always empty in list responses — list the project''s language targets instead.'
+          default: []
+        webhook_ids:
+          items:
+            type: string
+          type: array
+          title: Webhook Ids
+          description: 'IDs of the workspace webhooks notified as this project and its languages reach `ready`, `completed`, or `failed`.'
+          default: []
+        revision:
+          type: integer
+          title: Revision
+          description: Monotonic counter incremented whenever the source transcript is edited (segment add/edit/delete).
+        error:
+          description: Why the project failed; null unless `status` is `failed`. Also null for the few projects that failed before failure reporting was introduced.
+          $ref: '#/components/schemas/DubbingError'
+        warnings:
+          items:
+            $ref: '#/components/schemas/VoicesNotPermittedWarning'
+          type: array
+          title: Warnings
+          description: 'Non-fatal conditions raised while preparing the source, empty when there are none. Reflects the latest preparation. Conditions raised while dubbing a particular language are reported on that language instead.'
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+          description: When the project was created.
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+          description: When the project was last updated.
+      type: object
+      required:
+        - project_id
+        - status
+        - revision
+        - created_at
+        - updated_at
+      title: DubbingProjectResponse
+    DubbingSourceMediaInfo:
+      properties:
+        filename:
+          title: Filename
+          description: Original filename of the uploaded source media (null for URL sources).
+          type: string
+        duration_s:
+          title: Duration S
+          description: 'Duration of the source media, in seconds.'
+          type: number
+        has_video:
+          title: Has Video
+          description: Whether the source media contains a video stream.
+          type: boolean
+        mime_type:
+          title: Mime Type
+          description: MIME type of the uploaded source media (null for URL sources).
+          type: string
+      type: object
+      title: DubbingSourceMediaInfo
+      description: Metadata about the project's source media.
+    Body_Create_Dubbing_Project_v1_dubbing_project_post:
+      properties:
+        file:
+          title: File
+          description: 'The source media file to dub: an audio or video file of at most 3 GiB. Provide this or `source_url`, not both.'
+          type: string
+          format: binary
+        source_url:
+          title: Source Url
+          description: 'Public HTTP(S) URL the source media is fetched from server-side, subject to the same size and format limits as an upload. Provide this or `file`, not both.'
+          type: string
+        reference:
+          title: Reference
+          description: Optional free-form string (at most 500 characters) to identify the project on your end. Stored and echoed back verbatim; it does not affect the dub.
+          type: string
+        source_language:
+          title: Source Language
+          description: 'BCP-47 language tag of the source media; must be a language the transcription model supports. Any region or script subtag is ignored, since transcription is per-language. Omit to auto-detect.'
+          type: string
+        model_id:
+          anyOf:
+            - type: string
+              enum:
+                - dubbing_v1
+                - dubbing_v2
+            - type: string
+          title: Model Id
+          description: 'Dubbing model (`dubbing_v1` or `dubbing_v2`) every language target of this project is dubbed with. Defaults to `dubbing_v2`. Fixed at create time — the source is prepared for this model, so neither the project nor an individual target can change it later.'
+        keyterms:
+          items:
+            type: string
+          type: array
+          title: Keyterms
+          description: 'Key terms to bias transcription and translation toward (for example, product or brand names). At most 1,000 terms; each term at most 50 characters and 5 words; the characters `<>{}[]\` are not allowed. Terms are trimmed and deduplicated. Repeat the field once per term, or pass a single JSON array.'
+        webhook_ids:
+          items:
+            type: string
+          type: array
+          title: Webhook Ids
+          description: 'IDs of workspace webhooks to notify as this project progresses — the alternative to polling, and what we recommend. Each receives a `dubbing_project_ready` or `dubbing_project_failed` event for the project, and a `dubbing_language_completed` or `dubbing_language_failed` event for every language under it; `dubbing_language_completed` carries the output download URLs. At most 3 IDs, each already configured in your workspace — see [Webhooks](https://elevenlabs.io/docs/eleven-api/resources/webhooks) for how to create one and verify its signature. Repeat the field once per ID, or pass a single JSON array or comma-separated string. Delivery is best-effort and can repeat, so we recommend handling events idempotently.'
+        target_language:
+          title: Target Language
+          description: 'Optional shortcut: also create a language target in this BCP-47 language, queued to start once the project is ready — equivalent to creating the project and then creating one language target. Must be one of the [languages the dubbing model supports](https://elevenlabs.io/docs/help-center/product/dubbing/which-languages-are-supported-in-dubbing), and a region-qualified tag must be one of the supported dialects. This is the first language target, so it consumes the project''s minimum charge rather than adding to it. Its ID is returned in `language_ids`.'
+          type: string
+        transcript:
+          title: Transcript
+          description: 'Enterprise only. Optional JSON transcript to use instead of transcribing the source: a `{"segments": [...]}` document, at most 20,000 segments and 4 MiB. See [Bring your own transcript](https://elevenlabs.io/docs/eleven-api/guides/how-to/dubbing/bring-your-own-transcript) for the segment fields and their constraints. `source_language` is required whenever a transcript is provided. If any segment carries a `translation`, `target_language` is required and every segment must carry one; those translations seed the target created via `target_language`, which then skips machine translation.'
+          type: string
+          format: binary
+      type: object
+      title: Body_Create_Dubbing_Project_v1_dubbing_project_post
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError
+    DubbingProjectListResponse:
+      properties:
+        projects:
+          items:
+            $ref: '#/components/schemas/DubbingProjectResponse'
+          type: array
+          title: Projects
+          description: The page of dubbing projects the caller can access.
+        next_cursor:
+          title: Next Cursor
+          description: 'Opaque cursor to pass back as `cursor` for the next page, or null when there are no more results.'
+          type: string
+      type: object
+      required:
+        - projects
+      title: DubbingProjectListResponse
+tags:
+  - name: text-to-speech
+    description: Convert text into lifelike speech using a voice of your choice.
+  - name: speech-to-speech
+    description: Create speech by combining the style and content of an audio file you upload with a voice of your choice.
+  - name: speech-to-text
+    description: Transcribe your audio files with detailed speaker annotations and precise timestamps using our cutting-edge model.
+  - name: forced-alignment
+    description: Force align an audio file to a text transcript to get precise word-level and character level timing information. Response is a list of characters with their start and end times as milliseconds elapsed from the start of the recording.
+  - name: models
+    description: Access the different models of the platform.
+  - name: productions
+    description: Access and manage ElevenProductions orders.
+  - name: voices
+    description: Access to voices created either by you or ElevenLabs.
+  - name: samples
+    description: Access to your samples. A sample is any audio file you attached to a voice. A voice can have one or more samples.
+  - name: speech-history
+    description: Accesses your speech history. Your speech history is a list of all your created audio including its metadata using our text-to-speech and speech-to-speech models.
+  - name: studios
+    description: 'Access, create and convert Studio Projects programmatically, only specifically whitelisted accounts can access the Studio API. If you need access please contact our sales team.'
+  - name: workspace
+    description: Access to workspace related endpoints.
+  - name: text-to-voice
+    description: Design and generate custom voices from a text prompt.
+  - name: text-to-dialogue
+    description: Generate multi-speaker dialogue from a script using different voices.
+  - name: sound-generation
+    description: Generate sound effects and non-speech audio from a text prompt.
+  - name: audio-isolation
+    description: Isolate speech from background noise in an audio file.
+  - name: audio-native
+    description: Embed AI-narrated audio players into your website using Audio Native.
+  - name: music-generation
+    description: Generate music from a text prompt.
+  - name: music-finetunes
+    description: Create and manage music finetunes.
+  - name: video-to-music
+    description: Generate music that matches the content and mood of a video.
+  - name: Speech Engine
+    description: 'Low-latency, real-time speech generation endpoints.'
+  - name: pvc-voices
+    description: Create and manage Professional Voice Clones (PVCs).
+  - name: dubbing
+    description: Dub audio and video content into other languages while preserving the original speaker's voice.
+  - name: resource
+    description: 'Manage dubbing resources, including segments, speakers, and language tracks.'
+  - name: segment
+    description: Manage individual segments within a dubbing resource.
+  - name: studio
+    description: 'Access, create and convert Studio Projects programmatically. Only specifically whitelisted accounts can access the Studio API. If you need access please contact our sales team.'
+  - name: Pronunciation Dictionary
+    description: Manage pronunciation dictionaries that override how specific words are pronounced.
+  - name: Conversational AI
+    description: Build and manage conversational AI agents (legacy tag — see also Agents Platform).
+  - name: Agents Platform
+    description: 'Build, configure and manage Conversational AI agents, knowledge bases, tools, and conversations.'
+  - name: Agents Insights
+    description: Query analytics and insights about agent conversations and performance.
+  - name: Agents Workspace Analytics
+    description: Workspace-level analytics for Conversational AI usage.
+  - name: Single Use Token
+    description: 'Mint short-lived, single-use tokens for client-side use of Conversational AI agents.'
+  - name: api-key
+    description: Manage API keys for your workspace.
+  - name: enterprise
+    description: Endpoints available only to enterprise workspaces.
+  - name: 'access:all'
+    description: Endpoints accessible to all authenticated callers regardless of scope.
