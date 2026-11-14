@@ -262,9 +262,8 @@ const replaceIds = (exported, ids) =>
   );
 
 /**
- * Import the complete-flow fixture (cypress/fixtures/gitSync/complete-flow, rebuilt by
- * tools/gitsync-fixtures/build-complete-flow.mjs) onto a branch under unique names, and put the
- * app in its own folder. The app's module is imported with the app; the workflow is imported
+ * Import the complete-flow fixture (cypress/fixtures/gitSync/complete-flow) onto a branch under
+ * unique names, and put the app in its own folder. The app's module is imported with the app; the workflow is imported
  * first because app exports don't carry workflows.
  *
  * @tjType gitSyncSpec.importCompleteFlow
