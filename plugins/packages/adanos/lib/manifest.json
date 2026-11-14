@@ -1,0 +1,49 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Adanos Sentiment datasource",
+  "description": "A schema defining Adanos Market Sentiment datasource",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "Adanos",
+    "kind": "adanos",
+    "type": "api"
+  },
+  "properties": {
+    "api_key": {
+      "type": "string",
+      "title": "API Key",
+      "description": "Adanos API Key (X-API-Key)"
+    },
+    "base_url": {
+      "type": "string",
+      "title": "Base URL",
+      "description": "Optional custom Adanos API endpoint",
+      "default": "https://api.adanos.org/v1"
+    }
+  },
+  "tj:encrypted": [
+    "api_key"
+  ],
+  "required": [
+    "api_key"
+  ],
+  "tj:ui:properties": {
+    "api_key": {
+      "$ref": "#/properties/api_key",
+      "key": "api_key",
+      "label": "API Key",
+      "description": "Adanos API Key (X-API-Key)",
+      "widget": "password-v3-textarea",
+      "required": true
+    },
+    "base_url": {
+      "$ref": "#/properties/base_url",
+      "key": "base_url",
+      "label": "Base URL",
+      "description": "Custom API endpoint (defaults to https://api.adanos.org/v1)",
+      "widget": "text",
+      "required": false
+    }
+  }
+}
