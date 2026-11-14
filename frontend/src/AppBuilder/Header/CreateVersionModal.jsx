@@ -26,7 +26,6 @@ const CreateVersionModal = ({
   getSuccessMessage,
 }) => {
   const { moduleId } = useModuleContext();
-  const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [pinsBlocked, setPinsBlocked] = useState(null);
   const [versionName, setVersionName] = useState('');
