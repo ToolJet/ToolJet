@@ -142,45 +142,6 @@
     font-weight: 500;
     color: var(--text-placeholder);
   }
-
-  .custom-component-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-radius: 8px;
-    background: var(--surfaces-surface-01);
-    &:hover {
-      cursor: move;
-    }
-
-    .custom-component-card-icon {
-      width: 48px;
-      height: 48px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      background: var(--surfaces-surface-02);
-      color: var(--text-placeholder);
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: -0.28px;
-    }
-
-    .custom-component-card-name {
-      font-size: 12px;
-      font-weight: 500;
-      line-height: 20px;
-      color: var(--text-default);
-    }
-
-    .custom-component-card-description {
-      font-size: 11px;
-      line-height: 20px;
-      color: var(--text-placeholder);
-    }
-  }
 }
 
 .custom-components-empty {

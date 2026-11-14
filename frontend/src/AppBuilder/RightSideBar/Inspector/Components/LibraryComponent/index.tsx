@@ -12,7 +12,8 @@ import { useLibraryManifest } from '@/AppBuilder/Widgets/hooks/useLibraryManifes
 import useStore from '@/AppBuilder/_stores/store';
 import { offersDynamicHeight } from '@/AppBuilder/_helpers/sdkComponentTypes';
 import { useBuiltinPack, usePackManifest } from '@/_stores/builtinPacksStore';
-import { packIdentity, type PackIdentity } from './packIdentity';
+import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
+import { libraryIdentity, packIdentity, type PackIdentity } from './packIdentity';
 import { PackIdentityStrip } from './PackIdentityStrip';
 import type { ManifestComponent } from '@/AppBuilder/types/libraryComponent.types';
 import {
@@ -46,8 +47,8 @@ const resolveLive = (value: unknown): unknown =>
 
 // Manifest-driven Properties tab for a component built with the custom-component SDK (LibraryComponent, PackComponent;
 // LLD §5.6, ModuleViewerInspector pattern). Which component the instance draws lives ONLY in definition.properties —
-// never rendered as editable fields. `identityRows` is read-only context shown first (a library's revision);
-// `identity` is a pack instance's library and component, shown as one line above the accordions.
+// never rendered as editable fields. `identity` is the instance's library and component, shown as one line above the
+// accordions; `identityRows` is read-only context shown first (a custom library's revision).
 const ManifestPropertiesPanel = ({
   componentMeta,
   darkMode,
@@ -91,23 +92,6 @@ const ManifestPropertiesPanel = ({
   const validationMeta = withValidationMeta(componentMeta, validation);
 
   const items: { id?: string; title: string; isOpen: boolean; children: React.ReactNode }[] = [];
-
-  // Identity — read-only context (picker UX arrives with F5's revision picker).
-  if (identityRows.length > 0)
-    items.push({
-      title: 'Component',
-      isOpen: true,
-      children: (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '4px 0' }}>
-          {identityRows.map(([label, value]) => (
-            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-              <span style={{ color: 'var(--text-placeholder)' }}>{label}</span>
-              <span style={{ color: 'var(--text-default)', fontWeight: 500 }}>{value}</span>
-            </div>
-          ))}
-        </div>
-      ),
-    });
 
   groupPropsBySection(visibleProps).forEach(({ title, props: sectionProps }) => {
     items.push({
@@ -271,6 +255,16 @@ const ManifestPropertiesPanel = ({
   return (
     <>
       {identity && <PackIdentityStrip {...identity} />}
+      {identityRows.length > 0 && (
+        <div className="library-component-revision">
+          {identityRows.map(([label, value]) => (
+            <div key={label} className="library-component-revision-row">
+              <span>{label}</span>
+              <span className="library-component-revision-value">{value}</span>
+            </div>
+          ))}
+        </div>
+      )}
       <AccordionComponent items={items} />
     </>
   );
@@ -285,14 +279,18 @@ export const LibraryComponentProperties = (props: LibraryComponentPropertiesProp
   const effectiveRevision: string | undefined = useEffectiveLibraryRevision(correlationId);
   const manifest = useLibraryManifest(libraryId, effectiveRevision);
   const componentManifest = componentName ? manifest?.components?.[componentName] : undefined;
+  // The library's current name (it may have been renamed since the drop), else the one saved with the instance.
+  const currentLibraryName = useCustomComponentLibrariesStore(
+    (state: any) =>
+      state.libraries?.find((library: { correlationId?: string }) => library.correlationId === correlationId)?.name
+  );
+  const savedLibraryName = (props.component as any)?.component?.definition?.properties?.libraryName?.value;
   return (
     <ManifestPropertiesPanel
       {...props}
       componentManifest={componentManifest}
-      identityRows={[
-        ['Component', componentManifest?.displayName ?? componentName],
-        ['Revision', formatRevisionLabel(effectiveRevision)],
-      ]}
+      identity={libraryIdentity(currentLibraryName ?? savedLibraryName, componentName, componentManifest)}
+      identityRows={[['Revision', formatRevisionLabel(effectiveRevision)]]}
     />
   );
 };

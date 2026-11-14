@@ -139,3 +139,23 @@
     min-width: 0;
   }
 }
+
+.library-component-revision {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-weak);
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--text-placeholder);
+}
+
+.library-component-revision-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.library-component-revision-value {
+  color: var(--text-default);
+  font-weight: 500;
+}

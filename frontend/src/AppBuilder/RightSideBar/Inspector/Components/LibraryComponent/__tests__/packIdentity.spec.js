@@ -1,4 +1,4 @@
-import { packIdentity } from '../packIdentity';
+import { libraryIdentity, packIdentity } from '../packIdentity';
 
 // QA item 8: a selected pack component's Properties tab didn't say which component it is or which library it comes
 // from (its name, antDrawer1, is the builder's), so two libraries' Drawers or Buttons looked alike. It now opens with
@@ -29,5 +29,30 @@ describe('packIdentity', () => {
   test('shows nothing for an instance that names no component', () => {
     // Break this catches: "Ant Design · undefined" on a pack slot with nothing picked.
     expect(packIdentity('antd', undefined, undefined)).toBeNull();
+  });
+});
+
+// A custom library's instance opens its Properties tab with the same strip as a pack's.
+describe('libraryIdentity', () => {
+  test("names the library and the component's display name", () => {
+    // Break this catches: the component's code name (StatusBadge) shown once its manifest has loaded.
+    expect(libraryIdentity('Palette Tiles Demo', 'StatusBadge', { displayName: 'Status Badge' })).toEqual({
+      library: 'Palette Tiles Demo',
+      component: 'Status Badge',
+    });
+  });
+
+  test("falls back to the component's code name before its manifest loads", () => {
+    // Break this catches: an empty component name while the manifest is still loading.
+    expect(libraryIdentity('Palette Tiles Demo', 'StatusBadge', undefined)).toEqual({
+      library: 'Palette Tiles Demo',
+      component: 'StatusBadge',
+    });
+  });
+
+  test('shows nothing until both the library and the component are known', () => {
+    // Break this catches: "undefined · Status Badge" on an instance saved without its library name.
+    expect(libraryIdentity(undefined, 'StatusBadge', undefined)).toBeNull();
+    expect(libraryIdentity('Palette Tiles Demo', undefined, undefined)).toBeNull();
   });
 });

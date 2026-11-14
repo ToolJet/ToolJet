@@ -3,8 +3,8 @@ import { ROCKET_1_LABEL } from '@/AppBuilder/RightSideBar/ComponentManagerTab/co
 export type ComponentIdentity = { kind: 'native' | 'module'; library: string; component: string };
 
 // Components whose Properties tab names them some other way, or not at all: a pack component builds its own strip
-// (LibraryComponent/packIdentity), a custom library's keeps its Component and Revision rows, and the module editor's
-// own container has no Properties tab.
+// and so does a custom library's (LibraryComponent/packIdentity), and the module editor's own container has no
+// Properties tab.
 const NAMED_ELSEWHERE = new Set(['PackComponent', 'LibraryComponent', 'ModuleContainer']);
 
 /**
