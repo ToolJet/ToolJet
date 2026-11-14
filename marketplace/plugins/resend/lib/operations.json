@@ -1,0 +1,476 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Resend datasource",
+  "description": "A schema defining Resend datasource operations",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        { "value": "send_email", "name": "Send Email" },
+        { "value": "send_batch_emails", "name": "Send Batch Emails" },
+        { "value": "get_email", "name": "Get Email" },
+        { "value": "update_scheduled_email", "name": "Update Scheduled Email" },
+        { "value": "cancel_scheduled_email", "name": "Cancel Scheduled Email" },
+        { "value": "list_domains", "name": "List Domains" },
+        { "value": "create_domain", "name": "Create Domain" },
+        { "value": "verify_domain", "name": "Verify Domain" },
+        { "value": "list_contacts", "name": "List Contacts" },
+        { "value": "create_contact", "name": "Create Contact" },
+        { "value": "update_contact", "name": "Update Contact" },
+        { "value": "delete_contact", "name": "Delete Contact" },
+        { "value": "create_broadcast", "name": "Create Broadcast" },
+        { "value": "send_broadcast", "name": "Send Broadcast" }
+      ]
+    },
+    "send_email": {
+      "from": {
+        "label": "From Email",
+        "key": "from",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Sender email address (e.g. Acme <onboarding@resend.dev>)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Acme <onboarding@resend.dev>"
+      },
+      "to": {
+        "label": "To Email(s)",
+        "key": "to",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Recipient email address(es) as string or array",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "delivered@resend.dev"
+      },
+      "subject": {
+        "label": "Subject",
+        "key": "subject",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Email subject",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Hello World"
+      },
+      "html": {
+        "label": "HTML Body",
+        "key": "html",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The HTML version of the message",
+        "width": "320px",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "<p>Congrats on sending your first email!</p>"
+      },
+      "text": {
+        "label": "Plain Text Body",
+        "key": "text",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The plain text version of the message",
+        "width": "320px",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "Congrats on sending your first email!"
+      },
+      "cc": {
+        "label": "CC",
+        "key": "cc",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Cc recipient email address(es)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "cc@example.com"
+      },
+      "bcc": {
+        "label": "BCC",
+        "key": "bcc",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Bcc recipient email address(es)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "bcc@example.com"
+      },
+      "reply_to": {
+        "label": "Reply-To",
+        "key": "reply_to",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Reply-to email-address(es)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "support@example.com"
+      },
+      "scheduled_at": {
+        "label": "Scheduled At",
+        "key": "scheduled_at",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Schedule in natural language (e.g. in 1 min) or ISO 8601 timestamp",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "in 1 hour"
+      },
+      "attachments": {
+        "label": "Attachments",
+        "key": "attachments",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "JSON array of attachment objects with filename and content or path",
+        "width": "320px",
+        "height": "80px",
+        "className": "codehinter-plugins",
+        "placeholder": "[{\"filename\": \"invoice.pdf\", \"content\": \"...\"}]"
+      }
+    },
+    "send_batch_emails": {
+      "batch": {
+        "label": "Batch Emails Array",
+        "key": "batch",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "JSON array of email payloads (up to 100 emails)",
+        "width": "320px",
+        "height": "120px",
+        "className": "codehinter-plugins",
+        "placeholder": "[{\"from\": \"onboarding@resend.dev\", \"to\": \"user@example.com\", \"subject\": \"Hello\", \"html\": \"<p>Hi</p>\"}]"
+      }
+    },
+    "get_email": {
+      "email_id": {
+        "label": "Email ID",
+        "key": "email_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The unique ID of the email to retrieve",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "49a3999c-0ce1-4ea6-ab68-afcd6dc2e794"
+      }
+    },
+    "update_scheduled_email": {
+      "email_id": {
+        "label": "Email ID",
+        "key": "email_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The unique ID of the scheduled email",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "49a3999c-0ce1-4ea6-ab68-afcd6dc2e794"
+      },
+      "scheduled_at": {
+        "label": "New Scheduled At",
+        "key": "scheduled_at",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Updated schedule timestamp",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "in 2 days"
+      }
+    },
+    "cancel_scheduled_email": {
+      "email_id": {
+        "label": "Email ID",
+        "key": "email_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The unique ID of the scheduled email to cancel",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "49a3999c-0ce1-4ea6-ab68-afcd6dc2e794"
+      }
+    },
+    "list_domains": {},
+    "create_domain": {
+      "name": {
+        "label": "Domain Name",
+        "key": "name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The name of the domain you want to add",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "example.com"
+      },
+      "region": {
+        "label": "Region",
+        "key": "region",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Region for the domain (us-east-1, eu-west-1, sa-east-1, ap-northeast-1)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "us-east-1"
+      }
+    },
+    "verify_domain": {
+      "domain_id": {
+        "label": "Domain ID",
+        "key": "domain_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The unique ID of the domain to verify",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "d91cd9fb-572f-411f-987f-6acb03517272"
+      }
+    },
+    "list_contacts": {
+      "audience_id": {
+        "label": "Audience ID",
+        "key": "audience_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The unique ID of the audience",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "78261eea-8f8b-4381-83c6-79fa7120f1cf"
+      }
+    },
+    "create_contact": {
+      "audience_id": {
+        "label": "Audience ID",
+        "key": "audience_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The unique ID of the audience",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "78261eea-8f8b-4381-83c6-79fa7120f1cf"
+      },
+      "email": {
+        "label": "Email Address",
+        "key": "email",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The contact's email address",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "steve.wozniak@gmail.com"
+      },
+      "first_name": {
+        "label": "First Name",
+        "key": "first_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The contact's first name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Steve"
+      },
+      "last_name": {
+        "label": "Last Name",
+        "key": "last_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The contact's last name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Wozniak"
+      },
+      "unsubscribed": {
+        "label": "Unsubscribed",
+        "key": "unsubscribed",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Subscription status (true or false)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "false"
+      }
+    },
+    "update_contact": {
+      "audience_id": {
+        "label": "Audience ID",
+        "key": "audience_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The unique ID of the audience",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "78261eea-8f8b-4381-83c6-79fa7120f1cf"
+      },
+      "contact_id": {
+        "label": "Contact ID",
+        "key": "contact_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The unique ID of the contact to update",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "e169aa45-1ecf-4183-9955-b1499d570199"
+      },
+      "first_name": {
+        "label": "First Name",
+        "key": "first_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Updated first name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Steve"
+      },
+      "last_name": {
+        "label": "Last Name",
+        "key": "last_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Updated last name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Wozniak"
+      },
+      "unsubscribed": {
+        "label": "Unsubscribed",
+        "key": "unsubscribed",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Updated subscription status",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "false"
+      }
+    },
+    "delete_contact": {
+      "audience_id": {
+        "label": "Audience ID",
+        "key": "audience_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The unique ID of the audience",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "78261eea-8f8b-4381-83c6-79fa7120f1cf"
+      },
+      "contact_id": {
+        "label": "Contact ID",
+        "key": "contact_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The unique ID of the contact to delete",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "e169aa45-1ecf-4183-9955-b1499d570199"
+      }
+    },
+    "create_broadcast": {
+      "audience_id": {
+        "label": "Audience ID",
+        "key": "audience_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The audience ID to send the broadcast to",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "78261eea-8f8b-4381-83c6-79fa7120f1cf"
+      },
+      "from": {
+        "label": "From Email",
+        "key": "from",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Sender email address",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Acme <newsletter@example.com>"
+      },
+      "subject": {
+        "label": "Subject",
+        "key": "subject",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Broadcast subject line",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Monthly Newsletter"
+      },
+      "html": {
+        "label": "HTML Content",
+        "key": "html",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The HTML version of the broadcast",
+        "width": "320px",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "<p>Welcome to our monthly newsletter!</p>"
+      },
+      "name": {
+        "label": "Broadcast Name",
+        "key": "name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Internal name for the broadcast",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "November Newsletter"
+      }
+    },
+    "send_broadcast": {
+      "broadcast_id": {
+        "label": "Broadcast ID",
+        "key": "broadcast_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The unique ID of the broadcast to send",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "b57e7a83-5c24-42f2-89b5-f48bf00624c9"
+      },
+      "scheduled_at": {
+        "label": "Scheduled At",
+        "key": "scheduled_at",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Schedule time (optional; omit to send immediately)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "in 1 hour"
+      }
+    }
+  }
+}
