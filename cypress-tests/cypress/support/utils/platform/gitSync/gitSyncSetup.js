@@ -2,10 +2,6 @@ import { pollUntil } from "Support/utils/platform/gitSync/poll";
 import { getDefaultBranchViaAPI } from "Support/utils/platform/gitSync/workspaceBranch";
 
 /**
- * Git sync configuration API (`/api/git-sync/*`).
- */
-
-/**
  * GitHub HTTPS config payload from cypress.env.json.
  *
  * @tjType gitSyncConfig.githubPayload

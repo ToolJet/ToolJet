@@ -16,7 +16,6 @@ import {
   pullWorkspaceViaAPI,
 } from "Support/utils/platform/gitSync/workspaceBranch";
 
-// Branching off: only the default branch exists, it is editable, and commits go straight to it.
 describe("Git Sync — Single Branch Mode", { retries: 0 }, () => {
   let ctx;
 

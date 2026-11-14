@@ -3,12 +3,7 @@ import {
   readRepoJsonViaAPI,
 } from "Support/utils/platform/gitSync/gitHubRepo";
 
-/**
- * The only place that knows the git repo layout ToolJet writes.
- *
- * `.meta/*.json` is no longer written (meta-free enumeration via app/app.json),
- * so nothing here reads it.
- */
+// The only place that knows the repo layout ToolJet writes (apps/, modules/, workflows/, data-sources/).
 
 export const RESOURCE_ROOT = { app: "apps", module: "modules", workflow: "workflows" };
 export const DATA_SOURCE_ROOT = "data-sources";

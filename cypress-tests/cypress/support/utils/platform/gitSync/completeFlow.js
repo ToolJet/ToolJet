@@ -5,7 +5,6 @@ import {
   runWorkflowAndReadNodeOutputViaUI,
 } from "Support/utils/platform/gitSync/gitSyncUI";
 
-// Checks shared by the complete-flow specs.
 export const todoTitles = {
   1: "delectus aut autem",
   2: "quis ut nam facilis et officia qui",

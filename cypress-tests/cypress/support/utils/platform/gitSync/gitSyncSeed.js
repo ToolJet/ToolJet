@@ -13,11 +13,6 @@ import {
 } from "Support/utils/platform/gitSync/workspaceBranch";
 
 /**
- * Composite seeding for git sync specs: one isolated workspace + base branch
- * per spec, plus app seeding and the branch → push → merge → pull round trip.
- */
-
-/**
  * Create an isolated workspace configured with git sync on its own base branch.
  * Call in `before()`; pair with `teardownGitSyncSpec()` in `after()`.
  * Pass `baseBranch` to attach a second workspace to an existing base branch

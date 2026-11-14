@@ -33,7 +33,6 @@ import {
 } from "Support/utils/platform/gitSync/gitSyncUI";
 import { waitForPullToFinish } from "Support/utils/platform/gitSync/workspaceBranch";
 
-// Single-branch mode: everything happens on the default branch, commits go straight to it on GitHub.
 describe("Git Sync — Complete Flow (Single Branch)", { retries: 0 }, () => {
   let ctx;
   let flow;

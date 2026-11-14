@@ -4,13 +4,7 @@ import {
   waitForRemoteBranchViaAPI,
 } from "Support/utils/platform/gitSync/gitHubRepo";
 
-/**
- * ToolJet workspace-branch API (`/api/workspace-branches/*`).
- *
- * Branch create / delete / pull are enqueued on `git-sync-queue` and only run
- * on a WORKER=true process,
- * so every mutating helper here waits for the resulting state.
- */
+// Branch create / delete / pull run as queued jobs on a WORKER=true process, so mutating helpers wait for the result.
 
 const normalizeBranch = (b) => ({
   id: b.id,

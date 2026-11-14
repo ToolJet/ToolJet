@@ -1,11 +1,7 @@
 import { gitSyncSelectors as GS } from "Selectors/platform/gitSyncSelectors";
 import { gitSyncText } from "Texts/platform/gitSync";
 
-/**
- * Dashboard-level git sync UI helpers (branch dropdown, create/switch modals,
- * workspace commit/pull modal). The header git controls render only on
- * `/<ws>`, `/data-sources`, `/modules`, `/workflows` for admins and builders
- */
+// The header git controls render only on /<ws>, /data-sources, /modules and /workflows, for admins and builders.
 
 /**
  * Visit a workspace page with the branch selected through `?branch=`

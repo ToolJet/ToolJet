@@ -18,7 +18,6 @@ import {
   pushWorkspaceViaAPI,
 } from "Support/utils/platform/gitSync/workspaceBranch";
 
-// What a push writes to GitHub, compared against the app's own export.
 const FIXTURE = "gitSync/fixture-app.json";
 const FIXTURE_DS = "restapi";
 const FIXTURE_DS_URL = "{{constants.API_BASE_URL}}";

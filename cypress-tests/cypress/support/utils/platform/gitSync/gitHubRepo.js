@@ -1,17 +1,7 @@
 import { pollUntil } from "Support/utils/platform/gitSync/poll";
 
-/**
- * GitHub REST helpers for the git sync suite.
- *
- * Isolation model: every spec works under its own ref prefix (see `runPrefix`)
- * and its own base branch, so specs never reset a shared branch or delete
- * refs they did not create. Auth is a GitHub App installation token minted by
- * the `gitHubAppToken` task; repo comes from
- * GITHUB_REPO_OWNER / GITHUB_REPO_NAME.
- *
- * Every call goes through `ghRequest` with failOnStatusCode:false so a failed
- * request never prints the Authorization header; callers assert on status.
- */
+// Each spec works under its own `gs-<spec>-<time>` refs; stale refs from earlier runs are swept once per run.
+// Every call goes through ghRequest with failOnStatusCode:false so a failure never logs the Authorization header.
 
 const EMPTY_TREE_SHA = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
 

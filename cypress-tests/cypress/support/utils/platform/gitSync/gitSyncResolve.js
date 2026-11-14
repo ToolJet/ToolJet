@@ -8,12 +8,6 @@ import {
 import { configureGitSyncViaAPI } from "Support/utils/platform/gitSync/gitSyncSetup";
 
 /**
- * Unsynced resources and pull-conflict resolution: apps authored before git sync
- * was connected, the dashboard "Push unsynced apps to git" modal, and the pull
- * conflict modal's "Sync from git remote" path.
- */
-
-/**
  * Isolated spec workspace where `appNames` are created while git sync is OFF, then
  * GitHub is connected. A git-off app lands on the workspace's default branch with a
  * co_relation_id and is_synced=false; connecting keeps the same default-branch row and only renames it.

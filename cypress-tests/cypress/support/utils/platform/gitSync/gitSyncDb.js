@@ -1,9 +1,4 @@
-/**
- * Direct DB reads for git sync state the API does not expose (per-version
- * is_synced / is_stub / git_tree_sha). Needs `app_db` in cypress env, so it works
- * locally and in pr-qa but not against a hosted instance; keep DB asserts in
- * these helpers so UI flows still run without DB access.
- */
+// Direct DB reads for per-version sync state the API doesn't expose; needs `app_db`, so not usable against a hosted instance.
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

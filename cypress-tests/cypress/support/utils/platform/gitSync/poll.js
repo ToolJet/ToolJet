@@ -1,7 +1,4 @@
-/**
- * Polling primitive for git sync state. Git sync work runs on background jobs
- * and on GitHub, so tests wait for real state instead of fixed cy.wait() delays.
- */
+// Git sync work finishes on background jobs and on GitHub, so tests poll real state instead of fixed waits.
 
 /**
  * Re-run `fetch` until `isDone(result)` is truthy, then yield the result.

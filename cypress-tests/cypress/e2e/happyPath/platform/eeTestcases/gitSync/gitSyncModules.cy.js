@@ -18,7 +18,6 @@ import { createBranchViaAPI } from "Support/utils/platform/gitSync/workspaceBran
 
 const CARD = '[data-cy$="-card"]';
 
-// Modules sync like apps but live under modules/ in the repo.
 describe("Git Sync — Modules", { retries: 0 }, () => {
   let ctx;
 
