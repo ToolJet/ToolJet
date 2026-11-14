@@ -218,7 +218,10 @@ export const saveVersionViaUI = (name, { via = "branchMenu" } = {}) => {
   }
   cy.get(GS.versionNameInput).should("be.visible").clear().type(name);
   cy.get(GS.createVersionSaveBtn).should("be.enabled").click();
-  cy.contains(`Version ${name} saved successfully`, { timeout: 30000 }).should("be.visible");
+  // The branch menu names the version in its toast; the version menu uses the modal's default text.
+  cy.contains(new RegExp(`Version ${name} saved successfully|Version Created successfully`), { timeout: 30000 }).should(
+    "be.visible",
+  );
 };
 
 /**

@@ -6,17 +6,6 @@ import { getDefaultBranchViaAPI } from "Support/utils/platform/gitSync/workspace
  * source: server/src/modules/git-sync/controller.ts, server/src/modules/git-sync-configs/controller.ts
  */
 
-const tjRequest = (method, path, { body, failOnStatusCode = true } = {}) =>
-  cy.getAuthHeaders().then((headers) =>
-    cy.request({
-      method,
-      url: `${Cypress.env("server_host")}/api${path}`,
-      headers,
-      body,
-      failOnStatusCode,
-    }),
-  );
-
 /**
  * GitHub HTTPS config payload from cypress.env.json.
  * source: server/src/modules/git-sync/dto/provider-config.dto.ts (GithubHttpsConfigDTO)
@@ -43,30 +32,28 @@ export const githubConfigPayload = (branchName, overrides = {}) => ({
  * @tjType gitSyncConfig.status
  * @tjBlock gitSync
  * @tjUsage getGitSyncStatusViaAPI().then((status) => status.is_enabled)
- * @tjDom none - GET /api/git-sync/:orgId/status
+ * @tjDom none - cy.apiGetGitSyncStatus (GET /api/git-sync/:orgId/status)
  */
 export const getGitSyncStatusViaAPI = () =>
-  tjRequest("GET", `/git-sync/${Cypress.env("workspaceId")}/status`, {
-    failOnStatusCode: false,
-  }).then((res) => (res.status === 200 ? res.body : null));
+  cy.apiGetGitSyncStatus({ failOnStatusCode: false }).then((res) => (res.status === 200 ? res.body : null));
 
 /**
  * @tjType gitSyncConfig.attemptSave
  * @tjBlock gitSync
  * @tjUsage attemptSaveGitConfigViaAPI(githubConfigPayload(base, { githubAppId: "0" }))
- * @tjDom none - POST /api/git-sync/configs
+ * @tjDom none - cy.apiSaveGitSyncConfig (POST /api/git-sync/configs)
  */
 export const attemptSaveGitConfigViaAPI = (payload) =>
-  tjRequest("POST", "/git-sync/configs", { body: payload, failOnStatusCode: false });
+  cy.apiSaveGitSyncConfig(payload, { failOnStatusCode: false });
 
 /**
  * @tjType gitSyncConfig.attemptTestConnection
  * @tjBlock gitSync
  * @tjUsage attemptTestConnectionViaAPI(githubConfigPayload(base))
- * @tjDom none - POST /api/git-sync/test-connection
+ * @tjDom none - cy.apiTestGitSyncConnection (POST /api/git-sync/test-connection)
  */
 export const attemptTestConnectionViaAPI = (payload) =>
-  tjRequest("POST", "/git-sync/test-connection", { body: payload, failOnStatusCode: false });
+  cy.apiTestGitSyncConnection(payload, { failOnStatusCode: false });
 
 /**
  * Turn branching (multi-branch mode) on or off.
@@ -75,12 +62,10 @@ export const attemptTestConnectionViaAPI = (payload) =>
  * @tjType gitSyncConfig.setBranching
  * @tjBlock gitSync
  * @tjUsage setBranchingViaAPI(orgGitId, true)
- * @tjDom none - PUT /api/git-sync/:orgGitId/is-branching-enabled
+ * @tjDom none - cy.apiSetGitSyncBranching (PUT /api/git-sync/:orgGitId/is-branching-enabled)
  */
 export const setBranchingViaAPI = (orgGitId, isBranchingEnabled) =>
-  tjRequest("PUT", `/git-sync/${orgGitId}/is-branching-enabled`, {
-    body: { isBranchingEnabled },
-  });
+  cy.apiSetGitSyncBranching(orgGitId, isBranchingEnabled);
 
 /**
  * Configure GitHub HTTPS git sync on `branchName`, set the branching mode, and
@@ -93,9 +78,9 @@ export const setBranchingViaAPI = (orgGitId, isBranchingEnabled) =>
  * @param {{branchName:string, mode?:"single"|"multi"}} opts
  */
 export const configureGitSyncViaAPI = ({ branchName, mode = "multi" }) =>
-  attemptSaveGitConfigViaAPI(githubConfigPayload(branchName))
+  cy
+    .apiSaveGitSyncConfig(githubConfigPayload(branchName))
     .then((res) => {
-      expect(res.status, `save git config: ${JSON.stringify(res.body)}`).to.be.oneOf([200, 201]);
       expect(res.body?.data?.connection_message, "no connection error").to.be.undefined;
     })
     .then(() => getGitSyncStatusViaAPI())
@@ -117,20 +102,16 @@ export const configureGitSyncViaAPI = ({ branchName, mode = "multi" }) =>
  * @tjType gitSyncConfig.disable
  * @tjBlock gitSync
  * @tjUsage disableGitSyncViaAPI(orgGitId)
- * @tjDom none - PUT /api/git-sync/status/:orgGitId
+ * @tjDom none - cy.apiDisableGitSync (PUT /api/git-sync/status/:orgGitId)
  */
 export const disableGitSyncViaAPI = (orgGitId, gitType = "github_https") =>
-  tjRequest("PUT", `/git-sync/status/${orgGitId}`, {
-    body: { isEnabled: false, gitType },
-  });
+  cy.apiDisableGitSync(orgGitId, gitType);
 
 /**
  * @tjType gitSyncConfig.delete
  * @tjBlock gitSync
  * @tjUsage deleteGitSyncConfigViaAPI(orgGitId) - teardown
- * @tjDom none - DELETE /api/git-sync/:orgGitId?gitType=
+ * @tjDom none - cy.apiDeleteGitSyncConfig (DELETE /api/git-sync/:orgGitId?gitType=)
  */
 export const deleteGitSyncConfigViaAPI = (orgGitId, gitType = "github_https") =>
-  tjRequest("DELETE", `/git-sync/${orgGitId}?gitType=${gitType}`, {
-    failOnStatusCode: false,
-  });
+  cy.apiDeleteGitSyncConfig(orgGitId, gitType, { failOnStatusCode: false });

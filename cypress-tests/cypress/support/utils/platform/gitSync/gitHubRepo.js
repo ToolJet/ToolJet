@@ -129,29 +129,6 @@ export const deleteBranchesByPrefixViaAPI = (prefix) =>
   );
 
 /**
- * Delete run branches left behind by crashed runs (teardown never ran). Only
- * `gs-<spec>-<base36 timestamp>…` refs older than `maxAgeMs` are touched, so
- * concurrent runs and other people's branches are safe. Every ToolJet workspace
- * seeds a branch row per remote branch, so stale refs slow every later run.
- *
- * @tjType gitHub.cleanupStaleRefs
- * @tjBlock gitSync
- * @tjUsage deleteStaleRunRefsViaAPI() - teardown
- * @tjDom none - GET /git/matching-refs/heads/gs- + DELETE
- */
-export const deleteStaleRunRefsViaAPI = (maxAgeMs = 2 * 60 * 60 * 1000) =>
-  ghRequest("GET", "/git/matching-refs/heads/gs-").then((res) => {
-    const refs = Array.isArray(res.body) ? res.body : [];
-    // source: runPrefix() above — `gs-<specKey>-<Date.now().toString(36)>`
-    const stale = refs.filter((r) => {
-      const m = r.ref.replace("refs/heads/", "").match(/^gs-.+?-([0-9a-z]{8})(?:-|$)/);
-      return m && Date.now() - parseInt(m[1], 36) > maxAgeMs;
-    });
-    stale.forEach((r) => ghRequest("DELETE", `/${r.ref.replace(/^refs\//, "git/refs/")}`));
-    Cypress.log({ name: "gitHub", message: `swept ${stale.length} stale run ref(s)` });
-  });
-
-/**
  * Delete every tag starting with `prefix` (tags are `<co_relation_id>/<version>`).
  *
  * @tjType gitHub.cleanupTags

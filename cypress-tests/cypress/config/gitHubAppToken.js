@@ -9,7 +9,7 @@ const crypto = require("crypto");
 
 const REFRESH_AFTER_MS = 50 * 60 * 1000;
 
-module.exports = (on, config) => {
+const createTokenProvider = (config) => {
   let cached = null;
 
   const b64url = (obj) => Buffer.from(JSON.stringify(obj)).toString("base64url");
@@ -26,24 +26,28 @@ module.exports = (on, config) => {
     return `${unsigned}.${signature}`;
   };
 
-  on("task", {
-    async gitHubAppToken() {
-      if (cached && Date.now() - cached.mintedAt < REFRESH_AFTER_MS) return cached.token;
+  return async () => {
+    if (cached && Date.now() - cached.mintedAt < REFRESH_AFTER_MS) return cached.token;
 
-      const apiBase = config.env.GITHUB_API_BASE_URL || "https://api.github.com";
-      const res = await fetch(
-        `${apiBase}/app/installations/${config.env.GITHUB_APP_INSTALLATION_ID}/access_tokens`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${appJwt()}`, Accept: "application/vnd.github+json" },
-        },
-      );
-      if (res.status !== 201) {
-        throw new Error(`GitHub App token mint failed with HTTP ${res.status}`);
-      }
-      const { token } = await res.json();
-      cached = { token, mintedAt: Date.now() };
-      return token;
-    },
-  });
+    const apiBase = config.env.GITHUB_API_BASE_URL || "https://api.github.com";
+    const res = await fetch(
+      `${apiBase}/app/installations/${config.env.GITHUB_APP_INSTALLATION_ID}/access_tokens`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${appJwt()}`, Accept: "application/vnd.github+json" },
+      },
+    );
+    if (res.status !== 201) {
+      throw new Error(`GitHub App token mint failed with HTTP ${res.status}`);
+    }
+    const { token } = await res.json();
+    cached = { token, mintedAt: Date.now() };
+    return token;
+  };
+};
+
+module.exports = (on, config) => {
+  const getToken = createTokenProvider(config);
+  on("task", { gitHubAppToken: getToken });
+  return getToken;
 };

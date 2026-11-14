@@ -13,18 +13,6 @@ import {
  * so every mutating helper here waits for the resulting state.
  */
 
-const tjRequest = (method, path, { body, qs, failOnStatusCode = true } = {}) =>
-  cy.getAuthHeaders().then((headers) =>
-    cy.request({
-      method,
-      url: `${Cypress.env("server_host")}/api${path}`,
-      headers,
-      body,
-      qs,
-      failOnStatusCode,
-    }),
-  );
-
 const normalizeBranch = (b) => ({
   id: b.id,
   name: b.name ?? b.branch_name,
@@ -43,10 +31,10 @@ const normalizeBranch = (b) => ({
  * @tjType workspaceBranch.list
  * @tjBlock gitSync
  * @tjUsage listBranchesViaAPI().then(({ branches, activeBranchId }) => ...)
- * @tjDom none - GET /api/workspace-branches
+ * @tjDom none - cy.apiListWorkspaceBranches (GET /api/workspace-branches)
  */
 export const listBranchesViaAPI = () =>
-  tjRequest("GET", "/workspace-branches").then((res) => {
+  cy.apiListWorkspaceBranches().then((res) => {
     const body = res.body || {};
     const list = Array.isArray(body) ? body : body.branches || [];
     return {
@@ -83,13 +71,10 @@ export const getDefaultBranchViaAPI = () =>
  * @tjType workspaceBranch.attemptCreate
  * @tjBlock gitSync
  * @tjUsage attemptCreateBranchViaAPI("bad name").then((res) => expect(res.status).to.eq(400))
- * @tjDom none - POST /api/workspace-branches
+ * @tjDom none - cy.apiCreateWorkspaceBranch (POST /api/workspace-branches)
  */
 export const attemptCreateBranchViaAPI = (name, opts = {}) =>
-  tjRequest("POST", "/workspace-branches", {
-    body: { name, ...opts },
-    failOnStatusCode: false,
-  });
+  cy.apiCreateWorkspaceBranch(name, opts, { failOnStatusCode: false });
 
 /**
  * Create a branch and wait until the background job has both inserted the
@@ -103,10 +88,8 @@ export const attemptCreateBranchViaAPI = (name, opts = {}) =>
  * @param {{sourceBranchId?:string, commitSha?:string, appId?:string, versionId?:string, confirmImport?:boolean}} [opts]
  */
 export const createBranchViaAPI = (name, opts = {}) =>
-  attemptCreateBranchViaAPI(name, opts)
-    .then((res) => {
-      expect(res.status, `create branch ${name}: ${JSON.stringify(res.body)}`).to.be.oneOf([200, 201]);
-    })
+  cy
+    .apiCreateWorkspaceBranch(name, opts)
     .then(() => waitForRemoteBranchViaAPI(name))
     .then(() =>
       pollUntil(() => getBranchViaAPI(name), (b) => !!b, {
@@ -118,22 +101,20 @@ export const createBranchViaAPI = (name, opts = {}) =>
  * @tjType workspaceBranch.switch
  * @tjBlock gitSync
  * @tjUsage switchBranchViaAPI(branch.id)
- * @tjDom none - PUT /api/workspace-branches/:id/activate
+ * @tjDom none - cy.apiSwitchWorkspaceBranch (PUT /api/workspace-branches/:id/activate)
  * @returns {Cypress.Chainable<{resolvedAppId?:string, slug?:string}>}
  */
 export const switchBranchViaAPI = (branchId, appId) =>
-  tjRequest("PUT", `/workspace-branches/${branchId}/activate`, {
-    body: appId ? { appId } : {},
-  }).then((res) => res.body || {});
+  cy.apiSwitchWorkspaceBranch(branchId, appId).then((res) => res.body || {});
 
 /**
  * @tjType workspaceBranch.attemptDelete
  * @tjBlock gitSync
  * @tjUsage attemptDeleteBranchViaAPI(defaultBranch.id).then((res) => ...)
- * @tjDom none - DELETE /api/workspace-branches/:id
+ * @tjDom none - cy.apiDeleteWorkspaceBranch (DELETE /api/workspace-branches/:id)
  */
 export const attemptDeleteBranchViaAPI = (branchId) =>
-  tjRequest("DELETE", `/workspace-branches/${branchId}`, { failOnStatusCode: false });
+  cy.apiDeleteWorkspaceBranch(branchId, { failOnStatusCode: false });
 
 /**
  * Delete a branch and wait until it is gone from ToolJet and the remote.
@@ -160,11 +141,11 @@ export const deleteBranchViaAPI = (branch) =>
  * @tjType workspaceBranch.attemptPush
  * @tjBlock gitSync
  * @tjUsage attemptPushWorkspaceViaAPI({ branchId, commitMessage }).then((res) => ...)
- * @tjDom none - POST /api/workspace-branches/push
+ * @tjDom none - cy.apiPushWorkspaceBranch (POST /api/workspace-branches/push)
  * @param {{branchId:string, commitMessage:string, scope?:string, targetBranch?:string, onlyUnsyncedDatasources?:boolean}} body
  */
 export const attemptPushWorkspaceViaAPI = (body) =>
-  tjRequest("POST", "/workspace-branches/push", { body, failOnStatusCode: false });
+  cy.apiPushWorkspaceBranch(body, { failOnStatusCode: false });
 
 /**
  * Workspace push (data sources and other workspace resources). Push is synchronous.
@@ -172,25 +153,18 @@ export const attemptPushWorkspaceViaAPI = (body) =>
  * @tjType workspaceBranch.push
  * @tjBlock gitSync
  * @tjUsage pushWorkspaceViaAPI({ branchId, commitMessage: "feat: ds" })
- * @tjDom none - POST /api/workspace-branches/push
+ * @tjDom none - cy.apiPushWorkspaceBranch (POST /api/workspace-branches/push)
  */
-export const pushWorkspaceViaAPI = (body) =>
-  attemptPushWorkspaceViaAPI(body).then((res) => {
-    expect(res.status, `workspace push: ${JSON.stringify(res.body)}`).to.be.oneOf([200, 201]);
-    return res.body;
-  });
+export const pushWorkspaceViaAPI = (body) => cy.apiPushWorkspaceBranch(body).then((res) => res.body);
 
 /**
  * @tjType workspaceBranch.attemptPull
  * @tjBlock gitSync
  * @tjUsage attemptPullWorkspaceViaAPI(branchId).then((res) => expect(res.status).to.eq(409))
- * @tjDom none - POST /api/workspace-branches/pull
+ * @tjDom none - cy.apiPullWorkspaceBranch (POST /api/workspace-branches/pull)
  */
 export const attemptPullWorkspaceViaAPI = (branchId) =>
-  tjRequest("POST", "/workspace-branches/pull", {
-    body: branchId ? { branchId } : {},
-    failOnStatusCode: false,
-  });
+  cy.apiPullWorkspaceBranch(branchId, { failOnStatusCode: false });
 
 /**
  * Pull `branch` from git and wait until ToolJet has recorded the remote head
@@ -239,12 +213,10 @@ export const waitForPullToFinish = (branchName, remoteHead) =>
  * @tjType workspaceBranch.checkUpdates
  * @tjBlock gitSync
  * @tjUsage checkForUpdatesViaAPI(branchName).then(({ hasUpdates, latestCommit }) => ...)
- * @tjDom none - GET /api/workspace-branches/check-updates?branch=
+ * @tjDom none - cy.apiCheckWorkspaceBranchUpdates (GET /api/workspace-branches/check-updates?branch=)
  */
 export const checkForUpdatesViaAPI = (branchName) =>
-  tjRequest("GET", "/workspace-branches/check-updates", {
-    qs: { branch: branchName },
-  }).then((res) => ({
+  cy.apiCheckWorkspaceBranchUpdates(branchName).then((res) => ({
     hasUpdates: res.body?.has_updates ?? res.body?.hasUpdates,
     latestCommit: res.body?.latest_commit ?? res.body?.latestCommit ?? null,
   }));
@@ -255,9 +227,7 @@ export const checkForUpdatesViaAPI = (branchName) =>
  * @tjType workspaceBranch.ensureDraft
  * @tjBlock gitSync
  * @tjUsage ensureDraftViaAPI(appId, branchId)
- * @tjDom none - POST /api/workspace-branches/ensure-draft
+ * @tjDom none - cy.apiEnsureBranchAppDraft (POST /api/workspace-branches/ensure-draft)
  */
 export const ensureDraftViaAPI = (appId, branchId) =>
-  tjRequest("POST", "/workspace-branches/ensure-draft", {
-    body: { appId, branchId },
-  }).then((res) => res.body);
+  cy.apiEnsureBranchAppDraft(appId, branchId).then((res) => res.body);

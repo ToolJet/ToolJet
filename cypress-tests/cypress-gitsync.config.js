@@ -16,7 +16,8 @@ module.exports = defineConfig({
     setupNodeEvents (on, config) {
       require("./cypress/config/tasks")(on);
       require("./cypress/config/browserConfig")(on);
-      require("./cypress/config/gitHubAppToken")(on, config);
+      const getGitHubToken = require("./cypress/config/gitHubAppToken")(on, config);
+      require("./cypress/config/gitSyncRepoSweep")(on, config, getGitHubToken);
 
       return require("./cypress/plugins/index.js")(on, config);
     },

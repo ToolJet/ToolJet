@@ -2,7 +2,6 @@ import {
   runPrefix,
   prepareRepoViaAPI,
   deleteBranchesByPrefixViaAPI,
-  deleteStaleRunRefsViaAPI,
   mergeBranchViaAPI,
   waitForCommitMessageViaAPI,
 } from "Support/utils/platform/gitSync/gitHubRepo";
@@ -17,18 +16,6 @@ import {
  * Composite seeding for git sync specs: one isolated workspace + base branch
  * per spec, plus app seeding and the branch → push → merge → pull round trip.
  */
-
-const tjRequest = (method, path, { body, qs, failOnStatusCode = true } = {}) =>
-  cy.getAuthHeaders().then((headers) =>
-    cy.request({
-      method,
-      url: `${Cypress.env("server_host")}/api${path}`,
-      headers,
-      body,
-      qs,
-      failOnStatusCode,
-    }),
-  );
 
 /**
  * Create an isolated workspace configured with git sync on its own base branch.
@@ -50,10 +37,8 @@ export const setupGitSyncSpec = ({ specKey, mode = "multi", baseBranch, skipConf
   // Recorded up front so teardown can clean partial setups (see teardownGitSyncSpec).
   Cypress.env("gitSyncCtxs", [...(Cypress.env("gitSyncCtxs") || []), ctx]);
 
-  // Sweep refs leaked by crashed runs first; a second workspace on an existing base branch shares it.
-  const base = baseBranch
-    ? cy.wrap({ baseBranch }, { log: false })
-    : deleteStaleRunRefsViaAPI().then(() => prepareRepoViaAPI(prefix));
+  // Stale refs from earlier runs are swept once per run (cypress/config/gitSyncRepoSweep.js).
+  const base = baseBranch ? cy.wrap({ baseBranch }, { log: false }) : prepareRepoViaAPI(prefix);
   return base
     .then((prepared) => {
       ctx.baseBranch = prepared.baseBranch;
@@ -144,15 +129,10 @@ export const teardownGitSyncSpec = () => {
  * @tjType app.createOnBranch
  * @tjBlock gitSync
  * @tjUsage createAppOnBranchViaAPI(appName, branch.id).then((app) => app.id)
- * @tjDom none - POST /api/apps
+ * @tjDom none - cy.apiCreateBranchApp (POST /api/apps)
  */
 export const createAppOnBranchViaAPI = (name, branchId, type = "front-end") =>
-  tjRequest("POST", type === "module" ? "/modules" : "/apps", {
-    body: { name, icon: "floppydisk", type, branchId },
-  }).then((res) => {
-    expect(res.status, `create ${type} ${name}`).to.equal(201);
-    return res.body;
-  });
+  cy.apiCreateBranchApp(name, branchId, { type }).then((res) => res.body);
 
 /**
  * Export one app version (appV2 definition) — the source of truth to compare git files against.
@@ -160,20 +140,10 @@ export const createAppOnBranchViaAPI = (name, branchId, type = "front-end") =>
  * @tjType app.export
  * @tjBlock gitSync
  * @tjUsage exportAppViaAPI(appId, versionId, branch.id).then((appV2) => appV2.components)
- * @tjDom none - POST /api/v2/resources/export
+ * @tjDom none - cy.apiExportBranchApp (POST /api/v2/resources/export)
  */
 export const exportAppViaAPI = (appId, versionId, branchId) =>
-  tjRequest("POST", "/v2/resources/export", {
-    qs: { branch_id: branchId },
-    body: {
-      app: [{ id: appId, search_params: { version_id: versionId } }],
-      tooljet_database: [],
-      organization_id: Cypress.env("workspaceId"),
-    },
-  }).then((res) => {
-    expect(res.status, "export app").to.equal(201);
-    return res.body.app[0].definition.appV2;
-  });
+  cy.apiExportBranchApp(appId, versionId, branchId).then((res) => res.body.app[0].definition.appV2);
 
 /**
  * Put an app in a folder on a branch. folder-apps reads the raw `branch_id`
@@ -182,15 +152,10 @@ export const exportAppViaAPI = (appId, versionId, branchId) =>
  * @tjType folder.addAppOnBranch
  * @tjBlock gitSync
  * @tjUsage addAppToFolderViaAPI(folderId, appId, branch.id)
- * @tjDom none - POST /api/folder-apps?branch_id=
+ * @tjDom none - cy.apiAddBranchAppToFolder (POST /api/folder-apps?branch_id=)
  */
 export const addAppToFolderViaAPI = (folderId, appId, branchId) =>
-  tjRequest("POST", "/folder-apps", {
-    qs: { branch_id: branchId },
-    body: { folder_id: folderId, app_id: appId },
-  }).then((res) => {
-    expect(res.status, "add app to folder").to.be.oneOf([200, 201]);
-  });
+  cy.apiAddBranchAppToFolder(folderId, appId, branchId);
 
 /**
  * Wait until `appName` is listed on `branchId`. A new branch's row appears
@@ -214,13 +179,10 @@ export const waitForAppOnBranchViaAPI = (branchId, appName, type = "front-end") 
  * @tjType app.attemptCreateOnBranch
  * @tjBlock gitSync
  * @tjUsage attemptCreateAppOnBranchViaAPI(name, ctx.defaultBranch.id).then((res) => ...)
- * @tjDom none - POST /api/apps
+ * @tjDom none - cy.apiCreateBranchApp (POST /api/apps)
  */
 export const attemptCreateAppOnBranchViaAPI = (name, branchId) =>
-  tjRequest("POST", "/apps", {
-    body: { name, icon: "floppydisk", type: "front-end", branchId },
-    failOnStatusCode: false,
-  });
+  cy.apiCreateBranchApp(name, branchId, { failOnStatusCode: false });
 
 /**
  * Import an exported-app fixture onto a branch.
@@ -228,28 +190,10 @@ export const attemptCreateAppOnBranchViaAPI = (name, branchId) =>
  * @tjType app.importOnBranch
  * @tjBlock gitSync
  * @tjUsage importFixtureAppViaAPI("gitSync/fixture-app.json", appName, branch.id)
- * @tjDom none - POST /api/v2/resources/import
+ * @tjDom none - cy.apiImportBranchApp (POST /api/v2/resources/import)
  */
 export const importExportViaAPI = (exported, appName, branchId) =>
-  // ?branch_id overrides body.branchId (import-export-resources/controller.ts:45-47), so send both.
-  tjRequest("POST", "/v2/resources/import", {
-    qs: { branch_id: branchId },
-    body: {
-      ...exported,
-      organization_id: Cypress.env("workspaceId"),
-      branchId,
-      app: (exported.app || []).map((app) => ({
-        ...app,
-        appName,
-        definition: app.definition?.appV2
-          ? { ...app.definition, appV2: { ...app.definition.appV2, name: appName } }
-          : app.definition,
-      })),
-    },
-  }).then((res) => {
-    expect(res.status, `import ${appName}`).to.equal(201);
-    return res.body?.imports?.app?.[0]?.id;
-  });
+  cy.apiImportBranchApp(exported, appName, branchId).then((res) => res.body?.imports?.app?.[0]?.id);
 
 export const importFixtureAppViaAPI = (fixturePath, appName, branchId) =>
   cy.fixture(fixturePath).then((fixture) => importExportViaAPI(fixture, appName, branchId));
@@ -334,7 +278,7 @@ export const importCompleteFlowViaAPI = (branch, suffix) => {
  * @tjType gitSyncSpec.pushCompleteFlow
  * @tjBlock gitSync
  * @tjUsage pushCompleteFlowViaAPI(flow, branch)
- * @tjDom none - POST /api/app-git/gitpush + POST /api/workspace-branches/push
+ * @tjDom none - POST /api/app-git/gitpush + cy.apiPushWorkspaceBranch
  */
 export const pushCompleteFlowViaAPI = (flow, branch, { singleBranch = false } = {}) =>
   getAppOnBranchViaAPI(flow.appId, branch.id)
@@ -349,23 +293,17 @@ export const pushCompleteFlowViaAPI = (flow, branch, { singleBranch = false } = 
       }),
     )
     .then(() =>
-      tjRequest("POST", "/workspace-branches/push", {
-        body: { branchId: branch.id, commitMessage: `feat: workspace ${flow.names.app}` },
-        failOnStatusCode: false,
-      }),
-    )
-    .then((res) => {
-      expect(res.status, `workspace push: ${JSON.stringify(res.body)}`).to.be.oneOf([200, 201]);
-    });
+      cy.apiPushWorkspaceBranch({ branchId: branch.id, commitMessage: `feat: workspace ${flow.names.app}` }),
+    );
 
 /**
  * @tjType app.getOnBranch
  * @tjBlock gitSync
  * @tjUsage getAppOnBranchViaAPI(appId, branch.id).then((app) => app.editing_version.id)
- * @tjDom none - GET /api/apps/:id?branch_id=
+ * @tjDom none - cy.apiGetBranchApp (GET /api/apps/:id?branch_id=)
  */
 export const getAppOnBranchViaAPI = (appId, branchId) =>
-  tjRequest("GET", `/apps/${appId}`, { qs: { branch_id: branchId } }).then((res) => res.body);
+  cy.apiGetBranchApp(appId, branchId).then((res) => res.body);
 
 /**
  * Release a saved (non-draft) version of an app on a branch. Yields the app's slug for the
@@ -374,20 +312,18 @@ export const getAppOnBranchViaAPI = (appId, branchId) =>
  * @tjType app.releaseSavedVersion
  * @tjBlock gitSync
  * @tjUsage releaseSavedVersionViaAPI(appName, ctx.defaultBranch, "v1").then((slug) => ...)
- * @tjDom none - GET /api/apps/:id/versions + PUT /api/apps/:id/release
+ * @tjDom none - cy.apiListBranchAppVersions + cy.apiReleaseAppVersion
  */
 export const releaseSavedVersionViaAPI = (appName, branch, versionName) =>
   listAppsOnBranchViaAPI(branch.id).then((apps) => {
     const app = apps.find((a) => a.name === appName);
     expect(app, `${appName} on ${branch.name}`).to.exist;
-    return tjRequest("GET", `/apps/${app.id}/versions`, { qs: { branch_id: branch.id } })
+    return cy
+      .apiListBranchAppVersions(app.id, branch.id)
       .then((res) => {
         const version = (res.body.versions || []).find((v) => v.name === versionName && v.status !== "DRAFT");
         expect(version, `saved ${versionName} of ${appName} on ${branch.name}`).to.exist;
-        return tjRequest("PUT", `/apps/${app.id}/release`, {
-          body: { versionToBeReleased: version.id },
-          failOnStatusCode: false,
-        });
+        return cy.apiReleaseAppVersion(app.id, version.id, { failOnStatusCode: false });
       })
       .then((res) => {
         expect(res.status, `release ${appName} ${versionName}: ${JSON.stringify(res.body)}`).to.be.oneOf([200, 201]);
@@ -399,12 +335,10 @@ export const releaseSavedVersionViaAPI = (appName, branch, versionName) =>
  * @tjType app.listOnBranch
  * @tjBlock gitSync
  * @tjUsage listAppsOnBranchViaAPI(branch.id).then((apps) => apps.map((a) => a.name))
- * @tjDom none - GET /api/apps?type=&branch_id=
+ * @tjDom none - cy.apiListBranchApps (GET /api/apps?type=&branch_id=)
  */
 export const listAppsOnBranchViaAPI = (branchId, type = "front-end") =>
-  tjRequest("GET", "/apps", { qs: { page: 1, type, branch_id: branchId } }).then(
-    (res) => res.body?.apps || [],
-  );
+  cy.apiListBranchApps(branchId, type).then((res) => res.body?.apps || []);
 
 /**
  * Rename an app on a branch the way the dashboard does: name + the current
@@ -416,25 +350,18 @@ export const listAppsOnBranchViaAPI = (branchId, type = "front-end") =>
  * @tjType app.attemptRename
  * @tjBlock gitSync
  * @tjUsage attemptRenameAppViaAPI(appId, "new-name", branch.id, versionId).then((res) => ...)
- * @tjDom none - PUT /api/apps/:id?branch_id=
+ * @tjDom none - cy.apiRenameBranchApp (PUT /api/apps/:id?branch_id=)
  */
 export const attemptRenameAppViaAPI = (appId, name, branchId, editingVersionId) =>
-  tjRequest("PUT", `/apps/${appId}`, {
-    qs: branchId ? { branch_id: branchId } : undefined,
-    body: { app: editingVersionId ? { name, editingVersionId } : { name } },
-    failOnStatusCode: false,
-  });
+  cy.apiRenameBranchApp(appId, name, branchId, editingVersionId, { failOnStatusCode: false });
 
 /**
  * @tjType app.deleteOnBranch
  * @tjBlock gitSync
  * @tjUsage deleteAppOnBranchViaAPI(appId, branch.id)
- * @tjDom none - DELETE /api/apps/:id?branch_id=
+ * @tjDom none - cy.apiDeleteBranchApp (DELETE /api/apps/:id?branch_id=)
  */
-export const deleteAppOnBranchViaAPI = (appId, branchId) =>
-  tjRequest("DELETE", `/apps/${appId}`, { qs: { branch_id: branchId } }).then((res) => {
-    expect(res.status, "delete app on branch").to.be.oneOf([200, 204]);
-  });
+export const deleteAppOnBranchViaAPI = (appId, branchId) => cy.apiDeleteBranchApp(appId, branchId);
 
 /**
  * POST an editor push without asserting. Body mirrors the app builder's commit
@@ -443,21 +370,10 @@ export const deleteAppOnBranchViaAPI = (appId, branchId) =>
  * @tjType app.attemptPush
  * @tjBlock gitSync
  * @tjUsage attemptPushAppViaAPI({ appId, versionId, appName, branch, commitMessage })
- * @tjDom none - POST /api/app-git/gitpush/:appId/:versionId?branch_id=
+ * @tjDom none - cy.apiPushBranchApp (POST /api/app-git/gitpush/:appId/:versionId?branch_id=)
  * @param {{appId, versionId, appName, branch:{id,name}, commitMessage, singleBranch?:boolean}} p
  */
-export const attemptPushAppViaAPI = ({ appId, versionId, appName, branch, commitMessage, singleBranch = false }) =>
-  tjRequest("POST", `/app-git/gitpush/${appId}/${versionId}`, {
-    qs: { branch_id: branch.id },
-    body: {
-      gitAppName: appName,
-      versionId,
-      lastCommitMessage: commitMessage,
-      gitVersionName: branch.name,
-      ...(singleBranch ? { allowMasterPush: true } : { sourceBranch: branch.name }),
-    },
-    failOnStatusCode: false,
-  });
+export const attemptPushAppViaAPI = (params) => cy.apiPushBranchApp(params, { failOnStatusCode: false });
 
 /**
  * Push an app from the editor and wait for the commit on the remote branch.
@@ -509,17 +425,18 @@ export const seedPushedAppViaAPI = ({ branch, appName, fixture, commitMessage = 
  * @tjType dataSource.getOnBranch
  * @tjBlock gitSync
  * @tjUsage getDataSourceOnBranchViaAPI("restapi", branch.id, "staging").then((ds) => ds.options.url.value)
- * @tjDom none - GET /api/data-sources/:orgId?branch_id= + GET /api/data-sources/:id/environment/:envId?branch_id=
+ * @tjDom none - cy.apiListBranchDataSources + cy.apiGetBranchDataSourceOptions
  */
 export const getDataSourceOnBranchViaAPI = (name, branchId, envName) =>
   cy.apiGetEnvironments().then((environments) => {
     const env = environments.find((e) => e.name === envName);
     expect(env, `environment ${envName}`).to.exist;
-    return tjRequest("GET", `/data-sources/${Cypress.env("workspaceId")}`, { qs: { branch_id: branchId } })
+    return cy
+      .apiListBranchDataSources(branchId)
       .then((res) => {
         const ds = (res.body?.data_sources || []).find((d) => d.name === name);
         expect(ds, `data source ${name} on branch`).to.exist;
-        return tjRequest("GET", `/data-sources/${ds.id}/environment/${env.id}`, { qs: { branch_id: branchId } });
+        return cy.apiGetBranchDataSourceOptions(ds.id, env.id, branchId);
       })
       .then((res) => ({ ...res.body, environmentId: env.id }));
   });
@@ -532,7 +449,7 @@ export const getDataSourceOnBranchViaAPI = (name, branchId, envName) =>
  * @tjType dataSource.updateOnBranch
  * @tjBlock gitSync
  * @tjUsage updateDataSourceOnBranchViaAPI({ name: "restapi", branchId, envName: "staging", values: { url: "https://x" } })
- * @tjDom none - PUT /api/data-sources/:id?environment_id=&branch_id=
+ * @tjDom none - cy.apiUpdateBranchDataSource (PUT /api/data-sources/:id?environment_id=&branch_id=)
  */
 export const updateDataSourceOnBranchViaAPI = ({ name, branchId, envName, values }) =>
   getDataSourceOnBranchViaAPI(name, branchId, envName).then((ds) => {
@@ -541,11 +458,13 @@ export const updateDataSourceOnBranchViaAPI = ({ name, branchId, envName, values
         ? { key, value: values[key], encrypted: !!ds.options?.[key]?.encrypted }
         : { key, value: opt?.encrypted ? "" : opt?.value, encrypted: !!opt?.encrypted },
     );
-    return tjRequest("PUT", `/data-sources/${ds.id}`, {
-      qs: { environment_id: ds.environmentId, branch_id: branchId },
-      body: { name, options },
-    }).then((res) => {
-      expect(res.status, `update ${name} (${envName})`).to.equal(200);
+    return cy.apiUpdateBranchDataSource({
+      dataSourceId: ds.id,
+      environmentId: ds.environmentId,
+      branchId,
+      name,
+      options,
+      label: `update ${name} (${envName})`,
     });
   });
 
