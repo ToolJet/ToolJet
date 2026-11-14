@@ -1,26 +1,25 @@
+import { waitForCommitMessageViaAPI } from "Support/utils/platform/gitSync/gitHubRepo";
 import {
-  setupGitSyncSpec,
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
-  importFixtureAppViaAPI,
-  getAppOnBranchViaAPI,
-  exportAppViaAPI,
-  pushAppViaAPI,
+  readDataSourceFromGit,
+  readResourceFromGit,
+} from "Support/utils/platform/gitSync/gitRepoReader";
+import {
   addAppToFolderViaAPI,
+  exportAppViaAPI,
+  getAppOnBranchViaAPI,
+  importFixtureAppViaAPI,
+  loginToGitSyncSpec,
+  pushAppViaAPI,
+  setupGitSyncSpec,
+  teardownGitSyncSpec,
 } from "Support/utils/platform/gitSync/gitSyncSeed";
 import {
   createBranchViaAPI,
   pushWorkspaceViaAPI,
 } from "Support/utils/platform/gitSync/workspaceBranch";
-import { waitForCommitMessageViaAPI } from "Support/utils/platform/gitSync/gitHubRepo";
-import {
-  readResourceFromGit,
-  readDataSourceFromGit,
-} from "Support/utils/platform/gitSync/gitRepoReader";
 
 // What a push writes to GitHub, compared against the app's own export.
 const FIXTURE = "gitSync/fixture-app.json";
-// source: cypress/fixtures/gitSync/fixture-app.json (data source "restapi", url {{constants.API_BASE_URL}})
 const FIXTURE_DS = "restapi";
 const FIXTURE_DS_URL = "{{constants.API_BASE_URL}}";
 
@@ -83,7 +82,6 @@ describe("Git Sync — Repo Content", { retries: 0 }, () => {
           expect(files.schema?.[0], "schema.json").to.include.keys("multiPages", "multiEnv");
 
           const all = JSON.stringify(files);
-          // source: server/src/modules/git-sync/AGENTS.md (files must not include these)
           ["created_at", "updated_at", "git_tree_sha", "createdAt", "updatedAt", "gitTreeSha"].forEach((key) => {
             expect(all, `no ${key}`).to.not.include(`"${key}"`);
           });

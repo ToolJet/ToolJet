@@ -1,29 +1,29 @@
 import { gitSyncSelectors as GS } from "Selectors/platform/gitSyncSelectors";
-import { gitSyncText } from "Texts/platform/gitSync";
 import {
-  setupGitSyncSpec,
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
+  createRemoteBranchViaAPI,
+  getBranchHeadViaAPI,
+  waitForRemoteBranchViaAPI,
+} from "Support/utils/platform/gitSync/gitHubRepo";
+import {
   createAppOnBranchViaAPI,
   listAppsOnBranchViaAPI,
+  loginToGitSyncSpec,
+  setupGitSyncSpec,
+  teardownGitSyncSpec,
 } from "Support/utils/platform/gitSync/gitSyncSeed";
+import {
+  fillCreateBranchViaUI,
+  switchBranchViaUI,
+  visitGitSyncPage,
+} from "Support/utils/platform/gitSync/gitSyncUI";
+import { pollUntil } from "Support/utils/platform/gitSync/poll";
 import {
   attemptCreateBranchViaAPI,
   createBranchViaAPI,
   deleteBranchViaAPI,
   getBranchViaAPI,
 } from "Support/utils/platform/gitSync/workspaceBranch";
-import {
-  createRemoteBranchViaAPI,
-  getBranchHeadViaAPI,
-  waitForRemoteBranchViaAPI,
-} from "Support/utils/platform/gitSync/gitHubRepo";
-import { pollUntil } from "Support/utils/platform/gitSync/poll";
-import {
-  visitGitSyncPage,
-  fillCreateBranchViaUI,
-  switchBranchViaUI,
-} from "Support/utils/platform/gitSync/gitSyncUI";
+import { gitSyncText } from "Texts/platform/gitSync";
 
 describe("Git Sync — Branches", { retries: 0 }, () => {
   let ctx;
@@ -85,7 +85,6 @@ describe("Git Sync — Branches", { retries: 0 }, () => {
 
   it("should show the lock banner on the default branch and drop it on a feature branch", () => {
     visitGitSyncPage(ctx, { branch: ctx.baseBranch });
-    // source: frontend/src/AppBuilder/Header/LockedBranchBanner.jsx
     cy.get(GS.lockedBanner).should("be.visible").and("contain.text", gitSyncText.lockBanner(ctx.baseBranch, "apps"));
     cy.get(GS.wsCommitButton).should("not.exist");
 
@@ -98,7 +97,7 @@ describe("Git Sync — Branches", { retries: 0 }, () => {
   });
 
   it("should open the branch picker with Create branch instead of creating an app from every create entry point on the locked default branch", () => {
-    // Each entry point opens the Switch branch modal (HomePage.jsx:1907); git import isn't gated.
+    // Each entry point opens the Switch branch modal; git import isn't gated.
     const entryPoints = [
       { label: "Create new app", open: () => cy.get(GS.createNewAppButton).should("be.visible").click() },
       {
@@ -123,7 +122,6 @@ describe("Git Sync — Branches", { retries: 0 }, () => {
         cy.get(GS.lockedBanner).should("be.visible");
         open();
         cy.log(`entry point: ${label}`);
-        // source: frontend/src/_ui/WorkspaceBranchDropdown/SwitchBranchModal.jsx:240-244 (Alert has no data-cy)
         cy.contains(gitSyncText.switchBranchLocked).should("be.visible");
         cy.get(GS.switchCreateBranchBtn).should("be.visible").click();
         cy.get(GS.branchNameInput).should("be.visible");
@@ -141,7 +139,6 @@ describe("Git Sync — Branches", { retries: 0 }, () => {
 
     attemptCreateBranchViaAPI(name).then((res) => {
       expect(res.status).to.equal(409);
-      // source: server/ee/workspace-branches/service.ts (needsImportConfirmation)
       expect(JSON.parse(res.body.message)).to.deep.equal({ needsImportConfirmation: true, name });
     });
 

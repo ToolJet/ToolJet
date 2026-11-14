@@ -1,17 +1,17 @@
 import {
-  setupGitSyncSpec,
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
-  seedPushedAppViaAPI,
-} from "Support/utils/platform/gitSync/gitSyncSeed";
-import { createBranchViaAPI } from "Support/utils/platform/gitSync/workspaceBranch";
-import {
+  deleteTagsByPrefixViaAPI,
   getBranchHeadViaAPI,
   getTagViaAPI,
   waitForTagViaAPI,
-  deleteTagsByPrefixViaAPI,
 } from "Support/utils/platform/gitSync/gitHubRepo";
+import {
+  loginToGitSyncSpec,
+  seedPushedAppViaAPI,
+  setupGitSyncSpec,
+  teardownGitSyncSpec,
+} from "Support/utils/platform/gitSync/gitSyncSeed";
 import { pollUntil } from "Support/utils/platform/gitSync/poll";
+import { createBranchViaAPI } from "Support/utils/platform/gitSync/workspaceBranch";
 import { gitSyncText } from "Texts/platform/gitSync";
 
 // Saving a version creates the GitHub tag `<co_relation_id>/<version name>`.
@@ -81,7 +81,6 @@ describe("Git Sync — Version Tags", { retries: 0 }, () => {
         saveVersionViaAPI(s.appId, s.versionId, "v1", s.branch.id);
         waitForTagViaAPI(`${s.coRelationId}/v1`).then((tag) => {
           expect(tag.sha, "tag points at the feature branch head").to.equal(head);
-          // source: server/ee/app-git/services/versions.service.ts (default message `Version ${dto.name} created`)
           expect(tag.message, "default tag message").to.include("Version v1 created");
         });
         checkTagViaAPI(s.appId, "v1").then((body) => {
@@ -111,7 +110,7 @@ describe("Git Sync — Version Tags", { retries: 0 }, () => {
     });
   });
 
-  // Saved versions can't be renamed (versions/service.ts:441), so the tag must stay as saved.
+  // Saved versions can't be renamed, so the tag must stay as saved.
   it("should keep the GitHub tag unchanged when renaming a saved version is rejected", () => {
     const renamed = "v1-renamed";
     seedBranchApp("rename").then((s) => {

@@ -3,12 +3,10 @@ import { getDefaultBranchViaAPI } from "Support/utils/platform/gitSync/workspace
 
 /**
  * Git sync configuration API (`/api/git-sync/*`).
- * source: server/src/modules/git-sync/controller.ts, server/src/modules/git-sync-configs/controller.ts
  */
 
 /**
  * GitHub HTTPS config payload from cypress.env.json.
- * source: server/src/modules/git-sync/dto/provider-config.dto.ts (GithubHttpsConfigDTO)
  *
  * @tjType gitSyncConfig.githubPayload
  * @tjBlock gitSync
@@ -57,7 +55,6 @@ export const attemptTestConnectionViaAPI = (payload) =>
 
 /**
  * Turn branching (multi-branch mode) on or off.
- * source: server/src/modules/git-sync-configs/controller.ts `:id/is-branching-enabled`
  *
  * @tjType gitSyncConfig.setBranching
  * @tjBlock gitSync

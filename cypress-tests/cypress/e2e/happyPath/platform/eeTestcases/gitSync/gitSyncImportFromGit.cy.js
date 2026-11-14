@@ -1,14 +1,14 @@
-import {
-  setupGitSyncSpec,
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
-  seedPushedAppViaAPI,
-  listAppsOnBranchViaAPI,
-  getAppOnBranchViaAPI,
-} from "Support/utils/platform/gitSync/gitSyncSeed";
-import { createBranchViaAPI } from "Support/utils/platform/gitSync/workspaceBranch";
 import { mergeBranchViaAPI } from "Support/utils/platform/gitSync/gitHubRepo";
+import {
+  getAppOnBranchViaAPI,
+  listAppsOnBranchViaAPI,
+  loginToGitSyncSpec,
+  seedPushedAppViaAPI,
+  setupGitSyncSpec,
+  teardownGitSyncSpec,
+} from "Support/utils/platform/gitSync/gitSyncSeed";
 import { visitGitSyncPage } from "Support/utils/platform/gitSync/gitSyncUI";
+import { createBranchViaAPI } from "Support/utils/platform/gitSync/workspaceBranch";
 
 // Import from git reads apps from the workspace's current branch only.
 describe("Git Sync — Import App From Git", { retries: 0 }, () => {

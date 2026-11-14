@@ -37,7 +37,7 @@ export const setupGitSyncSpec = ({ specKey, mode = "multi", baseBranch, skipConf
   // Recorded up front so teardown can clean partial setups (see teardownGitSyncSpec).
   Cypress.env("gitSyncCtxs", [...(Cypress.env("gitSyncCtxs") || []), ctx]);
 
-  // Stale refs from earlier runs are swept once per run (cypress/config/gitSyncRepoSweep.js).
+  // Stale refs from earlier runs are swept once per run.
   const base = baseBranch ? cy.wrap({ baseBranch }, { log: false }) : prepareRepoViaAPI(prefix);
   return base
     .then((prepared) => {
@@ -147,7 +147,7 @@ export const exportAppViaAPI = (appId, versionId, branchId) =>
 
 /**
  * Put an app in a folder on a branch. folder-apps reads the raw `branch_id`
- * query (server/src/modules/folder-apps/service.ts:57-88).
+ * query.
  *
  * @tjType folder.addAppOnBranch
  * @tjBlock gitSync
@@ -159,7 +159,7 @@ export const addAppToFolderViaAPI = (folderId, appId, branchId) =>
 
 /**
  * Wait until `appName` is listed on `branchId`. A new branch's row appears
- * before its apps are hydrated from git (server/ee/workspace-branches/service.ts:394 vs :519-520).
+ * before its apps are hydrated from git.
  *
  * @tjType app.waitOnBranch
  * @tjBlock gitSync
@@ -342,9 +342,8 @@ export const listAppsOnBranchViaAPI = (branchId, type = "front-end") =>
 
 /**
  * Rename an app on a branch the way the dashboard does: name + the current
- * editing version (frontend/src/HomePage/HomePage.jsx:478-489). App metadata is
- * branch-scoped, so `branch_id` is required in multi-branch mode
- * (server/src/modules/apps/service.ts:387). Without `editingVersionId` the server
+ * editing version. App metadata is
+ * branch-scoped, so `branch_id` is required in multi-branch mode. Without `editingVersionId` the server
  * renames the newest version row, which may not be the editing draft.
  *
  * @tjType app.attemptRename
@@ -365,7 +364,6 @@ export const deleteAppOnBranchViaAPI = (appId, branchId) => cy.apiDeleteBranchAp
 
 /**
  * POST an editor push without asserting. Body mirrors the app builder's commit
- * (frontend/ee/modules/Appbuilder/components/GitSyncManager/GitSyncModal.jsx `appGitPush`).
  *
  * @tjType app.attemptPush
  * @tjBlock gitSync
@@ -420,7 +418,6 @@ export const seedPushedAppViaAPI = ({ branch, appName, fixture, commitMessage = 
 /**
  * Global data source on a branch, read for one environment: options are
  * `{ <key>: { value, encrypted, credential_id? } }`.
- * source: server/src/modules/data-sources/controller.ts:45-53, :119-129
  *
  * @tjType dataSource.getOnBranch
  * @tjBlock gitSync
@@ -444,7 +441,7 @@ export const getDataSourceOnBranchViaAPI = (name, branchId, envName) =>
 /**
  * Change option values of a data source for one environment on a branch, the way the
  * data source form saves: every current option is sent back (encrypted values left
- * empty keep their stored credential — server/src/modules/data-sources/util.service.ts:918-952).
+ * empty keep their stored credential).
  *
  * @tjType dataSource.updateOnBranch
  * @tjBlock gitSync

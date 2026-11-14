@@ -6,7 +6,7 @@ import { pollUntil } from "Support/utils/platform/gitSync/poll";
  * Isolation model: every spec works under its own ref prefix (see `runPrefix`)
  * and its own base branch, so specs never reset a shared branch or delete
  * refs they did not create. Auth is a GitHub App installation token minted by
- * the `gitHubAppToken` task (cypress/config/gitHubAppToken.js); repo comes from
+ * the `gitHubAppToken` task; repo comes from
  * GITHUB_REPO_OWNER / GITHUB_REPO_NAME.
  *
  * Every call goes through `ghRequest` with failOnStatusCode:false so a failed

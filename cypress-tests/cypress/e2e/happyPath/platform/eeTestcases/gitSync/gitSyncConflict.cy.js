@@ -1,28 +1,28 @@
 import { gitSyncSelectors as GS } from "Selectors/platform/gitSyncSelectors";
-import { gitSyncText } from "Texts/platform/gitSync";
-import {
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
-  getAppOnBranchViaAPI,
-  listAppsOnBranchViaAPI,
-  seedPushedAppViaAPI,
-} from "Support/utils/platform/gitSync/gitSyncSeed";
-import {
-  createBranchViaAPI,
-  getBranchViaAPI,
-  waitForPullToFinish,
-} from "Support/utils/platform/gitSync/workspaceBranch";
 import {
   getBranchHeadViaAPI,
   mergeBranchViaAPI,
   readRepoJsonViaAPI,
 } from "Support/utils/platform/gitSync/gitHubRepo";
-import { visitGitSyncPage, pullWorkspaceViaUI } from "Support/utils/platform/gitSync/gitSyncUI";
 import {
-  setupPreGitAppsSpec,
   getAppSyncStateViaAPI,
+  setupPreGitAppsSpec,
   syncAppConflictFromGitRemoteViaUI,
 } from "Support/utils/platform/gitSync/gitSyncResolve";
+import {
+  getAppOnBranchViaAPI,
+  listAppsOnBranchViaAPI,
+  loginToGitSyncSpec,
+  seedPushedAppViaAPI,
+  teardownGitSyncSpec,
+} from "Support/utils/platform/gitSync/gitSyncSeed";
+import { pullWorkspaceViaUI, visitGitSyncPage } from "Support/utils/platform/gitSync/gitSyncUI";
+import {
+  createBranchViaAPI,
+  getBranchViaAPI,
+  waitForPullToFinish,
+} from "Support/utils/platform/gitSync/workspaceBranch";
+import { gitSyncText } from "Texts/platform/gitSync";
 
 // The local app is created before git is connected, since the multi-branch default branch rejects app creation.
 describe("Git Sync — Pull Name Conflict", { retries: 0 }, () => {

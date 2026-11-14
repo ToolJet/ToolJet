@@ -5,12 +5,10 @@ import { gitSyncText } from "Texts/platform/gitSync";
  * Dashboard-level git sync UI helpers (branch dropdown, create/switch modals,
  * workspace commit/pull modal). The header git controls render only on
  * `/<ws>`, `/data-sources`, `/modules`, `/workflows` for admins and builders
- * (frontend/src/_ui/Header/index.jsx:84-88, 180-198).
  */
 
 /**
  * Visit a workspace page with the branch selected through `?branch=`
- * (source of truth for the active branch: frontend/src/_helpers/active-branch.js).
  *
  * @tjType gitSyncUI.visit
  * @tjBlock gitSync
@@ -86,7 +84,7 @@ export const commitWorkspaceViaUI = (message) => {
 
 /**
  * Open the dashboard Pull modal and pull the current branch. The update check
- * runs when the modal opens (frontend/src/_ui/WorkspaceGitSyncModal/index.jsx:91).
+ * runs when the modal opens.
  *
  * @tjType gitSyncUI.pullWorkspace
  * @tjBlock gitSync
@@ -99,7 +97,7 @@ export const pullWorkspaceViaUI = () => {
   cy.get(GS.pullButton, { timeout: 30000 }).should("be.enabled").click();
 };
 
-// Provider modal inputs have no data-cy; placeholders are the stable hook (GithubHTTPSModal.jsx:861-973).
+// Provider modal inputs have no data-cy; placeholders are the stable hook.
 const githubField = {
   gitUrl: 'input[placeholder="Enter HTTPS repo URL"]',
   branchName: 'input[placeholder="Enter Branch Name"]',
@@ -121,7 +119,7 @@ const credentialFields = ["githubAppId", "githubAppInstallationId", "githubAppPr
  */
 export const openGithubConfigModal = (ws) => {
   cy.visit(`/${ws.workspaceSlug}/workspace-settings/configure-git`, { redirectionLimit: 20 });
-  // The card's edit icon stays visibility:hidden until licence access loads (RepositoryConnections.jsx:214).
+  // The card's edit icon stays visibility:hidden until licence access loads.
   cy.get('[data-cy="github-edit-icon"]', { timeout: 30000 }).should(($img) => {
     expect($img[0].style.visibility, "provider card enabled").to.not.equal("hidden");
   });
@@ -266,7 +264,6 @@ export const pullCommitInEditorViaUI = () => {
  */
 export const runWorkflowAndReadNodeOutputViaUI = (nodeName) => {
   const node = nodeName.toLowerCase();
-  // source: frontend/src/_services/workflow_executions.service.js triggerEditor
   cy.intercept("POST", "**/api/workflow_executions/*/trigger").as("workflowRun");
   cy.get(GS.workflowRunButton, { timeout: 60000 }).should("be.enabled").click();
   cy.wait("@workflowRun", { timeout: 60000 }).its("response.statusCode").should("be.oneOf", [200, 201]);
@@ -308,7 +305,7 @@ export const openWidgetInspectorViaUI = (widgetName) => {
   cy.contains(".config-handle", widgetName).should("be.visible").click();
 };
 
-// ModuleViewer Version has no data-cy (ModuleViewerInspector.jsx:373) and reads as hidden when locked.
+// ModuleViewer Version has no data-cy and reads as hidden when locked.
 const moduleVersionField = () => cy.contains(".field", /^Version/, { timeout: 30000 }).first();
 
 /**

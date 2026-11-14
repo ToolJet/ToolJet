@@ -1,38 +1,37 @@
 import {
-  setupGitSyncSpec,
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
-  importCompleteFlowViaAPI,
-  pushCompleteFlowViaAPI,
-  getAppOnBranchViaAPI,
-  releaseSavedVersionViaAPI,
-} from "Support/utils/platform/gitSync/gitSyncSeed";
-import { waitForPullToFinish } from "Support/utils/platform/gitSync/workspaceBranch";
-import {
-  rewriteRepoFilesViaAPI,
-  waitForCommitMessageViaAPI,
-  waitForTagViaAPI,
-  deleteTagsByPrefixViaAPI,
-} from "Support/utils/platform/gitSync/gitHubRepo";
-import {
-  visitGitSyncPage,
-  pullWorkspaceViaUI,
-  openAppFromDashboardViaUI,
-  saveVersionViaUI,
-  commitAppViaUI,
-  pinModuleViewerVersionViaUI,
-  pinWorkflowQueryVersionViaUI,
-  verifyModuleViewerVersion,
-  verifyWorkflowQueryVersion,
-} from "Support/utils/platform/gitSync/gitSyncUI";
-import {
-  todoTitles,
   openAppPage,
+  todoTitles,
+  verifyModuleDraftViaUI,
   verifyPagesInEditor,
   verifyReleasedPages,
-  verifyModuleDraftViaUI,
   verifyWorkflowDraftViaUI,
 } from "Support/utils/platform/gitSync/completeFlow";
+import {
+  deleteTagsByPrefixViaAPI,
+  rewriteRepoFilesViaAPI,
+  waitForCommitMessageViaAPI
+} from "Support/utils/platform/gitSync/gitHubRepo";
+import {
+  getAppOnBranchViaAPI,
+  importCompleteFlowViaAPI,
+  loginToGitSyncSpec,
+  pushCompleteFlowViaAPI,
+  releaseSavedVersionViaAPI,
+  setupGitSyncSpec,
+  teardownGitSyncSpec,
+} from "Support/utils/platform/gitSync/gitSyncSeed";
+import {
+  commitAppViaUI,
+  openAppFromDashboardViaUI,
+  pinModuleViewerVersionViaUI,
+  pinWorkflowQueryVersionViaUI,
+  pullWorkspaceViaUI,
+  saveVersionViaUI,
+  verifyModuleViewerVersion,
+  verifyWorkflowQueryVersion,
+  visitGitSyncPage,
+} from "Support/utils/platform/gitSync/gitSyncUI";
+import { waitForPullToFinish } from "Support/utils/platform/gitSync/workspaceBranch";
 
 // Single-branch mode: everything happens on the default branch, commits go straight to it on GitHub.
 describe("Git Sync — Complete Flow (Single Branch)", { retries: 0 }, () => {

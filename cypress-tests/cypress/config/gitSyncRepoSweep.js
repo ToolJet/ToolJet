@@ -1,7 +1,7 @@
 /**
  * Once per `cypress run`, before the first spec: delete what earlier runs left on the shared
  * git sync test repo. Only refs older than STALE_AFTER_MS go, so a concurrent run keeps its own.
- * - branches `gs-<specKey>-<base36 time>…` (see runPrefix in support/utils/platform/gitSync/gitHubRepo.js)
+ * - branches `gs-<specKey>-<base36 time>…`
  * - tags whose commit is older than the cut-off (tags are `<co_relation_id>/<version>` and carry no time)
  * A failed sweep is logged and never fails the run.
  */

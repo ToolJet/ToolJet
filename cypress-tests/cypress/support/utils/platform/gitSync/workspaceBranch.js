@@ -6,10 +6,9 @@ import {
 
 /**
  * ToolJet workspace-branch API (`/api/workspace-branches/*`).
- * source: server/src/modules/workspace-branches/controller.ts
  *
  * Branch create / delete / pull are enqueued on `git-sync-queue` and only run
- * on a WORKER=true process (server/src/modules/workspace-branches/module.ts:83),
+ * on a WORKER=true process,
  * so every mutating helper here waits for the resulting state.
  */
 
@@ -18,7 +17,7 @@ const normalizeBranch = (b) => ({
   name: b.name ?? b.branch_name,
   isDefault: b.is_default ?? b.isDefault ?? false,
   lastSyncedCommit: b.last_synced_commit ?? b.lastSyncedCommit ?? null,
-  // Category tree SHAs, stored per category on a clean pull (workspace_branch.entity.ts:36-53).
+  // Category tree SHAs, stored per category on a clean pull.
   appsGitTreeSha: b.apps_git_tree_sha ?? b.appsGitTreeSha ?? null,
   modulesGitTreeSha: b.modules_git_tree_sha ?? b.modulesGitTreeSha ?? null,
   dataSourcesGitTreeSha: b.data_sources_git_tree_sha ?? b.dataSourcesGitTreeSha ?? null,
@@ -168,10 +167,8 @@ export const attemptPullWorkspaceViaAPI = (branchId) =>
 
 /**
  * Pull `branch` from git and wait until ToolJet has recorded the remote head
- * as its last synced commit (set when the pull job finishes —
- * server/ee/workspace-branches/service.ts `lastSyncedCommit`). When the remote
+ * as its last synced commit (set when the pull job finishes). When the remote
  * head has not moved the server skips the pull and answers `{ upToDate: true }`
- * (server/ee/workspace-branches/service.ts:1056-1058).
  *
  * @tjType workspaceBranch.pull
  * @tjBlock gitSync

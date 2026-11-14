@@ -1,22 +1,22 @@
+import { listGitResources } from "Support/utils/platform/gitSync/gitRepoReader";
 import {
-  setupGitSyncSpec,
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
-  getAppOnBranchViaAPI,
-  listAppsOnBranchViaAPI,
-  seedPushedAppViaAPI,
-  pushAppViaAPI,
-  mergeToDefaultAndPullViaAPI,
   attemptRenameAppViaAPI,
   deleteAppOnBranchViaAPI,
+  getAppOnBranchViaAPI,
+  listAppsOnBranchViaAPI,
+  loginToGitSyncSpec,
+  mergeToDefaultAndPullViaAPI,
+  pushAppViaAPI,
+  seedPushedAppViaAPI,
+  setupGitSyncSpec,
+  teardownGitSyncSpec,
   waitForAppOnBranchViaAPI,
 } from "Support/utils/platform/gitSync/gitSyncSeed";
+import { pollUntil } from "Support/utils/platform/gitSync/poll";
 import {
   createBranchViaAPI,
   pullWorkspaceViaAPI,
 } from "Support/utils/platform/gitSync/workspaceBranch";
-import { listGitResources } from "Support/utils/platform/gitSync/gitRepoReader";
-import { pollUntil } from "Support/utils/platform/gitSync/poll";
 
 describe("Git Sync — Push and Pull", { retries: 0 }, () => {
   let ctx;
@@ -97,7 +97,7 @@ describe("Git Sync — Push and Pull", { retries: 0 }, () => {
         .then((branch2) =>
           waitForAppOnBranchViaAPI(branch2.id, appName).then((app) => {
             deleteAppOnBranchViaAPI(app.id, branch2.id);
-            // The deletion is committed by a queued job (server/ee/workspace-branches/deletion-commit.listener.ts).
+            // The deletion is committed by a queued job.
             pollUntil(
               () => listGitResources(branch2.name),
               ({ apps: dirs }) => !dirs.includes(appName),

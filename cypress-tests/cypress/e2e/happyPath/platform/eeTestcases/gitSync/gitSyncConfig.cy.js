@@ -1,24 +1,23 @@
-import { gitSyncText } from "Texts/platform/gitSync";
 import {
-  setupGitSyncSpec,
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
   createPlainWorkspaceViaAPI,
+  loginToGitSyncSpec,
+  setupGitSyncSpec,
+  teardownGitSyncSpec,
 } from "Support/utils/platform/gitSync/gitSyncSeed";
 import {
-  githubConfigPayload,
-  getGitSyncStatusViaAPI,
   attemptTestConnectionViaAPI,
+  getGitSyncStatusViaAPI,
+  githubConfigPayload,
   setBranchingViaAPI,
 } from "Support/utils/platform/gitSync/gitSyncSetup";
-import { listBranchesViaAPI } from "Support/utils/platform/gitSync/workspaceBranch";
-import { pollUntil } from "Support/utils/platform/gitSync/poll";
 import {
-  openGithubConfigModal,
   fillGithubConfigViaUI,
+  openGithubConfigModal,
 } from "Support/utils/platform/gitSync/gitSyncUI";
+import { pollUntil } from "Support/utils/platform/gitSync/poll";
+import { listBranchesViaAPI } from "Support/utils/platform/gitSync/workspaceBranch";
+import { gitSyncText } from "Texts/platform/gitSync";
 
-// source: frontend/ee/modules/WorkspaceSettings/pages/GitSync/providers/GithubHTTPS/GithubHTTPSModal.jsx
 const SAVE = '[data-cy="save-config-button"]';
 const TEST_CONNECTION = '[data-cy="test-connection-button"]';
 const DELETE_CONFIG = '[data-cy="delete-config-button"]';

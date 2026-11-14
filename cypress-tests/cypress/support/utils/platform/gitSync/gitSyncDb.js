@@ -3,7 +3,6 @@
  * is_synced / is_stub / git_tree_sha). Needs `app_db` in cypress env, so it works
  * locally and in pr-qa but not against a hosted instance; keep DB asserts in
  * these helpers so UI flows still run without DB access.
- * source: server/src/entities/app_version.entity.ts (co_relation_id, is_stub, branch_id, git_tree_sha, is_synced)
  */
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -19,7 +18,6 @@ const runQuery = (sql) => cy.task("dbConnection", { dbconfig: dbConfig(), sql })
  * `branchId` is omitted), oldest first.
  * A first pull stores lazy stub rows (is_stub=true, git_tree_sha = tree of `apps/<name>`);
  * opening the app in the editor hydrates them (is_stub=false)
- * (server/ee/platform-git-sync/pull.service.ts buildAppVersionInsert / hydrateStubApp).
  *
  * @tjType gitSyncDb.versionSyncState
  * @tjBlock gitSync

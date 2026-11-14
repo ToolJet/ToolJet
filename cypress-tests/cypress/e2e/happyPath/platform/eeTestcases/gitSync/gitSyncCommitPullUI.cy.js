@@ -1,23 +1,4 @@
 import { gitSyncSelectors as GS } from "Selectors/platform/gitSyncSelectors";
-import { gitSyncText } from "Texts/platform/gitSync";
-import {
-  setupGitSyncSpec,
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
-  createAppOnBranchViaAPI,
-  getAppOnBranchViaAPI,
-  importFixtureAppViaAPI,
-  listAppsOnBranchViaAPI,
-  pushAppViaAPI,
-  mergeToDefaultAndPullViaAPI,
-  getDataSourceOnBranchViaAPI,
-  updateDataSourceOnBranchViaAPI,
-} from "Support/utils/platform/gitSync/gitSyncSeed";
-import {
-  createBranchViaAPI,
-  getBranchViaAPI,
-  pushWorkspaceViaAPI,
-} from "Support/utils/platform/gitSync/workspaceBranch";
 import {
   getBranchHeadViaAPI,
   getTreeShaViaAPI,
@@ -26,13 +7,32 @@ import {
 } from "Support/utils/platform/gitSync/gitHubRepo";
 import { listGitResources, readDataSourceFromGit } from "Support/utils/platform/gitSync/gitRepoReader";
 import { getVersionSyncStateViaDB } from "Support/utils/platform/gitSync/gitSyncDb";
+import {
+  createAppOnBranchViaAPI,
+  getAppOnBranchViaAPI,
+  getDataSourceOnBranchViaAPI,
+  importFixtureAppViaAPI,
+  listAppsOnBranchViaAPI,
+  loginToGitSyncSpec,
+  mergeToDefaultAndPullViaAPI,
+  pushAppViaAPI,
+  setupGitSyncSpec,
+  teardownGitSyncSpec,
+  updateDataSourceOnBranchViaAPI,
+} from "Support/utils/platform/gitSync/gitSyncSeed";
+import {
+  commitWorkspaceViaUI,
+  openAppFromDashboardViaUI,
+  pullWorkspaceViaUI,
+  visitGitSyncPage,
+} from "Support/utils/platform/gitSync/gitSyncUI";
 import { pollUntil } from "Support/utils/platform/gitSync/poll";
 import {
-  visitGitSyncPage,
-  commitWorkspaceViaUI,
-  pullWorkspaceViaUI,
-  openAppFromDashboardViaUI,
-} from "Support/utils/platform/gitSync/gitSyncUI";
+  createBranchViaAPI,
+  getBranchViaAPI,
+  pushWorkspaceViaAPI,
+} from "Support/utils/platform/gitSync/workspaceBranch";
+import { gitSyncText } from "Texts/platform/gitSync";
 
 const FIXTURE = "gitSync/fixture-app.json";
 // The fixture's REST data source URL is {{constants.API_BASE_URL}}.
@@ -105,7 +105,6 @@ describe("Git Sync — Commit and Pull (UI)", { retries: 0 }, () => {
         listGitResources(branch.name).then(({ dataSources }) => {
           expect(dataSources, "data source committed").to.include("restapi");
         });
-        // source: server/ee/git-sync/workspace-git-sync-adapter.ts:683-698 (options keyed by environment name)
         readDataSourceFromGit(branch.name, "restapi").then((ds) => {
           expect(JSON.stringify(ds.options.staging), "staging option committed").to.include(stagingUrl);
           expect(JSON.stringify(ds.options.development), "development option untouched").to.not.include(stagingUrl);
@@ -176,9 +175,8 @@ describe("Git Sync — Commit and Pull (UI)", { retries: 0 }, () => {
               cy.wrap(appTreeSha, { log: false }).as("appTreeSha");
             });
             openAppFromDashboardViaUI(ctx, ctx.baseBranch, appName);
-            // A synced app on the locked default offers Pull commit, not Commit (LifecycleCTAButton.jsx).
+            // A synced app on the locked default offers Pull commit, not Commit.
             cy.get(GS.lifecycleCta).should("contain.text", "Pull commit");
-            // source: cypress/fixtures/gitSync/fixture-app.json (query_status shows the query result)
             cy.get('[data-cy="draggable-widget-query_status"]', { timeout: 30000 }).should(
               "contain.text",
               "Query completed",

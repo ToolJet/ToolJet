@@ -1,45 +1,45 @@
 import { gitSyncSelectors as GS } from "Selectors/platform/gitSyncSelectors";
 import {
-  setupGitSyncSpec,
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
-  importCompleteFlowViaAPI,
-  pushCompleteFlowViaAPI,
-  getAppOnBranchViaAPI,
-  releaseSavedVersionViaAPI,
-} from "Support/utils/platform/gitSync/gitSyncSeed";
+  openAppPage,
+  todoTitles,
+  verifyModuleDraftViaUI,
+  verifyPagesInEditor,
+  verifyReleasedPages,
+  verifyWorkflowDraftViaUI,
+} from "Support/utils/platform/gitSync/completeFlow";
 import {
-  createBranchViaAPI,
-  pullWorkspaceViaAPI,
-  waitForPullToFinish,
-} from "Support/utils/platform/gitSync/workspaceBranch";
-import {
+  deleteTagsByPrefixViaAPI,
   getBranchHeadViaAPI,
   mergeBranchViaAPI,
   rewriteRepoFilesViaAPI,
   waitForCommitMessageViaAPI,
   waitForTagViaAPI,
-  deleteTagsByPrefixViaAPI,
 } from "Support/utils/platform/gitSync/gitHubRepo";
 import {
-  visitGitSyncPage,
-  pullWorkspaceViaUI,
-  openAppFromDashboardViaUI,
-  saveVersionViaUI,
+  getAppOnBranchViaAPI,
+  importCompleteFlowViaAPI,
+  loginToGitSyncSpec,
+  pushCompleteFlowViaAPI,
+  releaseSavedVersionViaAPI,
+  setupGitSyncSpec,
+  teardownGitSyncSpec,
+} from "Support/utils/platform/gitSync/gitSyncSeed";
+import {
   commitAppViaUI,
+  openAppFromDashboardViaUI,
   pinModuleViewerVersionViaUI,
   pinWorkflowQueryVersionViaUI,
+  pullWorkspaceViaUI,
+  saveVersionViaUI,
   verifyModuleViewerVersion,
   verifyWorkflowQueryVersion,
+  visitGitSyncPage,
 } from "Support/utils/platform/gitSync/gitSyncUI";
 import {
-  todoTitles,
-  openAppPage,
-  verifyPagesInEditor,
-  verifyReleasedPages,
-  verifyModuleDraftViaUI,
-  verifyWorkflowDraftViaUI,
-} from "Support/utils/platform/gitSync/completeFlow";
+  createBranchViaAPI,
+  pullWorkspaceViaAPI,
+  waitForPullToFinish,
+} from "Support/utils/platform/gitSync/workspaceBranch";
 
 describe("Git Sync — Complete Flow (Multi Branch)", { retries: 0 }, () => {
   let ctx;

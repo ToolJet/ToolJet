@@ -120,7 +120,7 @@ Cypress.Commands.add("apiExportBranchApp", (appId, versionId, branchId) =>
  * @tjUsage cy.apiImportBranchApp(exported, appName, branch.id).then((res) => res.body.imports.app[0].id)
  */
 Cypress.Commands.add("apiImportBranchApp", (exported, appName, branchId) =>
-  // ?branch_id overrides body.branchId (import-export-resources/controller.ts:45-47), so send both.
+  // ?branch_id overrides body.branchId, so send both.
   tjRequest("POST", "/v2/resources/import", {
     qs: { branch_id: branchId },
     body: {

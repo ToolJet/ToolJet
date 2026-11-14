@@ -1,20 +1,20 @@
+import { listGitResources } from "Support/utils/platform/gitSync/gitRepoReader";
 import {
-  setupGitSyncSpec,
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
+  attemptRenameAppViaAPI,
   createAppOnBranchViaAPI,
+  deleteAppOnBranchViaAPI,
   getAppOnBranchViaAPI,
   listAppsOnBranchViaAPI,
-  pushAppViaAPI,
+  loginToGitSyncSpec,
   mergeToDefaultAndPullViaAPI,
+  pushAppViaAPI,
+  setupGitSyncSpec,
+  teardownGitSyncSpec,
   waitForAppOnBranchViaAPI,
-  attemptRenameAppViaAPI,
-  deleteAppOnBranchViaAPI,
 } from "Support/utils/platform/gitSync/gitSyncSeed";
-import { createBranchViaAPI } from "Support/utils/platform/gitSync/workspaceBranch";
-import { listGitResources } from "Support/utils/platform/gitSync/gitRepoReader";
-import { pollUntil } from "Support/utils/platform/gitSync/poll";
 import { visitGitSyncPage } from "Support/utils/platform/gitSync/gitSyncUI";
+import { pollUntil } from "Support/utils/platform/gitSync/poll";
+import { createBranchViaAPI } from "Support/utils/platform/gitSync/workspaceBranch";
 
 const CARD = '[data-cy$="-card"]';
 
@@ -56,7 +56,6 @@ describe("Git Sync — Modules", { retries: 0 }, () => {
 
   // Visit the default branch's Modules page once its list has loaded.
   const visitModulesOnDefault = () => {
-    // source: frontend/src/_services/app.service.js:42 (dashboard list request)
     cy.intercept("GET", "**/api/apps?page=*").as("dashboardList");
     visitGitSyncPage(ctx, { branch: ctx.baseBranch, page: "modules" });
     cy.wait("@dashboardList");
@@ -143,7 +142,7 @@ describe("Git Sync — Modules", { retries: 0 }, () => {
       .then((branch2) =>
         waitForAppOnBranchViaAPI(branch2.id, moduleName, "module").then((module) => {
           deleteAppOnBranchViaAPI(module.id, branch2.id);
-          // The deletion is committed by a queued job (server/ee/workspace-branches/deletion-commit.listener.ts).
+          // The deletion is committed by a queued job.
           pollUntil(
             () => listGitResources(branch2.name),
             ({ modules }) => !modules.includes(moduleName),

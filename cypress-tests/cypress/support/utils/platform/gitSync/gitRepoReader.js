@@ -5,8 +5,6 @@ import {
 
 /**
  * The only place that knows the git repo layout ToolJet writes.
- * source: server/ee/app-git/shared/app-git-file-operations.util.ts:44-66 (top folders + APP_RESOURCE_DIRS)
- * source: server/ee/git-sync/data-source-fs.util.ts:8-32 (data-sources/[<folder>/]<name>/data-source.json)
  *
  * `.meta/*.json` is no longer written (meta-free enumeration via app/app.json),
  * so nothing here reads it.

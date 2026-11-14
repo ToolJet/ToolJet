@@ -16,9 +16,7 @@ import { configureGitSyncViaAPI } from "Support/utils/platform/gitSync/gitSyncSe
 /**
  * Isolated spec workspace where `appNames` are created while git sync is OFF, then
  * GitHub is connected. A git-off app lands on the workspace's default branch with a
- * co_relation_id (server/src/modules/apps/service.ts:108-111, util.service.ts:419-422)
- * and is_synced=false; connecting keeps the same default-branch row and only renames it
- * (server/ee/git-sync/providers/github-https/util.service.ts:514-520).
+ * co_relation_id and is_synced=false; connecting keeps the same default-branch row and only renames it.
  * Pair with `teardownGitSyncSpec()` in `after()`.
  *
  * @tjType gitSyncSpec.setupWithPreGitApps
@@ -49,8 +47,7 @@ export const setupPreGitAppsSpec = ({ specKey, appNames, mode = "multi" }) =>
 
 /**
  * The dashboard's per-app sync flag: true once the app's default-branch DRAFT
- * (version_type=version) has is_synced=true (server/src/modules/apps/util.service.ts
- * `stampIsAppSynced`). Drives the red unsynced icon (frontend/src/HomePage/AppCard.jsx:331).
+ * (version_type=version) has is_synced=true. Drives the red unsynced icon.
  *
  * @tjType app.syncStateOnBranch
  * @tjBlock gitSync
@@ -69,7 +66,6 @@ export const getAppSyncStateViaAPI = (appId, branchId) =>
  * "Push unsynced apps to git" modal. Does not wait for the result — callers assert
  * the toast. The modal creates the branch off the default branch, pushes the app's
  * default-branch draft, pulls the new branch and switches to it
- * (frontend/ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal.jsx:155-232).
  *
  * @tjType gitSyncUI.pushUnsyncedApp
  * @tjBlock gitSync
@@ -93,7 +89,7 @@ export const pushUnsyncedAppViaUI = (appName, branchName) => {
 /**
  * In the open pull conflict modal, tick the syncable row for `appName` and press
  * "Sync selected". The modal then calls /workspace-branches/resolve-conflicts and
- * reloads the page (frontend/src/_ui/WorkspaceGitSyncModal/index.jsx:293-309).
+ * reloads the page.
  *
  * @tjType gitSyncUI.syncConflictFromRemote
  * @tjBlock gitSync

@@ -1,22 +1,22 @@
 import { gitSyncSelectors as GS } from "Selectors/platform/gitSyncSelectors";
-import { gitSyncText } from "Texts/platform/gitSync";
-import {
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
-  getAppOnBranchViaAPI,
-} from "Support/utils/platform/gitSync/gitSyncSeed";
-import { pullWorkspaceViaAPI } from "Support/utils/platform/gitSync/workspaceBranch";
 import {
   mergeBranchViaAPI,
   readRepoJsonViaAPI,
   waitForCommitMessageViaAPI,
 } from "Support/utils/platform/gitSync/gitHubRepo";
-import { visitGitSyncPage, openAppFromDashboardViaUI } from "Support/utils/platform/gitSync/gitSyncUI";
 import {
-  setupPreGitAppsSpec,
   getAppSyncStateViaAPI,
   pushUnsyncedAppViaUI,
+  setupPreGitAppsSpec,
 } from "Support/utils/platform/gitSync/gitSyncResolve";
+import {
+  getAppOnBranchViaAPI,
+  loginToGitSyncSpec,
+  teardownGitSyncSpec,
+} from "Support/utils/platform/gitSync/gitSyncSeed";
+import { openAppFromDashboardViaUI, visitGitSyncPage } from "Support/utils/platform/gitSync/gitSyncUI";
+import { pullWorkspaceViaAPI } from "Support/utils/platform/gitSync/workspaceBranch";
+import { gitSyncText } from "Texts/platform/gitSync";
 
 // Pre-git apps stay unsynced until pushed, merged and pulled back; the push alone doesn't sync them.
 describe("Git Sync — Unsynced Apps", { retries: 0 }, () => {
@@ -45,7 +45,6 @@ describe("Git Sync — Unsynced Apps", { retries: 0 }, () => {
       expect(state, "pre-git app listed on the default branch").to.not.equal(null);
       expect(state.isAppSynced, "pre-git app is unsynced").to.equal(false);
     });
-    // source: server/src/modules/apps/util.service.ts:1678-1688 (unsynced drafts are exempt from the default-branch lock)
     getAppOnBranchViaAPI(appId, ctx.defaultBranch.id).then((app) => {
       expect(app.should_freeze_editor, "editor not frozen for an unsynced app").to.equal(false);
     });

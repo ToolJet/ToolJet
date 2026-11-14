@@ -1,20 +1,20 @@
 import { gitSyncSelectors as GS } from "Selectors/platform/gitSyncSelectors";
+import { getBranchHeadViaAPI, getHeadCommitViaAPI } from "Support/utils/platform/gitSync/gitHubRepo";
+import { listGitResources } from "Support/utils/platform/gitSync/gitRepoReader";
+import { getVersionSyncStateViaDB } from "Support/utils/platform/gitSync/gitSyncDb";
 import {
-  setupGitSyncSpec,
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
   createAppOnBranchViaAPI,
   getAppOnBranchViaAPI,
+  loginToGitSyncSpec,
   pushAppViaAPI,
+  setupGitSyncSpec,
+  teardownGitSyncSpec,
 } from "Support/utils/platform/gitSync/gitSyncSeed";
+import { openBranchPopover, visitGitSyncPage } from "Support/utils/platform/gitSync/gitSyncUI";
 import {
   listBranchesViaAPI,
   pullWorkspaceViaAPI,
 } from "Support/utils/platform/gitSync/workspaceBranch";
-import { getBranchHeadViaAPI, getHeadCommitViaAPI } from "Support/utils/platform/gitSync/gitHubRepo";
-import { getVersionSyncStateViaDB } from "Support/utils/platform/gitSync/gitSyncDb";
-import { listGitResources } from "Support/utils/platform/gitSync/gitRepoReader";
-import { visitGitSyncPage, openBranchPopover } from "Support/utils/platform/gitSync/gitSyncUI";
 
 // Branching off: only the default branch exists, it is editable, and commits go straight to it.
 describe("Git Sync — Single Branch Mode", { retries: 0 }, () => {
@@ -45,7 +45,6 @@ describe("Git Sync — Single Branch Mode", { retries: 0 }, () => {
     cy.get(GS.wsPullButton).should("be.visible");
     cy.get(GS.wsCommitButton).should("be.visible");
     openBranchPopover();
-    // source: frontend/src/_ui/WorkspaceBranchDropdown/index.jsx (enable-branching-btn)
     cy.get(GS.enableBranchingBtn).should("be.visible");
     cy.get(GS.wsCreateBranchBtn).should("not.exist");
   });

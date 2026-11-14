@@ -1,6 +1,5 @@
 /**
  * Polling primitive for git sync state. Git sync work runs on background jobs
- * (branch create / delete / pull — server/ee/workspace-branches/git-sync-queue.service.ts)
  * and on GitHub, so tests wait for real state instead of fixed cy.wait() delays.
  */
 

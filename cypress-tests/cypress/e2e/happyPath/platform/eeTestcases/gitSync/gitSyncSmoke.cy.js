@@ -1,19 +1,19 @@
 import { fake } from "Fixtures/fake";
+import { readResourceFromGit } from "Support/utils/platform/gitSync/gitRepoReader";
+import { getVersionSyncStateViaDB } from "Support/utils/platform/gitSync/gitSyncDb";
 import {
-  setupGitSyncSpec,
-  loginToGitSyncSpec,
-  teardownGitSyncSpec,
-  seedPushedAppViaAPI,
-  mergeToDefaultAndPullViaAPI,
   listAppsOnBranchViaAPI,
+  loginToGitSyncSpec,
+  mergeToDefaultAndPullViaAPI,
+  seedPushedAppViaAPI,
+  setupGitSyncSpec,
+  teardownGitSyncSpec,
 } from "Support/utils/platform/gitSync/gitSyncSeed";
 import { getGitSyncStatusViaAPI } from "Support/utils/platform/gitSync/gitSyncSetup";
 import {
   createBranchViaAPI,
   listBranchesViaAPI,
 } from "Support/utils/platform/gitSync/workspaceBranch";
-import { readResourceFromGit } from "Support/utils/platform/gitSync/gitRepoReader";
-import { getVersionSyncStateViaDB } from "Support/utils/platform/gitSync/gitSyncDb";
 
 // Fast gate: config, branch jobs, push, and the merge → pull round trip on an isolated base branch.
 describe("Git Sync — Smoke", { retries: 0 }, () => {
@@ -62,7 +62,7 @@ describe("Git Sync — Smoke", { retries: 0 }, () => {
           expect(resource, "app folder in git").to.not.equal(null);
           expect(resource.app.id, "app.json id is the co_relation_id").to.equal(coRelationId);
         });
-        // A new branch app starts unsynced (server/src/modules/apps/util.service.ts:203-206); push flips it.
+        // A new branch app starts unsynced; push flips it.
         getVersionSyncStateViaDB({ appId, branchId: branch.id }).then((rows) => {
           const draft = rows.find((r) => r.id === versionId);
           expect(draft, "pushed branch draft").to.exist;
