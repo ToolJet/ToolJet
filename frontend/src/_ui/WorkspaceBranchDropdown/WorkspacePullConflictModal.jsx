@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Check, CircleCheck, Copy } from 'lucide-react';
 import cx from 'classnames';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { buildConflictReport } from './conflictReport';
 import '@/_styles/workspace-pull-conflict-modal.scss';
 
 const TYPE_ICON_MAP = {
@@ -60,6 +63,46 @@ function getConflictItemBadge(item, group) {
   if (item.status === 'on-branch')
     return { label: item.targetBranchName ? `On ${item.targetBranchName}` : 'On branch', variant: 'remote' };
   return { label: item.status, variant: item.status };
+}
+
+const TYPE_LABEL_MAP = {
+  app: 'App',
+  module: 'Module',
+  workflow: 'Workflow',
+  datasource: 'Data source',
+  folder: 'Folder',
+};
+
+// Modal row → report issue.
+function groupToReportIssue(group, { resolution, hideBadges }) {
+  const typeLabel = TYPE_LABEL_MAP[group.type] || group.type;
+  const fieldLabel = CONFLICT_SECTION_HEADER_MAP[`${group.type}-${group.conflictField}`] || group.label || typeLabel;
+  const value = group.conflictKey || group.conflicts?.[0]?.name;
+  const conflicts = group.conflicts || [];
+
+  if (group.conflictField === 'in_use') {
+    return {
+      issue: fieldLabel,
+      value,
+      details: 'Still used by the local app(s) listed below',
+      resolution,
+      resources: conflicts.map((c) => ({ type: 'App', name: c.name, id: c.coRelationId })),
+    };
+  }
+
+  const isInvalidName = group.conflictField === 'invalid_name';
+  return {
+    issue: isInvalidName ? `Invalid ${typeLabel.toLowerCase()} name` : `Duplicate ${fieldLabel.toLowerCase()}`,
+    value,
+    details: isInvalidName ? "Resource names cannot include '/'" : undefined,
+    resolution,
+    resources: conflicts.map((c) => ({
+      type: typeLabel,
+      name: c.name,
+      id: c.coRelationId,
+      origin: hideBadges || isInvalidName ? undefined : getConflictItemBadge(c, group).label,
+    })),
+  };
 }
 
 function MultiDraftSection({ resources }) {
@@ -196,10 +239,22 @@ export function PullConflictModal({
   multiDraftResources = [],
   context,
   onResolve,
+  // Defaults to the active branch.
+  branchName,
 }) {
   const [expandedManual, setExpandedManual] = useState(() => new Set());
   const [expandedSyncable, setExpandedSyncable] = useState(() => new Set([0]));
   const [selectedSyncable, setSelectedSyncable] = useState(() => new Set());
+  const currentBranchName = useWorkspaceBranchesStore((state) => state.currentBranch?.name);
+  // Copy error dialog state.
+  const [copiedReport, setCopiedReport] = useState(null);
+  const [reportFormat, setReportFormat] = useState('text');
+  const [copiedFormat, setCopiedFormat] = useState('text');
+  const [copyFailed, setCopyFailed] = useState(false);
+  const [justCopied, setJustCopied] = useState(false);
+  const justCopiedTimerRef = useRef(null);
+
+  useEffect(() => () => clearTimeout(justCopiedTimerRef.current), []);
 
   if (!show) return null;
 
@@ -262,6 +317,89 @@ export function PullConflictModal({
   );
   const manualInUseGroups = manualGroups.filter((g) => g.conflictField === 'in_use');
   const manualInvalidNameGroups = manualGroups.filter((g) => g.conflictField === 'invalid_name');
+
+  const action = (() => {
+    if (isBranchCreation) return 'Create branch';
+    if (isBranchSwitch) return 'Open branch';
+    if (isImport) return 'Import resources';
+    if (isPushNameConflict || isPushConflict) return 'Push resources';
+    return 'Pull branch';
+  })();
+
+  const buildReport = () => {
+    const manual = { resolution: 'Manual resolution required', hideBadges };
+    const sections = [
+      {
+        title: 'Apps with multiple draft versions',
+        issues: multiDraftResources.map((r) => ({
+          issue: 'Multiple draft versions',
+          value: r.name,
+          details: 'All resources must have exactly one draft version to pull from git',
+          resolution: 'Manual resolution required',
+          resources: [{ type: TYPE_LABEL_MAP[r.type] || r.type, name: r.name, id: r.coRelationId || r.id }],
+        })),
+      },
+      {
+        title: 'Duplicate data (requires manual resolution)',
+        issues: manualDuplicateGroups.map((g) => groupToReportIssue(g, manual)),
+      },
+      {
+        title: 'Still in use (requires manual resolution)',
+        issues: manualInUseGroups.map((g) => groupToReportIssue(g, manual)),
+      },
+      {
+        title: 'Invalid name (requires manual resolution)',
+        issues: manualInvalidNameGroups.map((g) => groupToReportIssue(g, manual)),
+      },
+      {
+        title: 'Duplicate data: Sync from git remote',
+        issues: syncableGroups.map((g) =>
+          groupToReportIssue(g, { resolution: 'Can be synced from git remote', hideBadges })
+        ),
+      },
+    ];
+    return buildConflictReport({ action, branchName: branchName || currentBranchName, sections });
+  };
+
+  const writeToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyFailed(false);
+      return true;
+    } catch {
+      setCopyFailed(true);
+      return false;
+    }
+  };
+
+  const handleCopyError = async () => {
+    const report = buildReport();
+    setCopiedReport(report);
+    setReportFormat('text');
+    setCopiedFormat('text');
+    setJustCopied(false);
+    await writeToClipboard(report.text);
+  };
+
+  const handleCopyAgain = async () => {
+    if (!(await writeToClipboard(copiedReport[reportFormat]))) return;
+    setCopiedFormat(reportFormat);
+    setJustCopied(true);
+    clearTimeout(justCopiedTimerRef.current);
+    justCopiedTimerRef.current = setTimeout(() => setJustCopied(false), 2500);
+  };
+
+  const closeCopiedReport = () => {
+    clearTimeout(justCopiedTimerRef.current);
+    setJustCopied(false);
+    setCopiedReport(null);
+  };
+
+  const copyAgainLabel = (() => {
+    if (justCopied) return 'Copied!';
+    if (!copyFailed && copiedFormat === reportFormat) return 'Copy';
+    return reportFormat === 'json' ? 'Copy as JSON' : 'Copy as text';
+  })();
 
   const toggleInSet = (setState, idx) => {
     setState((prev) => {
@@ -449,6 +587,17 @@ export function PullConflictModal({
           <ButtonSolid
             variant="tertiary"
             size="md"
+            className="conflict-copy-error-btn"
+            onClick={handleCopyError}
+            data-cy="conflict-copy-error-button"
+          >
+            <Copy size={14} color="var(--indigo9)" aria-hidden="true" />
+            Copy error
+          </ButtonSolid>
+
+          <ButtonSolid
+            variant="tertiary"
+            size="md"
             as="a"
             href="https://docs.tooljet.com/docs/beta/unique-constraint/"
             target="_blank"
@@ -471,6 +620,80 @@ export function PullConflictModal({
           )}
         </div>
       </div>
+
+      {copiedReport && (
+        <div className="conflict-report-overlay">
+          <div
+            className={`conflict-report-dialog${darkMode ? ' theme-dark dark-theme' : ''}`}
+            role="dialog"
+            aria-label="Copied error details"
+          >
+            <div className="conflict-report-header">
+              {copyFailed ? (
+                <SolidIcon name="warning" width="16" fill="var(--orange9)" />
+              ) : (
+                <CircleCheck size={16} color="var(--grass9)" aria-hidden="true" />
+              )}
+              <span className="conflict-report-title">
+                {copyFailed ? "Couldn't copy to clipboard" : 'Copied to clipboard'}
+              </span>
+              <button
+                type="button"
+                className="conflict-modal-close-btn"
+                onClick={closeCopiedReport}
+                aria-label="Close copied details"
+              >
+                <SolidIcon name="remove" width="16" fill="var(--slate11)" />
+              </button>
+            </div>
+
+            <div className="conflict-report-body">
+              <div className="conflict-report-toolbar">
+                <div className="conflict-report-format-toggle" role="group" aria-label="Format">
+                  {['text', 'json'].map((format) => (
+                    <button
+                      key={format}
+                      type="button"
+                      className={cx('conflict-report-format-btn', { 'is-active': reportFormat === format })}
+                      aria-pressed={reportFormat === format}
+                      onClick={() => setReportFormat(format)}
+                    >
+                      {format === 'json' ? 'JSON' : 'Text'}
+                    </button>
+                  ))}
+                </div>
+                <span className="conflict-report-note">
+                  {copyFailed
+                    ? 'Select the text below and copy it manually'
+                    : `Copied as ${copiedFormat === 'json' ? 'JSON' : 'text'}`}
+                </span>
+              </div>
+              <pre className="conflict-report-preview" tabIndex={0} data-cy="conflict-report-preview">
+                {copiedReport[reportFormat]}
+              </pre>
+            </div>
+
+            <div className="conflict-report-footer">
+              <ButtonSolid variant="tertiary" size="md" onClick={handleCopyAgain} data-cy="conflict-report-copy-button">
+                {justCopied ? (
+                  <Check size={14} color="var(--grass9)" aria-hidden="true" />
+                ) : (
+                  <Copy size={14} color="var(--indigo9)" aria-hidden="true" />
+                )}
+                {copyAgainLabel}
+              </ButtonSolid>
+              <ButtonSolid
+                variant="primary"
+                size="md"
+                onClick={closeCopiedReport}
+                data-cy="conflict-report-done-button"
+              >
+                Done
+              </ButtonSolid>
+            </div>
+          </div>
+        </div>
+      )}
     </div>,
     document.body
   );
