@@ -20,5 +20,7 @@ the library name, a `·`, and the component name, built by `packIdentity()`. Cus
 Component and Revision rows.
 When the names don't fit, the library name is cut first and the component name stays whole; the library keeps
 at least min(its full name, 40%), so a cut component name never takes more than 60% while the library is cut.
-This is CSS only (styles.scss): two hidden attr(title) copies size the library name, so keep its title equal to
-the name.
+This is CSS only (styles.scss): two hidden attr(data-name) copies size the library name, so keep its data-name equal
+to the name. A cut-off name shows in full in the Inspector's own tooltip (no native title).
+Native widgets (ToolJet UI 1.0 · display name) and module instances (Modules · module name, with the Lucide
+`Blocks` icon) get the same strip from `Inspector.jsx`, via `componentIdentity()` in the Inspector folder.

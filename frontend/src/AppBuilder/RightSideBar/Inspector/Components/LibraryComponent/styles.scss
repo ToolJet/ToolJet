@@ -66,7 +66,7 @@
 // at least min(its full name, 40% of the strip): once it is down to that, the component name is cut too, so it never
 // takes more than about 60% while the library is cut. A short library name is never cut, so a long component name may
 // then use the rest. CSS can't write min(max-content, 40%), so two hidden, zero-height copies of the library name
-// (attr(title)) size its box: ::before sets its full width and adds nothing to its minimum; ::after sets the minimum.
+// (attr(data-name)) size its box: ::before sets its full width and adds nothing to its minimum; ::after sets the minimum.
 .pack-identity-strip {
   container-type: inline-size;
   display: flex;
@@ -113,7 +113,7 @@
 
     &::before,
     &::after {
-      content: attr(title);
+      content: attr(data-name);
       grid-area: 1 / 1;
       height: 0;
       // clip, not hidden: a scroll container's minimum is 0, so hidden would drop the 40% floor.
