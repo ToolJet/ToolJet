@@ -42,6 +42,7 @@ const DynamicSelector = ({
   const getAllExposedValues = useStore((state) => state.getAllExposedValues);
   const getComponentNameIdMapping = useStore((state) => state.getComponentNameIdMapping);
   const getQueryNameIdMapping = useStore((state) => state.getQueryNameIdMapping);
+  const replaceIdsWithName = useStore((state) => state.replaceIdsWithName);
 
   const operationLabel = operation?.label || operation?.name || 'Fetch';
 
@@ -528,7 +529,8 @@ const DynamicSelector = ({
       const values = Array.isArray(currentValue) ? currentValue : [];
       return values.map((v) => {
         const found = fetchedData.find((opt) => String(opt.value) === String(v));
-        return found || { value: v, label: v };
+        const label = typeof v === 'string' ? replaceIdsWithName(v) : v;
+        return found || { value: v, label };
       });
     }
 
@@ -546,7 +548,7 @@ const DynamicSelector = ({
     // This handles the case where another user's selection is stored but not in current user's accessible options
     return {
       value: currentValue,
-      label: currentValue,
+      label: typeof currentValue === 'string' ? replaceIdsWithName(currentValue) : currentValue,
     };
   };
 
