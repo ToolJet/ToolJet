@@ -4,25 +4,27 @@ import FormData = require('form-data');
 import { buildUploadFormData } from './upload-form';
 import { parseApiErrorMessage } from '../api-error';
 import { ensureCompatible } from '../compatibility';
+import { DirectKind, directHeaders } from '../direct-credential';
 
 export class ApiClient {
   private readonly baseUrl: string;
 
   /**
-   * `apiToken` is a personal access token, or with `session` the ToolJet session token of the user an in-product build
-   * runs as (its MCP server has no personal token): then requests carry the session cookie and workspace instead.
+   * `apiToken` is a personal access token, or with `session` the ToolJet session token (or, `kind` 'delegation', the
+   * MCP OAuth delegation) of the user a build runs as (its MCP server has no personal token): then requests carry that
+   * credential and the workspace instead.
    */
   constructor(
     baseUrl: string,
     private readonly apiToken: string,
-    private readonly session?: { workspaceId: string }
+    private readonly session?: { workspaceId: string; kind?: DirectKind }
   ) {
     this.baseUrl = baseUrl.replace(/\/+$/, '');
   }
 
   private authHeaders(): Record<string, string> {
     return this.session
-      ? { Cookie: `tj_auth_token=${this.apiToken}`, 'tj-workspace-id': this.session.workspaceId }
+      ? directHeaders(this.session.kind ?? 'session', this.apiToken, this.session.workspaceId)
       : { Authorization: `Bearer ${this.apiToken}` };
   }
 

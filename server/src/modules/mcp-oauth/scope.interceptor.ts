@@ -5,7 +5,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
 import { FEATURE_KEY as SESSION_FEATURE } from '@modules/session/constants';
 import { FEATURE_KEY as CONFIG_FEATURE } from '@modules/configs/constants';
-import { patBundleOf, patCanAccess } from '@modules/personal-access-tokens/constants/scopes';
+import { PAT_BUNDLE, patBundleOf, patCanAccess } from '@modules/personal-access-tokens/constants/scopes';
 
 @Injectable()
 export class McpOAuthScopeInterceptor implements NestInterceptor {
@@ -48,7 +48,13 @@ export class McpOAuthScopeInterceptor implements NestInterceptor {
       request.method === 'GET' &&
       features.length === 1 &&
       features[0] === PLUGIN_FEATURE.GET_SPEC;
-    const bundle = readPluginSpec ? 'data' : patBundleOf(module);
+    // The library routes a workspace token may use (patCanAccess: a Code mode build uploads to its app's library) come
+    // with apps consent, as for a token; the module is in no bundle, so without this every one of them was refused.
+    const bundle = readPluginSpec
+      ? 'data'
+      : module === MODULES.CUSTOM_COMPONENT_LIBRARIES
+        ? PAT_BUNDLE.APPS
+        : patBundleOf(module);
     if (!bundle || !user.oauthScopes?.includes(bundle) || !features.every((item) => patCanAccess(module, item))) {
       throw new ForbiddenException('The AI connection was not authorized for this operation');
     }
