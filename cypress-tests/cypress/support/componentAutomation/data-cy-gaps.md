@@ -43,14 +43,16 @@ changes, so re-check before editing.
 
 ## Summary
 
-221 widget-specific gaps across 41 widgets, plus 15 cross-cutting items.
+263 widget-specific gaps across 46 widgets, plus 16 cross-cutting items.
 
 | Widget | Open gaps | Fixed |
 |---|---|---|
-| [Cross-cutting](#cross-cutting) | 15 | 0 |
+| [Cross-cutting](#cross-cutting) | 16 | 0 |
+| [AudioRecorder](#audiorecorder) | 9 | 0 |
 | [BoundedBox](#boundedbox) | 9 | 0 |
 | [ButtonGroupV2](#buttongroupv2) | 2 | 0 |
 | [Calendar](#calendar) | 9 | 0 |
+| [Camera](#camera) | 11 | 0 |
 | [Cascader](#cascader) | 8 | 0 |
 | [CircularProgressBar](#circularprogressbar) | 4 | 0 |
 | [CodeEditor](#codeeditor) | 5 | 0 |
@@ -72,11 +74,14 @@ changes, so re-check before editing.
 | [KeyValuePair](#keyvaluepair) | 15 | 0 |
 | [LibraryComponent](#librarycomponent) | 4 | 0 |
 | [Link](#link) | 5 | 0 |
+| [Map](#map) | 5 | 0 |
 | [Navigation](#navigation) | 11 | 0 |
 | [Pagination](#pagination) | 5 | 0 |
+| [PDF](#pdf) | 11 | 0 |
 | [PhoneInput](#phoneinput) | 9 | 0 |
 | [PopoverMenu](#popovermenu) | 10 | 0 |
 | [ProgressBar](#progressbar) | 5 | 0 |
+| [QrScanner](#qrscanner) | 6 | 0 |
 | [RadioButtonV2](#radiobuttonv2) | 4 | 0 |
 | [RichTextEditor](#richtexteditor) | 9 | 0 |
 | [Spinner](#spinner) | 1 | 0 |
@@ -89,7 +94,7 @@ changes, so re-check before editing.
 | [TimePicker](#timepicker) | 1 | 0 |
 | [TreeSelect](#treeselect) | 6 | 0 |
 | [VerticalDivider](#verticaldivider) | 1 | 0 |
-| **Total** | **236** | **0** |
+| **Total** | **279** | **0** |
 
 ## Cross-cutting
 
@@ -114,8 +119,25 @@ change, such as a call site that has to pass `dataCy`; those are listed in the w
 | DCY-X-13 | **CodeMirror 6 (`@uiw/react-codemirror`) renders the whole editor with no data-cy**: the `.cm-editor` root, `.cm-scroller`, `.cm-content` / `.cm-line`, the gutters and line numbers, fold markers and lint markers / tooltips. Every CodeMirror surface (the CodeEditor and JSONEditor widgets, and the inspector's multi-line CodeHinter that CustomComponent's Code field uses) is reached through a widget class plus `cm-*` classes. | `W:CodeEditor.jsx:119` (`extensions` at :127); `W:JSONEditor/JSONEditor.jsx:305` (`extensions` at :321); `frontend/src/AppBuilder/CodeEditor/MultiLineCodeEditor.jsx:364` (`extensions` at :373) | `` `... .cm-content` `` / `.cm-line` / `.cm-scroller` / `.cm-gutters` — `C:codeEditor.js:15-19`; `C:jsonEditor.js:16-31`; `C:customComponent.js:17,18` (rows DCY-CodeEditor-02..05, DCY-JSONEditor-02..07, DCY-CustomComponent-02) | Add one shared extension that takes the prefix and returns `EditorView.editorAttributes` (`` `${dc}-editor` ``) and `EditorView.contentAttributes` (`` `${dc}-content` ``), plus a small `ViewPlugin` that tags `view.scrollDOM` (`` `${dc}-scroller` ``) and the gutter element (`` `${dc}-gutter` ``). Append it to each `extensions` array. Leave `cm-*` state classes (`.cm-matchingBracket`, `.cm-activeLine`) alone. | Open |
 | DCY-X-14 | CodeHinter builds its field data-cy as `` `${cyLabel}-input-field` `` from `paramLabel`, falling back to `props.cyLabel`. A call site that passes neither renders a **broken value**: the multi-line editor has no default and emits **`undefined-input-field`**, and the single-line editor defaults to `''` and emits **`-input-field`**. Every such field on the page shares the value. | `frontend/src/AppBuilder/CodeEditor/MultiLineCodeEditor.jsx:276` (derivation), `:363` (attribute); `frontend/src/AppBuilder/CodeEditor/SingleLineCodeEditor.jsx:284` (`cyLabel = ''`), `:571`, `:577`; inspector call sites with neither prop in `frontend/src/AppBuilder/RightSideBar/Inspector/Components/`: `CustomComponent.jsx:22,35`, `FilePicker.jsx:63`, `Steps.jsx:199,215,229`, `Tags.jsx:217` (more in that folder) | `` `.custom-component-inspector-multiline .cm-content` `` (scoped by the call site's `className`) — `C:customComponent.js:17,18`; `H:customComponent.js:93,94,102` (rows DCY-CustomComponent-02, DCY-CustomComponent-03) | Pass `cyLabel` at each call site (listed as per-widget rows). Make both editors omit the attribute (or warn in dev) when the derived label is empty. | Open |
 | DCY-X-15 | `ToolJetUI/Tabs` renders its tab buttons with **no data-cy** (only `role="tab"`, `data-tab-key` and a `.tab-label` span). The Inspector's Properties / Styles tabs are reached by position, and the Components panel's tabs by `data-tab-key`. | `frontend/src/ToolJetUI/Tabs/Tabs.jsx:47` (button; `data-tab-key` at :50); callers `frontend/src/AppBuilder/RightSideBar/Inspector/Inspector.jsx:659` (`id="inspector"`), `frontend/src/AppBuilder/RightSideBar/ComponentManagerTab/ComponentsManagerTab.jsx:290` (`id="components-manager-tabs"` at :295) | `` `#inspector .nav-link:eq(1)` `` — `cypress-tests/cypress/constants/selectors/common.js:400` (`buttonStylesEditorSideBar`, referenced from 42 files, e.g. `S:customComponent/styles.cy.js:47`); `` `#inspector .nav-link:eq(0)` `` — `C:phoneInput.js:34`; `S:currencyInput/canvas.cy.js:257`; `` `#components-manager-tabs button[role="tab"][data-tab-key="custom"]` `` — `C:libraryComponent.js:16`; `H:libraryComponent.js:259,263` | Add an optional `dataCy` prop (defaulting to `id`) and render `` `${dataCy}-tab-${eventKey}` `` on the button: `inspector-tab-properties`, `inspector-tab-styles`; ComponentsManagerTab passes `dataCy="components-manager"` → `components-manager-tab-custom`. | Open |
+| DCY-X-16 | The widget **drops its `dataCy` prop entirely**, so nothing it renders carries a data-cy, not even its root. AudioRecorder destructures the prop as `_dataCy` and never uses it; Camera and BoundedBox don't destructure it. Specs scope every part under RenderWidget's `draggable-widget-<name>` box and fall back to classes, aria-labels and DOM structure. | `W:AudioRecorder/AudioRecorder.jsx:20` (root div :297); `W:Camera/Camera.jsx:25` (root div :510); `W:BoundedBox/BoundedBox.jsx:12` (root div :184) | `` `[data-cy="draggable-widget-x"] .<class>` `` as the base of every selector — `C:audioRecorder.js:6`; `C:camera.js:6`; `C:boundedBox.js:5` (rows DCY-AudioRecorder-01..09, DCY-Camera-01..11, DCY-BoundedBox-01..09) | Destructure `dataCy`, render `data-cy={dataCy}` on the widget root (namespaced per DCY-X-03), and pass it to each child component that renders a tested part (listed as per-widget rows). Add a unit check that every registered widget's root carries the `dataCy` it receives, so a new widget can't drop it again. | Open |
 
 ## Per-widget gaps
+
+### AudioRecorder
+
+Instance of DCY-X-16: `W:AudioRecorder/AudioRecorder.jsx:20` destructures the prop as `_dataCy` and never uses it, so nothing the widget renders has a data-cy and every selector is a class or aria-label scoped under `draggable-widget-<name>` (`C:audioRecorder.js:6`). `RecorderStatusDisplay`, `Waveform` and `RecorderActions` take no `dataCy`, so it has to be passed down from `W:AudioRecorder/AudioRecorder.jsx:322`, `:332` and `:342`. The button container (`:303`, `C:audioRecorder.js:11`) and the save/discard container (`:341`, `C:audioRecorder.js:18`) have constants but are not selected by current specs.
+
+| # | Element | Renders at (file:line) | Current fallback selector (spec/helper file:line) | Suggested data-cy | Status |
+|---|---|---|---|---|---|
+| DCY-AudioRecorder-01 | Widget root (instance of DCY-X-16: the `dataCy` prop is discarded) | `W:AudioRecorder/AudioRecorder.jsx:20` (prop renamed `_dataCy`); root div `:297` | `` `[data-cy="draggable-widget-x"]` `` + class as the base of every part — `C:audioRecorder.js:6`; widget presence read through the label — `S:audioRecorder/contexts.cy.js:40,55` | `data-cy={dataCy}` on the root div (destructure the prop; namespaced per DCY-X-03) | Open |
+| DCY-AudioRecorder-02 | Record / pause / resume / play button (state only in its aria-label) | `W:AudioRecorder/AudioRecorder.jsx:304` (aria-label at :309) | `` `... .audio-recorder-transparent-button` `` / `` `... button[aria-label="<state>"]` `` — `C:audioRecorder.js:13,14`; `S:audioRecorder/canvas.cy.js:63`; `S:audioRecorder/userflow.cy.js:49,50,96,239` | `` `${dataCy}-recorder-button` `` (keep the aria-label for the state) | Open |
+| DCY-AudioRecorder-03 | Label / status text | `W:AudioRecorder/AudioRecorder.jsx:321` | `` `... .audio-recorder-label` `` — `C:audioRecorder.js:15`; `S:audioRecorder/canvas.cy.js:64`; `S:audioRecorder/contexts.cy.js:40,55`; `S:audioRecorder/userflow.cy.js:105,159,175,292` | `` `${dataCy}-label` `` | Open |
+| DCY-AudioRecorder-04 | Recording / playback timer | `W:AudioRecorder/RecorderStatusDisplay.jsx:10` | `` `... .audio-recorder-timer-container` `` — `C:audioRecorder.js:16`; `H:audioRecorder.js:69`; `S:audioRecorder/userflow.cy.js:60,115,148,176` (+4 more) | `` `${dataCy}-timer` `` (add a `dataCy` prop to `RecorderStatusDisplay`) | Open |
+| DCY-AudioRecorder-05 | Waveform `<canvas>` | `W:AudioRecorder/Waveform.jsx:106` | `` `... .audio-recorder-waveform-container canvas` `` — `C:audioRecorder.js:17`; `H:audioRecorder.js:61`; `S:audioRecorder/userflow.cy.js:177,246,300` | `` `${dataCy}-waveform` `` | Open |
+| DCY-AudioRecorder-06 | Save (check) button, no aria-label | `W:AudioRecorder/RecorderActions.jsx:9` | `` `... .audio-recorder-save-button` `` — `C:audioRecorder.js:19`; `S:audioRecorder/canvas.cy.js:65`; `S:audioRecorder/userflow.cy.js:72,106,114,125` (+4 more) | `` `${dataCy}-save-button` `` | Open |
+| DCY-AudioRecorder-07 | Discard button: X while paused, trash while stopped (no aria-label, no own class on the X) | `W:AudioRecorder/RecorderActions.jsx:17` (X), `:25` (trash) | `` `... .save-discard-button-container .audio-recorder-button:not(.audio-recorder-save-button)` `` — `C:audioRecorder.js:21`; `S:audioRecorder/userflow.cy.js:126,147,157,173` | `` `${dataCy}-discard-button` `` on both | Open |
+| DCY-AudioRecorder-08 | "Know more" link (microphone permission denied) | `W:AudioRecorder/RecorderActions.jsx:37` | `` `... .permission-denied-text` `` — `C:audioRecorder.js:22`; `S:audioRecorder/userflow.cy.js:288,293,307` | `` `${dataCy}-permission-help` `` | Open |
+| DCY-AudioRecorder-09 | Loader (call site of the shared `Loader`, DCY-X-06) | `W:AudioRecorder/AudioRecorder.jsx:299` (`Loader` at :300) | `` `... .audio-recorder-loader-container` `` — `C:audioRecorder.js:23` (constant defined; no spec usage yet) | `` `${dataCy}-loader` `` (pass `dataCy` to `Loader` once DCY-X-06 adds the prop) | Open |
 
 ### BoundedBox
 
@@ -123,7 +145,7 @@ The widget renders **no data-cy at all**: `W:BoundedBox/BoundedBox.jsx` never re
 
 | # | Element | Renders at (file:line) | Current fallback selector (spec/helper file:line) | Suggested data-cy | Status |
 |---|---|---|---|---|---|
-| DCY-BoundedBox-01 | Widget root (display / height / box-shadow) | `W:BoundedBox/BoundedBox.jsx:184` (class at :187) | `` `[data-cy="draggable-widget-x"] .bounded-box` `` — `C:boundedBox.js:10`; `H:boundedBox.js:105`; `S:boundedBox/canvas.cy.js:496`; `S:boundedBox/contexts.cy.js:180,183` (+23 more) | `data-cy={dataCy}` (destructure the unused prop; namespaced per DCY-X-03) | Open |
+| DCY-BoundedBox-01 | Widget root (display / height / box-shadow; instance of DCY-X-16) | `W:BoundedBox/BoundedBox.jsx:184` (class at :187) | `` `[data-cy="draggable-widget-x"] .bounded-box` `` — `C:boundedBox.js:10`; `H:boundedBox.js:105`; `S:boundedBox/canvas.cy.js:496`; `S:boundedBox/contexts.cy.js:180,183` (+23 more) | `data-cy={dataCy}` (destructure the unused prop; namespaced per DCY-X-03) | Open |
 | DCY-BoundedBox-02 | Annotated `<img>` (library-rendered `Img`) | `W:BoundedBox/BoundedBox.jsx:189` (`Annotation`) | `` `... .bounded-box img` `` — `C:boundedBox.js:12`; `H:boundedBox.js:106,177,199`; `S:boundedBox/canvas.cy.js:111`; `S:boundedBox/properties.cy.js:95` | `` `${dataCy}-image` `` (set through a ref, or scope as `[data-cy=${dataCy}] img`) | Open |
 | DCY-BoundedBox-03 | In-progress selection box | `W:BoundedBox/RenderSelector.jsx:8` → `W:BoundedBox/Box.jsx:4` | "the `Items` child without a `.row.m-0`" — `H:boundedBox.js:111` | `` `${dataCy}-selection` `` (add a `dataCy` prop to `Box`) | Open |
 | DCY-BoundedBox-04 | Create-label picker (editor of the annotation being drawn) | `W:BoundedBox/RenderEditor.jsx:25` (class at :34) | `` `... .bounded-box > div > .col` `` / `... .col .react-select__control` — `C:boundedBox.js:14,15`; `H:boundedBox.js:112`; `S:boundedBox/userflow.cy.js:96,117` (+14 more) | `` `${dataCy}-label-editor` `` | Open |
@@ -157,6 +179,24 @@ The root carries the bare `<name>` data-cy (`W:Calendar/Calendar.jsx:138`, DCY-X
 | DCY-Calendar-07 | Event (`.rbc-event`) (library) | `W:Calendar/Calendar.jsx:141`; `eventPropGetter` at :60 can only return `className` / `style` | `` `... .rbc-event` `` — `C:calendar.js:39`; `H:calendar.js:150`; `S:calendar/properties.cy.js:71,75,96,103` (+3 more) | `` `${dataCy}-event-<index>` `` through `components.event` (renders inside `.rbc-event`) | Open |
 | DCY-Calendar-08 | Event popover | `W:Calendar/CalendarPopover.jsx:112` (id at :127); rendered from `W:Calendar/Calendar.jsx:195` | `` `... .popover[id$="-popover"]` `` — `C:calendar.js:42`; `H:calendar.js:118`; `S:calendar/properties.cy.js:72,77,95,97` (+6 more) | `` `${dataCy}-event-popover` `` (pass `dataCy` to `CalendarEventPopover`) | Open |
 | DCY-Calendar-09 | Errored widget: the inline error boundary replaces the inner box, so `draggable-widget-<name>` disappears and the fallback carries the **global, unprefixed** `error-boundary-fallback` | `frontend/src/_ui/ErrorBoundary/FallbackBoundary.tsx:135`; wrapped at `frontend/src/AppBuilder/AppCanvas/RenderWidget.jsx:384` | `` `.ele-<componentId>` `` (component id pinned through the API) + `[data-cy="error-boundary-fallback"]` — `C:calendar.js:47,48`; `S:calendar/userflow.cy.js:258,264,265,267` | Give `FallbackBoundary` an optional `dataCy` and pass `componentName` from RenderWidget → `` `${componentName}-error-boundary` `` | Open |
+
+### Camera
+
+Instance of DCY-X-16: `W:Camera/Camera.jsx:25` never destructures `dataCy`, so nothing the widget renders has a data-cy and every selector is a class or aria-label scoped under `draggable-widget-<name>` (`C:camera.js:6`). `Content`, `Footer` and `DeviceSelect` take no `dataCy`, so it has to be passed down from `W:Camera/Camera.jsx:516` (`Content`), `:527` (`Footer`) and `W:Camera/Footer.jsx:64,74` (`DeviceSelect`). The aria-label variant of the capture button (`C:camera.js:16`) is unused, and the placeholder's "Learn more" link (`W:Camera/Content.jsx:157`) is not selected by current specs.
+
+| # | Element | Renders at (file:line) | Current fallback selector (spec/helper file:line) | Suggested data-cy | Status |
+|---|---|---|---|---|---|
+| DCY-Camera-01 | Widget container (instance of DCY-X-16; carries `data-permission-error` and the fullscreen class) | `W:Camera/Camera.jsx:25` (no `dataCy` in props); container `W:Camera/Camera.jsx:510` (class at :512) | `` `[data-cy="draggable-widget-x"] .camera-container` `` — `C:camera.js:10`; `S:camera/userflow.cy.js:62,63,279,280` (+3 more) | `data-cy={dataCy}` on the container (destructure the prop; namespaced per DCY-X-03) | Open |
+| DCY-Camera-02 | Live / recorded `<video>` | `W:Camera/Content.jsx:141` (class at :143) | `` `... video.camera-content-video` `` — `C:camera.js:11`; `H:camera.js:186,213`; `S:camera/userflow.cy.js:87,137,138,193` | `` `${dataCy}-video` `` | Open |
+| DCY-Camera-03 | Captured still `<img>` | `W:Camera/Content.jsx:139` | `` `... img.camera-content-image` `` — `C:camera.js:12`; `S:camera/userflow.cy.js:86,90,104` | `` `${dataCy}-captured-image` `` | Open |
+| DCY-Camera-04 | Placeholder text (no stream / permission error) | `W:Camera/Content.jsx:152` | `` `... .camera-content-placeholder` `` — `C:camera.js:13` (constant defined; no spec usage yet) | `` `${dataCy}-placeholder` `` | Open |
+| DCY-Camera-05 | Capture / record button (mode only in its aria-label) | `W:Camera/Footer.jsx:100` (aria-label at :107) | `` `... .camera-capture-button-trigger` `` — `C:camera.js:15`; `S:camera/canvas.cy.js:63`; `S:camera/contexts.cy.js:40,55`; `S:camera/userflow.cy.js:80,85,106,124` (+6 more) | `` `${dataCy}-capture-button` `` (keep the aria-label) | Open |
+| DCY-Camera-06 | Save (check) button, no aria-label | `W:Camera/Footer.jsx:86` | `` `... .camera-save-button` `` — `C:camera.js:17`; `S:camera/userflow.cy.js:88,97,136,142` (+1 more) | `` `${dataCy}-save-button` `` | Open |
+| DCY-Camera-07 | Discard (X) button, no aria-label | `W:Camera/Footer.jsx:89` (class at :91) | `` `... .camera-discard-button` `` — `C:camera.js:18`; `S:camera/userflow.cy.js:89` | `` `${dataCy}-discard-button` `` | Open |
+| DCY-Camera-08 | Fullscreen toggle | `W:Camera/Footer.jsx:124` (class at :126) | `` `... .camera-fullscreen-button-trigger` `` — `C:camera.js:19`; `S:camera/userflow.cy.js:289,291,305,307` | `` `${dataCy}-fullscreen-button` `` | Open |
+| DCY-Camera-09 | Flip-camera button (mobile only) | `W:Camera/Footer.jsx:53` (class at :55) | `` `... .camera-flip-button` `` — `C:camera.js:20`; `S:camera/userflow.cy.js:165,247,252,259` | `` `${dataCy}-flip-camera-button` `` | Open |
+| DCY-Camera-10 | Camera / microphone device-select triggers | `W:Camera/DeviceSelect.jsx:41` (aria-label at :43); call sites `W:Camera/Footer.jsx:64` (camera), `:74` (microphone) | `` `... button[aria-label="Select camera device"]` `` / `` `... "Select microphone device"` `` — `C:camera.js:22,23`; `H:camera.js:315`; `S:camera/canvas.cy.js:64`; `S:camera/userflow.cy.js:172,196,248` | `` `${dataCy}-camera-select` `` / `` `${dataCy}-microphone-select` `` (pass `dataCy` and the kind into `DeviceSelect`) | Open |
+| DCY-Camera-11 | Device options (Radix popover portalled to `<body>`; global selector that relies on only one popover being open, see DCY-X-04) | `W:Camera/DeviceSelect.jsx:57` (role at :60; popover content at :51) | `` `.camera-device-popover-content [role="option"]` `` matched by label text — `C:camera.js:25`; `H:camera.js:317,318`; `S:camera/userflow.cy.js:173,180,197` | `` `${dataCy}-<kind>-menu` `` on the popover content and `` `${dataCy}-<kind>-option-<index>` `` on each option (`kind` = `camera` / `microphone`) | Open |
 
 ### Cascader
 
@@ -413,6 +453,18 @@ Depends on DCY-X-03 (root is bare `[data-cy="<name>"]`, qualified with `.link-wi
 | DCY-Link-04 | Icon `<svg>` (TablerIcon; spreads props onto the svg) | `W:Link/Link.jsx:199` | `` `... > span > span:not(.link-text) svg` `` — `C:link.js:15`; `S:link/events.cy.js:107`; `S:link/styles.cy.js:166`; `H:link.js:133` (+3 more) | `` `${dataCy}-icon` `` | Open |
 | DCY-Link-05 | Link text `<span class="link-text">` | `W:Link/Link.jsx:211` | `` `.link-text` `` — `C:link.js:17`; `S:link/canvas.cy.js:82`; `S:link/contexts.cy.js:41`; `H:link.js:132` (+26 more) | `` `${dataCy}-text` `` | Open |
 
+### Map
+
+Depends on DCY-X-03 (root is the bare `<name>` data-cy at `W:Map/Map.jsx:246`, qualified as `` `[data-cy=x].map-widget` ``, `C:map.js:4`). Everything inside `<GoogleMap>` (tiles, markers, polygon, map controls) and the Places dropdown is rendered by the Google Maps JS SDK through `@react-google-maps/api`, so only the elements ToolJet renders itself can carry a data-cy; DCY-Map-04 and DCY-Map-05 record the SDK selectors as not practical. The loading placeholder (`W:Map/Map.jsx:302`) and the centre overlay div on its own (`C:map.js:12`) are not selected by current specs.
+
+| # | Element | Renders at (file:line) | Current fallback selector (spec/helper file:line) | Suggested data-cy | Status |
+|---|---|---|---|---|---|
+| DCY-Map-01 | Centre overlay pin `<img>` | `W:Map/Map.jsx:248` (overlay div; img at :255) | `` `[data-cy=x].map-widget > .map-center img` `` — `C:map.js:13`; `H:map.js:255` | `` `${dataCy}-center-overlay` `` on the div and `` `${dataCy}-center-marker` `` on the img | Open |
+| DCY-Map-02 | GoogleMap viewport div (the drag / click surface) | `W:Map/Map.jsx:258` (`mapContainerStyle` at :260) | `` `[data-cy=x].map-widget > div:not(.map-center)` `` — `C:map.js:15`; `H:map.js:272,289,290,292` (+1 more); `S:map/userflow.cy.js:187` | `` `${dataCy}-viewport` ``: `GoogleMap` forwards no `data-*` props, so set it in `onLoad` with `map.getDiv().setAttribute(...)` | Open |
+| DCY-Map-03 | Places search input | `W:Map/Map.jsx:274` (class at :278) | `` `... .place-search-input` `` — `C:map.js:23`; `H:map.js:277`; `S:map/contexts.cy.js:82,92`; `S:map/userflow.cy.js:231,234,235` | `` `${dataCy}-search-input` `` | Open |
+| DCY-Map-04 | Google Maps SDK DOM inside the viewport: `.gm-style` root, raster tiles, legacy `Marker` icons, camera-control buttons | rendered by the SDK under `W:Map/Map.jsx:258`; markers from `:283` | `` `.gm-style` `` / `` `img[src*="/maps/vt"]` `` / `` `img[src*="spotlight-poi"]` `` / `` `button[aria-label="Map camera controls"|"Zoom in"…]` `` — `C:map.js:17,19,21,25,26`; `H:map.js:142,144,267`; `S:map/userflow.cy.js:73,79,121,122` (+2 more) | Not practical (third-party). Scope these SDK selectors under `${dataCy}-viewport` (DCY-Map-02) once it lands | Open |
+| DCY-Map-05 | Google Maps SDK DOM portalled to `<body>`: Places Autocomplete dropdown and rows, invalid-key dialog OK button | rendered by the SDK from `W:Map/Map.jsx:273` (`Autocomplete`) and on map load | `` `.pac-container` `` / `` `.pac-item` `` / `` `.dismissButton` `` (global) — `C:map.js:28,29,31`; `H:map.js:163,166`; `S:map/userflow.cy.js:247,249` | Not practical (third-party; the SDK creates these nodes outside the widget, so no widget prefix can be applied) | Open |
+
 ### Navigation
 
 Depends on DCY-X-01 (`.first()` on `draggable-widget-<name>`, `H:navigation.js:97,105`) and DCY-X-03 (root reached as `` `.navigation-widget[data-cy=<name>]` ``, `C:navigation.js:8`; `H:navigation.js:62` finds it by class only, which is a test-side switch to `[data-cy=<name>]`). The item, group, icon and label data-cy values (`nav-item-<id>`, `nav-group-<id>`, `nav-icon-<id>` at `W:Navigation/Navigation.jsx:58`, `nav-label-<id>` at :77) are **global** (no widget prefix). Two Navigations with the default item ids collide, and portalled popup items can't be tied to their widget. `RenderNavItem` / `RenderNavGroup` take no `dataCy`, so it has to be threaded down from `Navigation.jsx:271`. The `nav-icon-<id>` is not selected by current specs; it should become `${dataCy}-item-<id>-icon`. The loading spinner (`W:Navigation/Navigation.jsx:617`) isn't selected either. Inspector rows below are Navigation-specific inspector UI (`frontend/src/AppBuilder/RightSideBar/Inspector/Components/Navigation/**`). The Caption field is reached through CodeMirror's `.cm-content` / `.cm-line` (`H:navigation.js:345,354`), which is shared CodeHinter chrome and not counted. Its `label` pick (`H:navigation.js:355`) is test-side only, because `inspector-nav-item-details-caption-label` already exists (`NavItemPopover.jsx:169`).
@@ -442,6 +494,24 @@ Depends on DCY-X-01 (`.first()` on `draggable-widget-<name>`, `H:pagination.js:1
 | DCY-Pagination-03 | Page-number item `<li>` (+ active state) | `W:Pagination/Pagination.jsx:395`; first-page copy `:431`, last-page copy `:414` | `` `ul.pagination > li` `` + exact-text filter — `C:pagination.js:13`; `H:pagination.js:177-178`; `S:pagination/contexts.cy.js:90`; `S:pagination/userflow.cy.js:314` (+15 more `items(...)` uses); active state `` `li.active` `` — `C:pagination.js:17` (defined, unused), `H:pagination.js:74` | `` `${dataCy}-page-<n>` `` (page number as the slug, since the rendered window shifts; e.g. `pagination1-page-4`) + `aria-current="page"` on the active one | Open |
 | DCY-Pagination-04 | Ellipsis item `<li>` (left and right, can render together) | `W:Pagination/Pagination.jsx:426` (left), `:408` (right) | text `...` match — `H:pagination.js:73`; by row index `` `ul.pagination > li` `` + `.eq(at.index)` — `S:pagination/userflow.cy.js:321` | `` `${dataCy}-ellipsis-start` `` / `` `${dataCy}-ellipsis-end` `` | Open |
 | DCY-Pagination-05 | Item link (`a.page-link`; `span.page-link` on an ellipsis) carrying the click handler and pointer state | `W:Pagination/Pagination.jsx:335` (operator), `:396` (page), `:409` / `:427` (ellipsis) | `li.firstElementChild` — `H:pagination.js:68,230`; `S:pagination/userflow.cy.js:328`; `` `.find('a')` `` — `S:pagination/userflow.cy.js:299` | `` `${dataCy}-operator-<op>-link` `` / `` `${dataCy}-page-<n>-link` `` / `` `${dataCy}-ellipsis-<start\|end>-link` `` | Open |
+
+### PDF
+
+Depends on DCY-X-03 (root is the bare `<name>` data-cy at `W:PDF.jsx:215`, `C:pdf.js:6`). Nothing inside the root carries a stable data-cy: the only attribute present, on the Retry button, is a hard-coded value copied from a canvas button (DCY-PDF-06). Pages, page canvases and text layers are rendered by react-pdf 10, so their hooks have to go through the props it exposes (`inputRef`, `error`, `noData`). The download label (`W:PDF.jsx:285`, `C:pdf.js:33`) is read as the download button's text (`H:pdf.js:177`) and needs no hook of its own.
+
+| # | Element | Renders at (file:line) | Current fallback selector (spec/helper file:line) | Suggested data-cy | Status |
+|---|---|---|---|---|---|
+| DCY-PDF-01 | Bordered card (border / radius / box-shadow) | `W:PDF.jsx:216` (class at :217) | `` `[data-cy=x] > .flex-column` `` — `C:pdf.js:8`; `H:pdf.js:155`; `S:pdf/contexts.cy.js:34` | `` `${dataCy}-card` `` | Open |
+| DCY-PDF-02 | Scroll wrapper (also renders `id="pdf-wrapper"`, duplicated by every PDF instance on the page) | `W:PDF.jsx:228` (id at :230) | `` `[data-cy=x] > .flex-column > .scrollable` `` — `C:pdf.js:10`; `H:pdf.js:135,189,193,196`; `S:pdf/canvas.cy.js:246,275,355,358`; `S:pdf/properties.cy.js:105` | `` `${dataCy}-scroll-wrapper` `` (and make the id unique or drop it) | Open |
+| DCY-PDF-03 | Page (react-pdf `Page`; its `<canvas>` and `.textLayer` are library-rendered) | `W:PDF.jsx:182` (`inputRef` at :187) | `` `... .scrollable .react-pdf__Page[data-page-number=n]` `` + `canvas` / `.textLayer` — `C:pdf.js:23`; `H:pdf.js:137,138,139`; `S:pdf/contexts.cy.js:38,44`; `S:pdf/styles.cy.js:31`; inline `.react-pdf__Page` — `S:pdf/properties.cy.js:108`; `S:pdf/canvas.cy.js:318` | `` `${dataCy}-page-<n>` `` set through the existing `inputRef` (`el?.setAttribute(...)`); canvas and text layer stay scoped under it | Open |
+| DCY-PDF-04 | Load-error / no-file message | `W:PDF.jsx:174` (`Document`, react-pdf's default error message); bare-text messages at `:237` | `` `... .scrollable .react-pdf__message--error` `` — `C:pdf.js:25`; `H:pdf.js:150`; the scroller's `textContent` when no `.react-pdf__Document` is mounted — `H:pdf.js:167` | `` `${dataCy}-error-message` ``: pass `error` / `noData` elements carrying it to `Document`, and wrap the `:237` strings in a `<span>` with the same value | Open |
+| DCY-PDF-05 | "Password prompt closed" text | `W:PDF.jsx:156` | the scroller's `textContent` — `H:pdf.js:167`; asserted at `S:pdf/userflow.cy.js:109` | `` `${dataCy}-password-closed-message` `` | Open |
+| DCY-PDF-06 | Password Retry button (broken: hard-coded `data-cy="draggable-widget-button3"`, which also matches the RenderWidget box of any real widget named `button3`, cf. DCY-X-01) | `W:PDF.jsx:157` (data-cy at :159) | `` `... .scrollable .pdf-retry-button` `` — `C:pdf.js:36`; `H:pdf.js:168`; `S:pdf/userflow.cy.js:130,143` | `` `${dataCy}-password-retry-button` `` | Open |
+| DCY-PDF-07 | Footer row (page controls + download) | `W:PDF.jsx:240` (class at :241) | `` `[data-cy=x] > .flex-column > .border-top` `` — `C:pdf.js:12`; `H:pdf.js:136`; `S:pdf/contexts.cy.js:36` | `` `${dataCy}-footer` `` | Open |
+| DCY-PDF-08 | Page-controls group | `W:PDF.jsx:248` | `` `.pdf-page-controls` `` — `C:pdf.js:27` (constant unused by specs); `H:pdf.js:172` (`footer.querySelector(".pdf-page-controls")`) | `` `${dataCy}-page-controls` `` | Open |
+| DCY-PDF-09 | Previous / Next page buttons | `W:PDF.jsx:249` (aria-label at :253), `:261` (aria-label at :265) | `` `... .border-top button[aria-label="Previous page"]` `` / `` `"Next page"` `` — `C:pdf.js:28,29`; `H:pdf.js:174,175`; `S:pdf/properties.cy.js:102,110,112,113` (+2 more); `S:pdf/userflow.cy.js:54,55` | `` `${dataCy}-prev-page-button` `` / `` `${dataCy}-next-page-button` `` | Open |
+| DCY-PDF-10 | Page indicator (`n of N`) | `W:PDF.jsx:258` | `` `... .pdf-page-controls > span` `` — `C:pdf.js:30`; `H:pdf.js:173`; `S:pdf/canvas.cy.js:351` | `` `${dataCy}-page-indicator` `` | Open |
+| DCY-PDF-11 | Download button (a clickable `<div>`, not a `<button>`) | `W:PDF.jsx:274` (class at :275) | `` `... .border-top .download-icon-outer-wrapper` `` — `C:pdf.js:32`; `H:pdf.js:151`; `S:pdf/events.cy.js:70`; `S:pdf/styles.cy.js:24,60` | `` `${dataCy}-download-button` `` | Open |
 
 ### PhoneInput
 
@@ -487,6 +557,19 @@ Root is the bare `<name>` data-cy (DCY-X-03). The bar parts are reached by `last
 | DCY-ProgressBar-03 | track | `W:Progressbar/Progressbar.jsx:186` | `barCont.firstElementChild` — `H:progressBar.js:90`; `S:progressBar/canvas.cy.js:183`; `S:progressBar/contexts.cy.js:64`; `S:progressBar/styles.cy.js:106` | `` `${dataCy}-track` `` | Open |
 | DCY-ProgressBar-04 | fill | `W:Progressbar/Progressbar.jsx:208` | `track.firstElementChild` (when it has no child) — `H:progressBar.js:91`; `H:progressBar.js:93`; `S:progressBar/contexts.cy.js:65`; `S:progressBar/styles.cy.js:167` | `` `${dataCy}-fill` `` | Open |
 | DCY-ProgressBar-05 | loading strip (inside the loading clip box at line 188) | `W:Progressbar/Progressbar.jsx:196` | `first.firstElementChild` — `H:progressBar.js:92`; `S:progressBar/styles.cy.js:168` | `` `${dataCy}-loading-strip` `` | Open |
+
+### QrScanner
+
+Depends on DCY-X-03 (root is the bare `<name>` data-cy at `W:QrScanner/QrScanner.jsx:23`; `C:qrScanner.js:8`; `H:qrScanner.js:132`; `S:qrScanner/contexts.cy.js:130`; `S:qrScanner/userflow.cy.js:77`). `ErrorModal` takes no props (`W:QrScanner/ErrorModal.jsx:3`), so `W:QrScanner/QrScanner.jsx:24` has to pass `dataCy` into it before DCY-QrScanner-02..06 can be fixed. The error dialog renders inline (no portal), so the current class selectors are already scoped to the widget.
+
+| # | Element | Renders at (file:line) | Current fallback selector (spec/helper file:line) | Suggested data-cy | Status |
+|---|---|---|---|---|---|
+| DCY-QrScanner-01 | Camera preview `<video>` (react-qr-reader: `<section><section><div/><video/>`) | `W:QrScanner/QrScanner.jsx:24` (`<QrReader>`; DOM from react-qr-reader 2.2.1) | `` `[data-cy=x] video` `` — `C:qrScanner.js:10`; `S:qrScanner/contexts.cy.js:117`; `S:qrScanner/events.cy.js:62,107,125` | Not practical on the `<video>` (third-party; react-qr-reader forwards only `className` / `style`). Wrap `<QrReader>` in a `<div>` with `` `${dataCy}-preview` `` and scope `video` under it | Open |
+| DCY-QrScanner-02 | Error dialog | `W:QrScanner/ErrorModal.jsx:13` | `` `[data-cy=x] .modal-dialog` `` — `C:qrScanner.js:12`; `S:qrScanner/userflow.cy.js:36,73,86,105` | `` `${dataCy}-error-modal` `` | Open |
+| DCY-QrScanner-03 | Error title | `W:QrScanner/ErrorModal.jsx:16` | `` `[data-cy=x] .modal-title` `` — `C:qrScanner.js:13`; `S:qrScanner/contexts.cy.js:132`; `S:qrScanner/userflow.cy.js:43,93` | `` `${dataCy}-error-title` `` | Open |
+| DCY-QrScanner-04 | Error body | `W:QrScanner/ErrorModal.jsx:25` | `` `[data-cy=x] .modal-body` `` — `C:qrScanner.js:14`; `S:qrScanner/userflow.cy.js:44` | `` `${dataCy}-error-body` `` | Open |
+| DCY-QrScanner-05 | Header close (×) button | `W:QrScanner/ErrorModal.jsx:17` | `` `[data-cy=x] .modal-header .btn-close` `` — `C:qrScanner.js:15`; `S:qrScanner/userflow.cy.js:45,48,85,96` (+2 more) | `` `${dataCy}-error-close-icon` `` | Open |
+| DCY-QrScanner-06 | Footer Close button | `W:QrScanner/ErrorModal.jsx:30` | `` `[data-cy=x] .modal-footer button` `` — `C:qrScanner.js:16`; `S:qrScanner/userflow.cy.js:46,48,72,99` (+1 more) | `` `${dataCy}-error-close-button` `` | Open |
 
 ### RadioButtonV2
 
