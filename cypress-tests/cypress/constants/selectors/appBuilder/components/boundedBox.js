@@ -13,7 +13,6 @@ export const boundedBoxSelector = {
   // RenderEditor.jsx:25-35 — the label picker of the annotation being created (a direct child of the Container)
   editor: (name) => `${widget(name)} .bounded-box > div > .col`,
   editorControl: (name) => `${widget(name)} .bounded-box > div > .col .react-select__control`,
-  editorInput: (name) => `${widget(name)} .bounded-box > div > .col input`,
   // RenderHighlight.jsx:34-45 — one row per committed annotation: [delete span, label select]
   highlightRow: (name) => `${widget(name)} .bounded-box .row.m-0`,
   highlightDelete: (name) => `${widget(name)} .bounded-box .row.m-0 > span`,

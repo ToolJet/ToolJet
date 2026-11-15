@@ -193,16 +193,17 @@ describe('Key Value Pair — userflow facet', { testIsolation: false }, () => {
         });
 
         // ── KeyValuePair-BRW-003 (date picker from its input) ────────────────
-        // react-datepicker's own input keyboard contract: with the calendar open, ArrowDown moves focus into the
-        // calendar's selected day and Escape closes it. Both are handled by the onKeyDown react-datepicker passes to
-        // its customInput.
-        it('[KeyValuePair-BRW-003] Date picker: from the focused date input, ArrowDown enters the calendar and Escape closes it', () => {
+        // react-datepicker's keyboard contract: with the calendar open, ArrowDown from the input moves focus into the
+        // calendar's selected day, and Escape pressed there closes the calendar.
+        // KNOWN PRODUCT BUG: ArrowDown in the open date field does nothing — focus stays in the input, so a keyboard
+        // user cannot reach the calendar grid. DatePickerRenderer.jsx:16 DatepickerInput drops the onKeyDown
+        // react-datepicker passes to its customInput.
+        it('[KeyValuePair-BRW-003] Date picker: from the focused date input, ArrowDown enters the calendar and Escape there closes it', () => {
             cy.get(S.valueCell('kv1', 'datepicker')).click();
             cy.get(P.datePopper).should('be.visible');
             cy.get(P.dateInput('kv1')).should('be.focused');
             cy.realPress('ArrowDown');
             cy.get(P.dateSelectedDay).should('be.focused');
-            cy.get(P.dateInput('kv1')).focus();
             cy.realPress('Escape');
             cy.get(P.datePopper).should('not.exist');
         });

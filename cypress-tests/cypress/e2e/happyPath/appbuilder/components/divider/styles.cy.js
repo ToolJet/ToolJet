@@ -219,8 +219,10 @@ describe('Horizontal Divider — styles facet', { testIsolation: false }, () => 
     });
 
     // ── Divider-BRW-002 — clipping + neighbours ──────────────────────────────
+    // KNOWN PRODUCT BUG: in wrap mode a single word wider than the narrow slot (here `exercitationem`) is not broken,
+    // so the label and divider lines spill past the widget's edges instead of staying inside it.
     it('[Divider-BRW-002] A wrapped label taller than the widget is clipped inside it and never covers the neighbouring component', () => {
-        const long = longLabel();
+        const long = 'Ut enim ad minima veniam quis nostrum exercitationem ullam corporis suscipit laboriosam'; // dynamic: fixed label with one long word
         addDividersViaApi([
             {
                 name: 'cliplabel',

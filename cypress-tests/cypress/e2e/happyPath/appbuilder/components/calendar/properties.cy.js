@@ -26,7 +26,12 @@ import {
 } from "Support/utils/appBuilder/components/calendar";
 import { pinBrowserTimezone, openDateAppInViewer } from "Support/utils/appBuilder/components/dateTimeCommon";
 
-const PX = 8; // the popover is offset by the widget box padding + root border (CalendarPopover.jsx:54-55)
+// CalendarPopover.jsx:54-55 places the popover at the clicked event's right edge / top (flipped: right edge at the
+// event's right edge, top at its bottom, :65-66) with no added offset, so the only slack is sub-pixel rounding
+// KNOWN PRODUCT BUG: the popover opens ~6px left of the event's right edge, overlapping the clicked event. Likely cause:
+// Calendar.jsx onSelectEvent takes the offset from e.target (the inner event content, inset by the event's padding and
+// border) instead of the event box.
+const PX = 1;
 const title = () => fake.firstName.slice(0, 10) || 'Standup'; // dynamic: event titles
 // dynamic: fixed explicit times — Mon 13 Jun (left of the week) and Sat 18 Jun (right edge of the week)
 const monday = (t) => ({ title: t, start: '06-13-2022 10:00', end: '06-13-2022 11:00', allDay: false });

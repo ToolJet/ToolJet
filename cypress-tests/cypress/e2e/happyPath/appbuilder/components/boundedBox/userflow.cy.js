@@ -193,10 +193,10 @@ describe('Bounded Box — userflow facet', () => {
             openIconAppInViewer(S.root(BB));
             waitForImage(BB);
 
-            // create with the pointer (no keyboard drawing model — D-04), then pick the label from the keyboard
+            // create with the pointer (no keyboard drawing model — D-04), open the label picker with a click, then pick
+            // the label from the keyboard
             drawRectangle(BB, [0.1, 0.1], [0.3, 0.4]);
-            cy.get(S.editorInput(BB)).first().focus();
-            cy.realPress('ArrowDown');
+            cy.get(S.editorControl(BB)).first().realClick({ scrollBehavior: false });
             cy.get(S.option).should('have.length', labels.length);
             cy.realPress('ArrowDown');
             cy.realPress('Enter');
@@ -247,8 +247,7 @@ describe('Bounded Box — userflow facet', () => {
             openIconAppInViewer(S.root(BB));
             waitForImage(BB);
             drawRectangle(BB, [0.1, 0.1], [0.3, 0.4]);
-            cy.get(S.editorInput(BB)).first().focus();
-            cy.realPress('ArrowDown');
+            cy.get(S.editorControl(BB)).first().realClick({ scrollBehavior: false });
             cy.get(S.option).should('have.length', labels.length);
             cy.realPress('Enter');
             expectAnnotations(PROBE, (list) => expect(list).to.have.length(1));

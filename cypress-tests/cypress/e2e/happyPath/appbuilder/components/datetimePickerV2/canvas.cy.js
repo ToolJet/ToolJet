@@ -228,6 +228,22 @@ describe('Date Time Picker — canvas facet', { testIsolation: false }, () => {
             });
         });
 
+        // ── DatetimePickerV2-BRW-002 (Escape) ────────────────────────────────
+        // KNOWN PRODUCT BUG: pressing Escape with the popup open leaves it open — the user has to click outside to
+        // close it. DatepickerInput.jsx (customInput of BaseDateComponent.jsx:209) never forwards the onKeyDown
+        // react-datepicker passes to its custom input, so react-datepicker's Escape handling never runs.
+        it('[DatetimePickerV2-BRW-002] Escape closes the open popup', () => {
+            addDatetimePickersViaApi([
+                // dynamic: fixed explicit date
+                { name: 'esc', layout: { top: 40, left: 2, width: 10, height: 40 }, properties: { defaultValue: { value: '15/06/2026 10:30' } } },
+            ]);
+            openDateAppInViewer(S.input('esc'));
+            openDatePopup(S.input('esc'));
+            cy.get(S.input('esc')).should('be.focused');
+            cy.realPress('Escape');
+            cy.get(P.popup).should('not.exist');
+        });
+
         // ── DatetimePickerV2-BRW-002 (dynamic height) ────────────────────────
         // properties.collapseWhenHidden on + visibility off: the picker is taken out of flow in a running app and
         // the Text below moves up by its height; lane B (collapse off) is the control and keeps its place.
