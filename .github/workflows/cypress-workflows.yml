@@ -120,12 +120,12 @@ jobs:
           CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         run: |
           echo "Building EE Docker image..."
-          # PR branches cut before the secret change still read the token as a build arg;
-          # pass both until they've all merged it. The image is --load only, never pushed.
-          CUSTOM_GITHUB_TOKEN="${{ secrets.CUSTOM_GITHUB_TOKEN }}" docker buildx build \
+          # The token goes in only as a BuildKit secret: this image is pushed, and an older
+          # Dockerfile would write a token build arg into a layer. Branches cut before the
+          # secret change need main merged before a run.
+          docker buildx build \
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
-            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
             --secret id=github_token,env=CUSTOM_GITHUB_TOKEN \
             --build-arg BRANCH_NAME="$BRANCH_NAME" \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
