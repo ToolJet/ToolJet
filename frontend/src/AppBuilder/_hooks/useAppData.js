@@ -548,8 +548,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                  ? result.isMaintenanceOn
-                  : false,
+                ? result.isMaintenanceOn
+                : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -614,6 +614,8 @@ const useAppData = (
               {},
               {
                 ...(hasTaggedResources ? { taggedResources } : {}),
+                // The version store still holds the previously opened app's version at this point.
+                ...(appData.editing_version?.id ? { versionId: appData.editing_version.id } : {}),
                 attachments: state.attachments,
                 restoreDraftOnFailure: true,
                 onAccepted: clearKickoffDraft,
@@ -1025,25 +1027,17 @@ const useAppData = (
   }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 
   useEffect(() => {
-    // Tried extending this to the standalone module editor (isModuleEditor) too, since it
-    // used to run unconditionally here before AppBuilder.jsx started passing moduleMode for
-    // direct module edits. Reverted: changeEditorVersionAction's onSuccess callers set
-    // currentVersionId a beat after changeEditorVersionAction's own atomic state update
-    // (mirroring the non-module VersionManagerDropdown pattern) — for modules that second
-    // write re-triggers this effect on top of the refresh changeEditorVersionAction already
-    // did, racing cleanUpStore/setApp/initDependencyGraph against themselves. The targeted
-    // fix lives in changeEditorVersionAction itself (pages/freeze/environment sync in one
-    // pass) instead of relying on this effect for modules.
-    if (moduleMode) return;
+    // A hot reload runs this same pipeline but swaps only the canvas, so the editor chrome
+    // (and the AI chat mid-conversation) stays mounted and we stay on the current page.
+    const isHotReload = hotReloadTimestamp != previousHotReloadTimestamp;
+    // The standalone module editor ('canvas') hot-reloads too; embedded module instances never do.
+    if (moduleMode && !(isHotReload && moduleId === 'canvas')) return;
     const exposedTheme =
       appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
     const isForceRefreshTriggered = restoreTimestamp != previousRestoreTimestamp;
-    // A hot reload runs this same pipeline but swaps only the canvas, so the editor chrome
-    // (and the AI chat mid-conversation) stays mounted and we stay on the current page.
-    const isHotReload = hotReloadTimestamp != previousHotReloadTimestamp;
 
     // currentVersionId (set by fetchApp -> setApp) and selectedVersion (set by the
     // env-dropdown init) are written by two independent async flows. On clone -> editor
@@ -1090,8 +1084,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-                ? appData.isMaintenanceOn
-                : false,
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
