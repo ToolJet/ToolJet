@@ -68,19 +68,25 @@ describe('JSON Explorer — styles facet', { testIsolation: false }, () => {
             return backgrounds[0];
         });
 
-    // every painted run against the background it actually sits on; one failure row per theme + colour
-    const expectLegible = (mode) => {
+    // every painted run against the background it actually sits on; one failure row per theme + colour.
+    // `exempt(theme, run)` excludes runs whose colour is a documented third-party palette value (see dark mode).
+    const expectLegible = (mode, exempt = () => false) => {
         const failures = [];
+        const exempted = [];
         const palettes = {};
         THEMES.forEach((theme) =>
             treeTextRuns(nameOf(theme)).then((runs) => {
                 palettes[theme] = Cypress._.uniq(runs.map((r) => r.color)).sort().join(' ');
-                runs.filter((r) => r.ratio < T.contrast.token).forEach((r) => failures.push(`${theme}: ${r.color} on ${r.background} = ${r.ratio}:1 (e.g. "${r.text}")`));
+                runs.forEach((r) => {
+                    if (exempt(theme, r)) exempted.push(r);
+                    else if (r.ratio < T.contrast.token) failures.push(`${theme}: ${r.color} on ${r.background} = ${r.ratio}:1 (e.g. "${r.text}")`);
+                });
             }));
-        cy.then(() => {
+        return cy.then(() => {
             expect(new Set(Object.values(palettes)).size, 'the four themes paint four distinct palettes').to.eq(THEMES.length);
             const unique = Cypress._.uniqBy(failures, (f) => f.replace(/ \(e\.g\..*$/, ''));
             expect(unique, `${mode} mode: painted runs below ${T.contrast.token}:1`).to.deep.eq([]);
+            return exempted;
         });
     };
 
@@ -122,10 +128,19 @@ describe('JSON Explorer — styles facet', { testIsolation: false }, () => {
         expectLegible('light');
     });
 
-    // PRODUCT BUG (kept red): in dark mode bespin's item strings ("{} 2 keys", "[] 2 items") are rgb(102, 102, 102)
-    // on rgb(30, 34, 38) = 2.79:1; the other three themes clear 3:1.
+    // BY DESIGN (triage B-39): bespin's expanded item-count strings ("2 keys", "2 items") are painted in bespin's own
+    // base03 grey (#666666, react-json-tree ITEM_STRING_EXPANDED_COLOR) — ~2.8:1 even on bespin's own background.
+    // D-01 leaves theme colours to react-base16-styling and no contract sets a ratio, so that one third-party palette
+    // value is excluded from the contrast check (and pinned to the palette value); every other run must clear 3:1.
+    const BESPIN_ITEM_STRING = 'rgb(102, 102, 102)'; // source: base16/lib/bespin.js base03 '#666666'
     it('[JSONExplorer-BRW-003] Each theme renders the tree legibly over the default Background in dark mode', () => {
         openViewer('dark');
-        expectLegible('dark');
+        expectLegible('dark', (theme, r) => theme === 'bespin' && r.color === BESPIN_ITEM_STRING).then((exempted) => {
+            // the exclusion is narrow: it really is bespin's item-count string ("{}" / "[]" + "N keys" / "N items"),
+            // and only that
+            expect(exempted.map((r) => r.text), 'bespin item counts found').to.satisfy((t) => t.some((x) => /^\d+ (keys?|items?)$/.test(x)));
+            exempted.forEach((r) =>
+                expect(r.text, `exempted bespin run "${r.text}" is an item-count string`).to.match(/^(\{\}|\[\]|\d+ (keys?|items?))$/));
+        });
     });
 });

@@ -113,10 +113,10 @@ describe('Bounded Box — canvas facet', { testIsolation: false }, () => {
             verifyWidgetCount(PREFIX, 1);
         });
 
-        // PRODUCT BUG (kept red): BoundedBox.jsx:185 stops every mousedown at the widget root (so drawing on the
-        // editor canvas does not drag the widget), which also hides it from the grid's move gesture — a real drag
-        // anywhere on a Bounded Box, even outside the image, never moves it (a Text widget moves with the same drag).
-        it('move: a real drag on the widget body repositions it', () => {
+        // BY DESIGN (triage B-26): Grid.jsx (966c208333) makes BoundedBox handle-only — onDragStart rejects a drag
+        // unless it starts on the drag handle, so drawing on the body never drags the widget (like Table/Calendar/
+        // Kanban inner content). A real drag on the body must leave the widget where it is.
+        it('move: a real drag on the widget body does not move it (handle-only by design)', () => {
             waitForImage(W);
             getWidgetRect(W).as('r0');
             cy.get('@r0').then((before) => {
@@ -128,6 +128,39 @@ describe('Bounded Box — canvas facet', { testIsolation: false }, () => {
                     cy.get(commonWidgetSelector.draggableWidget(W)).realMouseMove(x + i * 15, y + i * 10, { position: 'topLeft', scrollBehavior: false });
                 }
                 cy.get(commonWidgetSelector.draggableWidget(W)).realMouseUp({ position: { x: x + 150, y: y + 100 }, scrollBehavior: false });
+                cy.wait(800); // proving a negative: let any drag end / snap / autosave land before reading the box
+                getWidgetRect(W).then((after) => {
+                    expect(Math.abs(after.x - before.x), 'body drag leaves x').to.be.lte(PX);
+                    expect(Math.abs(after.y - before.y), 'body drag leaves y').to.be.lte(PX);
+                });
+            });
+        });
+
+        // The designed way to move a handle-only widget is its drag handle — the config handle's name badge.
+        // PRODUCT BUG (kept red, B-57): Grid.jsx:1097-1105 only lets the drag through when the pointer is over a
+        // `.handle-content` element, which nothing renders any more (84b8d29f49 removed it from ConfigHandle), so the
+        // badge drag is rejected too and BoundedBox cannot be moved by mouse at all (a Text moves by its badge).
+        it('move: a real drag on the name badge (drag handle) repositions it', () => {
+            waitForImage(W);
+            getWidgetRect(W).as('r0');
+            cy.get(commonWidgetSelector.draggableWidget(W)).realHover({ scrollBehavior: false });
+            cy.get(commonWidgetSelector.draggableWidget(W))
+                .closest('[component-type]')
+                .find('.config-handle .component-name-btn')
+                .should('be.visible')
+                .as('badge');
+            cy.get('@r0').then((before) => {
+                cy.get('@badge').then(($b) => {
+                    const b = $b[0].getBoundingClientRect();
+                    const x0 = b.left + b.width / 2;
+                    const y0 = b.top + b.height / 2;
+                    cy.get('@badge').realMouseDown({ position: 'center', scrollBehavior: false });
+                    // move in viewport coordinates (the badge travels with the widget, so don't anchor on it)
+                    for (let i = 1; i <= 10; i++) {
+                        cy.get('body').realMouseMove(x0 + i * 15, y0 + i * 10, { position: 'topLeft', scrollBehavior: false });
+                    }
+                    cy.get('body').realMouseUp({ position: { x: x0 + 150, y: y0 + 100 }, scrollBehavior: false });
+                });
                 verifyWidgetMoved(W, before);
             });
         });

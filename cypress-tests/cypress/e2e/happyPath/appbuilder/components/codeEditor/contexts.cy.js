@@ -158,28 +158,53 @@ describe('Code Editor — contexts facet', { testIsolation: false }, () => {
             });
         });
 
-        // PRODUCT BUG (kept red): in dark mode the D-07 opaque gutter (`--cc-surface3-surface`, codeEditor.scss:21)
-        // under the shared line-number colour (`--text-disabled`, CodeEditor/styles.scss:512) measures 2.95:1 —
-        // below even the 3:1 large-text minimum. Light mode passes (3.98:1).
-        it('[CodeEditor-BRW-003] Line numbers stay readable on the gutter in light and dark mode', () => {
-            const gutterReadability = () =>
-                readPalettes().then((P) =>
-                    EDITORS.map((e) => ({
-                        editor: e.name,
-                        lineNumber: P[e.name].lineNumber,
-                        gutter: P[e.name].gutterBackground,
-                        ratio: Number(contrastRatio(P[e.name].lineNumber, P[e.name].gutterBackground).toFixed(2)),
-                    })));
-            const expectReadableNumbers = (rows, theme) =>
-                rows.forEach((r) =>
-                    expect(r.ratio, `${theme} ${r.editor}: line number ${r.lineNumber} on gutter ${r.gutter}`).to.be.gte(T.contrast.token));
+        // BY DESIGN (triage B-29): D-07 approved the opaque gutter and the line numbers use a muted text token on
+        // purpose; no contract sets a contrast ratio (dark measures 2.95:1). So pin the designed tokens, not a
+        // threshold. Note: triage names --text-disabled (CodeEditor/styles.scss:512), but inside the widget that rule
+        // is overridden by `.codehinter-multi-line-input .cm-gutterElement { color: var(--cc-placeholder-text)
+        // !important }` (theme.scss:18140-18148, same block as the gutter's `--cc-surface3-surface`), so the painted
+        // muted token is --cc-placeholder-text (#6A727C light / #858C94 dark). In both modes each editor must paint its
+        // line numbers in that token over an opaque --cc-surface3-surface gutter.
+        it('[CodeEditor-BRW-003] Line numbers paint the muted placeholder-text token on the opaque gutter in light and dark mode', () => {
+            // resolve a token to its painted rgb inside the widget (theme scope), via a throwaway probe element
+            const tokens = (name) =>
+                cy.get(commonWidgetSelector.draggableWidget(name)).then(($w) => {
+                    const doc = $w[0].ownerDocument;
+                    const probe = doc.createElement('span');
+                    probe.style.color = 'var(--cc-placeholder-text)';
+                    probe.style.backgroundColor = 'var(--cc-surface3-surface)';
+                    $w[0].appendChild(probe);
+                    const cs = doc.defaultView.getComputedStyle(probe);
+                    const out = { mutedText: cs.color, surface3: cs.backgroundColor };
+                    probe.remove();
+                    return out;
+                });
+            const expectGutterTokens = (theme) => {
+                const seen = {};
+                EDITORS.forEach((e) => tokens(e.name).then((t) => (seen[e.name] = t)));
+                return readPalettes().then((P) => {
+                    EDITORS.forEach((e) => {
+                        const t = seen[e.name];
+                        const ctx = `${theme} ${e.name}`;
+                        expect(t.mutedText, `${ctx}: --cc-placeholder-text resolves`).to.match(/^rgb\(/);
+                        expect(P[e.name].lineNumber, `${ctx}: line numbers paint --cc-placeholder-text`).to.eq(t.mutedText);
+                        expect(P[e.name].gutterBackground, `${ctx}: gutter is opaque`).to.match(/^rgb\(/);
+                        expect(P[e.name].gutterBackground, `${ctx}: gutter paints --cc-surface3-surface`).to.eq(t.surface3);
+                        expect(P[e.name].lineNumber, `${ctx}: line numbers differ from the gutter`).to.not.eq(P[e.name].gutterBackground);
+                    });
+                    return seen;
+                });
+            };
 
             openAndFill();
-            gutterReadability().then((rows) => expectReadableNumbers(rows, 'light'));
+            expectGutterTokens('light').then((L) => cy.wrap(L).as('lightTokens'));
             cy.apiUpdateGlobalSettings({ appMode: 'dark' });
             openAndFill();
             cy.get('.dark-theme').should('exist');
-            gutterReadability().then((rows) => expectReadableNumbers(rows, 'dark'));
+            expectGutterTokens('dark').then((D) =>
+                cy.get('@lightTokens').then((L) =>
+                    // the tokens really re-resolved for the dark theme (else the check above proves nothing new)
+                    expect(D.cejs.surface3, 'dark gutter token differs from light').to.not.eq(L.cejs.surface3)));
         });
     });
 });

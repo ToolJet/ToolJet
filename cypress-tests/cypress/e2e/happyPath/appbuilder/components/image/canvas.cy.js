@@ -2,7 +2,8 @@
  * SPEC — Image — canvas facet.
  * FOR AI: 11 always-on canvas ops (dnd/move/resize/nudge/duplicate/copy-paste/cut/multi-select/
  * rename/delete+undo) + browser-only geometry scenarios from TESTING.md:
- *   Image-BRW-001 — a top-level image below the fold mounts only once scrolled near view, and does mount then
+ *   Image-BRW-001 — a top-level image below the fold is a placeholder until the canvas first scrolls (#1705 offset,
+ *                   by design), then mounts and loads
  *   Image-BRW-002 — dynamicHeight reflows the widget to the image's natural aspect-ratio height (viewer side;
  *                   the editor-side mode gate lives in contexts.cy.js)
  * BRW-001/002 import fixture apps with SVG data-URI images (no network) and measure them in the viewer.
@@ -172,21 +173,26 @@ describe('Image — canvas facet', { testIsolation: false }, () => {
             cy.apiDeleteApp();
         });
 
-        // PRODUCT BUG (kept red): computeOffset() (Image.jsx:182-189) hands LazyLoad an `offset` equal to the
-        // image's own distance below the fold at mount, so the FIRST scroll event of any size passes
-        // react-lazyload's `top - offset <= innerHeight` check and the far-below image mounts immediately.
-        it('[Image-BRW-001] Far below the fold the image stays a placeholder on load and after a small scroll', () => {
+        // BY DESIGN (triage B-03): computeOffset() (Image.jsx:182-189) hands LazyLoad an `offset` equal to the
+        // image's own distance below the fold at mount — a deliberate workaround for #1705 "Image isn't showing if
+        // it's below the default viewport" (1d233ee468, #1739). So the image is a placeholder until the canvas
+        // first scrolls, and the first scroll of any size mounts and loads it, even while still far below the fold.
+        it('[Image-BRW-001] Far below the fold the image is a placeholder on load and the first small scroll mounts it', () => {
             // source: imageLazyLoad.json image1 top 3000 (canvas viewport ~900px)
             cy.document().should((doc) => expect(belowFold(doc), 'image starts far below the fold').to.be.gt(1500));
             cy.get(imageSelector.placeholder(W)).should('exist');
             cy.get(imageSelector.img(W)).should('not.exist');
-
-            // a small real wheel scroll — the image is still ~2000px below the fold, nowhere near view
-            wheelCanvasUntil((sc) => sc.scrollTop > 0, 40);
-            cy.wait(1200); // > LazyLoad debounce 500ms (Image.jsx:369) — proving a negative needs the window to pass
-            cy.document().should((doc) => expect(belowFold(doc), 'still far below the fold').to.be.gt(1500));
+            // no scroll yet: it stays lazy past the LazyLoad debounce (500ms, Image.jsx:369) — not mounted eagerly
+            cy.wait(1200); // proving a negative needs the debounce window to pass
             cy.get(imageSelector.img(W)).should('not.exist');
             cy.get(imageSelector.placeholder(W)).should('exist');
+
+            // a small real wheel scroll — the image is still ~2000px below the fold, yet the #1705 offset mounts it
+            wheelCanvasUntil((sc) => sc.scrollTop > 0, 40);
+            cy.document().should((doc) => expect(belowFold(doc), 'still far below the fold').to.be.gt(1500));
+            cy.get(imageSelector.placeholder(W)).should('not.exist');
+            cy.get(imageSelector.img(W)).should('exist')
+                .and(($img) => expect($img[0].naturalWidth, 'loaded at natural size').to.eq(T.lazy.naturalWidth)); // source: imageLazyLoad.json 200x200 SVG
         });
 
         it('[Image-BRW-001] Scrolled into view, the image mounts and loads', () => {

@@ -175,6 +175,22 @@ export const expectMoreMenu = (name, overflowIds) => {
     // while the open is still settling was once dropped on CI and left the menu open)
     expect($p[0].contains($p[0].ownerDocument.activeElement), "More menu holds focus").to.eq(true);
   });
+  // ...and only once the open has finished rendering. Radix DismissableLayer (1.1.x) decides "am I the top layer"
+  // from an index computed at RENDER time; the layer registers itself (and the content takes focus) in a passive
+  // effect and only then force-re-renders to learn its index. Until that re-render commits, the layer's index is
+  // -1 and an Escape is ignored for good. On the slow CI runner (4 Navigations re-bucketing in the viewer) that
+  // render can still be pending after focus moved in — run 43749174042 left the menu open. Wait for two frames and
+  // an idle period so React's queued work has committed before the key goes in.
+  cy.window({ log: false }).then(
+    (win) =>
+      new Cypress.Promise((resolve) =>
+        win.requestAnimationFrame(() =>
+          win.requestAnimationFrame(() =>
+            win.requestIdleCallback ? win.requestIdleCallback(() => resolve(), { timeout: 2000 }) : win.setTimeout(resolve, 50)
+          )
+        )
+      )
+  );
   cy.realPress("Escape");
   cy.get(navigationSelector.popup).should("not.exist");
 };
