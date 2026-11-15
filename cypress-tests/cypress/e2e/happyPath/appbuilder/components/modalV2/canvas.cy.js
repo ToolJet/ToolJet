@@ -271,6 +271,13 @@ describe('Modal (ModalV2) — canvas facet', { testIsolation: false }, () => {
         };
 
         it('[ModalV2-BRW-001] A fullscreen modal stays full width and re-lays out its slots when the window is resized (running app)', () => {
+            // PRODUCT BUG (red wherever scrollbars take layout space — Linux/Windows, macOS "Show scroll bars:
+            // Always"; green on macOS overlay scrollbars): useResizeSideEffects.js (lines 30, 52-53) sizes the slot
+            // grids from the full `.page-container.canvas-container`.offsetWidth, but the modal is portalled into
+            // `.tj-canvas-area`, which sits inside the canvas scroller and loses that scroller's vertical scrollbar
+            // width. With a ~10px classic scrollbar the grid is ~10px wider than the modal (CI: full-width child 1428
+            // vs canvas 1420; reproduced on macOS Chrome with scrollbars set to Always: 1428 vs 1419), so children
+            // shift right and a full-width child runs under the scrollbar.
             seedResizeApp();
             openModalAppInViewer(S.launchButton('fsmodal'));
             runResize('viewer', [
@@ -283,7 +290,8 @@ describe('Modal (ModalV2) — canvas facet', { testIsolation: false }, () => {
             // PRODUCT BUG (stays red): in the editor the fullscreen modal fills `.tj-canvas-area`, but useResizeSideEffects.js
             // (lines 30, 52-53) sizes the slot grids from `.page-container.canvas-container`.offsetWidth, which includes
             // that container's 8px side padding — the grid is 16px wider than the modal, so children are mis-placed
-            // and a full-width child runs past the modal's right edge.
+            // and a full-width child runs past the modal's right edge. A classic scrollbar adds its width on top
+            // (CI: 24px wider), see the running-app test above.
             seedResizeApp();
             openEditor(S.launchButton('fsmodal'));
             runResize('editor', [

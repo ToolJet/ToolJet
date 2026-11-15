@@ -95,6 +95,10 @@ describe('Bounded Box — contexts facet', { testIsolation: false }, () => {
             cy.apiDeleteApp();
         });
 
+        // KNOWN PRODUCT BUG: after the image loads, the editor lays the Bounded Box out again (on a slow CPU — CI,
+        // or locally with 6x CDP CPU throttling — the first render places the widget elsewhere and narrower, ~400ms
+        // later it jumps to its final box), so a draw started on the loaded image lands beside it and no annotation
+        // editor opens. Stays red where the re-layout is slow enough (CI); assertions unchanged.
         it('exposed-value context — an annotation drawn on the editor canvas is published as annotations', () => {
             addBoundedBoxesViaApi([
                 {
@@ -144,6 +148,8 @@ describe('Bounded Box — contexts facet', { testIsolation: false }, () => {
         });
 
         // ── BoundedBox-BRW-003 (editor side of collapse) ───────────────────
+        // KNOWN PRODUCT BUG: same late re-layout as the exposed-value test above — the draw started on the loaded
+        // image lands beside the box once the editor moves it, so the label control never appears (red on CI).
         it('[BoundedBox-BRW-003] In the editor a hidden collapse-when-hidden box keeps its place and shows the same annotations again', () => {
             const hideWord = fake.firstName.toLowerCase() || 'hide'; // dynamic: typed to hide the box
             addBoundedBoxesViaApi([

@@ -218,20 +218,27 @@ describe('Button — styles facet', () => {
                 'font-weight': c.expectWeight,
             });
         });
+        // Glyph widths are only comparable once every label paints in its own web-font face. The faces are
+        // font-display: swap (theme.scss @font-face), so a weight the page has not used yet (700 here) paints in the
+        // fallback font until its file arrives — on a cold CI browser the bold label was measured in that narrower
+        // fallback. Load each label's exact face first, then measure (retrying).
+        const labelFonts = ($labels) => [...$labels].map((el) => el.ownerDocument.defaultView.getComputedStyle(el).font);
+        cy.get(cases.map((c) => SEL.label(c.name)).join(', ')).then(($labels) => {
+            const fonts = labelFonts($labels);
+            return Promise.all(fonts.map((font) => $labels[0].ownerDocument.fonts.load(font)));
+        });
+        cy.get(cases.map((c) => SEL.label(c.name)).join(', ')).should(($labels) => {
+            const fonts = $labels[0].ownerDocument.fonts;
+            labelFonts($labels).forEach((font) => expect(fonts.check(font), `web font loaded for "${font}"`).to.eq(true));
+        });
         // the rendered glyphs follow: same text is wider at 20px than at 14px, and wider in bold than medium
-        cy.get(SEL.label('normal')).then(($n) => {
-            cy.get(SEL.label('medium')).then(($m) => {
-                cy.get(SEL.label('bold')).then(($b) => {
-                    cy.get(SEL.label('small')).then(($s) => {
-                        const w = ($el) => $el[0].getBoundingClientRect().width;
-                        const h = ($el) => $el[0].getBoundingClientRect().height;
-                        expect(w($m), '20px label wider than 14px').to.be.gt(w($n));
-                        expect(w($n), '14px label wider than 10px').to.be.gt(w($s));
-                        expect(w($b), 'bold wider than medium at the same size').to.be.gt(w($m));
-                        expect(h($m), '20px line box').to.be.closeTo(20 * T.lineHeightRatio, 0.5);
-                    });
-                });
-            });
+        cy.document().should((doc) => {
+            const rect = (name) => doc.querySelector(SEL.label(name)).getBoundingClientRect();
+            const w = (name) => rect(name).width;
+            expect(w('medium'), '20px label wider than 14px').to.be.gt(w('normal'));
+            expect(w('normal'), '14px label wider than 10px').to.be.gt(w('small'));
+            expect(w('bold'), 'bold wider than medium at the same size').to.be.gt(w('medium'));
+            expect(rect('medium').height, '20px line box').to.be.closeTo(20 * T.lineHeightRatio, 0.5);
         });
     });
 
