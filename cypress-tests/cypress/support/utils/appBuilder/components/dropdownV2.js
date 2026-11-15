@@ -302,9 +302,22 @@ export const getDropdownState = (name) => cy.document().then((doc) => measureDro
 /**
  * @tjBlock  canvas
  * @tjUsage  scrollDropdownMenuTo('bottom')  ·  scrollDropdownMenuTo(0)
- * @tjDom    scrolls the open menu's virtualized scroller (fires a real scroll event the virtualizer reads)
+ * @tjDom    scrolls the open menu's virtualized scroller (fires a real scroll event the virtualizer reads). First
+ *           waits until the scroller's scrollTop has not moved for `quietMs`: the reveal-on-open
+ *           (CustomMenuList.jsx:56-67 → @tanstack/virtual scrollToIndex) re-scrolls to the selected row on up to 10
+ *           animation frames while row measurements settle, and a scroll made inside that window is pulled back.
  */
-export const scrollDropdownMenuTo = (position) => {
+export const scrollDropdownMenuTo = (position, quietMs = 300) => {
+  let last = null;
+  let since = 0;
+  cy.get(S.menuBody).should(($b) => {
+    const top = $b[0].scrollTop;
+    if (top !== last) {
+      last = top;
+      since = Date.now();
+    }
+    expect(Date.now() - since, "menu scroll settled").to.be.gte(quietMs);
+  });
   if (typeof position === "number") cy.get(S.menuBody).scrollTo(0, position, { ensureScrollable: false });
   else cy.get(S.menuBody).scrollTo(position, { ensureScrollable: false });
 };

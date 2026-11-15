@@ -318,6 +318,37 @@ export const mapResourceUrls = (fragment) =>
 
 /**
  * @tjBlock  contexts
+ * @tjUsage  mapInstanceStyles('map1', (styles) => expect(styles).to.be.an('array'))
+ * @tjDom    retries the callback with the `styles` option the real google.maps.Map instance holds (MVCObject
+ *           get('styles')). The instance is @react-google-maps/api's <GoogleMap> state.map, reached from the SDK
+ *           root through its React fiber. Unlike the tile payload this does not depend on the Maps API key: with
+ *           no key the SDK swaps every tile request's style for its own dimming (p.s:-60|p.l:-60).
+ */
+export const mapInstanceStyles = (name, assertFn) =>
+  cy.get(mapSelector.gmRoot(name), { timeout: 30000 }).should(($gm) => {
+    let map = null;
+    for (let el = $gm[0]; el && !map; el = el.parentElement) {
+      const key = Object.keys(el).find((k) => k.startsWith("__reactFiber$"));
+      for (let f = key && el[key]; f && !map; f = f.return) {
+        const state = f.stateNode && f.stateNode.state;
+        if (state && state.map && typeof state.map.get === "function") map = state.map;
+      }
+    }
+    expect(map, `${name}: google.maps.Map instance`).to.not.eq(null);
+    assertFn(map.get("styles"));
+  });
+
+/**
+ * @tjBlock  contexts
+ * @tjUsage  mapsKeyConfigured().then((hasKey) => ...)
+ * @tjDom    whether the server hands the app a Maps API key (window.public_config.GOOGLE_MAPS_API_KEY, which
+ *           Map.jsx:88 passes to useJsApiLoader); CI runs without one
+ */
+export const mapsKeyConfigured = () =>
+  cy.window().then((win) => Boolean(win.public_config && win.public_config.GOOGLE_MAPS_API_KEY));
+
+/**
+ * @tjBlock  contexts
  * @tjUsage  tileStyleStrings().then((styles) => expect(styles.some((s) => s.includes('p.c:#021019'))).to.eq(true))
  * @tjDom    the decoded `styles` payload (`…!1sstyles!2z<base64>…`, e.g. "s.t:6|p.c:#021019,…") of every SDK raster
  *           tile request (maps.googleapis.com/maps/vt) made by the current page that carries one

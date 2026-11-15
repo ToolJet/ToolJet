@@ -171,6 +171,9 @@ export const expectMoreMenu = (name, overflowIds) => {
       (el) => el.getAttribute("data-cy").replace(/^nav-(item|group)-/, "")
     );
     expect(ids, `${name}: More lists what overflowed`).to.deep.eq(overflowIds);
+    // Radix moves focus into the opened content; press Escape only once the menu holds focus (an Escape sent
+    // while the open is still settling was once dropped on CI and left the menu open)
+    expect($p[0].contains($p[0].ownerDocument.activeElement), "More menu holds focus").to.eq(true);
   });
   cy.realPress("Escape");
   cy.get(navigationSelector.popup).should("not.exist");

@@ -30,6 +30,13 @@ const NAV = 'navdnd';
 const openTree = () => {
     openEditorSidebar(NAV);
     cy.get(navigationSelector.inspectorList).should('be.visible');
+    // openEditorSidebar opens the Inspector with a simulated click on the widget's "Properties & Styles" config-handle
+    // button. That click's simulated mouseover arms the button's hover ToolTip (ToolTip.jsx trigger ['hover',
+    // 'focus'], ConfigHandleButton delay 500ms), but the real pointer never was on the button, so no mouseout ever
+    // closes it: in Chrome it stays open and covers the header's autosave indicator that waitForAutoSave checks.
+    // Send the matching mouseout: it hides an open tooltip, or cancels the pending delayed show (OverlayTrigger).
+    cy.get(`[data-cy="${NAV}-properties-styles-button"]`).trigger('mouseout', { force: true });
+    cy.get('.tooltip.show').should('not.exist');
 };
 const expectTree = (rows, context) => inspectorTree((r) => expect(r, `Inspector tree ${context}`).to.deep.eq(rows));
 // after a reload of the editor the saved menu comes back in the same tree

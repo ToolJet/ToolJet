@@ -155,6 +155,11 @@ describe('Phone Input — userflow facet', { testIsolation: false }, () => {
 
     // 4f159069c7 / PhoneInput.jsx:329 put `disabled` on the tel input; CountrySelect.jsx:158 disables the picker.
     it('[PhoneInput-BRW-004] A disabled Phone Input takes neither keyboard entry nor tab focus', () => {
+        // a Text Input BELOW the Phone Input: the next Tab stop after it. Without one, the Tab off the first input
+        // leaves the app document, and where Shift+Tab lands from there differs between Chrome and Electron.
+        const afterInput = SEL.input('textinput2'); // dynamic: the second dropped Text Input
+        cy.dragAndDropWidget(T.textInputDisplayName, 400, 400);
+        cy.get(afterInput).should('exist');
         openEditorSidebar(W);
         openAccordion(T.accordionAdditionalActions);
         verifyAndModifyToggleFx(T.disable, '{{false}}'); // flips ON. source: phoneinput.js:77
@@ -163,12 +168,14 @@ describe('Phone Input — userflow facet', { testIsolation: false }, () => {
         cy.openPreview(SEL.input(W));
 
         cy.get(SEL.input(W)).should('be.disabled').and('have.value', '');
-        // Tab from the previous widget skips the whole Phone Input
+        // Tab from the previous widget skips the whole Phone Input and lands on the next widget; Shift+Tab skips it back
         cy.get(tiInput).realClick();
         cy.get(tiInput).should('be.focused');
         cy.realPress('Tab');
         expectActiveElementOutside(SEL.field(W));
+        cy.get(afterInput).should('be.focused');
         cy.realPress(['Shift', 'Tab']);
+        expectActiveElementOutside(SEL.field(W));
         cy.get(tiInput).should('be.focused');
 
         // pointer + keyboard entry is ignored

@@ -66,8 +66,11 @@ const expectState = (name, state) => {
 };
 const expectDeviceSet = (layout, context) => {
     cy.log(`device × visibility gates — ${context} (${layout})`);
-    // wait on a widget that must be there, then check every combination
-    cy.get(dividerSelector.root('bothdevices'), { timeout: 30000 }).should('be.visible');
+    // wait on a widget that must be there, then check every combination. Not `be.visible`: on the mobile editor
+    // canvas auto layout stacks hiddenboth right under bothdevices, and a hidden widget's config handle is always
+    // shown (ConfigHandle.jsx isHiddenOrModalOpen), so depending on font metrics it can sit over the centre of the
+    // thin bothdevices line and fail Cypress' hit test. expectState asserts the real display + painted line width.
+    cy.get(dividerSelector.root('bothdevices'), { timeout: 30000 }).should('exist');
     Object.entries(EXPECTED[layout]).forEach(([name, state]) => expectState(name, state));
 };
 

@@ -6,9 +6,11 @@
  *                 mode requests no dark-styled tile (control)
  * Environment note: the dev key answers BillingNotEnabledMapError, and Google then swaps every requested style for
  * its own "development purposes only" dimming — so the PAINTED tiles cannot turn dark here. The assertion is on the
- * style payload the real SDK sends (Map.jsx:263 options.styles), which is what a billed key paints.
+ * style payload the real SDK sends (Map.jsx:263 options.styles), which is what a billed key paints. CI has no key at
+ * all: then Google sends only its own dimming style with each tile, so the always-on assertion is the style array the
+ * real google.maps.Map instance holds, and the tile payload is checked on top whenever a key is configured.
  * Helpers: verifyLayout, openNode, openAndVerifyNode, verifyNodeData, addMapsViaApi, openMapAppInViewer,
- * tileStyleStrings.
+ * tileStyleStrings, mapInstanceStyles, mapsKeyConfigured.
  */
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
@@ -21,6 +23,8 @@ import {
     openMapAppInViewer,
     waitForMapTiles,
     tileStyleStrings,
+    mapInstanceStyles,
+    mapsKeyConfigured,
 } from "Support/utils/appBuilder/components/map";
 
 const W = mapText.defaultWidgetName;
@@ -81,6 +85,8 @@ describe('Map — contexts facet', { testIsolation: false }, () => {
             cy.get('.dark-theme').should('not.exist');
             cy.get(mapSelector.searchInput(W)).should(($i) =>
                 T.searchDarkClasses.forEach((c) => expect($i[0].classList.contains(c), `light: no ${c}`).to.eq(false))); // source: Map.jsx:278
+            mapInstanceStyles(W, (styles) =>
+                expect(Array.isArray(styles) && styles.length > 0, 'light: no style array on the map').to.eq(false)); // Map.jsx:263 ''
             tileStyleStrings().then((styles) => {
                 expect(styles.filter(hasDarkPayload), 'light: dark-styled tile requests').to.have.length(0);
             });
@@ -91,8 +97,19 @@ describe('Map — contexts facet', { testIsolation: false }, () => {
             cy.get('.dark-theme', { timeout: 30000 }).should('exist');
             cy.get(mapSelector.searchInput(W)).should(($i) =>
                 T.searchDarkClasses.forEach((c) => expect($i[0].classList.contains(c), `dark: ${c}`).to.eq(true))); // source: Map.jsx:278
-            tileStyleStrings().then((styles) => {
-                expect(styles.filter(hasDarkPayload).length, 'dark: tile requests carrying every darkModeStyles colour').to.be.gte(1);
+            // the real google.maps.Map holds the darkModeStyles array (styles.js) — with or without an API key
+            mapInstanceStyles(W, (styles) => {
+                expect(styles, 'dark: style array on the map').to.be.an('array').and.not.be.empty;
+                const colours = styles.flatMap((rule) => (rule.stylers || []).map((st) => st.color).filter(Boolean));
+                expect(colours, 'dark: every darkModeStyles colour').to.include.members(T.darkStyleColors); // source: styles.js:7-133
+            });
+            // with a key the SDK also requests its tiles with that payload; with none (CI) Google replaces every
+            // tile style with its own development-mode dimming, so there is no app style on the wire to read
+            mapsKeyConfigured().then((hasKey) => {
+                if (!hasKey) return;
+                tileStyleStrings().then((styles) => {
+                    expect(styles.filter(hasDarkPayload).length, 'dark: tile requests carrying every darkModeStyles colour').to.be.gte(1);
+                });
             });
         });
     });

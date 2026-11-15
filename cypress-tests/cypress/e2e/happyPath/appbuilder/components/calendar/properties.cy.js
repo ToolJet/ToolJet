@@ -123,6 +123,11 @@ describe('Calendar — properties facet', { testIsolation: false }, () => {
     });
 
     // ── Calendar-BRW-002 (restricted children) ──────────────────────────────
+    // KNOWN PRODUCT BUG (intermittently RED — the assertion is correct): in the editor, a mousedown on a SELECTED
+    // Calendar that is not in month view throws "Cannot read properties of null (reading 'contains')" — Grid.jsx
+    // onDragStart looks up `.rbc-month-view` (absent in week/day view) and calls .contains on null. When that throw
+    // lands on the event's mousedown, the event click opens no popover. The wait below makes the user's real order
+    // (select the Calendar, then click its event) explicit instead of racing the selection.
     it('[Calendar-BRW-002] Calendar and Kanban cannot be dropped into the event popover; a Button can', () => {
         addCalendarsViaApi([
             {
@@ -134,6 +139,10 @@ describe('Calendar — properties facet', { testIsolation: false }, () => {
         cy.openApp('', undefined, undefined, S.event('cal'));
         // select the widget first: in the editor the first mousedown selects the Calendar and swallows that click
         cy.get(S.toolbarLabel('cal')).click();
+        // wait until that selection has landed (WidgetWrapper.jsx:258 active-target); an event click sent before it
+        // is still the selecting click on a slow runner and opens nothing
+        cy.get(commonWidgetSelector.draggableWidget('cal')).should(($w) =>
+            expect($w[0].closest('.active-target'), 'cal selected on the canvas').to.not.eq(null));
         cy.get(S.event('cal')).click();
         cy.get(S.popover('cal')).should('have.css', 'display', 'block');
         cy.get(S.popoverCanvas('cal')).should('be.visible');

@@ -80,6 +80,14 @@ describe('PDF — events facet', { testIsolation: false }, () => {
                 expect(Cypress.Buffer.compare(Cypress.Buffer.from(saved), Cypress.Buffer.from(original)), 'same bytes').to.eq(0);
             })
         );
-        cy.task('readPdf', `${DOWNLOADS}/${NAME}.pdf`).should('contain', `${MULTI.label} 1`).and('contain', `${MULTI.label} 3`);
+        // … a PDF whose page tree and page text are the fixture's. Read from the raw bytes: the fixture's text is
+        // uncompressed, and the readPdf task (pdf-parse's bundled pdf.js 1.x) rejects this jsPDF file with "bad XRef
+        // entry" although its xref offsets are valid and the widget's own pdf.js renders it.
+        cy.readFile(`${DOWNLOADS}/${NAME}.pdf`, 'latin1').then((raw) => {
+            expect(raw.startsWith('%PDF-'), 'PDF header').to.eq(true);
+            expect(raw, 'page count').to.contain(`/Count ${MULTI.pages}`);
+            expect(raw, 'first page text').to.contain(`(${MULTI.label} 1) Tj`);
+            expect(raw, 'last page text').to.contain(`(${MULTI.label} ${MULTI.pages}) Tj`);
+        });
     });
 });

@@ -377,6 +377,7 @@ describe('Dropdown (DropdownV2) — canvas facet', { testIsolation: false }, () 
 
             scrollDropdownMenuTo('top');
             dropdownState('ddlong', (s) => {
+                expect(s.menu.body.scrollTop, 'scroller at the top').to.eq(0);
                 expectWindow(s, labels, 0);
                 expectRowVisible(s, 0);
                 expect(s.menu.options.map((o) => o.index), 'selection row recycled').to.not.include(SELECTED);

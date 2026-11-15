@@ -69,10 +69,18 @@ export const expectZoom = (name, assertFn) =>
 /**
  * @tjBlock  userflow
  * @tjUsage  clickZoomSurface('image1')
- * @tjDom    real hover (mouseenter arms zoom, Image.jsx:323) then a real click at the surface centre
+ * @tjDom    real hover (mouseenter arms zoom, Image.jsx:323) then a real click at the surface centre. The pointer
+ *           first leaves to the page corner so the hover is a real enter (a pointer already resting on the surface
+ *           — e.g. left there by the previous test — gets no mouseenter), and the click waits until the surface
+ *           is armed (its zoom cursor is painted, Image.jsx:320): handleClick reads isZoomEnabled from its render,
+ *           so a click dispatched before the mouseenter re-render is ignored (Chrome sends both back to back).
  */
 export const clickZoomSurface = (name) => {
+  cy.get("body").realMouseMove(1, 1, { position: "topLeft", scrollBehavior: false });
   cy.get(imageSelector.zoomSurface(name)).realHover({ scrollBehavior: false });
+  cy.get(imageSelector.zoomSurface(name)).should(($s) =>
+    expect(getComputedStyle($s[0]).cursor, `${name}: zoom armed by the hover`).to.match(/^zoom-(in|out)$/)
+  );
   cy.get(imageSelector.zoomSurface(name)).realClick({ scrollBehavior: false });
 };
 
