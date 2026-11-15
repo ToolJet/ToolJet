@@ -125,7 +125,7 @@ jobs:
         edition:
           - ee
         # one entry per machine; specs are split by cypress-tests/ci-shard.js
-        shard: [1, 2, 3, 4, 5, 6]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
     steps:
       - name: Debug labels and matrix edition
@@ -504,10 +504,12 @@ jobs:
           CELL: "App Builder / ${{ matrix.edition }} (${{ matrix.shard }}/${{ strategy.job-total }})"
           SHARD_INDEX: ${{ strategy.job-index }}
           SHARD_TOTAL: ${{ strategy.job-total }}
-          # One group per machine, in machine order, balanced on spec durations from a
-          # full CI run (~19 min of specs each). Specs matching no group go to the
-          # machine with the fewest specs. The first group holds the license spec (runs
-          # first) and chainingOfQueries.cy.js, the one spec that needs the VPN.
+          # One group per machine for the first six machines, in machine order,
+          # balanced on spec durations from a full CI run. Specs matching no group
+          # (the per-widget component folders) go to the machine with the fewest
+          # specs, so machines 7-10 start with them. The first group holds the
+          # license spec (runs first) and chainingOfQueries.cy.js, the one spec
+          # that needs the VPN.
           SHARD_GROUPS: >-
             /licensing/,/globals/,/pages/,/querymanager/,components/datePickerHappyPath,components/modalHappyPath,components/textHappyPath,/components/button/,filebutton/propertiesFx,filebutton/stylesFx,filebutton/userflow,filebutton/basics;
             /components/numberInput/,filebutton/canvas,filebutton/contexts,filebutton/customerIssues;
@@ -720,7 +722,7 @@ jobs:
           CHANNEL: ${{ secrets.SLACK_CHANNEL_ID }}
           # Suite name rendered in the Slack headline (e.g. "❌ Cypress App Builder Failed").
           SUITE: App Builder
-          # one "App Builder / ee" row for the 6 Cypress-AppBuilder machines
+          # one "App Builder / ee" row for the 10 Cypress-AppBuilder machines
           COMBINE_SHARDS: "true"
           # Red unless every test job that ran passed (skipped cells don't count).
           OVERALL: >-
