@@ -69,5 +69,6 @@ export const gitSyncSelectors = {
   workflowGitButton: '[data-cy="workflow-git-commit-button"]',
   workflowLogsPanel: '[data-cy="logs-panel"]',
   versionSwitcherButton: '[data-cy="version-switcher-button"]',
+  developmentEnvName: '[data-cy="development-environment-name"]',
   versionRowSaveButton: '[data-cy$="-save-version-button"]',
 };

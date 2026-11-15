@@ -272,6 +272,8 @@ const pullFromGitSyncModalViaUI = () => {
 export const runWorkflowAndReadNodeOutputViaUI = (nodeName) => {
   const node = nodeName.toLowerCase();
   cy.intercept("POST", "**/api/workflow_executions/*/trigger").as("workflowRun");
+  // Run is enabled before the environment loads; an early click is rejected with "environmentId should not be empty".
+  cy.get(GS.developmentEnvName, { timeout: 60000 }).should("be.visible");
   cy.get(GS.workflowRunButton, { timeout: 60000 }).should("be.enabled").click();
   // The run's outcome is read from the logs below; the status is logged since a 400 can still show a successful run.
   cy.wait("@workflowRun", { timeout: 60000 }).then(({ response }) =>
