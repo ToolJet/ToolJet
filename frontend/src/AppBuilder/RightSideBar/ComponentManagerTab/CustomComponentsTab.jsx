@@ -395,7 +395,9 @@ export const SdkComponentCard = ({ componentType, dragComponent, name, displayNa
             </div>
           </center>
         </div>
-        <div className="component-title">{title}</div>
+        <div className="component-title" title={title}>
+          {title}
+        </div>
       </div>
     </div>
   );

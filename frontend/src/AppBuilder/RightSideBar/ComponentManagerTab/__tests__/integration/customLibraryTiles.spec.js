@@ -66,4 +66,12 @@ describe('a custom library without roles in the palette', () => {
     expect(screen.getByText('Reset Button').closest('.draggable-box-wrapper')).not.toBeNull();
     expect(screen.queryByText('Counter Button')).toBeNull();
   });
+
+  it('[CustomComponentsTab-TILES-003] keeps each tile name whole in its tooltip, since the title shows two lines at most', () => {
+    // Break this catches: a long component name cut off by the two-line clamp with no way to read the rest.
+    const { container } = renderPicked();
+
+    const titles = [...container.querySelectorAll('.draggable-box-wrapper .component-title')];
+    expect(titles.map((title) => title.getAttribute('title'))).toEqual(['Counter Button', 'Reset Button']);
+  });
 });
