@@ -5,6 +5,11 @@
  * container accordion (padding/togglr-button-none). Selectors confirmed live: field bg/border/radius/
  * shadow → `-actionable-section`, text color → `-input`, label color/size → `-label`.
  * Helpers: openEditorSidebar, selectColourFromColourPicker, verifyWidgetColorCss, fillBoxShadowParams, verifyBoxShadowCss.
+ * TESTING.md browser scenario:
+ *   PasswordInput-BRW-003 — COMPUTED colours (label, background, border, text masked+revealed, placeholder, left icon,
+ *   error text), radius and shadow in light AND dark app mode; border precedence error > focus(accent) > configured,
+ *   incl. an invalid field revealed with the eye that is focused or hovered.
+ *   Helpers: expectComputedColor, resolveCssVarColor.
  */
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
@@ -17,6 +22,9 @@ import {
     fillBoxShadowParams,
     verifyBoxShadowCss,
 } from "Support/utils/commonWidget";
+import { expectComputedColor, resolveCssVarColor } from "Support/utils/appBuilder/components/baseInput";
+import { passwordInputSelector } from "Selectors/appBuilder/components/passwordInput";
+import { passwordInputText } from "Texts/appBuilder/components/passwordInput";
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec run.
 describe('Password Input — styles facet', { testIsolation: false }, () => {
@@ -176,5 +184,181 @@ describe('Password Input — styles facet', { testIsolation: false }, () => {
         // source: passwordinput.js:15
         cy.get('[data-cy="legacy-input-size-toggle-button"]').check({ force: true });
         cy.get('[data-cy="legacy-input-size-toggle-button"]').should('be.checked');
+    });
+
+    // ── PasswordInput-BRW-003 ────────────────────────────────────────────────
+    // jsdom drops `var()` on standard properties, so the cascade is browser-only. Colours are asserted on
+    // getComputedStyle; theme tokens are resolved in-page with a probe element (resolveCssVarColor).
+    const PSEL = passwordInputSelector;
+    const rgb = (c) => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+    const asPicker = (c) => [...c.map(String), '100'];
+
+    // One swatch popover at a time: commit each pick by clicking the canvas, then reopen the Styles tab.
+    const pickColour = (...args) => {
+        selectColourFromColourPicker(...args);
+        cy.forceClickOnCanvas();
+        openStyles();
+    };
+
+    const enableMandatoryThenOpenStyles = () => {
+        openEditorSidebar(W);
+        openAccordion(passwordInputText.accordionValidation);
+        // raw `false` default, so skip the fx-value check. source: passwordinput.js:344
+        verifyAndModifyToggleFx(passwordInputText.mandatory, '');
+        cy.forceClickOnCanvas();
+        openStyles();
+    };
+
+    const switchAppToDark = () => {
+        // globalSettings.appMode drives the app canvas `dark-theme` class
+        cy.apiUpdateGlobalSettings({ appMode: 'dark' });
+        cy.reload();
+        cy.get(PSEL.input(W), { timeout: 30000 }).should('be.visible');
+        cy.get('.dark-theme').should('exist');
+    };
+
+    const moveMouseAway = () => cy.get('body').realHover({ position: 'topLeft' });
+
+    it('[PasswordInput-BRW-003] Computed colours, radius and shadow match the configured styles in light and dark mode', () => {
+        // dynamic: distinct test colours, one per style
+        const labelColor = [128, 0, 128];
+        const background = [255, 240, 200];
+        const border = [0, 0, 255];
+        const text = [0, 128, 0];
+        const placeholder = [200, 100, 0];
+        const errText = [255, 128, 0];
+        const shadow = [2, 4, 6, 0]; // dynamic: x/y/blur/spread
+        const shadowColor = [255, 0, 0, 90]; // dynamic: alpha < 100 → rgba
+        const radius = '14'; // dynamic (default {{6}} — passwordinput.js:352)
+
+        enableMandatoryThenOpenStyles();
+        pickColour('Text', asPicker(labelColor), 0, undefined, 0); // label `color`. source: passwordinput.js:117
+        pickColour('Background', asPicker(background)); // source: passwordinput.js:204
+        pickColour('Border', asPicker(border)); // source: passwordinput.js:210
+        pickColour('Text', asPicker(text), 0, undefined, 1); // field textColor. source: passwordinput.js:222
+        pickColour('Placeholder Text', asPicker(placeholder)); // source: passwordinput.js:228
+        pickColour('Error text', asPicker(errText)); // source: passwordinput.js:234
+        cy.get('[data-cy="border-radius-input"]').clear().type(radius); // source: passwordinput.js:255
+        cy.get(commonWidgetSelector.boxShadowColorPicker).click(); // source: passwordinput.js:261
+        fillBoxShadowParams(commonWidgetSelector.boxShadowDefaultParam, shadow);
+        selectColourFromColourPicker('Box shadow Color', shadowColor.map(String), 0);
+        cy.forceClickOnCanvas();
+        cy.waitForAutoSave();
+
+        const expectConfiguredStyles = (mode) => {
+            cy.log(`configured styles — ${mode}`);
+            moveMouseAway();
+            expectComputedColor(`${PSEL.label(W)} p`, 'color', rgb(labelColor));
+            expectComputedColor(PSEL.field(W), 'background-color', rgb(background));
+            expectComputedColor(PSEL.field(W), 'border-top-color', rgb(border));
+            cy.get(PSEL.field(W)).should('have.css', 'border-top-left-radius', `${radius}px`);
+            cy.get(PSEL.field(W)).should(
+                'have.css',
+                'box-shadow',
+                `rgba(${shadowColor[0]}, ${shadowColor[1]}, ${shadowColor[2]}, ${shadowColor[3] / 100}) ${shadow[0]}px ${shadow[1]}px ${shadow[2]}px ${shadow[3]}px`
+            );
+            // empty field → placeholder paints in the configured colour; with iconColor left at its default the
+            // left icon follows the placeholder colour (BaseInput.jsx:93-100)
+            cy.get(PSEL.input(W)).clear();
+            cy.get(PSEL.input(W)).should(($el) => {
+                const c = $el[0].ownerDocument.defaultView.getComputedStyle($el[0], '::placeholder').color;
+                expect(c, 'placeholder colour').to.eq(rgb(placeholder));
+            });
+            expectComputedColor(PSEL.icon(W), 'color', rgb(placeholder));
+            // typed text — both masked and revealed — in the configured text colour
+            cy.get(PSEL.input(W)).type(fake.password); // dynamic: fake
+            expectComputedColor(PSEL.input(W), 'color', rgb(text));
+            cy.get(PSEL.revealToggle(W)).click();
+            cy.get(PSEL.input(W)).should('have.attr', 'type', 'text');
+            expectComputedColor(PSEL.input(W), 'color', rgb(text));
+            cy.get(PSEL.revealToggle(W)).click();
+            cy.get(PSEL.input(W)).should('have.attr', 'type', 'password');
+            // reveal the mandatory error, then its text colour
+            cy.get(PSEL.input(W)).clear().focus().blur();
+            cy.get(PSEL.invalidFeedback(W)).should('have.text', passwordInputText.errorMandatory);
+            expectComputedColor(PSEL.invalidFeedback(W), 'color', rgb(errText));
+        };
+
+        expectConfiguredStyles('light');
+        resolveCssVarColor('--cc-surface1-surface', PSEL.field(W)).as('lightSurfaceToken');
+
+        switchAppToDark();
+        // the theme really switched where the widget lives: an unconfigured token resolves differently
+        cy.get('@lightSurfaceToken').then((lightToken) => {
+            resolveCssVarColor('--cc-surface1-surface', PSEL.field(W)).should('not.eq', lightToken);
+        });
+        expectConfiguredStyles('dark');
+    });
+
+    // BaseInput.jsx:223-234: borderColor = error (invalid && revealed) → accent (focused) → configured.
+    // baseInput.scss: the `:hover:not(:focus-within):not(.tj-input-has-error)` rule repaints the border with
+    // `!important`. "Revealed" is exercised both ways: the error is revealed AND the password is revealed
+    // with the eye (the input re-renders as type=text), which must not drop the error border.
+    it('[PasswordInput-BRW-003] Border precedence — accent on focus; an invalid revealed field stays in the error colour while focused, light and dark', () => {
+        const border = [0, 0, 255]; // dynamic: configured border
+        const accent = [255, 0, 255]; // dynamic: configured accent (focus) colour
+
+        enableMandatoryThenOpenStyles();
+        pickColour('Border', asPicker(border)); // source: passwordinput.js:210
+        pickColour('Accent', asPicker(accent)); // source: passwordinput.js:216
+        cy.forceClickOnCanvas();
+        cy.waitForAutoSave();
+
+        const expectBorderPrecedence = (mode) => {
+            cy.log(`border precedence — ${mode}`);
+            resolveCssVarColor('--cc-error-systemStatus', PSEL.field(W)).then((errorRgb) => {
+                expect(errorRgb, 'error token differs from the configured colours').not.to.be.oneOf([rgb(border), rgb(accent)]);
+
+                moveMouseAway();
+                // untouched (invalid but not revealed) → configured border
+                expectComputedColor(PSEL.field(W), 'border-top-color', rgb(border));
+                // focused, not revealed → accent
+                cy.get(PSEL.input(W)).realClick();
+                cy.get(PSEL.input(W)).should('be.focused');
+                expectComputedColor(PSEL.field(W), 'border-top-color', rgb(accent));
+                // blur reveals the mandatory error → error colour
+                cy.get(PSEL.input(W)).blur();
+                moveMouseAway();
+                cy.get(PSEL.invalidFeedback(W)).should('have.text', passwordInputText.errorMandatory);
+                expectComputedColor(PSEL.field(W), 'border-top-color', errorRgb);
+                // invalid + error revealed + FOCUSED → still the error colour
+                cy.get(PSEL.input(W)).realClick();
+                cy.get(PSEL.input(W)).should('be.focused');
+                expectComputedColor(PSEL.field(W), 'border-top-color', errorRgb);
+                // password revealed with the eye (type=text) + focused → still the error colour
+                cy.get(PSEL.revealToggle(W)).realClick();
+                cy.get(PSEL.input(W)).should('have.attr', 'type', 'text');
+                cy.get(PSEL.input(W)).realClick();
+                cy.get(PSEL.input(W)).should('be.focused');
+                cy.get(PSEL.invalidFeedback(W)).should('have.text', passwordInputText.errorMandatory);
+                expectComputedColor(PSEL.field(W), 'border-top-color', errorRgb);
+                // … and hovered while not focused → still the error colour
+                cy.get(PSEL.input(W)).blur();
+                cy.get(PSEL.field(W)).realHover();
+                expectComputedColor(PSEL.field(W), 'border-top-color', errorRgb);
+                // a valid value while focused (still revealed) → accent; blurred and unhovered → configured
+                cy.get(PSEL.input(W)).realClick();
+                cy.get(PSEL.input(W)).type(fake.password); // dynamic: fake
+                cy.get(PSEL.invalidFeedback(W)).should(($el) => expect($el.text()).to.eq(''));
+                expectComputedColor(PSEL.field(W), 'border-top-color', rgb(accent));
+                cy.get(PSEL.input(W)).blur();
+                moveMouseAway();
+                expectComputedColor(PSEL.field(W), 'border-top-color', rgb(border));
+                // leave it empty and masked for the next mode
+                cy.get(PSEL.revealToggle(W)).click();
+                cy.get(PSEL.input(W)).should('have.attr', 'type', 'password');
+                cy.get(PSEL.input(W)).clear().blur();
+            });
+        };
+
+        cy.openPreview(PSEL.input(W));
+        expectBorderPrecedence('light, preview');
+
+        switchAppToDark();
+        expectBorderPrecedence('dark, preview');
+    });
+
+    afterEach(() => {
+        cy.apiDeleteApp();
     });
 });
