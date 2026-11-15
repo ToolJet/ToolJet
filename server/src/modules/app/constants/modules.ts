@@ -26,6 +26,7 @@ export enum MODULES {
   SMTP = 'SMTP',
   ONBOARDING = 'Onboarding',
   INSTANCE_SETTINGS = 'instanceSettings',
+  SSRF = 'ssrf',
   LICENSING = 'Licensing',
   FILE = 'file',
   ORGANIZATION_THEMES = 'organizationThemes',
