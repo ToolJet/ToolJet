@@ -135,6 +135,11 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Comment** | An individual message within a thread | — |
 | **Multiplayer Editing** | Real-time collaborative editing of an app by multiple users simultaneously (EE feature) | — |
 | **Audit Log** | A compliance record of user actions (who did what, when); retention varies by plan | — |
+| **Usage analytics** | Workspace-admin dashboards of how released apps are used: active users, retention, reach, lifecycle (EE feature) | App usage analytics; `app-usage-analytics` module, `/api/analytics` routes |
+| **App open** | A logged-in user loading a released app through its released link; editor, preview and public (no-login) visits are not app opens | `app_opened` event |
+| **Active user** | A distinct logged-in user with at least one app open in the selected period | — |
+| **Lifecycle group** | Each user who ever opened an app falls in one per period: New (first open in the period), Retained (active in this and the previous period), Reactivated (active now, absent last period, first seen earlier), Inactive (opened before, not in the period) | — |
+| **Reach** | Active users of an app ÷ users who can open it today (historical access is not stored) | — |
 | **Git Sync** | Bidirectional sync between a workspace and a Git repository — apps, data sources, and modules pushed/pulled per Workspace Branch (EE feature) | Version control (docs use that for app Versions, a different feature) |
 | **Correlation ID** | Portable identity (`co_relation_id`) carried by apps, versions, components, and data sources so entities survive git/zip round-trips; unique only per workspace — git clones share it, always scope lookups | Git id (adapter-internal term) |
 | **Import** | Loading an app definition (JSON) into a workspace from another ToolJet instance | — |

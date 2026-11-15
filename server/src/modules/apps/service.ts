@@ -57,6 +57,8 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { APP_OPENED_EVENT } from '@modules/app-usage-analytics/constants';
+import { AppOpenedEvent } from '@modules/app-usage-analytics/types';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
@@ -320,6 +322,8 @@ export class AppsService implements IAppsService {
       throw new HttpException(errorResponse, HttpStatus.NOT_IMPLEMENTED);
     }
 
+    if (user) this.emitAppOpened(app, user);
+
     return {
       id: app.id,
       slug: app.slug,
@@ -330,6 +334,26 @@ export class AppsService implements IAppsService {
         licenseTerms: await this.licenseTermsService.getLicenseTerms(VIEWER_LICENSE_FIELDS, app.organizationId),
       }),
     };
+  }
+
+  /**
+   * Usage analytics: a logged-in user opened the released version. Fire-and-forget; the EE
+   * listener enqueues it and nothing on this request waits. Public visitors (no user) are not
+   * tracked, and the editor and preview never reach validateReleasedApp.
+   */
+  private emitAppOpened(app: App, user: User): void {
+    const event: AppOpenedEvent = {
+      event: 'app_opened',
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+      properties: {
+        workspaceId: app.organizationId,
+        appId: app.id,
+        appVersionId: app.currentVersionId,
+        environment: 'production',
+      },
+    };
+    this.eventEmitter.emit(APP_OPENED_EVENT, event);
   }
 
   async getAppAuthenticationConfig(slug: string) {
@@ -1130,6 +1154,13 @@ export class AppsService implements IAppsService {
       }
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
+      // First release time of this version; MIN over an app's versions is its first release (New app tag).
+      await manager
+        .createQueryBuilder()
+        .update(AppVersion)
+        .set({ releasedAt: () => 'now()' })
+        .where('id = :id AND released_at IS NULL', { id: versionToBeReleased })
+        .execute();
 
       //APP_RELEASE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {

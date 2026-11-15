@@ -37,6 +37,7 @@ export interface Terms {
     scim?: boolean;
     mfa?: boolean;
     customDomains?: boolean;
+    appUsageAnalytics?: boolean;
     google?: boolean;
     github?: boolean;
     observability?: boolean;

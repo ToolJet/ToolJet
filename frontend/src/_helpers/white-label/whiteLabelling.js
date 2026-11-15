@@ -56,7 +56,10 @@ export async function setFaviconAndTitle(location) {
   });
 
   // Set page title based on route
-  const isEditorOrViewer = ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
+  // The usage analytics app view (/usage-analytics/apps/:id) is a dashboard page, not the editor.
+  const isEditorOrViewer =
+    !location.pathname.includes('/usage-analytics/') &&
+    ['/apps/', '/applications/'].some((path) => location?.pathname.includes(path));
   if (isEditorOrViewer) return;
 
   const pageTitles = {
@@ -66,6 +69,7 @@ export async function setFaviconAndTitle(location) {
     workflows: 'Workflows',
     'data-sources': 'Data sources',
     'audit-logs': 'Audit logs',
+    'usage-analytics': 'Usage analytics',
     'account-settings': 'Profile settings',
     settings: 'Settings',
     'profile-settings': 'Profile settings',

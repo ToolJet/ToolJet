@@ -21,6 +21,8 @@ export const routes = {
   integrations: '/integrations/marketplace',
   data_sources: '/data-sources',
   audit_logs: '/audit-logs',
+  usage_analytics: '/usage-analytics',
+  usage_analytics_app: '/usage-analytics/apps/:appId',
   home: '/home',
   workflows: '/workflows',
   workspace_constants: '/workspace-constants',

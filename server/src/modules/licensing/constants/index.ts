@@ -144,6 +144,7 @@ export enum LICENSE_FIELD {
   APP_PERMISSIONS_QUERY = 'appPermissionQueryEnabled',
   APP_PERMISSIONS_PAGES = 'appPermissionPagesEnabled',
   CUSTOM_DOMAINS = 'customDomainsEnabled',
+  APP_USAGE_ANALYTICS = 'appUsageAnalyticsEnabled',
   APP_PAGES_LIMIT = 'appPagesLimit',
   GOOGLE = 'googleEnabled',
   GITHUB = 'githubEnabled',

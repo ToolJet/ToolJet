@@ -52,6 +52,7 @@ graph TD
 | App lifecycle | Create versions, edit in an environment, release a selected version, roll back by releasing an earlier version, and import/export app definitions. | `server/src/modules/versions/`; `server/src/modules/apps/service.ts::release`; `server/src/modules/apps/services/app-import-export.service.ts` |
 | Sharing and consumption | Access released apps by slug, make an app public, embed it, or require authenticated app access. | `frontend/src/ViewerApp.jsx`; `server/src/modules/apps/controller.ts::{validateReleasedAppAccess,appFromSlug}` |
 | Workspace administration | Authenticate users, switch workspace, manage membership, roles/groups, folders, constants, environments, and settings. | `server/src/modules/auth/`; `server/src/modules/session/`; `server/src/modules/group-permissions/`; `frontend/src/modules/WorkspaceSettings/` |
+| Usage analytics (EE/Cloud) | Workspace admins see active users, retention, lifecycle groups and active apps for the workspace, and per released app: active users, trend, retention, reach, last opened and who opened it. | `server/src/modules/app-usage-analytics/` (CE contract, EE in `server/ee/app-usage-analytics/`); `frontend/ee/modules/UsageAnalytics/` |
 | Extensibility and deployment | Use built-in connector packages, marketplace plugins, and self-host through Docker, Kubernetes, Helm, or OpenShift assets. | `plugins/package.json`; `marketplace/`; `docker/`; `deploy/` |
 | Workflows and AI surfaces | Public base modules and UI/docs exist for workflow execution and AI-assisted building. Availability and concrete implementations vary by edition/license; several CE workflow webhook methods are stubs. | `server/src/modules/workflows/`; `server/src/modules/ai/`; `server/src/modules/workflows/controllers/workflow-webhooks.controller.ts` |
 
@@ -96,6 +97,7 @@ graph TD
 - Query credentials and constants are resolved for the selected Environment on the server; secrets are decrypted there rather than exposed to the browser (`server/src/modules/data-queries/util.service.ts`).
 - Component configuration must remain backward compatible with previously saved apps, and server/frontend component defaults must change together (`frontend/AGENTS.md`; `server/AGENTS.md`).
 - Feature availability may be constrained by edition, license terms, and resource-count guards (`server/src/modules/licensing/`; `AbilityGuard`).
+- Usage analytics counts only logged-in users opening a released app through its released link; editor, preview and public (no-login) visits never count, and days are UTC for every workspace (`server/src/modules/app-usage-analytics/AGENTS.md`).
 
 ## Inferences
 

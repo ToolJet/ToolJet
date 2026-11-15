@@ -53,6 +53,7 @@ export default class LicenseBase {
   private _isScimEnabled: boolean;
   private _isMfaEnabled: boolean;
   private _isCustomDomains: boolean;
+  private _isAppUsageAnalytics: boolean;
   private _isGoogle: boolean;
   private _isGithub: boolean;
   private _isObservability: object;
@@ -89,6 +90,7 @@ export default class LicenseBase {
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
       this._isCustomDomains = true;
+      this._isAppUsageAnalytics = true;
       this._plan = plan;
       return;
     }
@@ -155,6 +157,7 @@ export default class LicenseBase {
     // non-flexible plans - which would silently turn MFA on for every pre-existing license.
     this._isMfaEnabled = (this._features as any)?.mfa === true;
     this._isCustomDomains = this.getFeatureValue('customDomains');
+    this._isAppUsageAnalytics = this.getFeatureValue('appUsageAnalytics');
     this._isEnvMapping = this.getFeatureValue('workspaceEnv');
     this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
@@ -547,6 +550,13 @@ export default class LicenseBase {
     return this._isCustomDomains;
   }
 
+  public get appUsageAnalytics(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.appUsageAnalytics;
+    }
+    return this._isAppUsageAnalytics;
+  }
+
   public get multiPlayerEdit(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.multiPlayerEdit;
@@ -625,6 +635,7 @@ export default class LicenseBase {
       appPagesLimit: this.appPagesLimit,
       workflowsEnabled: this.getWorkflowsEnabled(),
       customDomain: this.customDomains,
+      appUsageAnalytics: this.appUsageAnalytics,
       promote: this.canPromote,
       release: this.canRelease,
       google: this.google,
