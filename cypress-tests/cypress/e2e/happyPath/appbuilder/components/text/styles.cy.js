@@ -17,8 +17,6 @@ import { addTextsViaApi, textMetrics } from "Support/utils/appBuilder/components
 
 const T = textText;
 const PX = 1.5; // line placement tolerance (px)
-// dynamic: words for wrapped text — letters only, capped so a row of them wraps predictably
-const words = (n) => Array.from({ length: n }, () => (fake.firstName.replace(/[^A-Za-z]/g, '') || 'word').slice(0, 9)).join(' ');
 
 describe('Text — styles facet', () => {
     beforeEach(() => {
@@ -32,8 +30,9 @@ describe('Text — styles facet', () => {
 
     // ── Text-BRW-003 ─────────────────────────────────────────────────────────
     it('[Text-BRW-003] Horizontal and vertical alignment place wrapped text as configured', () => {
-        const paragraph = words(24); // dynamic: wraps to several lines in a 9-column box
-        const twoLines = words(8); // dynamic: wraps to about two lines, far shorter than the box
+        // fixed text: random names could be short enough to fit on one line and make the wrap counts flaky
+        const paragraph = 'Quarterly revenue grew steadily across every region while operating costs held flat, so margins improved for the third consecutive quarter and the board approved new hiring plans';
+        const twoLines = 'Shipment delayed at customs pending inspection review';
         addTextsViaApi([
             // horizontal: one Text per textAlign option (text.js:160-168), vertically centred
             ...T.horizontalAlignments.map((align, i) => ({
