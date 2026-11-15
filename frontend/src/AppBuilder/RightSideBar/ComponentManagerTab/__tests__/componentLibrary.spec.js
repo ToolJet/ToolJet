@@ -24,6 +24,11 @@ describe('component library choices', () => {
     expect(choices.custom.map((c) => c.value)).toEqual(['lib:lib-1']);
   });
 
+  it("never offers a Code mode app's library: it is that app's build, not a component library", () => {
+    const { custom } = libraryChoices(packs, [...libraries, { id: 'lib-code', name: 'Inventory', codeMode: true }]);
+    expect(custom.map((c) => c.value)).toEqual(['lib:lib-1']);
+  });
+
   it('names ToolJet UI 1.0 for the native widgets', () => {
     expect(choiceLabel(UI1, choices)).toBe('ToolJet UI 1.0');
     expect(choiceLabel('pack:antd', choices)).toBe('Ant Design');

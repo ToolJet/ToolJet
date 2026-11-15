@@ -348,7 +348,12 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
               eventKey="components"
               title={
                 hasLibraryChoices ? (
-                  <LibraryPicker value={library} choices={choices} onChange={pickLibrary} />
+                  <LibraryPicker
+                    value={library}
+                    choices={choices}
+                    onChange={pickLibrary}
+                    onOpen={() => setActiveTab('components')}
+                  />
                 ) : (
                   (() => {
                     const str = t('globals.components', 'Components');
