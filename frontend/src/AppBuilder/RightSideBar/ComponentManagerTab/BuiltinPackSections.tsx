@@ -44,7 +44,6 @@ const PackComponentCard = ({ pack, name, component }: { pack: string; name: stri
       displayName={displayName}
       description={description}
       role={role}
-      tile
     />
   );
 };

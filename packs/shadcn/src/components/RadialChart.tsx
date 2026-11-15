@@ -201,7 +201,8 @@ export const RadialChart = () => {
   const [maxValue] = ToolJet.useStateNumber({ name: 'maxValue', label: 'Max value', initialValue: 100 });
   const [data] = ToolJet.useStateArray({
     name: 'data',
-    label: 'Data (categories mode)',
+    label: 'Data',
+    description: 'Used only when Mode is categories.',
     initialValue: [
       { channel: 'Direct', visitors: 275 },
       { channel: 'Search', visitors: 200 },
@@ -217,7 +218,8 @@ export const RadialChart = () => {
   const [valueField] = ToolJet.useStateString({ name: 'valueField', label: 'Value field', initialValue: 'visitors' });
   const [centerValue] = ToolJet.useStateString({
     name: 'centerValue',
-    label: 'Center figure (blank = the value)',
+    label: 'Center figure',
+    description: 'Leave empty to show the progress value.',
     initialValue: '',
   });
   const [centerLabel] = ToolJet.useStateString({
@@ -234,7 +236,8 @@ export const RadialChart = () => {
   const [endAngle] = ToolJet.useStateNumber({ name: 'endAngle', label: 'End angle', initialValue: -270 });
   const [thickness] = ToolJet.useStateString({
     name: 'thickness',
-    label: 'Ring thickness (px, blank = auto)',
+    label: 'Ring thickness (px)',
+    description: 'Leave empty to size it automatically.',
     initialValue: '',
   });
   const [rounded] = ToolJet.useStateBoolean({ name: 'rounded', label: 'Rounded ends', initialValue: true });
@@ -250,7 +253,8 @@ export const RadialChart = () => {
   const [animate] = ToolJet.useStateBoolean({ name: 'animate', label: 'Animate', initialValue: true });
   const [showLegend] = ToolJet.useStateBoolean({
     name: 'showLegend',
-    label: 'Legend (categories mode)',
+    label: 'Legend',
+    description: 'Used in categories mode.',
     initialValue: true,
   });
   const [colors] = ToolJet.useStateArray({ name: 'colors', label: 'Series colors (in order)', initialValue: [] });
@@ -261,7 +265,9 @@ export const RadialChart = () => {
     initialValue: false,
   });
   const click = useChartClick(highlightClicked);
-  const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
+  const chartColor = useThemeColor('chartColor', 'Chart color', TOKEN.brand, {
+    description: 'Leads the series colors unless Series colors sets them.',
+  });
   const trackColor = useThemeColor('trackColor', 'Track color', TOKEN.muted);
   const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
   const centerValueColor = useThemeColor('centerValueColor', 'Center figure color', TOKEN.text);

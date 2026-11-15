@@ -101,7 +101,8 @@ export const Navigation = () => {
   });
   const [collapsed, setCollapsed] = ToolJet.useStateBoolean({
     name: 'collapsed',
-    label: 'Collapsed (icon-only sidebar)',
+    label: 'Collapsed',
+    description: 'Shows icons only in a vertical sidebar.',
     initialValue: false,
   });
   const [showCollapseButton] = ToolJet.useStateBoolean({

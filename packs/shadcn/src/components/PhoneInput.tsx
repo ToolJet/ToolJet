@@ -33,7 +33,8 @@ export const PhoneInput = () => {
   });
   const [defaultValue] = ToolJet.useStateString({
     name: 'defaultValue',
-    label: 'Default value (E.164 or a national number)',
+    label: 'Default value',
+    description: 'Like +14155550123, or a local number in Default country.',
     initialValue: '',
   });
   const [defaultCountry] = ToolJet.useStateString({
@@ -43,7 +44,8 @@ export const PhoneInput = () => {
   });
   const [onlyCountries] = ToolJet.useStateArray({
     name: 'onlyCountries',
-    label: 'Countries offered (ISO codes; empty: all)',
+    label: 'Countries offered',
+    description: 'Country codes, like US. Leave empty for all.',
     placeholder: "['US', 'CA', 'GB']",
     initialValue: [],
   });

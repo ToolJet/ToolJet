@@ -64,7 +64,8 @@ export const Combobox = () => {
   const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: true });
   const [serverSideSearch] = ToolJet.useStateBoolean({
     name: 'serverSideSearch',
-    label: 'Server-side search (options already filtered by searchText)',
+    label: 'Server-side search',
+    description: 'Your query filters the options by searchText.',
     initialValue: false,
   });
   const [showClearBtn] = ToolJet.useStateBoolean({
@@ -97,7 +98,7 @@ export const Combobox = () => {
   const onSearchTextChanged = ToolJet.useEventCallback({ name: 'onSearchTextChanged' });
   const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
   const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
-  const styles = useFieldStyles('Accent (focus ring, checks)');
+  const styles = useFieldStyles('Accent', 'Used for the focus ring and checkmarks.');
   const menuBackgroundColor = useColorStyle('menuBackgroundColor', 'Menu background', TOKEN.surface);
   const menuTextColor = useColorStyle('menuTextColor', 'Menu text color', TOKEN.text);
   const optionHoverColor = useColorStyle('optionHoverColor', 'Highlighted option background', TOKEN.muted);

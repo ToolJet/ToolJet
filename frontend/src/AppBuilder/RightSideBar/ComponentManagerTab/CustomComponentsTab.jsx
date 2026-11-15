@@ -124,7 +124,12 @@ export const LibrarySection = ({ library, searchQuery = '', onVisibilityChange =
   const { current, latest } = useLibraryCurrentRevision(library);
   const manifest = useResolvedManifest(library, current, latest);
   const { components, isVisible } = getLibrarySearchMatch(library, manifest?.components, searchQuery);
-  const sections = useMemo(() => groupPackComponents(components), [components]);
+  // A pack's components sit in ToolJet's palette sections; a library whose components declare no roles gets one
+  // untitled section, so every library shows the same tile grid as the built-in components.
+  const sections = useMemo(
+    () => groupPackComponents(components) ?? (components.length ? [{ key: 'components', items: components }] : []),
+    [components]
+  );
 
   // Cleanup reports "gone" on unmount (library removed from the candidate list) or
   // right before re-reporting on a query/manifest change — always a targeted add/remove
@@ -138,12 +143,11 @@ export const LibrarySection = ({ library, searchQuery = '', onVisibilityChange =
   // so it's discoverable — the card list itself stays empty until a dev entry is chosen.
   if (!isVisible) return null;
 
-  const packSections = (list) => (
-    // A component pack (its components declare roles): ToolJet's palette sections, as widget tiles.
+  const tileSections = (
     <div className="custom-library-section-content custom-library-pack-sections">
-      {list.map((section) => (
+      {sections.map((section) => (
         <div key={section.key} className="custom-library-pack-section" data-cy={`pack-section-${section.key}`}>
-          <div className="custom-library-pack-section-title">{section.title}</div>
+          {section.title && <div className="custom-library-pack-section-title">{section.title}</div>}
           <div className="component-card-group-wrapper">
             {section.items.map(([exportName, comp]) => (
               <CustomComponentCard
@@ -152,28 +156,12 @@ export const LibrarySection = ({ library, searchQuery = '', onVisibilityChange =
                 correlationId={library.correlationId}
                 libraryName={library.name}
                 revisionId={current}
-                name={exportName}
+                name={exportName} // the bundle's export — what the shell resolves
                 componentConfig={comp}
-                tile
               />
             ))}
           </div>
         </div>
-      ))}
-    </div>
-  );
-  const flatList = () => (
-    <div className="custom-library-section-content">
-      {components.map(([exportName, comp]) => (
-        <CustomComponentCard
-          key={exportName}
-          libraryId={library.id}
-          correlationId={library.correlationId}
-          libraryName={library.name}
-          revisionId={current}
-          name={exportName} // the bundle's export — what the shell resolves
-          componentConfig={comp}
-        />
       ))}
     </div>
   );
@@ -185,7 +173,7 @@ export const LibrarySection = ({ library, searchQuery = '', onVisibilityChange =
           <span className="custom-library-version-label">Version</span>
           <VersionPicker library={library} />
         </div>
-        {sections ? packSections(sections) : flatList()}
+        {tileSections}
       </div>
     );
   }
@@ -211,7 +199,7 @@ export const LibrarySection = ({ library, searchQuery = '', onVisibilityChange =
         </div>
       </div>
 
-      {open && (sections ? packSections(sections) : flatList())}
+      {open && tileSections}
     </div>
   );
 };
@@ -331,17 +319,8 @@ const VersionPicker = ({ library }) => {
 
 // A draggable card for one SDK-built component (a library's or a pack's): drops `dragComponent` as a
 // `componentType` widget, with the same rules as the built-in components' DragLayer. `onDropped` runs after a drop.
-// `tile` draws it as a ToolJet widget in the palette (its role's widget icon over its name), else as a list row.
-export const SdkComponentCard = ({
-  componentType,
-  dragComponent,
-  name,
-  displayName,
-  description,
-  role,
-  tile = false,
-  onDropped,
-}) => {
+// It draws as a ToolJet widget tile in the palette: its role's widget icon (or its initials) over its name.
+export const SdkComponentCard = ({ componentType, dragComponent, name, displayName, description, role, onDropped }) => {
   const darkMode = useStore((state) => state.isTJDarkMode);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
@@ -385,64 +364,46 @@ export const SdkComponentCard = ({
     }
   }, [isDragging, isRightSidebarPinned, setRightSidebarOpen]);
 
-  if (tile) {
-    // As a ToolJet widget in the palette (WidgetBox): its widget's icon over its name.
-    const { icon } = paletteFor(role);
-    const title = displayName ?? name;
-    return (
-      <div
-        ref={drag}
-        className="text-center align-items-center clearfix draggable-box-wrapper"
-        data-cy={`custom-component-${name.toLowerCase()}`}
-      >
-        <div
-          className="component-image-wrapper"
-          style={{ height: '56px', width: '72px', position: 'relative' }}
-          title={description || title}
-        >
-          <div className="component-image-holder d-flex flex-column justify-content-center" style={{ height: '100%' }}>
-            <center>
-              <div className="widget-svg-container" style={{ width: '24px', height: '24px' }}>
-                {icon?.startsWith('Icon') ? (
-                  <TablerIcon
-                    iconName={icon}
-                    style={{ width: 24, height: 24, color: 'var(--icon-brand)' }}
-                    stroke={1.5}
-                  />
-                ) : icon ? (
-                  <WidgetIcon name={icon} fill={darkMode ? '#3A3F42' : '#D7DBDF'} />
-                ) : (
-                  <span className="custom-component-tile-initials">{initials(title)}</span>
-                )}
-              </div>
-            </center>
-          </div>
-          <div className="component-title">{title}</div>
-        </div>
-      </div>
-    );
-  }
-
+  // As a ToolJet widget in the palette (WidgetBox): its widget's icon over its name.
+  const { icon } = paletteFor(role);
+  const title = displayName ?? name;
   return (
-    <div ref={drag} className="custom-component-card" data-cy={`custom-component-${name.toLowerCase()}`}>
-      <div className="custom-component-card-icon">{initials(displayName ?? name)}</div>
-      <div className="custom-component-card-text">
-        <div className="custom-component-card-name">{displayName ?? name}</div>
-        {description && <div className="custom-component-card-description">{description}</div>}
+    <div
+      ref={drag}
+      className="text-center align-items-center clearfix draggable-box-wrapper"
+      data-cy={`custom-component-${name.toLowerCase()}`}
+    >
+      <div
+        className="component-image-wrapper"
+        style={{ height: '56px', width: '72px', position: 'relative' }}
+        title={description || title}
+      >
+        <div className="component-image-holder d-flex flex-column justify-content-center" style={{ height: '100%' }}>
+          <center>
+            <div className="widget-svg-container" style={{ width: '24px', height: '24px' }}>
+              {icon?.startsWith('Icon') ? (
+                <TablerIcon
+                  iconName={icon}
+                  style={{ width: 24, height: 24, color: 'var(--icon-brand)' }}
+                  stroke={1.5}
+                />
+              ) : icon ? (
+                <WidgetIcon name={icon} fill={darkMode ? '#3A3F42' : '#D7DBDF'} />
+              ) : (
+                <span className="custom-component-tile-initials">{initials(title)}</span>
+              )}
+            </div>
+          </center>
+        </div>
+        <div className="component-title" title={title}>
+          {title}
+        </div>
       </div>
     </div>
   );
 };
 
-const CustomComponentCard = ({
-  libraryId,
-  correlationId,
-  libraryName,
-  revisionId,
-  name,
-  componentConfig,
-  tile = false,
-}) => {
+const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId, name, componentConfig }) => {
   const { displayName, description, props = [], styles = [], defaultWidth, defaultHeight, role } = componentConfig;
 
   const dragComponent = useMemo(() => {
@@ -481,7 +442,6 @@ const CustomComponentCard = ({
       displayName={displayName}
       description={description}
       role={role}
-      tile={tile}
       onDropped={pinRevision}
     />
   );

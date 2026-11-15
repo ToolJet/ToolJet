@@ -73,17 +73,20 @@ export const ProgressList = () => {
   const [targetField] = ToolJet.useStateString({ name: 'targetField', label: 'Target field', initialValue: 'budget' });
   const [percentField] = ToolJet.useStateString({
     name: 'percentField',
-    label: 'Percent field (0 to 100; overrides value / target)',
+    label: 'Percent field',
+    description: 'A 0–100 value. Overrides value and target.',
     initialValue: '',
   });
   const [captionField] = ToolJet.useStateString({
     name: 'captionField',
-    label: 'Caption field (a line under the bar)',
+    label: 'Caption field',
+    description: 'A line under the bar.',
     initialValue: 'note',
   });
   const [statusField] = ToolJet.useStateString({
     name: 'statusField',
-    label: 'Status field (a chip, or a tone name)',
+    label: 'Status field',
+    description: 'A chip, or a tone name that colors the bar.',
     initialValue: 'status',
   });
   // Number by default: a currency default printed bound order counts as $10 (the sample budgets read as figures).
@@ -96,7 +99,8 @@ export const ProgressList = () => {
   });
   const [currency] = ToolJet.useStateString({
     name: 'currency',
-    label: 'Currency (ISO code, e.g. USD)',
+    label: 'Currency',
+    description: 'A currency code, like USD.',
     initialValue: 'USD',
   });
   const [locale] = ToolJet.useStateString({
@@ -157,7 +161,9 @@ export const ProgressList = () => {
   const borderColor = useThemeColor('borderColor', 'Border and divider color', TOKEN.border);
   const titleColor = useThemeColor('titleColor', 'Label and value color', TOKEN.text);
   const textColor = useThemeColor('textColor', 'Caption color', TOKEN.mutedText);
-  const accent = useThemeColor('accentColor', 'Bar color (rows without a tone)', TOKEN.brand);
+  const accent = useThemeColor('accentColor', 'Bar color', TOKEN.brand, {
+    description: 'Used for rows without a tone.',
+  });
   const trackColor = useThemeColor('trackColor', 'Bar track color', TOKEN.text);
   const borderRadius = useThemeRadius('borderRadius', 'List radius');
   const titleFontFamily = ToolJet.useStyleEnumeration({

@@ -67,11 +67,9 @@ export const Steps = () => {
   const onSelect = ToolJet.useEventCallback({ name: 'onSelect' });
   const { disabled } = ToolJet.useControlState();
   const completedAccent = useThemeColor('completedAccent', 'Completed and current accent', TOKEN.brand);
-  const incompletedAccent = useThemeColor(
-    'incompletedAccent',
-    'Upcoming step accent (circle border, line)',
-    TOKEN.border
-  );
+  const incompletedAccent = useThemeColor('incompletedAccent', 'Upcoming step accent', TOKEN.border, {
+    description: 'Used for upcoming steps and the line.',
+  });
   const completedLabel = useThemeColor('completedLabel', 'Completed step label', TOKEN.text);
   const currentStepLabel = useThemeColor('currentStepLabel', 'Current step label', TOKEN.text);
   const incompletedLabel = useThemeColor('incompletedLabel', 'Upcoming step label', TOKEN.mutedText);

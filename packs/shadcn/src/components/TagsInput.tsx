@@ -14,7 +14,7 @@ import { FieldLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
-  ...field({ accentColor: 'Accent (focus ring, checks)' }),
+  ...field({ accentColor: ['Accent', 'Used for the focus ring and checkmarks.'] }),
   ['chipBackgroundColor', 'Chip background', '--lk-chip-bg', TOKEN.muted],
   ['chipTextColor', 'Chip text color', '--lk-chip-fg', TOKEN.text],
   ['menuBackgroundColor', 'Menu background', '--lk-menu-bg', TOKEN.surface],
@@ -42,7 +42,12 @@ export const TagsInput = () => {
     label: 'Allow tags not in suggestions',
     initialValue: true,
   });
-  const [maxTags] = ToolJet.useStateNumber({ name: 'maxTags', label: 'Max tags (0 for no limit)', initialValue: 0 });
+  const [maxTags] = ToolJet.useStateNumber({
+    name: 'maxTags',
+    label: 'Max tags',
+    description: '0 means no limit.',
+    initialValue: 0,
+  });
   const [caseSensitive] = ToolJet.useStateBoolean({
     name: 'caseSensitive',
     label: 'Case-sensitive duplicate check',

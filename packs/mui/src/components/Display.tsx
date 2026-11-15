@@ -176,13 +176,15 @@ export const Alert = () => {
   const whenCustom = { section: 'Custom severity', visibleWhen: { key: 'severity', value: 'custom' } };
   const accent = useColorStyle({
     name: 'customAccent',
-    label: 'Accent (icon, border)',
+    label: 'Accent',
+    description: 'Used for the icon and border, or the filled background.',
     token: THEME_TOKEN.brand,
     ...whenCustom,
   });
   const background = useColorStyle({
     name: 'customBackground',
-    label: 'Background (filled: the accent)',
+    label: 'Background',
+    description: 'Filled alerts use the Accent color unless set.',
     token: THEME_TOKEN.surface,
     ...whenCustom,
   });

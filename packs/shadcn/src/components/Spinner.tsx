@@ -25,7 +25,8 @@ export const Spinner = () => {
   });
   const [size] = ToolJet.useStateString({
     name: 'size',
-    label: 'Size (sm, default, lg or px)',
+    label: 'Size',
+    description: 'Use sm, default, lg, or a size in px.',
     initialValue: 'default',
   });
   const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Loading…' });

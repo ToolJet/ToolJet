@@ -44,7 +44,8 @@ export const CurrencyInput = () => {
   });
   const [currencyOptions] = ToolJet.useStateArray({
     name: 'currencyOptions',
-    label: 'Currencies to choose from (empty: fixed)',
+    label: 'Currencies to choose from',
+    description: 'Leave empty to keep one fixed currency.',
     placeholder: "['USD', 'EUR', 'GBP']",
     initialValue: [],
   });
@@ -56,7 +57,8 @@ export const CurrencyInput = () => {
   });
   const [decimalPlaces] = ToolJet.useStateString({
     name: 'decimalPlaces',
-    label: "Decimal places (empty: the currency's own)",
+    label: 'Decimal places',
+    description: "Leave empty to use the currency's default.",
     initialValue: '',
   });
   const [currencyDisplay] = ToolJet.useStateEnumeration({

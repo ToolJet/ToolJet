@@ -65,7 +65,8 @@ export const MultiSelect = () => {
   const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: true });
   const [serverSideSearch] = ToolJet.useStateBoolean({
     name: 'serverSideSearch',
-    label: 'Server-side search (options already filtered by searchText)',
+    label: 'Server-side search',
+    description: 'Your query filters the options by searchText.',
     initialValue: false,
   });
   const [showClearBtn] = ToolJet.useStateBoolean({
@@ -90,12 +91,14 @@ export const MultiSelect = () => {
   });
   const [maxVisibleChips] = ToolJet.useStateNumber({
     name: 'maxVisibleChips',
-    label: 'Max visible chips (0 shows all)',
+    label: 'Max visible chips',
+    description: '0 shows all.',
     initialValue: 3,
   });
   const [maxSelections] = ToolJet.useStateNumber({
     name: 'maxSelections',
-    label: 'Max selections (0 for no limit)',
+    label: 'Max selections',
+    description: '0 means no limit.',
     initialValue: 0,
   });
   // Exposed values, and the pack's earlier names (values was its default, maxSelected its limit).
@@ -118,7 +121,7 @@ export const MultiSelect = () => {
   const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
   const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
   // onSelect is UI 2.0's one change event: the pack's earlier onChange fired alongside it.
-  const styles = useFieldStyles('Accent (focus ring, checks)');
+  const styles = useFieldStyles('Accent', 'Used for the focus ring and checkmarks.');
   const chipBackgroundColor = useColorStyle('chipBackgroundColor', 'Chip background', TOKEN.muted);
   const chipTextColor = useColorStyle('chipTextColor', 'Chip text color', TOKEN.text);
   const menuBackgroundColor = useColorStyle('menuBackgroundColor', 'Menu background', TOKEN.surface);

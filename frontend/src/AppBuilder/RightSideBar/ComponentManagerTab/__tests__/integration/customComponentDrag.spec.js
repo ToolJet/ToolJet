@@ -45,7 +45,7 @@ describe('dragging a custom component card', () => {
         <CustomComponentsTab />
       </DndProvider>
     );
-    const card = screen.getByText('Button').closest('.custom-component-card');
+    const card = screen.getByText('Button').closest('.draggable-box-wrapper');
 
     act(() => {
       fireEvent.dragStart(card, { dataTransfer: dataTransfer() });

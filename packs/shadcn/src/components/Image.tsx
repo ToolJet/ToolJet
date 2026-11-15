@@ -105,7 +105,8 @@ export const Image = () => {
   const borderColor = useThemeColor('borderColor', 'Border color', TOKEN.border);
   const background = ToolJet.useStyleString({
     name: 'backgroundColor',
-    label: 'Background (letterbox and fallback)',
+    label: 'Background',
+    description: 'Shows around the image and when it fails to load.',
     inspector: 'color',
     initialValue: '',
   });

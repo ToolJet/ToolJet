@@ -35,8 +35,18 @@ export const NumberInput = () => {
     initialValue: 'split',
     inspector: 'switch',
   });
-  const [prefix] = ToolJet.useStateString({ name: 'prefix', label: 'Prefix (inside the box)', initialValue: '' });
-  const [suffix] = ToolJet.useStateString({ name: 'suffix', label: 'Suffix (inside the box)', initialValue: '' });
+  const [prefix] = ToolJet.useStateString({
+    name: 'prefix',
+    label: 'Prefix',
+    description: 'Shown inside the field, before the number.',
+    initialValue: '',
+  });
+  const [suffix] = ToolJet.useStateString({
+    name: 'suffix',
+    label: 'Suffix',
+    description: 'Shown inside the field, after the number.',
+    initialValue: '',
+  });
   const [thousandSeparator] = ToolJet.useStateBoolean({
     name: 'thousandSeparator',
     label: 'Thousands separators',

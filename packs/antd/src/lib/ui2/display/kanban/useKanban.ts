@@ -146,8 +146,13 @@ const THEME = {
   surfaceStrong: 'var(--cc-surface3-surface)',
   borderWeak: 'var(--cc-weak-border)',
 };
-const useThemeColor = (name: string, label: string, initialValue: string): string => {
-  const value = ToolJet.useStyleString({ name, label, inspector: 'color', initialValue }) as unknown;
+const useThemeColor = (
+  name: string,
+  label: string,
+  initialValue: string,
+  extra: Record<string, unknown> = {}
+): string => {
+  const value = ToolJet.useStyleString({ name, label, inspector: 'color', initialValue, ...extra }) as unknown;
   const text = value === undefined || value === null ? '' : String(value).trim();
   return text === initialValue ? '' : text;
 };
@@ -183,7 +188,7 @@ export const useKanban = (o: KanbanOptions) => {
   });
   const [cardHeight] = ToolJet.useStateNumber({
     name: 'cardHeight',
-    label: 'Card height (custom content)',
+    label: 'Card height (px)',
     initialValue: 96,
     min: 24,
     max: 1200,
@@ -202,7 +207,8 @@ export const useKanban = (o: KanbanOptions) => {
   });
   const [badgeField] = ToolJet.useStateString({
     name: 'badgeField',
-    label: 'Badge field (priority, severity)',
+    label: 'Badge field',
+    description: 'Like priority or severity.',
     initialValue: d.badge ?? '',
   });
   const [tagsField] = ToolJet.useStateString({
@@ -217,17 +223,20 @@ export const useKanban = (o: KanbanOptions) => {
   });
   const [metaField] = ToolJet.useStateString({
     name: 'metaField',
-    label: 'Meta field (a date, a count)',
+    label: 'Meta field',
+    description: 'Like a date or a count.',
     initialValue: d.meta ?? '',
   });
   const [avatarField] = ToolJet.useStateString({
     name: 'avatarField',
-    label: 'Avatar field (a name or image URL)',
+    label: 'Avatar field',
+    description: 'A name or an image URL.',
     initialValue: d.avatar ?? '',
   });
   const [detailsField] = ToolJet.useStateString({
     name: 'detailsField',
-    label: 'Details field (shown on the clicked card)',
+    label: 'Details field',
+    description: 'Shown when a card is clicked.',
     initialValue: d.details ?? '',
   });
   const [density] = ToolJet.useStateEnumeration({
@@ -240,12 +249,14 @@ export const useKanban = (o: KanbanOptions) => {
   });
   const [collapsedHeight] = ToolJet.useStateString({
     name: 'collapsedHeight',
-    label: 'Collapsed card height (px, empty: show all)',
+    label: 'Collapsed card height (px)',
+    description: 'Leave empty to show cards in full.',
     initialValue: '',
   });
   const [columnWidthRaw] = ToolJet.useStateString({
     name: 'columnWidth',
-    label: 'Column width (px, empty: fill the board)',
+    label: 'Column width (px)',
+    description: 'Leave empty for equal-width columns.',
     initialValue: '',
   });
   const [showCount] = ToolJet.useStateBoolean({
@@ -347,7 +358,9 @@ export const useKanban = (o: KanbanOptions) => {
     cardBorderColor: useThemeColor('cardBorderColor', 'Card border color', THEME.borderWeak),
     cardTitleColor: useThemeColor('cardTitleColor', 'Card title color', THEME.text),
     cardTextColor: useThemeColor('cardTextColor', 'Card secondary text color', THEME.muted),
-    progressColor: useThemeColor('progressColor', 'Progress color (else the primary)', THEME.brand),
+    progressColor: useThemeColor('progressColor', 'Progress color', THEME.brand, {
+      description: 'Follows the Primary color unless changed.',
+    }),
     cardBorderRadius: ToolJet.useStyleNumber({
       name: 'cardBorderRadius',
       label: 'Card radius',

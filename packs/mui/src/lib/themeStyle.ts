@@ -26,6 +26,8 @@ type ColorStyle = {
   /** The THEME_TOKEN it draws when left alone. */
   token: string;
   section?: string;
+  /** The Inspector tooltip. */
+  description?: string;
   visibleWhen?: { key: string; value: string | number | boolean | null };
 };
 

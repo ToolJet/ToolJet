@@ -123,7 +123,9 @@ export const Questionnaire = () => {
   const onStepChanged = ToolJet.useEventCallback({ name: 'onStepChanged', displayName: 'On step changed' } as Event);
   const onSubmit = ToolJet.useEventCallback({ name: 'onSubmit', displayName: 'On submit' } as Event);
 
-  const accentColor = useThemeColor('accentColor', 'Accent (progress, selected answer, buttons)', TOKEN.brand);
+  const accentColor = useThemeColor('accentColor', 'Accent', TOKEN.brand, {
+    description: 'Used for progress, the selected answer and buttons.',
+  });
   const backgroundColor = useThemeColor('backgroundColor', 'Background', TOKEN.surface);
   const borderColor = useThemeColor('borderColor', 'Border and answer card border', TOKEN.border);
   const titleColor = useThemeColor('titleColor', 'Question color', TOKEN.text);

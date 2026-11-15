@@ -40,7 +40,8 @@ export const AreaChart = () => {
   const [showLegend] = ToolJet.useStateBoolean({ name: 'showLegend', label: 'Legend', initialValue: false });
   const [seriesLabels] = ToolJet.useStateObject({
     name: 'seriesLabels',
-    label: 'Series labels ({ field: label })',
+    label: 'Series labels',
+    description: 'Rename series, like { revenue: "Revenue" }.',
     initialValue: {},
   });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
@@ -61,7 +62,9 @@ export const AreaChart = () => {
     initialValue: false,
   });
   const click = useChartClick(highlightClicked);
-  const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
+  const chartColor = useThemeColor('chartColor', 'Chart color', TOKEN.brand, {
+    description: 'Leads the series colors unless Series colors sets them.',
+  });
   const gridColor = useThemeColor('gridColor', 'Grid line color', TOKEN.border);
   const axisTextColor = useThemeColor('axisTextColor', 'Axis label color', TOKEN.mutedText);
   const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);

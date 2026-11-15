@@ -60,7 +60,8 @@ export const RadarChart = () => {
   });
   const [maxValue] = ToolJet.useStateString({
     name: 'maxValue',
-    label: 'Max value (blank = auto)',
+    label: 'Max value',
+    description: 'Leave empty to set it from the data.',
     initialValue: '100',
   });
   const [fillOpacity] = ToolJet.useStateNumber({
@@ -84,7 +85,8 @@ export const RadarChart = () => {
   const [showLegend] = ToolJet.useStateBoolean({ name: 'showLegend', label: 'Legend', initialValue: true });
   const [seriesLabels] = ToolJet.useStateObject({
     name: 'seriesLabels',
-    label: 'Series labels ({ field: label })',
+    label: 'Series labels',
+    description: 'Rename series, like { revenue: "Revenue" }.',
     initialValue: {},
   });
   const [colors] = ToolJet.useStateArray({ name: 'colors', label: 'Series colors (in order)', initialValue: [] });
@@ -95,7 +97,9 @@ export const RadarChart = () => {
     initialValue: false,
   });
   const click = useChartClick(highlightClicked);
-  const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
+  const chartColor = useThemeColor('chartColor', 'Chart color', TOKEN.brand, {
+    description: 'Leads the series colors unless Series colors sets them.',
+  });
   const gridColor = useThemeColor('gridColor', 'Grid line color', TOKEN.border);
   const axisTextColor = useThemeColor('axisTextColor', 'Axis label color', TOKEN.mutedText);
   const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);

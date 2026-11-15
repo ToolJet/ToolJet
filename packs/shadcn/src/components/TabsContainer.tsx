@@ -103,7 +103,9 @@ export const TabsContainer = () => {
   const onFinish = ToolJet.useEventCallback({ name: 'onFinish' });
   const { disabled } = ToolJet.useControlState();
 
-  const accent = useThemeColor('accentColor', 'Accent (active step, focus ring)', TOKEN.brand);
+  const accent = useThemeColor('accentColor', 'Accent', TOKEN.brand, {
+    description: 'Used for the active step and focus ring.',
+  });
   const tabListBackground = useThemeColor('tabListBackground', 'Tab bar background', TOKEN.muted);
   const tabTextColor = useThemeColor('tabTextColor', 'Tab text color', TOKEN.mutedText);
   const activeTabTextColor = useThemeColor('activeTabTextColor', 'Active tab text color', TOKEN.text);

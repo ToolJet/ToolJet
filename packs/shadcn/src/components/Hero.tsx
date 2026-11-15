@@ -113,27 +113,32 @@ export const Hero = () => {
   });
   const [actionLabel] = ToolJet.useStateString({
     name: 'actionLabel',
-    label: 'Primary action label (empty hides it)',
+    label: 'Primary action label',
+    description: 'Leave empty to hide the button.',
     initialValue: 'New booking',
   });
   const [secondaryActionLabel] = ToolJet.useStateString({
     name: 'secondaryActionLabel',
-    label: 'Secondary action label (empty hides it)',
+    label: 'Secondary action label',
+    description: 'Leave empty to hide the button.',
     initialValue: '',
   });
   const [asideValue] = ToolJet.useStateString({
     name: 'asideValue',
-    label: 'Aside: a figure, or a list of facts',
+    label: 'Aside',
+    description: 'A headline number, or up to four facts.',
     initialValue: '',
   });
   const [asideLabel] = ToolJet.useStateString({
     name: 'asideLabel',
-    label: "Aside label (the figure's caption, the facts' heading)",
+    label: 'Aside label',
+    description: 'Heading above the number or the facts.',
     initialValue: '',
   });
   const [icon] = ToolJet.useStateString({
     name: 'icon',
-    label: 'Icon (lucide name, e.g. sparkles)',
+    label: 'Icon',
+    description: 'A Lucide icon name, like sparkles.',
     initialValue: '',
     inspector: 'icon',
     iconSet: 'lucide',
@@ -147,7 +152,8 @@ export const Hero = () => {
   });
   const [imageUrl] = ToolJet.useStateString({
     name: 'imageUrl',
-    label: 'Background image URL (when Background is Image)',
+    label: 'Background image URL',
+    description: 'Used when Background is Image.',
     initialValue: '',
     visibleWhen: { key: 'background', value: 'image' },
   } as Parameters<typeof ToolJet.useStateString>[0]);
@@ -172,7 +178,8 @@ export const Hero = () => {
   const accent = useThemeColor('accentColor', 'Accent color', TOKEN.brand);
   const backgroundColor = ToolJet.useStyleString({
     name: 'backgroundColor',
-    label: 'Panel background color (replaces the Background choice)',
+    label: 'Panel background color',
+    description: 'Replaces the panel fill set by Background.',
     inspector: 'color',
     initialValue: '',
   });

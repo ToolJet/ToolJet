@@ -960,8 +960,8 @@ const KvValue = ({
 export const KeyValue = () => {
   const [data] = ToolJet.useStateObject({
     name: 'data',
-    label: 'Data (object or array)',
-    description: "{ Status: 'Active' } or [{ label: 'Amount', value: 1250, type: 'currency' }]",
+    label: 'Data',
+    description: 'An object, or a list of { label, value } rows.',
     initialValue: [
       { label: 'Customer', value: 'Ada Lovelace' },
       { label: 'Email', value: 'ada@example.com', type: 'link' },

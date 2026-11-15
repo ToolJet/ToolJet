@@ -30,7 +30,8 @@ export const Slider = () => {
   const [range] = ToolJet.useStateBoolean({ name: 'range', label: 'Range', initialValue: false });
   const [defaultValue] = ToolJet.useStateNumber({
     name: 'defaultValue',
-    label: 'Default value (number, or [start, end] for a range)',
+    label: 'Default value',
+    description: 'A number, or [start, end] for a range.',
     initialValue: 50,
   });
   // The pack's own: the value beside the label (UI 2.0 always shows it).

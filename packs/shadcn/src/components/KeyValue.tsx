@@ -117,8 +117,8 @@ const Value = ({
 export const KeyValue = () => {
   const [data] = ToolJet.useStateObject({
     name: 'data',
-    label: 'Data (object or array)',
-    description: "{ Status: 'Active' } or [{ label: 'Amount', value: 1250, type: 'currency' }]",
+    label: 'Data',
+    description: 'An object, or a list of { label, value } rows.',
     initialValue: [
       { label: 'Customer', value: 'Ada Lovelace' },
       { label: 'Email', value: 'ada@example.com', type: 'link' },
@@ -144,7 +144,8 @@ export const KeyValue = () => {
   });
   const [labelWidth] = ToolJet.useStateString({
     name: 'labelWidth',
-    label: 'Label width (side by side; px or %)',
+    label: 'Label width',
+    description: 'In px or %.',
     initialValue: '40%',
     visibleWhen: { key: 'layout', value: 'inline' },
   } as Parameters<typeof ToolJet.useStateString>[0]);

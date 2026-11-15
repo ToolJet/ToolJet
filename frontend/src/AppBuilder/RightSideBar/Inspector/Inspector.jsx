@@ -58,7 +58,9 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 import { Cascader } from './Components/Cascader/Cascader';
-import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash } from 'lucide-react';
+import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash, Blocks } from 'lucide-react';
+import { PackIdentityStrip } from './Components/LibraryComponent/PackIdentityStrip';
+import { componentIdentity } from './componentIdentity';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
 import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
@@ -225,6 +227,17 @@ export const Inspector = ({
   // Its Styles tab is manifest-driven accordions (LibraryComponentStyles), laid out like a revamped widget's.
   const isLibraryComponent = component.component.component === 'LibraryComponent';
   const isPackComponent = component.component.component === 'PackComponent';
+  // A module instance's name, for the Properties tab's identity strip. The modules slice is EE-only, so CE has none.
+  const moduleAppId = component.component?.definition?.properties?.moduleAppId?.value;
+  const moduleName = useStore(
+    (state) =>
+      moduleAppId
+        ? (state.modulesStore?.modulesList?.find((module) => module.co_relation_id === moduleAppId)?.name ??
+          state.modulesStore?.moduleDefinition?.[moduleAppId]?.name)
+        : undefined,
+    shallow
+  );
+  const identity = componentIdentity(componentMeta?.component, componentMeta?.displayName, moduleName);
   const inspectorHeaderOptions = INSPECTOR_HEADER_OPTIONS.filter(
     (option) => option.value !== 'edit-module' || componentMeta?.component === 'ModuleViewer'
   );
@@ -585,6 +598,13 @@ export const Inspector = ({
         allComponents={allComponents}
         widthSectionTitle={t('widget.flexChild.widthAndHeight', 'Width')}
       >
+        {identity && (
+          <PackIdentityStrip
+            library={identity.library}
+            component={identity.component}
+            {...(identity.kind === 'module' && { icon: Blocks })}
+          />
+        )}
         <div className={`${shouldFreeze && 'disabled'}`}>
           <GetAccordion
             tabsPropertiesPanelKey={tabsPropertiesPanelKey}

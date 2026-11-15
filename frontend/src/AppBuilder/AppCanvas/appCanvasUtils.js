@@ -330,6 +330,34 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
   return childrenWidgets;
 }
 
+// The longest a generated name gets before its number. Library components and modules can have long names
+// (QuarterlyRevenueForecastSummaryCard), and builders type the instance name in every {{components.…}} binding. Every
+// native widget name is shorter (the longest, CircularProgressBar, has 19). A builder's own rename is not limited.
+const MAX_GENERATED_NAME_BASE = 24;
+
+// rawBase lowercased, with only letters, digits, _ and -; a longer one keeps the whole words that fit in
+// MAX_GENERATED_NAME_BASE (quarterlyrevenueforecast), or the first characters of a single long word. Words split where
+// the case goes up (RevenueForecast), at _ and -, and where a dropped character was (a module's spaces).
+const generatedNameBase = (rawBase) => {
+  let base = '';
+  const wordStarts = [];
+  let previous = '';
+  for (const char of rawBase) {
+    if (!/[a-zA-Z0-9_-]/.test(char)) {
+      previous = ' ';
+      continue;
+    }
+    const startsWord =
+      /[_-]/.test(char) || /[^a-zA-Z0-9]/.test(previous) || (/[A-Z]/.test(char) && /[a-z0-9]/.test(previous));
+    if (base && startsWord) wordStarts.push(base.length);
+    base += char.toLowerCase();
+    previous = char;
+  }
+  if (base.length <= MAX_GENERATED_NAME_BASE) return base;
+  const cut = wordStarts.filter((start) => start <= MAX_GENERATED_NAME_BASE).pop() ?? MAX_GENERATED_NAME_BASE;
+  return base.slice(0, cut).replace(/[_-]+$/, '');
+};
+
 // skipRegistry: the seed is a library or pack component's own name, not a native widget type, so it is not looked up
 // in the widget registry (a pack's ButtonGroup would take the native widget's name, ButtonGroupLegacy).
 export function computeComponentName(componentType, currentComponents, moduleName, { skipRegistry = false } = {}) {
@@ -341,7 +369,7 @@ export function computeComponentName(componentType, currentComponents, moduleNam
     componentType
   )?.replace(/^Shad(?=[A-Z])/, '');
   const rawBase = moduleName || widgetConfigName || '';
-  let sanitizedBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
+  let sanitizedBase = generatedNameBase(rawBase);
 
   if (!sanitizedBase) {
     sanitizedBase = (widgetConfigName || 'component').toLowerCase();

@@ -69,7 +69,9 @@ export const Tabs = () => {
   const onTabSwitch = ToolJet.useEventCallback({ name: 'onTabSwitch' });
   const { disabled } = ToolJet.useControlState();
 
-  const accent = useThemeColor('accentColor', 'Accent (underline, active step)', TOKEN.brand);
+  const accent = useThemeColor('accentColor', 'Accent', TOKEN.brand, {
+    description: 'Used for current and done steps, and the underline.',
+  });
   const tabListBackground = useThemeColor('tabListBackground', 'Tab bar background', TOKEN.muted);
   const tabTextColor = useThemeColor('tabTextColor', 'Tab text color', TOKEN.mutedText);
   const activeTabTextColor = useThemeColor('activeTabTextColor', 'Active tab text color', TOKEN.text);

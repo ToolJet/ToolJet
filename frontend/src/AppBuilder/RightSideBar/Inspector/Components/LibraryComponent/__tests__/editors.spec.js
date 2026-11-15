@@ -77,20 +77,21 @@ describe('LibraryComponent inspector editors', () => {
     expect(withField(marked, 'default', false)).toEqual({ label: 'Week', value: 'week' });
   });
 
-  it('puts a style with a long label on its own line, and keeps a short one beside its control', () => {
+  it('keeps long color and numeric style labels inline like short labels', () => {
     const long = styleFieldMeta({
       name: 'primary',
       label: 'Primary (palette.primary.main)',
       type: 'string',
       inspector: 'color',
     });
-    expect(long).toEqual(expect.objectContaining({ type: 'colorSwatches', newLine: true }));
+    expect(long).toEqual(expect.objectContaining({ type: 'colorSwatches' }));
     const radius = styleFieldMeta({
       name: 'borderRadius',
       label: 'Border radius (shape.borderRadius)',
       type: 'number',
     });
-    expect(radius.newLine).toBe(true);
+    expect(long.newLine).toBeUndefined();
+    expect(radius.newLine).toBeUndefined();
     const short = styleFieldMeta({ name: 'textColor', label: 'Text color', type: 'string', inspector: 'color' });
     expect(short.newLine).toBeUndefined();
   });

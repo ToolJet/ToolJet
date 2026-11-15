@@ -51,7 +51,8 @@ export const DropdownMenu = () => {
   });
   const [triggerIcon] = ToolJet.useStateString({
     name: 'triggerIcon',
-    label: 'Trigger icon (Tabler name, e.g. IconDots)',
+    label: 'Trigger icon',
+    description: 'Pick an icon, or type a Lucide or Tabler name.',
     initialValue: '',
     inspector: 'icon',
     iconSet: 'lucide',
