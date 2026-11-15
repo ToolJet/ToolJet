@@ -43,11 +43,11 @@ changes, so re-check before editing.
 
 ## Summary
 
-106 widget-specific gaps across 23 widgets, plus 8 cross-cutting items.
+131 widget-specific gaps across 26 widgets, plus 9 cross-cutting items.
 
 | Widget | Open gaps | Fixed |
 |---|---|---|
-| [Cross-cutting](#cross-cutting) | 8 | 0 |
+| [Cross-cutting](#cross-cutting) | 9 | 0 |
 | [ButtonGroupV2](#buttongroupv2) | 2 | 0 |
 | [Cascader](#cascader) | 8 | 0 |
 | [CircularProgressBar](#circularprogressbar) | 4 | 0 |
@@ -60,18 +60,21 @@ changes, so re-check before editing.
 | [Icon](#icon) | 1 | 0 |
 | [Image](#image) | 4 | 0 |
 | [Link](#link) | 5 | 0 |
+| [Navigation](#navigation) | 11 | 0 |
+| [Pagination](#pagination) | 5 | 0 |
 | [PhoneInput](#phoneinput) | 9 | 0 |
 | [ProgressBar](#progressbar) | 5 | 0 |
 | [RadioButtonV2](#radiobuttonv2) | 4 | 0 |
 | [Spinner](#spinner) | 1 | 0 |
 | [Steps](#steps) | 6 | 0 |
 | [SvgImage](#svgimage) | 1 | 0 |
+| [Tabs](#tabs) | 9 | 0 |
 | [Tags](#tags) | 10 | 0 |
 | [TextArea](#textarea) | 0 (none found) | 0 |
 | [Timeline](#timeline) | 5 | 0 |
 | [TreeSelect](#treeselect) | 6 | 0 |
 | [VerticalDivider](#verticaldivider) | 1 | 0 |
-| **Total** | **114** | **0** |
+| **Total** | **140** | **0** |
 
 ## Cross-cutting
 
@@ -89,6 +92,7 @@ change, such as a call site that has to pass `dataCy`; those are listed in the w
 | DCY-X-06 | The shared `Loader` has **no data-cy** and takes no `dataCy` prop. PhoneInput, CurrencyInput and DropdownV2 find it by class. | `frontend/src/ToolJetUI/Loader/Loader.jsx:10` (div `.tj-widget-loader`); call sites `W:BaseComponents/BaseInput.jsx:299`, `W:PhoneCurrency/PhoneInput.jsx:374`, `W:PhoneCurrency/CurrencyInput.jsx:393`, `W:DropdownV2/DropdownV2.jsx:623` | `` `[data-cy="draggable-widget-x"] .tj-widget-loader` `` — `C:phoneInput.js:29`; `C:currencyInput.js:28`; `C:dropdownV2.js:31`; `H:dropdownV2.js:254`; `S:phoneInput/canvas.cy.js:286`; `S:dropdownV2/styles.cy.js:155` | Add an optional `dataCy` prop that renders `${dataCy}-loader`, and pass it from each call site | Open |
 | DCY-X-07 | The `_ui/Label` text `<p>` (which carries the label colour and the mandatory `*`) has **no data-cy**, so colour checks reach it with a descendant tag selector. | `frontend/src/_ui/Label.jsx:36` | `` `[data-cy="<name>-label"] p` `` — `C:radioButtonV2.js:10`; `H:radioButtonV2.js:61`; `S:emailInput/styles.cy.js:107` | `${dataCy}-label-text` on the `<p>` (fix once in `_ui/Label.jsx`) | Open |
 | DCY-X-08 | The canvas hover tooltip carries one **global, unprefixed** `widget-tooltip` data-cy for every widget, and its per-format body has none. Tests take `.first()` and pick the body by class. | `frontend/src/AppBuilder/AppCanvas/WidgetTooltip.jsx:71` (`data-cy="widget-tooltip"`); bodies at `:28` (html), `:32` (markdown), `:36` (plain) | `` `[data-cy="widget-tooltip"]` `` + `span.tw-whitespace-pre-wrap` / `.widget-tooltip-markdown` / `.widget-tooltip-html` — `C:radioButtonV2.js:22`; `C:radioButtonV2.js:24-26`; `S:radioButtonV2/properties.cy.js:34`; `S:radioButtonV2/properties.cy.js:74` | `${dataCy}-tooltip` on the content and `${dataCy}-tooltip-body` on the body. Keep `widget-tooltip` as a secondary attribute if other suites rely on it. | Open |
+| DCY-X-09 | Every SubContainer canvas carries the **same `data-cy="real-canvas"`** as the main canvas, so once a Tabs (or any other sub-canvas host) is on the page `[data-cy="real-canvas"]` matches several nodes. The shared canvas commands then throw or hit the wrong canvas, and a sub-canvas can only be reached by its id `#canvas-<componentId>-<slot>`. | `frontend/src/AppBuilder/AppCanvas/Container.jsx:305` (id at :304); Tabs pane call site `W:Tabs/Tabs.jsx:607` | `` `[data-cy="real-canvas"]` `` — `cypress-tests/cypress/constants/selectors/common.js:26`; `cypress-tests/cypress/support/utils/appBuilder/canvas.js:102,211,248,258`; worked around by overwriting `forceClickOnCanvas` / `moveComponent` to filter to `#real-canvas` (`H:tabs.js:269-286`, `H:tabs.js:296`; enabled at `S:tabs/canvas.cy.js:70`, `S:tabs/contexts.cy.js:75`) | Emit `real-canvas` only on the main canvas (`id === 'canvas'`). Give `Container` an optional `dataCy` prop that the host widget fills for its sub-canvases (Tabs: DCY-Tabs-09). Keep the `real-canvas` class, which existing `.real-canvas` lookups use. | Open |
 
 ## Per-widget gaps
 
@@ -234,6 +238,36 @@ Depends on DCY-X-03 (root is bare `[data-cy="<name>"]`, qualified with `.link-wi
 | DCY-Link-04 | Icon `<svg>` (TablerIcon; spreads props onto the svg) | `W:Link/Link.jsx:199` | `` `... > span > span:not(.link-text) svg` `` — `C:link.js:15`; `S:link/events.cy.js:107`; `S:link/styles.cy.js:166`; `H:link.js:133` (+3 more) | `` `${dataCy}-icon` `` | Open |
 | DCY-Link-05 | Link text `<span class="link-text">` | `W:Link/Link.jsx:211` | `` `.link-text` `` — `C:link.js:17`; `S:link/canvas.cy.js:82`; `S:link/contexts.cy.js:41`; `H:link.js:132` (+26 more) | `` `${dataCy}-text` `` | Open |
 
+### Navigation
+
+Depends on DCY-X-01 (`.first()` on `draggable-widget-<name>`, `H:navigation.js:97,105`) and DCY-X-03 (root reached as `` `.navigation-widget[data-cy=<name>]` ``, `C:navigation.js:8`; `H:navigation.js:62` finds it by class only, which is a test-side switch to `[data-cy=<name>]`). The item, group, icon and label data-cy values (`nav-item-<id>`, `nav-group-<id>`, `nav-icon-<id>` at `W:Navigation/Navigation.jsx:58`, `nav-label-<id>` at :77) are **global** (no widget prefix). Two Navigations with the default item ids collide, and portalled popup items can't be tied to their widget. `RenderNavItem` / `RenderNavGroup` take no `dataCy`, so it has to be threaded down from `Navigation.jsx:271`. The `nav-icon-<id>` is not selected by current specs; it should become `${dataCy}-item-<id>-icon`. The loading spinner (`W:Navigation/Navigation.jsx:617`) isn't selected either. Inspector rows below are Navigation-specific inspector UI (`frontend/src/AppBuilder/RightSideBar/Inspector/Components/Navigation/**`). The Caption field is reached through CodeMirror's `.cm-content` / `.cm-line` (`H:navigation.js:345,354`), which is shared CodeHinter chrome and not counted. Its `label` pick (`H:navigation.js:355`) is test-side only, because `inspector-nav-item-details-caption-label` already exists (`NavItemPopover.jsx:169`).
+
+| # | Element | Renders at (file:line) | Current fallback selector (spec/helper file:line) | Suggested data-cy | Status |
+|---|---|---|---|---|---|
+| DCY-Navigation-01 | Item button (broken: global `nav-item-<id>`; id read back by string-stripping the prefix) | `W:Navigation/Navigation.jsx:47` (data-cy at :55) | `` `[data-cy=draggable-widget-x] [data-cy="nav-item-<id>"]` `` / `` `nav button[data-cy^="nav-item-"]` `` — `C:navigation.js:12`; `H:navigation.js:80,90`; `S:navigation/styles.cy.js:64`; `S:navigation/contexts.cy.js:216` (+7 more) | `` `${dataCy}-item-<id>` `` (e.g. `navigation1-item-item1`) | Open |
+| DCY-Navigation-02 | Item label (`.page-name`, carries the global `nav-label-<id>`) | `W:Navigation/Navigation.jsx:74` (data-cy at :77) → `frontend/src/_components/OverflowTooltip.jsx:81` | `` `.page-name` `` inside the item — `H:navigation.js:310` | `` `${dataCy}-item-<id>-label` `` | Open |
+| DCY-Navigation-03 | Group trigger (horizontal) / group wrapper (vertical) (broken: global `nav-group-<id>`) | `W:Navigation/Navigation.jsx:160` (data-cy at :169); vertical `:221` | `` `[data-cy=draggable-widget-x] [data-cy="nav-group-<id>"]` `` / `` `nav button[data-cy^="nav-group-"]` `` — `C:navigation.js:13`; `H:navigation.js:80,90,170,250`; `S:navigation/styles.cy.js:129`; `S:navigation/contexts.cy.js:221,224` | `` `${dataCy}-group-<id>` `` | Open |
+| DCY-Navigation-04 | Horizontal row (Radix `NavigationMenu` `<nav>`, forwards props) | `W:Navigation/Navigation.jsx:629` | `` `nav.navigation-horizontal-menu` `` — `C:navigation.js:10` (defined, unused); `` `nav button[...]` `` tag scope — `H:navigation.js:80` | `` `${dataCy}-horizontal-menu` `` | Open |
+| DCY-Navigation-05 | "More" overflow button | `W:Navigation/Navigation.jsx:675` (class at :677) | `` `[data-cy=draggable-widget-x] button.more-pages-btn` `` — `C:navigation.js:15`; `H:navigation.js:81,164,167`; `S:navigation/styles.cy.js:138` | `` `${dataCy}-more-button` `` | Open |
+| DCY-Navigation-06 | Portalled dropdown content ("More" menu and horizontal group sub-menu; global, assumes one open) | `W:Navigation/Navigation.jsx:685` (More), `:191` (group) | `` `.page-menu-popup` `` / `` `.page-menu-popup [data-cy="nav-item-<id>"]` `` — `C:navigation.js:19,20`; `H:navigation.js:168,170,251,253`; `S:navigation/styles.cy.js:130,132` (+5 more) | `` `${dataCy}-more-menu` `` / `` `${dataCy}-group-<id>-menu` `` | Open |
+| DCY-Navigation-07 | Hidden measurement copy (off-screen, one div per top-level item) | `W:Navigation/Navigation.jsx:803` (container), `:817` (item, `data-id` at :819) | `` `[data-id]` `` — `C:navigation.js:17` (defined, unused); `H:navigation.js:77` | `` `${dataCy}-measure` `` on the container and `` `${dataCy}-measure-<id>` `` on each item | Open |
+| DCY-Navigation-08 | Inline caption (vertical, nested and overflowed items) | `W:Navigation/Navigation.jsx:82` → `frontend/src/_components/OverflowTooltip.jsx:81` | `` `.nav-item-caption` `` — `C:navigation.js:22`; `H:navigation.js:272,306` | `` `${dataCy}-item-<id>-caption` `` | Open |
+| DCY-Navigation-09 | Caption tooltip (horizontal top-level items; portalled to body, global, and also matches any OverflowTooltip that is open) | `W:Navigation/Navigation.jsx:94` → `frontend/src/_components/ToolTip.jsx:26` (`ToolTip` takes no data-cy prop) | `` `.tooltip.show` `` — `C:navigation.js:24`; `H:navigation.js:276,278,285,293` (+2 more) | `` `${dataCy}-item-<id>-tooltip` `` (same `ToolTip` `dataCy` prop as DCY-Steps-06) | Open |
+| DCY-Navigation-10 | Inspector tree row `<li>` (depth read from the inline `--spacing` var) | `frontend/src/_ui/SortableTree/TreeItemWrapper.jsx:49` (`data-draggable` at :51, `--spacing` at :64) | `` `[data-cy="inspector-navigation-menu-items-list"] li[data-draggable="true"]` `` + `` `--spacing` / 15 `` — `C:navigation.js:28`; `H:navigation.js:186,191,211` | `` `inspector-navigation-menu-item-<id>-row` `` + `data-depth={depth}` (pass through `TreeItemWrapper`) | Open |
+| DCY-Navigation-11 | Inspector row body (click opens the item popover; drag handle) | `frontend/src/AppBuilder/RightSideBar/Inspector/Components/Navigation/components/MenuItem.jsx:42`, `.../GroupMenuItem.jsx:43` (`data-list-item-id`) | `` `[data-list-item-id="<id>"]` `` — `C:navigation.js:30`; `H:navigation.js:188,190,214,220,343` | `` `inspector-navigation-menu-item-<id>` `` | Open |
+
+### Pagination
+
+Depends on DCY-X-01 (`.first()` on `draggable-widget-<name>`, `H:pagination.js:125,136,221`) and DCY-X-03 (root reached as `` `[data-cy=draggable-widget-x] [data-cy=<name>]` ``, `C:pagination.js:9`; `H:pagination.js:64`). `Operator` and `PageLinks` take no `dataCy`, so it has to be passed down from `W:Pagination/Pagination.jsx:175-210`. The loader (`W:Pagination/Pagination.jsx:157`, DCY-X-06) is not selected by current specs. `S:pagination/userflow.cy.js:167` selects a helper Button widget and is out of scope.
+
+| # | Element | Renders at (file:line) | Current fallback selector (spec/helper file:line) | Suggested data-cy | Status |
+|---|---|---|---|---|---|
+| DCY-Pagination-01 | Control row `ul.pagination` (clips overflow; unmounted while loading) | `W:Pagination/Pagination.jsx:165` | `` `[data-cy=draggable-widget-x] ul.pagination` `` — `C:pagination.js:11` (constant unused by specs); `H:pagination.js:65` (`root.querySelector("ul.pagination")`); `li.parentElement` at `H:pagination.js:184` | `` `${dataCy}-list` `` (e.g. `pagination1-list`) | Open |
+| DCY-Pagination-02 | Operator item `<li>` (`<<`, `<`, `>`, `>>`), found by its aria-label | `W:Pagination/Pagination.jsx:331` (aria-label at :333) | `` `ul.pagination > li[aria-label="Go to next page"]` `` — `C:pagination.js:15`; `H:pagination.js:175`; kind read from `aria-label` at `H:pagination.js:69,73`; `S:pagination/userflow.cy.js:315` | `` `${dataCy}-operator-<first\|previous\|next\|last>` `` | Open |
+| DCY-Pagination-03 | Page-number item `<li>` (+ active state) | `W:Pagination/Pagination.jsx:395`; first-page copy `:431`, last-page copy `:414` | `` `ul.pagination > li` `` + exact-text filter — `C:pagination.js:13`; `H:pagination.js:177-178`; `S:pagination/contexts.cy.js:90`; `S:pagination/userflow.cy.js:314` (+15 more `items(...)` uses); active state `` `li.active` `` — `C:pagination.js:17` (defined, unused), `H:pagination.js:74` | `` `${dataCy}-page-<n>` `` (page number as the slug, since the rendered window shifts; e.g. `pagination1-page-4`) + `aria-current="page"` on the active one | Open |
+| DCY-Pagination-04 | Ellipsis item `<li>` (left and right, can render together) | `W:Pagination/Pagination.jsx:426` (left), `:408` (right) | text `...` match — `H:pagination.js:73`; by row index `` `ul.pagination > li` `` + `.eq(at.index)` — `S:pagination/userflow.cy.js:321` | `` `${dataCy}-ellipsis-start` `` / `` `${dataCy}-ellipsis-end` `` | Open |
+| DCY-Pagination-05 | Item link (`a.page-link`; `span.page-link` on an ellipsis) carrying the click handler and pointer state | `W:Pagination/Pagination.jsx:335` (operator), `:396` (page), `:409` / `:427` (ellipsis) | `li.firstElementChild` — `H:pagination.js:68,230`; `S:pagination/userflow.cy.js:328`; `` `.find('a')` `` — `S:pagination/userflow.cy.js:299` | `` `${dataCy}-operator-<op>-link` `` / `` `${dataCy}-page-<n>-link` `` / `` `${dataCy}-ellipsis-<start\|end>-link` `` | Open |
+
 ### PhoneInput
 
 Depends on DCY-X-04: the country menu is portalled to `<body>` and keyed by component id (`` classNamePrefix={`country-${componentId}`} ``, `W:PhoneCurrency/CountrySelect.jsx:160`), so `H:phoneInput.js:17` and `S:phoneInput/canvas.cy.js:164` walk `closest('[component-type]')` to get the id. Rows 03–06 remove that need.
@@ -301,6 +335,22 @@ Root is the bare `<name>` data-cy scoped under `draggable-widget-<name>` (DCY-X-
 | # | Element | Renders at (file:line) | Current fallback selector (spec/helper file:line) | Suggested data-cy | Status |
 |---|---|---|---|---|---|
 | DCY-SvgImage-01 | image wrapper (`role="img"`, parent of the authored `<svg>`) | `W:SvgImage.jsx:9` | `` `[data-cy=<name>] > [role="img"]` `` / `` `> [role="img"] > svg` `` — `C:svgImage.js:12`, `C:svgImage.js:14`; `H:svgImage.js:53`; `H:svgImage.js:72`; `S:svgImage/canvas.cy.js:75` (+3 more) | `` `${dataCy}-image` `` (e.g. `svgimage1-image`; then `[data-cy=svgimage1-image] > svg`) | Open |
+
+### Tabs
+
+Depends on DCY-X-01 (box class-qualified as `` `.canvas-component[data-cy=draggable-widget-x]` `` to skip nested child boxes, `C:tabs.js:3`; `.first()` at `H:tabs.js:205,212`), DCY-X-03 (root reached as `` `.tabs-component[data-cy=<name>]` ``, `C:tabs.js:9`; `H:tabs.js:124`) and DCY-X-09 (pane sub-canvases repeat `real-canvas`, so two specs overwrite the canvas commands). The header bar wrapper (`W:Tabs/Tabs.jsx:322`) is only walked through (`:scope > div > ...`); rows 01 and 05 remove that walk. `TabContent` (`W:Tabs/Tabs.jsx:553`) takes no `dataCy`, so it has to be passed down for rows 06 and 09. The loading shimmer and spinners (`W:Tabs/Tabs.jsx:20`, `:472`, `:604`) are not selected by current specs.
+
+| # | Element | Renders at (file:line) | Current fallback selector (spec/helper file:line) | Suggested data-cy | Status |
+|---|---|---|---|---|---|
+| DCY-Tabs-01 | Header row `ul.nav` (scroll container) | `W:Tabs/Tabs.jsx:344` | `` `.tabs-component[data-cy=<name>] > div > ul.nav` `` — `C:tabs.js:11`; `H:tabs.js:125`; consumed as `b.nav` at `S:tabs/canvas.cy.js:214`, `S:tabs/styles.cy.js:85` (+14 more) | `` `${dataCy}-nav` `` (e.g. `tabs1-nav`) | Open |
+| DCY-Tabs-02 | Tab header `li.nav-item` (+ active state), picked by position | `W:Tabs/Tabs.jsx:367` | `` `... > ul.nav > li.nav-item` `` + `.eq(i)` — `C:tabs.js:13`; `H:tabs.js:126`; `closest("li.nav-item")` at `H:tabs.js:248`; `S:tabs/canvas.cy.js:104`; `S:tabs/userflow.cy.js:92`; `S:tabs/styles.cy.js:153` (+29 more); active state `` `li.nav-item.active` `` — `C:tabs.js:14` (defined, unused), `H:tabs.js:158` | `` `${dataCy}-tab-<tabId>` `` (tab id as the slug, since hidden tabs shift the index; e.g. `tabs1-tab-t0`) + `aria-selected` | Open |
+| DCY-Tabs-03 | Header hover surface (the inner div that paints the hover background) | `W:Tabs/Tabs.jsx:408` | `li.firstElementChild` — `H:tabs.js:153`; consumed as `surfaceBg` at `S:tabs/styles.cy.js:304` | `` `${dataCy}-tab-<tabId>-surface` `` | Open |
+| DCY-Tabs-04 | Header title (`OverflowTooltip` div in split width, `<span>` otherwise) | `W:Tabs/Tabs.jsx:434` → `frontend/src/_components/OverflowTooltip.jsx:81` (split); `W:Tabs/Tabs.jsx:439` (auto) | `` `:scope > span, .text-truncate, div` `` inside the surface — `H:tabs.js:154`; consumed as `labelRect` at `S:tabs/styles.cy.js:104` | `` `${dataCy}-tab-<tabId>-label` `` | Open |
+| DCY-Tabs-05 | Nav scroll arrows (left / right; only rendered on overflow) | `W:Tabs/Tabs.jsx:332` (left), `:450` (right) | `` `.tabs-component[data-cy=<name>] > div > div.px-2` `` + `.eq(i)` — `C:tabs.js:16`; `H:tabs.js:127`; `S:tabs/canvas.cy.js:237`; consumed as `b.arrows` at `S:tabs/canvas.cy.js:214-221,296` | `` `${dataCy}-scroll-left` `` / `` `${dataCy}-scroll-right` `` | Open |
+| DCY-Tabs-06 | Tab pane `.tab-pane[activetab]` | `W:Tabs/Tabs.jsx:577` (`activetab` at :579) | `` `.tab-pane[activetab="<tabId>"]` `` — `C:tabs.js:18`; `H:tabs.js:128,221`; `S:tabs/canvas.cy.js:102`; `S:tabs/styles.cy.js:157,167` | `` `${dataCy}-pane-<tabId>` `` | Open |
+| DCY-Tabs-07 | Pane wrapper (per-tab div that carries display / slide transform / opacity / visibility) | `W:Tabs/Tabs.jsx:488` | `pane.parentElement` — `H:tabs.js:172`; `S:tabs/styles.cy.js:157`; every wrapper via `` `:scope > div:last-child > div` `` — `H:tabs.js:191`; consumed at `S:tabs/canvas.cy.js:93`, `S:tabs/styles.cy.js:238-244` | `` `${dataCy}-pane-wrapper-<tabId>` `` | Open |
+| DCY-Tabs-08 | Panel (overflow-hidden container of all pane wrappers) | `W:Tabs/Tabs.jsx:475` | `.parentElement.parentElement` from a pane — `S:tabs/styles.cy.js:167`; `wrapper.parentElement` — `S:tabs/styles.cy.js:188,189`; `` `:scope > div:last-child` `` — `H:tabs.js:191` | `` `${dataCy}-panel` `` | Open |
+| DCY-Tabs-09 | Pane sub-canvas (instance of DCY-X-09: renders the shared `real-canvas` data-cy; reachable only by `#canvas-<componentId>-<tabId>`) | `W:Tabs/Tabs.jsx:607` → `frontend/src/AppBuilder/AppCanvas/Container.jsx:304-305` | `` `#canvas-<componentId>-<tabId>` `` — `C:tabs.js:20`; `S:tabs/canvas.cy.js:100,328`; `` `[id^="canvas-"]` `` — `H:tabs.js:173`; `S:tabs/styles.cy.js:171`; component id parsed out of the canvas id by `tabsComponentId` — `H:tabs.js:219-226` | `` `${dataCy}-pane-<tabId>-canvas` `` (pass `dataCy` to `SubContainer`) | Open |
 
 ### Tags
 
