@@ -82,7 +82,8 @@ export class FeatureAbilityGuard extends AbilityGuard {
       });
       if (apps.length !== new Set(appIds).size) return false;
 
-      request.tj_allow_owner_folder_app_create = folderOwnedByUser && apps.every((app) => app.userId === request.user.id);
+      request.tj_allow_owner_folder_app_create =
+        folderOwnedByUser && apps.every((app) => app.userId === request.user.id);
       request.tj_allow_owner_folder_app_delete = folderOwnedByUser;
       request.tj_folder_app_type_mismatch = !!folder.type && apps.some((app) => app.type && app.type !== folder.type);
     }
