@@ -5,6 +5,8 @@
 
 export const COMPARE_OVERLAY_MESSAGE = 'tooljet-compare:overlay';
 export const COMPARE_OVERLAY_RESULT = 'tooljet-compare:overlay-result';
+// Closing the dialogs the app itself opened (on page load, say), which cover the compared page.
+export const COMPARE_DISMISS_MESSAGE = 'tooljet-compare:dismiss';
 // Switching the compared page inside a frame that is already running, instead of loading the version again.
 export const COMPARE_PAGE_MESSAGE = 'tooljet-compare:page';
 export const COMPARE_PAGE_RESULT = 'tooljet-compare:page-result';

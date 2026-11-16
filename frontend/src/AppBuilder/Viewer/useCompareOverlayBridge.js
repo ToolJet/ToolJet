@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import {
+  COMPARE_DISMISS_MESSAGE,
   COMPARE_OVERLAY_MESSAGE,
   COMPARE_OVERLAY_RESULT,
   COMPARE_PAGE_MESSAGE,
@@ -64,12 +65,31 @@ export function createCompareOverlayHandler(getState, moduleId = 'canvas') {
       opened = null;
     }
     if (result.status !== 'found') return result;
-    if (opened === result.id || run(result.id, 'open')) {
+    const stillOpen = opened === result.id && getState().getExposedValueOfComponent?.(opened, moduleId)?.show !== false;
+    if (stillOpen || run(result.id, 'open')) {
       opened = result.id;
       return { status: 'opened', name: result.name };
     }
     return { status: 'unsupported', name: result.name };
   };
+}
+
+/**
+ * Closes every dialog that is open, for a reviewer who cannot get past one (the app opens some on page load).
+ * Their events are muted first, so closing runs none of the app's actions.
+ */
+export function dismissAppOverlays(getState, moduleId = 'canvas') {
+  const state = getState();
+  let count = 0;
+  Object.entries(state.getCurrentPageComponents?.(moduleId) ?? {}).forEach(([id, definition]) => {
+    if (!OVERLAY_TYPES.test(definition?.component?.component ?? '')) return;
+    const exposed = state.getExposedValueOfComponent?.(id, moduleId);
+    if (!exposed?.show || typeof exposed.close !== 'function') return;
+    muteCompareEvents(id);
+    exposed.close();
+    count += 1;
+  });
+  return { status: 'dismissed', count };
 }
 
 /**
@@ -101,6 +121,10 @@ export function useCompareOverlayBridge(moduleId = 'canvas', enabled = true) {
           { type: COMPARE_PAGE_RESULT, requestId: event.data.requestId, ...result },
           window.location.origin
         );
+        return;
+      }
+      if (event.data?.type === COMPARE_DISMISS_MESSAGE) {
+        dismissAppOverlays(useStore.getState, moduleId);
         return;
       }
       if (event.data?.type !== COMPARE_OVERLAY_MESSAGE) return;
