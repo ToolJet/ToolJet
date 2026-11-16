@@ -1,6 +1,6 @@
 ---
 id: project-structure
-title: Code Mode Project Structure
+title: React Builder Project Structure
 sidebar_label: Project Structure
 ---
 
@@ -14,9 +14,11 @@ sidebar_label: Project Structure
  <span>Paid feature</span>
 </div>
 
-A Code mode app is a React and TypeScript project. `app.json` names the app and its screens, and `frontend/` holds the source. ToolJet keeps sign-in, permissions, environments, data sources and queries. This page describes the files in a project, the rules ToolJet applies to them, and what ToolJet stores.
+<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
 
-You get a project when you clone an app or create one with the CLI. See [Work Locally](/docs/app-builder/code-mode/local-development).
+A React Builder app is a React and TypeScript project. `app.json` names the app and its screens, and `frontend/` holds the source. ToolJet keeps sign-in, permissions, environments, data sources and queries. This page describes the files in a project, the rules ToolJet applies to them, and what ToolJet stores.
+
+You get a project when you clone an app or create one with the CLI. See [Work Locally](/docs/build-with-ai/react-builder/local-development).
 
 ## Files and Folders
 
@@ -54,7 +56,7 @@ orders-desk/
 - `frontend/package.json` has `lib:*` scripts for custom component libraries. To build and run the app, use the `tooljet app` commands instead.
 - ToolJet provides React 18 when the app runs. `react` and `react-dom` aren't bundled.
 
-For the files the CLI writes in `.tooljet/`, see the [CLI reference](/docs/app-builder/code-mode/cli-reference#files-the-cli-writes).
+For the files the CLI writes in `.tooljet/`, see the [CLI reference](/docs/build-with-ai/react-builder/cli-reference#files-the-cli-writes).
 
 ## `app.json`
 
@@ -97,7 +99,7 @@ The CLI checks `app.json` every time it reads it, and stops with a message such 
 
 ### Screens and Their Hidden Pages
 
-Each route in `app.json` gets a hidden page in the app, named `<code page handle>-<route id>`. For the example above, the `admin` screen's page is `home-admin`. The page's permissions decide who can open the screen. See [Access Control](/docs/app-builder/code-mode/access-control).
+Each route in `app.json` gets a hidden page in the app, named `<code page handle>-<route id>`. For the example above, the `admin` screen's page is `home-admin`. The page's permissions decide who can open the screen. See [Access Control](/docs/build-with-ai/react-builder/access-control).
 
 `tooljet app dev` and `tooljet app publish` create these pages. `pull` doesn't change them.
 
@@ -130,7 +132,7 @@ Query results are typed as follows:
 
 Column types map to `number`, `boolean` or `string`. JSON columns map to `unknown`. Nullable columns add `| null`.
 
-For how to use these, see [Runtime API](/docs/app-builder/code-mode/runtime-api).
+For how to use these, see [Runtime API](/docs/build-with-ai/react-builder/runtime-api).
 
 ## Styling
 
@@ -231,24 +233,24 @@ A series without a colour gets the app's accent, then the theme's chart colours.
 
 ### Other UI Libraries
 
-You can use another React UI library, such as Ant Design or MUI. Connect it to the app theme with `useToolJetTheme()`, which returns ready-made theme objects for both. See [Use the App Theme in Code](/docs/app-builder/code-mode/runtime-api#use-the-app-theme-in-code).
+You can use another React UI library, such as Ant Design or MUI. Connect it to the app theme with `useToolJetTheme()`, which returns ready-made theme objects for both. See [Use the App Theme in Code](/docs/build-with-ai/react-builder/runtime-api#use-the-app-theme-in-code).
 
 ## Dependencies
 
-Code mode installs packages from the npm registry only.
+React Builder installs packages from the npm registry only.
 
 - Every entry in `dependencies`, `devDependencies`, `optionalDependencies`, `peerDependencies`, `resolutions` and `overrides` must be a version, a range or a dist-tag. An `overrides` entry can also point at a dependency's own version with `$<package>`.
 - Git, URL, `file:` and `link:` dependencies are refused. So are `npm:` aliases and `workspaces`.
-- Every package in the lockfile must resolve from an allowed registry: `registry.npmjs.org`, `registry.yarnpkg.com`, or a registry the ToolJet server allows. A self-hosted admin adds registries with the server's `TOOLJET_CODE_NPM_REGISTRIES` environment variable (comma-separated). See [Environment Variables](/docs/setup/configuration/env-vars#code-mode).
+- Every package in the lockfile must resolve from an allowed registry: `registry.npmjs.org`, `registry.yarnpkg.com`, or a registry the ToolJet server allows. A self-hosted admin adds registries with the server's `TOOLJET_CODE_NPM_REGISTRIES` environment variable (comma-separated). See [Environment Variables](/docs/setup/configuration/env-vars#react-builder).
 - Package install scripts never run. `tooljet app install` turns them off, and `frontend/.npmrc` sets `ignore-scripts=true`, so a plain `npm install` behaves the same.
 - To add a package, run `npm install --ignore-scripts <package>` in `frontend/`.
 - `tooljet app publish` needs a lockfile, and installs exactly what it lists.
 
-ToolJet refuses to store a project that breaks these rules, with a message such as `frontend/package.json: ... Code mode installs packages from the npm registry only: no git, URL, file:, link:, alias or workspace dependencies.`
+ToolJet refuses to store a project that breaks these rules, with a message such as `frontend/package.json: ... React Builder installs packages from the npm registry only: no git, URL, file:, link:, alias or workspace dependencies.`
 
 ToolJet stores `frontend/.npmrc` with only `ignore-scripts=true`. It drops every other line, including registry tokens. Keep registry authentication in your user-level `.npmrc`.
 
-To check packages before you add them, run `tooljet app vet`. It checks for malware and known vulnerabilities, versions published in the last 7 days, licences and the blocklist. See [`tooljet app vet`](/docs/app-builder/code-mode/cli-reference#tooljet-app-vet).
+To check packages before you add them, run `tooljet app vet`. It checks for malware and known vulnerabilities, versions published in the last 7 days, licences and the blocklist. See [`tooljet app vet`](/docs/build-with-ai/react-builder/cli-reference#tooljet-app-vet).
 
 ## What ToolJet Stores
 
@@ -261,7 +263,7 @@ When the CLI or the editor saves the app's code, ToolJet stores only the project
 
 ToolJet doesn't store:
 
-- Binary files, such as PNG images or fonts. Use SVG, or load them from an address your workspace allows. See [Allow Outside Addresses](/docs/app-builder/code-mode/security#allow-outside-addresses).
+- Binary files, such as PNG images or fonts. Use SVG, or load them from an address your workspace allows. See [Allow Outside Addresses](/docs/build-with-ai/react-builder/security#allow-outside-addresses).
 - Dot files and folders inside `frontend/src/` and `frontend/styles/`, and `node_modules`.
 - The `version` field in `app.json`.
 - Lockfiles other than `package-lock.json`. <!-- TODO verify: pnpm-lock.yaml and yarn.lock are not on the stored-file allowlist, so pnpm and yarn projects appear to lose their lockfile on ToolJet and in git sync; confirm before documenting -->
