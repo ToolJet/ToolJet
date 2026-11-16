@@ -329,7 +329,7 @@
     },
     {
       "componentType": "BoundedBox",
-      "status": "grilling",
+      "status": "approved",
       "contract": "ee/test/app-builder/widgets/BoundedBox/TESTING.md"
     },
     {

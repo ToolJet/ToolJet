@@ -12,16 +12,6 @@ import { mapCameraDevices, hasFrontAndBackCameras, isMobileBrowser } from './cam
 // rear lenses ("Back Ultra Wide Camera", "Back Dual Wide Camera") whose ids are not
 // stable across sessions, so `facingMode` is the only reliable front/back switch.
 
-// TEMPORARY: surfaces camera failures on phones, where the console is unreachable.
-// Delete this block and its three call sites before merging.
-const alertedMessages = new Set();
-const debugAlert = (headline, details = '') => {
-  const message = `[camera] ${headline}\n${details}`;
-  if (alertedMessages.has(message)) return;
-  alertedMessages.add(message);
-  window.alert(message);
-};
-
 export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setExposedVariables }) => {
   // Props
   const { backgroundColor, borderRadius, borderColor, boxShadow, textColor, accentColor } = styles;
@@ -52,11 +42,36 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   const savedImageUrlRef = useRef(null);
   const mediaStreamRef = useRef(null);
 
+  // Either signal is enough. Labels are blank until permission is granted (and some
+  // browsers only ever expose the granted camera), so the front/back pair alone would
+  // miss real phones; the browser heuristic alone misses Android "Desktop site" mode
+  // and ChromeOS, which report a desktop user agent.
+  const isMobile = useMemo(
+    () => hasFrontAndBackCameras(deviceLists.cameras) || isMobileBrowser(),
+    [deviceLists.cameras]
+  );
+
+  // The library only re-reads video/audio (not customMediaStream) when they change identity.
+  const recorderVideo = useMemo(
+    () =>
+      !isMobile && selectedCameraId && !selectedCameraId.startsWith?.('camera-')
+        ? { deviceId: { exact: selectedCameraId } }
+        : true,
+    [isMobile, selectedCameraId]
+  );
+  const recorderAudio = useMemo(
+    () =>
+      selectedMicrophoneId && !selectedMicrophoneId.startsWith?.('microphone-')
+        ? { deviceId: { exact: selectedMicrophoneId } }
+        : true,
+    [selectedMicrophoneId]
+  );
+
   // Media recorder setup
   const recorderOptions = useMemo(
     () => ({
-      audio: true,
-      video: true,
+      audio: recorderAudio,
+      video: recorderVideo,
       customMediaStream: mediaStream,
       stopStreamsOnStop: false,
       onStart: () => {
@@ -67,7 +82,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
         setRecordingResult({ url: blobUrl, blob });
       },
     }),
-    [mediaStream, fireEvent]
+    [mediaStream, fireEvent, recorderAudio, recorderVideo]
   );
 
   const {
@@ -106,15 +121,6 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
       updateCapturedImage(null, { revokePrevious });
     },
     [updateCapturedImage]
-  );
-
-  // Either signal is enough. Labels are blank until permission is granted (and some
-  // browsers only ever expose the granted camera), so the front/back pair alone would
-  // miss real phones; the browser heuristic alone misses Android "Desktop site" mode
-  // and ChromeOS, which report a desktop user agent.
-  const isMobile = useMemo(
-    () => hasFrontAndBackCameras(deviceLists.cameras) || isMobileBrowser(),
-    [deviceLists.cameras]
   );
 
   const isBusy = useMemo(
@@ -361,7 +367,6 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
       );
     } catch (error) {
       console.error('Failed to enumerate media devices', error);
-      debugAlert(`enumerateDevices failed — ${error?.name || 'UnknownError'}`, error?.message || '');
     }
   }, [isMobile]);
 
@@ -383,7 +388,6 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
       if (!navigator?.mediaDevices?.getUserMedia) {
         setPermissionError('unsupported');
         setMediaStream(null);
-        debugAlert('getUserMedia unavailable', `secure context: ${window.isSecureContext}`);
         return;
       }
 
@@ -429,15 +433,6 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
       } catch (error) {
         if (cancelled) return;
         console.error('Failed to acquire media stream', error);
-        debugAlert(
-          `${error?.name || 'UnknownError'}: ${error?.message || ''}`,
-          [
-            `isMobile: ${isMobile}`,
-            `facingMode: ${facingMode}`,
-            `video constraint: ${JSON.stringify(constraints.video)}`,
-            `cameras: ${deviceLists.cameras.map((c) => `${c.label} [${c.facing}]`).join(' | ') || 'none'}`,
-          ].join('\n')
-        );
         setPermissionError(error?.name || 'permission_denied');
         setMediaStream(null);
       }

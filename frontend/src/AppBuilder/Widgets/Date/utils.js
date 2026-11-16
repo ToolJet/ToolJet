@@ -63,14 +63,16 @@ export const resolveTimezone = (timezone) =>
 // utc + selected timezone offset = incorrectMomentObject + local timezone offset
 // utc = incorrectMomentObject + local timezone offset - selected timezone offset
 
-export const getOffset = (timezone = moment.tz.guess()) => {
-  return -moment.tz.zone(timezone).utcOffset(1577836800000);
+// The instant matters because a zone's offset changes with daylight saving time.
+export const getOffset = (timezone = moment.tz.guess(), instant = Date.now()) => {
+  return -moment.tz.zone(timezone).utcOffset(instant);
 };
 
 export const getUnixTimeFromParsedDate = (date, timezone, displayFormat) => {
   const momentObj = moment(date, displayFormat);
-  const localOffset = getOffset();
-  const selectedOffset = getOffset(timezone);
+  const localOffset = getOffset(undefined, momentObj.valueOf());
+  // The wall-clock date read in the selected zone gives that zone's instant for the date.
+  const selectedOffset = getOffset(timezone, moment.tz(date, displayFormat, timezone).valueOf());
   const modifiedTime = momentObj.add(localOffset - selectedOffset, 'minutes');
   const val = modifiedTime.valueOf();
   return val === 'Invalid date' ? null : val;
@@ -78,8 +80,8 @@ export const getUnixTimeFromParsedDate = (date, timezone, displayFormat) => {
 
 export const getSelectedTimestampFromUnixTimestampV2 = (unixTimestamp, timezone) => {
   const momentObj = moment(unixTimestamp);
-  const localOffset = getOffset();
-  const selectedOffset = getOffset(timezone);
+  const localOffset = getOffset(undefined, momentObj.valueOf());
+  const selectedOffset = getOffset(timezone, momentObj.valueOf());
   const modifiedTime = momentObj.add(selectedOffset - localOffset, 'minutes');
   const val = modifiedTime.valueOf();
   return val === 'Invalid date' ? null : val;
@@ -129,16 +131,19 @@ export const getSelectedTimestampFromUnixTimestamp = (
   isTimezoneEnabled = false
 ) => {
   if (!isTimezoneEnabled || !unixTimestamp) return unixTimestamp;
-  const localTimeOffset = getOffset();
-  const selectedTimeOffset = getOffset(displayTimezone);
+  const localTimeOffset = getOffset(undefined, unixTimestamp);
+  const selectedTimeOffset = getOffset(displayTimezone, unixTimestamp);
   const modifiedTime = moment(unixTimestamp).subtract(localTimeOffset - selectedTimeOffset, 'minutes');
   return modifiedTime.valueOf() === 'Invalid date' ? null : modifiedTime.valueOf();
 };
 
 export const getUnixTimestampFromSelectedTimestamp = (selectedTime, displayTimezone = moment.tz.guess()) => {
   if (!selectedTime) return selectedTime;
-  const localTimeOffset = getOffset();
-  const selectedTimeOffset = getOffset(displayTimezone);
+  const localTimeOffset = getOffset(undefined, moment(selectedTime).valueOf());
+  const selectedTimeOffset = getOffset(
+    displayTimezone,
+    moment.tz(moment(selectedTime).format('YYYY-MM-DDTHH:mm:ss.SSS'), displayTimezone).valueOf()
+  );
   const modifiedTime = moment(selectedTime).add(localTimeOffset - selectedTimeOffset, 'minutes');
   return modifiedTime.valueOf() === 'Invalid date' ? null : modifiedTime.valueOf();
 };

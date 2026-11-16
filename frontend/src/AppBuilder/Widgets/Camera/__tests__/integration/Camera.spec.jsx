@@ -6,6 +6,7 @@ import {
   MODULE_ID,
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { __getRecorderOptions } from 'react-media-recorder';
 
 // Engineering scenarios for the Camera widget.
 // Contract: frontend/ee/test/app-builder/widgets/Camera/TESTING.md.
@@ -251,6 +252,22 @@ describe('Camera widget', () => {
     expect(screen.getByText('Learn more')).toBeInTheDocument();
   });
 
+  test('[Camera-PERM-004] a denied camera shows the placeholder without a native alert', async () => {
+    // Break this catches: the TEMPORARY debugAlert in the getUserMedia catch
+    // (Camera.jsx) popping window.alert on top of the widget's own denied state.
+    setMediaDevices({
+      getUserMedia: rejectGetUserMedia('NotAllowedError'),
+      enumerateDevices: () => Promise.resolve([]),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    });
+
+    widget.render({});
+
+    expect(await screen.findByText('Camera permission denied.')).toBeInTheDocument();
+    expect(window.alert).not.toHaveBeenCalled();
+  });
+
   test('[Camera-PERM-003] getUserMedia NotFoundError shows the no-device placeholder', async () => {
     // Break this catches: the NotFoundError -> 'No camera device found' mapping
     // (Content.jsx:107-109), the representative device-error branch that
@@ -383,6 +400,49 @@ describe('Camera widget', () => {
 
     await waitFor(() => expect(exposed().videoDataURL).toBeNull());
     expect(widget.variables().onRecordingSaveCount).toBeUndefined();
+  });
+
+  test('[Camera-REC-004] recording uses the selected camera and microphone, not the defaults', async () => {
+    // Break this catches: the recorder options keeping video/audio at `true`, so
+    // react-media-recorder (which ignores later customMediaStream changes) records
+    // the default devices after the user picked camera B and mic B.
+    setMediaDevices({
+      getUserMedia: () => Promise.resolve(fakeStream()),
+      enumerateDevices: () =>
+        Promise.resolve([
+          { kind: 'videoinput', deviceId: 'cam-a', label: 'FaceTime HD Camera' },
+          { kind: 'videoinput', deviceId: 'cam-b', label: 'Logitech C920' },
+          { kind: 'audioinput', deviceId: 'mic-a', label: 'Built-in Mic' },
+          { kind: 'audioinput', deviceId: 'mic-b', label: 'USB Mic' },
+        ]),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    });
+    widget.render({ properties: { content: binding('video') } });
+
+    const pick = async (triggerName, optionText) => {
+      const trigger = await screen.findByRole('button', { name: triggerName });
+      await waitFor(() => expect(trigger).not.toBeDisabled());
+      await widget.session.store.act(async () => {
+        fireEvent.click(trigger);
+      });
+      await widget.session.store.act(async () => {
+        fireEvent.click(await screen.findByText(optionText));
+      });
+    };
+    await pick('Select camera device', 'Logitech C920');
+    await pick('Select microphone device', 'USB Mic');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Start recording' })).not.toBeDisabled());
+    await widget.session.store.act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Start recording' }));
+    });
+
+    await waitFor(() =>
+      expect(__getRecorderOptions()).toMatchObject({
+        video: { deviceId: { exact: 'cam-b' } },
+        audio: { deviceId: { exact: 'mic-b' } },
+      })
+    );
   });
 
   // --- Styles -----------------------------------------------------------------

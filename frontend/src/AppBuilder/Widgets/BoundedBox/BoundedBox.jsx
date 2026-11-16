@@ -9,7 +9,7 @@ import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { getSafeRenderableValue } from '../utils';
 
-export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, id }) => {
+export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles }) => {
   const [annotationState, setAnnotation] = useState({});
   const [annotationsState, setAnnotations] = useState([]);
   const [outerDivHeight, setOuterDivHeight] = useState();
@@ -25,9 +25,15 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
     : [];
   const annotateRef = useRef(null);
 
+  const rootRef = useRef(null);
+
   useEffect(() => {
+    // react-image-annotation's generated class names change between builds, so locate the image structurally
+    const imageElement = rootRef.current?.querySelector('img');
+    if (!imageElement) return;
+
     const handleImageLoad = () => {
-      const wrapperElement = document.querySelector(`[widgetid="${id}"] .jcdOkx`);
+      const wrapperElement = imageElement.parentElement;
       if (wrapperElement) {
         const { width, height } = wrapperElement.getBoundingClientRect();
         // Use the width and height of bounding image for further calculations
@@ -36,17 +42,11 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       }
     };
 
-    const imageElement = document.querySelector(`[widgetid="${id}"] .hIIYQM`);
-    if (imageElement) {
-      imageElement.addEventListener('load', handleImageLoad);
-    }
+    imageElement.addEventListener('load', handleImageLoad);
+    // a cached image can finish loading before this effect attaches the listener
+    if (imageElement.complete && imageElement.naturalWidth > 0) handleImageLoad();
 
-    return () => {
-      if (imageElement) {
-        imageElement.removeEventListener('load', handleImageLoad);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => imageElement.removeEventListener('load', handleImageLoad);
   }, []);
 
   useEffect(() => {
@@ -182,6 +182,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
 
   return (
     <div
+      ref={rootRef}
       onMouseDown={(e) => e.stopPropagation()}
       style={{ display: styles.visibility ? 'block' : 'none', height: height, boxShadow: styles.boxShadow }}
       className="bounded-box relative"

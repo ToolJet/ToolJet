@@ -331,6 +331,37 @@ describe('DatetimePickerV2 widget', () => {
     expect(exposed().storeTimezone).toBe(moment.tz.guess());
   });
 
+  test('[DatetimePickerV2-TZ-005] timezone conversion applies daylight saving time for the date shown', async () => {
+    // Break this catches: reading zone offsets at a fixed winter instant (Date/utils.js getOffset),
+    // so summer dates in DST zones render one hour off and stored values get the wrong wall time.
+    const tzProps = (display, store, defaultValue) => ({
+      properties: {
+        isTimezoneEnabled: binding('{{true}}'),
+        storeTimezone: binding(store),
+        displayTimezone: binding(display),
+        defaultValue: binding(defaultValue),
+      },
+    });
+
+    widget.render(tzProps('America/New_York', 'Etc/UTC', '15/07/2026 12:00'));
+    await waitFor(() => expect(input()).toHaveValue('15/07/2026 08:00'));
+    widget.teardown();
+
+    widget.setup();
+    widget.render(tzProps('Australia/Sydney', 'Etc/UTC', '15/07/2026 12:00'));
+    await waitFor(() => expect(input()).toHaveValue('15/07/2026 22:00'));
+    widget.teardown();
+
+    widget.setup();
+    widget.render(tzProps('America/New_York', 'Etc/UTC', '15/01/2026 12:00'));
+    await waitFor(() => expect(input()).toHaveValue('15/01/2026 07:00'));
+    widget.teardown();
+
+    widget.setup();
+    widget.render(tzProps('America/New_York', 'America/New_York', '15/07/2026 09:00'));
+    await waitFor(() => expect(exposed().value).toMatch(/^2026-07-15T09:00:00\.000-04:00$/));
+  });
+
   test('[DatetimePickerV2-VALID-001] a mandatory empty field is invalid', async () => {
     // Break this catches: dropping the mandatory check from isDateValid
     // (utils.js isMandatoryValid), so a required empty datetime reports valid.
