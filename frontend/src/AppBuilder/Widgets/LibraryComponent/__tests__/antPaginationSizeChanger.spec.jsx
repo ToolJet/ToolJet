@@ -51,7 +51,8 @@ const mount = async (props) => {
 
 describe('Ant Design Pagination: the page-size list', () => {
   test('[PackComponent-PAGINATION-001] opens in the popup layer, outside the widget, and takes a pick', async () => {
-    const pagination = await mount({ showSizeChanger: true, total: 200 });
+    // A standard size, so the list holds only Ant's own options: the default (1) is added to the list as "1 / page".
+    const pagination = await mount({ showSizeChanger: true, total: 200, pageSize: 10 });
 
     act(() => {
       fireEvent.mouseDown(pagination.shadow().querySelector('.ant-pagination-options .ant-select-selector'));

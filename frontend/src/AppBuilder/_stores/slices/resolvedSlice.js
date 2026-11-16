@@ -520,7 +520,12 @@ export const createResolvedSlice = (set, get) => {
     },
     setExposedValue: (componentId, property, value, moduleId = 'canvas') => {
       const existing = get().resolvedStore.modules[moduleId].exposedValues.components?.[componentId]?.[property];
-      if (existing !== undefined && _.isEqual(existing, value)) return;
+      if (
+        existing !== undefined &&
+        _.isEqual(existing, value) &&
+        !_exposedValueBatch.hasPendingWrite(`components.${componentId}.${property}`, moduleId)
+      )
+        return;
 
       const mutation = buildExposedValueMutation(componentId, property, value, moduleId);
       const depPaths = typeof value !== 'function' ? [{ path: `components.${componentId}.${property}`, moduleId }] : [];
