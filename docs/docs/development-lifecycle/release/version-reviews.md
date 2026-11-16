@@ -13,9 +13,11 @@ title: Compare and Review Versions
  <span>Paid feature</span>
 </div>
 
-**Compare versions** shows what changed between two versions of an app: its screens side by side, its queries, settings and, for Code mode apps, its code and access. A **version review** asks a teammate to approve a saved version before it's released. Use reviews when a second pair of eyes should sign off on every change that reaches your users.
+<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
 
-Both work for visual and Code mode apps. They aren't available for workflows or modules.
+**Compare versions** shows what changed between two versions of an app: its screens side by side, its queries, settings and, for React Builder apps, its code and access. A **version review** asks a teammate to approve a saved version before it's released. Use reviews when a second pair of eyes should sign off on every change that reaches your users.
+
+Both work for visual and React Builder apps. They aren't available for workflows or modules.
 
 ## Availability
 
@@ -28,9 +30,9 @@ Compare versions and version reviews are available on the Pro plan and above, an
 3. Review the changes:
    - The change list on the left groups changes into screens or pages, **Queries**, **Access** and **Settings**.
    - The preview shows both versions **Side by side**, at the **Screen size** you pick. Under **Render**, choose **Live data** to run the versions' queries, or **Layout only, runs no queries**.
-   - For a Code mode app, the view summarizes the changed files, and **See screens and code** opens the screens side by side and the code file by file. See [See What Changed](/docs/app-builder/code-mode/versions-and-history#see-what-changed).
+   - For a React Builder app, the view summarizes the changed files, and **See screens and code** opens the screens side by side and the code file by file. See [See What Changed](/docs/build-with-ai/react-builder/versions-and-history#see-what-changed).
 
-<img className="screenshot-full img-full" src="/img/development-lifecycle/release/version-reviews/compare-versions.png" alt="Compare versions view for a Code mode app, from v2 to the v3 draft, with See screens and code and Request review" />
+<img className="screenshot-full img-full" src="/img/development-lifecycle/release/version-reviews/compare-versions.png" alt="Compare versions view for a React Builder app, from v2 to the v3 draft, with See screens and code and Request review" />
 
 ## Request a Review
 
@@ -74,7 +76,7 @@ The release dialog shows the review's state: **Needs an approved review**, with 
 
 A version that was released from an approved review can be released again later, for example to roll back, as long as its content still matches what was approved.
 
-For Code mode apps, the [security check](/docs/app-builder/code-mode/security#release-gate) runs first, then the review gate.
+For React Builder apps, the [security check](/docs/build-with-ai/react-builder/security#release-gate) runs first, then the review gate.
 
 ### Release Without Approval
 

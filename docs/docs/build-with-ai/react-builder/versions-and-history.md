@@ -1,6 +1,6 @@
 ---
 id: versions-and-history
-title: Versions, History and Git in Code Mode
+title: Versions, History and Git in React Builder
 sidebar_label: Versions, History and Git
 ---
 
@@ -14,7 +14,9 @@ sidebar_label: Versions, History and Git
  <span>Paid feature</span>
 </div>
 
-A Code mode app uses ToolJet's usual [draft and saved versions](/docs/development-lifecycle/release/version-control), environments and releases. On top of that, ToolJet keeps the app's code with each version, records every change to it, and can sync it with git. This page explains how.
+<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
+
+A React Builder app uses ToolJet's usual [draft and saved versions](/docs/development-lifecycle/release/version-control), environments and releases. On top of that, ToolJet keeps the app's code with each version, records every change to it, and can sync it with git. This page explains how.
 
 ## Drafts and Saved Versions
 
@@ -32,9 +34,9 @@ Only a draft's code can change. In a saved version, the **Code** panel, the styl
 
 If the code doesn't build, the dialog shows the error with **Open in the Code panel**, and **Save** stays disabled until you fix it.
 
-You can also save a version from your computer with `tooljet app publish`. It builds the code, stores it on ToolJet, runs the security check and saves the draft as a version. See [CLI Reference](/docs/app-builder/code-mode/cli-reference).
+You can also save a version from your computer with `tooljet app publish`. It builds the code, stores it on ToolJet, runs the security check and saves the draft as a version. See [CLI Reference](/docs/build-with-ai/react-builder/cli-reference).
 
-After a save, ToolJet checks the frozen code in the background. The check never blocks the save, but its result decides whether the version can be released. See [App Security](/docs/app-builder/code-mode/security).
+After a save, ToolJet checks the frozen code in the background. The check never blocks the save, but its result decides whether the version can be released. See [App Security](/docs/build-with-ai/react-builder/security).
 
 | <div style={{ width:"300px"}}> Message </div> | <div style={{ width:"350px"}}> What to Do </div> |
 |:---------- | :---------- |
@@ -45,10 +47,10 @@ After a save, ToolJet checks the frozen code in the background. The check never 
 
 ### Release and Promote
 
-Release and promote a Code mode version the same way as any app. In addition:
+Release and promote a React Builder version the same way as any app. In addition:
 
 - The release and promote dialogs show how the code changed since the released version, for example "Since v1: 4 files changed (+120 −18)", with **See what changed**.
-- Release and promotion wait until the version passes its security check. See [Release Gate](/docs/app-builder/code-mode/security#release-gate).
+- Release and promotion wait until the version passes its security check. See [Release Gate](/docs/build-with-ai/react-builder/security#release-gate).
 - A version that still runs a developer's local build can't be released. Save the version first.
 - If the app reads ToolJet Database tables, the release dialog reminds you that **Production has its own data**: rows added in Development or Staging aren't copied.
 - If the workspace requires version reviews, the version also needs an approved review. See [Compare and Review Versions](/docs/development-lifecycle/release/version-reviews).
@@ -57,7 +59,7 @@ Release and promote a Code mode version the same way as any app. In addition:
 
 **App history** in the left sidebar lists every change to the app's code and access, newest first, grouped by day. It works on every plan.
 
-<img className="screenshot-full img-s" src="/img/app-builder/code-mode/versions-and-history/app-history.png" alt="App history panel with two code uploads from a computer, Started from saved version v1, and Saved version v1" />
+<img className="screenshot-full img-s" src="/img/build-with-ai/react-builder/versions-and-history/app-history.png" alt="App history panel with two code uploads from a computer, Started from saved version v1, and Saved version v1" />
 
 | <div style={{ width:"200px"}}> Entry </div> | <div style={{ width:"400px"}}> Example </div> |
 |:---------- | :---------- |
@@ -87,9 +89,9 @@ The view has three tabs:
 - **Code**: the file changes, **Inline** or **Side by side**.
 - **Access**: who can open each screen and run each query, before and after.
 
-<img className="screenshot-full img-full" src="/img/app-builder/code-mode/versions-and-history/see-what-changed.png" alt="What changed view on the Code tab, listing two changed files and an inline diff of src/App/index.tsx" />
+<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/versions-and-history/see-what-changed.png" alt="What changed view on the Code tab, listing two changed files and an inline diff of src/App/index.tsx" />
 
-<img className="screenshot-full img-full" src="/img/app-builder/code-mode/versions-and-history/compare-screens.png" alt="What changed from v2 to v3 on the Screens tab: the Overview screen of both versions side by side, with screen tabs and width options" />
+<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/versions-and-history/compare-screens.png" alt="What changed from v2 to v3 on the Screens tab: the Overview screen of both versions side by side, with screen tabs and width options" />
 
 **See query changes** opens ToolJet's version comparison for the queries and settings. It needs the Pro plan or above.
 
@@ -104,7 +106,7 @@ A restore never rewrites history. It writes the old files as a new revision, so 
 
 ## Who Edits the Code
 
-A Code mode app's code has one owner at a time:
+A React Builder app's code has one owner at a time:
 
 | <div style={{ width:"150px"}}> Owner </div> | <div style={{ width:"450px"}}> What It Means </div> |
 |:---------- | :---------- |
@@ -115,20 +117,20 @@ Each upload from the CLI sets the owner. Uploading with `--source platform` hand
 
 ## Git Sync
 
-With [GitSync](/docs/development-lifecycle/gitsync/overview) set up, a Code mode app's code is committed with the app.
+With [GitSync](/docs/development-lifecycle/gitsync/overview) set up, a React Builder app's code is committed with the app.
 
 - **Commit.** ToolJet writes the draft's code to `apps/<app>/code/`, beside the app definition: `app.json`, `frontend/` and the lockfile. The first commit adds a `code/.gitignore` for `node_modules/`, `.tooljet/`, `frontend/dist/` and `frontend/src/tooljet.gen.ts`. Generated `tooljet.gen.ts` is never committed.
 - **Owner.** If ToolJet owns the code, each commit makes `code/` match it exactly. If your repository owns it, ToolJet leaves `code/` as the repository has it. Your team's other files in the folder are never touched.
 - **Pull.** A pull stores what's in `code/` as a new revision of the app's code. It appears in App history as "Pulled from git", so code it replaced can be restored.
 - **Save version.** If the saved code is ahead of the last commit, ToolJet commits it before tagging the version.
-- **Another workspace.** On the first pull into another workspace, a `code/` folder that ToolJet committed turns the app into a Code mode app with its code.
+- **Another workspace.** On the first pull into another workspace, a `code/` folder that ToolJet committed turns the app into a React Builder app with its code.
 - A project file in git that ToolJet can't store, such as a file over the size limit, refuses the whole pull, so the next commit can't delete it from git.
 
 ### Branches
 
 In multi-branch mode, each git branch has its own draft of the app. The code on the default branch is read-only in ToolJet: "This code is synced with git on the default branch. Create a feature branch to make changes."
 
-With the CLI, the git branch your project folder is on picks that branch's draft. `tooljet app checkout` overrides it. See [Work Locally](/docs/app-builder/code-mode/local-development).
+With the CLI, the git branch your project folder is on picks that branch's draft. `tooljet app checkout` overrides it. See [Work Locally](/docs/build-with-ai/react-builder/local-development).
 
 All branches of an app share the app's one component library.
 
@@ -137,14 +139,14 @@ All branches of an app share the app's one component library.
 | <div style={{ width:"120px"}}> Action </div> | <div style={{ width:"480px"}}> What Happens to the Code </div> |
 |:---------- | :---------- |
 | **Export** | The file includes each version's current code and the builds the versions run. The code's history isn't exported. Builds over 40 MB in total can't be exported: export one version at a time. |
-| **Import** | The app is created in Code mode with its own new component library. Each version's code starts a new history, editable in ToolJet. Builds from a file aren't trusted, so the first **Save version** rebuilds the code from source. |
+| **Import** | The app is created as a React Builder app with its own new component library. Each version's code starts a new history, editable in ToolJet. Builds from a file aren't trusted, so the first **Save version** rebuilds the code from source. |
 | **Clone** | Same as import, and the clone's builds are used as they are. App history starts with "Copied with the app". |
 
 An export made before exports carried code imports without it. Export the app again from the original and import the new file.
 
 ## The App's Component Library
 
-ToolJet builds a Code mode app into a component library of its own, named after the app. The app keeps the same library across all its versions and git branches, and no other app uses it. If the name is already taken in the workspace, ToolJet adds a short suffix, such as `Northwind Shipments (3f2a9c1d)`.
+ToolJet builds a React Builder app into a component library of its own, named after the app. The app keeps the same library across all its versions and git branches, and no other app uses it. If the name is already taken in the workspace, ToolJet adds a short suffix, such as `Northwind Shipments (3f2a9c1d)`.
 
 ## Retention
 
@@ -155,4 +157,4 @@ ToolJet prunes old code revisions and builds. A self-hosted admin can change the
 | `TOOLJET_CODE_SOURCE_REVISIONS_KEEP` | `500` | The newest code revisions of each version. Older ones leave App history and can't be restored. |
 | `TOOLJET_CODE_BUILDS_KEEP` | `50` | The newest saved builds of each app's library, plus every build a version uses. |
 
-`0` keeps everything. See [Environment Variables](/docs/setup/configuration/env-vars#code-mode).
+`0` keeps everything. See [Environment Variables](/docs/setup/configuration/env-vars#react-builder).

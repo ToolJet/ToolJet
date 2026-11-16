@@ -1,6 +1,6 @@
 ---
 id: security
-title: App Security in Code Mode
+title: App Security in React Builder
 sidebar_label: App Security
 ---
 
@@ -14,12 +14,14 @@ sidebar_label: App Security
  <span>Paid feature</span>
 </div>
 
-A Code mode app ships code that your builders, the AI or a coding agent wrote, along with the npm packages it uses. ToolJet protects the app in two ways:
+<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
+
+A React Builder app ships code that your builders, the AI or a coding agent wrote, along with the npm packages it uses. ToolJet protects the app in two ways:
 
 - **Isolation.** The app's code runs in a sandboxed frame. It can't read the viewer's session or cookies, and by default it can reach only the ToolJet instance, so its data goes through the app's queries.
 - **Security checks.** ToolJet checks every version's code, packages and queries. The workspace's **scan policy** decides which findings block a release.
 
-Security checks apply only to Code mode apps. Visual apps are never checked and are always releasable.
+Security checks apply only to React Builder apps. Visual apps are never checked and are always releasable.
 
 ## What's Checked
 
@@ -40,7 +42,7 @@ Security checks apply only to Code mode apps. Visual apps are never checked and 
 
 The last two checks run on the frozen build of a saved version. The app's code can't switch any check off: lint-disable and secret-scanner comments in the code are ignored. Only workspace [exceptions](#exceptions) suppress a finding.
 
-Packages that come with the Code mode app template are never flagged as newly published. They're still checked for known vulnerabilities.
+Packages that come with the React Builder app template are never flagged as newly published. They're still checked for known vulnerabilities.
 
 ToolJet also reports how the app protects its data, as issues to review that never block a release. For example, when a query changes data and no query is restricted, or when a query trusts `{{globals.currentUser…}}` from the browser. See [What Protects This App](#what-protects-this-app).
 
@@ -59,9 +61,9 @@ Only ToolJet's own checks count for the release gate. Results from `tooljet app 
 
 ## The Security Panel
 
-Open **Security** from the left sidebar of a Code mode app, or click the security chip in the header.
+Open **Security** from the left sidebar of a React Builder app, or click the security chip in the header.
 
-<img className="screenshot-full img-m" src="/img/app-builder/code-mode/security/security-panel.png" alt="Security panel showing No issues for v2, with What protects this app expanded: private app, passwords on the server, one screen and one query restricted, password sign-in, and connections limited to ToolJet" />
+<img className="screenshot-full img-m" src="/img/build-with-ai/react-builder/security/security-panel.png" alt="Security panel showing No issues for v2, with What protects this app expanded: private app, passwords on the server, one screen and one query restricted, password sign-in, and connections limited to ToolJet" />
 
 ### States
 
@@ -108,7 +110,7 @@ This section lists the app's protections and whether each is on:
 
 ## Release Gate
 
-Every release, promotion, change of the released version and auto-deploy of a Code mode app passes the release gate. The gate passes only when:
+Every release, promotion, change of the released version and auto-deploy of a React Builder app passes the release gate. The gate passes only when:
 
 - the version has a finished check by ToolJet of exactly the code it stores, under today's scan policy;
 - no finding fails the policy, and every check that the policy blocks on actually ran;
@@ -117,7 +119,7 @@ Every release, promotion, change of the released version and auto-deploy of a Co
 
 When the gate fails, the release and promote dialogs show why, such as "Blocks release: 2 issues" or "Security: not checked yet", and lock the confirm button.
 
-<!-- TODO screenshot: Release confirmation dialog for a Code mode app showing the code changes line, the security gate line and Release anyway. Pending: needs a version that fails the gate; the showcase app passes every check. -->
+<!-- TODO screenshot: Release confirmation dialog for a React Builder app showing the code changes line, the security gate line and Release anyway. Pending: needs a version that fails the gate; the showcase app passes every check. -->
 
 ### Release Anyway
 
@@ -133,13 +135,13 @@ Workspace admins, and app editors with release permission, can do this. A person
 
 ## Workspace App Security
 
-Workspace admins manage security for every Code mode app in the workspace at **Workspace settings** → **App security**.
+Workspace admins manage security for every React Builder app in the workspace at **Workspace settings** → **App security**.
 
-<img className="screenshot-full img-full" src="/img/app-builder/code-mode/security/workspace-app-security.png" alt="Workspace settings App security page with the Apps table, the Addresses apps may connect to field, the policy summary, exceptions and activity" />
+<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/security/workspace-app-security.png" alt="Workspace settings App security page with the Apps table, the Addresses apps may connect to field, the policy summary, exceptions and activity" />
 
 The page has five sections:
 
-- **Apps**: every checked Code mode app with its version, status, open issues and last check.
+- **Apps**: every checked React Builder app with its version, status, open issues and last check.
 - **Addresses apps may connect to**: see [Allow Outside Addresses](#allow-outside-addresses).
 - **Policy**: the workspace scan policy, with **Edit policy**.
 - **Exceptions**: every accepted issue.
@@ -177,7 +179,7 @@ Exceptions survive unrelated code edits. Remove one from the **Security** panel 
 
 ### Allow Outside Addresses
 
-By default, Code mode apps can connect only to this ToolJet instance, so their data goes through queries. To let apps call an outside address directly:
+By default, React Builder apps can connect only to this ToolJet instance, so their data goes through queries. To let apps call an outside address directly:
 
 1. Go to **Workspace settings** → **App security** → **Addresses apps may connect to**.
 2. Add one address per line, as `https://host` or `https://*.host`, with an optional port. `http://localhost` is allowed for development.
@@ -205,18 +207,18 @@ Uploaded results are listed in the **Security** panel but never block a release 
 
 ## Isolation
 
-On self-hosted ToolJet, an admin can change how Code mode apps are isolated with environment variables. By default, every Code mode app runs isolated in the released app, Preview, the editor and comparisons, in **strict mode**:
+On self-hosted ToolJet, an admin can change how React Builder apps are isolated with environment variables. By default, every React Builder app runs isolated in the released app, Preview, the editor and comparisons, in **strict mode**:
 
-- RunJS and RunPy queries and transformations don't run. ToolJet shows: "Code mode apps can't run JavaScript or Python on the page. Move this logic into the app's code."
+- RunJS and RunPy queries and transformations don't run. ToolJet shows: "React Builder apps can't run JavaScript or Python on the page. Move this logic into the app's code."
 - `{{ }}` bindings are evaluated by a restricted interpreter.
 - JavaScript libraries and preloaded scripts don't load.
 - The legacy Custom component widget doesn't render.
 - IFrame addresses and the **Open webpage** action accept only `http(s)` addresses and same-site paths.
 - The **Set local storage** action does nothing.
 
-Isolation protects the viewer's session, not the data the app is given. App code still sees what its queries return. What the app may read and write is controlled by [query permissions](/docs/app-builder/code-mode/access-control) on the server.
+Isolation protects the viewer's session, not the data the app is given. App code still sees what its queries return. What the app may read and write is controlled by [query permissions](/docs/build-with-ai/react-builder/access-control) on the server.
 
-See [Environment Variables](/docs/setup/configuration/env-vars#code-mode) for `CODE_MODE_ISOLATION`, `CODE_MODE_STRICT_BINDINGS`, `CODE_MODE_SANDBOX_URL` and the security check settings.
+See [Environment Variables](/docs/setup/configuration/env-vars#react-builder) for `CODE_MODE_ISOLATION`, `CODE_MODE_STRICT_BINDINGS`, `CODE_MODE_SANDBOX_URL` and the security check settings.
 
 ## Audit Log
 

@@ -1,6 +1,6 @@
 ---
 id: access-control
-title: Access Control in Code Mode
+title: Access Control in React Builder
 sidebar_label: Access Control
 ---
 
@@ -14,7 +14,9 @@ sidebar_label: Access Control
  <span>Paid feature</span>
 </div>
 
-A Code mode app uses ToolJet's permissions, like any other app. Who can open the app is set in workspace settings. Inside the app, you control two things:
+<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
+
+A React Builder app uses ToolJet's permissions, like any other app. Who can open the app is set in workspace settings. Inside the app, you control two things:
 
 - **Who can open each screen.** A restricted screen is hidden from everyone outside its groups.
 - **Who can run each query.** A restricted query is refused by ToolJet's server for everyone outside its groups.
@@ -34,9 +36,9 @@ The hidden pages don't appear in the app's navigation. Opening a hidden page's U
 
 ## The Access Panel
 
-Open **Access** from the left sidebar of a Code mode app.
+Open **Access** from the left sidebar of a React Builder app.
 
-<img className="screenshot-full img-m" src="/img/app-builder/code-mode/access-control/access-panel.png" alt="Access panel listing four screens and four queries, with the Carriers screen and the updateShipmentStatus query restricted to Operations" />
+<img className="screenshot-full img-m" src="/img/build-with-ai/react-builder/access-control/access-panel.png" alt="Access panel listing four screens and four queries, with the Carriers screen and the updateShipmentStatus query restricted to Operations" />
 
 The panel has two sections. Search them with **Search screens, routes and queries**, and filter with **All** or **Restricted**.
 
@@ -56,7 +58,7 @@ In an open screen row, click the link icon to copy the released app's link to it
 
 Each query shows **Everyone** or **Restricted to** its groups. Click a query to open its row, then click **Restrict** or **Change** to choose them.
 
-ToolJet's server refuses to run a restricted query for anyone outside its users or groups. The app receives the run as a failed query, and the code's `error` shows it. See [Runtime API](/docs/app-builder/code-mode/runtime-api).
+ToolJet's server refuses to run a restricted query for anyone outside its users or groups. The app receives the run as a failed query, and the code's `error` shows it. See [Runtime API](/docs/build-with-ai/react-builder/runtime-api).
 
 ### Choosing Groups
 
@@ -75,7 +77,7 @@ More permission settings, such as groups, roles and who can open the app, are in
 
 ## Who the Limits Apply To
 
-In a Code mode app, limits depend on **who** the user is, not on how they open the app:
+In a React Builder app, limits depend on **who** the user is, not on how they open the app:
 
 - **People who can edit the app** pass every screen and query limit everywhere: workspace admins, super admins, and users with edit access to the app directly or through a folder. This is why you see every screen in the editor.
 - **Everyone else** is held to the limits everywhere, including when they open the app with `?mode=edit` or in Preview.
@@ -91,7 +93,7 @@ When a user opens a screen they may not open:
 
 <!-- TODO screenshot: Released Northwind Shipments app as a Finance user opening Carriers: "You don't have access to this screen" over the content area. Pending: needs a sign-in as a non-builder user and a released version. -->
 
-In the app's code, `ToolJet.useNavigation().routes` marks each screen with `allowed`, and the template's `useAllowedRoutes()` returns only the screens the user may open, so the template's navigation leaves restricted screens out. The current route is never one the user may not open. See [Runtime API](/docs/app-builder/code-mode/runtime-api).
+In the app's code, `ToolJet.useNavigation().routes` marks each screen with `allowed`, and the template's `useAllowedRoutes()` returns only the screens the user may open, so the template's navigation leaves restricted screens out. The current route is never one the user may not open. See [Runtime API](/docs/build-with-ai/react-builder/runtime-api).
 
 ## Public Apps
 
@@ -107,7 +109,7 @@ The **Access** panel shows a warning on public apps.
 
 `ToolJet.useGlobals()` gives the code the current user's name, email and groups, for example to hide a button from people outside Finance. This is for display only: the values come from the browser. Protect the action itself by restricting the query it runs.
 
-Don't pass `{{globals.currentUser.…}}` to a query to decide what the user may see. The browser fills it in, so a user can change it. The **Security** panel reports this as "Who the queries think the user is". See [App Security](/docs/app-builder/code-mode/security#what-protects-this-app).
+Don't pass `{{globals.currentUser.…}}` to a query to decide what the user may see. The browser fills it in, so a user can change it. The **Security** panel reports this as "Who the queries think the user is". See [App Security](/docs/build-with-ai/react-builder/security#what-protects-this-app).
 
 ## Access Changes in App History
 
@@ -115,4 +117,4 @@ Every change to who can open a screen or run a query is recorded, whether it was
 
 ## Listing Users in the App
 
-`ToolJet.useWorkspaceUsers()` lists the workspace's active users who can open the app, for fields such as an assignee or owner picker. It returns only the people with access to the app, and only to a user who can open it. See [Runtime API](/docs/app-builder/code-mode/runtime-api).
+`ToolJet.useWorkspaceUsers()` lists the workspace's active users who can open the app, for fields such as an assignee or owner picker. It returns only the people with access to the app, and only to a user who can open it. See [Runtime API](/docs/build-with-ai/react-builder/runtime-api).

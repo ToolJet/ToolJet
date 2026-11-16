@@ -1,6 +1,6 @@
 ---
 id: runtime-api
-title: Code Mode Runtime API
+title: React Builder Runtime API
 sidebar_label: Runtime API
 ---
 
@@ -14,7 +14,9 @@ sidebar_label: Runtime API
  <span>Paid feature</span>
 </div>
 
-A Code mode app's code talks to ToolJet through the `ToolJet` object and a few hooks. With them, the code runs the app's queries, reads the signed-in user and environment, moves between screens, and follows the app theme. This page lists each one.
+<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
+
+A React Builder app's code talks to ToolJet through the `ToolJet` object and a few hooks. With them, the code runs the app's queries, reads the signed-in user and environment, moves between screens, and follows the app theme. This page lists each one.
 
 ## Imports
 
@@ -24,7 +26,7 @@ import { useAppQuery, routePath, ROUTES, PAGES } from '../tooljet.gen';
 import { AppRouter, useUnsavedChanges, useAllowedRoutes } from '../lib/router';
 ```
 
-The paths above are relative to `frontend/src/App/`. `tooljet.gen.ts` is generated from the app by `tooljet app pull`. `lib/router.tsx` is part of the project template. See [Project Structure](/docs/app-builder/code-mode/project-structure).
+The paths above are relative to `frontend/src/App/`. `tooljet.gen.ts` is generated from the app by `tooljet app pull`. `lib/router.tsx` is part of the project template. See [Project Structure](/docs/build-with-ai/react-builder/project-structure).
 
 The hooks work in any component or custom hook inside the app, not only in the root `App` component.
 
@@ -117,7 +119,7 @@ export function ShipButton({ id }: { id: number }) {
 
 ### Queries That Run on Page Load
 
-In a Code mode app, a query set to run on page load runs when a screen that reads it opens. A query that no open screen reads never runs. For such a query, `loading` is `true` until its first result, for up to 15 seconds.
+In a React Builder app, a query set to run on page load runs when a screen that reads it opens. A query that no open screen reads never runs. For such a query, `loading` is `true` until its first result, for up to 15 seconds.
 
 When a screen opens after the app changed data, ToolJet runs its page-load queries again so they aren't stale. Once the app runs a query itself, its hook shows only the app's own newest run.
 
@@ -129,7 +131,7 @@ For a query that reads data (a ToolJet Database **List rows** or **Join tables**
 
 If the code runs the same query with the same parameters more than 5 times a second for 2 seconds, ToolJet slows it to one run a second. It stays slowed until no call comes for 2 seconds. Calls that arrive meanwhile share that run. Runs with different parameters are counted apart, so typing in a search box isn't slowed.
 
-In the editor, the canvas shows a notice that names the query, and the Debugger logs `[Code mode] Query running in a loop`. This usually means an effect re-runs the query on its own result. A released app is only slowed, with no notice.
+In the editor, the canvas shows a notice that names the query, and the Debugger logs `[React Builder] Query running in a loop`. This usually means an effect re-runs the query on its own result. A released app is only slowed, with no notice.
 
 ## Read the User and Environment
 
@@ -158,7 +160,7 @@ const { currentUser, environment } = ToolJet.useGlobals();
 const isManager = currentUser.groups.includes('Managers');
 ```
 
-Use these values only to show or hide parts of a screen. They don't protect data: screen and query permissions do. See [Access Control](/docs/app-builder/code-mode/access-control).
+Use these values only to show or hide parts of a screen. They don't protect data: screen and query permissions do. See [Access Control](/docs/build-with-ai/react-builder/access-control).
 
 ## Move Between Screens
 
@@ -267,7 +269,7 @@ Store a user's `id` (and `email` if a query needs it), and show their `name`.
 
 ## Use the App Theme in Code
 
-`useToolJetTheme()` returns the app theme as values, and re-renders when the theme or dark mode changes. Use it to connect another UI library to the theme. For Tailwind and CSS, use the theme tokens instead. See [Styling](/docs/app-builder/code-mode/project-structure#styling).
+`useToolJetTheme()` returns the app theme as values, and re-renders when the theme or dark mode changes. Use it to connect another UI library to the theme. For Tailwind and CSS, use the theme tokens instead. See [Styling](/docs/build-with-ai/react-builder/project-structure#styling).
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"500px"}}> Description </div> |
 |:---------- | :---------- |
@@ -314,7 +316,7 @@ Put library overrides in `frontend/styles/global.css`, which loads after the lib
 
 ## Custom Component Hooks
 
-The `ToolJet` object also has the hooks custom components use on visual pages, such as `useStateString`, `useStyleString`, `useEventCallback` and `useAction`. A Code mode app doesn't need them. See [Build Components](/docs/app-builder/custom-component-library/build-components).
+The `ToolJet` object also has the hooks custom components use on visual pages, such as `useStateString`, `useStyleString`, `useEventCallback` and `useAction`. A React Builder app doesn't need them. See [Build Components](/docs/app-builder/custom-component-library/build-components).
 
 ## What App Code Can't Do
 
@@ -322,18 +324,18 @@ The `ToolJet` object also has the hooks custom components use on visual pages, s
 
 App code can't call `fetch` or make other network requests to outside addresses. By default it reaches only your ToolJet instance, so all data goes through queries. Queries run on the ToolJet server with the data source's credentials, so keep secrets in data sources, never in the code.
 
-A workspace admin can allow more addresses for apps to connect to, load images or fonts from, and so on. See [Allow Outside Addresses](/docs/app-builder/code-mode/security#allow-outside-addresses).
+A workspace admin can allow more addresses for apps to connect to, load images or fonts from, and so on. See [Allow Outside Addresses](/docs/build-with-ai/react-builder/security#allow-outside-addresses).
 
 ### Run JavaScript on the ToolJet Page
 
-ToolJet runs a Code mode app in an isolated frame, apart from the ToolJet page. See [Isolation](/docs/app-builder/code-mode/security#isolation). By default it also applies strict mode to the app, which limits what the app's visual parts can run on the ToolJet page:
+ToolJet runs a React Builder app in an isolated frame, apart from the ToolJet page. See [Isolation](/docs/build-with-ai/react-builder/security#isolation). By default it also applies strict mode to the app, which limits what the app's visual parts can run on the ToolJet page:
 
-- **RunJS and RunPy queries, and queries with a transformation**, are refused with `Code mode apps can't run JavaScript or Python on the page. Move this logic into the app's code.` Do that work in the app's code instead.
-- **`{{ }}` bindings** are evaluated with a limited interpreter. Only known values and a fixed set of methods are allowed. Anything else fails with a message that ends `isn't allowed in a Code mode app's bindings. Move this logic into the app's code.`
+- **RunJS and RunPy queries, and queries with a transformation**, are refused with `React Builder apps can't run JavaScript or Python on the page. Move this logic into the app's code.` Do that work in the app's code instead.
+- **`{{ }}` bindings** are evaluated with a limited interpreter. Only known values and a fixed set of methods are allowed. Anything else fails with a message that ends `isn't allowed in a React Builder app's bindings. Move this logic into the app's code.`
 - **App JavaScript libraries and preloaded scripts** don't load.
 - **The legacy Custom component widget** is refused.
 - **The IFrame component** loads only `http://`, `https://` or relative addresses. Other addresses load a blank page.
 - **The Open webpage action** opens only `http://`, `https://` or same-site paths.
 - **The Set local storage action** does nothing.
 
-On self-hosted ToolJet, an admin can change isolation and strict mode with the `CODE_MODE_ISOLATION` and `CODE_MODE_STRICT_BINDINGS` environment variables. See [Environment Variables](/docs/setup/configuration/env-vars#code-mode).
+On self-hosted ToolJet, an admin can change isolation and strict mode with the `CODE_MODE_ISOLATION` and `CODE_MODE_STRICT_BINDINGS` environment variables. See [Environment Variables](/docs/setup/configuration/env-vars#react-builder).
