@@ -28,6 +28,8 @@ export interface CustomComponentLibrary {
   manifest?: LibraryManifest; // the latest revision's manifest, embedded so callers can skip a fetch for the common case
   // Set when the list left that manifest's embedded source out; its manifest file still has it.
   manifestSourceOmitted?: boolean;
+  // A Code mode app owns or pins it: that app's build, not a library to pick for a visual app.
+  codeMode?: boolean;
 }
 
 function list(): Promise<CustomComponentLibrary[]> {

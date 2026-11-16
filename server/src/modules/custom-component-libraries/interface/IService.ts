@@ -17,6 +17,8 @@ export interface LibraryListItem {
   manifest: Record<string, any> | null;
   // Set when that manifest had a `source` this list left out: its manifest file still has it.
   manifestSourceOmitted?: boolean;
+  // A Code mode app owns or pins it: that app's build, which the Components panel does not offer to visual apps.
+  codeMode?: boolean;
   revisions: { id: string; version: string; message: string | null; createdAt: Date }[]; // newest first
   // Who built each dev preview, by user id; sourceContentHash: the source the build was made from, null when unknown.
   devBundles: { userId: string; uploadedAt: Date; sourceContentHash: string | null }[];

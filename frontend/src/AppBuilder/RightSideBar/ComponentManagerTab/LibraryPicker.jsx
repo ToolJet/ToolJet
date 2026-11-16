@@ -11,9 +11,10 @@ import {
 import { ROCKET_1, ROCKET_1_LABEL, choiceLabel } from './componentLibrary';
 
 // The app's component library, as the Components tab's own label (Rocket 2.0 ▾): Rocket 1.0, the component packs,
-// then the other custom component libraries (see componentLibrary.js). Opening it does not switch tabs by itself; the
-// tab takes the click as well, so picking from Modules lands on the Components tab.
-export const LibraryPicker = ({ value, choices, onChange }) => {
+// then the other custom component libraries (see componentLibrary.js). The menu opens on pointer down and then blocks
+// clicks outside it, so the tab never gets the click: onOpen lets the tab switch itself, so opening it from Modules
+// lands on the Components tab.
+export const LibraryPicker = ({ value, choices, onChange, onOpen }) => {
   const item = (choice) => (
     <DropdownMenuItem
       key={choice.value}
@@ -28,7 +29,7 @@ export const LibraryPicker = ({ value, choices, onChange }) => {
     </DropdownMenuItem>
   );
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={(open) => open && onOpen?.()}>
       <DropdownMenuTrigger asChild>
         <span
           role="button"

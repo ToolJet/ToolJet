@@ -21,7 +21,8 @@ export const packLabel = (pack, displayName) => PACK_LABELS[pack] ?? displayName
 const componentType = (entry) => entry?.component?.component ?? entry?.component ?? entry?.type;
 
 /**
- * The picker's choices: the packs this release ships, and the workspace's custom libraries.
+ * The picker's choices: the packs this release ships, and the workspace's custom libraries. A Code mode app's library
+ * is that app's build, not a component library, so it is never offered.
  * @param {{ pack: string, displayName: string }[]} packs the shipped packs (builtinPacksStore)
  * @param {{ id: string, name: string }[]} libraries the custom libraries the plan offers ([] without the licence)
  */
@@ -35,6 +36,7 @@ export const libraryChoices = (packs = [], libraries = []) => {
     .map((pack) => ({ value: `pack:${pack.pack}`, label: PACK_LABELS[pack.pack] ?? pack.displayName, pack }))
     .sort((a, b) => rank(a.pack.pack) - rank(b.pack.pack) || a.label.localeCompare(b.label));
   const custom = libraries
+    .filter((library) => !library.codeMode)
     .map((library) => ({ value: `lib:${library.id}`, label: library.name, library }))
     .sort((a, b) => a.label.localeCompare(b.label));
   return { packs: packChoices, custom };
