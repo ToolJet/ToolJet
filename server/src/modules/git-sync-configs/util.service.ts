@@ -30,10 +30,8 @@ export async function findDefaultBranch(
   return applied ? null : { id: null, name: 'main' };
 }
 
-// Every org has a default branch (seeded on creation / backfilled by the
-// EnsureDefaultBranchForAllOrganizations migration) and branch_id is now mandatory on
-// version rows. Resolve it; if it's somehow missing, create one named 'main' as a safety
-// net. Mirrors the EE util's resolveDefaultBranch (CE has no provider to derive a name
+// Missing only mid-upgrade from 3.21.58 (see findDefaultBranch); otherwise create one
+// named 'main' as a safety net. Mirrors the EE util's resolveDefaultBranch (CE has no provider to derive a name
 // from, so it always uses 'main' — the migration's default).
 async function resolveDefaultBranch(
   manager: EntityManager,

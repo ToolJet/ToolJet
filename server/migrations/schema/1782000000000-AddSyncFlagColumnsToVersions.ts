@@ -2,12 +2,12 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddSyncFlagColumnsToVersions1782000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Add is_synced in the SCHEMA phase. All `migrations/` run before all
-    // `data-migrations/`, so creating the columns here guarantees they exist before any
+    // Add is_synced in the SCHEMA phase. All `migrations/schema/` run before all
+    // `migrations/data/`, so creating the columns here guarantees they exist before any
     // data-migration runs.
     //
     // Why this is needed: old data-migrations query the AppVersion / DataSourceVersion
-    // entities (e.g. data-migrations/1625814801430-UpdateDefinitionsForEvents), and the
+    // entities (e.g. migrations/data/1625814801430-UpdateDefinitionsForEvents), and the
     // entities now map is_synced. TypeORM's entity SELECT lists every mapped
     // column, so those migrations fail with "column is_synced does not exist" — the
     // data-migrations that originally introduced these columns

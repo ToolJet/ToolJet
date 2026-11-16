@@ -16,7 +16,7 @@ const MIGRATION_NAME = 'TjdbRolloutMigrationASubstrate1793250000800';
 // this implements.
 //
 // The 3 internal_table* tables + internal_tables' soft-delete/unique-index shape are created by the
-// sibling schema migration `migrations/1793250000300-TjdbRolloutSubstrateSchema.ts` — DDL ownership
+// sibling schema migration `migrations/schema/1793250000300-TjdbRolloutSubstrateSchema.ts` — DDL ownership
 // lives entirely there; this migration only backfills data into them. Revert order (not enforced
 // mechanically — both data sources share one `migrations` table, reverted by insertion id, not
 // timestamp): TjdbRolloutMigrationBEnvironmentAssignment1793250001100 (down) -> this migration

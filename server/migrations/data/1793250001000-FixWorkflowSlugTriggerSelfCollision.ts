@@ -16,7 +16,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * Exception name and lock key unchanged — apps/util.service.ts matches on the string and
  * workflow-slug-trigger.e2e-spec.ts asserts on it.
  *
- * In data-migrations/ (not migrations/) for the reason 1782500000000 documents:
+ * In migrations/data/ (not migrations/schema/) for the reason 1782500000000 documents:
  * 1781741000000 also does CREATE OR REPLACE on this function, and all schema migrations run
  * before any data migration, so an earlier-phase fix would be clobbered on a fresh install.
  */

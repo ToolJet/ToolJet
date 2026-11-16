@@ -30,9 +30,9 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * makes workflow slug re-validate on app_id reparenting, matching what
  * non-workflow rows already got from 1781741000000.
  *
- * Lives in data-migrations/, not migrations/, despite being pure schema: schema
- * migrations (server/migrations) all run to completion BEFORE any data migration
- * runs (see package.json's db:migrate script). 1781741000000 (data-migrations)
+ * Lives in migrations/data/, not migrations/schema/, despite being pure schema: schema
+ * migrations all run to completion BEFORE any data migration runs (see
+ * docs/MIGRATION_FLOW.md). 1781741000000 (migrations/data)
  * itself does `CREATE OR REPLACE FUNCTION enforce_app_versions_default_branch_
  * slug_unique`, so on a fresh install it would silently clobber this merge back
  * to its own older, workflow-unaware body if this migration stayed in the
