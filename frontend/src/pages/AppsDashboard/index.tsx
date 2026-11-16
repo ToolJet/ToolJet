@@ -16,13 +16,13 @@ import { useAiOnboarding } from '@/pages/AppsDashboard/hooks/useAiOnboarding';
 
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { Separator } from '@/components/ui/Rocket/Separator/Separator';
+import PageHeader from '@/pages/components/PageHeader';
 import WorkspaceLockedBanner from '@/_ui/WorkspaceLockedBanner';
 
 import { NoAppsExist } from './components/EmptyStates';
 import AddNewMenu from './components/AddNewMenu';
 import BuildWithAIButton from './components/BuildWithAIButton';
 import MoreActionsMenu from './components/MoreActionsMenu';
-import PageHeader from './components/PageHeader';
 import ViewTabs from './components/ViewTabs';
 import Dialogs from './components/Dialogs';
 
@@ -175,7 +175,10 @@ export default function AppsDashboard({ appType }: IAppsDashboardProps) {
           <>
             <Separator className="tw-mx-[4.375rem] tw-w-auto" />
 
-            <NoAppsExist showContent appType={appType} {...staticContentMappingByAppType[appType].emptyState} />
+            <NoAppsExist {...staticContentMappingByAppType[appType].emptyState}>
+              <AddNewMenu appType={appType} />
+              <BuildWithAIButton appType={appType} data-cy="no-apps-build-with-ai" />
+            </NoAppsExist>
           </>
         )}
       </main>

@@ -1,48 +1,27 @@
 import React from 'react';
-import type { TAppType } from '../helper';
 
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/ui/Rocket/Empty/Empty';
+import EmptyState from '@/pages/components/EmptyState';
 import NoResultFoundIllustration from '../illustrations/NoResultsFound';
-import AddNewMenu from './AddNewMenu';
-import BuildWithAIButton from './BuildWithAIButton';
 
 interface NoAppsExistProps {
   icon: React.ReactNode;
   title: string;
   description?: string;
-  appType: TAppType;
-  showContent?: boolean;
+  /** Actions shown under the text, e.g. the add and build-with-AI buttons. */
+  children?: React.ReactNode;
 }
 
-export function NoAppsExist({ icon, title, description, appType, showContent = false }: NoAppsExistProps) {
+export function NoAppsExist({ icon, title, description, children }: NoAppsExistProps) {
   return (
-    <Empty className="tw-gap-3 tw-px-4 tw-py-10" data-cy="dashboard-no-apps">
-      <EmptyHeader className="tw-gap-0">
-        <EmptyMedia variant="icon" className="tw-mb-0 tw-size-auto tw-p-1.5">
-          {icon}
-        </EmptyMedia>
-
-        <EmptyTitle className="tw-mt-2">{title}</EmptyTitle>
-
-        {Boolean(description) && (
-          <EmptyDescription className="tw-mt-0.5 tw-whitespace-pre-line">{description}</EmptyDescription>
-        )}
-      </EmptyHeader>
-
-      {showContent && (
-        <EmptyContent className="tw-flex-row tw-justify-center tw-gap-1">
-          <AddNewMenu appType={appType} />
-          <BuildWithAIButton appType={appType} data-cy="no-apps-build-with-ai" />
-        </EmptyContent>
-      )}
-    </Empty>
+    <EmptyState
+      icon={icon}
+      title={title}
+      description={description}
+      classes={{ description: 'tw-whitespace-pre-line' }}
+      data-cy="dashboard-no-apps"
+    >
+      {children}
+    </EmptyState>
   );
 }
 
@@ -54,17 +33,7 @@ interface NoResultsProps {
 
 function NoResults({ title, description, 'data-cy': dataCy }: NoResultsProps) {
   return (
-    <Empty className="tw-gap-3 tw-px-4 tw-py-10" data-cy={dataCy}>
-      <EmptyHeader className="tw-gap-0">
-        <EmptyMedia className="tw-mb-0">
-          <NoResultFoundIllustration />
-        </EmptyMedia>
-
-        <EmptyTitle className="tw-mt-2.5">{title}</EmptyTitle>
-
-        {Boolean(description) && <EmptyDescription className="tw-mt-0.5">{description}</EmptyDescription>}
-      </EmptyHeader>
-    </Empty>
+    <EmptyState illustration={<NoResultFoundIllustration />} title={title} description={description} data-cy={dataCy} />
   );
 }
 

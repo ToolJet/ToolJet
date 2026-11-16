@@ -269,7 +269,6 @@ function FolderView({ folderId, appType }: FolderViewProps) {
               <NoMatchesFound />
             ) : (
               <NoAppsExist
-                appType={appType}
                 title={`No ${appTypeToDisplayNameMapping[appType]}s in this folder`}
                 icon={staticContentMappingByAppType[appType].emptyState.icon}
               />
