@@ -37,6 +37,16 @@ const asAdmin = <T>(fn: (client: Client) => Promise<T>) => withClient(specAdmin,
 const asRole = <T>(fn: (client: Client) => Promise<T>, password = role.password) =>
   withClient({ ...specAdmin, user: role.name, password }, fn);
 
+// The role's stored password hash (pg_authid needs a superuser), or null when it cannot be read.
+async function storedPasswordHash(name: string): Promise<string | null> {
+  try {
+    const { rows } = await asAdmin((c) => c.query('SELECT rolpassword FROM pg_authid WHERE rolname = $1', [name]));
+    return rows[0]?.rolpassword ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function service(config: Record<string, string>): SampleDataSourceService {
   return new SampleDataSourceService(null, new ConfigService(config), null);
 }
@@ -155,10 +165,18 @@ describe('Sample data source role', () => {
 
     it('should refuse an elevated pre-existing role without changing its password', async () => {
       await asAdmin((c) => c.query(`ALTER ROLE ${role.name} CREATEDB`));
+      const hashBefore = await storedPasswordHash(role.name);
 
       await expect(provisionSampleDbRole(specAdmin, { ...role, password: 'new-password' })).rejects.toThrow(/elevated/);
       await expect(asRole((c) => c.query('SELECT 1'))).resolves.toBeDefined();
-      await expect(asRole((c) => c.query('SELECT 1'), 'new-password')).rejects.toThrow(/password authentication/);
+
+      // Compare the stored hash rather than log in with the new password: a server with `trust`
+      // auth (Postgres.app's default) accepts any password, so a login proves nothing there.
+      if (hashBefore !== null) {
+        expect(await storedPasswordHash(role.name)).toBe(hashBefore);
+      } else {
+        await expect(asRole((c) => c.query('SELECT 1'), 'new-password')).rejects.toThrow(/password authentication/);
+      }
 
       await asAdmin((c) => c.query(`ALTER ROLE ${role.name} NOCREATEDB`));
     });

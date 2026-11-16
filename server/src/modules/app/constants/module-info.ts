@@ -51,6 +51,7 @@ import { FEATURES as METRICS } from '@modules/metrices/constants/features';
 import { FEATURES as SCIM_FEATURES } from '@modules/scim/constants/feature';
 import { FEATURES as WORKSPACE_BRANCHES_FEATURES } from '@modules/workspace-branches/constants/feature';
 import { FEATURES as CUSTOM_DOMAINS_FEATURES } from '@modules/custom-domains/constant/feature';
+import { FEATURES as APP_USAGE_ANALYTICS_FEATURES } from '@modules/app-usage-analytics/constants/features';
 import { FEATURES as DATA_QUERY_FOLDERS_FEATURES } from '@modules/data-query-folders/constants/features';
 import { FEATURES as PERSONAL_ACCESS_TOKENS_FEATURES } from '@modules/personal-access-tokens/constants/feature';
 import { FEATURES as FRONTEND_METRICS_FEATURES } from '@modules/frontend-metrics/constants/feature';
@@ -113,6 +114,7 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...SCIM_FEATURES,
   ...WORKSPACE_BRANCHES_FEATURES,
   ...CUSTOM_DOMAINS_FEATURES,
+  ...APP_USAGE_ANALYTICS_FEATURES,
   ...DATA_QUERY_FOLDERS_FEATURES,
   ...PERSONAL_ACCESS_TOKENS_FEATURES,
   ...FRONTEND_METRICS_FEATURES,
