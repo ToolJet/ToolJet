@@ -37,6 +37,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       );
     }
 
-    can([FEATURE_KEY.STRIPE_WEBHOOK], OrganizationSubscription);
+    can([FEATURE_KEY.STRIPE_WEBHOOK, FEATURE_KEY.GET_PLAN_PRICES], OrganizationSubscription);
   }
 }

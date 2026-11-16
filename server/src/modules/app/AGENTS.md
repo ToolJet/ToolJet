@@ -22,6 +22,8 @@ The base module every other backend module builds on. Owns: the `SubModule` base
 | `guards/cloud-feature.guard.ts` | Route allowed only when edition is Cloud |
 | `module.ts` | Root `AppModule.register()` — `AppModuleLoader.loadModules` + every feature module's `register(configs, true)`; conditional imports (Workflows + BullBoard non-Cloud, `SessionTransferModule` Cloud-only, Metrics via env) |
 | `loader.ts` | Infra modules: TypeORM (main + `tooljetDb`), BullMQ, ConfigModule, pino logger, otel/Sentry, Redis, `GuardValidatorModule` |
+| `middlewares/migration-gate.middleware.ts` | Upgrade gate, async mode only (blocking mode passes everything): answers API writes with 503 while a migration runs or after a failed run. Details: `server/docs/MIGRATION_FLOW.md` (Upgrade gate) |
+| `migration-runs/` | `MigrationRunsService`: gate status, and async-mode runs (data phase in a child process). Super-admin `migration-runs` routes. The public `migration-status` route is on `AppController`. Details: `MIGRATION_FLOW.md` (Async mode) |
 | `validators/feature-guard.validator.ts` | `GuardValidator` — boot-time scan asserting every route has an `AbilityGuard` |
 | `interceptors/response.interceptor.ts` | Emits audit-log events after responses, driven by `MODULE_INFO` feature config |
 | `types.ts` | `FeatureConfig`, `ResourceDetails`, `UserAllPermissions` |
@@ -51,6 +53,8 @@ Controller wiring (`src/modules/folders/controller.ts`):
 - License gating is declarative: `FeatureConfig.license` in `MODULE_INFO` → guard returns HTTP 451 when the plan lacks the feature.
 - Param decorators (`@User`, `App`, ability, permissions) return `cloneDeep` copies — mutating them never touches the request.
 - `IS_GET_CONTEXT: true` is for migrations only (switches `src`/`dist` resolution); normal server startup always passes it false.
+- `AppModule.configure()` applies `MigrationGateMiddleware` before `OtelMiddleware`, both on `'*'`. Health and probe endpoints must be GETs: reads always pass the gate (`MIGRATION_FLOW.md`, Upgrade gate).
+- Root features check abilities against `InstanceSettings` (`FeatureAbilityFactory` is an `AppModule` provider). Non-public root routes need both.
 - Workspace = `Organization` entity/`organizationId` fields (legacy naming) — user-facing term is Workspace.
 
 ## Related modules

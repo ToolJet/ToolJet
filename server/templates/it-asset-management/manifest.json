@@ -1,0 +1,19 @@
+{
+  "name": "IT asset management",
+  "description": "Track laptops and equipment through issue, custody, return and service, with a full history for every asset.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "it-asset-management",
+  "category": "it-assets-and-access"
+}

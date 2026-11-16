@@ -1,18 +1,36 @@
-import { AddGroupUserDto, CreateGroupPermissionDto, DuplicateGroupDtoBase, UpdateGroupPermissionDto } from './dto';
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  AddGroupUserDto,
+  CreateGroupPermissionDto,
+  DuplicateGroupDtoBase,
+  GroupUserResponseDto,
+  UpdateGroupPermissionDto,
+} from './dto';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { User, UserEntity } from '@modules/app/decorators/user.decorator';
 import { GroupPermissionsService } from './service';
 import { GroupExistenceGuard } from '@modules/group-permissions/guards/group-existance.guard';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
-import { FEATURE_KEY, USER_ROLE } from './constants';
+import { FEATURE_KEY, roleGroupFor } from './constants';
 import { FeatureAbilityGuard } from './ability/guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { IGroupPermissionsControllerV2 } from './interfaces/IController';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GetUsersResponse } from './types';
-import { GroupUsers } from '@entities/group_users.entity';
 import { Group } from './decorators/group.decorator';
 import { UserPermissionsDecorator } from '@modules/app/decorators/user-permission.decorator';
 import { UserPermissions } from '@modules/ability/types';
@@ -23,6 +41,7 @@ import { UserPermissions } from '@modules/ability/types';
 })
 @InitModule(MODULES.GROUP_PERMISSIONS)
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(ClassSerializerInterceptor)
 export class GroupPermissionsControllerV2 implements IGroupPermissionsControllerV2 {
   constructor(protected groupPermissionsService: GroupPermissionsService) {}
 
@@ -55,11 +74,7 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
     @UserPermissionsDecorator() userPermissions: UserPermissions
   ): Promise<GetUsersResponse> {
     const { organizationId } = user;
-    user.roleGroup = userPermissions.isAdmin
-      ? USER_ROLE.ADMIN
-      : userPermissions.isEndUser
-        ? USER_ROLE.END_USER
-        : USER_ROLE.BUILDER;
+    user.roleGroup = roleGroupFor(userPermissions);
     return await this.groupPermissionsService.getAllGroup(organizationId, user);
   }
 
@@ -100,9 +115,11 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   @Post(':id/users')
   async createGroupUsers(
     @User() user: UserEntity,
+    @UserPermissionsDecorator() userPermissions: UserPermissions,
     @Param('id') groupId: string,
     @Body() addGroupUserDto: AddGroupUserDto
   ) {
+    user.roleGroup = roleGroupFor(userPermissions);
     addGroupUserDto.groupId = groupId;
     await this.groupPermissionsService.addGroupUsers(addGroupUserDto, user);
     return;
@@ -116,14 +133,20 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
     @User() user: UserEntity,
     @Query('input') searchInput: string,
     @Group() group: GroupPermissions
-  ): Promise<GroupUsers[]> {
-    return await this.groupPermissionsService.getAllGroupUsers(group, user.organizationId, searchInput);
+  ): Promise<GroupUserResponseDto[]> {
+    const groupUsers = await this.groupPermissionsService.getAllGroupUsers(group, user.organizationId, searchInput);
+    return plainToInstance(GroupUserResponseDto, groupUsers);
   }
 
   @InitFeature(FEATURE_KEY.DELETE_GROUP_USER)
   @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Delete('users/:id')
-  async deleteGroupUser(@User() user: UserEntity, @Param('id') id: string) {
+  async deleteGroupUser(
+    @User() user: UserEntity,
+    @UserPermissionsDecorator() userPermissions: UserPermissions,
+    @Param('id') id: string
+  ) {
+    user.roleGroup = roleGroupFor(userPermissions);
     await this.groupPermissionsService.deleteGroupUser(id, user);
   }
 

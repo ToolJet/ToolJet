@@ -1,0 +1,21 @@
+{
+  "name": "Home inspection management",
+  "description": "Book home inspections, record findings and track each report through to handover.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "home-inspection-management",
+  "category": "field-services"
+}

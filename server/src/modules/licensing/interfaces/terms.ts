@@ -13,6 +13,7 @@ export interface Terms {
   };
   database?: {
     table?: number | string;
+    row?: number | string;
   };
   domains?: Array<{ hostname?: string; subpath?: string }>;
   features?: {

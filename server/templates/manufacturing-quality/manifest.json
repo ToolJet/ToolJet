@@ -1,0 +1,19 @@
+{
+  "name": "Manufacturing quality",
+  "description": "Inspect production batches, flag defects and follow corrective actions through to resolution.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "manufacturing-quality",
+  "category": "manufacturing-and-production"
+}

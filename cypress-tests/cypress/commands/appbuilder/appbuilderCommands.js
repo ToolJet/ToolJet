@@ -19,8 +19,14 @@ Cypress.Commands.add(
     widgetName2 = widgetName,
     canvas = null // null = auto-detect: #real-canvas, or ModuleContainer's sub-canvas if in module editor
   ) => {
-    // Open widget panel and search
-    cy.get('[data-cy="right-sidebar-components-button"]').click();
+    // Open widget panel and search. The sidebar button TOGGLES the panel and the
+    // panel can stay open after a drop, so only click it when the search box is
+    // not already showing — a blind click would close it.
+    cy.get("body").then(($body) => {
+      if (!$body.find(`${commonSelectors.searchField}:visible`).length) {
+        cy.get('[data-cy="right-sidebar-components-button"]').click();
+      }
+    });
     cy.get(commonSelectors.searchField)
       .should("be.visible")
       .first()
@@ -363,18 +369,11 @@ Cypress.Commands.add("hideTooltip", () => {
  * @tjUsage cy.createApp('My Test App')
  */
 Cypress.Commands.add("createApp", (appName) => {
-  const getAppButtonSelector = ($title) =>
-    $title.text().includes(commonText.introductionMessage)
-      ? commonSelectors.dashboardAppCreateButton
-      : commonSelectors.appCreateButton;
-
-  cy.get("body").then(($title) => {
-    cy.get(getAppButtonSelector($title))
-      .scrollIntoView()
-      .click({ force: true }); //workaround for cypress dashboard click issue
-    cy.clearAndType('[data-cy="app-name-input"]', appName);
-    cy.get('[data-cy="create-app"]').click();
-  });
+  cy.get(commonSelectors.appCreateButton)
+    .scrollIntoView()
+    .click({ force: true }); //workaround for cypress dashboard click issue
+  cy.clearAndType('[data-cy="app-name-input"]', appName);
+  cy.get('[data-cy="create-app"]').click();
   cy.waitForAppLoad();
   cy.skipEditorPopover();
 });

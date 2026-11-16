@@ -8,6 +8,7 @@ import {
 export default class LicenseBase {
   private _appsCount: number | string;
   private _tablesCount: number | string;
+  private _rowsCount: number | string;
   private _usersCount: number | string;
   private _isAuditLogs: boolean;
   private _maxDurationForAuditLogs: number | string;
@@ -106,6 +107,7 @@ export default class LicenseBase {
     this._appsCount = licenseData?.apps;
     this._usersCount = licenseData?.users?.total;
     this._tablesCount = licenseData?.database?.table;
+    this._rowsCount = licenseData?.database?.row;
     this._editorUsersCount = licenseData?.users?.editor;
     this._viewerUsersCount = licenseData?.users?.viewer;
     this._superadminUsersCount = licenseData?.users?.superadmin;
@@ -320,6 +322,13 @@ export default class LicenseBase {
       return this.BASIC_PLAN_TERMS.database?.table || this._tablesCount || LICENSE_LIMIT.UNLIMITED;
     }
     return this._tablesCount || LICENSE_LIMIT.UNLIMITED;
+  }
+
+  public get rows(): number | string {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.database?.row || this._rowsCount || LICENSE_LIMIT.UNLIMITED;
+    }
+    return this._rowsCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get maxDurationForAuditLogs(): number | string {
@@ -581,6 +590,11 @@ export default class LicenseBase {
     return this._type || LICENSE_TYPE.ENTERPRISE;
   }
 
+  // The license's own type, kept after expiry (licenseType reports BASIC by then).
+  public get termsType(): string {
+    return this._type;
+  }
+
   public get features(): object {
     return {
       openid: this.oidc,
@@ -641,6 +655,7 @@ export default class LicenseBase {
     return {
       appsCount: this.apps,
       tablesCount: this.tables,
+      rowsCount: this.rows,
       usersCount: this.users,
       auditLogsEnabled: this.auditLogs,
       maxDurationForAuditLogs: this.maxDurationForAuditLogs,

@@ -1,13 +1,13 @@
 ---
-applyTo: "frontend/src/AppBuilder/WidgetManager/widgets/**/*"
+applyTo: "packages/widget-definitions/**/*"
 excludeAgent: "coding-agent"
 ---
 
 # Widget Config — Code Review Rules
 
-## Server-Side Sync (CRITICAL)
+## Single Source of Truth (CRITICAL)
 
-When any file here is modified, the corresponding config in `server/src/modules/apps/services/widget-config/` MUST also be updated. Flag PRs that modify one without the other.
+These are the only widget definitions. The builder (frontend) and the server (defaults on load, validation) both import them from `@tooljet/widget-definitions`. Flag any PR that adds a copy of a widget config anywhere else. A new widget must be exported from `src/index.js` and registered in the frontend `WidgetManager/configs/widgetConfig.js` and the server `apps/services/widget-config/index.js`.
 
 ## Key Changes Require Migrations
 

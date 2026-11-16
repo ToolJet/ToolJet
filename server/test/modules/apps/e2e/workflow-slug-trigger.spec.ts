@@ -85,4 +85,38 @@ describe('Workflow app_versions slug uniqueness trigger', () => {
       await expect(updateEntity(AppVersion, workflowVersion.id, { slug: 'cross-type-slug' })).resolves.toBeUndefined();
     });
   });
+
+  // The trigger re-validates the slug when a row moves between apps, and in a BEFORE UPDATE the
+  // row still carries its OLD app_id — so without `av.id <> NEW.id` it collides with itself.
+  describe('re-parenting a version across apps (git hydration)', () => {
+    it('should allow re-parenting a workflow app_version onto another workflow app', async () => {
+      const admin = await createAdmin(app, 'workflow-slug-admin-4@tooljet.io');
+      const realWorkflow = await createApplication(app, {
+        name: 'Real Workflow',
+        user: { ...admin.user, organizationId: admin.workspace.id } as any,
+        type: 'workflow',
+      });
+      const tempWorkflow = await createApplication(
+        app,
+        {
+          name: 'Temp Hydrate Workflow',
+          user: { ...admin.user, organizationId: admin.workspace.id } as any,
+          type: 'workflow',
+        },
+        false // same org — envs already seeded
+      );
+      const tempVersion = await createApplicationVersion(app, tempWorkflow as any);
+
+      // A slug held by no other row, so ONLY a self-collision can fail this update.
+      await updateEntity(AppVersion, tempVersion.id, { slug: 'hydrate-reparent-slug' });
+
+      await expect(
+        updateEntity(AppVersion, tempVersion.id, { appId: realWorkflow.id } as any)
+      ).resolves.toBeUndefined();
+    });
+
+    // No "re-parent into a cross-app slug collision" case — it can't reach the slug trigger:
+    // such rows always share an app_name too, and that trigger sorts first and raises first.
+    // Cross-app slug enforcement is covered by the first test in this file.
+  });
 });

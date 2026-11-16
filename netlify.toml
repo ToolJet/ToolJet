@@ -6,8 +6,8 @@
 [template.environment]
   NODE_ENV = "production"
   TOOLJET_EDITION = "cloud"
-  NODE_VERSION = "22.15.1"
-  NPM_VERSION = "10.9.2"
+  NODE_VERSION = "22.23.4"
+  NPM_VERSION = "10.9.9"
 
 [[redirects]]
   from = "/*"

@@ -1,0 +1,15 @@
+{
+  "name": "Patch rollout coordination",
+  "description": "Roll out patches ring by ring. Track pilot health, fleet progress and rollback readiness before each rollout moves forward.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "patch-rollout-coordination",
+  "category": "it-operations"
+}

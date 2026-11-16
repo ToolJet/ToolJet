@@ -26,7 +26,8 @@
  * prefix, per the widget-testing-contract validator.
  */
 import React from 'react';
-import { waitFor, fireEvent as rtlFireEvent, act, screen } from '@testing-library/react';
+import { waitFor, fireEvent as rtlFireEvent, act, screen, render } from '@testing-library/react';
+import useKeyHooks from '@/_hooks/useKeyHooks';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import { getModalBodyHeight } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
 import { onShowSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
@@ -227,6 +228,31 @@ describe('ModalV2: open/close lifecycle', () => {
     await waitFor(() => expect(exposed()).toBe(false));
     await waitFor(() => expect(modalBody()).not.toBeInTheDocument(), { timeout: 3000 });
   });
+
+  test('[ModalV2-OPEN-005] await components.modal1.open() resolves to true once the modal has opened', async () => {
+    renderModal();
+    await waitFor(() => expect(triggerButton()).toBeInTheDocument());
+
+    const opened = await widget.act('open');
+
+    expect(opened).toBe(true);
+    expect(modalBody()).toBeInTheDocument();
+  });
+
+  test('[ModalV2-OPEN-006] open() resolves to false when the modal is closed before it finishes opening', async () => {
+    renderModal();
+    await waitFor(() => expect(exposed('open')).toBeInstanceOf(Function));
+
+    let opened;
+    await widget.session.store.act(async () => {
+      const opening = exposed('open')();
+      await exposed('close')();
+      opened = await opening;
+    });
+
+    expect(opened).toBe(false);
+    expect(exposed()).toBe(false);
+  });
 });
 
 describe('ModalV2: onOpen/onClose events', () => {
@@ -274,6 +300,24 @@ describe('ModalV2: Escape key', () => {
   afterEach(widget.teardown);
 
   test('[ModalV2-ESC-001] hideOnEsc: true closes the modal on Escape', async () => {
+    renderModal({ properties: { hideOnEsc: binding('{{true}}') } });
+    await openModal();
+
+    rtlFireEvent.keyDown(modalBody(), { key: 'Escape', code: 'Escape' });
+
+    await waitFor(() => expect(exposed()).toBe(false));
+  });
+
+  test('[ModalV2-ESC-003] Escape still closes the modal when the editor hotkeys are mounted', async () => {
+    // Break this catches: the editor's useKeyHooks default-preventing Escape before the
+    // modal sees it, which makes Components/Modal.jsx's `if (e.defaultPrevented) return`
+    // guard (meant for a nested Radix overlay) swallow every Escape in edit mode.
+    const EditorHotkeys = () => {
+      useKeyHooks(['esc'], () => {});
+      return null;
+    };
+    // Mounted first, as HotkeyProvider is in the real editor, so its document listener runs first.
+    render(<EditorHotkeys />);
     renderModal({ properties: { hideOnEsc: binding('{{true}}') } });
     await openModal();
 
@@ -511,7 +555,7 @@ describe('ModalV2: component-specific actions', () => {
     renderModal();
     await waitFor(() => expect(triggerButton()).toBeInTheDocument());
 
-    // Exactly the `actions` list in WidgetManager/widgets/modalV2.js.
+    // Exactly the `actions` list in packages/widget-definitions/src/widgets/modalV2.js.
     for (const handle of ['open', 'close', 'setVisibility', 'setDisableTrigger', 'setDisableModal', 'setLoading']) {
       await waitFor(() => expect(typeof exposed(handle)).toBe('function'));
     }
@@ -870,7 +914,7 @@ describe('ModalV2: canvas scroll lock', () => {
     // unmount cleanup, not the initial lock.
     renderModal();
     await openModal();
-    onShowSideEffects();
+    onShowSideEffects(ID);
     await waitFor(() => expect(canvasContent()).toHaveStyle({ overflow: 'hidden' }));
 
     // Re-render the SAME root with the modal gone entirely — simulates a page
@@ -878,6 +922,115 @@ describe('ModalV2: canvas scroll lock', () => {
     widget.session.render(<PageWrapper>{null}</PageWrapper>);
 
     await waitFor(() => expect(canvasContent()).toHaveStyle({ overflow: 'auto' }));
+  });
+
+  test('[ModalV2-SCROLL-004] closing two stacked modals in the same batched update still restores canvas scroll', async () => {
+    // Break this catches: a bare DOM `.modal`-count check in onHideSideEffects
+    // (the pre-fix implementation) racing react-bootstrap's exit animation.
+    // When both modals close within the same React commit, each modal's own
+    // `.modal` DOM node is still present (mid-exit, animation not yet
+    // resolved) at the instant either modal's own effect runs its check — a
+    // DOM-count-based guard sees 2 modals from BOTH calls and never restores
+    // scroll, permanently locking the canvas.
+    const SECOND_ID = 'modal2';
+    const first = componentDefinition(ID, NAME, 'ModalV2', DEFAULT_PROPERTIES);
+    first.component.definition.styles = DEFAULT_STYLES;
+    const second = componentDefinition(SECOND_ID, 'modal2', 'ModalV2', DEFAULT_PROPERTIES);
+    second.component.definition.styles = DEFAULT_STYLES;
+    seedApp({ [ID]: first, [SECOND_ID]: second }, { moduleId: MODULE_ID });
+    store().setEditorLoading(false, MODULE_ID);
+    store().setCurrentMode('edit', MODULE_ID);
+    widget.session.render(
+      <PageWrapper>
+        <RenderWidget {...widgetProps(ID, 'ModalV2')} />
+        <RenderWidget {...widgetProps(SECOND_ID, 'ModalV2')} />
+      </PageWrapper>
+    );
+    await openModal();
+    const secondTrigger = () => document.querySelector(`[data-cy="${SECOND_ID}-launch-button"]`);
+    await waitFor(() => expect(secondTrigger()).toBeInTheDocument());
+    await widget.session.user.click(secondTrigger());
+    await waitFor(() => expect(document.querySelectorAll('[data-cy="modal-body"]')).toHaveLength(2));
+    await waitFor(() => expect(canvasContent()).toHaveStyle({ overflow: 'hidden' }));
+
+    // Close both modals from a single synchronous handler — the reported
+    // bug's exact trigger (e.g. a button inside the inner modal closing both).
+    await widget.session.store.act(async () => {
+      const closeFirst = store().getExposedValueOfComponent(ID, MODULE_ID).close;
+      const closeSecond = store().getExposedValueOfComponent(SECOND_ID, MODULE_ID).close;
+      closeFirst();
+      closeSecond();
+    });
+
+    // Confirms this exercised the actual racy window: react-bootstrap's exit
+    // animation hasn't resolved yet, so both DOM nodes still linger.
+    expect(document.querySelectorAll('.modal').length).toBeGreaterThan(0);
+    expect(canvasContent()).toHaveStyle({ overflow: 'auto' });
+  });
+});
+
+// The editor's open-modal record (`useGridStore.openModalWidgetId`) is what
+// AppCanvas/Grid/Grid.jsx reads to hide every non-child widget's resize
+// controls while a modal is open. It lives in the standalone grid store, read
+// through the harness's `store.read(selector, { store: 'grid' })`.
+const openModalWidgetId = () => widget.session.store.read((state) => state.openModalWidgetId, { store: 'grid' });
+
+describe('ModalV2: editor open-modal record', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[ModalV2-GRID-001] unmounting the modal while it is still open clears the editor open-modal record', async () => {
+    // Break this catches: the modal unmounting while open (a page switch fired
+    // from a button inside it) without clearing `openModalWidgetId`. Grid.jsx
+    // then keeps hiding every widget's resize controls on the next page until a
+    // full browser reload — the reported "can't resize anything" bug (D-04).
+    renderModal();
+    await openModal();
+    await waitFor(() => expect(openModalWidgetId()).toBe(ID));
+
+    // Re-render the SAME root with the modal gone entirely — simulates a page
+    // switch unmounting it without ever going through the normal close path.
+    widget.session.render(<PageWrapper>{null}</PageWrapper>);
+
+    await waitFor(() => expect(openModalWidgetId()).toBeNull());
+  });
+
+  test('[ModalV2-GRID-002] unmounting a modal does not clear another open modal from the editor open-modal record', async () => {
+    // Break this catches: the unmount cleanup clearing the record
+    // unconditionally instead of only when it still names this modal, which
+    // would drop a different, still-open modal and re-expose the resize
+    // controls of widgets behind it.
+    const SECOND_ID = 'modal2';
+    const first = componentDefinition(ID, NAME, 'ModalV2', DEFAULT_PROPERTIES);
+    first.component.definition.styles = DEFAULT_STYLES;
+    const second = componentDefinition(SECOND_ID, 'modal2', 'ModalV2', DEFAULT_PROPERTIES);
+    second.component.definition.styles = DEFAULT_STYLES;
+    seedApp({ [ID]: first, [SECOND_ID]: second }, { moduleId: MODULE_ID });
+    store().setEditorLoading(false, MODULE_ID);
+    store().setCurrentMode('edit', MODULE_ID);
+    // Keys keep React's instance identity per modal, so the re-render below
+    // unmounts modal1's instance rather than handing it modal2's props.
+    widget.session.render(
+      <PageWrapper>
+        <RenderWidget key={ID} {...widgetProps(ID, 'ModalV2')} />
+        <RenderWidget key={SECOND_ID} {...widgetProps(SECOND_ID, 'ModalV2')} />
+      </PageWrapper>
+    );
+    await openModal();
+    const secondTrigger = () => document.querySelector(`[data-cy="${SECOND_ID}-launch-button"]`);
+    await waitFor(() => expect(secondTrigger()).toBeInTheDocument());
+    rtlFireEvent.click(secondTrigger());
+    await waitFor(() => expect(openModalWidgetId()).toBe(SECOND_ID));
+
+    // Unmount only the first (still-open) modal; the second stays mounted and open.
+    widget.session.render(
+      <PageWrapper>
+        <RenderWidget key={SECOND_ID} {...widgetProps(SECOND_ID, 'ModalV2')} />
+      </PageWrapper>
+    );
+
+    await waitFor(() => expect(document.querySelectorAll('[data-cy="modal-body"]')).toHaveLength(1));
+    expect(openModalWidgetId()).toBe(SECOND_ID);
   });
 });
 

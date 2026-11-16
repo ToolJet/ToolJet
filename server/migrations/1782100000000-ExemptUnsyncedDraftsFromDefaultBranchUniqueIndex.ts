@@ -21,6 +21,11 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  */
 export class ExemptUnsyncedDraftsFromDefaultBranchUniqueIndex1782100000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // MakeAppVersionBranchIdNotNullAndGitSyncFlags rebuilds these indexes; until it runs, keep 3.21.58's single-draft rule.
+    const [rebuildPending] = await queryRunner.query(
+      `SELECT NOT EXISTS (SELECT 1 FROM migrations WHERE name = 'MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000') AS pending`
+    );
+    if (rebuildPending.pending) return;
     await queryRunner.query(`DROP INDEX IF EXISTS "app_versions_app_default_branch_draft_unique"`);
     await queryRunner.query(`DROP INDEX IF EXISTS "app_versions_app_default_branch_draft_unique_ensure_single_stub"`);
 

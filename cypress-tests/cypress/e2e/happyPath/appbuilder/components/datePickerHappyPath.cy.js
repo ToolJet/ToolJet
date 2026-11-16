@@ -15,7 +15,7 @@ import {
 //
 // The current "Date Picker" widget is DatePickerV2 (datePickerV2Config,
 // displayName "Date Picker"); the old datepickerConfig is `//!Depreciated`.
-// source: frontend/src/AppBuilder/WidgetManager/widgets/index.js:93-95
+// source: packages/widget-definitions/src/index.js
 // The legacy spec was built against the OLD widget + OLD single-pane inspector
 // via editAndVerifyWidgetName -> closeAccordions(["General","Properties",
 // "Devices"]), which broke at `[data-cy="widget-accordion-general"]` (that
@@ -30,7 +30,7 @@ import {
 describe("Date Picker widget (V2)", { testIsolation: false }, () => {
   // Deterministic exposed values, captured live from the V2 widget's default
   // config (no env/timezone dependence). source: live inspector dump of
-  // datepicker1 + frontend/src/AppBuilder/WidgetManager/widgets/datepickerV2.js
+  // datepicker1 + packages/widget-definitions/src/widgets/datepickerV2.js
   const exposedValues = [
     { key: "isVisible", type: "Boolean", value: "true" }, // datepickerV2.js:86-92 (visibility default true)
     { key: "isLoading", type: "Boolean", value: "false" }, // datepickerV2.js:80-85

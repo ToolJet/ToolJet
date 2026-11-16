@@ -1,0 +1,6 @@
+id,batch_code,issue,priority,owner,status,note
+,BT-2403,Verify drill fixture alignment,High,Nora Patel,Open,Compare fixture setup with the approved drawing.
+,BT-2405,Adjust deburring pass,Normal,Jonah Reed,In progress,Trial pass scheduled before the next inspection.
+,BT-2408,Check coupling clearance,High,Maya Chen,Open,Measure mating parts from the same lot.
+,BT-2402,Replace worn inspection gauge,Normal,Jonah Reed,Resolved,Replacement gauge checked against the reference standard.
+,BT-2410,Confirm inspection fixture reference,Normal,Maya Chen,Resolved,Reference fixture checked against the approved gauge. No adjustment required.

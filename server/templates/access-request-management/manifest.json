@@ -1,0 +1,21 @@
+{
+  "name": "Access request management",
+  "description": "Review and approve application access requests with manager, app owner and security sign-off, and keep every grant accountable.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "access-request-management",
+  "category": "it-assets-and-access"
+}

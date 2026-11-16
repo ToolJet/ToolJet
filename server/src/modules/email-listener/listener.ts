@@ -44,6 +44,10 @@ export class EmailListener {
           await this.emailService.sendWorkspaceBannedEmail(payload);
           break;
 
+        case EMAIL_EVENTS.SEND_APP_BUILD_COMPLETED_EMAIL:
+          await this.emailService.sendAppBuildCompletedEmail(payload);
+          break;
+
         default:
           this.logger.warn(`Unhandled email event type: ${type}`);
       }

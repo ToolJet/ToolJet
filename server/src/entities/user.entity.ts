@@ -1,3 +1,5 @@
+import type { WorkspaceAuthentication } from '@modules/mcp-oauth/protocol';
+import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 import {
   Entity,
   Column,
@@ -130,6 +132,10 @@ export class User extends BaseEntity {
   @Column({ name: 'company_size' })
   companySize: string;
 
+  // Cloud only: when the account used its one trial. Null = never claimed.
+  @Column({ name: 'trial_claimed_at', type: 'timestamptz', nullable: true, default: null })
+  trialClaimedAt: Date | null;
+
   @Column({ name: 'auto_activated', default: false })
   autoActivated: boolean;
 
@@ -231,10 +237,14 @@ export class User extends BaseEntity {
   isSSOLogin: boolean;
   sessionId: string;
   roleGroup: USER_ROLE;
+  workspaceAuthentication?: WorkspaceAuthentication;
+  oauthGrantId?: string;
+  oauthClientId?: string;
+  oauthScopes?: string[];
+  oauthAppId?: string;
   tjApiSource?: string;
-  /* Session provenance, mirrored from the JWT. isPATLogin covers BOTH personal-access-token
-     species; patAppId is set only by the app-scoped embed flow, so `isPATLogin && !patAppId`
-     identifies a workspace PAT session. */
+  // Session provenance, mirrored from the JWT. Session kinds: personal-access-tokens/AGENTS.md.
   isPATLogin?: boolean;
+  patScope?: PersonalAccessTokenScope;
   patAppId?: string;
 }

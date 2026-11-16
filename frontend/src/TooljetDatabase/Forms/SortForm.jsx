@@ -1,10 +1,10 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import Select from '@/_ui/Select';
-import { TooljetDatabaseContext } from '../index';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const SortForm = ({ filters, setFilters, index, column = '', order = '' }) => {
-  const { columns } = useContext(TooljetDatabaseContext);
+  const { columns } = useTooljetDatabaseContext();
 
   const orders = [
     { value: 'asc', label: 'Ascending' },
@@ -12,17 +12,11 @@ export const SortForm = ({ filters, setFilters, index, column = '', order = '' }
   ];
 
   const handleColumnChange = (value) => {
-    const prevFilters = { ...filters };
-    prevFilters[index].column = value;
-
-    setFilters(prevFilters);
+    setFilters({ ...filters, [index]: { ...filters[index], column: value } });
   };
 
   const handleFilterChange = (value) => {
-    const prevFilters = { ...filters };
-    prevFilters[index].order = value;
-
-    setFilters(prevFilters);
+    setFilters({ ...filters, [index]: { ...filters[index], order: value } });
   };
 
   const handleDelete = () => {

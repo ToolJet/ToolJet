@@ -1236,6 +1236,7 @@ export const EventManager = ({
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                                 data-cy="event-handler-card"
+                                data-event-id={event.id}
                                 className="tw-mb-1 tw-h-14 tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-md tw-bg-interactive-default tw-p-2 hover:tw-bg-interactive-hover"
                               >
                                 <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-justify-center tw-gap-0.5">

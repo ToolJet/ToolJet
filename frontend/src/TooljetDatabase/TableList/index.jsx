@@ -2,10 +2,10 @@ import React, { useState, useEffect, useContext } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { toast } from 'react-hot-toast';
 import { isEmpty } from 'lodash';
-import { TooljetDatabaseContext } from '../index';
-import { tooljetDatabaseService } from '@/_services';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { ListItem } from '../TableListItem';
-import { BreadCrumbContext } from '../../App/App';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import Search from '../Search';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Button } from '@/components/ui/Button/Button';
@@ -17,10 +17,11 @@ const List = () => {
     searchParam,
     selectedTable,
     setTables,
+    setTablesLoaded,
     setSelectedTable,
     loadingState,
     setLoadingState,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
   const [loading, setLoading] = useState(false);
   const [showInput, setShowInput] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -38,6 +39,7 @@ const List = () => {
       return;
     }
 
+    setTablesLoaded(true);
     if (!isEmpty(data?.result)) {
       setTables(data.result || []);
       if (localStorage.getItem('tableDetails')) {
@@ -62,7 +64,13 @@ const List = () => {
   }, []);
 
   useEffect(() => {
-    const renamedTableList = tables.map((table) => (table.id === selectedTable.id ? selectedTable : table));
+    // Merge, don't replace - selectedTable is only ever set as a thin {table_name, id} shape
+    // (see every setSelectedTable call site), while a tables[] row also carries `environments`
+    // (per-env has_relation, read by EnvironmentSwitcher). A replace here wipes that off the
+    // currently open table the moment it's selected.
+    const renamedTableList = tables.map((table) =>
+      table.id === selectedTable.id ? { ...table, ...selectedTable } : table
+    );
     setTables(renamedTableList);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
@@ -120,6 +128,7 @@ const List = () => {
               key={index}
               active={id === selectedTable.id}
               text={table_name}
+              tableId={id}
               onDeleteCallback={fetchTables}
               onClick={() => {
                 setSelectedTable({ table_name, id });

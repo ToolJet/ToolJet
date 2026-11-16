@@ -1,0 +1,19 @@
+{
+  "name": "Purchase request management",
+  "description": "Collect purchase requests and move them through review, approval and ordering with a clear decision queue.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "purchase-request-management",
+  "category": "procurement-and-suppliers"
+}

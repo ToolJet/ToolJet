@@ -1,0 +1,15 @@
+{
+  "name": "Service status and incident communication",
+  "description": "Keep customers informed during incidents. Manage component health, incidents, maintenance windows and subscribers, and publish a public status page.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "service-status-and-incident-communication",
+  "category": "status-pages"
+}

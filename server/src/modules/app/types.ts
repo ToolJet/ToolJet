@@ -32,6 +32,8 @@ export interface ResourceDetails {
 interface Features {
   [FEATURE_KEY.HEALTH]: FeatureConfig;
   [FEATURE_KEY.ROOT]: FeatureConfig;
+  [FEATURE_KEY.MIGRATION_STATUS]: FeatureConfig;
+  [FEATURE_KEY.MIGRATION_RUNS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

@@ -1,0 +1,97 @@
+// Figma frame: 856x828, 36px from the top/right/bottom; leaves room on the left for the signup form
+$graphic-width: 856;
+$graphic-height: 828;
+$graphic-gutter: 36px;
+$form-space: 468px; // 308px form + 80px either side
+$max-frame-ratio: 1.25;
+
+.signup-feature-image {
+    height: 100vh;
+    padding: $graphic-gutter $graphic-gutter $graphic-gutter 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    // Fills the full height and stretches wider than the graphic (up to $max-frame-ratio),
+    // trimming only the empty background above and below the diagram. When there is
+    // not enough width it shrinks with the graphic's own ratio so the sides never crop.
+    &__frame {
+        $available-width: calc(100vw - #{$form-space} - #{$graphic-gutter});
+        $available-height: calc(100vh - #{2 * $graphic-gutter});
+
+        position: relative;
+        flex-shrink: 0;
+        width: min(#{$available-width}, #{$available-height} * #{$max-frame-ratio});
+        height: $available-height;
+        max-height: calc(#{$available-width} * #{$graphic-height} / #{$graphic-width});
+        background: var(--page-page-default, #F6F8FA);
+        border: 1px solid var(--border-weak, #E4E7EB);
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    }
+
+    &__handle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: var(--icon-on-solid, #FAFCFF);
+        border: 0.27px solid var(--border-strong, #6D757D);
+        box-shadow: var(--elevation-100-box-shadow);
+
+        &--top-left {
+            top: -5px;
+            left: -5px;
+        }
+
+        &--top-right {
+            top: -5px;
+            right: -5px;
+        }
+
+        &--bottom-left {
+            bottom: -5px;
+            left: -5px;
+        }
+
+        &--bottom-right {
+            bottom: -5px;
+            right: -5px;
+        }
+    }
+}
+
+.dark-theme .signup-feature-image__frame {
+    background: var(--page-page-default, #181B1F);
+}
+
+// Page layout for OnboardingBackgroundWrapper's `feature-graphic-layout` className:
+// the form is centred in whatever space the graphic leaves
+@media (min-width: 768px) {
+    .onboarding-background-wrapper.feature-graphic-layout {
+        .row {
+            flex-wrap: nowrap;
+        }
+
+        .leftside-wrapper {
+            flex: 1 1 auto;
+            width: auto;
+            padding-left: 0;
+            justify-content: center !important;
+        }
+
+        .rightside-wrapper:has(.signup-feature-image) {
+            flex: 0 0 auto;
+            width: auto;
+        }
+
+        // Graphic hidden for a white-labelled logo: the form centres on the whole page
+        .rightside-wrapper:empty {
+            display: none !important;
+        }
+    }
+}

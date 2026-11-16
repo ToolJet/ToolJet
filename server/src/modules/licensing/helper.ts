@@ -29,6 +29,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.TABLE_COUNT:
       return licenseInstance.tables;
 
+    case LICENSE_FIELD.TJDB_ROW_COUNT:
+      return licenseInstance.rows;
+
     case LICENSE_FIELD.TOTAL_USERS:
       return licenseInstance.users;
 
@@ -110,6 +113,7 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
         isLicenseValid: licenseInstance.isValid,
         isExpired: licenseInstance.isExpired,
         licenseType: licenseInstance.licenseType,
+        termsType: licenseInstance.termsType,
         expiryDate: licenseInstance.expiry,
       };
 

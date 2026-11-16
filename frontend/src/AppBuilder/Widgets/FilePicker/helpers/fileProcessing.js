@@ -6,7 +6,7 @@ import Papa from 'papaparse';
 
 // Define constants for processing file types
 // (Consider moving these to a shared constants file if used elsewhere)
-export const PARSE_FILE_TYPES = {
+const PARSE_FILE_TYPES = {
   CSV: 'text/csv',
   TSV: 'text/tab-separated-values',
   TXT: 'text/plain',
@@ -16,7 +16,7 @@ export const PARSE_FILE_TYPES = {
 };
 
 // RFC 4180 compliant CSV parser using PapaParse
-export const processCSV = (str, delimiter = ',') => {
+const processCSV = (str, delimiter = ',') => {
   try {
     const result = Papa.parse(str, {
       header: true,
@@ -36,7 +36,7 @@ export const processCSV = (str, delimiter = ',') => {
   }
 };
 
-export const processXls = async (base64Str) => {
+const processXls = async (base64Str) => {
   try {
     // Decode base64 to binary string
     const binary = atob(base64Str.split(',')[1] || base64Str);
@@ -62,7 +62,7 @@ export const processXls = async (base64Str) => {
 };
 
 // Added function to parse JSON content
-export const processJson = (str) => {
+const processJson = (str) => {
   try {
     // Use JSON5 for more flexibility (comments, trailing commas, etc.)
     return JSON5.parse(str);
@@ -118,7 +118,7 @@ export const DEPRECATED_processFileContent = async (fileType, fileContent, optio
   }
 };
 
-export const detectParserFile = (file) => {
+const detectParserFile = (file) => {
   return Object.values(PARSE_FILE_TYPES).includes(file.type);
 };
 

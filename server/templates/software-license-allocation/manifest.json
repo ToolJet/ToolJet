@@ -1,0 +1,15 @@
+{
+  "name": "Software license allocation",
+  "description": "Put every paid software seat to work. Balance license demand, allocations and reclaim decisions across your software portfolio.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "software-license-allocation",
+  "category": "it-assets-and-access"
+}

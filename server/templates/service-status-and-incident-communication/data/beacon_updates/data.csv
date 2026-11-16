@@ -1,0 +1,7 @@
+id,incident_reference,status,message,posted_at,posted_by
+,INC-260916-01,Monitoring,Queue depth has fallen by 78%. New notification events are processing normally; delayed messages continue to drain.,2026-09-16T16:46:00Z,Avery Chen
+,INC-260916-01,Identified,We identified saturated delivery workers following a regional provider slowdown and added capacity.,2026-09-16T16:21:00Z,Avery Chen
+,INC-260916-01,Investigating,We are investigating reports of delayed email and webhook notifications.,2026-09-16T15:58:00Z,Avery Chen
+,INC-260909-02,Resolved,Traffic has been restored to the primary edge cluster and latency remains within target.,2026-09-09T19:06:00Z,Priya Nair
+,INC-260909-02,Investigating,We are investigating elevated p95 latency affecting API requests in the US region.,2026-09-09T18:12:00Z,Priya Nair
+,INC-260828-01,Resolved,SSO authentication is operating normally. We have added certificate-expiry monitoring.,2026-08-28T10:51:00Z,Morgan Lee

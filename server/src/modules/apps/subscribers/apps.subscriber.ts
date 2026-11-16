@@ -1,14 +1,21 @@
-import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent, Not, UpdateEvent } from 'typeorm';
-import { AsyncLocalStorage } from 'async_hooks';
+import {
+  DataSource,
+  EntitySubscriberInterface,
+  EventSubscriber,
+  InsertEvent,
+  LoadEvent,
+  Not,
+  UpdateEvent,
+} from 'typeorm';
 import { App } from 'src/entities/app.entity';
-import { AppVersionType } from 'src/entities/app_version.entity';
-import { APP_TYPES } from '@modules/apps/constants';
+import { AppVersion, AppVersionType } from 'src/entities/app_version.entity';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { skipAppEditingVersionHydration } from './hydration-context';
 
-// List endpoints opt out of the per-entity afterLoad hydration and run a single bulk query instead.
-export const skipAppEditingVersionHydration = new AsyncLocalStorage<boolean>();
+// Re-exported so existing importers keep working.
+export { skipAppEditingVersionHydration };
 
 @EventSubscriber()
 export class AppsSubscriber implements EntitySubscriberInterface {
@@ -42,7 +49,7 @@ export class AppsSubscriber implements EntitySubscriberInterface {
     }
   }
 
-  async afterLoad(app: any): Promise<void> {
+  async afterLoad(app: any, event?: LoadEvent<App>): Promise<void> {
     // Only fire for App entity loads (single-app/editor paths). AppBase is used by
     // list/admin queries (e.g. /api/folder-apps, /api/apps listing) where the per-row
     // editingVersion lookup would amount to N+1; those callers resolve metadata via
@@ -54,16 +61,14 @@ export class AppsSubscriber implements EntitySubscriberInterface {
 
     if (skipAppEditingVersionHydration.getStore()) return;
 
+    // TypeORM runs this hook while the loading query still holds its pooled connection, and runs
+    // it for every loaded App in parallel. Read on that same connection (event.manager) — taking
+    // fresh ones per App exhausts the pool when one query loads many Apps.
+    const manager = event?.manager;
+
     // Git-sync detection via the central util — gates on license + provider + branch.
-    // Workflows are exempt — they only ever use the org's default branch (no feature
-    // branches), so the subscriber falls through and picks their single VERSION row even
-    // when git is on for the org.
-    const isWorkflow = app.type === APP_TYPES.WORKFLOW;
-    let isGitEnabled = false;
-    if (!isWorkflow) {
-      const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
-      isGitEnabled = details.isEnabled;
-    }
+    const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId, undefined, { manager });
+    const isGitEnabled = details.isEnabled;
 
     if (isGitEnabled) {
       // Git on: every editing-version read is branch-scoped. Callers must
@@ -76,10 +81,10 @@ export class AppsSubscriber implements EntitySubscriberInterface {
       return;
     }
 
-    // Git off (or workflow): fall back to most-recent non-BRANCH non-stub
+    // Git off: fall back to most-recent non-BRANCH non-stub
     // VERSION row. These rows live on the org's default branch, and there is a
     // single non-stub VERSION DRAFT per app here, so this is deterministic.
-    const editingVersion = await this.appVersionRepository.findOne({
+    const editingVersion = await (manager ?? this.appVersionRepository.manager).findOne(AppVersion, {
       where: { appId: app.id, versionType: Not(AppVersionType.BRANCH), isStub: false },
       order: { updatedAt: 'DESC' },
     });

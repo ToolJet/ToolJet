@@ -1,0 +1,16 @@
+{
+  "name": "Pool service management",
+  "description": "Plan pool service visits and record water readings, work done and handover notes for every client.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "pool-service-management",
+  "category": "field-services"
+}

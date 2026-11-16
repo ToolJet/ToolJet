@@ -102,6 +102,19 @@ No change may break existing saved applications. Always ask: would an app saved 
 - Queries: `runQuery` → resolve options → API call → update `exposedValues.queries[name]` → trigger dependency updates
 - Event definitions live in `eventsSlice`, not in component definitions
 
+### Grouped error notifications
+
+- App editor and ViewerApp (private, public, published and embedded) enable grouping in
+  `_ui/Toast`. Text errors use a fixed-width collapsed card whose height fits the current message with a persistent Latest error title. Multiple visible errors at the same position show the latest message and count; replacement arrivals replay the entry animation only when another notification was above the error.
+- Editor and viewer groups use View all: a scrollable list inside the latest toast.
+  Older messages are absorbed into it; expansion alone retains the original expiry deadline.
+  New errors at the same position appear first without remounting or replaying entry animation.
+  The expiry is the later of the current deadline and the incoming error deadline, preserving hover pauses. Other notification types never extend the error toast.
+  Outside the panel, each toast keeps its original lifetime and close action.
+- A single text error hides the count and View all but retains the title and content-sized height.
+  Interactive/custom-component/function-rendered messages and other toast types retain the original renderer. No extra debugger logs are created. Dashboard notifications
+  do not enable grouping.
+
 ### Bundles and performance
 
 - Viewer (`/applications/*`) and editor are separate lazy bundles via `RootRouter.jsx`. Never import editor-only code into viewer paths
@@ -113,11 +126,15 @@ No change may break existing saved applications. Always ask: would an app saved 
 - AppBuilder store: `AppBuilder/_stores/store.js` (30+ slices), all namespaced by `moduleId` (default `'canvas'`)
 - Global stores (`appDataStore`, `currentStateStore`, `dataQueriesStore`, `resolverStore`) should not be used from AppBuilder code unless truly unavoidable — prefer the AppBuilder store
 
+### Released-app cache
+
+- The released-app link reuses the app definition saved in IndexedDB (`_helpers/appDefinitionCache.ts`) while its key matches the `appDataRevision` the server returns. The browser never judges freshness itself; what refreshes it is server-side (`server/src/modules/apps/AGENTS.md` § Released-app viewer cache). Logout wipes it via `clearAllViewerCaches()`.
+
 ## Widget config
 
-### Server-side sync (CRITICAL)
+### Single source of truth
 
-Changing a widget config in `frontend/src/AppBuilder/WidgetManager/widgets/` requires the matching update in `server/src/modules/apps/services/widget-config/`. The two are maintained independently; changing one without the other is a bug.
+Widget configs live in the shared `packages/widget-definitions` package (`src/widgets/`), imported as `@tooljet/widget-definitions` by both the frontend (`AppBuilder/WidgetManager/configs/widgetConfig.js`) and the server (`server/src/modules/apps/services/widget-config/index.js`). Edit a config once there; there is no second copy to keep in sync.
 
 ### Key changes require migrations
 
@@ -127,7 +144,7 @@ Moving, renaming, or removing a config key (e.g. moving `loadingState` from `sty
 
 ### Universal props (`universalProps`)
 
-Schema fields merged into **every** widget by `combineProperties()` in `AppBuilder/WidgetManager/componentTypes.js`. Sub-buckets: `general` (properties — e.g. `tooltip`), `generalStyles` (styles — e.g. `boxShadow`). Adding a field here applies it to all widgets at once, with no per-widget edits.
+Schema fields merged into **every** widget by `combineProperties()` (both defined in `packages/widget-definitions/src/utils.js`; applied in `AppBuilder/WidgetManager/componentTypes.js` and the server's `widget-config/index.js`). Revamped components (`NEW_REVAMPED_COMPONENTS`) get `universalProps`; the rest get `legacyUniversalProps`. Sub-buckets: `general` (properties — e.g. `tooltip`), `generalStyles` (styles — e.g. `boxShadow`). Adding a field here applies it to all widgets at once, with no per-widget edits.
 
 ### CSS class (widget-level)
 

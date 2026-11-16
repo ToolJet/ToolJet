@@ -1,0 +1,9 @@
+id,asset_code,equipment,category,state,customer,pickup_at,return_at,daily_rate,notes
+,MX-014,Compact excavator,Earthmoving,Ready,Cedar & Stone,2026-09-10T08:00:00-07:00,2026-09-12T16:00:00-07:00,285,Return overdue. Call site foreman before scheduling transport.
+,LT-008,Towable light tower,Site power,Reserved,Northline Civil,2026-09-13T09:00:00-07:00,2026-09-16T16:00:00-07:00,95,Pickup at bay 2. Fuel tank full; hitch inspection complete.
+,CP-021,Plate compactor,Compaction,Reserved,Mason Works,2026-09-13T11:00:00-07:00,2026-09-14T16:00:00-07:00,65,Customer collecting. Include rubber paving mat.
+,SL-006,Electric scissor lift,Access,On rent,Apex Interiors,2026-09-11T08:00:00-07:00,2026-09-13T15:00:00-07:00,145,Delivery crew returning lift. Inspect wheels and charge level.
+,GN-012,Diesel generator · 20 kVA,Site power,Ready,,,,110,Serviced and load-tested. Available for a new booking.
+,MX-019,Mini excavator · 1.8 t,Earthmoving,Ready,,,,210,"Cleaned, greased and inspected. Trailer available separately."
+,SC-004,Concrete floor saw,Cutting,Service,,,,75,Blade guard replacement required. Do not release.
+,CH-010,Wood chipper · 6 inch,Groundcare,On rent,Evergreen Gardens,2026-09-12T08:00:00-07:00,2026-09-15T16:00:00-07:00,165,PPE handover completed. Customer will tow back.

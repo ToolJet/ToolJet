@@ -1,3 +1,4 @@
+import type { WorkspaceAuthentication } from '@modules/mcp-oauth/protocol';
 import { Response } from 'express';
 import { EntityManager } from 'typeorm';
 import { UserSessions } from 'src/entities/user_sessions.entity';
@@ -11,7 +12,12 @@ export interface ISessionService {
 
   validateUserSession(userId: string, sessionId: string, organizationId?: string): Promise<void>;
 
-  createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions>;
+  createSession(
+    userId: string,
+    device: string,
+    manager?: EntityManager,
+    passwordExpiry?: Date | null
+  ): Promise<UserSessions>;
 
   terminateSession(user: User, sessionId: string, response: Response): Promise<void>;
 
@@ -21,7 +27,7 @@ export interface ISessionService {
 }
 
 export interface ISessionUtilService {
-  terminateAllSessions(userId: string): Promise<void>;
+  terminateAllSessions(userId: string, exceptSessionId?: string): Promise<void>;
 }
 
 export interface JWTPayload {
@@ -32,5 +38,6 @@ export interface JWTPayload {
   isSSOLogin: boolean;
   isPasswordLogin: boolean;
   invitedOrganizationId?: string;
+  workspaceAuthentication?: WorkspaceAuthentication;
   isPatLogin?: boolean;
 }

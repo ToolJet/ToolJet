@@ -9,6 +9,9 @@ export const commonSelectors = {
   workFlowNameInputField: '[data-cy="app-name-input"]',
   toastMessage: ".go4109123758",
   oldToastMessage: ".go318386747",
+  // Component delete confirmation (AppBuilder/Shared/EntityDelete/EntityDeleteDialog.tsx)
+  entityDeleteModal: '[data-cy="entity-delete-modal"]',
+  entityDeleteConfirm: '[data-cy="entity-delete-confirm"]',
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',
   newToastMessage:
     '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > .go3958317564',
@@ -28,6 +31,7 @@ export const commonSelectors = {
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
   homePageLogo: "[data-cy=home-page-logo]",
+  homePagePromptHeader: '[data-cy="home-page-prompt-header"]',
   pageLogo: 'svg[viewBox="0 0 375 63"], [data-cy=page-logo]',
   workEmailLabel: '[data-cy="work-email-label"]',
   workEmailInputField: "[data-cy=work-email-input]",
@@ -39,7 +43,6 @@ export const commonSelectors = {
   loginButton: '[data-cy="login-button"]',
   dropdown: "[data-cy=workspace-dropdown]",
   backButton: "[data-cy=left-sidebar-back-button]",
-  dashboardAppCreateButton: '[data-cy="button-new-application-from-scratch"]',
   appCreateButton: "[data-cy=create-new-apps-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",

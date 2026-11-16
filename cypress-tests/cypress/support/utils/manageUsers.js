@@ -61,18 +61,11 @@ export const verifyManageUsersPageElements = () => {
 
   cy.get(usersSelector.userFilterInput).should("be.visible");
 
+  // "Add user" now opens the invite drawer directly (no "Invite with email" /
+  // "Upload CSV file" tabs). Bulk upload has its own header button and drawer.
   cy.get(usersSelector.buttonAddUsers)
     .verifyVisibleElement("have.text", usersText.buttonAddUsers)
     .click();
-
-  cy.get(usersSelector.buttonInviteWithEmail).verifyVisibleElement(
-    "have.text",
-    usersText.buttonInviteWithEmail
-  );
-  cy.get(usersSelector.buttonUploadCsvFile).verifyVisibleElement(
-    "have.text",
-    usersText.buttonUploadCsvFile
-  );
 
   cy.get(usersSelector.addUsersCardTitle).verifyVisibleElement(
     "have.text",
@@ -112,53 +105,9 @@ export const verifyManageUsersPageElements = () => {
   cy.get(commonSelectors.closeButton).click();
   cy.get(usersSelector.addUsersCardTitle).should("not.exist");
 
-  cy.get(usersSelector.buttonAddUsers).click();
-  cy.get(usersSelector.addUsersCardTitle).verifyVisibleElement(
-    "have.text",
-    usersText.addUsersCardTitle
-  );
-  cy.get(usersSelector.buttonUploadCsvFile).click();
-
-  if (envVar === "Enterprise") {
-    cy.get(usersSelector.helperTextBulkUpload).verifyVisibleElement(
-      "have.text",
-      "Download the template to add user details or format your file in the same way as the template. Files in any other format may not be recognized. "
-    );
-  } else {
-    cy.get(usersSelector.helperTextBulkUpload).verifyVisibleElement(
-      "have.text",
-      usersText.helperTextBulkUpload
-    );
-  }
-  cy.get(usersSelector.buttonDownloadTemplate).verifyVisibleElement(
-    "have.text",
-    usersText.buttonDownloadTemplate
-  );
-  cy.exec("mkdir -p ./cypress/downloads/", { failOnNonZeroExit: false });
-  cy.wait(3000);
-  cy.exec("cd ./cypress/downloads/ && rm -rf *", { failOnNonZeroExit: false });
-  cy.wait(3000);
-  cy.get(usersSelector.buttonDownloadTemplate).click();
-  cy.wait(4000);
-  cy.exec("ls ./cypress/downloads/").then((result) => {
-    const downloadedAppExportFileName = result.stdout.split("\n")[0];
-    expect(downloadedAppExportFileName).to.contain.string("sample_upload.csv");
-  });
-
-  cy.get(usersSelector.iconBulkUpload).should("be.visible");
-  cy.get(usersSelector.helperTextSelectFile).verifyVisibleElement(
-    "have.text",
-    usersText.helperTextSelectFile
-  );
-  cy.get(usersSelector.helperTextDropFile).verifyVisibleElement(
-    "have.text",
-    usersText.helperTextDropFile
-  );
-  cy.get(usersSelector.inputFieldBulkUpload).should("exist");
-  cy.get(usersSelector.buttonUploadUsers).verifyVisibleElement(
-    "have.text",
-    usersText.buttonUploadUsers
-  );
+  // Bulk upload has its own header button; the drawer contents + downloads are
+  // validated in bulkUsersUpload.cy.js.
+  cy.get(usersSelector.bulkUploadUsers).should("be.visible");
 };
 
 export const inviteUserToWorkspace = (firstName, email) => {
@@ -238,17 +187,103 @@ export const bulkUserUpload = (
     force: true,
   });
   cy.get(usersSelector.uploadedFileData).should("contain", fileName);
-  cy.get(usersSelector.buttonUploadUsers).click();
-  if (isDuplicate) {
-    cy.get(commonSelectors.modalMessage)
-      .should("be.visible")
-      .and("have.text", toastMessage);
-    cy.get(usersSelector.modalClose).click();
+
+  if (Cypress.env("environment") === "Community") {
+    cy.get(usersSelector.buttonUploadUsers).click();
+    if (isDuplicate) {
+      cy.get(commonSelectors.modalMessage)
+        .should("be.visible")
+        .and("have.text", toastMessage);
+      cy.get(usersSelector.modalClose).click();
+    } else {
+      cy.get(".go3958317564").should("be.visible").and("have.text", toastMessage);
+      cy.get('[data-cy="toast-close-button"]').click();
+    }
   } else {
-    cy.get(".go3958317564").should("be.visible").and("have.text", toastMessage);
-    cy.get('[data-cy="toast-close-button"]').click();
+    // EE: the file is validated on selection; errors are listed in the drawer
+    cy.get('[data-cy="invalid-file-message"]')
+      .should("be.visible")
+      .and("contain", "Errors detected, resolve and re-upload");
+    const errors = [].concat(toastMessage);
+    cy.get('[data-cy="bulk-upload-errors"]').should(
+      "contain",
+      `Errors (${errors.length})`
+    );
+    cy.get('[data-cy="bulk-upload-error-message"]')
+      .should("have.length", errors.length)
+      .each(($error, index) => {
+        cy.wrap($error).should("have.text", errors[index]);
+      });
+    cy.get(usersSelector.buttonUploadUsers).should("be.disabled");
   }
+
   cy.wait(1500);
+};
+
+// Verifies the static elements of the new bulk upload drawer (opened from the
+// "Bulk upload users" header button) and that both CSV downloads actually work.
+// Assumes the drawer is already open.
+export const verifyBulkUploadDrawerElements = () => {
+  cy.get(usersSelector.bulkUploadDrawerTitle).verifyVisibleElement(
+    "have.text",
+    usersText.bulkUploadDrawerTitle
+  );
+
+  // Download CSV template section
+  cy.get(usersSelector.buttonDownloadEmptyTemplate).verifyVisibleElement(
+    "have.text",
+    usersText.buttonDownloadEmptyTemplate
+  );
+  cy.get(usersSelector.buttonDownloadCurrentUsers).verifyVisibleElement(
+    "have.text",
+    usersText.buttonDownloadCurrentUsers
+  );
+
+  // Upload CSV section
+  cy.get(usersSelector.bulkUploadDropzone)
+    .should("be.visible")
+    .and("contain", "Drag and drop")
+    .and("contain", "browse");
+  cy.get(usersSelector.inputFieldBulkUpload).should("exist");
+
+  // Footer
+  cy.get(usersSelector.buttonReadDocs).verifyVisibleElement(
+    "have.text",
+    usersText.buttonReadDocs
+  );
+  cy.get(commonSelectors.cancelButton).verifyVisibleElement(
+    "have.text",
+    usersText.cancelButton
+  );
+  cy.get(usersSelector.buttonUploadUsers)
+    .verifyVisibleElement("have.text", usersText.buttonUploadUsers)
+    .and("be.disabled");
+
+  // Empty template download - verify it downloads with the expected header row.
+  cy.exec("mkdir -p ./cypress/downloads/", { failOnNonZeroExit: false });
+  cy.exec("cd ./cypress/downloads/ && rm -rf *", { failOnNonZeroExit: false });
+  cy.get(usersSelector.buttonDownloadEmptyTemplate).click();
+  cy.readFile(
+    `cypress/downloads/${usersText.emptyTemplateFileName}`,
+    "utf-8",
+    { timeout: 15000 }
+  ).then((content) => {
+    expect(content).to.not.be.empty;
+    expect(content).to.contain(usersText.bulkUploadCsvHeader);
+  });
+
+  // Current users list export - verify the header plus the logged-in admin's row.
+  cy.exec("cd ./cypress/downloads/ && rm -rf *", { failOnNonZeroExit: false });
+  cy.get(usersSelector.buttonDownloadCurrentUsers).click();
+  cy.readFile(
+    `cypress/downloads/${usersText.currentUsersFileName}`,
+    "utf-8",
+    { timeout: 15000 }
+  ).then((content) => {
+    expect(content).to.not.be.empty;
+    expect(content).to.contain(usersText.bulkUploadCsvHeader);
+    expect(content).to.contain(usersText.adminUserEmail);
+  });
 };
 
 export const copyInvitationLink = (firstName, email) => {

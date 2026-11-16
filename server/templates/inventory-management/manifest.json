@@ -1,0 +1,19 @@
+{
+  "name": "Inventory management",
+  "description": "Track stock levels, record stock movements and raise reorders before products run out.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "inventory-management",
+  "category": "inventory-orders-and-fleet"
+}

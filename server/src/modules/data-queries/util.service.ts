@@ -3,6 +3,7 @@ import { App } from '@entities/app.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
+import { redactSecretValues } from '@helpers/utils.helper';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { VersionRepository } from '@modules/versions/repository';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
@@ -24,6 +25,7 @@ import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 import { AbortControllerHandler } from '@helpers/abortqueryhandler.helper';
 import { AppVersion } from '@entities/app_version.entity';
 import { ListTablesDto } from './dto';
+import { DataSourceTypes, SAMPLE_SQL_DISABLED_KEY } from '@modules/data-sources/constants';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -79,6 +81,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     const queryStatus = new DataQueryStatus();
     const forwardRestCookies = this.configService.get<string>('FORWARD_RESTAPI_COOKIES') === 'true';
     let abortCtrl = null;
+    // Resolved secret plaintexts, collected during resolution and scrubbed from the returned metadata.
+    const collectedSecretValues: string[] = [];
 
     // Hoist these variables to function scope for access in finally block
     let dataSource: DataSource;
@@ -138,7 +142,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         environmentId,
         user,
         opts,
-        dataSourceOptions.id
+        dataSourceOptions.id,
+        collectedSecretValues
       );
 
       const isTooljetManagedApp = sourceOptions['oauth_type'] === 'tooljet_app';
@@ -208,7 +213,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             app: {
               id: appToUse?.id,
               isPublic: effectiveIsPublic,
-              ...(dataSource.kind === 'tooljetdb' && { organization_id: appToUse.organizationId }),
+              ...(dataSource.kind === 'tooljetdb' && {
+                organization_id: appToUse.organizationId,
+                environment_id: dataSourceOptions.environmentId,
+              }),
             },
           }
         );
@@ -313,6 +321,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             abortCtrl.start();
 
             const promises = [];
+            // This branch only runs after catching an OAuth token error, which a tooljetdb data
+            // source's own error paths never throw — so the spread below is a no-op here today.
+            // Mirrored anyway, rather than argued away in a comment: it costs nothing and survives
+            // a future plugin gaining an OAuth-shaped retry path.
             const queryPromise = service.run(
               sourceOptions,
               parsedQueryOptions,
@@ -320,7 +332,14 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               dataSourceOptions.updatedAt,
               {
                 user: { id: user?.id },
-                app: { id: appToUse?.id, isPublic: effectiveIsPublic },
+                app: {
+                  id: appToUse?.id,
+                  isPublic: effectiveIsPublic,
+                  ...(dataSource.kind === 'tooljetdb' && {
+                    organization_id: appToUse.organizationId,
+                    environment_id: dataSourceOptions.environmentId,
+                  }),
+                },
               }
             );
             promises.push(queryPromise);
@@ -398,6 +417,9 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         (result as any)['metadata']['queryDefinition'] = queryDefinition;
       }
 
+      // Scrub resolved secrets from metadata before returning.
+      result['metadata'] = redactSecretValues(result['metadata'], collectedSecretValues);
+
       return result;
     } catch (queryError) {
       // Null if we threw before it was built. Unguarded, that TypeError masked the real error.
@@ -408,6 +430,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         data: queryError?.data,
         stack: queryError?.stack,
       });
+      // Error metadata (e.g. restapi handleError) carries the request too — scrub it before returning.
+      if (queryError && queryError.metadata) {
+        queryError.metadata = redactSecretValues(queryError.metadata, collectedSecretValues);
+      }
       throw queryError;
     } finally {
       abortCtrl?.cleanup();
@@ -550,15 +576,25 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     environmentId = undefined,
     user = undefined,
     opts?: DataQueryExecutionOptions,
-    dataSourceOptionId = undefined
+    dataSourceOptionId = undefined,
+    collectedSecretValues?: string[]
   ) {
     const sourceOptions = await this.dataSourceUtilService.parseSourceOptions(
       dataSource.options,
       organization_id,
       environmentId,
       user,
-      dataSourceOptionId
+      dataSourceOptionId,
+      collectedSecretValues
     );
+
+    if (dataSource.type === DataSourceTypes.SAMPLE && sourceOptions[SAMPLE_SQL_DISABLED_KEY]) {
+      throw new QueryError(
+        'Sample data source is disabled',
+        'ToolJet could not create a restricted database user for the sample data source. Ask your admin to give SAMPLE_PG_DB_USER (or PG_USER) permission to create roles, then restart ToolJet.',
+        {}
+      );
+    }
 
     const parsedQueryOptions = await this.parseQueryOptions(
       dataQuery.options,
@@ -566,7 +602,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       organization_id,
       environmentId,
       user,
-      opts
+      opts,
+      collectedSecretValues
     );
     const service = await this.pluginsSelectorService.getService(dataSource.pluginId, dataSource.kind);
 
@@ -638,7 +675,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     organization_id: string,
     environmentId?: string,
     user?: User,
-    opts?: DataQueryExecutionOptions
+    opts?: DataQueryExecutionOptions,
+    collectedSecretValues?: string[]
   ): Promise<object> {
     // If workflow bundle context is available, use the enhanced template resolution
     if (opts?.workflow?.bundleContent || opts?.workflow?.isolate || opts?.workflow?.context) {
@@ -659,11 +697,18 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       Object.assign(enhancedOptions, templateVariables);
 
       // Use the standard parseQueryOptions logic but with enhanced options
-      return this.parseQueryOptionsInternal(object, enhancedOptions, organization_id, environmentId, user);
+      return this.parseQueryOptionsInternal(
+        object,
+        enhancedOptions,
+        organization_id,
+        environmentId,
+        user,
+        collectedSecretValues
+      );
     }
 
     // Fallback to original logic for non-bundle contexts
-    return this.parseQueryOptionsInternal(object, options, organization_id, environmentId, user);
+    return this.parseQueryOptionsInternal(object, options, organization_id, environmentId, user, collectedSecretValues);
   }
 
   private async parseQueryOptionsInternal(
@@ -671,7 +716,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     options: object,
     organization_id: string,
     environmentId?: string,
-    user?: User
+    user?: User,
+    collectedSecretValues?: string[]
   ): Promise<object> {
     const stack: any[] = [{ obj: object, key: null, parent: null }];
 
@@ -721,7 +767,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             resolvedValue,
             organization_id,
             environmentId,
-            user
+            user,
+            collectedSecretValues
           );
           resolvedValue = resolvingConstant;
           if (parent && key !== null) {

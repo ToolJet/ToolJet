@@ -7,6 +7,7 @@ export const licenseService = {
   updateEnvSetting,
   getFeatureAccess,
   generateCloudTrial,
+  canStartCloudTrial,
   getDomainsList,
   upgradePlan,
   getUpcomingInvoice,
@@ -19,6 +20,7 @@ export const licenseService = {
   addTopUpCredits,
   getAiCreditsBalance,
   getSelfhostCustomer,
+  getPlanPrices,
 };
 
 function get() {
@@ -61,6 +63,13 @@ function generateCloudTrial(createCloudTrialLicenseDto) {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/license/organization/${organizationId}/trial`, requestOptions).then(handleResponse);
+}
+
+function canStartCloudTrial(organizationId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/license/organization/${organizationId}/can-start-trial`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function upgradePlan(planDetails) {
@@ -176,6 +185,12 @@ function getAiCreditsBalance() {
   return fetch(`${config.apiUrl}/organization/payment/${organizationId}/ai-credits-balance`, requestOptions).then(
     handleResponse
   );
+}
+
+// Per-builder plan prices from Stripe. Cloud reads them directly; self-hosted relays cloud's.
+function getPlanPrices() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization/payment/plan-prices`, requestOptions).then(handleResponse);
 }
 
 function getSelfhostCustomer() {

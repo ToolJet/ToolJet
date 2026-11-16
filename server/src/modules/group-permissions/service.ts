@@ -11,7 +11,8 @@ import { RolesUtilService } from '@modules/roles/util.service';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { GroupPermissionsDuplicateService } from './services/duplicate.service';
 import { AddGroupUserDto, DuplicateGroupDtoBase, UpdateGroupPermissionDto } from './dto';
-import { ResourceType } from './constants';
+import { ResourceType, USER_ROLE } from './constants';
+import { isSuperAdmin } from '@helpers/utils.helper';
 import { RolesRepository } from '@modules/roles/repository';
 import { IGroupPermissionsService } from './interfaces/IService';
 import { GroupPermissionLicenseUtilService } from './util-services/license.util.service';
@@ -147,7 +148,9 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await this.groupPermissionsUtilService.addUsersToGroup(addGroupUserDto, organizationId, manager);
+      // Only workspace admins may promote end-users (via allowRoleChange) to satisfy a builder-level group
+      const canChangeRole = isSuperAdmin(user) || user.roleGroup === USER_ROLE.ADMIN;
+      await this.groupPermissionsUtilService.addUsersToGroup(addGroupUserDto, organizationId, manager, canChangeRole);
       await this.licenseUserService.validateUser(manager, organizationId);
       const group = await this.groupPermissionsRepository.getGroup(
         { id: addGroupUserDto.groupId, organizationId: organizationId },

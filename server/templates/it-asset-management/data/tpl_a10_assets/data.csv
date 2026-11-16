@@ -1,0 +1,9 @@
+id,name,tag,serial,category,location,cost,purchased,item_condition,status,assignee,return_due,history,revision
+,MacBook Pro 14,IT-1001,DEMO-SN-7301,Laptop,San Francisco,2199,2026-02-15,Good,Checked out,person1@example.com,2026-09-15,"[{""at"":""2026-09-01T09:00:00Z"",""note"":""Fictional inventory sample."",""event"":""Asset registered""}]",1
+,Dell UltraSharp 27,IT-1002,DEMO-SN-7302,Monitor,San Francisco,549,2026-02-15,Good,Checked out,person2@example.com,2026-09-10,"[{""at"":""2026-09-01T09:00:00Z"",""note"":""Fictional inventory sample."",""event"":""Asset registered""}]",1
+,ThinkPad X1 Carbon,IT-1003,DEMO-SN-7303,Laptop,London,1850,2026-02-15,Good,Checked out,person3@example.com,2026-09-30,"[{""at"":""2026-09-01T09:00:00Z"",""note"":""Fictional inventory sample."",""event"":""Asset registered""}]",1
+,iPhone 15,IT-1004,DEMO-SN-7304,Phone,New York,799,2026-02-15,Good,Available,,,"[{""at"":""2026-09-01T09:00:00Z"",""note"":""Fictional inventory sample."",""event"":""Asset registered""}]",1
+,Logitech meeting kit,IT-1005,DEMO-SN-7305,Peripheral,Stockroom,349,2026-02-15,Good,Available,,,"[{""at"":""2026-09-01T09:00:00Z"",""note"":""Fictional inventory sample."",""event"":""Asset registered""}]",1
+,MacBook Air M3,IT-1006,DEMO-SN-7306,Laptop,Repair bench,1299,2026-02-15,Needs attention,Maintenance,,,"[{""at"":""2026-09-01T09:00:00Z"",""note"":""Fictional inventory sample."",""event"":""Asset registered""}]",1
+,Cisco access point,IT-1007,DEMO-SN-7307,Network,Stockroom,490,2026-02-15,Good,Available,,,"[{""at"":""2026-09-01T09:00:00Z"",""note"":""Fictional inventory sample."",""event"":""Asset registered""}]",1
+,Dell Latitude 7440,IT-1008,DEMO-SN-7308,Laptop,Archive,1599,2026-02-15,Good,Retired,,,"[{""at"":""2026-09-01T09:00:00Z"",""note"":""Fictional inventory sample."",""event"":""Asset registered""}]",1

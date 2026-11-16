@@ -308,6 +308,7 @@ export const JSONEditor = function JSONEditor(props) {
           }}
           value={exposedVariablesTemporaryState.value}
           onFocus={() => {
+            if (currentMode !== 'edit') return;
             setSelectedComponents([id]);
             setRightSidebarOpen(true);
             setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
@@ -324,6 +325,7 @@ export const JSONEditor = function JSONEditor(props) {
           basicSetup={basicSetup}
           // className={`codehinter-multi-line-input`}
           indentWithTab={true}
+          editable={!exposedVariablesTemporaryState.isDisabled}
         />
       )}
     </div>

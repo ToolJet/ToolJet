@@ -1,0 +1,21 @@
+{
+  "name": "Auto repair shop",
+  "description": "Track work orders across the workshop, from check-in and diagnosis to repair and pickup.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "auto-repair-shop",
+  "category": "local-services"
+}

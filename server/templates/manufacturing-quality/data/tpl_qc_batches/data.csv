@@ -1,0 +1,13 @@
+id,batch_code,part,line,units,target
+,BT-2401,Valve housing,Machining,240,09:00
+,BT-2402,Drive shaft,Assembly,180,09:30
+,BT-2403,Mounting bracket,Finishing,320,10:00
+,BT-2404,Seal assembly,Machining,450,10:30
+,BT-2405,Pump impeller,Assembly,160,11:00
+,BT-2406,Bearing sleeve,Finishing,200,11:30
+,BT-2407,Valve housing,Machining,240,12:00
+,BT-2408,Drive shaft,Assembly,180,12:30
+,BT-2409,Mounting bracket,Finishing,320,13:00
+,BT-2410,Seal assembly,Machining,450,13:30
+,BT-2411,Pump impeller,Assembly,160,14:00
+,BT-2412,Bearing sleeve,Finishing,200,14:30

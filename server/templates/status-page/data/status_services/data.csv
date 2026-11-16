@@ -1,0 +1,13 @@
+id,name,service_group,description,display_order,current_status,current_message,is_visible
+,Web application,Core platform,Customer-facing SaaS application,1,operational,All systems normal,true
+,Public API,Core platform,API requests and integrations,2,operational,All systems normal,true
+,Authentication,Core platform,Sign-in and identity services,3,operational,All systems normal,true
+,Data exports,Data & automation,"Reports, exports, and scheduled jobs",4,operational,All systems normal,true
+,Notifications,Data & automation,Email and in-app notifications,5,operational,All systems normal,true
+,Knowledge base,Customer experience,Help center and documentation,6,operational,All systems normal,true
+,Web application,Core platform,Customer-facing SaaS application,1,operational,All systems normal,true
+,Public API,Core platform,API requests and integrations,2,operational,All systems normal,true
+,Authentication,Core platform,"Sign-in, SSO, and identity services",3,degraded_performance,Slower than usual sign-in responses; monitoring closely,true
+,Data exports,Data & automation,"Reports, exports, and scheduled jobs",4,operational,All systems normal,true
+,Notifications,Data & automation,Email and in-app notifications,5,operational,All systems normal,true
+,Webhooks,Developer tools,Outbound webhook delivery and retries,6,operational,All systems normal,true

@@ -1,14 +1,12 @@
 /**
- * frontend/src/AppBuilder/WidgetManager/widgets/navigation.js and
- * server/src/modules/apps/services/widget-config/navigation.js are independently
- * maintained copies of the same widget registration (see NumberInput's contract,
- * which found the two files kept in lockstep by convention). Navigation's copies
- * had drifted: the server copy was missing `setItemVisibility`/`setItemDisable`
- * and registered `selectItem`'s `id` param as `type: 'text'` instead of `'code'`.
+ * The server's widget registry (server/src/modules/apps/services/widget-config) must register the
+ * same Navigation definition the builder uses; both come from packages/widget-definitions.
  */
-import { navigationConfig as frontendConfig } from '../../../WidgetManager/widgets/navigation';
+import { navigationConfig as frontendConfig } from '@tooljet/widget-definitions';
 // eslint-disable-next-line import/no-relative-packages
-import { navigationConfig as serverConfig } from '../../../../../../server/src/modules/apps/services/widget-config/navigation';
+import serverWidgets from '../../../../../../server/src/modules/apps/services/widget-config';
+
+const serverConfig = serverWidgets.navigationConfig;
 
 describe('Navigation widget-config parity', () => {
   test('[Navigation-CFG-001] frontend and server register the same actions', () => {

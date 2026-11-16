@@ -83,6 +83,18 @@ export const createNewComponentFromMeta = (column, parentId, nextTop) => {
   };
 };
 
+// The field editor passes mandatory/visibility as the property's `{ value, fxActive }` object, while the
+// column mapping list passes a bare boolean. Either way only the property's `value` (and `fxActive`, when
+// given) is written, so the stored shape stays `{ value: X }` and is never nested.
+const setPropertyValue = (definitionSection, property, fieldValue) => {
+  if (fieldValue === null || typeof fieldValue !== 'object' || Array.isArray(fieldValue)) {
+    set(definitionSection, `${property}.value`, fieldValue);
+    return;
+  }
+  if ('value' in fieldValue) set(definitionSection, `${property}.value`, fieldValue.value);
+  if ('fxActive' in fieldValue) set(definitionSection, `${property}.fxActive`, fieldValue.fxActive);
+};
+
 /**
  * Updates an existing form field component with new values
  * @param {string} componentId - ID of the component to update
@@ -120,12 +132,12 @@ export const updateFormFieldComponent = (updatedField, currentField, parentId, n
 
   // Update mandatory status
   if (updatedField.mandatory !== currentField.mandatory) {
-    set(updatedComponent.component.definition.validation, 'mandatory', updatedField.mandatory);
+    setPropertyValue(updatedComponent.component.definition.validation, 'mandatory', updatedField.mandatory);
   }
 
   // Update visibility status
   if (updatedField.visibility !== currentField.visibility) {
-    set(updatedComponent.component.definition.properties, 'visibility', updatedField.visibility);
+    setPropertyValue(updatedComponent.component.definition.properties, 'visibility', updatedField.visibility);
   }
 
   // Update component type specific properties

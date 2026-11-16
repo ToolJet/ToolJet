@@ -1,0 +1,21 @@
+{
+  "name": "Employee offboarding",
+  "description": "Offboard employees cleanly. Track handovers, access removal and final-day tasks in one clearance view.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "employee-offboarding",
+  "category": "people-and-hr"
+}

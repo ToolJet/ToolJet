@@ -1,0 +1,21 @@
+{
+  "name": "Backup restore testing",
+  "description": "Prove that backups actually restore. Schedule restore tests, compare results with recovery targets and keep failed evidence visible.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "backup-restore-testing",
+  "category": "it-operations"
+}

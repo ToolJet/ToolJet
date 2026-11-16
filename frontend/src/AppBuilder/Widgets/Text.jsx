@@ -9,6 +9,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -53,7 +54,9 @@ export const Text = function Text({
     borderColor,
     borderRadius,
     isScrollRequired,
+    padding,
   } = styles;
+  const boxHeight = padding === 'none' ? height + BOX_PADDING * 2 : height;
   const isInitialRender = useRef(true);
   const { loadingState, textFormat, disabledState } = properties;
   const [text, setText] = useState(() => computeText());
@@ -156,8 +159,8 @@ export const Text = function Text({
   };
 
   const computedStyles = {
-    ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
-    height: isDynamicHeightEnabled ? 'auto' : `${height}px`,
+    ...(isDynamicHeightEnabled && { minHeight: `${boxHeight}px` }),
+    height: isDynamicHeightEnabled ? 'auto' : `${boxHeight}px`,
     backgroundColor: darkMode && ['#edeff5'].includes(backgroundColor) ? '#2f3c4c' : backgroundColor,
     color,
     display: visibility ? 'flex' : 'none',
@@ -204,7 +207,10 @@ export const Text = function Text({
       className="text-widget"
       style={computedStyles}
       data-cy={`${generateCypressDataCy(dataCy)}-text`}
-      onMouseOver={() => {
+      // onMouseEnter, not onMouseOver: mouseover bubbles up from every element
+      // the authored HTML or markdown renders, so crossing an internal boundary
+      // re-fires the event for a single visual hover. mouseenter does not bubble.
+      onMouseEnter={() => {
         fireEvent('onHover');
       }}
       onClick={handleClick}
@@ -217,7 +223,10 @@ export const Text = function Text({
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
               <Markdown className={'reactMarkdown'} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-                {typeof text === 'object' ? JSON.stringify(text) : text}
+                {/* react-markdown accepts only a string. The property path coerces through
+                    `text`'s string schema, but setText() bypasses it, so a number or boolean
+                    from a CSA reaches here raw and the widget dies in its error boundary. */}
+                {typeof text === 'object' ? JSON.stringify(text) : String(text ?? '')}
               </Markdown>
             </div>
           )}

@@ -29,7 +29,11 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection, computeAutoMobileLayout } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
-import { ROW_SCOPED_WIDGET_TYPES, NESTING_LEVEL_LIMITS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import {
+  ROW_SCOPED_WIDGET_TYPES,
+  NESTING_LEVEL_LIMITS,
+  PROGRESS_LABEL_KEYS,
+} from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
   calculateInputCanvasHeight,
   resolveInputCanvasAlignment,
@@ -37,6 +41,7 @@ import {
 } from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
 const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
@@ -112,6 +117,11 @@ const hasDynamicValue = (value) => {
 
 // Arrays are objects too, so entries that are themselves arrays do not count as per-key resolvable values
 const hasObjectEntry = (items) => items.some((item) => item && typeof item === 'object' && !Array.isArray(item));
+
+// KeyValuePair field validation rules reference `cellValue`, which only exists when the field is validated,
+// so they must reach the adapter unresolved (like Table column rules) instead of collapsing to '' here.
+const isKeyValuePairFieldCustomRule = (componentType, property) =>
+  componentType === 'KeyValuePair' && /^fields\[\d+\]\.customRule$/.test(property);
 
 // Build the per-row components overlay used when resolving expressions inside
 // a ListView. Without this overlay, `components.<sibling>` is the per-row array
@@ -432,7 +442,8 @@ export const createComponentsSlice = (set, get) => ({
     component,
     componentResolvedValues = {},
     updatePassedValue = true,
-    moduleId
+    moduleId,
+    skipResolve = false
   ) => {
     const {
       getCustomResolvableReference,
@@ -473,7 +484,7 @@ export const createComponentsSlice = (set, get) => ({
 
       customResolvables = getCustomResolvables(nearestRowScopedAncestorId, null, moduleId, parentIndices);
     }
-    if (typeof value === 'string' && value?.includes('{{') && value?.includes('}}')) {
+    if (!skipResolve && typeof value === 'string' && value?.includes('{{') && value?.includes('}}')) {
       let valueWithId, allRefs, valueWithBrackets;
       if (value === '{{true}}' || value === '{{false}}') {
         valueWithId = value;
@@ -574,7 +585,10 @@ export const createComponentsSlice = (set, get) => ({
         lodashSet(
           componentResolvedValues,
           [componentId, idx, paramType, ...keys],
-          getComponentTypeFromId(componentId, moduleId) === 'Table' ? value : resolvedValue
+          getComponentTypeFromId(componentId, moduleId) === 'Table' ||
+            isKeyValuePairFieldCustomRule(getComponentTypeFromId(componentId, moduleId), property)
+            ? value
+            : resolvedValue
         );
       } else {
         componentResolvedValues[componentId][idx][paramType][property] = resolvedValue;
@@ -602,7 +616,10 @@ export const createComponentsSlice = (set, get) => ({
           lodashSet(
             componentResolvedValues,
             [componentId, paramType, ...keys],
-            getComponentTypeFromId(componentId, moduleId) === 'Table' ? value : resolvedValue
+            getComponentTypeFromId(componentId, moduleId) === 'Table' ||
+              isKeyValuePairFieldCustomRule(getComponentTypeFromId(componentId, moduleId), property)
+              ? value
+              : resolvedValue
           );
         } else {
           componentResolvedValues[componentId][paramType][property] = resolvedValue;
@@ -821,8 +838,15 @@ export const createComponentsSlice = (set, get) => ({
     validationRegex = typeof validationRegex === 'string' ? validationRegex : '';
 
     if (componentType === 'EmailInput' && widgetValue) {
-      const validationRegex = '^(?!.*\\.\\.)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$';
-      const emailRegex = new RegExp(validationRegex, 'g');
+      // Dots and hyphens separate parts rather than being legal anywhere inside them: the
+      // local part is dot-joined chunks, and each domain label must begin and end
+      // alphanumeric. The previous pattern kept `.` and `-` inside one character class per
+      // side, so an edge dot or hyphen passed — `.user@`, `user.@`, `@.example`,
+      // `@-example`, `@example-.`. Splitting on the separators also makes the old
+      // `(?!.*\.\.)` lookahead redundant, since no part can be empty.
+      const validationRegex =
+        '^[a-zA-Z0-9_%+-]+(?:\\.[a-zA-Z0-9_%+-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$';
+      const emailRegex = new RegExp(validationRegex);
       if (!emailRegex.test(widgetValue)) {
         return {
           isValid: false,
@@ -1142,7 +1166,7 @@ export const createComponentsSlice = (set, get) => ({
     resolvedComponentValues = {},
     paramType
   ) => {
-    const { checkValueAndResolve, setAllValueToComponent } = get();
+    const { checkValueAndResolve, updateResolvedValues } = get();
     if (component.definition[paramType] === undefined) return;
     Object.entries(component.definition[paramType]).forEach(([property, value]) => {
       if (!value?.skipResolve) {
@@ -1157,8 +1181,18 @@ export const createComponentsSlice = (set, get) => ({
           moduleId
         );
       } else {
-        const componentDetails = { componentId, paramType, property };
-        setAllValueToComponent(componentDetails, value?.value, false, null, {}, resolvedComponentValues, moduleId);
+        // Stored as-is, but per row like any plain value, so a component inside a ListView still gets it
+        updateResolvedValues(
+          componentId,
+          paramType,
+          property,
+          value?.value,
+          component,
+          resolvedComponentValues,
+          true,
+          moduleId,
+          true
+        );
       }
     });
   },
@@ -1199,8 +1233,7 @@ export const createComponentsSlice = (set, get) => ({
     const components = getCurrentPageComponents(moduleId);
 
     //TODO: Replace with object of component types
-    let resolvedComponentValues = {};
-
+    const resolvedComponentValues = {};
     startDependencyBatch();
     Object.entries(components).forEach(([componentId, component]) => {
       resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
@@ -1208,7 +1241,6 @@ export const createComponentsSlice = (set, get) => ({
     flushDependencyBatch();
 
     setResolvedComponents(resolvedComponentValues, moduleId);
-    resolveOthers(moduleId);
 
     // Pre-populate default exposed values for all components in a single store write.
     // This prevents 600+ individual set() calls during component mount in RenderWidget
@@ -1246,7 +1278,10 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'batchSetDefaultExposedValues'
     );
-    // Register query option dependencies for queries with runOnDependencyChange enabled
+
+    resolveOthers(moduleId);
+
+    // Register query option dependencies for queries with runOnDependencyChange enabled.
     const queries = get().dataQuery?.queries?.modules?.[moduleId] || [];
     queries.forEach((query) => {
       if (query.options?.runOnDependencyChange) {
@@ -1715,7 +1750,7 @@ export const createComponentsSlice = (set, get) => ({
     // from inside another set()'s producer gets clobbered when the outer one
     // commits. Update dependents before removeNode strips their graph edges.
     pendingDependencyUpdates.forEach(({ id, keys }) => {
-      keys.forEach((key) => updateDependencyValues(`components.${id}.${key}`, moduleId));
+      keys.forEach((key) => updateDependencyValues(`components.${id}.${key}`, moduleId, [], toDeleteComponents));
       removeNode(`components.${id}`, moduleId);
     });
 
@@ -2919,6 +2954,7 @@ export const createComponentsSlice = (set, get) => ({
     // logic to handle the key like options[0].visible. It will resolve the visible directly and update the resolved store
     if (hasArrayNotation(key)) {
       const keys = parsePropertyPath(key);
+      if (isKeyValuePairFieldCustomRule(getComponentTypeFromId(entityId, moduleId), key)) return;
       // Triggering a re-render of the table component if any of the dependent component is updated
       // This is done to calculate the callValues in the table component
       // Need to find a better way to handle this
@@ -2999,12 +3035,15 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
 
-  updateDependencyValues: (path, moduleId = 'canvas', parentIndices = []) => {
+  // `excludeComponentIds` skips dependents owned by those components, eg. a component being deleted whose own
+  // property reads its own exposed value (ProgressBar label). It is already gone, so re-resolving it would throw.
+  updateDependencyValues: (path, moduleId = 'canvas', parentIndices = [], excludeComponentIds = []) => {
     const { getDependencies, applyDependencyUpdate } = get();
     const dependencies = getDependencies(path, moduleId);
     if (!dependencies?.length) return;
 
     dependencies.forEach((dependency) => {
+      if (excludeComponentIds.includes(dependency.split('.')[1])) return;
       applyDependencyUpdate(dependency, path, moduleId, parentIndices);
     });
   },
@@ -3294,45 +3333,9 @@ export const createComponentsSlice = (set, get) => ({
 
   replaceIdsWithName: (input, moduleId = 'canvas') => {
     const { getComponentsFromAllPages, getQueryIdNameMapping } = get();
-    const mappings = {
+    return replaceIdsWithNameUsing(input, {
       components: getComponentsFromAllPages(moduleId), // Getting components from all pages to avoid showing IDs on queries when the component is not on the current page
       queries: getQueryIdNameMapping(moduleId),
-    };
-
-    // The trailing path (".value", "?.value", "[0].name", ...) is matched with an include-list
-    // of what a JS member-path can actually contain, instead of an exclude-list of characters
-    // that "shouldn't" appear there — an exclude-list has to anticipate every operator that
-    // might sit next to a reference (this is what missed `<`/`>` previously); an include-list
-    // of valid identifier/index characters can't miss anything because it's a closed set.
-    const regex =
-      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?((?:\??\.[A-Za-z_$][\w$]*|\[\d+\]|\['[^']*'\]|\["[^"]*"\])*)/g;
-    return input.replace(regex, (match, category, prefix, id, closingBracket, path) => {
-      if (mappings[category] && mappings[category][id]) {
-        const name = mappings[category][id];
-
-        // Reconstruct the string with the name instead of UUID
-        let result = `${category}`;
-
-        // Handle optional chaining at the beginning
-        if (prefix.includes('?.')) {
-          result += '?.';
-        } else if (prefix.includes('.')) {
-          result += '.';
-        }
-
-        // Handle bracket notation
-        if (prefix.includes('[')) {
-          result += `["${name}"]`;
-        } else {
-          result += name;
-        }
-
-        // Append the rest of the member path as-is (already validated by the regex above)
-        result += path;
-
-        return result;
-      }
-      return match; // Return the original match if no mapping is found
     });
   },
   calculateMoveableBoxHeightWithId: (
@@ -3514,20 +3517,15 @@ export const createComponentsSlice = (set, get) => ({
         ? initialComponentName
         : computeComponentName(componentDefinition.component.component, currentComponents);
 
+      // A freshly dropped progress widget seeds its label with its own value binding. Only an empty
+      // label is seeded: paste, duplicate, undo and multiplayer adds carry the author's label through.
       const getComponentProperties = (componentDefinition) => {
         const properties = componentDefinition.component.definition?.properties;
-        const componentType = componentDefinition.component.component;
-        if (componentType === 'CircularProgressBar') {
+        const labelKey = PROGRESS_LABEL_KEYS[componentDefinition.component.component];
+        if (labelKey && !properties?.[labelKey]?.value) {
           return {
             ...properties,
-            text: {
-              value: `{{components.${componentDefinition.id}.value}}%`,
-            },
-          };
-        } else if (componentType === 'ProgressBar') {
-          return {
-            ...properties,
-            label: {
+            [labelKey]: {
               value: `{{components.${componentDefinition.id}.value}}%`,
             },
           };

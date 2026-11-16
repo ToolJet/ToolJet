@@ -1,5 +1,6 @@
 import { CreateDefaultGroupObject } from '../types';
 import { CreateResourcePermissionObject } from '../types/granular_permissions';
+import { UserPermissions } from '@modules/ability/types';
 
 export enum GROUP_PERMISSIONS_TYPE {
   DEFAULT = 'default',
@@ -12,7 +13,13 @@ export enum USER_ROLE {
   BUILDER = 'builder',
 }
 
+export const roleGroupFor = (p: UserPermissions): USER_ROLE =>
+  p.isAdmin ? USER_ROLE.ADMIN : p.isEndUser ? USER_ROLE.END_USER : USER_ROLE.BUILDER;
+
 export const HUMANIZED_USER_LIST = ['End-user', 'Builder', 'Admin'];
+
+// Tiebreak for getUserRole() when a user holds several DEFAULT groups: elevate, never demote.
+export const USER_ROLE_PRECEDENCE: USER_ROLE[] = [USER_ROLE.ADMIN, USER_ROLE.BUILDER, USER_ROLE.END_USER];
 
 export enum ResourceType {
   APP = 'app',
@@ -22,6 +29,7 @@ export enum ResourceType {
   MODULE = 'module',
   WORKFLOW_FOLDER = 'workflow_folder',
   MODULE_FOLDER = 'module_folder',
+  DATA_SOURCE_FOLDER = 'data_source_folder',
 }
 
 export const DEFAULT_GROUP_PERMISSIONS = {
@@ -40,6 +48,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     moduleDelete: true,
     moduleFolderCreate: true,
     moduleFolderDelete: true,
+    dataSourceFolderCreate: true,
+    dataSourceFolderDelete: true,
     orgConstantCRUD: true,
     tjdbCRUD: true,
     dataSourceCreate: true,
@@ -47,6 +57,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     isBuilderLevel: true,
     appPromote: true,
     appRelease: true,
+    patCreate: true,
+    patRevoke: true,
   },
   BUILDER: {
     name: USER_ROLE.BUILDER,
@@ -63,6 +75,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     moduleDelete: true,
     moduleFolderCreate: true,
     moduleFolderDelete: true,
+    dataSourceFolderCreate: true,
+    dataSourceFolderDelete: true,
     orgConstantCRUD: true,
     tjdbCRUD: true,
     dataSourceCreate: true,
@@ -70,6 +84,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     isBuilderLevel: true,
     appPromote: true,
     appRelease: true,
+    patCreate: true,
+    patRevoke: true,
   },
   END_USER: {
     name: USER_ROLE.END_USER,
@@ -89,6 +105,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     isBuilderLevel: false,
     appPromote: false,
     appRelease: false,
+    patCreate: false,
+    patRevoke: false,
   },
 } as Record<string, CreateDefaultGroupObject>;
 
@@ -132,6 +150,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canViewApps: false,
     },
     [ResourceType.MODULE_FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
+    [ResourceType.DATA_SOURCE_FOLDER]: {
       canEditFolder: true,
       canEditApps: false,
       canViewApps: false,
@@ -201,6 +224,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEditApps: false,
       canViewApps: false,
     },
+    [ResourceType.DATA_SOURCE_FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
   },
 } as Record<USER_ROLE, Record<ResourceType, CreateResourcePermissionObject<any>>>;
 
@@ -236,10 +264,13 @@ export enum FEATURE_KEY {
   CREATE_GRANULAR_MODULE_FOLDER_PERMISSIONS = 'create_granular_module_folder_permissions',
   UPDATE_GRANULAR_MODULE_FOLDER_PERMISSIONS = 'update_granular_module_folder_permissions',
   DELETE_GRANULAR_MODULE_FOLDER_PERMISSIONS = 'delete_granular_module_folder_permissions',
+  GET_ADDABLE_DATA_SOURCE_FOLDERS = 'get_addable_data_source_folders',
+  CREATE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS = 'create_granular_data_source_folder_permissions',
+  UPDATE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS = 'update_granular_data_source_folder_permissions',
+  DELETE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS = 'delete_granular_data_source_folder_permissions',
   USER_ROLE_CHANGE = 'change_user_role',
   ASSIGN_GROUP_ADMIN = 'assign_group_admin',
   REVOKE_GROUP_ADMIN = 'revoke_group_admin',
   GET_GROUP_ADMINS = 'get_group_admins',
   GET_ADDABLE_ADMINS = 'get_addable_admins',
-  GET_USER_ADMIN_GROUPS = 'get_user_admin_groups',
 }

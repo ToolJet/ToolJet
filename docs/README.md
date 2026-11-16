@@ -101,7 +101,7 @@ The two suggested workflows are:
 
 ### Requirements
 
-- **Node version 16.14**
+- **Node version 22.23.4**
 
 ### Installation
 ```console

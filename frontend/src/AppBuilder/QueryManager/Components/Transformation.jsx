@@ -37,7 +37,11 @@ const labelPopoverContent = (darkMode, t) => (
         'Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python'
       )}
       <br />
-      <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
+      <a
+        href="https://docs.tooljet.com/docs/app-builder/connecting-with-data-sources/transforming-data"
+        target="_blank"
+        rel="noreferrer"
+      >
         {t('globals.readDocumentation', 'Read documentation')}
       </a>
       .
@@ -174,7 +178,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
 
   return (
     <div className="field transformation-editor">
-      <div className="tw-flex tw-items-start">
+      <div data-param="enableTransformation" className="tw-flex tw-items-start">
         <CustomToggleSwitch
           isChecked={enableTransformation}
           toggleSwitchFunction={toggleEnableTransformation}
@@ -215,7 +219,10 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
       <div className={`d-flex copilot-codehinter-wrap ${!enableTransformation && 'read-only-codehinter'}`}>
         <div className="col flex-grow-1">
           <div style={{ borderRadius: '6px', background: darkMode ? '#272822' : '#F8F9FA' }}>
-            <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
+            <div
+              data-param="transformationLanguage"
+              className="py-3 px-3 d-flex justify-content-between copilot-section-header"
+            >
               <Tab.Container
                 activeKey={lang}
                 onSelect={(value) => {

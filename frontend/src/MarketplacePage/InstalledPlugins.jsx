@@ -1,15 +1,20 @@
 import React from 'react';
 import cx from 'classnames';
-import { pluginsService, marketplaceService, globalDatasourceService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import Spinner from '@/_ui/Spinner';
+
+import { pluginsService } from '@/_services/plugins.service';
+import { marketplaceService } from '@/_services/marketplace.service';
+import { globalDatasourceService } from '@/_services/globalDatasource.service';
 import { capitalizeFirstLetter, useTagsByPluginId } from './utils';
-import { ConfirmDialog, SearchBox } from '@/_components';
-import Icon from '@/_ui/Icon/SolidIcons';
+
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
+import { SearchBox } from '@/_components/SearchBox';
 import config from 'config';
+import Spinner from '@/_ui/Spinner';
+import Icon from '@/_ui/Icon/SolidIcons';
 import Modal from '@/HomePage/Modal';
 
-export const InstalledPlugins = () => {
+const InstalledPlugins = () => {
   const [allPlugins, setAllPlugins] = React.useState([]);
   const [installedPlugins, setInstalledPlugins] = React.useState([]);
   const [fetching, setFetching] = React.useState(false);
@@ -316,3 +321,5 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
 };
 
 InstalledPlugins.Plugin = InstalledPluginCard;
+
+export default InstalledPlugins;

@@ -266,7 +266,7 @@ const TreeSelect = ({
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            if (processedItem.disabled) return;
+            if (processedItem.disabled || isDisabled) return;
             // Always pass actual checked state (not display state) so toggle logic is correct
             handleCustomCheck(item.value, isChecked);
           }}
@@ -279,6 +279,14 @@ const TreeSelect = ({
             uncheckedColor={uncheckedBackground}
             borderColor={borderColor}
             handleColor={checkmarkColor}
+            disabled={processedItem.disabled || isDisabled}
+            ariaLabel={typeof item.label === 'string' ? item.label : undefined}
+            // Keyboard path: focus the checkbox and press Space. Mouse clicks are handled by
+            // the row's onClick above (the input is pointer-events:none), so this won't double-fire.
+            onChange={() => {
+              if (processedItem.disabled || isDisabled) return;
+              handleCustomCheck(item.value, isChecked);
+            }}
           />
           {item.label}
         </div>
@@ -316,7 +324,7 @@ const TreeSelect = ({
   if (isLoading) {
     return (
       <div
-        className="custom-checkbox-tree"
+        className="custom-checkbox-tree tw-py-0.5"
         style={{
           height: '100%',
           display: isVisible ? '' : 'none',
@@ -426,7 +434,7 @@ const TreeSelect = ({
   return (
     <div
       ref={containerRef}
-      className={cx('custom-checkbox-tree', {
+      className={cx('custom-checkbox-tree tw-py-0.5', {
         [`dynamic-${id}`]: isDynamicHeightEnabled,
       })}
       data-disabled={isDisabled}
@@ -441,7 +449,7 @@ const TreeSelect = ({
       aria-disabled={isDisabled}
     >
       <div
-        className={cx('d-flex', {
+        className={cx('d-flex tw-py-0.5', {
           'flex-column': isTopAlignment && label?.length > 0,
           'flex-row-reverse': isRightDirection && !isTopAlignment,
         })}

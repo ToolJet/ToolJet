@@ -35,6 +35,39 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
     const appUpdateAllowed = userAppPermissions ? isAllAppsEditable || isEditableApp : false;
 
+    // Export matches the dashboard's Export option: create + edit on each resource, checked against
+    // that resource type's own permissions. ToolJet Database tables need table create access (tjdbCRUD).
+    const exportAppTypes: Record<string, string> = requestContext?.tj_export_app_types ?? {};
+    const exportAppIds: string[] = (requestContext.body?.app ?? []).map((app) => app?.id).filter(Boolean);
+    const canExportResource = (id: string) => {
+      switch (exportAppTypes[id]) {
+        case APP_TYPES.WORKFLOW: {
+          const workflows = userPermission?.[MODULES.WORKFLOWS];
+          return (
+            !!userPermission?.workflowCreate &&
+            (!!workflows?.isAllEditable || !!workflows?.editableWorkflowsId?.includes(id))
+          );
+        }
+        case APP_TYPES.MODULE: {
+          const modules = userPermission?.[MODULES.MODULES];
+          return (
+            !!userPermission?.moduleCreate && (!!modules?.isAllEditable || !!modules?.editableAppsId?.includes(id))
+          );
+        }
+        case APP_TYPES.FRONT_END:
+          return isAllAppsCreatable && (isAllAppsEditable || !!userAppPermissions?.editableAppsId?.includes(id));
+        default:
+          return false;
+      }
+    };
+    const canExportApps = isAdmin || superAdmin || exportAppIds.every(canExportResource);
+    const canExportTables =
+      !requestContext.body?.tooljet_database?.length || isAdmin || superAdmin || !!userPermission?.tjdbCRUD;
+
+    if (canExportApps && canExportTables) {
+      can([FEATURE_KEY.APP_RESOURCE_EXPORT], App);
+    }
+
     // A module import must be gated on module-create, not app-create — a builder with app-create
     // but without module-create may not import modules.
     const importDefinition = requestContext.body?.app?.[0]?.definition;
@@ -43,7 +76,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const canCreateForImport = isModuleImport ? !!userPermission?.moduleCreate : isAllAppsCreatable;
 
     if (canCreateForImport || isAdmin || superAdmin) {
-      can([FEATURE_KEY.APP_RESOURCE_IMPORT, FEATURE_KEY.APP_RESOURCE_EXPORT], App);
+      can([FEATURE_KEY.APP_RESOURCE_IMPORT], App);
       if (appUpdateAllowed) {
         can([FEATURE_KEY.APP_RESOURCE_CLONE], App);
       }

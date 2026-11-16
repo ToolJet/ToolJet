@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import _, { debounce } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
-import { NO_OF_GRIDS } from './appCanvasConstants';
+import { NO_OF_GRIDS, PROGRESS_LABEL_KEYS } from './appCanvasConstants';
 import { computeComponentName, getAllChildComponents } from './appCanvasUtils';
 import { utilityFuncForNameSeed } from '@/_helpers/utils';
 
@@ -359,6 +359,18 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     if (componentData?.component === 'Table' && pastedColumns) {
       componentData.definition.properties.columns = deepClone(pastedColumns);
     }
+    // A progress label still holding the source's own seeded binding follows the copy; any other label is kept.
+    const labelKey = PROGRESS_LABEL_KEYS[componentData?.component];
+    const pastedLabel = labelKey && componentData.definition?.properties?.[labelKey];
+    if (pastedLabel?.value === `{{components.${component.id}.value}}%`) {
+      pastedLabel.value = `{{components.${newComponentId}.value}}%`;
+    }
+    // Same array-index-merge issue affects any widget storing options as an array of objects
+    // (RadioButtonV2, DropdownV2, MultiselectV2) - override with the pasted value directly.
+    const pastedOptions = component.component?.definition?.properties?.options;
+    if (Array.isArray(pastedOptions?.value) && componentData?.definition?.properties?.options) {
+      componentData.definition.properties.options = deepClone(pastedOptions);
+    }
     if (targetParentId && !componentData.parent) {
       isChild = component.component.parent;
     }
@@ -453,8 +465,13 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
         existingComponents = Object.values(components);
       }
 
-      // Add already processed components to existingComponents
-      const processedComponents = finalComponentWithUpdatedLayout || [];
+      // NOTE: this used to read `finalComponentWithUpdatedLayout || []` — a TDZ
+      // self-reference (this .map callback runs while that const is still being
+      // initialized) that ES5 output evaluated as `undefined`. So already-pasted
+      // components were never actually included in position calculations. Historical
+      // behavior preserved; to make the original intent work, accumulate processed
+      // components in a separate array declared before this map.
+      const processedComponents = [];
       existingComponents = [...existingComponents, ...processedComponents];
       if (isGroup) {
         // Handle group positioning

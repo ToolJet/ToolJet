@@ -12,6 +12,9 @@ export interface SourceOptions {
   auth_url?: string;
   access_token_url?: string;
   scopes?: string;
+  // When true, each user authorizes separately and tokens are stored per user (tokenData is an array).
+  multiple_auth_enabled?: boolean;
+  tokenData?: any;
   // Action Fabric MCP server endpoint (absolute URL, or path appended to instance_url).
   // Blank → defaults to `${instance_url}/sncapps/mcp-server/mcp/sn_mcp_server_default`.
   mcp_endpoint?: string;

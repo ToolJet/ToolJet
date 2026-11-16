@@ -1,0 +1,19 @@
+{
+  "name": "Boutique hotel operations",
+  "description": "Run the front desk of a boutique hotel. Track room readiness, expected arrivals and guest requests.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "boutique-hotel-operations",
+  "category": "hospitality-and-events"
+}

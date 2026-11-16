@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { IAppPermissionsService } from './interfaces/IService';
+import { AppPermissionUserResponseDto } from './dto';
 
 @Injectable()
 export class AppPermissionsService implements IAppPermissionsService {
   constructor() {}
 
-  async fetchUsers(appId, user) {
+  async fetchUsers(appId, user): Promise<AppPermissionUserResponseDto[]> {
     throw new Error('Method not implemented.');
   }
 

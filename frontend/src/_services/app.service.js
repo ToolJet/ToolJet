@@ -1,5 +1,5 @@
 import config from 'config';
-import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
+import { authHeader, handleResponse } from '@/_helpers';
 import { getActiveBranchId, appendBranchParam } from '@/_helpers/active-branch';
 
 export const appService = {
@@ -229,7 +229,7 @@ function acceptInvite({ token, password }) {
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/onboarding/accept-invite`, requestOptions).then(handleResponseWithoutValidation);
+  return fetch(`${config.apiUrl}/onboarding/accept-invite`, requestOptions).then(handleResponse);
 }
 
 function getInviteeDetails(token) {

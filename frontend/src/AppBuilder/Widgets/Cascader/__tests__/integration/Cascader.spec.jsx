@@ -13,12 +13,6 @@ import {
 
 const ID = 'casc1';
 const HANDLE = 'cascader1';
-const MOUNT_MS = 20000;
-
-// Cascader is React.lazy-loaded (editorHelpers.js); MOUNT_MS alone can't save a
-// slow chunk resolution under CI contention if Jest's own per-test timeout (default
-// 5000ms) kills the test first. Match FORM-001/002's existing 20000ms budget file-wide.
-jest.setTimeout(MOUNT_MS);
 
 function node(label, value, { children, visible = true, disable = false, isDefault } = {}) {
   return {
@@ -98,7 +92,7 @@ const widget = createWidgetHarness({
 });
 
 async function mounted() {
-  return screen.findByRole('combobox', { timeout: MOUNT_MS });
+  return screen.findByRole('combobox');
 }
 
 function display() {
@@ -882,7 +876,7 @@ describe('Cascader widget', () => {
       properties: { visibility: binding('{{false}}') },
       validation: { mandatory: binding('{{true}}') },
     });
-    await waitFor(() => expect(widget.exposed().isVisible).toBe(false), { timeout: MOUNT_MS });
+    await waitFor(() => expect(widget.exposed().isVisible).toBe(false));
     expect(root()).toHaveClass('invisible');
     expect(screen.queryByText('Field cannot be empty')).toBeNull();
 
@@ -936,14 +930,14 @@ describe('Cascader widget', () => {
     widget.renderInsideForm({
       properties: { value: binding('africa'), options: { value: TREE } },
     });
-    await waitFor(() => expect(widget.exposed().value).toBe('africa'), { timeout: MOUNT_MS });
+    await waitFor(() => expect(widget.exposed().value).toBe('africa'));
     await waitFor(() => expect(widget.exposed('form1').clearForm).toBeInstanceOf(Function));
     await widget.session.store.act(async () => {
       await widget.exposed('form1').clearForm();
     });
     await waitFor(() => expect(widget.exposed().value).toBeNull());
     expect(widget.exposed().pathArray).toEqual([]);
-  }, 20000);
+  });
 
   test('[Cascader-FORM-002] Form submit reveals mandatory error without opening the menu', async () => {
     // Break this catches: Form submit not revealing Cascader validation, or opening the menu.
@@ -952,7 +946,7 @@ describe('Cascader widget', () => {
       validation: { mandatory: binding('{{true}}') },
       properties: { options: { value: TREE } },
     });
-    await waitFor(() => expect(widget.exposed().setValue).toBeInstanceOf(Function), { timeout: MOUNT_MS });
+    await waitFor(() => expect(widget.exposed().setValue).toBeInstanceOf(Function));
     await waitFor(() => expect(widget.exposed().isMandatory).toBe(true));
     const control = document.querySelector('[role="combobox"]');
     expect(control).not.toBeNull();
@@ -963,7 +957,7 @@ describe('Cascader widget', () => {
     });
     await waitFor(() => expect(screen.getByText('Field cannot be empty')).toBeInTheDocument());
     expect(control).toHaveAttribute('aria-expanded', 'false');
-  }, 20000);
+  });
 
   test('[Cascader-PREC-001] setValue vs Default value follows current runtime', async () => {
     // Break this catches: re-applying Default value on an unrelated or no-op property tick (dropping

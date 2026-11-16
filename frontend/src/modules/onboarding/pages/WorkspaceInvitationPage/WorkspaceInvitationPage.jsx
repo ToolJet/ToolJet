@@ -10,7 +10,7 @@ import {
 } from '@/modules/common/components';
 import { appService, authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
-import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
+import { FeatureGraphicRightPanel } from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import './resources/styles/workspace_invitation_page.scss';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
@@ -64,6 +64,8 @@ const WorkspaceInvitationPage = (props) => {
           updateCurrentSession({ authentication_status: false, noWorkspaceAttachedInTheSession: false });
           setExpiredOrgSlug(orgSlug);
           setLinkExpired(true);
+        } else if (errorObj?.error && errorObj.error.includes('reached the number of workspaces')) {
+          // Handled globally by the WorkspaceLimitModal in handle-response.js
         } else {
           toast.error('Error while setting up your account.', { position: 'top-center' });
         }
@@ -118,7 +120,13 @@ const WorkspaceInvitationPage = (props) => {
     );
   }
 
-  return <OnboardingBackgroundWrapper LeftSideComponent={LeftSideComponent} RightSideComponent={LoginPageRightPanel} />;
+  return (
+    <OnboardingBackgroundWrapper
+      className="feature-graphic-layout"
+      LeftSideComponent={LeftSideComponent}
+      RightSideComponent={FeatureGraphicRightPanel}
+    />
+  );
 };
 
 export default WorkspaceInvitationPage;

@@ -28,15 +28,19 @@ const BaseColorSwatches = ({
   onReset,
 }) => {
   const computeColorForPopoverMenu = useStore((state) => state.computeColorForPopoverMenu);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   value = coerceColorString(value);
   if (component == 'PopoverMenu') {
     value = computeColorForPopoverMenu(value, meta, componentId);
   } else if (component == 'Button' || component == 'FileButton') {
     value = computeColor(styleDefinition, value, meta, component);
+  } else if (component == 'Html' && !value) {
+    // Empty string is the "unset" sentinel (backward compatibility for pre-existing widgets);
+    // show the mode-appropriate backdrop Html.jsx actually falls back to, not a blank swatch.
+    value = darkMode ? '#47505D' : '#ffffff';
   }
   value = coerceColorString(value);
   const [showPicker, setShowPicker] = useState(false);
-  const darkMode = localStorage.getItem('darkMode') === 'true';
   const colorPickerPosition = meta?.colorPickerPosition ?? '';
   const coverStyles = {
     position: 'fixed',

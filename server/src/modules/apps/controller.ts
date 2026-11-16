@@ -98,8 +98,8 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS)
   @UseGuards(AppAuthGuard, ValidatePublicAppGuard, FeatureAbilityGuard)
   @Get('validate-released-app-access/:slug')
-  validateReleasedAppAccess(@Ability() ability: AppAbility, @App() app: AppEntity) {
-    return this.appsService.validateReleasedApp(ability, app);
+  validateReleasedAppAccess(@Ability() ability: AppAbility, @App() app: AppEntity, @User() user: UserEntity) {
+    return this.appsService.validateReleasedApp(ability, app, user);
   }
 
   @InitFeature(FEATURE_KEY.UPDATE)
@@ -129,9 +129,9 @@ export class AppsController implements IAppsController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get()
   index(@User() user: UserEntity, @Query() query: any) {
-    // Raw query param (not user.branchId): getAllApps -> resolveDashboardBranchId already
-    // fills the default branch for front-end apps and keeps workflows/non-git NULL. A
-    // default-filled user.branchId would break workflow/non-git listing.
+    // Raw query param (not user.branchId): getAllApps -> resolveDashboardBranchId fills the
+    // org's default branch when none is supplied. A default-filled user.branchId would break
+    // non-git listing.
     const AppListDto: AppListDto = {
       page: query.page,
       folderId: query.folder,
