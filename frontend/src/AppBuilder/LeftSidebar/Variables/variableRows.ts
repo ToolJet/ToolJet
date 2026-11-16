@@ -85,3 +85,13 @@ export function buildVariableRows(
   runtimeOnly.forEach((row) => rows[row.scope].push(row));
   return rows;
 }
+
+/** Type label for a live value, named as the Inspector colours it: [n] items for arrays, {n} keys for objects. */
+export const typeLabelOf = (value: unknown): { label: string; kind: string } => {
+  if (value === null) return { label: 'Null', kind: 'null' };
+  if (value === undefined) return { label: 'Undefined', kind: 'null' };
+  if (Array.isArray(value)) return { label: `Array [${value.length}]`, kind: 'array' };
+  const t = typeof value;
+  if (t === 'object') return { label: `Object {${Object.keys(value as object).length}}`, kind: 'object' };
+  return { label: t.charAt(0).toUpperCase() + t.slice(1), kind: t };
+};

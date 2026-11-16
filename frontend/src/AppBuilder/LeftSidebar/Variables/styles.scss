@@ -136,6 +136,12 @@
     color: var(--text-placeholder);
   }
 
+  // Validation text quotes the name, so a long name must wrap instead of widening the panel.
+  .variables-form label,
+  .variables-field-error {
+    overflow-wrap: anywhere;
+  }
+
   .variables-field-error {
     font-size: 12px;
     line-height: 18px;
@@ -205,6 +211,67 @@
     white-space: nowrap;
   }
 
+  .dependency-row .dependency-row-trailing {
+    gap: 6px;
+  }
+
+  // Type label next to the name, coloured by type as the Inspector colours values.
+  .variables-type-label {
+    flex-shrink: 0;
+    font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    line-height: 16px;
+    color: var(--text-placeholder);
+
+    &.type-string,
+    &.type-number {
+      color: var(--text-success);
+    }
+
+    &.type-array {
+      color: var(--text-accent);
+    }
+
+    &.type-object {
+      color: var(--text-warning);
+    }
+
+    &.type-boolean {
+      color: var(--indigo9);
+    }
+
+    &.type-null {
+      color: var(--text-danger);
+    }
+  }
+
+  // Copy path icon: hidden until the row is hovered or focused, as in the Inspector.
+  .variables-row-copy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    opacity: 0;
+
+    &:hover {
+      background: var(--interactive-overlays-fill-hover);
+    }
+
+    &:focus-visible {
+      opacity: 1;
+    }
+  }
+
+  .dependency-row:hover .variables-row-copy,
+  .dependency-row:focus-visible .variables-row-copy {
+    opacity: 1;
+  }
+
   .variables-badge-runtime {
     background: var(--background-warning-weak);
     color: var(--text-warning);
@@ -246,4 +313,12 @@
     font-weight: 500;
     color: var(--text-placeholder);
   }
+}
+
+// Full name or value of a truncated row, in a tooltip portalled outside the panel.
+.dependency-row-full-text .tooltip-inner {
+  max-width: 320px;
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }

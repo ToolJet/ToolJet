@@ -14,7 +14,9 @@ import { CreateVariableForm, EditVariableForm, RuntimeVariableDetail } from './V
 import VariableReferencesDialog, { computeVariableReferences } from './VariableReferencesDialog';
 import type { VariableReference } from './variableReferences';
 import toast from 'react-hot-toast';
-import { buildVariableRows, previewOf, referenceOf, rowKey } from './variableRows';
+import { ToolTip } from '@/_components/ToolTip';
+import { DefaultCopyIcon } from '../LeftSidebarInspector/DefaultCopyIcon';
+import { buildVariableRows, previewOf, referenceOf, rowKey, typeLabelOf } from './variableRows';
 import type { VariableRow, VariableScope } from './variableRows';
 import '../Dependencies/styles.scss';
 import './styles.scss';
@@ -137,28 +139,59 @@ const VariablesPanel = ({ darkMode, onClose, moduleId }: VariablesPanelProps) =>
         }
       >
         {list.length ? (
-          list.map((row) => (
-            <DependencyEntityRow
-              key={row.key}
-              icon={variableIcon}
-              name={row.name}
-              tags={[previewOf((scope === 'app' ? liveApp : livePage)?.[row.name], 60)]}
-              highlight={term}
-              onClick={() => openDetail(row)}
-              dataCy={`variables-row-${scope}-${row.name}`}
-              trailing={
-                !row.definition ? (
+          list.map((row) => {
+            const liveValue = (scope === 'app' ? liveApp : livePage)?.[row.name];
+            const type = typeLabelOf(liveValue);
+            return (
+              <DependencyEntityRow
+                key={row.key}
+                icon={variableIcon}
+                name={row.name}
+                tags={[previewOf(liveValue, 500)]}
+                nameSuffix={
                   <span
-                    className="variables-badge-runtime"
-                    title={`No initial value. Created at runtime${row.setBy ? ` by ${row.setBy}` : ''}`}
+                    className={`variables-type-label type-${type.kind}`}
+                    data-cy={`variables-row-type-${scope}-${row.name}`}
                   >
-                    Runtime only
+                    {type.label}
                   </span>
-                ) : undefined
-              }
-              darkMode={darkMode}
-            />
-          ))
+                }
+                highlight={term}
+                onClick={() => openDetail(row)}
+                dataCy={`variables-row-${scope}-${row.name}`}
+                trailing={
+                  <>
+                    {!row.definition && (
+                      <span
+                        className="variables-badge-runtime"
+                        title={`No initial value. Created at runtime${row.setBy ? ` by ${row.setBy}` : ''}`}
+                      >
+                        Runtime only
+                      </span>
+                    )}
+                    <ToolTip message="Copy path">
+                      <button
+                        type="button"
+                        className="variables-row-copy"
+                        aria-label={`Copy path of ${row.name}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          // Drop focus so the icon hides again once the pointer leaves the row.
+                          event.currentTarget.blur();
+                          copyToClipboard(referenceOf(scope, row.name));
+                        }}
+                        onKeyDown={(event) => event.stopPropagation()}
+                        data-cy={`variables-row-copy-${scope}-${row.name}`}
+                      >
+                        <DefaultCopyIcon height={12} width={12} />
+                      </button>
+                    </ToolTip>
+                  </>
+                }
+                darkMode={darkMode}
+              />
+            );
+          })
         ) : (
           <div className="variables-empty" data-cy={`variables-empty-${scope}`}>
             {term ? (

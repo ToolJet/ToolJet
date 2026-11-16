@@ -225,6 +225,13 @@
     color: var(--text-default);
   }
 
+  .dependency-row-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
   .dependency-row-subtitle {
     font-size: 12px;
     line-height: 18px;
