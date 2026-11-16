@@ -4,21 +4,9 @@ title: React Builder Project Structure
 sidebar_label: Project Structure
 ---
 
-<div className="badge badge--primary heading-badge">
-  <img
-    src="/img/badge-icons/premium.svg"
-    alt="Icon"
-    width="16"
-    height="16"
-  />
- <span>Paid feature</span>
-</div>
+This page is the reference for the files in a React Builder project: what each one holds, the rules ToolJet applies to them, and what ToolJet stores. To get a project onto your computer, see [Build Locally](./local-development.md). To edit the same files in ToolJet, see [Edit in the Browser](./editor.md).
 
-<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
-
-A React Builder app is a React and TypeScript project. `app.json` names the app and its screens, and `frontend/` holds the source. ToolJet keeps sign-in, permissions, environments, data sources and queries. This page describes the files in a project, the rules ToolJet applies to them, and what ToolJet stores.
-
-You get a project when you clone an app or create one with the CLI. See [Work Locally](/docs/build-with-ai/react-builder/local-development).
+A React Builder app is a React and TypeScript project. `app.json` names the app and its screens, and `frontend/` holds the source. ToolJet keeps sign-in, permissions, environments, data sources and queries. You get a project when you clone an app or create one with the CLI.
 
 ## Files and Folders
 
@@ -56,7 +44,7 @@ orders-desk/
 - `frontend/package.json` has `lib:*` scripts for custom component libraries. To build and run the app, use the `tooljet app` commands instead.
 - ToolJet provides React 18 when the app runs. `react` and `react-dom` aren't bundled.
 
-For the files the CLI writes in `.tooljet/`, see the [CLI reference](/docs/build-with-ai/react-builder/cli-reference#files-the-cli-writes).
+For the files the CLI writes in `.tooljet/`, see the [CLI reference](./cli-reference.md#files-the-cli-writes).
 
 ## `app.json`
 
@@ -85,7 +73,7 @@ For the files the CLI writes in `.tooljet/`, see the [CLI reference](/docs/build
 | `routes[].path` | Yes | Starts with `/`. Unique. Use `:name` for a parameter, for example `/orders/:id`. |
 | `routes[].title` | No | The screen's title. Shown in menus and in the screen's page name. |
 | `version` | No | `{ "id", "name" }` of the version you work on. Set it with `tooljet app checkout`. Local only: ToolJet never stores it. |
-| `branch` | No | A workspace git branch to work on instead of the branch the folder's git checkout is on. |
+| `branch` | No | A workspace Git branch to work on instead of the branch the folder's Git checkout is on. |
 
 The CLI checks `app.json` every time it reads it, and stops with a message such as `app.json: route id "Orders" must start with a letter and use lowercase letters, digits, _ and -`. The rules:
 
@@ -99,7 +87,7 @@ The CLI checks `app.json` every time it reads it, and stops with a message such 
 
 ### Screens and Their Hidden Pages
 
-Each route in `app.json` gets a hidden page in the app, named `<code page handle>-<route id>`. For the example above, the `admin` screen's page is `home-admin`. The page's permissions decide who can open the screen. See [Access Control](/docs/build-with-ai/react-builder/access-control).
+Each route in `app.json` gets a hidden page in the app, named `<code page handle>-<route id>`. For the example above, the `admin` screen's page is `home-admin`. The page's permissions decide who can open the screen. See [Control Access](./access-control.md).
 
 `tooljet app dev` and `tooljet app publish` create these pages. `pull` doesn't change them.
 
@@ -111,7 +99,7 @@ Limiting a screen hides the screen, not its code. Everyone who can open the app 
 
 ## `tooljet.gen.ts`
 
-`frontend/src/tooljet.gen.ts` gives your code typed access to the app's queries, routes and pages. `tooljet app pull` and `tooljet app dev` write it from the app. Don't edit it: your changes are overwritten on the next pull. Git sync never commits it.
+`frontend/src/tooljet.gen.ts` gives your code typed access to the app's queries, routes and pages. `tooljet app pull` and `tooljet app dev` write it from the app. Don't edit it: your changes are overwritten on the next pull. GitSync never commits it.
 
 It exports:
 
@@ -132,7 +120,7 @@ Query results are typed as follows:
 
 Column types map to `number`, `boolean` or `string`. JSON columns map to `unknown`. Nullable columns add `| null`.
 
-For how to use these, see [Runtime API](/docs/build-with-ai/react-builder/runtime-api).
+For how to use these, see [Runtime API](./runtime-api.md).
 
 ## Styling
 
@@ -156,25 +144,25 @@ ToolJet sets the `--tj-*` variables. The second value is a fallback.
 |:---------- | :---------- |
 | `--page`, `--background`, `--foreground` | Page background, surfaces, text |
 | `--card`, `--popover` and their `-foreground` | Cards and popups |
-| `--primary`, `--secondary`, `--muted`, `--accent` and their `-foreground` | Brand colour and neutral surfaces |
-| `--destructive`, `--success`, `--warning` and their `-foreground` | Status colours |
+| `--primary`, `--secondary`, `--muted`, `--accent` and their `-foreground` | Brand color and neutral surfaces |
+| `--destructive`, `--success`, `--warning` and their `-foreground` | Status colors |
 | `--border`, `--input`, `--ring` | Borders and focus rings |
 | `--chart-1` to `--chart-5` | Chart series |
 | `--radius`, `--font-sans` | Corner radius and font |
 
-To use your own brand colours instead of the app theme, replace the `var(--tj-...)` with a colour:
+To use your own brand colors instead of the app theme, replace the `var(--tj-...)` with a color:
 
 ```css
 --primary: #0f766e;
 ```
 
-Any CSS colour works. Dark mode fallbacks are under the `.dark` selectors in the same file.
+Any CSS color works. Dark mode fallbacks are under the `.dark` selectors in the same file.
 
 ### Tailwind Classes
 
-The Tailwind config maps the tokens to colour utilities: `page`, `background`, `foreground`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `success`, `warning`, `popover`, `card`, `border`, `input`, `ring` and `chart-1` to `chart-5`. For example, `bg-primary`, `text-muted-foreground` and `bg-page`. Opacity modifiers such as `bg-primary/10` work. `rounded-lg`, `rounded-md` and `rounded-sm` follow `--radius`.
+The Tailwind config maps the tokens to color utilities: `page`, `background`, `foreground`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `success`, `warning`, `popover`, `card`, `border`, `input`, `ring` and `chart-1` to `chart-5`. For example, `bg-primary`, `text-muted-foreground` and `bg-page`. Opacity modifiers such as `bg-primary/10` work. `rounded-lg`, `rounded-md` and `rounded-sm` follow `--radius`.
 
-Use these classes instead of fixed colours such as `bg-blue-600`, so the app follows the theme and dark mode.
+Use these classes instead of fixed colors such as `bg-blue-600`, so the app follows the theme and dark mode.
 
 ### App-Wide Rules
 
@@ -229,11 +217,11 @@ const config = {
 </ChartContainer>
 ```
 
-A series without a colour gets the app's accent, then the theme's chart colours. Give a colour that means something through a theme token, as `overdue` does above. The container animates series, except under reduced motion or past 300 points.
+A series without a color gets the app's accent, then the theme's chart colors. Give a color that means something through a theme token, as `overdue` does above. The container animates series, except under reduced motion or past 300 points.
 
 ### Other UI Libraries
 
-You can use another React UI library, such as Ant Design or MUI. Connect it to the app theme with `useToolJetTheme()`, which returns ready-made theme objects for both. See [Use the App Theme in Code](/docs/build-with-ai/react-builder/runtime-api#use-the-app-theme-in-code).
+You can use another React UI library, such as Ant Design or MUI. Connect it to the app theme with `useToolJetTheme()`, which returns ready-made theme objects for both. See [Use the App Theme in Code](./runtime-api.md#use-the-app-theme-in-code).
 
 ## Dependencies
 
@@ -241,7 +229,7 @@ React Builder installs packages from the npm registry only.
 
 - Every entry in `dependencies`, `devDependencies`, `optionalDependencies`, `peerDependencies`, `resolutions` and `overrides` must be a version, a range or a dist-tag. An `overrides` entry can also point at a dependency's own version with `$<package>`.
 - Git, URL, `file:` and `link:` dependencies are refused. So are `npm:` aliases and `workspaces`.
-- Every package in the lockfile must resolve from an allowed registry: `registry.npmjs.org`, `registry.yarnpkg.com`, or a registry the ToolJet server allows. A self-hosted admin adds registries with the server's `TOOLJET_CODE_NPM_REGISTRIES` environment variable (comma-separated). See [Environment Variables](/docs/setup/configuration/env-vars#react-builder).
+- Every package in the lockfile must resolve from an allowed registry: `registry.npmjs.org`, `registry.yarnpkg.com`, or a registry the ToolJet server allows. A self-hosted admin adds registries with the server's `TOOLJET_CODE_NPM_REGISTRIES` environment variable (comma-separated). See [Environment Variables](../../setup/configuration/env-vars.md#react-builder).
 - Package install scripts never run. `tooljet app install` turns them off, and `frontend/.npmrc` sets `ignore-scripts=true`, so a plain `npm install` behaves the same.
 - To add a package, run `npm install --ignore-scripts <package>` in `frontend/`.
 - `tooljet app publish` needs a lockfile, and installs exactly what it lists.
@@ -250,7 +238,7 @@ ToolJet refuses to store a project that breaks these rules, with a message such 
 
 ToolJet stores `frontend/.npmrc` with only `ignore-scripts=true`. It drops every other line, including registry tokens. Keep registry authentication in your user-level `.npmrc`.
 
-To check packages before you add them, run `tooljet app vet`. It checks for malware and known vulnerabilities, versions published in the last 7 days, licences and the blocklist. See [`tooljet app vet`](/docs/build-with-ai/react-builder/cli-reference#tooljet-app-vet).
+To check packages before you add them, run `tooljet app vet`. It checks for malware and known vulnerabilities, versions published in the last 7 days, licenses and the blocklist. See [`tooljet app vet`](./cli-reference.md#tooljet-app-vet).
 
 ## What ToolJet Stores
 
@@ -263,10 +251,10 @@ When the CLI or the editor saves the app's code, ToolJet stores only the project
 
 ToolJet doesn't store:
 
-- Binary files, such as PNG images or fonts. Use SVG, or load them from an address your workspace allows. See [Allow Outside Addresses](/docs/build-with-ai/react-builder/security#allow-outside-addresses).
+- Binary files, such as PNG images or fonts. Use SVG, or load them from an address your workspace allows. See [Allow Outside Addresses](./security-policy.md#allow-outside-addresses).
 - Dot files and folders inside `frontend/src/` and `frontend/styles/`, and `node_modules`.
 - The `version` field in `app.json`.
-- Lockfiles other than `package-lock.json`. <!-- TODO verify: pnpm-lock.yaml and yarn.lock are not on the stored-file allowlist, so pnpm and yarn projects appear to lose their lockfile on ToolJet and in git sync; confirm before documenting -->
+- Lockfiles other than `package-lock.json`.
 
 The source sync never follows a symlink that leads outside the project.
 
@@ -279,3 +267,16 @@ The source sync never follows a symlink that leads outside the project.
 | Size of the whole project | 12 MB |
 | Number of files | 1000 |
 | Length of a file path | 512 characters |
+
+## Who Edits the Code
+
+A React Builder app's code has one owner at a time. Each upload from the CLI sets the owner.
+
+| <div style={{ width:"150px"}}> Owner </div> | <div style={{ width:"450px"}}> What It Means </div> |
+|:---------- | :---------- |
+| ToolJet | The default. The **Code** panel, the style inspector and ToolJet AI edit the code, and `tooljet app dev --source platform` stores each local save on ToolJet. |
+| Your repository | The code is edited in a Git repository and uploaded with `tooljet app dev --source repository` or `tooljet app publish --source repository`. In ToolJet, the code is read-only: the **Code** panel shows "This code lives in your Git repository", and the style inspector and **Fix with AI** are off. |
+
+Uploading with `--source platform` hands editing to ToolJet. If ToolJet holds editor or AI changes that your upload would overwrite, the upload is refused until you run `tooljet app source-pull`, or pass `--source-replace` to replace them.
+
+With GitSync, the owner also decides what a commit does to the app's `code/` folder. See [Move an App](./versions-and-history.md#move-an-app).

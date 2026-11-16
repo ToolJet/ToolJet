@@ -9,6 +9,10 @@ ToolJet MCP connects your AI client to your ToolJet workspace, so your agent can
 
 Setting up has two parts: choose how your client authenticates with ToolJet, then follow the guide for your client. Each client guide covers both methods.
 
+:::tip React Builder apps
+To work on a React Builder app from your own editor or coding agent, see [Build Locally](../../react-builder/local-development.md).
+:::
+
 ## Choose an Authentication Method
 
 ToolJet MCP supports two ways to connect. With either one, the agent works in a single workspace and can't go beyond your own permissions in it.

@@ -4,19 +4,7 @@ title: React Builder Runtime API
 sidebar_label: Runtime API
 ---
 
-<div className="badge badge--primary heading-badge">
-  <img
-    src="/img/badge-icons/premium.svg"
-    alt="Icon"
-    width="16"
-    height="16"
-  />
- <span>Paid feature</span>
-</div>
-
-<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
-
-A React Builder app's code talks to ToolJet through the `ToolJet` object and a few hooks. With them, the code runs the app's queries, reads the signed-in user and environment, moves between screens, and follows the app theme. This page lists each one.
+This page is the reference for the `ToolJet` object and the hooks a React Builder app's code uses to run the app's queries, read the signed-in user and environment, move between screens and follow the app theme. To start writing that code, see [Build Locally](./local-development.md) or [Edit in the Browser](./editor.md).
 
 ## Imports
 
@@ -26,7 +14,7 @@ import { useAppQuery, routePath, ROUTES, PAGES } from '../tooljet.gen';
 import { AppRouter, useUnsavedChanges, useAllowedRoutes } from '../lib/router';
 ```
 
-The paths above are relative to `frontend/src/App/`. `tooljet.gen.ts` is generated from the app by `tooljet app pull`. `lib/router.tsx` is part of the project template. See [Project Structure](/docs/build-with-ai/react-builder/project-structure).
+The paths above are relative to `frontend/src/App/`. `tooljet.gen.ts` is generated from the app by `tooljet app pull`. `lib/router.tsx` is part of the project template. See [Project Structure](./project-structure.md).
 
 The hooks work in any component or custom hook inside the app, not only in the root `App` component.
 
@@ -160,7 +148,7 @@ const { currentUser, environment } = ToolJet.useGlobals();
 const isManager = currentUser.groups.includes('Managers');
 ```
 
-Use these values only to show or hide parts of a screen. They don't protect data: screen and query permissions do. See [Access Control](/docs/build-with-ai/react-builder/access-control).
+Use these values only to show or hide parts of a screen. They don't protect data: screen and query permissions do. See [Control Access](./access-control.md).
 
 ## Move Between Screens
 
@@ -269,7 +257,7 @@ Store a user's `id` (and `email` if a query needs it), and show their `name`.
 
 ## Use the App Theme in Code
 
-`useToolJetTheme()` returns the app theme as values, and re-renders when the theme or dark mode changes. Use it to connect another UI library to the theme. For Tailwind and CSS, use the theme tokens instead. See [Styling](/docs/build-with-ai/react-builder/project-structure#styling).
+`useToolJetTheme()` returns the app theme as values, and re-renders when the theme or dark mode changes. Use it to connect another UI library to the theme. For Tailwind and CSS, use the theme tokens instead. See [Styling](./project-structure.md#styling).
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"500px"}}> Description </div> |
 |:---------- | :---------- |
@@ -316,7 +304,20 @@ Put library overrides in `frontend/styles/global.css`, which loads after the lib
 
 ## Custom Component Hooks
 
-The `ToolJet` object also has the hooks custom components use on visual pages, such as `useStateString`, `useStyleString`, `useEventCallback` and `useAction`. A React Builder app doesn't need them. See [Build Components](/docs/app-builder/custom-component-library/build-components).
+The `ToolJet` object also has the hooks custom components use on visual pages, such as `useStateString`, `useStyleString`, `useEventCallback` and `useAction`. A React Builder app doesn't need them. See [Build Components](../../app-builder/custom-component-library/build-components.md).
+
+## How the App Is Isolated {#isolation}
+
+ToolJet runs a React Builder app's code in a sandboxed frame, apart from the ToolJet page:
+
+- The browser treats the frame as a separate origin, so the app's code can't read the viewer's session, cookies or the ToolJet page.
+- The app reaches ToolJet only through a message channel that the page checks, and its queries run with the viewer's permissions.
+- By default the app reaches only your ToolJet instance, so its data goes through queries.
+- By default the app is isolated everywhere it runs: the released app, Preview, the editor and version comparisons.
+
+Isolation protects the viewer's session, not the data the app is given. App code still sees what its queries return. What the app may read and write is controlled by [query permissions](./access-control.md) on the server.
+
+On self-hosted ToolJet, an admin can change how apps are isolated with the `CODE_MODE_ISOLATION`, `CODE_MODE_STRICT_BINDINGS` and `CODE_MODE_SANDBOX_URL` environment variables. ToolJet Cloud always isolates apps and applies strict mode. See [Environment Variables](../../setup/configuration/env-vars.md#react-builder).
 
 ## What App Code Can't Do
 
@@ -324,11 +325,11 @@ The `ToolJet` object also has the hooks custom components use on visual pages, s
 
 App code can't call `fetch` or make other network requests to outside addresses. By default it reaches only your ToolJet instance, so all data goes through queries. Queries run on the ToolJet server with the data source's credentials, so keep secrets in data sources, never in the code.
 
-A workspace admin can allow more addresses for apps to connect to, load images or fonts from, and so on. See [Allow Outside Addresses](/docs/build-with-ai/react-builder/security#allow-outside-addresses).
+A workspace admin can allow more addresses for apps to connect to, load images or fonts from, and so on. See [Allow Outside Addresses](./security-policy.md#allow-outside-addresses).
 
 ### Run JavaScript on the ToolJet Page
 
-ToolJet runs a React Builder app in an isolated frame, apart from the ToolJet page. See [Isolation](/docs/build-with-ai/react-builder/security#isolation). By default it also applies strict mode to the app, which limits what the app's visual parts can run on the ToolJet page:
+ToolJet runs a React Builder app in an isolated frame, apart from the ToolJet page. See [How the App Is Isolated](#isolation). By default it also applies strict mode to the app, which limits what the app's visual parts can run on the ToolJet page:
 
 - **RunJS and RunPy queries, and queries with a transformation**, are refused with `React Builder apps can't run JavaScript or Python on the page. Move this logic into the app's code.` Do that work in the app's code instead.
 - **`{{ }}` bindings** are evaluated with a limited interpreter. Only known values and a fixed set of methods are allowed. Anything else fails with a message that ends `isn't allowed in a React Builder app's bindings. Move this logic into the app's code.`
@@ -338,4 +339,4 @@ ToolJet runs a React Builder app in an isolated frame, apart from the ToolJet pa
 - **The Open webpage action** opens only `http://`, `https://` or same-site paths.
 - **The Set local storage action** does nothing.
 
-On self-hosted ToolJet, an admin can change isolation and strict mode with the `CODE_MODE_ISOLATION` and `CODE_MODE_STRICT_BINDINGS` environment variables. See [Environment Variables](/docs/setup/configuration/env-vars#react-builder).
+On self-hosted ToolJet, an admin can change isolation and strict mode with the `CODE_MODE_ISOLATION` and `CODE_MODE_STRICT_BINDINGS` environment variables. See [Environment Variables](../../setup/configuration/env-vars.md#react-builder).
