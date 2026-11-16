@@ -456,11 +456,11 @@ export class AppsRepository extends Repository<App> {
         .innerJoin(
           'app_versions',
           'av_branch',
-          `av_branch.app_id = app.id AND av_branch.branch_id = :activeBranchId
+          `av_branch.app_id = app.id AND ${appVersionOnBranch('av_branch', 'activeBranchId')}
              AND av_branch.id = (
                SELECT av_pick.id FROM app_versions av_pick
-               WHERE av_pick.app_id = app.id AND av_pick.branch_id = :activeBranchId
-               ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
+               WHERE av_pick.app_id = app.id AND ${appVersionOnBranch('av_pick', 'activeBranchId')}
+               ORDER BY ${nullBranchLast('av_pick.branch_id')}, av_pick.is_stub ASC, av_pick.updated_at DESC
                LIMIT 1
              )`,
           { activeBranchId: branchId }
@@ -498,13 +498,13 @@ export class AppsRepository extends Repository<App> {
       .leftJoin(
         'app_versions',
         'av_meta',
-        `av_meta.app_id = app.id AND av_meta.branch_id = :defaultBranchId
+        `av_meta.app_id = app.id AND ${appVersionOnBranch('av_meta', 'defaultBranchId')}
            AND av_meta.version_type = 'version' AND av_meta.is_stub = false
            AND av_meta.id = (
              SELECT av_inner.id FROM app_versions av_inner
-             WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
+             WHERE av_inner.app_id = app.id AND ${appVersionOnBranch('av_inner', 'defaultBranchId')}
                AND av_inner.version_type = 'version' AND av_inner.is_stub = false
-             ORDER BY av_inner.is_synced DESC, av_inner.updated_at DESC
+             ORDER BY ${nullBranchLast('av_inner.branch_id')}, av_inner.is_synced DESC, av_inner.updated_at DESC
              LIMIT 1
            )`,
         { defaultBranchId }
