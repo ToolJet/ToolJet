@@ -70,10 +70,9 @@ export default function Calendar({
   const [currentDate, setCurrentDate] = useState(defaultDate);
   const [eventPopoverOptions, setEventPopoverOptions] = useState({ show: false });
   const isInitialRender = useRef(true);
-  // visibility moved from styles to properties (Additional Actions, bug-fix batch
-  // 2026-10-27). The styles fallback keeps unmigrated definitions (old exports /
-  // imports that bypass the data migration) rendering correctly.
-  const visibility = properties.visibility ?? styles?.visibility ?? true;
+  // visibility lives in properties (Additional Actions). The old styles place is dropped on load
+  // (MOVED_COMPONENT_KEYS) and converted on import, so it is never read here.
+  const visibility = properties.visibility ?? true;
 
   const eventPropGetter = (event) => {
     const backgroundColor = event.color ?? 'var(--cc-primary-brand)';

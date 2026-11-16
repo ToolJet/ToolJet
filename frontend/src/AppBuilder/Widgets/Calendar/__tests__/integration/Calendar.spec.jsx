@@ -6,7 +6,6 @@ import {
   MODULE_ID,
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { componentDefinition } from '@/test/app-builder';
 
 // Engineering scenarios for Calendar (react-big-calendar).
 // Contract: frontend/ee/test/app-builder/widgets/Calendar/TESTING.md.
@@ -252,44 +251,19 @@ describe('Calendar widget', () => {
     expect(calRoot()).toHaveStyle({ display: 'none' });
   });
 
-  test('[Calendar-LEGACY-001] unmigrated styles-based visibility still applies', async () => {
-    // Break this catches: dropping the styles fallback (properties.visibility ??
-    // styles.visibility) the runtime keeps for definitions the data migration has
-    // not touched — old exports imported after this release would otherwise ignore
-    // their saved hidden state. The sibling is seeded WITHOUT registered defaults
-    // so the moved key is truly absent from properties, exactly like a
-    // pre-migration saved definition.
-    const LEGACY = 'calLegacy';
+  test('[Calendar-LEGACY-001] a saved hidden calendar stays hidden after the move', async () => {
+    // Break this catches: a reader still using styles.visibility, or the move missing from MOVED_COMPONENT_KEYS.
+    // Once CopyCalendarAdditionalActions ran, a saved app arrives with both places (a trigger keeps them equal until
+    // the cleanup removes the old one); the App Builder drops the old place on load, so only the new place can hide
+    // the calendar.
     widget.render({
-      extraComponents: {
-        [LEGACY]: componentDefinition(
-          LEGACY,
-          'callegacy1',
-          'Calendar',
-          {
-            dateFormat: binding('MM-DD-YYYY'),
-            defaultDate: binding('06-15-2022'),
-            events: binding('{{[]}}'),
-            resources: binding('{{[]}}'),
-            defaultView: binding("{{'month'}}"),
-            displayToolbar: binding('{{true}}'),
-            displayViewSwitcher: binding('{{true}}'),
-            highlightToday: binding('{{true}}'),
-            showPopOverOnEventClick: binding('{{false}}'),
-          },
-          {
-            styles: { visibility: binding('{{false}}') },
-            seedFromRegisteredDefinition: false,
-          }
-        ),
-      },
-      also: [{ id: LEGACY, componentType: 'Calendar' }],
+      properties: { visibility: binding('{{false}}') },
+      styles: { visibility: binding('{{false}}') },
     });
 
-    await waitFor(() => expect(document.querySelectorAll('.scrollbar-container')).toHaveLength(2), { timeout: 8000 });
-    const legacyRoot = document.getElementById(LEGACY);
-    expect(legacyRoot).toBeTruthy();
-    expect(legacyRoot).toHaveStyle({ display: 'none' });
+    await waitFor(() => expect(calRoot()).toBeTruthy(), { timeout: 8000 });
+    expect(calRoot()).toHaveStyle({ display: 'none' });
+    expect(store().getComponentDefinition(ID, MODULE_ID).component.definition.styles).not.toHaveProperty('visibility');
   });
 
   test('[Calendar-STYLE-002] borderColor is applied to the root inline border', async () => {

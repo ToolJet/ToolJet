@@ -20,7 +20,7 @@ For every changed path:
   when the EE service overrides the CE one is a CE bug.
 - Failure path: rollback, partial write, retry, stale cache?
 - Concurrency: two builders, two requests, a queue worker and a request at once.
-- Migrations: reversible, safe on a populated table, matched by an entity change.
+- Migrations: see the Migrations lens.
 
 Phrase as the consequence for a user or operator, then the trace that gets there.
 
@@ -117,6 +117,26 @@ anonymous inline object, `decamelizeKeys` on output, untyped `@Query()` or `@Bod
 DTO, missing `ClassSerializerInterceptor`, missing `toMatchObject` shape test, dropped field with no
 consumer grep across `frontend/src` and `frontend/ee`. Anything under `external-apis/` is the public
 contract; a removed field needs a deprecation path.
+
+## Migrations
+
+Authority: `server/AGENTS.md` Migrations (writing rules) and `server/docs/MIGRATION_FLOW.md` (how phases run).
+Only when `server/migrations/**` or `server/src/migration-helpers/**` is touched. The authoring spec and the CI lock
+probe catch the mechanical cases; this lens covers what they cannot judge.
+
+- **Phase placement.** Schema migrations add only, data migrations change rows, cleanup migrations drop or tighten.
+  A drop, rename, type change or NOT NULL outside cleanup breaks the release still serving and blocks rollback. So
+  does a cleanup migration for something the code in this same release still reads: it belongs a release later.
+- **Data `beforeCommit()`.** Index builds, triggers, foreign keys `NOT VALID` and `VALIDATE` go in `beforeCommit()`, not `up()`. A CHECK takes ACCESS EXCLUSIVE even `NOT VALID`, so it goes to cleanup.
+- **Rerunnable.** Cleanup steps and anything that may run twice use `IF EXISTS` / `IF NOT EXISTS` or a guard, and
+  go through `withShortLock` / `setNotNull`.
+- **Reads during the data phase.** Code in this PR serves while data migrations run and after they fail. A new read
+  that assumes rows the data phase fills (a new non-null column, a moved value) returns wrong data until then; it must read both
+  shapes.
+- **Rollback.** The previous image must run on the database after the schema phase, and after a failed data phase.
+- **Entities.** A schema change matched by its entity; an entity field no released code can read yet is fine.
+
+Phrase as what an upgrading instance sees: the phase, the lock or the read, and who is stalled or misread.
 
 ## Merge impact and evidence
 

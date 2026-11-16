@@ -216,17 +216,22 @@ describe('SvgImage widget', () => {
   );
 
   test('[SvgImage-VIS-002] A saved app that still stores visibility under styles stays hidden', async () => {
-    // Break this catches: reading only properties.visibility so an app saved before the D-05 data
-    // migration (visibility under styles, no properties.visibility) pops its hidden Svg Images back
-    // on screen the moment the new build ships.
-    const definition = svgImageDefinition(ID, HANDLE);
-    delete definition.component.definition.properties.visibility;
-    definition.component.definition.styles.visibility = binding('{{false}}');
+    // Break this catches: a reader still using styles.visibility, or the move missing from MOVED_COMPONENT_KEYS.
+    // Once CopySvgImageAdditionalActions ran, a saved app arrives with both places (a trigger keeps them equal until
+    // the cleanup removes the old one); the App Builder drops the old place on load, so only the new place can hide
+    // the image.
+    const definition = svgImageDefinition(
+      ID,
+      HANDLE,
+      { visibility: binding('{{false}}') },
+      { visibility: binding('{{false}}') }
+    );
     const { container } = widget.render({
       extraComponents: { [ID]: definition },
     });
     await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
     expect(within(container).getByRole('img', { hidden: true })).not.toBeNull();
+    expect(store().getComponentDefinition(ID, MODULE_ID).component.definition.styles).not.toHaveProperty('visibility');
   });
 
   test('[SvgImage-TIP-001] A saved app that still stores the tooltip under general keeps showing it', async () => {

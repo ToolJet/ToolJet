@@ -12,6 +12,7 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
 import { RequestContext } from '@modules/request-context/service';
+import { appVersionOnBranch, nullBranchLast } from '@helpers/branch_scope.helper';
 
 const FIND_VERSION_MEMO_KEY = 'tj_find_version_memo';
 
@@ -310,15 +311,15 @@ export class VersionRepository extends Repository<AppVersion> {
     // is_public (propagation triggers). Read from any non-stub row — no version_type /
     // status / git-on-off branching; is_synced sorts the canonical row first.
     const targetBranchId = branchId ?? (await this.getDefaultBranchId(manager, app.organizationId));
-    if (!targetBranchId) return null;
 
     return manager
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .where('av.app_id = :appId', { appId: app.id })
-      .andWhere('av.branch_id = :branchId', { branchId: targetBranchId })
+      .andWhere(appVersionOnBranch('av', 'branchId'), { branchId: targetBranchId })
       .andWhere('av.is_stub = false')
-      .orderBy('av.is_synced', 'DESC')
+      .orderBy(nullBranchLast('av.branch_id'), 'ASC')
+      .addOrderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
   }

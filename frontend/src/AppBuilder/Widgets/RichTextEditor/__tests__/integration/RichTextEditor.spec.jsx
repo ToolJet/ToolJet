@@ -5,7 +5,6 @@ import {
   store,
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { componentDefinition } from '@/test/app-builder';
 
 // Engineering scenarios for the RichTextEditor (display name "Text Editor").
 // Contract: frontend/ee/test/app-builder/widgets/RichTextEditor/TESTING.md.
@@ -237,39 +236,22 @@ describe('RichTextEditor widget', () => {
     expect(outer()).toHaveAttribute('aria-disabled', 'true');
   });
 
-  test('[RichTextEditor-LEGACY-001] unmigrated styles-based visibility/disabledState still apply', async () => {
-    // Break this catches: dropping the styles fallback (properties.visibility ??
-    // styles.visibility) the runtime keeps for definitions the data migration
-    // has not touched — old exports imported after this release would otherwise
-    // ignore their saved hidden/disabled state. The sibling is seeded WITHOUT
-    // registered defaults so the moved keys are truly absent from properties,
-    // exactly like a pre-migration saved definition.
-    const LEGACY = 'rteLegacy';
+  test('[RichTextEditor-LEGACY-001] a saved hidden, disabled editor stays hidden and disabled after the move', async () => {
+    // Break this catches: a reader still using styles.visibility/disabledState, or the move missing from
+    // MOVED_COMPONENT_KEYS. Once CopyRichTextEditorAdditionalActions ran, a saved app arrives with both places (a
+    // trigger keeps them equal until the cleanup removes the old ones); the App Builder drops the old places on
+    // load, so only the new places can hide and disable the editor.
     widget.render({
-      extraComponents: {
-        [LEGACY]: componentDefinition(
-          LEGACY,
-          'rtelegacy1',
-          'RichTextEditor',
-          {
-            placeholder: binding('legacy'),
-            defaultValue: binding(''),
-            loadingState: binding('{{false}}'),
-            dynamicHeight: binding('{{false}}'),
-          },
-          {
-            styles: { visibility: binding('{{false}}'), disabledState: binding('{{true}}') },
-            seedFromRegisteredDefinition: false,
-          }
-        ),
-      },
-      also: [{ id: LEGACY, componentType: 'RichTextEditor' }],
+      properties: { visibility: binding('{{false}}'), disabledState: binding('{{true}}') },
+      styles: { visibility: binding('{{false}}'), disabledState: binding('{{true}}') },
     });
 
-    await waitFor(() => expect(document.querySelector('[data-cy="rtelegacy1"]')).toBeInTheDocument());
-    const legacyOuter = document.querySelector('[data-cy="rtelegacy1"]');
-    expect(legacyOuter).toHaveStyle({ display: 'none' });
-    expect(legacyOuter).toHaveAttribute('data-disabled', 'true');
+    await waitFor(() => expect(outer()).toBeInTheDocument());
+    expect(outer()).toHaveStyle({ display: 'none' });
+    expect(outer()).toHaveAttribute('data-disabled', 'true');
+    const { styles } = store().getComponentDefinition(ID, MODULE_ID).component.definition;
+    expect(styles).not.toHaveProperty('visibility');
+    expect(styles).not.toHaveProperty('disabledState');
   });
 
   test('[RichTextEditor-STYLE-003] boxShadow is applied to the outer wrapper', async () => {
