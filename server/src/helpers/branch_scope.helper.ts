@@ -9,7 +9,7 @@ export function onBranch(column: string, param: string, legacyRowFilter?: string
 }
 
 // Workflow versions are never legacy rows: before the data phase they have no name or slug for an app read to match.
-export function isNotWorkflowVersion(appVersionAlias: string): string {
+function isNotWorkflowVersion(appVersionAlias: string): string {
   return `EXISTS (SELECT 1 FROM apps legacy_app WHERE legacy_app.id = ${appVersionAlias}.app_id AND legacy_app.type <> 'workflow')`;
 }
 
