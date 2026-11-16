@@ -9,13 +9,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/Rocket/Pagination/Pagination';
+import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/Rocket/Skeleton/Skeleton';
 
 // Shared with the loading footer so both keep the same height and border.
 export const FOOTER_CLASS =
   'tw-flex tw-h-12 tw-shrink-0 tw-items-center tw-justify-between tw-border-0 tw-border-t tw-border-solid tw-border-border-weak tw-px-[4.375rem]';
 
-interface PageFooterProps {
+export interface PageFooterProps {
   isLoading?: boolean;
   /** 1-based current page. */
   page: number;
@@ -24,6 +25,8 @@ interface PageFooterProps {
   onPageChange: (page: number) => void;
   /** Singular noun after the count, pluralised when `totalCount` is above 1; omit to hide the label. */
   singularItemLabel?: string;
+  /** Merged over `FOOTER_CLASS`, e.g. `tw-px-4` to replace the 70px page gutter. */
+  className?: string;
 }
 
 // Pinned footer for a paginated list: "Showing x-y of N <items>" plus numbered pages, or a skeleton while loading.
@@ -34,7 +37,10 @@ export default function PageFooter({
   totalCount,
   onPageChange,
   singularItemLabel = '',
+  className,
 }: PageFooterProps) {
+  const footerClass = cn(FOOTER_CLASS, className);
+
   // Rocket's links are anchors; href="#" keeps them keyboard-focusable, so the navigation itself is prevented.
   const handlePageChange = (targetPage: number) => (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
@@ -43,13 +49,13 @@ export default function PageFooter({
 
   if (isLoading)
     return (
-      <div className={FOOTER_CLASS}>
+      <div className={footerClass}>
         <Skeleton className="tw-h-6 tw-w-32" />
         <Skeleton className="tw-h-6 tw-w-32" />
       </div>
     );
 
-  if (!totalCount) return <div className={FOOTER_CLASS}></div>;
+  if (!totalCount) return <div className={footerClass}></div>;
 
   const firstItem = (page - 1) * pageSize + 1;
   const lastItem = Math.min(page * pageSize, totalCount);
@@ -59,7 +65,7 @@ export default function PageFooter({
   const finalItemLabel = singularItemLabel && totalCount > 1 ? `${singularItemLabel}s` : singularItemLabel;
 
   return (
-    <div className={FOOTER_CLASS}>
+    <div className={footerClass}>
       <p className="tw-m-0 tw-font-body-default tw-text-text-placeholder">
         Showing {firstItem}-{lastItem} of {totalCount} {finalItemLabel}
       </p>

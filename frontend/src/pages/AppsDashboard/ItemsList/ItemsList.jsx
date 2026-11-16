@@ -5,7 +5,7 @@ import { useSearchStore } from '@/_stores/searchStore';
 import { Separator } from '@/components/ui/Rocket/Separator/Separator';
 import { NoMatchesFound } from '@/pages/AppsDashboard/components/EmptyStates';
 import { ListViewLoading } from '@/pages/AppsDashboard/components/LoadingStates';
-import PageFooter from '@/pages/AppsDashboard/components/PageFooter';
+import PageFooter from '@/pages/components/PageFooter';
 import { ROOT_PAGE_SIZE } from '@/pages/AppsDashboard/helper';
 import { useRootAppsQuery } from '@/pages/AppsDashboard/hooks/useRootAppsQuery';
 import { getSelectedKind, isInPinnedSection } from '@/pages/AppsDashboard/items';

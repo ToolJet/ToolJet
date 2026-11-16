@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/Rocket/Skeleton/Skeleton';
 import { INFO_SKELETON_WIDTHS, SKELETON_BAR_CLASS } from '@/pages/AppsDashboard/ItemsList/FolderStatusRow';
 import { useDataTableContext } from '@/pages/components/DataTable/DataTableContext';
-import { FOOTER_CLASS } from './PageFooter';
+import { FOOTER_CLASS } from '@/pages/components/PageFooter';
 
 const SKELETON_CLASS = 'tw-rounded tw-bg-interactive-default';
 const LIST_ROW_COUNT = 8;
