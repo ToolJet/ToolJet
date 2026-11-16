@@ -287,10 +287,11 @@ The Gate column is for async mode.
 **Is a migration running?**
 
 ```sql
--- holders of the migration lock (6273975241000) and the active lock (6273975241001)
+-- holders of the migration (6273975241000), active (6273975241001) and cleanup (6273975241002) locks in this database
 SELECT (l.classid::bigint << 32) | l.objid::bigint AS key, a.pid, a.client_addr, a.backend_start
 FROM pg_locks l JOIN pg_stat_activity a USING (pid)
-WHERE l.locktype = 'advisory' AND l.objsubid = 1 AND l.granted;
+WHERE l.locktype = 'advisory' AND l.objsubid = 1 AND l.granted
+  AND l.database = (SELECT oid FROM pg_database WHERE datname = current_database());
 ```
 
 A row means a live connection is migrating. Once that connection ends, the lock is gone.
