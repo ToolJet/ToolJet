@@ -14,11 +14,13 @@ sidebar_label: Overview
  <span>Paid feature</span>
 </div>
 
-**Code mode** lets you build a ToolJet app as a React and TypeScript project instead of dragging components onto a canvas. You write the screens in code, with ToolJet's AI, in the ToolJet editor, or in your own editor and coding agent. ToolJet still handles sign-in, permissions, environments, data sources and queries, so the code only draws the screens and calls queries by name.
-
-Use Code mode when you need a layout, interaction or styling that is easier to write than to assemble from components, or when your team wants to review and version the app as code.
+Code mode brings the flexibility of React and TypeScript to ToolJet, letting you build fully customized applications without managing the underlying infrastructure. Build with ToolJet AI, write code directly in ToolJet, or use your preferred IDE and coding agent. ToolJet handles authentication, access control, environments, data sources, and queries, while you focus on building the application experience.
 
 <img className="screenshot-full img-full" src="/img/app-builder/code-mode/overview/editor.png" alt="A Code mode app in the App Builder: the Northwind Shipments overview screen on the canvas, with the Code panel open beside it" />
+
+## When to Use Code Mode
+
+Code mode is ideal for applications that require complex interfaces, custom interactions, or advanced styling beyond what standard drag-and-drop components offer. It's also a natural fit for development teams that prefer working with code, using familiar tools and workflows to build, maintain, and evolve applications.
 
 ## Code Mode and Visual Mode
 
