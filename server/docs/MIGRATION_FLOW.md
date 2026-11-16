@@ -164,7 +164,7 @@ New code can map a column that only a new schema migration adds. Without this ph
 |---|---|
 | 3.21.74 or later | Nothing old is pending. Normal split |
 | 3.21.58–3.21.73 | Every old migration still pending is in `ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS`. Normal split. If the data phase fails, 3.21.58 still runs on the database |
-| older than 3.21.58 | The whole upgrade runs as one single-transaction run before the server starts, with the active lock held. The data phase then has nothing left to do |
+| older than 3.21.58 | The whole upgrade runs as one single-transaction run before the server starts, with the active lock held. It waits and locks as in blocking mode: no schema-phase lock timeout or 5s retry. The data phase then has nothing left to do |
 
 So that 3.21.58 can split, old schema steps it cannot run on were changed:
 
