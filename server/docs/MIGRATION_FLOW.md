@@ -18,7 +18,7 @@ In both modes only one pod migrates at a time. The others wait.
 | Term | Meaning |
 |---|---|
 | runner | The process that runs migrations (`run-all-migrations.ts`) |
-| single-transaction run | A runner with `MIGRATION_PHASE` unset: schema, data and cleanup in one transaction |
+| single-transaction run | A runner with `MIGRATION_PHASE` unset: schema, data and cleanup in one transaction (two when a new enum type is created; see [Enum values](#phases-and-transactions)). Used by blocking mode, `npm run db:migrate` and the async boot of a database older than 3.21.58 |
 | schema / data / cleanup phase | A runner with `MIGRATION_PHASE=schema` / `data` / `cleanup` |
 | migration lock | Advisory lock: one runner at a time migrates (`MIGRATION_ADVISORY_LOCK_KEY`) |
 | active lock | Advisory lock held while a runner changes the database (`MIGRATION_ACTIVE_LOCK_KEY`) |
