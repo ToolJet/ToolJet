@@ -100,7 +100,8 @@ export class OnboardingService implements IOnboardingService {
     return oldestWorkspace || null;
   }
 
-  async signup(appSignUpDto: AppSignupDto, response?: Response) {
+  // `manager` lets a caller run signup inside its own transaction; omitted, signup opens one as before.
+  async signup(appSignUpDto: AppSignupDto, response?: Response, manager?: EntityManager) {
     const { name, email, password, organizationId, redirectTo } = appSignUpDto;
     validatePasswordServer(password);
 
@@ -196,7 +197,7 @@ export class OnboardingService implements IOnboardingService {
           response
         );
       }
-    });
+    }, manager);
   }
 
   async setupAccountFromInvitationToken(response: Response, userCreateDto: OnboardUserDto) {
