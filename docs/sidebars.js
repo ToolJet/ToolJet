@@ -240,6 +240,7 @@ const sidebars = {
             "build-with-ai/react-builder/runtime-api",
             "build-with-ai/react-builder/access-control",
             "build-with-ai/react-builder/versions-and-history",
+            "build-with-ai/react-builder/security",
             "build-with-ai/react-builder/cli-reference"
           ]
         },
