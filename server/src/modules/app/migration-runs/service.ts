@@ -283,9 +283,12 @@ export class MigrationRunsService implements OnApplicationShutdown {
           };
         }
       }
-      if (migrating) value = { ...value, state: 'running' };
+      // Forced running before this run's row exists: a finished row's details belong to an older run.
+      const running: MigrationStatus =
+        latest?.status === 'running' ? { ...value, state: 'running' } : { state: 'running' };
+      if (migrating) value = running;
       if (this.bootHold && migrating) this.bootHold = false;
-      else if (this.bootHold) value = { ...value, state: 'running' };
+      else if (this.bootHold) value = running;
     } catch (error) {
       console.warn(`[migrations] Could not read the migration status: ${(error as Error).message}`);
     }

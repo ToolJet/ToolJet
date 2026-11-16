@@ -111,7 +111,9 @@ export async function restoreLegacyRules(dataSource: DataSource): Promise<string
   }
   console.log(
     `[migrations] Legacy upgrade: restored ${saved.length - problems.length} of ${saved.length} old rules.` +
-      (problems.length ? ` Not restored: ${problems.join('; ')}` : '')
+      (problems.length
+        ? ` Not restored: ${problems.join('; ')}. They stay saved: restart the server to retry, or run npm run db:legacy-upgrade:restore.`
+        : '')
   );
   return problems;
 }
