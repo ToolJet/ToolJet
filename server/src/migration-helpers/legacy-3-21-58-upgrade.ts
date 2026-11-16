@@ -11,27 +11,27 @@ import { withShortLock } from './with-short-lock';
 /** The 3.21.58 data migration that gives every row a branch. Still pending = the database is on 3.21.58. */
 export const LEGACY_BRANCH_MIGRATION = 'MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000';
 
-export interface LooseRule {
-  name: string;
-  kind: 'check' | 'index';
-  table: string;
-}
-
-/** Each one the data phase breaks (spike on seeded 3.21.58 data); `default_must_be_active_check` holds, so it stays. */
-export const LEGACY_LOOSEN_RULES: readonly LooseRule[] = [
-  { name: 'data_source_versions_default_branch_null_check', kind: 'check', table: 'data_source_versions' },
-  { name: 'idx_unique_active_name_branch', kind: 'index', table: 'data_source_versions' },
-  { name: 'chk_app_versions_branched_implies_draft', kind: 'check', table: 'app_versions' },
-  { name: 'app_versions_app_default_branch_draft_unique', kind: 'index', table: 'app_versions' },
-  { name: 'app_versions_app_default_branch_draft_unique_ensure_single_stub', kind: 'index', table: 'app_versions' },
-];
-
 export interface SavedRule {
   name: string;
   kind: 'check' | 'index';
   table_name: string;
   definition: string;
 }
+
+export type LooseRule = Omit<SavedRule, 'definition'>;
+
+/** Each one the data phase breaks (spike on seeded 3.21.58 data); `default_must_be_active_check` holds, so it stays. */
+export const LEGACY_LOOSEN_RULES: readonly LooseRule[] = [
+  { name: 'data_source_versions_default_branch_null_check', kind: 'check', table_name: 'data_source_versions' },
+  { name: 'idx_unique_active_name_branch', kind: 'index', table_name: 'data_source_versions' },
+  { name: 'chk_app_versions_branched_implies_draft', kind: 'check', table_name: 'app_versions' },
+  { name: 'app_versions_app_default_branch_draft_unique', kind: 'index', table_name: 'app_versions' },
+  {
+    name: 'app_versions_app_default_branch_draft_unique_ensure_single_stub',
+    kind: 'index',
+    table_name: 'app_versions',
+  },
+];
 
 const DROPPED_RULES_DDL = `
   CREATE TABLE IF NOT EXISTS legacy_upgrade_dropped_rules (
@@ -43,7 +43,7 @@ const DROPPED_RULES_DDL = `
   )`;
 
 /** Saves the definition (first save wins, so a rerun never overwrites the original) and drops the rule. */
-export function loosenStep({ name, kind, table }: LooseRule): string[] {
+export function loosenStep({ name, kind, table_name: table }: LooseRule): string[] {
   const save =
     kind === 'check'
       ? `SELECT conname, 'check', '${table}', pg_get_constraintdef(oid) FROM pg_constraint

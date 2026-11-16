@@ -11,7 +11,7 @@ describe('migration-helpers/legacy-3-21-58-upgrade', () => {
     ['check', 'ALTER TABLE app_versions DROP CONSTRAINT IF EXISTS chk'],
     ['index', 'DROP INDEX IF EXISTS chk'],
   ] as const)('should save a copy of a %s before dropping it, and keep the first copy when run again', (kind, drop) => {
-    const [save, dropSql] = loosenStep({ name: 'chk', kind, table: 'app_versions' });
+    const [save, dropSql] = loosenStep({ name: 'chk', kind, table_name: 'app_versions' });
     expect(save).toMatch(/^INSERT INTO legacy_upgrade_dropped_rules .* ON CONFLICT \(name\) DO NOTHING$/s);
     expect(dropSql).toBe(drop);
   });
