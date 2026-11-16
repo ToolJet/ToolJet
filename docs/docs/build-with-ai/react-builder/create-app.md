@@ -4,91 +4,89 @@ title: Create a React Builder App
 sidebar_label: Create an App
 ---
 
-<div className="badge badge--primary heading-badge">
-  <img
-    src="/img/badge-icons/premium.svg"
-    alt="Icon"
-    width="16"
-    height="16"
-  />
- <span>Paid feature</span>
-</div>
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
-<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
+Describe the app you need, and ToolJet AI builds it as a working React app, with its screens, data and queries. You can also start from a blank app and build it yourself, in the browser or in your own editor.
 
-You choose an app's build mode when you create it. An app keeps the mode it is created in: you can't switch a visual app to React Builder later, or a React Builder app back to visual. This page covers the ways to create a React Builder app and what happens on its first build.
+<!-- TODO screenshot: /img/build-with-ai/react-builder/create-app/ai-build-result.png | img-full | alt: A React Builder app on the canvas beside the AI chat, which shows the build's summary and See what changed | shows: the flagship app in the editor with the AI chat open after an AI turn, with the turn summary line and See what changed visible in the chat -->
 
-## Create a Blank App
+## Create the App
+
+You choose a build mode when you create an app, and the app keeps it. A visual app can't become a React Builder app later, or the other way round.
+
+<Tabs>
+<TabItem value="prompt" label="From a prompt" default>
+
+1. Open the Home page, or click **Start with a prompt** on the dashboard. Describe the app in the prompt box and send it.
+2. The first time, ToolJet asks how it should build the app. Click **React Builder**, and the build starts. After that, the prompt box shows the build mode it will use, and you can switch it there.
+3. The editor opens with the AI chat, and the app is named from your prompt. If the AI asks a question, pick an option and click **Continue**.
+4. Watch the build move through its three stages: Data, Build and Check. Your screens appear on the canvas near the end. Click **Stop** if you want to change course.
+
+<!-- TODO screenshot: /img/build-with-ai/react-builder/create-app/build-mode-dialog.png | img-l | alt: The dialog that asks how to build the app, with the Visual and React Builder cards | shows: the "How should we build this app?" dialog after sending a first prompt from the Home page; shows the product name, so capture after the UI rename -->
+
+When the build finishes, the chat lists what it built and suggests what you could do next.
+
+</TabItem>
+<TabItem value="blank" label="Blank app">
 
 1. On the dashboard, click **Create an app**.
 2. Enter the **App name**.
-3. Under **Build mode**, select **React Builder** ("A React app you edit with the AI or in code"). **Visual** builds the app with drag and drop instead.
+3. Under **Build mode**, select **React Builder**.
 4. Click **+ Create app**.
 
-<img className="screenshot-full img-s" src="/img/build-with-ai/react-builder/create-app/create-app-dialog.png" alt="Create app dialog with the App name field and the Build mode choice, React Builder selected" />
+<!-- TODO screenshot: /img/build-with-ai/react-builder/create-app/create-app-dialog.png | img-s | alt: The Create app dialog with an app name entered and React Builder selected under Build mode | shows: the Create app dialog with the name "Northwind Dispatch" and the React Builder card selected; shows the product name, so capture after the UI rename -->
 
-The dialog remembers the mode you picked last and selects it the next time. The first time, it selects **Visual**.
+The editor opens with the AI chat and an empty canvas. Describe what you need in the chat, or build the app from your own editor or coding agent. See [Build Locally](./local-development.md).
 
-The editor opens with the AI chat. The app has no code yet: build it with the AI, or set it up from your computer. See [Build the First Version](#build-the-first-version).
+</TabItem>
+</Tabs>
 
-:::info
-The **Build mode** choice appears only for apps, not for modules or workflows, and only on an edition that includes React Builder.
+## What ToolJet AI Builds
+
+<SectionSubtitle text="A complete app, in code that is yours to read and change." />
+
+<CardGrid columns={3}>
+  <FeatureCard
+    icon="🖥️"
+    title="Screens"
+    description="Each screen is a React component. Screens appear on the canvas once their code is built, and every file opens from Code in the top bar."
+  />
+  <FeatureCard
+    icon="🗄️"
+    title="Data"
+    description="Sample data goes into ToolJet Database, and the code reads it through queries. To build on your own data, type @ in your prompt and pick a data source."
+  />
+  <FeatureCard
+    icon="🎨"
+    title="Styling"
+    description="Layout and styling are part of the code, so any design is possible. Restyle an element later with the style inspector, without writing code."
+  />
+</CardGrid>
+
+Keep going in the same chat: ask for a change, and ToolJet AI edits the app. Under each edit, click **See what changed** to compare the screens and the code before and after, and to undo the edit if it isn't what you wanted.
+
+## Keep Building
+
+<CardGrid columns={3}>
+  <NextStepCard title="Edit in the Browser" description="Change the code in the Code panel, or restyle elements with the style inspector." href="/docs/build-with-ai/react-builder/editor" />
+  <NextStepCard title="Build Locally" description="Clone the app and work in your own editor, or hand it to a coding agent." href="/docs/build-with-ai/react-builder/local-development" />
+  <NextStepCard title="Control Access" description="Choose who can open each screen and who can run each query." href="/docs/build-with-ai/react-builder/access-control" />
+</CardGrid>
+
+:::info Availability
+React Builder is available on ToolJet Cloud and on self-hosted Enterprise Edition. The Community Edition doesn't include it.
 :::
 
-## Create an App From a Prompt
+<details id="tj-dropdown">
+<summary>**Troubleshooting**</summary>
 
-You can also start from the prompt box on the dashboard.
-
-1. Describe the app in **Start with a prompt** and send it.
-2. The first time, ToolJet asks **How should we build this app?**
-   - **Visual**: drag and drop on a canvas. Best for most internal tools.
-   - **React Builder**: the AI writes a React app you can edit in ToolJet, VS Code or Cursor.
-
-   Click a card, or press `1` or `2`, to start the build. Select **Don't ask again** to skip this question next time.
-3. After the first pick, the prompt box shows a build mode picker (**Visual** or **React Builder**). Change it any time. Your choice is **Remembered for your next app**.
-
-<!-- TODO screenshot: "How should we build this app?" dialog with the Visual and React Builder cards. Pending: the dialog opens only after sending a dashboard prompt, which starts a real AI build. -->
-
-A React Builder build names the app from your prompt, for example "Returns queue".
-
-## Build the First Version
-
-A new React Builder app has no screens until its first build. There are two ways in, and you can use both:
-
-- **Build with AI.** Describe what you need in the AI chat. ToolJet plans it, writes the React code, builds it on the canvas and checks that it works.
-- **Build from your coding agent or editor.** Claude Code, Codex, Cursor and other agents build the app through ToolJet's MCP server, or you clone the app with the ToolJet CLI and work on it yourself. With the AI chat closed, the empty canvas offers **Connect your agent**. You can also use **Open locally** in the **Code** panel. See [Work Locally](/docs/build-with-ai/react-builder/local-development).
-
-### While the AI Builds
-
-During an AI build:
-
-- The canvas shows the build's progress and phases, and the lock **Editing paused**. Click **Stop** to stop the build.
-- Your screens appear on the canvas once their code is built, near the end of the build. The **Code** panel shows files as the AI stores them.
-- Canvas width, the style inspector, the version menu and the **Access** panel wait until the build finishes.
-
-After each AI turn, the chat shows **See what changed** under the turn, with a summary of the changed files and screens and an option to undo the edit. See [See What Changed](/docs/build-with-ai/react-builder/versions-and-history#see-what-changed).
-
-The chat also offers theme suggestions. Pick **Change colour theme** to apply one of the workspace's themes to the app.
-
-## Data for a New App
-
-The code reads data only through the app's queries. When you ask the AI for sample data, it puts the data in ToolJet Database and creates queries for it. The code calls the queries by name, so a change to a query in the **Queries** panel reaches every screen that uses it.
-
-## Clone and Import
-
-Clone and import keep an app's build mode.
-
-- **Clone app** copies a React Builder app with its code. The copy gets its own component library and starts a fresh code history at its first revision. The **Clone app** dialog notes that the copy uses the same ToolJet Database tables as the original, so changes to data appear in both.
-- **Export** includes the app's code and the builds its versions run. **Import** creates a React Builder app with its code, editable in the ToolJet editor. The first **Save version** after an import rebuilds the code from source.
-
-An export made before exports carried code imports without it. ToolJet then shows: "This file doesn't include the app's code: it was exported before exports carried it. Export the app again from the original and import the new file."
-
-See [Export, Import and Clone](/docs/build-with-ai/react-builder/versions-and-history#export-import-and-clone) for details.
-
-## Troubleshooting
-
-| <div style={{ width:"300px"}}> Message </div> | <div style={{ width:"350px"}}> What to Do </div> |
+| <div style={{ width:"300px"}}> What You See </div> | <div style={{ width:"350px"}}> What to Do </div> |
 |:---------- | :---------- |
-| This server created the app in Visual mode. Ask an admin to update ToolJet to use React Builder. | The ToolJet server doesn't support React Builder. Ask an admin to upgrade ToolJet. |
-| This server did not create the app with React Builder, so the build was not started. | Same as above, for an app started from a prompt. |
-| React Builder is not enabled on this workspace. | The server's edition doesn't include React Builder. |
+| The Create app dialog has no **Build mode** choice. | The choice appears only for apps, not for modules or workflows, and only on an edition that includes React Builder. |
+| A message says the server created the app in Visual mode, or that the build was not started. | The ToolJet server doesn't support React Builder yet. Ask an admin to update ToolJet, then try again. |
+| A message says React Builder is not enabled on this workspace. | The server's edition doesn't include React Builder. |
+| ToolJet doesn't ask how to build the app. | It asks only the first time you send a prompt in a browser. After that, change the build mode in the prompt box. |
+| You want to change an existing app's build mode. | An app keeps the mode it was created in. Create a new app in the other mode. |
+
+</details>

@@ -1,276 +1,166 @@
 ---
 id: local-development
-title: Work on a React Builder App Locally
-sidebar_label: Work Locally
+title: Build Locally
 ---
 
-<div className="badge badge--primary heading-badge">
-  <img
-    src="/img/badge-icons/premium.svg"
-    alt="Icon"
-    width="16"
-    height="16"
-  />
- <span>Paid feature</span>
-</div>
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
-<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
+Work on a React Builder app from your own computer, in your own editor or with a coding agent. By the end of this guide, the app's React project is in a local folder and every save shows up live on the canvas in ToolJet.
 
-You can work on a React Builder app on your own computer, in your own editor or with a coding agent. The ToolJet CLI clones the app's React project into a folder, builds it on every save, and shows the result live on your canvas in the ToolJet editor. Queries, data sources, permissions and environments stay in ToolJet.
+<!-- TODO screenshot: /img/build-with-ai/react-builder/local-development/open-locally.png | img-m | alt: The Open locally view in the Code panel, with buttons to open the app in VS Code, Cursor or Windsurf and the terminal steps below them | shows: Northwind Dispatch draft in the editor, Code panel on the Open locally view, Your editor tab selected, Use the terminal instead collapsed -->
 
-Work locally when you want your own editor, your own tools (linters, formatters, git), or a coding agent such as Claude Code, Codex, Cursor or Windsurf. For small changes, the [Code panel](/docs/build-with-ai/react-builder/editor) in the editor is quicker.
+## How It Works
 
-## Prerequisites
+<SectionSubtitle text="Only the code comes to your computer. Queries, data sources, permissions and environments stay in ToolJet." />
 
-- Node.js 18 or later, and npm.
+<CardGrid columns={3}>
+  <FlowStep number="1" title="Clone" description="The ToolJet CLI copies the app's React project into a folder and links it to the app." />
+  <FlowStep number="2" title="Edit" description="Save a file in your editor. The CLI rebuilds the app, and the canvas in ToolJet shows the result." />
+  <FlowStep number="3" title="Publish" description="One command checks the code, builds it and saves the draft as a version, ready to release." />
+</CardGrid>
+
+## Before You Start
+
+- Node.js 18 or later, with npm.
 - Edit access to the app in ToolJet.
-- A ToolJet account that can create personal access tokens. The CLI signs in with one.
+- Permission to create personal access tokens in your workspace. The CLI signs in with one.
 
-## Install the CLI
+## Set Up
 
-Install the CLI from your ToolJet instance:
+<Tabs>
+<TabItem value="editor" label="From the editor" default>
 
-```bash
-npm i -g https://tooljet.example.com/api/code-mode/cli/tooljet-cli.tgz
-```
+The editor shows the commands with your instance's address and the app's ID filled in.
 
-Replace `https://tooljet.example.com` with your instance's address. Your instance serves the CLI it was built with, so the CLI's React Builder commands always match your instance.
+1. Open the app in the editor and click **Code** in the header.
+2. In the Code panel, click **Open locally**.
+3. Expand **Use the terminal instead**, then copy each command and run it in your terminal.
 
-Run this even if you already have `tooljet` installed. It replaces any older `tooljet` you installed from npm. Older versions don't have the `auth`, `app` and `skill` commands.
+If you have the ToolJet extension for your editor, **Open in VS Code**, **Open in Cursor** or **Open in Windsurf** clones the app, signs you in and starts the live preview for you.
 
-If your instance doesn't serve the CLI, install the beta from npm instead:
+</TabItem>
+<TabItem value="terminal" label="From the terminal">
 
-```bash
-npm i -g @tooljet/cli@beta
-```
+1. Install the CLI from your ToolJet instance. Replace `https://tooljet.example.com` with your instance's address.
 
-The **Open locally** view in the editor shows the right install command for your instance. See [Open the App Locally](#open-the-app-locally).
+   ```bash
+   npm i -g https://tooljet.example.com/api/code-mode/cli/tooljet-cli.tgz
+   ```
 
-## Sign In
+2. Sign in through your browser.
 
-Sign in through your browser:
+   ```bash
+   tooljet auth login --url https://tooljet.example.com
+   ```
 
-```bash
-tooljet auth login --url https://tooljet.example.com
-```
+3. Clone the app, install its packages and start the live preview. The app's ID is the long ID after `/apps/` in the editor's address.
 
-1. The CLI prints an address and an eight-letter code, such as `BCDF-GHJK`, and opens the address in your browser. Add `--no-browser` to stop it from opening the browser.
-2. On the **Sign in the ToolJet CLI** page, type the code from your terminal and click **Continue**. You must be signed in to ToolJet in that browser.
-3. The page shows what is asking to act as you, and in which workspace. Approve only if you just ran `tooljet auth login` yourself. Click **Approve**.
-4. Go back to your terminal. The CLI finishes signing in by itself and prints `✓ Signed in to <instance> as <email>`.
+   ```bash
+   tooljet app clone <app-id> northwind-dispatch
+   cd northwind-dispatch
+   tooljet app install
+   tooljet app dev
+   ```
 
-<img className="screenshot-full img-m" src="/img/build-with-ai/react-builder/local-development/cli-activate.png" alt="Sign in the ToolJet CLI page asking to approve tooljet CLI on northwind-mbp for the workspace, with Approve and Cancel" />
+</TabItem>
+</Tabs>
 
-<!-- TODO verify: the approval page says the token "lasts 90 days", but the server default is 30 days (TOOLJET_CLI_TOKEN_DAYS). Fix the page text or the screenshot before release. -->
+When you sign in, the CLI prints a code and opens the **Sign in the ToolJet CLI** page in your browser. Type the code, click **Continue**, then click **Approve**. The CLI finishes signing in by itself.
 
-The code works for 10 minutes. If it expires, run `tooljet auth login` again.
+<!-- TODO screenshot: /img/build-with-ai/react-builder/local-development/cli-approval.png | img-m | alt: The Sign in the ToolJet CLI page asking to approve the ToolJet CLI for the Northwind Logistics workspace, with Approve and Cancel | shows: /cli/activate after entering a valid code, confirm step, client name "tooljet CLI on northwind-mbp", Northwind Logistics workspace, fictional user; no real name, email or host -->
 
-The CLI gets a personal access token for the workspace you have open in the browser. It stores the token in `~/.tooljet/credentials.json`, readable only by you, and never prints it. The token is valid for 30 days by default. A self-hosted admin can change this with the server's `TOOLJET_CLI_TOKEN_DAYS` environment variable (1 to 90 days). The token doesn't refresh: when it expires, run `tooljet auth login` again.
+Go back to the app in the ToolJet editor: the canvas now shows the build from your computer. Leave `tooljet app dev` running, and it rebuilds on every save in `frontend/src`. If a save has TypeScript errors, nothing is uploaded and the canvas keeps your last good build.
 
-To revoke the token, go to **Profile settings** → **Personal access tokens** and click **Revoke** next to it. The token is named after your computer and the date you signed in, for example `tooljet CLI on my-laptop (2026-11-13)`.
+## Everyday Commands
 
-### Sign In to More Than One Instance
+Run these in the project folder.
 
-The CLI keeps one login per instance. A project always uses the login for the instance it was cloned from, so you can sign in to several instances and work on projects from each.
+| <div style={{ width:"190px"}}> Command </div> | <div style={{ width:"460px"}}> When to Run It </div> |
+|:---------- | :---------- |
+| `tooljet app dev` | While you work. It rebuilds on every save and shows the app live in the editor. |
+| `tooljet app pull` | After a query changes in ToolJet. It rewrites the typed hooks in `frontend/src/tooljet.gen.ts`. |
+| `tooljet app check` | Before you publish. It fails when the code names a query, screen or link the app doesn't have, and runs the security scan. |
+| `tooljet app publish` | When the work is ready. It saves the draft as a version, as **Save version** does in the editor. |
 
-The first login becomes the default, used outside a project. A login to another instance doesn't replace the default unless you add `--default`:
+You create and edit queries in ToolJet's query editor, not in code. `publish` doesn't release the version: you do that in ToolJet. See [Versions and History](./versions-and-history.md).
 
-```bash
-tooljet auth login --url https://staging.tooljet.example.com --default
-```
+Install packages with `tooljet app install`, not `npm install`: it never runs a package's install scripts. Every flag is in the [CLI reference](./cli-reference.md).
 
-To run a command with another instance's login, add `--instance <url>` to it.
+## Build With a Coding Agent
 
-### Sign In With a Personal Access Token
-
-If your instance doesn't support browser sign-in, or you prefer to paste a token, use `tooljet login`. It asks for your ToolJet origin URL and a personal access token. To create a token, see [Create a Personal Access Token](/docs/app-builder/custom-component-library/setup#create-a-personal-access-token).
-
-### Sign In From CI
-
-In CI, set both environment variables instead of signing in:
-
-```bash
-export TOOLJET_URL=https://tooljet.example.com
-export TOOLJET_PAT=<personal access token>
-```
-
-`TOOLJET_URL` and `TOOLJET_PAT` override any stored login. Set both, or neither. You can also pass `--url` and `--token` on a command.
-
-## Open the App Locally
-
-The editor shows the exact commands for each app, with its ID and your instance filled in.
-
-1. Open the app in the editor.
-2. Click the **Code** button in the header, or press **Alt+Shift+E**.
-3. In the Code panel, click **Open locally**.
-
-<img className="screenshot-full img-m" src="/img/build-with-ai/react-builder/local-development/open-locally.png" alt="Open locally view in the Code panel with the Your editor and A coding agent tabs, Open in VS Code, Cursor and Windsurf buttons, and Use the terminal instead" />
-
-The view has two tabs:
-
-- **Your editor**: Click **Open in VS Code**, **Open in Cursor** or **Open in Windsurf**. These buttons need the ToolJet extension, which clones the app, signs you in and starts the live preview. Click **Get the extension** to install it. <!-- TODO verify: the extension's download link is a placeholder in the product; confirm where the ToolJet extension is published before documenting it --> To use a terminal instead, expand **Use the terminal instead** and run the numbered steps.
-- **A coding agent**: Steps to clone the app with instructions for a coding agent and connect the agent to ToolJet's MCP server. See [Work With a Coding Agent](#work-with-a-coding-agent).
-
-## Develop Locally
-
-### 1. Clone the App
-
-```bash
-tooljet app clone <app id> orders-desk
-cd orders-desk
-```
-
-`clone` creates the project folder, links it to the app and your instance, and writes the app's code stored on ToolJet into it. It also reads the app's queries and writes typed hooks for them. If ToolJet doesn't store the app's code, the folder holds a starter project, and the CLI tells you to copy the code from your repository.
-
-To start a new project instead, run `tooljet app init <folder> --name "<app name>" --create`. See the [CLI reference](/docs/build-with-ai/react-builder/cli-reference#tooljet-app-init).
-
-For the files in the project, see [Project Structure](/docs/build-with-ai/react-builder/project-structure).
-
-### 2. Install Dependencies
-
-```bash
-tooljet app install
-```
-
-`app install` installs the project's packages with npm, pnpm or yarn, depending on the lockfile. Install scripts never run. Use it instead of `npm install`. To add a package, run `npm install --ignore-scripts <package>` in `frontend/`.
-
-### 3. Start the Live Preview
-
-```bash
-tooljet app dev
-```
-
-`app dev` builds the app, links it to ToolJet, and rebuilds on every save in `frontend/src`. The first run prints a link to open the app in the editor. Open it, and your canvas shows your local build.
-
-TypeScript errors stop a build from uploading. The canvas keeps showing your last good build.
-
-Whether your saves reach other people depends on where the app's code is edited:
-
-- **The code is stored on ToolJet and edited there** (the usual case, for apps made in the editor or with AI): each build also saves the code to ToolJet. The CLI prints `Each build also saves its code in ToolJet, where the editor and AI work on it`. The draft, the Code panel and the AI all see your changes.
-- **The code isn't saved by `app dev`** (you passed `--no-source`, or the code is owned by a git repository): only your canvas shows your local build. The editor header shows **On your computer** for you. Everyone else sees the code stored on ToolJet.
-
-From the **On your computer** menu you can:
-
-- **Show the ToolJet version**: See the code stored on ToolJet, as everyone else does. Your local copy stays as it is.
-- **Save my copy to ToolJet**: Copies `tooljet app dev --source platform`. Run it in the app's folder instead of `tooljet app dev`, and every save then goes to ToolJet.
-
-### 4. Pull After Queries Change
-
-You create and edit queries in ToolJet's query editor, not in code. After you add, rename or change a query, run:
-
-```bash
-tooljet app pull
-```
-
-`pull` reads the app's queries, ToolJet Database tables and pages, and rewrites `frontend/src/tooljet.gen.ts` with typed hooks. `app dev` also does this when it starts.
-
-### 5. Check the Code
-
-```bash
-tooljet app check
-```
-
-`check` fails when the code names a query, route, link or page the app doesn't have, and runs a security scan. It also lists accessibility warnings. Run it before you publish. See [`tooljet app check`](/docs/build-with-ai/react-builder/cli-reference#tooljet-app-check).
-
-### 6. Save a Version
-
-```bash
-tooljet app publish --name v3
-```
-
-`publish` does what **Save version** does in the editor. It installs exactly the lockfile, checks the code, builds it for production, stores it on ToolJet, runs the security scan and saves the draft as a version. ToolJet freezes the code with the version, so a released version always runs the code it was saved with.
-
-`publish` needs a lockfile in `frontend/`. It doesn't release or promote the version. Do that in ToolJet. See [Versions and History](/docs/build-with-ai/react-builder/versions-and-history) and [Security](/docs/build-with-ai/react-builder/security).
-
-### 7. Work on Another Version
-
-By default the project follows the app's editing version. To work on another version:
-
-```bash
-tooljet app checkout --list       # list the app's versions
-tooljet app checkout v3           # work on v3
-tooljet app checkout --editing    # follow the editing version again
-```
-
-`pull` and `check` work on any version. `dev` and `publish` need a draft version.
-
-## Keep in Sync With Editor and AI Edits
-
-When the app's code is edited on ToolJet, someone can change it in the Code panel or the AI can change it while you work locally.
-
-While `app dev` runs, it checks ToolJet for newer code every 5 seconds:
-
-- If you haven't changed any files since the last sync, it pulls the newer code and rebuilds. It prints `Pulled revision <n> (changed in the editor or by AI)`.
-- If you have local changes, it doesn't overwrite them and stops uploading. It prints `ToolJet has newer code (revision <n>, changed in the editor or by AI). Run tooljet app source-pull, then save again.`
-
-To bring the newer code in:
-
-```bash
-tooljet app source-pull
-```
-
-If files you changed would be overwritten, `source-pull` refuses and lists them. To take ToolJet's code anyway, run `tooljet app source-pull --force`. The CLI keeps a copy of your changed files in `.tooljet/before-pull/`.
-
-### Changes That Run on Your Computer
-
-Some files control what a build runs on your computer: build config files, `package.json`, the lockfile, `.npmrc`, and stylesheets that load Tailwind config or plugins. If someone else changes one of these on ToolJet, `app dev` doesn't pull the change. It stops and prints which files changed.
-
-Review the change in the editor first. If you trust it, run:
-
-```bash
-tooljet app dev --trust-remote-config
-```
-
-## Work With a Coding Agent
-
-To give a coding agent the rules for building a React Builder app, run this in the project folder:
+A coding agent can do the editing for you, in the same project folder. First give it ToolJet's rules for React Builder apps:
 
 ```bash
 tooljet skill install
 ```
 
-It writes the same instructions to three files, one per agent:
+The command writes one instruction file per agent, and each agent reads its own file without any setup.
 
-| <div style={{ width:"250px"}}> File </div> | <div style={{ width:"300px"}}> Read By </div> |
+| <div style={{ width:"230px"}}> Agent </div> | <div style={{ width:"420px"}}> File It Reads </div> |
 |:---------- | :---------- |
-| `CLAUDE.md` | Claude Code |
-| `AGENTS.md` | Codex, Windsurf |
-| `.cursor/rules/tooljet.mdc` | Cursor |
+| Claude Code | `CLAUDE.md` |
+| Codex and Windsurf | `AGENTS.md` |
+| Cursor | `.cursor/rules/tooljet.mdc` |
 
-In `CLAUDE.md` and `AGENTS.md`, the CLI only replaces the block between its `<!-- tooljet:begin ... -->` and `<!-- tooljet:end -->` markers. Your own notes in those files stay. `.cursor/rules/tooljet.mdc` is rewritten whole. Run `tooljet skill install` again after you update the CLI.
+Start the agent in the project folder, then describe the change you want, for example:
 
-The instructions tell the agent to get data only from ToolJet queries. To let the agent create tables and queries in the app, connect it to the [ToolJet MCP server](/docs/build-with-ai/mcp/overview). The **A coding agent** tab in **Open locally** shows the setup steps for Claude Code, Codex and Cursor. The MCP server uses your `tooljet auth login` for that instance, so no configuration holds a token. <!-- TODO verify: the A coding agent tab builds the MCP server from a pre-release GitHub branch; confirm the published install steps before release -->
+```text
+Add a Carriers screen that lists the rows from the listCarriers query,
+sorted by on-time rate. Link it from the sidebar.
+```
 
-## Work With Git Branches
+The instructions tell the agent to read data only through ToolJet queries, to build with `tooljet app dev --once`, and to finish with `tooljet app check` passing. Keep `tooljet app dev` running while the agent works, and its changes show on your canvas as it saves them.
 
-If your workspace uses git sync, ToolJet commits the app's code to a `code/` folder in the app's folder in the repository. You can open that folder and run `tooljet app dev` there. See [Git Sync](/docs/build-with-ai/react-builder/versions-and-history#git-sync).
+The agent writes the screens. To let it also create tables and queries in the app, connect it to the [ToolJet MCP server](../mcp/overview.md): the **A coding agent** tab in **Open locally** lists the setup commands.
 
-The git branch your project folder is on picks the draft you work on. For example, `git checkout feature-x` and then `tooljet app dev` works on the `feature-x` branch's draft. The CLI prints the branch it uses, for example `On git branch feature-x: working on its draft`.
+## Stay in Sync
 
-- To work on a different workspace branch than the folder's git branch, set `"branch"` in `app.json`.
-- `tooljet app checkout <version>` overrides the branch.
-- If the branch has no draft of the app yet, open the app on that branch in ToolJet first.
+Teammates and ToolJet AI can change the app while you work on it. For an app created in ToolJet, each local build also saves your code to the app's draft, so the Code panel and the AI work on what you just wrote. For the other cases, see [Who Sees Your Saves](./cli-reference.md#who-sees-your-saves).
 
-## Troubleshooting
+While it runs, `tooljet app dev` also checks ToolJet for newer code every few seconds:
+
+- If you haven't changed any files since the last sync, it pulls the newer code and rebuilds.
+- If you have local changes, it keeps them and stops uploading until you bring the newer code in.
+
+```bash
+tooljet app source-pull
+```
+
+`source-pull` refuses to overwrite files you changed, and lists them. To take ToolJet's code anyway, add `--force`: the CLI keeps a copy of your changed files in `.tooljet/before-pull/`.
+
+<details id="tj-dropdown">
+<summary>**Other Sign-In Methods, Git Branches and Common Problems**</summary>
+
+#### Other Ways to Sign In
+
+You can also paste a personal access token with `tooljet login`, stay signed in to several instances at once, or sign in from CI without a browser. See [Sign In](./cli-reference.md#sign-in) in the CLI reference.
+
+#### Git Branches
+
+If your workspace uses GitSync, ToolJet commits the app's code to a `code/` folder inside the app's folder in the repository. Open that folder and run `tooljet app dev` there.
+
+The Git branch the folder is on picks the draft you work on. After `git checkout feature-x`, `tooljet app dev` works on the `feature-x` branch's draft, and the CLI prints the branch it uses. `tooljet app checkout <version>` overrides the branch. If the branch has no draft of the app yet, open the app on that branch in ToolJet first.
+
+#### Common Problems
 
 | <div style={{ width:"300px"}}> Message </div> | <div style={{ width:"350px"}}> What to Do </div> |
 |:---------- | :---------- |
-| `No app.json here or above` | Run the command inside the project folder, or clone the app first. |
-| `This project belongs to <instance>, and the CLI is not signed in there.` | Run `tooljet auth login --url <instance>`. |
-| `Not authenticated. Run: tooljet login` | Sign in with `tooljet auth login --url <instance>`. |
-| `The ToolJet token was rejected by <instance>: it may have expired` | The token expired or was revoked. Run `tooljet auth login` again. If `TOOLJET_URL` is set in your environment, it overrides your login: unset it, or set a current `TOOLJET_PAT`. |
-| `This ToolJet instance does not support browser sign-in yet` | Sign in with `tooljet login` and a personal access token. |
-| `The code expired before it was approved` | Run `tooljet auth login` again and approve within 10 minutes. |
-| `That code is not valid or has expired.` (in the browser) | Check the code in your terminal, or run `tooljet auth login` again. |
-| `app.json has no appId` | The project isn't linked to an app. Clone the app, or run `tooljet app init --create`. |
-| `Version <name> is <status>, which cannot change.` | `dev` and `publish` need a draft. Run `tooljet app checkout` to pick a draft, or create one in ToolJet. |
+| `No app.json here or above` | Run the command inside the project folder. |
+| `The ToolJet token was rejected by <instance>` | The sign-in expired or was revoked. Run `tooljet auth login` again. |
 | `<n> TypeScript error(s); not uploaded` | Fix the errors listed. The canvas keeps your last good build. |
 | `ToolJet has newer code (revision <n>...)` | Run `tooljet app source-pull`, then save again. |
-| `Stopped: revision <n> on ToolJet changes <files>...` | Review the change in the editor, then run `tooljet app dev --trust-remote-config`. |
-| `This app's source is owned by its repository` | The code is edited in git. Push your change there, or move editing to ToolJet with `--source platform --source-replace`. See [Who Edits the Code](/docs/build-with-ai/react-builder/versions-and-history#who-edits-the-code). |
-| `No lockfile in frontend/` | Run `tooljet app install` and commit the lockfile. `publish` needs one. |
-| `The security scanner isn't on this computer` | `check` and `dev` skip the local scan. ToolJet scans the code when you publish. |
-| `The security scan fails the gate` | Fix the findings listed, or publish with `--allow-findings`. Releasing then needs **Release anyway** with a reason. See [Release Gate](/docs/build-with-ai/react-builder/security#release-gate). |
-| `<path>: ... React Builder installs packages from the npm registry only` | Replace git, URL, `file:`, `link:`, alias or workspace dependencies with versions from the npm registry. See [Dependencies](/docs/build-with-ai/react-builder/project-structure#dependencies). |
-| `app.json: ...` | Fix the field named. See [`app.json`](/docs/build-with-ai/react-builder/project-structure#appjson). |
-| `This version is locked, so this code wasn't saved.` | The version was saved or released while `dev` ran. Restart `tooljet app dev` to follow the new draft. |
+| `Version <name> is <status>, which cannot change.` | `dev` and `publish` need a draft. Pick one with `tooljet app checkout`, or create one in ToolJet. |
+
+For every message, see [Common Errors](./cli-reference.md#common-errors) in the CLI reference.
+
+</details>
+
+## Where to Go Next
+
+<CardGrid min={190}>
+  <NextStepCard title="CLI Reference" description="Every command, flag and error message." href="/docs/build-with-ai/react-builder/cli-reference" />
+  <NextStepCard title="Project Structure" description="The files in the project and what each one does." href="/docs/build-with-ai/react-builder/project-structure" />
+  <NextStepCard title="Runtime API" description="The hooks your screens use for queries, users and navigation." href="/docs/build-with-ai/react-builder/runtime-api" />
+  <NextStepCard title="Versions and History" description="Save, release and undo your work." href="/docs/build-with-ai/react-builder/versions-and-history" />
+</CardGrid>

@@ -246,7 +246,8 @@ const sidebars = {
               "items": [
                 "build-with-ai/react-builder/project-structure",
                 "build-with-ai/react-builder/runtime-api",
-                "build-with-ai/react-builder/cli-reference"
+                "build-with-ai/react-builder/cli-reference",
+                "build-with-ai/react-builder/security-policy"
               ]
             }
           ]

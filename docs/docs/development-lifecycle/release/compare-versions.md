@@ -1,86 +1,132 @@
 ---
 id: compare-versions
 title: Compare and Review Versions
+hide_title: true
 ---
 
-<div className="badge badge--primary heading-badge">
-  <img
-    src="/img/badge-icons/premium.svg"
-    alt="Icon"
-    width="16"
-    height="16"
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<DocHero
+  eyebrow="New in ToolJet v4"
+  title="Compare and Review Versions"
+  description="See exactly what changed between two versions of an app, with the screens side by side. Then ask a teammate to approve the version before it reaches your users."
+  chips={['Visual and React Builder apps', 'Side-by-side screens', 'Code and query changes', 'Approval before release']}
+/>
+
+<PlanBadge type="pro" />
+
+<!-- TODO screenshot: /img/development-lifecycle/release/compare-versions/compare-side-by-side.png | img-full | alt: Compare versions showing one screen in two versions side by side: the bar chart has become a stacked area chart, and a list of shipments that need attention has replaced the table | shows: Northwind Dispatch with v3 saved, Compare versions from v2 to v3, See screens and code, Screens view, Side by side, Overview screen at Laptop 1280 -->
+
+## What You Can Do
+
+<SectionSubtitle text="It works the same way for visual apps and React Builder apps." />
+
+<CardGrid columns={3}>
+  <FeatureCard
+    icon="🔍"
+    title="Compare two versions"
+    description="Pick any two versions and see every change: screens before and after, queries, settings and, in React Builder apps, code and access."
+    href="#compare-two-versions"
   />
- <span>Paid feature</span>
-</div>
-
-<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
-
-**Compare versions** shows what changed between two versions of an app: its screens side by side, its queries, settings and, for React Builder apps, its code and access. A **version review** asks a teammate to approve a saved version before it's released. Use reviews when a second pair of eyes should sign off on every change that reaches your users.
-
-Both work for visual and React Builder apps. They aren't available for workflows or modules.
-
-## Availability
-
-Compare versions and version reviews are available on the Pro plan and above, and during a trial. On a lower plan, the **Compare versions** button explains that it's available on Pro and above.
+  <FeatureCard
+    icon="📨"
+    title="Request a review"
+    description="Ask teammates to check a saved version before it goes live. They see the same comparison you do."
+    href="#request-a-review"
+  />
+  <FeatureCard
+    icon="✅"
+    title="Approve or request changes"
+    description="Reviewers comment beside the changes, then approve the version or send it back. An open review holds the release."
+    href="#approve-or-request-changes"
+  />
+</CardGrid>
 
 ## Compare Two Versions
 
-1. In the App Builder header, click **Compare versions**.
-2. Pick the versions to compare under **From** and **To**. Use the swap button to switch sides.
-3. Review the changes:
-   - The change list on the left groups changes into screens or pages, **Queries**, **Access** and **Settings**.
-   - The preview shows both versions **Side by side**, at the **Screen size** you pick. Under **Render**, choose **Live data** to run the versions' queries, or **Layout only, runs no queries**.
-   - For a React Builder app, the view summarizes the changed files, and **See screens and code** opens the screens side by side and the code file by file. See [See What Changed](/docs/build-with-ai/react-builder/versions-and-history#see-what-changed).
+The steps depend on how the app is built.
 
-<img className="screenshot-full img-full" src="/img/development-lifecycle/release/version-reviews/compare-versions.png" alt="Compare versions view for a React Builder app, from v2 to the v3 draft, with See screens and code and Request review" />
+<Tabs>
+<TabItem value="visual" label="Visual app" default>
+
+1. In the App Builder header, click **Compare versions**.
+2. Pick the two versions under **From** and **To**. The swap button between them switches sides.
+3. Go through the change list on the left. It groups what changed by page, then queries and settings.
+4. Choose how the pages are shown. Pick a **Screen size**, and use **Layout** to switch from side by side to a slider you drag across the page. Under **Render**, choose **Live data** to run each version's queries, or **Layout only, runs no queries**.
+
+After an AI edit, **See what changed** under the chat turn opens this same view, with the app as it was before the edit on the left.
+
+</TabItem>
+<TabItem value="react-builder" label="React Builder app">
+
+1. In the editor's header, click **Compare versions**, then pick the versions under **From** and **To**.
+2. Read the summary of the changed files, queries and settings, then click **See screens and code**.
+3. Switch between the three views:
+   - **Screens** shows each screen before and after, side by side or with a slider, at the width you choose.
+   - **Code** shows what changed in each file.
+   - **Access** shows who can open each screen and run each query.
+
+<!-- TODO screenshot: /img/development-lifecycle/release/compare-versions/code-diff.png | img-full | alt: The Code view of a comparison, with the changes to Overview.tsx between two versions shown side by side | shows: Northwind Dispatch, Compare versions from v2 to v3, See screens and code, Code view, Side by side layout, Overview.tsx selected -->
+
+The same view opens from **See what changed** under an AI chat turn, on an App history entry, and in the release and promote dialogs. Queries that write data are blocked while you compare, so comparing never changes your data.
+
+</TabItem>
+</Tabs>
 
 ## Request a Review
 
-You can request a review of a saved version. A draft can't be reviewed, because what's reviewed must not change: save the version first.
+A review asks teammates to approve a saved version. Save the version first: a draft can't be reviewed, because what's reviewed must not change.
 
-1. Open **Compare versions** on the saved version.
+1. Open **Compare versions** on the saved version. By default, a review compares it with the released version.
 2. Click **Request review**.
-3. Enter a **Title** (by default, "Release \{version\}") and describe what changed and why. Type `@` to mention a teammate.
-4. Under **Reviewers**, click **Ask someone** and choose who should review. Reviewers must be able to approve.
+3. Enter a **Title**, then describe what changed and what to check. Type `@` to mention a teammate.
+4. Under **Reviewers**, click **Ask someone** and choose people who can approve.
 5. Submit the request.
 
-The reviewers are notified, and the review appears in their dashboard notifications, for example "2 reviews waiting on you".
+Each reviewer sees the request in their dashboard notifications. A version has one open review at a time.
 
-A version has at most one open review at a time.
+## Approve or Request Changes
 
-## Review a Version
+Reviewers open the review from the notification or from **Compare versions**. The conversation sits beside the comparison.
 
-Reviewers open the review from the notification or from **Compare versions**. The review conversation sits beside the comparison.
+- **Comment** on the whole version, or on one change.
+- **Approve** the version. An approval covers exactly what the comparison showed. If the version changes afterwards, it needs a fresh approval.
+- **Request changes** to block the release. The author addresses them, then clicks **Ask for re-review**.
 
-- **Comment** on the whole version, or on a specific change.
-- **Approve** the version. The approval covers exactly what the comparison showed. If the version changes after you open it, ToolJet asks you to reload the changes and review them again.
-- **Request changes** to block the release until the author updates the version and asks for a re-review.
+You can't approve a review you opened yourself.
 
-The author can't approve their own review.
-
-### Review States
-
-| <div style={{ width:"200px"}}> State </div> | <div style={{ width:"400px"}}> Meaning </div> |
-|:---------- | :---------- |
-| **Waiting for review** | The review is open and needs approvals. |
-| **Changes requested** | A reviewer asked for changes. |
-| **Approved** | The version has the approvals it needs. If the version changed after approval, the approval no longer counts and the version needs a fresh one. |
-| **Released** | The approved version was released. |
-| **Closed** | The review was closed without a release. |
+<!-- TODO screenshot: /img/development-lifecycle/release/compare-versions/review-panel.png | img-full | alt: A review beside the comparison: the request, a reviewer's comment on one change, and an approval | shows: Northwind Dispatch v3, review requested by Alex Morgan and approved by Priya Raman with one comment on a change, review panel open beside the Screens view -->
 
 ## Reviews and Release
 
-A version with an open review that isn't approved can't be released, promoted, or moved to another environment until it's approved, the review is closed, or an admin releases it without approval. This applies whether or not your instance requires reviews.
+A review also decides whether the version can go out.
 
-The release dialog shows the review's state: **Needs an approved review**, with **Open the review** or **Request a review**, or **Approved in review**: "This exact version was approved, so it can be released."
+- A version with an open review that isn't approved can't be released, promoted or moved to another environment. This holds whether or not your instance requires reviews.
+- The release dialog shows where the review stands, with a button to open the review or request one.
+- A version released from an approved review can be released again later, for example to roll back, as long as its content still matches what was approved.
+- In a React Builder app, the [security check](../../build-with-ai/react-builder/security.md) runs first, then the review check.
 
-A version that was released from an approved review can be released again later, for example to roll back, as long as its content still matches what was approved.
+<details id="tj-dropdown">
+<summary>**Required Reviews, Permissions and Releasing Without Approval**</summary>
 
-For React Builder apps, the [security check](/docs/build-with-ai/react-builder/security#release-gate) runs first, then the review gate.
+#### Require Reviews
 
-### Release Without Approval
+On a self-hosted instance, an admin can require an approved review before every release, every promotion to production, or both, and set how many approvals a review needs. See [Version Reviews](../../setup/configuration/env-vars.md#version-reviews) in the environment variables reference. Until a required review is approved, the release stays locked.
 
-Workspace admins can release a version without an approved review:
+#### Who Can Do What
+
+| <div style={{ width:"300px"}}> Action </div> | <div style={{ width:"300px"}}> Who </div> |
+|:---------- | :---------- |
+| Compare versions, request a review, comment, ask for a re-review, close or reopen a review | Anyone who can edit the app |
+| Approve or request changes | Workspace admins, and users with promote permission on an app they can edit. Never the review's author. |
+| Release without approval | Workspace admins |
+
+A personal access token can read and comment on reviews, but it can never approve one or release without one. Approvals, change requests and releases without approval are recorded in the [audit log](../../security/audit-logs/audit-logs.md).
+
+#### Release Without Approval
+
+A workspace admin can release a version whose review isn't approved:
 
 1. In the review, click **Release without approval**.
 2. Give a reason of at least 10 characters. It stays on the review's record.
@@ -88,25 +134,17 @@ Workspace admins can release a version without an approved review:
 
 The author and the reviewers are emailed.
 
-## Require Reviews
+</details>
 
-On a self-hosted instance, an admin can require an approved review before every release or promotion with environment variables:
+## Where to Go Next
 
-| <div style={{ width:"300px"}}> Variable </div> | <div style={{ width:"100px"}}> Default </div> | <div style={{ width:"250px"}}> What It Does </div> |
-|:---------- | :---------- | :---------- |
-| `TOOLJET_VERSION_REVIEW_REQUIRED` | `off` | `release` requires an approved review to release. `promote` requires one to promote into production. `release,promote` or `all` requires both. |
-| `TOOLJET_VERSION_REVIEW_APPROVALS` | `1` | How many approvals a review needs. |
+<CardGrid min={190}>
+  <NextStepCard title="Version Control" description="Create, save and manage an app's versions." href="/docs/development-lifecycle/release/version-control" />
+  <NextStepCard title="Release and Rollback" description="Release a version, or go back to an earlier one." href="/docs/development-lifecycle/release/release-rollback" />
+  <NextStepCard title="App History" description="Every change to an app, and how to restore one." href="/docs/app-builder/app-history" />
+  <NextStepCard title="App Security" description="The checks a React Builder version passes before release." href="/docs/build-with-ai/react-builder/security" />
+</CardGrid>
 
-With reviews required, a version without an approved review shows **Release stays locked until this is approved**.
-
-## Who Can Do What
-
-| <div style={{ width:"300px"}}> Action </div> | <div style={{ width:"300px"}}> Who </div> |
-|:---------- | :---------- |
-| Compare versions, request a review, comment, ask for a re-review, close or reopen a review | Anyone who can edit the app |
-| Approve or request changes | Workspace admins, or users with promote permission on an app they can edit. Not the review's author. |
-| Release without approval | Workspace admins |
-
-A personal access token can read and comment on reviews, but it can never approve a review or release without one.
-
-Approvals, change requests and releases without approval are recorded in the audit log as app updates.
+:::info Availability
+Compare versions and version reviews are available on the Pro plan and above and during a trial, and the **Compare versions** button is labelled Beta in the product. They cover apps, not workflows or modules.
+:::
