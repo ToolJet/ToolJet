@@ -561,6 +561,8 @@ jobs:
           apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Install app scanner dependencies
+        run: npm ci --prefix server/ee/packages/app-scanner
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: E2E tests
