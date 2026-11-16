@@ -1,4 +1,4 @@
-import { AddSsrfProtectionInstanceSettings1790600000000 } from '../../../../migrations/data/1790600000000-AddSsrfProtectionInstanceSettings';
+import { AddSsrfProtectionInstanceSettings1790600000000 } from '../../../../migrations/schema/1790600000000-AddSsrfProtectionInstanceSettings';
 import { QueryRunner } from 'typeorm';
 import { SSRF_SETTINGS } from '@modules/ssrf/constants';
 
