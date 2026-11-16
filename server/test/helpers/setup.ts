@@ -249,6 +249,8 @@ export async function rollbackSuiteTransaction() {
   _suiteOrigCreateQR_tj = undefined;
   _suiteDS = undefined;
   _testSavepointId = 0;
+  // Savepoints die with the transaction; a stale name would make the next afterEach roll back to nothing.
+  _testSavepoint = undefined;
   _lastGoodSavepoint = undefined;
 }
 
