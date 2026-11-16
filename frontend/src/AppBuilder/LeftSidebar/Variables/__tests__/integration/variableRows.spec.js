@@ -3,7 +3,7 @@
  * ("Runtime only"), which are never saved.
  */
 import useStore from '@/AppBuilder/_stores/store';
-import { buildVariableRows } from '../../variableRows';
+import { buildVariableRows, previewOf } from '../../variableRows';
 
 const state = () => useStore.getState();
 
@@ -33,4 +33,16 @@ test('a variable only set at runtime is listed as runtime-only; a declared one i
     ['cartTotal', false],
   ]);
   expect(rows.page.map((r) => [r.name, Boolean(r.definition)])).toEqual([['editing', false]]);
+});
+
+describe('previewOf', () => {
+  // A blank initial value stores an empty string; the panel labels it instead of showing "".
+  test('labels an empty string', () => {
+    expect(previewOf('')).toBe('Empty string');
+  });
+
+  test('quotes other strings so they stay distinct from the label', () => {
+    expect(previewOf('Empty string')).toBe('"Empty string"');
+    expect(previewOf(' ')).toBe('" "');
+  });
 });

@@ -171,3 +171,67 @@ describe('delete', () => {
     expect(saved).toEqual([{ type: 'global_settings', body: { globalSettings: { variables: {} } } }]);
   });
 });
+
+describe('undo and redo', () => {
+  test('undo removes a created variable; redo brings it back with its value', async () => {
+    await state().saveVariableDefinition({ scope: 'app', name: 'threshold', value: '5' });
+
+    await state().handleUndo();
+    expect(state().getAppVariableDefinitions()).toEqual([]);
+    expect('threshold' in appVars()).toBe(false);
+
+    await state().handleRedo();
+    expect(
+      state()
+        .getAppVariableDefinitions()
+        .map((d) => d.name)
+    ).toEqual(['threshold']);
+    expect(appVars().threshold).toBe(5);
+  });
+
+  test('undo restores a deleted variable and its value in one step', async () => {
+    const { definition } = await state().saveVariableDefinition({ scope: 'page', name: 'category', value: 'Books' });
+    await state().deleteVariableDefinition(definition.id);
+
+    await state().handleUndo();
+
+    expect(
+      state()
+        .getPageVariableDefinitions()
+        .map((d) => d.name)
+    ).toEqual(['category']);
+    expect(pageVars().category).toBe('Books');
+  });
+
+  test('undo of a rename restores the old name and its value', async () => {
+    const { definition } = await state().saveVariableDefinition({ scope: 'app', name: 'threshold', value: '5' });
+    await state().saveVariableDefinition({ ...definition, name: 'minStock' });
+
+    await state().handleUndo();
+
+    expect(
+      state()
+        .getAppVariableDefinitions()
+        .map((d) => d.name)
+    ).toEqual(['threshold']);
+    expect(appVars().threshold).toBe(5);
+    expect('minStock' in appVars()).toBe(false);
+  });
+
+  test('undo of a value change restores the previous value and saves it', async () => {
+    const { definition } = await state().saveVariableDefinition({ scope: 'app', name: 'threshold', value: '5' });
+    await state().saveVariableDefinition({ ...definition, value: '9' });
+    saved = [];
+
+    await state().handleUndo();
+    await flush();
+
+    expect(appVars().threshold).toBe(5);
+    expect(saved).toEqual([
+      {
+        type: 'global_settings',
+        body: { globalSettings: { variables: { [definition.id]: expect.objectContaining({ value: '5' }) } } },
+      },
+    ]);
+  });
+});
