@@ -27,6 +27,8 @@ export const referenceOf = (scope: VariableScope, name: string) =>
 
 export const previewOf = (value: unknown, max = 120): string => {
   if (value === undefined) return 'undefined';
+  // A blank initial value stores ''; a label reads better than "" and other strings stay quoted.
+  if (value === '') return 'Empty string';
   let text: string;
   try {
     text = typeof value === 'string' ? `"${value}"` : (JSON.stringify(value) ?? String(value));
