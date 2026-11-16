@@ -8,13 +8,15 @@ export const migrationsService = {
 };
 
 const IDLE = { state: 'idle' };
+// No banner, but the banner keeps polling: an upgrade may be what made the call fail.
+const UNKNOWN = { state: 'unknown' };
 
-// Public, polled by every tab. Skips handleResponse: any failure is just "idle", never a logout/redirect.
+// Public, polled by every tab. Skips handleResponse: a failure is never a logout/redirect.
 function getStatus() {
   return fetch(`${config.apiUrl}/migration-status`)
-    .then((res) => (res.ok ? res.json() : IDLE))
+    .then((res) => (res.ok ? res.json() : UNKNOWN))
     .then((data) => data || IDLE)
-    .catch(() => IDLE);
+    .catch(() => UNKNOWN);
 }
 
 function getRuns() {

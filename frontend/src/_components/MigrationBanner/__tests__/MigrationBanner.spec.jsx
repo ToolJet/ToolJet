@@ -171,12 +171,28 @@ describe('MigrationBanner', () => {
     }
   });
 
-  test('treats a non-200 response as idle', async () => {
-    respondWith({ state: 'running', startedAt: 'run-x' }, { status: 503 });
-    render(<MigrationBanner />);
-    await settle();
+  test('shows nothing on a failed status call, and keeps asking', async () => {
+    jest.useFakeTimers({ advanceTimers: true });
+    try {
+      let calls = 0;
+      server.use(
+        http.get(STATUS_URL, () =>
+          calls++ === 0
+            ? HttpResponse.json({ state: 'running', startedAt: 'run-x' }, { status: 503 })
+            : HttpResponse.json({ state: 'running', startedAt: 'run-x' })
+        )
+      );
+      render(<MigrationBanner />);
+      await waitFor(() => expect(calls).toBe(1));
+      await settle();
+      expect(visibleBanner()).toBeNull();
 
-    expect(visibleBanner()).toBeNull();
+      act(() => jest.advanceTimersByTime(30000));
+
+      await waitFor(() => expect(visibleBanner()).toHaveTextContent(/being upgraded/));
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   test('close hides it for the same run and state, and a new run shows again', async () => {
