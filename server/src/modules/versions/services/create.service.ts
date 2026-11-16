@@ -481,6 +481,7 @@ export class VersionsCreateService implements IVersionsCreateService {
           hidden: page.hidden,
           pageHeader: page.pageHeader,
           pageFooter: page.pageFooter,
+          variables: page.variables,
           icon: page.icon,
           type: page.type,
           openIn: page.openIn,

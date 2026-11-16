@@ -42,6 +42,7 @@ import {
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
+import { VARIABLE_DEFINITION_NODE_SUFFIX } from './variablesSlice';
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
 const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
@@ -1229,8 +1230,13 @@ export const createComponentsSlice = (set, get) => ({
       startDependencyBatch,
       flushDependencyBatch,
       registerQueryDependencies,
+      initVariableDefinitions,
+      refreshExpressionVariables,
     } = get();
     const components = getCurrentPageComponents(moduleId);
+
+    // Declared variables first, so components resolve against their values.
+    const seededVariableIds = initVariableDefinitions(moduleId);
 
     //TODO: Replace with object of component types
     const resolvedComponentValues = {};
@@ -1280,6 +1286,7 @@ export const createComponentsSlice = (set, get) => ({
     );
 
     resolveOthers(moduleId);
+    refreshExpressionVariables(seededVariableIds, moduleId);
 
     // Register query option dependencies for queries with runOnDependencyChange enabled.
     const queries = get().dataQuery?.queries?.modules?.[moduleId] || [];
@@ -2910,6 +2917,13 @@ export const createComponentsSlice = (set, get) => ({
         'updateDependencyValues'
       );
     };
+
+    // Declared variable sentinel - recompute the variable's value from its definition
+    if (dependency.endsWith(VARIABLE_DEFINITION_NODE_SUFFIX)) {
+      const nodeData = getNodeData(dependency, moduleId);
+      if (nodeData?.definitionId) get().recomputeVariableDefinition(nodeData.definitionId, moduleId);
+      return;
+    }
 
     // Handle query options sentinel - trigger re-run instead of resolution
     if (dependency.endsWith('.__options__')) {

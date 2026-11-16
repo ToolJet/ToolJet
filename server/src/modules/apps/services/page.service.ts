@@ -253,6 +253,7 @@ export class PageService implements IPageService {
       newPage.hidden = pageToClone.hidden;
       newPage.pageHeader = pageToClone.pageHeader;
       newPage.pageFooter = pageToClone.pageFooter;
+      newPage.variables = pageToClone.variables;
 
       await lockForValidation(manager, 'page_handle', appVersionId);
       await this.appValidationService.check('pages', [this.toPageWrite('create', newPage)], {

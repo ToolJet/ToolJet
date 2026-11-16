@@ -2,6 +2,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   IsUrl,
@@ -9,6 +10,7 @@ import {
   MaxLength,
   ValidateIf,
 } from 'class-validator';
+import type { PageVariableDefinition } from '@entities/page.entity';
 
 // 1. Define your enums here in the same file
 export enum PageOpenIn {
@@ -53,6 +55,10 @@ export class CreatePageDto {
 
   @IsOptional()
   pageFooter: Record<string, any>;
+
+  @IsOptional()
+  @IsObject()
+  variables: Record<string, PageVariableDefinition>;
 
   @IsOptional()
   isPageGroup: boolean;

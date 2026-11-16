@@ -40,6 +40,7 @@ import { createDataQueryFolderSlice } from './slices/dataQueryFolderSlice';
 import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
 import { tableComponentSlice } from './slices/componentSlices/tableComponentSlice';
 import { createBranchSlice } from './slices/branchSlice';
+import { createVariablesSlice } from './slices/variablesSlice';
 enableMapSet();
 
 export default create(
@@ -84,6 +85,7 @@ export default create(
       ...listViewComponentSlice(...state),
       ...tableComponentSlice(...state),
       ...createBranchSlice(...state),
+      ...createVariablesSlice(...state),
     })),
     { name: 'App Builder Store', anonymousActionType: 'unknown' }
   )

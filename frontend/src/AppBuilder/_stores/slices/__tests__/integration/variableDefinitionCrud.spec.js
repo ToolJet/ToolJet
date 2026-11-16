@@ -1,0 +1,173 @@
+/**
+ * Creating, editing, renaming and deleting declared variables: the store, the runtime value and the
+ * saved definition change together, and invalid names or circular references are rejected before
+ * anything is saved. HTTP is the only controlled boundary.
+ */
+import '@/test/setupMsw';
+import { http, HttpResponse } from 'msw';
+import { server } from '@/test/msw/server';
+import useStore from '@/AppBuilder/_stores/store';
+import { componentDefinition, binding } from '@/test/app-builder';
+
+const state = () => useStore.getState();
+const appVars = () => state().resolvedStore.modules.canvas.exposedValues.variables;
+const pageVars = () => state().resolvedStore.modules.canvas.exposedValues.page.variables;
+const flush = () => new Promise((r) => setTimeout(r, 0));
+
+let saved;
+beforeEach(() => {
+  saved = [];
+  server.use(
+    http.put('*/v2/apps/:appId/versions/:versionId/global_settings', async ({ request }) => {
+      saved.push({ type: 'global_settings', body: await request.json() });
+      return HttpResponse.json({});
+    }),
+    http.put('*/v2/apps/:appId/versions/:versionId/pages', async ({ request }) => {
+      saved.push({ type: 'pages', body: await request.json() });
+      return HttpResponse.json({});
+    })
+  );
+
+  const store = state();
+  store.initializeDependencySlice('canvas');
+  store.setApp({ appId: 'app-1' }, 'canvas');
+  store.setCurrentVersionId('version-1');
+  store.setGlobalSettings({ ...store.globalSettings, variables: {} });
+  store.setPages(
+    [
+      {
+        id: 'page-1',
+        handle: 'home',
+        name: 'Home',
+        variables: {},
+        components: {
+          c1: componentDefinition('c1', 'text1', 'Text', { text: binding('{{variables.threshold}}') }),
+        },
+      },
+    ],
+    'canvas'
+  );
+  store.setCurrentPageId('page-1', 'canvas');
+  store.setComponentNameIdMapping('canvas');
+  store.initDependencyGraph('canvas');
+});
+
+describe('create', () => {
+  test('an app variable is usable at once and saved in global settings', async () => {
+    const result = await state().saveVariableDefinition({ scope: 'app', name: 'threshold', value: '5' });
+    await flush();
+
+    expect(result.ok).toBe(true);
+    expect(appVars().threshold).toBe(5);
+    expect(state().getResolvedComponent('c1').properties.text).toBe('5');
+    expect(state().getAppVariableDefinitions()).toEqual([
+      expect.objectContaining({ id: result.definition.id, name: 'threshold', value: '5', scope: 'app' }),
+    ]);
+    expect(saved).toEqual([
+      {
+        type: 'global_settings',
+        body: {
+          globalSettings: {
+            variables: {
+              [result.definition.id]: { id: result.definition.id, name: 'threshold', value: '5', fxActive: false },
+            },
+          },
+        },
+      },
+    ]);
+  });
+
+  test('a page variable is usable at once and saved on the page', async () => {
+    const result = await state().saveVariableDefinition({ scope: 'page', name: 'category', value: 'Books' });
+
+    expect(result.ok).toBe(true);
+    expect(pageVars().category).toBe('Books');
+    expect(saved).toEqual([
+      {
+        type: 'pages',
+        body: expect.objectContaining({
+          pageId: 'page-1',
+          diff: {
+            variables: { [result.definition.id]: expect.objectContaining({ name: 'category', value: 'Books' }) },
+          },
+        }),
+      },
+    ]);
+  });
+
+  test('an invalid name is rejected and nothing is saved', async () => {
+    const result = await state().saveVariableDefinition({ scope: 'app', name: 'my-var', value: '1' });
+
+    expect(result).toEqual({ ok: false, field: 'name', error: expect.stringMatching(/letters, numbers/) });
+    expect(state().getAppVariableDefinitions()).toEqual([]);
+    expect(saved).toEqual([]);
+  });
+
+  test('a circular reference is rejected with its path and nothing is saved', async () => {
+    const a = await state().saveVariableDefinition({ scope: 'app', name: 'a', value: '{{variables.b}}' });
+    saved = [];
+    const b = await state().saveVariableDefinition({ scope: 'app', name: 'b', value: '{{variables.a}}' });
+
+    expect(a.ok).toBe(true);
+    expect(b).toEqual({
+      ok: false,
+      field: 'value',
+      error: 'Circular reference: b → a → b. Change one of these values to break the loop.',
+    });
+    expect(
+      state()
+        .getAppVariableDefinitions()
+        .map((d) => d.name)
+    ).toEqual(['a']);
+    expect(saved).toEqual([]);
+  });
+});
+
+describe('edit', () => {
+  test('changing the value updates the variable and its dependents', async () => {
+    const { definition } = await state().saveVariableDefinition({ scope: 'app', name: 'threshold', value: '5' });
+    await state().saveVariableDefinition({ ...definition, value: '8' });
+    await flush();
+
+    expect(appVars().threshold).toBe(8);
+    expect(state().getResolvedComponent('c1').properties.text).toBe('8');
+  });
+
+  test('changing an expression re-registers what it reads', async () => {
+    await state().saveVariableDefinition({ scope: 'app', name: 'x', value: '1' });
+    await state().saveVariableDefinition({ scope: 'app', name: 'y', value: '2' });
+    const { definition } = await state().saveVariableDefinition({ scope: 'app', name: 'z', value: '{{variables.x}}' });
+    await state().saveVariableDefinition({ ...definition, value: '{{variables.y * 10}}' });
+    expect(appVars().z).toBe(20);
+
+    state().setVariable('x', 100);
+    await flush();
+    expect(appVars().z).toBe(20);
+
+    state().setVariable('y', 3);
+    await flush();
+    expect(appVars().z).toBe(30);
+  });
+
+  test('renaming moves the value to the new name and leaves the old name unset', async () => {
+    const { definition } = await state().saveVariableDefinition({ scope: 'app', name: 'threshold', value: '5' });
+    const result = await state().saveVariableDefinition({ ...definition, name: 'minStock' });
+    await flush();
+
+    expect(result.ok).toBe(true);
+    expect(appVars().minStock).toBe(5);
+    expect('threshold' in appVars()).toBe(false);
+  });
+});
+
+describe('delete', () => {
+  test('removes the definition and value and saves', async () => {
+    const { definition } = await state().saveVariableDefinition({ scope: 'app', name: 'threshold', value: '5' });
+    saved = [];
+    await state().deleteVariableDefinition(definition.id);
+
+    expect(state().getAppVariableDefinitions()).toEqual([]);
+    expect('threshold' in appVars()).toBe(false);
+    expect(saved).toEqual([{ type: 'global_settings', body: { globalSettings: { variables: {} } } }]);
+  });
+});
