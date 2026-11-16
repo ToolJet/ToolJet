@@ -22,33 +22,33 @@ Custom Component Libraries are currently in beta and not recommended for product
 
 A **library** is what you publish and version. The **components** inside it are what app builders drag onto the canvas. One publish ships every component in the library as a single version.
 
-## What's New in v4
+## What You Can Do
 
-<SectionSubtitle text="What changes for the libraries you publish and the apps that use them." />
+<SectionSubtitle text="Bring your own React components into the App Builder, in three steps." />
 
 <CardGrid columns={3}>
   <FeatureCard
-    icon="⚡"
-    title="Rendered inline"
-    description="Components draw directly in the app page instead of in a separate frame. They inherit the app's font, can use its theme colors, and a library's code loads once however many of its components are on the page."
-    href="/docs/app-builder/custom-component-library/build-components#styling-and-dependencies"
-  />
-  <FeatureCard
     icon="🧩"
-    title="In the library picker"
-    description="Published libraries are listed in the App Builder's library picker under Custom libraries, below the libraries that ship with ToolJet. The Custom tab is gone."
-    href="/docs/app-builder/custom-component-library/use-in-app-builder"
+    title="Build your own components"
+    description="When the built-in components don't cover what you need, write your own in React and TypeScript."
+    href="/docs/app-builder/custom-component-library/build-components"
   />
   <FeatureCard
-    icon="⌨️"
-    title="A quicker CLI loop"
-    description="Check types without building, create a project before you sign in, and sign in through your browser instead of pasting a token."
-    href="/docs/app-builder/custom-component-library/cli-reference"
+    icon="📦"
+    title="Publish them as a library"
+    description="Package your components as a library and publish it to your workspace with the ToolJet CLI. Every publish is a new version."
+    href="/docs/app-builder/custom-component-library/preview-and-publish"
+  />
+  <FeatureCard
+    icon="🖱️"
+    title="Use them like built-in components"
+    description="Pick your library in the App Builder, drag a component onto the canvas and set its properties, as you would for any other component."
+    href="/docs/app-builder/custom-component-library/use-in-app-builder"
   />
 </CardGrid>
 
-:::info Components run in the app page
-A custom component is no longer isolated in its own frame. Its code runs in the app page, so it can read what's on the page and act as the person using the app. Only admins and builders can publish a library. Publish only code you trust.
+:::info Publish only code you trust
+A custom component's code runs inside the app page, so it can read what's on the page and act as the person using the app. Only admins and builders can publish a library.
 :::
 
 ## How It Works

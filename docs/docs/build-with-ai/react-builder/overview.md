@@ -6,7 +6,6 @@ hide_title: true
 ---
 
 <DocHero
-  eyebrow="New in ToolJet v4"
   title="React Builder"
   description="Build internal tools as real React and TypeScript apps, without managing any infrastructure. Generate the app with ToolJet AI, edit the code in your browser, or work in your own editor with a coding agent. ToolJet takes care of sign-in, permissions, data sources, environments and releases."
   chips={['React + TypeScript', 'ToolJet AI', 'VS Code and Cursor', 'Claude Code and Codex', 'Security checks']}

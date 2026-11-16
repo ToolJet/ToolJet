@@ -8,7 +8,6 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 <DocHero
-  eyebrow="New in ToolJet v4"
   title="Compare and Review Versions"
   description="See exactly what changed between two versions of an app, with the screens side by side. Then ask a teammate to approve the version before it reaches your users."
   chips={['Visual and React Builder apps', 'Side-by-side screens', 'Code and query changes', 'Approval before release']}

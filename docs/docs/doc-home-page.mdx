@@ -19,7 +19,7 @@ import {
     releaseCards,
     resourceCards,
     sectionCards,
-    whatsNew
+    highlights
 } from './homePageData';
 import Link from '@docusaurus/Link';
 import useBaseUrl from '@docusaurus/useBaseUrl';
@@ -297,14 +297,14 @@ style={{
             </div>
 
             <div className="w-full p-10 space-y-12">
-                {/* New in ToolJet v4 */}
+                {/* Highlights */}
                 <SectionContainer
-                    title={whatsNew.title}
-                    description={whatsNew.description}
+                    title={highlights.title}
+                    description={highlights.description}
                 >
-                    <FeatureBanner {...whatsNew.banner} />
+                    <FeatureBanner {...highlights.banner} />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {whatsNew.cards.map((card, index) => (
+                        {highlights.cards.map((card, index) => (
                             <IconCard key={index} {...card} compact />
                         ))}
                     </div>

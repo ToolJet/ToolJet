@@ -52,9 +52,9 @@ export const featureCards = [
     }
 ];
 
-export const whatsNew = {
-    title: "New in ToolJet v4",
-    description: "A code-based way to build, plus new tools to review, secure and style your apps.",
+export const highlights = {
+    title: "What Sets ToolJet Apart",
+    description: "A code-based way to build, plus tools to review, secure and style your apps.",
     banner: {
         title: "React Builder",
         content: "Build internal tools as real React and TypeScript apps. Generate them with ToolJet AI, edit the code in your browser, or work in your own editor with a coding agent. ToolJet takes care of sign-in, permissions, data and releases.",
@@ -87,7 +87,7 @@ export const whatsNew = {
         },
         {
             icon: Sparkles,
-            title: "Redesigned AI Chat",
+            title: "AI Chat",
             color: "text-blue-500",
             content: "Questions up front, live progress while it builds, and a summary of what was built.",
             href: "/docs/build-with-ai/use-ai-in-tooljet/"

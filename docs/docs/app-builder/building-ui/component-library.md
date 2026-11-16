@@ -5,7 +5,7 @@ title: Component Library
 
 Components are the building blocks of ToolJet applications, used to create interactive user interfaces. You add them from the components panel on the right of the app builder, and you choose which component library they come from.
 
-## Choose a Component Library
+## Available Component Libraries
 
 <SectionSubtitle text="Three libraries ship with ToolJet on every edition. Pick one, switch later, or mix them in one app." />
 
@@ -61,23 +61,3 @@ If a Rocket 2.0 or Ant Design component fails to load, ToolJet tries again twice
 Components can be added to the canvas by dragging and dropping them onto the canvas at your desired location.
 
 <img className="screenshot-full img-full" src="/img/app-builder/components/component-library.png" alt="App Builder: Component library"/>
-
-## Available Components
-
-ToolJet UI 1.0 includes the following components.
-
-| Category | Components |
-|:----------|:------------|
-| **Buttons**  | [Button](/docs/widgets/button/), [Button Group](/docs/widgets/button-group/), [Popover Menu](/docs/widgets/popover-menu/) |
-| **Data** | [Table](/docs/widgets/table/), [Chart](/docs/widgets/chart/)|
-| **Layouts** | [Form](/docs/widgets/form/), [Modal](/docs/widgets/modal-v2/), [Container](/docs/widgets/container/), [Tabs](/docs/widgets/tabs/), [ListView](/docs/widgets/listview/), [Kanban](/docs/widgets/kanban/), [Calendar](/docs/widgets/calendar/) |
-| **Text Inputs** | [Text Input](/docs/widgets/text-input/), [Text Area](/docs/widgets/text-area/), [Email Input](/docs/widgets/email-input/), [Password Input](/docs/widgets/password-input/), [Rich Text Editor](/docs/widgets/rich-text-editor/) |
-| **Number Inputs** | [Number Input](/docs/widgets/number-input/), [Phone Input](/docs/widgets/phone-input/), [Currency Input](/docs/widgets/currency-input/), [Range Slider](/docs/widgets/range-slider/), [Star Rating](/docs/widgets/star-rating/) |
-| **Select Inputs** | [Dropdown](/docs/widgets/dropdown/), [Multi-Select](/docs/widgets/multiselect/), [Toggle Switch](/docs/widgets/toggle-switch-v2/), [Radio Button](/docs/widgets/radio-button-v2/), [Checkbox](/docs/widgets/checkbox/), [Tree Select](/docs/widgets/tree-select/), [Cascader](/docs/widgets/cascader/) |
-| **Date and Time Inputs** | [Date-range Picker](/docs/widgets/date-range-picker/), [Date Picker](/docs/widgets/date-picker-v2/), [Time Picker](/docs/widgets/time-picker/), [Date-Time Picker](/docs/widgets/datetime-picker-v2/) |
-| **Navigation** | [Link](/docs/widgets/link/), [Pagination](/docs/widgets/pagination/), [Steps](/docs/widgets/steps/) |
-| **Media** | [Icon](/docs/widgets/icon/), [Image](/docs/widgets/image/), [SVG Image](/docs/widgets/svg-image/), [PDF](/docs/widgets/pdf/), [Map](/docs/widgets/map/) |
-| **Presentation** | [Text](/docs/widgets/text/), [Tags](/docs/widgets/tags/), [Circular Progressbar](/docs/widgets/circular-progress-bar/), [Timeline](/docs/widgets/timeline/), [Divider](/docs/widgets/divider/), [Vertical Divider](/docs/widgets/vertical-divider/), [Spinner](/docs/widgets/spinner/), [Statistics](/docs/widgets/statistics/), [Timer](/docs/widgets/timer/), [Progress Bar](/docs/widgets/progress-bar/) |
-| **Custom** | [Custom Component](/docs/widgets/custom-component/), [HTML Viewer](/docs/widgets/html/), [iFrame](/docs/widgets/iframe/) |
-| **Miscellaneous** | [Filepicker](/docs/widgets/file-picker/), [Code Editor](/docs/widgets/code-editor/), [Color Picker](/docs/widgets/color-picker/), [Bounded Box](/docs/widgets/bounded-box/), [QR Scanner](/docs/widgets/qr-scanner/) |
-| **Legacy** | [Modal](/docs/3.5.0-LTS/widgets/modal/), [Datetime Picker](/docs/widgets/datepicker/), [Radio Button](/docs/3.5.0-LTS/widgets/radio-button/), [Toggle Switch](/docs/3.5.0-LTS/widgets/toggle-switch/), [Dropdown](/docs/2.50.0-LTS/widgets/dropdown/), [Multiselect](/docs/widgets/multiselect/) |

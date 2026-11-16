@@ -31,7 +31,7 @@ In this guide, you’ll walk through each step and see how they fit together to 
     features={['Best for most internal tools', 'Edited in the visual App Builder', 'JavaScript and Python for custom logic']}
   />
   <ConfigCard
-    label="New in v4"
+    label="React Builder"
     labelBg="#dcfce7"
     labelColor="#166534"
     title="React Builder app"

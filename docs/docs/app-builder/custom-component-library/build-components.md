@@ -144,7 +144,7 @@ Content that doesn't fit in the component's box is clipped.
 
 ## Styling and Dependencies
 
-A component renders inline in the app page and shares the app's copy of React. It no longer runs in a separate frame.
+A component renders inline in the app page and shares the app's copy of React.
 
 - ToolJet provides React 18 at runtime. `react`, `react-dom` and `react/jsx-runtime` are left out of your bundle, which keeps it small. Don't bundle your own copy of React.
 - Every other package you import must be part of your bundle. If the built code still imports a package ToolJet doesn't provide, the component fails with `the code imports "<name>", which ToolJet does not provide`.

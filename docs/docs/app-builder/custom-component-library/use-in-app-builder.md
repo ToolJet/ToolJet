@@ -22,7 +22,7 @@ Once a library is published to your workspace, its components are available to e
 
 ## Find Custom Components
 
-Click the library picker at the top of the components panel and choose a library under Custom libraries. The panel then shows the library's **Version** and a tile for every component, with an icon or the component's initials and its display name. See [Choose a Component Library](../building-ui/component-library.md#choose-a-component-library).
+Click the library picker at the top of the components panel and choose a library under Custom libraries. The panel then shows the library's **Version** and a tile for every component, with an icon or the component's initials and its display name. See [Choose a Component Library](../building-ui/component-library.md#available-component-libraries).
 
 A library is listed once it has a published version or a dev upload.
 
