@@ -15,6 +15,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { emptyPreviewParameters } from '@/AppBuilder/QueryManager/Components/previewParameters';
 import * as compareGuard from '@ee/modules/CodeMode/AppBuilder/CodeDiff/compareGuard';
 import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
+import { classifyWorkflowEvent, syncWorkflowOutcome } from './workflowQueryResults';
 
 const BLOCKED_WRITE_MESSAGE = compareGuard.BLOCKED_WRITE_MESSAGE ?? '';
 const writeBlockedInCompare = compareGuard.writeBlockedInCompare ?? (() => false);
@@ -285,20 +286,7 @@ export const createQueryPanelSlice = (set, get) => ({
           return workflowExecutionsService.streamSSE(jobId);
         },
         extractJobId: () => executionId,
-        classifyEventStatus: (eventData) => {
-          // hardcoded for workflows
-          if (eventData.type === 'workflow_connection_close') {
-            return { status: 'CLOSE', data: eventData };
-          } else if (eventData.type === 'workflow_execution_completed') {
-            return { status: 'COMPLETE', result: eventData.result, data: eventData };
-          } else if (eventData.type === 'workflow_execution_error') {
-            return { status: 'ERROR', data: eventData };
-          } else if (eventData.type === 'workflow_execution_cancelled') {
-            return { status: 'CANCELLED', data: eventData };
-          } else {
-            return { status: 'PROGRESS', data: eventData };
-          }
-        },
+        classifyEventStatus: classifyWorkflowEvent,
         callbacks: {
           onProgress: (progressData) => {
             // Update UI with progress information
@@ -792,14 +780,9 @@ export const createQueryPanelSlice = (set, get) => ({
               // Handle sync execution response — no SSE needed
               if (data?.data?.syncExecution) {
                 const executionStatus = data.data.executionStatus;
-                if (executionStatus === 'completed') {
-                  // Reshape to match the structure processQueryResults expects:
-                  // processQueryResults reads data?.data as the final result and data?.metadata
-                  const syncResult = {
-                    data: data.data.data,
-                    metadata: data.data.metadata,
-                  };
-                  const result = await processQueryResults(syncResult);
+                const outcome = syncWorkflowOutcome(data.data);
+                if (outcome.ok) {
+                  const result = await processQueryResults(outcome.result);
                   resolve(result);
                 } else {
                   const result = handleFailure({
@@ -1097,6 +1080,12 @@ export const createQueryPanelSlice = (set, get) => ({
                   setIsPreviewQueryLoading(false);
                   if (!calledFromQuery) setPreviewData(finalData);
                   resolve({ status: 'ok', data: finalData });
+                } else if (executionStatus === 'waiting') {
+                  const waitingData = syncWorkflowOutcome(data.data).result.data;
+                  setPreviewLoading(false);
+                  setIsPreviewQueryLoading(false);
+                  if (!calledFromQuery) setPreviewData(waitingData);
+                  resolve({ status: 'ok', data: waitingData });
                 } else {
                   const errorData = {
                     status: executionStatus,
