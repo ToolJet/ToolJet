@@ -1,6 +1,6 @@
 ---
 id: editor
-title: The Code Mode Editor
+title: The React Builder Editor
 sidebar_label: Editor
 ---
 
@@ -14,9 +14,11 @@ sidebar_label: Editor
  <span>Paid feature</span>
 </div>
 
-A Code mode app opens in the same App Builder as a visual app, with tools for working on code instead of components. This page walks through what's different: the header, the **Code** panel, the canvas, the style inspector and the sidebars.
+<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
 
-## What Changes in Code Mode
+A React Builder app opens in the same App Builder as a visual app, with tools for working on code instead of components. This page walks through what's different: the header, the **Code** panel, the canvas, the style inspector and the sidebars.
+
+## What Changes in React Builder
 
 The component-based tools are hidden, because the screens come from the project's code:
 
@@ -32,19 +34,19 @@ These tools are added:
 | **Code** panel | **Code** button in the header (`Alt+Shift+E`) | Read and edit the project's files, and set up local development. |
 | Canvas width | Header | Preview the app at phone, tablet, laptop and desktop widths. |
 | Style inspector | Right sidebar (`Alt+Shift+C`) | Pick an element on the canvas and change its spacing, color and type in the code. |
-| **Security** | Left sidebar and the status chip in the header | The version's security check. See [App Security](/docs/app-builder/code-mode/security). |
-| **Access** | Left sidebar | Who can open each screen and run each query. See [Access Control](/docs/app-builder/code-mode/access-control). |
-| **App history** | Left sidebar | Every AI edit, save, upload and version, with restore. See [Versions, History and Git](/docs/app-builder/code-mode/versions-and-history). |
+| **Security** | Left sidebar and the status chip in the header | The version's security check. See [App Security](/docs/build-with-ai/react-builder/security). |
+| **Access** | Left sidebar | Who can open each screen and run each query. See [Access Control](/docs/build-with-ai/react-builder/access-control). |
+| **App history** | Left sidebar | Every AI edit, save, upload and version, with restore. See [Versions, History and Git](/docs/build-with-ai/react-builder/versions-and-history). |
 
-A Code mode app opens with the AI chat open and the **Queries** panel collapsed.
+A React Builder app opens with the AI chat open and the **Queries** panel collapsed.
 
 The editor is built for larger screens. On a screen narrower than 768 px, ToolJet shows **Best on a larger screen**, with **Preview app** and **Continue anyway**.
 
 ## Header
 
-<img className="screenshot-full img-full" src="/img/app-builder/code-mode/editor/header.png" alt="Code mode editor header with the Code mode badge, canvas width control, Code button, Preview, version menu and the No issues security chip" />
+<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/editor/header.png" alt="React Builder editor header with the React Builder badge, canvas width control, Code button, Preview, version menu and the No issues security chip" />
 
-- **Build mode badge.** **Code mode** next to the app name. The build mode is chosen when an app is created and can't be changed.
+- **Build mode badge.** **React Builder** next to the app name. The build mode is chosen when an app is created and can't be changed.
 - **Canvas width.** Shows the current width, for example **Fit · 1156** or **Laptop · 1280**. Open it to pick **Phone** (375 px), **Tablet** (768 px), **Laptop** (1280 px), **Desktop** (1440 px) or **Fit**, or to type a width. You can also drag the grips at the canvas edges, and double-click a grip to fit.
 - **Code** button. Shows or hides the [Code panel](#code-panel).
 - **Preview** opens the app the way your users see it. In Preview, the canvas width control replaces the layout toggle.
@@ -59,7 +61,7 @@ The editor is built for larger screens. On a screen narrower than 768 px, ToolJe
 
 The **Code** panel shows the project's files and lets you edit them in ToolJet. Open it with the **Code** button in the header or `Alt+Shift+E`. It docks over the right side of the canvas; drag its edge to resize it.
 
-<img className="screenshot-full img-m" src="/img/app-builder/code-mode/editor/code-panel.png" alt="Code panel with the Files and Open locally tabs, the project file tree, and src/App/index.tsx open in the editor" />
+<img className="screenshot-full img-m" src="/img/build-with-ai/react-builder/editor/code-panel.png" alt="Code panel with the Files and Open locally tabs, the project file tree, and src/App/index.tsx open in the editor" />
 
 ### Files
 
@@ -88,7 +90,7 @@ The AI, a teammate or a developer's `tooljet app dev` session can change files w
 
 | <div style={{ width:"300px"}}> Note in the Panel </div> | <div style={{ width:"350px"}}> Why </div> |
 |:---------- | :---------- |
-| This code lives in your Git repository. Edit it there; this is a read-only copy. | The code is owned by a git repository. See [Who Edits the Code](/docs/app-builder/code-mode/versions-and-history#who-edits-the-code). |
+| This code lives in your Git repository. Edit it there; this is a read-only copy. | The code is owned by a git repository. See [Who Edits the Code](/docs/build-with-ai/react-builder/versions-and-history#who-edits-the-code). |
 | You can view this source. Editing it needs edit access to the app. | You can view the app but not edit it. |
 | This version is not a draft, so its source is read-only. Create a draft version to edit it. | Saved versions can't change. |
 | This code is synced with git on the default branch. Create a feature branch to make changes. | Git sync with branching is on, and you're on the default branch. |
@@ -103,7 +105,7 @@ The **Open locally** tab sets up the app on your computer:
 - **Your editor**: **Open in VS Code**, **Open in Cursor** or **Open in Windsurf** clone the app into a folder, sign you in and start a live session. These need the ToolJet editor extension. **Use the terminal instead** lists the same steps as CLI commands.
 - **A coding agent**: the steps to clone the app with agent instructions and connect Claude Code or Codex through the ToolJet MCP server.
 
-See [Work Locally](/docs/app-builder/code-mode/local-development) for the full workflow.
+See [Work Locally](/docs/build-with-ai/react-builder/local-development) for the full workflow.
 
 ## Canvas
 
@@ -111,13 +113,13 @@ The canvas runs the app in an isolated frame, exactly as Preview and the release
 
 - **Loading your app...** shows while the frame loads, and **Rebuilding the app…** while a new build loads.
 - If the code can't load, the canvas shows **This app's code couldn't load.** with **Retry** and the error details. Ask the AI chat to fix it, or check the **Debugger**.
-- If a query runs in a loop, the canvas slows it to once a second and shows a notice with the query's name. Check the effect or handler that runs it. See [Runtime API](/docs/app-builder/code-mode/runtime-api).
+- If a query runs in a loop, the canvas slows it to once a second and shows a notice with the query's name. Check the effect or handler that runs it. See [Runtime API](/docs/build-with-ai/react-builder/runtime-api).
 
 Code pages never switch to ToolJet's mobile layout. The app uses its own responsive breakpoints at every width, so use the canvas width control to check phone and tablet layouts.
 
 ## Style Inspector
 
-You don't set component properties in a Code mode app. Instead, the right sidebar is a **style inspector**: pick any element on the canvas, see its size, spacing, color and type, and change them. ToolJet writes the change into the code.
+You don't set component properties in a React Builder app. Instead, the right sidebar is a **style inspector**: pick any element on the canvas, see its size, spacing, color and type, and change them. ToolJet writes the change into the code.
 
 Open it from the right sidebar (**Style inspector**), with `Alt+Shift+C`, or by right-clicking an element on the canvas.
 
@@ -147,7 +149,7 @@ The style inspector can't change:
 
 ## Left Sidebar
 
-In a Code mode app, the left sidebar has:
+In a React Builder app, the left sidebar has:
 
 | <div style={{ width:"150px"}}> Item </div> | <div style={{ width:"400px"}}> What It Shows </div> |
 |:---------- | :---------- |
@@ -167,4 +169,4 @@ The **Queries** panel works as in any app. The code calls queries by name, so cr
 
 - Only a run from the **Queries** panel saves the panel's copy of the query. Runs from the app itself don't, so an older copy in your editor never overwrites a query that the AI or the CLI changed.
 - In the query **Preview**, a query that ran with empty parameters shows a note such as "Ran with an empty parameter (id). The app passes its own value when it runs this query."
-- RunJS and RunPy queries and transformations don't run in an isolated Code mode app. See [What App Code Can't Do](/docs/app-builder/code-mode/runtime-api).
+- RunJS and RunPy queries and transformations don't run in an isolated React Builder app. See [What App Code Can't Do](/docs/build-with-ai/react-builder/runtime-api).

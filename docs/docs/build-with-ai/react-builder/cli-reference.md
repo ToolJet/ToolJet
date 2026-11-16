@@ -1,6 +1,6 @@
 ---
 id: cli-reference
-title: Code Mode CLI Reference
+title: React Builder CLI Reference
 sidebar_label: CLI Reference
 ---
 
@@ -14,7 +14,9 @@ sidebar_label: CLI Reference
  <span>Paid feature</span>
 </div>
 
-This page lists the ToolJet CLI commands, flags, environment variables and files for Code mode apps. For a walkthrough, see [Work Locally](/docs/app-builder/code-mode/local-development).
+<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
+
+This page lists the ToolJet CLI commands, flags, environment variables and files for React Builder apps. For a walkthrough, see [Work Locally](/docs/build-with-ai/react-builder/local-development).
 
 ## Install
 
@@ -32,7 +34,7 @@ If your instance doesn't serve the CLI, install `@tooljet/cli@beta` from npm. Th
 |:---------- | :---------- | :------------ |
 | `tooljet auth login --url <url>` | Anywhere | Signs in through the browser. |
 | `tooljet login` | Anywhere | Signs in with a pasted personal access token. |
-| `tooljet app init <dir>` | Anywhere | Creates a new Code mode project. |
+| `tooljet app init <dir>` | Anywhere | Creates a new React Builder project. |
 | `tooljet app clone <appId> [dir]` | Anywhere | Creates a project linked to an existing app. |
 | `tooljet app install` | Project folder | Installs dependencies without install scripts. |
 | `tooljet app pull` | Project folder | Reads the app's queries, tables and pages, and writes `tooljet.gen.ts`. |
@@ -43,7 +45,7 @@ If your instance doesn't serve the CLI, install `@tooljet/cli@beta` from npm. Th
 | `tooljet app source-pull` | Project folder | Brings code changed in the editor or by AI into the project. |
 | `tooljet app vet <packages...>` | Anywhere | Checks npm packages before you add them. |
 | `tooljet skill install` | Project folder | Writes instructions for coding agents. |
-| `tooljet library init <dir> --template code-app` | Anywhere | Creates a Code mode project as a component library. |
+| `tooljet library init <dir> --template code-app` | Anywhere | Creates a React Builder project as a component library. |
 | `tooljet library build` | Library folder | Builds the library to `dist/`. |
 | `tooljet library typecheck` | Library folder | Type-checks without building. |
 
@@ -72,7 +74,7 @@ If `--url` or `TOOLJET_URL` names another instance than the project's, the comma
 
 ## `tooljet auth login`
 
-Signs in through the browser. The CLI shows a code, you approve it on your instance's **Sign in the ToolJet CLI** page, and the CLI stores a personal access token. The token is never printed. See [Sign In](/docs/app-builder/code-mode/local-development#sign-in).
+Signs in through the browser. The CLI shows a code, you approve it on your instance's **Sign in the ToolJet CLI** page, and the CLI stores a personal access token. The token is never printed. See [Sign In](/docs/build-with-ai/react-builder/local-development#sign-in).
 
 | <div style={{ width:"200px"}}> Flag </div> | <div style={{ width:"100px"}}> Default </div> | <div style={{ width:"350px"}}> Description </div> |
 |:---------- | :---------- | :------------ |
@@ -98,7 +100,7 @@ tooljet login
 
 ## `tooljet app init`
 
-Creates a Code mode project: `app.json` and the React and TypeScript source in `frontend/`.
+Creates a React Builder project: `app.json` and the React and TypeScript source in `frontend/`.
 
 | <div style={{ width:"200px"}}> Argument or Flag </div> | <div style={{ width:"100px"}}> Default </div> | <div style={{ width:"350px"}}> Description </div> |
 |:---------- | :---------- | :------------ |
@@ -179,7 +181,7 @@ tooljet app check --sarif scan.sarif --json
 
 ## `tooljet app dev`
 
-Builds the app on every save in `frontend/src` and shows it live in the ToolJet editor. The first build links the app: it creates the code page and one hidden page per screen. It needs a draft version. See [Start the Live Preview](/docs/app-builder/code-mode/local-development#3-start-the-live-preview).
+Builds the app on every save in `frontend/src` and shows it live in the ToolJet editor. The first build links the app: it creates the code page and one hidden page per screen. It needs a draft version. See [Start the Live Preview](/docs/build-with-ai/react-builder/local-development#3-start-the-live-preview).
 
 | <div style={{ width:"230px"}}> Flag </div> | <div style={{ width:"100px"}}> Default </div> | <div style={{ width:"330px"}}> Description </div> |
 |:---------- | :---------- | :------------ |
@@ -192,7 +194,7 @@ Builds the app on every save in `frontend/src` and shows it live in the ToolJet 
 | `--trust-remote-config` | `false` | Pull and build code from ToolJet even when it changes what a build runs on your computer, such as build config, `package.json`, the lockfile or `.npmrc`. |
 | `--verbose` | `false` | Also print the stored code's revision and owner. |
 
-While it runs, `dev` checks ToolJet for newer code every 5 seconds. See [Keep in Sync With Editor and AI Edits](/docs/app-builder/code-mode/local-development#keep-in-sync-with-editor-and-ai-edits).
+While it runs, `dev` checks ToolJet for newer code every 5 seconds. See [Keep in Sync With Editor and AI Edits](/docs/build-with-ai/react-builder/local-development#keep-in-sync-with-editor-and-ai-edits).
 
 ```bash
 tooljet app dev
@@ -274,7 +276,7 @@ tooljet app vet date-fns@4.1.0 zod
 
 ## `tooljet skill install`
 
-Writes instructions for building the app in Code mode for coding agents, from one source:
+Writes instructions for building the app with React Builder for coding agents, from one source:
 
 - `CLAUDE.md` for Claude Code
 - `AGENTS.md` for Codex and Windsurf
@@ -288,7 +290,7 @@ tooljet skill install
 
 ## `tooljet library init`
 
-Creates a custom component library project. With `--template code-app`, the project is a whole app on shadcn/ui, Tailwind and React Router, with its source kept for Code mode. See also [Custom Component Libraries](/docs/app-builder/custom-component-library/overview).
+Creates a custom component library project. With `--template code-app`, the project is a whole app on shadcn/ui, Tailwind and React Router, with its source kept for React Builder. See also [Custom Component Libraries](/docs/app-builder/custom-component-library/overview).
 
 | <div style={{ width:"200px"}}> Argument or Flag </div> | <div style={{ width:"100px"}}> Default </div> | <div style={{ width:"350px"}}> Description </div> |
 |:---------- | :---------- | :------------ |
@@ -297,7 +299,7 @@ Creates a custom component library project. With `--template code-app`, the proj
 | `--display-name` | | The library display name. Skips the prompt. Starts with a letter. Letters, numbers, spaces, hyphens and underscores. Up to 100 characters. |
 | `--local` | `false` | Create the files only: no sign-in, and no library registered in a workspace. `dev` or `publish` registers it later. |
 
-To create a Code mode app project, use `tooljet app init` instead. It adds `app.json` and the app files.
+To create a React Builder app project, use `tooljet app init` instead. It adds `app.json` and the app files.
 
 ```bash
 tooljet library init orders-ui --template code-app --display-name "Orders UI" --local
@@ -317,7 +319,7 @@ tooljet library build --env development
 
 ## `tooljet library typecheck`
 
-Type-checks the library and parses its stylesheets without building. It is fast and incremental, and uploads nothing. It exits with `1` when there are problems. Run it in the folder that holds the library's `package.json`. <!-- TODO verify: for a Code mode app project, confirm typecheck is meant to run in frontend/ -->
+Type-checks the library and parses its stylesheets without building. It is fast and incremental, and uploads nothing. It exits with `1` when there are problems. Run it in the folder that holds the library's `package.json`. <!-- TODO verify: for a React Builder app project, confirm typecheck is meant to run in frontend/ -->
 
 | <div style={{ width:"200px"}}> Flag </div> | <div style={{ width:"100px"}}> Default </div> | <div style={{ width:"350px"}}> Description </div> |
 |:---------- | :---------- | :------------ |
@@ -347,7 +349,7 @@ To scan locally, install `@tooljet/app-scanner` or set `TOOLJET_APP_SCANNER_BIN`
 | `TOOLJET_SDK_SPEC` | An npm spec for the custom component SDK to install, instead of the one your instance serves. |
 | `TOOLJET_APP_SCANNER_BIN` | Path to the security scanner's `tj-app-scan.js`. |
 
-npm commands that the CLI runs, such as installs and `app vet`, use your normal npm configuration, including `npm_config_registry` and `.npmrc`. Which registries a stored lockfile may use is a server setting: `TOOLJET_CODE_NPM_REGISTRIES` on the ToolJet server. See [Dependencies](/docs/app-builder/code-mode/project-structure#dependencies).
+npm commands that the CLI runs, such as installs and `app vet`, use your normal npm configuration, including `npm_config_registry` and `.npmrc`. Which registries a stored lockfile may use is a server setting: `TOOLJET_CODE_NPM_REGISTRIES` on the ToolJet server. See [Dependencies](/docs/build-with-ai/react-builder/project-structure#dependencies).
 
 ## Files the CLI Writes
 
