@@ -40,6 +40,9 @@ const ACCEPTS: Record<string, PropertyType[]> = {
   // A figure, or a list: a Hero's aside facts, a Stat's trend points (numbers or [{ x, y }]).
   'shadcn.Hero.asideValue': ['string', 'array', 'number'],
   'shadcn.Stat.trendData': ['string', 'array'],
+  // An hour, or a clock time ('09:30', '5:30 PM').
+  'shadcn.Schedule.dayStart': ['number', 'string'],
+  'shadcn.Schedule.dayEnd': ['number', 'string'],
   // Field names, or values to highlight: one, a comma list as text, or a list.
   ...Object.fromEntries(
     [
