@@ -184,6 +184,27 @@ const onFieldKeyDown = (e: React.KeyboardEvent) => {
   keepSearchOnEscape(e);
 };
 
+// Ant realigns an open popup on 'scroll' of the field's scroll parents, found by walking parentElement. A widget lives in
+// a shadow root, so that walk never reaches the app canvas scroller outside it and a popup stayed put while its field
+// scrolled away. Any scroll is forwarded, once a frame, to each pack root (.tj-cc-root, in Ant's list) as a scroll event.
+const scrollRoots = new Set<Element>();
+let scrollFrame = 0;
+const forwardScroll = (e: Event) => {
+  if (scrollFrame) return;
+  scrollFrame = requestAnimationFrame(() => {
+    scrollFrame = 0;
+    scrollRoots.forEach((r) => r !== e.target && r.dispatchEvent(new Event('scroll')));
+  });
+};
+const watchScroll = (root: Element) => {
+  scrollRoots.add(root);
+  if (scrollRoots.size === 1) document.addEventListener('scroll', forwardScroll, true);
+  return () => {
+    scrollRoots.delete(root);
+    if (!scrollRoots.size) document.removeEventListener('scroll', forwardScroll, true);
+  };
+};
+
 // Every pack component renders inside this: antd's ConfigProvider with popups portalled into ToolJet's popup layer, and
 // a root that declares antd's token variables (the `.tj-ant` rule in antd.css), dark when the app is.
 export const AntProvider = ({
@@ -205,6 +226,10 @@ export const AntProvider = ({
 }) => {
   const [anchorRef, container] = usePortalContainer();
   const { dark, themed } = useAppLook(anchorRef);
+  useEffect(() => {
+    const root = anchorRef.current?.closest('.tj-cc-root');
+    return root ? watchScroll(root) : undefined;
+  }, [anchorRef]);
   // Ant's icons put their styles in each widget's shadow root through rc-util, whose module-level cache maps every root
   // it served to its real parent and never lets go, so a page switch kept every old Ant root (and its listeners)
   // alive. Emptied when a widget unmounts; the cache is only a lookup, refilled on the next insert.
