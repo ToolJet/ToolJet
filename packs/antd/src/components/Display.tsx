@@ -16,9 +16,9 @@ import {
   Timeline as AntTimeline,
   Typography,
 } from 'antd';
-import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined } from '@ant-design/icons';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { AntProvider, splitBoxStyles, useTokenStyles } from '../lib/AntProvider';
 import { THEME_COLOR, useThemeColor } from '../lib/themeStyles';
 import { SkeletonSwap, SpinOver, TextBone } from '../lib/Loading';
 import { oneOf, str, toArray, type Row } from '../lib/data';
@@ -35,6 +35,34 @@ const TONE_TAG_STATUS: Record<string, string | undefined> = {
   danger: 'error',
   info: 'processing',
   neutral: undefined,
+};
+
+// Ant matches preset colours case-sensitively and paints anything else as a white-on-fill custom colour (QA PF-036).
+const TAG_PRESETS = new Set(
+  [
+    'blue',
+    'purple',
+    'cyan',
+    'green',
+    'magenta',
+    'pink',
+    'red',
+    'orange',
+    'yellow',
+    'volcano',
+    'geekblue',
+    'gold',
+    'lime',
+  ]
+    .flatMap((n) => [n, `${n}-inverse`])
+    .concat(['success', 'processing', 'error', 'warning'])
+);
+const tagColor = (value: string): string | undefined => {
+  const v = value.trim();
+  const lower = v.toLowerCase();
+  if (!v || lower === 'default') return undefined;
+  if (TAG_PRESETS.has(lower)) return lower;
+  return typeof CSS !== 'undefined' && CSS.supports ? (CSS.supports('color', v) ? v : undefined) : v;
 };
 
 // Ant's Tag: its text is its children; color (a status preset, a palette name, or any CSS colour), bordered, closable;
@@ -77,27 +105,38 @@ export const Tag = () => {
     defaultWidth: 4,
     defaultHeight: 3,
   });
-  const c = str(color).trim();
+  const c = tagColor(str(color));
+  // Container background, Border color and Border radius style the widget box, not the tag (QA PKB-41).
+  const { tokens: tagTokens, box } = splitBoxStyles(tokens);
   return (
-    <AntProvider tokens={tokens}>
-      <SkeletonSwap loading={loading} look={<Skeleton.Button active size="small" />}>
-        {children && !closed ? (
-          <AntTag
-            color={c && c !== 'default' ? c : undefined}
-            bordered={bordered}
-            closable={closable}
-            onClose={(e) => {
-              // The tag is hidden here, not by Ant, so the reopen action can show it again.
-              e.preventDefault();
-              setClosed(true);
-              onClose();
-            }}
-            style={{ marginInlineEnd: 0 }}
-          >
-            {children}
-          </AntTag>
-        ) : null}
-      </SkeletonSwap>
+    <AntProvider tokens={tagTokens} fill>
+      <div className="tj-ant-tag-box" style={box}>
+        <SkeletonSwap loading={loading} look={<Skeleton.Button active size="small" />}>
+          {children && !closed ? (
+            <AntTag
+              className="tj-ant-tag"
+              title={children}
+              color={c}
+              bordered={bordered}
+              closable={closable}
+              closeIcon={
+                <button type="button" className="tj-ant-tag-close" aria-label="Remove tag">
+                  <CloseOutlined />
+                </button>
+              }
+              onClose={(e) => {
+                // The tag is hidden here, not by Ant, so the reopen action can show it again.
+                e.preventDefault();
+                setClosed(true);
+                onClose();
+              }}
+              style={{ marginInlineEnd: 0 }}
+            >
+              <span className="tj-ant-tag-text">{children}</span>
+            </AntTag>
+          ) : null}
+        </SkeletonSwap>
+      </div>
     </AntProvider>
   );
 };

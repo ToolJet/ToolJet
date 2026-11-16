@@ -1677,3 +1677,38 @@
 .tj-cc-root:not(.tj-cc-fit) > .tj-ant-textarea .ant-input-textarea-affix-wrapper.ant-input-textarea-show-count {
   height: calc(100% - 22px) !important;
 }
+
+/* Tag: long text clips with an ellipsis (PF-035); close x is a real button (PF-037); container bg colours a default tag (PKB-41). */
+.ant-tag.tj-ant-tag {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+}
+.tj-ant-tag-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tj-ant-tag-close {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.tj-ant-tag-close:focus-visible {
+  outline: 2px solid var(--ant-color-primary);
+  outline-offset: 1px;
+}
+
+/* Tag's widget box: Container background, Border color and Border radius style it, not the tag. */
+.tj-ant-tag-box {
+  height: 100%;
+  box-sizing: border-box;
+}

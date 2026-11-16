@@ -101,7 +101,10 @@ const watchTheme = (listener: () => void) => {
   if (!darkObserver && typeof MutationObserver !== 'undefined') {
     darkObserver = new MutationObserver(() => darkListeners.forEach((l) => l()));
     [document.documentElement, document.body].forEach((node) =>
-      darkObserver!.observe(node, { attributes: true, attributeFilter: ['class', 'style', 'data-theme', 'data-bs-theme'] })
+      darkObserver!.observe(node, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme', 'data-bs-theme'],
+      })
     );
   }
   return () => {
@@ -114,7 +117,9 @@ const isDarkAt = (el: HTMLElement) => {
   if (!surface) return false;
   el.style.setProperty('--tj-ant-probe', surface);
   el.style.color = 'var(--tj-ant-probe)';
-  const rgb = getComputedStyle(el).color.match(/\d+(\.\d+)?/g)?.map(Number) ?? [255, 255, 255];
+  const rgb = getComputedStyle(el)
+    .color.match(/\d+(\.\d+)?/g)
+    ?.map(Number) ?? [255, 255, 255];
   el.style.removeProperty('color');
   el.style.removeProperty('--tj-ant-probe');
   return (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255 < 0.4;
@@ -234,7 +239,10 @@ export const AntProvider = ({
   // it served to its real parent and never lets go, so a page switch kept every old Ant root (and its listeners)
   // alive. Emptied when a widget unmounts; the cache is only a lookup, refilled on the next insert.
   useEffect(() => () => clearContainerCache(), []);
-  const popup = useMemo(() => ({ className: dark ? 'tj-ant tj-ant-dark' : 'tj-ant', style: tokens ?? {}, container }), [tokens, container, dark]);
+  const popup = useMemo(
+    () => ({ className: dark ? 'tj-ant tj-ant-dark' : 'tj-ant', style: tokens ?? {}, container }),
+    [tokens, container, dark]
+  );
   const ownBackground = Boolean((tokens as Record<string, unknown> | undefined)?.['--tj-ant-color-bg-container']);
   return (
     <div
@@ -243,7 +251,13 @@ export const AntProvider = ({
         if (ownerRef) ownerRef.current = el;
       }}
       // Container background set: it fills the Filled and Borderless fields too (pack.css .tj-ant-own-bg).
-      className={['tj-ant tj-ant-root', dark ? 'tj-ant-dark' : '', fill ? 'tj-ant--fill' : '', ownBackground ? 'tj-ant-own-bg' : '', className ?? '']
+      className={[
+        'tj-ant tj-ant-root',
+        dark ? 'tj-ant-dark' : '',
+        fill ? 'tj-ant--fill' : '',
+        ownBackground ? 'tj-ant-own-bg' : '',
+        className ?? '',
+      ]
         .join(' ')
         .trim()}
       style={{ ...tokens, ...style }}
@@ -268,6 +282,38 @@ export const AntProvider = ({
 
 /** The popup theme for an Ant control whose component renders AntProvider itself: read inside the provider, as a
  *  popup's class and style must be (read beside it, a popup got the default theme: no token overrides, never dark). */
-export const WithPopupTheme = ({ children }: { children: (popup: ReturnType<typeof usePopupTheme>) => React.ReactNode }) => (
-  <>{children(usePopupTheme())}</>
-);
+export const WithPopupTheme = ({
+  children,
+}: {
+  children: (popup: ReturnType<typeof usePopupTheme>) => React.ReactNode;
+}) => <>{children(usePopupTheme())}</>;
+
+const BOX_VARS = [
+  '--tj-ant-color-bg-elevated',
+  '--tj-ant-color-border-secondary',
+  '--tj-ant-border-radius-sm',
+  '--tj-ant-border-radius-lg',
+  '--tj-ant-border-radius-xs',
+];
+
+/**
+ * For widgets whose Container background, Border color and Border radius style the widget box, not the content (Tag,
+ * Tags): takes those vars out of the tokens and returns them as the box's inline style (unset ones omitted).
+ */
+export const splitBoxStyles = (all: CSSProperties): { tokens: CSSProperties; box: CSSProperties } => {
+  const {
+    '--tj-ant-color-bg-container': bg,
+    '--tj-ant-color-border': border,
+    '--tj-ant-border-radius': radius,
+    ...rest
+  } = all as Record<string, string>;
+  for (const k of BOX_VARS) delete rest[k];
+  return {
+    tokens: rest as CSSProperties,
+    box: {
+      ...(bg ? { background: bg } : {}),
+      ...(border ? { border: `1px solid ${border}` } : {}),
+      ...(radius ? { borderRadius: radius, padding: parseFloat(radius) * 0.3 } : {}),
+    },
+  };
+};
