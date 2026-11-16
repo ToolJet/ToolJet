@@ -104,6 +104,12 @@
   }
 }
 
+.dependency-section-action {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+}
+
 .dependency-section-chevron-box {
   display: inline-flex;
   align-items: center;
@@ -230,6 +236,13 @@
     border-radius: 2px;
     background: var(--yellow4);
     color: inherit;
+  }
+
+  .dependency-row-trailing {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
   }
 
   .dependency-row-tag {

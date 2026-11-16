@@ -44,6 +44,8 @@ export type DependencyEntityRowProps = {
   dataCy?: string;
   /** Forwarded to the portalled tooltip, which cannot inherit the panel's theme class. */
   darkMode?: boolean;
+  /** Right-aligned content, e.g. a status badge. */
+  trailing?: React.ReactNode;
 };
 
 export const DependencyEntityRow = ({
@@ -57,6 +59,7 @@ export const DependencyEntityRow = ({
   onClick,
   dataCy,
   darkMode = false,
+  trailing,
 }: DependencyEntityRowProps) => {
   const stacked = Boolean(subtitle) || tags.length > 0;
   const label = decodeEntities(name);
@@ -83,6 +86,7 @@ export const DependencyEntityRow = ({
           </span>
         ))}
       </span>
+      {trailing && <span className="dependency-row-trailing">{trailing}</span>}
     </div>
   );
 

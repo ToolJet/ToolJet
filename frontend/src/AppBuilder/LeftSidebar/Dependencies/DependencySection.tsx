@@ -18,6 +18,10 @@ export type DependencySectionProps = {
   forceExpanded?: boolean;
   children?: React.ReactNode;
   dataCy?: string;
+  /** Trailing control in the header (e.g. an add button). Clicks on it don't toggle the section. */
+  action?: React.ReactNode;
+  /** Render even when `count` is 0, so `children` can show an empty state. */
+  showWhenEmpty?: boolean;
 };
 
 export const DependencySection = ({
@@ -27,9 +31,11 @@ export const DependencySection = ({
   forceExpanded = false,
   children,
   dataCy,
+  action,
+  showWhenEmpty = false,
 }: DependencySectionProps) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
-  if (!count) return null;
+  if (!count && !showWhenEmpty) return null;
 
   const isOpen = forceExpanded || expanded;
   const Chevron = isOpen ? ChevronUpIcon : ChevronDownIcon;
@@ -51,6 +57,15 @@ export const DependencySection = ({
         <span className="dependency-section-title">
           {title} ({count})
         </span>
+        {action && (
+          <span
+            className="dependency-section-action"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            {action}
+          </span>
+        )}
       </div>
       {isOpen && <div className="dependency-section-body">{children}</div>}
     </div>
