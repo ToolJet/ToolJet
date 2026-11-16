@@ -13,6 +13,7 @@ import {
   LockSession,
   LockWaitOptions,
   MIGRATION_ACTIVE_LOCK_KEY,
+  pgCode,
   SchemaPhaseOptions,
   SKIPPED_EXIT_CODE,
   withMigrationConnectionOptions,
@@ -52,8 +53,7 @@ const DATA_RETRY_DELAY_MS = 2000;
 const TRANSIENT_ERROR_CODES = new Set(['40P01', '40001', '55P03']);
 
 export function isTransientError(error: unknown): boolean {
-  const { code, driverError } = (error ?? {}) as { code?: string; driverError?: { code?: string } };
-  return TRANSIENT_ERROR_CODES.has(driverError?.code ?? code ?? '');
+  return TRANSIENT_ERROR_CODES.has(pgCode(error) ?? '');
 }
 
 type Up = (queryRunner: QueryRunner) => Promise<void>;

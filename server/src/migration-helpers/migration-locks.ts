@@ -61,10 +61,15 @@ export function getSchemaPhaseOptions(env: Record<string, string | undefined> = 
   };
 }
 
-/** SQLSTATE 55P03 (lock_timeout hit), raw from pg or wrapped in TypeORM's QueryFailedError. */
-export function isLockNotAvailableError(error: unknown): boolean {
+/** SQLSTATE of a raw pg error or of one wrapped in TypeORM's QueryFailedError. */
+export function pgCode(error: unknown): string | undefined {
   const { code, driverError } = (error ?? {}) as { code?: string; driverError?: { code?: string } };
-  return (driverError?.code ?? code) === '55P03';
+  return driverError?.code ?? code;
+}
+
+/** SQLSTATE 55P03: lock_timeout hit. */
+export function isLockNotAvailableError(error: unknown): boolean {
+  return pgCode(error) === '55P03';
 }
 
 /**
