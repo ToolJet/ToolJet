@@ -98,14 +98,6 @@ function collectBeforeCommitSteps(dataDS: DataSource): BeforeCommitSteps {
   };
 }
 
-const ENUM_SEPARATE_TRANSACTIONS_REASON =
-  'A pending ALTER TYPE ADD VALUE targets an enum type created in this run; running schema and data in ' +
-  'separate transactions (PostgreSQL cannot add and use an enum value in one transaction).';
-
-const DATA_PHASE_REASON =
-  'Data phase: running schema (catch-up, normally empty) and data in separate transactions, so a ' +
-  'data failure rolls back the data phase only.';
-
 function logExecuted(label: string, executed: { name: string }[]): void {
   if (!executed.length) {
     console.log(`[migrations] ${label}: no pending migrations.`);
@@ -202,10 +194,8 @@ async function runAtomic(
 async function runInSeparateTransactions(
   schemaDS: DataSource,
   [dataDS, beforeCommitSteps]: [DataSource, BeforeCommitSteps],
-  reason: string,
   cleanupDS?: DataSource
 ): Promise<void> {
-  console.log(`[migrations] ${reason} Schema commits before data runs.`);
   await runPass('schema', schemaDS);
   await retryWhen(
     isTransientError,
@@ -428,7 +418,11 @@ async function executeMigrations(
     try {
       // Inside the try: a loosen that stops part way restores the rules it already dropped.
       if (legacy) await loosenLegacyRules(dataDS);
-      return await runInSeparateTransactions(schemaDS, data, DATA_PHASE_REASON);
+      console.log(
+        '[migrations] Data phase: running schema (catch-up, normally empty) and data in separate transactions, ' +
+          'so a data failure rolls back the data phase only. Schema commits before data runs.'
+      );
+      return await runInSeparateTransactions(schemaDS, data);
     } catch (error) {
       // Still holding the migration lock, so no other runner sees the loosened rules.
       if (legacy) {
@@ -441,7 +435,12 @@ async function executeMigrations(
   }
   announceEachMigration(cleanupDS);
   if (plan.hasMissingType) {
-    return runInSeparateTransactions(schemaDS, data, ENUM_SEPARATE_TRANSACTIONS_REASON, cleanupDS);
+    console.log(
+      '[migrations] A pending ALTER TYPE ADD VALUE targets an enum type created in this run; running schema and ' +
+        'data in separate transactions (PostgreSQL cannot add and use an enum value in one transaction). ' +
+        'Schema commits before data runs.'
+    );
+    return runInSeparateTransactions(schemaDS, data, cleanupDS);
   }
   await runAtomic(plan.precommittable, schemaDS, dataDS, cleanupDS, data[1]);
 }
