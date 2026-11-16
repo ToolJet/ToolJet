@@ -41,6 +41,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-google-maps/api": "^2.18.1",
+    "@react-spring/web": "^9.7.5",
     "@sentry/react": "^7.100.1",
     "@sentry/webpack-plugin": "^2.14.0",
     "@tabler/icons-react": "^2.4.0",
@@ -58,7 +59,7 @@
     "@y-presence/react": "^2.0.1",
     "acorn": "^8.11.3",
     "acorn-walk": "^8.3.4",
-    "axios": "^1.3.3",
+    "axios": "^1.20.0",
     "bootstrap": "^5.2.3",
     "buffer": "^6.0.3",
     "class-variance-authority": "^0.7.1",
@@ -69,7 +70,7 @@
     "cronstrue": "^2.51.0",
     "deep-object-diff": "^1.1.9",
     "dependency-graph": "^1.0.0",
-    "dompurify": "^3.0.0",
+    "dompurify": "^3.4.17",
     "dotenv": "^16.0.3",
     "draft-js": "^0.11.7",
     "draft-js-export-html": "^1.4.1",
@@ -77,7 +78,7 @@
     "driver.js": "^0.9.8",
     "emoji-mart": "^5.5.2",
     "file-loader": "^6.2.0",
-    "flatted": "^3.3.1",
+    "flatted": "^3.4.4",
     "focus-trap-react": "^10.0.2",
     "fuse.js": "^6.6.2",
     "html-loader": "^4.2.0",
@@ -90,7 +91,7 @@
     "immutability-helper": "^3.1.1",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
-    "lodash": "^4.17.21",
+    "lodash": "^4.18.1",
     "lucide-react": "^0.525.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.40",
@@ -147,7 +148,6 @@
     "react-select": "^5.7.0",
     "react-select-search": "^4.1.6",
     "react-selecto": "^1.22.0",
-    "react-spring": "^9.6.1",
     "react-syntax-highlighter": "^15.6.1",
     "react-table": "^7.8.0",
     "react-table-plugins": "^1.3.4",
@@ -236,7 +236,7 @@
     "mini-css-extract-plugin": "^2.9.4",
     "msw": "^2.15.0",
     "path": "^0.12.7",
-    "postcss": "^8.4.35",
+    "postcss": "^8.5.18",
     "postcss-loader": "^8.2.1",
     "prettier": "^3.5.3",
     "react-refresh": "^0.17.0",
@@ -250,7 +250,7 @@
     "webpack": "^5.75.0",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^5.2.2"
+    "webpack-dev-server": "^5.2.7"
   },
   "overrides": {
     "react-dates": {
@@ -286,7 +286,7 @@
     },
     "jspdf": {
       "@babel/runtime": ">=7.26.10",
-      "dompurify": "^3.2.5"
+      "dompurify": "^3.4.17"
     },
     "refractor": {
       "prismjs": "1.30.0"
@@ -298,7 +298,7 @@
     "on-headers": "1.1.0",
     "tar-fs": "^3.1.0",
     "minimatch@3": {
-      "brace-expansion": "^1.1.11"
+      "brace-expansion": "^1.1.20"
     },
     "react-plotly.js": {
       "plotly.js": "npm:plotly.js-dist-min@^4.1.1"
@@ -311,7 +311,14 @@
       "svgo": "^4.1.0"
     },
     "js-yaml@3": "^3.15.2",
-    "js-yaml@4": "^4.3.2"
+    "js-yaml@4": "^4.3.2",
+    "draft-js": {
+      "immutable": "^3.8.4"
+    },
+    "serialize-javascript": "^7.0.3",
+    "@storybook/builder-webpack5": {
+      "webpack-dev-middleware": "^7.4.6"
+    }
   },
   "scripts": {
     "build:vendor": "node scripts/build-vendor-bundle.js",

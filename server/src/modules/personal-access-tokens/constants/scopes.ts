@@ -54,6 +54,8 @@ export const PAT_BUNDLE_MODULES: Record<PAT_BUNDLE, MODULES[]> = {
     MODULES.DATA_QUERY,
     MODULES.DATA_QUERY_FOLDERS,
     MODULES.GLOBAL_DATA_SOURCE,
+    MODULES.FOLDER_DATA_SOURCES,
+    MODULES.DATA_SOURCE_FOLDER,
     MODULES.TOOLJET_DATABASE,
     MODULES.APP_ENVIRONMENTS,
   ],
@@ -115,6 +117,7 @@ export const PAT_UNASSIGNED_MODULES: MODULES[] = [
   MODULES.FRONTEND_METRICS, // browser telemetry ingestion, not required by automation clients
   MODULES.CUSTOM_COMPONENT_LIBRARIES, // uploads code that runs inside apps; not granted pending a decision
   MODULES.ROOT, // health and version
+  MODULES.SSRF, // outbound request settings: super admin in the UI only, never a token
   // Uploads and publishes JS bundles that execute inside every app that uses them.
   MODULES.CUSTOM_COMPONENT_LIBRARIES,
 ];

@@ -1,3 +1,4 @@
+/** @group platform */
 import { Test, TestingModule } from '@nestjs/testing';
 import { EncryptionService } from '@modules/encryption/service';
 

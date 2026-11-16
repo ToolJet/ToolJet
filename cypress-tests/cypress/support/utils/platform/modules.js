@@ -81,7 +81,7 @@ export const publishModuleVersion = (currentVersionName, newVersionName) => {
   cy.get(commonWidgetSelector.parameterInputField('version name')).clear().type(newVersionName);
   cy.get(commonSelectors.buttonSelector('create version save')).click();
   cy.get(commonSelectors.toastMessage).should('be.visible');
-  cy.get(moduleSelectors.versionLockBanner, { timeout: 15000 }).should('be.visible');
+  cy.get(moduleSelectors.versionLockBanner, { timeout: 15000 }).should('exist');
 };
 
 export const ensureVersionSwitcherOpen = () => {

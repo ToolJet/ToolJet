@@ -1,3 +1,4 @@
+import { EntityManager } from 'typeorm';
 import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
 
 // Combined "is git sync active for this org" answer — licence entitlement +
@@ -32,6 +33,11 @@ export interface GetDetailsOptions {
   //   (implies git is mandatory). Same error handling as isGitMandatory: 451 if the multi-branch
   //   license entitlement is missing, 422 if the workspace is in single-branch mode.
   isMultiBranchingMandatory?: boolean;
+  // manager — run every read on this manager (and its connection) instead of opening a new
+  //   transaction. Callers that already hold a pooled connection must pass it: taking a second
+  //   one while holding the first can exhaust the pool under fan-out (see AppsSubscriber.afterLoad).
+  //   The rare "create the missing default branch" fallback still writes in its own transaction.
+  manager?: EntityManager;
 }
 
 export interface IGitSyncConfigsUtilService {

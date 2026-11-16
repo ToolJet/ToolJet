@@ -106,8 +106,12 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
     ]
   );
 
+  // `data` must keep its identity between renders: table-core resets the page index (a state update)
+  // whenever `data` changes, so a fresh array per render re-renders this popup forever and freezes the tab.
+  const newRowsData = useMemo(() => [...addNewRowDetails.values()], [addNewRowDetails]);
+
   const table = useReactTable({
-    data: [...addNewRowDetails.values()],
+    data: newRowsData,
     columns: columns,
     getCoreRowModel: getCoreRowModel(),
   });

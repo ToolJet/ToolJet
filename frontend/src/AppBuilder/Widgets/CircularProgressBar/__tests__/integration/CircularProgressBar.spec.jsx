@@ -8,6 +8,7 @@ import {
   store,
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { pasteComponents } from '@/AppBuilder/AppCanvas/copyPasteWidgetsUtils';
 // eslint-disable-next-line import/no-relative-packages
 import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
 
@@ -69,6 +70,32 @@ const trail = (container, handle = HANDLE) => root(container, handle)?.querySele
 const label = (container, handle = HANDLE) => root(container, handle)?.querySelector('.CircularProgressbar-text');
 const dashOffset = (node) => Number.parseFloat(node.style.strokeDashoffset);
 const circumference = (strokeWidth = STROKE_WIDTH) => 2 * Math.PI * (50 - strokeWidth / 2);
+
+const pageComponents = () => store().getCurrentPageComponents(MODULE_ID);
+const storedLabel = (componentId) => pageComponents()[componentId]?.component.definition.properties.text?.value;
+
+// Mirrors copyComponents' clipboard payload for one selected widget and pastes it through the real paste path.
+async function pasteCopyOf(componentId) {
+  const source = pageComponents()[componentId];
+  const before = new Set(Object.keys(pageComponents()));
+  await widget.session.store.act(() =>
+    pasteComponents(undefined, {
+      newComponents: [
+        {
+          id: componentId,
+          component: source.component,
+          layouts: source.layouts,
+          parent: source.component.parent,
+          events: [],
+        },
+      ],
+      isCut: false,
+      isCloning: false,
+      pageId: store().getCurrentPageId(MODULE_ID),
+    })
+  );
+  return Object.keys(pageComponents()).find((id) => !before.has(id));
+}
 
 async function setProperty(property, value, componentId = ID) {
   await widget.session.store.act(() => widget.setComponentProperty(componentId, property, value, 'properties'));
@@ -384,6 +411,47 @@ describe('CircularProgressBar widget', () => {
     expect(created.component.definition.properties.text).toEqual({
       value: '{{components.fresh-circle.value}}%',
     });
+  });
+
+  test('[CircularProgressBar-REG-002] a custom label survives paste and undoing a delete', async () => {
+    // Break this catches: re-seeding the value binding on every add path, which wipes the author's label
+    // whenever the widget is duplicated, pasted or restored by undo.
+    widget.render({ properties: { labelType: binding('custom'), text: binding('Uploading…') } });
+    await waitFor(() => expect(storedLabel(ID)).toBe('Uploading…'));
+
+    const copyId = await pasteCopyOf(ID);
+    expect(copyId).toBeTruthy();
+    expect(storedLabel(copyId)).toBe('Uploading…');
+
+    await widget.session.store.act(() => store().deleteComponents([ID], MODULE_ID, { saveAfterAction: false }));
+    expect(pageComponents()[ID]).toBeUndefined();
+    await widget.session.store.act(() => store().handleUndo());
+    await waitFor(() => expect(pageComponents()[ID]).toBeDefined());
+    expect(storedLabel(ID)).toBe('Uploading…');
+  });
+
+  test('[CircularProgressBar-REG-003] an untouched seeded label follows the pasted copy (D-04)', async () => {
+    // Break this catches: a copy whose label still reads the source widget's value, so a duplicated
+    // bar shows the original's percentage.
+    widget.render({ properties: { labelType: binding('custom'), text: binding(`{{components.${ID}.value}}%`) } });
+    await waitFor(() => expect(storedLabel(ID)).toBe(`{{components.${ID}.value}}%`));
+
+    const copyId = await pasteCopyOf(ID);
+    expect(storedLabel(copyId)).toBe(`{{components.${copyId}.value}}%`);
+    expect(storedLabel(ID)).toBe(`{{components.${ID}.value}}%`);
+  });
+
+  test('[CircularProgressBar-REG-004] setValue with non-numeric text sets 0 instead of NaN (D-05)', async () => {
+    // Break this catches: raw text reaching the label and arc, which shows "abc%" and an undrawable NaN path.
+    const { container } = widget.render();
+    await widget.act('setValue', 'abc');
+    expect(widget.exposed().value).toBe(0);
+    expect(label(container)).toHaveTextContent('0%');
+    expect(dashOffset(path(container))).toBeCloseTo(circumference());
+
+    await widget.act('setValue', '70');
+    expect(widget.exposed().value).toBe(70);
+    expect(label(container)).toHaveTextContent('70%');
   });
 
   test('[CircularProgressBar-ISO-001] instances isolate state and styles', async () => {
