@@ -28,6 +28,7 @@ import { FEATURES as APP_ENVIRONMENTS_FEATURES } from '@modules/app-environments
 import { FEATURES as LICENSING_FEATURES } from '@modules/licensing/constants/features';
 import { FEATURES as WORKFLOW_FEATURES } from '@modules/workflows/constants/feature';
 import { FEATURES as INSTANCE_SETTINGS_FEATURES } from '@modules/instance-settings/constants/features';
+import { FEATURES as SSRF_FEATURES } from '@modules/ssrf/constants/features';
 import { FEATURES as ORGANIZATION_THEMES_FEATURES } from '@modules/organization-themes/constants/feature';
 import { FEATURES as PLUGINS_FEATURES } from '@modules/plugins/constants/features';
 import { FEATURES as TOOLJET_DATABASE_FEATURES } from '@modules/tooljet-db/constants/features';
@@ -90,6 +91,7 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...LICENSING_FEATURES,
   ...WORKFLOW_FEATURES,
   ...INSTANCE_SETTINGS_FEATURES,
+  ...SSRF_FEATURES,
   ...ORGANIZATION_THEMES_FEATURES,
   ...PLUGINS_FEATURES,
   ...TOOLJET_DATABASE_FEATURES,
