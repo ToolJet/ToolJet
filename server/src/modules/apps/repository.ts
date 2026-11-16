@@ -9,6 +9,7 @@ import { SessionAppData } from './types';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { isUUID } from 'class-validator';
 import { APP_TYPES } from './constants';
+import { skipAppEditingVersionHydration } from './subscribers/hydration-context';
 
 @Injectable()
 export class AppsRepository extends Repository<App> {
@@ -107,6 +108,9 @@ export class AppsRepository extends Repository<App> {
       .andWhere('av.branch_id = :branchId', { branchId: resolvedDefaultBranchId })
       .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
+      // Every version row of the app matches; without LIMIT each loads its own App and runs
+      // AppsSubscriber.afterLoad — one hydration per version row. av→app is many-to-one.
+      .limit(1)
       .getOne();
 
     if (!resolvedVersion?.app || resolvedVersion.app.organizationId !== organizationId) {
@@ -140,6 +144,9 @@ export class AppsRepository extends Repository<App> {
       .where('av.slug = :slug', { slug })
       .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
+      // Every version row of the app matches; without LIMIT each loads its own App and runs
+      // AppsSubscriber.afterLoad — one hydration per version row. av→app is many-to-one.
+      .limit(1)
       .getOne();
 
     if (!resolvedVersion?.app) {
@@ -152,39 +159,47 @@ export class AppsRepository extends Repository<App> {
   }
 
   async retrieveAppDataUsingSlug(slug: string): Promise<SessionAppData> {
-    // Resolve the app by its default-branch slug row (git on or off — every org has a
-    // default branch). is_synced=true sorts first when git is on.
-    const resolved = await this.dataSource
-      .getRepository(AppVersion)
-      .createQueryBuilder('av')
-      .innerJoinAndSelect('av.app', 'app')
-      .innerJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
-      .where('av.slug = :slug', { slug })
-      .orderBy('av.is_synced', 'DESC')
-      .addOrderBy('av.updated_at', 'DESC')
-      .getOne();
+    // Only plain app columns are read here, so skip AppsSubscriber.afterLoad: it would run once
+    // per loaded App (one per matching version row), each holding extra pooled connections while
+    // this query's connection is still checked out — enough to starve the pool for apps with
+    // many versions.
+    return skipAppEditingVersionHydration.run(true, async () => {
+      // Resolve the app by its default-branch slug row (git on or off — every org has a
+      // default branch). is_synced=true sorts first when git is on. Every version row of the
+      // app carries the slug; only the first is used. av→app is many-to-one, so LIMIT is safe.
+      const resolved = await this.dataSource
+        .getRepository(AppVersion)
+        .createQueryBuilder('av')
+        .innerJoinAndSelect('av.app', 'app')
+        .innerJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
+        .where('av.slug = :slug', { slug })
+        .orderBy('av.is_synced', 'DESC')
+        .addOrderBy('av.updated_at', 'DESC')
+        .limit(1)
+        .getOne();
 
-    if (resolved?.app) {
+      if (resolved?.app) {
+        return {
+          organizationId: resolved.app.organizationId,
+          isPublic: resolved.isPublic ?? resolved.app.isPublic,
+          isReleased: !!resolved.app.currentVersionId,
+        };
+      }
+
+      // Fallback to apps table (for workflows)
+      let app: App;
+      try {
+        app = await this.findOneOrFail({ where: { slug } });
+      } catch {
+        app = await this.findOne({ where: { slug } });
+      }
+
       return {
-        organizationId: resolved.app.organizationId,
-        isPublic: resolved.isPublic ?? resolved.app.isPublic,
-        isReleased: !!resolved.app.currentVersionId,
+        organizationId: app?.organizationId,
+        isPublic: app?.isPublic,
+        isReleased: app?.currentVersionId ? true : false,
       };
-    }
-
-    // Fallback to apps table (for workflows)
-    let app: App;
-    try {
-      app = await this.findOneOrFail({ where: { slug } });
-    } catch {
-      app = await this.findOne({ where: { slug } });
-    }
-
-    return {
-      organizationId: app?.organizationId,
-      isPublic: app?.isPublic,
-      isReleased: app?.currentVersionId ? true : false,
-    };
+    });
   }
 
   // defaultBranchId — caller-supplied; null when git-sync is off. See findBySlug.
@@ -205,6 +220,9 @@ export class AppsRepository extends Repository<App> {
       .andWhere('app.organization_id = :organizationId', { organizationId })
       .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
+      // Every version row of the app matches; without LIMIT each loads its own App and runs
+      // AppsSubscriber.afterLoad — one hydration per version row. av→app is many-to-one.
+      .limit(1)
       .getOne();
 
     if (resolved?.app) {

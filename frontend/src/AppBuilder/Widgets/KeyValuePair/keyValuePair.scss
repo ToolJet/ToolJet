@@ -16,23 +16,28 @@
     display: none;
   }
 
-  // ChangeSet Popover - fixed at bottom, overlays content
+  // ChangeSet Popover - fixed at bottom, overlays content; stays 8px inside both edges
   .kv-changeset-popover {
     position: absolute;
     bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--surfaces-surface-01);
-    border: 1px solid var(--borders-default);
-    border-radius: 9px;
-    padding: 8px;
+    left: 8px;
+    right: 8px;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
     z-index: 10;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 
     .kv-changeset-content {
       display: flex;
       align-items: center;
       gap: 6px;
+      max-width: 100%;
+      pointer-events: auto;
+      background: var(--surfaces-surface-01);
+      border: 1px solid var(--borders-default);
+      border-radius: 9px;
+      padding: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
     }
 
     .kv-changeset-actions {
@@ -52,6 +57,7 @@
       border: 1px solid var(--borders-default);
       border-radius: 6px;
       cursor: pointer;
+      white-space: nowrap;
 
       &:hover {
         background: var(--surfaces-surface-02);
@@ -66,12 +72,68 @@
       font-weight: 500;
       color: var(--surfaces-surface-01);
       background: var(--primary-accent-strong);
-      border: none;
+      border: 1px solid var(--primary-accent-strong);
       border-radius: 6px;
       cursor: pointer;
+      white-space: nowrap;
 
-      &:hover {
+      &:hover:not(:disabled) {
         opacity: 0.9;
+      }
+
+      // Matches the shared .tj-base-btn:disabled convention (AppButton.scss) that
+      // Table's own Save/Discard buttons already get for free - this widget's
+      // Save/Cancel are plain buttons, not ButtonSolid, so they need it explicitly.
+      &:disabled {
+        background: var(--slate6);
+        border-color: var(--slate6);
+        color: var(--slate9);
+        cursor: not-allowed;
+      }
+    }
+
+    // Icon-only below CTA_TEXT_MIN_WIDTH (KeyValuePair.jsx)
+    .kv-btn-cancel.kv-btn-icon-only,
+    .kv-btn-save.kv-btn-icon-only {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      min-width: 28px;
+    }
+
+    .kv-btn-anchor {
+      display: inline-flex;
+    }
+
+    // Below CTA_TEXT_MIN_WIDTH the bar becomes a full-width footer on the bottom edge
+    &.kv-changeset-docked {
+      left: 0;
+      right: 0;
+      bottom: 0;
+
+      .kv-changeset-content {
+        width: 100%;
+        padding: 6px;
+        border-width: 1px 0 0;
+        border-radius: 0 0 calc(var(--kv-border-radius, 0px) - 1px) calc(var(--kv-border-radius, 0px) - 1px);
+        box-shadow: 0 -1px 6px rgba(0, 0, 0, 0.06);
+      }
+
+      .kv-changeset-actions {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .kv-btn-anchor {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .kv-btn-cancel.kv-btn-icon-only,
+      .kv-btn-save.kv-btn-icon-only {
+        flex: 1;
+        min-width: 0;
       }
     }
   }
@@ -91,6 +153,12 @@
     height: 100%;
     overflow-y: auto;
     scrollbar-color: var(--interactive-selected) transparent;
+
+    // Keeps the last row clear of the docked footer
+    &.kv-content-docked {
+      box-sizing: border-box;
+      padding-bottom: 52px;
+    }
   }
 }
 
@@ -156,6 +224,13 @@
     align-items: center;
     min-height: 38px;
   }
+
+  // With auto label width the value cell is `width: 100%` and would shrink by each label's natural width,
+  // so cells (and their edit icons) ended at different edges per row. Fill the remaining space instead.
+  .key-value-render-value {
+    flex: 1 1 0%;
+    min-width: 0;
+  }
 }
 
 // Value styling
@@ -175,11 +250,52 @@
   box-sizing: border-box;
 
 
+  // The renderer may shrink below its content width so it can never push the edit icon out of the cell.
+  > :first-child {
+    min-width: 0;
+  }
+
   &.kv-select,
   &.kv-newMultiSelect {
     padding: 0 !important;
     .kv-edit-icon {
-      margin-right: 8px;
+      right: 8px;
+    }
+  }
+
+  // Editable cells reserve a gutter for the edit icon, which floats at the cell's right edge.
+  &.kv-editable {
+    padding-right: 30px !important;
+  }
+
+  &.kv-select.kv-editable,
+  &.kv-newMultiSelect.kv-editable {
+    padding-right: 32px !important;
+  }
+
+  // Single-line values truncate with an ellipsis; the full value is still shown by the hover overlay.
+  &.kv-string,
+  &.kv-number {
+    > :first-child {
+      flex: 1 1 auto;
+    }
+
+    .text-container:not([contenteditable='true']),
+    > div:not(.position-relative) {
+      display: block !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      word-break: normal;
+    }
+
+    // Read-only string: the text sits in a span inside a flex wrapper.
+    > div > span {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 
@@ -189,9 +305,13 @@
   }
 
   .kv-edit-icon {
-    flex-shrink: 0;
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
     min-width: 16px;
     color: #ACB2B9;
+    pointer-events: none;
   }
 }
 
@@ -215,7 +335,11 @@
       // resize: vertical;
       // overflow-y: auto;
       position: absolute;
-      z-index: 99999 !important;
+      // Must stay below .kv-changeset-popover's z-index (10): this field and the popover share the
+      // same stacking context (no row/value wrapper between them sets its own z-index), so a value
+      // copied from Table's expanding cell-editor overlay (99999) let an actively-edited field (e.g.
+      // an HTML field with long unbreakable text) paint over the Save/Cancel buttons.
+      z-index: 1 !important;
       align-items: flex-start !important;
       // padding: 8px !important;
     }
@@ -374,3 +498,8 @@
     }
     
 
+
+// The label tooltip is portaled into the canvas, where widget layers would otherwise paint over it.
+.kv-label-overlay {
+  z-index: 1100;
+}

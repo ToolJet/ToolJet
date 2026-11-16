@@ -2,8 +2,10 @@ import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Inj
 import { isEmpty, set } from 'lodash';
 import { isUUID } from 'class-validator';
 import { App } from 'src/entities/app.entity';
+import { AppBase } from 'src/entities/app_base.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from 'src/entities/app_version.entity';
+import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
@@ -639,13 +641,13 @@ export class AppImportExportService {
       const coRelationIds = uniqueModuleAppIds.map((m) => m.moduleId).filter(Boolean);
       const moduleAppsById: Record<string, string> = {};
       if (coRelationIds.length > 0) {
-        const resolvedModules = await manager
-          .createQueryBuilder(App, 'app')
+        const resolvedModules: { id: string; co_relation_id: string }[] = await manager
+          .createQueryBuilder(AppBase, 'app')
           .where('app.co_relation_id IN (:...coRelationIds)', { coRelationIds })
           .andWhere('app.organization_id = :organizationId', { organizationId: appToExport.organizationId })
           .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
-          .select(['app.id', 'app.co_relation_id'])
-          .getMany();
+          .select(['app.id AS id', 'app.co_relation_id AS co_relation_id'])
+          .getRawMany();
         for (const mod of resolvedModules) {
           moduleAppsById[mod.co_relation_id] = mod.id;
         }
@@ -883,10 +885,11 @@ export class AppImportExportService {
     // the module, tries to recreate it, and violates app_versions(app_name, branch_id, type).
     const nameMatchBranchIds = Array.from(new Set([defaultBranchId, branchId].filter(Boolean)));
 
-    const existingModules =
+    const existingModules: { id: string; co_relation_id: string }[] =
       moduleAppNames.length > 0 || moduleAppCoRelIds.length > 0
         ? await manager
-            .createQueryBuilder(App, 'app')
+            .createQueryBuilder(AppBase, 'app')
+            .select(['app.id AS id', 'app.co_relation_id AS co_relation_id'])
             .where('app.organizationId = :organizationId', { organizationId: user.organizationId })
             .andWhere(
               new Brackets((qb: any) => {
@@ -915,15 +918,15 @@ export class AppImportExportService {
               })
             )
             .distinct(true)
-            .getMany()
+            .getRawMany()
         : [];
 
     // Index existing modules by passport first, name as fallback. Resolve each module's
     // canonical name from the same source as the lookup above.
-    const existingByCoRel = new Map<string, App>(
+    const existingByCoRel = new Map<string, { id: string; co_relation_id: string }>(
       existingModules.filter((m) => m.co_relation_id).map((m) => [m.co_relation_id, m])
     );
-    const existingByName = new Map<string, App>();
+    const existingByName = new Map<string, { id: string; co_relation_id: string }>();
     if (existingModules.length > 0 && moduleAppNames.length > 0) {
       const nameQb = manager
         .createQueryBuilder(AppVersion, 'av')
@@ -1266,7 +1269,7 @@ export class AppImportExportService {
     manager: EntityManager,
     user: User,
     importedModule: any,
-    existingModule: App,
+    existingModule: { id: string },
     branchId: string,
     externalResourceMappings: any,
     tooljetVersion: string
@@ -1374,6 +1377,10 @@ export class AppImportExportService {
         : convertSinglePageSchemaToMultiPageSchema(appParams);
       schemaUnifiedAppParams.name = appName;
 
+      if (cloning) {
+        await this.dedupeClonedDataSourceNames(manager, schemaUnifiedAppParams, user.organizationId);
+      }
+
       const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
       const isNormalizedAppDefinitionSchema = cloning
         ? true
@@ -1425,6 +1432,22 @@ export class AppImportExportService {
       });
       return { newApp, resourceMapping };
     }, manager);
+  }
+
+  // Copies cannot reuse a name (idx_unique_active_name_branch). Default sources are recognised by name; skip them.
+  private async dedupeClonedDataSourceNames(
+    manager: EntityManager,
+    appParams: { dataSources?: Pick<DataSource, 'name' | 'type'>[] },
+    organizationId: string
+  ): Promise<void> {
+    const dataSources = appParams?.dataSources;
+    if (!dataSources?.length) return;
+    for (const dataSource of dataSources) {
+      if (!dataSource?.name) continue;
+      if (DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName)) continue;
+      if (dataSource.type === DataSourceTypes.SAMPLE) continue;
+      dataSource.name = await this.dataSourcesUtilService.generateUniqueName(dataSource.name, organizationId, manager);
+    }
   }
 
   /**
@@ -2920,12 +2943,14 @@ export class AppImportExportService {
     resourceMapping: AppResourceMappings
   ): Promise<void> {
     // Get the app versions with their definitions and associated apps
-    const appVersionsWithDefinitions = await manager
-      .createQueryBuilder(AppVersion, 'appVersion')
-      .leftJoinAndSelect('appVersion.app', 'app')
-      .where('appVersion.id IN(:...appVersionIds)', { appVersionIds })
-      .select(['appVersion.id', 'appVersion.definition', 'app.type'])
-      .getMany();
+    const appVersionsWithDefinitions = await skipAppEditingVersionHydration.run(true, () =>
+      manager
+        .createQueryBuilder(AppVersion, 'appVersion')
+        .leftJoinAndSelect('appVersion.app', 'app')
+        .where('appVersion.id IN(:...appVersionIds)', { appVersionIds })
+        .select(['appVersion.id', 'appVersion.definition', 'app.type'])
+        .getMany()
+    );
 
     const workflowAppVersions = appVersionsWithDefinitions.filter(
       (appVersion) => appVersion.app?.type === 'workflow' && appVersion.definition?.queries
@@ -3277,7 +3302,7 @@ export class AppImportExportService {
       if (plugin) {
         const newDataSource = manager.create(DataSource, {
           organizationId: user?.organizationId,
-          name: dataSource.name,
+          name: await this.dataSourcesUtilService.generateUniqueName(dataSource.name, user.organizationId, manager),
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
           scope: DataSourceScopes.GLOBAL,
@@ -3297,7 +3322,8 @@ export class AppImportExportService {
     const createNewGlobalDs = async (ds: DataSource): Promise<DataSource> => {
       const newDataSource = manager.create(DataSource, {
         organizationId: user?.organizationId,
-        name: dataSource.name,
+        // No reusable global source matched above; (name, branch_id) is unique per workspace, so a clash gets a numbered name.
+        name: await this.dataSourcesUtilService.generateUniqueName(dataSource.name, user.organizationId, manager),
         kind: dataSource.kind,
         type: DataSourceTypes.DEFAULT,
         scope: DataSourceScopes.GLOBAL,
@@ -4615,7 +4641,7 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @param {NewRevampedComponent[]} componentTypes - An array of component types for which to perform property migration.
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
-function migrateProperties(
+export function migrateProperties(
   componentType: NewRevampedComponent | PartialRevampedComponent | 'ModuleViewer',
   component: Component,
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
@@ -4844,7 +4870,9 @@ function migrateProperties(
 
     // Image
     if (componentType === 'Image') {
-      if (styles.padding) {
+      // Old exports kept the padding number in `padding`; current ones keep the switch value there and the
+      // number in `customPadding`. Only a `padding` that isn't a switch value needs moving.
+      if (styles.padding && !['default', 'custom'].includes(styles.padding.value)) {
         styles.customPadding = styles.padding;
         styles.padding = { value: 'custom' };
       }

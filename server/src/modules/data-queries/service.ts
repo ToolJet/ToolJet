@@ -257,16 +257,19 @@ export class DataQueriesService implements IDataQueriesService {
     );
   }
 
-  async bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]) {
+  async bulkUpdateQueryOptions(user: User, versionId: string, dataQueriesOptions: IUpdatingReferencesOptions[]) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const stored: DataQuery[] = [];
       for (const { id } of dataQueriesOptions) {
-        stored.push(
-          await this.dataQueryRepository.findOneOrFail({
-            where: { id, dataSource: { organizationId: user.organizationId } },
-            relations: ['dataSource'],
-          })
-        );
+        // Scope to the authorized version; a query from any other app must be rejected (IDOR).
+        const query = await this.dataQueryRepository.findOne({
+          where: { id, appVersionId: versionId, dataSource: { organizationId: user.organizationId } },
+          relations: ['dataSource'],
+        });
+        if (!query) {
+          throw new ForbiddenException('You do not have permission to access this resource');
+        }
+        stored.push(query);
       }
 
       if (stored.length) {
@@ -322,8 +325,13 @@ export class DataQueriesService implements IDataQueriesService {
     // Persisting options on run is an EDITOR authoring convenience.
     // This endpoint is also hit by app preview, and there the user is consuming, not editing,
     // so the loaded options must NOT be written back.
+    // The released version (App.currentVersionId) is frozen too: a non-UI client (MCP/PAT) can hit
+    // this endpoint directly, so skip the write-back when the query's version is the released one.
+    // Only the authoring persist is gated — the query still executes below.
+    const isReleasedVersion = !!app?.currentVersionId && dataQuery.appVersionId === app.currentVersionId;
     if (
       mode !== 'view' &&
+      !isReleasedVersion &&
       ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) &&
       !isEmpty(options) &&
       (await this.isGitSyncEditAllowed(user.organizationId, dataQuery.appVersion))

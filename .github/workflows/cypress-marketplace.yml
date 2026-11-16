@@ -118,10 +118,12 @@ jobs:
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
+        env:
+          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         run: |
           echo "Building EE Docker image..."
-          # main's Dockerfile reads the token as a build arg, lts-3.16's as a BuildKit
-          # secret; pass both so label runs work for PRs into either branch.
+          # PR branches cut before the secret change still read the token as a build arg;
+          # pass both until they've all merged it. The image is --load only, never pushed.
           CUSTOM_GITHUB_TOKEN="${{ secrets.CUSTOM_GITHUB_TOKEN }}" docker buildx build \
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
@@ -431,6 +433,25 @@ jobs:
             -H 'Content-Type: application/json' \
             -H "tj-workspace-id: $TJ_ORG_ID" \
             --data-raw '{"region": "us"}'
+
+      - name: Seeding (Disable SSRF protection)
+        run: |
+          # The SSRF settings API only exists on branches that have it; skip the step where it does not.
+          STATUS=$(curl --silent --output /dev/null --write-out '%{http_code}' \
+            -b /tmp/tj_cookies.txt \
+            'http://localhost:3000/api/instance-settings/ssrf' \
+            -H "tj-workspace-id: $TJ_ORG_ID")
+          if [ "$STATUS" = "404" ]; then
+            echo "SSRF settings API not found, skipping"
+            exit 0
+          fi
+          curl --fail-with-body \
+            -b /tmp/tj_cookies.txt \
+            -X PUT \
+            'http://localhost:3000/api/instance-settings/ssrf' \
+            -H 'Content-Type: application/json' \
+            -H "tj-workspace-id: $TJ_ORG_ID" \
+            --data-raw '{"enabled": false, "allowed_addresses": []}'
 
       - name: Create Cypress environment file
         id: create-json

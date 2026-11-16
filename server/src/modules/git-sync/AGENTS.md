@@ -110,6 +110,10 @@ logic is in `server/ee/git-sync/`.
   `GitSyncConfigsUtilService.getDetails`, which replaces `orgGit.gitHttps` wholesale — reinstating
   `githubPrivateKey` if it was stripped earlier. `getDetails` now shallow-clones its argument, but
   the ordering in `findAppGitConfigs` is still the guard that matters.
+- **Pass `{ manager }` to `getDetails` when you already hold a connection.** Without it, `getDetails`
+  opens its own transaction (and `ensureResolved` its own lookup) — a second pooled connection per
+  call. Called per row (e.g. `AppsSubscriber.afterLoad`), that exhausts the pool. The rare
+  missing-default-branch fallback still writes in its own transaction, never on the caller's manager.
 - **The app-git import lane creates referenced workflow rows, and gates them.** `createGitApp` (and the two tag-import helpers) pre-create + hydrate embedded **workflows** as well as modules, via `pullAndHydrateWorkflowRefs` → `hydrateReferencedWorkflowStubs`. Creating them requires `workflowCreate` (`assertWorkflowCreatePermission`), asserted **before** hydration — after it, the check would always see zero missing. Workflows reached through a module are handled by `hydrateStubApp` step 6b during that module's hydration, so this lane must not walk into modules.
 - Pull / create-branch clone the default `organization_git_sync_branches` row's `branch_name`, not the
   configured branch. Env config keeps it in sync via `reconcileDefaultBranchName` (`ee/git-sync/default-branch.util.ts`)

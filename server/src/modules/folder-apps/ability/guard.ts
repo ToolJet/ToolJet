@@ -62,19 +62,29 @@ export class FeatureAbilityGuard extends AbilityGuard {
         select: ['id', 'createdBy', 'type'],
       });
 
-      const folderOwnedByUser = !!folder && folder.createdBy === request.user.id;
-      request.tj_folder_type = folder?.type;
+      // Cross-workspace guard: the target folder must belong to the caller's workspace.
+      // folder_apps rows carry no organization_id, so a folder from another org is never a
+      // valid sink — deny here, before the role-based grants in the ability factory (which
+      // grant admins unconditionally) can bind a foreign resource.
+      if (!folder) return false;
 
-      const appIds: string[] = request.body.app_id ? [request.body.app_id] : request.body.app_ids;
+      const folderOwnedByUser = folder.createdBy === request.user.id;
+      request.tj_folder_type = folder.type;
+
+      // Every target app must belong to the caller's workspace too. The create/bulkCreate
+      // sinks look up and move a binding by app_id alone (no org scope), so a cross-org
+      // app_id would hijack another workspace's folder binding. Resolve all ids org-scoped
+      // and reject unless each one resolves in-org — for every role, admins included.
+      const appIds: string[] = request.body?.app_id ? [request.body.app_id] : request.body.app_ids;
       const apps = await this.dataSource.manager.find(App, {
         where: { id: In(appIds), organizationId: request.user.organizationId },
         select: ['id', 'userId', 'type'],
       });
-      const allFound = apps.length === new Set(appIds).size;
-      request.tj_allow_owner_folder_app_create =
-        folderOwnedByUser && allFound && apps.every((app) => app.userId === request.user.id);
-      request.tj_allow_owner_folder_app_delete = folderOwnedByUser && allFound;
-      request.tj_folder_app_type_mismatch = !!folder?.type && apps.some((app) => app.type && app.type !== folder.type);
+      if (apps.length !== new Set(appIds).size) return false;
+
+      request.tj_allow_owner_folder_app_create = folderOwnedByUser && apps.every((app) => app.userId === request.user.id);
+      request.tj_allow_owner_folder_app_delete = folderOwnedByUser;
+      request.tj_folder_app_type_mismatch = !!folder.type && apps.some((app) => app.type && app.type !== folder.type);
     }
 
     return super.canActivate(context);
