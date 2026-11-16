@@ -25,6 +25,19 @@ jobs:
     outputs:
       digest: ${{ steps.build.outputs.digest }}
     steps:
+      - name: Check PR source and branch name
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ -n "$HEAD_REPO" ] && [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::Cypress runs are not allowed for pull requests from forks ($HEAD_REPO)."
+            exit 1
+          fi
+          if ! printf '%s' "$BRANCH_NAME" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+            echo "::error::Branch name may only contain letters, numbers, '.', '_', '/' and '-'."
+            exit 1
+          fi
+
       - name: Free up disk space
         run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
       - uses: actions/checkout@v7
