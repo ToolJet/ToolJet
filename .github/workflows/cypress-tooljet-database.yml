@@ -171,7 +171,7 @@ jobs:
 
       - name: Update docker-compose file
         run: |
-          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1${{ env.IMAGE }}|' docker-compose.yaml
+          sed -i "/^[[:space:]]*tooljet:/,/^\$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1${IMAGE}|" docker-compose.yaml
 
       - name: view docker-compose file
         run: cat docker-compose.yaml
