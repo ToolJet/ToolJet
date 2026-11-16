@@ -12,18 +12,18 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
 - **`WorkflowApprovalRequest`** — `@entities/workflow_approval_request.entity.ts`, table
   `workflow_approval_requests`. One `pending` row per (execution, node), enforced by a
   **partial unique index** on `status='pending'`. Migration:
-  `migrations/1789300000100-CreateWorkflowApprovalRequestsAndExecutionLinkage.ts`.
+  `migrations/schema/1789300000100-CreateWorkflowApprovalRequestsAndExecutionLinkage.ts`.
   Key columns: `token` (bearer secret for the public resolve endpoint), `status`
   (`pending`/`resolved`/`expired`/…), `resolvedOutcome`, `input` (jsonb), `resolvedByUserId`,
   `approversSnapshot` (jsonb), `expiresAt`,
   `organization_id` / `app_id` (denormalized from the execution's app version so the approvals
   list can filter and paginate on an index rather than through three joins; written at request
-  creation, added by `migrations/1789300000300-AddOrganizationAndAppToApprovalRequests.ts`).
+  creation, added by `migrations/schema/1789300000300-AddOrganizationAndAppToApprovalRequests.ts`).
   Repository:
   `repositories/workflow-approval-request.repository.ts`.
 - **Foreign-key indexes.** Postgres does not index the referencing side of a foreign key, so
   every FK on a cascade path of run history needs its own non-partial index
-  (`migrations/1790600000000-AddWorkflowRunHistoryForeignKeyIndexes.ts`: `parent_execution_id`,
+  (`migrations/schema/1790600000000-AddWorkflowRunHistoryForeignKeyIndexes.ts`: `parent_execution_id`,
   `parent_node_id`, `schedule_id`, approval `workflow_execution_id` / `execution_node_id`). The
   pending-only partial unique index cannot serve cascade lookups. Pinned by
   the foreign-key index describe in `e2e/workflow-runs.spec.ts`; add new run-history FKs to both.

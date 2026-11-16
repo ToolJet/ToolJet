@@ -14,7 +14,7 @@ import {
 } from 'test-helper';
 import { INestApplication } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
-import { BackfillWorkspaceColumnsOnWorkflowExecutions1793450000000 } from '../../../../data-migrations/1793450000000-BackfillWorkspaceColumnsOnWorkflowExecutions';
+import { BackfillWorkspaceColumnsOnWorkflowExecutions1793450000000 } from '../../../../migrations/data/1793450000000-BackfillWorkspaceColumnsOnWorkflowExecutions';
 
 jest.setTimeout(60_000);
 
