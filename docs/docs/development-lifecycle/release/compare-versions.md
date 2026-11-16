@@ -16,7 +16,7 @@ import TabItem from '@theme/TabItem';
 
 <PlanBadge type="pro" />
 
-<!-- TODO screenshot: /img/development-lifecycle/release/compare-versions/compare-side-by-side.png | img-full | alt: Compare versions showing one screen in two versions side by side: the bar chart has become a stacked area chart, and a list of shipments that need attention has replaced the table | shows: Northwind Dispatch with v3 saved, Compare versions from v2 to v3, See screens and code, Screens view, Side by side, Overview screen at Laptop 1280 -->
+<img className="screenshot-full img-full" src="/img/development-lifecycle/release/compare-versions/compare-side-by-side.png" alt="Compare versions showing one screen in two versions side by side: the bar chart has become a stacked area chart, and a list of shipments that need attention has replaced the table" />
 
 ## What You Can Do
 
@@ -61,13 +61,12 @@ After an AI edit, **See what changed** under the chat turn opens this same view,
 <TabItem value="react-builder" label="React Builder app">
 
 1. In the editor's header, click **Compare versions**, then pick the versions under **From** and **To**.
-2. Read the summary of the changed files, queries and settings, then click **See screens and code**.
-3. Switch between the three views:
-   - **Screens** shows each screen before and after, side by side or with a slider, at the width you choose.
-   - **Code** shows what changed in each file.
-   - **Access** shows who can open each screen and run each query.
+2. Read the summary on the left: the changed files, queries and settings, and any change to who can open a screen or run a query. Then click **See screens and code**.
+3. Switch between the two views:
+   - **Screens** shows each screen before and after, side by side or with a slider, at the width you choose. A dot marks the screens and widths that look different.
+   - **Code** lists the changed files and shows what changed in each one.
 
-<!-- TODO screenshot: /img/development-lifecycle/release/compare-versions/code-diff.png | img-full | alt: The Code view of a comparison, with the changes to Overview.tsx between two versions shown side by side | shows: Northwind Dispatch, Compare versions from v2 to v3, See screens and code, Code view, Side by side layout, Overview.tsx selected -->
+<img className="screenshot-full img-full" src="/img/development-lifecycle/release/compare-versions/code-diff.png" alt="The Code view of a comparison: the changed files with their added and removed lines on the left, and the changes to Overview.tsx between v2 and v3" />
 
 The same view opens from **See what changed** under an AI chat turn, on an App history entry, and in the release and promote dialogs. Queries that write data are blocked while you compare, so comparing never changes your data.
 
