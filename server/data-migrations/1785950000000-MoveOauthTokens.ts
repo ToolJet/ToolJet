@@ -206,17 +206,28 @@ export class MoveOauthTokens1785950000000 implements MigrationInterface {
             const accessTokenOption = options?.access_token;
             const refreshTokenOption = options?.refresh_token;
 
+            // Options can reference a credentials row that no longer exists; treat its token as absent.
+            const readCredentialValue = async (credentialId: string): Promise<string | null> => {
+              const [found] = await manager.query(`SELECT 1 FROM credentials WHERE id = $1`, [credentialId]);
+              if (!found) {
+                console.log(
+                  `MoveOauthTokens1785950000000: [SKIP] credential ${credentialId} referenced by data_source_version_option ${row.id} not found.`
+                );
+                return null;
+              }
+              credentialIdsToDelete.push(credentialId);
+              return credentialsService.getValue(credentialId, manager);
+            };
+
             let accessToken: string | null = null;
             let refreshToken: string | null = null;
 
             if (accessTokenOption?.credential_id) {
-              accessToken = await credentialsService.getValue(accessTokenOption.credential_id, manager);
-              credentialIdsToDelete.push(accessTokenOption.credential_id);
+              accessToken = await readCredentialValue(accessTokenOption.credential_id);
             }
 
             if (refreshTokenOption?.credential_id) {
-              refreshToken = await credentialsService.getValue(refreshTokenOption.credential_id, manager);
-              credentialIdsToDelete.push(refreshTokenOption.credential_id);
+              refreshToken = await readCredentialValue(refreshTokenOption.credential_id);
             }
 
             const encryptedAccessToken = accessToken

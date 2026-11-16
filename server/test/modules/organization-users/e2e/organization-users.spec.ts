@@ -351,6 +351,10 @@ describe('OrganizationUsersController', () => {
       expect(viewerUserData.orgUser.status).toBe('archived');
     });
 
+    // The PAT-session variant of this IDOR check lives in the EE tree
+    // (ee/test/modules/organization-users/e2e/organization-users.spec.ts): workspace PATs are an
+    // EE feature, so /api/personal-access-tokens is only implemented under the EE app. The plain
+    // cross-tenant case (non-super-admin attacker, cookie session) is covered below in CE.
     it('should not allow a workspace admin to archive a user in a different organization via body.organizationId override', async () => {
       const attackerData = await createUser(app, {
         email: 'attacker@tooljet.io',
@@ -590,6 +594,57 @@ describe('OrganizationUsersController', () => {
       expect(developerUserData.orgUser.status).toBe('invited');
     });
 
+    // Regression for the audit-log misattribution flagged alongside tj-ee#5469: the entry
+    // must record the workspace the action was taken in, not the caller's default workspace.
+    it('should attribute the archive/unarchive audit log entry to the acted-on workspace', async () => {
+      const orgAdminData = await createUser(app, {
+        email: 'audit-org-admin@tooljet.io',
+        groups: ['admin', 'end-user'],
+      });
+      const organization = orgAdminData.organization;
+
+      const targetUserData = await createUser(app, {
+        email: 'audit-target@tooljet.io',
+        groups: ['viewer', 'end-user'],
+        organization,
+      });
+
+      // Super admin's default workspace is their own — distinct from `organization`.
+      const superAdminUserData = await createUser(app, {
+        email: 'audit-superadmin@tooljet.io',
+        groups: ['admin', 'end-user'],
+        userType: 'instance',
+      });
+      await createUser(app, { email: 'audit-superadmin@tooljet.io', organization }, superAdminUserData.user);
+      expect(superAdminUserData.user.defaultOrganizationId).not.toEqual(organization.id);
+
+      const session = await buildTestSession(superAdminUserData.user, organization.id);
+
+      const emitter = app.get(EventEmitter2);
+      const spy = jest.spyOn(emitter, 'emit');
+
+      await request(app.getHttpServer())
+        .post(`/api/organization-users/${targetUserData.orgUser.id}/archive`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', session.tokenCookie)
+        .send({})
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post(`/api/organization-users/${targetUserData.orgUser.id}/unarchive`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', session.tokenCookie)
+        .send({})
+        .expect(201);
+
+      const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry').map(([, payload]) => payload);
+      expect(auditEmits).toHaveLength(2);
+      for (const entry of auditEmits) {
+        expect(entry.organizationId).toEqual(organization.id);
+        expect(entry.organizationId).not.toEqual(superAdminUserData.user.defaultOrganizationId);
+      }
+    });
+
     it('should not allow a workspace admin to unarchive a user in a different organization via body.organizationId override', async () => {
       const attackerData = await createUser(app, {
         email: 'attacker-unarchive@tooljet.io',
@@ -662,6 +717,30 @@ describe('OrganizationUsersController', () => {
 
       await victimData.orgUser.reload();
       expect(victimData.orgUser.status).toBe('invited');
+    });
+  });
+
+  describe('GET /api/organization-users | List organization users', () => {
+    it('should not list users belonging to another organization', async () => {
+      const adminUserData = await createUser(app, { email: 'admin@tooljet.io', groups: ['all_users', 'admin'] });
+      const anotherOrgAdminUserData = await createUser(app, {
+        email: 'another-org-admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const { tokenCookie } = await buildTestSession(
+        anotherOrgAdminUserData.user,
+        anotherOrgAdminUserData.organization.id
+      );
+
+      const response = await request(app.getHttpServer())
+        .get('/api/organization-users?page=1')
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+      const emails = response.body.users.map((u: { email: string }) => u.email);
+      expect(emails).toContain(anotherOrgAdminUserData.user.email);
+      expect(emails).not.toContain(adminUserData.user.email);
     });
   });
 

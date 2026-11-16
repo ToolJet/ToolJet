@@ -24,7 +24,8 @@
                         // Unique ID to correlate this request with its response when multiple queries run concurrently
                         const requestId = 'rq_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                         const handler = (e) => {
-                            if (e.data.message === 'RUN_QUERY_RESPONSE' &&
+                            if (e.source === window.parent &&
+                                e.data.message === 'RUN_QUERY_RESPONSE' &&
                                 e.data.componentId === window.Tooljet.componentId &&
                                 e.data.requestId === requestId) {
                                 window.removeEventListener('message', handler);
@@ -66,6 +67,8 @@
                     }, "*");
             
                     messageEventListener = (e) => {
+                        // Only the host page may send data or code; other frames can reach this window too.
+                        if (e.source !== window.parent) return;
                         if(e.data.message === 'CODE_UPDATED' || e.data.message === 'INIT_RESPONSE'){
                             const tags = document.getElementsByTagName("script");
                             for(let i = 0; i < tags.length; i++){
@@ -75,7 +78,7 @@
                                 }
                             }
                             var head = document.getElementsByTagName('head')[0];
-                            script = document.createElement('script');
+                            const script = document.createElement('script');
                             script.text = e.data.code
                             script.type = "text/babel";
                             script.setAttribute("data-type", "module");

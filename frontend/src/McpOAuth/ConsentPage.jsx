@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import config from 'config';
 import { Check, Database, Info, LayoutGrid, UsersRound, Workflow } from 'lucide-react';
-import TooljetLogoIcon from '@/_ui/Icon/solidIcons/TooljetLogoIcon';
+import TooljetLogo from './tooljet-logo.svg';
 import '@/_styles/componentdesign.scss';
 import '@/_styles/typography.scss';
 import './oauth.css';
 import ClientLogo from './ClientLogo';
+import WorkspacePicker from './WorkspacePicker';
 import { captureMcpOAuthBootstrap, clearMcpOAuthBootstrap, getMcpOAuthBootstrap } from './bootstrap';
 
 export const SCOPE_LABELS = {
@@ -35,15 +36,21 @@ export default function ConsentPage() {
   const pageClassName = `mcp-oauth-page${darkMode ? ' dark-theme theme-dark' : ''}`;
   const [flow, setFlow] = useState(null);
   const [email, setEmail] = useState(null);
+  const [accountId, setAccountId] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [needsLogin, setNeedsLogin] = useState(false);
+  const [workspaces, setWorkspaces] = useState(null);
+  const [workspace, setWorkspace] = useState('');
 
   useEffect(() => {
     let active = true;
     setFlow(null);
     setEmail(null);
+    setAccountId(null);
     setNeedsLogin(false);
+    setWorkspaces(null);
+    setWorkspace('');
     setError('');
     const load = async () => {
       if (window.top !== window.self) throw new Error('Open this connection in a separate browser tab to continue.');
@@ -81,9 +88,12 @@ export default function ConsentPage() {
       const info = await response.json();
       if (!active) return;
       setFlow(info);
-      const session = await fetch(`${api()}/interactions/${id}/session`, {
+      const session = await fetch(`${api()}/interactions/${id}/${info.organizationId ? 'session' : 'workspaces'}`, {
         credentials: 'include',
-        headers: { 'tj-workspace-id': info.organizationId, 'x-tooljet-oauth-origin': window.location.origin },
+        headers: {
+          ...(info.organizationId ? { 'tj-workspace-id': info.organizationId } : {}),
+          'x-tooljet-oauth-origin': window.location.origin,
+        },
       });
       if (!active) return;
       if (session.status === 401) {
@@ -104,12 +114,42 @@ export default function ConsentPage() {
       }
       if (session.status === 403)
         throw new Error(
-          'You do not have access to connect an AI client in this workspace. Contact your workspace administrator.'
+          info.approvalPending
+            ? 'This connection was approved for a different account or your workspace access changed. Start again from your AI client.'
+            : 'You do not have access to connect an AI client in this workspace. Contact your workspace administrator.'
         );
       if (!session.ok) throw new Error('Unable to verify access to this workspace. Please sign in again.');
       const user = await session.json();
+      if (info.approvalPending) {
+        // Continue already approved this immutable request on the server. Finish
+        // after the workspace policy check (including a required SSO round trip).
+        const completed = await fetch(`${api()}/interactions/${id}`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'tj-workspace-id': info.organizationId,
+            'x-tooljet-oauth-csrf': info.csrfToken,
+          },
+          body: JSON.stringify({ allow: true, accountId: user.accountId, resume: true }),
+        });
+        if (!active) return;
+        if (completed.status === 401) {
+          window.location.assign(info.loginUrl);
+          return;
+        }
+        if (!completed.ok) throw new Error('Unable to complete this connection. Start again from your AI client.');
+        const result = await completed.json();
+        window.location.assign(result.redirectUrl);
+        return;
+      }
       if (active) {
         setEmail(user.email);
+        setAccountId(user.accountId);
+        if (!info.organizationId) {
+          setWorkspaces(user.workspaces);
+          if (user.workspaces.length === 1) setWorkspace(user.workspaces[0].id);
+        }
         try {
           sessionStorage.removeItem(`tj_mcp_login_${id}`);
         } catch {
@@ -123,7 +163,7 @@ export default function ConsentPage() {
     };
   }, [id]);
 
-  const decide = async (allow) => {
+  const selectWorkspace = async () => {
     setBusy(true);
     setError('');
     try {
@@ -132,10 +172,39 @@ export default function ConsentPage() {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'tj-workspace-id': flow.organizationId,
           'x-tooljet-oauth-csrf': flow.csrfToken,
         },
-        body: JSON.stringify({ allow }),
+        body: JSON.stringify({ allow: true, accountId, workspaceId: workspace }),
+      });
+      if (response.status === 401) {
+        window.location.assign(flow.loginUrl);
+        return;
+      }
+      if (!response.ok)
+        throw new Error('This workspace or connection link is unavailable. Start again from your AI client.');
+      const result = await response.json();
+      // The child retains the approval and finishes without another consent card.
+      window.location.assign(result.redirectUrl);
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  };
+
+  const decide = async (allow) => {
+    setBusy(true);
+    setError('');
+    try {
+      const cancelWithoutSession = !allow && (!flow.organizationId || needsLogin);
+      const response = await fetch(`${api()}/interactions/${id}${cancelWithoutSession ? '/cancel' : ''}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(flow.organizationId ? { 'tj-workspace-id': flow.organizationId } : {}),
+          'x-tooljet-oauth-csrf': flow.csrfToken,
+        },
+        body: JSON.stringify(cancelWithoutSession ? {} : { allow, accountId }),
       });
       if (response.status === 401) {
         setEmail(null);
@@ -152,6 +221,7 @@ export default function ConsentPage() {
   };
 
   // Keep consent hidden during the session check and while leaving for login.
+  const choosingWorkspace = flow && !flow.organizationId;
   if (!email && !error && !needsLogin) {
     return (
       <main className={pageClassName}>
@@ -160,21 +230,22 @@ export default function ConsentPage() {
     );
   }
 
-  const hasConsent = Boolean(flow && email);
+  const hasConsent = Boolean(flow && email && !needsLogin);
+  const canApprove = Boolean(flow?.organizationId && email && accountId && !needsLogin);
 
   return (
     <main className={pageClassName}>
       <div className="mcp-oauth-content">
         {hasConsent && (
           <div className="mcp-oauth-connection" aria-hidden="true">
-            <ClientLogo name={flow.clientName} />
+            <ClientLogo name={flow.clientName} redirectUri={flow.redirectUri} />
             <span className="mcp-oauth-connection-line" />
             <span className="mcp-oauth-connection-check">
               <Check size={16} />
             </span>
             <span className="mcp-oauth-connection-line" />
             <span className="mcp-oauth-connection-logo">
-              <TooljetLogoIcon width="32" fill="var(--icon-brand)" />
+              <TooljetLogo width="32" height="32" />
             </span>
           </div>
         )}
@@ -187,20 +258,31 @@ export default function ConsentPage() {
           )}
           {hasConsent && (
             <>
-              <div className="mcp-oauth-account">
-                <span className="mcp-oauth-avatar" aria-hidden="true">
-                  {email.charAt(0).toUpperCase()}
-                </span>
-                <div>
-                  <p>
-                    <strong>{flow.clientName}</strong> wants to access your ToolJet account
-                  </p>
-                  <p className="mcp-oauth-muted">{email}</p>
+              {email && (
+                <div className="mcp-oauth-account">
+                  <span className="mcp-oauth-avatar" aria-hidden="true">
+                    {email.charAt(0).toUpperCase()}
+                  </span>
+                  <div>
+                    <p>
+                      <strong>{flow.clientName}</strong> wants to access your ToolJet account
+                    </p>
+                    <p className="mcp-oauth-muted">{email}</p>
+                  </div>
                 </div>
-              </div>
+              )}
+              {choosingWorkspace && (
+                <WorkspacePicker workspaces={workspaces} workspace={workspace} onChange={setWorkspace} busy={busy} />
+              )}
               <section className="mcp-oauth-permissions" aria-labelledby="mcp-oauth-permissions-title">
                 <h2 id="mcp-oauth-permissions-title">
-                  Access requested in <span>{flow.organizationName}</span>
+                  {flow.organizationName ? (
+                    <>
+                      Access requested in <span>{flow.organizationName}</span>
+                    </>
+                  ) : (
+                    'Access requested'
+                  )}
                 </h2>
                 <ul>
                   {flow.scopes.map((scope) => {
@@ -230,9 +312,20 @@ export default function ConsentPage() {
                   <button type="button" disabled={busy} onClick={() => decide(false)}>
                     Cancel
                   </button>
-                  <button type="button" className="mcp-oauth-primary" disabled={busy} onClick={() => decide(true)}>
-                    {busy ? 'Please wait…' : 'Allow access'}
-                  </button>
+                  {needsLogin ? (
+                    <a className="mcp-oauth-signin" href={flow.loginUrl}>
+                      Sign in to this workspace
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      className="mcp-oauth-primary"
+                      disabled={busy || (choosingWorkspace ? !workspace || !accountId : !canApprove)}
+                      onClick={choosingWorkspace ? selectWorkspace : () => decide(true)}
+                    >
+                      {busy ? 'Please wait…' : choosingWorkspace ? 'Continue' : 'Allow access'}
+                    </button>
+                  )}
                 </div>
                 <p className="mcp-oauth-callback mcp-oauth-muted">
                   Authorizing will redirect to <code dir="ltr">{flow.redirectUri}</code>
@@ -244,13 +337,18 @@ export default function ConsentPage() {
               </footer>
             </>
           )}
-          {flow && needsLogin && (
-            <a className="mcp-oauth-signin" href={flow.loginUrl}>
-              Sign in to this workspace
-            </a>
+          {flow && needsLogin && !hasConsent && (
+            <div className="mcp-oauth-actions">
+              <button type="button" disabled={busy} onClick={() => decide(false)}>
+                Cancel
+              </button>
+              <a className="mcp-oauth-signin" href={flow.loginUrl}>
+                {flow.organizationId ? 'Sign in to this workspace' : 'Sign in to ToolJet'}
+              </a>
+            </div>
           )}
         </section>
-        {hasConsent && (
+        {hasConsent && flow.organizationId && (
           <p className="mcp-oauth-disconnect mcp-oauth-muted">
             You can disconnect anytime in{' '}
             <a

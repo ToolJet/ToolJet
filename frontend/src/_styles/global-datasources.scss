@@ -166,6 +166,16 @@
         position: sticky;
         top: 0;
 
+        // Search box fills the row so the "Create folder" button stays visible beside it.
+        .datasources-search-input {
+            flex: 1;
+            min-width: 0;
+
+            input {
+                width: 100% !important;
+            }
+        }
+
         .datasources-search-btn {
             width: 28px;
             height: 28px;

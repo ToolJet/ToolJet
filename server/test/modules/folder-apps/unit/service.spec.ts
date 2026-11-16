@@ -1,3 +1,4 @@
+/** @group platform */
 import { FolderAppsService } from '../../../../src/modules/folder-apps/service';
 import { User } from '../../../../src/entities/user.entity';
 import { USER_ROLE } from '../../../../src/modules/group-permissions/constants';

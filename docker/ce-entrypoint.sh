@@ -1,14 +1,19 @@
 #!/bin/bash
 set -e
 
-# Start Redis if not already running (bundled sidecar for single-instance CE)
-if ! pgrep -x redis-server > /dev/null 2>&1; then
-  redis-server /app/redis.conf
-  echo "Redis started"
-fi
-
 if [ -f "./.env" ]; then
   export $(grep -v '^#' ./.env | xargs -d '\n') || true
+fi
+
+# Start Redis if not already running (bundled sidecar for single-instance CE)
+if { [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; } && ! pgrep -x redis-server > /dev/null 2>&1; then
+  # Bundled Redis is loopback-only; a random per-boot password stops data sources pointed at localhost from reaching it
+  export REDIS_PASSWORD="${REDIS_PASSWORD:-$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')}"
+  REDIS_AUTH_CONF=$(mktemp)
+  chmod 600 "$REDIS_AUTH_CONF"
+  printf 'include %s\nrequirepass %s\n' "/app/redis.conf" "$REDIS_PASSWORD" > "$REDIS_AUTH_CONF"
+  redis-server "$REDIS_AUTH_CONF"
+  echo "Redis started"
 fi
 
 if [ -d "./server/dist" ]; then

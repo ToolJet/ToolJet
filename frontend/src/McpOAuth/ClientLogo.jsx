@@ -15,6 +15,7 @@ const CLIENT_LOGOS = new Map([
   ['claude code', Claude],
   ['claude-code', Claude],
   ['claude.ai', Claude],
+  ['claude.com', Claude],
   ['chatgpt', OpenAI],
   ['chat gpt', OpenAI],
   ['openai', OpenAI],
@@ -30,11 +31,21 @@ const CLIENT_LOGOS = new Map([
   ['xai grok', Grok],
 ]);
 
-export default function ClientLogo({ name }) {
+const CLAUDE_CALLBACKS = new Set([
+  'https://claude.ai/api/mcp/auth_callback',
+  'https://claude.com/api/mcp/auth_callback',
+]);
+
+export default function ClientLogo({ name, redirectUri }) {
   const clientName = typeof name === 'string' ? name.trim() : '';
-  // Exact known aliases only: a client name containing a brand is still unknown.
-  // This is decorative, not proof of identity; consent retains its disclosure.
-  const Logo = CLIENT_LOGOS.get(clientName.toLowerCase().replace(/\s+/g, ' '));
+  const normalizedName = clientName.toLowerCase().replace(/\s+/g, ' ');
+  // Claude Code registers as "Claude Code (<server name>)". Match that complete
+  // format, not arbitrary names containing a brand. Hosted Claude can also use
+  // a custom registration name with its documented, exact OAuth callback.
+  // These marks are decorative, not identity verification; keep the disclosure.
+  const Logo =
+    CLIENT_LOGOS.get(normalizedName) ||
+    (/^claude code \([^()]+\)$/.test(normalizedName) || CLAUDE_CALLBACKS.has(redirectUri) ? Claude : null);
 
   return (
     <span className="mcp-oauth-connection-logo mcp-oauth-client-logo" aria-hidden="true">

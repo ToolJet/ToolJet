@@ -46,7 +46,6 @@ describe("Workflows - folders and folder movement", () => {
     cy.get(dashboardSelector.folderName(data.folderName)).should("be.visible");
 
     cy.reload();
-    cy.wait(3000);
     cy.get(dashboardSelector.folderName(data.folderName)).should("exist");
   });
 
@@ -166,7 +165,7 @@ describe("Workflows - folders and folder movement", () => {
     cy.get(commonSelectors.appCard(data.workflowName)).should("exist");
   });
 
-  it("Folder counts reflect membership and the empty state shows for an empty folder", () => {
+  it("An empty folder shows the empty-folder message and counts reflect membership", () => {
     cy.apiCreateWorkflow(data.workflowName);
     openWorkflowsDashboard();
     createFolder(data.folderName);
@@ -176,7 +175,19 @@ describe("Workflows - folders and folder movement", () => {
       "not.contain.text",
       "(1)"
     );
+    cy.get(dashboardSelector.folderName(data.folderName)).click();
+    cy.get(commonSelectors.empytyFolderImage).should("be.visible");
+    cy.get(commonSelectors.emptyFolderText).verifyVisibleElement(
+      "have.text",
+      commonText.emptyFolderText
+    );
 
+    // The folder view lists only its own workflows, so go back to the full list.
+    // The hovered folder's tooltip covers the link; clicking the empty-folder image dismisses it.
+    cy.get(commonSelectors.empytyFolderImage).click();
+    cy.get(".tooltip-inner").should("not.exist");
+    cy.get(workflowSelector.allWorkflowsLink).click();
+    cy.get(commonSelectors.appCard(data.workflowName)).should("exist");
     moveWorkflowToFolder(data.workflowName, data.folderName);
     cy.get(dashboardSelector.folderName(data.folderName)).should(
       "contain.text",
@@ -202,19 +213,6 @@ describe("Workflows - folders and folder movement", () => {
     cy.get(dashboardSelector.folderName(data.folderName)).should(
       "not.contain.text",
       "(1)"
-    );
-  });
-
-  it("An empty workflow folder shows the empty-folder message", () => {
-    openWorkflowsDashboard();
-    createFolder(data.folderName);
-
-    cy.get(dashboardSelector.folderName(data.folderName)).click();
-    cy.wait(2000);
-    cy.get(commonSelectors.empytyFolderImage).should("be.visible");
-    cy.get(commonSelectors.emptyFolderText).verifyVisibleElement(
-      "have.text",
-      commonText.emptyFolderText
     );
   });
 
