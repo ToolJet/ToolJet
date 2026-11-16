@@ -55,6 +55,15 @@ export function isTransientError(error: unknown): boolean {
   return TRANSIENT_ERROR_CODES.has(driverError?.code ?? code ?? '');
 }
 
+type Up = (queryRunner: QueryRunner) => Promise<void>;
+
+/** Replaces each up() with `wrap(name, up, migration)`; `up` is the original. */
+function wrapUp(dataSource: DataSource, wrap: (name: string, up: Up, migration: DataMigration) => Up): void {
+  for (const migration of dataSource.migrations as DataMigration[]) {
+    migration.up = wrap(nameOf(migration), migration.up.bind(migration), migration);
+  }
+}
+
 interface BeforeCommitSteps {
   run(queryRunner: QueryRunner): Promise<void>;
   clear(): void;
@@ -63,16 +72,14 @@ interface BeforeCommitSteps {
 /** Collects the beforeCommit() step of each data whose up() ran in this attempt. */
 function collectBeforeCommitSteps(dataDS: DataSource): BeforeCommitSteps {
   const beforeCommitSteps: { name: string; beforeCommit: (queryRunner: QueryRunner) => Promise<void> }[] = [];
-  for (const migration of dataDS.migrations as DataMigration[]) {
-    if (!migration.beforeCommit) continue;
-    const name = nameOf(migration);
+  wrapUp(dataDS, (name, up, migration) => {
+    if (!migration.beforeCommit) return up;
     const beforeCommit = migration.beforeCommit.bind(migration);
-    const up = migration.up.bind(migration);
-    migration.up = async (queryRunner: QueryRunner) => {
+    return async (queryRunner) => {
       await up(queryRunner);
       beforeCommitSteps.push({ name, beforeCommit });
     };
-  }
+  });
   return {
     clear: () => beforeCommitSteps.splice(0),
     async run(queryRunner) {
@@ -277,14 +284,11 @@ class YieldToMigrationRun extends Error {}
 
 /** Cleanup never holds the migration lock, so a run never waits on it; it stops when one starts. */
 function yieldBeforeEachMigration(dataSource: DataSource, session: LockSession): void {
-  for (const migration of dataSource.migrations) {
-    const up = migration.up.bind(migration);
-    migration.up = async (queryRunner: QueryRunner) => {
-      const [{ running }] = (await session.query(HELD_MIGRATION_LOCKS_SQL)) as { running: boolean }[];
-      if (running) throw new YieldToMigrationRun();
-      await up(queryRunner);
-    };
-  }
+  wrapUp(dataSource, (_name, up) => async (queryRunner) => {
+    const [{ running }] = (await session.query(HELD_MIGRATION_LOCKS_SQL)) as { running: boolean }[];
+    if (running) throw new YieldToMigrationRun();
+    await up(queryRunner);
+  });
 }
 
 /** After writes reopen: each step in its own short transaction. A failed step stays pending for the next boot. */
@@ -403,16 +407,12 @@ function withoutLockSentinels(dataSource: DataSource): void {
 
 /** START/DONE line per migration: the async-mode tracker parses these. */
 function announceEachMigration(dataSource: DataSource): void {
-  for (const migration of dataSource.migrations) {
-    const name = nameOf(migration);
-    const up = migration.up.bind(migration);
-    migration.up = async (queryRunner: QueryRunner) => {
-      const startedAt = Date.now();
-      console.log(`[migrations] START ${name}`);
-      await up(queryRunner);
-      console.log(`[migrations] DONE ${name} ${Date.now() - startedAt}ms`);
-    };
-  }
+  wrapUp(dataSource, (name, up) => async (queryRunner) => {
+    const startedAt = Date.now();
+    console.log(`[migrations] START ${name}`);
+    await up(queryRunner);
+    console.log(`[migrations] DONE ${name} ${Date.now() - startedAt}ms`);
+  });
 }
 
 async function executeMigrations(
