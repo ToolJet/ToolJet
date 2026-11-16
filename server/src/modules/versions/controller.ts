@@ -29,13 +29,15 @@ export class VersionController implements IVersionController {
     @User() user: UserEntity,
     @App() app: AppEntity,
     @Query('includeDefaultBranchVersions') includeDefaultBranchVersions?: string,
+    @Query('includeAllBranchVersions') includeAllBranchVersions?: string,
     @Query('releasePreflightFor') versionId?: string,
     @Req() request?: { user: UserEntity }
   ) {
     const inventory = await this.versionService.getAllVersions(
       app,
       user.branchId,
-      includeDefaultBranchVersions === 'true'
+      includeDefaultBranchVersions === 'true',
+      includeAllBranchVersions === 'true'
     );
     if (versionId === undefined) return inventory;
 

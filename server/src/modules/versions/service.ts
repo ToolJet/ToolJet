@@ -138,10 +138,21 @@ export class VersionService implements IVersionService {
   /** Enterprise editions also check review and security policy before the first release write. */
   async checkReleasePolicies(_app: App, _version: AppVersion, _promotionCount: number): Promise<void> {}
 
+  // Every branch's rows, the current branch's first, for a read-only comparison between branches.
+  private async getVersionsOfEveryBranch(appId: string, currentBranchId?: string): Promise<AppVersion[]> {
+    const rows = await this.versionRepository.getVersionsInApp(appId);
+    if (!currentBranchId) return rows;
+    return [
+      ...rows.filter((v) => v.branchId === currentBranchId),
+      ...rows.filter((v) => v.branchId !== currentBranchId),
+    ];
+  }
+
   async getAllVersions(
     app: App,
     branchId?: string,
-    includeDefaultBranchVersions = false
+    includeDefaultBranchVersions = false,
+    includeAllBranchVersions = false
   ): Promise<{ versions: Array<AppVersion> }> {
     const effectiveBranchId = branchId;
     const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
@@ -150,7 +161,9 @@ export class VersionService implements IVersionService {
     let result =
       app.type === APP_TYPES.MODULE
         ? await listModuleVersions(this.versionRepository.manager, app, branchId, defaultBranchId)
-        : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
+        : includeAllBranchVersions
+          ? await this.getVersionsOfEveryBranch(app.id, effectiveBranchId)
+          : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
 
     // The fetch above is already branch-scoped, so skipping the filter below is not enough to
     // surface default-branch rows — fetch them explicitly. Appended, so `result[0]` stays the
@@ -172,7 +185,12 @@ export class VersionService implements IVersionService {
     // NOT for modules: listModuleVersions intentionally returns saved versions on
     // all branches so the ModuleViewer inspector can detect pinned states and avoid
     // showing "Current branch" when the pin is valid.
-    if (effectiveBranchId && app.type !== APP_TYPES.MODULE && !includeDefaultBranchVersions) {
+    if (
+      effectiveBranchId &&
+      app.type !== APP_TYPES.MODULE &&
+      !includeDefaultBranchVersions &&
+      !includeAllBranchVersions
+    ) {
       const branch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
         where: { id: effectiveBranchId },
         select: ['id', 'isDefault'],
@@ -201,7 +219,7 @@ export class VersionService implements IVersionService {
       }
     }
 
-    if (result?.length) {
+    if (result?.length && !includeAllBranchVersions) {
       result[0].isCurrentEditingVersion = true;
     }
     return { versions: result };

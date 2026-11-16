@@ -27,13 +27,15 @@ export const appVersionService = {
 // `parentAppId`, threaded through getAll/getModuleVersionData below, lets the backend
 // grant view access to a module when the requester has no direct module permission but
 // is embedding it in an app they can edit (see FeatureAbilityFactory.defineAbilityFor).
-function getAll(appId, parentAppId, includeDefaultBranchVersions) {
+function getAll(appId, parentAppId, includeDefaultBranchVersions, includeAllBranchVersions) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const params = new URLSearchParams();
   if (parentAppId) params.set('parentAppId', parentAppId);
   // Opt-in: on a feature branch the backend otherwise returns only that branch's rows, which
   // is the contract the workflow editor's version manager depends on.
   if (includeDefaultBranchVersions) params.set('includeDefaultBranchVersions', 'true');
+  // Read-only comparison between branches: the drafts of every branch, not only the current one.
+  if (includeAllBranchVersions) params.set('includeAllBranchVersions', 'true');
   const query = params.toString() ? `?${params.toString()}` : '';
   return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/versions${query}`), requestOptions).then(
     handleResponse
