@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
 
 type Env = Record<string, string | undefined>;
 
@@ -109,6 +109,12 @@ export function migrationTimestamp(name: string): number {
 /** TypeORM leaves `name` unset unless the class declares it. */
 export function nameOf(migration: MigrationInterface): string {
   return migration.name || migration.constructor.name;
+}
+
+/** Drops, in place, every migration whose name fails `keep`. */
+export function keepMigrations(dataSource: DataSource, keep: (name: string) => boolean): void {
+  const kept = dataSource.migrations.filter((migration) => keep(nameOf(migration)));
+  dataSource.migrations.splice(0, dataSource.migrations.length, ...kept);
 }
 
 export function isPreCutoffMigration(name: string): boolean {

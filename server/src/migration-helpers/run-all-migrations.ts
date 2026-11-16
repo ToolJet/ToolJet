@@ -30,6 +30,7 @@ import {
   blocksAsyncUpgrade,
   CleanupMigration,
   MigrationPhase,
+  keepMigrations,
   migrationTimestamp,
   nameOf,
   parseMigrationPhase,
@@ -276,8 +277,7 @@ async function holdBackCleanups(cleanupDS: DataSource, baselineId: number): Prom
   for (const { name, waitingFor } of deferred) {
     console.log(`[migrations] Holding back ${name} until an earlier upgrade has recorded ${waitingFor}.`);
   }
-  const kept = cleanupDS.migrations.filter((migration) => run.includes(nameOf(migration)));
-  cleanupDS.migrations.splice(0, cleanupDS.migrations.length, ...kept);
+  keepMigrations(cleanupDS, (name) => run.includes(name));
 }
 
 class YieldToMigrationRun extends Error {}
@@ -401,8 +401,7 @@ async function migrationsTableLocked(dataSource: DataSource, lockTimeoutMs: numb
 
 /** Split phases are serialised by the advisory lock; the sentinels' LOCK TABLE would stall booting pods. */
 function withoutLockSentinels(dataSource: DataSource): void {
-  const kept = dataSource.migrations.filter((migration) => !LOCK_SENTINEL_MIGRATION_NAMES.includes(nameOf(migration)));
-  dataSource.migrations.splice(0, dataSource.migrations.length, ...kept);
+  keepMigrations(dataSource, (name) => !LOCK_SENTINEL_MIGRATION_NAMES.includes(name));
 }
 
 /** START/DONE line per migration: the async-mode tracker parses these. */
