@@ -111,6 +111,7 @@ Nest schedules and BullMQ share Redis configuration from `AppModuleLoader`. Work
 - JWT session: `server/src/modules/session/`, cookie `tj_auth_token`.
 - Feature authorization: module/feature metadata plus CASL in `server/src/modules/app/ability-factory.ts` and `guards/ability.guard.ts`.
 - Resource validation: App, Version, Data Source, workspace, public/private, and feature/license guards close to each controller.
+- Workflow approval links: `GET /workflow-approvals/:token` and `POST /workflow-approvals/:token/resolve` are authorized by the approval request's token, not a session. `OptionalJwtAuthGuard` (`server/src/modules/session/guards/optional-jwt-auth.guard.ts`) attaches the session user when the JWT is valid and proceeds anonymously otherwise (never 401), so a signed-in approver is identified when the request does not allow token-only resolution.
 - Secrets: source options and workspace secrets are decrypted/resolved server-side during query execution.
 - Security middleware: CSRF-origin checks for custom domains, body validation/whitelisting, security headers, redacted request logging, parameterized-query rule, and throttling on app query runs.
 
@@ -150,6 +151,7 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 | Stale frontend chunks after deployment | `RootRouter.jsx::ChunkErrorBoundary` reloads once, then presents a manual refresh action. |
 | Main DB, ToolJet DB, or PostgREST unavailable at boot/runtime | Health/startup or dependent requests fail; Compose/Kubernetes declare these service dependencies. |
 | Server/frontend component config drift | Existing saved apps may render incorrectly; repository instructions require synchronized config and migrations for key changes. |
+| SSRF allowlist or toggle change not yet applied (EE) | The server publishes the SSRF runtime config in-process and refreshes it every 30 s, so a change can lag by up to 30 s; before the first read it fails closed (protection on, empty allowlist). EE blocks private ranges (10/8, 172.16/12, 192.168/16) by default; CE keeps env-var behaviour; Cloud ignores the env vars and always blocks private ranges (`server/src/modules/ssrf/AGENTS.md`). |
 | PAT write fails app validation | Enforced source (`pat`) gets 400 `APP_VALIDATION_FAILED` with `issues`+`warnings`; every other source saves and receives `validationWarnings` in the body and the `x-tooljet-validation-warnings` header (`server/src/modules/app-validation/`). |
 
 ## Inferences
