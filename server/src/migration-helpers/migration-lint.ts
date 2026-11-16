@@ -1,4 +1,5 @@
 import * as ts from 'typescript';
+import { migrationTimestamp } from './migration-mode';
 
 /**
  * Static checks on migration source. test/modules/migrations/unit/migration-lint.spec.ts runs them on
@@ -110,11 +111,14 @@ const COLUMN_DECORATORS = new Set([
 
 // --- Reading source ---
 
-function migrationClass(source: ts.SourceFile): ts.ClassDeclaration | undefined {
-  return source.statements.find(
-    (statement): statement is ts.ClassDeclaration =>
-      ts.isClassDeclaration(statement) && /\d{13}$/.test(statement.name?.text ?? '')
-  );
+/** The migration class: the one whose name ends in a 13-digit timestamp. */
+function parse({ file, text }: MigrationSource): ts.ClassDeclaration | undefined {
+  return ts
+    .createSourceFile(file, text, ts.ScriptTarget.Latest, true)
+    .statements.find(
+      (statement): statement is ts.ClassDeclaration =>
+        ts.isClassDeclaration(statement) && /\d{13}$/.test(statement.name?.text ?? '')
+    );
 }
 
 function method(cls: ts.ClassDeclaration, name: string): ts.MethodDeclaration | undefined {
@@ -172,8 +176,7 @@ function indexesOnExistingTables(sql: string): string[] {
 
 /** Schema and data: up() only adds schema; down() is not empty. */
 export function authoringViolations({ file, text }: MigrationSource): string[] {
-  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
-  const cls = migrationClass(source);
+  const cls = parse({ file, text });
   if (!cls) return [`${file}: no migration class found. ${RULES_DOC}`];
   const violations: string[] = [];
 
@@ -184,7 +187,7 @@ export function authoringViolations({ file, text }: MigrationSource): string[] {
     const { sql, identifiers } = codeIn(up.body);
     const uniqueIndex = identifiers.has('isUnique') && UNIQUE_INDEX_API.some((name) => identifiers.has(name));
     const found = [
-      ...DESTRUCTIVE_SQL.filter(([, pattern]) => pattern.test(sql)).map(([label]) => label),
+      ...matching(DESTRUCTIVE_SQL, sql),
       ...[...DESTRUCTIVE_API].filter((name) => identifiers.has(name)),
       ...(uniqueIndex ? ['createIndex({ isUnique })'] : []),
     ];
@@ -201,8 +204,7 @@ export function authoringViolations({ file, text }: MigrationSource): string[] {
 /** Schema adds only and changes no rows; data keeps lock-taking statements to beforeCommit(). */
 export function phaseViolations(phase: 'schema' | 'data', { file, text }: MigrationSource): string[] {
   if (OPT_OUT.test(text)) return [];
-  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
-  const cls = migrationClass(source);
+  const cls = parse({ file, text });
   const up = cls && method(cls, 'up');
   if (!up?.body) return [];
   const { sql, identifiers } = codeIn(up.body);
@@ -232,9 +234,9 @@ export function phaseViolations(phase: 'schema' | 'data', { file, text }: Migrat
  * Cleanup runs after writes reopen, one short transaction per step, so up() goes through
  * withShortLock / setNotNull, never queryRunner directly, and every step is safe to run twice.
  */
-export function cleanupViolations({ file, text }: MigrationSource, knownMigrations: ReadonlySet<string>): string[] {
-  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
-  const cls = migrationClass(source);
+export function cleanupViolations(source: MigrationSource, knownMigrations: ReadonlySet<string>): string[] {
+  const { file } = source;
+  const cls = parse(source);
   if (!cls) return [`${file}: no migration class found. ${RULES_DOC}`];
   const violations: string[] = [];
 
@@ -318,9 +320,9 @@ export function entityMappings(sources: MigrationSource[]): Set<string> {
 }
 
 /** Tables and columns a cleanup migration's up() drops, as `table` and `table.column`. */
-export function droppedSchema({ file, text }: MigrationSource): string[] {
-  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
-  const up = migrationClass(source) && method(migrationClass(source), 'up');
+export function droppedSchema(source: MigrationSource): string[] {
+  const cls = parse(source);
+  const up = cls && method(cls, 'up');
   if (!up?.body) return [];
   const dropped: string[] = [];
   // One statement per literal: joined with spaces, a later ALTER's drops would land on the first table.
@@ -345,4 +347,4 @@ export function frozenListDrift(frozen: string[], current: string[]): { added: s
 }
 
 export const newerThanPhaseRules = (sources: MigrationSource[]) =>
-  sources.filter(({ text }) => Number(text.match(/class\s+\w*?(\d{13})\b/)?.[1]) > PHASE_RULES_FROM);
+  sources.filter((source) => migrationTimestamp(parse(source)?.name?.text ?? '') > PHASE_RULES_FROM);
