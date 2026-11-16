@@ -39,7 +39,7 @@ entrypoint → wait-for-it (PostgreSQL) → npm run db:setup:prod → exec "$@" 
 - **The runner is not the server.** It is a plain Node process without NestJS (no `ConfigService`, no DI). It reads config with `getEnvVars()` and opens its own connections.
 - **Config.** `getEnvVars()` puts the env file over `process.env`: a key in `.env` wins over an exported shell variable. A key missing from the file comes from `process.env`. The e2e specs rely on this.
 - **`NODE_ENV`** only picks the file (`test` → `../.env.test`, else `../.env`). Coordination does not depend on it. With `NODE_ENV=test`, `ormconfig.ts` lists no migrations, so the e2e pods bring their own DataSources.
-- **Async mode.** The entrypoint runs only the schema phase (`MIGRATION_PHASE=schema`) and exports the database-only setup command as `MIGRATION_SETUP_COMMAND`. The server runs the data and cleanup phases with it, so they run no plugin steps. Cloud does the same as EE.
+- **Async mode.** CE and EE: the entrypoint runs no migrations and exports the database-only setup command as `MIGRATION_SETUP_COMMAND`. `main.ts` runs the schema phase in a child process before Nest starts. Cloud runs the schema phase in its entrypoint, because plugin steps follow it; `main.ts` then finds nothing pending. The server runs the data and cleanup phases with `MIGRATION_SETUP_COMMAND`, so they run no plugin steps.
 
 ## Phases and transactions
 
@@ -48,7 +48,7 @@ Folders: `server/migrations/schema/`, `server/migrations/data/`, `server/migrati
 | `MIGRATION_PHASE` | Used by | Runs | Transactions |
 |---|---|---|---|
 | unset | Blocking mode, `npm run db:migrate`, an async boot of a database older than 3.21.58 | Schema, data, then cleanup | One. A failing data migration also undoes the schema changes |
-| `schema` | Async boot (entrypoint) | Pending schema migrations | One short transaction, with a lock timeout and retries |
+| `schema` | Async boot (`main.ts`; Cloud: entrypoint) | Pending schema migrations | One short transaction, with a lock timeout and retries |
 | `data` | Async runs | Leftover schema migrations (normally none), then all data migrations | One for the leftover schema, one for all data |
 | `cleanup` | Async, after a successful data run | Pending cleanup migrations | One short transaction per step (`withShortLock`) |
 
