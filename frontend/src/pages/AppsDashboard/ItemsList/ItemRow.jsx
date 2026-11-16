@@ -5,32 +5,21 @@ import { GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppsStore } from '@/_stores/appsStore';
 import { Checkbox } from '@/components/ui/Rocket/Checkbox/Checkbox';
-import { GRID_TEMPLATE_COLUMNS } from './columns';
-
-// The selection gutter fills the list's 70px side padding (checkbox right-aligned, as in Figma), so when
-// docked it also covers columns scrolling under the padding.
-export const GUTTER_CLASS = 'tw-flex tw-gap-1 tw-w-[70px] tw-shrink-0 tw-justify-end tw-pr-2';
-
-// Sticky offsets are measured from the list scroller's content edge (inside its padding): the gutter docks
-// across the padding, the name at the content edge.
-export const DOCKED_GUTTER_CLASS = 'tw-sticky tw--left-[70px] tw-z-[1] tw-bg-page-weak';
-const DOCKED_NAME_CLASS = 'tw-sticky tw-left-0 tw-z-[1]';
-
-// Folder rows can't use `sticky` (their own scroll box is the nearest scroller); see itemsList.scss.
-const OFFSET_DOCKED_GUTTER_CLASS = 'items-list-offset-docked tw-relative tw-z-[1] tw-bg-page-weak';
-const OFFSET_DOCKED_NAME_CLASS = 'items-list-offset-docked tw-relative tw-z-[1]';
+import {
+  DOCKED_COLUMN_CLASS,
+  DOCKED_EDGE_SHADOW_CLASS,
+  DOCKED_GUTTER_CLASS,
+  GUTTER_CLASS,
+  OFFSET_DOCKED_COLUMN_CLASS,
+  OFFSET_DOCKED_GUTTER_CLASS,
+} from '@/pages/components/DataTable/constants';
+import { useDataTableContext } from '@/pages/components/DataTable/DataTableContext';
 
 // Opaque page background plus the translucent hover tint, so info columns scrolling underneath stay hidden.
 const NAME_CELL_BACKGROUND_CLASS = cn(
   'tw-bg-page-weak',
   'group-hover:tw-bg-[linear-gradient(var(--interactive-hover),var(--interactive-hover))]',
   'group-has-[[data-state=open]]:tw-bg-[linear-gradient(var(--interactive-hover),var(--interactive-hover))]'
-);
-// Figma 3352-14623: 10px edge shadow, shown only while the list is scrolled sideways.
-export const DOCKED_EDGE_SHADOW_CLASS = cn(
-  "after:tw-pointer-events-none after:tw-absolute after:tw-inset-y-0 after:tw-left-full after:tw-hidden after:tw-w-2.5 after:tw-content-['']",
-  'after:tw-bg-gradient-to-r after:tw-from-docked-column-shadow after:tw-to-transparent',
-  'group-data-[scrolled-x]/list:after:tw-block'
 );
 
 // `level` is the treegrid nesting level (2 = inside a folder); `className`/`style` let virtualized lists position the row.
@@ -39,6 +28,7 @@ export default function ItemRow({ row, level = 1, className, style, rowRef, drag
   const hasSelection = useAppsStore((state) => Object.keys(state.rowSelection).length > 0);
   const isSelected = row.getIsSelected();
   const isInFolderScrollBox = level > 1;
+  const { gridTemplateColumns } = useDataTableContext();
 
   return (
     <div
@@ -90,21 +80,21 @@ export default function ItemRow({ row, level = 1, className, style, rowRef, drag
       </div>
       <div
         className="tw-grid tw-h-full tw-flex-1 tw-items-center tw-pr-2 group-hover:tw-bg-interactive-hover group-has-[[data-state=open]]:tw-bg-interactive-hover"
-        style={{ gridTemplateColumns: GRID_TEMPLATE_COLUMNS }}
+        style={{ gridTemplateColumns }}
       >
         {row.getVisibleCells().map((cell) => {
-          const isNameCell = cell.column.id === 'name';
+          const isDockedCell = Boolean(cell.column.columnDef.meta?.docked);
           return (
             <div
               key={cell.id}
               role="gridcell"
               className={cn(
                 'tw-min-w-0 tw-font-body-default tw-text-text-placeholder',
-                isNameCell && [
+                isDockedCell && [
                   'tw-flex tw-h-full tw-items-center tw-pl-2 tw-pr-7',
                   NAME_CELL_BACKGROUND_CLASS,
                   DOCKED_EDGE_SHADOW_CLASS,
-                  isInFolderScrollBox ? OFFSET_DOCKED_NAME_CLASS : DOCKED_NAME_CLASS,
+                  isInFolderScrollBox ? OFFSET_DOCKED_COLUMN_CLASS : DOCKED_COLUMN_CLASS,
                 ]
               )}
             >

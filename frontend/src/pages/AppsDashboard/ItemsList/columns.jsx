@@ -22,13 +22,14 @@ const renderTruncatedText = (text) => (
 
 // `meta.width` is a CSS grid track shared by header and rows so columns stay aligned.
 // `meta.sortField` matches the sort value prefix (e.g. `modified` in `modified_desc`) to show the header sort icon.
+// `meta.docked` keeps the column fixed on the left while the others scroll sideways.
 export const columns = [
   {
     id: 'name',
     header: 'Name',
     accessorKey: 'name',
     // Figma 3352-14623: below 328px the Name column stops shrinking and the list scrolls sideways instead.
-    meta: { width: 'minmax(328px, 464px)', sortField: 'name' },
+    meta: { width: 'minmax(328px, 464px)', sortField: 'name', docked: true },
     // Both tables pass `meta.appType`; only folder child tables pass `meta.depth: 1`.
     cell: ({ row, table }) => (
       <ItemNameCell row={row} depth={table.options.meta?.depth ?? 0} appType={table.options.meta?.appType} />
@@ -67,5 +68,3 @@ export const columns = [
 
 // Kind-prefixed because folder and app ids come from different tables and may collide.
 export const getRowId = (item) => `${item.kind}:${item.id}`;
-
-export const GRID_TEMPLATE_COLUMNS = columns.map((column) => column.meta.width).join(' ');
