@@ -12,7 +12,7 @@
     align-items: center;
 
     &.is-active .runtime-debugger__count {
-      color: var(--indigo9);
+      color: var(--editor-accent-text, var(--indigo9));
     }
 
     &.is-empty:not(.is-active) {
@@ -43,7 +43,7 @@
       }
 
       &.is-active {
-        color: var(--indigo9) !important;
+        color: var(--editor-accent-text, var(--indigo9)) !important;
         background: var(--indigo3) !important;
         border-color: var(--indigo5) !important;
       }
@@ -76,7 +76,7 @@
     }
 
     &.is-selected {
-      background: var(--indigo3) !important;
+      background: var(--background-accent-weak) !important;
     }
   }
 
@@ -159,7 +159,8 @@
   }
 
   &__detail-title {
-    min-width: 0;
+    flex: 1 1 auto;
+    min-width: 80px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -172,7 +173,7 @@
     height: 28px;
     padding: 0 8px !important;
     border-radius: 6px;
-    color: var(--indigo9) !important;
+    color: var(--editor-accent-text, var(--indigo9)) !important;
     font-size: 12px !important;
     white-space: nowrap;
 

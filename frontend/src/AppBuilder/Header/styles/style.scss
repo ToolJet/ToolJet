@@ -36,12 +36,19 @@
 .app-name-inline-trigger,
 .app-name-inline-trigger:hover,
 .app-name-inline-trigger:focus,
-.app-name-inline-trigger:focus-visible,
 .app-name-inline-trigger:active {
   border: 0 !important;
   outline: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+}
+
+// Keyboard focus keeps a visible ring on the app name.
+.app-name-inline-trigger:focus-visible {
+  border: 0 !important;
+  outline: 2px solid var(--interactive-focus-outline) !important;
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .app-name-inline-input {
@@ -95,6 +102,8 @@
   align-items: center;
   justify-content: space-between;
   max-width: min(520px, 100%);
+  // Lets the app name shrink (and truncate) on narrow screens instead of pushing Share off screen.
+  min-width: 0;
   margin-right: 10px;
 }
 
@@ -117,7 +126,7 @@
   --editor-header-text: var(--text-default);
   --editor-header-muted: var(--text-placeholder);
   --editor-header-icon: var(--icon-default);
-  --editor-header-accent: var(--indigo9);
+  --editor-header-accent: var(--editor-accent-text, var(--indigo9));
   --editor-header-accent-soft: var(--indigo3);
   --editor-header-accent-border: var(--indigo5);
 

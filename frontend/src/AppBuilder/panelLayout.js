@@ -49,26 +49,17 @@ export const PANEL_MOTION = {
   rightShellEnterAnimation: false,
 };
 
-// The bar shares the left panel's surface token (white, or the dark surface in dark mode); its tab
-// colors stay on the prototype palette.
-const RUNTIME_PANEL_THEMES = {
-  light: {
-    panel: 'var(--background-surface-layer-01)',
-    text: '#222631',
-    muted: '#747d8f',
-    border: '#e1e5ed',
-    accent: '#4368e8',
-  },
-  dark: {
-    panel: 'var(--background-surface-layer-01)',
-    text: '#f3f5f9',
-    muted: '#a8b0bf',
-    border: '#353c49',
-    accent: '#7895ff',
-  },
+// Theme tokens, so the runtime bar matches the left panel and switches with dark mode by itself.
+const RUNTIME_PANEL_THEME = {
+  panel: 'var(--background-surface-layer-01)',
+  text: 'var(--text-default)',
+  muted: 'var(--text-placeholder)',
+  border: 'var(--border-weak)',
+  accent: 'var(--primary-accent-strong)',
 };
 
-export const getRuntimePanelTheme = (darkMode) => RUNTIME_PANEL_THEMES[darkMode ? 'dark' : 'light'];
+// Kept as a function of darkMode for callers; the tokens already resolve per theme.
+export const getRuntimePanelTheme = () => RUNTIME_PANEL_THEME;
 
 // Content sits on top of the tab bar (never over it) so Inspector/Debugger stay switchable while open.
 // panelTop is the content's top edge as a percent of the viewport.
@@ -77,11 +68,15 @@ export const getRuntimePanelContentStyle = (isExpanded, panelTop) =>
     ? {
         bottom: RUNTIME_PANEL_COLLAPSED_HEIGHT,
         height: `calc(100% - ${panelTop}% - ${RUNTIME_PANEL_COLLAPSED_HEIGHT}px)`,
-        borderTopWidth: 2,
+        borderTopWidth: 1,
       }
     : { bottom: RUNTIME_PANEL_COLLAPSED_HEIGHT, height: 0, borderTopWidth: 0 };
 
-export const getCanvasReservedBottom = (runtimeContentHeight, isDragging) => (isDragging ? 0 : runtimeContentHeight);
+// The height is the drawer's committed height, so a drag keeps the last value until mouseup instead of
+// letting the canvas jump to full height. On mobile the drawer overlays the canvas, but the canvas's own
+// bottom toolbar must stay above the runtime bar.
+export const getCanvasReservedBottom = (runtimeContentHeight, isMobile) =>
+  isMobile ? RUNTIME_PANEL_COLLAPSED_HEIGHT : runtimeContentHeight;
 
 export const getRuntimePanelMeasuredHeight = (isExpanded, measuredHeight) =>
   isExpanded ? measuredHeight + RUNTIME_PANEL_COLLAPSED_HEIGHT : 0;
@@ -150,7 +145,7 @@ export const getQueryHeaderPlacement = (surface) =>
 
 export const getQueryAddButtonPresentation = (surface) =>
   surface === 'left'
-    ? { size: 'default', style: { fontWeight: 400, padding: '7px 12px' }, variant: 'outline' }
+    ? { size: 'default', style: { fontWeight: 500, padding: '7px 12px' }, variant: 'outline' }
     : { size: 'medium', variant: 'outline' };
 
 export const QUERY_POPOVER_MOTION_TARGETS = ['new-query', 'filter', 'query-actions', 'dropdown', 'parameter'];
@@ -170,7 +165,7 @@ export const getQuerySearchFocusStyle = (surface) =>
   surface === 'left'
     ? {
         '--query-search-focus-background': 'var(--background-surface-layer-01)',
-        '--query-search-focus-border': 'var(--slate8)',
+        '--query-search-focus-border': 'var(--border-accent-strong)',
         '--query-search-focus-shadow': 'none',
       }
     : undefined;
@@ -182,7 +177,7 @@ export const getRightPanelClassName = (activeTab, isLeftPanelOpen = false) =>
   }`;
 
 export const getAppBuilderTypographyStyle = () => ({
-  '--app-builder-font-family': "'Inter', sans-serif",
+  '--app-builder-font-family': "'IBM Plex Sans', sans-serif",
   '--app-builder-code-font-family': "'Source Code Pro', monospace",
   '--app-builder-canvas-font-family': "'IBM Plex Sans', sans-serif",
 });
@@ -297,10 +292,13 @@ export const getQueryDetailsStyle = (surface) =>
       }
     : undefined;
 
-export const getQueryDetailsOverflowStyle = (surface, hasSelectedQuery, previewHeight) => ({
-  height: `calc(100% - ${hasSelectedQuery ? previewHeight + 40 : 0}px)`,
-  ...(surface === 'right' && hasSelectedQuery ? { paddingBottom: `${previewHeight + 16}px` } : {}),
-});
+// In the right panel the details area is a flex child that fills the panel below its header, and the
+// preview is docked over the panel's bottom edge. A bottom margin of the preview's height makes the scroll
+// area end where the preview starts, whatever the header's height.
+export const getQueryDetailsOverflowStyle = (surface, hasSelectedQuery, previewHeight) =>
+  surface === 'right' && hasSelectedQuery
+    ? { marginBottom: `${previewHeight}px` }
+    : { height: `calc(100% - ${hasSelectedQuery ? previewHeight + 40 : 0}px)` };
 
 export const TOOLJET_DB_MODE_OPTIONS = [
   { label: 'GUI mode', value: 'GUI mode' },
@@ -317,10 +315,8 @@ export const getTooljetDbModeControlPresentation = () => ({
 export const getQueryHeaderClassName = (surface) =>
   `row header${surface === 'right' ? ' query-manager-header--right query-manager-header--polished' : ''}`;
 
-export const getQueryHeaderControlPresentation = (control, surface = 'bottom') => ({
+export const getQueryHeaderControlPresentation = (control) => ({
   className: `query-header-control${control === 'close' ? ' query-header-control--close' : ''}`,
-  ...(control === 'close' && { iconSizePx: 16 }),
-  ...(control === 'preview' && surface === 'right' && { style: { fontWeight: 400 } }),
   size: 'medium',
 });
 
@@ -331,8 +327,8 @@ export const getQueryTabsStyle = (surface) =>
   surface === 'right'
     ? {
         gap: '3px',
-        '--query-tab-font-size': '13px',
-        '--query-tab-font-weight': 400,
+        '--query-tab-font-size': '12px',
+        '--query-tab-font-weight': 500,
         '--query-tab-line-height': '20px',
       }
     : { gap: '3px', marginBottom: '-15px' };

@@ -10,6 +10,8 @@ import cx from 'classnames';
 import FilterandSortPopup from './FilterandSortPopup';
 import { ToolTip } from '@/_components';
 import { Button } from '@/components/ui/Button/Button';
+import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
+import { NoMatchesEmptyState } from '@/AppBuilder/Shared/Panel/PanelEmptyState';
 import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
 import { Fade, OverlayTrigger, Popover } from 'react-bootstrap';
@@ -143,24 +145,15 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
   return (
     <div className={getQueryListClassName(surface)} style={getQuerySearchFocusStyle(surface)}>
       <div className={`queries-container ${darkMode && 'theme-dark'} d-flex flex-column h-100`}>
-        <div className={getQueryPanelHeaderClassName(surface)}>
-          <span className="queries-panel-title">Queries</span>
-          <div className="queries-panel-header-actions">
-            {headerPlacement.add === 'title' && <AddDataSourceButton darkMode={darkMode} surface={surface} />}
-            <ToolTip message="Close queries" placement="bottom">
-              <Button
-                isLucid
-                iconOnly
-                size="medium"
-                variant="ghost"
-                leadingIcon="x"
-                aria-label="Close queries"
-                onClick={onClose}
-                data-cy="close-query-panel"
-              />
-            </ToolTip>
-          </div>
-        </div>
+        <PanelHeader
+          title="Queries"
+          onClose={onClose}
+          closeLabel="Close queries"
+          closeDataCy="close-query-panel"
+          className={getQueryPanelHeaderClassName(surface)}
+        >
+          {headerPlacement.add === 'title' && <AddDataSourceButton darkMode={darkMode} surface={surface} />}
+        </PanelHeader>
         <div className={getQueryToolbarClassName(surface, showSearchBox)}>
           {headerPlacement.add === 'toolbar' && <AddDataSourceButton darkMode={darkMode} surface={surface} />}
           {headerPlacement.search === 'toolbar' && (
@@ -273,7 +266,19 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
             {filteredQueries.length === 0 &&
               (folders.length === 0 || dataSourcesForFilters.length > 0 || !!searchTermForFilters) && (
                 <div className="query-empty-state-wrapper">
-                  <EmptyDataSource />
+                  {searchTermForFilters || dataSourcesForFilters.length > 0 ? (
+                    <NoMatchesEmptyState
+                      term={searchTermForFilters}
+                      description="Search matches query names."
+                      onClearSearch={() => {
+                        setSearchTermForFilters('');
+                        setDataSourcesForFilters([]);
+                      }}
+                      dataCy="queries-no-matches"
+                    />
+                  ) : (
+                    <EmptyDataSource />
+                  )}
                 </div>
               )}
           </div>

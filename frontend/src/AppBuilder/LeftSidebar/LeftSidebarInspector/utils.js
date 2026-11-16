@@ -1,5 +1,22 @@
 import { toast } from 'react-hot-toast';
 
+const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
+const ARRAY_INDEX = /^(0|[1-9]\d*)$/;
+
+// Inspector paths are written the way they are typed inside {{ }}: a.b, a[0], a["my key"].
+// Joining keys with dots breaks for names with a space, dash, dot or leading digit.
+export const appendPathSegment = (path, key) => {
+  const name = String(key);
+  if (IDENTIFIER.test(name)) return path ? `${path}.${name}` : name;
+  return `${path}[${ARRAY_INDEX.test(name) ? name : JSON.stringify(name)}]`;
+};
+
+// The keys of a path built by appendPathSegment (plain dotted paths split the same way).
+export const splitPath = (path = '') =>
+  (path.match(/\[\d+\]|\["(?:[^"\\]|\\.)*"\]|[^.[\]]+/g) ?? []).map((part) =>
+    part.startsWith('["') ? JSON.parse(part.slice(1, -1)) : part.replace(/^\[|\]$/g, '')
+  );
+
 export const noDataFoundChildDataFormat = (path, keyName) => ({
   id: `empty-${path}`,
   name: `No ${keyName || path} found`,
@@ -24,7 +41,7 @@ export const formatInspectorDataMisc = (obj, type, searchablePaths = new Set()) 
     }
 
     return data.reduce((acc, [name, value]) => {
-      const currentPath = path + `.${name}`;
+      const currentPath = appendPathSegment(path, name);
       searchablePaths.add(currentPath);
       return [
         ...acc,
@@ -66,7 +83,7 @@ export const formatInspectorQueryData = (queryNameIdMapping, exposedQueries, sea
     return data
       .filter((item) => item.name)
       .reduce((acc, { id, name, value }) => {
-        const currentPath = path + `.${name}`;
+        const currentPath = appendPathSegment(path, name);
         searchablePaths.add(currentPath);
         return [
           ...acc,
@@ -98,24 +115,15 @@ export const extractComponentName = (path) => {
   }
 };
 
+// Value copies are JSON so they paste back as the same value; paths (includeQuotes off) are copied as typed.
 export const copyToClipboard = (data, includeQuotes = true) => {
-  const stringified = JSON.stringify(data, null, 2).replace(/\\/g, '');
-  const finalText = includeQuotes ? stringified : stringified.slice(1, -1);
-  navigator.clipboard.writeText(finalText);
+  let text;
+  if (typeof data === 'function') text = 'function';
+  else if (typeof data === 'string' && !includeQuotes) text = data;
+  else text = JSON.stringify(data, null, 2) ?? String(data);
+  navigator.clipboard.writeText(text);
   return toast.success('Copied to the clipboard', { position: 'top-center' });
 };
 
-export const formatPathForCopy = (path) => {
-  const isArray = path.includes('.');
-  if (isArray) {
-    const pathArray = path.split('.');
-    const newPath = pathArray.map((item) => {
-      if (!isNaN(item) && item !== '') {
-        return `[${item}]`;
-      }
-      return item;
-    });
-    return newPath.join('.').replace(/\.\[/g, '[');
-  }
-  return path;
-};
+// Rewrites any Inspector path (including old dot-joined ones such as a.0.b) as a {{ }} reference.
+export const formatPathForCopy = (path) => splitPath(path).reduce(appendPathSegment, '');

@@ -64,3 +64,10 @@ test.each([
 
   expectDrawerOnInspector(path);
 });
+
+// RT-50: every way of opening the drawer is remembered across a reload, not only the tab and toggle.
+test('a drawer opened by State inspector stays open after a reload', () => {
+  act(() => useStore.getState().setComponentToInspect('button1'));
+
+  expect(JSON.parse(localStorage.getItem('runtimePanelPreferences'))).toMatchObject({ isExpanded: true });
+});

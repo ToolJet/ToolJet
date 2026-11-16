@@ -107,7 +107,9 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
         return (
           <div className="card-body p-0 tj-scrollbar query-editor-sort-filter-popup query-editor-sort-filter-body">
             <div className="color-slate9 px-3 pb-2 w-100">
-              <small data-cy="label-filter-by">Filter By</small>
+              <span className="tj-text-xsm" data-cy="label-filter-by">
+                Filter by
+              </span>
             </div>
             <div className={`tj-list-btn mx-1 ${selectedDataSources.length ? 'd-flex' : ''}`}>
               <MenuButton
@@ -131,7 +133,9 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             </div>
             <div className="border-bottom mt-1"></div>
             <div className="color-slate9 px-3 pb-2 pt-1 w-100">
-              <small data-cy="label-sort-by">Sort By</small>
+              <span className="tj-text-xsm" data-cy="label-sort-by">
+                Sort by
+              </span>
             </div>
             <MenuButton id="custom" text="Custom order" callback={handleSort} active={sortBy === 'custom'} />
             <MenuButton

@@ -210,7 +210,7 @@
 
 
 .tj-ghost-blue-btn {
-    color: var(--indigo9);
+    color: var(--editor-accent-text, var(--indigo9));
     border: none;
     background: transparent;
 

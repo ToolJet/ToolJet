@@ -275,7 +275,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
         style={{ marginBottom: '16px' }}
       >
         <div className="form-label mt-2" data-cy="query-manager-timeout-label">
-          {t('editor.queryManager.timeout', 'Timeout ( ms )')}
+          {t('editor.queryManager.timeout', 'Timeout (ms)')}
         </div>
         <div className="query-manager-query-timeout">
           <CodeHinter

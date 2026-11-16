@@ -50,13 +50,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const pageSidebarStyle = useStore((state) => state?.pageSettings?.definition?.properties?.style, shallow);
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const queryPanelHeight = useStore((state) => state?.queryPanel?.queryPanelHeight || 0);
-  const isDraggingQueryPane = useStore((state) => state.queryPanel.isDraggingQueryPane, shallow);
   const { isAppDarkMode } = useAppDarkMode();
-  // On mobile the canvas keeps its collapsed-query height; the query panel overlays it via z-index.
-  const canvasContainerHeight =
-    currentLayout === 'mobile'
-      ? computeCanvasContainerHeight(0, false)
-      : computeCanvasContainerHeight(queryPanelHeight, isDraggingQueryPane);
+  const canvasContainerHeight = computeCanvasContainerHeight(queryPanelHeight, currentLayout === 'mobile');
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady, shallow);
   const canvasMaxWidth = useAppCanvasMaxWidth();
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);

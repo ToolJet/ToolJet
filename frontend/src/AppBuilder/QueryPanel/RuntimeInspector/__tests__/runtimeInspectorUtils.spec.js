@@ -4,6 +4,7 @@ import {
   getCategoryLabel,
   isEntityPath,
   isPathWithin,
+  containsSelectedPath,
 } from '../runtimeInspectorUtils';
 
 const entry = (category, name, children = []) => ({
@@ -103,5 +104,23 @@ describe('isEntityPath', () => {
     expect(isEntityPath('queries.getUsers.data')).toBe(false);
     expect(isEntityPath('queries')).toBe(false);
     expect(isEntityPath(undefined)).toBe(false);
+  });
+});
+
+// RT-34c: a component inside a container is listed under it but keeps its own path (components.text2),
+// so the container must open for the inspected child to be visible.
+describe('containsSelectedPath', () => {
+  const text2 = entry('components', 'text2');
+  const container1 = entry('components', 'container1', [text2]);
+
+  it('finds a selected child nested under a parent whose path is not its prefix', () => {
+    expect(containsSelectedPath(container1, 'components.text2')).toBe(true);
+    expect(containsSelectedPath(container1, 'components.text2.value')).toBe(true);
+  });
+
+  it('is false when nothing below the entry is selected', () => {
+    expect(containsSelectedPath(container1, 'components.other')).toBe(false);
+    expect(containsSelectedPath(text2, 'components.text2')).toBe(false);
+    expect(containsSelectedPath(container1, null)).toBe(false);
   });
 });

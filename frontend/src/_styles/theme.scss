@@ -1593,6 +1593,9 @@ button {
     overflow-y: auto;
     // TAB HEADER HEIGHT + FOOTER HEIGHT + Extra padding = 120px
     height: calc(100vh - 8rem);
+    // The fixed "Read documentation" footer overlays the bottom of this area; pad it so the last row
+    // (e.g. "Show on mobile") scrolls clear of the footer.
+    padding-bottom: 64px;
     // Hide scrollbar
     -ms-overflow-style: none;
     /* IE and Edge */
@@ -7816,6 +7819,13 @@ tbody {
 
 .apploader {
   height: 100vh;
+  // Blue accent text (active tabs, filter pills, link buttons). --indigo9 is too dim on dark surfaces
+  // (3.03:1), so dark mode uses --indigo11, Radix's high-contrast text step.
+  --editor-accent-text: var(--indigo9);
+
+  &.dark-theme {
+    --editor-accent-text: var(--indigo11);
+  }
 
   &.module-mode {
     height: 100%;
@@ -17863,19 +17873,7 @@ section.ai-message-prompt-input-wrapper {
   color: #6a727c;
 }
 
-.app-export-btn {
-  background-color: #ffffff;
-  border: 1px solid var(--Border-default, #ccd1d5);
-  box-shadow: 0px 1px 0px 0px var(--Dropshadow000);
-}
-
 .dark-theme {
-  .app-export-btn {
-    background-color: #313b46;
-    color: #ffffff;
-    border: 1px solid transparent;
-  }
-
   .canvas-styles-header {
     background-color: #212325;
     color: #ffffff;

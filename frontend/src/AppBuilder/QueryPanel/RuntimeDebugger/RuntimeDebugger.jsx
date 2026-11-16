@@ -63,10 +63,8 @@ const useRelativeTimeTick = () => {
 const useLogAction = (log) => {
   const getQueryIdFromName = useStore((state) => state.getQueryIdFromName, shallow);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery, shallow);
-  const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded, shallow);
+  const revealQueryEditor = useStore((state) => state.queryPanel.revealQueryEditor, shallow);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
-  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
-  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
   const currentPageComponents = useStore((state) => state.getCurrentPageComponents(), shallow);
 
   const action = getLogAction(log);
@@ -81,10 +79,7 @@ const useLogAction = (log) => {
       label: action.label,
       run: () => {
         setSelectedQuery(queryId);
-        expandQueryPaneIfNeeded();
-        // Re-selecting the already-selected query doesn't retrigger the panel's open effect, so open it here.
-        setActiveRightSideBarTab('query');
-        setRightSidebarOpen(true);
+        revealQueryEditor();
       },
     };
   }
@@ -200,7 +195,7 @@ const RuntimeDebugger = ({ darkMode, onClose }) => {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Filter logs"
+            placeholder="Search logs"
             aria-label="Filter logs"
             data-cy="debugger-search-input"
           />
@@ -286,7 +281,9 @@ const RuntimeDebugger = ({ darkMode, onClose }) => {
                 >
                   <LevelIcon level={logLevel} />
                   <span className="runtime-debugger__row-text">
-                    <span className="runtime-debugger__row-message">{getLogMessage(log) || getLogTitle(log)}</span>
+                    <span className="runtime-debugger__row-message" title={getLogMessage(log) || getLogTitle(log)}>
+                      {getLogMessage(log) || getLogTitle(log)}
+                    </span>
                     <span className="runtime-debugger__row-source">
                       {getLogSource(log)}
                       {log.key && (

@@ -2018,30 +2018,13 @@ export const createQueryPanelSlice = (set, get) => ({
       set((state) => {
         state.queryPanel.deletingQueryId = queryId;
       }),
-    expandQueryPaneIfNeeded: () => {
-      const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
-        isExpanded: true,
-        queryPanelHeight: 100,
-      };
-
-      // If query pane is not expanded, expand it
-      if (!queryManagerPreferences.isExpanded) {
-        const newPreferences = {
-          ...queryManagerPreferences,
-          isExpanded: true,
-          queryPanelHeight: 70, // Default expanded height
-        };
-        localStorage.setItem('queryManagerPreferences', JSON.stringify(newPreferences));
-
-        // Update the store state
-        set((state) => {
-          state.queryPanel.isQueryPaneExpanded = true;
-        });
-
-        return true; // Indicates that expansion was needed and performed
-      }
-
-      return false; // Indicates that expansion was not needed
-    },
+    // Shows the selected query's editor in the right panel, even when that query was already selected
+    // (setSelectedQuery only opens the panel for a new selection). The bottom drawer holds the
+    // Inspector and Debugger, so it is left as the user had it.
+    revealQueryEditor: () =>
+      set((state) => {
+        state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.QUERY;
+        state.isRightSidebarOpen = true;
+      }),
   },
 });

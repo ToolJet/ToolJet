@@ -21,6 +21,7 @@ import { resolveReferences, validateKebabCase } from '@/_helpers/utils';
 import { ToolTip as InspectorTooltip } from '../../Inspector/Elements/Components/ToolTip';
 import { shallow } from 'zustand/shallow';
 import { Button } from '@/components/ui/Button/Button';
+import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const POPOVER_TITLES = {
@@ -76,6 +77,9 @@ export const AddEditPagePopup = forwardRef(
     const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
     const [page, setPage] = useState(editingPage || props?.page);
+    // The page as saved now. `page` is a snapshot that isn't refreshed after an update (the update clears
+    // editingPage), so "did this field change?" checks must compare against the store.
+    const savedPage = pages.find((p) => p.id === page?.id) ?? page;
 
     const showPageHeaderOnDesktop = useStore(
       (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageHeader?.showOnDesktop,
@@ -297,7 +301,7 @@ export const AddEditPagePopup = forwardRef(
     };
 
     const handleSave = () => {
-      if (handle === page.handle) {
+      if (handle === savedPage?.handle) {
         setError(null);
         return;
       }
@@ -320,7 +324,9 @@ export const AddEditPagePopup = forwardRef(
       >
         <Popover.Header>
           <div className="d-flex justify-content-between align-items-center">
-            <div className="tj-text-xsm font-weight-500 text-default">{POPOVER_TITLES?.[mode]?.[type]}</div>
+            <div className="add-new-page-popup__title tj-text-xsm font-weight-500 text-default">
+              {POPOVER_TITLES?.[mode]?.[type]}
+            </div>
             <div className="actions-container">
               {!['group', 'custom'].includes(type) && (
                 <>
@@ -366,16 +372,11 @@ export const AddEditPagePopup = forwardRef(
                 />
               </ToolTip>
               {embedded && (
-                <Button
+                <PanelCloseButton
                   key="close-page-configuration"
-                  leadingIcon="x"
-                  iconOnly
-                  variant="ghost"
-                  size="medium"
-                  isLucid
-                  aria-label="Close page configuration"
-                  data-cy="close-page-configuration-button"
-                  onClick={onClose}
+                  label="Close page configuration"
+                  dataCy="close-page-configuration-button"
+                  onClose={onClose}
                 />
               )}
             </div>
@@ -392,7 +393,7 @@ export const AddEditPagePopup = forwardRef(
                 autoFocus={true}
                 onChange={(e) => setPageName(e.target.value)}
                 onBlur={() => {
-                  pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
+                  pageName && pageName !== savedPage?.name && updatePageName(page?.id, pageName);
                 }}
                 minLength="1"
                 maxLength="32"
@@ -426,7 +427,7 @@ export const AddEditPagePopup = forwardRef(
                   onChange={(e) => setPageURL(e.target.value)}
                   className="form-control"
                   value={pageURL}
-                  onBlur={(e) => page?.url !== e.target.value && updatePageURL(page?.id, pageURL)}
+                  onBlur={(e) => savedPage?.url !== e.target.value && updatePageURL(page?.id, pageURL)}
                   minLength="1"
                 />
               </div>
@@ -704,9 +705,7 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
         <div className={`field`}>
           <InspectorTooltip
             label={`${page?.type === 'default' ? 'Hide this page on navigation' : 'Hide this item on navigation'}`}
-            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
-              darkMode && 'color-whitish-darkmode'
-            }`}
+            labelClass={`form-label font-weight-400 ${forceCodeBox ? 'mb-2' : 'mb-0'}`}
           />
         </div>
         <div className={`flex-grow-1`}>

@@ -13,7 +13,6 @@ const NoComponentCanvasContainer = () => {
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery, shallow);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
-  const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded);
 
   const queryBoxText = sampleDataSource
     ? 'Connect to your data source or use our sample data source to start playing around!'
@@ -31,7 +30,6 @@ const NoComponentCanvasContainer = () => {
   const handleConnectSampleDB = () => {
     const source = sampleDataSource;
     const query = `SELECT tablename \nFROM pg_catalog.pg_tables \nWHERE schemaname='public';`;
-    expandQueryPaneIfNeeded();
     createDataQuery(source, true, { query });
     setPreviewData(null);
   };
@@ -47,7 +45,8 @@ const NoComponentCanvasContainer = () => {
             Drag and drop a component
           </div>
           <div className="title-desc" data-cy="drag-and-drop-a-component-description">
-            Choose a component from the right side panel or use our pre-built templates to get started quickly!
+            Choose a component from the Components panel on the left or use our pre-built templates to get started
+            quickly!
           </div>
         </div>
         <div className="col-md-4 dotted-cont">

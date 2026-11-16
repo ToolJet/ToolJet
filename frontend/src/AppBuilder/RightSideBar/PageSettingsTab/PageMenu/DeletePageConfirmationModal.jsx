@@ -83,7 +83,7 @@ export function DeletePageConfirmationModal({ darkMode }) {
       onHide={handleClose}
       size="sm"
       centered={true}
-      contentClassName={darkMode ? 'dark-theme' : ''}
+      contentClassName={darkMode ? 'dark-theme theme-dark' : ''}
       className="delete-page-modal"
       backdropClassName={'delete-page-backdrop'}
     >

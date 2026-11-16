@@ -187,6 +187,9 @@ export const BaseLeftSidebar = ({
           key={panelItem}
           className={cx('left-sidebar-panel-content', {
             'left-sidebar-panel-content--switching': animatePanelSwitch,
+            // The panel renders in a portal, outside the editor's .theme-dark ancestor that dark-mode
+            // rules (tabs, Bootstrap inputs) key on.
+            'theme-dark': darkMode,
           })}
         >
           {renderSelectedPanel()}

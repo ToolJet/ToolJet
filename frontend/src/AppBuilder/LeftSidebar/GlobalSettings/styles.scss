@@ -2,22 +2,10 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow-y: auto; // scrolls under its own pinned header (Shared/Panel/PanelHeader)
 
-  // Header section
-  .global-settings-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    border-bottom: 1px solid var(--border-weak, #e4e7eb);
-
-    .global-settings-header-title {
-      font-family: 'IBM Plex Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      line-height: 20px;
-      color: var(--text-default);
-    }
+  > * {
+    flex-shrink: 0;
   }
 
   // Main content section (Slug, App Link, Maintenance Mode, Export)

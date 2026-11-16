@@ -15,7 +15,7 @@ const useCallbackActions = () => {
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery, shallow);
   const getComponentIdFromName = useStore((state) => state.getComponentIdFromName, shallow);
   const getQueryIdFromName = useStore((state) => state.getQueryIdFromName, shallow);
-  const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded, shallow);
+  const revealQueryEditor = useStore((state) => state.queryPanel.revealQueryEditor, shallow);
 
   // Goes through the confirmation dialog rather than deleting outright, so the
   // reference check that guards every other delete path applies here too.
@@ -43,9 +43,7 @@ const useCallbackActions = () => {
     const { nodeName } = data;
     const id = getQueryIdFromName(nodeName);
     setSelectedQuery(id);
-
-    // Expand query pane if it's not already expanded
-    expandQueryPaneIfNeeded();
+    revealQueryEditor();
   };
 
   const handleAutoScrollToComponent = (data) => {
@@ -63,8 +61,14 @@ const useCallbackActions = () => {
       return;
     }
     setSelectedComponents([computedComponentId]);
-    const target = document.getElementById(computedComponentId);
-    target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (computedComponentId !== componentId) {
+      const containerName = currentPageComponents?.[computedComponentId]?.component?.name;
+      toast(`${data.nodeName} is inside ${containerName}, which is closed. Selected ${containerName} instead.`);
+    }
+    // A tab that was just switched to mounts its children on the next render.
+    requestAnimationFrame(() =>
+      document.getElementById(computedComponentId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    );
   };
 
   const callbackActions = [

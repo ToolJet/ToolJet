@@ -61,7 +61,8 @@
 
       &.disabled {
         cursor: not-allowed;
-        color: var(--text-disabled);
+        // Readable even though not selectable (--text-disabled was 2.14:1).
+        color: var(--text-placeholder);
         opacity: 1;
         pointer-events: none;
       }

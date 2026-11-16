@@ -64,17 +64,15 @@
         margin-top: 2px;
         width: 100%;
         justify-content: space-between;
-        background-color: var(--interactive-default);
+        border: 1px solid transparent;
         &.highlight {
-            border: 2px solid #3D63DC;
+            border: 2px solid var(--border-accent-strong);
         }
 
+        // Same "this is the one that is open" look as the Queries list.
         &.is-selected {
-            background-color: var(--interactive-selected) !important; 
-        }
-
-        &:hover {
-            background-color: var(--interactive-default);
+            border-color: var(--border-accent-weak);
+            background-color: var(--background-accent-weak) !important;
         }
 
         &.page-group-item {
@@ -478,6 +476,25 @@
     border-radius: 0;
     box-shadow: none;
 
+    // As a right-panel title row it follows the shared panel header: 48px, 14px title, pinned.
+    .popover-header {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        height: 48px;
+        padding: 0 16px;
+        background-color: var(--background-surface-layer-01);
+
+        > div {
+            height: 100%;
+        }
+    }
+
+    .add-new-page-popup__title {
+        font-size: 14px !important;
+        line-height: 20px !important;
+    }
+
     .popover-arrow {
         display: none;
     }
@@ -530,4 +547,9 @@
 .add-new-page-options {
     padding: 8px;
     border-radius: 0 0 8px 8px;
+}
+
+// Dark Pages panel: Tabler's dark .form-control keeps its light border.
+.theme-dark .pages-settings .form-control {
+    border-color: var(--border-default);
 }

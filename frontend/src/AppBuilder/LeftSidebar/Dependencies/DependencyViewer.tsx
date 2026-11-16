@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { Button as RawButton } from '@/components/ui/Button/Button';
+import RawPanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
 import RawInputComponent from '@/components/ui/Input/Index';
 import { getDependencySections } from '@/AppBuilder/_utils/entityUsage';
 import type { DependencySections } from '@/AppBuilder/_utils/entityUsage';
@@ -22,7 +22,7 @@ import '../panelHeader.scss';
 import './styles.scss';
 
 // Untyped JS modules — cast at the import site.
-const ButtonComponent = RawButton as React.ComponentType<any>;
+const PanelHeader = RawPanelHeader as React.ComponentType<any>;
 const InputComponent = RawInputComponent as React.ComponentType<any>;
 
 export type DependencyViewerProps = {
@@ -102,20 +102,14 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps
   return (
     <div className={`left-sidebar-dependency-viewer ${darkMode ? 'dark-theme' : ''}`}>
       <div className={`inspector-header ${darkMode ? 'dark-theme' : ''}`}>
-        <div className="inspector-header-top">
-          <span className="inspector-header-title" data-cy="dependency-viewer-title">
-            Dependencies
-          </span>
-          <ButtonComponent
-            iconOnly
-            leadingIcon="x"
-            onClick={onClose}
-            variant="ghost"
-            size="medium"
-            isLucid={true}
-            data-cy="dependency-viewer-close-button"
-          />
-        </div>
+        <PanelHeader
+          title="Dependencies"
+          titleDataCy="dependency-viewer-title"
+          onClose={onClose}
+          closeLabel="Close dependencies"
+          closeDataCy="dependency-viewer-close-button"
+          divider={false}
+        />
         {detail ? (
           <DetailHeader
             subject={detail.subject}

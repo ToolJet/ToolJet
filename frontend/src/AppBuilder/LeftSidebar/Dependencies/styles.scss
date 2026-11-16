@@ -21,73 +21,6 @@
 
 }
 
-/* ---------- empty states ---------- */
-
-.dependency-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 40px 16px;
-
-  .dependency-empty-state-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-  }
-
-  .dependency-empty-state-spot {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px;
-    border-radius: 8px;
-    background: var(--surfaces-surface-02);
-  }
-
-  .dependency-empty-state-icon {
-    color: var(--icon-default);
-  }
-
-  .dependency-empty-state-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    width: 100%;
-    text-align: center;
-  }
-
-  .dependency-empty-state-title {
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
-    color: var(--text-default);
-  }
-
-  .dependency-empty-state-description {
-    font-size: 12px;
-    line-height: 18px;
-    color: var(--text-placeholder);
-  }
-
-  .dependency-empty-state-action {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 6px;
-    background: transparent;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
-    color: var(--primary-brand);
-
-    &:hover {
-      background: var(--interactive-overlays-fill-hover);
-    }
-  }
-}
-
 /* ---------- section ---------- */
 
 .dependency-section-header {
@@ -100,7 +33,7 @@
   user-select: none;
 
   &:hover {
-    background: var(--interactive-overlays-fill-hover);
+    background: var(--interactive-hover);
   }
 }
 
@@ -188,11 +121,11 @@
   }
 
   &:hover {
-    background: var(--interactive-overlays-fill-hover);
+    background: var(--interactive-hover);
   }
 
   &.selected {
-    background: var(--interactive-overlays-fill-selected);
+    background: var(--background-accent-weak);
   }
 
   .dependency-row-icon {
@@ -350,7 +283,7 @@
   border-radius: 6px;
 
   &:hover {
-    background: var(--interactive-overlays-fill-hover);
+    background: var(--interactive-hover);
   }
 }
 
@@ -407,7 +340,7 @@
     cursor: pointer;
 
     &:hover {
-      background: var(--interactive-overlays-fill-hover);
+      background: var(--interactive-hover);
     }
   }
 

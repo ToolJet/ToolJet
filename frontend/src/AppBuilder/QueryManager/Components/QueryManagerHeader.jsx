@@ -159,7 +159,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
                       surface === 'right'
                         ? undefined
                         : {
-                            borderBottom: activeTab === tab.id ? '2px solid #3E63DD' : '',
+                            borderBottom:
+                              activeTab === tab.id ? '2px solid var(--editor-accent-text, var(--indigo9))' : '',
                             cursor: 'pointer',
                             padding: '0px 8px 6px 8px',
                             color: activeTab === tab.id ? 'var(--text-default)' : 'var(--text-placeholder)',

@@ -10,6 +10,10 @@
   background-color: var(--surfaces-surface-01) !important;
   border-right: 2px solid var(--slate6, #313538);
 
+  // The editor's left panel. This class is shared with every other popover, so the 1px separator is scoped.
+  &.sidebar-h-100-popover {
+    border-right: 1px solid var(--border-weak);
+  }
 
   // Scrolling comes from getLeftPanelOverflow: the chat scrolls its own messages.
   &.tooljetai {

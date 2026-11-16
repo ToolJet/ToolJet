@@ -19,7 +19,7 @@ import { AddEditPagePopup } from './PageSettingsTab/PageMenu/AddNewPagePopup';
 import { QueryPanelResizeHandle } from './QueryPanelResizeHandle';
 import { LEFT_SIDEBAR_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './rightSidebar.scss';
-import { Button } from '@/components/ui/Button/Button';
+import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
 
 export const RightSideBar = ({ darkMode }) => {
   const closeControl = getQueryHeaderControlPresentation('close');
@@ -115,16 +115,12 @@ export const RightSideBar = ({ darkMode }) => {
             {displayedTab === RIGHT_SIDE_BAR_TAB.QUERY && (
               <FallbackBoundary label="Query configuration" location="Right SideBar Query" darkMode={darkMode}>
                 <div className="right-sidebar-query-configuration">
-                  <Button
-                    isLucid
-                    iconOnly
+                  <PanelCloseButton
+                    label="Close query configuration"
+                    dataCy="query-configuration-close-button"
                     size={closeControl.size}
-                    variant="ghost"
-                    leadingIcon="x"
                     className={cx('right-sidebar-query-close', closeControl.className)}
-                    style={{ '--query-header-close-icon-size': `${closeControl.iconSizePx}px` }}
-                    aria-label="Close query configuration"
-                    onClick={() => {
+                    onClose={() => {
                       setActiveRightSideBarTab(null);
                       setRightSidebarOpen(false);
                     }}

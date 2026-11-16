@@ -34,6 +34,7 @@ import {
   copyToClipboard,
   extractComponentName,
   formatPathForCopy,
+  splitPath,
 } from '@/AppBuilder/LeftSidebar/LeftSidebarInspector/utils';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import {
@@ -44,6 +45,7 @@ import {
   getPathCategory,
   isEntityPath,
   isPathWithin,
+  containsSelectedPath,
 } from './runtimeInspectorUtils';
 import RuntimePanelCloseButton from '@/AppBuilder/QueryPanel/RuntimePanelCloseButton';
 import RuntimeFilterSelect from '@/AppBuilder/QueryPanel/RuntimeFilterSelect';
@@ -97,7 +99,7 @@ const useInspectedValue = (path) => {
 
   if (!path) return undefined;
   if (path.startsWith('components.')) {
-    const componentId = getComponentIdFromName(path.split('.')[1]);
+    const componentId = getComponentIdFromName(splitPath(path)[1]);
     // Deleted, or on another page: nothing to show (and no component for Go to / Delete to act on).
     if (!componentId) return undefined;
     const parentId = getComponentDefinition(componentId)?.component?.parent;
@@ -113,7 +115,12 @@ const EntryList = ({ entries, depth, selectedPath, onSelect, expanded, onToggle,
   entries.map((entry) => {
     const path = getEntryPath(entry);
     const hasChildren = entry.children?.length > 0;
-    const isOpen = hasChildren && (forceExpand || expanded.has(path) || isPathWithin(selectedPath, path));
+    const isOpen =
+      hasChildren &&
+      (forceExpand ||
+        expanded.has(path) ||
+        isPathWithin(selectedPath, path) ||
+        containsSelectedPath(entry, selectedPath));
     return (
       <React.Fragment key={entry.id}>
         <div
@@ -133,6 +140,7 @@ const EntryList = ({ entries, depth, selectedPath, onSelect, expanded, onToggle,
             type="button"
             className="runtime-inspector__entry-label"
             onClick={() => onSelect(path)}
+            title={entry.name}
             data-cy={`inspector-${generateCypressDataCy(entry.name)}-subnode-label`}
           >
             <span className="runtime-inspector__entry-icon">
@@ -198,7 +206,7 @@ const CopyButton = ({ label, icon: Icon, onCopy, dataCy }) => {
 const DetailHeader = ({ path }) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const callbackActions = useCallbackActions() || [];
-  const segments = path.split('.');
+  const segments = splitPath(path);
   const category = getPathCategory(path);
   const entityActions = isEntityPath(path)
     ? (callbackActions.find((group) => group.for === category)?.actions ?? []).filter((action) => action.icon)

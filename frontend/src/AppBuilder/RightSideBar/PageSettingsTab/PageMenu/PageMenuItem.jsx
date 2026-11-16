@@ -71,6 +71,10 @@ export const PageMenuItem = withRouter(
     const moreBtnRef = useRef(null);
 
     const isEditingPage = editingPage?.id === page?.id;
+    // The row whose "Edit page" panel is open on the right stays highlighted, like the open query does.
+    const isPageConfigurationOpen = useStore(
+      (state) => state.isRightSidebarOpen && state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION
+    );
 
     const icon = (props) => {
       const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
@@ -220,7 +224,7 @@ export const PageMenuItem = withRouter(
       >
         <div
           className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
-            (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
+            isEditingPage && (showPageOptions || showEditPopover || isPageConfigurationOpen) ? 'is-selected' : ''
           }`}
           data-page-id={page?.id}
           style={{
@@ -347,7 +351,7 @@ export const PageMenuItem = withRouter(
                       />
                       {page?.type === 'default' && (
                         <PageOptions
-                          text="Mark home"
+                          text="Mark as home"
                           icon="home"
                           darkMode={darkMode}
                           disabled={isHomePage}

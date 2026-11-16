@@ -28,7 +28,7 @@
  */
 import '@/test/setupMsw';
 import React from 'react';
-import { render, act } from '@testing-library/react';
+import { render, act, fireEvent } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import useStore from '@/AppBuilder/_stores/store';
@@ -137,5 +137,39 @@ describe('AddEditPagePopup embedded in the right panel', () => {
     });
 
     expect(state().modules.canvas.pages.map((p) => p.name)).toEqual(['Home', 'Page 1']);
+  });
+});
+
+// HP-47b: in one open page configuration, renaming A → B and then back to A must save A again.
+describe('AddEditPagePopup page name', () => {
+  test('renaming a page back to its original name saves it', async () => {
+    server.use(
+      http.put('http://localhost:3000/api/v2/apps/:appId/versions/:versionId/pages/:pageId', () =>
+        HttpResponse.json({})
+      ),
+      http.patch('http://localhost:3000/api/v2/apps/:appId/versions/:versionId/pages/:pageId', () =>
+        HttpResponse.json({})
+      )
+    );
+    seedFreshApp();
+    state().setEditingPage(state().modules.canvas.pages[0]);
+    state().setNewPagePopupConfig({ show: true, mode: 'edit', type: 'default' });
+    let view;
+    await act(async () => {
+      view = render(<AddEditPagePopup darkMode={false} embedded onClose={() => {}} />);
+    });
+    const nameInput = () => view.container.querySelector('input.form-control[type="text"]');
+    const rename = async (value) => {
+      await act(async () => {
+        fireEvent.change(nameInput(), { target: { value } });
+        fireEvent.blur(nameInput());
+      });
+    };
+
+    await rename('Main');
+    expect(state().modules.canvas.pages[0].name).toBe('Main');
+
+    await rename('Home');
+    expect(state().modules.canvas.pages[0].name).toBe('Home');
   });
 });

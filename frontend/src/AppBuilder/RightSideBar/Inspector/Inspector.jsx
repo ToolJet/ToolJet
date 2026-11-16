@@ -48,6 +48,7 @@ import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
 import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
+import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
@@ -763,14 +764,10 @@ export const Inspector = ({
                 />
               </>
             )}
-            <Button
-              iconOnly
-              leadingIcon="x"
-              onClick={handleRightSidebarToggle}
-              variant="ghost"
-              size="medium"
-              isLucid={true}
-              data-cy="inspector-close-button"
+            <PanelCloseButton
+              label="Close component configuration"
+              onClose={handleRightSidebarToggle}
+              dataCy="inspector-close-button"
             />
           </div>
         </div>

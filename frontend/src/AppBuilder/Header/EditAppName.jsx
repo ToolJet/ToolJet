@@ -119,6 +119,7 @@ function EditAppName() {
   };
 
   const handleSave = async () => {
+    if (isSaving || isClosing) return;
     const nextName = normalizeAppName(draftName);
     const validation = validateInlineAppName(nextName);
     setDraftName(nextName);
@@ -190,7 +191,9 @@ function EditAppName() {
             maxLength={APP_NAME_MAX_LENGTH}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            disabled={isSaving || isClosing}
+            // Read-only, not disabled: a disabled input loses focus, and after a duplicate-name error the
+            // user keeps typing to fix the name.
+            readOnly={isSaving || isClosing}
             aria-label={`${appTypeName} name`}
             aria-invalid={!!errorText}
             data-cy={`${appTypeName.toLowerCase()}-name-input`}

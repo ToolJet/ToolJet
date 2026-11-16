@@ -21,7 +21,7 @@ import Select from '@/_ui/Select';
 import { DeletePageConfirmationModal } from './PageMenu/DeletePageConfirmationModal';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { Button } from '@/components/ui/Button/Button';
+import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { ToolTip as InspectorTooltip } from '../Inspector/Elements/Components/ToolTip';
@@ -168,28 +168,22 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
   return (
     <div className="inspector pages-settings">
       <div>
-        <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
-          <span className="panel-header-title">{isNavigationSurface ? 'Pages' : 'Page configuration'}</span>
-          <div className="panel-header-actions">
-            <Button
-              iconOnly
-              leadingIcon="x"
-              onClick={handleToggle}
-              variant="ghost"
-              size="medium"
-              isLucid={true}
-              data-cy="pages-close-button"
-            />
-          </div>
-        </div>
+        <PanelHeader
+          title={isNavigationSurface ? 'Pages' : 'Page configuration'}
+          onClose={handleToggle}
+          closeLabel={isNavigationSurface ? 'Close pages' : 'Close page configuration'}
+          closeDataCy="pages-close-button"
+          divider={false}
+          className={cx({ disabled: shouldFreeze })}
+        />
         <div className={cx({ disabled: shouldFreeze })}>
           <Tabs activeKey={activeTab} onSelect={setActiveTab} id={`page-settings-${surface}`}>
             <Tab className="page-selector-panel-body" eventKey="properties" title="Properties">
               <div className="tj-text-xsm color-slate12 ">
                 {propertySections.includes('page-list') && (
-                  <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
+                  <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} isTitleCase={false} />
                 )}
-                <Accordion items={appHeaderMenuItems} />
+                <Accordion items={appHeaderMenuItems} isTitleCase={false} />
                 {/* <Accordion items={devices} /> */}
               </div>
             </Tab>
@@ -246,7 +240,7 @@ const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
         }),
       },
     ];
-    return <Accordion key={style} items={items} />;
+    return <Accordion key={style} items={items} isTitleCase={false} />;
   });
 });
 
@@ -452,7 +446,7 @@ const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }
           </div>
           {position == 'side' && style !== 'text' && style !== 'icon' && (
             <div data-param="collapsable" className="d-flex justify-content-between align-items-center pb-2">
-              <label className="form-label font-weight-400 mb-0">Collapsable</label>
+              <label className="form-label font-weight-400 mb-0">Collapsible</label>
               <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
                 <ToggleGroup
                   onValueChange={(value) => {

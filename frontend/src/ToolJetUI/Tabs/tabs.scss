@@ -75,6 +75,7 @@
       // Focus state - Figma: bg-white, shadow-[0px_0px_0px_2px_#4368e3]
       &:focus-visible {
         outline: none;
+        box-shadow: none; // Bootstrap's own .nav-link ring; the label below draws ours
 
         .tab-label {
           background-color: var(--bg-surface-layer-01, #ffffff); // Figma: bg-white

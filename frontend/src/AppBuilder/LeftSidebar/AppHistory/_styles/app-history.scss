@@ -11,31 +11,14 @@
 
 // App History Panel Styles
 .app-history-panel {
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 0; // Allow flex container to shrink
+  overflow: hidden; // the timeline scrolls, the header stays put
 
   .spinner-center {
     height: 282px;
-  }
-
-  .app-history-header {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    border-bottom: 1px solid var(--border-weak, #E4E7EB);
-
-    .app-history-header-title {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      font-family: 'IBM Plex Sans';
-      font-weight: 500;
-      font-size: 14px;
-      line-height: 20px;
-      color: var(--text-default, #1B1F24);
-    }
   }
 
   // Ensure proper scrolling behavior
@@ -76,7 +59,7 @@
             border-radius: 6px;
             margin: 0 -6px;
             padding: 7px 6px;
-            background: rgba(136, 144, 153, 0.12);
+            background: var(--interactive-hover);
 
             .entry-option-btn-wrapper {
               .entry-option-btn {

@@ -4,7 +4,8 @@
 $border-radius: 4px;
 
 .query-manager {
-  .row.header {
+  // The right-panel query editor sits under the editor header, so it has no top band.
+  .row.header:not(.query-manager-header--right) {
     border-top: 3px solid var(--slate5);
   }
 
@@ -101,7 +102,7 @@ $border-radius: 4px;
   color: var(--runtime-panel-muted);
   background: var(--runtime-panel-background);
   border-top: 1px solid var(--runtime-panel-border);
-  font: 400 13px/1.35 Inter, ui-sans-serif, system-ui, sans-serif;
+  font: 500 12px/18px 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
   z-index: 12;
   transition: width 180ms ease;
 }
@@ -122,6 +123,12 @@ $border-radius: 4px;
   &:hover {
     color: var(--runtime-panel-text);
     background: transparent;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--interactive-focus-outline);
+    outline-offset: -2px;
+    border-radius: 4px;
   }
 }
 
@@ -237,22 +244,17 @@ $border-radius: 4px;
   }
 }
 
+// Centred on the query name row (10px header padding + 32px row), 16px from the edge like every panel.
 .right-sidebar-query-close {
   position: absolute;
-  top: 10px;
-  right: 12px;
+  top: 12px;
+  right: 16px;
   z-index: 5;
 }
 
 .query-header-control {
   height: 28px !important;
   min-height: 28px;
-}
-
-.query-header-control--close > div,
-.query-header-control--close svg {
-  width: var(--query-header-close-icon-size) !important;
-  height: var(--query-header-close-icon-size) !important;
 }
 
 .query-documentation-link {
@@ -418,9 +420,8 @@ $border-radius: 4px;
       cursor: pointer;
       transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease;
 
+      // Underline tabs (panel, query, drawer) all hover the same way: text colour only.
       &:hover {
-        border-radius: 6px 6px 0 0;
-        background: var(--interactive-overlays-fill-hover);
         color: var(--text-default);
       }
 
@@ -440,7 +441,6 @@ $border-radius: 4px;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
-    scrollbar-gutter: stable;
     scrollbar-width: thin;
     scrollbar-color: var(--slate7) transparent;
     background: var(--query-panel-background);
@@ -846,17 +846,15 @@ $border-radius: 4px;
   }
 }
 
-[class*='query-select-motion__option--is-focused']:not([class*='query-select-motion__option--is-selected']) {
-  background: var(--background-surface-layer-01) !important;
-}
-
+// Selected, keyboard-focused and hovered options each need a visible state (QE-51).
 [class*='query-select-motion__option--is-selected'] {
-  background: var(--background-surface-layer-01) !important;
+  background: var(--interactive-default) !important;
   color: var(--text-default) !important;
 }
 
+[class*='query-select-motion__option--is-focused'],
 [class*='query-select-motion__option']:hover {
-  background: var(--background-surface-layer-01) !important;
+  background: var(--interactive-hover) !important;
 }
 
 @keyframes runtime-panel-content-enter {
@@ -899,7 +897,7 @@ $border-radius: 4px;
 
 
   &#query-manager {
-    border-top-width: 2px;
+    border-top-width: 1px;
     transition: border-color 0.3s;
   }
 
@@ -1985,7 +1983,7 @@ $border-radius: 4px;
 
       &.active {
         box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
-        color: var(--indigo9) !important;
+        color: var(--editor-accent-text, var(--indigo9)) !important;
       }
     }
   }
@@ -3022,29 +3020,6 @@ $border-radius: 4px;
     background-color: var(--background-surface-layer-01);
   }
 
-  .queries-panel-header {
-    display: flex;
-    flex: 0 0 48px;
-    align-items: center;
-    justify-content: space-between;
-    height: 48px;
-    padding: 8px 10px 8px 16px;
-    border-bottom: 1px solid var(--border-weak);
-  }
-
-  .queries-panel-title {
-    color: var(--text-primary);
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 20px;
-  }
-
-  .queries-panel-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
   .queries-header {
     display: flex;
     flex: 0 0 44px;
@@ -3075,13 +3050,13 @@ $border-radius: 4px;
 
   .query-search--left {
     width: 100%;
-    height: 28px !important;
+    height: 32px !important;
 
     .query-manager-search-box-wrapper {
       min-width: 0;
 
       .input-icon {
-        height: 28px;
+        height: 32px;
         margin-bottom: 0 !important;
 
         .input-icon-addon {
@@ -3090,30 +3065,31 @@ $border-radius: 4px;
           width: 16px;
           min-width: 16px;
           height: 16px;
-          margin: 6px 0 6px 8px;
+          margin: 8px 0 8px 8px;
           padding: 1.33px 0 1.33px 1.33px;
 
           .icon {
             width: 13.33px;
             height: 13.33px;
-            stroke: var(--slate8);
+            stroke: var(--icon-default);
           }
         }
 
         .form-control {
-          height: 28px;
+          height: 32px;
           padding-top: 4px !important;
           padding-right: 8px;
           padding-bottom: 4px !important;
           padding-left: 12px !important;
-          border: 1px solid var(--slate7) !important;
-          color: var(--slate12);
+          border: 1px solid var(--border-default) !important;
+          border-radius: 8px !important;
+          color: var(--text-default);
           font-size: 12px;
           font-weight: 400;
           line-height: 20px;
 
           &::placeholder {
-            color: var(--slate9);
+            color: var(--text-placeholder);
           }
 
           &:focus {
@@ -3187,17 +3163,22 @@ $border-radius: 4px;
     flex-direction: row;
     align-items: center;
     width: 100%;
-    height: 40px;
-    padding: 8px 10px !important;
+    height: 32px;
+    padding: 4px 10px !important;
     border: 1px solid transparent;
-    border-radius: 7px;
+    border-radius: 6px;
     color: var(--slate12);
     font-weight: 500;
     cursor: pointer;
     --tblr-gutter-x: 0rem;
 
     &:hover {
-      background: var(--background-surface-layer-02) !important;
+      background: var(--interactive-hover) !important;
+    }
+
+    // The ⋮ menu is hidden (d-none) on rows that aren't selected; hovering any row reveals it (QL-49).
+    &:hover .query-rename-delete-btn {
+      display: flex !important;
     }
 
     .query-name {

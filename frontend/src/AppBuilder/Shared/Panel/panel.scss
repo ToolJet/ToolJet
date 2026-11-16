@@ -1,0 +1,103 @@
+// Shared chrome for the editor's panels. One place for the numbers every panel header must agree on.
+.tj-panel-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  flex: 0 0 48px;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  background-color: var(--background-surface-layer-01);
+
+  &--divider {
+    border-bottom: 1px solid var(--border-weak);
+  }
+}
+
+.tj-panel-header__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-default);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tj-panel-header__actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.tj-panel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 40px 16px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  text-align: center;
+}
+
+.tj-panel-empty__spot {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px;
+  border-radius: 8px;
+  background: var(--surfaces-surface-02);
+  color: var(--icon-default);
+}
+
+.tj-panel-empty__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.tj-panel-empty__title {
+  overflow-wrap: anywhere;
+  color: var(--text-default);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.tj-panel-empty__description {
+  color: var(--text-placeholder);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.tj-panel-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.tj-panel-empty__action {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--primary-brand);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+
+  &:hover {
+    background: var(--interactive-hover);
+  }
+}

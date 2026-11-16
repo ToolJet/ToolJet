@@ -66,7 +66,7 @@ const useEntityNavigation = (): NavigateToEntity => {
   const { moduleId } = useModuleContext();
   const setSelectedComponents = useStore((state: any) => state.setSelectedComponents);
   const setSelectedQuery = useStore((state: any) => state.queryPanel.setSelectedQuery);
-  const setIsQueryPaneExpanded = useStore((state: any) => state.queryPanel.setIsQueryPaneExpanded);
+  const revealQueryEditor = useStore((state: any) => state.queryPanel.revealQueryEditor);
   const openInspector = useStore((state: any) => state.queryPanel.openRuntimeInspector);
 
   const navigate = (entry: NavigableEntry): boolean => {
@@ -78,7 +78,7 @@ const useEntityNavigation = (): NavigateToEntity => {
       }
       case 'query': {
         setSelectedQuery(entry.id, moduleId);
-        setIsQueryPaneExpanded(true);
+        revealQueryEditor();
         return true;
       }
       case 'variable':

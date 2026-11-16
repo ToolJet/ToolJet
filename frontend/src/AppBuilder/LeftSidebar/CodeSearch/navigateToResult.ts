@@ -150,14 +150,22 @@ export const navigateToResult = async (match: SearchMatch, moduleId = 'canvas'):
     document.getElementById(ownerId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } else if (ownerType === 'query') {
     queryPanel.setSelectedQuery(ownerId, moduleId);
-    queryPanel.expandQueryPaneIfNeeded();
+    queryPanel.revealQueryEditor();
   } else if (ownerId === 'pageSettings') {
     // App-wide navigation settings are edited in the right sidebar's Pages panel.
     openRightSidebar(RIGHT_SIDE_BAR_TAB.PAGES);
   } else if (ownerType === 'page') {
-    // A page's own fields (hidden, disabled, icon, …) are edited in its details popover, which the
-    // reveal chain opens.
-    openRightSidebar(RIGHT_SIDE_BAR_TAB.PAGES);
+    // A page's own fields (hidden, disabled, icon, …) live in its configuration in the right panel,
+    // opened the same way as clicking the page's row in the Pages panel.
+    const state = useStore.getState();
+    const page = state.modules[moduleId]?.pages?.find((p: any) => p.id === ownerId);
+    if (page) {
+      state.setEditingPage(page);
+      state.setNewPagePopupConfig({ show: true, mode: 'edit', type: page.type || 'default' });
+      openRightSidebar(RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION);
+    } else {
+      openRightSidebar(RIGHT_SIDE_BAR_TAB.PAGES);
+    }
   } else if (
     ownerType === 'app' &&
     LIBRARY_FIELDS.has(record.fieldPath[0]) &&

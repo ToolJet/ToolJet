@@ -246,8 +246,8 @@
   .search-icon .code-search-beta-tag {
     position: absolute;
     // Off the glyph's top-right corner, badge-style, so the pill never covers the magnifier.
-    top: -10px;
-    right: -14px;
+    top: -12px;
+    right: -16px;
     z-index: 1;
     pointer-events: none;
     transform: scale(0.75);

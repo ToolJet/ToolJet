@@ -89,12 +89,16 @@ export const QueryPanel = ({ darkMode }) => {
     localStorage.setItem('runtimePanelPreferences', JSON.stringify(panelPreferences.current));
   }, []);
 
+  // Remembers the open state however the drawer was opened or closed (tabs, toggle, Inspect links).
+  useEffect(() => {
+    persistPanel(isQueryPaneExpanded);
+  }, [isQueryPaneExpanded, persistPanel]);
+
   const toggleRuntimePanel = useCallback(() => {
     const expanded = !isQueryPaneExpanded;
     setIsQueryPaneExpanded(expanded);
-    persistPanel(expanded, height);
     if (!expanded) setQueryPanelHeight(0);
-  }, [height, isQueryPaneExpanded, persistPanel, setIsQueryPaneExpanded, setQueryPanelHeight]);
+  }, [isQueryPaneExpanded, setIsQueryPaneExpanded, setQueryPanelHeight]);
 
   const selectTab = (tab) => {
     if (getRuntimeTabClickAction(tab, activeTab, isQueryPaneExpanded) === 'close') {
@@ -105,10 +109,7 @@ export const QueryPanel = ({ darkMode }) => {
     setTabDirection(Math.sign(tabIndex(tab) - tabIndex(activeTab)));
     setActiveTab(tab);
     if (tab === 'debugger') resetUnreadErrorCount();
-    if (!isQueryPaneExpanded) {
-      setIsQueryPaneExpanded(true);
-      persistPanel(true, height);
-    }
+    if (!isQueryPaneExpanded) setIsQueryPaneExpanded(true);
   };
 
   // Sliding underline: measured from the active tab so it glides between tabs of different widths.

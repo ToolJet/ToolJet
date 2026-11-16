@@ -54,6 +54,7 @@ button:focus:not(:focus-visible) {
 
 .list-item-popover-body {
   padding: 4px;
+  font-size: 12px; // not the 12.25px Bootstrap popovers default to
   min-width: 10.625rem; // 170px
   color: var(--slate12);
   border-radius: 6px;
