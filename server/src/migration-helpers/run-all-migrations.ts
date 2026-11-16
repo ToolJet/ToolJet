@@ -106,20 +106,6 @@ const DATA_PHASE_REASON =
   'Data phase: running schema (catch-up, normally empty) and data in separate transactions, so a ' +
   'data failure rolls back the data phase only.';
 
-interface EnumAdditionPlan {
-  /** Their type exists, so they can commit ahead of the shared transaction. */
-  precommittable: EnumValueAddition[];
-  /** Some type is created in this run: no single transaction can add and use its values. */
-  hasMissingType: boolean;
-}
-
-function splitByExistingType(additions: EnumValueAddition[], existingTypes: ReadonlySet<string>): EnumAdditionPlan {
-  return {
-    precommittable: additions.filter(({ typeName }) => existingTypes.has(typeName)),
-    hasMissingType: additions.some(({ typeName }) => !existingTypes.has(typeName)),
-  };
-}
-
 function logExecuted(label: string, executed: { name: string }[]): void {
   if (!executed.length) {
     console.log(`[migrations] ${label}: no pending migrations.`);
@@ -161,14 +147,24 @@ async function inTransaction(
   }
 }
 
-// Single-transaction runs only: async schema commits before the data phase uses a new value.
-async function planEnumAdditions(schemaDS: DataSource): Promise<EnumAdditionPlan> {
+/**
+ * Single-transaction runs only: async schema commits before the data phase uses a new value.
+ * `precommittable`: their type exists, so they commit ahead. `hasMissingType`: a type created in this run,
+ * so no single transaction can add and use its values.
+ */
+async function planEnumAdditions(
+  schemaDS: DataSource
+): Promise<{ precommittable: EnumValueAddition[]; hasMissingType: boolean }> {
   const additions = extractEnumValueAdditions(await new MigrationExecutor(schemaDS).getPendingMigrations());
   if (!additions.length) return { precommittable: [], hasMissingType: false };
   const rows: { typname: string }[] = await schemaDS.query('SELECT typname FROM pg_type WHERE typname = ANY($1)', [
     additions.map(({ typeName }) => typeName),
   ]);
-  return splitByExistingType(additions, new Set(rows.map(({ typname }) => typname)));
+  const existing = new Set(rows.map(({ typname }) => typname));
+  return {
+    precommittable: additions.filter(({ typeName }) => existing.has(typeName)),
+    hasMissingType: additions.some(({ typeName }) => !existing.has(typeName)),
+  };
 }
 
 /** Enum values cannot be removed anyway, so committing them first costs nothing. */
