@@ -3,6 +3,7 @@ import { DiscoveryService } from '@nestjs/core';
 import { WorkerHost } from '@nestjs/bullmq';
 import { ChildProcess, spawn } from 'child_process';
 import { createInterface } from 'readline';
+import { Readable } from 'stream';
 import { Pool } from 'pg';
 import * as semver from 'semver';
 import {
@@ -157,6 +158,17 @@ const currentVersion = (): string => globalThis.TOOLJET_VERSION ?? 'unknown';
 /** Mid-rollout, an older pod's runner cannot see this release's migrations: it would find nothing and record a success. */
 const isNewerRelease = (version: string): boolean =>
   !!semver.valid(version) && !!semver.valid(currentVersion()) && semver.gt(version, currentVersion());
+
+/** One migration phase in a detached runner process; `exit` settles when it closes. */
+function spawnRunner(output: 'pipe' | 'inherit', env: NodeJS.ProcessEnv): { child: ChildProcess; exit: Promise<void> } {
+  const child = spawn(setupCommand(process.env), {
+    shell: true,
+    detached: true,
+    stdio: ['ignore', output, output],
+    env: { ...process.env, ...env },
+  });
+  return { child, exit: new Promise((resolve) => child.once('close', () => resolve())) };
+}
 
 /** Detached group: kills npm and the runner under it, so its open transaction rolls back. */
 async function stopChild(child: ChildProcess | null, exit: Promise<void> | null): Promise<void> {
@@ -328,19 +340,13 @@ export class MigrationRunsService implements OnApplicationShutdown {
    * a run that finishes before this one re-reads what is pending.
    */
   private runChild(triggeredBy: string, { runId: claimedRunId }: { runId?: string } = {}): void {
-    const child = spawn(setupCommand(process.env), {
-      shell: true,
-      detached: true,
-      stdio: ['ignore', 'pipe', 'pipe'],
-      env: {
-        ...process.env,
-        MIGRATION_SKIP_IF_LOCKED: String(!claimedRunId),
-        // Schema already applied at boot (migrateSchemaBeforeBoot); data rolls back on its own.
-        MIGRATION_PHASE: 'data',
-      },
+    const { child, exit } = spawnRunner('pipe', {
+      MIGRATION_SKIP_IF_LOCKED: String(!claimedRunId),
+      // Schema already applied at boot (migrateSchemaBeforeBoot); data rolls back on its own.
+      MIGRATION_PHASE: 'data',
     });
     this.child = child;
-    this.childExit = new Promise((resolve) => child.once('close', () => resolve()));
+    this.childExit = exit;
     this.cachedStatus = null;
     const keepQueries = !!process.env.ORM_LOGGING && process.env.ORM_LOGGING !== 'false';
     let run = emptyRunProgress();
@@ -394,8 +400,8 @@ export class MigrationRunsService implements OnApplicationShutdown {
       run = next;
       if (!hadWork && run.hasPendingWork) record();
     };
-    createInterface({ input: child.stdout }).on('line', onLine(process.stdout));
-    createInterface({ input: child.stderr }).on('line', onLine(process.stderr));
+    createInterface({ input: child.stdout as Readable }).on('line', onLine(process.stdout));
+    createInterface({ input: child.stderr as Readable }).on('line', onLine(process.stderr));
 
     const heartbeat = setInterval(() => {
       if (!runId || (!dirty && Date.now() - lastWriteAt < IDLE_WRITE_MS)) return;
@@ -453,14 +459,9 @@ export class MigrationRunsService implements OnApplicationShutdown {
   /** Output goes to the pod log only. A failed step stays pending for the next boot; the run stays succeeded. */
   private runCleanupChild(): void {
     if (this.shuttingDown || this.cleanupChild) return;
-    const child = spawn(setupCommand(process.env), {
-      shell: true,
-      detached: true,
-      stdio: ['ignore', 'inherit', 'inherit'],
-      env: { ...process.env, MIGRATION_PHASE: 'cleanup' },
-    });
+    const { child, exit } = spawnRunner('inherit', { MIGRATION_PHASE: 'cleanup' });
     this.cleanupChild = child;
-    this.cleanupExit = new Promise((resolve) => child.once('close', () => resolve()));
+    this.cleanupExit = exit;
     child.on('close', (code) => {
       this.cleanupChild = null;
       if (code && code !== SKIPPED_EXIT_CODE) {
