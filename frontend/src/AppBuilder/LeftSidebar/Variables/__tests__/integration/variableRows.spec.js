@@ -1,0 +1,36 @@
+/**
+ * Panel rows: declared variables first, then variables that only a script or event creates
+ * ("Runtime only"), which are never saved.
+ */
+import useStore from '@/AppBuilder/_stores/store';
+import { buildVariableRows } from '../../variableRows';
+
+const state = () => useStore.getState();
+
+function seed() {
+  const store = state();
+  store.initializeDependencySlice('canvas');
+  store.setGlobalSettings({
+    ...store.globalSettings,
+    variables: { v1: { id: 'v1', name: 'threshold', value: '5', fx_active: false } },
+  });
+  store.setPages([{ id: 'page-1', handle: 'home', name: 'Home', components: {}, variables: {} }], 'canvas');
+  store.setCurrentPageId('page-1', 'canvas');
+  store.setComponentNameIdMapping('canvas');
+  store.initDependencyGraph('canvas');
+}
+
+test('a variable only set at runtime is listed as runtime-only; a declared one is not duplicated', () => {
+  seed();
+  state().setVariable('cartTotal', 12);
+  state().setPageVariable('editing', { id: 1 });
+
+  const s = state();
+  const rows = buildVariableRows(s, 'canvas', s.globalSettings.variables, {});
+
+  expect(rows.app.map((r) => [r.name, Boolean(r.definition)])).toEqual([
+    ['threshold', true],
+    ['cartTotal', false],
+  ]);
+  expect(rows.page.map((r) => [r.name, Boolean(r.definition)])).toEqual([['editing', false]]);
+});

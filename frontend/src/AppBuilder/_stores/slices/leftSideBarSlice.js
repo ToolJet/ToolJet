@@ -1,4 +1,4 @@
-const validSidebarItems = ['page', 'inspect', 'debugger', 'settings', 'dependencies'];
+const validSidebarItems = ['page', 'inspect', 'debugger', 'settings', 'dependencies', 'variables'];
 const storedIsSidebarPinned = localStorage.getItem('isLeftSideBarPinned') === 'true' ? true : false;
 const storedSelectedSidebarItem = !storedIsSidebarPinned
   ? null
