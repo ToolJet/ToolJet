@@ -223,6 +223,40 @@ export const createVariablesSlice = (set, get) => ({
   },
 
   /**
+   * Puts one definition back to a recorded state (`null` = absent): store, runtime value, dependency
+   * node and saved copy. Undo and redo use it, so neither re-runs validation.
+   */
+  applyVariableDefinitionState: async (scope, id, target, moduleId = 'canvas') => {
+    const current = get().getVariableDefinitionById(id, moduleId);
+    const scopeMap =
+      scope === VARIABLE_SCOPES.APP
+        ? get().globalSettings?.variables
+        : get().modules[moduleId].pages.find((p) => p.id === get().getCurrentPageId(moduleId))?.variables;
+    const { [id]: _previous, ...rest } = scopeMap || {};
+    get().setVariableDefinitionMap(scope, target ? { ...rest, [id]: toStored(target) } : rest, moduleId);
+
+    if (current && (!target || current.name !== target.name)) {
+      if (scope === VARIABLE_SCOPES.PAGE) get().unsetPageVariable(current.name, moduleId);
+      else get().unsetVariable(current.name, moduleId);
+    }
+    if (target) {
+      const definition = { ...toStored(target), scope };
+      get().registerVariableDefinitionDependencies(definition, moduleId);
+      get().writeVariableDefinitionValue(definition, get().evaluateVariableDefinition(definition, moduleId), moduleId);
+    } else {
+      get().unregisterVariableDefinitionDependencies(id, moduleId);
+    }
+    await get().persistVariableDefinitions(scope, moduleId);
+  },
+
+  recordVariableDefinitionChange: (scope, id, before, after, moduleId = 'canvas') => {
+    get().pushUndoRedoCommand?.({
+      undo: () => get().applyVariableDefinitionState(scope, id, before, moduleId),
+      redo: () => get().applyVariableDefinitionState(scope, id, after, moduleId),
+    });
+  },
+
+  /**
    * Creates (no `id`) or updates a variable. Rejects an invalid name, invalid JSON or a circular
    * reference before anything changes. On success the value is live at once, then saved.
    * Scope is fixed once created. Returns `{ ok: true, definition }` or `{ ok: false, field, error }`.
@@ -279,6 +313,7 @@ export const createVariablesSlice = (set, get) => ({
     get().registerVariableDefinitionDependencies(definition, moduleId);
     get().writeVariableDefinitionValue(definition, get().evaluateVariableDefinition(definition, moduleId), moduleId);
 
+    get().recordVariableDefinitionChange(scope, stored.id, existing ? toStored(existing) : null, stored, moduleId);
     await get().persistVariableDefinitions(scope, moduleId);
     return { ok: true, definition };
   },
@@ -296,6 +331,7 @@ export const createVariablesSlice = (set, get) => ({
     get().unregisterVariableDefinitionDependencies(id, moduleId);
     if (scope === VARIABLE_SCOPES.PAGE) get().unsetPageVariable(definition.name, moduleId);
     else get().unsetVariable(definition.name, moduleId);
+    get().recordVariableDefinitionChange(scope, id, toStored(definition), null, moduleId);
     await get().persistVariableDefinitions(scope, moduleId);
   },
 });
