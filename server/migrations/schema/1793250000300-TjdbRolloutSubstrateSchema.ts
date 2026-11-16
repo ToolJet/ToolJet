@@ -2,8 +2,8 @@
 import { MigrationInterface, QueryRunner, Table, TableColumn, TableForeignKey, TableUnique } from 'typeorm';
 
 // Pure-DDL half of "Migration A" (`migrations/data/1793250000800-TjdbRolloutMigrationASubstrate.ts`),
-// split out so the 3 new tables + internal_tables shape changes exist even on a deploy that skips
-// `db:migrate:data`. The data migration backfills relations/baselines into what this creates.
+// split out so the 3 new tables + internal_tables shape changes exist after the schema phase,
+// before the data phase runs. The data migration backfills relations/baselines into what this creates.
 //
 // Revert order matters and isn't enforced mechanically (both the schema and data datasources write
 // to the same `migrations` table, and TypeORM reverts by insertion id, not timestamp):
