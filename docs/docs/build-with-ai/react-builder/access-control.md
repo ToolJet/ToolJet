@@ -5,7 +5,7 @@ title: Control Access
 
 Choose who can open each screen of a React Builder app and who can run each query, by group or by person. You set both in the **Access** panel, and ToolJet's server checks the query limits on every run.
 
-<!-- TODO screenshot: /img/build-with-ai/react-builder/access-control/access-panel.png | img-m | alt: The Access panel listing the app's five screens, two of them restricted, and its eight queries, four of them restricted | shows: state A (Northwind Dispatch v3 draft): Access panel open from the left sidebar; the screens list reads "5, 2 restricted" with Carriers restricted to Operations and Billing to Finance; the queries list reads "8, 4 restricted" -->
+<img className="screenshot-full img-m" src="/img/build-with-ai/react-builder/access-control/access-panel.png" alt="The Access panel listing the app's five screens, two of them restricted, and its eight queries, four of them restricted" />
 
 ## Two Kinds of Access
 

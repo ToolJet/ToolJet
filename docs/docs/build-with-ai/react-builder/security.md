@@ -101,7 +101,7 @@ A clean result means no check found an issue. It doesn't prove the app is secure
 
 Below the issues, **What protects this app** shows whether each protection is on: who can open the app and each screen, who can run each query, how people sign in, and where the code can connect. It also flags a query that trusts `{{globals.currentUser…}}`, which a user can change in the browser.
 
-<!-- TODO screenshot: /img/build-with-ai/react-builder/security/what-protects-this-app.png | img-m | alt: The What protects this app section with every row on: a private app, passwords kept on the server, screens and queries restricted, the sign-in method, and connections limited to ToolJet | shows: state A (Northwind Dispatch v3 draft): Security panel with What protects this app expanded and its state reading All on -->
+<img className="screenshot-full img-m" src="/img/build-with-ai/react-builder/security/what-protects-this-app.png" alt="The What protects this app section with every row on: a private app, passwords kept on the server, screens and queries restricted, the sign-in method, and connections limited to ToolJet" />
 
 Isolation protects the viewer's session, not the app's data: that depends on who can run each query. See [Control Access](./access-control.md).
 
