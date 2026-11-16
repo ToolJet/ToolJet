@@ -317,7 +317,7 @@ export const createEventsSlice = (set, get) => ({
       }
       if (eventName === 'onTrigger') {
         const { queryPanel, dataQuery } = get();
-        const queries = dataQuery.queries.modules.canvas;
+        const queries = dataQuery.queries.modules[moduleId] ?? dataQuery.queries.modules.canvas;
         const { runQuery } = queryPanel;
         const { queryName, parameters } = options;
         const queryId = queries.filter((query) => query.name === queryName && isQueryRunnable(query))?.[0]?.id;
@@ -403,6 +403,8 @@ export const createEventsSlice = (set, get) => ({
           'onMarkerClick',
           'onPolygonClick',
           'onPageChanged',
+          'onNextPageClicked',
+          'onPreviousPageClicked',
           'onSearch',
           'onChange',
           'onEnterPressed',

@@ -1,3 +1,4 @@
+/** @group platform */
 /**
  * Unit tests for the module delete-in-use guard in AppsService.delete (H3 — DEV-64).
  *

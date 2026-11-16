@@ -19,6 +19,6 @@
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2",
-    "woocommerce-rest-ts-api": "^7.0.0"
+    "woocommerce-rest-ts-api": "^8.2.3"
   }
 }

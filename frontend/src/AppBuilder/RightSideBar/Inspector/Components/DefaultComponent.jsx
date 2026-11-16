@@ -59,6 +59,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'FlexContainer',
   'Timeline',
   'Timer',
+  'PDF',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',

@@ -3,10 +3,11 @@ import { isEqual } from 'lodash';
 import iframeContent from './iframe.html';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const CustomComponent = (props) => {
-  const { height, properties, styles, id, setExposedVariable, dataCy } = props;
-  const exposedVariables = useStore((state) => state.getExposedValueOfComponent(id), shallow);
+  const { height, properties, styles, id, setExposedVariable, dataCy, componentName, currentMode } = props;
+  const { moduleId } = useModuleContext();
   const onEvent = useStore((state) => state.eventsSlice.onEvent, shallow);
   const { visibility, boxShadow, borderColor, borderRadius } = styles;
   const { code, data } = properties;
@@ -18,6 +19,9 @@ export const CustomComponent = (props) => {
   // The startup reply is sent from a listener bound at mount, when a row in the viewer has no code yet.
   const codeRef = useRef(code);
   codeRef.current = code;
+  // The data last published and sent to the frame. Kept here rather than read back from the store,
+  // which inside a ListView holds one value per row
+  const syncedDataRef = useRef();
 
   useEffect(() => {
     setCustomProps(data);
@@ -26,12 +30,13 @@ export const CustomComponent = (props) => {
   }, [JSON.stringify(data)]);
 
   useEffect(() => {
-    if (!isEqual(exposedVariables.data, customProps)) {
+    if (!isEqual(syncedDataRef.current, customProps)) {
+      syncedDataRef.current = customProps;
       setExposedVariable('data', customProps);
       sendMessageToIframe({ message: 'DATA_UPDATED' });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customProps, exposedVariables.data]);
+  }, [customProps]);
 
   useEffect(() => {
     sendMessageToIframe({ message: 'CODE_UPDATED' });
@@ -41,12 +46,11 @@ export const CustomComponent = (props) => {
   useEffect(() => {
     messageEventListenerRef.current = (e) => {
       try {
-        // Every row of a List View shares this id, so only the sending iframe identifies the sender.
-        if (
-          e.data.from === 'customComponent' &&
-          e.data.componentId === id &&
-          e.source === iFrameRef.current?.contentWindow
-        ) {
+        // Only this component's own frame may drive it.
+        // Every ListView row shares the id, and any other window on the page can forge the tag and id.
+        const frameWindow = iFrameRef.current?.contentWindow;
+        if (!frameWindow || e.source !== frameWindow) return;
+        if (e.data.from === 'customComponent' && e.data.componentId === id) {
           if (e.data.message === 'UPDATE_DATA') {
             setCustomProps({ ...customPropRef.current, ...e.data.updatedObj });
           } else if (e.data.message === 'RUN_QUERY') {
@@ -58,7 +62,7 @@ export const CustomComponent = (props) => {
             const requestId = e.data.requestId;
             // Run the query and post the result back to the iframe
             // Result structure matches queries.queryName.run() — always resolves with { status, data, ... }
-            onEvent('onTrigger', [], options)
+            onEvent('onTrigger', [], options, currentMode, moduleId)
               .then((result) => {
                 if (iFrameRef.current?.contentWindow) {
                   iFrameRef.current.contentWindow.postMessage(
@@ -100,13 +104,18 @@ export const CustomComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     window.addEventListener('message', messageEventListenerRef.current);
 
-    // Cleanup function to remove event listener and cleanup iframe
+    // Re-registering for a new mode or module only swaps the listener; the frame keeps running
     return () => {
       if (messageEventListenerRef.current) {
         window.removeEventListener('message', messageEventListenerRef.current);
         messageEventListenerRef.current = null;
       }
+    };
+  }, [id, onEvent, currentMode, moduleId]);
 
+  // Tear the frame down on unmount only
+  useEffect(() => {
+    return () => {
       // Send cleanup message to iframe
       if (iFrameRef.current?.contentWindow) {
         try {
@@ -122,7 +131,7 @@ export const CustomComponent = (props) => {
         }
       }
     };
-  }, [id, onEvent]);
+  }, [id]);
 
   const sendMessageToIframe = ({ message }) => {
     if (!iFrameRef.current) return;
@@ -177,6 +186,7 @@ export const CustomComponent = (props) => {
       data-cy={dataCy}
     >
       <iframe
+        title={componentName}
         srcDoc={iframeContent}
         style={{ width: '100%', height: '100%', border: 'none' }}
         ref={iFrameRef}
