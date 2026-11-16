@@ -1,6 +1,5 @@
 import { MODULES } from '@modules/app/constants/modules';
 import { InitModule } from '@modules/app/decorators/init-module';
-import { Body, Controller, Delete, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { Body, Controller, Delete, Param, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common';

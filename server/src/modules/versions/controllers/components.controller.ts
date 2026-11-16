@@ -1,10 +1,6 @@
 import { MODULES } from '@modules/app/constants/modules';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { Body, Controller, Delete, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common';
-import { FEATURE_KEY } from '../constants';
-import { App as AppEntity } from '@entities/app.entity';
-import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
-import { Body, Controller, Delete, Post, Put, UseGuards } from '@nestjs/common';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { FeatureAbilityGuard } from '../ability/guard';
