@@ -6,6 +6,14 @@ applyTo: "server/migrations/data/**/*"
 
 Full writing rules: the Migrations section of `server/AGENTS.md`.
 
+## Phase rules
+
+The data phase runs while old and new code serve. Flag:
+
+- Index builds, triggers, foreign keys `NOT VALID` or `VALIDATE` in `up()`. They go in `beforeCommit()`.
+- `DROP`, `RENAME`, `SET NOT NULL`, `ADD CHECK` or `LOCK TABLE`. They go in a cleanup migration.
+- Schema changes (new tables or columns). They go in a schema migration.
+
 ## Progress logging
 
 New data migrations log progress, so operators and the super-admin Migrations page can follow a deploy:
