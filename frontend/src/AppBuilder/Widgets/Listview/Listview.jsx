@@ -157,13 +157,6 @@ export const Listview = function Listview({
       });
     }
   }
-  // A copy of the clicked item must not outlive a change to the records it came from (D-10).
-  const prevDataRef = useRef(data);
-  if (prevDataRef.current !== data) {
-    const contentChanged = !_.isEqual(prevDataRef.current, data);
-    prevDataRef.current = data;
-    if (contentChanged) setExposedVariables({ selectedListItem: undefined });
-  }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
   const filteredData = _.isArray(data)
@@ -228,8 +221,6 @@ export const Listview = function Listview({
         selectedRecord: selectedRow,
         selectedRowId: index,
         selectedRow: selectedRow,
-        // The data item itself: selectedRecordId is page-relative, so it cannot find it past page one.
-        selectedListItem: filteredData[index],
       });
       // Every row event carries its record, so a handler on the list itself can read {{listItem}}.
       const fireRowEvent = (name) =>
