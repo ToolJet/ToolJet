@@ -47,12 +47,6 @@ export function endUserMessage(state: string, env: Env = process.env): string | 
 export type MigrationPhase = 'schema' | 'data' | 'cleanup';
 
 /**
- * - single-transaction: every phase in one transaction before boot (blocking mode, fresh install, `db:migrate`).
- * - multi-transaction: one process and transaction per phase (async mode); MIGRATION_PHASE names it.
- */
-export type RunStrategy = 'single-transaction' | 'multi-transaction';
-
-/**
  * `beforeCommit` holds a data migration's lock-taking statements (index builds, triggers, foreign keys NOT VALID, VALIDATE). They run after
  * every data migration up(), just before commit, so their locks last seconds instead of the whole run.
  */
@@ -99,10 +93,6 @@ export function parseMigrationPhase(raw: string | undefined): MigrationPhase | u
   if (!raw) return undefined;
   if (raw === 'schema' || raw === 'data' || raw === 'cleanup') return raw;
   throw new Error(`Unknown MIGRATION_PHASE '${raw}': use 'schema', 'data' or 'cleanup', or leave it unset.`);
-}
-
-export function runStrategy(phase: MigrationPhase | undefined): RunStrategy {
-  return phase ? 'multi-transaction' : 'single-transaction';
 }
 
 /**

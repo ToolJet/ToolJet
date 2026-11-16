@@ -13,7 +13,6 @@ import {
   isMigrationTrafficGateDisabled,
   parseMigrationPhase,
   planCleanup,
-  runStrategy,
 } from 'src/migration-helpers/migration-mode';
 
 describe('migration-helpers/migration-mode', () => {
@@ -53,14 +52,13 @@ describe('migration-helpers/migration-mode', () => {
 
   describe('parseMigrationPhase(): which part of the upgrade a run applies', () => {
     it.each([
-      [undefined, undefined, 'single-transaction'],
-      ['', undefined, 'single-transaction'],
-      ['schema', 'schema', 'multi-transaction'],
-      ['data', 'data', 'multi-transaction'],
-      ['cleanup', 'cleanup', 'multi-transaction'],
-    ])('should read %j as phase %s, run as a %s run', (raw, phase, strategy) => {
+      [undefined, undefined],
+      ['', undefined],
+      ['schema', 'schema'],
+      ['data', 'data'],
+      ['cleanup', 'cleanup'],
+    ])('should read %j as phase %s', (raw, phase) => {
       expect(parseMigrationPhase(raw)).toBe(phase);
-      expect(runStrategy(parseMigrationPhase(raw))).toBe(strategy);
     });
 
     it.each(['Schema', 'joint', 'contract'])(

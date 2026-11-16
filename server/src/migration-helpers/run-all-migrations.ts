@@ -33,7 +33,6 @@ import {
   migrationTimestamp,
   parseMigrationPhase,
   planCleanup,
-  runStrategy,
 } from './migration-mode';
 import { getEnvVars } from '../../scripts/database-config-utils';
 
@@ -508,7 +507,7 @@ export async function run(
       phase = undefined;
     }
   }
-  if (runStrategy(phase) === 'multi-transaction') {
+  if (phase) {
     withoutLockSentinels(schemaDS);
     withoutLockSentinels(dataDS);
   }

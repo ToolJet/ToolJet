@@ -43,7 +43,7 @@ entrypoint → wait-for-it (PostgreSQL) → npm run db:setup:prod → exec "$@" 
 
 ## Phases and transactions
 
-Folders: `server/migrations/schema/`, `server/migrations/data/`, `server/migrations/cleanup/`. A runner runs pending schema, then data, then cleanup migrations. `MIGRATION_PHASE` picks which. An unknown value fails the runner. Types: `MigrationPhase` and `RunStrategy` in `migration-mode.ts`. A single-transaction run uses the `single-transaction` strategy. The split phases use `multi-transaction`.
+Folders: `server/migrations/schema/`, `server/migrations/data/`, `server/migrations/cleanup/`. A runner runs pending schema, then data, then cleanup migrations. `MIGRATION_PHASE` picks which. An unknown value fails the runner. Type: `MigrationPhase` in `migration-mode.ts`.
 
 | `MIGRATION_PHASE` | Used by | Runs | Transactions |
 |---|---|---|---|
