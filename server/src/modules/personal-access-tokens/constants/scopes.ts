@@ -118,6 +118,7 @@ export const PAT_UNASSIGNED_MODULES: MODULES[] = [
   MODULES.CUSTOM_COMPONENT_LIBRARIES, // uploads code that runs inside apps; not granted pending a decision
   MODULES.ROOT, // health and version
   MODULES.SSRF, // outbound request settings: super admin in the UI only, never a token
+  MODULES.APP_USAGE_ANALYTICS, // admin dashboard reads; not granted to tokens pending a decision
   // Uploads and publishes JS bundles that execute inside every app that uses them.
   MODULES.CUSTOM_COMPONENT_LIBRARIES,
 ];
