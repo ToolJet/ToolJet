@@ -12,6 +12,7 @@ import VersionDropdownItem from './VersionDropdownItem';
 import CreateDraftButton from './CreateDraftButton';
 import VersionItemSkeleton from './VersionItemSkeleton';
 import { CreateVersionModal, CreateDraftVersionModal, EditVersionModal } from '.';
+import NestedWorkflowPinsBlockedDialog from '../NestedWorkflowPinsBlockedDialog';
 import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
@@ -73,6 +74,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     setSelectedEnvironmentFilter,
     fetchVersionsForEnvironment,
     refreshVersions,
+    pinsBlocked,
+    setPinsBlocked,
   } = useVersionManagerStore();
 
   const { currentBranch, pullApp: pullAppAction } = useWorkspaceBranchesStore(
@@ -81,7 +84,12 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   );
   const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
 
-  const appCoRelationId = useStore((state) => state.appStore.modules[moduleId]?.app?.co_relation_id, shallow);
+  // Same shape as appId above — the workflow editor renders outside ModuleProvider, so the
+  // module read is undefined there.
+  const appCoRelationId = useStore(
+    (state) => state.appCoRelationId ?? state.appStore.modules[moduleId]?.app?.co_relation_id,
+    shallow
+  );
 
   const { isGitSyncEnabled } = useGitSyncConfig();
   const [showCreateDraftModal, setShowCreateDraftModal] = useState(false);
@@ -639,6 +647,14 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     </Popover>
   );
 
+  // Feature branches have no version lifecycle. Guarded here rather than in EditorHeader so
+  // the workflow header is covered too.
+  const isOnFeatureBranch =
+    selectedVersion?.versionType === 'branch' ||
+    selectedVersion?.version_type === 'branch' ||
+    !!(currentBranch && !currentBranch.is_default && !currentBranch.isDefault);
+  if (isOnFeatureBranch) return null;
+
   return (
     <>
       <div ref={buttonRef}>
@@ -817,6 +833,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           </div>,
           document.body
         )}
+      <NestedWorkflowPinsBlockedDialog blocked={pinsBlocked} onClose={() => setPinsBlocked(null)} />
     </>
   );
 };

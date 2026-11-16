@@ -67,6 +67,12 @@ export class GroupPermissions extends BaseEntity {
   @Column({ name: 'module_folder_delete', default: false })
   moduleFolderDelete: boolean;
 
+  @Column({ name: 'data_source_folder_create', default: false })
+  dataSourceFolderCreate: boolean;
+
+  @Column({ name: 'data_source_folder_delete', default: false })
+  dataSourceFolderDelete: boolean;
+
   @Column({ name: 'org_constant_crud', default: false })
   orgConstantCRUD: boolean;
 
@@ -84,6 +90,12 @@ export class GroupPermissions extends BaseEntity {
 
   @Column({ name: 'app_release', default: false })
   appRelease: boolean;
+
+  @Column({ name: 'pat_create', default: false })
+  patCreate: boolean;
+
+  @Column({ name: 'pat_revoke', default: false })
+  patRevoke: boolean;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

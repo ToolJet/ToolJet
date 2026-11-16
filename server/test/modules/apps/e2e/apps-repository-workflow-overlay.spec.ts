@@ -8,6 +8,7 @@ import { updateEntity } from 'test-helper';
 import { createWorkflowDataQuery } from 'test-helper';
 import { getDefaultDataSource } from 'test-helper';
 import { DataSource as DataSourceEntity } from '@entities/data_source.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 /** @group platform */
 describe('AppsRepository — workflow metadata overlay (post-migration)', () => {
@@ -137,5 +138,37 @@ describe('AppsRepository — workflow metadata overlay (post-migration)', () => 
       icon: 'overlay-icon.svg',
       isPublic: true,
     });
+  });
+
+  it('findAllOrganizationWorkflows should scope the list to the active branch', async () => {
+    const admin = await createAdmin(app, 'overlay-admin-9@tooljet.io');
+    const orgUser = { ...admin.user, organizationId: admin.workspace.id } as any;
+
+    // createApplicationVersion seeds the org's default branch on first use; add a feature branch alongside it.
+    const branchRepo = getDefaultDataSource().getRepository(WorkspaceBranch);
+    const featureBranch = await branchRepo.save(
+      branchRepo.create({ organizationId: admin.workspace.id, name: 'feature', isDefault: false })
+    );
+
+    const workflowOnDefaultBranch = await createApplication(app, {
+      name: 'Default-only workflow',
+      user: orgUser,
+      type: 'workflow',
+    });
+    await createApplicationVersion(app, workflowOnDefaultBranch as any);
+
+    const workflowOnFeatureBranch = await createApplication(app, {
+      name: 'Feature-only workflow',
+      user: orgUser,
+      type: 'workflow',
+    });
+    const featureVersion = await createApplicationVersion(app, workflowOnFeatureBranch as any);
+    await updateEntity(AppVersion, featureVersion.id, { branchId: featureBranch.id });
+
+    const results = await appsRepository.findAllOrganizationWorkflows(admin.workspace.id, undefined, featureBranch.id);
+    const resultIds = results.map((result) => result.id);
+
+    expect(resultIds).toContain(workflowOnFeatureBranch.id);
+    expect(resultIds).not.toContain(workflowOnDefaultBranch.id);
   });
 });

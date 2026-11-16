@@ -49,10 +49,4 @@ export interface IOnboardingUtilService {
     organizationInviteUrl: string;
   }>;
   splitName(name: string): { firstName: string; lastName: string };
-  updateExistingUserDefaultWorkspace(
-    userParams: { password: string; firstName: string; lastName: string },
-    existingUser: User,
-    defaultWorkspace: Organization,
-    manager?: EntityManager
-  );
 }

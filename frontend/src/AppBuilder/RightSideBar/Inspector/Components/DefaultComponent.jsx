@@ -61,6 +61,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Timeline',
   'Spinner',
   'BoundedBox',
+  'PDF',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',

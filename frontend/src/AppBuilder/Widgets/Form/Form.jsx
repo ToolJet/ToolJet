@@ -360,6 +360,7 @@ const FormComponent = (props) => {
             if (childData.hasOwnProperty('file')) return childData.file;
             if (childData.hasOwnProperty('selectedDateRange')) return childData.selectedDateRange;
             if (childData.hasOwnProperty('checked')) return childData.checked;
+            if (childData.hasOwnProperty('selectedColorHex')) return childData.selectedColorHex;
 
             return null;
           })();

@@ -1,6 +1,7 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 import { authenticationService } from '@/_services';
+import { appendBranchParam } from '@/_helpers/active-branch';
 
 export const workflowExecutionsService = {
   create,
@@ -85,7 +86,10 @@ function enableWebhook(appId, value) {
     isEnable: value,
   };
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
-  return fetch(`${config.apiUrl}/v2/webhooks/workflows/${appId}`, requestOptions).then(handleResponse);
+  // Enablement is branch-scoped, so the write has to say which branch.
+  return fetch(appendBranchParam(`${config.apiUrl}/v2/webhooks/workflows/${appId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function getPaginatedExecutions(appVersionId, page = 1, perPage = 10) {

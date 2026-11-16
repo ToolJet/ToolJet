@@ -19,7 +19,7 @@ export class OrganizationPaymentService implements IOrganizationPaymentService {
   getProration(organizationId: string, prorationDto: ProrationDto): Promise<any> {
     throw new Error('Method not implemented.');
   }
-  getPortalLink(portalDto: PortalDto): Promise<any> {
+  getPortalLink(organizationId: string, portalDto: PortalDto): Promise<any> {
     throw new Error('Method not implemented.');
   }
   updateSubscription(organizationId: string, updatedSubscription: ProrationDto): Promise<any> {
