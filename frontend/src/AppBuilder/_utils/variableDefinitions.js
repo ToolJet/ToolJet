@@ -47,7 +47,7 @@ export function validateVariableName(rawName, scope, definitions = [], selfId = 
   const clash = definitions.find((d) => d.id !== selfId && d.scope === scope && d.name === name);
   if (clash) {
     const where = scope === VARIABLE_SCOPES.PAGE && pageName ? ` on ${pageName}` : '';
-    return `A ${scope} variable named “${name}” already exists${where}. Names must be unique within their scope.`;
+    return `${scope === VARIABLE_SCOPES.APP ? 'An app' : 'A page'} variable named “${name}” already exists${where}. Names must be unique within their scope.`;
   }
   return null;
 }

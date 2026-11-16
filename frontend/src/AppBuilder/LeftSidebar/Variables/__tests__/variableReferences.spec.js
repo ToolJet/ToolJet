@@ -104,7 +104,12 @@ describe('findVariableReferences', () => {
     const refs = findVariableReferences(withDefinitions, { scope: 'app', name: 'threshold' });
     expect(refs).toHaveLength(1);
     expect(refs[0]).toEqual(
-      expect.objectContaining({ confidence: 'confirmed', preview: expect.stringContaining('threshold * 2') })
+      expect.objectContaining({
+        confidence: 'confirmed',
+        preview: expect.stringContaining('threshold * 2'),
+        entityName: 'double',
+        fieldLabel: 'App variable · Initial value',
+      })
     );
   });
 

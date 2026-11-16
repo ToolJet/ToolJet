@@ -64,8 +64,18 @@ export function buildVariableRows(
     });
   });
 
+  // Runtime-only means something creates it: a script or event sets it, or it holds a value now.
+  // A name that bindings only read is a dangling reference, not a variable.
+  const exposed = state.resolvedStore?.modules?.[moduleId]?.exposedValues;
+  const isLive = (scope: VariableScope, name: string) =>
+    name in ((scope === 'app' ? exposed?.variables : exposed?.page?.variables) ?? {});
   const runtimeOnly = getVariableUsage(state, moduleId)
-    .variables.filter((v) => !BULK_ROW_NAMES.has(v.name) && !declared.has(rowKey(v.scope, v.name)))
+    .variables.filter(
+      (v) =>
+        !BULK_ROW_NAMES.has(v.name) &&
+        !declared.has(rowKey(v.scope, v.name)) &&
+        (v.setBy.length > 0 || isLive(v.scope, v.name))
+    )
     .map<VariableRow>((v) => ({
       key: `runtime:${rowKey(v.scope, v.name)}`,
       scope: v.scope,

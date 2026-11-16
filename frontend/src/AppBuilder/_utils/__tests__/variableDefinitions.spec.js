@@ -45,7 +45,9 @@ describe('validateVariableName', () => {
   });
 
   test('rejects a duplicate within the same scope only', () => {
-    expect(validateVariableName('lowStockThreshold', 'app', existing)).toMatch(/already exists/);
+    expect(validateVariableName('lowStockThreshold', 'app', existing)).toMatch(
+      /^An app variable named “lowStockThreshold” already exists/
+    );
     expect(validateVariableName('lowStockThreshold', 'page', existing)).toBeNull();
   });
 

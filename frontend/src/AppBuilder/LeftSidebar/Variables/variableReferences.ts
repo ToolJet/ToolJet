@@ -109,6 +109,14 @@ export function findVariableReferences(
     currentPageId,
   });
   const patterns = confirmedPatterns(scope, name);
+  // Another declared variable's value is indexed under its id; name it like the panel does.
+  const definitionOf = (record: SearchRecord) => {
+    const id = record.fieldPath[record.fieldPath.lastIndexOf('variables') + 1];
+    const app = (input.globalSettings as any)?.variables?.[id];
+    if (app) return { name: app.name as string, scopeLabel: 'App variable' };
+    const page = (input.pages as any[]).find((p) => p?.variables?.[id]);
+    return page ? { name: page.variables[id].name as string, scopeLabel: 'Page variable' } : null;
+  };
   const actionIdByEventId = new Map<string, string>(
     (input.events ?? []).map((event: any) => [event.id, event.event?.actionId])
   );
@@ -124,14 +132,15 @@ export function findVariableReferences(
       const isEventKey = isEventKeyField(record) && text.trim() === name && actions.includes(actionId ?? '');
       const confirmed = isEventKey || patterns.some((pattern) => pattern.test(text));
       const first = matches[0] ?? { start: 0, end: 0 };
+      const definition = isVariableValueField(record) ? definitionOf(record) : null;
       return {
         confidence: confirmed ? 'confirmed' : 'possible',
         entityType: record.entityType,
-        entityName: record.entityName,
+        entityName: definition?.name ?? record.entityName,
         entitySubtype: record.entitySubtype,
         componentType: record.componentType,
         pageId: record.pageId,
-        fieldLabel: record.fieldLabel,
+        fieldLabel: definition ? `${definition.scopeLabel} · Initial value` : record.fieldLabel,
         preview: previewAround(text, first.start),
         record,
         start: first.start,

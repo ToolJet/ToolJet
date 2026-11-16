@@ -3,6 +3,7 @@
  * ("Runtime only"), which are never saved.
  */
 import useStore from '@/AppBuilder/_stores/store';
+import { componentDefinition, binding } from '@/test/app-builder';
 import { buildVariableRows, previewOf } from '../../variableRows';
 
 const state = () => useStore.getState();
@@ -45,4 +46,28 @@ describe('previewOf', () => {
     expect(previewOf('Empty string')).toBe('"Empty string"');
     expect(previewOf(' ')).toBe('" "');
   });
+});
+
+test('a name that bindings only read, and nothing sets, is not listed', () => {
+  seed();
+  state().setPages(
+    [
+      {
+        id: 'page-1',
+        handle: 'home',
+        name: 'Home',
+        variables: {},
+        components: {
+          c1: componentDefinition('c1', 'text1', 'Text', { text: binding('{{variables.onlyRead}}') }),
+        },
+      },
+    ],
+    'canvas'
+  );
+  state().setComponentNameIdMapping('canvas');
+  state().initDependencyGraph('canvas');
+
+  const s = state();
+  const names = buildVariableRows(s, 'canvas', s.globalSettings.variables, {}).app.map((r) => r.name);
+  expect(names).toEqual(['threshold']);
 });
