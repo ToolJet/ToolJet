@@ -97,7 +97,7 @@ graph TD
 - Query credentials and constants are resolved for the selected Environment on the server; secrets are decrypted there rather than exposed to the browser (`server/src/modules/data-queries/util.service.ts`).
 - Component configuration must remain backward compatible with previously saved apps, and server/frontend component defaults must change together (`frontend/AGENTS.md`; `server/AGENTS.md`).
 - Feature availability may be constrained by edition, license terms, and resource-count guards (`server/src/modules/licensing/`; `AbilityGuard`).
-- Usage analytics counts only logged-in users opening a released app through its released link; editor, preview and public (no-login) visits never count, and days are UTC for every workspace (`server/src/modules/app-usage-analytics/AGENTS.md`).
+- Usage analytics counts only logged-in users opening a released app through its released link; editor, preview and anonymous visits to public apps never count (signed-in members on a public app do), and days are UTC for every workspace (`server/src/modules/app-usage-analytics/AGENTS.md`).
 
 ## Inferences
 

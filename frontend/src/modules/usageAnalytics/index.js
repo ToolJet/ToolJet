@@ -4,7 +4,6 @@ import { Route, Navigate } from 'react-router-dom';
 import { TJLoader } from '@/_ui/TJLoader';
 import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
 
-// Lazy so the page (and its charting library) lands in its own chunk.
 const eeUsageAnalyticsPage = lazy(() => import('@ee/modules/UsageAnalytics'));
 
 const UsageAnalyticsPage = pickEditionSpecificComponent({

@@ -69,7 +69,7 @@ export async function setFaviconAndTitle(location) {
     workflows: 'Workflows',
     'data-sources': 'Data sources',
     'audit-logs': 'Audit logs',
-    'usage-analytics': 'Usage analytics',
+    'usage-analytics': 'Analytics',
     'account-settings': 'Profile settings',
     settings: 'Settings',
     'profile-settings': 'Profile settings',

@@ -20,8 +20,11 @@ export type TimeGrain = (typeof TIME_GRAINS)[number];
 /** Longest range a client may ask for; daily data is only kept for 13 months anyway. */
 export const MAX_RANGE_DAYS = 400;
 
-/** An app whose first release is younger than this is tagged "New app". */
-export const NEW_APP_DAYS = 14;
+/** Whole months of daily rows kept (monthly partitions older than this are dropped). */
+export const DAILY_RETENTION_MONTHS = 13;
 
-export const APP_TAGS = ['public', 'new'] as const;
+/** Days of daily rows kept for a workspace whose plan lacks usage analytics, so an upgrade starts with some history. */
+export const UNLICENSED_RETENTION_DAYS = 60;
+
+export const APP_TAGS = ['public'] as const;
 export type AppTag = (typeof APP_TAGS)[number];

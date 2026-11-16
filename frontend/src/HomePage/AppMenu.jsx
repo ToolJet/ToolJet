@@ -86,7 +86,6 @@ export const AppMenu = function AppMenu({
       folderGroupPermissions?.editable_folders_id?.includes(currentFolder.id) ||
       currentFolder?.created_by === currentUserId);
 
-  // Usage analytics is an EE/Cloud, admin-only page that only counts released apps.
   const edition = fetchEdition();
   const canViewUsageAnalytics =
     !!currentSession?.admin && (edition === 'ee' || edition === 'cloud') && appType === 'front-end' && isReleased;
@@ -154,7 +153,7 @@ export const AppMenu = function AppMenu({
                 )}
                 {canViewUsageAnalytics && (
                   <Field
-                    text={t('homePage.appCard.viewUsageAnalytics', 'View usage analytics')}
+                    text={t('homePage.appCard.viewUsageAnalytics', 'View analytics')}
                     onClick={() => navigate(getPrivateRoute('usage_analytics_app', { appId }))}
                   />
                 )}

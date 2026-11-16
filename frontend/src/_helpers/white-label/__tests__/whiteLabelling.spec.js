@@ -11,7 +11,7 @@ describe('setFaviconAndTitle', () => {
 
   it('titles the usage analytics app view, whose path also contains /apps/', async () => {
     await setFaviconAndTitle({ pathname: '/acme/usage-analytics/apps/0c1d2e3f-0000-4000-8000-000000000000' });
-    expect(document.title).toBe('Usage analytics | ToolJet');
+    expect(document.title).toBe('Analytics | ToolJet');
   });
 
   it('leaves the title alone in the app editor', async () => {

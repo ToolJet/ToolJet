@@ -1,14 +1,16 @@
 import { Exclude, Expose, Type } from 'class-transformer';
-import { IsIn, IsInt, IsISO8601, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsIn, IsInt, IsISO8601, IsOptional, IsString, Matches, Max, MaxLength, Min } from 'class-validator';
 import { TIME_GRAINS, TimeGrain } from '../constants';
 
-// ---------- Requests ----------
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
-/** `start` and `end` are ISO dates (YYYY-MM-DD, UTC); `end` is exclusive. */
+/** `start` and `end` are UTC dates (YYYY-MM-DD); `end` is exclusive. */
 export class AnalyticsRangeQueryDto {
+  @Matches(DATE_ONLY, { message: 'start must be a date (YYYY-MM-DD)' })
   @IsISO8601({ strict: true })
   start: string;
 
+  @Matches(DATE_ONLY, { message: 'end must be a date (YYYY-MM-DD)' })
   @IsISO8601({ strict: true })
   end: string;
 }
@@ -57,13 +59,10 @@ export class WorkspaceAppsQueryDto extends PagedRangeQueryDto {
   sort?: WorkspaceAppsSort;
 }
 
-// ---------- Responses ----------
-
 @Exclude()
 export class AnalyticsStatusResponseDto {
   /** The instance records app opens (ANALYTICS_ENABLED is not false). */
   @Expose() collecting: boolean;
-  /** The workspace's plan includes usage analytics. */
   @Expose() licensed: boolean;
   /** First recorded open in this workspace; charts mark it. Null before any data. */
   @Expose() trackingStartedAt: string | null;
@@ -74,6 +73,8 @@ export class AnalyticsRangeDto {
   @Expose() start: string;
   @Expose() end: string;
   @Expose() previousStart: string;
+  /** False when the previous period reaches past retained data: previous-period numbers are then null. */
+  @Expose() previousAvailable: boolean;
 }
 
 @Exclude()
@@ -88,10 +89,10 @@ export class LifecycleCountsDto {
 export class WorkspaceSummaryResponseDto {
   @Expose() @Type(() => AnalyticsRangeDto) range: AnalyticsRangeDto;
   @Expose() activeUsers: number;
-  @Expose() previousActiveUsers: number;
-  /** (active − previous) ÷ previous; null when the previous period had no active users. */
+  @Expose() previousActiveUsers: number | null;
+  /** (active − previous) ÷ previous; null when the previous period had no active users or is unavailable. */
   @Expose() trend: number | null;
-  /** Retained ÷ previous; null when the previous period had no active users. */
+  /** Retained ÷ previous; null when the previous period had no active users or is unavailable. */
   @Expose() retention: number | null;
   @Expose() activeApps: number;
   @Expose() releasedApps: number;
@@ -128,7 +129,7 @@ export class WorkspaceAppRowDto {
   @Expose() name: string;
   @Expose() icon: string | null;
   @Expose() activeUsers: number;
-  @Expose() previousActiveUsers: number;
+  @Expose() previousActiveUsers: number | null;
   @Expose() trend: number | null;
   @Expose() @Type(() => ReachDto) reach: ReachDto;
   @Expose() lastOpenedAt: string | null;
@@ -162,13 +163,12 @@ export class AppSummaryResponseDto {
   @Expose() @Type(() => AnalyticsRangeDto) range: AnalyticsRangeDto;
   @Expose() @Type(() => AnalyticsAppDto) app: AnalyticsAppDto;
   @Expose() @Type(() => AppActiveUsersDto) activeUsers: AppActiveUsersDto;
-  @Expose() previousActiveUsers: number;
+  @Expose() previousActiveUsers: number | null;
   @Expose() trend: number | null;
   @Expose() retention: number | null;
   @Expose() @Type(() => ReachDto) reach: ReachDto;
   /** Most recent open ever, regardless of the range. */
   @Expose() lastOpenedAt: string | null;
-  @Expose() firstReleasedAt: string | null;
   @Expose() tags: string[];
 }
 

@@ -119,6 +119,7 @@
     "react-datepicker": "^7.6.0",
     "react-dates": "^21.8.0",
     "react-datetime": "^3.2.0",
+    "react-day-picker": "^9.14.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",

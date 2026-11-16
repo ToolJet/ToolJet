@@ -37,7 +37,7 @@ function Header({
         return parentPath === 'workspace-settings' ? 'Workspace settings' : 'Settings';
       }
       // The app view ends in an app id (/:workspaceId/usage-analytics/apps/:appId).
-      if (pathParts.includes('usage-analytics')) return 'Usage analytics';
+      if (pathParts[2] === 'usage-analytics') return 'Analytics';
       // A selected data source's page ends in its id (/:workspaceId/data-sources/:selectedId).
       if (parentPath === 'data-sources') return 'Data sources';
     }
@@ -63,8 +63,6 @@ function Header({
         return 'Settings';
       case 'audit-logs':
         return 'Audit logs';
-      case 'usage-analytics':
-        return 'Usage analytics';
       case 'workflows':
         return 'Workflows';
       case 'workspace-constants':

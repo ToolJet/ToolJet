@@ -5,6 +5,10 @@ import {
   ENTERPRISE_PLAN_TERMS,
   WORKFLOW_TEAM_PLAN_TERMS,
 } from '@modules/licensing/constants/PlanTerms';
+
+// TODO(usage-analytics): turn back on before release to gate usage analytics by plan.
+const APP_USAGE_ANALYTICS_LICENCE_CHECK = false;
+
 export default class LicenseBase {
   private _appsCount: number | string;
   private _tablesCount: number | string;
@@ -551,6 +555,9 @@ export default class LicenseBase {
   }
 
   public get appUsageAnalytics(): boolean {
+    // TODO(usage-analytics): licence check disabled for now, so every EE/Cloud workspace gets the
+    // dashboards. Set APP_USAGE_ANALYTICS_LICENCE_CHECK to true to gate on `appUsageAnalytics` again.
+    if (!APP_USAGE_ANALYTICS_LICENCE_CHECK) return true;
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.appUsageAnalytics;
     }

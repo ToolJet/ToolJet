@@ -1,20 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-/**
- * Usage analytics rollups (EE/Cloud feature; the tables exist in every edition and stay empty in CE).
- *
- * - app_usage_daily: one row per (app, user, UTC day) the user opened the released app.
- *   Range-partitioned by month on `day` so 13-month retention is a cheap DROP of old partitions.
- *   The DEFAULT partition is a safety net: if the partition job ever falls behind, inserts land
- *   there instead of failing. The job (AppUsagePartitionScheduler) creates months ahead at runtime,
- *   because a migration runs once; this migration only seeds the current month and the next two.
- * - app_user_first_seen / workspace_user_first_seen: first (and latest) open per app or workspace,
- *   never expired, so "New" stays correct after old daily partitions are dropped.
- *
- * Foreign keys cascade: deleting a user account, an app or a workspace removes its rows.
- * Removing a user from a workspace does not (organization_users is not referenced), so their
- * history keeps counting and the UI labels them "Removed user".
- */
+/** Usage analytics tables; created in every edition, written only by EE/Cloud. Rules: app-usage-analytics/AGENTS.md. */
 export class CreateAppUsageAnalyticsTables1794700000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`

@@ -31,11 +31,6 @@ import {
   WorkspaceSummaryResponseDto,
 } from './dto';
 
-/**
- * Read API for usage analytics. Every query is scoped by the caller's workspace
- * (`user.organizationId`), never by ids from the request alone. The service does the work;
- * in CE it answers 501.
- */
 @Controller('analytics')
 @InitModule(MODULES.APP_USAGE_ANALYTICS)
 @UseGuards(JwtAuthGuard, FeatureAbilityGuard)

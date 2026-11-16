@@ -135,8 +135,8 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Comment** | An individual message within a thread | — |
 | **Multiplayer Editing** | Real-time collaborative editing of an app by multiple users simultaneously (EE feature) | — |
 | **Audit Log** | A compliance record of user actions (who did what, when); retention varies by plan | — |
-| **Usage analytics** | Workspace-admin dashboards of how released apps are used: active users, retention, reach, lifecycle (EE feature) | App usage analytics; `app-usage-analytics` module, `/api/analytics` routes |
-| **App open** | A logged-in user loading a released app through its released link; editor, preview and public (no-login) visits are not app opens | `app_opened` event |
+| **Usage analytics** | Workspace-admin dashboards of how released apps are used: active users, retention, reach, lifecycle (EE feature). Shown in the UI as "Analytics" | App usage analytics; `app-usage-analytics` module, `/api/analytics` routes |
+| **App open** | A logged-in user loading a released app through its released link (a signed-in workspace member counts on a public app too); editor, preview and anonymous visits are not app opens | `app_opened` event |
 | **Active user** | A distinct logged-in user with at least one app open in the selected period | — |
 | **Lifecycle group** | Each user who ever opened an app falls in one per period: New (first open in the period), Retained (active in this and the previous period), Reactivated (active now, absent last period, first seen earlier), Inactive (opened before, not in the period) | — |
 | **Reach** | Active users of an app ÷ users who can open it today (historical access is not stored) | — |

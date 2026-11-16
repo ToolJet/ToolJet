@@ -26,7 +26,7 @@ const setEdition = (edition) => {
   config.TOOLJET_EDITION = edition;
 };
 
-const ITEM = 'View usage analytics';
+const ITEM = 'View analytics';
 
 const Location = () => <div data-testid="location">{useLocation().pathname}</div>;
 
@@ -104,8 +104,8 @@ describe('AppMenu — View usage analytics', () => {
     expect(screen.queryByText(ITEM)).not.toBeInTheDocument();
   });
 
-  it('is hidden for workflows and modules', async () => {
-    await renderMenu({ appType: 'module' });
+  it.each(['workflow', 'module'])('is hidden for %s apps', async (appType) => {
+    await renderMenu({ appType });
     expect(screen.queryByText(ITEM)).not.toBeInTheDocument();
   });
 });

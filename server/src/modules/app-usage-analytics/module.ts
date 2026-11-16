@@ -1,4 +1,4 @@
-import { DynamicModule } from '@nestjs/common';
+import { DynamicModule, Provider } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
@@ -8,14 +8,6 @@ import { getTooljetEdition } from '@helpers/utils.helper';
 import { FeatureAbilityFactory } from './ability';
 import { APP_USAGE_QUEUE } from './constants';
 
-/**
- * Usage analytics (EE/Cloud). CE registers only the 501 controller.
- *
- * EE/Cloud wiring:
- * - listener: turns APP_OPENED_EVENT into a queue job (every process that serves HTTP);
- * - processor: batches jobs into the daily rollup tables (WORKER=true only);
- * - scheduler: keeps monthly partitions of app_usage_daily ahead and drops expired ones.
- */
 export class AppUsageAnalyticsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const cacheKey = this.buildCacheKey(configs, isMainImport);
@@ -28,8 +20,8 @@ export class AppUsageAnalyticsModule extends SubModule {
       ['controller', 'service']
     );
 
-    const providers: any[] = [AppUsageAnalyticsService, FeatureAbilityFactory];
-    const imports: any[] = [];
+    const providers: Provider[] = [AppUsageAnalyticsService, FeatureAbilityFactory];
+    const imports: NonNullable<DynamicModule['imports']> = [];
 
     const edition = getTooljetEdition();
     const isEEOrCloud = edition === TOOLJET_EDITIONS.EE || edition === TOOLJET_EDITIONS.Cloud;

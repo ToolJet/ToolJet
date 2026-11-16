@@ -308,7 +308,9 @@ export class AppsService implements IAppsService {
     ability: AppAbility,
     app: App,
     // Undefined for an anonymous visitor of a public app.
-    user?: User
+    user?: User,
+    // A signed-in workspace member on a public app; only counted as an app open.
+    publicAppViewer?: User
   ): Promise<{ id: string; slug: string; currentVersionId: string; appDataRevision: string | null }> {
     if (!app.currentVersionId) {
       // ability is undefined for unauthenticated visitors on a public app - the guard
@@ -322,7 +324,8 @@ export class AppsService implements IAppsService {
       throw new HttpException(errorResponse, HttpStatus.NOT_IMPLEMENTED);
     }
 
-    if (user) this.emitAppOpened(app, user);
+    const opener = user ?? publicAppViewer;
+    if (opener) this.emitAppOpened(app, opener);
 
     return {
       id: app.id,
@@ -336,11 +339,6 @@ export class AppsService implements IAppsService {
     };
   }
 
-  /**
-   * Usage analytics: a logged-in user opened the released version. Fire-and-forget; the EE
-   * listener enqueues it and nothing on this request waits. Public visitors (no user) are not
-   * tracked, and the editor and preview never reach validateReleasedApp.
-   */
   private emitAppOpened(app: App, user: User): void {
     const event: AppOpenedEvent = {
       event: 'app_opened',
@@ -1154,13 +1152,6 @@ export class AppsService implements IAppsService {
       }
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
-      // First release time of this version; MIN over an app's versions is its first release (New app tag).
-      await manager
-        .createQueryBuilder()
-        .update(AppVersion)
-        .set({ releasedAt: () => 'now()' })
-        .where('id = :id AND released_at IS NULL', { id: versionToBeReleased })
-        .execute();
 
       //APP_RELEASE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {

@@ -58,7 +58,7 @@ graph LR
 | ToolJet DB PostgreSQL | User-created workspace tables and rows, with per-workspace schema/user isolation unless SQL mode is disabled. | Named TypeORM connection from `buildToolJetDbConnectionOptions`; `TooljetDbTableOperationsService`. |
 | PostgREST | HTTP data plane over ToolJet DB; not a source of truth itself. | `PostgrestProxyService::{proxy,perform}` signs a database JWT, selects the workspace schema, and forwards requests. |
 | Redis | BullMQ queues and shared runtime coordination/cache facilities. | `AppModuleLoader` Bull/Redis configuration; `server/src/modules/workflows/module.ts`. |
-| Usage analytics rollups (main PostgreSQL) | `app_usage_daily` (one row per app, user and UTC day; partitioned by month, 13-month retention), `app_user_first_seen`, `workspace_user_first_seen`. No raw event table. | Written only by the EE `app-usage-analytics` queue worker; read by `/api/analytics/*`. Migration `server/migrations/1794700000000-CreateAppUsageAnalyticsTables.ts`. |
+| Usage analytics rollups (main PostgreSQL) | `app_usage_daily` (one row per app, user and UTC day; partitioned by month, 13-month retention; 60 days for workspaces without the licence), `app_user_first_seen`, `workspace_user_first_seen`. No raw event table. | Written only by the EE `app-usage-analytics` queue worker; read by `/api/analytics/*`. Migration `server/migrations/1794700000000-CreateAppUsageAnalyticsTables.ts`. |
 | Files/object storage | Uploaded assets/files through configurable storage providers. | `server/src/modules/files/`; deployment environment configuration. |
 
 Schema changes and data transformations are separated: `server/migrations/` contains TypeORM schema migrations, while `server/data-migrations/` contains deployment-time data migrations.
