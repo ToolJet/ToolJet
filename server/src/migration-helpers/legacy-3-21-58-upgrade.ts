@@ -134,7 +134,7 @@ const runOriginal =
   async (queryRunner, original) => {
     const statements = original.filter(keep);
     if (!statements.length) throw new Error('Legacy upgrade: the original migration has no statement for this step.');
-    for (const sql of statements) await queryRunner.query(sql);
+    await run(...statements)(queryRunner, original);
   };
 
 const inOrder =
