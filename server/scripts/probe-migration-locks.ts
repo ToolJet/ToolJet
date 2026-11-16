@@ -13,7 +13,13 @@ import cleanupDataSource from '../src/migration-helpers/cleanup-datasource';
 import { classifyLocks, MigrationPart, phaseOfMigrationFile, ProbedLock } from '../src/migration-helpers/lock-probe';
 import { DataMigration, keepMigrations, MigrationPhase } from '../src/migration-helpers/migration-mode';
 
-const PHASE_ORDER: MigrationPhase[] = ['schema', 'data', 'cleanup'];
+/** A real run's order. Only the data phase runs beforeCommit(). */
+const STEP_ORDER: [MigrationPhase, MigrationPart][] = [
+  ['schema', 'up'],
+  ['data', 'up'],
+  ['data', 'beforeCommit'],
+  ['cleanup', 'up'],
+];
 const REPO_ROOT = resolve(__dirname, '../..');
 
 interface ProbedMigration {
@@ -70,18 +76,12 @@ async function probe(queryRunner: QueryRunner, migrations: ProbedMigration[]): P
     }
   };
 
-  const ordered = PHASE_ORDER.flatMap((phase) => migrations.filter((migration) => migration.phase === phase));
-  for (const migration of ordered.filter(({ phase }) => phase !== 'cleanup')) {
-    await step(migration, 'up', () => migration.instance.up(queryRunner));
-  }
-  for (const migration of ordered) {
-    const beforeCommit = migration.instance.beforeCommit?.bind(migration.instance);
-    // Only the data phase runs beforeCommit().
-    if (beforeCommit && migration.phase === 'data')
-      await step(migration, 'beforeCommit', () => beforeCommit(queryRunner));
-  }
-  for (const migration of ordered.filter(({ phase }) => phase === 'cleanup')) {
-    await step(migration, 'up', () => migration.instance.up(queryRunner));
+  for (const [phase, part] of STEP_ORDER) {
+    for (const migration of migrations.filter((candidate) => candidate.phase === phase)) {
+      const { instance } = migration;
+      const run = part === 'up' ? instance.up : instance.beforeCommit;
+      if (run) await step(migration, part, () => run.call(instance, queryRunner));
+    }
   }
   return violations;
 }
