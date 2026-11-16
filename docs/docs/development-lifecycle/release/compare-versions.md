@@ -95,7 +95,7 @@ Reviewers open the review from the notification or from **Compare versions**. Th
 
 You can't approve a review you opened yourself.
 
-<!-- TODO screenshot: /img/development-lifecycle/release/compare-versions/review-panel.png | img-full | alt: A review beside the comparison: the request, a reviewer's comment on one change, and an approval | shows: Northwind Dispatch v3, review requested by Alex Morgan and approved by Priya Raman with one comment on a change, review panel open beside the Screens view -->
+<img className="screenshot-full img-m" src="/img/development-lifecycle/release/compare-versions/review-panel.png" alt="The review panel beside a comparison: the request to release v3 in place of v2, the reviewer's approval with the next step, and the comments" />
 
 ## Reviews and Release
 
