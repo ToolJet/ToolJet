@@ -306,11 +306,13 @@ export const getAppOnBranchViaAPI = (appId, branchId) =>
  *
  * @tjType app.releaseSavedVersion
  * @tjBlock gitSync
- * @tjUsage releaseSavedVersionViaAPI(appName, ctx.defaultBranch, "v1").then((slug) => ...)
+ * Pinned module and workflow versions must be released before the app that pins them.
+ *
+ * @tjUsage releaseSavedVersionViaAPI(appName, ctx.defaultBranch, "v1", "module").then((slug) => ...)
  * @tjDom none - cy.apiListBranchAppVersions + cy.apiReleaseAppVersion
  */
-export const releaseSavedVersionViaAPI = (appName, branch, versionName) =>
-  listAppsOnBranchViaAPI(branch.id).then((apps) => {
+export const releaseSavedVersionViaAPI = (appName, branch, versionName, type = "front-end") =>
+  listAppsOnBranchViaAPI(branch.id, type).then((apps) => {
     const app = apps.find((a) => a.name === appName);
     expect(app, `${appName} on ${branch.name}`).to.exist;
     return cy

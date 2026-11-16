@@ -127,6 +127,8 @@ describe("Git Sync — Complete Flow (Single Branch)", () => {
     verifyModuleDraftViaUI(ctx, ctx.baseBranch, flow.names.module, "beta", "alpha");
     verifyWorkflowDraftViaUI(ctx, ctx.baseBranch, flow.names.workflow, "getTodo2", todoTitles[3]);
 
+    releaseSavedVersionViaAPI(flow.names.module, ctx.defaultBranch, "v1", "module");
+    releaseSavedVersionViaAPI(flow.names.workflow, ctx.defaultBranch, "v1", "workflow");
     releaseSavedVersionViaAPI(flow.names.app, ctx.defaultBranch, "v1").then((slug) => verifyReleasedPages(slug));
   });
 });
