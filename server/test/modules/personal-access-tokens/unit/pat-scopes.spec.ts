@@ -1,3 +1,4 @@
+import { FEATURE_KEY as BRANCH_FEATURE } from '@modules/workspace-branches/constants';
 import { FEATURE_KEY as GROUP_FEATURE } from '@modules/group-permissions/constants';
 import { ForbiddenException } from '@nestjs/common';
 import { MODULES } from '@modules/app/constants/modules';
@@ -106,6 +107,15 @@ describe('PAT scope definition', () => {
       expect(patCanAccess(MODULES.GROUP_PERMISSIONS, feature)).toBe(allowed.has(feature));
     }
     expect(patCanAccess(MODULES.GROUP_PERMISSIONS)).toBe(false);
+  });
+
+  it('allows branch discovery without granting branch or Git administration', () => {
+    for (const feature of Object.values(BRANCH_FEATURE)) {
+      expect(patCanAccess(MODULES.WORKSPACE_BRANCHES, feature)).toBe(feature === BRANCH_FEATURE.LIST_BRANCHES);
+      expect(patAppViewerCanAccess(MODULES.WORKSPACE_BRANCHES, feature)).toBe(false);
+    }
+    expect(patCanAccess(MODULES.WORKSPACE_BRANCHES)).toBe(false);
+    expect(patCanAccess(MODULES.GIT_SYNC_CONFIGS)).toBe(false);
   });
 
   it('denies workspace and instance administration', () => {
