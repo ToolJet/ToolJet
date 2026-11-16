@@ -106,6 +106,11 @@ export function migrationTimestamp(name: string): number {
   return Number(name.slice(-13));
 }
 
+/** TypeORM leaves `name` unset unless the class declares it. */
+export function nameOf(migration: MigrationInterface): string {
+  return migration.name || migration.constructor.name;
+}
+
 export function isPreCutoffMigration(name: string): boolean {
   return migrationTimestamp(name) <= MIGRATION_AUTHORING_RULES_CUTOFF;
 }

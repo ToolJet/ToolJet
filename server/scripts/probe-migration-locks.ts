@@ -11,7 +11,7 @@ import schemaDataSource from '../src/migration-helpers/schema-datasource';
 import dataDataSource from '../src/migration-helpers/data-datasource';
 import cleanupDataSource from '../src/migration-helpers/cleanup-datasource';
 import { classifyLocks, MigrationPart, phaseOfMigrationFile, ProbedLock } from '../src/migration-helpers/lock-probe';
-import { DataMigration, MigrationPhase } from '../src/migration-helpers/migration-mode';
+import { DataMigration, MigrationPhase, nameOf } from '../src/migration-helpers/migration-mode';
 
 const PHASE_ORDER: MigrationPhase[] = ['schema', 'data', 'cleanup'];
 const REPO_ROOT = resolve(__dirname, '../..');
@@ -32,7 +32,7 @@ async function load(file: string): Promise<ProbedMigration> {
 /** Commits every pending migration except the probed ones, so they run against the schema they expect. */
 async function applyOthers(dataSource: DataSource, probed: ReadonlySet<string>): Promise<void> {
   await dataSource.initialize();
-  const others = dataSource.migrations.filter((migration) => !probed.has(migration.name || migration.constructor.name));
+  const others = dataSource.migrations.filter((migration) => !probed.has(nameOf(migration)));
   dataSource.migrations.splice(0, dataSource.migrations.length, ...others);
   await dataSource.runMigrations({ transaction: 'each' });
 }

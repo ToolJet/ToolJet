@@ -1,5 +1,5 @@
 import { DataSource, MigrationInterface, QueryRunner } from 'typeorm';
-import { DataMigration } from './migration-mode';
+import { DataMigration, nameOf } from './migration-mode';
 import { withShortLock } from './with-short-lock';
 
 /**
@@ -292,7 +292,7 @@ export async function branchlessRowFixes(table: string, originals: MigrationInte
 /** Swaps in the variants. Call before announcing or collecting beforeCommit() steps, which wrap up() and read beforeCommit(). */
 export function useLegacyVariants(dataDS: DataSource): void {
   for (const migration of dataDS.migrations as DataMigration[]) {
-    const variant = LEGACY_VARIANTS.get(migration.name || migration.constructor.name);
+    const variant = LEGACY_VARIANTS.get(nameOf(migration));
     if (!variant) continue;
     const originalUp = migration.up.bind(migration);
     const { up, beforeCommit } = variant;

@@ -31,6 +31,7 @@ import {
   CleanupMigration,
   MigrationPhase,
   migrationTimestamp,
+  nameOf,
   parseMigrationPhase,
   planCleanup,
 } from './migration-mode';
@@ -64,7 +65,7 @@ function collectBeforeCommitSteps(dataDS: DataSource): BeforeCommitSteps {
   const beforeCommitSteps: { name: string; beforeCommit: (queryRunner: QueryRunner) => Promise<void> }[] = [];
   for (const migration of dataDS.migrations as DataMigration[]) {
     if (!migration.beforeCommit) continue;
-    const name = migration.name || migration.constructor.name;
+    const name = nameOf(migration);
     const beforeCommit = migration.beforeCommit.bind(migration);
     const up = migration.up.bind(migration);
     migration.up = async (queryRunner: QueryRunner) => {
@@ -230,9 +231,7 @@ const BASELINES_DDL = `
 
 /** The newest migration this code ships: it changes with every release that adds one. */
 export function codeHead(...dataSources: DataSource[]): string {
-  const names = dataSources.flatMap(({ migrations }) =>
-    migrations.map((migration) => migration.name || migration.constructor.name)
-  );
+  const names = dataSources.flatMap(({ migrations }) => migrations.map(nameOf));
   return names.reduce((newest, name) => (migrationTimestamp(name) > migrationTimestamp(newest) ? name : newest), '');
 }
 
@@ -263,14 +262,14 @@ async function holdBackCleanups(cleanupDS: DataSource, baselineId: number): Prom
   if (baselineId === 0 || !cleanupDS.migrations.length) return;
   const recorded: { id: number; name: string }[] = await cleanupDS.query('SELECT id, name FROM migrations');
   const candidates = (cleanupDS.migrations as unknown as CleanupMigration[]).map((migration) => ({
-    name: migration.name || migration.constructor.name,
+    name: nameOf(migration),
     requires: migration.requires,
   }));
   const { run, deferred } = planCleanup(candidates, new Map(recorded.map(({ name, id }) => [name, id])), baselineId);
   for (const { name, waitingFor } of deferred) {
     console.log(`[migrations] Holding back ${name} until an earlier upgrade has recorded ${waitingFor}.`);
   }
-  const kept = cleanupDS.migrations.filter((migration) => run.includes(migration.name || migration.constructor.name));
+  const kept = cleanupDS.migrations.filter((migration) => run.includes(nameOf(migration)));
   cleanupDS.migrations.splice(0, cleanupDS.migrations.length, ...kept);
 }
 
@@ -398,16 +397,14 @@ async function migrationsTableLocked(dataSource: DataSource, lockTimeoutMs: numb
 
 /** Split phases are serialised by the advisory lock; the sentinels' LOCK TABLE would stall booting pods. */
 function withoutLockSentinels(dataSource: DataSource): void {
-  const kept = dataSource.migrations.filter(
-    (migration) => !LOCK_SENTINEL_MIGRATION_NAMES.includes(migration.name || migration.constructor.name)
-  );
+  const kept = dataSource.migrations.filter((migration) => !LOCK_SENTINEL_MIGRATION_NAMES.includes(nameOf(migration)));
   dataSource.migrations.splice(0, dataSource.migrations.length, ...kept);
 }
 
 /** START/DONE line per migration: the async-mode tracker parses these. */
 function announceEachMigration(dataSource: DataSource): void {
   for (const migration of dataSource.migrations) {
-    const name = migration.name || migration.constructor.name;
+    const name = nameOf(migration);
     const up = migration.up.bind(migration);
     migration.up = async (queryRunner: QueryRunner) => {
       const startedAt = Date.now();
