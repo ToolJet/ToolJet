@@ -130,6 +130,28 @@ describe("a pack component's props", () => {
   });
 });
 
+describe('an Ant Design Select value keeps its type', () => {
+  const manifestProps = [{ name: 'value', type: 'string' }];
+  // Break this catches: the number 1 bound to an Ant Select reaches it as the text '1', so an option whose value is the
+  // number 1 never shows (it picks the text '1' option instead).
+  it.each([
+    ['the number 1', 1],
+    ['a boolean', true],
+    ['the text 1', '1'],
+    ['a list', ['a', 1]],
+  ])('[LibraryComponent-PROPTYPE-001] %s reaches the Select as it is', (_, value) => {
+    const { props, errors } = typedPackProps('antd', 'Select', manifestProps, { value });
+    expect(props.value).toEqual(value);
+    expect(errors).toEqual([]);
+  });
+
+  // Break this catches: the Select's row widens a value prop that it does not own (another pack component's).
+  it('[LibraryComponent-PROPTYPE-001] the number 1 still reaches another pack text value as text', () => {
+    const { props } = typedPackProps('antd', 'Combobox', manifestProps, { value: 1 });
+    expect(props.value).toBe('1');
+  });
+});
+
 // Every built pack's own defaults are values of the types it takes: a property whose sample is another type than its
 // hook's (a range's [20, 80] on a number) is one the pack takes more than one type for, and must be listed. Runs on the
 // packs built here (dist/manifest.json), as the pack fuzz does.

@@ -61,6 +61,33 @@ const useWatch = (active: boolean, check: () => boolean, onBlocked: () => void) 
   }, [active, check]);
 };
 
+/** Whether `scroller` holds `el`, across the shadow roots `el` sits in. */
+const holds = (scroller: Node, el: Element | null): boolean => {
+  let node: Node | null = el;
+  while (node) {
+    if (scroller === node || scroller.contains(node)) return true;
+    const root = node.getRootNode();
+    node = root instanceof ShadowRoot ? root.host : null;
+  }
+  return false;
+};
+
+/** The popup sits in the shared layer, so a scroll around the anchor left it behind its field (QA PKB-73). */
+const useCloseOnScroll = (active: boolean, anchorRef: RefObject<Element | null>, onScroll: () => void) => {
+  const latest = useRef(onScroll);
+  latest.current = onScroll;
+  useEffect(() => {
+    if (!active || typeof window === 'undefined') return undefined;
+    const listener = (e: Event) => {
+      // The real scroller, not the shadow host the event was retargeted to.
+      const target = e.composedPath?.()[0] ?? e.target;
+      if (target instanceof Node && holds(target, anchorRef.current)) latest.current();
+    };
+    window.addEventListener('scroll', listener, true);
+    return () => window.removeEventListener('scroll', listener, true);
+  }, [active, anchorRef]);
+};
+
 /**
  * The open state of an Ant popup, controlled here so it can be closed when its owner stops taking input. Pass
  * `open` to the Ant component and `onOpenChange` as its handler; `available()` guards the popup's own handlers.
@@ -89,6 +116,7 @@ export const usePopupOwner = (
     [available]
   );
   useWatch(open, available, () => change(false));
+  useCloseOnScroll(open, anchorRef, () => change(false));
   return { open, onOpenChange: change, available };
 };
 

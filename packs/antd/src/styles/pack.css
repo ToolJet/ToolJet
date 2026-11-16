@@ -1371,9 +1371,14 @@
   padding-bottom: 4px;
   line-height: 20px;
 }
+/* One line with an ellipsis, as the ToolJet Text Input: a wrapped label pushed the field out of its box (QA PF-078). */
 .tj-ant-root .ant-form-item-vertical > .ant-form-item-row > .ant-form-item-label > label {
+  display: block;
   height: 20px;
   line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .tj-ant-root.tj-ant-compact .ant-form-item-control-input,
 .tj-ant-root.tj-ant-compact .ant-form-item-label > label {

@@ -7,6 +7,7 @@ import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { controlOptions, exposedOption, keyForValue, str, toChoiceValue, toOptions, valueForKey } from '../lib/data';
 import { useOwnedPopup } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
+import { useOfferedValue } from '../lib/offeredValue';
 
 // Forwards the ref, so the focus and blur actions reach Ant's Select (a plain function component dropped it).
 const Control = React.forwardRef<RefSelectProps, React.ComponentProps<typeof AntSelect>>((p, ref) => {
@@ -150,22 +151,17 @@ export const Select = (props: Record<string, unknown>) => {
   // options change: multiple to single kept an array that showed as an empty field, single to multiple kept text, and a
   // value no option offers stayed exposed while nothing showed selected. Not while the options are empty or loading
   // (a query not yet run), so a default waits for them. Fires no event, as a native Dropdown's does not.
+  // A dropped value comes back once an option offers it (lib/offeredValue), as in the Combobox.
   const prune = options.length > 0 && !loading;
   const offered = (v: unknown) => options.some((o) => o.value === keyForValue(options, v));
-  const single =
-    Array.isArray(value) || (typeof value === 'string' && value.trim().startsWith('[')) ? (values[0] ?? '') : value;
-  const shaped: unknown = many
-    ? mode === 'tags' || !prune
-      ? values
-      : values.filter(offered)
-    : single === '' || !prune || offered(single)
-      ? single
-      : '';
-  const shapedKey = JSON.stringify(shaped);
-  useEffect(() => {
-    if (JSON.stringify(value) !== shapedKey) setValue(shaped as string);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shapedKey, JSON.stringify(value)]);
+  const shape = (v: unknown): unknown => {
+    if (many) return mode === 'tags' || !prune ? toValues(v) : toValues(v).filter(offered);
+    const single = Array.isArray(v) || (typeof v === 'string' && v.trim().startsWith('[')) ? (toValues(v)[0] ?? '') : v;
+    if (single === '' || !prune) return single;
+    // The option's own value: the number 1 with only a text '1' option exposes '1', as a pick of it does.
+    return offered(single) ? valueForKey(options, keyForValue(options, single)) : '';
+  };
+  useOfferedValue<unknown>(value, (next) => setValue(next as string), shape, `${prune}|${mode}|${JSON.stringify(options)}`);
   // The selected option(s) follow the value however it changes (a pick, a binding, a Form's clearForm emptying it) and
   // the options' labels: set only on a pick, a cleared Form kept exposing the old choice.
   const optionsKey = JSON.stringify(options);
