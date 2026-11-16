@@ -7,7 +7,6 @@ export const tooljetDatabaseSelectors = {
   tableName: (name) => `[data-cy="${name}-table-name"]`,
   tableKebabIcon: '[data-cy="table-kebab-icon"]',
   renameTableOption: '[data-cy="rename-table-option"]',
-  addColumnOption: '[data-cy="add-new-column-option"]',
   exportSchemaOption: '[data-cy="export-schema-option"]',
   exportCsvOption: '[data-cy="export-csv-option"]',
   deleteTableOption: '[data-cy="delete-table-option"]',
@@ -36,11 +35,26 @@ export const tooljetDatabaseSelectors = {
 
   // filter and sort
   filterButton: '[data-cy="filter-button"]',
+  filterFooter: '[data-cy="filter-card-footer"]',
   filterColumn: '[data-cy="select-column-field"]',
   filterOperation: '[data-cy="select-operation-field"]',
   filterValue: '[data-cy="value-input-field"]',
   sortButton: '[data-cy="sort-button"]',
+  sortColumn: '[data-cy="select-column-field"]',
   sortOrder: '[data-cy="select-order-field"]',
+  columnCells: (column) => `[data-cy$="-column-${column}-table-cell"]`,
+
+  // bulk upload, export and seed SQL
+  bulkUploadFileInput: '[data-cy="input-field-bulk-upload"]',
+  uploadDataButton: '[data-cy="upload-data-button"]',
+  exportCsvModal: '[data-cy="export-csv-modal"]',
+  exportCsvEnvironment: (name) => `[data-cy="export-csv-${name}-option"]`,
+  exportCsvConfirm: '[data-cy="export-csv-modal-confirm"]',
+  seedSqlEditor: '[data-cy="seed-data-sql-textarea"] .cm-content',
+
+  // table list search
+  searchIcon: '[data-cy="create-new-folder-button"]', // reused name of the search button
+  searchInput: 'input[placeholder="Search table"]',
 
   // columns
   addColumnPlus: 'th.add-icon-column .icon-styles', // no data-cy on the header plus icon
@@ -48,6 +62,8 @@ export const tooljetDatabaseSelectors = {
   dataTypeDropdown: '[data-cy="data-type-dropdown-section"]',
   dropdownOption: '[class*="option"]',
   editColumnOption: '[data-cy="edit-column-option"]',
+  deleteColumnOption: '[data-cy="delete-column-option"]',
+  defaultValueInput: '[data-cy="default-value-input-field"]',
   omittedTypesFooter: '[data-cy="data-type-omitted-footer"]',
 
   // schema migration confirmation
@@ -58,6 +74,9 @@ export const tooljetDatabaseSelectors = {
   // environments and migration history
   switcherButton: '[data-cy="tjdb-environment-switcher-button"]',
   historyButton: '[data-cy="tjdb-migration-history-button"]',
+  newMigrationButton: '[data-cy="new-migration-button"]',
+  migrationTitleInput: '[data-cy="migration-confirm-title-input"]',
+  migrationSqlEditor: '[data-cy="migration-confirm-sql-editor"] .cm-content',
   environmentOption: (name) => `[data-cy="${name}-environment-option"]`,
   drawer: '.migration-history-drawer', // no data-cy on the drawer
   drawerStatus: '.migration-history-drawer__status',
