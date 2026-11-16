@@ -3,7 +3,15 @@ import fetch = require('node-fetch');
 import { Auth } from '../library/auth';
 import { validateOriginUrl } from '../library/target-validation';
 import { ensureCompatible } from '../compatibility';
-import { DirectKind, directHeaders, directKindOf, jwtPayload } from '../direct-credential';
+import {
+  DELEGATION_REFUSED_HINT,
+  type DirectIdentity,
+  type DirectKind,
+  credentialFetchOptions,
+  directHeaders,
+  directKindOf,
+  jwtPayload,
+} from '../direct-credential';
 
 /*
   How `tooljet app` reaches a ToolJet instance. The target is, in order: --url and --token, then TOOLJET_URL and
@@ -24,7 +32,7 @@ export interface Target {
 }
 
 /** The workspace and kind of a credential sent as it is (a session or a delegation); undefined for a PAT. */
-export const directIdentity = (target: Target): { workspaceId: string; kind: DirectKind } | undefined =>
+export const directIdentity = (target: Target): DirectIdentity | undefined =>
   (target.kind === 'session' || target.kind === 'delegation') && target.workspaceId
     ? { workspaceId: target.workspaceId, kind: target.kind }
     : undefined;
@@ -94,6 +102,7 @@ const sessionApi = (url: string, kind: DirectKind, token: string, workspaceId: s
       ...(init.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
     },
     body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+    ...credentialFetchOptions(kind),
   });
   const text = await response.text();
   if (!response.ok) {
@@ -103,7 +112,8 @@ const sessionApi = (url: string, kind: DirectKind, token: string, workspaceId: s
     } catch {
       /* not JSON */
     }
-    throw new ApiError(`${init.method ?? 'GET'} ${path} failed (HTTP ${response.status}) on ${url}: ${String(message).slice(0, 300)}`, response.status, text);
+    const hint = kind === 'delegation' && response.status === 401 ? DELEGATION_REFUSED_HINT : '';
+    throw new ApiError(`${init.method ?? 'GET'} ${path} failed (HTTP ${response.status}) on ${url}: ${String(message).slice(0, 300)}${hint}`, response.status, text);
   }
   return text ? JSON.parse(text) : null;
 };

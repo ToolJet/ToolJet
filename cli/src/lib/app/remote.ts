@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 
 import { ApiError, directIdentity, type Session } from './session';
-import { directHeaders } from '../direct-credential';
+import { credentialFetchOptions, credentialHeaders } from '../direct-credential';
 import type { AppJson, Snapshot, SnapshotColumn } from './project';
 
 /* The ToolJet calls `tooljet app` makes, all through the user's session (session.ts). */
@@ -274,13 +274,11 @@ async function fetchWithToken(session: Session, path: string, body: unknown) {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const fetch = require('node-fetch');
   const direct = directIdentity(session);
-  const auth = direct
-    ? directHeaders(direct.kind, session.token, direct.workspaceId)
-    : { Authorization: `Bearer ${session.token}` };
   const res = await fetch(`${session.url}/api${path}`, {
     method: 'POST',
-    headers: { ...auth, 'Content-Type': 'application/json' },
+    headers: { ...credentialHeaders(session.token, direct), 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+    ...credentialFetchOptions(direct?.kind),
   });
   const text = await res.text();
   if (!res.ok) {

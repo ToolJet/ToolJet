@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { of } from 'rxjs';
@@ -75,31 +76,35 @@ describe('OAuth delegated scope enforcement', () => {
     request.method = 'POST';
     expect(() => interceptor.intercept(ctx, next)).toThrow();
   });
-  test('apps consent permits the library routes a workspace token may use (a Code mode build), and no others', () => {
-    const request: any = { user: { ...user }, method: 'POST' };
+  test('apps consent permits the two library routes a Code mode build uses, and no others', () => {
+    const request = { user: { ...user }, method: 'POST' };
     const ctx = context(request, MODULES.CUSTOM_COMPONENT_LIBRARIES);
-    const permitted = [
-      LIBRARY_FEATURE.CREATE_LIBRARY,
-      LIBRARY_FEATURE.FIND_OR_CREATE_LIBRARY,
-      LIBRARY_FEATURE.GET_LIBRARY,
-      LIBRARY_FEATURE.LIST_LIBRARIES,
-      LIBRARY_FEATURE.UPLOAD_DEV_BUNDLE,
-      LIBRARY_FEATURE.PUBLISH_REVISION,
-    ];
+    const permitted = [LIBRARY_FEATURE.UPLOAD_DEV_BUNDLE, LIBRARY_FEATURE.LIST_LIBRARIES];
     for (const feature of permitted) {
       Reflect.defineMetadata('tjFeatureId', feature, action);
       interceptor.intercept(ctx, next);
     }
     expect(next.handle).toHaveBeenCalledTimes(permitted.length);
-    // Deleting a library and its live stream stay out, as for a token; so does a route with no feature.
-    for (const feature of [LIBRARY_FEATURE.DELETE_LIBRARY, LIBRARY_FEATURE.STREAM_DEV_BUNDLE, undefined]) {
+    // A token's other library routes, deleting a library, its live stream and a route with no feature stay out.
+    const refused = [
+      LIBRARY_FEATURE.CREATE_LIBRARY,
+      LIBRARY_FEATURE.FIND_OR_CREATE_LIBRARY,
+      LIBRARY_FEATURE.GET_LIBRARY,
+      LIBRARY_FEATURE.PUBLISH_REVISION,
+      LIBRARY_FEATURE.DELETE_LIBRARY,
+      LIBRARY_FEATURE.STREAM_DEV_BUNDLE,
+      undefined,
+    ];
+    for (const feature of refused) {
       Reflect.defineMetadata('tjFeatureId', feature, action);
-      expect(() => interceptor.intercept(ctx, next)).toThrow();
+      expect(() => interceptor.intercept(ctx, next)).toThrow(ForbiddenException);
     }
-    // Without apps consent, none of them.
-    Reflect.defineMetadata('tjFeatureId', LIBRARY_FEATURE.UPLOAD_DEV_BUNDLE, action);
+    // Without apps consent, neither of the two.
     request.user.oauthScopes = ['data', 'workflows'];
-    expect(() => interceptor.intercept(ctx, next)).toThrow();
+    for (const feature of permitted) {
+      Reflect.defineMetadata('tjFeatureId', feature, action);
+      expect(() => interceptor.intercept(ctx, next)).toThrow(ForbiddenException);
+    }
     expect(next.handle).toHaveBeenCalledTimes(permitted.length);
   });
   test('workflows are available only when consented and administration remains excluded', () => {

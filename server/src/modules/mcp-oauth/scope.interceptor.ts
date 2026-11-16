@@ -5,7 +5,18 @@ import { MODULES } from '@modules/app/constants/modules';
 import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
 import { FEATURE_KEY as SESSION_FEATURE } from '@modules/session/constants';
 import { FEATURE_KEY as CONFIG_FEATURE } from '@modules/configs/constants';
+import { FEATURE_KEY as LIBRARY_FEATURE } from '@modules/custom-component-libraries/constants';
 import { PAT_BUNDLE, patBundleOf, patCanAccess } from '@modules/personal-access-tokens/constants/scopes';
+
+/**
+ * The custom component library routes a delegation reaches with apps consent: the two a Code mode build uses, its
+ * upload and the list that names the upload's owner. The module is in no bundle, so without this both were refused.
+ * A token's other library routes (creating a library, publishing a revision) are not granted to a delegation.
+ */
+const BUILD_LIBRARY_FEATURES: ReadonlySet<string> = new Set([
+  LIBRARY_FEATURE.UPLOAD_DEV_BUNDLE,
+  LIBRARY_FEATURE.LIST_LIBRARIES,
+]);
 
 @Injectable()
 export class McpOAuthScopeInterceptor implements NestInterceptor {
@@ -48,13 +59,9 @@ export class McpOAuthScopeInterceptor implements NestInterceptor {
       request.method === 'GET' &&
       features.length === 1 &&
       features[0] === PLUGIN_FEATURE.GET_SPEC;
-    // The library routes a workspace token may use (patCanAccess: a Code mode build uploads to its app's library) come
-    // with apps consent, as for a token; the module is in no bundle, so without this every one of them was refused.
-    const bundle = readPluginSpec
-      ? 'data'
-      : module === MODULES.CUSTOM_COMPONENT_LIBRARIES
-        ? PAT_BUNDLE.APPS
-        : patBundleOf(module);
+    const buildLibraryRoute =
+      module === MODULES.CUSTOM_COMPONENT_LIBRARIES && features.every((item) => BUILD_LIBRARY_FEATURES.has(item));
+    const bundle = readPluginSpec ? 'data' : buildLibraryRoute ? PAT_BUNDLE.APPS : patBundleOf(module);
     if (!bundle || !user.oauthScopes?.includes(bundle) || !features.every((item) => patCanAccess(module, item))) {
       throw new ForbiddenException('The AI connection was not authorized for this operation');
     }
