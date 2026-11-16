@@ -18,7 +18,7 @@ import {
   withMigrationConnectionOptions,
   withMigrationAdvisoryLock,
 } from './migration-locks';
-import { retryOnLockTimeout, retryWhen } from './with-short-lock';
+import { retryWhen } from './with-short-lock';
 import {
   LEGACY_BRANCH_MIGRATION,
   loosenLegacyRules,
@@ -337,11 +337,15 @@ async function applySchemaUnderLockTimeout(
       await runPass('schema', schemaDS, queryRunner);
     });
   try {
-    await retryOnLockTimeout(applyOnce, { attempts: lockAttempts, retryDelayMs: SCHEMA_LOCK_RETRY_DELAY_MS }, (next) =>
-      console.warn(
-        `[migrations] A schema migration waited over ${lockTimeoutMs}ms for a table lock; rolled back so ` +
-          `readers are not stalled behind it. Retrying (attempt ${next} of ${lockAttempts}).`
-      )
+    await retryWhen(
+      isLockNotAvailableError,
+      applyOnce,
+      { attempts: lockAttempts, retryDelayMs: SCHEMA_LOCK_RETRY_DELAY_MS },
+      (next) =>
+        console.warn(
+          `[migrations] A schema migration waited over ${lockTimeoutMs}ms for a table lock; rolled back so ` +
+            `readers are not stalled behind it. Retrying (attempt ${next} of ${lockAttempts}).`
+        )
     );
   } catch (error) {
     console.error('[migrations] Schema migrations failed. Rolled back the schema changes.');

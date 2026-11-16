@@ -46,12 +46,6 @@ export async function retryWhen<T>(
   }
 }
 
-export const retryOnLockTimeout = <T>(
-  work: () => Promise<T>,
-  policy: Pick<LockRetryPolicy, 'attempts' | 'retryDelayMs'>,
-  onRetry?: (nextAttempt: number) => void
-): Promise<T> => retryWhen(isLockNotAvailableError, work, policy, onRetry);
-
 /**
  * Runs one step in its own short transaction: waits at most `lockTimeoutMs` for a lock, so readers queued
  * behind it are not stalled, and retries on a lock timeout. Inside a transaction the caller opened
@@ -67,7 +61,8 @@ export async function withShortLock(
     return;
   }
   const { lockTimeoutMs, ...retry } = { ...SHORT_LOCK_POLICY, ...policy };
-  await retryOnLockTimeout(
+  await retryWhen(
+    isLockNotAvailableError,
     async () => {
       await queryRunner.startTransaction();
       try {
