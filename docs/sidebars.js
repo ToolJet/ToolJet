@@ -226,21 +226,21 @@ const sidebars = {
         },
         {
           "type": "category",
-          "label": "Code Mode",
+          "label": "React Builder",
           "link": {
             "type": "doc",
-            "id": "app-builder/code-mode/overview"
+            "id": "build-with-ai/react-builder/overview"
           },
           "items": [
-            "app-builder/code-mode/overview",
-            "app-builder/code-mode/create-app",
-            "app-builder/code-mode/editor",
-            "app-builder/code-mode/local-development",
-            "app-builder/code-mode/project-structure",
-            "app-builder/code-mode/runtime-api",
-            "app-builder/code-mode/access-control",
-            "app-builder/code-mode/versions-and-history",
-            "app-builder/code-mode/cli-reference"
+            "build-with-ai/react-builder/overview",
+            "build-with-ai/react-builder/create-app",
+            "build-with-ai/react-builder/editor",
+            "build-with-ai/react-builder/local-development",
+            "build-with-ai/react-builder/project-structure",
+            "build-with-ai/react-builder/runtime-api",
+            "build-with-ai/react-builder/access-control",
+            "build-with-ai/react-builder/versions-and-history",
+            "build-with-ai/react-builder/cli-reference"
           ]
         },
         "build-with-ai/privacy"
