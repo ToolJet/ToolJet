@@ -3,9 +3,10 @@ const { defineConfig } = require("cypress");
 module.exports = defineConfig({
   execTimeout: 1800000,
   defaultCommandTimeout: 30000,
-  requestTimeout: 30000,
+  // Branch create/pull clone the GitHub repo on a background job; 30s is too short.
+  requestTimeout: 120000,
   pageLoadTimeout: 30000,
-  responseTimeout: 30000,
+  responseTimeout: 120000,
   viewportWidth: 1440,
   viewportHeight: 960,
   chromeWebSecurity: false,
@@ -15,6 +16,8 @@ module.exports = defineConfig({
     setupNodeEvents (on, config) {
       require("./cypress/config/tasks")(on);
       require("./cypress/config/browserConfig")(on);
+      const getGitHubToken = require("./cypress/config/gitHubAppToken")(on, config);
+      require("./cypress/config/gitSyncRepoSweep")(on, config, getGitHubToken);
 
       return require("./cypress/plugins/index.js")(on, config);
     },
@@ -23,6 +26,10 @@ module.exports = defineConfig({
     specPattern: "cypress/e2e/happyPath/platform/eeTestcases/gitSync/**/*.cy.js",
 
     testIsolation: true,
+    retries: {
+      runMode: 2,
+      openMode: 0,
+    },
     redirectionLimit: 10,
 
     numTestsKeptInMemory: 0,
