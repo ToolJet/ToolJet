@@ -31,7 +31,7 @@ Four parts of ToolJet are involved, and you use them in this order:
 | `@tooljet/cli` | An npm CLI that scaffolds, builds, previews and publishes a library. | Developer |
 | `@tooljet/custom-component-sdk` | A TypeScript package with the `ToolJet` hooks a component uses to declare its properties, events and actions. | Developer, in component code |
 | **Workspace settings** → **Custom component libraries** | Lists every library published to the workspace and lets an admin delete one. | Workspace admin |
-| **App Builder** → **Custom** tab | Where you find published components, drop them on the canvas and configure them. | App builder |
+| **App Builder** → **Components** panel → **Custom libraries** | Where you find published components, drop them on the canvas and configure them. | App builder |
 
 The end-to-end flow is shown below. Steps with a `$` are CLI commands you run in a terminal. The other steps happen in ToolJet or in your code editor.
 
@@ -44,13 +44,13 @@ flowchart TD
   E -->|No| F["Preview live in the App Builder<br/>$ tooljet library dev"]
   F --> D
   E -->|Yes| G["Publish a version<br/>$ tooljet library publish --version 1.0.0"]
-  G --> H["Open the Custom tab<br/>in the App Builder"]
+  G --> H["Pick the library in the<br/>App Builder's Components panel"]
   H --> I["Drag a component onto the canvas,<br/>configure it and pin a version"]
 ```
 
 ## Before You Start
 
-Custom Component Libraries are a paid feature. On the Community edition, the **Custom** tab in the App Builder and the **Custom component libraries** page in workspace settings are hidden.
+Custom Component Libraries are a paid feature. On the Community edition, the **Custom libraries** group in the App Builder's library picker and the **Custom component libraries** page in workspace settings are hidden.
 
 ### Roles and Permissions
 
