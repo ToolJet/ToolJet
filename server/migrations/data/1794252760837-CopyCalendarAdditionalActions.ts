@@ -9,6 +9,8 @@ import {
 } from '../../src/migration-helpers/component-key-moves'; // migration-import-allowed: copy, sync trigger and cleanup come from one declaration
 
 const MIGRATION_NAME = 'CopyCalendarAdditionalActions1794252760837';
+/** Components that get a plain-text tooltipFormat: a key added where missing. */
+const NEEDS_TOOLTIP_FORMAT = `type = 'Calendar' AND COALESCE(general_properties::jsonb, '{}'::jsonb) ? 'tooltip' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltipFormat'`;
 
 /**
  * Calendar modernization (bug-fix batch 2026-10-27): `visibility` moves from styles to properties (the inspector's
@@ -39,13 +41,13 @@ export class CopyCalendarAdditionalActions1794252760837 implements DataMigration
     const touchedVersions = new Set(await copyMovedKeys(queryRunner, MIGRATION_NAME, CALENDAR_MOVES));
 
     // A tooltip that moves gets an explicit plain-text format: a key added where missing, nothing removed.
+    const [{ count }] = await queryRunner.query(`SELECT COUNT(*) FROM components WHERE ${NEEDS_TOOLTIP_FORMAT}`);
+    console.log(`${MIGRATION_NAME}: [START] Seed tooltipFormat | Total: ${count}`);
     const seeded: { app_version_id: string }[] = await queryRunner.query(
       `WITH seeded AS (
          UPDATE components
          SET properties = (COALESCE(properties::jsonb, '{}'::jsonb) || $1::jsonb)::json
-         WHERE type = 'Calendar'
-           AND COALESCE(general_properties::jsonb, '{}'::jsonb) ? 'tooltip'
-           AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltipFormat'
+         WHERE ${NEEDS_TOOLTIP_FORMAT}
          RETURNING page_id)
        SELECT p.app_version_id FROM seeded JOIN pages p ON p.id = seeded.page_id`,
       [JSON.stringify({ tooltipFormat: { value: 'plainText' } })]

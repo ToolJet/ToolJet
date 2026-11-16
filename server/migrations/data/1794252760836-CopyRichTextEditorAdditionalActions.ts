@@ -9,6 +9,8 @@ import {
 } from '../../src/migration-helpers/component-key-moves'; // migration-import-allowed: copy, sync trigger and cleanup come from one declaration
 
 const MIGRATION_NAME = 'CopyRichTextEditorAdditionalActions1794252760836';
+/** Components that get a plain-text tooltipFormat: a key added where missing. */
+const NEEDS_TOOLTIP_FORMAT = `type = 'RichTextEditor' AND COALESCE(general_properties::jsonb, '{}'::jsonb) ? 'tooltip' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltipFormat'`;
 
 /**
  * RichTextEditor modernization (bug-fix batch 2026-10-27): `visibility` and `disabledState` move from styles to
@@ -40,13 +42,13 @@ export class CopyRichTextEditorAdditionalActions1794252760836 implements DataMig
     const touchedVersions = new Set(await copyMovedKeys(queryRunner, MIGRATION_NAME, RICH_TEXT_EDITOR_MOVES));
 
     // A tooltip that moves gets an explicit plain-text format: a key added where missing, nothing removed.
+    const [{ count }] = await queryRunner.query(`SELECT COUNT(*) FROM components WHERE ${NEEDS_TOOLTIP_FORMAT}`);
+    console.log(`${MIGRATION_NAME}: [START] Seed tooltipFormat | Total: ${count}`);
     const seeded: { app_version_id: string }[] = await queryRunner.query(
       `WITH seeded AS (
          UPDATE components
          SET properties = (COALESCE(properties::jsonb, '{}'::jsonb) || $1::jsonb)::json
-         WHERE type = 'RichTextEditor'
-           AND COALESCE(general_properties::jsonb, '{}'::jsonb) ? 'tooltip'
-           AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltipFormat'
+         WHERE ${NEEDS_TOOLTIP_FORMAT}
          RETURNING page_id)
        SELECT p.app_version_id FROM seeded JOIN pages p ON p.id = seeded.page_id`,
       [JSON.stringify({ tooltipFormat: { value: 'plainText' } })]

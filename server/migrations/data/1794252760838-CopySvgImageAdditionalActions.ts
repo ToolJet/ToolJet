@@ -9,6 +9,8 @@ import {
 } from '../../src/migration-helpers/component-key-moves'; // migration-import-allowed: copy, sync trigger and cleanup come from one declaration
 
 const MIGRATION_NAME = 'CopySvgImageAdditionalActions1794252760838';
+/** Components that get a plain-text tooltipFormat: a key added where missing. */
+const NEEDS_TOOLTIP_FORMAT = `type = 'SvgImage' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltipFormat'`;
 
 /**
  * SvgImage's visibility moves from styles to properties, the universal tooltip to `properties.tooltip`, and the
@@ -30,11 +32,13 @@ export class CopySvgImageAdditionalActions1794252760838 implements DataMigration
 
     // tooltipFormat pairs with the properties-based tooltip; BackfillTooltipFormat did not cover SvgImage, so every
     // SvgImage without one gets the plain-text default here: a key added where missing, nothing removed.
+    const [{ count }] = await queryRunner.query(`SELECT COUNT(*) FROM components WHERE ${NEEDS_TOOLTIP_FORMAT}`);
+    console.log(`${MIGRATION_NAME}: [START] Seed tooltipFormat | Total: ${count}`);
     const seeded: { app_version_id: string }[] = await queryRunner.query(
       `WITH seeded AS (
          UPDATE components
          SET properties = (COALESCE(properties::jsonb, '{}'::jsonb) || $1::jsonb)::json
-         WHERE type = 'SvgImage' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltipFormat'
+         WHERE ${NEEDS_TOOLTIP_FORMAT}
          RETURNING page_id)
        SELECT p.app_version_id FROM seeded JOIN pages p ON p.id = seeded.page_id`,
       [JSON.stringify({ tooltipFormat: { value: 'plainText' } })]
