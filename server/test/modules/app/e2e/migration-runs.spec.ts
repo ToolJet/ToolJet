@@ -296,6 +296,14 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
       await expect(fresh(server).status()).resolves.toEqual({ state: 'idle' });
     });
 
+    it("should not show the previous finished run's details before its own run starts", async () => {
+      await dataSource.query(
+        `INSERT INTO migration_runs (to_version, status, triggered_by, finished_at) VALUES ('3.21.86', 'succeeded', 'boot', now())`
+      );
+
+      await expect(booting().status()).resolves.toEqual({ state: 'running' });
+    });
+
     it('should retry on boot a failed run of this version, so a restart or new image is the fix', async () => {
       await dataSource.query(
         `INSERT INTO migration_runs (to_version, status, triggered_by, finished_at) VALUES ($1, 'failed', 'boot', now())`,
@@ -331,13 +339,13 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
     await expect(newServer().status()).resolves.toEqual({ state: 'idle' });
   });
 
-  it('should report running while another migrator holds the active lock, whatever the latest row says', async () => {
+  it("should report running while another migrator holds the active lock, without a finished run's details", async () => {
     await dataSource.query(
       `INSERT INTO migration_runs (to_version, status, triggered_by) VALUES ('3.21.75', 'succeeded', 'boot')`
     );
 
     await holding(MIGRATION_ACTIVE_LOCK_KEY, async () => {
-      await expect(newServer().status()).resolves.toMatchObject({ state: 'running', toVersion: '3.21.75' });
+      await expect(newServer().status()).resolves.toEqual({ state: 'running' });
     });
   });
 
@@ -737,7 +745,7 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
         status: 'failed',
         error: expect.stringContaining('deadlock detected'),
         migrations: [
-          { name: 'AddThing1', status: 'done' },
+          { name: 'AddThing1', status: 'rolled_back' },
           { name: 'BackfillThing2', status: 'failed', percent: 50 },
         ],
       });
