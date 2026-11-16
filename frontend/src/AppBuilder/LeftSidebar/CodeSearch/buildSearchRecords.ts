@@ -246,6 +246,11 @@ const SETTINGS_OPTIONS = new Set([
   'query_timeout',
   'disableQuery',
   'disabledMessage',
+  'runPeriodically',
+  'runPeriodicallyFx',
+  'queryRunInterval',
+  'pauseAfterFailures',
+  'runPeriodicallyInBackground',
   'events',
 ]);
 

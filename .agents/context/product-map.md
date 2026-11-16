@@ -94,6 +94,7 @@ graph TD
 - App content belongs to a Version; non-workflow app name, slug, icon, and public state are stored on version rows (`server/src/modules/apps/AGENTS.md`).
 - End users consume a released version. A public app can bypass login, but query execution remains guarded and throttled (`QueryAuthGuard`; `AppScopedThrottlerGuard`).
 - Query credentials and constants are resolved for the selected Environment on the server; secrets are decrypted there rather than exposed to the browser (`server/src/modules/data-queries/util.service.ts`).
+- A rerunning query keeps showing its previous result while it runs, so bound components don't go blank; `queries.<name>.isLoading` is the loading signal (`frontend/src/AppBuilder/_stores/slices/queryPanelSlice.js::runQuery`).
 - Component configuration must remain backward compatible with previously saved apps, and server/frontend component defaults must change together (`frontend/AGENTS.md`; `server/AGENTS.md`).
 - Feature availability may be constrained by edition, license terms, and resource-count guards (`server/src/modules/licensing/`; `AbilityGuard`).
 

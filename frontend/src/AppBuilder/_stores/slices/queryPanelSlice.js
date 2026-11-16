@@ -12,6 +12,11 @@ import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAb
 import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/AppBuilder/QueryManager/constants';
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import {
+  reconcileQueryPeriodicRun,
+  pauseQueryPeriodicRun,
+  resumeQueryPeriodicRun,
+} from '@/AppBuilder/_stores/slices/componentsSlice';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
@@ -19,6 +24,19 @@ const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPre
 const toastIfQueryRunRestricted = (errorData) => {
   if (errorData?.data?.type === TJ_QUERY_ERROR_TYPE.FORBIDDEN) toast.error(errorData.data.responseObject.responseBody);
 };
+
+// The result fields a failed or aborted run leaves on the query. A run start no longer blanks the
+// query (bound components keep the previous result while it loads), so a run that settles without
+// a result writes this blank itself: the query ends up exactly as it did when the start blanked it.
+const clearedQueryResult = () => ({
+  data: [],
+  rawData: [],
+  metadata: undefined,
+  request: undefined,
+  response: undefined,
+  responseHeaders: undefined,
+  error: undefined,
+});
 
 const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
@@ -343,6 +361,15 @@ export const createQueryPanelSlice = (set, get) => ({
 
       return asyncHandler;
     },
+    // Stop a query's periodic re-run at runtime (pausePeriodicRun CSA). The pause is
+    // sticky: reconcile won't auto-restart it on the next manual run / option edit.
+    pausePeriodicRun: (queryId) => {
+      pauseQueryPeriodicRun(queryId);
+    },
+    // Resume a paused periodic re-run (resumePeriodicRun CSA).
+    resumePeriodicRun: (queryId, moduleId = 'canvas') => {
+      resumeQueryPeriodicRun(queryId, moduleId, get);
+    },
     resetQuery: (queryId, moduleId = 'canvas') => {
       const { setResolvedQuery } = get();
       setResolvedQuery(
@@ -526,6 +553,12 @@ export const createQueryPanelSlice = (set, get) => ({
         }
       }
 
+      // Query is committed to executing now — start/refresh its periodic timer if
+      // "Run this query periodically" is on. Idempotent: a tick re-running the query
+      // re-enters here and no-ops when the resolved interval is unchanged. Skipped when the toggle is
+      // off: an existing timer then just idles (the tick and updateDataQuery reconcile handle it).
+      if (dataQuery.options?.runPeriodically) reconcileQueryPeriodicRun(queryId, moduleId, get);
+
       // Handler for transformation and completion of query results
       const processQueryResults = async (data, rawData = null) => {
         let finalData = data?.data;
@@ -620,6 +653,7 @@ export const createQueryPanelSlice = (set, get) => ({
           queryId,
           {
             isLoading: false,
+            ...clearedQueryResult(),
             ...(errorData?.data?.type === TJ_QUERY_ERROR_TYPE.UNAUTHORIZED
               ? {
                   metadata: errorData?.metadata,
@@ -660,21 +694,10 @@ export const createQueryPanelSlice = (set, get) => ({
           queryPreviewData && setPreviewData('');
         }
 
-        setResolvedQuery(
-          queryId,
-          {
-            isLoading: true,
-            data: [],
-            rawData: [],
-            id: queryId,
-            metadata: undefined,
-            request: undefined,
-            response: undefined,
-            responseHeaders: undefined,
-            error: undefined,
-          },
-          moduleId
-        );
+        // Only flag the run as loading: the previous result (and error) stays until this run
+        // settles, so bound components don't go blank. `isLoading` is the loading signal. Failure
+        // and abort write clearedQueryResult() when they settle, so the end state is unchanged.
+        setResolvedQuery(queryId, { isLoading: true }, moduleId);
 
         // Create AbortController only for fetch-based kinds. For runjs/runpy/workflows,
         // controller.abort() has no effect on the underlying execution, so registering one
@@ -856,7 +879,7 @@ export const createQueryPanelSlice = (set, get) => ({
           .catch((e) => {
             // User-initiated abort — clear loading silently, log to debugger, do not fire failure events
             if (isAbortError(e)) {
-              setResolvedQuery(queryId, { isLoading: false }, moduleId);
+              setResolvedQuery(queryId, { isLoading: false, ...clearedQueryResult() }, moduleId);
               get().debugger.log({
                 logLevel: 'warning',
                 type: 'query',

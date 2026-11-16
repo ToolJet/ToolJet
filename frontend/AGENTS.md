@@ -100,6 +100,7 @@ No change may break existing saved applications. Always ask: would an app saved 
 
 - Events: `fireEvent → handleEvent → executeActionsForEventId → executeAction`. Events support `runOnlyIf` and `debounce`
 - Queries: `runQuery` → resolve options → API call → update `exposedValues.queries[name]` → trigger dependency updates
+- Query run start (`queries.<name>`, every query kind, editor and viewer) only sets `isLoading: true`. It doesn't clear `data`, `rawData`, `request`, `response`, `responseHeaders`, `metadata` or `error` first, so bound components keep the previous result until the run settles. `isLoading` is the loading signal; an empty `data` is never one. Once settled, the query holds exactly what it did when the start blanked it: success replaces every result field, failure and abort first write the blank result (`clearedQueryResult`, so the previous `data` doesn't survive a failed run), and reset (`resetQuery`) clears it. Specs: `_stores/__tests__/integration/queryRunPreservesResult.spec.js`
 - Event definitions live in `eventsSlice`, not in component definitions
 
 ### Grouped error notifications
