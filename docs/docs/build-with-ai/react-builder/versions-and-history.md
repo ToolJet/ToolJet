@@ -5,7 +5,7 @@ title: Versions and History
 
 Save your work as a version, release it when it's ready, and go back to any earlier point. ToolJet keeps the app's code with every version and records each change to it, whether it came from the AI, the editor or your computer.
 
-<!-- TODO screenshot: /img/build-with-ai/react-builder/versions-and-history/app-history.png | img-s | alt: The App history panel listing an AI edit, a Code panel save, a style inspector edit, an upload from a computer and an access change, newest first | shows: Northwind Dispatch v3 draft in the editor with App history open in the left sidebar, showing entries from five sources (AI edit, Code panel save, style inspector edit, CLI upload, access change) above "Started from saved version v2" -->
+<img className="screenshot-full img-s" src="/img/build-with-ai/react-builder/versions-and-history/app-history.png" alt="The App history panel, newest first: a saved version, an access change, two uploads from a computer, and the earlier saved versions" />
 
 ## Save a Version
 

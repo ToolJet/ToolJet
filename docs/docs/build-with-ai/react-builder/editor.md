@@ -44,7 +44,7 @@ The Code panel shows the project's files and lets you edit them in ToolJet, with
 
 ToolJet stores the change, builds the app in your browser and updates the canvas. If the code doesn't build, the panel lists the errors and the app keeps showing its last working version. Click an error to jump to its line.
 
-<!-- TODO screenshot: /img/build-with-ai/react-builder/editor/code-panel.png | img-l | alt: The Code panel with Overview.tsx open at the line that reads the listShipments query through useAppQuery | shows: state A (Northwind Dispatch v3 draft), Code panel on the Files tab with the file tree, Overview.tsx open at the useAppQuery call, long-line wrap off, saved state -->
+<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/editor/code-panel.png" alt="The Code panel with Overview.tsx open at the line that reads the listShipments query through useAppQuery" />
 
 Unsaved edits are kept in your browser. If you leave with unsaved changes, the panel offers to **Restore** or **Discard** them the next time it opens.
 
