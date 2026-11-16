@@ -2,7 +2,7 @@
  * @group workflows
  *
  * The backfill of workflow_executions' workspace columns is a data migration, so the schema
- * migration that adds the columns stays short. Run here the way the CLI runs it: `up(queryRunner)`.
+ * migration that adds the columns stays short. The update runs in `beforeCommit(queryRunner)`, where the runner calls it.
  */
 import {
   initTestApp,
@@ -63,7 +63,7 @@ describe('BackfillWorkspaceColumnsOnWorkflowExecutions1793450000000', () => {
         )[0];
 
       const migration = new BackfillWorkspaceColumnsOnWorkflowExecutions1793450000000();
-      await migration.up(queryRunner);
+      await migration.beforeCommit(queryRunner);
 
       // created_at/updated_at have no time zone; the backfill reads them in the session's zone.
       const [times] = await queryRunner.query(
@@ -86,7 +86,7 @@ describe('BackfillWorkspaceColumnsOnWorkflowExecutions1793450000000', () => {
 
       // A second run finds nothing left to fill and changes nothing.
       const before = await readRun(finishedRun);
-      await migration.up(queryRunner);
+      await migration.beforeCommit(queryRunner);
       expect(await readRun(finishedRun)).toEqual(before);
     } finally {
       await queryRunner.rollbackTransaction();

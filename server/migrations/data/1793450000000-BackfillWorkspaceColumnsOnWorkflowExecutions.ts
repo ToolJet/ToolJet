@@ -4,12 +4,17 @@ const MIGRATION_NAME = 'BackfillWorkspaceColumnsOnWorkflowExecutions179345000000
 const BATCH_SIZE = 5000;
 
 /**
- * Fills the columns AddWorkspaceColumnsToWorkflowExecutions1790400000000 adds, for runs created
- * before them. Kept out of that schema migration so its lock on workflow_executions stays short.
+ * Fills the columns AddWorkflowRunHistoryColumns1793500000100 adds, for runs created before them.
+ * Runs in beforeCommit(): old pods keep writing runs during the data phase (the gate lets workflow runs
+ * through), and an updated row stays locked until commit, so the update goes last to keep that lock short.
  * Only rows with no organization_id are touched, so a re-run is a no-op.
  */
 export class BackfillWorkspaceColumnsOnWorkflowExecutions1793450000000 implements MigrationInterface {
-  public async up(queryRunner: QueryRunner): Promise<void> {
+  public async up(): Promise<void> {
+    console.log(`${MIGRATION_NAME}: [START] Backfilling workflow_executions: deferred to before commit`);
+  }
+
+  public async beforeCommit(queryRunner: QueryRunner): Promise<void> {
     // Never SET updated_at: historical durations derive from it.
     const [{ count }] = await queryRunner.query(
       `SELECT COUNT(*) FROM workflow_executions WHERE organization_id IS NULL`
