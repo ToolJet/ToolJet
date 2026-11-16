@@ -17,12 +17,29 @@ Teams across engineering, product, operations, and business can build applicatio
 
 In this guide, you’ll walk through each step and see how they fit together to bring your application to life.
 
-:::tip Prefer to write code?
-On Enterprise Edition and ToolJet Cloud, you can also build an app in [React Builder](/docs/build-with-ai/react-builder/overview): a React and TypeScript project that you write with the AI, in the ToolJet editor or in your own editor, while ToolJet keeps handling data, queries, permissions and releases.
-:::
-
 <div style={{textAlign: 'center', marginBottom:'15px'}}> <img className="screenshot-full img-full" src="/img/app-builder/overview/banner.png" alt="Components Preview" /> </div>
 
+## Two Ways to Build an App
+
+<SectionSubtitle text="Either way, ToolJet handles data, queries, permissions and releases." />
+
+<CardGrid columns={2}>
+  <ConfigCard
+    label="Visual mode"
+    title="Visual app"
+    description="You drag components onto a canvas and connect them to queries. This section of the docs shows you how."
+    features={['Best for most internal tools', 'Edited in the visual App Builder', 'JavaScript and Python for custom logic']}
+  />
+  <ConfigCard
+    label="New in v4"
+    labelBg="#dcfce7"
+    labelColor="#166534"
+    title="React Builder app"
+    description="A React and TypeScript app. You write it with ToolJet AI, in the Code panel or in your own editor."
+    features={['Any layout and styling you can code', 'Checked for security before release', 'On ToolJet Cloud and Enterprise Edition']}
+    href="/docs/build-with-ai/react-builder/overview"
+  />
+</CardGrid>
 
 ## 1.  Building the Interface
 

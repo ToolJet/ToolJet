@@ -1,120 +1,66 @@
 ---
 id: access-control
-title: Access Control in React Builder
-sidebar_label: Access Control
+title: Control Access
 ---
 
-<div className="badge badge--primary heading-badge">
-  <img
-    src="/img/badge-icons/premium.svg"
-    alt="Icon"
-    width="16"
-    height="16"
+Choose who can open each screen of a React Builder app and who can run each query, by group or by person. You set both in the **Access** panel, and ToolJet's server checks the query limits on every run.
+
+<!-- TODO screenshot: /img/build-with-ai/react-builder/access-control/access-panel.png | img-m | alt: The Access panel listing the app's five screens, two of them restricted, and its eight queries, four of them restricted | shows: state A (Northwind Dispatch v3 draft): Access panel open from the left sidebar; the screens list reads "5, 2 restricted" with Carriers restricted to Operations and Billing to Finance; the queries list reads "8, 4 restricted" -->
+
+## Two Kinds of Access
+
+<SectionSubtitle text="Who can open the app at all is set in workspace settings. Inside the app, you control two things." />
+
+<CardGrid columns={2}>
+  <FeatureCard
+    icon="🖥️"
+    title="Who can open each screen"
+    description="A restricted screen leaves the app's navigation for everyone outside its groups, and a link to it says they don't have access."
   />
- <span>Paid feature</span>
-</div>
-
-<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
-
-A React Builder app uses ToolJet's permissions, like any other app. Who can open the app is set in workspace settings. Inside the app, you control two things:
-
-- **Who can open each screen.** A restricted screen is hidden from everyone outside its groups.
-- **Who can run each query.** A restricted query is refused by ToolJet's server for everyone outside its groups.
+  <FeatureCard
+    icon="🗄️"
+    title="Who can run each query"
+    description="ToolJet's server refuses to run a restricted query for anyone outside its groups, whatever the screen shows. This is what protects the app's data."
+  />
+</CardGrid>
 
 :::warning Restricting a screen doesn't protect its data
-Everyone who can open the app downloads the code of every screen, including its constants and the names of the queries it calls. Restricting a screen only hides it. To protect data, restrict the **queries** the screen uses. ToolJet's server checks query permissions on every run, whatever the screen shows.
+Restricting a screen only hides it. Everyone who can open the app still receives the screen's code and can still run its queries. To protect data, restrict the queries the screen uses.
 :::
 
-## How Screens Map to Pages
+Northwind Dispatch does both: its Billing screen is restricted to the Finance group, and so are the `listInvoices` and `approveInvoice` queries behind it.
 
-Each screen is a route in the project's `app.json`. When the app is built, ToolJet creates one hidden page per screen to carry that screen's permissions:
+## Restrict a Screen or Query
 
-- **Handle:** `<code page handle>-<route id>`, for example `home-carriers`.
-- **Name:** `<code page name>: <route title>`, for example `Home: Carriers`.
+1. Open the app's draft version in the editor and click **Access** in the left sidebar. The panel has one list of screens and one of queries.
+2. Click a screen or a query to open its row, then click **Restrict**.
+3. Select **User groups** and choose the groups. To pick people instead, select **Users**.
+4. Click **Create permission**.
 
-The hidden pages don't appear in the app's navigation. Opening a hidden page's URL takes the user to the code page at that screen. You don't need to manage these pages by hand: the **Access** panel lists the screens by title.
+The group list shows your workspace's custom groups. A group that can't open the app yet is grayed out. Click the option beside it, for example **Give Operations access to this app**, to let that group open the released app, then select it.
 
-## The Access Panel
-
-Open **Access** from the left sidebar of a React Builder app.
-
-<img className="screenshot-full img-m" src="/img/build-with-ai/react-builder/access-control/access-panel.png" alt="Access panel listing four screens and four queries, with the Carriers screen and the updateShipmentStatus query restricted to Operations" />
-
-The panel has two sections. Search them with **Search screens, routes and queries**, and filter with **All** or **Restricted**.
-
-### Who Can Open Each Screen
-
-Each screen shows **Everyone** or **Restricted to** its groups.
-
-1. Click a screen to open its row, then click **Restrict** (or **Change** if it's already restricted).
-2. Under **Type**, select **User groups** and choose the groups that may open the screen, or select **Users** and choose people. **All users with access to the app** removes the restriction.
-3. Click **Create permission** (or **Save changes**).
-
-A restricted screen is left out of the app's navigation for everyone outside its groups, and a link to it says they don't have access. Each restricted screen shows a reminder: "Hides this screen from people outside these groups. It doesn't protect the screen's data: restrict the queries it uses."
-
-In an open screen row, click the link icon to copy the released app's link to it (`/applications/<app slug>?route=<path>`). Screens with route parameters, such as `/shipments/:id`, have no copyable link.
-
-### Who Can Run Each Query
-
-Each query shows **Everyone** or **Restricted to** its groups. Click a query to open its row, then click **Restrict** or **Change** to choose them.
-
-ToolJet's server refuses to run a restricted query for anyone outside its users or groups. The app receives the run as a failed query, and the code's `error` shows it. See [Runtime API](/docs/build-with-ai/react-builder/runtime-api).
-
-### Choosing Groups
-
-The group picker lists the workspace's custom groups. A group that can't open the app yet is grayed out, with a **Give access to this app** option for that group. Click it to give the group view access to the released app, then select it. The default groups (Admin, Builder, End-user) are listed only when they already have access to the app.
-
-More permission settings, such as groups, roles and who can open the app, are in **Workspace settings** → **Groups**.
-
-### When You Can't Change Access
-
-| <div style={{ width:"350px"}}> Message </div> | <div style={{ width:"300px"}}> Why </div> |
-|:---------- | :---------- |
-| This version is saved and can't change. Edit a draft version to restrict it. | Permissions are part of the version. Switch to a draft. |
-| The AI is building this app. You can change who has access when it's done. | An AI build is running. |
-| You don't have access to page permissions. Upgrade your plan to access this feature. | Your plan doesn't include page permissions. The same message appears for query permissions. |
-| Configured but not enforced on this plan | Query limits are set, but your plan doesn't enforce them: everyone who can open the app can run the queries. |
-
-## Who the Limits Apply To
-
-In a React Builder app, limits depend on **who** the user is, not on how they open the app:
-
-- **People who can edit the app** pass every screen and query limit everywhere: workspace admins, super admins, and users with edit access to the app directly or through a folder. This is why you see every screen in the editor.
-- **Everyone else** is held to the limits everywhere, including when they open the app with `?mode=edit` or in Preview.
-
-In a visual app, by contrast, screen and query limits apply in the released app (to admins too) and are skipped in the editor.
+To change a restriction later, click **Change** on its row. To remove it, select **All users with access to the app**, then click **Save changes**.
 
 ## What Users See
 
-When a user opens a screen they may not open:
+Someone outside a screen's groups doesn't find the screen in the app's navigation. If they follow a link to it, the app keeps its layout and shows "You don't have access to this screen" in place of the content. Someone who can't open any screen sees only that message.
 
-- **If they can open another screen**, the app keeps its layout and shows **You don't have access to this screen** over the content area: "This screen is restricted to certain groups. Ask the app's owner if you need access." The **Go to** button takes them to the app's first screen they may open.
-- **If they may open no screen at all**, none of the app's code runs. They see the same message under a header with the app's name.
+<!-- TODO screenshot: /img/build-with-ai/react-builder/access-control/no-access-screen.png | img-full | alt: The released app for a Finance user who followed a link to Carriers: the app keeps its sidebar and shows "You don't have access to this screen" where the content would be | shows: state E (v2 released, signed in as Daniel Okafor from the Finance group): the released Northwind Dispatch opened at the Carriers route; the navigation lists Overview, Shipments and Billing, not Carriers -->
 
-<!-- TODO screenshot: Released Northwind Shipments app as a Finance user opening Carriers: "You don't have access to this screen" over the content area. Pending: needs a sign-in as a non-builder user and a released version. -->
+A restricted query fails for them instead of returning data, and your code gets the failure as the query's `error`. See [Runtime API](./runtime-api.md#errors).
 
-In the app's code, `ToolJet.useNavigation().routes` marks each screen with `allowed`, and the template's `useAllowedRoutes()` returns only the screens the user may open, so the template's navigation leaves restricted screens out. The current route is never one the user may not open. See [Runtime API](/docs/build-with-ai/react-builder/runtime-api).
+## Good to Know
 
-## Public Apps
+- People who can edit the app, workspace admins included, open every screen and run every query. Everyone else is held to the limits everywhere, Preview included.
+- On a public app's link, restricted screens and queries are closed to everyone, signed-in members included. Queries without a restriction run for anyone who has the link.
+- Access is saved with the version, and a saved version can't change. Switch to a draft to edit its restrictions.
+- Screen and query restrictions depend on your plan. If the panel asks you to upgrade, your plan doesn't include them.
+- Every change is recorded in [App history](./versions-and-history.md), for example "Access changed: Only Operations can open Carriers".
 
-If the app is public, anyone with its link can open it. On a public link:
+## Where to Go Next
 
-- Restricted screens are closed to **everyone**, signed-in workspace members included, because the public link doesn't identify the user. They see: "This app is public. On its public link, restricted screens are closed to everyone, signed in or not."
-- Restricted queries are refused for everyone.
-- Unrestricted queries run for anyone with the link.
-
-The **Access** panel shows a warning on public apps.
-
-## Showing and Hiding Parts of a Screen
-
-`ToolJet.useGlobals()` gives the code the current user's name, email and groups, for example to hide a button from people outside Finance. This is for display only: the values come from the browser. Protect the action itself by restricting the query it runs.
-
-Don't pass `{{globals.currentUser.…}}` to a query to decide what the user may see. The browser fills it in, so a user can change it. The **Security** panel reports this as "Who the queries think the user is". See [App Security](/docs/build-with-ai/react-builder/security#what-protects-this-app).
-
-## Access Changes in App History
-
-Every change to who can open a screen or run a query is recorded, whether it was made in the **Access** panel, the **Queries** panel or by the AI. **App history** shows it as an entry such as "Access changed: Only Operations can open Carriers". Changes by the same person within two minutes are grouped into one entry. Click the entry to see **Who can open and run what** before and after.
-
-## Listing Users in the App
-
-`ToolJet.useWorkspaceUsers()` lists the workspace's active users who can open the app, for fields such as an assignee or owner picker. It returns only the people with access to the app, and only to a user who can open it. See [Runtime API](/docs/build-with-ai/react-builder/runtime-api).
+<CardGrid columns={3}>
+  <NextStepCard title="App Security" description="See what protects the app, and fix the access issues it reports." href="/docs/build-with-ai/react-builder/security" />
+  <NextStepCard title="Runtime API" description="Read the signed-in user, list users and handle a failed query in code." href="/docs/build-with-ai/react-builder/runtime-api" />
+  <NextStepCard title="Workspace Permissions" description="Groups, roles and who can open each app." href="/docs/user-management/role-based-access/access-control" />
+</CardGrid>

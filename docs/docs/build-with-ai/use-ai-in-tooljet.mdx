@@ -97,7 +97,7 @@ export const SectionSubtitle = ({ text }) => (
     <FeatureCard
         icon="⚡"
         title="App Generation"
-        description="Describe your app in plain language. ToolJet AI scaffolds the full UI, queries, and schema; ready to customize."
+        description="Describe your app in plain language. ToolJet AI builds it as a visual app or a React Builder app, with its queries and data, ready to customize."
         href="/docs/build-with-ai/generate-applications"
     />
     <FeatureCard
@@ -129,6 +129,49 @@ export const SectionSubtitle = ({ text }) => (
         title="Selecting an AI Model"
         description="Switch the LLM provider that powers your chats, or pin an exact model through OpenRouter."
         href="/docs/build-with-ai/model-selection"
+    />
+</div>
+
+## What's New in the AI Chat
+
+<SectionSubtitle text="Redesigned in ToolJet v4, for visual apps and React Builder apps alike" />
+
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px', marginBottom: '8px' }}>
+    <FeatureCard
+        icon="🧭"
+        title="Visual or React Builder"
+        description="Choose how each new app is built: on the drag-and-drop canvas, or as React code you can edit anywhere."
+        href="/docs/build-with-ai/generate-applications#choosing-how-the-app-is-built"
+    />
+    <FeatureCard
+        icon="🗂️"
+        title="Build on Your Data"
+        description="A new chat lists the data sources you can mention. Click one, and the AI builds on that data."
+        href="/docs/build-with-ai/referencing-app-resources#mentioning-data-sources"
+    />
+    <FeatureCard
+        icon="❓"
+        title="Questions Before It Builds"
+        description="When your prompt leaves a decision open, the AI asks first, with its recommended answer already selected."
+        href="/docs/build-with-ai/generate-applications#answering-questions-during-a-build"
+    />
+    <FeatureCard
+        icon="⏱️"
+        title="Progress You Can Follow"
+        description="A new app builds in three stages, Data, Build and Check, with a clock and the step it's working on."
+        href="/docs/build-with-ai/generate-applications#watching-the-build"
+    />
+    <FeatureCard
+        icon="🧾"
+        title="A Summary of Every Build"
+        description="See what was built and how long it took, then pick what to do next from the AI's suggestions."
+        href="/docs/build-with-ai/generate-applications#reading-the-summary"
+    />
+    <FeatureCard
+        icon="↩️"
+        title="See What Changed, Then Undo"
+        description="Compare the app before and after an AI edit, and undo the edit if it isn't what you wanted."
+        href="/docs/build-with-ai/generate-applications#reviewing-and-undoing-an-ai-edit"
     />
 </div>
 
@@ -184,24 +227,32 @@ For a full architecture breakdown and a side-by-side comparison of all four setu
 
 <SectionSubtitle text="Find your past chats and other ways to build with AI" />
 
-Open the AI chat from the ToolJet AI icon in the left sidebar of the App Builder or Module Builder. The icon is shown only when AI features are enabled for your workspace.
+Open the AI chat by clicking **AI chat** in the left sidebar of the App Builder or Module Builder. It's shown only when AI features are enabled for your workspace. In a React Builder app, the chat opens with the editor.
+
+A new chat greets you with example prompts and, in an app, the data sources you can mention. Click a data source to mention it in your message, or click an example to fill the message box. Nothing is sent until you send it.
+
+<!-- TODO screenshot: /img/build-with-ai/ai-chat/zero-state.png | img-s | alt: A new AI chat with the greeting, the workspace's data sources under Build on your data and four example prompts under Try an example | shows: a new, empty chat in the Northwind Dispatch editor signed in as the fictional admin: greeting, lede, the Build on your data chips and the Try an example list above the empty message box; crop the chat panel (400 px wide) -->
 
 ### Chat History
 
-Each app keeps its own AI chats, and you see only the chats you started. Click the **Chats** button at the top-left of the AI chat panel to open **All chats**, which lists your chats for this app with the date and number of messages for each.
+Each app keeps its own AI chats, and you see only the chats you started. Click the **Chats** button at the top-left of the AI chat panel to open **All chats**, which lists your chats for this app. Each one shows its status, such as Building or Needs you, with the date and number of messages. A build keeps running when you switch to another chat.
 
-- To find a chat, type in **Search conversations...**. The list is filtered by chat title, which is the text of your first message in that chat.
-- To start over, click **Start new chat**. The button is disabled while the AI is working on a request.
+- To find a chat, type in **Search conversations**. The list is filtered by chat title, which is a short summary of your first message in that chat.
+- To start over, click **Start new chat**. The button is disabled while the AI is working on a request. If you already have an empty chat, ToolJet opens it instead of creating another one.
 
-<!-- TODO screenshot: AI chat panel with the All chats menu open, showing the search box and Start new chat -->
+<!-- TODO screenshot: /img/build-with-ai/ai-chat/all-chats.png | img-s | alt: The All chats list in the AI chat, with a search box, Start new chat and each chat's status, date and number of messages | shows: the AI chat panel with All chats open on an app that has three or four chats in different states (one Building or Needs you, the rest Applied or Ready), under Today and Earlier; crop the chat panel (400 px wide) -->
 
-When a chat reaches its context limit, the prompt box shows **You've reached the context limit for this conversation.** Click **Continue on new chat** to open a new chat that carries over a summary of the current one, so the AI can pick up where it left off.
+When a chat reaches its context limit, a card titled "This chat is full" replaces the message box. Click **Continue on new chat** to open a new chat that starts with a summary of the current one and sends it for you. The new chat keeps the same model, so the AI can pick up where it left off.
 
 ### Build From Your Coding Agent
 
-The top of the AI chat shows a **Prefer your own agent?** banner. Click it to open **Build ToolJet apps from your coding agent**, which lists the commands to connect **Claude Code**, **Codex**, **Grok Build**, or another MCP client (**Others**) to your ToolJet instance through the [ToolJet MCP server](/docs/build-with-ai/mcp/setup). The commands already include your ToolJet URL; replace the token placeholder with a personal access token. Building this way runs on your coding agent's subscription instead of ToolJet AI credits.
+Under its header, the AI chat shows a **Build from your own agent** bar. Click **Connect** on it to open **Build ToolJet apps from your coding agent**, which lists the commands to connect **Claude Code**, **Codex**, **Cursor**, **Grok Build**, or another MCP client (**Others**) to your ToolJet instance through the [ToolJet MCP server](./mcp/setup/overview.md). The commands already include your ToolJet URL; replace the token placeholder with a personal access token. On ToolJet Cloud, the dialog can also offer **OAuth**: your agent signs in through your browser, and no token is needed. Building this way runs on your coding agent's subscription instead of ToolJet AI credits.
 
-To hide the banner, click **x** on it. It stays hidden in that browser.
+<!-- TODO screenshot: /img/build-with-ai/ai-chat/connect-your-agent.png | img-l | alt: The Build ToolJet apps from your coding agent dialog, with its six benefits and the Connect your agent steps for Claude Code | shows: the dialog opened from Connect on the Build from your own agent bar in a visual app, Claude Code tab, Personal access token method; the commands print the instance's address, so capture where that address can be shown or crop above the commands; token placeholder left as it is -->
+
+In a React Builder app, the bar reads **Work on this app in your editor** instead. Click **Open** to work on the app's code from your own editor, terminal, or coding agent. See [Build Locally](./react-builder/local-development.md).
+
+The bar steps aside while a build runs. To hide it for good, select **Hide the bar in chat** at the bottom of the dialog: it stays hidden in that browser. The bar in a React Builder app has no such option.
 
 ## Data & Privacy
 

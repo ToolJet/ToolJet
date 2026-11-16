@@ -22,22 +22,27 @@ Once a library is published to your workspace, its components are available to e
 
 ## Find Custom Components
 
-Open the component library on the right, click the library picker at the top of the **Components** panel, and choose a library under **Custom libraries**. The panel shows the library's **Version** and a card for every component, with its display name and description. See [Choose a Component Library](/docs/app-builder/building-ui/component-library#choose-a-component-library).
+Click the library picker at the top of the components panel and choose a library under Custom libraries. The panel then shows the library's **Version** and a tile for every component, with an icon or the component's initials and its display name. See [Choose a Component Library](../building-ui/component-library.md#choose-a-component-library).
 
-Search in the component library matches both library names and component names.
+A library is listed once it has a published version or a dev upload.
+
+<!-- TODO screenshot: /img/app-builder/custom-component-library/custom-libraries-in-picker.png | img-full | alt: The library picker open in the App Builder, with a published custom library listed under Custom libraries below the libraries that ship with ToolJet | shows: a visual app in the App Builder with the library picker open: ToolJet UI 1.0, Rocket 2.0 and Ant Design, then the Custom libraries group with one published library with a realistic name; crop the canvas edge plus the panel; list only the libraries that ship -->
 
 ## Add and Configure a Component
 
-Drag a card onto the canvas. A custom component works like any built-in component. You can resize, move and rename it, and bind it to queries. The component is named after the component itself (for example, *currencyinput1*), and it is dropped at the default size the author set with `useComponentSettings`.
+Drag a tile onto the canvas. A custom component works like any built-in component. You can resize, move and rename it, and bind it to queries. The component is named after the component itself (for example, *currencyinput1*), and it is dropped at the default size the author set with `useComponentSettings`.
 
-The component properties panel has four groups:
+The component properties panel opens with a line that names the library and the component, and a Revision row. Below them are these sections:
 
-| <div style={{ width:"150px"}}> Group </div> | <div style={{ width:"400px"}}> Contents </div> |
+| <div style={{ width:"150px"}}> Section </div> | <div style={{ width:"400px"}}> Contents </div> |
 |:---------- | :---------- |
-| **Component** | Read-only details: the library, the component and the version in use. |
-| **Properties** | One field for each property the author declared, pre-filled with its initial value. Properties grouped with the `section` option appear in their own accordion. |
+| **Properties** | One field for each property the author declared, pre-filled with its initial value. Properties grouped with the `section` option appear in a section of their own. |
 | **Events** | One entry for each event the author declared. Attach event handlers the same way as on a built-in component. |
-| **Layout** | **Show on desktop** and **Show on mobile**. |
+| **Validation** | Shown for field components only. |
+| **Additional Actions** | **Visibility** and **Loading state**, plus **Disable** and **Dynamic height** on components that support them. |
+| **Devices** | **Show on desktop** and **Show on mobile**. |
+
+The **Styles** tab lists the style fields the author declared, then **Box shadow**.
 
 ### Exposed Variables
 
@@ -51,9 +56,8 @@ Actions declared by the author appear wherever you choose component actions. For
 
 Each app pins one version of each library. The pinned version is saved with the app version, so it carries over when you release, clone, export or import the app.
 
-- The first time you drop a component from a library into an app, the app pins the **latest** version.
-- To change the version, open the **Version** picker at the top of the library in the **Components** panel. The list shows each version with its date, a ✓ next to the current one, and a **New** badge when a newer version exists.
-- An icon on the library header tells you when the pinned version is behind the latest version.
+- The first time you drop a component from a library into an app, the app pins the version the panel shows. That is the latest version, unless you picked another one.
+- To change the version, pick the library in the library picker, open its **Version** picker and choose a version.
 - **Changing the version updates every component from that library in the app at once.** It only happens when you choose a version. Publishing a new version never changes a running app.
 - Previewed and released apps always render the pinned version.
 
@@ -65,10 +69,12 @@ In addition to what the author declares, ToolJet adds the same set of properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"100px"}}> Type </div> | <div style={{ width:"100px"}}> Default </div> | <div style={{ width:"200px"}}> Where It Appears </div> |
 |:---------- | :---------- | :---------- | :---------- |
-| **Visibility** | Toggle | `true` | Additional actions |
-| **Loading state** | Toggle | `false` | Additional actions |
+| **Visibility** | Toggle | `true` | Additional Actions |
+| **Loading state** | Toggle | `false` | Additional Actions |
 
-### Layout
+Components that support them also get **Disable** and **Dynamic height** in the same section.
+
+### Devices
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"100px"}}> Type </div> | <div style={{ width:"100px"}}> Default </div> |
 |:---------- | :---------- | :---------- |
@@ -88,6 +94,8 @@ In addition to what the author declares, ToolJet adds the same set of properties
 | `isVisible` | Boolean | `true` | `{{components.myWidget.isVisible}}` |
 | `isLoading` | Boolean | `false` | `{{components.myWidget.isLoading}}` |
 
+Every component also exposes `isDisabled`.
+
 ### Component Specific Actions (CSA)
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"350px"}}> Parameter </div> |
@@ -95,8 +103,10 @@ In addition to what the author declares, ToolJet adds the same set of properties
 | **Set visibility** | **Value**: Toggle, defaults to `{{false}}`. |
 | **Set loading** | **Value**: Toggle, defaults to `{{false}}`. |
 
-These appear in the same action list as the author's own actions. For example, a query can show a loading spinner on a custom component without the author writing any code for it.
+Every component also has a **Set disable** action.
+
+These appear in the same action list as the author's own actions. For example, a query can show a loading spinner on a custom component without the author writing any code for it. The spinner covers the component, which stays in place underneath.
 
 :::info
-If a component's bundle is missing, for example because its library was deleted, the component renders as an empty box. The app still opens, and everything else keeps working.
+If a component's code can't be loaded, ToolJet tries again on its own. If it still can't load, the canvas shows "This component couldn't load." in its place, with a **Retry** button. The app still opens, and everything else keeps working.
 :::

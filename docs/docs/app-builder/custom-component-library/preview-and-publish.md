@@ -32,13 +32,17 @@ The CLI watches `src/`, rebuilds on every save, and uploads the result to your *
 
 To see your dev build in the App Builder:
 
-1. In the **Components** panel, click the library picker at the top and choose your library under **Custom libraries**.
+1. Click the library picker at the top of the components panel and choose your library under Custom libraries.
 2. Open the library's **Version** picker.
-3. Select the **Dev preview** entry. It is labelled with your email and marked **preview only**.
+3. Select the **Dev preview** entry that shows your email.
+
+<!-- TODO screenshot: /img/app-builder/custom-component-library/dev-preview-version.png | img-m | alt: The Version picker of a custom library in the components panel, open on a Dev preview entry next to the published versions | shows: a visual app in the App Builder with a custom library picked in the library picker and its Version picker open: published versions plus a Dev preview entry with a fictional user's email; no real name or email -->
+
+The library's components on the canvas now run your dev build and carry a `dev: <your email>` badge.
 
 Keep these points in mind:
 
-- **Dev builds never reach end users.** Previewed and released apps always render the published version.
+- **A dev build can't be saved into a version.** While a library is set to a dev preview, the app's draft uses that build, and **Save version** stops with "Cannot save: 1 custom component library is pinned to a developer preview build. Select a published revision before saving this version." Choose a published version in the **Version** picker before you save.
 - **Each developer gets their own dev build.** Two developers working on the same library don't overwrite each other's previews.
 - **Empty builds aren't uploaded.** If the build finds no components in `src/index.ts`, the CLI skips the upload and tells you.
 
@@ -59,7 +63,13 @@ Keep these points in mind:
 tooljet library build
 ```
 
-This builds the library to `dist/` without uploading anything. It doesn't need you to be signed in, so it works well as a CI check.
+This builds the library to `dist/` without uploading anything. It doesn't need you to be signed in, and it exits with code `1` on TypeScript errors, so it works well as a CI check.
+
+For a faster check, type-check the code and its stylesheets without building:
+
+```bash
+tooljet library typecheck
+```
 
 ## Publish a Version
 
@@ -68,14 +78,14 @@ tooljet library publish --version 1.0.0 --message "Add dark mode support"
 ```
 
 - `--version` is required. It accepts `X`, `X.Y` or `X.Y.Z`. Missing parts default to zero, so `1` becomes `1.0.0`. Leading zeros are not allowed.
-- `--message` is optional.
+- `--message`, or `-m`, is optional.
 
 The command builds the library, generates the manifest, type-checks the code, and uploads it. As it runs, it prints the number of components, the bundle size and the CSS size.
 
 ### Publishing Rules
 
-- **Versions can't be changed.** Once a version is published, its code never changes. Publishing a version number that already exists fails with "Version already exists for this library — choose a different version."
-- **Publishing never changes running apps.** Each app pins a version. A new version is only offered as an upgrade. See [Versions and Pinning](/docs/app-builder/custom-component-library/use-in-app-builder#versions-and-pinning).
+- **Versions can't be changed.** Once a version is published, its code never changes. Publishing a version number that already exists fails with `Version "1.0.0" already exists for this library — choose a different version.`
+- **Publishing never changes running apps.** Each app pins a version. A new version is only offered as an upgrade. See [Versions and Pinning](./use-in-app-builder.md#versions-and-pinning).
 - **TypeScript errors block the publish.** Use `--skip-type-check` to publish anyway.
 - **A library needs at least one component.** If nothing exported from `src/index.ts` is a React component, the publish stops.
 
@@ -89,4 +99,4 @@ tooljet library publish --version 1.2.0 --url https://app.tooljet.ai --token <yo
 
 ## Next Steps
 
-Your library is now available under **Custom libraries** in the **Components** panel's library picker. See [Use Custom Components in the App Builder](/docs/app-builder/custom-component-library/use-in-app-builder).
+Your library now appears in the App Builder's library picker, under Custom libraries. See [Use Custom Components in the App Builder](./use-in-app-builder.md).
