@@ -4,8 +4,6 @@ How ToolJet runs database migrations: at boot, across many pods, and in async mo
 
 **Read this when** you change `server/src/migration-helpers/`, `server/src/modules/app/migration-runs/`, `server/src/modules/app/middlewares/migration-gate.middleware.ts` or the `db:setup` step of a container entrypoint. Update this document in the same PR. To *write* a migration, read the Migrations section of [`../AGENTS.md`](../AGENTS.md#migrations).
 
-**Sections:** [Boot path](#boot-path) · [Phases and transactions](#phases-and-transactions) · [Many pods, one migration](#many-pods-one-migration) · [Upgrade gate](#upgrade-gate) · [Async mode](#async-mode) · [Environment variables](#environment-variables) · [Failure modes](#failure-modes) · [Operator runbook](#operator-runbook) · [Invariants](#invariants) · [Tests](#tests)
-
 ## In short
 
 There are two modes.
@@ -310,12 +308,9 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 
 ## Invariants
 
-- Take the migration lock **before** reading the pending list.
-- Lock sentinels are not work: keep them out of the pending count. The split phases do not run them.
 - Gate state comes only from connection-held locks and run rows. Never from a flag someone must clear by hand.
-- Never refuse a health or metrics endpoint. If the gate cannot read the status, it lets the request through.
+- If the gate cannot read the status, it lets the request through.
 - An error inside the migration transaction is final; do not wrap the runner in a retry. Exceptions: a lock timeout in the schema phase, transient errors (`40P01`, `40001`, `55P03`) in the data phase, and `withShortLock` steps.
-- In async mode only a server boot or the dead-run check starts a run. There is no manual retry.
 - Schema, data and cleanup run as separate `MigrationExecutor` passes. Do not merge the folders into one DataSource: TypeORM sorts by class-name timestamp, and the timestamps interleave.
 - Plan enum additions before `announceEachMigration` wraps `up()`; the wrapper hides the source from the scanner.
 
