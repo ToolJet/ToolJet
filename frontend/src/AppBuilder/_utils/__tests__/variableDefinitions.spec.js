@@ -68,8 +68,22 @@ describe('parseStaticValue', () => {
     ['{"a":1}', { a: 1 }],
     ['open', 'open'],
     ['  padded  ', '  padded  '],
+    ['0', 0],
+    ['0.5', 0.5],
+    ['02134', '02134'],
+    ['007', '007'],
+    ['"true"', 'true'],
+    ['"5"', '5'],
+    ['"a \\"quoted\\" word"', 'a "quoted" word'],
   ])('%j parses to %j', (input, expected) => {
     expect(parseStaticValue(input)).toEqual({ ok: true, value: expected });
+  });
+
+  test('reports an unterminated quoted string as invalid JSON', () => {
+    expect(parseStaticValue('"open" extra"')).toEqual({
+      ok: false,
+      error: 'Not valid JSON. Use double quotes around keys and strings.',
+    });
   });
 
   test('reports invalid JSON', () => {

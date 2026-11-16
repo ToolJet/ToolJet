@@ -56,10 +56,12 @@ export function parseStaticValue(text) {
   const raw = String(text ?? '');
   const t = raw.trim();
   if (t === '') return { ok: true, value: '' };
-  if (/^-?\d+(\.\d+)?$/.test(t)) return { ok: true, value: Number(t) };
+  // A leading zero (02134, 007) marks an identifier such as a ZIP code, so it stays text.
+  if (/^-?(0|[1-9]\d*)(\.\d+)?$/.test(t)) return { ok: true, value: Number(t) };
   if (t === 'true' || t === 'false') return { ok: true, value: t === 'true' };
   if (t === 'null') return { ok: true, value: null };
-  if (/^[[{]/.test(t)) {
+  // Quote a value to keep it a string: "true", "5".
+  if (/^[[{"]/.test(t)) {
     try {
       return { ok: true, value: JSON.parse(t) };
     } catch {
