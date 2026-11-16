@@ -98,7 +98,7 @@ export async function setNotNull(queryRunner: QueryRunner, table: string, column
   try {
     for (const step of steps) await withShortLock(queryRunner, step);
   } catch (error) {
-    // A NOT VALID check still refuses new NULL writes from the release that is serving.
+    // VALIDATE found NULL rows, so the serving release still writes them: drop the check, or those writes fail.
     if (!queryRunner.isTransactionActive) await withShortLock(queryRunner, [steps[2][1]]);
     throw error;
   }
