@@ -3,7 +3,7 @@
 # Usage: scripts/test-changed.sh
 #
 # Fallback: cross-cutting changes (helpers/entities/dto/lib, jest config/setup) → run
-# all tests. Tooling-only changes (scripts, package.json) don't affect test selection
+# all tests. Metadata/tooling changes (.version, scripts, package.json) don't affect test selection
 # and are ignored. Anything else unrecognized under server/ also falls back to all, as
 # a safety net.
 # NODE_ENV=test is set by the npm scripts themselves (server/package.json,
@@ -58,7 +58,7 @@ while IFS= read -r file; do
       echo "Test infra change in: $file"
       RUN_ALL=true
       ;;
-    server/scripts/*|server/package.json|server/package-lock.json)
+    server/.version|server/scripts/*|server/package.json|server/package-lock.json)
       echo "Non-test-selecting change (ignored): $file"
       ;;
     *)

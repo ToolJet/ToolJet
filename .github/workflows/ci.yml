@@ -46,8 +46,9 @@ jobs:
       plugins: ${{ steps.filter.outputs.plugins }}
       marketplace: ${{ steps.filter.outputs.marketplace }}
       migrations: ${{ steps.filter.outputs.migrations }}
-      # false = nothing CI-relevant changed (docs, cypress-tests, deploy, …): only the gate runs
-      any: ${{ (steps.filter.outputs.changes != '[]' || steps.sub.outputs.server == 'true' || steps.sub.outputs.frontend == 'true') && 'true' || 'false' }}
+      version_only: ${{ steps.filter.outputs.version == 'true' && steps.filter.outputs.non_version != 'true' && steps.sub.outputs.server != 'true' && steps.sub.outputs.frontend != 'true' }}
+      # non_version is only an exemption guard, not a reason to run CI for docs/deploy edits.
+      any: ${{ ((steps.filter.outputs.changes != '[]' && steps.filter.outputs.changes != '["non_version"]') || steps.sub.outputs.server == 'true' || steps.sub.outputs.frontend == 'true') && 'true' || 'false' }}
       # secrets aren't allowed in job-level if:, so expose only whether the snapshot is configured
       snapshot: ${{ secrets.MIGRATION_SNAPSHOT_BUCKET != '' }}
       # changed = fast lane (run-ci-changed label): lint+build always, changed tests only,
@@ -91,9 +92,12 @@ jobs:
             migrations:
               - 'server/{migrations,data-migrations}/**'
               - '!**/*.md'
-            # version bump = release cut: runs only the vulnerability gate (no job reads this output)
+            # A nonempty diff containing only these exact paths qualifies for the exemption.
             version:
               - '{.version,server/.version,frontend/.version}'
+            non_version:
+              - '**'
+              - '!{.version,server/.version,frontend/.version}'
             # toolchain / workflow changes affect every suite
             root:
               - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**}'
@@ -1254,9 +1258,10 @@ jobs:
   # Repo-wide Dependabot-alert policy (not PR-diff scoped) — full lane only, feeds ci-gate.
   vulnerability-gate:
     needs: detect-changes
-    # repo-wide Dependabot alerts shouldn't block a PR that touches no code; pushes always check
+    # Version-only diffs skip the release policy; mixed changes retain the normal policy.
     if: >-
       needs.detect-changes.result == 'success' && needs.detect-changes.outputs.mode == 'full'
+      && needs.detect-changes.outputs.version_only != 'true'
       && (github.event_name != 'pull_request' || needs.detect-changes.outputs.any == 'true')
     uses: ./.github/workflows/release-vulnerability-gate.yml
     secrets:
@@ -1529,7 +1534,9 @@ jobs:
               sha: context.payload.pull_request?.head?.sha || context.sha,
               state: verdict === 'pass' ? 'success' : 'failure',
               context: 'CI Gate',
-              description: verdict === 'pass' ? 'Full CI green' : 'Full CI failed',
+              description: verdict === 'pass'
+                ? ('${{ needs.detect-changes.outputs.version_only }}' === 'true' ? 'Version-only change' : 'Full CI green')
+                : 'Full CI failed',
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
