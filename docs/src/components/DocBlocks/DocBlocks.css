@@ -1,0 +1,539 @@
+/*
+ * DocBlocks: shared landing-page blocks for docs pages (hero banner, card
+ * grid, cards, flow steps). The light theme reproduces the inline components
+ * of build-with-ai/overview.mdx, build-with-ai/use-ai-in-tooljet.mdx and
+ * getting-started/platform-overview.mdx.
+ *
+ * Two conventions keep these rules independent of where the file lands in
+ * the final stylesheet (the production CSS minifier reorders rules):
+ *   1. Site-wide rules that the inline originals beat with style="" (Infima's
+ *      `.markdown` rules, the link and heading rules in custom.css) are
+ *      out-ranked by specificity. That is why some selectors look longer
+ *      than necessary.
+ *   2. No two rules of equal specificity set the same property on the same
+ *      element. Variants set custom properties or use their own class.
+ */
+
+/* ─── Hero ──────────────────────────────────────────────────────── */
+.docblk-hero {
+  padding: var(--docblk-hero-padding);
+  margin-bottom: var(--docblk-hero-gap);
+  border: 1px solid var(--docblk-hero-border);
+  border-radius: 12px;
+  background: var(--docblk-hero-bg);
+}
+
+.docblk-hero--violet {
+  --docblk-hero-padding: 28px 28px 24px;
+  --docblk-hero-gap: 32px;
+  --docblk-hero-bg: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 40%, #e0f2fe 100%);
+  --docblk-hero-border: #e9d5ff;
+  --docblk-hero-eyebrow: #7c3aed;
+  --docblk-hero-title: #1e1b4b;
+  --docblk-hero-text: #4c1d95;
+  --docblk-hero-chip-bg: rgba(255, 255, 255, 0.7);
+  --docblk-hero-chip-border: #c4b5fd;
+  --docblk-hero-chip-text: #6d28d9;
+}
+
+.docblk-hero--blue {
+  --docblk-hero-padding: 32px 32px 28px;
+  --docblk-hero-gap: 36px;
+  --docblk-hero-bg: linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #e0f2fe 100%);
+  --docblk-hero-border: #bfdbfe;
+  --docblk-hero-eyebrow: #1d4ed8;
+  --docblk-hero-title: #1e3a5f;
+  --docblk-hero-text: #1e40af;
+  --docblk-hero-chip-bg: rgba(255, 255, 255, 0.7);
+  --docblk-hero-chip-border: #93c5fd;
+  --docblk-hero-chip-text: #1d4ed8;
+}
+
+[data-theme='dark'] .docblk-hero--violet {
+  --docblk-hero-bg: linear-gradient(135deg, #1e1b3a 0%, #251f4d 40%, #14293d 100%);
+  --docblk-hero-border: #3b3170;
+  --docblk-hero-eyebrow: #a78bfa;
+  --docblk-hero-title: #f1eeff;
+  --docblk-hero-text: #c9befa;
+  --docblk-hero-chip-bg: rgba(255, 255, 255, 0.06);
+  --docblk-hero-chip-border: #4c3d99;
+  --docblk-hero-chip-text: #c4b5fd;
+}
+
+[data-theme='dark'] .docblk-hero--blue {
+  --docblk-hero-bg: linear-gradient(135deg, #172038 0%, #1a2a4d 50%, #13283b 100%);
+  --docblk-hero-border: #2a3f73;
+  --docblk-hero-eyebrow: #7b9af8;
+  --docblk-hero-title: #e6edf3;
+  --docblk-hero-text: #b3c7f5;
+  --docblk-hero-chip-bg: rgba(255, 255, 255, 0.06);
+  --docblk-hero-chip-border: #2d4f9e;
+  --docblk-hero-chip-text: #93c5fd;
+}
+
+.docblk-hero__eyebrow {
+  margin-bottom: 8px;
+  color: var(--docblk-hero-eyebrow);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.docblk-hero--blue .docblk-hero__eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+}
+
+/*
+ * These sizes are what phones and tablets get. From 997px up, custom.css
+ * forces every `article h1` to 40px with !important, which is also how the
+ * inline originals render on desktop.
+ */
+.docblk-hero__title {
+  margin: 0 0 10px;
+  color: var(--docblk-hero-title);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* Without an eyebrow the title is a first child, which `.markdown
+   h1:first-child` would otherwise give its own bottom margin. */
+.docblk-hero > .docblk-hero__title:first-child {
+  margin-bottom: 10px;
+}
+
+.docblk-hero--blue .docblk-hero__title {
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+/*
+ * In the originals MDX wraps the description text in a second <p> inside the
+ * styled one. That inner paragraph gets the site-wide `p { line-height: 180% }`
+ * and the default paragraph bottom margin, so those are the values the pages
+ * really render with, not the 1.6 and 0 of the inline style.
+ */
+.docblk-hero__description {
+  max-width: 620px;
+  margin: 0 0 var(--ifm-paragraph-margin-bottom);
+  color: var(--docblk-hero-text);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.docblk-hero--blue .docblk-hero__description {
+  max-width: 640px;
+  margin-bottom: 24px;
+}
+
+.docblk-hero__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Two classes, to out-rank `.markdown li + li`. */
+.docblk-hero__chips > .docblk-hero__chip {
+  display: block;
+  margin: 0;
+  padding: 4px 12px;
+  border: 1px solid var(--docblk-hero-chip-border);
+  border-radius: 20px;
+  background: var(--docblk-hero-chip-bg);
+  color: var(--docblk-hero-chip-text);
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+
+.docblk-hero__body {
+  margin-top: 20px;
+  color: var(--docblk-hero-text);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.docblk-hero__body > :first-child {
+  margin-top: 0;
+}
+
+.docblk-hero__body > :last-child {
+  margin-bottom: 0;
+}
+
+/* ─── Section subtitle ──────────────────────────────────────────── */
+/* The second selector out-ranks `.markdown > p`. */
+.docblk-section-subtitle,
+.markdown > .docblk-section-subtitle {
+  margin: -8px 0 16px;
+  color: var(--ifm-color-emphasis-600);
+  font-size: 14px;
+}
+
+/* ─── Card grid ─────────────────────────────────────────────────── */
+/* A grid is either --auto or --fixed, never both. */
+.docblk-grid {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 14px;
+  margin: 16px 0 24px;
+}
+
+/* min() keeps a column from overflowing a container narrower than --docblk-grid-min. */
+.docblk-grid--auto {
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--docblk-grid-min, 260px), 100%), 1fr));
+}
+
+/* Below 640px a fixed grid has no column template, which leaves one column. */
+@media (min-width: 640px) {
+  .docblk-grid--fixed {
+    grid-template-columns: repeat(var(--docblk-grid-columns), minmax(0, 1fr));
+  }
+}
+
+/* ─── Card frame (shared by every card) ─────────────────────────── */
+.docblk-card {
+  --docblk-accent: #6366f1;
+  --docblk-hover-shadow: 0 4px 16px rgba(99, 102, 241, 0.12);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: 10px;
+  background: var(--ifm-card-background-color);
+  color: var(--ifm-font-color-base);
+  line-height: var(--ifm-line-height-base);
+  overflow-wrap: break-word;
+}
+
+/* Capability cards, next-step cards and flow steps use the brand blue. */
+.docblk-card.docblk-capability {
+  --docblk-accent: #4d72fa;
+  --docblk-hover-shadow: 0 4px 16px rgba(77, 114, 250, 0.12);
+}
+
+.docblk-card.docblk-next-step,
+.docblk-card.docblk-flow-step {
+  --docblk-accent: #4d72fa;
+  --docblk-hover-shadow: 0 4px 12px rgba(77, 114, 250, 0.1);
+}
+
+[data-theme='dark'] .docblk-card {
+  --docblk-hover-shadow: 0 4px 16px rgba(99, 102, 241, 0.24);
+  border-color: #30363d;
+  background: #161b22;
+}
+
+[data-theme='dark'] .docblk-card.docblk-capability,
+[data-theme='dark'] .docblk-card.docblk-next-step,
+[data-theme='dark'] .docblk-card.docblk-flow-step {
+  --docblk-hover-shadow: 0 4px 16px rgba(77, 114, 250, 0.18);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .docblk-card {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+}
+
+/* custom.css underlines every link inside docs content
+   (`.theme-doc-markdown a:not(.home-page a)`); a card must never be. */
+.docblk-card--link {
+  cursor: pointer;
+  text-decoration: none !important;
+}
+
+.docblk-card--link:hover,
+.docblk-card--link:focus-visible,
+[data-theme='dark'] .docblk-card--link:hover,
+[data-theme='dark'] .docblk-card--link:focus-visible {
+  border-color: var(--docblk-accent);
+  box-shadow: var(--docblk-hover-shadow);
+}
+
+.docblk-card--link:focus-visible {
+  outline: 2px solid var(--docblk-accent);
+  outline-offset: 2px;
+}
+
+.docblk-card__icon {
+  color: var(--ifm-font-color-base);
+  font-size: 28px;
+  line-height: 1;
+}
+
+/* An <img> or <svg> passed as the icon: size it like an emoji and drop the
+   rounded corners and shadow custom.css gives every image. */
+.docblk-card__icon img,
+.docblk-card__icon svg {
+  display: block;
+  width: auto;
+  height: 1em;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.docblk-card__features {
+  --docblk-features-gap: calc(4px + var(--ifm-list-item-margin, 0.25rem));
+  --docblk-features-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--docblk-features-gap);
+  margin: 0;
+  padding-left: 16px;
+}
+
+/* Two classes, to out-rank `.markdown li + li`. In the originals that rule
+   added --ifm-list-item-margin to their own 4px (3px) gap, so the gaps here
+   include it. */
+.docblk-card__features > .docblk-card__feature {
+  margin: 0;
+  color: var(--ifm-color-emphasis-700);
+  font-size: var(--docblk-features-size);
+}
+
+/* ─── Feature card ──────────────────────────────────────────────── */
+.docblk-feature {
+  gap: 10px;
+  padding: 20px;
+}
+
+.docblk-feature__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.docblk-feature__title {
+  margin-bottom: 6px;
+  color: var(--ifm-font-color-base);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.docblk-feature__description {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.docblk-badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border: 1px solid #93c5fd;
+  border-radius: 20px;
+  background: #dbeafe;
+  color: #1e40af;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.docblk-badge.docblk-badge--paid {
+  border-color: #fcd34d;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+[data-theme='dark'] .docblk-badge {
+  border-color: #2d4f9e;
+  background: #1a2e5c;
+  color: #7eb8f7;
+}
+
+[data-theme='dark'] .docblk-badge.docblk-badge--paid {
+  border-color: #6b4e00;
+  background: #3d2e00;
+  color: #fbbf24;
+}
+
+/* ─── Config card ───────────────────────────────────────────────── */
+.docblk-config {
+  gap: 12px;
+  padding: 22px;
+}
+
+/* The pill keeps the colours passed as labelBg / labelColor in both themes. */
+.docblk-config__label {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--docblk-label-bg, #e0e7ff);
+  color: var(--docblk-label-color, #3730a3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.docblk-config__title {
+  margin-bottom: 6px;
+  color: var(--ifm-font-color-base);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.docblk-config__description {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ─── Flow step ─────────────────────────────────────────────────── */
+.docblk-flow-step {
+  gap: 8px;
+  padding: 16px;
+}
+
+.docblk-flow-step__number {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #4d72fa;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.docblk-flow-step__title {
+  color: var(--ifm-font-color-base);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.docblk-flow-step__description {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+/* ─── Capability card ───────────────────────────────────────────── */
+.docblk-capability {
+  overflow: hidden;
+}
+
+/* The body is either --fill (no screenshot) or --with-media, never both. */
+.docblk-capability__body {
+  padding: 18px 18px 14px;
+}
+
+.docblk-capability__body--fill {
+  flex: 1;
+}
+
+.docblk-capability__body--with-media {
+  flex: none;
+}
+
+.docblk-capability__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.docblk-capability .docblk-card__icon {
+  font-size: 24px;
+}
+
+.docblk-capability__badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #e0e7ff;
+  color: #3730a3;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+[data-theme='dark'] .docblk-capability__badge {
+  background: #1e2852;
+  color: #a5b4fc;
+}
+
+.docblk-capability__title {
+  margin-bottom: 6px;
+  color: var(--ifm-font-color-base);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.docblk-capability__description {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.docblk-capability .docblk-card__features {
+  --docblk-features-gap: calc(3px + var(--ifm-list-item-margin, 0.25rem));
+  --docblk-features-size: 12.5px;
+  margin-top: 10px;
+}
+
+.docblk-capability__media {
+  margin-top: auto;
+  padding: 0 10px 10px;
+}
+
+.docblk-capability__img {
+  display: block;
+  width: 100%;
+  margin: 0;
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: 6px;
+}
+
+[data-theme='dark'] .docblk-capability__img {
+  border-color: #30363d;
+}
+
+/* In a linked card a click on the screenshot should follow the link, not
+   open the image-zoom overlay that is attached to every `.markdown img`. */
+.docblk-card--link .docblk-capability__img {
+  pointer-events: none;
+}
+
+/* ─── Next-step card ────────────────────────────────────────────── */
+.docblk-next-step {
+  gap: 5px;
+  padding: 16px 18px;
+}
+
+.docblk-next-step__title {
+  color: var(--ifm-font-color-base);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.docblk-next-step__description {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* Pinned to the bottom so the cue lines up across a row of cards. */
+.docblk-next-step__cta {
+  margin-top: auto;
+  padding-top: 2px;
+  color: #4d72fa;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+[data-theme='dark'] .docblk-next-step__cta {
+  color: #7b9af8;
+}

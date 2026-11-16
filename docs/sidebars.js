@@ -224,6 +224,33 @@ const sidebars = {
             "build-with-ai/mcp/security"
           ]
         },
+        {
+          "type": "category",
+          "label": "React Builder",
+          "className": "sidebar-badge-new",
+          "link": {
+            "type": "doc",
+            "id": "build-with-ai/react-builder/overview"
+          },
+          "items": [
+            "build-with-ai/react-builder/overview",
+            "build-with-ai/react-builder/create-app",
+            "build-with-ai/react-builder/editor",
+            "build-with-ai/react-builder/local-development",
+            "build-with-ai/react-builder/access-control",
+            "build-with-ai/react-builder/versions-and-history",
+            "build-with-ai/react-builder/security",
+            {
+              "type": "category",
+              "label": "Reference",
+              "items": [
+                "build-with-ai/react-builder/project-structure",
+                "build-with-ai/react-builder/runtime-api",
+                "build-with-ai/react-builder/cli-reference"
+              ]
+            }
+          ]
+        },
         "build-with-ai/privacy"
       ]
     },
@@ -1147,6 +1174,7 @@ const sidebars = {
           "label": "Release Management",
           "items": [
             "development-lifecycle/release/version-control",
+            "development-lifecycle/release/compare-versions",
             "development-lifecycle/release/release-rollback",
             "development-lifecycle/release/share-app"
           ]

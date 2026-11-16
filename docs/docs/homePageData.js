@@ -3,7 +3,7 @@ import {
     Layers, FileSpreadsheet, Folder, Wand2, LayoutDashboard, Users, UserCheck,
     Lock, UserPlus, ScrollText, Megaphone, Gem, Mail, GitBranch,
     Box, GitMerge, ShoppingBag, Wand, Flag, ShieldCheck, Cloud, Container, Boxes, Server, Telescope, Globe,
-    Terminal
+    Terminal, Code2, GitCompare, Blocks, Sparkles, Palette, Laptop
 } from 'lucide-react';
 
 export const featureCards = [
@@ -20,6 +20,14 @@ export const featureCards = [
         color: "text-blue-500",
         content: "Connect Claude Code, Codex, or any MCP-compatible agent to your workspace and build ToolJet apps without leaving your editor.",
         href: "/docs/build-with-ai/mcp/overview/"
+    },
+    {
+        icon: Code2,
+        title: "React Builder",
+        color: "text-blue-500",
+        badge: "New",
+        content: "Build apps in React and TypeScript. Generate them with AI, edit the code in your browser, or work in VS Code, Cursor, Claude Code or Codex.",
+        href: "/docs/build-with-ai/react-builder/overview/"
     },
     {
         icon: Grid3x3,
@@ -43,6 +51,63 @@ export const featureCards = [
         href: "/docs/workflows/overview/"
     }
 ];
+
+export const whatsNew = {
+    title: "New in ToolJet v4",
+    description: "A code-based way to build, plus new tools to review, secure and style your apps.",
+    banner: {
+        title: "React Builder",
+        content: "Build internal tools as real React and TypeScript apps. Generate them with ToolJet AI, edit the code in your browser, or work in your own editor with a coding agent. ToolJet takes care of sign-in, permissions, data and releases.",
+        cta: "Explore React Builder",
+        href: "/docs/build-with-ai/react-builder/overview/",
+        image: "/img/build-with-ai/react-builder/overview/hero.png",
+        alt: "A React Builder app on the canvas with its React code open beside it"
+    },
+    cards: [
+        {
+            icon: GitCompare,
+            title: "Compare Versions",
+            color: "text-blue-500",
+            content: "See two versions side by side, screen by screen, and get approval before release.",
+            href: "/docs/development-lifecycle/release/compare-versions/"
+        },
+        {
+            icon: Blocks,
+            title: "Component Libraries",
+            color: "text-blue-500",
+            content: "Build visual apps with ToolJet UI, Rocket 2.0 or Ant Design components.",
+            href: "/docs/app-builder/building-ui/component-library/"
+        },
+        {
+            icon: ShieldCheck,
+            title: "App Security",
+            color: "text-blue-500",
+            content: "Every version is checked before release. Your workspace policy decides what can ship.",
+            href: "/docs/build-with-ai/react-builder/security/"
+        },
+        {
+            icon: Sparkles,
+            title: "Redesigned AI Chat",
+            color: "text-blue-500",
+            content: "Questions up front, live progress while it builds, and a summary of what was built.",
+            href: "/docs/build-with-ai/use-ai-in-tooljet/"
+        },
+        {
+            icon: Palette,
+            title: "Built-in Themes",
+            color: "text-blue-500",
+            content: "Seven ready-made themes to give your apps a consistent look.",
+            href: "/docs/app-builder/custom-theme/"
+        },
+        {
+            icon: Laptop,
+            title: "Build Locally",
+            color: "text-blue-500",
+            content: "Clone an app with the ToolJet CLI and edit it in your own editor, with a live preview in ToolJet.",
+            href: "/docs/build-with-ai/react-builder/local-development/"
+        }
+    ]
+};
 
 export const setupCards = [
     {
@@ -187,7 +252,7 @@ export const textLabels = {
         prefix: "ToolJet",
         highlight: "Documentation"
     },
-    subtitle: "Learn how to get up and running with ToolJet",
+    subtitle: "Build internal tools visually, with AI, from your coding agent, or in code.",
     gettingStarted: {
         title: "Getting Started",
         description: "Discover how to create and publish apps within minutes"

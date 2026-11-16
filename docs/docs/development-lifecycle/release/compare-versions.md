@@ -1,5 +1,5 @@
 ---
-id: version-reviews
+id: compare-versions
 title: Compare and Review Versions
 ---
 

@@ -2,110 +2,142 @@
 id: overview
 title: React Builder
 sidebar_label: Overview
+hide_title: true
 ---
 
-<div className="badge badge--primary heading-badge">
-  <img
-    src="/img/badge-icons/premium.svg"
-    alt="Icon"
-    width="16"
-    height="16"
-  />
- <span>Paid feature</span>
-</div>
+<DocHero
+  eyebrow="New in ToolJet v4"
+  title="React Builder"
+  description="Build internal tools as real React and TypeScript apps, without managing any infrastructure. Generate the app with ToolJet AI, edit the code in your browser, or work in your own editor with a coding agent. ToolJet takes care of sign-in, permissions, data sources, environments and releases."
+  chips={['React + TypeScript', 'ToolJet AI', 'VS Code and Cursor', 'Claude Code and Codex', 'Security checks']}
+/>
 
-<!-- TODO verify: the product UI still says "Code mode" (Build mode card, editor badge, messages) on feat/cc-packs. This page uses "React Builder" ahead of the rename: check every bold label and quoted message against the released UI, and refresh screenshots that still show "Code mode". -->
-
-React Builder brings the flexibility of React and TypeScript to ToolJet, letting you build fully customized applications without managing the underlying infrastructure. Build with ToolJet AI, write code directly in ToolJet, or use your preferred IDE and coding agent. ToolJet handles authentication, access control, environments, data sources, and queries, while you focus on building the application experience.
-
-<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/overview/editor.png" alt="A React Builder app in the App Builder: the Northwind Shipments overview screen on the canvas, with the Code panel open beside it" />
-
-## When to Use React Builder
-
-React Builder is ideal for applications that require complex interfaces, custom interactions, or advanced styling beyond what standard drag-and-drop components offer. It's also a natural fit for development teams that prefer working with code, using familiar tools and workflows to build, maintain, and evolve applications.
-
-## React Builder and Visual Mode
-
-Every app is created in one of two build modes, and it keeps that mode for its whole life.
-
-| <div style={{ width:"150px"}}> </div> | <div style={{ width:"250px"}}> Visual Mode </div> | <div style={{ width:"250px"}}> React Builder </div> |
-|:---------- | :---------- | :---------- |
-| How you build the UI | Drag components onto a canvas and set their properties. | Write React components, or ask the AI to write them. |
-| Where the UI lives | The app definition in ToolJet. | A React + TypeScript project stored on ToolJet, with its own files. |
-| Data | Queries in the **Queries** panel. | The same queries. The code runs them by name. |
-| Pages and navigation | ToolJet pages. | **Screens**: routes declared in the project's `app.json`. |
-| Styling | Themes and component styles. | Tailwind classes and theme tokens that follow the app's ToolJet theme. |
-| Editing tools | Component inspector, pages panel. | Code panel, style inspector, your own editor through the CLI. |
-| Security checks before release | None | Every version is checked. A version that fails the workspace policy can't be released. |
-
-The dashboard marks React Builder apps with a **Code** tag on their card, and the editor header shows a **React Builder** or **Visual mode** badge next to the app name.
-
-## How It Works
-
-A React Builder app has three parts:
-
-- **The project.** `app.json` names the app and its screens. `frontend/` holds the React + TypeScript source, styles and `package.json`. ToolJet stores the project with the app version, so the editor, the AI and the CLI all work on the same files. See [Project Structure](/docs/build-with-ai/react-builder/project-structure).
-- **ToolJet's platform.** Queries, data sources, environments, users, groups and permissions stay in ToolJet. The code reads data only through the app's queries, with hooks such as `useAppQuery('listShipments')`. See [Runtime API](/docs/build-with-ai/react-builder/runtime-api).
-- **The build.** ToolJet builds the project into the app's own component library and draws it on a single **code page**. Each screen also gets a hidden ToolJet page that carries its permissions. See [Access Control](/docs/build-with-ai/react-builder/access-control).
-
-The app's code runs in an isolated frame. It can reach ToolJet only through a checked channel, so it can't read the viewer's session or cookies. By default, it can't call any address other than the ToolJet instance. See [App Security](/docs/build-with-ai/react-builder/security).
+<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/overview/hero.png" alt="A React Builder app in the editor: a freight control tower on the canvas, with the React code of that screen open beside it" />
 
 ## Three Ways to Build
 
-You can mix these freely. Every change from every source lands in the same [App history](/docs/build-with-ai/react-builder/versions-and-history#app-history).
+<SectionSubtitle text="Mix them freely. Every change lands in the same app, with the same history." />
 
-| <div style={{ width:"180px"}}> Where </div> | <div style={{ width:"300px"}}> What You Do </div> | <div style={{ width:"200px"}}> Learn More </div> |
-|:---------- | :---------- | :---------- |
-| **AI chat** | Describe the app or a change. ToolJet plans it, writes the code and builds it on the canvas. | [Create a React Builder App](/docs/build-with-ai/react-builder/create-app) |
-| **The ToolJet editor** | Edit files in the **Code** panel, or restyle elements with the style inspector, and see the result on the canvas. | [The React Builder Editor](/docs/build-with-ai/react-builder/editor) |
-| **Your own editor or coding agent** | Clone the app with the ToolJet CLI, run `tooljet app dev`, and your saves show live on your canvas in ToolJet. Claude Code, Codex, Cursor and other agents can build the app through the same CLI and the ToolJet MCP server. | [Work Locally](/docs/build-with-ai/react-builder/local-development) |
+<CardGrid columns={3}>
+  <ConfigCard
+    label="Prompt"
+    title="Describe it to ToolJet AI"
+    description="Say what you need. ToolJet plans the app, writes the React code and shows the result on the canvas."
+    features={['Start from a prompt on the dashboard', 'Answer a few questions, then watch it build', 'See what each edit changed']}
+    href="/docs/build-with-ai/react-builder/create-app"
+  />
+  <ConfigCard
+    label="Browser"
+    labelBg="#dcfce7"
+    labelColor="#166534"
+    title="Edit the code in ToolJet"
+    description="Open any file in the built-in Code panel, or click an element and restyle it without writing code."
+    features={['Every save updates the canvas', 'The style inspector writes the change for you', 'Preview phone, tablet and desktop widths']}
+    href="/docs/build-with-ai/react-builder/editor"
+  />
+  <ConfigCard
+    label="Local"
+    labelBg="#fef3c7"
+    labelColor="#92400e"
+    title="Use your editor and coding agent"
+    description="Clone the app with the ToolJet CLI. Work in VS Code or Cursor, or let Claude Code or Codex build it."
+    features={['Your saves appear live in ToolJet', 'Typed hooks for every query', 'Instructions for your agent, written by the CLI']}
+    href="/docs/build-with-ai/react-builder/local-development"
+  />
+</CardGrid>
 
-## The App Lifecycle
+## What ToolJet Handles for You
 
-```mermaid
-flowchart TD
-  A["Create the app with React Builder<br/>(Create app or the AI prompt)"] --> B["Build screens<br/>(AI chat, Code panel or your editor)"]
-  B --> C["Create queries in the Queries panel<br/>and call them from the code"]
-  C --> D["Restrict screens and queries<br/>(Access panel)"]
-  D --> E["Save version<br/>(code is frozen with the version)"]
-  E --> F{"Security check<br/>passes?"}
-  F -->|No| G["Fix the issues, or Release anyway<br/>with a reason"]
-  G --> E
-  F -->|Yes| H["Promote and release"]
+<SectionSubtitle text="You write the screens. The platform does the rest." />
+
+<CardGrid min={220}>
+  <FeatureCard
+    icon="🗄️"
+    title="Data through queries"
+    description="Your code calls ToolJet queries by name. Database passwords and API keys stay on the server."
+  />
+  <FeatureCard
+    icon="🔐"
+    title="Sign-in and access"
+    description="Users sign in with your workspace login or SSO. You choose who can open each screen and run each query."
+    href="/docs/build-with-ai/react-builder/access-control"
+  />
+  <FeatureCard
+    icon="🛡️"
+    title="Security checks"
+    description="Every version's code and packages are checked. A version that fails your workspace's policy is blocked from release."
+    href="/docs/build-with-ai/react-builder/security"
+  />
+  <FeatureCard
+    icon="🔍"
+    title="Visual diff and reviews"
+    description="Compare two versions screen by screen and file by file, then ask a teammate to approve the release."
+    href="/docs/development-lifecycle/release/compare-versions"
+  />
+  <FeatureCard
+    icon="🕘"
+    title="History and undo"
+    description="Every AI edit, save and upload is recorded. Go back to any earlier point."
+    href="/docs/build-with-ai/react-builder/versions-and-history"
+  />
+  <FeatureCard
+    icon="🚀"
+    title="Environments and GitSync"
+    description="Promote versions from development to production, and keep the code in your Git repository."
+    href="/docs/build-with-ai/react-builder/versions-and-history"
+  />
+</CardGrid>
+
+## A Screen Is Plain React
+
+A screen is a React component. It reads data by running one of the app's queries by name.
+
+```tsx
+import { useAppQuery } from '../tooljet.gen';
+
+export const Shipments = () => {
+  const shipments = useAppQuery('listShipments');
+  if (shipments.loading) return <p>Loading shipments…</p>;
+  return (
+    <ul>
+      {shipments.data?.map((s) => <li key={s.id}>{s.reference}: {s.status}</li>)}
+    </ul>
+  );
+};
 ```
 
-1. **Create** the app with the **React Builder** build mode. See [Create a React Builder App](/docs/build-with-ai/react-builder/create-app).
-2. **Build** the screens. ToolJet checks the draft's code automatically after each save and build.
-3. **Restrict access.** A restricted screen is hidden, but its data is protected only by restricting the queries it uses. See [Access Control](/docs/build-with-ai/react-builder/access-control).
-4. **Save a version.** **Save version** freezes the built code with the version, so a released version always runs the code it was saved with. See [Versions, History and Git](/docs/build-with-ai/react-builder/versions-and-history).
-5. **Release.** Release and promotion wait until the version's security check passes under the workspace's scan policy. See [App Security](/docs/build-with-ai/react-builder/security).
+The CLI generates `useAppQuery` from your app's queries, so the query name and its rows are typed.
 
-## Availability
+## React Builder or Visual Mode?
 
-React Builder is available on ToolJet Enterprise Edition and ToolJet Cloud. It isn't available in the Community Edition. On an edition without React Builder, the **Build mode** choice doesn't appear and every new app is a visual app.
-<!-- TODO verify: plan gating at launch. The code currently allows React Builder on every plan of the enterprise editions ("for now"); confirm the plans before release. -->
+You choose a build mode when you create an app, and the app keeps it. Both modes share the same data sources, queries, permissions and release flow.
 
-Some features inside React Builder follow your plan:
+| <div style={{ width:"120px"}}> </div> | <div style={{ width:"260px"}}> Visual Mode </div> | <div style={{ width:"260px"}}> React Builder </div> |
+|:---------- | :---------- | :---------- |
+| You build by | Dragging components onto a canvas and setting their properties | Writing React components, or asking the AI to write them |
+| Best for | Most internal tools: tables, forms and dashboards | Interfaces that need their own layout, interactions or styling |
+| You edit in | The visual App Builder | The Code panel, the style inspector, or your own editor |
+| Before release | The standard release flow | The same flow, plus a security check of the code and its packages |
 
-- Screen and query permissions in the **Access** panel need a plan that includes page and query permissions.
-- **Compare versions**, version reviews and the query changes in **See what changed** need the Pro plan or above. See [Compare and Review Versions](/docs/development-lifecycle/release/version-reviews).
+## From Prompt to Production
 
-### Roles and Permissions
+<CardGrid columns={3}>
+  <FlowStep number="1" title="Create" description="Pick React Builder when you create the app, or start from a prompt." href="/docs/build-with-ai/react-builder/create-app" />
+  <FlowStep number="2" title="Build" description="Use the AI chat, the Code panel or your own editor. Each save shows on the canvas." href="/docs/build-with-ai/react-builder/editor" />
+  <FlowStep number="3" title="Set access" description="Choose who can open each screen and who can run each query." href="/docs/build-with-ai/react-builder/access-control" />
+  <FlowStep number="4" title="Save a version" description="ToolJet builds the code, checks it and keeps that build with the version." href="/docs/build-with-ai/react-builder/versions-and-history" />
+  <FlowStep number="5" title="Review and release" description="Compare it with what is live, get approval, then release and promote." href="/docs/development-lifecycle/release/compare-versions" />
+</CardGrid>
 
-| <div style={{ width:"300px"}}> Action </div> | <div style={{ width:"250px"}}> Who Can Do It </div> |
-|:---------- | :---------- |
-| Create a React Builder app | Anyone who can create apps |
-| Read and edit the app's code | Anyone who can edit the app. A builder who can only view the app can read the code. |
-| Restrict screens and queries | Anyone who can edit the app |
-| Release a version that fails the security check (**Release anyway**) | Workspace admins, or app editors with release permission |
-| Change the workspace scan policy, exceptions and allowed addresses | Workspace admins |
+## Where to Go Next
 
-## Next Steps
+<CardGrid min={190}>
+  <NextStepCard title="Create an App" description="Start from a prompt or a blank app." href="/docs/build-with-ai/react-builder/create-app" />
+  <NextStepCard title="Edit in the Browser" description="The Code panel and the style inspector." href="/docs/build-with-ai/react-builder/editor" />
+  <NextStepCard title="Build Locally" description="Your editor, the CLI and coding agents." href="/docs/build-with-ai/react-builder/local-development" />
+  <NextStepCard title="App Security" description="What is checked, and how the release gate works." href="/docs/build-with-ai/react-builder/security" />
+</CardGrid>
 
-1. [Create a React Builder app](/docs/build-with-ai/react-builder/create-app)
-2. [Learn the React Builder editor](/docs/build-with-ai/react-builder/editor)
-3. [Work on the app in your own editor](/docs/build-with-ai/react-builder/local-development)
-4. [Read data with the runtime API](/docs/build-with-ai/react-builder/runtime-api)
-5. [Control who can open screens and run queries](/docs/build-with-ai/react-builder/access-control)
-6. [Save, compare and release versions](/docs/build-with-ai/react-builder/versions-and-history)
-7. [Understand security checks and the release gate](/docs/build-with-ai/react-builder/security)
+:::info Availability
+React Builder is available on ToolJet Cloud and on self-hosted Enterprise Edition. The Community Edition doesn't include it.
+:::

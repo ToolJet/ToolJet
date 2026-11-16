@@ -85,6 +85,29 @@ The ToolJet home page offers two entry points, and they are backed by two differ
     />
 </div>
 
+## Two Kinds of Apps
+
+<SectionSubtitle text="Choose what gets built when you send your first prompt" />
+
+<CardGrid columns={2}>
+    <ConfigCard
+        label="Visual mode"
+        title="Visual app"
+        description="ToolJet AI places components on the canvas and connects them to queries. You refine the result by drag and drop."
+        features={['Best for most internal tools', 'Edited in the visual App Builder']}
+        href="/docs/build-with-ai/generate-applications"
+    />
+    <ConfigCard
+        label="New in v4"
+        labelBg="#dcfce7"
+        labelColor="#166534"
+        title="React Builder app"
+        description="ToolJet AI writes a React app. You keep changing it with the AI, in the Code panel or in your own editor."
+        features={['Any layout and styling you can code', 'Checked for security before release']}
+        href="/docs/build-with-ai/react-builder/overview"
+    />
+</CardGrid>
+
 ## ToolJet AI vs ToolJet MCP
 
 Both can create and modify apps. The difference is where you drive them from, which model does the work, and who bills you for it.
@@ -93,6 +116,7 @@ Both can create and modify apps. The difference is where you drive them from, wh
 | --- | --- | --- |
 | **Where you build** | The AI chat inside ToolJet, in your browser | Your own coding agent, such as Claude Code or Codex |
 | **What it does** | Generates and modifies apps, modules, queries, and code; answers questions from the docs | Creates and modifies apps, manages users, and queries your instance in natural language |
+| **What it can build** | Visual apps and [React Builder](/docs/build-with-ai/react-builder/overview) apps | Visual apps. For React Builder apps, a coding agent works through the [ToolJet CLI](/docs/build-with-ai/react-builder/local-development) |
 | **Which model runs it** | ToolJet Managed AI by default, or your own key via [BYOK](/docs/setup/tooljet-ai/bring-your-own-key) on Enterprise Cloud or Self-hosted deployments | Whichever model your AI client is already running |
 | **What it consumes** | [ToolJet AI credits](/docs/build-with-ai/ai-credits) by default; BYOK uses your own key and does not consume ToolJet AI credits | [AI model tokens](#credits-vs-tokens), billed by your model provider |
 | **Setup needed** | None, it is available out of the box | A personal access token and an [MCP server install](/docs/build-with-ai/mcp/setup) |
@@ -111,7 +135,7 @@ Both are metered, but in different units and by different parties.
 
 ## Where to Go Next
 
-<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '14px', margin: '16px 0 8px' }}>
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px', margin: '16px 0 8px' }}>
     <FeatureCard
         icon="✨"
         title="Use AI in ToolJet"
@@ -123,6 +147,12 @@ Both are metered, but in different units and by different parties.
         title="ToolJet MCP Server"
         description="Connect a coding agent to your workspace and build from your editor."
         href="/docs/build-with-ai/mcp/app-generation"
+    />
+    <FeatureCard
+        icon="⚛️"
+        title="React Builder"
+        description="Build apps in React with AI, in your browser or in your own editor."
+        href="/docs/build-with-ai/react-builder/overview"
     />
     <FeatureCard
         icon="🔒"

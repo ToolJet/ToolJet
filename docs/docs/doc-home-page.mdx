@@ -18,12 +18,16 @@ import {
     organizationCards,
     releaseCards,
     resourceCards,
-    sectionCards
+    sectionCards,
+    whatsNew
 } from './homePageData';
 import Link from '@docusaurus/Link';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+import { useVersionedHref } from '@site/src/components/DocBlocks';
 
 {/* // Reusable components */}
 export const Card = ({ className = '', href, children }) => {
+    const to = useVersionedHref(href);
     const cardContent = (
         <div className={`relative rounded-lg bg-white dark:bg-gray-800 group pt-[0.5px] pb-[3px] shadow-[inset_0_0_0_1.2px_rgba(243,244,246,1)] dark:shadow-[inset_0_0_0_1.2px_rgba(55,65,81,1)] pb-2.25 ${className}`}>
             <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50"
@@ -42,11 +46,17 @@ export const Card = ({ className = '', href, children }) => {
     );
 
     return href ? (
-        <Link to={href} className="no-underline hover:no-underline block h-full">
+        <Link to={to} className="no-underline hover:no-underline block h-full">
             {cardContent}
         </Link>
     ) : cardContent;
 };
+
+export const VersionedLink = ({ to, children, ...props }) => (
+    <Link to={useVersionedHref(to)} {...props}>
+        {children}
+    </Link>
+);
 
 export const CardHeader = ({ className = '', children }) => (
     <div className={`flex flex-col space-y-1.5 ${className}`}>
@@ -92,12 +102,21 @@ export const Button = ({
     );
 };
 
-export const IconCard = ({ icon: Icon, title, content, color, href }) => (
-    <Card href={href} className="h-[280px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+export const NewPill = ({ className = '' }) => (
+    <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold leading-none bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 ${className}`}>
+        New
+    </span>
+);
+
+export const IconCard = ({ icon: Icon, title, content, color, href, badge, compact }) => (
+    <Card href={href} className={`${compact ? 'h-[220px]' : 'h-[280px]'} transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative`}>
         <div className="p-8 h-full flex flex-col">
             <CardHeader>
-                <div className="w-12 h-12 mb-5 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg bg-gray-100 dark:bg-gray-700">
-                    <Icon className={`w-6 h-6 ${color}`} />
+                <div className="flex items-start justify-between">
+                    <div className="w-12 h-12 mb-5 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg bg-gray-100 dark:bg-gray-700">
+                        <Icon className={`w-6 h-6 ${color}`} />
+                    </div>
+                    {badge && <NewPill />}
                 </div>
                 <CardTitle>{title}</CardTitle>
             </CardHeader>
@@ -120,6 +139,29 @@ export const SmallCard = ({ icon: Icon, title, href }) => (
         </div>
     </Card>
 );
+
+export const FeatureBanner = ({ title, content, cta, href, image, alt }) => {
+    const to = useVersionedHref(href);
+    const src = useBaseUrl(image);
+    return (
+        <Link to={to} className="no-underline hover:no-underline block">
+            <div className="grid grid-cols-1 lg:grid-cols-2 overflow-hidden rounded-lg border border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 transition-all duration-300 ease-in-out hover:shadow-lg group">
+                <div className="p-8 lg:p-10 flex flex-col justify-center">
+                    <div><NewPill /></div>
+                    <h3 className="text-2xl font-semibold tracking-tight text-black dark:text-white mt-4 mb-3">{title}</h3>
+                    <p className="text-sm leading-6 text-gray-600 dark:text-gray-400">{content}</p>
+                    <span className="mt-5 inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400">
+                        {cta}
+                        <ArrowRight className="ml-2 w-4 h-4 transition-transform duration-300 ease-in-out group-hover:translate-x-1" />
+                    </span>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800 p-5 lg:p-6 flex items-center">
+                    <img src={src} alt={alt} className="w-full h-auto rounded-md border border-solid border-gray-200 dark:border-gray-700" />
+                </div>
+            </div>
+        </Link>
+    );
+};
 
 export const SectionContainer = ({ title, description, children }) => (
     <section className="space-y-6">
@@ -214,7 +256,7 @@ style={{
                     </div>
 
                     {/* Getting Started Section */}
-<Link
+<VersionedLink
   to={sectionCards.gettingStarted.link}
   className="no-underline hover:no-underline block"
 >
@@ -248,13 +290,26 @@ style={{
       </p>
     </div>
   </div>
-</Link>
+</VersionedLink>
 
 
                     </div>
             </div>
 
             <div className="w-full p-10 space-y-12">
+                {/* New in ToolJet v4 */}
+                <SectionContainer
+                    title={whatsNew.title}
+                    description={whatsNew.description}
+                >
+                    <FeatureBanner {...whatsNew.banner} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {whatsNew.cards.map((card, index) => (
+                            <IconCard key={index} {...card} compact />
+                        ))}
+                    </div>
+                </SectionContainer>
+
                 {/* Setup ToolJet Section */}
                 <SectionContainer 
                     title={textLabels.setupToolJet.title}
@@ -278,14 +333,14 @@ style={{
 
                 {/* Explore more details link */}
                 <div className="text-center">
-                    <Link 
-                        className="no-underline" 
+                    <VersionedLink
+                        className="no-underline"
                         to="/docs/setup/"
     >
                     <Button variant="link">
                         {textLabels.exploreMore}
                     </Button>
-                    </Link>
+                    </VersionedLink>
                 </div>
 
                 {/* Bring your data to ToolJet section */}
