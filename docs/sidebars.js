@@ -236,6 +236,8 @@ const sidebars = {
             "build-with-ai/react-builder/create-app",
             "build-with-ai/react-builder/editor",
             "build-with-ai/react-builder/local-development",
+            "build-with-ai/react-builder/project-structure",
+            "build-with-ai/react-builder/runtime-api",
             "build-with-ai/react-builder/cli-reference"
           ]
         },
