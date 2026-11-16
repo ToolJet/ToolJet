@@ -8,6 +8,7 @@ import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { EntityManager, MoreThan } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
+import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { VersionsCreateService } from './services/create.service';
 import { camelizeKeys } from 'humps';
 import { serializeDataQueries } from '@modules/data-queries/serialization.helper';
@@ -218,7 +219,20 @@ export class VersionService implements IVersionService {
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     const versionToDelete = app.appVersions[0];
+    const scheduleIds =
+      app.type === APP_TYPES.WORKFLOW
+        ? await dbTransactionWrap(
+            (m: EntityManager) =>
+              m
+                .find(WorkflowSchedule, { where: { workflowId: versionToDelete.id }, select: ['id'] })
+                .then((schedules) => schedules.map(({ id }) => id)),
+            manager
+          )
+        : [];
     await this.versionsUtilService.deleteVersion(app, user, manager);
+    if (scheduleIds.length) {
+      this.eventEmitter.emit('app.deleted', { appId: app.id, scheduleIds });
+    }
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.organizationId,

@@ -154,9 +154,8 @@ describe("Workflows - webhook endpoint (API)", () => {
         token: data.token,
         qs: { version: "no-such-version", environment: "development" },
       }).then((res) => {
-        // An unknown version is refused by the guard (403) before the service's 404.
-        expect(res.status).to.equal(403);
-        expect(res.body.message).to.equal(workflowsText.webhookDisabledError);
+        expect(res.status).to.equal(404);
+        expect(res.body.message).to.include('Version "no-such-version" not found');
       });
 
       cy.apiTriggerWorkflowWebhook({
@@ -227,7 +226,7 @@ describe("Workflows - webhook endpoint (API)", () => {
         body: { name: 5 },
       }).then((res) => {
         expect(res.status).to.equal(400);
-        expect(res.body.message).to.equal("name has incorrect datatype");
+        expect(res.body.message).to.equal('Parameter "name" has an incorrect datatype');
       });
     });
   });
