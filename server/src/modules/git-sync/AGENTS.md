@@ -1,7 +1,7 @@
 # git-sync module
 
 Workspace-level Git connection for Git Sync (EE feature): configure, test, finalize, and delete a
-workspace's git provider (GitHub SSH / GitHub HTTPS / GitLab), plus the serialization machinery that
+workspace's git provider (GitHub HTTPS / GitLab; the SSH provider was removed), plus the serialization machinery that
 turns an app into a distributed file tree in the repo and back. App push/pull endpoints live in
 `app-git`; branch lifecycle lives in `workspace-branches`. CE ships stubs/empty shells; all real
 logic is in `server/ee/git-sync/`.
@@ -11,10 +11,10 @@ logic is in `server/ee/git-sync/`.
 - **Organization git**: per-workspace connection config — `OrganizationGitSync` entity
   (`src/entities/organization_git_sync.entity.ts`, has `autoCommit`, `isBranchingEnabled`,
   `useEnvConfig`) with one-to-one provider rows in `src/entities/gitsync_entities/`
-  (`OrganizationGitSsh`, `OrganizationGitHttps`, `OrganizationGitLab`).
-- **Provider / source-control strategy**: `SSHGitSyncService` | `HTTPSGitSyncService` |
-  `GitLabGitSyncService`. Chosen per org by `SourceControlProviderService.getSourceControlService()`:
-  explicit `gitType` arg > `useEnvConfig`+`envGitProvider` > first enabled provider row > SSH default.
+  (`OrganizationGitHttps`, `OrganizationGitLab`; `GITConnectionType` is `github_https | gitlab | disabled`).
+- **Provider / source-control strategy**: `HTTPSGitSyncService` | `GitLabGitSyncService`. Chosen per org by
+  `SourceControlProviderService.getSourceControlService()`: explicit `gitType` arg > the provider
+  `GitSyncConfigsUtilService.getDetails` resolves (env config or the enabled provider row).
 - **Finalize**: two-step setup — save provider config (`POST /git-sync/configs`), then
   `PUT /git-sync/finalize/:id` after connection test marks it usable.
 - **git id / co_relation_id**: portable stable id written into repo files in place of DB UUIDs;
@@ -32,7 +32,7 @@ logic is in `server/ee/git-sync/`.
 | `base-git.service.ts` | abstract stub (`BaseGitSyncService`) | version lookup helpers shared by providers |
 | `base-git-util.service.ts` | stub | `findOrgGitByOrganizationId`, `readAppFromDistributedStructure`, `findMatchingVersion`, `deleteMatchingVersionIfExists` |
 | `source-control-provider.ts` | base class | provider-selection logic |
-| `providers/{github-ssh,github-https,gitlab}/service.ts` | stubs | per-provider config CRUD + `testConnection` (simple-git; SSH keygen ed25519/rsa for github-ssh) |
+| `providers/{github-https,gitlab}/service.ts` | stubs | per-provider config CRUD + `testConnection` |
 | `git-sync-adapter.ts` | empty class | 800-line app<->files serializer: git-id generation, UUID->git-id rewrite (incl. UUIDs embedded in strings), entity cleanup |
 | `workspace-git-sync-adapter.ts` | empty class | workspace resources: serialize/deserialize, `reconcileDummyDataSources`, `ensureMarketplacePluginsInstalled` |
 | `remote-branch-cache.service.ts` | empty | Redis cache of remote branch list per org (TTL `GIT_REMOTE_BRANCHES_CACHE_TTL_SECONDS`, default 300s) |
@@ -75,7 +75,6 @@ logic is in `server/ee/git-sync/`.
   swallowed. Multi-node eviction relies on Redis pub/sub channel `tj:git-cache:evict`.
 - Version rename/match on pull: `findMatchingVersion(appId, gitVersionName)` +
   `deleteMatchingVersionIfExists` in EE `base-git-util.service.ts` — pulls replace the matching version.
-- SSH keys are written to temp files per operation and cleaned up (`writeSSHKeyToFile`/`cleanupSSHKeys`).
 - **Slug-uniqueness triggers must exclude BOTH `av.app_id <> NEW.app_id` AND `av.id <> NEW.id`.**
   `enforce_app_versions_default_branch_slug_unique` fires on `UPDATE OF slug, branch_id, app_id`.
   Hydration re-parents a version row between apps (`UPDATE app_versions SET app_id = ...` in

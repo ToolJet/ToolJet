@@ -15,6 +15,7 @@ export const workspaceBranchesService = {
   checkForUpdates,
   listRemoteBranches,
   fetchPullRequests,
+  getBranchReviewStatus,
   getEntityTags,
 };
 
@@ -168,6 +169,15 @@ function listRemoteBranches() {
 function fetchPullRequests() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/workspace-branches/pull-requests`, requestOptions).then(handleResponse);
+}
+
+// The branch's pull request into the default branch and the review of each app on it.
+function getBranchReviewStatus(branchId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/workspace-branches/${encodeURIComponent(branchId)}/review-status`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function getEntityTags(coRelationId) {

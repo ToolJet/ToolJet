@@ -143,4 +143,13 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   async getPullRequests(@User() user) {
     return this.workspaceBranchService.getPullRequests(user.organizationId);
   }
+
+  // The branch's pull request and the review of each app on it. Also records a merge that skipped approval, for
+  // workspaces without git webhooks.
+  @InitFeature(FEATURE_KEY.BRANCH_REVIEW_STATUS)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Get(':id/review-status')
+  async getBranchReviewStatus(@User() user, @Param('id') branchId: string) {
+    return this.workspaceBranchService.getBranchReviewStatus(user.organizationId, branchId);
+  }
 }

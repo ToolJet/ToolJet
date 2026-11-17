@@ -17,6 +17,7 @@ interface Features {
   [FEATURE_KEY.PULL_APP]: FeatureConfig;
   [FEATURE_KEY.PULL_MODULE]: FeatureConfig;
   [FEATURE_KEY.GET_ENTITY_TAGS]: FeatureConfig;
+  [FEATURE_KEY.BRANCH_REVIEW_STATUS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
