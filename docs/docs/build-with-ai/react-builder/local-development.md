@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 Work on a React Builder app from your own computer, in your own editor or with a coding agent. By the end of this guide, the app's React project is in a local folder and every save shows up live on the canvas in ToolJet.
 
-<!-- TODO screenshot: /img/build-with-ai/react-builder/local-development/open-locally.png | img-m | alt: The Open locally view in the Code panel, with buttons to open the app in VS Code, Cursor or Windsurf and the terminal steps below them | shows: Northwind Dispatch draft in the editor, Code panel on the Open locally view, Your editor tab selected, Use the terminal instead collapsed -->
+<img className="screenshot-full img-m" src="/img/build-with-ai/react-builder/local-development/open-locally.png" alt="The Open locally view in the Code panel, with buttons to open the app in VS Code, Cursor or Windsurf and the terminal steps below them" />
 
 ## How It Works
 
@@ -68,7 +68,7 @@ If you have the ToolJet extension for your editor, **Open in VS Code**, **Open i
 
 When you sign in, the CLI prints a code and opens the **Sign in the ToolJet CLI** page in your browser. Type the code, click **Continue**, then click **Approve**. The CLI finishes signing in by itself.
 
-<!-- TODO screenshot: /img/build-with-ai/react-builder/local-development/cli-approval.png | img-m | alt: The Sign in the ToolJet CLI page asking to approve the ToolJet CLI for the Northwind Logistics workspace, with Approve and Cancel | shows: /cli/activate after entering a valid code, confirm step, client name "tooljet CLI on northwind-mbp", Northwind Logistics workspace, fictional user; no real name, email or host -->
+<img className="screenshot-full img-m" src="/img/build-with-ai/react-builder/local-development/cli-approval.png" alt="The Sign in the ToolJet CLI page asking to approve the ToolJet CLI for the Northwind Logistics workspace, with Approve and Cancel" />
 
 Go back to the app in the ToolJet editor: the canvas now shows the build from your computer. Leave `tooljet app dev` running, and it rebuilds on every save in `frontend/src`. If a save has TypeScript errors, nothing is uploaded and the canvas keeps your last good build.
 
