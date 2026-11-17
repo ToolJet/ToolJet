@@ -28,6 +28,7 @@
   "viewer | DATA_SOURCE | TEST_CONNECTION | POST | /data-sources/:id/test-connection | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.testConnection",
   "viewer | DATA_SOURCE | TEST_CONNECTION_SAMPLE_DB | POST | /data-sources/sample-db/test-connection | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.testConnectionSampleDb",
   "viewer | DATA_SOURCE | UPDATE | PUT | /data-sources/:id | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.update",
+  "viewer | DATA_SOURCE | UPDATE | PUT | /data-sources/:id | version=2 | src/modules/data-sources/dashboard/dashboard.controller.ts | DataSourcesDashboardController.saveAll",
   "viewer | DATA_SOURCE | VALIDATE_OPTIONS | POST | /data-sources/:id/validate-options | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.validateOptions",
   "viewer | DataQueries | create | POST | /data-queries/data-sources/:dataSourceId/versions/:versionId | version=(default) | src/modules/data-queries/controller.ts | DataQueriesController.create",
   "viewer | DataQueries | delete | DELETE | /data-queries/:id/versions/:versionId | version=(default) | src/modules/data-queries/controller.ts | DataQueriesController.delete",
