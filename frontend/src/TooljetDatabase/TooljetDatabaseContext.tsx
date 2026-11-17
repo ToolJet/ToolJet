@@ -5,15 +5,16 @@ import React, { useContext, ReactNode, Dispatch, SetStateAction } from 'react';
 // the same provider.
 import { TooljetDatabaseContext } from './context';
 
+/** A table as the page holds it. The open table is `{}` while none is open. */
+export type TjdbTable = { id: string; table_name: string };
+
 export type TooljetDatabaseContextValue = {
   canEditTjdb: boolean;
   canEditSchema: boolean;
   organizationId: string | null;
   setOrganizationId: Dispatch<SetStateAction<string | null>>;
-  selectedTable: string;
-  setSelectedTable: Dispatch<SetStateAction<string>>;
-  searchParam: string;
-  setSearchParam: Dispatch<SetStateAction<string>>;
+  selectedTable: Partial<TjdbTable>;
+  setSelectedTable: Dispatch<SetStateAction<Partial<TjdbTable>>>;
   selectedTableData: unknown[];
   setSelectedTableData: Dispatch<SetStateAction<unknown[]>>;
   tables: unknown[];

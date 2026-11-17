@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
 import { authenticationService } from '../_services/authentication.service';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling';
 import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import { TooljetDatabaseContext } from './context';
@@ -22,7 +22,6 @@ const TooljetDatabase = () => {
   const [tables, setTables] = useState([]);
   // `tables` starts empty, so "no tables yet" and "workspace has none" look the same until the first list fetch succeeds.
   const [tablesLoaded, setTablesLoaded] = useState(false);
-  const [searchParam, setSearchParam] = useState('');
   const [selectedTable, setSelectedTable] = useState({});
   const [selectedTableData, setSelectedTableData] = useState([]);
 
@@ -33,7 +32,6 @@ const TooljetDatabase = () => {
   const [foreignKeys, setForeignKeys] = useState([]);
   const { loadEnvironments, resetStore } = useTjdbActions();
 
-  const { collapseSidebar, setCollapseSidebar, setEnableCollapsibleSidebar } = useOutletContext();
   const navigate = useNavigate();
   // The design has no global search in the header: tables are searched in the tables panel.
   useHeaderSearchConfig({ hidden: true });
@@ -74,8 +72,6 @@ const TooljetDatabase = () => {
     () => ({
       canEditTjdb,
       canEditSchema,
-      searchParam,
-      setSearchParam,
       organizationId,
       setOrganizationId,
       tables,
@@ -107,7 +103,6 @@ const TooljetDatabase = () => {
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      searchParam,
       organizationId,
       tables,
       tablesLoaded,
@@ -120,15 +115,6 @@ const TooljetDatabase = () => {
       canEditSchema,
     ]
   );
-
-  useEffect(() => {
-    setEnableCollapsibleSidebar(true);
-
-    return () => {
-      setCollapseSidebar(false);
-      setEnableCollapsibleSidebar(false);
-    };
-  }, []);
 
   useEffect(() => {
     loadEnvironments();
@@ -146,7 +132,7 @@ const TooljetDatabase = () => {
     <div className="page-wrapper tooljet-database">
       <TooljetDatabaseProvider value={value}>
         <TjdbHeaderEnvironment />
-        <TooljetDatabasePage totalTables={tables.length || 0} collapseSidebar={collapseSidebar} />
+        <TooljetDatabasePage totalTables={tables.length || 0} />
       </TooljetDatabaseProvider>
     </div>
   );

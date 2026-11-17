@@ -9,7 +9,7 @@ import Enter from '../Icons/Enter.svg';
 import { shallow } from 'zustand/shallow';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 
-const Footer = ({ darkMode, dataLoading, tableDataLength, collapseSidebar }) => {
+const Footer = ({ darkMode, dataLoading, tableDataLength }) => {
   const selectOptions = [
     { label: '50 records', value: 50 },
     { label: '100 records', value: 100 },
@@ -86,11 +86,7 @@ const Footer = ({ darkMode, dataLoading, tableDataLength, collapseSidebar }) => 
   }, [selectedTable]);
 
   return (
-    <div
-      className={`${
-        collapseSidebar ? 'toojet-db-table-footer-collapse' : 'toojet-db-table-footer'
-      } card-footer d-flex align-items-center jet-table-footer justify-content-center col-12`}
-    >
+    <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center col-12">
       {tableDataLength > 0 && (
         <div
           className="table-footer d-flex align-items-center justify-content-between gx-0"

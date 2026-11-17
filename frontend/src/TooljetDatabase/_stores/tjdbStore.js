@@ -117,7 +117,7 @@ export const useTjdbStore = create(
 
         // Bumped whenever a migration is recorded. useTableMigrations owns the migration-chain fetch
         // in local state; this is the one signal that tells it to re-read. Called from useMigrationModal
-        // and TableListItem (which calls deleteTable directly).
+        // and the Tables panel (which calls deleteTable directly).
         bumpMigrations: () =>
           set((state) => {
             state.migrationsVersion += 1;

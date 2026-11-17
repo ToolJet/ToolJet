@@ -7,7 +7,7 @@ import DependentsWarning from '../_components/DependentsWarning';
 import '../MigrationConfirmModal/styles.scss';
 
 /**
- * Two states, driven entirely by props - TableListItem owns the dependents fetch and the delete
+ * Two states, driven entirely by props - the Tables panel (TableActionsHost) owns the dependents fetch and the delete
  * call. `loading` is the pre-check (getTableDependents); once it resolves, `blocked` decides which
  * body renders. Built on the same react-bootstrap Modal primitive and header/footer structure as
  * MigrationConfirmModal, so the two read as one family.

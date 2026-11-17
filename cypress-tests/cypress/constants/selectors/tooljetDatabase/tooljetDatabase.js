@@ -53,8 +53,8 @@ export const tooljetDatabaseSelectors = {
   seedSqlEditor: '[data-cy="seed-data-sql-textarea"] .cm-content',
 
   // table list search
-  searchIcon: '[data-cy="create-new-folder-button"]', // reused name of the search button
-  searchInput: 'input[placeholder="Search table"]',
+  // The tables panel search is always visible; there is no search icon to click first.
+  searchInput: '[data-cy="tables-search-bar"]',
 
   // columns
   addColumnPlus: 'th.add-icon-column .icon-styles', // no data-cy on the header plus icon

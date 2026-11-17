@@ -1,74 +1,22 @@
 .tooljet-database {
-  .search-icon-wrap svg {
-    position: relative;
-    top: 1px;
-    left: 1px;
-  }
-  .create-new-table-btn {
-    width: 248px;
-
-    button {
-      height: 40px !important;
-    }
-  }
-
-  .tooljet-database-sidebar {
-    max-width: 288px;
-    background: var(--page-weak);
-    border-right: 1px solid var(--border-weak);
-    height: calc(100vh - 48px) !important;
-
-    .sidebar-container {
-      height: 40px !important;
-      margin: 12px auto 0;
-      display: flex;
-      justify-content: center;
-    }
-
-    .sidebar-container-with-banner {
-      height: 40px !important;
-      padding-top: 1px !important;
-      margin: 0 auto;
-      display: flex;
-      justify-content: center;
-    }
-  }
-
-  // TABLE
-  .table-left-sidebar {
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-  }
-
+  // The footer is fixed to the bottom of the page content, whatever the tables panel's width or state: the content wrap
+  // is its containing block (`contain: layout`), so `left: 0; width: 100%` mean the wrap, not the viewport.
   .toojet-db-table-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
     height: 52px;
     background: var(--page-weak) !important;
-    width: calc(100vw - 336px);
-  }
-
-  .toojet-db-table-footer-collapse {
-    height: 52px;
-    background: var(--page-weak) !important;
-    width: calc(100vw - 48px);
-  }
-
-  .toojet-db-table-footer-collapse {
-    height: 52px;
-    background: var(--page-weak) !important;
-    width: calc(100vw - 48px);
+    width: 100%;
   }
 
   .database-page-content-wrap {
+    contain: layout;
     background-color: var(--page-weak);
-    height: calc(100vh - 64px) !important;
+    height: calc(100vh - 48px) !important;
   }
 
   .instance-settings-wrapper {
-  }
-
-  .database-page-content-wrap {
-    height: calc(100vh - 64px) !important;
   }
 
   .empty-table-description {

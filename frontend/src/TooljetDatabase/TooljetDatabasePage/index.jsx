@@ -1,24 +1,21 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import cx from 'classnames';
 import Table from '../Table';
-import Sidebar from '../Sidebar';
+import { PanelLeftOpen } from 'lucide-react';
+import { Button } from '@/components/ui/Rocket/Button/Button';
+import { TablesPanel } from '../TablesPanel/TablesPanel';
+import CreateTableDrawer from '../Drawers/CreateTableDrawer';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import Warning from '../Icons/warning.svg';
 import WarningDark from '../Icons/warning-dark.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { isEmpty } from 'lodash';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
-import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
-import { toast } from 'react-hot-toast';
-import Drawer from '@/_ui/Drawer';
-import CreateTableForm from '../Forms/TableForm';
-import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import Skeleton from 'react-loading-skeleton';
 
-const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
-  const { organizationId, setSelectedTable, setTables, selectedTable, loadingState, canEditSchema } =
-    useTooljetDatabaseContext();
-  const { updateSidebarNAV } = useContext(BreadCrumbContext);
+const TooljetDatabasePage = ({ totalTables }) => {
+  const { selectedTable, loadingState, canEditSchema } = useTooljetDatabaseContext();
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
   const emptyMessage = "You don't have any tables yet.";
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const emptyHeader = Array.from({ length: 5 }, (_, index) => index + 1);
@@ -50,33 +47,7 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
             </div>
           </div>
         </div>
-        <Drawer
-          isOpen={isCreateTableDrawerOpen}
-          onClose={() => setIsCreateTableDrawerOpen(false)}
-          position="right"
-          drawerStyle={{ width: '630px' }}
-          className="tj-db-drawer"
-        >
-          <CreateTableForm
-            onCreate={(tableInfo) => {
-              tooljetDatabaseService.findAll(organizationId).then(({ data = [], error }) => {
-                if (error) {
-                  toast.error(error?.message ?? 'Failed to fetch tables');
-                  return;
-                }
-
-                if (Array.isArray(data?.result) && data.result.length > 0) {
-                  setSelectedTable({ table_name: tableInfo.table_name, id: tableInfo.id });
-                  updateSidebarNAV(tableInfo.table_name);
-                  setTables(data.result || []);
-                }
-              });
-              setIsCreateTableDrawerOpen(false);
-            }}
-            onClose={() => setIsCreateTableDrawerOpen(false)}
-            initiator="CreateTableForm"
-          />
-        </Drawer>
+        <CreateTableDrawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} />
       </>
     );
   };
@@ -129,14 +100,31 @@ const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
   };
 
   return (
-    <div className="row gx-0">
-      <Sidebar collapseSidebar={collapseSidebar} />
-      <div className={cx('col animation-fade database-page-content-wrap vh-100')}>
+    <div className="tw-flex tw-h-[calc(100vh-48px)]">
+      {!isPanelCollapsed && <TablesPanel onCollapse={() => setIsPanelCollapsed(true)} />}
+      <div
+        className={cx('tw-min-w-0 tw-flex-1 animation-fade database-page-content-wrap vh-100')}
+        style={isPanelCollapsed ? { '--tjdb-above-table': '48px' } : undefined}
+      >
+        {isPanelCollapsed && (
+          <div className="tw-flex tw-h-12 tw-items-center tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-pl-2">
+            <Button
+              variant="ghost"
+              size="medium"
+              iconOnly
+              aria-label="Expand tables panel"
+              data-cy="expand-tables-panel"
+              onClick={() => setIsPanelCollapsed(false)}
+            >
+              <PanelLeftOpen />
+            </Button>
+          </div>
+        )}
         {totalTables === 0 && !loadingState && <EmptyState />}
         {totalTables === 0 && loadingState && <LoadingState />}
         {!isEmpty(selectedTable) && (
           <div className={cx('col')}>
-            <Table collapseSidebar={collapseSidebar} />
+            <Table />
           </div>
         )}
       </div>

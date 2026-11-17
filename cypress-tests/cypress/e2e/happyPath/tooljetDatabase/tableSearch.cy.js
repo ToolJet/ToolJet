@@ -30,7 +30,6 @@ describe('ToolJet Database - table list search', () => {
     cy.get(tooljetDatabaseSelectors.tableItem(matching), { timeout: 20000 }).should('be.visible');
     cy.get(tooljetDatabaseSelectors.tableItem(other)).should('be.visible');
 
-    cy.get(tooljetDatabaseSelectors.searchIcon).click();
     cy.get(tooljetDatabaseSelectors.searchInput).type('qa_srchmatch');
 
     cy.get(tooljetDatabaseSelectors.tableItem(matching)).should('be.visible');

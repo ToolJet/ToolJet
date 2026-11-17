@@ -29,9 +29,9 @@ describe('ToolJet Database - table create, rename and delete', () => {
     // the edit drawer builds its schema from the loaded table, so select it and wait for the grid first
     cy.get(tooljetDatabaseSelectors.tableItem(name)).scrollIntoView().click();
     cy.get(tooljetDatabaseSelectors.columnHeader('id')).should('be.visible');
-    // the kebab is only rendered while the pointer is over the list item
+    // the kebab only shows while the row is hovered or focused (CSS), so the click is forced
     cy.get(tooljetDatabaseSelectors.tableItem(name)).trigger('mouseover');
-    cy.get(tooljetDatabaseSelectors.tableItem(name)).find(tooljetDatabaseSelectors.tableKebabIcon).click();
+    cy.get(tooljetDatabaseSelectors.tableItem(name)).find(tooljetDatabaseSelectors.tableKebabIcon).click({ force: true });
     cy.get(optionSelector).click();
   };
 

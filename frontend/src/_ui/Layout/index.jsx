@@ -24,9 +24,7 @@ function Layout({
   children,
   switchDarkMode,
   darkMode,
-  enableCollapsibleSidebar = false,
   collapseSidebar = false,
-  toggleCollapsibleSidebar = () => {},
   classes = null,
   showNewHeader = false,
   shouldWrapContentBody = true,
@@ -186,9 +184,7 @@ function Layout({
       <div className={cn('col tw-pl-12 tw-pr-0', classes?.contentContainer)}>
         <Header
           featureAccess={featureAccess}
-          enableCollapsibleSidebar={enableCollapsibleSidebar}
           collapseSidebar={collapseSidebar}
-          toggleCollapsibleSidebar={toggleCollapsibleSidebar}
           licenseStatus={licenseStatus}
           showNewHeader={showNewHeader}
         />

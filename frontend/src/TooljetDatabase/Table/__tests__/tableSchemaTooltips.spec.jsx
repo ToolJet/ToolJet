@@ -65,7 +65,7 @@ function renderTable({ canEditTjdb, canEditSchema }) {
         canEditSchema,
       }}
     >
-      <Table collapseSidebar={false} />
+      <Table />
     </TooljetDatabaseContext.Provider>
   );
 }

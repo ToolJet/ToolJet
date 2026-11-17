@@ -10,6 +10,9 @@ const CreateColumnDrawer = ({
   rows,
   referencedColumnDetails,
   setReferencedColumnDetails,
+  // The grid goes back to page 1 because the open table's shape changed. Pass false when the column is added to a
+  // table that is not the open one (Tables panel), so the open grid keeps its page.
+  resetPage = true,
 }) => {
   const { organizationId, selectedTable, setColumns, handleRefetchQuery, setForeignKeys, setConfigurations } =
     useTooljetDatabaseContext();
@@ -33,7 +36,7 @@ const CreateColumnDrawer = ({
               setForeignKeys([...metadata.foreignKeys]);
             });
             handleRefetchQuery({}, {}, 1, pageSize);
-            setPageCount(1);
+            if (resetPage) setPageCount(1);
             setIsCreateColumnDrawerOpen(false);
           }}
           onClose={() => setIsCreateColumnDrawerOpen(false)}

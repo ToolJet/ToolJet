@@ -49,7 +49,10 @@ const itemClasses = [
   // Radix focuses items on pointer hover, so focus: is hover and focus-visible: is keyboard focus
   'focus:tw-bg-interactive-default focus:tw-text-text-default',
   'focus-visible:tw-bg-transparent focus-visible:tw-shadow-interactive-focus-outline',
-  'active:tw-bg-interactive-hover',
+  // After any keyboard input Chrome also treats pointer-driven focus as focus-visible, which would show the keyboard ring
+  // on hover. While the pointer is over the item, hover wins (important, because focus-visible is generated later).
+  'hover:!tw-bg-interactive-default hover:!tw-shadow-none',
+  'active:!tw-bg-interactive-hover',
   'data-[disabled]:tw-text-text-placeholder data-[disabled]:tw-opacity-100 data-[disabled]:tw-pointer-events-none',
 ].join(' ');
 

@@ -43,7 +43,7 @@ import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 import { CHANGE_TYPE } from '../MigrationConfirmModal';
 import './styles.scss';
 
-const Table = ({ collapseSidebar }) => {
+const Table = () => {
   const {
     organizationId,
     tables,
@@ -1186,7 +1186,9 @@ const Table = ({ collapseSidebar }) => {
       />
       <div
         style={{
-          height: 'calc(100vh - 164px)', // 48px navbar + 96 for table bar +  52 px in footer
+          // 48px navbar + 96 for table bar + 52 px in footer, plus whatever the page puts above the table (the strip
+          // with the expand button while the tables panel is collapsed).
+          height: 'calc(100vh - 164px - var(--tjdb-above-table, 0px))',
         }}
         className={cx(
           `table-responsive border-0 tj-db-table animation-fade ${rows.length === 0 ? 'tj-table-empty' : 'tj-table'}`,
@@ -1793,12 +1795,7 @@ const Table = ({ collapseSidebar }) => {
           </div>
         )}
 
-        <TableFooter
-          darkMode={darkMode}
-          dataLoading={loading}
-          tableDataLength={tableData.length}
-          collapseSidebar={collapseSidebar}
-        />
+        <TableFooter darkMode={darkMode} dataLoading={loading} tableDataLength={tableData.length} />
         {rows.length === 0 && !loadingState && (
           <div
             onClick={() => {

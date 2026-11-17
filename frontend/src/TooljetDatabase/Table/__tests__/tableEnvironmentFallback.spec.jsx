@@ -70,7 +70,7 @@ function renderTable(table) {
         canEditSchema: false,
       }}
     >
-      <Table collapseSidebar={false} />
+      <Table />
     </TooljetDatabaseContext.Provider>
   );
   return { metadataEnvironments };

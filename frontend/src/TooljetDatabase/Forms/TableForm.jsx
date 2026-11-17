@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { isEmpty, cloneDeep } from 'lodash';
 import cx from 'classnames';
@@ -7,7 +7,6 @@ import CreateColumnsForm from './ColumnsForm';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { authenticationService } from '@/_services/authentication.service';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
-import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import WarningInfo from '../Icons/Edit-information.svg';
 // import ArrowRight from '../Icons/ArrowRight.svg';
 import { serialDataType } from '../constants';
@@ -66,8 +65,6 @@ const TableForm = ({
       return transformedColumns;
     })()
   );
-  const { updateSidebarNAV } = useContext(BreadCrumbContext);
-
   const [foreignKeyDetails, setForeignKeyDetails] = useState([]);
 
   useEffect(() => {
@@ -268,7 +265,6 @@ const TableForm = ({
         tooljetDatabaseService.renameTable(organizationId, selectedTable.table_name, tableName, data, migrationName),
       onSuccess: () => {
         toast.success(`${tableName} updated successfully`);
-        updateSidebarNAV(tableName);
         updateSelectedTable({ ...selectedTable, table_name: tableName });
         onEdit && onEdit(tableName);
         setCreateForeignKeyInEdit(false);

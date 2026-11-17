@@ -102,7 +102,7 @@ describe('ToolJet Database - bulk upload and CSV export', () => {
 
     // the kebab is only rendered while the pointer is over the list item
     cy.get(tooljetDatabaseSelectors.tableItem(table.name)).trigger('mouseover');
-    cy.get(tooljetDatabaseSelectors.tableItem(table.name)).find(tooljetDatabaseSelectors.tableKebabIcon).click();
+    cy.get(tooljetDatabaseSelectors.tableItem(table.name)).find(tooljetDatabaseSelectors.tableKebabIcon).click({ force: true });
     cy.get(tooljetDatabaseSelectors.exportCsvOption).click();
     cy.get(tooljetDatabaseSelectors.exportCsvModal).should('be.visible');
     cy.get(tooljetDatabaseSelectors.exportCsvEnvironment('staging')).click();
@@ -118,7 +118,7 @@ describe('ToolJet Database - bulk upload and CSV export', () => {
     openTable();
 
     cy.get(tooljetDatabaseSelectors.tableItem(table.name)).trigger('mouseover');
-    cy.get(tooljetDatabaseSelectors.tableItem(table.name)).find(tooljetDatabaseSelectors.tableKebabIcon).click();
+    cy.get(tooljetDatabaseSelectors.tableItem(table.name)).find(tooljetDatabaseSelectors.tableKebabIcon).click({ force: true });
     cy.get(tooljetDatabaseSelectors.exportSchemaOption).click();
 
     downloadedFile(`${table.name}-export-`).then((fileName) => {

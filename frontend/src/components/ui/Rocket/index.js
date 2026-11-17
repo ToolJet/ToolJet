@@ -212,3 +212,5 @@ export {
   PopoverDescription,
   PopoverTrigger,
 } from './Popover/Popover';
+export { SearchInput } from './SearchInput/SearchInput';
+export { SidePanel, SidePanelHeader, SidePanelSection, SidePanelBody } from './SidePanel/SidePanel';

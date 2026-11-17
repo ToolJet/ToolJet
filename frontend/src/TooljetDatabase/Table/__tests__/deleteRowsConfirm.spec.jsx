@@ -59,7 +59,7 @@ function renderTable(deleteRequests) {
         canEditSchema: true,
       }}
     >
-      <Table collapseSidebar={false} />
+      <Table />
     </TooljetDatabaseContext.Provider>
   );
 }

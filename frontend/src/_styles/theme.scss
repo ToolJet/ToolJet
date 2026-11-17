@@ -7711,15 +7711,6 @@ tbody {
     }
   }
 
-  .table-name {
-    color: #000;
-    width: 250px;
-  }
-
-  .table-left-sidebar {
-    max-width: 288px;
-  }
-
   .add-table-btn {
     height: 32px;
   }
@@ -7986,20 +7977,6 @@ tbody {
   .layout-sidebar-icon {
     &:hover {
       background-color: #273342;
-    }
-  }
-
-  .tooljet-database {
-
-    .table-name,
-    .subheader {
-      color: var(--slate9);
-    }
-
-    .list-group-item.active {
-      .table-name {
-        color: #000;
-      }
     }
   }
 
@@ -8928,8 +8905,6 @@ tbody {
   display: block;
 }
 
-.toojet-db-table-footer,
-.toojet-db-table-footer-collapse,
 .home-page-footer {
   position: fixed;
   bottom: 0px;
@@ -9208,22 +9183,6 @@ tbody {
     .CodeMirror-lines {
       margin-top: 0px !important;
       min-height: 32px !important;
-    }
-  }
-}
-
-.table-list-items#popover-contained {
-  .popover-body {
-    outline: 1px solid var(--slate3);
-    background: var(--base);
-    overflow: hidden;
-  }
-}
-
-.table-list-item-popover.dark {
-  svg {
-    path {
-      fill: white;
     }
   }
 }
@@ -10278,10 +10237,6 @@ tbody {
     text-decoration: none !important;
     color: var(--slate12);
   }
-}
-
-.table-list-item {
-  width: 248px;
 }
 
 .workspace-settings-filter-items {
@@ -11870,52 +11825,6 @@ tbody {
   cursor: pointer;
 }
 
-.sidebar-list-wrap {
-  margin-top: 24px;
-  padding: 0px 20px 20px 20px;
-  flex-grow: 1;
-  overflow: auto;
-
-  span {
-    letter-spacing: -0.02em;
-  }
-
-  &::-webkit-scrollbar {
-    width: 6.5px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: transparent;
-  }
-
-  &::-webkit-scrollbar-track {
-    background-color: transparent;
-  }
-
-  &:hover::-webkit-scrollbar-thumb {
-    background-color: #a1a6ad;
-  }
-}
-
-.sidebar-list-wrap-with-banner {
-  margin-top: 24px;
-  padding: 0px 20px 20px 20px;
-  height: calc(100vh - 408px);
-  overflow: auto;
-
-  span {
-    letter-spacing: -0.02em;
-  }
-}
-
-.sidebar-list-wrap.sidebar-list-wrap-with-banner.isAdmin {
-  height: calc(100vh - 371px);
-
-  &.resource-limit-reached {
-    height: calc(100vh - 371px);
-  }
-}
-
 .drawer-footer-btn-wrap,
 .variable-form-footer {
   display: flex;
@@ -11955,11 +11864,6 @@ tbody {
 }
 
 .folder-list-group-item {
-  color: var(--slate12) !important;
-}
-
-.table-list-item,
-.table-name {
   color: var(--slate12) !important;
 }
 
