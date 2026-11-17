@@ -72,6 +72,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ...(statement && { statement }),
         ...(organizationSlug && { organizationSlug }),
         ...(validationIssues && { issues: validationIssues, warnings: validationWarnings }),
+        // AI parallel-run refusal: app of the running action
+        ...(exception?.runningApp && { runningApp: exception.runningApp }),
         ...(reason && { reason }),
       });
     } catch (error) {

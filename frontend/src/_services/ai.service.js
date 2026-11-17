@@ -10,6 +10,10 @@ export const aiService = {
   voteMessage,
   getCopilotSuggestion,
   getCreditBalance,
+  getCreditsUsage,
+  getMyCredits,
+  updateCreditLimits,
+  updateBuilderLimit,
   fixWithAI,
   updateKey,
   getKeySettings,
@@ -278,6 +282,29 @@ async function getCreditBalance() {
   return fetch(`${config.apiUrl}/ai/get-credits-balance`, requestOptions).then((response) =>
     handleResponse(response, undefined, undefined, true)
   );
+}
+
+// Caller's own numbers; scope from the session.
+async function getMyCredits() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/credits-usage/me`, requestOptions).then((response) =>
+    handleResponse(response, undefined, undefined, true)
+  );
+}
+
+async function getCreditsUsage() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/credits-usage`, requestOptions).then(handleResponse);
+}
+
+async function updateCreditLimits(body) {
+  const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/credits-usage/limits`, requestOptions).then(handleResponse);
+}
+
+async function updateBuilderLimit(userId, body) {
+  const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/credits-usage/limits/builders/${userId}`, requestOptions).then(handleResponse);
 }
 
 async function fixWithAI(body) {
