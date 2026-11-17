@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Badge, Button, Card, Empty, List, Progress, Space, Statistic, Tag, Typography } from 'antd';
 import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AntProvider, splitBoxStyles, useTokenStyles } from '../lib/AntProvider';
+import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { RADIUS_HINT, THEME_COLOR, useThemeColor, useThemeNumber } from '../lib/themeStyles';
 import { safeUrl } from '../lib/ui2/display/chat/values';
 import { PackTag } from '../lib/PackTag';
 import { SpinOver, TextBone } from '../lib/Loading';
@@ -870,7 +871,11 @@ export const Tags = () => {
   });
   const onTagClicked = ToolJet.useEventCallback({ name: 'onTagClicked' });
   const { loading } = ToolJet.useControlState();
-  const tokens = useTokenStyles();
+  // Only the box's styles (no Primary or Text colour): the tags' colours come from tags and Tag colors. Same style
+  // names as before, so saved values still apply.
+  const background = useThemeColor('colorBgContainer', 'Container background', THEME_COLOR.surface);
+  const borderColor = useThemeColor('colorBorder', 'Border color', THEME_COLOR.border);
+  const borderRadius = useThemeNumber('borderRadius', 'Border radius', RADIUS_HINT);
   ToolJet.useComponentSettings({
     role: 'tags',
     fit: true,
@@ -889,9 +894,14 @@ export const Tags = () => {
         : { label: str(t), color: '' }
     )
     .filter((t) => t.label);
-  const { tokens: rowTokens, box } = splitBoxStyles(tokens);
+  const radius = borderRadius === '' || borderRadius == null ? NaN : Number(borderRadius);
+  const box = {
+    ...(background ? { background } : {}),
+    ...(borderColor ? { border: `1px solid ${borderColor}` } : {}),
+    ...(Number.isFinite(radius) ? { borderRadius: radius, padding: radius * 0.3 } : {}),
+  };
   return (
-    <AntProvider tokens={rowTokens} fill>
+    <AntProvider fill>
       <div className="tj-ant-tag-box" style={box}>
         <SpinOver loading={loading}>
           <div className={`tj-ant-tags is-${overflow}`}>

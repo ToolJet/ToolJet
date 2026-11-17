@@ -169,6 +169,13 @@ describe('Ant Tags: a long tag', () => {
     expect(rootStyle).not.toContain('--tj-ant-border-radius');
   });
 
+  it('Tags: Primary and Text colours are no longer styles and change nothing', async () => {
+    const v = await mount({ tags: ['A'] }, { colorPrimary: '#ff0000', colorText: '#00ff00' }, 'Tags');
+    await waitFor(() => expect(v.root().querySelector('.ant-tag')).toBeTruthy());
+    const rootStyle = v.root().querySelector('.tj-ant-root').getAttribute('style') || '';
+    expect(rootStyle).not.toMatch(/--tj-ant-color-(primary|text)/);
+  });
+
   it('Tags: an unstyled row has a box with no background or border', async () => {
     const v = await mount({ tags: ['A'] }, {}, 'Tags');
     await waitFor(() => expect(v.root().querySelector('.tj-ant-tag-box')).toBeTruthy());

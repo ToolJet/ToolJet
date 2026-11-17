@@ -287,35 +287,3 @@ export const WithPopupTheme = ({
 }: {
   children: (popup: ReturnType<typeof usePopupTheme>) => React.ReactNode;
 }) => <>{children(usePopupTheme())}</>;
-
-const BOX_VARS = [
-  '--tj-ant-color-bg-elevated',
-  '--tj-ant-color-border-secondary',
-  '--tj-ant-border-radius-sm',
-  '--tj-ant-border-radius-lg',
-  '--tj-ant-border-radius-xs',
-];
-
-/**
- * For widgets whose Container background, Border color and Border radius style the widget box, not the content (Tags):
- * takes those vars out of the tokens and returns them as the box's inline style (unset ones omitted).
- */
-export const splitBoxStyles = (
-  all: CSSProperties
-): { tokens: CSSProperties; box: CSSProperties } => {
-  const {
-    '--tj-ant-color-bg-container': bg,
-    '--tj-ant-color-border': border,
-    '--tj-ant-border-radius': radius,
-    ...rest
-  } = all as Record<string, string>;
-  for (const k of BOX_VARS) delete rest[k];
-  return {
-    tokens: rest as CSSProperties,
-    box: {
-      ...(bg ? { background: bg } : {}),
-      ...(border ? { border: `1px solid ${border}` } : {}),
-      ...(radius ? { borderRadius: radius, padding: parseFloat(radius) * 0.3 } : {}),
-    },
-  };
-};
