@@ -31,6 +31,7 @@ export const commonSelectors = {
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
   homePageLogo: "[data-cy=home-page-logo]",
+  homePagePromptHeader: '[data-cy="home-page-prompt-header"]',
   pageLogo: 'svg[viewBox="0 0 375 63"], [data-cy=page-logo]',
   workEmailLabel: '[data-cy="work-email-label"]',
   workEmailInputField: "[data-cy=work-email-input]",
