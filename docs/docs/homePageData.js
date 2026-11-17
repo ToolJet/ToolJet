@@ -3,38 +3,42 @@ import {
     Layers, FileSpreadsheet, Folder, Wand2, LayoutDashboard, Users, UserCheck,
     Lock, UserPlus, ScrollText, Megaphone, Gem, Mail, GitBranch,
     Box, GitMerge, ShoppingBag, Wand, Flag, ShieldCheck, Cloud, Container, Boxes, Server, Telescope, Globe,
-    Terminal, Code2, GitCompare, Blocks, Sparkles, Palette, Laptop
+    Code2, Blocks
 } from 'lucide-react';
 
-export const featureCards = [
+export const builderCards = [
     {
-        icon: BrainCircuit,
-        title: "Build with AI",
+        icon: Grid3x3,
+        title: "Visual Builder",
         color: "text-blue-500",
-        content: "Build applications effortlessly using natural language to generate and customize apps.",
-        href: "/docs/build-with-ai/overview/"
-    },
-    {
-        icon: Terminal,
-        title: "Build with Your Coding Agent",
-        color: "text-blue-500",
-        content: "Connect Claude Code, Codex, or any MCP-compatible agent to your workspace and build ToolJet apps without leaving your editor.",
-        href: "/docs/build-with-ai/mcp/overview/"
+        content: "Drag components onto a canvas, connect them to your data and add logic with events and JavaScript. Best for most internal tools.",
+        href: "/docs/app-builder/overview/"
     },
     {
         icon: Code2,
         title: "React Builder",
         color: "text-blue-500",
         badge: "New",
-        content: "Build apps in React and TypeScript. Generate them with AI, edit the code in your browser, or work in VS Code, Cursor, Claude Code or Codex.",
+        content: "Build apps in React and TypeScript. Generate them with AI, edit the code in your browser, or work in your own editor. ToolJet handles sign-in, permissions, data and releases.",
         href: "/docs/build-with-ai/react-builder/overview/"
-    },
+    }
+];
+
+export const aiCard = {
+    icon: BrainCircuit,
+    title: "Build With ToolJet AI or Your Own Coding Agent",
+    color: "text-blue-500",
+    content: "Describe the app you need and ToolJet AI builds it. Or connect Claude Code, Codex or any MCP-compatible agent to your workspace and build ToolJet apps without leaving your editor.",
+    href: "/docs/build-with-ai/overview/"
+};
+
+export const platformCards = [
     {
-        icon: Grid3x3,
-        title: "App Builder",
+        icon: Blocks,
+        title: "Components",
         color: "text-blue-500",
-        content: "Design and create applications with ToolJet's intuitive app builder, featuring a drag-and-drop interface and powerful pre-built components to streamline development.",
-        href: "/docs/app-builder/overview/"
+        content: "Choose from three component libraries, ToolJet UI 1.0, Rocket 2.0 and Ant Design, or build your own custom components.",
+        href: "/docs/app-builder/building-ui/component-library/"
     },
     {
         icon: Database,
@@ -51,75 +55,6 @@ export const featureCards = [
         href: "/docs/workflows/overview/"
     }
 ];
-
-export const highlights = {
-    title: "What Sets ToolJet Apart",
-    description: "A code-based way to build, plus tools to review, secure and style your apps.",
-    banner: {
-        title: "React Builder",
-        content: "Build internal tools as real React and TypeScript apps. Generate them with ToolJet AI, edit the code in your browser, or work in your own editor with a coding agent. ToolJet takes care of sign-in, permissions, data and releases.",
-        cta: "Explore React Builder",
-        href: "/docs/build-with-ai/react-builder/overview/",
-        image: "/img/build-with-ai/react-builder/overview/hero.png",
-        alt: "A React Builder app on the canvas with its React code open beside it"
-    },
-    cards: [
-        {
-            icon: GitCompare,
-            title: "Compare Versions",
-            color: "text-blue-500",
-            content: "See two versions side by side, screen by screen, and get approval before release.",
-            href: "/docs/development-lifecycle/release/compare-versions/",
-            image: "/img/home/highlights/compare-versions.jpg",
-            alt: "Two versions of the same screen side by side in Compare versions"
-        },
-        {
-            icon: Blocks,
-            title: "Component Libraries",
-            color: "text-blue-500",
-            content: "Build visual apps with ToolJet UI, Rocket 2.0 or Ant Design components.",
-            href: "/docs/app-builder/building-ui/component-library/",
-            image: "/img/home/highlights/component-libraries.jpg",
-            alt: "The same Carrier Directory page built in Rocket 2.0 and in Ant Design"
-        },
-        {
-            icon: ShieldCheck,
-            title: "App Security",
-            color: "text-blue-500",
-            content: "Every version is checked before release. Your workspace policy decides what can ship.",
-            href: "/docs/build-with-ai/react-builder/security/",
-            image: "/img/home/highlights/app-security.jpg",
-            alt: "The Security panel showing a version that blocks release, with Fix with AI on the issue"
-        },
-        {
-            icon: Sparkles,
-            title: "AI Chat",
-            color: "text-blue-500",
-            content: "Questions up front, live progress while it builds, and a summary of what was built.",
-            href: "/docs/build-with-ai/use-ai-in-tooljet/",
-            image: "/img/home/highlights/ai-chat.jpg",
-            alt: "The AI chat summary of a finished build beside the app it built"
-        },
-        {
-            icon: Palette,
-            title: "Built-in Themes",
-            color: "text-blue-500",
-            content: "Seven ready-made themes to give your apps a consistent look.",
-            href: "/docs/app-builder/custom-theme/",
-            image: "/img/home/highlights/built-in-themes.jpg",
-            alt: "The same page in ToolJet Navy and ToolJet Emerald"
-        },
-        {
-            icon: Laptop,
-            title: "Build Locally",
-            color: "text-blue-500",
-            content: "Clone an app with the ToolJet CLI and edit it in your own editor, with a live preview in ToolJet.",
-            href: "/docs/build-with-ai/react-builder/local-development/",
-            image: "/img/home/highlights/build-locally.jpg",
-            alt: "The Open locally panel with buttons to open the app in VS Code, Cursor or Windsurf"
-        }
-    ]
-};
 
 export const setupCards = [
     {

@@ -11,18 +11,18 @@ import { ArrowRight } from 'lucide-react';
 import gettingStartedImage from '../src/pages/getting-started.png';
 import {
     textLabels,
-    featureCards,
+    builderCards,
+    aiCard,
+    platformCards,
     setupCards,
     deployOptions,
     dataCards,
     organizationCards,
     releaseCards,
     resourceCards,
-    sectionCards,
-    highlights
+    sectionCards
 } from './homePageData';
 import Link from '@docusaurus/Link';
-import useBaseUrl from '@docusaurus/useBaseUrl';
 import { useVersionedHref } from '@site/src/components/DocBlocks';
 
 {/* // Reusable components */}
@@ -127,25 +127,19 @@ export const IconCard = ({ icon: Icon, title, content, color, href, badge, compa
     </Card>
 );
 
-export const ShotCard = ({ icon: Icon, title, content, color, href, image, alt = '' }) => {
-    const src = useBaseUrl(image);
-    return (
-        <Card href={href} className="h-full transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
-            <div className="h-full flex flex-col overflow-hidden rounded-lg">
-                <div className="aspect-[16/10] overflow-hidden border-0 border-b border-solid border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                    <img src={src} alt={alt} loading="lazy" className="w-full h-full object-cover object-left-top transition-transform duration-300 ease-in-out group-hover:scale-[1.02]" />
-                </div>
-                <div className="p-5 flex-grow">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Icon className={`w-4 h-4 ${color}`} />
-                        <h3 className="text-base font-semibold text-black dark:text-white m-0">{title}</h3>
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 m-0">{content}</p>
-                </div>
+export const WideCard = ({ icon: Icon, title, content, color, href }) => (
+    <Card href={href} className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+        <div className="p-8 flex flex-col md:flex-row md:items-center gap-5">
+            <div className="w-12 h-12 shrink-0 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg bg-gray-100 dark:bg-gray-700">
+                <Icon className={`w-6 h-6 ${color}`} />
             </div>
-        </Card>
-    );
-};
+            <div className="min-w-0">
+                <CardTitle>{title}</CardTitle>
+                <p className="text-sm text-gray-600 dark:text-gray-400 m-0 mt-2">{content}</p>
+            </div>
+        </div>
+    </Card>
+);
 
 export const SmallCard = ({ icon: Icon, title, href }) => (
     <Card href={href} className="h-[72px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
@@ -159,29 +153,6 @@ export const SmallCard = ({ icon: Icon, title, href }) => (
         </div>
     </Card>
 );
-
-export const FeatureBanner = ({ title, content, cta, href, image, alt }) => {
-    const to = useVersionedHref(href);
-    const src = useBaseUrl(image);
-    return (
-        <Link to={to} className="no-underline hover:no-underline block">
-            <div className="grid grid-cols-1 lg:grid-cols-2 overflow-hidden rounded-lg border border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 transition-all duration-300 ease-in-out hover:shadow-lg group">
-                <div className="p-8 lg:p-10 flex flex-col justify-center">
-                    <div><NewPill /></div>
-                    <h3 className="text-2xl font-semibold tracking-tight text-black dark:text-white mt-4 mb-3">{title}</h3>
-                    <p className="text-sm leading-6 text-gray-600 dark:text-gray-400">{content}</p>
-                    <span className="mt-5 inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400">
-                        {cta}
-                        <ArrowRight className="ml-2 w-4 h-4 transition-transform duration-300 ease-in-out group-hover:translate-x-1" />
-                    </span>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-5 lg:p-6 flex items-center">
-                    <img src={src} alt={alt} className="w-full h-auto rounded-md border border-solid border-gray-200 dark:border-gray-700" />
-                </div>
-            </div>
-        </Link>
-    );
-};
 
 export const SectionContainer = ({ title, description, children }) => (
     <section className="space-y-6">
@@ -269,8 +240,16 @@ style={{
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {featureCards.map((card, index) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {builderCards.map((card, index) => (
+                            <IconCard key={index} {...card} compact />
+                        ))}
+                    </div>
+                    <div className="mt-4">
+                        <WideCard {...aiCard} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        {platformCards.map((card, index) => (
                             <IconCard key={index} {...card} />
                         ))}
                     </div>
@@ -317,19 +296,6 @@ style={{
             </div>
 
             <div className="w-full p-10 space-y-12">
-                {/* Highlights */}
-                <SectionContainer
-                    title={highlights.title}
-                    description={highlights.description}
-                >
-                    <FeatureBanner {...highlights.banner} />
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {highlights.cards.map((card, index) => (
-                            <ShotCard key={index} {...card} />
-                        ))}
-                    </div>
-                </SectionContainer>
-
                 {/* Setup ToolJet Section */}
                 <SectionContainer 
                     title={textLabels.setupToolJet.title}
