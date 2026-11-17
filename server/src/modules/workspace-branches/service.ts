@@ -1,8 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from '@entities/user.entity';
-import { IWorkspaceBranchService, WorkspaceBranchListResponse, CheckUpdatesResponse } from './interfaces/IService';
+import {
+  IWorkspaceBranchService,
+  WorkspaceBranchListResponse,
+  CheckUpdatesResponse,
+  PullWorkspaceResponse,
+} from './interfaces/IService';
 import { CreateBranchDto, WorkspacePushDto, PullConflictResolutionDto } from './dto';
-import { PullDiagnostics } from './types';
 
 @Injectable()
 export class WorkspaceBranchService implements IWorkspaceBranchService {
@@ -40,7 +44,7 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     user?: User,
     sourceBranch?: string,
     branchId?: string
-  ): Promise<{ success: boolean; diagnostics?: PullDiagnostics }> {
+  ): Promise<PullWorkspaceResponse> {
     throw new NotFoundException();
   }
 

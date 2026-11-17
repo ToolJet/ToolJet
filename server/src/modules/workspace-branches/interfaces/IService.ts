@@ -21,6 +21,13 @@ export interface CheckUpdatesResponse {
   } | null;
 }
 
+// upToDate: the remote branch HEAD hasn't moved since the last full pull, so the pull was skipped
+export interface PullWorkspaceResponse {
+  success: boolean;
+  upToDate?: boolean;
+  diagnostics?: PullDiagnostics;
+}
+
 export interface IWorkspaceBranchService {
   list(organizationId: string, userId?: string): Promise<WorkspaceBranchListResponse>;
   createBranch(
@@ -42,7 +49,7 @@ export interface IWorkspaceBranchService {
     user?: User,
     sourceBranch?: string,
     branchId?: string
-  ): Promise<{ success: boolean; diagnostics?: PullDiagnostics }>;
+  ): Promise<PullWorkspaceResponse>;
   resolveConflicts(
     organizationId: string,
     resolutions: PullConflictResolutionDto[],

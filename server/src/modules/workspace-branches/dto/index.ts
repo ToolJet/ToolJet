@@ -94,6 +94,8 @@ export class PullDiagnosticsDto implements PullDiagnostics {
 export class WorkspacePullResponseDto {
   @Expose() success: boolean;
 
+  @Expose() upToDate?: boolean;
+
   @Expose()
   @Type(() => PullDiagnosticsDto)
   diagnostics?: PullDiagnosticsDto;

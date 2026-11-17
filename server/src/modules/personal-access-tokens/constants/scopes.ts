@@ -1,3 +1,4 @@
+import { FEATURE_KEY as BRANCH_FEATURE } from '@modules/workspace-branches/constants';
 import { FEATURE_KEY as GROUP_FEATURE } from '@modules/group-permissions/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { FEATURE_KEY as ORGANIZATION_USER_FEATURE } from '@modules/organization-users/constants';
@@ -49,6 +50,7 @@ export const PAT_BUNDLE_MODULES: Record<PAT_BUNDLE, MODULES[]> = {
     MODULES.THREAD,
     MODULES.FILE,
     MODULES.ORGANIZATION_THEMES,
+    MODULES.WORKSPACE_BRANCHES,
   ],
   [PAT_BUNDLE.DATA]: [
     MODULES.DATA_QUERY,
@@ -73,7 +75,6 @@ export const PAT_BUNDLE_MODULES: Record<PAT_BUNDLE, MODULES[]> = {
     MODULES.LOGIN_CONFIGS,
     MODULES.GIT_SYNC,
     MODULES.GIT_SYNC_CONFIGS,
-    MODULES.WORKSPACE_BRANCHES,
     MODULES.SMTP,
     MODULES.CONFIGS,
   ],
@@ -117,6 +118,7 @@ export const PAT_UNASSIGNED_MODULES: MODULES[] = [
   MODULES.FRONTEND_METRICS, // browser telemetry ingestion, not required by automation clients
   MODULES.CUSTOM_COMPONENT_LIBRARIES, // uploads code that runs inside apps; not granted pending a decision
   MODULES.ROOT, // health and version
+  MODULES.SSRF, // outbound request settings: super admin in the UI only, never a token
   // Uploads and publishes JS bundles that execute inside every app that uses them.
   MODULES.CUSTOM_COMPONENT_LIBRARIES,
 ];
@@ -215,6 +217,7 @@ const ALLOWED_MODULES: ReadonlySet<MODULES> = new Set(
 );
 
 const PAT_ALLOWED_FEATURES: Partial<Record<MODULES, ReadonlySet<string>>> = {
+  [MODULES.WORKSPACE_BRANCHES]: new Set([BRANCH_FEATURE.LIST_BRANCHES]),
   [MODULES.GROUP_PERMISSIONS]: new Set([
     GROUP_FEATURE.GET_ALL,
     GROUP_FEATURE.GET_ONE,

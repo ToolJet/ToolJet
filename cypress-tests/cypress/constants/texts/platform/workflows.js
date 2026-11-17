@@ -63,11 +63,14 @@ export const workflowsText = {
   cloneAppOption: "Clone app",
   cloneWorkflowOption: "Clone workflow",
 
-  // Folder delete confirmation. The trailing sentence says "Apps ... will not be
-  // deleted" even on the workflows dashboard, so only the stable prefix is
-  // asserted.
+  // lts-3.16 still says "Apps" in this sentence; this is the main/release wording.
   folderDeletePrefix: (folderName) =>
     `Are you sure you want to delete the folder ${folderName}?`,
+  folderDeleteMessage: (folderName) =>
+    `Are you sure you want to delete the folder ${folderName}? Workflows within the folder will not be deleted.`,
+
+  nodeDeleteConfirmMessage: "Do you really want to delete this node?",
+  duplicatedRunjsNodeName: "runjs1-copy",
 
   llmAgentFixturePath:
     "cypress/fixtures/templates/workflows/workflow_llm_agent_node-export-1781268843647.json",
@@ -84,8 +87,124 @@ export const workflowsText = {
   loopNotArrayError: "Loop array did not resolve into an array",
   releaseNeedsProductionError:
     "You can only release when the version is promoted to production",
-  invalidScheduleError: "Invalid interval configuration",
+  invalidScheduleError: "is not a valid cron expression",
   responseStatusError: (code, reason) =>
     `Workflow failed due to HTTP status code: ${code} ${reason}`,
   versionLockedText: "This version is locked",
+};
+
+export const humanText = {
+  sidebarNodeLabel: "Human-in-the-loop",
+  defaultNodeName: "human1",
+  defaultOutcomes: [
+    { key: "approved", label: "Approve" },
+    { key: "rejected", label: "Reject" },
+  ],
+  duplicateOutcomeKeyToast: "Outcome key must be unique",
+  duplicateFieldName: "Field names must be unique",
+  timeoutOutcomeWarning:
+    "Pick an outcome, or the run fails when the timeout expires.",
+  waitingBannerTitle: "Waiting for human input",
+  waitingRunLabel: "Waiting for input",
+  statusWaiting: "Waiting",
+  statusSuccess: "Success",
+  statusFailed: "Failed",
+  statusStopped: "Stopped",
+  notApprover: "You are not an approver for this request, so you cannot resolve it.",
+  noApprovalsMatch: "No approval requests match these filters.",
+  removeOutcomeConfirm: (label, edges) =>
+    `Removing outcome "${label}" will also delete ${edges} connected edge(s). Continue?`,
+  requiredInputToast: (label) => `"${label}" is required`,
+  resolvedToast: (label) => `Resolved as "${label}"`,
+  requestCancelledToast: "Request cancelled",
+  notPendingError: "Approval request is not pending",
+  notFoundError: "Approval request not found",
+  unknownOutcomeError: (key) => `Unknown outcome "${key}"`,
+  missingInputError: (name) => `Missing required input "${name}"`,
+  notAuthorizedError: "Not authorized to resolve this approval request",
+  notAuthorizedToCancelError: "Not authorized to cancel this approval request",
+  requestNotFoundError: "Approval request not found",
+  requestNotPendingError: "Approval request is not pending",
+  setupError: "requires at least one outcome",
+  approvalEmailSubject: (workflowName) => `Approval requested: ${workflowName}`,
+  approvalEmailCta: "Open approval dashboard",
+};
+
+export const inputsText = {
+  nameRequired: "Input name is required",
+  namesUnique: "Input names must be unique",
+  numberDefault: "Default value must be a number",
+  booleanDefault: "Default value must be true or false",
+  arrayDefault: "Default value must be a valid JSON array",
+  objectDefault: "Default value must be a valid JSON object",
+  runDialogTitle: "Run workflow",
+  noInputsConfigured: "No workflow inputs configured",
+  requiredError: (name) => `Parameter "${name}" is required`,
+  datatypeError: (name) => `Parameter "${name}" has an incorrect datatype`,
+  startFailed: "Start node execution failed",
+};
+
+export const controlFlowText = {
+  waitRangeError: "Enter a duration between 1 second and 30 days.",
+  waitServerRangeError: "Wait duration must be between 1 second and 30 days",
+  waitingRunLabel: "Waiting",
+  waitingBanner: "Waiting before continuing",
+  filterNotArray: "Filter input must resolve to an array",
+  filterEmptyCondition: "Filter condition cannot be empty",
+  filterEmptyInput: "Filter input expression cannot be empty",
+  filterNoInput: "Filter requires one upstream input connection",
+  filterManyInputs: "Filter accepts exactly one upstream input connection",
+  filterTwoConnectionsHint:
+    "Filter accepts exactly one input connection. Remove the additional connections.",
+  filterEmptyPreview: "Preview the filter to inspect matching items.",
+  ifEmptyCondition: (label) => `If condition "${label}" cannot be empty`,
+  removeElseIfConfirm: (label, edges) =>
+    `Removing "${label}" will also delete ${edges} connected edge(s). Continue?`,
+  addElseIf: "+ Add else if",
+  addElse: "+ Add else",
+};
+
+export const schedulesText = {
+  panelTitle: "Schedules",
+  createTitle: "Create schedule",
+  editTitle: "Edit schedule",
+  emptyList:
+    "This workflow is not scheduled. Add a schedule to run this workflow in your preferred interval",
+  noMatch: "No schedules match these filters.",
+  everyMinute: "Every minute",
+  duplicateName: "A schedule with this name already exists.",
+  nameTooLong: "Schedule name must be 100 characters or fewer.",
+  fieldOrder: [
+    "Schedule name",
+    "Environment",
+    "Version",
+    "Input overrides",
+    "Schedule type",
+  ],
+};
+
+export const executionsText = {
+  noMatch: "No executions match these filters.",
+  noSchedules: "No active schedules in this workspace.",
+  noSchedulesScoped: "No active schedules match this view.",
+  notScheduled: "Not scheduled",
+  unresolvable: "Unresolvable",
+  columns: [
+    "Name",
+    "Status",
+    "Trigger",
+    "Schedule",
+    "Started at",
+    "Duration",
+    "Version",
+    "Environment",
+    "Actions",
+  ],
+  statusWaiting: "Waiting",
+  statusStopped: "Stopped",
+  statusSuccess: "Success",
+  statusFailed: "Failed",
+  allWorkflows: "All workflows",
+  usedByEmpty: "No app or workflow in this workspace calls this workflow yet.",
+  usedByLoadFailed: "Couldn't load where this workflow is used",
 };
