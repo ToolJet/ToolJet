@@ -280,7 +280,8 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
     dataSourceId: string,
     organizationId: string,
     environmentId?: string,
-    branchId?: string
+    branchId?: string,
+    manager?: EntityManager
   ): Promise<DataSourceVersionOptions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
@@ -350,7 +351,7 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
       throw new ForbiddenException(
         `No data source version options found for dataSourceId=${dataSourceId}, environmentId=${envId}`
       );
-    });
+    }, manager);
   }
 
   async init(

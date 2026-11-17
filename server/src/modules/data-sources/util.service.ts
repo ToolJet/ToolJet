@@ -106,7 +106,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
    * Validates that workspace constants are not being added directly on the default (master) branch.
    * PRD requires that workspace constants in encrypted fields must go through a PR workflow.
    */
-  private async validateNoConstantsOnDefaultBranch(branchId: string, options: Array<object>): Promise<void> {
+  async validateNoConstantsOnDefaultBranch(branchId: string, options: Array<object>): Promise<void> {
     const hasConstantReference = options.some((opt) => {
       if (opt['workspace_constant']) return true;
       if (
@@ -580,11 +580,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     environmentId?: string,
     branchId?: string
   ): Promise<void> {
-    const dataSource = await this.dataSourceRepository.findById(dataSourceId, organizationId);
-
-    if (dataSource.type === DataSourceTypes.SAMPLE) {
-      throw new BadRequestException('Cannot update configuration of sample data source');
-    }
+    const dataSource = await this.findUpdatable(dataSourceId, organizationId);
 
     // Validate: workspace constants cannot be added directly on the default (master) branch
     if (branchId && options?.length) {
@@ -592,288 +588,305 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
 
     try {
-      await dbTransactionWrap(async (manager: EntityManager) => {
-        const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
-          LICENSE_FIELD.MULTI_ENVIRONMENT,
-          organizationId
-        );
-        const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
+      await dbTransactionWrap((manager: EntityManager) =>
+        this.updateWithManager(manager, dataSource, organizationId, userId, name, options, environmentId, branchId)
+      );
+    } finally {
+      this.clearCache();
+    }
+  }
 
-        // Detect auth mode toggle — clear all token data for affected environments
-        const incomingMultiAuthOption = options.find((o) => o['key'] === 'multiple_auth_enabled');
-        const incomingMultiAuthValue = incomingMultiAuthOption?.['value'];
+  async findUpdatable(dataSourceId: string, organizationId: string): Promise<DataSource> {
+    const dataSource = await this.dataSourceRepository.findById(dataSourceId, organizationId);
 
-        // if datasource is restapi/microsoft_graph then clear the token data on save
-        const shouldClearTokens = ['restapi', 'microsoft_graph'].includes(dataSource.kind);
+    if (dataSource.type === DataSourceTypes.SAMPLE) {
+      throw new BadRequestException('Cannot update configuration of sample data source');
+    }
+    return dataSource;
+  }
 
-        // Determine if we should update the isDefault DSV.
-        // isDefault = "snapshot of main" — only update it when:
-        //   - No branchId (no git sync / license expired)
-        //   - branchId is the default (main) branch
-        // Skip for feature branches — their edits shouldn't alter the main fallback.
-        let shouldUpdateDefault = true;
-        if (branchId) {
-          const branch = await manager.findOne(WorkspaceBranch, {
-            where: { id: branchId },
-            select: ['id', 'isDefault'],
-          });
-          shouldUpdateDefault = !!branch?.isDefault;
-        }
+  clearCache(): void {
+    this.inMemoryCacheService.clear();
+  }
 
-        if (isMultiEnvEnabled) {
-          const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
-          const dso = await this.appEnvironmentUtilService.getOptions(
-            dataSourceId,
-            organizationId,
-            envToUpdate.id,
-            effectiveBranchId
+  // The body of update() on the caller's transaction; refusals and cache clearing stay with the caller.
+  async updateWithManager(
+    manager: EntityManager,
+    dataSource: DataSource,
+    organizationId: string,
+    userId: string,
+    name: string,
+    options: Array<object>,
+    environmentId?: string,
+    branchId?: string
+  ): Promise<void> {
+    const dataSourceId = dataSource.id;
+    const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
+    const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
+
+    // Detect auth mode toggle — clear all token data for affected environments
+    const incomingMultiAuthOption = options.find((o) => o['key'] === 'multiple_auth_enabled');
+    const incomingMultiAuthValue = incomingMultiAuthOption?.['value'];
+
+    // if datasource is restapi/microsoft_graph then clear the token data on save
+    const shouldClearTokens = ['restapi', 'microsoft_graph'].includes(dataSource.kind);
+
+    // Determine if we should update the isDefault DSV.
+    // isDefault = "snapshot of main" — only update it when:
+    //   - No branchId (no git sync / license expired)
+    //   - branchId is the default (main) branch
+    // Skip for feature branches — their edits shouldn't alter the main fallback.
+    let shouldUpdateDefault = true;
+    if (branchId) {
+      const branch = await manager.findOne(WorkspaceBranch, {
+        where: { id: branchId },
+        select: ['id', 'isDefault'],
+      });
+      shouldUpdateDefault = !!branch?.isDefault;
+    }
+
+    if (isMultiEnvEnabled) {
+      const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
+      const dso = await this.appEnvironmentUtilService.getOptions(
+        dataSourceId,
+        organizationId,
+        envToUpdate.id,
+        effectiveBranchId,
+        manager
+      );
+      dataSource.options = dso.options;
+
+      const existingMultiAuth = dataSource.options?.['multiple_auth_enabled']?.value;
+      const authModeToggled = incomingMultiAuthValue !== undefined && incomingMultiAuthValue !== existingMultiAuth;
+      if (shouldClearTokens || authModeToggled) {
+        await this.deleteAllUserTokenData(dso.id, manager);
+      }
+
+      const newOptions = await this.parseOptionsForUpdate(
+        dataSource,
+        options,
+        manager,
+        userId,
+        organizationId,
+        envToUpdate.id,
+        dso.id
+      );
+      if (shouldUpdateDefault) {
+        await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
+      }
+
+      // Branch-aware: also update data_source_version_options
+      if (effectiveBranchId) {
+        let dsv = await manager.findOne(DataSourceVersion, {
+          where: {
+            dataSourceId: dataSource.id,
+            branchId: effectiveBranchId,
+            isActive: true,
+          },
+        });
+        if (!dsv) {
+          // Auto-create branch DSV (DS was likely created before git sync was enabled)
+          dsv = await manager.save(
+            manager.create(DataSourceVersion, {
+              dataSourceId: dataSource.id,
+              branchId: effectiveBranchId,
+              name: name || dataSource.name,
+              isActive: true,
+            })
           );
-          dataSource.options = dso.options;
-
-          const existingMultiAuth = dataSource.options?.['multiple_auth_enabled']?.value;
-          const authModeToggled = incomingMultiAuthValue !== undefined && incomingMultiAuthValue !== existingMultiAuth;
-          if (shouldClearTokens || authModeToggled) {
-            await this.deleteAllUserTokenData(dso.id, manager);
-          }
-
-          const newOptions = await this.parseOptionsForUpdate(
-            dataSource,
-            options,
-            manager,
-            userId,
-            organizationId,
-            envToUpdate.id,
-            dso.id
-          );
-          if (shouldUpdateDefault) {
-            await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
-          }
-
-          // Branch-aware: also update data_source_version_options
-          if (effectiveBranchId) {
-            let dsv = await manager.findOne(DataSourceVersion, {
-              where: {
-                dataSourceId: dataSource.id,
-                branchId: effectiveBranchId,
-                isActive: true,
-              },
-            });
-            if (!dsv) {
-              // Auto-create branch DSV (DS was likely created before git sync was enabled)
-              dsv = await manager.save(
-                manager.create(DataSourceVersion, {
-                  dataSourceId: dataSource.id,
-                  branchId: effectiveBranchId,
-                  name: name || dataSource.name,
-                  isActive: true,
-                })
-              );
-              // Seed DSVOs for all environments from default DSV, cloning credentials
-              const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId, null, manager);
-              const defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSource.id);
-              for (const env of allEnvs) {
-                let sourceOptions: any = {};
-                let defaultDsvo: DataSourceVersionOptions | null = null;
-                if (defaultDsv) {
-                  defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
-                    where: {
-                      dataSourceVersionId: defaultDsv.id,
-                      environmentId: env.id,
-                    },
-                  });
-                  sourceOptions = defaultDsvo?.options ? JSON.parse(JSON.stringify(defaultDsvo.options)) : {};
-                }
-                // Clone credential rows so branches don't share credential references
-                for (const key of Object.keys(sourceOptions)) {
-                  const opt = sourceOptions[key];
-                  if (opt?.credential_id && opt?.encrypted) {
-                    const originalValue = await this.credentialService.getValue(opt.credential_id);
-                    const newCredential = await this.credentialService.create(originalValue || '', manager);
-                    sourceOptions[key] = {
-                      ...opt,
-                      credential_id: newCredential.id,
-                    };
-                  }
-                }
-                const newDsvo = await manager.save(
-                  manager.create(DataSourceVersionOptions, {
-                    dataSourceVersionId: dsv.id,
-                    environmentId: env.id,
-                    options: sourceOptions,
-                  })
-                );
-                // Clone OAuth token rows too — otherwise a datasource with an active OAuth
-                // connection appears disconnected on the newly created branch.
-                if (defaultDsvo) {
-                  await this.duplicateTokenData(defaultDsvo.id, newDsvo.id, manager);
-                }
+          // Seed DSVOs for all environments from default DSV, cloning credentials
+          const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId, null, manager);
+          const defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSource.id);
+          for (const env of allEnvs) {
+            let sourceOptions: any = {};
+            let defaultDsvo: DataSourceVersionOptions | null = null;
+            if (defaultDsv) {
+              defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
+                where: {
+                  dataSourceVersionId: defaultDsv.id,
+                  environmentId: env.id,
+                },
+              });
+              sourceOptions = defaultDsvo?.options ? JSON.parse(JSON.stringify(defaultDsvo.options)) : {};
+            }
+            // Clone credential rows so branches don't share credential references
+            for (const key of Object.keys(sourceOptions)) {
+              const opt = sourceOptions[key];
+              if (opt?.credential_id && opt?.encrypted) {
+                const originalValue = await this.credentialService.getValue(opt.credential_id);
+                const newCredential = await this.credentialService.create(originalValue || '', manager);
+                sourceOptions[key] = {
+                  ...opt,
+                  credential_id: newCredential.id,
+                };
               }
             }
-            await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, envToUpdate.id, manager);
-            // Also update DSV name if DS name changed
-            if (name) {
-              await this.ensureUniqueActiveNameForUpdate(
-                name,
-                dataSource.id,
-                organizationId,
-                manager,
-                effectiveBranchId
-              );
-              await manager.update(DataSourceVersion, dsv.id, {
-                name,
-                updatedAt: new Date(),
-              });
+            const newDsvo = await manager.save(
+              manager.create(DataSourceVersionOptions, {
+                dataSourceVersionId: dsv.id,
+                environmentId: env.id,
+                options: sourceOptions,
+              })
+            );
+            // Clone OAuth token rows too — otherwise a datasource with an active OAuth
+            // connection appears disconnected on the newly created branch.
+            if (defaultDsvo) {
+              await this.duplicateTokenData(defaultDsvo.id, newDsvo.id, manager);
             }
           }
-        } else {
-          const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId);
-          /* 
+        }
+        await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, envToUpdate.id, manager);
+        // Also update DSV name if DS name changed
+        if (name) {
+          await this.ensureUniqueActiveNameForUpdate(name, dataSource.id, organizationId, manager, effectiveBranchId);
+          await manager.update(DataSourceVersion, dsv.id, {
+            name,
+            updatedAt: new Date(),
+          });
+        }
+      }
+    } else {
+      const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId, null, manager);
+      /* 
             Basic plan customer. lets update all environment options. 
             this will help us to run the queries successfully when the user buys enterprise plan 
             */
 
-          // Get branchId once for all environments
-          const nonMultiEnvBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
-          let dsv = nonMultiEnvBranchId
-            ? await manager.findOne(DataSourceVersion, {
-                where: {
-                  dataSourceId: dataSource.id,
-                  branchId: nonMultiEnvBranchId,
-                  isActive: true,
-                },
-              })
-            : null;
+      // Get branchId once for all environments
+      const nonMultiEnvBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
+      let dsv = nonMultiEnvBranchId
+        ? await manager.findOne(DataSourceVersion, {
+            where: {
+              dataSourceId: dataSource.id,
+              branchId: nonMultiEnvBranchId,
+              isActive: true,
+            },
+          })
+        : null;
 
-          // Auto-create branch DSV if missing (DS created before git sync)
-          if (nonMultiEnvBranchId && !dsv) {
-            dsv = await manager.save(
-              manager.create(DataSourceVersion, {
-                dataSourceId: dataSource.id,
-                branchId: nonMultiEnvBranchId,
-                name: name || dataSource.name,
-                isActive: true,
-              })
-            );
-            const defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSource.id);
-            for (const env of allEnvs) {
-              let sourceOptions: any = {};
-              let defaultDsvo: DataSourceVersionOptions | null = null;
-              if (defaultDsv) {
-                defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
-                  where: {
-                    dataSourceVersionId: defaultDsv.id,
-                    environmentId: env.id,
-                  },
-                });
-                sourceOptions = defaultDsvo?.options ? JSON.parse(JSON.stringify(defaultDsvo.options)) : {};
-              }
-              // Clone credential rows so branches don't share credential references
-              for (const key of Object.keys(sourceOptions)) {
-                const opt = sourceOptions[key];
-                if (opt?.credential_id && opt?.encrypted) {
-                  const originalValue = await this.credentialService.getValue(opt.credential_id);
-                  const newCredential = await this.credentialService.create(originalValue || '', manager);
-                  sourceOptions[key] = {
-                    ...opt,
-                    credential_id: newCredential.id,
-                  };
-                }
-              }
-              const newDsvo = await manager.save(
-                manager.create(DataSourceVersionOptions, {
-                  dataSourceVersionId: dsv.id,
-                  environmentId: env.id,
-                  options: sourceOptions,
-                })
-              );
-              // Clone OAuth token rows too — otherwise a datasource with an active OAuth
-              // connection appears disconnected on the newly created branch.
-              if (defaultDsvo) {
-                await this.duplicateTokenData(defaultDsvo.id, newDsvo.id, manager);
-              }
-            }
-          }
-
-          for (const env of allEnvs) {
-            const dso = await this.appEnvironmentUtilService.getOptions(
-              dataSourceId,
-              organizationId,
-              env.id,
-              nonMultiEnvBranchId
-            );
-            dataSource.options = dso.options;
-
-            const existingMultiAuth = dataSource.options?.['multiple_auth_enabled']?.value;
-            const authModeToggled =
-              incomingMultiAuthValue !== undefined && incomingMultiAuthValue !== existingMultiAuth;
-            if (shouldClearTokens || authModeToggled) {
-              await this.deleteAllUserTokenData(dso.id, manager);
-            }
-
-            const newOptions = await this.parseOptionsForUpdate(
-              dataSource,
-              options,
-              manager,
-              userId,
-              organizationId,
-              env.id,
-              dso.id
-            );
-            if (shouldUpdateDefault) {
-              await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
-            }
-
-            // Branch-aware: also update version options
-            if (dsv) {
-              await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, env.id, manager);
-            }
-          }
-
-          // Update DSV name if needed
-          if (dsv && name) {
-            await this.ensureUniqueActiveNameForUpdate(
-              name,
-              dataSource.id,
-              organizationId,
-              manager,
-              nonMultiEnvBranchId
-            );
-            await manager.update(DataSourceVersion, dsv.id, {
-              name,
-              updatedAt: new Date(),
+      // Auto-create branch DSV if missing (DS created before git sync)
+      if (nonMultiEnvBranchId && !dsv) {
+        dsv = await manager.save(
+          manager.create(DataSourceVersion, {
+            dataSourceId: dataSource.id,
+            branchId: nonMultiEnvBranchId,
+            name: name || dataSource.name,
+            isActive: true,
+          })
+        );
+        const defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSource.id);
+        for (const env of allEnvs) {
+          let sourceOptions: any = {};
+          let defaultDsvo: DataSourceVersionOptions | null = null;
+          if (defaultDsv) {
+            defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
+              where: {
+                dataSourceVersionId: defaultDsv.id,
+                environmentId: env.id,
+              },
             });
+            sourceOptions = defaultDsvo?.options ? JSON.parse(JSON.stringify(defaultDsvo.options)) : {};
+          }
+          // Clone credential rows so branches don't share credential references
+          for (const key of Object.keys(sourceOptions)) {
+            const opt = sourceOptions[key];
+            if (opt?.credential_id && opt?.encrypted) {
+              const originalValue = await this.credentialService.getValue(opt.credential_id);
+              const newCredential = await this.credentialService.create(originalValue || '', manager);
+              sourceOptions[key] = {
+                ...opt,
+                credential_id: newCredential.id,
+              };
+            }
+          }
+          const newDsvo = await manager.save(
+            manager.create(DataSourceVersionOptions, {
+              dataSourceVersionId: dsv.id,
+              environmentId: env.id,
+              options: sourceOptions,
+            })
+          );
+          // Clone OAuth token rows too — otherwise a datasource with an active OAuth
+          // connection appears disconnected on the newly created branch.
+          if (defaultDsvo) {
+            await this.duplicateTokenData(defaultDsvo.id, newDsvo.id, manager);
           }
         }
-        const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
+      }
 
-        if (!isGitEnabled && name) {
-          await this.ensureUniqueActiveNameForUpdate(name, dataSourceId, organizationId, manager);
+      for (const env of allEnvs) {
+        const dso = await this.appEnvironmentUtilService.getOptions(
+          dataSourceId,
+          organizationId,
+          env.id,
+          nonMultiEnvBranchId,
+          manager
+        );
+        dataSource.options = dso.options;
+
+        const existingMultiAuth = dataSource.options?.['multiple_auth_enabled']?.value;
+        const authModeToggled = incomingMultiAuthValue !== undefined && incomingMultiAuthValue !== existingMultiAuth;
+        if (shouldClearTokens || authModeToggled) {
+          await this.deleteAllUserTokenData(dso.id, manager);
         }
 
-        const updatableParams = {
-          id: dataSourceId,
+        const newOptions = await this.parseOptionsForUpdate(
+          dataSource,
+          options,
+          manager,
+          userId,
+          organizationId,
+          env.id,
+          dso.id
+        );
+        if (shouldUpdateDefault) {
+          await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
+        }
+
+        // Branch-aware: also update version options
+        if (dsv) {
+          await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, env.id, manager);
+        }
+      }
+
+      // Update DSV name if needed
+      if (dsv && name) {
+        await this.ensureUniqueActiveNameForUpdate(name, dataSource.id, organizationId, manager, nonMultiEnvBranchId);
+        await manager.update(DataSourceVersion, dsv.id, {
           name,
           updatedAt: new Date(),
-        };
+        });
+      }
+    }
+    const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
 
-        // Remove keys with undefined values
-        cleanObject(updatableParams);
+    if (!isGitEnabled && name) {
+      await this.ensureUniqueActiveNameForUpdate(name, dataSourceId, organizationId, manager);
+    }
 
-        await manager.save(DataSource, updatableParams);
+    const updatableParams = {
+      id: dataSourceId,
+      name,
+      updatedAt: new Date(),
+    };
 
-        if (shouldUpdateDefault && name) {
-          const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, organizationId);
-          if (defaultBranchId) {
-            await manager.update(
-              DataSourceVersion,
-              { dataSourceId, branchId: defaultBranchId },
-              { name, updatedAt: new Date() }
-            );
-          }
-        }
-      });
-    } finally {
-      this.inMemoryCacheService.clear();
+    // Remove keys with undefined values
+    cleanObject(updatableParams);
+
+    await manager.save(DataSource, updatableParams);
+
+    if (shouldUpdateDefault && name) {
+      const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, organizationId);
+      if (defaultBranchId) {
+        await manager.update(
+          DataSourceVersion,
+          { dataSourceId, branchId: defaultBranchId },
+          { name, updatedAt: new Date() }
+        );
+      }
     }
   }
 
@@ -943,7 +956,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
       if (option['encrypted'] && !option['value'] && dataSource?.options?.[option['key']]?.credential_id) {
         try {
-          const value = await this.credentialService.getValue(dataSource.options[option['key']].credential_id);
+          const value = await this.credentialService.getValue(dataSource.options[option['key']].credential_id, manager);
           resolvedOptions.push({ ...option, value });
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
@@ -1008,7 +1021,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
           if (existingCredentialId) {
             if (credentialValue !== undefined) {
-              await this.credentialService.update(existingCredentialId, credentialValue || '');
+              await this.credentialService.update(existingCredentialId, credentialValue || '', entityManager);
             }
 
             if (!parsedOptions[key]) {

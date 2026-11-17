@@ -48,6 +48,61 @@ function isSecretsOnlyEdit(incomingOptions: unknown, storedOptions: Record<strin
   return true;
 }
 
+export interface DataSourceEditTarget {
+  organizationId: string;
+  dataSourceId: string;
+  branchId?: string;
+  environmentId?: string;
+  name?: string;
+  options?: unknown;
+}
+
+/**
+ * The git-sync edit rule for one environment of a data source: resolves the DSV from the data
+ * source + branch and refuses a synced default-branch edit unless it is secrets only (a name
+ * change never is). The services are passed in so edition-resolved instances are used.
+ */
+export async function assertDataSourceEditAllowed(
+  gitSyncConfigsUtilService: GitSyncConfigsUtilService,
+  appEnvironmentUtilService: AppEnvironmentUtilService,
+  target: DataSourceEditTarget
+): Promise<void> {
+  const { organizationId, dataSourceId, branchId, environmentId, name, options } = target;
+
+  const dsv = await dbTransactionWrap((manager: EntityManager) =>
+    manager.findOne(DataSourceVersion, {
+      where: { dataSourceId, ...(branchId ? { branchId } : {}) },
+      select: ['id', 'branchId', 'isSynced'],
+    })
+  );
+
+  let secretsOnly = false;
+  if (dsv?.isSynced && Array.isArray(options)) {
+    const [storedOptions, dataSource] = await Promise.all([
+      appEnvironmentUtilService.getOptions(dataSourceId, organizationId, environmentId, dsv.branchId ?? branchId),
+      dbTransactionWrap((manager: EntityManager) =>
+        manager.findOne(DataSource, {
+          where: { id: dataSourceId },
+          select: ['id', 'name'],
+        })
+      ),
+    ]);
+    const nameUnchanged = name === undefined || name === dataSource?.name;
+    secretsOnly = nameUnchanged && isSecretsOnlyEdit(options, storedOptions?.options);
+  }
+
+  await assertGitSyncEditAllowedForOrg(
+    gitSyncConfigsUtilService,
+    organizationId,
+    {
+      branchId: dsv?.branchId ?? branchId,
+      isSynced: !!dsv?.isSynced,
+      secretsOnly,
+    },
+    'data source'
+  );
+}
+
 /**
  * CREATE guard: a data source can't be created on the default branch when branching is enabled
  * (and no feature-branch creates when branching is disabled). is_synced isn't checked on create.
@@ -83,46 +138,14 @@ export class GitSyncDataSourceEditGuard implements CanActivate {
     const organizationId = request.user?.organizationId;
     const dataSourceId = request.params?.id;
     if (!organizationId || !dataSourceId) return true;
-    const branchId = request.query?.branch_id;
-    const environmentId = request.query?.environment_id;
-
-    const dsv = await dbTransactionWrap((manager: EntityManager) =>
-      manager.findOne(DataSourceVersion, {
-        where: { dataSourceId, ...(branchId ? { branchId } : {}) },
-        select: ['id', 'branchId', 'isSynced'],
-      })
-    );
-
-    let secretsOnly = false;
-    if (dsv?.isSynced && Array.isArray(request.body?.options)) {
-      const [storedOptions, dataSource] = await Promise.all([
-        this.appEnvironmentUtilService.getOptions(
-          dataSourceId,
-          organizationId,
-          environmentId,
-          dsv.branchId ?? branchId
-        ),
-        dbTransactionWrap((manager: EntityManager) =>
-          manager.findOne(DataSource, {
-            where: { id: dataSourceId },
-            select: ['id', 'name'],
-          })
-        ),
-      ]);
-      const nameUnchanged = request.body?.name === undefined || request.body.name === dataSource?.name;
-      secretsOnly = nameUnchanged && isSecretsOnlyEdit(request.body.options, storedOptions?.options);
-    }
-
-    await assertGitSyncEditAllowedForOrg(
-      this.gitSyncConfigsUtilService,
+    await assertDataSourceEditAllowed(this.gitSyncConfigsUtilService, this.appEnvironmentUtilService, {
       organizationId,
-      {
-        branchId: dsv?.branchId ?? branchId,
-        isSynced: !!dsv?.isSynced,
-        secretsOnly,
-      },
-      'data source'
-    );
+      dataSourceId,
+      branchId: request.query?.branch_id,
+      environmentId: request.query?.environment_id,
+      name: request.body?.name,
+      options: request.body?.options,
+    });
     return true;
   }
 }
