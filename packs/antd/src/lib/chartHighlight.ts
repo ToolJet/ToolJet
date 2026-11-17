@@ -28,13 +28,17 @@ type Emitter = { on?: (name: string, handler: (event: ClickEvent) => void) => vo
  * The clicked row. A line or area click carries all the series' rows: take the one whose vertex is nearest the click.
  * The element's points are plot-local, in row order (an area has the top edge first, then the bottom).
  */
+// An element's points are in its plot layer's space. A cartesian element sits at the layer's origin, but a polar one
+// (Radar) is anchored at the centre, so its own offset put every point far off (PF-234): use the layer's.
+const offsetOf = (el: Node) => (el.parentNode?.getWorldTransform ? el.parentNode : el).getWorldTransform?.();
+
 export const pickRow = (event: ClickEvent): Row | Row[] => {
   const d = event?.data?.data ?? {};
   if (!Array.isArray(d)) return d;
   let el = event.target;
   while (el && el.className !== 'element') el = el.parentNode;
   const pts = el?.__data__?.points;
-  const m = el?.getWorldTransform?.();
+  const m = el && offsetOf(el);
   const at = event.canvas;
   if (!pts || !m || !at) return d[0] ?? {};
   // Cartesian (the first points run left to right): nearest by x alone, so a click deep in a tall area picks its column.
@@ -64,7 +68,7 @@ export const nearRow = (event: ClickEvent, elements: Node[]): Row | null => {
   let min = REACH;
   for (const el of elements) {
     const si = el.__data__?.seriesIndex;
-    const m = el.getWorldTransform?.();
+    const m = offsetOf(el);
     if (!si || !m || (el.markType !== 'line' && el.markType !== 'area')) continue;
     let view = el.parentNode;
     while (view && view.className !== 'view') view = view.parentNode;

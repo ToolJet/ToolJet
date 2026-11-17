@@ -40,7 +40,12 @@ const bound = (v: unknown, edge: 'start' | 'end'): Dayjs | undefined => {
 };
 
 // The unit a picker's value is compared at: a month picker's value is that month, whatever day it holds.
-const UNIT: Record<string, 'day' | 'week' | 'month' | 'year'> = { date: 'day', week: 'week', month: 'month', year: 'year' };
+export const UNIT: Record<string, 'day' | 'week' | 'month' | 'year'> = {
+  date: 'day',
+  week: 'week',
+  month: 'month',
+  year: 'year',
+};
 const range = (from: number, to: number) => Array.from({ length: Math.max(0, to - from) }, (_, i) => from + i);
 
 /**
