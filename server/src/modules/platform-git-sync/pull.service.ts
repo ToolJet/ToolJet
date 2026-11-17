@@ -69,4 +69,12 @@ export class PlatformGitPullService {
   async hydrateStubApp(..._args: any[]): Promise<any> {
     return null;
   }
+
+  async runPinnedToWorkspacePull<T>(_organizationId: string, _branchId: string, fn: () => Promise<T>): Promise<T> {
+    return fn();
+  }
+
+  async pullDraftIfBehindWorkspacePull(..._args: any[]): Promise<null> {
+    return null;
+  }
 }
