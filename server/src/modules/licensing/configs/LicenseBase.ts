@@ -6,9 +6,6 @@ import {
   WORKFLOW_TEAM_PLAN_TERMS,
 } from '@modules/licensing/constants/PlanTerms';
 
-// TODO(usage-analytics): turn back on before release to gate usage analytics by plan.
-const APP_USAGE_ANALYTICS_LICENCE_CHECK = false;
-
 export default class LicenseBase {
   private _appsCount: number | string;
   private _tablesCount: number | string;
@@ -161,7 +158,8 @@ export default class LicenseBase {
     // non-flexible plans - which would silently turn MFA on for every pre-existing license.
     this._isMfaEnabled = (this._features as any)?.mfa === true;
     this._isCustomDomains = this.getFeatureValue('customDomains');
-    this._isAppUsageAnalytics = this.getFeatureValue('appUsageAnalytics');
+    // Strict opt-in like MFA: only a licence that says `appUsageAnalytics: true` turns Analytics on.
+    this._isAppUsageAnalytics = (this._features as any)?.appUsageAnalytics === true;
     this._isEnvMapping = this.getFeatureValue('workspaceEnv');
     this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
@@ -555,9 +553,6 @@ export default class LicenseBase {
   }
 
   public get appUsageAnalytics(): boolean {
-    // TODO(usage-analytics): licence check disabled for now, so every EE/Cloud workspace gets the
-    // dashboards. Set APP_USAGE_ANALYTICS_LICENCE_CHECK to true to gate on `appUsageAnalytics` again.
-    if (!APP_USAGE_ANALYTICS_LICENCE_CHECK) return true;
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.appUsageAnalytics;
     }

@@ -1,5 +1,6 @@
 /**
- * Usage analytics is EE/Cloud only. On CE the routes exist but never serve data.
+ * Usage analytics is EE/Cloud only. On CE the routes exist but never serve data: the basic plan has
+ * no Analytics licence, so data routes stop at the licence gate (451) and status answers 501.
  *
  * @group platform
  */
@@ -30,14 +31,14 @@ describe('AppUsageAnalyticsController', () => {
   });
 
   describe('GET /api/analytics/workspace/summary | Summary on CE', () => {
-    it('should return 501 for a workspace admin', async () => {
+    it('should return 451 for a workspace admin, since the basic plan has no Analytics licence', async () => {
       const admin = await createAdmin(app, 'ce-analytics-admin2@tooljet.io');
       await request(app.getHttpServer())
         .get('/api/analytics/workspace/summary')
         .query({ start: '2026-10-17', end: '2026-11-16' })
         .set('tj-workspace-id', admin.user.defaultOrganizationId)
         .set('Cookie', admin.cookie)
-        .expect(501);
+        .expect(451);
     });
   });
 });
