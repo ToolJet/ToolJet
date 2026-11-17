@@ -1,5 +1,4 @@
 import * as probe from "./probe";
-import { KNOWN_OPEN } from "./knownOpen";
 
 export const forEachTheme = (fn) => ["light", "dark"].forEach(fn);
 
@@ -173,18 +172,8 @@ export const AUDIT_CHECKS = [
 
 const tags = (ids) => ids.map((id) => `[${id}]`).join("");
 
-export const expectOpen = (ids, violations, { knownOpen = KNOWN_OPEN } = {}) => {
-  const open = ids.filter((id) => knownOpen.has(id));
-  if (open.length && open.length !== ids.length) {
-    throw new Error(`${tags(ids)} open and close together, but KNOWN_OPEN lists only ${open.join(", ")}`);
-  }
-  if (open.length) {
-    Cypress.log({ name: "known-open", message: `${tags(ids)} ${violations.length} violation(s)` });
-    expect(violations, `${tags(ids)} no longer fail: delete ${ids.join(", ")} from KNOWN_OPEN`).to.not.be.empty;
-  } else {
-    expect(violations, tags(ids)).to.deep.equal([]);
-  }
-};
+// Every QA item the harness checks is closed, so any violation fails its check.
+export const expectClean = (ids, violations) => expect(violations, tags(ids)).to.deep.equal([]);
 
 const MAX_STOPS = 40;
 const STILL = "panel-audit-still";
@@ -209,11 +198,11 @@ export const evidence = (name, measure, { file = "panels.json", mask = [] } = {}
   return cy.then(() => facts);
 };
 
-// Asserts only the checks whose ids are closed, because a known-open id may have no violations on
-// this one surface.
+// Asserts every AUDIT_CHECKS entry except those with an id in `skip`, for callers that only want the
+// raw audit (see [UC-05] in panelSweep).
 export const auditPanel = (
   root,
-  { knownOpen = KNOWN_OPEN, evidenceName, file = "panels.json", mask = [], walk: walkFocus = true } = {}
+  { skip = new Set(), evidenceName, file = "panels.json", mask = [], walk: walkFocus = true } = {}
 ) => {
   const audit = { unnamed: [], lowContrast: [], ringless: [], hidden: [], rings: [], walk: "" };
   const rest = new Map();
@@ -352,7 +341,7 @@ export const auditPanel = (
   });
   cy.then(() => evidenceName && record(file, evidenceName, { audit }, mask));
   return cy.then(() => {
-    AUDIT_CHECKS.filter(({ ids }) => !ids.some((id) => knownOpen.has(id))).forEach(({ ids, key }) =>
+    AUDIT_CHECKS.filter(({ ids }) => !ids.some((id) => skip.has(id))).forEach(({ ids, key }) =>
       expect(audit[key], `${tags(ids)} ${root}`).to.deep.equal([])
     );
     return audit;

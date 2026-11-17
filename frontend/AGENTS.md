@@ -41,7 +41,10 @@ On top of the above:
 - New widgets MUST be lazy-loaded
 - `useBatchedUpdateEffectArray` for batched state updates
 - Widget components must be registered in `AppBuilder/WidgetManager/componentTypes.js`
-- Editor panel chrome (left panel, right panel) comes from `AppBuilder/Shared/Panel`: `PanelHeader` (48px pinned title row), `PanelIconButton` (a tooltipped icon-only button: its required `label` is both the `aria-label` and the `ToolTip`), `PanelCloseButton` (the named X, one line over it), `PanelEmptyState` / `NoMatchesEmptyState`. Do not hand-roll a panel header, close button or no-match state. Every icon-only button needs an `aria-label` (`panelSourceAudit` `[UB-04]`) — the numbers live in `Shared/Panel/panel.scss`
+- Editor panel chrome (left panel, right panel) comes from `AppBuilder/Shared/Panel`: `PanelHeader` (48px pinned title row), `PanelIconButton` (a tooltipped icon-only button: its required `label` is both the `aria-label` and the `ToolTip`), `PanelCloseButton` (the named X, one line over it), `PanelEmptyState` / `NoMatchesEmptyState`, `PanelSectionHeader` (collapsible section: 12/500 title, muted count, trailing caret). Do not hand-roll a panel header, close button, section header or no-match state. Every icon-only button needs an `aria-label` (`panelSourceAudit` `[UB-04]`) — the numbers live in `Shared/Panel/panel.scss`
+  - Panel names come from one registry in `AppBuilder/panelLayout.js`: `SIDEBAR_ITEMS` (rail item, panel title, close label), `RIGHT_PANEL_ITEMS` (right panel close labels), `RUNTIME_PANEL_ITEMS` (drawer tabs). Use `getPanelCloseLabel` / `getRuntimeToggleLabel`, never a literal
+  - Shared control specs are SCSS mixins in `Shared/Panel/_mixins.scss` (`focus-ring`, `panel-search-input`, `panel-control`, `panel-row`, `panel-switch`, `panel-overlay-surface`); they emit nothing until an editor selector includes them. Bootstrap controls are sized under the `.tj-panel` class on the three panel roots (left panel, right panel, bottom drawer); editor overlays take the surface under `body.app-builder-chrome`
+  - Guards: `src/AppBuilder/__tests__/panelSourceAudit.spec.js` (source rules) and the panels Cypress harness (`cypress-tests/cypress/e2e/happyPath/appbuilder/panels/*`, run with `cypress-panels.config.js`), which measures every panel in both themes at 1440x960 and 683x600
 
 ## Conventions
 

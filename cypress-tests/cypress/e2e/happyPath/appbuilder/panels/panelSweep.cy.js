@@ -7,7 +7,7 @@ import {
   SHORT_QUERY,
   auditPanel,
   evidence,
-  expectOpen,
+  expectClean,
   expectTheme,
   forEachTheme,
   guardBaseline,
@@ -62,7 +62,7 @@ const flow = (title, body) => {
       cy.then(() => evidence(`flow-${ids.join("_")}`, () => ({ violations }), { file: "flows.json", mask: [appName] }));
       cy.then(() => writeCheck(ids, violations));
     },
-    () => cy.then(() => expectOpen(ids, violations))
+    () => cy.then(() => expectClean(ids, violations))
   );
 };
 
@@ -638,7 +638,7 @@ describe("Panel sweep", { testIsolation: false }, () => {
         });
         cy.get('[data-cy="preview-content"]').should("be.visible");
         cy.wait(600);
-        auditPanel(".right-panel-shell", { knownOpen: new Set(AUDIT_CHECKS.flatMap(({ ids }) => ids)) }).then((audit) => {
+        auditPanel(".right-panel-shell", { skip: new Set(AUDIT_CHECKS.flatMap(({ ids }) => ids)) }).then((audit) => {
           expect([...audit.rings, ...audit.ringless].join("\n"), `${size} walk reached New event handler`).to.include("add-event-handler");
           violations.push(...audit.hidden.map((v) => `${size}: ${v}`));
         });
@@ -794,7 +794,7 @@ describe("Panel sweep", { testIsolation: false }, () => {
         expect([...declared].filter((t) => !finished.has(t)), "sweep steps that did not finish").to.deep.equal([]);
         expect(sweep, "surfaces swept").to.have.length(SURFACE_COUNT);
         const violations = run();
-        writeCheck(ids, violations).then(() => expectOpen(ids, violations));
+        writeCheck(ids, violations).then(() => expectClean(ids, violations));
       })
     );
   });
