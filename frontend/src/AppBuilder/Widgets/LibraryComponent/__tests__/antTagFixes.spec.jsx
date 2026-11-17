@@ -101,28 +101,39 @@ describe('Ant Tag fixes', () => {
     await waitFor(() => expect(v.root().querySelector('.ant-tag')).toBeNull());
   });
 
-  // PKB-41: Container background, Border color and Border radius style the widget box, not the tag.
-  it('PKB-41 box styles go on the widget box, not on the tag or the provider root', async () => {
-    const v = await mount({ children: 'T' }, { colorBgContainer: '#ffeeaa', colorBorder: '#0000ff', borderRadius: 10 });
-    await waitFor(() => expect(v.root().querySelector('.tj-ant-tag-box')).toBeTruthy());
-    const box = v.root().querySelector('.tj-ant-tag-box');
-    expect(box.style.background).toContain('rgb(255, 238, 170)');
-    expect(box.style.border).toContain('1px solid');
-    expect(box.style.border).toMatch(/0, 0, 255|#0000ff/i);
-    expect(box.style.borderRadius).toBe('10px');
-    const rootStyle = v.root().querySelector('.tj-ant-root').getAttribute('style') || '';
-    expect(rootStyle).not.toContain('--tj-ant-color-bg-container');
-    expect(rootStyle).not.toContain('--tj-ant-color-border');
-    expect(rootStyle).not.toContain('--tj-ant-border-radius');
-  });
-
-  it('PKB-41 an unstyled tag has a box with no background or border', async () => {
-    const v = await mount({ children: 'T' });
-    await waitFor(() => expect(v.root().querySelector('.tj-ant-tag-box')).toBeTruthy());
-    const box = v.root().querySelector('.tj-ant-tag-box');
-    expect(box.style.background).toBe('');
-    expect(box.style.border).toBe('');
-    expect(box.style.borderRadius).toBe('');
+  // Tag's colours come from its Color property only: the Primary, Text and Container colour styles are gone. Border color
+  // and Border radius style the tag itself; Bordered turns its border on and off.
+  describe('Tag styles', () => {
+    const tagOf = async (props, st) => {
+      const v = await mount(props, st);
+      await waitFor(() => expect(v.root().querySelector('.ant-tag')).toBeTruthy());
+      return { v, tag: v.root().querySelector('.ant-tag') };
+    };
+    it('Primary, Text and Container colours no longer change the tag', async () => {
+      const { v, tag } = await tagOf(
+        { children: 'T' },
+        { colorPrimary: '#ff0000', colorText: '#00ff00', colorBgContainer: '#ffeeaa' }
+      );
+      expect(tag.style.backgroundColor).toBe('');
+      const vars = v.root().querySelector('.tj-ant-root').getAttribute('style') ?? '';
+      expect(vars).not.toMatch(/--tj-ant-color-(primary|text|bg-container)/);
+    });
+    it('Border color and Border radius style the tag itself (no box), over the Color preset', async () => {
+      const { v, tag } = await tagOf({ children: 'T', color: 'success' }, { colorBorder: '#0000ff', borderRadius: 12 });
+      expect(tag.style.borderColor).toMatch(/0, 0, 255|#0000ff/i);
+      expect(tag.style.borderRadius).toBe('12px');
+      expect(v.root().querySelector('.tj-ant-tag-box')).toBeNull();
+    });
+    it('Bordered off: no border, whatever Border color is', async () => {
+      const { tag } = await tagOf({ children: 'T', bordered: false }, { colorBorder: '#0000ff' });
+      expect(tag.classList.contains('ant-tag-borderless')).toBe(true);
+      expect(tag.style.borderColor).toBe('');
+    });
+    it('unset styles add nothing inline', async () => {
+      const { tag } = await tagOf({ children: 'T' }, {});
+      expect(tag.style.borderColor).toBe('');
+      expect(tag.style.borderRadius).toBe('');
+    });
   });
 });
 

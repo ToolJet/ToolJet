@@ -297,10 +297,12 @@ const BOX_VARS = [
 ];
 
 /**
- * For widgets whose Container background, Border color and Border radius style the widget box, not the content (Tag,
- * Tags): takes those vars out of the tokens and returns them as the box's inline style (unset ones omitted).
+ * For widgets whose Container background, Border color and Border radius style the widget box, not the content (Tags):
+ * takes those vars out of the tokens and returns them as the box's inline style (unset ones omitted).
  */
-export const splitBoxStyles = (all: CSSProperties): { tokens: CSSProperties; box: CSSProperties } => {
+export const splitBoxStyles = (
+  all: CSSProperties
+): { tokens: CSSProperties; box: CSSProperties } => {
   const {
     '--tj-ant-color-bg-container': bg,
     '--tj-ant-color-border': border,
