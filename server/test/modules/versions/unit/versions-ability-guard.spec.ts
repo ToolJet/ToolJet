@@ -13,8 +13,7 @@ describe('versions FeatureAbilityGuard', () => {
   });
 
   const withResource = (resource: any, request?: any) => {
-    (guard as any).setResourceObject(resource);
-    return (guard as any).getResource(request);
+    return (guard as any).getResource({ ...request, tj_app: resource });
   };
 
   describe('getResource', () => {

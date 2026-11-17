@@ -81,6 +81,8 @@ Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
   });
 });
 
+let editorVisits = 0;
+
 /**
  * @tjCmd   api · navigate the browser to the app editor for a given app id and wait for the editor to be ready
  * @tjUsage cy.openApp('my-app-slug', Cypress.env('workspaceId'), Cypress.env('appId'))
@@ -91,9 +93,10 @@ Cypress.Commands.add(
     slug = "",
     workspaceId = Cypress.env("workspaceId"),
     appId = Cypress.env("appId"),
-    componentSelector = "[data-cy='drag-and-drop-a-component-label']"
+    componentSelector = "[data-cy='drag-and-drop-a-component-label'], [data-cy='empty-canvas-ways-in']"
   ) => {
-    cy.intercept({ method: "GET", pathname: `/api/apps/${appId}` }).as("getAppData");
+    const alias = `getAppData${++editorVisits}`;
+    cy.intercept({ method: "GET", pathname: `/api/apps/${appId}` }).as(alias);
 
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
@@ -101,7 +104,8 @@ Cypress.Commands.add(
 
     cy.visit(`/${workspaceId}/apps/${appId}/${slug}`);
 
-    cy.wait("@getAppData").then((interception) => {
+    cy.wait(`@${alias}`).then((interception) => {
+      expect(interception.response.statusCode, "editor app response").to.equal(200);
       const responseData = interception.response.body;
 
       Cypress.env("editingVersionId", responseData.editing_version.id);

@@ -17,6 +17,7 @@ import { setUpSlug } from "Support/utils/apps";
 import { releaseApp, sanitize } from "Support/utils/common";
 
 const data = {};
+const endpoint = Cypress.env("environmentRestFixtureUrl") || "http://130.131.160.149:4000";
 
 describe("Workspace constants", () => {
     const envVar = Cypress.env("environment");
@@ -147,7 +148,7 @@ describe("Workspace constants", () => {
         cy.get('[data-cy="env_constants-button"]').click();
         verifyConstantValueVisibility(
             dataSourceSelector.baseUrlTextField,
-            "http://130.131.160.149:4000/development"
+            `${endpoint}/development`
         );
         verifyConstantValueVisibility(
             '[value="{{constants.headerKey}}"]',

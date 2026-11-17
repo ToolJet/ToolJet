@@ -4,6 +4,7 @@ import { importSelectors } from "Selectors/platform/exportImport";
 import { workflowSelector } from "Selectors/platform/workflows";
 import { workspaceConstantsSelectors } from "Selectors/platform/workspaceConstants";
 import { appPromote } from "Support/utils/platform/multiEnv";
+import { closeVersionManager } from "Support/utils/platform/versionEnvironment";
 import { commonText } from "Texts/common";
 import { workspaceConstantsText } from "Texts/platform/workspaceConstants";
 import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selectors/platform/eeCommon";
@@ -476,6 +477,7 @@ export const promoteEnvAndVerify = (
   expectedValue
 ) => {
   appPromote(fromEnv, toEnv);
+  closeVersionManager();
   cy.waitForElement(versionModalSelector.versionLockInfoText)
   cy.wait(2000);
   cy.get(

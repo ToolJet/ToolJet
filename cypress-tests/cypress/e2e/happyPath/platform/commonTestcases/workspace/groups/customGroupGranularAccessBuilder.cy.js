@@ -1,3 +1,6 @@
+import { commonEeSelectors } from "Selectors/platform/eeCommon";
+import { versionSwitcherSelectors } from "Selectors/platform/version";
+import { selectVersionEnvironment } from "Support/utils/platform/versionEnvironment";
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
 import { groupsSelector } from "Selectors/platform/manageGroups";
@@ -100,7 +103,17 @@ describe("Custom Group Granular Access - Builder", () => {
                 openAppAsBuilder(appId1);
                 createVersionFromDraft("v1");
                 appPromote("development", "staging");
+                selectVersionEnvironment("staging");
+                cy.get(commonEeSelectors.promoteVersionButton).should("be.disabled");
+                cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
+
+                // Preview restrictions need a version that actually exists in production.
+                // Prepare it as admin after proving the builder cannot promote there.
+                loginAsAdmin();
+                openAppAsBuilder(appId1);
                 promoteEnv("staging");
+                loginAsUser(data.email);
+                openAppAsBuilder(appId1);
                 verifyEnvironmentAccess(environments, {
                     appName: data.appName,
                     canEdit: true,
@@ -255,8 +268,11 @@ describe("Custom Group Granular Access - Builder", () => {
     });
 
     it("Should verify builder own app dev access and invalid environment preview handling", () => {
-        const appName1 = fake.companyName;
-        const appName2 = fake.companyName;
+        // Component setup looks up app names across the test database, including
+        // archived workspaces; each app needs a name unique to this test attempt.
+        const attemptId = Date.now();
+        const appName1 = `${fake.companyName}-released-${attemptId}`;
+        const appName2 = `${fake.companyName}-owned-${attemptId}`;
         const groupName1 = fake.firstName.replace(/[^A-Za-z]/g, "");
         let appId1, appId2, groupId1;
 

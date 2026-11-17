@@ -1,5 +1,8 @@
 // server/test/modules/app/unit/ability-guard.spec.ts
 import { ForbiddenException, HttpException } from '@nestjs/common';
+import { FeatureAbilityGuard as AppAbilityGuard } from '@modules/apps/ability/guard';
+import { APP_TYPES } from '@modules/apps/constants';
+import { MODULES } from '@modules/app/constants/modules';
 import { AbilityGuard } from '@modules/app/guards/ability.guard';
 import { MODULE_INFO } from '@modules/app/constants/module-info';
 import { USER_TYPE } from '@modules/users/constants/lifecycle';
@@ -290,20 +293,53 @@ describe('AbilityGuard', () => {
     expect(banListRepo.findOne).toHaveBeenCalledWith({ where: { organizationId: 'header-org-1' } });
   });
 
-  describe('stale this.resource cross-tenant regression', () => {
-    // Guard instances are singleton-scoped in Nest's DI container, so `this.resource`
-    // persists across requests unless explicitly overwritten every call. A second request
-    // with no app in context must not inherit the first request's app.
-    it('does not leak resource state from a previous request onto one with no app', async () => {
-      const firstApp = { id: 'app-1', isPublic: false, organizationId: 'org-1' };
-      const firstRequest: any = { headers: {}, user: { organizationId: 'org-1' }, tj_app: firstApp };
-      await guard.canActivate(makeExecutionContext({ request: firstRequest }));
-      expect(guard['getResourceObject']()).toBe(firstApp);
-
-      const secondRequest: any = { headers: {}, user: { organizationId: 'org-1' } };
-      await guard.canActivate(makeExecutionContext({ request: secondRequest }));
-
-      expect(guard['getResourceObject']()).toBeUndefined();
-    });
+  describe('request resource isolation', () => {
+    it.each([undefined, APP_TYPES.MODULE])(
+      'keeps app authorization isolated from a concurrent request with type %s',
+      async (secondType) => {
+        const sharedGuard = new AppAbilityGuard(
+          reflector as never,
+          moduleRef as never,
+          licenseTermsService as never,
+          transactionLogger as never,
+          dataSource as never
+        );
+        let releaseFirst: () => void;
+        const firstPaused = new Promise<void>((resolve) => {
+          releaseFirst = resolve;
+        });
+        banListRepo.findOne.mockImplementationOnce(() => firstPaused);
+        abilityFactory.createAbility.mockImplementation((_user, _metadata, resources, request) => ({
+          can: () =>
+            !request.tj_app ||
+            resources.some(
+              ({ resourceType }) =>
+                resourceType === (request.tj_app.type === APP_TYPES.MODULE ? MODULES.MODULES : MODULES.APP)
+            ),
+        }));
+        const firstRequest = {
+          headers: {},
+          user: { organizationId: 'org-1' },
+          tj_app: { type: APP_TYPES.FRONT_END, organizationId: 'org-1' },
+        };
+        const firstResult = sharedGuard
+          .canActivate(makeExecutionContext({ request: firstRequest }))
+          .catch((error: unknown) => error);
+        const secondRequest = {
+          headers: {},
+          user: { organizationId: 'org-1' },
+          ...(secondType ? { tj_app: { type: secondType, organizationId: 'org-1' } } : {}),
+        };
+        await expect(sharedGuard.canActivate(makeExecutionContext({ request: secondRequest }))).resolves.toBe(true);
+        releaseFirst!();
+        await expect(firstResult).resolves.toBe(true);
+        expect(abilityFactory.createAbility).toHaveBeenCalledWith(
+          firstRequest.user,
+          expect.anything(),
+          [{ resourceType: MODULES.APP }],
+          firstRequest
+        );
+      }
+    );
   });
 });

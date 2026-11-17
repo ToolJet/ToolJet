@@ -137,14 +137,29 @@ describe("Home Page Dashboard Testcases", () => {
       "false",
     );
 
+    cy.get(dashboardSelector.buildFromEditorModal).should(
+      "contain.text",
+      "Create a personal access token",
+    );
     cy.get(dashboardSelector.byoaCreateTokenLink).verifyVisibleElement(
       "have.text",
       dashboardText.byoaCreateTokenLinkText,
     );
-    cy.get(dashboardSelector.byoaCopyCommand(0)).should("be.visible");
+    const verifyCommand = (step, index, command) => {
+      cy.get(dashboardSelector.byoaCopyCommand(step, index))
+        .should("be.visible")
+        .and("have.attr", "aria-label", "Copy")
+        .parent()
+        .find("code")
+        .should("contain.text", command);
+    };
+    verifyCommand(0, 0, "export TOOLJET_DEPLOYMENT_URL=");
+    verifyCommand(1, 0, "codex plugin marketplace add");
+    verifyCommand(1, 1, "codex plugin add tooljet-app-builder@tooljet");
     cy.get(dashboardSelector.byoaDocsLink)
       .should("be.visible")
-      .and("contain.text", dashboardText.byoaDocsLinkText);
+      .and("contain.text", dashboardText.byoaDocsLinkText)
+      .and("have.attr", "href", "https://docs.tooljet.com/docs/build-with-ai/mcp/setup/");
 
     // Switching tabs keeps the modal open on the newly selected agent.
     cy.get(dashboardSelector.byoaTab("claude-code")).click();
@@ -153,6 +168,15 @@ describe("Home Page Dashboard Testcases", () => {
       "aria-selected",
       "true",
     );
+
+    cy.get(dashboardSelector.byoaTab("codex")).should(
+      "have.attr",
+      "aria-selected",
+      "false",
+    );
+    verifyCommand(0, 0, "export TOOLJET_DEPLOYMENT_URL=");
+    verifyCommand(1, 0, "/plugin marketplace add");
+    verifyCommand(1, 1, "/plugin install tooljet-app-builder@tooljet");
 
     cy.get(dashboardSelector.byoaNotNowButton).verifyVisibleElement(
       "have.text",

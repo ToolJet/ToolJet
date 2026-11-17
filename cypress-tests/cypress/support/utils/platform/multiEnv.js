@@ -1,3 +1,4 @@
+import { selectVersionEnvironment } from "Support/utils/platform/versionEnvironment";
 import { Environments, WidgetPositions } from "Constants/constants/multiEnv";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selectors/platform/eeCommon";
@@ -13,7 +14,7 @@ export const promoteApp = () => {
 };
 
 export const releaseApp = () => {
-  cy.get(multiEnvSelector.environmentsTag("production")).click();
+  selectVersionEnvironment("production");
 
   cy.get(commonSelectors.releaseButton).click();
   cy.get(commonSelectors.yesButton).click();
@@ -31,7 +32,7 @@ export const launchApp = () => {
 };
 
 export const createVersionFromDraft = (version) => {
-  cy.get(multiEnvSelector.environmentsTag("development")).click();
+  selectVersionEnvironment("development");
   cy.get(versionModalSelector.saveVersionButton(version)).click();
   cy.get(versionModalSelector.createVersionModal.saveButton).click();
   cy.get(versionModalSelector.versionLockInfoText, { timeout: 10000 }).verifyVisibleElement(
@@ -41,7 +42,7 @@ export const createVersionFromDraft = (version) => {
 
 };
 export const promoteEnv = (fromEnv) => {
-  cy.get(multiEnvSelector.environmentsTag(fromEnv)).click();
+  selectVersionEnvironment(fromEnv);
   cy.waitForElement(commonEeSelectors.promoteVersionButton);
   cy.get(commonEeSelectors.promoteVersionButton, { timeout: 10000 }).click();
   cy.get(commonEeSelectors.promoteButton, { timeout: 10000 }).click();
@@ -50,7 +51,7 @@ export const promoteEnv = (fromEnv) => {
 
 export const appPromote = (fromEnv, toEnv) => {
   const commonActions = () => {
-    cy.get(multiEnvSelector.environmentsTag(fromEnv)).click();
+    selectVersionEnvironment(fromEnv);
 
     cy.waitForElement(commonEeSelectors.promoteVersionButton);
     cy.wait(200);
@@ -241,7 +242,7 @@ export const selectEnvironment = (envName) => {
 };
 
 export const releaseAndVisitApp = (appSlug) => {
-  cy.get(multiEnvSelector.environmentsTag("production")).click();
+  selectVersionEnvironment("production");
   cy.get(commonSelectors.releaseButton).click();
   cy.get(commonSelectors.yesButton).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");

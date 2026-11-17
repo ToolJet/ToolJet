@@ -17,7 +17,7 @@ describe("App creation", () => {
     });
 
     it("Should verify create, rename and clone app flow", () => {
-        data.appName = `${fake.companyName}-App`;
+        data.appName = `${fake.companyName}-App-${Date.now()}`;
         data.rename = `New-${data.appName}`;
         data.cloneAppName = `cloned-${data.appName}`;
 
@@ -178,16 +178,15 @@ describe("App creation", () => {
 
         cy.get(commonSelectors.appCreateButton, { timeout: 20000 }).click();
         cy.clearAndType(commonSelectors.appNameInput, data.rename);
+        cy.intercept("POST", "**/api/apps").as("duplicateAppCreation");
         cy.get(commonSelectors.createAppButton).click();
-
-        // TODO: Re-enable this when the Issue is fixed
-        // cy.get(commonSelectors.appNameErrorLabel).verifyVisibleElement(
-        //     "have.text",
-        //     "App name already exists"
-        // );
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "This app name is already taken."
+        cy.wait("@duplicateAppCreation").then(({ response }) => {
+            expect(response.statusCode).to.eq(400);
+            expect(response.body.message).to.eq("This app name is already taken.");
+        });
+        cy.get(commonSelectors.appNameErrorLabel).verifyVisibleElement(
+            "have.text",
+            "App name already exists"
         );
         // cy.get(commonSelectors.createAppButton).should("be.disabled");
         cy.get(commonSelectors.cancelButton).click();

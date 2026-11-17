@@ -1,6 +1,7 @@
+import { selectVersionEnvironment } from "Support/utils/platform/versionEnvironment";
 import { Environments } from 'Constants/constants/multiEnv';
 import { commonSelectors, commonWidgetSelector } from 'Selectors/common';
-import { commonEeSelectors, multiEnvSelector } from 'Selectors/platform/eeCommon';
+import { commonEeSelectors } from 'Selectors/platform/eeCommon';
 import { importSelectors } from 'Selectors/platform/exportImport';
 import { moduleSelectors } from 'Selectors/platform/modules';
 import { dragModuleIntoCanvas, openModulesList } from 'Support/utils/platform/modules';
@@ -12,7 +13,7 @@ describe('Modules — Workspace Constants Across Environments', () => {
   // strips only the ".json" extension — the space stays as-is).
   const moduleFileName = 'one version module';
 
-  const ENDPOINT = 'http://130.131.160.149:4000';
+  const ENDPOINT = Cypress.env('environmentRestFixtureUrl') || 'http://130.131.160.149:4000';
   // Env-var-seeded, static across all 3 environments (root .env).
   const HEADER_KEY_VALUE = 'customHeader';
   const UI_CONST_GLOBAL_VALUE = 'sample-ui-constant-value';
@@ -78,7 +79,7 @@ describe('Modules — Workspace Constants Across Environments', () => {
   });
 
   const promoteEnv = (fromEnv) => {
-    cy.get(multiEnvSelector.environmentsTag(fromEnv)).click();
+    selectVersionEnvironment(fromEnv);
     cy.waitForElement(commonEeSelectors.promoteVersionButton);
     cy.wait(200);
     cy.get(commonEeSelectors.promoteVersionButton, { timeout: 10000 }).click();

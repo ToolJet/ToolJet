@@ -2,6 +2,7 @@
 // queryPanel.js
 //   resizeQueryPanel                 -                    → querymanager
 //   closeQueryPanel                  -                    → querymanager
+//   openQueryPanel                   -                    → querymanager
 // └──────────────────────────────────────────────────────────────────┘
 /**
  * MODULE — appBuilder/querymanager/queryPanel: the app-builder bottom QUERY PANEL.
@@ -34,4 +35,18 @@ export const closeQueryPanel = () => {
       cy.get('[data-cy="query-manager-toggle-button"]').click();
     }
   });
+};
+
+/**
+ * @tjBlock  querymanager
+ * @tjUsage  openQueryPanel()
+ * @tjDom    .query-pane collapsed class + query-manager-toggle-button
+ */
+export const openQueryPanel = () => {
+  cy.get(".query-pane").then(($panel) => {
+    if ($panel.hasClass("collapsed")) {
+      cy.get('[data-cy="query-manager-toggle-button"]').click();
+    }
+  });
+  return cy.get(".query-pane").should("not.have.class", "collapsed");
 };

@@ -123,12 +123,8 @@ describe('AppsController', () => {
       });
 
       it('should be able to create app even after a module app was viewed by another user in the same server instance', async () => {
-        // Regression test: FeatureAbilityGuard (server/src/modules/app/guards/ability.guard.ts)
-        // is a singleton and stores the last-seen app on `this.resource`. Viewing/loading a
-        // "module" type app leaves that field set to `type: 'module'`. A subsequent create
-        // request (which has no app in context) then has its ability resolved against the
-        // MODULES.MODULES resource type instead of MODULES.APP, so a builder's `app_create`
-        // grant is silently ignored and the create is rejected with 403.
+        // A module request must not affect a later app-create request on the same
+        // singleton guard. App creation has no app resource and uses APP abilities.
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
           groups: ['all_users', 'admin'],
@@ -146,8 +142,7 @@ describe('AppsController', () => {
         });
         await createApplicationVersion(app, moduleApp);
 
-        // Admin views the module -- this populates the FeatureAbilityGuard singleton's
-        // `this.resource` with the module app (type: 'module').
+        // Exercise module authorization before the builder creates a front-end app.
         const moduleGetResponse = await request(app.getHttpServer())
           .get(`/api/apps/${moduleApp.id}`)
           .set('tj-workspace-id', organization.id)

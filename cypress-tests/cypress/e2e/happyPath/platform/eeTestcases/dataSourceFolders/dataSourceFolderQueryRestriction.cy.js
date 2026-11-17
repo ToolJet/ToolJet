@@ -1,3 +1,4 @@
+import { openQueryPanel } from 'Support/utils/appBuilder/querymanager/queryPanel';
 import { commonSelectors } from 'Selectors/common';
 import { dataSourceSelector } from 'Selectors/marketplace/dataSource';
 import {
@@ -68,6 +69,7 @@ describe('Data Source Folders — Restrict Query Run', () => {
   const runAs = (email, appId) => {
     cy.apiLogin(email, 'password');
     cy.openApp('', workspaceId, appId);
+    openQueryPanel();
     return uiRunQueryInBuilder(queryName);
   };
 
@@ -114,13 +116,22 @@ describe('Data Source Folders — Restrict Query Run', () => {
     const groupName = `QA Restricted Configure ${testId}`;
 
     // Toggles Restrict query run through the UI as admin, then hands the session back to the member — so "takes effect on the next run" is proven without a re-login.
-    const adminTogglesRestrict = () => {
+    const adminTogglesRestrict = (restricted) => {
       cy.getCookie('tj_auth_token').then((userCookie) => {
         cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
         openGroupGranularAccess(groupName);
         uiOpenEditDataSourceFolderGrant();
-        cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).click();
+        cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox)
+          .should(restricted ? 'not.be.checked' : 'be.checked')
+          .click()
+          .should(restricted ? 'be.checked' : 'not.be.checked');
+        cy.intercept('PUT', '**/api/v2/group-permissions/granular-permissions/data-source-folder/*')
+          .as('updateFolderQueryRestriction');
         cy.get(dsFolderPerm.sharedModalConfirmButton).click();
+        cy.wait('@updateFolderQueryRestriction').then(({ request, response }) => {
+          expect(request.body.actions.canRunQuery, 'saved query-run permission').to.equal(!restricted);
+          expect(response.statusCode, 'permission update status').to.equal(200);
+        });
         cy.verifyToastMessage(commonSelectors.toastMessage, 'Permission updated successfully');
         cy.then(() => cy.setCookie('tj_auth_token', userCookie.value));
       });
@@ -142,14 +153,17 @@ describe('Data Source Folders — Restrict Query Run', () => {
         cy.get(dataSourceSelector.dsNameInputField).should('be.enabled');
 
         cy.openApp('', workspaceId, appId);
+        openQueryPanel();
         uiRunQueryInBuilder(queryName).then(verifyQueryRunBlocked);
 
-        adminTogglesRestrict();
+        adminTogglesRestrict(false);
         cy.openApp('', workspaceId, appId);
+        openQueryPanel();
         uiRunQueryInBuilder(queryName).then(verifyQueryRunAllowed);
 
-        adminTogglesRestrict();
+        adminTogglesRestrict(true);
         cy.openApp('', workspaceId, appId);
+        openQueryPanel();
         uiRunQueryInBuilder(queryName).then(verifyQueryRunBlocked);
       });
     });

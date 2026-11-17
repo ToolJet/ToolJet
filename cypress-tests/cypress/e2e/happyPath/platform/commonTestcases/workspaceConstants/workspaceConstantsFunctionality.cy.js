@@ -1,3 +1,4 @@
+import { selectVersionEnvironment } from "Support/utils/platform/versionEnvironment";
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
@@ -17,10 +18,10 @@ import { workspaceConstantsText } from "Texts/platform/workspaceConstants";
 import { dataSourceSelector } from "Selectors/marketplace/dataSource";
 import { setUpSlug } from "Support/utils/apps";
 import { sanitize } from "Support/utils/common";
-import { commonEeSelectors, multiEnvSelector } from "Selectors/platform/eeCommon";
 
 
 const data = {};
+const endpoint = Cypress.env("environmentRestFixtureUrl") || "http://130.131.160.149:4000";
 
 describe("Workspace constants", () => {
     const envVar = Cypress.env("environment");
@@ -49,22 +50,22 @@ describe("Workspace constants", () => {
         // Create and update constants as needed
         createAndUpdateConstant(
             "url",
-            "http://130.131.160.149:4000/development",
+            `${endpoint}/development`,
             ["Global"],
             ["development", "staging", "production"],
             {
-                staging: "http://130.131.160.149:4000/staging",
-                production: "http://130.131.160.149:4000/production",
+                staging: `${endpoint}/staging`,
+                production: `${endpoint}/production`,
             }
         );
         createAndUpdateConstant(
             "url",
-            "http://130.131.160.149:4000/development",
+            `${endpoint}/development`,
             ["Secret"],
             ["development", "staging", "production"],
             {
-                staging: "http://130.131.160.149:4000/staging",
-                production: "http://130.131.160.149:4000/production",
+                staging: `${endpoint}/staging`,
+                production: `${endpoint}/production`,
             }
         );
         cy.apiCreateWorkspaceConstant(
@@ -88,7 +89,7 @@ describe("Workspace constants", () => {
         );
         cy.apiCreateWorkspaceConstant(
             "gconstUrl",
-            "http://130.131.160.149:4000/",
+            `${endpoint}/`,
             ["Global"],
             ["development", "staging", "production"]
         );
@@ -136,7 +137,7 @@ describe("Workspace constants", () => {
         // Verify global const in static query URL and preview
         verifyGlobalConstInStaticQuery(
             '[data-cy="list-query-static_restapi_constants_url"]',
-            "http://130.131.160.149:4000/development"
+            `${endpoint}/development`
         );
         verifyStaticQueryPreview(
             '[data-cy="list-query-constants_runjs"]',
@@ -170,8 +171,7 @@ describe("Workspace constants", () => {
         });
 
         // Final housekeeping steps
-        cy.waitForElement(multiEnvSelector.environmentsTag("production"));
-        cy.get(multiEnvSelector.environmentsTag("production")).click();
+        selectVersionEnvironment("production");
         cy.get(commonSelectors.releaseButton).click();
         cy.get(commonSelectors.yesButton).click();
         cy.wait(500);
@@ -184,7 +184,7 @@ describe("Workspace constants", () => {
         cy.get('[data-cy="constants-button"]').click();
         verifyConstantValueVisibility(
             dataSourceSelector.baseUrlTextField,
-            "http://130.131.160.149:4000/development"
+            `${endpoint}/development`
         );
         verifyConstantValueVisibility(
             '[value="{{constants.restapiHeaderKey}}"]',

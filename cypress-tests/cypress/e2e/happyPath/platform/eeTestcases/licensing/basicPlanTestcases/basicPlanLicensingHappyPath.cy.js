@@ -1,3 +1,4 @@
+import { selectVersionEnvironment } from "Support/utils/platform/versionEnvironment";
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
@@ -208,11 +209,11 @@ describe("License Page", () => {
 
     cy.openApp(data.appName1);
 
-    cy.get(multiEnvSelector.environmentsTag("development")).click();
-    cy.get(multiEnvSelector.environmentsTag("staging")).within(() => {
+    selectVersionEnvironment("development");
+    cy.get(multiEnvSelector.environmentOption("staging")).within(() => {
       cy.get(commonWidgetSelector.enterpriseGradientSmIcon).should("exist");
     });
-    cy.get(multiEnvSelector.environmentsTag("production")).within(() => {
+    cy.get(multiEnvSelector.environmentOption("production")).within(() => {
       cy.get(commonWidgetSelector.enterpriseGradientSmIcon).should("exist");
     });
 

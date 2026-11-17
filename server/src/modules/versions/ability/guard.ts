@@ -15,8 +15,11 @@ export class FeatureAbilityGuard extends AbilityGuard {
     return App;
   }
 
-  protected getResource(request?: any): ResourceDetails | ResourceDetails[] {
-    const resource: App = this.getResourceObject();
+  protected getResource(request?: {
+    tj_app?: App;
+    query?: { parentAppId?: string };
+  }): ResourceDetails | ResourceDetails[] {
+    const resource: App = request?.tj_app;
     switch (resource?.type) {
       case APP_TYPES.FRONT_END:
         return {

@@ -1,6 +1,7 @@
 import { commonSelectors } from 'Selectors/common';
 import { versionSwitcherSelectors } from 'Selectors/platform/version';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
+import { switchModuleEditorVersion } from 'Support/utils/platform/modules';
 import {
   RESOURCES,
   TIERS,
@@ -91,6 +92,8 @@ describe('Modules — Folder Granular Access', { retries: 0 }, () => {
     cy.then(() => {
       cy.apiGetEditingVersionId(moduleId).then((versionId) => cy.apiCreateAppVersion(moduleId, 'v2-folder-edit-allowed', versionId));
       openAppEditor(wsSlug, moduleId);
+      // Creating a draft through the API does not select it in the editor.
+      switchModuleEditorVersion('v2-folder-edit-allowed');
       cy.get(versionSwitcherSelectors.versionSwitcherButton).should('contain.text', 'v2-folder-edit-allowed');
     });
   });

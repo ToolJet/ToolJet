@@ -152,18 +152,29 @@ export const confirmInviteElements = (
     .and("have.attr", "href")
     .and("equal", "https://www.tooljet.com/privacy");
 
-  cy.get("body").then(($el) => {
-    if ($el.text().includes("Google")) {
-      cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
-        "have.text",
-        ssoText.googleSignUpText
-      );
-      cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
-        "have.text",
-        ssoText.gitSignUpText
-      );
-      cy.get(commonSelectors.onboardingSeperator).should("be.visible");
-    }
+  cy.location("pathname").then((pathname) => {
+    const workspaceSlug = pathname.match(/^\/signup\/([^/]+)/)?.[1];
+    const configPath = workspaceSlug ? `${workspaceSlug}/` : "";
+    cy.request({
+      url: `${Cypress.env("server_host")}/api/login-configs/${configPath}public`,
+      log: false,
+    }).then(({ status, body }) => {
+      expect(status, "signup configuration status").to.equal(200);
+      const configs = body.sso_configs;
+      [
+        ["google", ssoSelector.googleSSOText, ssoText.googleSignUpText],
+        ["git", ssoSelector.gitSSOText, ssoText.gitSignUpText],
+      ].forEach(([provider, selector, text]) => {
+        if (configs?.[provider]?.enabled) {
+          cy.get(selector).verifyVisibleElement("have.text", text);
+        } else {
+          cy.get(selector).should("not.exist");
+        }
+      });
+      if (configs?.google?.enabled || configs?.git?.enabled) {
+        cy.get(commonSelectors.onboardingSeperator).should("be.visible");
+      }
+    });
   });
 };
 

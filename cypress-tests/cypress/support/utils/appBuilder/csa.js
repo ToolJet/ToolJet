@@ -3,7 +3,6 @@
 //   verifyControlComponentAction     -                    → csa
 //   randomString                     -                    → common
 //   verifyCSA                        csa                  → csa
-//   addCSA                           csa                  → csa
 // └──────────────────────────────────────────────────────────────────┘
 /**
  * MODULE — appBuilder/csa: Component-Specific Action (CSA) helpers — wire a

@@ -1,0 +1,10 @@
+version: 1
+name: platform-environments
+slug: platform-environments
+protocol: http
+port: 4016
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

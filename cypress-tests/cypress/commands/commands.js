@@ -67,7 +67,8 @@ Cypress.Commands.add(
   (subject, assertion, value, ...arg) => {
     return cy
       .wrap(subject, { timeout: 10000 })
-      .scrollIntoView({ timeout: 10000 })
+      // Keep controls below the fixed editor and environment headers.
+      .scrollIntoView({ timeout: 10000, offset: { top: -100, left: 0 } })
       .should("be.visible", { timeout: 10000 })
       .and(assertion, value, ...arg);
   }

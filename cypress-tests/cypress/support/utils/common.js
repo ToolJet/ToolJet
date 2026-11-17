@@ -1,10 +1,11 @@
+import { openVersionManager, selectVersionEnvironment } from "Support/utils/platform/versionEnvironment";
 import moment from "moment";
 import {
   commonSelectors,
   commonWidgetSelector,
   cyParamName,
 } from "Selectors/common";
-import { commonEeSelectors, multiEnvSelector } from "Selectors/platform/eeCommon";
+import { commonEeSelectors } from "Selectors/platform/eeCommon";
 import { profileSelector } from "Selectors/platform/profile";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText, path } from "Texts/common";
@@ -238,12 +239,10 @@ export const navigateToworkspaceConstants = () => {
 export const releaseApp = () => {
   cy.ifEnv("Enterprise", () => {
     appPromote("development", "production");
-    cy.waitForElement(multiEnvSelector.environmentsTag("production"));
-    cy.get(multiEnvSelector.environmentsTag("production")).click();
+    selectVersionEnvironment("production");
   });
   cy.ifEnv("Community", () => {
-    cy.waitForElement(multiEnvSelector.environmentsTag("development"));
-    cy.get(multiEnvSelector.environmentsTag("development")).click();
+    openVersionManager();
   });
 
   cy.waitForElement(commonSelectors.releaseButton);

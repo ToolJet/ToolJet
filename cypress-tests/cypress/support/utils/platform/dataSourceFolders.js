@@ -203,11 +203,14 @@ export const apiCreateReleasedAppWithQuery = (appName, slug, dataSourceId, query
     return cy.wrap({ appId, versionId });
   });
 
+let builderQueryRuns = 0;
+
 export const uiRunQueryInBuilder = (queryName) => {
-  cy.intercept("POST", "/api/data-queries/*/versions/*/run/*").as("builderQueryRun");
+  const alias = `builderQueryRun${++builderQueryRuns}`;
+  cy.intercept("POST", "/api/data-queries/*/versions/*/run/*").as(alias);
   cy.get(dsFolder.listQuery(queryName)).click();
   cy.get(dsFolder.queryRunButton).click();
-  return cy.wait("@builderQueryRun").its("response.body");
+  return cy.wait(`@${alias}`).its("response.body");
 };
 
 let releasedAppVisits = 0;

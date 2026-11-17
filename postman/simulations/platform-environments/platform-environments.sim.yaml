@@ -1,0 +1,6 @@
+simulation: platform-environments
+routing: path
+mocks:
+  - name: platform-environments
+    routeKey: environment
+    path: postman/mocks/platform-environments

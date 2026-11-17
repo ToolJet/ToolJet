@@ -1,3 +1,4 @@
+import { openQueryPanel } from 'Support/utils/appBuilder/querymanager/queryPanel';
 import { dataSourceFolderSelectors as dsFolder } from 'Selectors/platform/dataSourceFolders';
 
 describe('Data Source Folders — Query Panel Grouping', () => {
@@ -75,6 +76,7 @@ describe('Data Source Folders — Query Panel Grouping', () => {
 
   it('both data source pickers group by folder, search across folders, and reflect a folder change after reload', () => {
     cy.openApp('', workspaceId, Cypress.env('appId'));
+    openQueryPanel();
 
     verifyFolderGrouping(dsFolder.pickerDataSourceCard, dsFolder.emptyPickerSearch, landingHeader);
 
@@ -86,6 +88,7 @@ describe('Data Source Folders — Query Panel Grouping', () => {
     cy.get(dsFolder.pickerDataSourceCard(names.stray)).should('be.visible');
     cy.then(() => cy.apiAddDataSourceToFolder(Cypress.env('strayId'), Cypress.env('folderAId')));
     cy.reload();
+    openQueryPanel();
 
     cy.get(dsFolder.pickerFolderHeader(names.folderA)).click();
     cy.get(dsFolder.pickerDataSourceCard(names.stray)).should('have.length', 1).and('be.visible');

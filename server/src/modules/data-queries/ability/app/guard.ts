@@ -16,8 +16,8 @@ export class FeatureAbilityGuard extends AbilityGuard {
     return App;
   }
 
-  private getAppResourceType(): MODULES {
-    const appResource: App = this.getResourceObject();
+  private getAppResourceType(request: { tj_app: App }): MODULES {
+    const appResource: App = request.tj_app;
     switch (appResource.type) {
       case APP_TYPES.MODULE:
         return MODULES.MODULES;
@@ -27,8 +27,8 @@ export class FeatureAbilityGuard extends AbilityGuard {
         return MODULES.APP;
     }
   }
-  protected getResource(): ResourceDetails | ResourceDetails[] {
-    const appResource: MODULES = this.getAppResourceType();
+  protected getResource(request: { tj_app: App }): ResourceDetails | ResourceDetails[] {
+    const appResource: MODULES = this.getAppResourceType(request);
     return [
       {
         resourceType: appResource,

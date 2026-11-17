@@ -1,3 +1,4 @@
+import { openQueryPanel } from 'Support/utils/appBuilder/querymanager/queryPanel';
 import { dataSourceSelector } from 'Selectors/marketplace/dataSource';
 import { dataSourceFolderSelectors as dsFolder } from 'Selectors/platform/dataSourceFolders';
 import { apiAddUserToGroup, apiCreateGroup } from 'Support/utils/manageGroups';
@@ -175,7 +176,10 @@ describe('Data Source Folders — Permission Tiers', () => {
         cy.apiCreateApp(`ds-tier-app-${Date.now()}`);
 
         // On a NEW app the landing picker renders folders as COLLAPSED headers — the contents are not in the DOM at all until the header is clicked.
-        cy.openApp('', Cypress.env('workspaceId'), Cypress.env('appId'), dsFolder.pickerFolderHeader(folderName));
+        cy.then(() => {
+          cy.openApp('', Cypress.env('workspaceId'), Cypress.env('appId'));
+          openQueryPanel();
+        });
 
         cy.get(dsFolder.pickerFolderHeader(folderName)).should('be.visible');
         cy.get(dsFolder.pickerDataSourceCard(insideName)).should('not.exist');

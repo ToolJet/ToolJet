@@ -12,16 +12,26 @@ export const getLicenseExpiryDate = () => {
     .then((response) => {
       expect(response.status).to.eq(200);
 
-      const expiryISO = response.body.licenseStatus?.expiryDate;
+      const licenseStatus = response.body.licenseStatus;
+      if (licenseStatus?.isExpired) return "License Expired";
+
+      const expiryISO = licenseStatus?.expiryDate;
       expect(expiryISO, "expiryDate should exist").to.be.a("string");
 
       const expiryDate = new Date(expiryISO);
-      const formattedDate = expiryDate.toLocaleDateString("en-GB", {
+      const now = new Date();
+      // Match getDateDifferenceInDays: compare UTC calendar dates, not elapsed hours.
+      const todayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+      const expiryUTC = Date.UTC(expiryDate.getUTCFullYear(), expiryDate.getUTCMonth(), expiryDate.getUTCDate());
+      const daysLeft = Math.round(Math.abs(expiryUTC - todayUTC) / (24 * 60 * 60 * 1000));
+      if (daysLeft <= 14) return `Expiring in ${daysLeft} day(s)`;
+
+      const formattedDate = expiryDate.toLocaleDateString("en-IN", {
         day: "2-digit",
         month: "short",
         year: "numeric",
         timeZone: "UTC",
-      });
+      }).replace(/-/g, " ");
 
       return `Valid till ${formattedDate} (UTC)`;
     });

@@ -46,7 +46,7 @@ describe("Redirection error pages", () => {
     });
 
     it("Verify error message in case of restricted access", () => {
-        data.appName = `${fake.companyName} App`;
+        data.appName = `${fake.companyName} App ${Date.now()}`;
         data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 
         cy.apiCreateApp(data.appName);
@@ -78,7 +78,7 @@ describe("Redirection error pages", () => {
     });
 
     it("Verify error modal for app url of unreleased apps", () => {
-        data.appName = `${fake.companyName} App`;
+        data.appName = `${fake.companyName} App ${Date.now()}`;
         data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 
         cy.apiCreateApp(data.appName);

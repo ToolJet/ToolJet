@@ -13,8 +13,7 @@ describe('data-queries app FeatureAbilityGuard', () => {
   });
 
   const withResource = (resource: any) => {
-    (guard as any).setResourceObject(resource);
-    return (guard as any).getResource();
+    return (guard as any).getResource({ tj_app: resource });
   };
 
   describe('getResource', () => {

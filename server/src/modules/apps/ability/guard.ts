@@ -8,8 +8,8 @@ import { APP_TYPES } from '../constants';
 
 @Injectable()
 export class FeatureAbilityGuard extends AbilityGuard {
-  protected getResource(): ResourceDetails {
-    const resource = this.getResourceObject();
+  protected getResource(request?: { tj_app?: App }): ResourceDetails {
+    const resource = request?.tj_app;
     switch (resource?.type) {
       case APP_TYPES.FRONT_END:
         return {

@@ -175,6 +175,9 @@ export const multiEnvSelector = {
   environmentsTag: (envName) => {
     return `[data-cy="${cyParamName(envName)}-environment-name"]`;
   },
+  environmentOption: (envName) => {
+    return `button[data-cy="${cyParamName(envName)}-environment-name"]`;
+  },
 };
 
 export const whiteLabellingSelectors = {

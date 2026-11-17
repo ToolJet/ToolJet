@@ -91,8 +91,8 @@ export const dashboardSelector = {
     return `[data-cy="byoa-tab-${tabId}"]`;
   },
   byoaCreateTokenLink: '[data-cy="byoa-create-token-link"]',
-  byoaCopyCommand: (index) => {
-    return `[data-cy="byoa-copy-command-${index}"]`;
+  byoaCopyCommand: (stepIndex, commandIndex) => {
+    return `[data-cy="byoa-copy-command-${stepIndex}-${commandIndex}"]`;
   },
   byoaDocsLink: '[data-cy="byoa-docs-link"]',
   byoaNotNowButton: '[data-cy="byoa-not-now"]',

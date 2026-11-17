@@ -46,6 +46,8 @@ Controller wiring (`src/modules/folders/controller.ts`):
 
 ## Invariants & gotchas
 
+- Ability guards are singleton-scoped: derive resource metadata from the current request passed to `getResource(request)`. Never store an app/resource on the guard instance; concurrent app and module-picker requests must not replace each other’s authorization context.
+
 - `getImportPath` maps **both** EE and Cloud to `ee/` — Cloud has no separate module tree; differentiate with runtime checks (`getTooljetEdition()`, `CloudFeatureGuard`).
 - CE and EE files loaded via `getProviders` must export identical class names — imports are merged with `Object.assign`, so a renamed EE export silently drops the CE provider override.
 - Every `@InitFeature` key must exist in `MODULE_INFO[module]`, else `AbilityGuard` throws 404 `Feature X not found in module Y` at request time. New feature = add to the module's `constants/features.ts` (wired into `module-info.ts`).

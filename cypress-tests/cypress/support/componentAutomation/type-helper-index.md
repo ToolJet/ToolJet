@@ -97,7 +97,6 @@
 | - | `verifyControlComponentAction` | appBuilder/csa.js | csa | `verifyControlComponentAction('textinput1', 'hello')` |
 | - | `randomString` | appBuilder/csa.js | common | `randomString(8)` |
 | csa | `verifyCSA` | appBuilder/csa.js | csa | `verifyCSA('textinput1')` |
-| csa | `addCSA` | appBuilder/csa.js | csa | `addCSA('textinput1', [{ event: 'On click', action: 'Set text', value: 'hello' }])` |
 | code | `addAndVerifyOnSingleLine` | appBuilder/codehinter.js | common | `addAndVerifyOnSingleLine('Hello', 'text', 'text1')` |
 | - | `renameApp` | appBuilder/editorHeader.js | editor | `renameApp('My App')` |
 | - | `verifyAppName` | appBuilder/editorHeader.js | editor | `verifyAppName('My App')` |
@@ -140,6 +139,7 @@
 | - | `verifyPreviewData` | appBuilder/querymanager/queries.js | common | `verifyPreviewData('expected value')` |
 | - | `resizeQueryPanel` | appBuilder/querymanager/queryPanel.js | querymanager | `resizeQueryPanel('90')   // set panel height to 90%` |
 | - | `closeQueryPanel` | appBuilder/querymanager/queryPanel.js | querymanager | `closeQueryPanel()` |
+| - | `openQueryPanel` | appBuilder/querymanager/queryPanel.js | querymanager | `openQueryPanel()` |
 | - | `addBasicData` | appBuilder/components/button.js | properties | `addBasicData({ widgetName: 'btnClone', tooltipText: 'hi', backgroundColor: ['255','0','0','100'] })` |
 | - | `verifyBasicData` | appBuilder/components/button.js | properties | `verifyBasicData('btnClone', { widgetName: 'btnClone', tooltipText: 'hi', backgroundColor: ['255','0','0','100'] })` |
 | - | `tableWidgetOuter` | appBuilder/components/table.js | canvas | `cy.get(tableWidgetOuter('table1')).first().click()` |

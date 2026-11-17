@@ -1,5 +1,6 @@
 import { dataSourceFolderSelectors as dsFolder } from 'Selectors/platform/dataSourceFolders';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
+import { openQueryPanel } from 'Support/utils/appBuilder/querymanager/queryPanel';
 import { holdModuleListUntilAppLoads } from 'Support/utils/platform/folderPermissions';
 import {
   dragDataSourceToFolder,
@@ -156,6 +157,7 @@ describe('Data Source Folders — Folder Granular Access', () => {
         holdModuleListUntilAppLoads(Cypress.env('appId'));
         cy.visit(`/${workspaceId}/apps/${Cypress.env('appId')}`);
       });
+      openQueryPanel();
       cy.get(dsFolder.pickerFolderHeader(folderName), { timeout: 30000 }).should('be.visible').click();
       cy.get(dsFolder.pickerDataSourceCard(dataSourceName)).should('be.visible');
     });

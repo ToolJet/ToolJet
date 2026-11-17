@@ -210,7 +210,7 @@ export const verifyAppBuilderAccess = (envNames, { workspaceName, canEdit, appId
   }
   cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
   envNames.forEach((envName) => {
-    const envSelector = `[data-cy="${envName.name}-environment-name"]`;
+    const envSelector = multiEnvSelector.environmentOption(envName.name);
     if (envName.hasAccess) cy.get(envSelector).should("be.enabled");
     else assertRestrictedTooltip(envSelector, envName.name);
   });
@@ -219,13 +219,14 @@ export const verifyAppBuilderAccess = (envNames, { workspaceName, canEdit, appId
 const assertEnvRestrictedTooltip = (envButton, env) => {
   envButton.find(multiEnvSelector.envNameDropdown)
     .should("have.css", "cursor", "not-allowed")
-    .trigger("mouseover", { force: true });
+    .parent()
+    .realHover();
 
   cy.get("div.tooltip-inner")
     .should("be.visible")
-    .and("contain", `Access to ${env} environment is restricted. Contact admin to know more.`);
+    .and("have.text", `Access to ${env} environment is restricted. Contact admin to know more.`);
 
-  envButton.trigger("mouseout", { force: true });
+  cy.get("body").realMouseMove(0, 0, { position: "topLeft" });
   cy.get("div.tooltip-inner").should("not.exist");
 };
 
@@ -249,7 +250,6 @@ export const verifyPreviewAccess = (
   };
 
   if (canEdit) {
-    cy.wait(2000);
     cy.get(commonWidgetSelector.editorPreviewLink)
       .first()
       .should("have.attr", "href")
@@ -263,20 +263,29 @@ export const verifyPreviewAccess = (
     cy.visit(previewUrl, { failOnStatusCode: false });
   }
 
+  // Wait for the preview to render its component and selected environment before
+  // opening options that are rebuilt when the environment/version data arrives.
+  cy.get(commonWidgetSelector.draggableWidget(componentName)).should("be.visible");
   envNames.forEach((envName) => {
     openPreviewSettingsIfClosed();
+    cy.get(multiEnvSelector.currentEnvName).should(($environment) => {
+      expect($environment.text().trim(), "loaded preview environment").not.to.equal("");
+    });
     openEnvDropdown();
 
-    const envButton = cy.contains(
+    const envButton = () => cy.contains(
       '[data-cy="env-name-list"] button',
       new RegExp(`^${envName.name}$`, "i")
     );
 
     if (envName.hasAccess) {
-      envButton.should("be.enabled").click();
+      envButton().should("be.enabled");
+      envButton().find(multiEnvSelector.envNameDropdown).should("have.css", "cursor", "pointer");
+      // Re-query after readiness assertions; preview data updates replace options.
+      envButton().click();
       cy.get(commonWidgetSelector.draggableWidget(componentName)).should("contain", envName.name);
     } else {
-      assertEnvRestrictedTooltip(envButton, envName.name);
+      assertEnvRestrictedTooltip(envButton(), envName.name);
     }
   });
 };

@@ -22,8 +22,8 @@ export class FeatureAbilityGuard extends AbilityGuard {
   }
 
   // Only front-end apps have one (set on the request by ValidAppGuard).
-  protected getResource(): ResourceDetails | ResourceDetails[] {
-    const resource: App = this.getResourceObject();
+  protected getResource(request?: { tj_app?: App }): ResourceDetails | ResourceDetails[] {
+    const resource: App = request?.tj_app;
     return resource?.type === APP_TYPES.FRONT_END ? { resourceType: MODULES.APP } : null;
   }
 }

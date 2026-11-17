@@ -1,0 +1,25 @@
+purpose:
+  stands_in_for: The external environment REST fixture used by Platform Cypress tests.
+  unblocks: Real backend queries that resolve workspace secrets and select development, staging, or production.
+assumptions:
+  - id: environment-response-contract
+    status: supported
+    claim: Each environment GET returns a JSON message naming that environment.
+    reason: The public imported module binds query data.message to text that the Cypress spec checks exactly.
+    verification: Ran the workspaceConstantsFunctionality spec and both moduleConstantsMultiEnv Cypress scenarios successfully. Simulation request events recorded real backend GETs for development, staging, and production with HTTP 200 and the expected rendered query results.
+    source: cypress-tests/cypress/fixtures/templates/modules/one version module.json; cypress-tests/cypress/e2e/happyPath/platform/eeTestcases/modules/constants/moduleConstantsMultiEnv.cy.js
+    updated_at: '2026-11-17'
+  - id: resolved-header-contract
+    status: supported
+    claim: Both imported queries send customHeader with the value key=value.
+    reason: Their header expressions resolve through the environment and workspace constants seeded by the tests.
+    verification: Inspected the public import fixture. Direct checks rejected a missing header with HTTP 400; the passing workspace-constants flow reached all three endpoints through the real backend with the required resolved header.
+    source: cypress-tests/cypress/fixtures/templates/modules/one version module.json
+    updated_at: '2026-11-17'
+  - id: provider-availability
+    status: unknown
+    claim: The shared external fixture is reachable from every development environment.
+    reason: Local backend requests timed out; a stand-in cannot establish remote availability.
+    verification: Observed connection timeouts while running the module constants tests. Owner mock discovery was skipped because the Postman CLI is signed out.
+    source: Local Platform Cypress run on 2026-11-17
+    updated_at: '2026-11-17'
