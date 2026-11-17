@@ -26,7 +26,7 @@ Every workspace comes with seven ready-made themes next to the default **ToolJet
 
 Each one changes the primary color, the app background and the surfaces, in light and dark mode. Fonts, corner radius and status colors stay the same as in the default theme.
 
-<!-- TODO screenshot: /img/app-builder/custom-theme/built-in-themes-two-up.png | img-full | alt: The same app page in two built-in themes, ToolJet Navy on the left and ToolJet Emerald on the right, with buttons, links and backgrounds following each theme | shows: the Carrier Directory page of the visual showcase app captured at one crop with ToolJet Navy applied and again with ToolJet Emerald applied, joined side by side in one image -->
+<img className="screenshot-full img-full" src="/img/app-builder/custom-theme/built-in-themes-two-up.png" alt="The same app page in two built-in themes, ToolJet Navy on the left and ToolJet Emerald on the right, with buttons, links and backgrounds following each theme" />
 
 ### Apply a Built-in Theme
 

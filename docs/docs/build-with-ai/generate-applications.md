@@ -86,7 +86,7 @@ After an edit, click **See what changed** under the AI's reply to compare the ap
 - In a visual app, **Undo this edit** beside it reverses the newest edit. Both buttons need the Pro plan or above, or a trial. They appear on edits after the first build, which has nothing to compare with.
 - In a React Builder app, the comparison has three views: Screens, Code and Access. **Undo this edit** is inside the comparison, and **Redo** brings the edit back.
 
-<!-- TODO screenshot: /img/build-with-ai/ai-chat/turn-summary-see-what-changed.png | img-s | alt: A finished AI edit in the chat: the summary line with its time and steps, then See what changed with a count of what changed, and Undo this edit | shows: the newest finished edit in a visual app on a Pro or trial plan: Changes applied in m:ss, n steps with the credits on the right, See what changed with its count line (for example 3 components on 1 page, 2 queries) and Undo this edit; crop the chat panel (400 px wide) -->
+<img className="screenshot-full img-s" src="/img/build-with-ai/ai-chat/turn-summary-see-what-changed.png" alt="A finished AI edit in the chat: the summary line with its time and steps, then See what changed with a count of what changed, and Undo this edit" />
 
 ## Creating Modules
 

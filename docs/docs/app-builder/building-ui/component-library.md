@@ -14,12 +14,14 @@ Components are the building blocks of ToolJet applications, used to create inter
     title="ToolJet UI 1.0"
     badge="60+ components"
     description="ToolJet's original components, the ones your existing apps use."
+    img="/img/app-builder/building-ui/component-library/carrier-directory-tooljet-ui.png"
     features={['Table, Form, Chart, Kanban and more', 'A reference page for every component']}
   />
   <CapabilityCard
     title="Rocket 2.0"
     badge="81 components"
     description="Components in the style of shadcn/ui. New apps start here."
+    img="/img/app-builder/building-ui/component-library/carrier-directory-rocket.png"
     features={['Data Table, Form, Kanban, Calendar and 11 charts', 'Always follows your app theme']}
   />
   <CapabilityCard
@@ -30,15 +32,13 @@ Components are the building blocks of ToolJet applications, used to create inter
   />
 </CardGrid>
 
-<!-- TODO screenshot: /img/app-builder/building-ui/component-library/carrier-directory-tooljet-ui.png | card img prop (ToolJet UI 1.0 card) | alt: The Carrier Directory screen built with ToolJet UI 1.0 components | shows: the Carrier Directory page (toolbar with search, Mode select, toggle and Add carrier; eight-row table; details form) built in ToolJet UI 1.0, same 1100x620 crop as the other two cards -->
-<!-- TODO screenshot: /img/app-builder/building-ui/component-library/carrier-directory-rocket.png | card img prop (Rocket 2.0 card) | alt: The Carrier Directory screen built with Rocket 2.0 components | shows: the same Carrier Directory page built in Rocket 2.0, same 1100x620 crop -->
 <!-- TODO screenshot: /img/app-builder/building-ui/component-library/carrier-directory-ant-design.png | card img prop (Ant Design card) | alt: The Carrier Directory screen built with Ant Design components | shows: the same Carrier Directory page built in Ant Design, same 1100x620 crop -->
 
 ### Switch to Another Library
 
 The library picker sits at the top of the components panel.
 
-<!-- TODO screenshot: /img/app-builder/building-ui/component-library/library-picker.png | img-full | alt: The library picker open at the top of the components panel, listing ToolJet UI 1.0, Rocket 2.0 and Ant Design, with Rocket 2.0 components on the canvas beside it | shows: Carrier Directory in the app builder on Rocket 2.0 with the picker open and the check mark on Rocket 2.0; crop the canvas edge plus the panel; the list must show only the three libraries that ship (no Material UI) -->
+<img className="screenshot-full img-m" src="/img/app-builder/building-ui/component-library/library-picker.png" alt="The library picker open at the top of the components panel, listing ToolJet UI 1.0, Rocket 2.0 and Ant Design, with the check mark on Rocket 2.0 and Rocket 2.0 components on the canvas beside it" />
 
 1. Click the name of the current library, for example **Rocket 2.0**.
 2. Select **ToolJet UI 1.0**, **Rocket 2.0** or **Ant Design**. A check mark shows the one in use.
