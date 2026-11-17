@@ -340,8 +340,11 @@ const CHECKS = [
 // Off the page: a screenshot hides the Cypress reporter and slides the app under any on-page point.
 const parkMouse = () => cy.get("body").realMouseMove(-10000, -10000, { position: "topLeft" });
 
-// Hovers near the left edge, which stays visible when the text is clipped.
+// Hovers near the left edge, which stays visible when the text is clipped. The pointer moves twice:
+// parkMouse leaves the window, so a hoverable Radix tooltip that just closed still guards its grace
+// area and ignores the first move onto the next trigger.
 const tooltipShows = (el, text) => {
+  cy.wrap(el).realHover({ position: "center" });
   cy.wrap(el).realHover({ position: "left" });
   cy.wait(800);
   return cy.get("body").then(($body) => {
