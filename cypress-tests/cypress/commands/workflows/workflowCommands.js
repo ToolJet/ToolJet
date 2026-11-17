@@ -2,6 +2,7 @@ import { commonSelectors } from "Selectors/common";
 import { workflowSelector } from "Selectors/platform/workflows";
 import { viewAppCardOptions } from "Support/utils/common";
 import { navigateBackToWorkflowsDashboard } from "Support/utils/workflows/workFlows";
+import { openQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import { commonText } from "Texts/common";
 import { workflowsText } from "Texts/platform/workflows";
 
@@ -171,6 +172,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("addWorkflowInApp", (workflowName) => {
+  openQueryPanel();
   cy.get(workflowSelector.showDSPopoverButton).click();
   cy.get(workflowSelector.workflowDataSourceOption).click();
   cy.get(workflowSelector.queryRenameInput).clear().type(workflowName);

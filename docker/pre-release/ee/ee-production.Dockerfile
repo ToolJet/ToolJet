@@ -26,13 +26,16 @@ RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools 
 
 
 # tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827).
+# Pinned to a reviewed commit, never a branch: a release bumps TOOLJET_MCP_REF deliberately, to the tooljet-mcp commit
+# it ships. The GitHub token is a BuildKit secret (github_token), so it stays out of the layers and the build cache.
 FROM node:22.23.4 AS mcp-builder
 WORKDIR /mcp
-ARG TOOLJET_MCP_REF=main
+ARG TOOLJET_MCP_REF=c0d48324b8212f697ef728f07ec2d3869214f74e
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
-    git clone https://github.com/ToolJet/tooljet-mcp.git . && git checkout ${TOOLJET_MCP_REF}
+    git clone https://github.com/ToolJet/tooljet-mcp.git . && \
+    git checkout --detach "${TOOLJET_MCP_REF}"
 RUN npm ci && npm run build:plugin
 
 
@@ -125,6 +128,15 @@ COPY ./server/ ./server/
 RUN node server/scripts/compress-templates.js
 RUN npm install -g @nestjs/cli && npm install -g copyfiles
 RUN npm --prefix server run build && npm prune --production --prefix server
+
+# Built-in component packs: each pack in packs/builtin.json is built with the custom component CLI (cli/) into
+# server/builtin-packs, which the server serves to every workspace like native widgets.
+COPY ./cli/ ./cli/
+COPY ./packs/ ./packs/
+RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
+# The same CLI, packed for GET /api/code-mode/cli/tooljet-cli.tgz: `npm i -g` from the instance installs the CLI
+# that matches this server (server/scripts/pack-cli.sh).
+RUN server/scripts/pack-cli.sh
 
 # Install dependencies for PostgREST, curl, tar, etc.
 RUN apt-get update && apt-get install -y \
@@ -258,6 +270,8 @@ COPY --from=builder --chown=appuser:0 /app/server/node_modules ./app/server/node
 COPY --from=builder --chown=appuser:0 /app/server/templates ./app/server/templates
 COPY --from=builder --chown=appuser:0 /app/server/scripts ./app/server/scripts
 COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
+COPY --from=builder --chown=appuser:0 /app/server/builtin-packs ./app/server/builtin-packs
+COPY --from=builder --chown=appuser:0 /app/server/code-mode-cli ./app/server/code-mode-cli
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/pre-release/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 

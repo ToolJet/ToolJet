@@ -25,6 +25,14 @@ export class CustomComponentLibraryRevision extends BaseEntity {
   @Column({ nullable: true })
   message: string;
 
+  // The stored source revision this revision was built from, when known.
+  @Column({ name: 'code_mode_source_revision', type: 'integer', nullable: true })
+  codeModeSourceRevision: number | null;
+
+  // ...and that source's content hash.
+  @Column({ name: 'code_mode_source_content_hash', type: 'varchar', length: 64, nullable: true })
+  codeModeSourceContentHash: string | null;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

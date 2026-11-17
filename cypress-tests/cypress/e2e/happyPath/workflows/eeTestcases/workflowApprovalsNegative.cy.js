@@ -73,7 +73,7 @@ describe("Workflows - approvals API negatives", SLOW_API, () => {
       });
       cy.apiCancelApproval(request.id).then((res) => {
         expect(res.status).to.equal(403);
-        expect(res.body.message).to.equal(humanText.notAuthorizedToCancelError);
+        expect(res.body.message).to.equal(humanText.forbiddenResourceError);
       });
 
       cy.apiLogout();
