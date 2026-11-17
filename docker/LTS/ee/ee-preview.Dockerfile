@@ -19,12 +19,12 @@ RUN npm ci && npm run build:plugin
 
 # Custom component SDK (private), packed for app projects (TOOLJET_SDK_SPEC below) and served to a teammate's
 # `tooljet app install` at /api/code-mode/cli/custom-component-sdk.tgz: npm's published SDK is older. Follows BRANCH_NAME
-# like tooljet-mcp, falling back to the pinned CUSTOM_COMPONENT_SDK_REF (never a moving branch). A release bumps it
-# deliberately, to the SDK commit it ships.
+# like tooljet-mcp, falling back to CUSTOM_COMPONENT_SDK_REF (the SDK's main
+# branch by default; pass a commit to pin one).
 FROM node:22.23.4 AS sdk-builder
 WORKDIR /sdk
 ARG BRANCH_NAME
-ARG CUSTOM_COMPONENT_SDK_REF=f03662cd1396760249af8cd7b72ebca6af7ff040
+ARG CUSTOM_COMPONENT_SDK_REF=main
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \

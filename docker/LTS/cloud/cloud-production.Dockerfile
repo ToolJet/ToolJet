@@ -1,10 +1,10 @@
 # Custom component SDK (private), packed for Code mode app projects (TOOLJET_SDK_SPEC below) and served to a teammate's
 # `tooljet app install` at /api/code-mode/cli/custom-component-sdk.tgz: npm's published SDK is older.
-# Pinned to a reviewed commit, never a branch: a release bumps CUSTOM_COMPONENT_SDK_REF deliberately, to the SDK commit
-# it ships. The GitHub token is a BuildKit secret (github_token), so it stays out of the layers and the build cache.
+# Builds CUSTOM_COMPONENT_SDK_REF, the SDK's main branch by default; pass a commit to pin one.
+# The GitHub token is a BuildKit secret (github_token), so it stays out of the layers and the build cache.
 FROM node:22.23.4 AS sdk-builder
 WORKDIR /sdk
-ARG CUSTOM_COMPONENT_SDK_REF=f03662cd1396760249af8cd7b72ebca6af7ff040
+ARG CUSTOM_COMPONENT_SDK_REF=main
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
