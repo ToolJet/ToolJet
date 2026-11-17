@@ -64,6 +64,7 @@ describe("Custom Group Granular Access - Builder", () => {
         const environments = [
             { name: "development", hasAccess: true },
             { name: "staging", hasAccess: true },
+            { name: "production", hasAccess: false },
         ];
         let appId1;
 
