@@ -1,11 +1,6 @@
 name: Cypress Cloud Platform
 
-# Cloud-only cases (workspace licences, subscription, white labelling, custom domain,
-# AI credits, cloud onboarding) against a cloud build deployed on the runner.
-# Shared features keep running on the self-hosted lanes.
-#
-# Scheduled runs use the copy of this file on the default branch, so it must live there
-# for the nightly to fire; the nightly itself tests `main` (see "Resolve source").
+# The nightly only fires once this file is on the default branch.
 on:
   pull_request_target:
     types: [labeled, synchronize]
@@ -122,7 +117,6 @@ jobs:
         with:
           ref: ${{ needs.Build-Image.outputs.sha }}
 
-      # Specs, plan terms (PlanTerms.ts) and the image must all come from one commit.
       - name: Verify checkout matches the image source
         run: |
           ACTUAL=$(git rev-parse HEAD)
