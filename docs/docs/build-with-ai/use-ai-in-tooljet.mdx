@@ -240,7 +240,7 @@ Each app keeps its own AI chats, and you see only the chats you started. Click t
 - To find a chat, type in **Search conversations**. The list is filtered by chat title, which is a short summary of your first message in that chat.
 - To start over, click **Start new chat**. The button is disabled while the AI is working on a request. If you already have an empty chat, ToolJet opens it instead of creating another one.
 
-<!-- TODO screenshot: /img/build-with-ai/ai-chat/all-chats.png | img-s | alt: The All chats list in the AI chat, with a search box, Start new chat and each chat's status, date and number of messages | shows: the AI chat panel with All chats open on an app that has three or four chats in different states (one Building or Needs you, the rest Applied or Ready), under Today and Earlier; crop the chat panel (400 px wide) -->
+<img className="screenshot-full img-s" src="/img/build-with-ai/ai-chat/all-chats.png" alt="The All chats list in the AI chat, with a search box, Start new chat and each chat's status, date and number of messages" />
 
 When a chat reaches its context limit, a card titled "This chat is full" replaces the message box. Click **Continue on new chat** to open a new chat that starts with a summary of the current one and sends it for you. The new chat keeps the same model, so the AI can pick up where it left off.
 
@@ -248,7 +248,7 @@ When a chat reaches its context limit, a card titled "This chat is full" replace
 
 Under its header, the AI chat shows a **Build from your own agent** bar. Click **Connect** on it to open **Build ToolJet apps from your coding agent**, which lists the commands to connect **Claude Code**, **Codex**, **Cursor**, **Grok Build**, or another MCP client (**Others**) to your ToolJet instance through the [ToolJet MCP server](./mcp/setup/overview.md). The commands already include your ToolJet URL; replace the token placeholder with a personal access token. On ToolJet Cloud, the dialog can also offer **OAuth**: your agent signs in through your browser, and no token is needed. Building this way runs on your coding agent's subscription instead of ToolJet AI credits.
 
-<!-- TODO screenshot: /img/build-with-ai/ai-chat/connect-your-agent.png | img-l | alt: The Build ToolJet apps from your coding agent dialog, with its six benefits and the Connect your agent steps for Claude Code | shows: the dialog opened from Connect on the Build from your own agent bar in a visual app, Claude Code tab, Personal access token method; the commands print the instance's address, so capture where that address can be shown or crop above the commands; token placeholder left as it is -->
+<img className="screenshot-full img-l" src="/img/build-with-ai/ai-chat/connect-your-agent.png" alt="The Build ToolJet apps from your coding agent dialog, with its six benefits and the Connect your agent steps for Claude Code" />
 
 In a React Builder app, the bar reads **Work on this app in your editor** instead. Click **Open** to work on the app's code from your own editor, terminal, or coding agent. See [Build Locally](./react-builder/local-development.md).
 
