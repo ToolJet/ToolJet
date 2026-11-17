@@ -38,6 +38,9 @@ const NARROW_CARD = 160;
 
 const css = (value: unknown) => (isSet(value) ? String(value) : undefined);
 const text = (value: unknown) => (value == null || typeof value === 'object' ? '' : String(value));
+// {{Infinity}} (arithmetic on data not loaded, like 1/0) reaches a text property as the word: no figure, as NaN is not.
+const finiteText = (value: unknown) =>
+  typeof value === 'string' && /^[-+]?Infinity$/.test(value.trim()) ? '' : value;
 
 const Sparkline = ({ data, type }: { data: unknown; type: string }) => {
   const paths = useMemo(() => sparkPaths(data, SPARK_W, SPARK_H), [data]);
@@ -280,7 +283,7 @@ export const Stat = () => {
 
   useEffect(() => {
     setPrimaryLabel(text(label));
-    setPrimaryValue(typeof value === 'number' ? (Number.isFinite(value) ? value : '') : text(value));
+    setPrimaryValue(typeof value === 'number' ? (Number.isFinite(value) ? value : '') : text(finiteText(value)));
     setSecondaryLabel(text(changeLabel));
     setSecondaryValue(text(change));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -367,7 +370,7 @@ export const Stat = () => {
   ) : null;
   // The chip sits in the label row unless the icon takes that corner; then it follows the figure.
   const badgeInHeader = !(Glyph && iconPosition === 'right');
-  const shown = statValue(value, { valueFormat, currency, locale });
+  const shown = statValue(finiteText(value), { valueFormat, currency, locale });
 
   const content = (
     <div className={cn('ui-stat-content', reserveLabel ? 'is-roomy' : 'is-short', inline && 'is-inline')}>
