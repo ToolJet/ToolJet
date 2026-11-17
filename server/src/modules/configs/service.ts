@@ -5,6 +5,7 @@ import { IConfigService } from './interfaces/IService';
 import { getMcpOAuthPublicConfig } from './mcp-oauth-public-config';
 import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
 import { resolveCodeModeIsolation } from '@helpers/code-mode-isolation.helper';
+import { isServerManagedMigrationMode } from '../../migration-helpers/migration-mode';
 
 // Instance-wide (not per-user/per-org) settings + env vars. Concurrent calls (the bootstrap burst on
 // page load) share one lookup, which is dropped as soon as it settles: a setting saved through the API,
@@ -61,6 +62,8 @@ export class ConfigService implements IConfigService {
     const isolation = resolveCodeModeIsolation(process.env);
     publicConfigVars.CODE_MODE_ISOLATION = isolation.mode;
     publicConfigVars.CODE_MODE_STRICT_BINDINGS = isolation.strictBindings ? 'true' : 'false';
+    // Blocking mode migrates before boot, so the migration banner never needs to ask.
+    publicConfigVars.MIGRATION_ASYNC = String(isServerManagedMigrationMode());
 
     return { ...publicConfigVars, ...getMcpOAuthPublicConfig(process.env) };
   }

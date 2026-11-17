@@ -10,48 +10,27 @@ import { ArrowBigUpDash } from 'lucide-react';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useTranslation } from 'react-i18next';
 import { useVersionActionRequest } from '@/AppBuilder/_utils/versionActions';
-import { authenticationService } from '@/_services';
-import { getEnvironmentAccessFromPermissions, hasEnvironmentAccess } from '@/_helpers/environmentAccess';
 
 const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = false }) => {
   const [promoteModalData, setPromoteModalData] = useState(null);
   const { moduleId } = useModuleContext();
   const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
   const { isPromoteVersionEnabled } = getCanPromoteAndRelease();
-  const {
-    isSaving,
-    editingVersion,
-    appVersionEnvironment,
-    environments,
-    selectedEnvironment,
-    currentEnvIndex,
-    appId,
-    isModuleApp,
-  } = useStore(
-    (state) => ({
-      appId: state.appStore.modules[moduleId].app.appId,
-      isModuleApp: state.appStore.modules.canvas?.app?.appType === 'module',
-      isSaving: state.appStore.modules[moduleId].app.isSaving,
-      editingVersion: version?.id || state.currentVersionId,
-      selectedEnvironment: state.selectedEnvironment,
-      environments: state.environments,
-      appVersionEnvironment: version?.currentEnvironmentId
-        ? state.environments?.find((env) => env.id === version.currentEnvironmentId)
-        : state.appVersionEnvironment,
-      currentEnvIndex: version?.currentEnvironmentId
-        ? state.environments?.findIndex((env) => env?.id === version.currentEnvironmentId)
-        : state.environments?.findIndex((env) => env?.id === state.appVersionEnvironment?.id),
-    }),
-    shallow
-  );
-
-  const targetEnvironment = environments?.[currentEnvIndex + 1];
-  const lacksTargetAccess =
-    !isModuleApp &&
-    !!targetEnvironment &&
-    !hasEnvironmentAccess(
-      getEnvironmentAccessFromPermissions(authenticationService.currentSessionValue?.app_group_permissions, appId),
-      targetEnvironment.name
+  const { isSaving, editingVersion, appVersionEnvironment, environments, selectedEnvironment, currentEnvIndex } =
+    useStore(
+      (state) => ({
+        isSaving: state.appStore.modules[moduleId].app.isSaving,
+        editingVersion: version?.id || state.currentVersionId,
+        selectedEnvironment: state.selectedEnvironment,
+        environments: state.environments,
+        appVersionEnvironment: version?.currentEnvironmentId
+          ? state.environments?.find((env) => env.id === version.currentEnvironmentId)
+          : state.appVersionEnvironment,
+        currentEnvIndex: version?.currentEnvironmentId
+          ? state.environments?.findIndex((env) => env?.id === version.currentEnvironmentId)
+          : state.environments?.findIndex((env) => env?.id === state.appVersionEnvironment?.id),
+      }),
+      shallow
     );
 
   // enable only after the environment details are loaded
@@ -59,8 +38,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
     isSaving ||
     selectedEnvironment?.priority < appVersionEnvironment?.priority ||
     !appVersionEnvironment ||
-    !targetEnvironment ||
-    lacksTargetAccess;
+    !environments?.[currentEnvIndex + 1];
 
   const handlePromote = (e) => {
     if (e) e.stopPropagation();
@@ -77,9 +55,6 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
   const renderTooltipMessage = () => {
     if (!isPromoteVersionEnabled) {
       return "You don't have access to promote application. Contact admin to know more.";
-    }
-    if (lacksTargetAccess) {
-      return `Access to ${targetEnvironment.name.toLowerCase()} environment is restricted. Contact admin to know more.`;
     }
     if (!shouldDisablePromote) {
       return 'Promote this version to the next environment';

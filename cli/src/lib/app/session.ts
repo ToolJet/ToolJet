@@ -3,6 +3,15 @@ import fetch = require('node-fetch');
 import { Auth } from '../library/auth';
 import { validateOriginUrl } from '../library/target-validation';
 import { ensureCompatible } from '../compatibility';
+import {
+  DELEGATION_REFUSED_HINT,
+  type DirectIdentity,
+  type DirectKind,
+  credentialFetchOptions,
+  directHeaders,
+  directKindOf,
+  jwtPayload,
+} from '../direct-credential';
 
 /*
   How `tooljet app` reaches a ToolJet instance. The target is, in order: --url and --token, then TOOLJET_URL and
@@ -14,19 +23,31 @@ import { ensureCompatible } from '../compatibility';
 export interface Target {
   url: string;
   token: string;
-  /** 'session': `token` is already a ToolJet session (TOOLJET_SESSION_TOKEN, an in-product build), not a PAT. */
-  kind?: 'pat' | 'session';
+  /**
+   * 'session': `token` is already a ToolJet session (TOOLJET_SESSION_TOKEN, an in-product build), not a PAT.
+   * 'delegation': `token` is an MCP OAuth delegation (TOOLJET_SESSION_TOKEN from an MCP server connected with OAuth).
+   */
+  kind?: 'pat' | DirectKind;
   workspaceId?: string;
 }
+
+/** The workspace and kind of a credential sent as it is (a session or a delegation); undefined for a PAT. */
+export const directIdentity = (target: Target): DirectIdentity | undefined =>
+  (target.kind === 'session' || target.kind === 'delegation') && target.workspaceId
+    ? { workspaceId: target.workspaceId, kind: target.kind }
+    : undefined;
 
 export interface Session extends Target {
   organizationId: string;
   organizationSlug?: string;
-  /** The signed-in user's email (the session token's subject). */
+  /** The signed-in user's email (the session token's subject); empty for an OAuth delegation, which carries no email. */
   email: string;
-  /** The signed-in user's id (the session token's `username`); empty when the token does not carry it. */
+  /**
+   * The signed-in user's id (the session token's `username`, a delegation's subject); empty when the token does not
+   * carry it.
+   */
   userId: string;
-  /** fetch against the API with the session cookie and workspace header. */
+  /** fetch against the API with the user's credential (session cookie or delegation header) and workspace header. */
   api: (path: string, init?: { method?: string; body?: unknown }) => Promise<any>;
 }
 
@@ -39,7 +60,7 @@ export const resolveTarget = (flags: { url?: string; token?: string } = {}): Tar
     if (!workspaceId) throw new Error('TOOLJET_SESSION_TOKEN needs TOOLJET_WORKSPACE_ID beside it.');
     const urlError = validateOriginUrl(url);
     if (urlError !== true) throw new Error(urlError);
-    return { url: url.replace(/\/+$/, ''), token: sessionToken, kind: 'session', workspaceId };
+    return { url: url.replace(/\/+$/, ''), token: sessionToken, kind: directKindOf(sessionToken), workspaceId };
   }
   const token = flags.token ?? process.env.TOOLJET_PAT ?? process.env.TOOLJET_TOKEN;
   if (url || token) {
@@ -61,13 +82,6 @@ export const signedInServer = (flags: { url?: string; token?: string } = {}): st
   }
 };
 
-const jwtPayload = (jwt: string): Record<string, unknown> => {
-  try {
-    return JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url').toString('utf8')) ?? {};
-  } catch {
-    return {};
-  }
-};
 const jwtSubject = (jwt: string): string => {
   const payload = jwtPayload(jwt);
   return String(payload.sub ?? payload.userId ?? payload.id ?? '');
@@ -80,15 +94,15 @@ export class ApiError extends Error {
   }
 }
 
-const sessionApi = (url: string, token: string, workspaceId: string) => async (path: string, init: { method?: string; body?: unknown } = {}) => {
+const sessionApi = (url: string, kind: DirectKind, token: string, workspaceId: string) => async (path: string, init: { method?: string; body?: unknown } = {}) => {
   const response = await fetch(`${url}/api${path}`, {
     method: init.method ?? 'GET',
     headers: {
-      Cookie: `tj_auth_token=${token}`,
-      'tj-workspace-id': workspaceId,
+      ...directHeaders(kind, token, workspaceId),
       ...(init.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
     },
     body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+    ...credentialFetchOptions(kind),
   });
   const text = await response.text();
   if (!response.ok) {
@@ -98,7 +112,8 @@ const sessionApi = (url: string, token: string, workspaceId: string) => async (p
     } catch {
       /* not JSON */
     }
-    throw new ApiError(`${init.method ?? 'GET'} ${path} failed (HTTP ${response.status}) on ${url}: ${String(message).slice(0, 300)}`, response.status, text);
+    const hint = kind === 'delegation' && response.status === 401 ? DELEGATION_REFUSED_HINT : '';
+    throw new ApiError(`${init.method ?? 'GET'} ${path} failed (HTTP ${response.status}) on ${url}: ${String(message).slice(0, 300)}${hint}`, response.status, text);
   }
   return text ? JSON.parse(text) : null;
 };
@@ -111,14 +126,16 @@ const envOverrideNote = (url: string): string =>
 
 export async function openSession(target: Target): Promise<Session> {
   await ensureCompatible(target.url);
-  if (target.kind === 'session' && target.workspaceId) {
-    // Already a session: no exchange, and the user is the token's subject.
+  const direct = directIdentity(target);
+  if (direct) {
+    // Already a session or a delegation: no exchange. A session names the user by email (sub) and id (username);
+    // a delegation carries only the id, as its subject.
     return {
       ...target,
-      organizationId: target.workspaceId,
-      email: jwtSubject(target.token),
-      userId: jwtUserId(target.token),
-      api: sessionApi(target.url, target.token, target.workspaceId),
+      organizationId: direct.workspaceId,
+      email: direct.kind === 'delegation' ? '' : jwtSubject(target.token),
+      userId: direct.kind === 'delegation' ? jwtSubject(target.token) : jwtUserId(target.token),
+      api: sessionApi(target.url, direct.kind, target.token, direct.workspaceId),
     };
   }
   const res = await fetch(`${target.url}/api/personal-access-tokens/session`, {

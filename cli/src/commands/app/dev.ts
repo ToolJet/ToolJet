@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { Project, GEN_FILE } from '../../lib/app/project';
-import { openSession } from '../../lib/app/session';
+import { directIdentity, openSession } from '../../lib/app/session';
 import { resolveAppTarget } from '../../lib/app/instance';
 import { appLibrary, appLibraryLine, devBundleOwnerId, pullSnapshot, syncApp } from '../../lib/app/remote';
 import { generateTypes } from '../../lib/app/typegen';
@@ -99,11 +99,7 @@ export default class AppDev extends Command {
       if (changed) this.log(formatSuccess(appLibraryLine(library)));
       project.writeSnapshot(snapshot);
       fs.writeFileSync(path.join(project.frontend, GEN_FILE), generateTypes(app, snapshot));
-      const client = new ApiClient(
-        target.url,
-        target.token,
-        target.kind === 'session' ? { workspaceId: target.workspaceId! } : undefined
-      );
+      const client = new ApiClient(target.url, target.token, directIdentity(target));
       const where = { appId: app.appId, versionId: snapshot.versionId };
       const local = readSourceState(project.root);
       // A ToolJet without stored source answers 404: nothing is stored, and nothing to keep in step with.

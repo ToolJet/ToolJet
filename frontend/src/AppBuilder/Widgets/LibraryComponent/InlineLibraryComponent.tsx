@@ -735,11 +735,11 @@ const InlineLibraryComponent = ({
 
   // Latest callbacks behind a stable facade, so the context value changes only when props do.
   // The component's first commit: its mount effects' store writes go out as one update (holdStoreWrites). Opened in a
-  // layout effect, closed in this component's passive effect, which runs after its children's (the pack component's)
-  // passive effects; a timer closes it should the passive effects be dropped.
+  // layout effect once code and CSS allow the child to mount, closed after the pack component's passive effects.
+  // A timer closes it should the passive effects be dropped.
   const mountHold = useRef<(() => void) | null>(null);
   useLayoutEffect(() => {
-    if (!Component) return undefined;
+    if (!Component || !cssReady) return undefined;
     const release = holdStoreWrites();
     mountHold.current = release;
     const fallback = setTimeout(release, 0);
@@ -747,12 +747,12 @@ const InlineLibraryComponent = ({
       clearTimeout(fallback);
       release();
     };
-  }, [Component]);
+  }, [Component, cssReady]);
   useEffect(() => {
-    if (!Component) return;
+    if (!Component || !cssReady) return;
     mountHold.current?.();
     mountHold.current = null;
-  }, [Component]);
+  }, [Component, cssReady]);
 
   const latest = useRef({ setExposedVariable, fireEvent });
   latest.current = { setExposedVariable, fireEvent };
