@@ -81,6 +81,8 @@ export interface IWorkflowExecutionsService {
   getStatus(id: string): Promise<{
     logs: unknown;
     status: boolean;
+    executionStatus: string;
+    approvalRequestId: string | null;
     nodes: Array<{
       id: string;
       idOnDefinition: string;

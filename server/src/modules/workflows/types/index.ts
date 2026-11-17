@@ -60,6 +60,7 @@ interface Features {
   [FEATURE_KEY.LIST_APPROVAL_REQUESTS]: FeatureConfig;
   [FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS]: FeatureConfig;
   [FEATURE_KEY.LIST_WORKFLOW_CONSUMERS]: FeatureConfig;
+  [FEATURE_KEY.RESOLVE_WORKFLOW_REFERENCE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

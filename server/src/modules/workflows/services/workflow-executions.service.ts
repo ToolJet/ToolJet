@@ -35,6 +35,8 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
   async getStatus(workflowExecutionId: string): Promise<{
     logs: unknown;
     status: boolean;
+    executionStatus: string;
+    approvalRequestId: string | null;
     nodes: Array<{
       id: string;
       idOnDefinition: string;

@@ -1,4 +1,15 @@
-import { Controller, Post, Get, Param, ParseUUIDPipe, UseGuards, Body, NotImplementedException } from '@nestjs/common';
+import { ResolveWorkflowVersionDto, ResolvedWorkflowVersion } from '../dto/resolve-workflow-version.dto';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  UseGuards,
+  Body,
+  Query,
+  NotImplementedException,
+} from '@nestjs/common';
 import { User } from '@modules/app/decorators/user.decorator';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { WorkflowCountGuard } from '@modules/licensing/guards/workflowcount.guard';
@@ -24,6 +35,16 @@ export class WorkflowsController implements IWorkflowsController {
   @UseGuards(JwtAuthGuard)
   @Get(':id/consumers')
   async consumers(@User() user, @Param('id', ParseUUIDPipe) id: string): Promise<WorkflowConsumersResponseDto> {
+    throw new NotImplementedException();
+  }
+  @InitFeature(FEATURE_KEY.RESOLVE_WORKFLOW_REFERENCE)
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/resolve-version')
+  async resolveVersion(
+    @User() user,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: ResolveWorkflowVersionDto
+  ): Promise<ResolvedWorkflowVersion> {
     throw new NotImplementedException();
   }
 }

@@ -1,4 +1,5 @@
 export enum FEATURE_KEY {
+  RESOLVE_WORKFLOW_REFERENCE = 'resolve_workflow_reference',
   EXECUTE_WORKFLOW = 'execute_workflow',
   EXECUTE_WORKFLOW_FROM_APP = 'execute_workflow_from_app',
   WORKFLOW_EXECUTION_STATUS = 'workflow_execution_status',

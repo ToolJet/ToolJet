@@ -92,3 +92,5 @@ Workflows are visual automations: a graph of nodes/edges stored as an app-versio
 - `external-apis` — `'workflows'` is a `DefaultDataSourceKind`: front-end apps trigger workflows as queries (`FEATURE_KEY.EXECUTE_WORKFLOW_FROM_APP`).
 - `background-processor` — unrelated; contains no workflow code. Workflow workers live in this module behind `WORKER=true`.
 - `licensing` — `LICENSE_FIELD.WORKFLOWS` limits; `ai` module backs `AgentNodeService`.
+
+- `GET workflows/:id/resolve-version` resolves native version names, draft-following pins, and identity-checked legacy UUID pins without executing. It uses workflow execution permissions and the consumer version branch.
