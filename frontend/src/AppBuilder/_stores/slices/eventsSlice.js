@@ -102,7 +102,8 @@ export const createEventsSlice = (set, get) => ({
       const componentEvents = events.filter((event) => event.sourceId === id);
       const mode = getCurrentMode(moduleId);
       if (getEditorLoading(moduleId)) return;
-      handleEvent(
+      // callers that need to wait for the handlers (see RenderWidget's AWAITED_EVENTS) use the returned promise
+      return handleEvent(
         eventName,
         componentEvents,
         { ...options, customVariables: { ...customResolvables }, sourceSubContainerIndex },
@@ -442,7 +443,7 @@ export const createEventsSlice = (set, get) => ({
           'onRowHovered',
           'onSubmit',
           'onInvalid',
-          'onNewRowsAdded',
+          'onAddNewRowCancelled',
           'onTableDataDownload',
           'onMessageSent',
           'onClearHistory',
@@ -463,6 +464,10 @@ export const createEventsSlice = (set, get) => ({
       }
       if (eventName === 'onBulkUpdate') {
         await executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+      }
+      // The add-new-row form waits for this one, to show "Adding row…" until the app's handlers are done.
+      if (eventName === 'onNewRowsAdded') {
+        await executeActionsForEventId(eventName, events, mode, customVariables, moduleId, sourceSubContainerIndex);
       }
 
       if (['onDataQuerySuccess', 'onDataQueryFailure'].includes(eventName)) {
