@@ -9491,7 +9491,7 @@ tbody {
 }
 
 .react-tooltip {
-  font-size: 0.765625rem !important;
+  font-size: var(--app-builder-small-font-size, 0.765625rem) !important;
 }
 
 .tooltip {

@@ -90,7 +90,7 @@
     border-radius: 999px;
     background: transparent;
     color: var(--text-default);
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     line-height: 18px;
 
     &:hover {
@@ -116,7 +116,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     color: var(--text-placeholder);
   }
 
@@ -212,7 +212,7 @@
     max-width: 96px;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     color: var(--text-placeholder);
 
     &.current {
@@ -225,7 +225,7 @@
     margin-left: auto;
     padding: 0 6px;
     border-radius: 999px;
-    font-size: 10px;
+    font-size: var(--app-builder-small-font-size, 10px);
     line-height: 16px;
     color: var(--text-default);
     background: var(--interactive-default, var(--slate3));
@@ -235,7 +235,7 @@
     flex-shrink: 0;
     padding: 0 4px;
     border-radius: 4px;
-    font-size: 10px;
+    font-size: var(--app-builder-small-font-size, 10px);
     line-height: 16px;
     color: var(--text-accent, var(--indigo9));
     background: var(--background-accent-weak);
@@ -312,7 +312,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: var(--font-family-mono, monospace);
-    font-size: 11.5px;
+    font-size: var(--app-builder-small-font-size, 11.5px);
     color: var(--text-placeholder);
 
     mark {

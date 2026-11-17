@@ -185,10 +185,11 @@ export const getRightPanelClassName = (activeTab, isLeftPanelOpen = false) =>
     isLeftPanelOpen ? ' right-panel-shell--below-left-panel' : ''
   }`;
 
-export const getAppBuilderTypographyStyle = () => ({
+export const getAppBuilderTypographyVariables = () => ({
   '--app-builder-font-family': "'IBM Plex Sans', sans-serif",
   '--app-builder-code-font-family': "'Source Code Pro', monospace",
   '--app-builder-canvas-font-family': "'IBM Plex Sans', sans-serif",
+  '--app-builder-small-font-size': '12px',
 });
 
 // The query panel opens at defaultPx and widens from a handle on its left edge, as far as the left

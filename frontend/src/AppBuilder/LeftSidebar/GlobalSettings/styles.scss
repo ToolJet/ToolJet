@@ -30,7 +30,7 @@
     // Helper text styling
     [data-cy="helper-text"] {
       font-family: 'IBM Plex Sans', sans-serif;
-      font-size: 11px;
+      font-size: var(--app-builder-small-font-size, 11px);
       font-style: normal;
       font-weight: 400;
       line-height: 16px;

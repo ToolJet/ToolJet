@@ -135,13 +135,54 @@ describe('panel source audit', () => {
     expect(rulesWithRepeatedDeclaration(scss, 'font-size')).toEqual([]);
   });
 
-  test.failing('[UB-01][UA-08] Tailwind typography helpers resolve the App Builder font in the editor', () => {
-    // tailwind.config.js typography utilities hard-code var(--font-family-inter), so editor chrome
-    // built from them renders Inter next to IBM Plex panels.
-    const config = fs.readFileSync(path.join(FRONTEND, 'tailwind.config.js'), 'utf8');
-    const bare = [...config.matchAll(/fontFamily:\s*'var\(--font-family-inter\)'/g)].map((m) =>
-      where(path.join(FRONTEND, 'tailwind.config.js'), config, m.index)
-    );
-    expect(bare).toEqual([]);
+  test('[UB-09] editor chrome stylesheets put text on the 12/13/14/16px scale', () => {
+    // A small size reads --app-builder-small-font-size with its old value as the fallback, so it is
+    // 12px in the editor and unchanged where shared styles render outside it.
+    const onScale = /^(?:(?:12|13|14|16)px|var\(--app-builder-small-font-size,)/;
+    // Fixed boxes that cannot fit 12px: the rail label (42px item; its size waits on the rail names in U7)
+    // and the 72x26 palette tile title, an allowed type-scale exception.
+    const pendingFit = ['.left-sidebar-item-label', '.component-title'];
+    const sheets = files([...PANEL_ROOTS, 'src/_styles/left-sidebar.scss'], /\.scss$/);
+    const offScale = sheets.flatMap((file) => {
+      const src = fs.readFileSync(file, 'utf8');
+      return [...src.matchAll(/font-size:\s*([^;]+);/g)].flatMap((m) => {
+        const value = m[1].trim();
+        if (!/^[\d.]+(px|r?em)\b/.test(value) || onScale.test(value)) return [];
+        const open = src.lastIndexOf('{', m.index);
+        const selector = src
+          .slice(Math.max(src.lastIndexOf(';', open), src.lastIndexOf('}', open)) + 1, open)
+          .split('\n')
+          .filter((line) => line.trim() && !line.trim().startsWith('//'))
+          .join(' ')
+          .trim();
+        if (selector.includes('::') || pendingFit.some((s) => selector.includes(s))) return []; // icon glyphs are not text
+        return [`${where(file, src, m.index)} ${selector} ${value}`];
+      });
+    });
+    expect(offScale).toEqual([]);
+  });
+
+  test('[UB-01][UA-08] Tailwind typography helpers resolve the App Builder font in the editor', () => {
+    // Runs the config's own typography plugin and reads what it emits.
+    const config = require(path.join(FRONTEND, 'tailwind.config.js'));
+    const utilities = {};
+    config.plugins
+      .filter((p) => typeof p?.handler === 'function')
+      // Other plugins get no-op helpers; only addUtilities output matters here.
+      .forEach((p) =>
+        p.handler(
+          new Proxy(
+            { addUtilities: (u) => Object.assign(utilities, u) },
+            { get: (api, key) => api[key] || (() => ({})) }
+          )
+        )
+      );
+    const families = Object.entries(utilities).filter(([, rules]) => rules.fontFamily);
+    expect(families.length).toBeGreaterThan(0);
+    const offChain = families
+      .filter(([, { fontFamily }]) => !/mono/.test(fontFamily))
+      .filter(([, { fontFamily }]) => fontFamily !== 'var(--app-builder-font-family, var(--font-family-inter))')
+      .map(([name, { fontFamily }]) => `${name}: ${fontFamily}`);
+    expect(offChain).toEqual([]);
   });
 });

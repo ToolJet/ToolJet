@@ -187,7 +187,7 @@
     }
 
     .custom-component-card-description {
-      font-size: 11px;
+      font-size: var(--app-builder-small-font-size, 11px);
       line-height: 20px;
       color: var(--text-placeholder);
     }
@@ -210,7 +210,7 @@
 
   .custom-components-empty-subtitle {
     margin: 0;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     line-height: 18px;
     color: var(--text-placeholder);
   }
@@ -297,7 +297,7 @@
     gap: 6px;
     padding: 1px 6px;
     border-radius: 100px;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     font-weight: 500;
     color: var(--primary-accent-strong);
     background: var(--background-accent-weak, #ecf0fe);

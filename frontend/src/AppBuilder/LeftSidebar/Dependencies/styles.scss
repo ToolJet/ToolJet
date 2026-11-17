@@ -83,7 +83,7 @@
 }
 
 .dependency-subsection-title {
-  font-size: 11px;
+  font-size: var(--app-builder-small-font-size, 11px);
   font-weight: 500;
   line-height: 16px;
   color: var(--text-placeholder);
@@ -251,7 +251,7 @@
   padding: 8px 16px 4px 24px;
 
   .dependency-detail-value-label {
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     font-weight: 500;
     line-height: 16px;
     color: var(--text-placeholder);

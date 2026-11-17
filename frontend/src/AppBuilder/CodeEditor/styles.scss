@@ -140,7 +140,7 @@
             align-items: flex-start !important;
             justify-content: space-between !important;
             padding: 0.35rem !important;
-            font-size: 11px !important;
+            font-size: var(--app-builder-small-font-size, 11px) !important;
             font-style: normal !important;
             font-weight: 400 !important;
             line-height: 16px !important;
@@ -395,7 +395,7 @@
 .suggest-list-item {
     color: var(--text-default, #1B1F24);
     font-family: IBM Plex Sans;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     font-style: normal;
     font-weight: 400;
     line-height: 16px;
@@ -735,7 +735,7 @@
 .codehinter-helper-text {
     font-family: IBM Plex Sans;
     font-weight: 400;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     line-height: 16px;
     letter-spacing: 0%;
     vertical-align: middle;

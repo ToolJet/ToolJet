@@ -198,7 +198,7 @@ $border-radius: 4px;
   border-radius: 8px;
   color: var(--text-on-solid);
   background: var(--background-error-strong);
-  font-size: 10px;
+  font-size: var(--app-builder-small-font-size, 10px);
   line-height: 16px;
 }
 
@@ -364,7 +364,7 @@ $border-radius: 4px;
         background: var(--background-surface-layer-01);
         box-shadow: var(--elevation-100-box-shadow);
         color: var(--text-danger);
-        font-size: 10px;
+        font-size: var(--app-builder-small-font-size, 10px);
         line-height: 14px;
         white-space: nowrap;
       }
@@ -2548,7 +2548,7 @@ $border-radius: 4px;
   border: 1px solid var(--tomato-05, #FDD8D3);
   background: var(--tomato-02, #FFF8F7);
   padding: 8px;
-  font-size: 10px;
+  font-size: var(--app-builder-small-font-size, 10px);
   font-weight: 400;
   color: var(--tomato-09, #E54D2E);
 
@@ -3190,7 +3190,7 @@ $border-radius: 4px;
       flex: 1;
       overflow: hidden;
       font-weight: 400;
-      font-size: 13px;
+      font-size: 12px;
       line-height: 20px;
       text-overflow: ellipsis;
       white-space: nowrap;

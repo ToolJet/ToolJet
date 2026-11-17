@@ -38,7 +38,7 @@ import {
   getQueryDetailsClassName,
   isCodeQueryLayout,
   getQueryDetailsStyle,
-  getAppBuilderTypographyStyle,
+  getAppBuilderTypographyVariables,
   getQueryDetailsOverflowStyle,
   QUERY_FIELD_LABEL_CLASS_NAME,
   QUERY_FIELD_HELPER_CLASS_NAME,
@@ -600,10 +600,11 @@ describe('AB-PANEL-001 app builder panel composition', () => {
 
   // Break this catches: CodeHinter text outside queries falls back to a platform-dependent generic monospace face.
   it('uses Source Code Pro for code-like inputs throughout App Builder', () => {
-    expect(getAppBuilderTypographyStyle()).toEqual({
+    expect(getAppBuilderTypographyVariables()).toEqual({
       '--app-builder-font-family': "'IBM Plex Sans', sans-serif",
       '--app-builder-code-font-family': "'Source Code Pro', monospace",
       '--app-builder-canvas-font-family': "'IBM Plex Sans', sans-serif",
+      '--app-builder-small-font-size': '12px',
     });
   });
 

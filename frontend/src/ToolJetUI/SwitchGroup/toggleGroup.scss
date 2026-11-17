@@ -18,8 +18,7 @@
   padding: 2px 2px;
   border-radius: 6px;
   width: 100%;
-  font-size: 10px;
-
+  font-size: var(--app-builder-small-font-size, 10px);
 }
 
 .ToggleGroupItem:first-child {
@@ -48,7 +47,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: var(--app-builder-small-font-size, 10px);
 
     svg {
       path {

@@ -5628,7 +5628,7 @@ fieldset:disabled .btn {
     z-index: 1080;
     display: block;
     margin: 0;
-    font-family: var(--tblr-font-sans-serif);
+    font-family: var(--app-builder-font-family, var(--tblr-font-sans-serif));
     font-style: normal;
     font-weight: 400;
     line-height: 1.4285714;
@@ -5642,7 +5642,7 @@ fieldset:disabled .btn {
     word-spacing: normal;
     white-space: normal;
     line-break: auto;
-    font-size: .765625rem;
+    font-size: var(--app-builder-small-font-size, .765625rem);
     word-wrap: break-word;
     opacity: 0
 }
@@ -5753,7 +5753,7 @@ fieldset:disabled .btn {
     z-index: 1070;
     display: block;
     max-width: 276px;
-    font-family: var(--tblr-font-sans-serif);
+    font-family: var(--app-builder-font-family, var(--tblr-font-sans-serif));
     font-style: normal;
     font-weight: 400;
     line-height: 1.4285714;
@@ -5767,7 +5767,7 @@ fieldset:disabled .btn {
     word-spacing: normal;
     white-space: normal;
     line-break: auto;
-    font-size: .765625rem;
+    font-size: var(--app-builder-small-font-size, .765625rem);
     word-wrap: break-word;
     background-color: #fff;
     background-clip: padding-box;

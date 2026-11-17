@@ -3,7 +3,7 @@
 .runtime-debugger {
   &__count {
     margin-left: 4px;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     color: var(--text-placeholder);
   }
 
@@ -130,7 +130,7 @@
   }
 
   &__row-time {
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     color: var(--text-placeholder);
     white-space: nowrap;
   }
@@ -139,7 +139,7 @@
     flex-shrink: 0;
     padding: 1px 6px;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     line-height: 16px;
 
     &.is-error {

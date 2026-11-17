@@ -140,7 +140,7 @@
 
   .autosave-indicator {
     color: var(--editor-header-muted);
-    font-size: 10px;
+    font-size: var(--app-builder-small-font-size, 10px);
     font-weight: 400;
     line-height: 14px;
   }
