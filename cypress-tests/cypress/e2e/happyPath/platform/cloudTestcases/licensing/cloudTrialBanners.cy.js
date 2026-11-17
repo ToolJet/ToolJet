@@ -1,3 +1,4 @@
+import { groupsSelector } from "Selectors/platform/manageGroups";
 import { fake } from "Fixtures/fake";
 import { licenseSelectors } from "Selectors/platform/license";
 import { cloudLicenseSelectors } from "Selectors/platform/cloudLicense";
@@ -105,12 +106,11 @@ describe("Cloud Licensing — Trial Banners", { retries: 0 }, () => {
     closeUpgradePlanModal();
 
     cy.visit(`/${signup.workspaceSlug}/workspace-settings/groups`);
-    cy.get(licenseSelectors.limitHeading("custom-groups"))
-      .should("be.visible")
-      .and("have.text", cloudLicenseText.customGroupsBanner.heading);
+    cy.get(groupsSelector.createNewGroupButton).should("be.visible").and("be.disabled");
   });
 
-  it("should let a free-plan admin start a 14-day trial from the custom groups banner", () => {
+    // Skipped: starting a cloud trial from the app needs the payment flow; covered with the Stripe integration.
+  it.skip("should let a free-plan admin start a 14-day trial from the custom groups banner", () => {
     resetToUnclaimedBasic();
     canStartTrial(signup.workspaceId).should("equal", true);
 
@@ -143,7 +143,8 @@ describe("Cloud Licensing — Trial Banners", { retries: 0 }, () => {
     canStartTrial(signup.workspaceId).should("equal", false);
   });
 
-  it("should allow only one trial per account", () => {
+    // Skipped: starting a cloud trial from the app needs the payment flow; covered with the Stripe integration.
+  it.skip("should allow only one trial per account", () => {
     canStartTrial(signup.workspaceId).should("equal", false);
 
     cy.apiSetCloudPlan("basic", { workspaceId: signup.workspaceId });

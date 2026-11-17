@@ -73,16 +73,17 @@ export const verifyFeatureAccess = (access) => {
 };
 
 export const verifyUpgradeFooter = () => {
-  cy.get(cloudSubscriptionSelectors.comparePlansButton).should("be.visible").and("contain.text", cloudSubscriptionText.comparePlans);
-  cy.get(cloudSubscriptionSelectors.upgradeButton).should("be.visible").and("contain.text", cloudSubscriptionText.upgrade);
+  cy.get(cloudSubscriptionSelectors.comparePlansButton).scrollIntoView().should("be.visible").and("contain.text", cloudSubscriptionText.comparePlans);
+  cy.get(cloudSubscriptionSelectors.upgradeButton).scrollIntoView().should("be.visible").and("contain.text", cloudSubscriptionText.upgrade);
   cy.get(cloudSubscriptionSelectors.manageSubscriptionButton).should("not.exist");
   cy.get(cloudSubscriptionSelectors.viewInvoicesButton).should("not.exist");
 };
 
 export const verifyPaidFooter = (totalText) => {
-  cy.get(cloudSubscriptionSelectors.footerTotalAmount).should("have.text", totalText);
-  cy.get(cloudSubscriptionSelectors.viewInvoicesButton).should("be.visible").and("contain.text", cloudSubscriptionText.viewInvoices);
+  cy.get(cloudSubscriptionSelectors.footerTotalAmount).scrollIntoView().should("have.text", totalText);
+  cy.get(cloudSubscriptionSelectors.viewInvoicesButton).scrollIntoView().should("be.visible").and("contain.text", cloudSubscriptionText.viewInvoices);
   cy.get(cloudSubscriptionSelectors.manageSubscriptionButton)
+    .scrollIntoView()
     .should("be.visible")
     .and("be.enabled")
     .and("contain.text", cloudSubscriptionText.manageSubscription);

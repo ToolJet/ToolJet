@@ -2,6 +2,7 @@ import { fake } from "Fixtures/fake";
 import { cloudAiSelectors } from "Selectors/platform/cloudAi";
 import { cloudAiText } from "Texts/platform/cloudAi";
 import { createFreshCloudWorkspace } from "Support/utils/platform/ai";
+import { stubCurrentSubscription, stubPlanPrices } from "Support/utils/platform/cloudSubscription";
 
 const formatCredits = (value) => Number(value).toLocaleString("en-US");
 
@@ -12,6 +13,8 @@ const formatDate = (iso) => {
 };
 
 const visitSubscription = (workspaceId, query = "") => {
+  stubCurrentSubscription();
+  stubPlanPrices();
   cy.visit(`/${workspaceId}/settings/subscription${query}`);
   cy.get('[data-cy="subscription-overview"]', { timeout: 60000 }).should("be.visible");
 };

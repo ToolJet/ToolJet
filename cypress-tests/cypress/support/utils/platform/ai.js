@@ -208,7 +208,9 @@ export const verifyFixWithAiInStyles = (appName, options = {}) => {
 
 // A fresh workspace per test lets its plan be set before the server caches its licence.
 export const createFreshCloudWorkspace = (adminEmail, loginWorkspaceId, password = "password") => {
-  const name = `cloud-ai-${Date.now()}`;
+  const name = `cloud-ai-${Date.now()}-${Cypress._.random(1e6)}`;
+  // A second login on top of an existing session sends two auth cookies.
+  cy.clearCookies();
   cy.apiLogin(adminEmail, password, loginWorkspaceId);
   return cy.apiCreateWorkspace(name, name).then(({ body }) => {
     const workspaceId = body.organization_id || body.id;

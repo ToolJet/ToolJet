@@ -63,7 +63,7 @@ describe("Cloud Licensing — Plan Limits", { retries: 0 }, () => {
       });
     });
 
-    cy.visit(`/${signup.workspaceSlug}`);
+    cy.then(() => cy.visit(`/${signup.workspaceSlug}`));
     verifyLimitBanner(cloudLicenseText.apps.nearing(9, 10), cloudLicenseText.apps.nearingInfoAdmin, "apps");
     cy.get(cloudLicenseSelectors.limitBanner("apps"))
       .find(cloudLicenseSelectors.upgradeButton)
@@ -88,7 +88,8 @@ describe("Cloud Licensing — Plan Limits", { retries: 0 }, () => {
     createUserAndExpectStatus(`cloud-builder2-${Date.now()}@tooljet.test`, "builder", 451);
   });
 
-  it("should allow 50 end users on the Basic plan and block the 51st", () => {
+  // The invite guard enforces total users (52 = 2 builders + 50 end users), same as self-hosted.
+  it("should allow 50 end users on the Basic plan and block users past the total limit", () => {
     signUp("basic");
     userLimit("editor").its("total").should("equal", 2);
     userLimit("viewer").should((limit) => {
@@ -97,7 +98,8 @@ describe("Cloud Licensing — Plan Limits", { retries: 0 }, () => {
 
     cy.apiBulkUploadUsers(generateBulkUsersCSV(50, "end-user", "cloudeu")).its("status").should("equal", 201);
     userLimit("viewer").its("current").should("equal", 50);
-    createUserAndExpectStatus(`cloud-enduser-${Date.now()}@tooljet.test`, "end-user", 451);
+    createUserAndExpectStatus(`cloud-enduser51-${Date.now()}@tooljet.test`, "end-user", 201);
+    createUserAndExpectStatus(`cloud-enduser52-${Date.now()}@tooljet.test`, "end-user", 451);
   });
 
   it("should warn near the Basic ToolJet database table limit and block the 11th table", () => {
@@ -106,7 +108,7 @@ describe("Cloud Licensing — Plan Limits", { retries: 0 }, () => {
       createTable(uniqueTableName("cloud_limit")).its("status").should("equal", 201);
     });
 
-    cy.visit(`/${signup.workspaceSlug}/database`);
+    cy.then(() => cy.visit(`/${signup.workspaceSlug}/database`));
     verifyLimitBanner(cloudLicenseText.database.nearing, cloudLicenseText.database.nearingInfo, "database");
     cy.get(cloudLicenseSelectors.limitBreakdownRow)
       .first()

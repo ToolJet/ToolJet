@@ -2,6 +2,7 @@ import { fake } from "Fixtures/fake";
 import { cloudAiSelectors } from "Selectors/platform/cloudAi";
 import { cloudAiText } from "Texts/platform/cloudAi";
 import { createFreshCloudWorkspace } from "Support/utils/platform/ai";
+import { stubCurrentSubscription, stubPlanPrices } from "Support/utils/platform/cloudSubscription";
 
 const fixWithAi = (workspaceId) =>
   cy.getAuthHeaders().then((headers) =>
@@ -59,6 +60,8 @@ describe("Cloud AI Credits — Credit Enforcement", { retries: 0 }, () => {
   it("should send an admin from Get more credits to the Add AI credits modal", () => {
     cy.apiSetCloudPlan("pro", { workspaceId });
     cy.setAiGatewayBalance(0, workspaceId);
+    stubCurrentSubscription();
+    stubPlanPrices();
     visitHome(workspaceId);
 
     cy.contains("button", cloudAiText.getMoreCredits).click();

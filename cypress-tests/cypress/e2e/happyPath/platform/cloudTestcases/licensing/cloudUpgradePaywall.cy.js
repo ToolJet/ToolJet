@@ -120,7 +120,8 @@ describe("Cloud Licensing — Upgrade Paywall", { retries: 0 }, () => {
   });
 
   it("should restrict a public app on a plan without public apps", () => {
-    cy.waitForCloudPlan("trial", signup.workspaceId);
+    // Basic has no multi-environment, so the app can be released without promoting it.
+    cy.apiSetCloudPlan("basic", { workspaceId: signup.workspaceId });
     createApp(`cloud-public-app-${Date.now()}`).then((app) => {
       releaseApp(app.id);
       cy.apiMakeAppPublic(app.id);

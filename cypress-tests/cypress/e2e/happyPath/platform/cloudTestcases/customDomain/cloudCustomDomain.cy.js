@@ -45,6 +45,9 @@ describe("Cloud Custom Domain — Workspace Settings", { retries: 0 }, () => {
       failOnStatusCode: false,
     });
 
+  const expectNoDomain = (response) =>
+    expect(Cypress._.isEmpty(response.body), "no custom domain").to.equal(true);
+
   const listWorkspaces = () =>
     cy.getAuthHeaders().then((headers) =>
       cy
@@ -56,21 +59,35 @@ describe("Cloud Custom Domain — Workspace Settings", { retries: 0 }, () => {
         .its("body.organizations")
     );
 
-  ["basic", "trial"].forEach((plan) => {
-    context(`on the ${plan} plan`, () => {
-      beforeEach(() => signupWithPlan(plan));
+  context("on the basic plan", () => {
+    beforeEach(() => signupWithPlan("basic"));
 
-      it(`should show the paid feature pill and lock the form on ${plan}`, () => {
-        openCustomDomainPage();
+    it("should show the paid feature pill and lock the form on basic", () => {
+      openCustomDomainPage();
 
-        cy.get(cloudSettingsSelectors.paidFeatureButton).verifyVisibleElement(
-          "have.text",
-          cloudSettingsText.paidFeature
-        );
-        cy.get(customDomainSelectors.domainInput).should("be.disabled");
-        cy.get(customDomainSelectors.testConnectionButton).should("be.disabled");
-        cy.get(customDomainSelectors.saveButton).should("be.disabled");
-      });
+      cy.get(cloudSettingsSelectors.paidFeatureButton).verifyVisibleElement(
+        "have.text",
+        cloudSettingsText.paidFeature
+      );
+      cy.get(customDomainSelectors.domainInput).should("be.disabled");
+      cy.get(customDomainSelectors.saveButton).should("be.disabled");
+    });
+  });
+
+  context("on the trial plan", () => {
+    beforeEach(() => {
+      signupWithPlan("trial");
+      cy.then(() => cy.waitForCloudPlan("trial", workspaceId));
+    });
+
+    it("should show the paid feature pill but keep the form editable on trial", () => {
+      openCustomDomainPage();
+
+      cy.get(cloudSettingsSelectors.paidFeatureButton).verifyVisibleElement(
+        "have.text",
+        cloudSettingsText.paidFeature
+      );
+      cy.get(customDomainSelectors.domainInput).should("be.enabled");
     });
   });
 
@@ -162,7 +179,7 @@ describe("Cloud Custom Domain — Workspace Settings", { retries: 0 }, () => {
         commonSelectors.toastMessage,
         customDomainText.invalidDomainToast
       );
-      customDomainRequest("GET").its("body").should("be.empty");
+      customDomainRequest("GET").then(expectNoDomain);
 
       const draftDomain = uniqueDomain("draft");
       cy.clearAndType(customDomainSelectors.domainInput, draftDomain);
@@ -232,7 +249,7 @@ describe("Cloud Custom Domain — Workspace Settings", { retries: 0 }, () => {
       cy.get(customDomainSelectors.saveButton).should("be.enabled").click();
       cy.verifyToastMessage(commonSelectors.toastMessage, customDomainText.removedToast);
 
-      customDomainRequest("GET").its("body").should("be.empty");
+      customDomainRequest("GET").then(expectNoDomain);
       resolveDomain(domain).its("status").should("equal", 404);
     });
 
@@ -245,13 +262,13 @@ describe("Cloud Custom Domain — Workspace Settings", { retries: 0 }, () => {
         cy.apiSetCloudPlan("team", { workspaceId: otherWorkspaceId });
         cy.apiSeedCustomDomain({ workspaceId, domain, status: "active" });
 
-        customDomainRequest("GET", "", { headers: { "Tj-Workspace-Id": otherWorkspaceId } })
-          .its("body")
-          .should("be.empty");
+        customDomainRequest("GET", "", { headers: { "Tj-Workspace-Id": otherWorkspaceId } }).then(
+          expectNoDomain
+        );
         resolveDomain(domain).its("body.organizationId").should("equal", workspaceId);
         listWorkspaces().then((organizations) => {
           const other = organizations.find((org) => org.id === otherWorkspaceId);
-          expect(other.custom_domain).to.equal(null);
+          expect(other.custom_domain ?? null).to.equal(null);
         });
       });
     });

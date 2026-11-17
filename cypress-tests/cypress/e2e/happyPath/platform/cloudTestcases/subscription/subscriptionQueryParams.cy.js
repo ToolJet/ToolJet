@@ -57,7 +57,7 @@ describe("Cloud Subscription — Payment Redirects and Deep Links", { retries: 0
     visitWithQuery("currentTab=upgradePlan");
 
     cy.location("search").should("not.contain", "currentTab=");
-    cy.get(cloudSubscriptionSelectors.upgradeButton).should("be.visible");
+    cy.get(cloudSubscriptionSelectors.upgradeButton).scrollIntoView().should("be.visible");
     cy.get(cloudSubscriptionSelectors.checkoutModalTitle).should("not.exist");
   });
 });
