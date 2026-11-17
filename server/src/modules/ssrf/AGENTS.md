@@ -22,7 +22,7 @@ Owns the outbound requests (SSRF) settings exposed on Settings -> Security -> Ou
 
 ## Storage
 
-The settings are rows in `instance_settings` (`type: system`), seeded by a data migration. This module reads them through the instance-settings module's util service and writes them with its own util service; the instance-settings module itself has no SSRF code.
+The settings are rows in `instance_settings` (`type: system`), seeded by a migration in the schema phase, so the rows exist before boot. This module reads them through the instance-settings module's util service and writes them with its own util service; the instance-settings module itself has no SSRF code.
 
 ## Edition split
 
@@ -41,8 +41,8 @@ The settings are rows in `instance_settings` (`type: system`), seeded by a data 
 - Allowlisted addresses are reachable by anyone who can run a query, including through public apps; the settings UI says so.
 - Fail closed: before the first successful read the publisher sets `{ enabled: true, empty allowlist }`. A change takes up to 30 s to apply.
 - Allowlist: max 200 entries, trimmed and lowercased, CIDR `/0` rejected.
-- Rows are `type: system`, seeded by a data migration; the SSRF keys must not be added to `BASIC_PLAN_SETTINGS` (no licence gate).
-- The data migration seeds the toggle by install type: a new installation (no workspace yet) gets it unset; an existing setup gets an explicit value matching its old behaviour (`'false'`, or `'true'` if it had `SSRF_PROTECTION_ENABLED=true`), so upgrading never flips it, and its dashboard notice is stored as already dismissed (the notice is for new installations only). `isSSRFProtectionEnabledSetting` (`ssrf-allowlist.helper.ts`) decides it for both the publisher and the settings API: an explicit `'true'`/`'false'` wins; unset means off in dev mode (`NODE_ENV=development`, set by `npm run start:dev`) and on everywhere else.
+- Rows are `type: system`, seeded by a migration in the schema phase, so the rows exist before boot; the SSRF keys must not be added to `BASIC_PLAN_SETTINGS` (no licence gate).
+- The migration (in `migrations/schema/`, so it runs before boot in async upgrades) seeds the toggle by install type: a new installation (no workspace yet) gets it unset; an existing setup gets an explicit value matching its old behaviour (`'false'`, or `'true'` if it had `SSRF_PROTECTION_ENABLED=true`), so upgrading never flips it, and its dashboard notice is stored as already dismissed (the notice is for new installations only). `isSSRFProtectionEnabledSetting` (`ssrf-allowlist.helper.ts`) decides it for both the publisher and the settings API: an explicit `'true'`/`'false'` wins; unset means off in dev mode (`NODE_ENV=development`, set by `npm run start:dev`) and on everywhere else.
 - Test connection runs the SSRF check for every data source kind; only the built-in database drivers in `SSRF_UNCHECKED_DATABASE_KINDS` (`data-sources/util.service.ts`) skip the `host` check (see `data-sources/AGENTS.md`).
 
 ## Related modules
