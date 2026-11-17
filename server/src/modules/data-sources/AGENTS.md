@@ -28,6 +28,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 | `dto/index.ts` | `CreateDataSourceDto`, `UpdateDataSourceDto`, `TestDataSourceDto`, `InvokeDataSourceMethodDto`, `ValidateOptionsDto`, ... |
 | `dashboard/activity.service.ts` + `activity.interceptor.ts` | Dashboard v2 view/edit attribution (see "Dashboard v2 schema" below) |
 | `dashboard/dashboard.controller.ts` + `dashboard.service.ts` | `GET /api/v2/data-sources` — paginated root / folder / search list (see "Dashboard v2 list" below) |
+| `dashboard/bulk.service.ts` + `bulk-folder-delete.service.ts` | v2 bulk delete / move / remove and folder bulk delete (see "Dashboard v2 bulk" below) |
 
 ## Edition split
 
@@ -65,6 +66,13 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 - `POST /api/v2/data-sources/pins`, `DELETE /api/v2/data-sources/pins/:resource_type/:resource_id`, `PUT /api/v2/data-sources/pins/order` (`dashboard/pins.controller.ts` + `pins.service.ts`). Per user, per branch; one pin space (`resource_type` is `data_source` or `folder`, no `type` field — unlike apps' pins, which fan out per app type).
 - Visibility reuses the dashboard list's `visible_data_sources` / `visible_folders` CTEs (`queries.ts` `visibleIdsQuery`); an app-folder id is invisible here because `visible_folders` already filters to `DATA_SOURCE_FOLDER_TYPE`.
 - Reorder (`pins.service.ts` `planReorder`) keys pins by `data_source_id ? 'data_source' : 'folder'` — copied from apps' `pins.service.ts` rather than reused, since the apps version keys `app_id ? 'app' : 'folder'` and would collapse every data-source pin to `folder:null`. Only the caller's data-source-page pins (rows with `data_source_id` set, or `folder_id` pointing at a data-source folder) are in scope; app / app-folder pins in the same `pinned_items` table keep their `position` slots.
+
+## Dashboard v2 bulk
+
+- `POST /api/v2/data-sources/{bulk-delete,bulk-move,bulk-remove,folders/bulk-delete}` → 200 `{ blocked_ids }`, all-or-nothing (apps' bulk pattern). Factory-provided `DataSourcesBulkService` / `DataSourcesBulkFolderDeleteService` (edition-resolved `DataSourcesService`, `FolderDataSourcesUtilService`, `FoldersService`, `GitSyncConfigsUtilService`).
+- Delete checks (`splitDeletable`): workspace, not sample, `canDeleteDataSource`, no dependent queries, git edit rule on the branch row. Writes via `DataSourcesService.delete` with the raw `branch_id` (absent → whole data source), one `DATA_SOURCE_DELETE` audit entry each.
+- Move / remove: `canManageFolderDataSources` (v1 folder-data-sources ability) on the target / source folder; `assertFolderWritable` guards git-locked default branches (403). Remove uses `FolderDataSourcesUtilService.bulkRemove`.
+- Folder delete: `FoldersService.assertFolderDeletable` per folder; `folder_and_data_sources` deletes only data sources on the branch that pass the delete checks, the rest fall to root.
 
 ## Related modules
 

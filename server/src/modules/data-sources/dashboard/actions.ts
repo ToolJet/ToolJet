@@ -49,6 +49,23 @@ export function canDeleteDataSource(p: UserPermissions): boolean {
   return isAdmin(p) || !!p.dataSourceDelete;
 }
 
+// v1 folder-data-sources create / delete rule (folder-data-sources/ability): bulk move checks the
+// target folder, bulk remove the source folder.
+export function canManageFolderDataSources(
+  p: UserPermissions,
+  userId: string,
+  folder: { id: string; ownerId: string | null }
+): boolean {
+  const f = folderPermissionsFor(p);
+  return (
+    isAdmin(p) ||
+    !!p.dataSourceFolderCreate ||
+    folder.ownerId === userId ||
+    !!f?.isAllEditable ||
+    !!f?.editableFoldersId?.includes(folder.id)
+  );
+}
+
 // Decides which of the caller's activity columns orders the list.
 export function isEditCapable(p: UserPermissions): boolean {
   const d = p[MODULES.GLOBAL_DATA_SOURCE];

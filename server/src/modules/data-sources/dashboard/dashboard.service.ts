@@ -6,6 +6,7 @@ import { UserPermissions } from '@modules/ability/types';
 import { MODULES } from '@modules/app/constants/modules';
 import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 import type { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { assertGitSyncCreateAllowedForOrg } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 import { dataSourceActions, folderActions, isEditCapable, resolveFolderAccess, visibleDataSourceIds } from './actions';
 import {
   BuiltQuery,
@@ -72,6 +73,10 @@ export class DataSourcesDashboardService {
       git: { enabled: git.isEnabled, multiBranch: git.isMultiBranchingEnabled },
     };
     return { scope, permissions };
+  }
+
+  assertFolderWritable(user: User, branchId?: string): Promise<void> {
+    return assertGitSyncCreateAllowedForOrg(this.gitSyncConfigsUtilService, user.organizationId, branchId, 'folder');
   }
 
   async resolveBranchId(user: User, branchId?: string): Promise<string> {
