@@ -32,6 +32,17 @@ const same = (value: unknown, drawn: unknown) => plain(value) === plain(drawn);
 /** '' while `value` is the declared default, so the component keeps its unset look. */
 export const unlessDefault = <V>(value: V, drawn: unknown): V | '' => (same(value, drawn) ? '' : value);
 
+/**
+ * A colour style kept under its earlier name, read only when the browser can draw it. The host drops colour text it
+ * can't read for the colour fields it shows, but an earlier name is hidden plain text, so "notacolor" reached CSS and
+ * the part went transparent (QA PF-175). Where the browser can't judge (no CSS.supports), the value is kept.
+ */
+export const earlierColor = (value: unknown): string => {
+  const text = typeof value === 'string' ? value.trim() : '';
+  if (!text || typeof CSS === 'undefined' || typeof CSS.supports !== 'function') return text;
+  return CSS.supports('color', text) ? text : '';
+};
+
 // The other options the style hooks take (section, description, visibleWhen, ...), passed through.
 type StyleOptions = Record<string, unknown>;
 
