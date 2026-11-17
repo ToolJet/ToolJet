@@ -327,15 +327,11 @@ export const Carousel = () => {
                           style={{ objectFit: imageFit === 'contain' ? 'contain' : 'cover' }}
                         />
                       ) : (
+                        // An image that failed shows its mark and still the slide's text (it showed the mark alone).
                         <div className="n2-carousel-text">
-                          {slide.image ? (
-                            <ImageOff size={24} style={{ color: 'var(--ui-muted-fg)' }} />
-                          ) : (
-                            <>
-                              <strong>{slide.title}</strong>
-                              {slide.description ? <span>{slide.description}</span> : null}
-                            </>
-                          )}
+                          {slide.image ? <ImageOff size={24} style={{ color: 'var(--ui-muted-fg)' }} /> : null}
+                          <strong>{slide.title}</strong>
+                          {slide.description ? <span>{slide.description}</span> : null}
                         </div>
                       )}
                       {caption === 'overlay' && showImage && (slide.title || slide.description) ? (
