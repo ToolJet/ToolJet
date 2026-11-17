@@ -128,6 +128,18 @@ If a held version has to ship, a workspace admin or an app editor with release p
 
 Visual apps aren't checked, so the gate never holds them. See [Release Gate Rules](./security-policy.md#release-gate-rules) for every rule.
 
+## Set Security Rules for the Workspace
+
+Workspace admins set the rules every React Builder app is checked against at **Workspace settings** → **App security**. From that page they can:
+
+- See every app's security status, open issues and last check in one list.
+- Edit the scan policy: which checks and severities block a release, the wait before new package versions can be used, and allowed licenses.
+- Review and remove exceptions.
+- Allow outside addresses that apps may connect to.
+- Follow the activity: releases made with **Release anyway**, exceptions, and policy changes.
+
+See [Workspace App Security](./security-policy.md#workspace-app-security) for each setting.
+
 ## Where to Go Next
 
 <CardGrid columns={3}>
