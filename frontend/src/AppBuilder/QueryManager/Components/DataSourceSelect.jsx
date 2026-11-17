@@ -355,6 +355,9 @@ function DataSourceSelect({
 
   return (
     <div
+      // In the editor the overlay surface (Shared/Panel/panel.scss) overrides this card's look; ee
+      // Workflows renders the same picker and keeps it.
+      className="ds-select-card"
       style={{
         width: '268px',
         border: '1px solid var(--border-weak, #e4e7eb)',

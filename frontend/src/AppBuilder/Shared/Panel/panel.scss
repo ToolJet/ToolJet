@@ -24,6 +24,25 @@
   }
 }
 
+// Editor overlays share one surface (UB-19, UB-21); their bodies don't paint over it. Widget overlays
+// (`tj-widget-overlay`) and widget modals never match these ids, so they keep the Viewer's look.
+body.app-builder-chrome {
+  :is(#version-manager-popover, #query-list-menu, #query-sort-filter-popover, #edit-page-popover, .ds-select-card) {
+    @include panel-overlay-surface;
+
+    > .popover-body,
+    > .list-item-popover-body {
+      background-color: transparent !important;
+    }
+  }
+
+  // The data source picker's popover is only a positioner; its card is the overlay. The dark theme's
+  // popover rule outranks queryManager.theme.scss's transparent background and painted it navy.
+  .ds-select-popover {
+    background: transparent !important;
+  }
+}
+
 // Every keyboard stop in the editor chrome shows the one ring. Widgets render a customer's app, so the
 // canvas and the modals and overlays widgets open keep their own focus styles, as in the Viewer.
 // Code fields and react-select ring their visible box, not the text node or the input inside it.

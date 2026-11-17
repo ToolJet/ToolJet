@@ -245,4 +245,27 @@ describe('panel source audit', () => {
       expect(src).toMatch(/@include panel-row;/);
     });
   });
+
+  test('[UB-20][UA-19] App Builder code fields take the surface code theme; the CodeEditor widget keeps okaidia', () => {
+    const read = (file) => fs.readFileSync(path.join(FRONTEND, file), 'utf8');
+    ['SingleLineCodeEditor.jsx', 'MultiLineCodeEditor.jsx', 'TJDBHinter.jsx'].forEach((file) => {
+      const src = read(`src/AppBuilder/CodeEditor/${file}`);
+      expect(src).toMatch(/getCodeTheme\(darkMode\)/);
+      expect(src).not.toMatch(/okaidia/);
+    });
+    expect(read('src/AppBuilder/Widgets/CodeEditor.jsx')).toMatch(/darkMode \? okaidia : githubLight/);
+  });
+
+  test('[UB-19][UB-21] editor overlays take the one overlay surface', () => {
+    const styles = fs.readFileSync(path.join(FRONTEND, 'src/AppBuilder/Shared/Panel/panel.scss'), 'utf8');
+    const overlays = styles.match(/:is\(([^)]*)\) \{\s*@include panel-overlay-surface;/);
+    expect(overlays).not.toBeNull();
+    [
+      '#version-manager-popover',
+      '#query-list-menu',
+      '#query-sort-filter-popover',
+      '#edit-page-popover',
+      '.ds-select-card',
+    ].forEach((overlay) => expect(overlays[1]).toContain(overlay));
+  });
 });

@@ -30,6 +30,15 @@
   border-radius: 6px;
 }
 
+// An editor overlay (popover, menu, picker): the surface, a weak border, 8px corners, elevation 300.
+// !important because legacy popover rules paint their own surfaces with !important.
+@mixin panel-overlay-surface {
+  border: 1px solid var(--border-weak) !important;
+  border-radius: 8px !important;
+  background-color: var(--background-surface-layer-01) !important;
+  box-shadow: var(--elevation-300-box-shadow) !important;
+}
+
 // The design-system Switch size (components/ui/Switch): 28x16.
 @mixin panel-switch {
   width: 28px;
