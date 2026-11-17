@@ -26,4 +26,4 @@ GitSync allows multiple builders to work on the same applications without overwr
 
 Applications, modules, datasources, and their folder assignments are synced to Git. Workflows and ToolJet Database tables are not synced yet.
 
-A [React Builder](../../build-with-ai/react-builder/overview.md) app's code is committed too, in a `code/` folder beside the app definition. See [Move an App](../../build-with-ai/react-builder/versions-and-history.md#move-an-app).
+A [React Builder](../../app-builder/react-builder/overview.md) app's code is committed too, in a `code/` folder beside the app definition. See [Move an App](../../app-builder/react-builder/versions-and-history.md#move-an-app).

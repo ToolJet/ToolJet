@@ -22,7 +22,7 @@ A custom component is a regular React component. The only ToolJet-specific part 
 
 There is no separate config file. **The hook calls are the component's schema.**
 
-ToolJet reads the hook calls written directly in the component's body. If a component calls hooks from a helper function, set `"recordRender": true` in the project's `.tooljet/config.json`. The build warns you when a component needs it.
+ToolJet reads the hook calls written directly in the component's body. If a component calls hooks from a helper function, set `"recordRender": true` in the project's `.tooljet/config.json`. The build prints a warning when a component needs it.
 
 ```tsx
 import React from "react";
@@ -107,7 +107,7 @@ ToolJet adds its own properties and actions to every component, so these names a
 const onEnterPressed = ToolJet.useEventCallback({ name: 'onEnterPressed' });
 ```
 
-Call `onEnterPressed()` in your component to fire the event. In the App Builder, the event appears under **Events** in the component properties panel. Its label comes from the name, so `onEnterPressed` is shown as "On enter pressed". To set the label yourself, add `displayName`. App builders attach handlers to it the same way they do for a built-in **Button** component's **On click** event.
+Call `onEnterPressed()` in the component to fire the event. In the App Builder, the event appears under **Events** in the component properties panel. Its label comes from the name, so `onEnterPressed` is shown as "On enter pressed". To set a different label, add `displayName`. App builders attach handlers to it the same way they do for a built-in **Button** component's **On click** event.
 
 ## Actions
 
@@ -147,11 +147,11 @@ Content that doesn't fit in the component's box is clipped.
 A component renders inline in the app page and shares the app's copy of React.
 
 - ToolJet provides React 18 at runtime. `react`, `react-dom` and `react/jsx-runtime` are left out of your bundle, which keeps it small. Don't bundle your own copy of React.
-- Every other package you import must be part of your bundle. If the built code still imports a package ToolJet doesn't provide, the component fails with `the code imports "<name>", which ToolJet does not provide`.
-- CSS imported by a component is collected into `dist/index.css` and loaded automatically. It applies only inside your component, and ToolJet's global styles don't reach in.
-- The app's font and theme variables are available inside your component, so it can follow the app's theme.
-- Your code runs with the same access to the page as the app itself. Bundle only code you trust.
+- Every other imported package must be part of the bundle. If the built code still imports a package ToolJet doesn't provide, the component fails with `the code imports "<name>", which ToolJet does not provide`.
+- CSS imported by a component is collected into `dist/index.css` and loaded automatically. It applies only inside the component, and ToolJet's global styles don't reach in.
+- The app's font and theme variables are available inside the component, so it can follow the app's theme.
+- The component's code runs with the same access to the page as the app itself. Bundle only trusted code.
 
 ## Next Steps
 
-See your changes live in the App Builder with [dev preview](./preview-and-publish.md#preview-changes-with-dev-mode), then publish a version.
+See changes live in the App Builder with [dev preview](./preview-and-publish.md#preview-changes-with-dev-mode), then publish a version.

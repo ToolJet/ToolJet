@@ -5,7 +5,7 @@ sidebar_label: Overview
 ---
 
 import Link from '@docusaurus/Link';
-import { useVersionedHref } from '@site/src/components/DocBlocks';
+import { useVersionedHref, CardIcon } from '@site/src/components/DocBlocks';
 
 export const VLink = ({ to, ...props }) => <Link to={useVersionedHref(to)} {...props} />;
 
@@ -27,7 +27,7 @@ export const FeatureCard = ({ icon, title, description, href, badge }) => (
         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ifm-toc-border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
         >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '28px', lineHeight: 1 }}>{icon}</span>
+                <CardIcon>{icon}</CardIcon>
                 {badge && (
                     <span style={{
                         fontSize: '11px',
@@ -98,37 +98,37 @@ export const SectionSubtitle = ({ text }) => (
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px', marginBottom: '8px' }}>
     <FeatureCard
-        icon="⚡"
+        icon="sparkles"
         title="App Generation"
-        description="Describe your app in plain language. ToolJet AI builds it as a visual app or a React Builder app, with its queries and data, ready to customize."
+        description="Describe the app in plain language. ToolJet AI builds it as a visual application or a React Builder application, with its queries and data."
         href="/docs/build-with-ai/generate-applications"
     />
     <FeatureCard
-        icon="🗄️"
+        icon="database"
         title="Query Generation"
         description="Generate fully configured queries, JavaScript and Python snippets, and let AI organize your query panel."
         href="/docs/build-with-ai/generate-queries"
     />
     <FeatureCard
-        icon="💬"
+        icon="at-sign"
         title="@mention in AI Chat"
         description="Point the AI at an exact component or query with @, so it changes what you meant instead of guessing."
         href="/docs/build-with-ai/referencing-app-resources"
     />
     <FeatureCard
-        icon="📚"
+        icon="book-open"
         title="Learn with AI"
         description="Ask anything about ToolJet: components, queries, integrations. Get instant, contextual answers from the docs assistant."
         href="/docs/build-with-ai/ai-docs-assistant"
     />
     <FeatureCard
-        icon="🎟️"
+        icon="coins"
         title="Understanding AI Credits"
         description="How credits are consumed, the difference between monthly and add-on credits, and how to buy more."
         href="/docs/build-with-ai/ai-credits"
     />
     <FeatureCard
-        icon="🎛️"
+        icon="sliders"
         title="Selecting an AI Model"
         description="Switch the LLM provider that powers your chats, or pin an exact model through OpenRouter."
         href="/docs/build-with-ai/model-selection"
@@ -137,43 +137,43 @@ export const SectionSubtitle = ({ text }) => (
 
 ## Inside the AI Chat
 
-<SectionSubtitle text="One chat for visual apps and React Builder apps" />
+The AI chat works the same way in visual applications and React Builder applications.
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px', marginBottom: '8px' }}>
     <FeatureCard
-        icon="🧭"
-        title="Visual or React Builder"
-        description="Choose how each new app is built: on the drag-and-drop canvas, or as React code you can edit anywhere."
+        icon="split"
+        title="Build Mode"
+        description="Each new application is built either on the visual canvas or as React code."
         href="/docs/build-with-ai/generate-applications#choosing-how-the-app-is-built"
     />
     <FeatureCard
-        icon="🗂️"
-        title="Build on Your Data"
-        description="A new chat lists the data sources you can mention. Click one, and the AI builds on that data."
+        icon="database"
+        title="Datasource Mentions"
+        description="A new chat lists the datasources that can be mentioned. The AI builds on the mentioned datasource."
         href="/docs/build-with-ai/referencing-app-resources#mentioning-data-sources"
     />
     <FeatureCard
-        icon="❓"
-        title="Questions Before It Builds"
-        description="When your prompt leaves a decision open, the AI asks first, with its recommended answer already selected."
+        icon="message-question"
+        title="Clarifying Questions"
+        description="When a prompt leaves a decision open, the AI asks a question first, with its recommended answer selected."
         href="/docs/build-with-ai/generate-applications#answering-questions-during-a-build"
     />
     <FeatureCard
-        icon="⏱️"
-        title="Progress You Can Follow"
-        description="A new app builds in three stages, Data, Build and Check, with a clock and the step it's working on."
+        icon="timer"
+        title="Build Progress"
+        description="A new application is built in three stages, Data, Build and Check. The chat shows the elapsed time and the current step."
         href="/docs/build-with-ai/generate-applications#watching-the-build"
     />
     <FeatureCard
-        icon="🧾"
-        title="A Summary of Every Build"
-        description="See what was built and how long it took, then pick what to do next from the AI's suggestions."
+        icon="file-text"
+        title="Build Summary"
+        description="After each build, the chat summarizes what was built and how long it took, and suggests next steps."
         href="/docs/build-with-ai/generate-applications#reading-the-summary"
     />
     <FeatureCard
-        icon="↩️"
-        title="See What Changed, Then Undo"
-        description="Compare the app before and after an AI edit, and undo the edit if it isn't what you wanted."
+        icon="undo"
+        title="Change Review and Undo"
+        description="An AI edit can be compared with the application before the edit, and undone."
         href="/docs/build-with-ai/generate-applications#reviewing-and-undoing-an-ai-edit"
     />
 </div>
@@ -230,30 +230,30 @@ For a full architecture breakdown and a side-by-side comparison of all four setu
 
 <SectionSubtitle text="Find your past chats and other ways to build with AI" />
 
-Open the AI chat by clicking **AI chat** in the left sidebar of the App Builder or Module Builder. It's shown only when AI features are enabled for your workspace. In a React Builder app, the chat opens with the editor.
+Open the AI chat by clicking **AI chat** in the left sidebar of the App Builder or Module Builder. It's shown only when AI features are enabled for the workspace. In a React Builder app, the chat opens with the editor.
 
-A new chat greets you with example prompts and, in an app, the data sources you can mention. Click a data source to mention it in your message, or click an example to fill the message box. Nothing is sent until you send it.
+A new chat shows example prompts and, in an app, the datasources that can be mentioned. Click a datasource to mention it in the message, or click an example to fill the message box. Nothing is sent until the message is sent.
 
 <img className="screenshot-full img-s" src="/img/build-with-ai/ai-chat/zero-state.png" alt="A new AI chat with the greeting, the workspace's data sources under Build on your data and four example prompts under Try an example" />
 
 ### Chat History
 
-Each app keeps its own AI chats, and you see only the chats you started. Click the **Chats** button at the top-left of the AI chat panel to open **All chats**, which lists your chats for this app. Each one shows its status, such as Building or Needs you, with the date and number of messages. A build keeps running when you switch to another chat.
+Each app keeps its own AI chats, and each user sees only the chats they started. Click the **Chats** button at the top-left of the AI chat panel to open **All chats**, which lists the user's chats for this app. Each one shows its status, such as Building or Needs you, with the date and number of messages. A build keeps running when another chat is opened.
 
-- To find a chat, type in **Search conversations**. The list is filtered by chat title, which is a short summary of your first message in that chat.
-- To start over, click **Start new chat**. The button is disabled while the AI is working on a request. If you already have an empty chat, ToolJet opens it instead of creating another one.
+- To find a chat, type in **Search conversations**. The list is filtered by chat title, which is a short summary of the first message in that chat.
+- To start over, click **Start new chat**. The button is disabled while the AI is working on a request. If an empty chat already exists, ToolJet opens it instead of creating another one.
 
 <img className="screenshot-full img-s" src="/img/build-with-ai/ai-chat/all-chats.png" alt="The All chats list in the AI chat, with a search box, Start new chat and each chat's status, date and number of messages" />
 
-When a chat reaches its context limit, a card titled "This chat is full" replaces the message box. Click **Continue on new chat** to open a new chat that starts with a summary of the current one and sends it for you. The new chat keeps the same model, so the AI can pick up where it left off.
+When a chat reaches its context limit, a card titled "This chat is full" replaces the message box. Click **Continue on new chat** to open a new chat that starts with a summary of the current one and sends it automatically. The new chat keeps the same model, so the AI can pick up where it left off.
 
 ### Build From Your Coding Agent
 
-Under its header, the AI chat shows a **Build from your own agent** bar. Click **Connect** on it to open **Build ToolJet apps from your coding agent**, which lists the commands to connect **Claude Code**, **Codex**, **Cursor**, **Grok Build**, or another MCP client (**Others**) to your ToolJet instance through the [ToolJet MCP server](./mcp/setup/overview.md). The commands already include your ToolJet URL; replace the token placeholder with a personal access token. On ToolJet Cloud, the dialog can also offer **OAuth**: your agent signs in through your browser, and no token is needed. Building this way runs on your coding agent's subscription instead of ToolJet AI credits.
+Under its header, the AI chat shows a **Build from your own agent** bar. Click **Connect** on it to open **Build ToolJet apps from your coding agent**, which lists the commands to connect **Claude Code**, **Codex**, **Cursor**, **Grok Build**, or another MCP client (**Others**) to the ToolJet instance through the [ToolJet MCP server](./mcp/setup/overview.md). The commands already include the instance's ToolJet URL; replace the token placeholder with a personal access token. On ToolJet Cloud, the dialog can also offer **OAuth**: the agent signs in through the browser, and no token is needed. Building this way runs on the coding agent's subscription instead of ToolJet AI credits.
 
 <img className="screenshot-full img-l" src="/img/build-with-ai/ai-chat/connect-your-agent.png" alt="The Build ToolJet apps from your coding agent dialog, with its six benefits and the Connect your agent steps for Claude Code" />
 
-In a React Builder app, the bar reads **Work on this app in your editor** instead. Click **Open** to work on the app's code from your own editor, terminal, or coding agent. See [Build Locally](./react-builder/local-development.md).
+In a React Builder app, the bar reads **Work on this app in your editor** instead. Click **Open** to work on the app's code from a local code editor, terminal, or coding agent. See [Build Locally](../app-builder/react-builder/local-development.md).
 
 The bar steps aside while a build runs. To hide it for good, select **Hide the bar in chat** at the bottom of the dialog: it stays hidden in that browser. The bar in a React Builder app has no such option.
 

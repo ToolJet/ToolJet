@@ -5,7 +5,7 @@ title: Map
 
 <div className="badge badge--primary">Ant Design</div>
 
-The **Map** component shows locations from your data as pins on an interactive map, with optional routes, areas and a heat layer. Use it to track deliveries, stores or field staff, or to let users pick a location.
+The **Map** component shows locations from the application's data as pins on an interactive map, with optional routes, areas and a heat layer. Use it to track deliveries, stores or field staff, or to let users pick a location.
 
 ## Properties
 
@@ -17,7 +17,7 @@ The **Map** component shows locations from your data as pins on an interactive m
 | Title field | Field shown as the title in a pin's popup. | Text. Default: `name` |
 | Second line field | Field shown under the title in a pin's popup. | Text. Default: `address` |
 | Status field (pin colour, toned by its words) | Field whose value colors the pin. Common words get matching colors, such as `Delivered` in green, `Delayed` in amber and `Failed` in red. | Text. Default: `status` |
-| Status colours (\{ Open: "#2563eb" \} or tone names) | Your own colors for status values, such as `{ Open: '#2563eb' }`, or a tone name: `success`, `warning`, `danger`, `info` or `neutral`. | Object |
+| Status colours (\{ Open: "#2563eb" \} or tone names) | Custom colors for status values, such as `{ Open: '#2563eb' }`, or a tone name: `success`, `warning`, `danger`, `info` or `neutral`. | Object |
 | Id field | Field that identifies each row, used by the **Select marker** action and `selectedMarkerId`. | Text. Default: `id` |
 | Pin label field (a stop number, a price) | Field shown as a short label on the pin, such as a stop number or a price. | Text |
 | Pin icon field (unused in the Ant pack) | Has no effect in the Ant Design library. | Text |
@@ -57,7 +57,7 @@ The **Map** component shows locations from your data as pins on an interactive m
 | Show a fullscreen button | Shows a button that opens the map in full screen. | On or off. Default: On |
 | Zoom with the mouse wheel | Zooms the map with the mouse wheel. When off, the wheel scrolls the page, and Ctrl or Cmd with the wheel zooms the map. | On or off. Default: Off |
 | Empty text | Message shown when there is nothing to draw on the map. | Text. Default: `No locations to show` |
-| Tile URL (empty for the default basemap) | Address of your own map tiles, with `{z}`, `{x}` and `{y}` placeholders. Leave it empty for the default map. | Text |
+| Tile URL (empty for the default basemap) | Address of custom map tiles, with `{z}`, `{x}` and `{y}` placeholders. Leave it empty for the default map. | Text |
 | Tile attribution | Credit text shown for the tiles in **Tile URL**. | Text |
 
 ### Additional Actions
@@ -118,7 +118,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `titleField` | Field shown as the title in a pin's popup. | `{{components.map1.titleField}}` |
 | `subtitleField` | Field shown under the title in a pin's popup. | `{{components.map1.subtitleField}}` |
 | `statusField` | Field whose value colors the pin. Common words get matching colors, such as `Delivered` in green, `Delayed` in amber and `Failed` in red. | `{{components.map1.statusField}}` |
-| `statusColors` | Your own colors for status values, such as `{ Open: '#2563eb' }`, or a tone name: `success`, `warning`, `danger`, `info` or `neutral`. | `{{components.map1.statusColors}}` |
+| `statusColors` | Custom colors for status values, such as `{ Open: '#2563eb' }`, or a tone name: `success`, `warning`, `danger`, `info` or `neutral`. | `{{components.map1.statusColors}}` |
 | `idField` | Field that identifies each row, used by the **Select marker** action and `selectedMarkerId`. | `{{components.map1.idField}}` |
 | `labelField` | Field shown as a short label on the pin, such as a stop number or a price. | `{{components.map1.labelField}}` |
 | `iconField` | Has no effect in the Ant Design library. | `{{components.map1.iconField}}` |
@@ -158,7 +158,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `showFullscreen` | Shows a button that opens the map in full screen. | `{{components.map1.showFullscreen}}` |
 | `scrollWheelZoom` | Zooms the map with the mouse wheel. When off, the wheel scrolls the page, and Ctrl or Cmd with the wheel zooms the map. | `{{components.map1.scrollWheelZoom}}` |
 | `emptyText` | Message shown when there is nothing to draw on the map. | `{{components.map1.emptyText}}` |
-| `tileUrl` | Address of your own map tiles, with `{z}`, `{x}` and `{y}` placeholders. Leave it empty for the default map. | `{{components.map1.tileUrl}}` |
+| `tileUrl` | Address of custom map tiles, with `{z}`, `{x}` and `{y}` placeholders. Leave it empty for the default map. | `{{components.map1.tileUrl}}` |
 | `tileAttribution` | Credit text shown for the tiles in **Tile URL**. | `{{components.map1.tileAttribution}}` |
 | `selectedMarker` | The data row of the selected pin. It is empty when nothing is selected. | `{{components.map1.selectedMarker}}` |
 | `selectedMarkerId` | Value of **Id field** for the selected pin. | `{{components.map1.selectedMarkerId}}` |
@@ -184,4 +184,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Radius | — |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

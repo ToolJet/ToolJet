@@ -5,7 +5,7 @@ title: Kanban
 
 <div className="badge badge--primary">Ant Design</div>
 
-The **Kanban** component shows records as cards in columns by status, such as tasks under To do, In progress and Done. Users drag cards between columns, and your app saves each change with a query.
+The **Kanban** component shows records as cards in columns by status, such as tasks under To do, In progress and Done. Users drag cards between columns, and the application saves each change with a query.
 
 ## Properties
 
@@ -15,7 +15,7 @@ The **Kanban** component shows records as cards in columns by status, such as ta
 | Columns (in order) | The columns, in order, as a list of `{id, title}`. Add `color` to show a colored dot in the header. A card whose status no column lists gets its own column at the end. | Array |
 | Status field | Field on each card that holds the id of the column it belongs in. | Text. Default: `status` |
 | Id field | Field that identifies each card, used by the actions and in the event data. | Text. Default: `id` |
-| Card content | What each card shows. `fields` shows the fields set below; `custom` repeats the components you place in the first card for every card, which read the card as `{{cardData}}`. | Fields, Custom. Default: Fields |
+| Card content | What each card shows. `fields` shows the fields set below; `custom` repeats the components placed in the first card for every card, which read the card as `{{cardData}}`. | Fields, Custom. Default: Fields |
 | Card height (custom content) | Least height of each card when **Card content** is `custom`, in pixels. A card grows to fit its components. | Number. Default: `96` |
 | Title field | Field shown as each card's title. | Text. Default: `title` |
 | Description field | Field shown under the title. | Text. Default: `description` |
@@ -32,7 +32,7 @@ The **Kanban** component shows records as cards in columns by status, such as ta
 | Collapsible columns | Shows a button in each column's header that folds the column to a narrow strip. | On or off. Default: On |
 | Columns collapsed at start (ids) | Ids of the columns that are folded when the app loads. | Array |
 | Drag to move | Lets users move cards between and within columns by dragging, or with the keyboard. | On or off. Default: On |
-| Add card button on columns | Shows an **Add card** button at the bottom of each column. It fires **On add card click**; your app adds the card. | On or off. Default: Off |
+| Add card button on columns | Shows an **Add card** button at the bottom of each column. It fires **On add card click**, and the application adds the card. | On or off. Default: Off |
 | Delete button on cards | Shows a delete button on each card that removes it from the board. | On or off. Default: Off |
 | Empty column message | Message shown in a column with no cards. | Text. Default: `No cards` |
 | Badge colours by value | Colors for badge values, such as `{ High: '#dc2626' }`. A value can also be `{text, background}` to set both colors. | Object |
@@ -92,7 +92,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `columns` | The columns, in order, as a list of `{id, title}`. Add `color` to show a colored dot in the header. A card whose status no column lists gets its own column at the end. | `{{components.kanban1.columns}}` |
 | `statusField` | Field on each card that holds the id of the column it belongs in. | `{{components.kanban1.statusField}}` |
 | `idField` | Field that identifies each card, used by the actions and in the event data. | `{{components.kanban1.idField}}` |
-| `cardLayout` | What each card shows. `fields` shows the fields set below; `custom` repeats the components you place in the first card for every card, which read the card as `{{cardData}}`. | `{{components.kanban1.cardLayout}}` |
+| `cardLayout` | What each card shows. `fields` shows the fields set below; `custom` repeats the components placed in the first card for every card, which read the card as `{{cardData}}`. | `{{components.kanban1.cardLayout}}` |
 | `cardHeight` | Least height of each card when **Card content** is `custom`, in pixels. A card grows to fit its components. | `{{components.kanban1.cardHeight}}` |
 | `titleField` | Field shown as each card's title. | `{{components.kanban1.titleField}}` |
 | `descriptionField` | Field shown under the title. | `{{components.kanban1.descriptionField}}` |
@@ -109,7 +109,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `collapsibleColumns` | Shows a button in each column's header that folds the column to a narrow strip. | `{{components.kanban1.collapsibleColumns}}` |
 | `collapsedColumns` | Ids of the columns that are folded when the app loads. | `{{components.kanban1.collapsedColumns}}` |
 | `allowDrag` | Lets users move cards between and within columns by dragging, or with the keyboard. | `{{components.kanban1.allowDrag}}` |
-| `allowAdd` | Shows an **Add card** button at the bottom of each column. It fires **On add card click**; your app adds the card. | `{{components.kanban1.allowAdd}}` |
+| `allowAdd` | Shows an **Add card** button at the bottom of each column. It fires **On add card click**, and the application adds the card. | `{{components.kanban1.allowAdd}}` |
 | `allowDelete` | Shows a delete button on each card that removes it from the board. | `{{components.kanban1.allowDelete}}` |
 | `emptyText` | Message shown in a column with no cards. | `{{components.kanban1.emptyText}}` |
 | `badgeColors` | Colors for badge values, such as `{ High: '#dc2626' }`. A value can also be `{text, background}` to set both colors. | `{{components.kanban1.badgeColors}}` |
@@ -149,4 +149,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Card shadow | None |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

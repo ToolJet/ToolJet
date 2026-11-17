@@ -3,58 +3,58 @@ id: security
 title: App Security
 ---
 
-ToolJet checks every React Builder app for you: its code, its npm packages and its queries. Each issue says what was found, where it is and how to fix it, and a version that fails your workspace's policy is held back from release.
+ToolJet checks the code, npm packages and queries of every React Builder application. Each reported issue states what was found, where it is and how to fix it. A version that fails the workspace's scan policy can't be released.
 
 <img className="screenshot-full img-m" src="/img/build-with-ai/react-builder/security/security-panel-blocking-issue.png" alt="The Security panel showing Blocks release for a version, with an issue that says what was found and where, and a Fix with AI button" />
 
-## How ToolJet Protects Your Apps
+## Protection Layers
 
-<SectionSubtitle text="Three layers, all on by default." />
+React Builder applications are protected in three ways, all turned on by default.
 
 <CardGrid columns={3}>
   <FeatureCard
-    icon="🔒"
-    title="Isolated at run time"
-    description="The app runs in a sandboxed frame: it can't read the viewer's session or cookies, and by default it reaches data only through the app's queries."
-    href="/docs/build-with-ai/react-builder/runtime-api#isolation"
+    icon="box"
+    title="Runtime Isolation"
+    description="The application runs in a sandboxed frame. It can't read the viewer's session or cookies, and by default it reaches data only through the application's queries."
+    href="/docs/app-builder/react-builder/runtime-api#isolation"
   />
   <FeatureCard
-    icon="🔎"
-    title="Checked on every version"
-    description="ToolJet checks the draft a few seconds after each change, and checks again when you save a version."
-    href="/docs/build-with-ai/react-builder/security-policy#when-checks-run"
+    icon="scan"
+    title="Version Checks"
+    description="ToolJet checks the draft a few seconds after each change, and checks the version again when it is saved."
+    href="/docs/app-builder/react-builder/security-policy#when-checks-run"
   />
   <FeatureCard
-    icon="🚦"
-    title="Gated at release"
-    description="A version that fails the workspace's policy can't be released or promoted until it's fixed, or accepted with a reason."
+    icon="shield-check"
+    title="Release Gate"
+    description="A version that fails the workspace's scan policy can't be released or promoted until the issue is fixed or accepted with a reason."
     href="#release-gate"
   />
 </CardGrid>
 
 ## What's Checked
 
-<SectionSubtitle text="Twelve checks in four groups. Comments in the code can't switch them off." />
+ToolJet runs twelve checks, grouped into four categories. Comments in the code can't turn a check off.
 
 <CardGrid columns={2}>
   <FeatureCard
-    icon="💻"
-    title="Your code"
+    icon="file-code"
+    title="Application Code"
     description="Unsafe HTML, text run as code, calls to outside addresses and token reads."
   />
   <FeatureCard
-    icon="🔑"
+    icon="key"
     title="Secrets"
     description="Passwords, keys and tokens written into the code, or left in the built app."
   />
   <FeatureCard
-    icon="📦"
+    icon="package"
     title="Packages"
-    description="Known vulnerabilities and malware, versions published only days ago, altered downloads, and licenses your workspace doesn't allow."
+    description="Known vulnerabilities and malware, recently published versions, altered downloads, and licenses the workspace doesn't allow."
   />
   <FeatureCard
-    icon="🗄️"
-    title="Queries and components"
+    icon="database"
+    title="Queries and Components"
     description="Unsafe SQL, scripts and HTML, and passwords sent in requests."
   />
 </CardGrid>
@@ -93,7 +93,7 @@ Open **Security** in the left sidebar, or click the security chip in the editor'
 | No issues | Every check ran and found nothing open. | Nothing to fix. |
 | N issues to review | Open findings, none of them blocking. | Review them. Nothing blocks the release. |
 | Blocks release | A finding, or a check that couldn't run, fails the workspace's policy. | Fix the issue, or click **Check again** if a check couldn't run. |
-| Code changed since the last check | The code changed after the last check. | Click **Check again** before you release. |
+| Code changed since the last check | The code changed after the last check. | Click **Check again** before release. |
 
 A clean result means no check found an issue. It doesn't prove the app is secure.
 
@@ -111,12 +111,12 @@ Isolation protects the viewer's session, not the app's data: that depends on who
 2. ToolJet AI makes the change as a chat message, and ToolJet checks the draft again a few seconds later.
 3. Confirm the issue is gone. If the result looks out of date, click **Check again**.
 
-**Fix with AI** uses AI credits, and it's off when the app's code is owned by a Git repository. You can also fix an issue by hand in the code.
+**Fix with AI** uses AI credits, and it's off when the app's code is owned by a Git repository. An issue can also be fixed by hand in the code.
 
 Some issues have another route:
 
 - For an access issue, click **Limit queries** to restrict the query in the **Access** panel.
-- For an issue you accept, a workspace admin can click **Add exception** and give a reason. See [Exceptions](./security-policy.md#exceptions).
+- For an accepted issue, a workspace admin can click **Add exception** and give a reason. See [Exceptions](./security-policy.md#exceptions).
 
 ## The Release Gate {#release-gate}
 
@@ -143,7 +143,7 @@ See [Workspace App Security](./security-policy.md#workspace-app-security) for ea
 ## Where to Go Next
 
 <CardGrid columns={3}>
-  <NextStepCard title="Control Access" description="Who can open each screen and run each query." href="/docs/build-with-ai/react-builder/access-control" />
-  <NextStepCard title="Versions and History" description="Save a version, release it, or go back." href="/docs/build-with-ai/react-builder/versions-and-history" />
-  <NextStepCard title="Security Policy" description="For admins: what blocks a release, and exceptions." href="/docs/build-with-ai/react-builder/security-policy" />
+  <NextStepCard title="Control Access" description="Who can open each screen and run each query." href="/docs/app-builder/react-builder/access-control" />
+  <NextStepCard title="Versions and History" description="Save a version, release it, or go back." href="/docs/app-builder/react-builder/versions-and-history" />
+  <NextStepCard title="Security Policy" description="For admins: what blocks a release, and exceptions." href="/docs/app-builder/react-builder/security-policy" />
 </CardGrid>

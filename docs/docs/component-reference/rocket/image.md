@@ -14,7 +14,7 @@ The **Image** component shows a picture from a URL, such as a product photo, a l
 | Image URL | URL of the image to show. | Text. Default: `https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800` |
 | Alt text | Description of the image read by screen readers. It is also the fallback text when **Fallback name (initials) or text** is empty. | Text. Default: `Mountain lake at sunrise` |
 | Fit | How the image fills its box: **Cover** fills and crops, **Contain** shows the whole image, **Fill** stretches it. | Cover (fill, crop), Contain (whole image), Fill (stretch). Default: Cover (fill, crop) |
-| Aspect ratio | Shape of the image box. **Auto** fills the component's height. | Auto (widget height), 1:1 square, 4:3, 3:2, 16:9, 21:9, 3:4 portrait, 9:16 portrait. Default: Auto (widget height) |
+| Aspect ratio | Shape of the image box. **Auto** fills the component's height. | Auto (component height), 1:1 square, 4:3, 3:2, 16:9, 21:9, 3:4 portrait, 9:16 portrait. Default: Auto (component height) |
 | Caption | Text shown under the image. | Text |
 | Fallback | What shows when there is no image or it fails to load: a **Placeholder** with text, an **Icon**, or **Initials** made from the fallback name. | Placeholder, Icon, Initials. Default: Placeholder |
 | Fallback name (initials) or text | Name to make initials from, or text for the placeholder, when the image can't be shown. | Text |
@@ -91,4 +91,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Caption color | Theme: Placeholder text |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

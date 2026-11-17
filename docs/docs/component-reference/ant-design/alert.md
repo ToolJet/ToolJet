@@ -13,7 +13,7 @@ The **Alert** component shows a colored message box for feedback such as a succe
 |:--|:--|:--|
 | Message | Title line of the alert. When it is empty, **Description** is shown as the title instead. | Text. Default: `A new version is available.` |
 | Description | Longer text shown under **Message**. | Text |
-| Type | Color and icon of the alert. `custom` uses your own background, text and border colors, set in the **Custom alert** section. | Info, Success, Warning, Error, Custom. Default: Info |
+| Type | Color and icon of the alert. `custom` uses custom background, text and border colors, set in the **Custom alert** section. | Info, Success, Warning, Error, Custom. Default: Info |
 | Show icon | Shows the type icon at the start of the alert. | On or off. Default: On |
 | Closable | Shows a close button that dismisses the alert. | On or off. Default: Off |
 | Banner | Shows the alert as a full-width strip with no rounded border, for a notice at the top of a page. | On or off. Default: Off |
@@ -65,7 +65,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 |:--|:--|:--|
 | `message` | Title line of the alert. When it is empty, **Description** is shown as the title instead. | `{{components.alert1.message}}` |
 | `description` | Longer text shown under **Message**. | `{{components.alert1.description}}` |
-| `type` | Color and icon of the alert. `custom` uses your own background, text and border colors, set in the **Custom alert** section. | `{{components.alert1.type}}` |
+| `type` | Color and icon of the alert. `custom` uses custom background, text and border colors, set in the **Custom alert** section. | `{{components.alert1.type}}` |
 | `showIcon` | Shows the type icon at the start of the alert. | `{{components.alert1.showIcon}}` |
 | `closable` | Shows a close button that dismisses the alert. | `{{components.alert1.closable}}` |
 | `banner` | Shows the alert as a full-width strip with no rounded border, for a notice at the top of a page. | `{{components.alert1.banner}}` |
@@ -89,4 +89,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Border color | Theme: Default border |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

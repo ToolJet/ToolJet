@@ -6,7 +6,7 @@ hide_title: true
 ---
 
 import Link from '@docusaurus/Link';
-import { useVersionedHref } from '@site/src/components/DocBlocks';
+import { useVersionedHref, CardIcon } from '@site/src/components/DocBlocks';
 
 export const VLink = ({ to, ...props }) => <Link to={useVersionedHref(to)} {...props} />;
 
@@ -28,7 +28,7 @@ export const FeatureCard = ({ icon, title, description, href, badge }) => (
         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ifm-toc-border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
         >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '28px', lineHeight: 1 }}>{icon}</span>
+                <CardIcon>{icon}</CardIcon>
                 {badge && (
                     <span style={{
                         fontSize: '11px',
@@ -75,39 +75,39 @@ The ToolJet home page offers two entry points, and they are backed by two differ
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px', margin: '16px 0 24px' }}>
     <FeatureCard
-        icon="✨"
+        icon="sparkles"
         title="Start with a prompt"
         description="ToolJet AI, built into the product. Describe what you want to build and ToolJet generates a fully functioning app for you."
         href="/docs/build-with-ai/use-ai-in-tooljet"
     />
     <FeatureCard
-        icon="🔌"
+        icon="plug"
         title="Build apps from your coding agents"
         description="ToolJet MCP. Build ToolJet apps from Claude Code, Codex, and other MCP-compatible clients, without leaving your editor."
         href="/docs/build-with-ai/mcp/app-generation"
     />
 </div>
 
-## Two Kinds of Apps
+## Build Modes
 
-<SectionSubtitle text="Choose what gets built when you send your first prompt" />
+The build mode is selected for each new application and decides what ToolJet AI generates.
 
 <CardGrid columns={2}>
     <ConfigCard
         label="Visual mode"
-        title="Visual app"
-        description="ToolJet AI places components on the canvas and connects them to queries. You refine the result by drag and drop."
-        features={['Best for most internal tools', 'Edited in the visual App Builder']}
+        title="Visual Application"
+        description="ToolJet AI places components on the canvas and connects them to queries. The result is edited in the visual App Builder."
+        features={['Suited to most internal tools', 'Edited by drag and drop']}
         href="/docs/build-with-ai/generate-applications"
     />
     <ConfigCard
         label="React Builder"
         labelBg="#dcfce7"
         labelColor="#166534"
-        title="React Builder app"
-        description="ToolJet AI writes a React app. You keep changing it with the AI, in the Code panel or in your own editor."
-        features={['Any layout and styling you can code', 'Checked for security before release']}
-        href="/docs/build-with-ai/react-builder/overview"
+        title="React Builder Application"
+        description="ToolJet AI writes a React and TypeScript application. The code is edited with ToolJet AI, in the Code panel or in a local code editor."
+        features={['Layout and styling defined in code', 'Security checks before release']}
+        href="/docs/app-builder/react-builder/overview"
     />
 </CardGrid>
 
@@ -119,7 +119,7 @@ Both can create and modify apps. The difference is where you drive them from, wh
 | --- | --- | --- |
 | **Where you build** | The AI chat inside ToolJet, in your browser | Your own coding agent, such as Claude Code or Codex |
 | **What it does** | Generates and modifies apps, modules, queries, and code; answers questions from the docs | Creates and modifies apps, manages users, and queries your instance in natural language |
-| **What it can build** | Visual apps and [React Builder](./react-builder/overview.md) apps | Visual apps. For React Builder apps, a coding agent works through the [ToolJet CLI](./react-builder/local-development.md) |
+| **What it can build** | Visual apps and [React Builder](../app-builder/react-builder/overview.md) apps | Visual apps. For React Builder apps, a coding agent works through the [ToolJet CLI](../app-builder/react-builder/local-development.md) |
 | **Which model runs it** | ToolJet Managed AI by default, or your own key via [BYOK](/docs/setup/tooljet-ai/bring-your-own-key) on Enterprise Cloud or Self-hosted deployments | Whichever model your AI client is already running |
 | **What it consumes** | [ToolJet AI credits](/docs/build-with-ai/ai-credits) by default; BYOK uses your own key and does not consume ToolJet AI credits | [AI model tokens](#credits-vs-tokens), billed by your model provider |
 | **Setup needed** | None, it is available out of the box | A personal access token and an [MCP server install](/docs/build-with-ai/mcp/setup) |
@@ -140,25 +140,25 @@ Both are metered, but in different units and by different parties.
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px', margin: '16px 0 8px' }}>
     <FeatureCard
-        icon="✨"
+        icon="sparkles"
         title="Use AI in ToolJet"
         description="Generate apps, queries, and code from ToolJet's own AI chat."
         href="/docs/build-with-ai/use-ai-in-tooljet"
     />
     <FeatureCard
-        icon="🔌"
+        icon="plug"
         title="ToolJet MCP Server"
         description="Connect a coding agent to your workspace and build from your editor."
         href="/docs/build-with-ai/mcp/app-generation"
     />
     <FeatureCard
-        icon="⚛️"
+        icon="code"
         title="React Builder"
-        description="Build apps in React with AI, in your browser or in your own editor."
-        href="/docs/build-with-ai/react-builder/overview"
+        description="Applications built as React and TypeScript projects, with ToolJet AI, in the browser or in a local code editor."
+        href="/docs/app-builder/react-builder/overview"
     />
     <FeatureCard
-        icon="🔒"
+        icon="lock"
         title="Privacy Policy"
         description="What data is shared with AI, and how it's protected."
         href="/docs/build-with-ai/privacy"

@@ -5,7 +5,7 @@ title: List View
 
 <div className="badge badge--primary">Rocket 2.0</div>
 
-The **List View** component shows a list or grid of records, such as people, orders or products, and lets users select one. Each item is built from data fields, or from components you design once and repeat for every record.
+The **List View** component shows a list or grid of records, such as people, orders or products, and lets users select one. Each item is built from data fields, or from components designed once and repeated for every record.
 
 ## Properties
 
@@ -14,7 +14,7 @@ The **List View** component shows a list or grid of records, such as people, ord
 | List data | The records to list, for example `{{queries.getItems.data}}`. | Array |
 | Layout | Whether items appear in a single-column `list` or a `grid`. | `list`, `grid`. Default: `list` |
 | Grid columns | Number of columns when **Layout** is `grid`. | Number. Default: `3` |
-| Item content | What each item shows. **Fields** builds the item from the field properties below; **Components** lets you design the item with components that read the record as `{{listItem}}`. | Fields, Components. Default: Fields |
+| Item content | What each item shows. **Fields** builds the item from the field properties below; **Components** builds the item from components that read the record as `{{listItem}}`. | Fields, Components. Default: Fields |
 | Item height (px) | Height of each item when **Item content** is **Components**. An item grows to fit its components. | Number. Default: `72` |
 | Gap between items (px) | Space between items in pixels. | Number. Default: `8` |
 | Title field | The field shown as the item's title. | Text. Default: `name` |
@@ -83,7 +83,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `data` | The records to list, for example `{{queries.getItems.data}}`. | `{{components.listview1.data}}` |
 | `mode` | Whether items appear in a single-column `list` or a `grid`. | `{{components.listview1.mode}}` |
 | `columns` | Number of columns when **Layout** is `grid`. | `{{components.listview1.columns}}` |
-| `itemContent` | What each item shows. **Fields** builds the item from the field properties below; **Components** lets you design the item with components that read the record as `{{listItem}}`. | `{{components.listview1.itemContent}}` |
+| `itemContent` | What each item shows. **Fields** builds the item from the field properties below; **Components** builds the item from components that read the record as `{{listItem}}`. | `{{components.listview1.itemContent}}` |
 | `rowHeight` | Height of each item when **Item content** is **Components**. An item grows to fit its components. | `{{components.listview1.rowHeight}}` |
 | `gap` | Space between items in pixels. | `{{components.listview1.gap}}` |
 | `titleField` | The field shown as the item's title. | `{{components.listview1.titleField}}` |
@@ -129,4 +129,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Empty message color | Theme: Placeholder text |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

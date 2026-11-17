@@ -7,3 +7,4 @@ export { default as FlowStep } from './FlowStep';
 export { default as CapabilityCard } from './CapabilityCard';
 export { default as NextStepCard } from './NextStepCard';
 export { default as useVersionedHref } from './useVersionedHref';
+export { CardIcon } from './Card';

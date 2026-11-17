@@ -10,7 +10,7 @@ App History keeps a timeline of the changes made to an app version in the App Bu
 <img className="screenshot-full img-s" src="/img/app-builder/app-history/app-history-panel.png" alt="App history panel listing changes for the current version" />
 
 :::info React Builder apps
-React Builder apps have **App history** in the same place. For them, it lists each change to the app's code and access, and each saved version. See [History and Undo](../build-with-ai/react-builder/versions-and-history.md#history-and-undo).
+React Builder apps have **App history** in the same place. For them, it lists each change to the app's code and access, and each saved version. See [History and Undo](./react-builder/versions-and-history.md#history-and-undo).
 :::
 
 ## Opening App History

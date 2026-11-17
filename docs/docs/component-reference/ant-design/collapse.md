@@ -11,7 +11,7 @@ The **Collapse** component stacks panels that users open and close by their head
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
 |:--|:--|:--|
-| Items | The panels, as a list of `{key, label}`. The label is the header text, and each panel holds the components you drop into it. | Array |
+| Items | The panels, as a list of `{key, label}`. The label is the header text, and each panel holds the components dropped into it. | Array |
 | Active key | Keys of the panels that are open. | Array. Default: `["panel1"]` |
 | Accordion | Lets only one panel be open at a time. Opening a panel closes the one that was open. | On or off. Default: Off |
 | Bordered | Draws a border around the panels. | On or off. Default: On |
@@ -60,7 +60,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 
 | <div style={{ width:"150px"}}> Variable </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
-| `items` | The panels, as a list of `{key, label}`. The label is the header text, and each panel holds the components you drop into it. | `{{components.collapse1.items}}` |
+| `items` | The panels, as a list of `{key, label}`. The label is the header text, and each panel holds the components dropped into it. | `{{components.collapse1.items}}` |
 | `activeKey` | Keys of the panels that are open. | `{{components.collapse1.activeKey}}` |
 | `accordion` | Lets only one panel be open at a time. Opening a panel closes the one that was open. | `{{components.collapse1.accordion}}` |
 | `bordered` | Draws a border around the panels. | `{{components.collapse1.bordered}}` |
@@ -82,4 +82,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Border radius | — |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

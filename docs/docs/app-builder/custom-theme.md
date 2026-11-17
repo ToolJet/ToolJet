@@ -11,7 +11,7 @@ Each workspace can have one or more themes configured, and any application withi
 
 ## Built-in Themes
 
-Every workspace comes with seven ready-made themes next to the default **ToolJet** theme, so you can give an app a new look without designing a theme first.
+Every workspace comes with seven ready-made themes next to the default **ToolJet** theme, so an app can get a new look without a custom theme.
 
 <CardGrid min={150}>
   <FeatureCard icon={<Swatch color="#4368E3" />} title="ToolJet" badge="Default" description="ToolJet's own blue. Primary #4368E3." />
@@ -37,10 +37,6 @@ Each one changes the primary color, the app background and the surfaces, in ligh
 <img className="screenshot-full img-s" src="/img/app-builder/custom-theme/theme-dropdown-built-in.png" alt="The Theme dropdown open in Global settings with ToolJet Navy selected, each theme shown with a swatch of its primary color and the workspace default marked Default" />
 
 Components that [take their colors from the theme](#3-use-theme-styles-in-your-components) switch to the new palette. To start every new app on a built-in theme, make it the workspace default under [Manage Themes](#manage-themes).
-
-:::info Availability
-Every plan on ToolJet Cloud and self-hosted Enterprise Edition can apply the built-in themes and set one as the workspace default. Editing, renaming or deleting them, and creating your own themes, needs a plan that includes custom themes. Community Edition doesn't have the **Theme** dropdown or the **Themes** page.
-:::
 
 ## Why Use App Themes?
 
@@ -70,7 +66,7 @@ You can configure these settings for both light and dark modes, and instantly pr
 
 <br/><br/>
 
-Using your own theme in ToolJet involves two simple steps — **creating the theme** and **applying it to your applications**.
+Using a custom theme involves two steps: **creating the theme** and **applying it to applications**.
 
 ### 1. Create an App Theme
 
@@ -97,11 +93,9 @@ Role Required: **Admin/Builder**
 
 You can create multiple themes as per your needs — for different teams, environments, or clients.
 
-:::info
-Custom themes are a paid feature. On plans without this feature, **Create new theme** is disabled and your own themes are listed but disabled: an app set to one of them shows the **ToolJet** theme's colors. The [built-in themes](#built-in-themes) stay available.
-:::
-
 ### Manage Themes
+
+<PlanBadge type="team" />
 
 The **Themes** tab lists every theme in the workspace. The workspace default theme has a **Default** tag. Select a theme to preview it, then use these actions:
 
@@ -110,7 +104,7 @@ The **Themes** tab lists every theme in the workspace. The workspace default the
 - **Rename Theme**: Available from the theme's menu in the list.
 - **Delete Theme**: Available from the theme's menu in the list, or from the delete icon in the theme's header.
 
-The **ToolJet** theme can't be edited, renamed, or deleted, but you can set it back as the default. The seven [built-in themes](#built-in-themes) are read-only unless your plan includes custom themes.
+The **ToolJet** theme can't be edited, renamed, or deleted, but it can be set back as the default.
 
 <img className="screenshot-full img-full" src="/img/app-builder/custom-theme/themes-tab.png" alt="Themes tab in workspace settings with a custom theme selected" />
 

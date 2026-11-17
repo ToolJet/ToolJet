@@ -11,24 +11,24 @@ export const builderCards = [
         icon: Grid3x3,
         title: "Visual Builder",
         color: "text-blue-500",
-        content: "Drag components onto a canvas, connect them to your data and add logic with events and JavaScript. Best for most internal tools.",
-        href: "/docs/app-builder/overview/"
+        content: "Drag components onto a canvas, connect them to data and add logic with events and RunJS. Suited to most internal tools.",
+        href: "/docs/app-builder/visual-builder/overview/"
     },
     {
         icon: Code2,
         title: "React Builder",
         color: "text-blue-500",
         badge: "New",
-        content: "Build apps in React and TypeScript. Generate them with AI, edit the code in your browser, or work in your own editor. ToolJet handles sign-in, permissions, data and releases.",
-        href: "/docs/build-with-ai/react-builder/overview/"
+        content: "Build applications in React and TypeScript. Generate them with ToolJet AI, edit the code in the browser, or work in a local code editor. ToolJet provides sign-in, permissions, data and releases.",
+        href: "/docs/app-builder/react-builder/overview/"
     }
 ];
 
 export const aiCard = {
     icon: BrainCircuit,
-    title: "Build With ToolJet AI or Your Own Coding Agent",
+    title: "Build With ToolJet AI or a Coding Agent",
     color: "text-blue-500",
-    content: "Describe the app and ToolJet AI builds it, or connect Claude Code, Codex or any MCP-compatible agent and build from your editor.",
+    content: "Describe the app and ToolJet AI builds it, or connect Claude Code, Codex or any MCP-compatible agent and build from a code editor.",
     href: "/docs/build-with-ai/overview/",
     image: "/img/home/build-with-ai.png",
     alt: "The AI chat asking What would you like to build today?, with the Build from your own agent bar and its Connect button at the top"
@@ -39,7 +39,7 @@ export const platformCards = [
         icon: Blocks,
         title: "Components",
         color: "text-blue-500",
-        content: "Choose from three component libraries, ToolJet UI 1.0, Rocket 2.0 and Ant Design, or build your own custom components.",
+        content: "Choose from three component libraries, ToolJet UI 1.0, Rocket 2.0 and Ant Design, or build custom components.",
         href: "/docs/app-builder/building-ui/component-library/"
     },
     {
@@ -201,7 +201,7 @@ export const textLabels = {
         prefix: "ToolJet",
         highlight: "Documentation"
     },
-    subtitle: "Build internal tools visually, with AI, from your coding agent, or in code.",
+    subtitle: "Build internal tools visually, with AI, from a coding agent, or in code.",
     gettingStarted: {
         title: "Getting Started",
         description: "Discover how to create and publish apps within minutes"

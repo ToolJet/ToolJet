@@ -5,7 +5,7 @@ title: Chat
 
 <div className="badge badge--primary">Ant Design</div>
 
-The **Chat** component shows a conversation between the user and a respondent, such as an AI assistant or a support agent, with a box for typing messages. Your app sends each message to a query and adds the reply with the **Append to history** action.
+The **Chat** component shows a conversation between the user and a respondent, such as an AI assistant or a support agent, with a box for typing messages. The application sends each message to a query and adds the reply with the **Append to history** action.
 
 ## Properties
 
@@ -111,4 +111,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Border radius | — |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

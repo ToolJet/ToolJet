@@ -11,7 +11,7 @@ The **Accordion Container** component groups other components into collapsible s
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
 |:--|:--|:--|
-| Sections | The sections to show, as a list of objects with an `id` and a `title`. Keep each `id` the same over time, since the components you drop into a section stay with its `id`. | Array |
+| Sections | The sections to show, as a list of objects with an `id` and a `title`. Keep each `id` the same over time, since the components dropped into a section stay with its `id`. | Array |
 | Open sections | The `id`s of the sections that are open. It updates as the user opens and closes sections. | Array. Default: `["general"]` |
 | Allow several open | Lets the user keep several sections open at the same time. When off, opening a section closes the one that was open. | On or off. Default: On |
 
@@ -61,7 +61,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 
 | <div style={{ width:"150px"}}> Variable </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
-| `sections` | The sections to show, as a list of objects with an `id` and a `title`. Keep each `id` the same over time, since the components you drop into a section stay with its `id`. | `{{components.accordioncontainer1.sections}}` |
+| `sections` | The sections to show, as a list of objects with an `id` and a `title`. Keep each `id` the same over time, since the components dropped into a section stay with its `id`. | `{{components.accordioncontainer1.sections}}` |
 | `openSections` | The `id`s of the sections that are open. It updates as the user opens and closes sections. | `{{components.accordioncontainer1.openSections}}` |
 | `allowMultiple` | Lets the user keep several sections open at the same time. When off, opening a section closes the one that was open. | `{{components.accordioncontainer1.allowMultiple}}` |
 | `isExpanded` | `true` when at least one section is open. | `{{components.accordioncontainer1.isExpanded}}` |
@@ -84,4 +84,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Padding | `12` |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

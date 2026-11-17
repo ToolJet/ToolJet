@@ -5,7 +5,7 @@ title: Currency Input
 
 <div className="badge badge--primary">Rocket 2.0</div>
 
-The **Currency Input** component lets the user enter an amount of money, shown with the currency sign and formatted for the locale. The user can also pick the currency when you give a list to choose from.
+The **Currency Input** component lets the user enter an amount of money, shown with the currency sign and formatted for the locale. The user can also pick the currency when a list of currencies is set.
 
 ## Properties
 
@@ -113,4 +113,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Selected item text color (on the accent) | Theme: Surface 1 |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

@@ -3,7 +3,7 @@ id: security-policy
 title: Security Policy
 ---
 
-This page is the reference for workspace admins who decide what a React Builder app must pass before release: the scan policy, exceptions, allowed addresses, uploads from your build pipeline, and every rule and state behind the release gate. To read a result and fix an issue as a builder, see [App Security](./security.md).
+This page is the reference for workspace admins who decide what a React Builder app must pass before release: the scan policy, exceptions, allowed addresses, uploads from a build pipeline, and every rule and state behind the release gate. To read a result and fix an issue as a builder, see [App Security](./security.md).
 
 ## When Checks Run
 
@@ -12,8 +12,8 @@ This page is the reference for workspace admins who decide what a React Builder 
 | After every save and build | ToolJet checks the draft automatically a few seconds after the code changes, whether the change came from the AI, the **Code** panel, the style inspector, the CLI or a git pull. |
 | **Check again** | Runs a full check of the version now, from the **Security** panel. |
 | **Save version** and `tooljet app publish` | Checks the code and the frozen build of the new version. This is the result the release gate uses. |
-| Each `tooljet app dev` build | The CLI checks the build on your computer and sends the result to the **Security** panel. It's for information only. |
-| Your build pipeline | Upload results from your own scanners. See [Upload Results From CI](#upload-results-from-ci). |
+| Each `tooljet app dev` build | The CLI checks the build on the local computer and sends the result to the **Security** panel. It's for information only. |
+| Build pipeline | Upload results from external scanners. See [Upload Results From CI](#upload-results-from-ci). |
 | After release | Optionally, ToolJet re-checks released versions' packages for new advisories on a schedule. |
 
 Only ToolJet's own checks count for the release gate. Results from `tooljet app dev` and from CI are listed, but they never block or unblock a release on their own.
@@ -35,7 +35,7 @@ The same state shows on the header chip, in the panel, in the release dialog and
 | No issues | Every check ran and found nothing open. |
 | N issues to review | Open findings, none of them blocking. |
 | Blocks release | A finding, or a check that couldn't run, fails the workspace policy. |
-| Code changed since the last check | The code changed after the last check. Check again before you release. |
+| Code changed since the last check | The code changed after the last check. Check again before release. |
 | Check failed | The check didn't finish. Click **Retry**. |
 | Released with issues | The version was released with **Release anyway**. |
 | N new issues to review | A re-check after release found new advisories in the packages this version uses. |
@@ -92,7 +92,9 @@ Workspace admins, and app editors with release permission, can do this. A person
 
 Workspace admins manage security for every React Builder app in the workspace at **Workspace settings** → **App security**.
 
-<!-- TODO screenshot: /img/build-with-ai/react-builder/security/workspace-app-security.png | img-full | alt: The App security page in workspace settings: each app with its status and open issues, the policy summary, the exceptions and recent activity | shows: state D: Workspace settings > App security with the three clones in different states (Blocks release, issues to review, Released with issues), two exceptions and activity entries. The page names the product, so capture it after the UI rename -->
+<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/security/workspace-app-security.png" alt="The App security page in workspace settings: each app with its status and open issues, the allowed addresses, the policy summary, the exceptions and recent activity" />
+
+<!-- TODO retake after the UI rename: the page text says "Code mode". -->
 
 The page has five sections:
 
@@ -118,7 +120,7 @@ Click **Edit policy** to change what blocks a release. Every workspace member ca
 | **Only these licences** | Empty | When set, every other license is refused. |
 | **Packages that skip the wait and the licence check** | `@tooljet/*` | Trusted packages. |
 | **Packages to block** | Empty | Packages, or package versions, that are never allowed. |
-| **Checks from your build pipeline required before release** | Empty | Tool names, as your pipeline reports them, that must report a clean result before release. |
+| **Checks from your build pipeline required before release** | Empty | Tool names, as the pipeline reports them, that must report a clean result before release. |
 
 Click **Save policy**. The new policy applies from then on: each version's last check no longer counts until it's checked again under the new policy, which ToolJet does automatically, and any earlier **Release anyway** decision ends. Exceptions and policy changes take effect without changing the app's code.
 
@@ -146,17 +148,17 @@ By default, React Builder apps can connect only to this ToolJet instance, so the
 Each list holds up to 25 addresses. Paths, wildcards on their own and `data:` aren't allowed. Every change is recorded in the audit log.
 
 :::warning
-Code from a **Scripts** address runs with the app user's access. Add only addresses you trust.
+Code from a **Scripts** address runs with the app user's access. Add only trusted addresses.
 :::
 
 Calls to an allowed address aren't reported by the **App code** check.
 
 ## Upload Results From CI
 
-Your build pipeline can upload results from any scanner that writes SARIF 2.1.0, such as Snyk, CodeQL or Semgrep:
+A build pipeline can upload results from any scanner that writes SARIF 2.1.0, such as Snyk, CodeQL or Semgrep:
 
 1. Exchange a personal access token for a session: `POST /api/personal-access-tokens/session` with the header `Authorization: Bearer <token>`. The response has `authToken` and `organizationId`.
-2. Upload the results: `POST /api/apps/<app id>/versions/<version id>/scan-results` with the cookie `tj_auth_token=<authToken>`, the header `tj-workspace-id: <organizationId>`, and the body `{ "sarif": <SARIF object>, "source": "ci" }`. You can add `dependencies`, a list of `{ name, version, license }`.
+2. Upload the results: `POST /api/apps/<app id>/versions/<version id>/scan-results` with the cookie `tj_auth_token=<authToken>`, the header `tj-workspace-id: <organizationId>`, and the body `{ "sarif": <SARIF object>, "source": "ci" }`. `dependencies`, a list of `{ name, version, license }`, can also be added.
 
 The token's user must be able to edit the app. Uploads are limited to 20 MB of SARIF and 5,000 findings.
 

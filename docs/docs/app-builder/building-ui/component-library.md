@@ -3,35 +3,35 @@ id: component-library
 title: Component Library
 ---
 
-Components are the building blocks of ToolJet applications, used to create interactive user interfaces. You add them from the components panel on the right of the app builder, and you choose which component library they come from.
+Components are the building blocks of ToolJet applications, used to create interactive user interfaces. Components are added from the components panel on the right of the App Builder, from the selected component library.
 
 ## Available Component Libraries
 
-<SectionSubtitle text="Three libraries ship with ToolJet on every edition. Pick one, switch later, or mix them in one app." />
+ToolJet includes three component libraries. An application can switch libraries later and can use components from more than one library.
 
 <CardGrid columns={3}>
   <CapabilityCard
     title="ToolJet UI 1.0"
     badge="60+ components"
-    description="ToolJet's original components, the ones your existing apps use."
+    description="The original ToolJet components, used by existing applications."
     img="/img/app-builder/building-ui/component-library/carrier-directory-tooljet-ui.png"
     features={['Table, Form, Chart, Kanban and more', 'A reference page for every component']}
   />
   <CapabilityCard
     title="Rocket 2.0"
     badge="81 components"
-    description="Components in the style of shadcn/ui. New apps start here."
+    description="Components in the style of shadcn/ui. New applications use this library by default."
     img="/img/app-builder/building-ui/component-library/carrier-directory-rocket.png"
     href="/docs/component-reference/rocket"
-    features={['Data Table, Form, Kanban, Calendar and 11 charts', 'Always follows your app theme']}
+    features={['Data Table, Form, Kanban, Calendar and 11 charts', 'Follows the application theme']}
   />
   <CapabilityCard
     title="Ant Design"
     badge="86 components"
-    description="Components built on Ant Design, with its own look."
+    description="Components built on Ant Design, with the Ant Design visual style."
     img="/img/app-builder/building-ui/component-library/carrier-directory-ant-design.png"
     href="/docs/component-reference/ant-design"
-    features={['Table, Tree, Transfer, Drawer and 13 charts', 'Follows your app theme once you apply one']}
+    features={['Table, Tree, Transfer, Drawer and 13 charts', 'Follows the application theme once a theme is applied']}
   />
 </CardGrid>
 
@@ -46,9 +46,9 @@ The library picker sits at the top of the components panel.
 2. Select **ToolJet UI 1.0**, **Rocket 2.0** or **Ant Design**. A check mark shows the one in use.
 3. Drag components from that library onto the canvas. Components already on the canvas stay as they are, so one app can mix libraries.
 
-Your choice is saved with the app version. Until you choose, a blank page opens on Rocket 2.0, and a page that has only ToolJet UI 1.0 components opens on ToolJet UI 1.0.
+The selection is saved with the app version. Until a library is selected, a blank page opens on Rocket 2.0, and a page that has only ToolJet UI 1.0 components opens on ToolJet UI 1.0.
 
-[Custom component libraries](../custom-component-library/overview.md) published to your workspace are listed in the same picker under Custom libraries, on plans that include them.
+[Custom component libraries](../custom-component-library/overview.md) published to the workspace are listed in the same picker under Custom libraries.
 
 <details id="tj-dropdown">
 

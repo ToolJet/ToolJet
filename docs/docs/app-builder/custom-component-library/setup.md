@@ -18,7 +18,7 @@ sidebar_label: Set Up and Create a Library
 Custom Component Libraries are currently in beta and not recommended for production use.
 :::
 
-The ToolJet CLI signs in with a personal access token, not your password. This guide covers creating a token, signing in to the CLI, and creating your first library. To let ToolJet create the token for you, see [Sign In Through Your Browser](#sign-in-through-your-browser).
+The ToolJet CLI signs in with a personal access token, not a password. This guide covers creating a token, signing in to the CLI, and creating a first library. To let ToolJet create the token automatically, see [Sign In Through the Browser](#sign-in-through-the-browser).
 
 ## Create a Personal Access Token
 
@@ -51,13 +51,13 @@ Revoking a token takes effect immediately and can't be undone. Any CLI session o
 
 ## Sign In to the CLI
 
-Install the CLI from your ToolJet instance, so that it matches your ToolJet version. Replace `https://tooljet.example.com` with your instance's address.
+Install the CLI from the ToolJet instance, so that it matches the ToolJet version. Replace `https://tooljet.example.com` with the instance's address.
 
 ```bash
 npm i -g https://tooljet.example.com/api/code-mode/cli/tooljet-cli.tgz
 ```
 
-If your instance doesn't serve the CLI, run `npm i -g @tooljet/cli@beta` instead. The CLI needs Node.js 18 or later.
+If the instance doesn't serve the CLI, run `npm i -g @tooljet/cli@beta` instead. The CLI needs Node.js 18 or later.
 
 Then sign in:
 
@@ -72,15 +72,15 @@ tooljet login
 
 You can run `tooljet login` from any directory.
 
-### Sign In Through Your Browser
+### Sign In Through the Browser
 
-You can skip the token steps above and sign in through your browser:
+Instead of the token steps above, the CLI can sign in through the browser:
 
 ```bash
 tooljet auth login --url https://tooljet.example.com
 ```
 
-The CLI prints a code and opens an approval page in ToolJet. After you approve, ToolJet creates a token for the workspace you have open in that browser, and the CLI stores it. If your instance doesn't support browser sign-in, the CLI tells you to use `tooljet login`. See [Sign In Through the Browser](../../build-with-ai/react-builder/cli-reference.md#sign-in-through-the-browser) for the details.
+The CLI prints a code and opens an approval page in ToolJet. After approval, ToolJet creates a token for the workspace open in that browser, and the CLI stores it. If the instance doesn't support browser sign-in, the CLI prints a note to use `tooljet login`. See [Sign In Through the Browser](../react-builder/cli-reference.md#sign-in-through-the-browser) for the details.
 
 ## Create a Library
 
@@ -94,7 +94,7 @@ The command then asks for a **display name**. App builders see this name in the 
 
 `init` registers the library in your workspace and creates the project in a new local directory. If either step fails, the CLI removes the directory so no half-created project is left behind.
 
-To create the project before you sign in, add `--local`. Nothing is registered in a workspace until you run `tooljet library dev` or `tooljet library publish`, which asks whether to create the library there.
+To create the project before signing in, add `--local`. Nothing is registered in a workspace until `tooljet library dev` or `tooljet library publish` runs, which asks whether to create the library there.
 
 The generated project looks like this:
 
@@ -130,4 +130,4 @@ The project also includes npm scripts as shortcuts: `npm run lib:dev`, `npm run 
 
 ## Next Steps
 
-Start writing your components. See [Build Components with the SDK](./build-components.md).
+Next, write the components. See [Build Components with the SDK](./build-components.md).
