@@ -1,4 +1,3 @@
-# Cloud Cypress lane (.github/workflows/cypress-cloud-platform.yml). Images pinned by digest.
 services:
   tooljet:
     image: ${TOOLJET_IMAGE:?TOOLJET_IMAGE must be an image pinned by digest}
@@ -24,7 +23,6 @@ services:
     ports:
       - 127.0.0.1:5432:5432
 
-  # ToolJet DB API
   postgrest:
     image: postgrest/postgrest:v12.0.2@sha256:79369c0cdf9d7112ed4e327bc1b80156be11575dd66fbda245077a2d13b803bc
     restart: always
@@ -34,7 +32,6 @@ services:
     depends_on:
       - postgres
 
-  # Workspace licences (ORGANIZATION_LICENSE_URL)
   license-postgrest:
     image: postgrest/postgrest:v12.0.2@sha256:79369c0cdf9d7112ed4e327bc1b80156be11575dd66fbda245077a2d13b803bc
     restart: always
