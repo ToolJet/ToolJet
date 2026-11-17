@@ -206,7 +206,7 @@ export const QueryPanel = ({ darkMode }) => {
       </div>
       <div
         ref={panelRef}
-        className={cx('query-pane runtime-panel-content', isQueryPaneExpanded ? 'expanded' : 'collapsed')}
+        className={cx('tj-panel query-pane runtime-panel-content', isQueryPaneExpanded ? 'expanded' : 'collapsed')}
         data-state={isQueryPaneExpanded ? 'open' : 'closed'}
         style={{
           ...getRuntimePanelContentStyle(isQueryPaneExpanded, height),

@@ -204,7 +204,7 @@ export const getQuerySearchFocusStyle = (surface) =>
 
 // An open left panel stacks above the right panel, so a widened query panel slides under it.
 export const getRightPanelClassName = (activeTab, isLeftPanelOpen = false) =>
-  `editor-sidebar right-panel-shell${activeTab === 'query' ? ' right-panel-shell--query' : ''}${
+  `editor-sidebar tj-panel right-panel-shell${activeTab === 'query' ? ' right-panel-shell--query' : ''}${
     isLeftPanelOpen ? ' right-panel-shell--below-left-panel' : ''
   }`;
 

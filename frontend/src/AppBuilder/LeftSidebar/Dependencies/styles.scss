@@ -1,3 +1,5 @@
+@import '../../Shared/Panel/mixins';
+
 .left-sidebar-dependency-viewer {
   // Fills the popover that hosts it rather than carrying a width of its own. The host is
   // `.PopoverContent` (350px, with its padding removed by the `p-0` class the sidebar
@@ -102,7 +104,7 @@
 .dependency-row {
   display: flex;
   gap: 8px;
-  border-radius: 4px;
+  @include panel-row;
   overflow: hidden;
 
   &.compact {

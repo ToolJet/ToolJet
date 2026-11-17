@@ -251,7 +251,7 @@ const CHECKS = [
     run: () =>
       perTheme(
         sweep.flatMap((e) => (e.facts.search || []).map((s) => ({ ...e, s }))),
-        (e) => [e.s.height, e.s["border-radius"], e.s["border-top-color"]]
+        (e) => [e.s.height, e.s.radius, e.s["border-top-color"]]
       ),
   },
   {
@@ -564,9 +564,13 @@ describe("Panel sweep", { testIsolation: false }, () => {
           const size = (el) => [Math.round(el.getBoundingClientRect().width), Math.round(el.getBoundingClientRect().height)];
           $root.find('.form-switch .form-check-input:visible, [class*="toggle-switch"] input:visible, [role="switch"]:visible')
             .each((_, el) => controls.switch.push({ surface, value: size(el) }));
-          $root.find('input.form-control:visible, input[type="text"]:visible').each((_, el) =>
-            controls.input.push({ surface, value: [Math.round(el.getBoundingClientRect().height), probe.pick(el, ["border-radius"])["border-radius"]] })
-          );
+          // A panel header's name editor is its title, not a form control.
+          $root.find('input.form-control:visible, input[type="text"]:visible')
+            .filter((_, el) => !el.closest(".tj-panel-header, .panel-header"))
+            .each((_, el) => {
+              const field = probe.fieldFacts(el);
+              controls.input.push({ surface, value: [field.height, field.radius] });
+            });
           $root.find("button:visible").filter((_, b) => /^\+?\s*(New|Add)\b/.test(b.innerText.trim())).each((_, el) =>
             controls.add.push({ surface, value: [Math.round(el.getBoundingClientRect().height), probe.pick(el, ["font-size", "font-weight", "border-top-color"])] })
           );

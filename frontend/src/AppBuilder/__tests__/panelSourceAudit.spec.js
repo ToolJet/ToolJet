@@ -224,4 +224,25 @@ describe('panel source audit', () => {
     const panelRule = styles.slice(0, styles.indexOf('.global-settings-body'));
     expect(panelRule).not.toMatch(/overflow-y:\s*auto/);
   });
+
+  test('[UB-14][UB-16] the three panel roots carry the .tj-panel scope for Bootstrap controls', () => {
+    const roots = {
+      'src/AppBuilder/LeftSidebar/LeftSidebar.jsx': /popoverContentClassName=\{`tj-panel /,
+      'src/AppBuilder/panelLayout.js': /`editor-sidebar tj-panel right-panel-shell/,
+      'src/AppBuilder/QueryPanel/QueryPanel.jsx': /'tj-panel query-pane runtime-panel-content'/,
+    };
+    Object.entries(roots).forEach(([file, scope]) =>
+      expect(fs.readFileSync(path.join(FRONTEND, file), 'utf8')).toMatch(scope)
+    );
+  });
+
+  test('[UA-11] Dependencies and Inspector rows use the panel row radius', () => {
+    [
+      'src/AppBuilder/LeftSidebar/Dependencies/styles.scss',
+      'src/AppBuilder/QueryPanel/RuntimeInspector/styles.scss',
+    ].forEach((file) => {
+      const src = fs.readFileSync(path.join(FRONTEND, file), 'utf8');
+      expect(src).toMatch(/@include panel-row;/);
+    });
+  });
 });

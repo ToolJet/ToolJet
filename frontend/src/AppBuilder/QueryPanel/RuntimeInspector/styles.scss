@@ -1,3 +1,5 @@
+@import '../../Shared/Panel/mixins';
+
 // Split-view Inspector for the bottom runtime panel. Type and selection colors follow the
 // editor header (13px / 400, indigo soft fill for the active item).
 .runtime-inspector {
@@ -201,7 +203,7 @@
     gap: 2px;
     height: 26px;
     padding-right: 6px;
-    border-radius: 4px;
+    @include panel-row;
 
     &:hover {
       background: var(--interactive-hover);

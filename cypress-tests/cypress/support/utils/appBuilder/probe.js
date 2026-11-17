@@ -17,6 +17,24 @@ export const box = (el) => {
   return { x: round(x), y: round(y), width: round(width), height: round(height) };
 };
 
+// The box a field draws: the input when it has a border, else the nearest bordered wrapper (a search
+// field around its icon, a react-select control). An input group's left corner is its field's radius.
+export const fieldBox = (input) => {
+  for (let el = input, depth = 0; el && depth < 4; el = el.parentElement, depth++) {
+    if (parseFloat(css(el).borderTopWidth) > 0) return el;
+  }
+  return input;
+};
+
+export const fieldFacts = (input) => {
+  const field = fieldBox(input);
+  return {
+    height: box(field).height,
+    radius: pick(field, ["border-top-left-radius"])["border-top-left-radius"],
+    ...pick(field, ["border-top-color"]),
+  };
+};
+
 export const pick = (el, props) => {
   const style = css(el);
   return Object.fromEntries(props.map((prop) => [prop, style.getPropertyValue(prop)]));
@@ -243,8 +261,7 @@ export const panelFacts = (root) => {
     search: [...root.querySelectorAll(SEARCH)].filter(isVisible).map((input) => ({
       placeholder: input.placeholder,
       name: input.getAttribute("aria-label"),
-      height: box(input).height,
-      ...pick(input, ["border-radius", "border-top-color"]),
+      ...fieldFacts(input),
     })),
     rows,
     families,

@@ -354,7 +354,7 @@ export const BaseLeftSidebar = ({
             // outside click (canvas, right panel, bottom panel, AI chat).
             onInteractOutside={(e) => e.preventDefault()}
             open={isLeftPanelOpen}
-            popoverContentClassName={`p-0 left-sidebar-scrollbar sidebar-h-100-popover ${panelItem} left-sidebar-overflow-${getLeftPanelOverflow(
+            popoverContentClassName={`tj-panel p-0 left-sidebar-scrollbar sidebar-h-100-popover ${panelItem} left-sidebar-overflow-${getLeftPanelOverflow(
               panelItem
             )}`}
             side="right"

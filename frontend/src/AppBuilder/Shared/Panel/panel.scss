@@ -1,6 +1,29 @@
 // Shared chrome for the editor's panels. One place for the numbers every panel header must agree on.
 @import './mixins';
 
+// Bootstrap controls inside the three panel roots (left panel, right panel, bottom drawer), which carry
+// `.tj-panel`. Widgets never render inside these roots, and ee pages outside the editor never have it.
+.tj-panel {
+  .form-switch .form-check-input {
+    @include panel-switch;
+  }
+
+  // Input groups keep their joined corners, and borderless inputs sit inside a field that draws the box.
+  input.form-control:not([type='checkbox'], [type='radio'], .border-0, .input-group > *) {
+    @include panel-control;
+  }
+
+  // react-select draws its box with emotion classes; only the corner follows the control spec.
+  .react-select__control {
+    border-radius: 8px;
+  }
+
+  // The "px" after a style value (_ui/CustomInput): placeholder text, which passes AA (was --slate9).
+  .static-value {
+    color: var(--text-placeholder);
+  }
+}
+
 // Every keyboard stop in the editor chrome shows the one ring. Widgets render a customer's app, so the
 // canvas and the modals and overlays widgets open keep their own focus styles, as in the Viewer.
 // Code fields and react-select ring their visible box, not the text node or the input inside it.
