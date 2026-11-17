@@ -8,6 +8,7 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { AbilityService } from '@modules/ability/service';
 import { MODULES } from '@modules/app/constants/modules';
 import { DATA_SOURCE_FOLDER_TYPE } from '@modules/folders/constants';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import {
   closeTestApp,
   createAdmin,
@@ -522,6 +523,42 @@ describe('DataSourcesDashboardController', () => {
         { id: configurable.id, actions: { edit: true, delete: false, pin: true } },
         { id: usable.id, actions: { edit: false, delete: false, pin: true } },
       ]);
+    });
+
+    it('should block folder delete in multi-branch mode while the folder holds data sources on any branch', async () => {
+      const admin = await createAdmin(nestApp, 'data-source-dash-actions-multibranch@tooljet.io');
+      const org = admin.workspace.id;
+      const branch = await resolveOrSeedDefaultBranch(org);
+      const feature = await saveEntity(WorkspaceBranch, { organizationId: org, name: 'feature-y' } as WorkspaceBranch);
+      const holding = await dataSourceFolder(org, 'A holds on feature');
+      const empty = await dataSourceFolder(org, 'B empty');
+      await seedDashboardDataSource(nestApp, {
+        organizationId: org,
+        name: 'Feature only',
+        folder: holding,
+        branchId: feature.id,
+      });
+      jest.spyOn(GitSyncConfigsUtilService.prototype, 'getDetails').mockResolvedValue({
+        isEnabled: true,
+        isMultiBranchingEnabled: true,
+        options: { type: null, defaultBranch: { id: branch.id, name: branch.name }, isBranchingEnabled: true },
+        orgGit: null,
+      } as any);
+
+      const res = await list(nestApp, admin.cookie, org);
+
+      expect(res.body).toMatchObject({ total: 2 });
+      const byId = new Map(res.body.items.map((i: { id: string }) => [i.id, i]));
+      expect(byId.get(holding.id)).toMatchObject({
+        kind: 'folder',
+        data_source_count: 0,
+        actions: { rename: false, delete: false, pin: true },
+      });
+      expect(byId.get(empty.id)).toMatchObject({
+        kind: 'folder',
+        data_source_count: 0,
+        actions: { rename: false, delete: true, pin: true },
+      });
     });
   });
 });
