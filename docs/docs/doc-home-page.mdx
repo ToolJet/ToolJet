@@ -30,8 +30,8 @@ import { useVersionedHref } from '@site/src/components/DocBlocks';
 export const Card = ({ className = '', href, children }) => {
     const to = useVersionedHref(href);
     const cardContent = (
-        <div className={`relative rounded-xl bg-white dark:bg-gray-800 group pt-[0.5px] pb-[3px] shadow-[0_1px_2px_rgba(15,23,42,0.06),0_4px_12px_rgba(15,23,42,0.06)] dark:shadow-none pb-2.25 ${className}`}>
-            <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-50"
+        <div className={`relative rounded-lg bg-white dark:bg-gray-800 group pt-[0.5px] pb-[3px] shadow-[inset_0_0_0_1.2px_rgba(243,244,246,1)] dark:shadow-[inset_0_0_0_1.2px_rgba(55,65,81,1)] pb-2.25 ${className}`}>
+            <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50"
                 style={{
                     background: 'linear-gradient(to bottom, #3B82F6, transparent) border-box',
                     border: '0px',
@@ -40,7 +40,7 @@ export const Card = ({ className = '', href, children }) => {
                     pointerEvents: 'none'
                 }}>
             </div>
-            <div className="m-0.5 relative z-10 h-full overflow-hidden rounded-xl border border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <div className="m-0.5 relative z-10 h-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
                 {children}
             </div>
         </div>
