@@ -29,6 +29,7 @@ const ACCEPTS: Record<string, PropertyType[]> = {
   'shadcn.Calendar.defaultValue': ['string', 'array', 'object'],
   // Option values keep their type: the number 1 and the text '1' are two options (Ant Select only).
   'antd.Select.value': ['string', 'array', 'number', 'boolean'],
+  'antd.Segmented.value': ['string', 'number', 'boolean'],
   'antd.TreeSelect.value': ['string', 'array'],
   'mui.ToggleButtonGroup.value': ['string', 'array'],
   // A list, or the same list as text ("a, b, c"; Hero's facts joined by " · ").

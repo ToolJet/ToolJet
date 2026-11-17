@@ -152,6 +152,27 @@ describe('an Ant Design Select value keeps its type', () => {
   });
 });
 
+describe('an Ant Design Segmented value keeps its type', () => {
+  const manifestProps = [{ name: 'value', type: 'string' }];
+  // Break this catches: the number 2 bound to an Ant Segmented reaches it as the text '2', so the value is exposed as
+  // text on load while a click on the same option exposes the number 2.
+  it.each([
+    ['the number 2', 2],
+    ['a boolean', true],
+    ['the text 2', '2'],
+  ])('[LibraryComponent-PROPTYPE-002] %s reaches the Segmented as it is', (_, value) => {
+    const { props, errors } = typedPackProps('antd', 'Segmented', manifestProps, { value });
+    expect(props.value).toEqual(value);
+    expect(errors).toEqual([]);
+  });
+
+  // Break this catches: the Segmented's row widens a value prop that it does not own (the Radio Group's).
+  it('[LibraryComponent-PROPTYPE-002] the number 2 still reaches the Ant Radio Group value as text', () => {
+    const { props } = typedPackProps('antd', 'RadioGroup', manifestProps, { value: 2 });
+    expect(props.value).toBe('2');
+  });
+});
+
 // Every built pack's own defaults are values of the types it takes: a property whose sample is another type than its
 // hook's (a range's [20, 80] on a number) is one the pack takes more than one type for, and must be listed. Runs on the
 // packs built here (dist/manifest.json), as the pack fuzz does.

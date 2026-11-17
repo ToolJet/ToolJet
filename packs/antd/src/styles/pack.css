@@ -1424,6 +1424,14 @@
   flex: 1 1 auto;
   width: 100%;
 }
+/* Ant's Segmented draws neither the primary nor the border colour, so those two styles changed nothing (QA PKB-41).
+   Each reads only the variable its style sets: a Segmented without them keeps the stock look. */
+.tj-ant-root .ant-segmented {
+  box-shadow: inset 0 0 0 1px var(--tj-ant-color-border, transparent);
+}
+.tj-ant-root .ant-segmented .ant-segmented-item-selected {
+  color: var(--tj-ant-color-primary, var(--ant-segmented-item-selected-color));
+}
 .tj-ant-spin-inline {
   display: inline-block;
   max-width: 100%;
