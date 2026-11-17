@@ -1,12 +1,12 @@
 # app-usage-analytics module
 
-Workspace-admin dashboards of how released apps are used (glossary: **Usage analytics**, **App open**, **Active user**, **Lifecycle group**, **Reach**). EE/Cloud only, licence field `APP_USAGE_ANALYTICS`: on only when the licence sets `appUsageAnalytics: true` (strict opt-in, like MFA; a missing key, the basic plan or an expired licence means off). V1 counts app opens; V2 will add query runs in a separate table.
+Workspace-admin dashboards of how released apps are used (glossary: **Usage analytics**, **App open**, **Active user**, **Lifecycle group**, **Reach**). EE/Cloud only, licence field `APP_USAGE_ANALYTICS` (`appUsageAnalytics` feature key; off on the free/basic plans). V1 counts app opens; V2 will add query runs in a separate table.
 
 ## Key files
 
 | File | Role |
 |---|---|
-| `module.ts` | CE: controller only (`status` answers 501; data routes answer 451, since CE has no Analytics licence). EE/Cloud: queue `app-usage-analytics`, listener + partition scheduler (runtime), processor (`WORKER=true`), repository |
+| `module.ts` | CE: controller only (`status` answers 501; data routes answer 451 when unlicensed, else 501). EE/Cloud: queue `app-usage-analytics`, listener + partition scheduler (runtime), processor (`WORKER=true`), repository |
 | `controller.ts` | `GET /api/analytics/{status, workspace/summary, workspace/active-users, workspace/apps, apps/:appId/summary, apps/:appId/active-users, apps/:appId/users}`; JwtAuthGuard + admin-only ability; strict DTOs in `dto/` |
 | `service.ts` | CE contract; every method throws 501 |
 | `constants/`, `types/` | Feature keys, `APP_OPENED_EVENT`, `AppOpenedEvent` (Segment `track` shape) |
@@ -34,6 +34,7 @@ Workspace-admin dashboards of how released apps are used (glossary: **Usage anal
 - When a range's previous period starts before the oldest kept month, `range.previousAvailable` is false and previous-period numbers (count, trend, retention, previous series) are null/empty rather than undercounted. The lifecycle split can still move users from Retained to Reactivated in that case.
 - Workspaces whose plan lacks the feature keep only `UNLICENSED_RETENTION_DAYS` (60) of daily rows (scheduler trim after partition upkeep). The licence is read with `{ strict: true }`, so a failed Cloud licence fetch skips the workspace instead of deleting its history.
 - Reach denominator: active workspace members in groups with view/edit on the app (or all apps) plus the admin group; computed from today's permissions.
+- TODO: the licence check is switched off for now (`APP_USAGE_ANALYTICS_LICENCE_CHECK = false` in `licensing/configs/LicenseBase.ts`), so every EE/Cloud workspace is licensed. Turn it back on before release.
 - Env: `ANALYTICS_ENABLED=false` stops collection and shows the "turned off" page (default on). There is no separate UI switch: the dashboards show as soon as the workspace is licensed.
 
 ## Tests
@@ -41,8 +42,7 @@ Workspace-admin dashboards of how released apps are used (glossary: **Usage anal
 - `server/ee/test/modules/app-usage-analytics/unit/metrics.spec.ts` — pure helpers.
 - `server/ee/test/modules/app-usage-analytics/unit/background.spec.ts` — listener (never throws), processor batching (5 s / 500, failed batch rejects all, flush on shutdown), scheduler lock, unlicensed trim.
 - `server/ee/test/modules/app-usage-analytics/e2e/app-usage-analytics.spec.ts` — merge rules, every endpoint, admin-only, workspace scoping (HTTP and repository), week/month buckets, previous period past retention, emit (incl. public apps), partitions, random-data lifecycle invariants (incl. a deleted app).
-- `server/test/modules/app-usage-analytics/e2e/` — CE: status 501, data routes 451.
-- `server/test/modules/licensing/unit/app-usage-analytics-licence.spec.ts` — strict opt-in of the licence flag.
+- `server/test/modules/app-usage-analytics/e2e/` — CE answers 501 under the test licence.
 
 ## Related modules
 
