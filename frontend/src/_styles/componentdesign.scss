@@ -239,6 +239,8 @@
     --border-success-weak: #318344;
     --border-warning-strong: #BA5722;
     --border-warning-weak: #BA5722;
+    // AI credit bars at 80–99%: the weak border above is translucent and reads as disabled. Lighter than at-limit.
+    --credit-near-limit: var(--orange11);
     --border-danger-strong: #E26367;
     --border-danger-weak: #D03F43;
     --border-disabled: #2B3036;

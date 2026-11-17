@@ -160,3 +160,29 @@ describe('build - env-specific options', () => {
     expect(fs.existsSync(path.join(distDir, 'index.js'))).to.be.true;
   }).timeout(30000);
 });
+
+describe('build - the SDK proxy', () => {
+  const cwd = withTempCwd();
+
+  it('binds ToolJet and useToolJetTheme to the host SDK', async () => {
+    writeProject(cwd.get(), {
+      'global.d.ts': GLOBAL_DTS.replace(
+        'export const ToolJet: any;',
+        'export const ToolJet: any;\n  export function useToolJetTheme(): any;'
+      ),
+      'index.ts': `export { Widget } from './Widget';\n`,
+      'Widget.tsx': `import { ToolJet, useToolJetTheme } from '@tooljet/custom-component-sdk';
+
+export const Widget = () => {
+  const t = useToolJetTheme();
+  return <div style={{ color: t.colors.brand }}>{String(!!ToolJet)}</div>;
+};
+`,
+    });
+
+    await build(cwd.get());
+    const bundle = fs.readFileSync(path.join(cwd.get(), 'dist', 'index.js'), 'utf8');
+    expect(bundle).to.include('window.__tj_ToolJet.useTheme()');
+    expect(bundle).not.to.match(/from\s*["']@tooljet\/custom-component-sdk["']/);
+  }).timeout(30000);
+});

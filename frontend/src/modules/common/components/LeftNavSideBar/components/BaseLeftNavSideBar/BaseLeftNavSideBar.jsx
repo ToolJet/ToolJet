@@ -1,6 +1,6 @@
 import React from 'react';
 import { ToolTip } from '@/_components/ToolTip';
-import { NotificationCenter } from '@/_components/NotificationCenter';
+import ReviewInbox from '../../ReviewInbox';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
@@ -19,6 +19,10 @@ const BaseLeftNavSideBar = ({
   canCreateVariableOrConstant,
   featureAccess,
 }) => {
+  // Prefix match: dashboard tabs keep the icon active.
+  const workflowsRoute = getPrivateRoute('workflows');
+  const isWorkflowsRoute = router.pathname === workflowsRoute || router.pathname.startsWith(`${workflowsRoute}/`);
+
   return (
     <div>
       <ul className="sidebar-inner nav nav-vertical">
@@ -69,9 +73,7 @@ const BaseLeftNavSideBar = ({
               <Link
                 to={appendBranchName(getPrivateRoute('workflows'))}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workflows'), event)}
-                className={`tj-leftsidebar-icon-items  ${
-                  router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
-                }`}
+                className={`tj-leftsidebar-icon-items  ${isWorkflowsRoute && `current-seleted-route`}`}
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -80,16 +82,7 @@ const BaseLeftNavSideBar = ({
                   padding: '8px',
                 }}
               >
-                <SolidIcon
-                  name="workflows"
-                  fill={
-                    router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
-                      ? '#3E63DD'
-                      : darkMode
-                        ? '#4C5155'
-                        : '#C1C8CD'
-                  }
-                />
+                <SolidIcon name="workflows" fill={isWorkflowsRoute ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'} />
               </Link>
             </ToolTip>
           </li>
@@ -161,7 +154,7 @@ const BaseLeftNavSideBar = ({
         )}
 
         <li className="tj-leftsidebar-icon-items-bottom text-center">
-          <NotificationCenter darkMode={darkMode} />
+          <ReviewInbox darkMode={darkMode} />
           <ToolTip delay={{ show: 0, hide: 0 }} message="Mode" placement="right">
             <Link
               className="cursor-pointer tj-leftsidebar-icon-items"

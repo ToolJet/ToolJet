@@ -1,0 +1,37 @@
+{
+  "name": "tooljet-antd-library",
+  "private": true,
+  "version": "1.4.28",
+  "type": "module",
+  "description": "Ant Design components for ToolJet, built as a custom component library (pack contract v2).",
+  "scripts": {
+    "styles": "node scripts/extract-styles.mjs",
+    "lib:dev": "tooljet library dev",
+    "lib:build": "tooljet library build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ant-design/charts-util": "0.0.3",
+    "@ant-design/cssinjs": "^1.24.0",
+    "@ant-design/icons": "^5.6.1",
+    "@ant-design/plots": "^2.6.8",
+    "@tooljet/custom-component-sdk": "0.1.0-beta.3",
+    "@types/leaflet": "^1.9.22",
+    "antd": "^5.29.3",
+    "dayjs": "^1.11.23",
+    "dompurify": "^3.4.17",
+    "leaflet": "^1.9.4"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "esbuild": "^0.28.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.9.3"
+  }
+}

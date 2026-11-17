@@ -6,3 +6,6 @@ extension:
 spec:
   - 'test/**/*.test.ts'
 timeout: 20000
+# ts-node compiles the tests; Node 22.18+ would otherwise strip their types itself and reject `import x = require()`.
+node-option:
+  - no-experimental-strip-types

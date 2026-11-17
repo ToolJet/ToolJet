@@ -1,0 +1,900 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Input, InputNumber, Progress, Select, Space, Spin } from 'antd';
+import type { InputRef } from 'antd';
+import { ToolJet } from '@tooljet/custom-component-sdk';
+import { boundsRule } from '../lib/typeRule';
+import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
+import { ControlSkeleton, SpinOver } from '../lib/Loading';
+import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
+import { controlOptions, exposedOption, keyForValue, str, toOptions, valueForKey, type Row } from '../lib/data';
+import { toNumber } from '../lib/format';
+import { parseLocaleNumber } from '../lib/numberText';
+import { useOwnedPopup } from '../lib/useOwnerGuard';
+import {
+  countryOf,
+  flagOf,
+  nationalOf,
+  phoneCountries,
+  phoneCountry,
+  phoneInfo,
+  type Country,
+} from '../lib/ui2/inputs/phone';
+import { useValueSetter } from '../lib/sameValue';
+import { useOfferedValue } from '../lib/offeredValue';
+
+const useFocusActions = (ref: React.RefObject<{ focus: () => void; blur: () => void }>) => {
+  ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
+  ToolJet.useAction({ name: 'blur', displayName: 'Blur' }, () => ref.current?.blur());
+};
+
+// ---- Combobox --------------------------------------------------------------------------------------------------------
+
+// Ant's searchable Select (showSearch): label, options [{ label, value }], value, placeholder, notFoundContent,
+// allowClear, filterOption (off for options a query fetches on onSearch); selectedOption, selectedLabel and
+// searchValue exposed; events onChange, onSelect, onSearch, onFocus, onBlur; actions setFieldValue, resetFields.
+export const Combobox = (props: Record<string, unknown>) => {
+  const field = useFieldProps({ label: 'City' });
+  const [rawOptions] = ToolJet.useStateArray({
+    name: 'options',
+    label: 'Options',
+    inspector: 'options',
+    description: 'Plain values or [{ label, value, disabled? }].',
+    initialValue: [
+      { label: 'Austin', value: 'austin' },
+      { label: 'Berlin', value: 'berlin' },
+      { label: 'Lisbon', value: 'lisbon' },
+      { label: 'Singapore', value: 'singapore' },
+      { label: 'Toronto', value: 'toronto' },
+    ],
+  });
+  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Search' });
+  const [notFoundContent] = ToolJet.useStateString({
+    name: 'notFoundContent',
+    label: 'Not found content',
+    initialValue: 'No matches',
+  });
+  const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: true });
+  const [filterOption] = ToolJet.useStateBoolean({
+    name: 'filterOption',
+    label: 'Filter option',
+    description: 'Off when a query fetches the options on onSearch.',
+    initialValue: true,
+  });
+  const [, setSelectedOption] = ToolJet.useStateObject({
+    name: 'selectedOption',
+    initialValue: {},
+    inspector: 'hidden',
+  });
+  const [, setSelectedLabel] = ToolJet.useStateString({ name: 'selectedLabel', initialValue: '', inspector: 'hidden' });
+  const [, setSearchValue] = ToolJet.useStateString({ name: 'searchValue', initialValue: '', inspector: 'hidden' });
+  const look = useControlLook();
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const onSelect = ToolJet.useEventCallback({ name: 'onSelect' });
+  const onSearch = ToolJet.useEventCallback({ name: 'onSearch' });
+  const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
+  const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
+  const ref = useRef<{ focus: () => void; blur: () => void }>(null);
+  const { disabled, loading } = ToolJet.useControlState();
+  const fieldId = ToolJet.useFieldId();
+  const check = ToolJet.useValidation({ kind: 'choice', value: str(value), present: value !== '' });
+  const tokens = useTokenStyles();
+  ToolJet.useComponentSettings({
+    role: 'combobox',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's searchable Select: label, options [{label, value}], value, placeholder, notFoundContent, allowClear, filterOption (off when a query fetches options on onSearch, reading searchValue); selectedOption, selectedLabel exposed; onChange, onSelect, onSearch.",
+    roleProps: {
+      description: 'extra',
+      emptyText: 'notFoundContent',
+      showClearBtn: 'allowClear',
+      defaultValue: 'value',
+      searchText: 'searchValue',
+      serverSideSearch: 'filterOption',
+    },
+    roleValues: { filterOption: { true: '{{false}}', false: '{{true}}' } },
+    roleEvents: { onSearchTextChanged: 'onSearch' },
+    roleActions: {
+      selectOption: 'setFieldValue',
+      setValue: 'setFieldValue',
+      clear: 'resetFields',
+      setFocus: 'focus',
+      setBlur: 'blur',
+    },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
+  const options = toOptions(rawOptions, 'Combobox');
+  // Ant's control holds option keys; the value keeps its type (lib/data Option), so 1 and '1' are two choices.
+  const key = value === '' ? '' : keyForValue(options, value);
+  // A value no option offers shows the placeholder, as in the Select: Ant drew it as bare text (QA AD-35).
+  const known = key !== '' && options.some((o) => o.value === key);
+  // It is dropped too, as the Select drops it, and comes back when an option offers it (lib/offeredValue, QA AD-57). Not
+  // while the options are empty or loading, so a default waits for them, nor when a query fetches them as the user
+  // searches (Filter option off): they hold only the last search's matches. Fires no event.
+  const prune = filterOption !== false && options.length > 0 && !loading;
+  const offers = (v: unknown) => {
+    const k = v === '' ? '' : keyForValue(options, v);
+    return k !== '' && options.some((o) => o.value === k);
+  };
+  useOfferedValue<unknown>(
+    value,
+    (next) => setValue(next as never),
+    (v) => (prune && v !== '' && !offers(v) ? '' : v),
+    `${prune}|${JSON.stringify(options)}`
+  );
+  const expose = (next: unknown) => {
+    const k = next === '' ? '' : keyForValue(options, next);
+    const opt = k === '' ? undefined : options.find((o) => o.value === k);
+    setSelectedOption(exposedOption(opt));
+    setSelectedLabel(opt?.label ?? '');
+  };
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  // A value given by the app: the option it names, with that option's own value (the text '1' picks the option 1),
+  // else as text.
+  const change = (v: unknown) => {
+    const next = v === undefined || v === null || v === '' ? '' : valueForKey(options, keyForValue(options, v));
+    if (!valueSetter.set(next)) return;
+    expose(next);
+    onChange();
+  };
+  // The selected option follows the value however it changes (a binding, a Form's clearForm emptying it) and the
+  // options' labels: set only on a pick, a cleared Form kept exposing the old choice.
+  useEffect(() => {
+    expose(value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(value), JSON.stringify(options)]);
+  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => setSearchValue(''));
+  ToolJet.useAction(
+    { name: 'setFieldValue', displayName: 'Set field value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => change(v)
+  );
+  ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(props.value));
+  useFocusActions(ref);
+  const list = useOwnedPopup(disabled, (open) => !open && setSearchValue(''));
+  return (
+    <AntProvider tokens={tokens} ownerRef={list.anchor}>
+      <FormField {...field} check={check} htmlFor={fieldId}>
+        <WithPopupTheme>
+          {(popup) => (
+            <Select
+              ref={ref as never}
+              id={fieldId}
+              style={{ width: '100%' }}
+              showSearch
+              options={controlOptions(options)}
+              value={known ? key : undefined}
+              placeholder={placeholder || undefined}
+              notFoundContent={loading ? <Spin size="small" /> : notFoundContent || undefined}
+              allowClear={allowClear}
+              filterOption={
+                filterOption ? (input, o) => str(o?.label).toLowerCase().includes(input.toLowerCase()) : false
+              }
+              loading={loading}
+              disabled={disabled}
+              variant={look.variant}
+              size={look.size}
+              status={check.error ? 'error' : undefined}
+              classNames={{ popup: { root: popup.className } }}
+              styles={{ popup: { root: popup.style } }}
+              open={list.open}
+              onOpenChange={list.onOpenChange}
+              onChange={(v) => list.available() && change(v === undefined || v === null ? '' : valueForKey(options, v))}
+              onSelect={() => list.available() && onSelect()}
+              onSearch={(text) => {
+                setSearchValue(text);
+                onSearch();
+              }}
+              onFocus={() => onFocus()}
+              onBlur={() => {
+                check.touch();
+                onBlur();
+              }}
+            />
+          )}
+        </WithPopupTheme>
+      </FormField>
+    </AntProvider>
+  );
+};
+
+// ---- OTP -------------------------------------------------------------------------------------------------------------
+
+// Ant's Input.OTP: label, length, mask (hide the characters), characters (numeric, alphanumeric), value; isComplete
+// exposed; events onChange (every character), onComplete (all filled); actions setFieldValue, resetFields, focus.
+// Ant selects a box's character on focus, click and key so typing replaces it, but only when document.activeElement is
+// the box: inside the pack's shadow root it is the host, so nothing was selected, the box took two characters and Ant
+// read them as a paste (box 3 of 123456 typed 9 gave 1293: AD-22). The same select, from the shadow root's focus.
+const selectFocusedBox = (e: React.SyntheticEvent<HTMLElement>) => {
+  const wrapper = e.currentTarget;
+  const root = wrapper.getRootNode() as Document | ShadowRoot;
+  requestAnimationFrame(() => {
+    const box = root.activeElement;
+    if (box instanceof HTMLInputElement && wrapper.contains(box)) box.select();
+  });
+};
+
+export const OTP = (props: Record<string, unknown>) => {
+  const field = useFieldProps({ label: 'Verification code' });
+  const [length] = ToolJet.useStateNumber({ name: 'length', label: 'Length', initialValue: 6, min: 2, max: 12 });
+  const [characters] = ToolJet.useStateEnumeration({
+    name: 'characters',
+    label: 'Characters',
+    enumDefinition: ['numeric', 'alphanumeric'],
+    initialValue: 'numeric',
+  });
+  const [mask] = ToolJet.useStateBoolean({ name: 'mask', label: 'Mask', initialValue: false });
+  const [rawValue, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
+  // A binding can give a number (a code from a query) or null; Ant's OTP splits the value as text.
+  const value = str(rawValue);
+  const [, setIsComplete] = ToolJet.useStateBoolean({ name: 'isComplete', initialValue: false, inspector: 'hidden' });
+  const look = useControlLook();
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const onComplete = ToolJet.useEventCallback({ name: 'onComplete' });
+  const { disabled, loading } = ToolJet.useControlState();
+  const check = ToolJet.useValidation({ kind: 'text', value });
+  const tokens = useTokenStyles();
+  ToolJet.useComponentSettings({
+    role: 'otpinput',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's Input.OTP: label, length, characters (numeric, alphanumeric), mask, value; isComplete exposed; onChange, onComplete.",
+    roleProps: { description: 'extra', masked: 'mask', defaultValue: 'value' },
+    roleActions: { setValue: 'setFieldValue', setText: 'setFieldValue', clear: 'resetFields', setFocus: 'focus' },
+    defaultWidth: 12,
+    defaultHeight: 6,
+  });
+  const n = Math.max(2, Math.min(12, Number(length) || 6));
+  const takes = (key: string) => (characters === 'numeric' ? /\d/ : /[\da-z]/i).test(key);
+  const ref = useRef<InputRef>(null);
+  // The characters a code may hold, as typing them gives them (letters in upper case), up to Length.
+  const clean = (s: string) =>
+    (characters === 'numeric' ? s.replace(/\D/g, '') : s.replace(/[^\da-z]/gi, '').toUpperCase()).slice(0, n);
+  // A value set from outside (a binding, a default) is cleaned as typing is: the boxes showed the first six of
+  // 12345678 while value stayed 12345678 and isComplete false, and ab12 stayed lower case (QA AD-48). No event fires:
+  // nothing was typed.
+  const code = clean(value);
+  useEffect(() => {
+    if (code !== value) setValue(code);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, value]);
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(code, (v) => setValue(v as never));
+  const change = (v: string) => {
+    const next = clean(v);
+    if (!valueSetter.set(next)) return;
+    setIsComplete(next.length === n);
+    onChange();
+    if (next.length === n) onComplete();
+  };
+  // Each box keeps its place: Ant holds the boxes while they are typed in (an emptied box 3 of 123456 stays empty, and
+  // 4 to 6 stay put), and the code only fills them again when it changes from outside (a binding, Set value, Clear, a
+  // Form's clear). Handing Ant back the typed code ('12456', no gap) moved 4 to 6 into box 3 (AD-22). The boxes follow
+  // the cleaned code (AD-48), and what is typed is held as it is cleaned, so a gap typed in does not count as a change
+  // from outside.
+  const [boxes, setBoxes] = useState({ code, given: code, key: 0 });
+  if (code !== boxes.code) setBoxes({ code, given: code, key: boxes.key + 1 });
+  const typed = (cells: string[]) => {
+    const typedCode = cells.join('');
+    setBoxes((b) => ({ ...b, code: clean(typedCode) }));
+    change(typedCode);
+  };
+  // isComplete follows the code however it changes: set only on typing, a Form's clearForm (or an emptied binding)
+  // left isComplete true over empty boxes (SP-33).
+  useEffect(() => {
+    setIsComplete(code.length === n);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, n]);
+  ToolJet.useAction(
+    { name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => change(str(v))
+  );
+  ToolJet.useAction({ name: 'resetFields', displayName: 'Clear' }, () => change(str(props.value)));
+  ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
+  return (
+    <AntProvider tokens={tokens}>
+      <FormField {...field} check={check}>
+        <SpinOver loading={loading} as="inline">
+          {/* Touched when focus leaves the boxes, so the message waits until the code is entered. */}
+          <span
+            className="tj-ant-otp"
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) check.touch();
+            }}
+            onFocus={selectFocusedBox}
+            onMouseUp={selectFocusedBox}
+            onKeyUp={selectFocusedBox}
+            // A character the code does not take (a letter in a numeric code) is refused before it replaces the
+            // selected one: Ant's formatter dropped it and left the box empty (box 4 of 123456 typed a gave 12356).
+            onKeyDown={(e) => {
+              if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && !takes(e.key)) e.preventDefault();
+            }}
+          >
+            <Input.OTP
+              key={boxes.key}
+              ref={ref as never}
+              length={n}
+              value={boxes.given}
+              mask={mask ? '•' : false}
+              disabled={disabled}
+              variant={look.variant}
+              size={look.size}
+              status={check.error ? 'error' : undefined}
+              // The space is Ant's mark for an empty box: dropping it moved the boxes after it one place left.
+              formatter={(s) =>
+                characters === 'numeric' ? s.replace(/[^\d ]/g, '') : s.replace(/[^\da-z ]/gi, '').toUpperCase()
+              }
+              onInput={typed}
+            />
+          </span>
+        </SpinOver>
+      </FormField>
+    </AntProvider>
+  );
+};
+
+// ---- CurrencyInput ---------------------------------------------------------------------------------------------------
+
+const symbolOf = (currency: string, locale?: string, display = 'symbol') => {
+  try {
+    return (
+      new Intl.NumberFormat(locale || undefined, { style: 'currency', currency, currencyDisplay: display as 'symbol' })
+        .formatToParts(0)
+        .find((p) => p.type === 'currency')?.value ?? currency
+    );
+  } catch {
+    return currency;
+  }
+};
+
+// Ant's InputNumber with a currency formatter (Ant's own grouping example): label, value (a number), currency, a
+// currency Select before it (currencyOptions), locale, precision, currencyDisplay (symbol, narrowSymbol, code), min,
+// max, placeholder, allowClear; formattedValue exposed; events onChange, onPressEnter, onFocus, onBlur; actions
+// setFieldValue, setCurrency, resetFields, focus, blur.
+export const CurrencyInput = (props: Record<string, unknown>) => {
+  const field = useFieldProps({ label: 'Amount' });
+  const [value, setValue] = ToolJet.useStateNumber({
+    name: 'value',
+    label: 'Value',
+    initialValue: undefined as unknown as number,
+  });
+  const [currency, setCurrency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD' });
+  const [currencyOptions] = ToolJet.useStateArray({
+    name: 'currencyOptions',
+    label: 'Currency options',
+    inspector: 'options',
+    description: "['USD', 'EUR', 'INR']; empty: one currency.",
+    initialValue: [],
+  });
+  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', initialValue: '' });
+  const [precision] = ToolJet.useStateNumber({
+    name: 'precision',
+    label: 'Precision',
+    initialValue: 2,
+    min: 0,
+    max: 6,
+  });
+  const [currencyDisplay] = ToolJet.useStateEnumeration({
+    name: 'currencyDisplay',
+    label: 'Currency display',
+    enumDefinition: ['symbol', 'narrowSymbol', 'code'],
+    initialValue: 'symbol',
+  });
+  const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Min', initialValue: undefined as unknown as number });
+  const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', initialValue: undefined as unknown as number });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '0.00' });
+  const [, setFormattedValue] = ToolJet.useStateString({
+    name: 'formattedValue',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const look = useControlLook();
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const onPressEnter = ToolJet.useEventCallback({ name: 'onPressEnter' });
+  const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
+  const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
+  const ref = useRef<{ focus: () => void; blur: () => void }>(null);
+  const { disabled, loading } = ToolJet.useControlState();
+  const fieldId = ToolJet.useFieldId();
+  const n = toNumber(value);
+  const check = ToolJet.useValidation({
+    kind: 'text',
+    value: n === null ? '' : String(n),
+    present: n !== null,
+    // A default or setFieldValue outside Min and Max is not valid (Ant clamps only what is typed).
+    rule: boundsRule(n, toNumber(min), toNumber(max)),
+  });
+  const tokens = useTokenStyles();
+  ToolJet.useComponentSettings({
+    role: 'currencyinput',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's InputNumber with a currency formatter: label, value (a number), currency, currencyOptions (a currency Select before it), locale, precision, currencyDisplay, min, max; formattedValue exposed; onChange, onPressEnter.",
+    roleProps: {
+      description: 'extra',
+      defaultValue: 'value',
+      decimalPlaces: 'precision',
+      minValue: 'min',
+      maxValue: 'max',
+    },
+    roleEvents: { onEnterPressed: 'onPressEnter' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields', setFocus: 'focus', setBlur: 'blur' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
+  const cur = str(currency).trim().toUpperCase() || 'USD';
+  const digits = Math.max(0, Math.min(6, toNumber(precision) ?? 2));
+  const fmt = useMemo(() => {
+    try {
+      return new Intl.NumberFormat(locale || undefined, {
+        style: 'currency',
+        currency: cur,
+        currencyDisplay: currencyDisplay as 'symbol',
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+      });
+    } catch {
+      return null;
+    }
+  }, [locale, cur, currencyDisplay, digits]);
+  // The field shows the amount as formattedValue does, in the locale's separators with Precision's decimals, less the
+  // currency (its sign stands before the field): it showed 1,234.5 for de-DE 1.234,50 € and 1,234,567 for en-IN
+  // ₹12,34,567.00 (QA AD-11). Typed text is read in the same locale.
+  const amountFormat = useMemo(() => {
+    const options = { minimumFractionDigits: digits, maximumFractionDigits: digits };
+    try {
+      return new Intl.NumberFormat(locale || undefined, options);
+    } catch {
+      return new Intl.NumberFormat(undefined, options);
+    }
+  }, [locale, digits]);
+  useEffect(() => {
+    setFormattedValue(n === null ? '' : fmt ? fmt.format(n) : String(n));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [n, fmt]);
+  // Whether the field has the focus, and whether its text holds an amount (blank text holds none): see the formatter.
+  const editing = useRef(false);
+  const holdsAmount = (text: string, v: unknown) => {
+    const typed = text.trim() === '' ? null : parseLocaleNumber(text, locale);
+    const given = v === undefined || v === null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v);
+    return typed === given;
+  };
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  // Every value has Precision's decimals, as typed ones do: a default or setFieldValue of 12.345 stayed 12.345 while the
+  // field and formattedValue showed 12.35.
+  const toPrecision = (v: number | null) => (v === null ? null : Number(v.toFixed(digits)));
+  const change = (v: number | null) => {
+    if (!valueSetter.set(toPrecision(v) as number)) return;
+    onChange();
+  };
+  const fitted = toPrecision(n);
+  useEffect(() => {
+    if (fitted !== n) setValue(fitted as number);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fitted, n]);
+  ToolJet.useAction(
+    { name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => change(toNumber(v))
+  );
+  ToolJet.useAction(
+    {
+      name: 'setCurrency',
+      displayName: 'Set currency',
+      params: [{ handle: 'currency', displayName: 'Currency code' }],
+    },
+    (c) => setCurrency(str(c).toUpperCase())
+  );
+  ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(toNumber(props.value)));
+  useFocusActions(ref);
+  // The options editor writes { label, value } once an entry is not a plain value.
+  const choices = (Array.isArray(currencyOptions) ? currencyOptions : [])
+    .map((c) => str(c && typeof c === 'object' ? ((c as Row).value ?? (c as Row).label) : c).toUpperCase())
+    .filter(Boolean);
+  return (
+    <AntProvider tokens={tokens}>
+      <FormField {...field} check={check} htmlFor={fieldId}>
+        <ControlSkeleton loading={loading} size={look.size}>
+          <InputNumber<number>
+            ref={ref as never}
+            id={fieldId}
+            style={{ width: '100%' }}
+            value={n}
+            min={toNumber(min) ?? undefined}
+            max={toNumber(max) ?? undefined}
+            precision={digits}
+            placeholder={placeholder || undefined}
+            prefix={choices.length ? undefined : symbolOf(cur, locale, currencyDisplay)}
+            addonBefore={
+              choices.length ? (
+                <WithPopupTheme>
+                  {(popup) => (
+                    <Select
+                      value={cur}
+                      options={choices.map((c) => ({ label: c, value: c }))}
+                      onChange={(c) => setCurrency(c)}
+                      style={{ width: 90 }}
+                      classNames={{ popup: { root: popup.className } }}
+                      styles={{ popup: { root: popup.style } }}
+                      disabled={disabled}
+                    />
+                  )}
+                </WithPopupTheme>
+              ) : undefined
+            }
+            // While the field has the focus its text stays as typed. rc-input-number formats it again when the value
+            // comes back from ToolJet (after the key is up) and on each render, and the padding to Precision then put a
+            // deleted digit back as 0 and turned the decimals into whole digits: Backspace in 1,234,567.89 ended at
+            // 12,345,670,000.00 (QA AD-58). The text takes Precision's decimals once the focus leaves, or when the value
+            // changes to one the text does not hold (setFieldValue).
+            formatter={(v, info) =>
+              info.userTyping || (editing.current && holdsAmount(info.input, v))
+                ? info.input
+                : v === undefined || v === null || v === ('' as never) || !Number.isFinite(Number(v))
+                  ? ''
+                  : amountFormat.format(Number(v))
+            }
+            parser={(v) => {
+              // An emptied field is no amount (null), as Ant's own parser gives: Number('') read it as 0, so clearing
+              // the field put 0 back in it and Required never caught it (QA AD-03). Text with no number in it yet (a
+              // minus sign) is not an amount either, and leaves the value as it is while typing goes on.
+              const text = String(v ?? '');
+              if (text.trim() === '') return '' as never;
+              return (parseLocaleNumber(text, locale) ?? NaN) as number;
+            }}
+            disabled={disabled}
+            variant={look.variant}
+            size={look.size}
+            status={check.error ? 'error' : undefined}
+            onChange={(v) => change(typeof v === 'number' ? v : toNumber(v))}
+            onPressEnter={() => onPressEnter()}
+            onFocus={() => {
+              editing.current = true;
+              onFocus();
+            }}
+            onBlur={() => {
+              editing.current = false;
+              check.touch();
+              onBlur();
+            }}
+          />
+        </ControlSkeleton>
+      </FormField>
+    </AntProvider>
+  );
+};
+
+// ---- PhoneInput ------------------------------------------------------------------------------------------------------
+
+// An Ant Input with a country Select before it (flag and calling code): label, value (E.164, +14155550123),
+// defaultCountry, onlyCountries, allowCountryChange, showFlag, placeholder, allowClear; country, countryCode,
+// formattedValue and isValidNumber exposed; events onChange, onPressEnter, onFocus, onBlur; actions setFieldValue,
+// setCountryCode, resetFields, focus, blur.
+export const PhoneInput = (props: Record<string, unknown>) => {
+  const field = useFieldProps({ label: 'Phone' });
+  const [value, setValue] = ToolJet.useStateString({
+    name: 'value',
+    label: 'Value',
+    description: 'E.164: +14155550123',
+    initialValue: '',
+  });
+  const [defaultCountry] = ToolJet.useStateString({
+    name: 'defaultCountry',
+    label: 'Default country',
+    initialValue: 'US',
+  });
+  const [onlyCountries] = ToolJet.useStateArray({
+    name: 'onlyCountries',
+    label: 'Only countries',
+    description: "['US', 'GB', 'IN']; empty: all.",
+    initialValue: [],
+  });
+  const [allowCountryChange] = ToolJet.useStateBoolean({
+    name: 'allowCountryChange',
+    label: 'Allow country change',
+    initialValue: true,
+  });
+  const [showFlag] = ToolJet.useStateBoolean({ name: 'showFlag', label: 'Show flag', initialValue: true });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Enter a phone number',
+  });
+  const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
+  const [, setCountry] = ToolJet.useStateString({ name: 'country', initialValue: '', inspector: 'hidden' });
+  const [, setCountryCode] = ToolJet.useStateString({ name: 'countryCode', initialValue: '', inspector: 'hidden' });
+  const [, setFormattedValue] = ToolJet.useStateString({
+    name: 'formattedValue',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const [, setIsValidNumber] = ToolJet.useStateBoolean({
+    name: 'isValidNumber',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const look = useControlLook();
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const onPressEnter = ToolJet.useEventCallback({ name: 'onPressEnter' });
+  const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
+  const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
+  const ref = useRef<InputRef>(null);
+  const { disabled, loading } = ToolJet.useControlState();
+  const fieldId = ToolJet.useFieldId();
+  const tokens = useTokenStyles();
+  ToolJet.useComponentSettings({
+    role: 'phoneinput',
+    fit: true,
+    loading: 'own',
+    usage:
+      'An Ant Input with a country Select (flag, calling code): label, value (E.164), defaultCountry, onlyCountries, allowCountryChange, showFlag, allowClear; country, countryCode, formattedValue, isValidNumber exposed; onChange, onPressEnter.',
+    roleProps: {
+      description: 'extra',
+      defaultValue: 'value',
+      isCountryChangeEnabled: 'allowCountryChange',
+      showClearBtn: 'allowClear',
+    },
+    roleEvents: { onEnterPressed: 'onPressEnter' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields', setFocus: 'focus', setBlur: 'blur' },
+    defaultWidth: 12,
+    defaultHeight: 6,
+  });
+  const countries = useMemo(() => phoneCountries(onlyCountries), [onlyCountries]);
+  // Only a country Only countries offers is ever picked: a Default country outside it starts on the first offered one,
+  // as Rocket 2.0's does (AD-24).
+  const offered = (c: Country | null) => (c && countries.includes(c) ? c : null);
+  const fallback: Country = offered(countryOf(defaultCountry)) ?? countries[0]!;
+  const [picked, setPicked] = useState<Country>(() => phoneCountry(value, countries, fallback) ?? fallback);
+  useEffect(() => {
+    if (!countries.includes(picked)) setPicked(fallback);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countries]);
+  useEffect(() => {
+    const c = phoneCountry(value, countries, picked);
+    if (c && c !== picked) setPicked(c);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+  const national = nationalOf(value, picked);
+  const info = phoneInfo(national, picked);
+  const check = ToolJet.useValidation({ kind: 'text', value: info.value, present: !!info.value });
+  useEffect(() => {
+    setCountry(info.country);
+    setCountryCode(info.countryCode);
+    setFormattedValue(info.formattedValue);
+    setIsValidNumber(info.isValidNumber);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [info.value, info.country]);
+  // The number and its country as last set: a setFieldValue or setCountryCode that leaves both as they are fires
+  // nothing (lib/sameValue), a second call in one batch included.
+  const shown = useValueSetter(`${str(value)}|${picked.code}`, () => {});
+  const commit = (digits: string, c: Country) => {
+    const next = phoneInfo(digits, c).value;
+    if (!shown.set(`${next}|${c.code}`)) return;
+    setValue(next);
+    onChange();
+  };
+  ToolJet.useAction(
+    { name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Number' }] },
+    (v) => {
+      const c = phoneCountry(v, countries, picked) ?? picked;
+      setPicked(c);
+      commit(nationalOf(v, c), c);
+    }
+  );
+  ToolJet.useAction(
+    {
+      name: 'setCountryCode',
+      displayName: 'Set country',
+      params: [{ handle: 'country', displayName: 'Country (ISO code)' }],
+    },
+    (code) => {
+      const c = offered(countryOf(code));
+      if (c) {
+        setPicked(c);
+        commit(national, c);
+      }
+    }
+  );
+  ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => setValue(str(props.value)));
+  useFocusActions(ref);
+  return (
+    <AntProvider tokens={tokens}>
+      <FormField {...field} check={check} htmlFor={fieldId}>
+        <ControlSkeleton loading={loading} size={look.size}>
+          <Space.Compact style={{ width: '100%' }}>
+            <WithPopupTheme>
+              {(popup) => (
+                <Select
+                  value={picked.code}
+                  disabled={disabled || !allowCountryChange}
+                  // One Tab stop, the number, as a ToolJet Phone input has: the country is picked with the pointer.
+                  tabIndex={-1}
+                  showSearch
+                  popupMatchSelectWidth={false}
+                  optionFilterProp="search"
+                  style={{ width: showFlag ? 104 : 84, flex: 'none' }}
+                  size={look.size}
+                  variant={look.variant}
+                  classNames={{ popup: { root: popup.className } }}
+                  styles={{ popup: { root: popup.style } }}
+                  options={countries.map((c) => ({
+                    value: c.code,
+                    search: `${c.code} +${c.dial}`,
+                    label: `${showFlag ? `${flagOf(c)} ` : ''}+${c.dial}`,
+                  }))}
+                  onChange={(code) => {
+                    const c = countryOf(code) ?? picked;
+                    setPicked(c);
+                    commit(national, c);
+                  }}
+                />
+              )}
+            </WithPopupTheme>
+            <Input
+              ref={ref}
+              id={fieldId}
+              inputMode="tel"
+              value={national ? info.formattedValue.replace(/^\+\d+\s*/, '') : ''}
+              placeholder={placeholder || undefined}
+              allowClear={allowClear}
+              disabled={disabled}
+              size={look.size}
+              variant={look.variant}
+              status={check.error ? 'error' : undefined}
+              onChange={(e) => commit(e.target.value.replace(/\D/g, '').slice(0, 15), picked)}
+              onPressEnter={() => onPressEnter()}
+              onFocus={() => onFocus()}
+              onBlur={() => {
+                check.touch();
+                onBlur();
+              }}
+            />
+          </Space.Compact>
+        </ControlSkeleton>
+      </FormField>
+    </AntProvider>
+  );
+};
+
+// ---- Password --------------------------------------------------------------------------------------------------------
+
+const strengthOf = (v: string): { score: number; label: string } => {
+  if (!v) return { score: 0, label: '' };
+  let s = 0;
+  if (v.length >= 8) s++;
+  if (v.length >= 12) s++;
+  if (/[a-z]/.test(v) && /[A-Z]/.test(v)) s++;
+  if (/\d/.test(v)) s++;
+  if (/[^\w\s]/.test(v)) s++;
+  const score = Math.max(1, Math.min(4, s));
+  return { score, label: ['', 'Weak', 'Fair', 'Good', 'Strong'][score]! };
+};
+
+// Ant's Input.Password: label, value, placeholder, visibilityToggle, showStrength (a four-step Progress under it),
+// minLength, allowClear; strength exposed; events onChange, onPressEnter, onFocus, onBlur; actions setFieldValue,
+// resetFields, focus, blur.
+export const Password = (props: Record<string, unknown>) => {
+  const field = useFieldProps({ label: 'Password' });
+  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Enter your password',
+  });
+  const [visibilityToggle] = ToolJet.useStateBoolean({
+    name: 'visibilityToggle',
+    label: 'Visibility toggle',
+    initialValue: true,
+  });
+  const [showStrength] = ToolJet.useStateBoolean({ name: 'showStrength', label: 'Show strength', initialValue: false });
+  const [minLength] = ToolJet.useStateNumber({ name: 'minLength', label: 'Min length', initialValue: 0, min: 0 });
+  const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
+  const [, setStrength] = ToolJet.useStateString({ name: 'strength', initialValue: '', inspector: 'hidden' });
+  const look = useControlLook();
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const onPressEnter = ToolJet.useEventCallback({ name: 'onPressEnter' });
+  const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
+  const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
+  const ref = useRef<InputRef>(null);
+  const { disabled, loading } = ToolJet.useControlState();
+  const fieldId = ToolJet.useFieldId();
+  // Shorter than Min length is not valid, as under the Validation section's Min length: it was only a hint, and
+  // isValid stayed true for abc under 8 (QA AD-50). The hint shows until the field is touched, then the message.
+  const short = Number(minLength) > 0 && value.length > 0 && value.length < Number(minLength);
+  const check = ToolJet.useValidation({
+    kind: 'text',
+    value,
+    rule: short ? `At least ${Number(minLength)} characters` : '',
+  });
+  const tokens = useTokenStyles();
+  ToolJet.useComponentSettings({
+    role: 'passwordinput',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's Input.Password: label, value, placeholder, visibilityToggle, showStrength, minLength, allowClear; strength exposed; onChange, onPressEnter.",
+    roleProps: { description: 'extra', defaultValue: 'value', showToggle: 'visibilityToggle' },
+    roleEvents: { onEnterPressed: 'onPressEnter' },
+    roleActions: {
+      setText: 'setFieldValue',
+      setValue: 'setFieldValue',
+      clear: 'resetFields',
+      setFocus: 'focus',
+      setBlur: 'blur',
+    },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
+  const st = strengthOf(value);
+  useEffect(() => {
+    setStrength(st.label);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [st.label]);
+  // A value it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  const change = (v: string) => {
+    if (!valueSetter.set(v)) return;
+    onChange();
+  };
+  ToolJet.useAction(
+    { name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => change(str(v))
+  );
+  ToolJet.useAction({ name: 'resetFields', displayName: 'Clear' }, () => change(str(props.value)));
+  useFocusActions(ref);
+  const colors = [
+    '',
+    'var(--ant-color-error)',
+    'var(--ant-color-warning)',
+    'var(--ant-color-primary)',
+    'var(--ant-color-success)',
+  ];
+  return (
+    <AntProvider tokens={tokens}>
+      <FormField
+        {...field}
+        extra={short && !check.error ? `At least ${Number(minLength)} characters` : field.extra}
+        check={check}
+        htmlFor={fieldId}
+      >
+        <ControlSkeleton loading={loading} size={look.size}>
+          <Input.Password
+            ref={ref}
+            id={fieldId}
+            value={value}
+            placeholder={placeholder || undefined}
+            visibilityToggle={visibilityToggle}
+            allowClear={allowClear}
+            disabled={disabled}
+            variant={look.variant}
+            size={look.size}
+            status={check.error ? 'error' : short ? 'warning' : undefined}
+            onChange={(e) => change(e.target.value)}
+            onPressEnter={() => onPressEnter()}
+            onFocus={() => onFocus()}
+            onBlur={() => {
+              check.touch();
+              onBlur();
+            }}
+          />
+        </ControlSkeleton>
+        {showStrength && value ? (
+          <div className="tj-ant-strength">
+            <Progress
+              percent={st.score * 25}
+              steps={4}
+              showInfo={false}
+              strokeColor={colors[st.score]}
+              size={[40, 4]}
+            />
+            <span style={{ color: colors[st.score] }}>{st.label}</span>
+          </div>
+        ) : null}
+      </FormField>
+    </AntProvider>
+  );
+};
