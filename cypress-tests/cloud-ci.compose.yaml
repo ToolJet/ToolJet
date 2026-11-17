@@ -1,0 +1,48 @@
+# Cloud Cypress lane (.github/workflows/cypress-cloud-platform.yml). Images pinned by digest.
+services:
+  tooljet:
+    image: ${TOOLJET_IMAGE:?TOOLJET_IMAGE must be an image pinned by digest}
+    restart: always
+    env_file: .env
+    environment:
+      SERVE_CLIENT: "true"
+      PORT: "3000"
+    command: npm run start:prod
+    ports:
+      - 127.0.0.1:3000:3000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:13@sha256:4689940c683801b4ab839ab3b0a0a3555a5fe425371422310944e89eca7d8068
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 127.0.0.1:5432:5432
+
+  # ToolJet DB API
+  postgrest:
+    image: postgrest/postgrest:v12.0.2@sha256:79369c0cdf9d7112ed4e327bc1b80156be11575dd66fbda245077a2d13b803bc
+    restart: always
+    env_file: .env
+    environment:
+      PGRST_SERVER_PORT: "80"
+    depends_on:
+      - postgres
+
+  # Workspace licences (ORGANIZATION_LICENSE_URL)
+  license-postgrest:
+    image: postgrest/postgrest:v12.0.2@sha256:79369c0cdf9d7112ed4e327bc1b80156be11575dd66fbda245077a2d13b803bc
+    restart: always
+    environment:
+      PGRST_DB_URI: postgres://postgres:postgres@postgres/tooljet_development
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: postgres
+      PGRST_JWT_SECRET: ${LICENSE_PGRST_JWT_SECRET:?per-run secret required}
+      PGRST_SERVER_PORT: "3002"
+    depends_on:
+      - postgres
