@@ -4,7 +4,9 @@ import {
   Controller,
   Get,
   HttpCode,
+  Param,
   Post,
+  Put,
   Query,
   UseGuards,
   UseInterceptors,
@@ -16,6 +18,7 @@ import { User } from '@modules/app/decorators/user.decorator';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { FeatureAbilityGuard } from '../ability/guard';
+import { ValidateDataSourceGuard } from '../guards/validate-query-source.guard';
 import { FEATURE_KEY } from '../constants';
 import { DataSourcesBulkService } from './bulk.service';
 import { DataSourcesBulkFolderDeleteService } from './bulk-folder-delete.service';
@@ -28,6 +31,7 @@ import {
   BulkResultResponseDto,
 } from './dto/bulk.dto';
 import { ListDataSourcesV2QueryDto, ListDataSourcesV2ResponseDto } from './dto/list.dto';
+import { SaveAllDataSourceEnvironmentsDto, SaveAllDataSourceEnvironmentsQueryDto } from './dto/save-all.dto';
 
 @InitModule(MODULES.GLOBAL_DATA_SOURCE)
 @Controller({ path: 'data-sources', version: '2' })
@@ -80,5 +84,19 @@ export class DataSourcesDashboardController {
     @Body() body: BulkDeleteDataSourceFoldersDto
   ): Promise<BulkResultResponseDto> {
     return this.bulkFolderDeleteService.delete(user, body);
+  }
+
+  // Git-sync edit rule runs per environment in the service; the v1 guard reads one from the query.
+  @InitFeature(FEATURE_KEY.UPDATE)
+  @UseGuards(JwtAuthGuard, ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Put(':id')
+  @HttpCode(204)
+  saveAll(
+    @User() user: UserEntity,
+    @Param('id') dataSourceId: string,
+    @Query() query: SaveAllDataSourceEnvironmentsQueryDto,
+    @Body() body: SaveAllDataSourceEnvironmentsDto
+  ): Promise<void> {
+    return this.dashboardService.saveAll(user, dataSourceId, body, query.branch_id);
   }
 }

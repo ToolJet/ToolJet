@@ -29,6 +29,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 | `dashboard/activity.service.ts` + `activity.interceptor.ts` | Dashboard v2 view/edit attribution (see "Dashboard v2 schema" below) |
 | `dashboard/dashboard.controller.ts` + `dashboard.service.ts` | `GET /api/v2/data-sources` — paginated root / folder / search list (see "Dashboard v2 list" below) |
 | `dashboard/bulk.service.ts` + `bulk-folder-delete.service.ts` | v2 bulk delete / move / remove and folder bulk delete (see "Dashboard v2 bulk" below) |
+| `dashboard/dashboard.service.ts` `saveAll` | `PUT /api/v2/data-sources/:id` — every edited environment in one call (see "Dashboard v2 save all" below) |
 
 ## Edition split
 
@@ -73,6 +74,11 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 - Delete checks (`splitDeletable`): workspace, not sample, `canDeleteDataSource`, no dependent queries, git edit rule on the branch row. Writes via `DataSourcesService.delete` with the raw `branch_id` (absent → whole data source), one `DATA_SOURCE_DELETE` audit entry each.
 - Move / remove: `canManageFolderDataSources` (v1 folder-data-sources ability) on the target / source folder; `assertFolderWritable` guards git-locked default branches (403). Remove uses `FolderDataSourcesUtilService.bulkRemove`.
 - Folder delete: `FoldersService.assertFolderDeletable` per folder; `folder_and_data_sources` deletes only data sources on the branch that pass the delete checks, the rest fall to root.
+
+## Dashboard v2 save all
+
+- `PUT /api/v2/data-sources/:id?branch_id` `{ name?, environments: [{ environment_id, options }] }` → 204. Runs `DataSourcesUtilService.updateWithManager` (the v1 `update` body, on a passed manager) per entry inside one `dbTransactionWrap`; refusals are prefixed with the environment name. Without the multi-environment licence exactly one entry (written to every environment, as v1).
+- Refusals checked before writing: sample (400), environment outside the workspace (404), duplicate `environment_id` (400, DTO), constants on default branch (400) and the git-sync edit rule per entry — `assertDataSourceEditAllowed` (`guards/git-sync-datasource.guard.ts`, also what `GitSyncDataSourceEditGuard` calls). One `DATA_SOURCE_UPDATE` audit entry per environment.
 
 ## Related modules
 

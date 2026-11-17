@@ -1,12 +1,25 @@
-import { NotFoundException } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { BadRequestException, HttpException, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import * as requestIp from 'request-ip';
+import { DataSource, EntityManager } from 'typeorm';
+import { DataSource as DataSourceEntity } from '@entities/data_source.entity';
 import { User } from '@entities/user.entity';
+import { dbTransactionWrap } from '@helpers/database.helper';
 import type { AbilityService } from '@modules/ability/interfaces/IService';
 import { UserPermissions } from '@modules/ability/types';
+import type { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 import type { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { assertGitSyncCreateAllowedForOrg } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
+import type { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { RequestContext } from '@modules/request-context/service';
+import { FEATURE_KEY } from '../constants';
+import { FEATURES } from '../constants/feature';
+import { assertDataSourceEditAllowed } from '../guards/git-sync-datasource.guard';
+import type { DataSourcesUtilService } from '../util.service';
 import { dataSourceActions, folderActions, isEditCapable, resolveFolderAccess, visibleDataSourceIds } from './actions';
 import {
   BuiltQuery,
@@ -27,6 +40,7 @@ import {
   ListDataSourcesV2ResponseDto,
   RefDto,
 } from './dto/list.dto';
+import { SaveAllDataSourceEnvironmentsDto, SaveDataSourceEnvironmentDto } from './dto/save-all.dto';
 
 type Counts = { pinned: number; folders: number; data_sources: number };
 
@@ -44,7 +58,11 @@ export class DataSourcesDashboardService {
   constructor(
     private readonly dataSource: DataSource,
     private readonly abilityService: AbilityService,
-    private readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
+    private readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
+    private readonly dataSourcesUtilService: DataSourcesUtilService,
+    private readonly appEnvironmentUtilService: AppEnvironmentUtilService,
+    private readonly licenseTermsService: LicenseTermsService,
+    private readonly eventEmitter: EventEmitter2
   ) {}
 
   // Resolving permissions loads workspace apps; skip their version hydration as getFolders does.
@@ -136,6 +154,119 @@ export class DataSourcesDashboardService {
       counts,
       folder: null,
     });
+  }
+
+  // Name + every listed environment in one transaction; each refusal names its environment.
+  async saveAll(
+    user: User,
+    dataSourceId: string,
+    dto: SaveAllDataSourceEnvironmentsDto,
+    branchId?: string
+  ): Promise<void> {
+    const { organizationId } = user;
+    const dataSource = await this.dataSourcesUtilService.findUpdatable(dataSourceId, organizationId);
+    const environmentNames = await this.environmentNames(organizationId, dto.environments);
+    const multiEnvironment = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
+    if (!multiEnvironment && dto.environments.length !== 1) {
+      throw new BadRequestException('Saving several environments at once needs multi-environment support');
+    }
+    const resolvedBranchId = await this.resolveBranchId(user, branchId);
+
+    for (const environment of dto.environments) {
+      await this.forEnvironment(environmentNames.get(environment.environment_id), async () => {
+        if (environment.options.length) {
+          await this.dataSourcesUtilService.validateNoConstantsOnDefaultBranch(resolvedBranchId, environment.options);
+        }
+        await assertDataSourceEditAllowed(this.gitSyncConfigsUtilService, this.appEnvironmentUtilService, {
+          organizationId,
+          dataSourceId,
+          branchId: resolvedBranchId,
+          environmentId: environment.environment_id,
+          name: dto.name,
+          options: environment.options,
+        });
+      });
+    }
+
+    try {
+      await dbTransactionWrap(async (manager: EntityManager) => {
+        for (const environment of dto.environments) {
+          await this.forEnvironment(environmentNames.get(environment.environment_id), () =>
+            this.dataSourcesUtilService.updateWithManager(
+              manager,
+              dataSource,
+              organizationId,
+              user.id,
+              dto.name,
+              environment.options,
+              environment.environment_id,
+              resolvedBranchId
+            )
+          );
+        }
+      });
+    } finally {
+      this.dataSourcesUtilService.clearCache();
+    }
+
+    for (const environment of dto.environments) this.emitUpdateAuditLogEntry(user, dataSource, dto, environment);
+  }
+
+  private async environmentNames(
+    organizationId: string,
+    environments: SaveDataSourceEnvironmentDto[]
+  ): Promise<Map<string, string>> {
+    const ids = environments.map((environment) => environment.environment_id);
+    const rows: NameRow[] = await this.dataSource.query(
+      `SELECT id, name FROM app_environments WHERE id = ANY($1::uuid[]) AND organization_id = $2`,
+      [ids, organizationId]
+    );
+    if (rows.length !== ids.length) throw new NotFoundException('Environment not found');
+    return new Map(rows.map((row) => [row.id, row.name]));
+  }
+
+  private async forEnvironment<T>(name: string, run: () => Promise<T>): Promise<T> {
+    try {
+      return await run();
+    } catch (error) {
+      if (!(error instanceof HttpException)) throw error;
+      throw new HttpException(`${name}: ${error.message}`, error.getStatus());
+    }
+  }
+
+  // One DATA_SOURCE_UPDATE entry per environment, shaped like the v1 update's; the request-context
+  // local is cleared so the response interceptor doesn't log the request a second time.
+  private emitUpdateAuditLogEntry(
+    user: User,
+    dataSource: DataSourceEntity,
+    dto: SaveAllDataSourceEnvironmentsDto,
+    environment: SaveDataSourceEnvironmentDto
+  ): void {
+    const context = RequestContext.currentContext;
+    const metadata = { ...(dto.name !== undefined && { name: dto.name }), options: environment.options };
+    this.eventEmitter.emit('auditLogEntry', {
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: dataSource.id,
+      resourceName: dto.name,
+      resourceData: {
+        dataSourceKind: dataSource.kind,
+        dataSourceScope: dataSource.scope,
+        appId: dataSource.app?.id || null,
+        appVersionId: dataSource.appVersionId,
+        environmentId: environment.environment_id,
+        updatedFields: Object.keys(metadata),
+      },
+      metadata,
+      ipAddress: context?.req ? requestIp.getClientIp(context.req) : undefined,
+      userAgent: context?.req?.headers['user-agent'],
+      resourceType: MODULES.GLOBAL_DATA_SOURCE,
+      actionType: FEATURES[MODULES.GLOBAL_DATA_SOURCE][FEATURE_KEY.UPDATE].auditLogsKey,
+    });
+    if (context?.res?.locals) delete context.res.locals[AUDIT_LOGS_REQUEST_CONTEXT_KEY];
   }
 
   private offset(query: ListDataSourcesV2QueryDto): number {

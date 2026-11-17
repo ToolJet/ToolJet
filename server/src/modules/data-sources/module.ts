@@ -30,6 +30,7 @@ import { FoldersModule } from '@modules/folders/module';
 import { DataSource } from 'typeorm';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 
 export class DataSourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -54,6 +55,7 @@ export class DataSourcesModule extends SubModule {
       'guards/git-sync-datasource.guard',
     ]);
 
+    const { AppEnvironmentUtilService } = await this.getProviders(configs, 'app-environments', ['util.service']);
     const { DataQueriesUtilService } = await this.getProviders(configs, 'data-queries', ['util.service']);
     const { GitSyncConfigsUtilService } = await this.getProviders(configs, 'git-sync-configs', ['util.service']);
     const { FolderDataSourcesUtilService } = await this.getProviders(configs, 'folder-data-sources', ['util.service']);
@@ -93,9 +95,33 @@ export class DataSourcesModule extends SubModule {
         // Factory: the service is CE-only, but its deps must be the edition-resolved classes.
         {
           provide: DataSourcesDashboardService,
-          useFactory: (dataSource, abilityService, gitSyncConfigsUtilService) =>
-            new DataSourcesDashboardService(dataSource, abilityService, gitSyncConfigsUtilService),
-          inject: [DataSource, AbilityService, GitSyncConfigsUtilService],
+          useFactory: (
+            dataSource,
+            abilityService,
+            gitSyncConfigsUtilService,
+            dataSourcesUtilService,
+            appEnvironmentUtilService,
+            licenseTermsService,
+            eventEmitter
+          ) =>
+            new DataSourcesDashboardService(
+              dataSource,
+              abilityService,
+              gitSyncConfigsUtilService,
+              dataSourcesUtilService,
+              appEnvironmentUtilService,
+              licenseTermsService,
+              eventEmitter
+            ),
+          inject: [
+            DataSource,
+            AbilityService,
+            GitSyncConfigsUtilService,
+            DataSourcesUtilService,
+            AppEnvironmentUtilService,
+            LicenseTermsService,
+            EventEmitter2,
+          ],
         },
         DataSourcesPinsService,
         {
