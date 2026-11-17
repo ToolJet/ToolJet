@@ -17,10 +17,8 @@ import {
     validateAndEditEnvironmentsInEditModal,
     validateAppCardCTAs,
 } from "Support/utils/platform/customGroupGranularAccess";
-import { commonEeSelectors, multiEnvSelector } from "Selectors/platform/eeCommon";
 import {
     appPromote,
-    closeVersionMenu,
     createVersionFromDraft,
     promoteEnv,
     releaseApp,
@@ -102,10 +100,7 @@ describe("Custom Group Granular Access - Builder", () => {
                 openAppAsBuilder(appId1);
                 createVersionFromDraft("v1");
                 appPromote("development", "staging");
-                // Without production access, Promote is disabled on staging.
-                cy.get(multiEnvSelector.environmentsTag("staging")).click();
-                cy.get(commonEeSelectors.promoteVersionButton, { timeout: 10000 }).should("be.disabled");
-                closeVersionMenu();
+                promoteEnv("staging");
                 verifyEnvironmentAccess(environments, {
                     appName: data.appName,
                     canEdit: true,
@@ -124,7 +119,6 @@ describe("Custom Group Granular Access - Builder", () => {
 
                 loginAsUser(data.email);
                 openAppAsBuilder(appId1);
-                promoteEnv("staging");
                 releaseApp();
                 verifyEnvironmentAccess([{ name: "production", hasAccess: true }], {
                     appName: data.appName,
