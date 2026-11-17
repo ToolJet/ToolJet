@@ -29,7 +29,7 @@ describe('DataQueriesService.runQueryOnBuilder on the released version', () => {
   let runAndGetResult: jest.SpyInstance;
 
   // The query row as the run endpoint loads it: appVersionId is a plain column, always present.
-  const runQueryOn = (appVersionId: string) => {
+  const runQueryOn = (appVersionId: string, response = {} as Response) => {
     dataQueryRepository.getOneById.mockResolvedValue({ id: 'query-id', appVersionId, options: {}, dataSource });
     return service.runQueryOnBuilder(
       {} as User,
@@ -38,7 +38,7 @@ describe('DataQueriesService.runQueryOnBuilder on the released version', () => {
       { options, resolvedOptions: {} } as unknown as UpdateDataQueryDto,
       ability,
       dataSource,
-      {} as Response,
+      response,
       undefined,
       app
     );
@@ -61,6 +61,14 @@ describe('DataQueriesService.runQueryOnBuilder on the released version', () => {
 
     expect(dataQueryRepository.updateOne).not.toHaveBeenCalled();
     expect(runAndGetResult).toHaveBeenCalledTimes(1);
+  });
+
+  // During an upgrade's data phase the save would wait on the phase's row locks until it times out.
+  it('does not write the run options back while the upgrade gate pauses writes', async () => {
+    await runQueryOn(DRAFT_VERSION_ID, { locals: { writesPaused: true } } as unknown as Response);
+
+    expect(dataQueryRepository.updateOne).not.toHaveBeenCalled();
+    expect(runAndGetResult.mock.calls[0][1]).toMatchObject({ options });
   });
 
   it('still writes the run options back to a query on a draft version', async () => {
