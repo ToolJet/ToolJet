@@ -91,3 +91,10 @@ test('Clear logs empties the list and the detail pane', () => {
   expect(detail()).not.toHaveTextContent('fetchOrders');
   expect(state().debugger.logs).toEqual([]);
 });
+
+// UC-07: the source line under each message is cut with an ellipsis, so hovering it shows all of it.
+test('a log row shows its full source line on hover', () => {
+  const source = list().querySelector('.runtime-debugger__row-source');
+  expect(source).toHaveTextContent('fetchOrders');
+  expect(source).toHaveAttribute('title', source.textContent);
+});

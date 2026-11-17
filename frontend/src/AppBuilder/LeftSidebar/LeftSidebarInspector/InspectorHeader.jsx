@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button as ButtonComponent } from '@/components/ui/Button/Button';
+import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
 import InputComponent from '@/components/ui/Input/Index';
 import '../panelHeader.scss';
 
@@ -8,15 +8,7 @@ const InspectorHeader = ({ darkMode, onClose, searchValue, onSearchChange, onSea
     <div className={`inspector-header ${darkMode ? 'dark-theme' : ''}`}>
       <div className="inspector-header-top">
         <span className="inspector-header-title">Inspector</span>
-        <ButtonComponent
-          iconOnly
-          leadingIcon="x"
-          onClick={onClose}
-          variant="ghost"
-          size="medium"
-          isLucid={true}
-          data-cy="inspector-close-button"
-        />
+        <PanelCloseButton label="Close inspector" onClose={onClose} dataCy="inspector-close-button" />
       </div>
       {!hideSearch && (
         <div className="inspector-header-search">

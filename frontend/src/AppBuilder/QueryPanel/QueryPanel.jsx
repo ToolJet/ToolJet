@@ -10,6 +10,7 @@ import useWindowResize from '@/_hooks/useWindowResize';
 import useStore from '@/AppBuilder/_stores/store';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
+import { ToolTip } from '@/_components/ToolTip';
 import RuntimeInspector from '@/AppBuilder/QueryPanel/RuntimeInspector/RuntimeInspector';
 import RuntimeDebugger from '@/AppBuilder/QueryPanel/RuntimeDebugger/RuntimeDebugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -190,15 +191,17 @@ export const QueryPanel = ({ darkMode }) => {
             aria-hidden="true"
           />
         )}
-        <button
-          className="runtime-panel-toggle"
-          onClick={toggleRuntimePanel}
-          aria-label="Toggle runtime panel"
-          // Kept from the old Queries toggle: Cypress specs open and close the bottom panel through it.
-          data-cy="query-manager-toggle-button"
-        >
-          {isQueryPaneExpanded ? <PanelBottomClose size={14} /> : <PanelBottomOpen size={14} />}
-        </button>
+        <ToolTip message="Toggle runtime panel" placement="top">
+          <button
+            className="runtime-panel-toggle"
+            onClick={toggleRuntimePanel}
+            aria-label="Toggle runtime panel"
+            // Kept from the old Queries toggle: Cypress specs open and close the bottom panel through it.
+            data-cy="query-manager-toggle-button"
+          >
+            {isQueryPaneExpanded ? <PanelBottomClose size={14} /> : <PanelBottomOpen size={14} />}
+          </button>
+        </ToolTip>
       </div>
       <div
         ref={panelRef}

@@ -209,6 +209,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
         <ToolTip message="Show sort/filter" placement="bottom">
           <button
             id="query-sort-filter-popover-btn"
+            aria-label="Show sort/filter"
             onClick={(e) => {
               e.stopPropagation();
               setShowMenu((showMenu) => !showMenu);

@@ -271,6 +271,8 @@ const RuntimeDebugger = ({ darkMode, onClose }) => {
         <ul className="runtime-debugger__list" aria-label="Logs">
           {visibleLogs.map((log, index) => {
             const logLevel = getLogLevel(log);
+            const pageName = scope === SCOPE_ALL && pageNames[log.page];
+            const sourceLine = `${getLogSource(log) ?? ''}${log.key ? ` · ${log.key}` : ''}${pageName ? ` · ${pageName}` : ''}`;
             return (
               <li key={`${log.timestamp}-${index}`}>
                 <button
@@ -284,7 +286,7 @@ const RuntimeDebugger = ({ darkMode, onClose }) => {
                     <span className="runtime-debugger__row-message" title={getLogMessage(log) || getLogTitle(log)}>
                       {getLogMessage(log) || getLogTitle(log)}
                     </span>
-                    <span className="runtime-debugger__row-source">
+                    <span className="runtime-debugger__row-source" title={sourceLine}>
                       {getLogSource(log)}
                       {log.key && (
                         <>
@@ -292,7 +294,7 @@ const RuntimeDebugger = ({ darkMode, onClose }) => {
                           <span>{log.key}</span>
                         </>
                       )}
-                      {scope === SCOPE_ALL && pageNames[log.page] && ` · ${pageNames[log.page]}`}
+                      {pageName && ` · ${pageName}`}
                     </span>
                   </span>
                   {log.timestamp && <span className="runtime-debugger__row-time">{formatLogAge(log.timestamp)}</span>}

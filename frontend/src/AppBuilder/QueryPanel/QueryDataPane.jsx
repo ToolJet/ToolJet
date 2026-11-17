@@ -175,6 +175,7 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
                   size="medium"
                   variant="ghost"
                   leadingIcon="search"
+                  aria-label="Open quick search"
                   onClick={() => {
                     showSearchBox && setSearchTermForFilters('');
                     setShowSearchBox((showSearchBox) => !showSearchBox);
@@ -334,6 +335,7 @@ const AutoSortButton = ({ darkMode: _darkMode }) => {
           size="medium"
           variant="ghost"
           disabled={disabled}
+          aria-label={tooltipMsg}
           onClick={() => !disabled && autoSort?.()}
           data-cy="query-autosort-button"
           style={!disabled ? { color: '#F3A53C' } : undefined}
@@ -402,6 +404,7 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled, surface = 'bottom'
         <Button
           isLucid
           iconOnly={surface !== 'left'}
+          aria-label="New query"
           size={buttonPresentation.size}
           variant={buttonPresentation.variant}
           style={buttonPresentation.style}

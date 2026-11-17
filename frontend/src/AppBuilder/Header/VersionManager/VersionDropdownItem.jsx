@@ -478,6 +478,7 @@ const VersionDropdownItem = ({
                           size="small"
                           iconOnly
                           leadingIcon="morevertical01"
+                          aria-label={`${version.name} options`}
                           className={cx({ 'dark-theme theme-dark': darkMode })}
                           onClick={(e) => e.stopPropagation()}
                           data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-more-menu-button`}

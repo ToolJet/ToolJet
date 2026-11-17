@@ -100,9 +100,7 @@ describe('panel source audit', () => {
     ).toEqual([]);
   });
 
-  test.failing('[UB-04] every icon-only button in the panels has an accessible name', () => {
-    // 47 unnamed sites at 4bdaed6682, e.g. QueryManagerHeader.jsx:238 (Run), Inspector.jsx:737 (menu),
-    // QueryCard.jsx:185 (row menu), Restapi/Tabs.jsx:66 (add header).
+  test('[UB-04] every icon-only button in the panels has an accessible name', () => {
     expect(unnamedIconOnly()).toEqual([]);
   });
 

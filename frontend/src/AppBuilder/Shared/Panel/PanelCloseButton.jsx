@@ -1,23 +1,17 @@
 import React from 'react';
-import { Button } from '@/components/ui/Button/Button';
-import { ToolTip } from '@/_components/ToolTip';
+import PanelIconButton from './PanelIconButton';
 
-// The close (X) button of every editor panel: 28px ghost button, 14px icon, and a name that both
-// screen readers (aria-label) and sighted users (tooltip) get.
-const PanelCloseButton = ({ label, onClose, dataCy, placement = 'bottom', ...buttonProps }) => (
-  <ToolTip message={label} placement={placement}>
-    <Button
-      isLucid
-      iconOnly
-      size="medium"
-      variant="ghost"
-      leadingIcon="x"
-      aria-label={label}
-      onClick={onClose}
-      data-cy={dataCy}
-      {...buttonProps}
-    />
-  </ToolTip>
+// The close (X) button of every editor panel: 28px ghost button, 14px icon.
+const PanelCloseButton = ({ onClose, dataCy, placement = 'bottom', ...buttonProps }) => (
+  <PanelIconButton
+    isLucid
+    size="medium"
+    leadingIcon="x"
+    onClick={onClose}
+    data-cy={dataCy}
+    placement={placement}
+    {...buttonProps}
+  />
 );
 
 export default PanelCloseButton;

@@ -41,7 +41,7 @@ On top of the above:
 - New widgets MUST be lazy-loaded
 - `useBatchedUpdateEffectArray` for batched state updates
 - Widget components must be registered in `AppBuilder/WidgetManager/componentTypes.js`
-- Editor panel chrome (left panel, right panel) comes from `AppBuilder/Shared/Panel`: `PanelHeader` (48px pinned title row), `PanelCloseButton` (named X with tooltip), `PanelEmptyState` / `NoMatchesEmptyState`. Do not hand-roll a panel header, close button or no-match state — the numbers live in `Shared/Panel/panel.scss`
+- Editor panel chrome (left panel, right panel) comes from `AppBuilder/Shared/Panel`: `PanelHeader` (48px pinned title row), `PanelIconButton` (a tooltipped icon-only button: its required `label` is both the `aria-label` and the `ToolTip`), `PanelCloseButton` (the named X, one line over it), `PanelEmptyState` / `NoMatchesEmptyState`. Do not hand-roll a panel header, close button or no-match state. Every icon-only button needs an `aria-label` (`panelSourceAudit` `[UB-04]`) — the numbers live in `Shared/Panel/panel.scss`
 
 ## Conventions
 

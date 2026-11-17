@@ -317,6 +317,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
         </label>
         <label className={`form-switch`}>
           <input
+            aria-label="Show app title"
             className="form-check-input"
             type="checkbox"
             checked={hasAppPagesHeaderAndLogoEnabled ? !hideHeader : true}
@@ -342,6 +343,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
         </label>
         <label className={`form-switch`}>
           <input
+            aria-label="Show logo"
             className="form-check-input"
             type="checkbox"
             checked={hasAppPagesHeaderAndLogoEnabled ? !hideLogo : true}
@@ -486,6 +488,7 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
         <label className="form-label font-weight-400 mb-0">Show on desktop</label>
         <label className={`form-switch`}>
           <input
+            aria-label="Show on desktop"
             className="form-check-input"
             type="checkbox"
             checked={showOnDesktop}
@@ -500,6 +503,7 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
         <label className="form-label font-weight-400 mb-0">Show on mobile</label>
         <label className={`form-switch`}>
           <input
+            aria-label="Show on mobile"
             className="form-check-input"
             type="checkbox"
             checked={showOnMobile}
@@ -558,6 +562,7 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
             {!forceCodeBox && (
               <div className="form-switch m-0">
                 <input
+                  aria-label="Hide navigation menu"
                   className="form-check-input"
                   type="checkbox"
                   checked={isPagesSidebarHidden}

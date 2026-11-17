@@ -349,6 +349,7 @@ export const AddEditPagePopup = forwardRef(
                       key="go-to-page-btn"
                       fill="var(--icon-strong)"
                       leadingIcon="arrowright01"
+                      aria-label="Go to page"
                       iconOnly
                       variant="ghost"
                       size="medium"
@@ -363,6 +364,7 @@ export const AddEditPagePopup = forwardRef(
                   key="duplicate-page-btn"
                   fill="var(--icon-strong)"
                   leadingIcon="duplicatepage"
+                  aria-label={`Duplicate ${type === 'group' ? 'group' : 'page'}`}
                   iconOnly
                   variant="ghost"
                   size="medium"
@@ -376,6 +378,7 @@ export const AddEditPagePopup = forwardRef(
                   data-cy="delete-page-button"
                   fill="var(--icon-strong)"
                   leadingIcon="delete01"
+                  aria-label={`Delete ${type === 'group' ? 'group' : 'page'}`}
                   iconOnly
                   variant="ghost"
                   size="medium"
@@ -525,6 +528,7 @@ export const AddEditPagePopup = forwardRef(
                 <label className="form-label font-weight-400 mb-0">Mark as home</label>
                 <label className={`form-switch`}>
                   <input
+                    aria-label="Mark as home"
                     className="form-check-input"
                     type="checkbox"
                     checked={isHomePage}
@@ -547,6 +551,7 @@ export const AddEditPagePopup = forwardRef(
                 <label className="form-label font-weight-400 mb-0">Disable page</label>
                 <label className={`form-switch`}>
                   <input
+                    aria-label="Disable page"
                     className="form-check-input"
                     type="checkbox"
                     checked={page?.disabled}
@@ -574,6 +579,7 @@ export const AddEditPagePopup = forwardRef(
               </label>
               <label className={`form-switch`}>
                 <input
+                  aria-label="Show page header on desktop"
                   className="form-check-input"
                   type="checkbox"
                   checked={showPageHeaderOnDesktop ?? false}
@@ -600,6 +606,7 @@ export const AddEditPagePopup = forwardRef(
               </label>
               <label className={`form-switch`}>
                 <input
+                  aria-label="Show page header on mobile"
                   className="form-check-input"
                   type="checkbox"
                   checked={showPageHeaderOnMobile ?? false}
@@ -629,6 +636,7 @@ export const AddEditPagePopup = forwardRef(
               </label>
               <label className={`form-switch`}>
                 <input
+                  aria-label="Show page footer on desktop"
                   className="form-check-input"
                   type="checkbox"
                   checked={showPageFooterOnDesktop ?? false}
@@ -655,6 +663,7 @@ export const AddEditPagePopup = forwardRef(
               </label>
               <label className={`form-switch`}>
                 <input
+                  aria-label="Show page footer on mobile"
                   className="form-check-input"
                   type="checkbox"
                   checked={showPageFooterOnMobile ?? false}
@@ -745,6 +754,7 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
             {!forceCodeBox && (
               <div className="form-switch m-0">
                 <input
+                  aria-label={`Hide this ${page?.type === 'default' ? 'page' : 'item'} on navigation`}
                   className="form-check-input"
                   type="checkbox"
                   checked={resolveReferences(hidden?.value)}

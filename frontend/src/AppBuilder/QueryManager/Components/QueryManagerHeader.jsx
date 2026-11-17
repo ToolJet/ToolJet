@@ -177,9 +177,9 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
       <div className="query-header-buttons">
         {!(selectedQuery === null || showCreateQuery) && (
           <>
-            {INLINE_AI_FEATURES_ENABLED && <GenerateQueryButton iconOnly={iconOnly} />}
+            {INLINE_AI_FEATURES_ENABLED && <GenerateQueryButton compact={iconOnly} />}
             <AbortButton />
-            <RunButton buttonLoadingState={buttonLoadingState} iconOnly={iconOnly} />
+            <RunButton buttonLoadingState={buttonLoadingState} compact={iconOnly} />
             <PreviewButton
               disabled={shouldFreeze}
               onClick={previewButtonOnClick}
@@ -219,7 +219,7 @@ const NameInput = ({ onInput, value, isDiabled, selectedQuery, queryDocumentatio
   );
 };
 
-const RunButton = ({ buttonLoadingState, iconOnly }) => {
+const RunButton = ({ buttonLoadingState, compact }) => {
   const control = getQueryHeaderControlPresentation('run');
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const runQuery = useStore((state) => state.queryPanel.runQuery);
@@ -241,13 +241,14 @@ const RunButton = ({ buttonLoadingState, iconOnly }) => {
           variant="secondary"
           onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true, undefined, true)}
           leadingIcon="play"
+          aria-label="Run query"
           disabled={isInDraft || isActive}
           isLoading={isLoading}
-          iconOnly={iconOnly}
-          className={cx(control.className, !iconOnly && (isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'))}
+          iconOnly={compact}
+          className={cx(control.className, !compact && (isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'))}
           data-cy="query-run-button"
         >
-          {!iconOnly && (
+          {!compact && (
             <>
               Run
               <span className="query-manager-btn-shortcut">{isMac ? '⌘↩' : 'Ctrl+Enter'}</span>
@@ -259,7 +260,7 @@ const RunButton = ({ buttonLoadingState, iconOnly }) => {
   );
 };
 
-const GenerateQueryButton = ({ iconOnly }) => {
+const GenerateQueryButton = ({ compact }) => {
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
@@ -291,14 +292,15 @@ const GenerateQueryButton = ({ iconOnly }) => {
           size="medium"
           variant="ghost"
           aria-selected={isPressed}
-          iconOnly={iconOnly}
+          aria-label={buttonLabel}
+          iconOnly={compact}
           className={isPressed ? '!tw-bg-button-outline-hover' : ''}
           onClick={openChat}
           disabled={shouldFreeze || isAiBlockedByBranch}
           data-cy="query-generate-button"
         >
           <AITripleSparkles width="14" height="14" />
-          {!iconOnly && buttonLabel}
+          {!compact && buttonLabel}
         </ButtonComponent>
       </span>
     </ToolTip>

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Overlay, Popover } from 'react-bootstrap';
 import { Button } from '@/components/ui/Button/Button';
+import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import useStore from '@/AppBuilder/_stores/store';
 import { AddEditPagePopup, getPagePopupPopperConfig } from './AddNewPagePopup';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
@@ -41,9 +42,9 @@ export function AddNewPageMenu({ darkMode }) {
         New page
       </Button>
 
-      <Button
+      <PanelIconButton
         ref={addPageBtnRef}
-        iconOnly
+        label="Add nav item"
         leadingIcon="ellipsis-vertical"
         isLucid
         fill="var(--icon-strong)"

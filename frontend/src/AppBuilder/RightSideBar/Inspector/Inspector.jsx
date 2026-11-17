@@ -47,8 +47,8 @@ import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
 import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
 import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
-import { Button } from '@/components/ui/Button/Button';
 import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
+import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
@@ -734,13 +734,12 @@ export const Inspector = ({
                       </Popover>
                     }
                   >
-                    <Button
-                      iconOnly
+                    <PanelIconButton
+                      label="Component options"
                       leadingIcon="ellipsis-vertical"
                       onClick={() => setShowHeaderActionsMenu(true)}
-                      variant="ghost"
                       size="medium"
-                      isLucid={true}
+                      isLucid
                       data-cy="menu-icon"
                     />
                   </OverlayTrigger>

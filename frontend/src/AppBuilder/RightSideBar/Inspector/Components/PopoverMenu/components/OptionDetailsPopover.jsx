@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 
 const OptionDetailsPopover = forwardRef(
   (
@@ -57,10 +57,9 @@ const OptionDetailsPopover = forwardRef(
                 {popoverTitle}
               </span>
               <div data-cy={`${dataCyPrefix}-option-details-actions`} className="pm-option-details-actions">
-                <ButtonComponent
+                <PanelIconButton
+                  label="Delete option"
                   data-cy={`${dataCyPrefix}-option-details-delete-button`}
-                  variant="ghost"
-                  iconOnly
                   onClick={() => onDeleteOption(index)}
                   trailingIcon="trash"
                   size="medium"

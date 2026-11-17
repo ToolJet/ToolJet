@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
-import { Button } from '@/components/ui/Button/Button';
+import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import { LabeledDivider, ColumnMappingComponent, FormFieldsList, FieldPopoverContent } from './index';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -114,10 +114,9 @@ const DataSectionUI = ({
 
   const renderManageFieldsIcon = () => {
     return (
-      <Button
-        iconOnly
+      <PanelIconButton
+        label="Manage fields"
         leadingIcon="sliders"
-        variant="ghost"
         size="small"
         onClick={() => {
           currentStatusRef.current = FORM_STATUS.MANAGE_FIELDS;
@@ -156,7 +155,7 @@ const DataSectionUI = ({
           </Popover>
         }
       >
-        <Button ref={addFieldButtonRef} iconOnly leadingIcon="plus" variant="ghost" size="small" />
+        <PanelIconButton ref={addFieldButtonRef} label="Add field" leadingIcon="plus" size="small" />
       </OverlayTrigger>
     );
   };
