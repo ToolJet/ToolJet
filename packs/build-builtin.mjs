@@ -18,12 +18,21 @@ const install = process.argv.includes('--install');
 // displayNames: the panel name of a pack component whose export name reads wrong there. A component's name is saved in
 // apps, so it cannot be renamed: Rocket 2.0's droppable TabsContainer shows as Tabs, as Ant's and MUI's Tabs do, and its
 // text-only Tabs as Text Tabs (team testing, 2026-10-29: a drop into Rocket's "Tabs" went to the canvas).
-const { packs, displayNames = {} } = JSON.parse(fs.readFileSync(path.join(root, 'packs/builtin.json'), 'utf8'));
+// disabled: packs kept in the repo but left out of the release, keyed by pack with the reason. A left-out pack is not
+// built or served, so the components panel does not offer it, and a component of it already in an app shows as
+// unavailable (PackComponent).
+const { packs, displayNames = {}, disabled = {} } = JSON.parse(
+  fs.readFileSync(path.join(root, 'packs/builtin.json'), 'utf8')
+);
 
 fs.rmSync(out, { recursive: true, force: true });
 for (const dir of packs) {
   const packDir = path.join(root, dir);
   const pack = path.basename(packDir);
+  if (disabled[pack]) {
+    console.log(`skipped ${pack}: ${disabled[pack]}`);
+    continue;
+  }
   // The Dockerfiles run this under NODE_ENV=production, which would skip the dev dependencies (types) the build needs.
   if (install) execFileSync('npm', ['ci', '--include=dev', '--no-audit', '--no-fund'], { cwd: packDir, stdio: 'inherit' });
   execFileSync('node', [cli, 'library', 'build'], { cwd: packDir, stdio: 'inherit' });

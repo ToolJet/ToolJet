@@ -25,6 +25,9 @@ listed in `packs/builtin.json` with the custom-component CLI (`packs/build-built
 
 - Only `index.js`, `index.css` and `manifest.json` are served, and only at the hash the server currently ships; an old
   hash is a 404, never stale content.
+- `packs/builtin.json` `disabled` (pack → reason) keeps a pack in the repo but out of the release: the build skips it,
+  so it is not listed or served, and its components already in apps render as unavailable. Material UI is disabled
+  until it is tested; delete its entry to ship it.
 - The folder is read once per process; it only changes with a release. `BUILTIN_PACKS_PATH` overrides where it is.
 - Not part of custom-component libraries: no versions, pins, revisions or workspace scoping.
 
