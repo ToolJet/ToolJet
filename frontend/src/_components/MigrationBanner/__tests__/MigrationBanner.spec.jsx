@@ -4,6 +4,7 @@ import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import { act, render, screen, userEvent, waitFor } from '@/test/test-utils';
 import { authenticationService } from '@/_services/authentication.service';
+import { MIGRATION_GATE_EVENT } from '@/_helpers/migrationGate';
 import { MigrationBanner } from '../index';
 
 const STATUS_URL = 'http://localhost:3000/api/migration-status';
@@ -14,8 +15,14 @@ const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 20))
 
 const initialSession = authenticationService.currentSessionValue;
 
-beforeEach(() => sessionStorage.clear());
-afterEach(() => authenticationService.updateCurrentSession(initialSession));
+beforeEach(() => {
+  sessionStorage.clear();
+  window.public_config = { MIGRATION_ASYNC: 'true' };
+});
+afterEach(() => {
+  authenticationService.updateCurrentSession(initialSession);
+  delete window.public_config;
+});
 
 const asSuperAdmin = (superAdmin) =>
   act(() => authenticationService.updateCurrentSession({ ...initialSession, super_admin: superAdmin }));
@@ -33,7 +40,7 @@ describe('MigrationBanner', () => {
       render(<MigrationBanner />);
       await waitFor(() => expect(visibleBanner()).toBeInTheDocument());
 
-      act(() => jest.advanceTimersByTime(3000));
+      act(() => jest.advanceTimersByTime(30000));
 
       await waitFor(() => expect(visibleBanner()).not.toBeInTheDocument());
     } finally {
@@ -124,12 +131,68 @@ describe('MigrationBanner', () => {
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
-  test('treats a non-200 response as idle', async () => {
-    respondWith({ state: 'running', startedAt: 'run-x' }, { status: 503 });
+  test('never asks in blocking mode, where migrations finish before the server starts', async () => {
+    window.public_config = { MIGRATION_ASYNC: 'false' };
+    let called = false;
+    server.use(
+      http.get(STATUS_URL, () => {
+        called = true;
+        return HttpResponse.json({ state: 'running' });
+      })
+    );
     render(<MigrationBanner />);
     await settle();
 
-    expect(visibleBanner()).toBeNull();
+    expect(called).toBe(false);
+  });
+
+  test('stops asking once idle, and asks again when the upgrade gate refuses a write', async () => {
+    jest.useFakeTimers({ advanceTimers: true });
+    try {
+      let calls = 0;
+      server.use(
+        http.get(STATUS_URL, () =>
+          HttpResponse.json(calls++ === 0 ? { state: 'idle' } : { state: 'running', startedAt: 'run-1' })
+        )
+      );
+      render(<MigrationBanner />);
+      await waitFor(() => expect(calls).toBe(1));
+
+      act(() => jest.advanceTimersByTime(60000));
+      await settle();
+      expect(calls).toBe(1);
+
+      act(() => window.dispatchEvent(new Event(MIGRATION_GATE_EVENT)));
+
+      await waitFor(() => expect(visibleBanner()).toHaveTextContent(/being upgraded/));
+      expect(calls).toBe(2);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test('shows nothing on a failed status call, and keeps asking', async () => {
+    jest.useFakeTimers({ advanceTimers: true });
+    try {
+      let calls = 0;
+      server.use(
+        http.get(STATUS_URL, () =>
+          calls++ === 0
+            ? HttpResponse.json({ state: 'running', startedAt: 'run-x' }, { status: 503 })
+            : HttpResponse.json({ state: 'running', startedAt: 'run-x' })
+        )
+      );
+      render(<MigrationBanner />);
+      await waitFor(() => expect(calls).toBe(1));
+      await settle();
+      expect(visibleBanner()).toBeNull();
+
+      act(() => jest.advanceTimersByTime(30000));
+
+      await waitFor(() => expect(visibleBanner()).toHaveTextContent(/being upgraded/));
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   test('close hides it for the same run and state, and a new run shows again', async () => {
