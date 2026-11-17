@@ -1,0 +1,315 @@
+name: Cypress Cloud Platform
+
+# Cloud-only cases (workspace licences, subscription, white labelling, custom domain,
+# AI credits, cloud onboarding) against a cloud build deployed on the runner.
+# Shared features keep running on the self-hosted lanes.
+#
+# Scheduled runs use the copy of this file on the default branch, so it must live there
+# for the nightly to fire; the nightly itself tests `main` (see "Resolve source").
+on:
+  pull_request_target:
+    types: [labeled, synchronize]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or SHA to test
+        required: false
+        default: main
+  schedule:
+    - cron: "30 20 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cypress-cloud-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request_target' }}
+
+jobs:
+  Build-Image:
+    name: 'Build image · cypress cloud'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    if: >-
+      github.event_name != 'pull_request_target'
+      || (github.event.pull_request.head.repo.full_name == github.repository
+          && contains(github.event.pull_request.labels.*.name, 'run-cypress-cloud')
+          && (github.event.action != 'labeled' || github.event.label.name == 'run-cypress-cloud'))
+    outputs:
+      sha: ${{ steps.pin.outputs.sha }}
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Resolve source
+        id: source
+        env:
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+          INPUT_REF: ${{ inputs.ref }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          case "$EVENT" in
+            pull_request_target) REF="$PR_SHA" ;;
+            workflow_dispatch)   REF="${INPUT_REF:-main}" ;;
+            *)                   REF="main" ;;
+          esac
+          if ! printf '%s' "$REF" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+            echo "::error::Ref may only contain letters, numbers, '.', '_', '/' and '-'."
+            exit 1
+          fi
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+      - name: Free up disk space
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.source.outputs.ref }}
+      - name: Pin source SHA
+        id: pin
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Check the branch has the cloud lane
+        run: |
+          if [ ! -f cypress-tests/cypress-cloud-platform.config.js ] || ! grep -q '^ARG TOOLJET_EDITION' cypress-tests/cypress-ci.Dockerfile; then
+            echo "::error::This branch predates the cloud Cypress lane. Merge the base branch into it first."
+            exit 1
+          fi
+      - name: Checkout EE submodules
+        env:
+          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+        run: |
+          export GIT_CONFIG_COUNT=1 \
+            GIT_CONFIG_KEY_0="url.https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/.insteadOf" \
+            GIT_CONFIG_VALUE_0="https://github.com/"
+          git submodule update --init --recursive
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: .
+          file: cypress-tests/cypress-ci.Dockerfile
+          platforms: linux/amd64
+          build-args: |
+            TOOLJET_EDITION=cloud
+          push: true
+          tags: tooljet/tj-osv:cloud-${{ steps.pin.outputs.sha }}
+          cache-from: type=registry,ref=tooljet/tj-osv:cypress-ci-cloud-buildcache
+          cache-to: type=registry,ref=tooljet/tj-osv:cypress-ci-cloud-buildcache,mode=max
+
+  Cypress-Cloud-Platform:
+    runs-on: ubuntu-22.04
+    needs: Build-Image
+    timeout-minutes: 90
+    env:
+      SOURCE_SHA: ${{ needs.Build-Image.outputs.sha }}
+      TOOLJET_IMAGE: tooljet/tj-osv@${{ needs.Build-Image.outputs.digest }}
+    steps:
+      - name: Check PR source
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ -n "$HEAD_REPO" ] && [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::Cypress runs are not allowed for pull requests from forks ($HEAD_REPO)."
+            exit 1
+          fi
+          if ! printf '%s' "$SOURCE_SHA" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::Build-Image did not report a commit SHA."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.Build-Image.outputs.sha }}
+
+      # Specs, plan terms (PlanTerms.ts) and the image must all come from one commit.
+      - name: Verify checkout matches the image source
+        run: |
+          ACTUAL=$(git rev-parse HEAD)
+          if [ "$ACTUAL" != "$SOURCE_SHA" ]; then
+            echo "::error::Checked out $ACTUAL but the image was built from $SOURCE_SHA."
+            exit 1
+          fi
+          echo "Testing $SOURCE_SHA with $TOOLJET_IMAGE" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Checkout server EE submodule
+        env:
+          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+        run: |
+          export GIT_CONFIG_COUNT=1 \
+            GIT_CONFIG_KEY_0="url.https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/.insteadOf" \
+            GIT_CONFIG_VALUE_0="https://github.com/"
+          git submodule update --init server/ee
+
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Generate per-run secrets
+        run: |
+          for name in MFA_MASTER_SECRET LICENSE_PGRST_JWT_SECRET LOCKBOX_MASTER_KEY SECRET_KEY_BASE PGRST_JWT_SECRET; do
+            value=$(openssl rand -hex 32)
+            echo "::add-mask::$value"
+            echo "$name=$value" >> "$GITHUB_ENV"
+          done
+
+      - name: Sign licence PostgREST key
+        run: |
+          KEY=$(node -e '
+            const c = require("crypto"), b = (o) => Buffer.from(JSON.stringify(o)).toString("base64url");
+            const h = b({ alg: "HS256", typ: "JWT" }), p = b({ role: "postgres" });
+            process.stdout.write(h + "." + p + "." + c.createHmac("sha256", process.env.LICENSE_PGRST_JWT_SECRET).update(h + "." + p).digest("base64url"));')
+          echo "::add-mask::$KEY"
+          echo "ORGANIZATION_LICENSE_API_KEY=$KEY" >> "$GITHUB_ENV"
+
+      - name: Set up environment variables
+        run: |
+          cat > cypress-tests/.env <<EOF
+          TOOLJET_EDITION=cloud
+          TOOLJET_HOST=http://localhost:3000
+          LOCKBOX_MASTER_KEY=$LOCKBOX_MASTER_KEY
+          SECRET_KEY_BASE=$SECRET_KEY_BASE
+          PG_DB=tooljet_development
+          PG_USER=postgres
+          PG_HOST=postgres
+          PG_PASS=postgres
+          PG_PORT=5432
+          ENABLE_TOOLJET_DB=true
+          TOOLJET_DB=tooljet_db
+          TOOLJET_DB_USER=postgres
+          TOOLJET_DB_HOST=postgres
+          TOOLJET_DB_PASS=postgres
+          TOOLJET_DB_STATEMENT_TIMEOUT=60000
+          TOOLJET_DB_RECONFIG=true
+          PGRST_JWT_SECRET=$PGRST_JWT_SECRET
+          PGRST_HOST=localhost:3001
+          PGRST_DB_PRE_CONFIG=postgrest.pre_config
+          PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db
+          PGRST_SERVER_PORT=3001
+          MFA_MASTER_SECRET=$MFA_MASTER_SECRET
+          ORGANIZATION_LICENSE_URL=http://license-postgrest:3002
+          ORGANIZATION_LICENSE_API_KEY=$ORGANIZATION_LICENSE_API_KEY
+          ENABLE_AI_FEATURES=true
+          TJ_AI_GATEWAY_URL=http://host.docker.internal:3200
+          CLOUD_API_KEY=cypress-cloud-stub
+          EOF
+
+      - name: Start the cloud stack
+        working-directory: ./cypress-tests
+        run: |
+          docker compose version
+          docker compose -f cloud-ci.compose.yaml up -d
+
+      - name: Wait for the server to be ready
+        working-directory: ./cypress-tests
+        run: |
+          for i in $(seq 1 70); do
+            if [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/api/health)" = "200" ]; then
+              echo "Server is ready"; exit 0
+            fi
+            sleep 10
+          done
+          docker compose -f cloud-ci.compose.yaml logs --tail=150 tooljet
+          exit 1
+
+      - name: Create Cypress environment file
+        run: |
+          jq -n --arg secret "$MFA_MASTER_SECRET" '{
+            environment: "Cloud",
+            server_host: "http://localhost:3000",
+            cloud_mfa_secret: $secret,
+            cloud_disposable_db: "tooljet_development",
+            app_db: { user: "postgres", host: "localhost", database: "tooljet_development", password: "postgres", port: 5432 }
+          }' > cypress-tests/cypress.env.json
+
+      - name: Install Cypress & deps
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ./cypress-tests
+          runTests: false
+
+      - name: Run Cypress tests
+        working-directory: ./cypress-tests
+        env:
+          CELL: "Platform / cloud"
+          BROWSER: chrome
+          CONFIG_FILE: cypress-cloud-platform.config.js
+          CYPRESS_CONFIG: "baseUrl=http://localhost:3000"
+        run: node cy-ci-run.js
+
+      - name: Ensure run summary exists
+        if: always()
+        working-directory: ./cypress-tests
+        run: |
+          if [ ! -f summary.json ]; then
+            printf '{"cell":"Platform / cloud","result":"failure","stats":null}\n' > summary.json
+          fi
+          cat summary.json
+
+      - name: Upload run summary
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cypress-summary-platform-cloud
+          path: cypress-tests/summary.json
+          retention-days: 7
+
+      - name: Capture Screenshots
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: screenshots-platform-cloud
+          path: cypress-tests/cypress/screenshots
+          if-no-files-found: ignore
+
+      - name: ToolJet logs on failure
+        if: failure()
+        working-directory: ./cypress-tests
+        run: docker compose -f cloud-ci.compose.yaml logs --tail=300 tooljet
+
+  notify-slack:
+    needs: Cypress-Cloud-Platform
+    if: >-
+      always() && needs.Cypress-Cloud-Platform.result != 'skipped'
+      && (github.event_name != 'pull_request_target'
+          || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - name: Download run summaries
+        uses: actions/download-artifact@v8
+        with:
+          pattern: cypress-summary-*
+          path: summaries
+
+      - name: Build Slack payload
+        env:
+          CHANNEL: ${{ secrets.SLACK_CHANNEL_ID }}
+          SUITE: Cloud Platform
+          OVERALL: ${{ needs.Cypress-Cloud-Platform.result == 'failure' && 'failure' || 'success' }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          EVENT: ${{ github.event_name == 'pull_request_target' && 'pull_request' || github.event_name }}
+          SHA: ${{ github.sha }}
+          SERVER_URL: ${{ github.server_url }}
+          RUN_ID: ${{ github.run_id }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          BRANCH: ${{ github.ref_name }}
+        run: node .github/scripts/build-slack-payload.js
+
+      - name: Post result to Slack
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload-file-path: payload.json
