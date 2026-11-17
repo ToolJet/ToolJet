@@ -52,6 +52,11 @@ On top of the above:
 - Prefer Tailwind over Bootstrap for new code; do not extend legacy `react-bootstrap` usage
 - Use typography utilities (`tw-font-title-default`, `tw-font-body-default`) instead of ad-hoc font-size/weight
 - Design tokens: `frontend/src/_styles/designtheme.scss` + `frontend/tailwind.config.js`
+- **Editor chrome never styles a customer's app.** The canvas (and the overlays and modals its widgets open) must render exactly as in the Viewer.
+  - Chrome type and colour variables (`--app-builder-*`, `--editor-text-*`) live on `<body>` only while editing, via `useAppBuilderChrome`. Writing to `<body>` is the exception to "no direct DOM manipulation", because chrome portals render there.
+  - Chrome text that needs AA on dark panels reads `var(--editor-text-accent|danger|success, <shared token>)` or `tw-text-editor-text-danger|success`, never the shared token alone.
+  - Widgets reset those variables (`theme.scss`). An overlay a widget renders (react-bootstrap `Tooltip`/`Popover`, `react-tooltip`) must carry `tj-widget-overlay`.
+  - The guard is `cypress/e2e/happyPath/appbuilder/panels/canvasParity.cy.js` (editor vs Viewer).
 
 ### Imports
 
@@ -166,7 +171,8 @@ A user-authored className (or space-separated classNames) applied to a single wi
 - Unused imports
 - Missing `key` props in `.map()`
 - Missing `shallow` in `useStore` selectors
-- Direct DOM manipulation (canvas drop calculations excepted)
+- Direct DOM manipulation (canvas drop calculations and `useAppBuilderChrome`'s `<body>` scope excepted)
+- A widget overlay (tooltip, popover) without `tj-widget-overlay`, or chrome reading `--text-accent/-danger/-success` without the `--editor-text-*` wrapper
 
 ## Decisions log
 

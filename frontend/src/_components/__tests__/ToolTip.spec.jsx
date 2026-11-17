@@ -1,7 +1,7 @@
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 
-import { AppBuilderTooltipProvider } from '@/AppBuilder/_contexts/AppBuilderTooltipContext';
+import { AppBuilderTooltipProvider, WidgetTooltipScope } from '@/AppBuilder/_contexts/AppBuilderTooltipContext';
 import { ToolTip } from '../ToolTip';
 
 describe('ToolTip in App Builder', () => {
@@ -44,5 +44,27 @@ describe('ToolTip in App Builder', () => {
     await screen.findByRole('tooltip');
 
     expect(document.querySelector('.app-builder-tooltip')).toHaveClass('!tw-z-[1070]');
+  });
+
+  // Widgets render a customer's app: inside the editor they get the Viewer's tooltip, marked so the
+  // editor chrome's type and colour variables stop at it (canvas = Viewer).
+  it('APPBUILDER-TOOLTIP-003 shows the Viewer tooltip inside a widget, marked as a widget overlay', async () => {
+    render(
+      <AppBuilderTooltipProvider>
+        <WidgetTooltipScope>
+          <ToolTip message="Step 2">
+            <button type="button">Two</button>
+          </ToolTip>
+        </WidgetTooltipScope>
+      </AppBuilderTooltipProvider>
+    );
+
+    fireEvent.mouseOver(screen.getByRole('button', { name: 'Two' }));
+    act(() => jest.advanceTimersByTime(100));
+    const tooltip = await screen.findByRole('tooltip');
+
+    expect(tooltip).toHaveTextContent('Step 2');
+    expect(tooltip).toHaveClass('tooltip', 'tj-widget-overlay');
+    expect(document.querySelector('.app-builder-tooltip')).not.toBeInTheDocument();
   });
 });

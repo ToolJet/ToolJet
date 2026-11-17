@@ -1,3 +1,4 @@
+import { WidgetTooltipScope } from '@/AppBuilder/_contexts/AppBuilderTooltipContext';
 import React, { Suspense, lazy } from 'react';
 import cx from 'classnames';
 
@@ -63,16 +64,18 @@ export const DesktopLayout = ({
               height: sideBarVisibleHeight,
             }}
           >
-            <PagesSidebarNavigation
-              isMobileDevice={isMobileLayout}
-              currentPageId={currentPageId ?? homePageId}
-              switchDarkMode={switchDarkMode}
-              isSidebarPinned={isViewerSidebarPinned}
-              setIsSidebarPinned={setIsSidebarPinned}
-              darkMode={darkMode}
-              canvasMaxWidth={canvasMaxWidth}
-              canvasContentRef={canvasContentRef}
-            />
+            <WidgetTooltipScope>
+              <PagesSidebarNavigation
+                isMobileDevice={isMobileLayout}
+                currentPageId={currentPageId ?? homePageId}
+                switchDarkMode={switchDarkMode}
+                isSidebarPinned={isViewerSidebarPinned}
+                setIsSidebarPinned={setIsSidebarPinned}
+                darkMode={darkMode}
+                canvasMaxWidth={canvasMaxWidth}
+                canvasContentRef={canvasContentRef}
+              />
+            </WidgetTooltipScope>
           </div>
         </>
       )}

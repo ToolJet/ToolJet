@@ -99,7 +99,7 @@
     }
 
     &.is-active {
-      color: var(--text-accent, var(--indigo9)) !important;
+      color: var(--editor-text-accent, var(--indigo9)) !important;
       background: var(--indigo3) !important;
       border-color: var(--indigo5) !important;
     }
@@ -209,10 +209,10 @@
 
     &.is-selected {
       background: var(--background-accent-weak);
-      color: var(--text-accent, var(--indigo9));
+      color: var(--editor-text-accent, var(--indigo9));
 
       .runtime-inspector__twisty {
-        color: var(--text-accent, var(--indigo9));
+        color: var(--editor-text-accent, var(--indigo9));
       }
     }
   }

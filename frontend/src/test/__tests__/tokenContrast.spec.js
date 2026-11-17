@@ -11,9 +11,15 @@ import { contrastRatio, readToken } from '../contrast';
 
 const read = (file) => fs.readFileSync(path.join(__dirname, '../..', file), 'utf8');
 const TOKEN_FILES = ['_styles/designtheme.scss', '_styles/componentdesign.scss'].map(read);
+// Editor chrome tokens live on <body> only while the App Builder edits (useAppBuilderChrome).
+const CHROME = read('_styles/componentdesign.scss');
 const THEMES = ['light', 'dark'];
 
 function token(name, theme) {
+  if (theme === 'dark') {
+    const chrome = readToken(CHROME, '.app-builder-chrome--dark', `--${name}`);
+    if (chrome) return chrome;
+  }
   for (const selector of theme === 'dark' ? ['.dark-theme', ':root'] : [':root']) {
     const value = TOKEN_FILES.map((file) => readToken(file, selector, `--${name}`))
       .filter(Boolean)
@@ -75,7 +81,7 @@ describe('panel text tokens reach WCAG AA in both themes', () => {
   });
 
   test('[UB-05] unselected segmented-toggle options on the toggle track', () => {
-    const fg = readToken(toggleGroup, '.ToggleGroupItem', 'color');
+    const fg = readToken(toggleGroup, '.app-builder-chrome .ToggleGroupItem', 'color');
     const track = readToken(toggleGroup, '.ToggleGroup', 'background-color');
     expect(shortfalls({ fg, bg: [track, surface] })).toEqual([]);
   });
@@ -97,13 +103,13 @@ describe('panel text tokens reach WCAG AA in both themes', () => {
   });
 
   test('[UB-07] accent text is readable on panels in both themes', () => {
-    expect(shortfalls({ fg: 'var(--text-accent, var(--indigo9))', bg: [surface] })).toEqual([]);
+    expect(shortfalls({ fg: 'var(--editor-text-accent, var(--indigo9))', bg: [surface] })).toEqual([]);
   });
 
   test('[UB-08] danger and success text on the panel surface', () => {
     expect([
-      ...shortfalls({ fg: 'var(--text-danger)', bg: [surface] }),
-      ...shortfalls({ fg: 'var(--text-success)', bg: [surface] }),
+      ...shortfalls({ fg: 'var(--editor-text-danger, var(--text-danger))', bg: [surface] }),
+      ...shortfalls({ fg: 'var(--editor-text-success, var(--text-success))', bg: [surface] }),
     ]).toEqual([]);
   });
 

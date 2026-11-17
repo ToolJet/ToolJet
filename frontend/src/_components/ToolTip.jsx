@@ -17,7 +17,8 @@ export function ToolTip({
   ...rest
 }) {
   const appBuilderTooltip = useAppBuilderTooltip();
-  const useIntentAwareTooltip = appBuilderTooltip && !trigger.includes('click');
+  const inWidget = appBuilderTooltip?.widget;
+  const useIntentAwareTooltip = appBuilderTooltip && !inWidget && !trigger.includes('click');
 
   if (!show) {
     return children;
@@ -50,7 +51,7 @@ export function ToolTip({
       popperConfig={rest?.popperConfig}
       overlay={
         <Tooltip
-          className={tooltipClassName}
+          className={inWidget ? `${tooltipClassName} tj-widget-overlay` : tooltipClassName}
           style={{ width: rest?.width ?? 'auto', maxWidth: rest?.maxWidth ?? undefined }}
         >
           {message}

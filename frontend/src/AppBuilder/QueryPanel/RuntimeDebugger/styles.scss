@@ -12,7 +12,7 @@
     align-items: center;
 
     &.is-active .runtime-debugger__count {
-      color: var(--text-accent, var(--indigo9));
+      color: var(--editor-text-accent, var(--indigo9));
     }
 
     &.is-empty:not(.is-active) {
@@ -43,7 +43,7 @@
       }
 
       &.is-active {
-        color: var(--text-accent, var(--indigo9)) !important;
+        color: var(--editor-text-accent, var(--indigo9)) !important;
         background: var(--indigo3) !important;
         border-color: var(--indigo5) !important;
       }
@@ -178,7 +178,7 @@
     height: 28px;
     padding: 0 8px !important;
     border-radius: 6px;
-    color: var(--text-accent, var(--indigo9)) !important;
+    color: var(--editor-text-accent, var(--indigo9)) !important;
     font-size: 12px !important;
     white-space: nowrap;
 

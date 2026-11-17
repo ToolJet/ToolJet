@@ -261,7 +261,7 @@ const VersionPicker = ({ library }) => {
                   <span className="version-menu-title">
                     Dev preview
                     {current === `dev:${userId}` && currentUserId === userId && (
-                      <span className="before:tw-content-[''] before:tw-inline-block before:tw-size-2 before:tw-rounded-full before:tw-bg-background-success-strong before:tw-mr-1 tw-text-text-success">
+                      <span className="before:tw-content-[''] before:tw-inline-block before:tw-size-2 before:tw-rounded-full before:tw-bg-background-success-strong before:tw-mr-1 tw-text-editor-text-success">
                         Live
                       </span>
                     )}

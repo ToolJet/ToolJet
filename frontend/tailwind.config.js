@@ -46,6 +46,9 @@ module.exports = {
         'text-success': 'var(--text-success)',
         'text-warning': 'var(--text-warning)',
         'text-danger': 'var(--text-danger)',
+        // Editor chrome only: brighter on dark editor panels, the shared token everywhere else.
+        'editor-text-danger': 'var(--editor-text-danger, var(--text-danger))',
+        'editor-text-success': 'var(--editor-text-success, var(--text-success))',
         'text-on-solid': 'var(--text-on-solid)',
         'text-disabled': 'var(--text-disabled)',
         'text-disabled-on-solid': 'var(--text-disabled-on-solid)',

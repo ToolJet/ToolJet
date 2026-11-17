@@ -8,7 +8,7 @@
 
 .ToggleGroupItem {
   all: unset;
-  color: var(--text-medium);
+  color: var(--text-placeholder);
   min-height: 28px;
   display: flex;
   line-height: 20px;
@@ -19,6 +19,11 @@
   border-radius: 6px;
   width: 100%;
   font-size: var(--app-builder-small-font-size, 10px);
+}
+
+// Editor chrome only (the body class lives while the App Builder edits): off options stay readable.
+.app-builder-chrome .ToggleGroupItem {
+  color: var(--text-medium);
 }
 
 .ToggleGroupItem:first-child {

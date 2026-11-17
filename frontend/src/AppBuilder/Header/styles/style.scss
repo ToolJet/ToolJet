@@ -126,7 +126,7 @@
   --editor-header-text: var(--text-default);
   --editor-header-muted: var(--text-placeholder);
   --editor-header-icon: var(--icon-default);
-  --editor-header-accent: var(--text-accent, var(--indigo9));
+  --editor-header-accent: var(--editor-text-accent, var(--indigo9));
   --editor-header-accent-soft: var(--indigo3);
   --editor-header-accent-border: var(--indigo5);
 

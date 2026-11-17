@@ -363,7 +363,7 @@ $border-radius: 4px;
         border-radius: 4px;
         background: var(--background-surface-layer-01);
         box-shadow: var(--elevation-100-box-shadow);
-        color: var(--text-danger);
+        color: var(--editor-text-danger, var(--text-danger));
         font-size: var(--app-builder-small-font-size, 10px);
         line-height: 14px;
         white-space: nowrap;
@@ -1987,7 +1987,7 @@ $border-radius: 4px;
 
       &.active {
         box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
-        color: var(--text-accent, var(--indigo9)) !important;
+        color: var(--editor-text-accent, var(--indigo9)) !important;
       }
     }
   }

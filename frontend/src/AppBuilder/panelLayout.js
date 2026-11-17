@@ -188,7 +188,9 @@ export const getRightPanelClassName = (activeTab, isLeftPanelOpen = false) =>
 export const getAppBuilderTypographyVariables = () => ({
   '--app-builder-font-family': "'IBM Plex Sans', sans-serif",
   '--app-builder-code-font-family': "'Source Code Pro', monospace",
-  '--app-builder-canvas-font-family': "'IBM Plex Sans', sans-serif",
+  // The canvas shows a customer's app, so it takes the Viewer's own font: the <body> declaration in
+  // theme.scss, without the chrome's fallback stack (canvas = Viewer).
+  '--app-builder-canvas-font-family': "'IBM Plex Sans'",
   '--app-builder-small-font-size': '12px',
 });
 

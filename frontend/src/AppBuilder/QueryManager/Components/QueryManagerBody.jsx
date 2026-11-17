@@ -510,7 +510,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
             </div>
             {selectedDataSource?.is_dummy && (
               <div
-                className="tw-text-text-danger tw-mt-1 tw-font-body-small tw-pointer-events-auto tw-select-text tw-cursor-text"
+                className="tw-text-editor-text-danger tw-mt-1 tw-font-body-small tw-pointer-events-auto tw-select-text tw-cursor-text"
                 data-cy="query-manager-source-missing-warning"
               >
                 {t(

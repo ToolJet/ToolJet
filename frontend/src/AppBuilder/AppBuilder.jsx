@@ -21,7 +21,7 @@ import * as Sentry from '@sentry/react';
 import { getErrorContext } from '@/_ui/ErrorBoundary/errorReport';
 import useCustomComponentDevPreviewSync from '@/AppBuilder/_hooks/useCustomComponentDevPreviewSync';
 import { AppBuilderTooltipProvider } from '@/AppBuilder/_contexts/AppBuilderTooltipContext';
-import useAppBuilderTypography from '@/AppBuilder/_hooks/useAppBuilderTypography';
+import useAppBuilderChrome from '@/AppBuilder/_hooks/useAppBuilderChrome';
 
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
@@ -85,7 +85,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   }, [isEditorLoading, appId, currentVersionId]);
 
   useCustomComponentDevPreviewSync(appId);
-  useAppBuilderTypography(currentMode === 'edit');
+  useAppBuilderChrome(currentMode === 'edit', darkMode);
 
   //TODO: This can be added to the mode slice and set based on the mode
   if (isEditorLoading) {

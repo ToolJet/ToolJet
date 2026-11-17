@@ -236,7 +236,7 @@ function EditAppName() {
           {(errorText || isAtLimit) && (
             <span
               className={`tw-absolute tw-left-0 tw-top-[34px] tw-z-20 tw-whitespace-nowrap tw-rounded tw-bg-[var(--surfaces-surface-01)] tw-px-1.5 tw-py-0.5 tw-text-[10px] tw-shadow-sm ${
-                errorText ? 'tw-text-[var(--text-danger)]' : 'tw-text-[var(--text-warning)]'
+                errorText ? 'tw-text-editor-text-danger' : 'tw-text-[var(--text-warning)]'
               }`}
               role={errorText ? 'alert' : 'status'}
               data-cy={`${appTypeName.toLowerCase()}-name-error-label`}

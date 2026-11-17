@@ -9494,6 +9494,19 @@ tbody {
   font-size: var(--app-builder-small-font-size, 0.765625rem) !important;
 }
 
+// A widget renders a customer's app, so ToolJet's chrome variables stop at it: unset, every shared rule
+// falls back to its own value and the canvas, widget modals and widget overlays match the Viewer.
+// Widget overlays (react-bootstrap Tooltip/Popover, react-tooltip) must carry .tj-widget-overlay.
+.main-editor-canvas,
+.tj-modal-widget-content,
+.tj-widget-overlay {
+  --app-builder-font-family: initial;
+  --app-builder-small-font-size: initial;
+  --editor-text-accent: initial;
+  --editor-text-success: initial;
+  --editor-text-danger: initial;
+}
+
 .tooltip {
   z-index: 10000;
 }

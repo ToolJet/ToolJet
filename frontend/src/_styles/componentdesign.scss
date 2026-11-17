@@ -206,10 +206,10 @@
     --text-placeholder: #858C94;
     --text-inverse: #181B1F;
     --text-tooltip: #1B1F24;
-    --text-accent: #9EB1FF;
-    --text-success: #63C174;
+    --text-accent: #4A6DD9;
+    --text-success: #318344;
     --text-warning: #BA5722;
-    --text-danger: #FF6369;
+    --text-danger: #D03F43;
     --text-on-solid: #FFFFFF;
     --text-disabled: #545B64;
     --text-disabled-on-solid: #FAFCFF66;
@@ -351,4 +351,13 @@
 // Specificity: input.tw-appearance-none[type="text"] (0-1-2) > input[type="text"] (0-1-1)
 input.tw-appearance-none[type="text"] {
   outline: none !important;
+}
+
+// Editor chrome colours. The shared dark --text-accent/-success/-danger fall below AA on the dark editor
+// panels, so chrome reads var(--editor-text-*, <shared token>). The class sits on <body> only while the
+// App Builder edits in dark mode (useAppBuilderChrome); widgets reset these in theme.scss.
+.app-builder-chrome--dark {
+  --editor-text-accent: #9EB1FF;
+  --editor-text-success: #63C174;
+  --editor-text-danger: #FF6369;
 }

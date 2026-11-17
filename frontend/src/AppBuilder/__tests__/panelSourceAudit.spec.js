@@ -110,10 +110,6 @@ describe('panel source audit', () => {
     expect(matches(['src', 'ee'], /--editor-accent-text/)).toEqual([]);
   });
 
-  test('[UB-07] panels read --text-accent with a fallback, because light leaves it undefined for pages outside the editor', () => {
-    expect(matches(PANEL_ROOTS, /var\(--text-accent\)/)).toEqual([]);
-  });
-
   test.failing('[UB-12] panel focus rings use the design-system tokens, not hard-coded or misspelt ones', () => {
     // #C6D4F9 rings (queryManager.scss, Restapi/index.jsx:272, GRPC.jsx:95) and the misspelt
     // --interactive-focusactive in ToolJetUI/Tabs/tabs.scss:82.
@@ -160,6 +156,19 @@ describe('panel source audit', () => {
       });
     });
     expect(offScale).toEqual([]);
+  });
+
+  test('[UB-07][UB-08] editor chrome reads the editor colour tokens, which pass AA on dark panels', () => {
+    // The shared dark --text-accent/-danger/-success stay as they are for everything outside the editor
+    // (and for widgets); chrome reads var(--editor-text-*, <shared token>) instead.
+    const shared = files(PANEL_ROOTS, /\.(jsx?|tsx?|scss)$/).flatMap((file) => {
+      const src = fs.readFileSync(file, 'utf8');
+      // tw-text-text-accent maps to --text-brand, which the dark fix never touched.
+      const reads =
+        /(editor-text-[\w-]+,\s?)?(?:var\(--text-(?:accent|danger|success)\b|tw-text-text-(?:danger|success)\b)/g;
+      return [...src.matchAll(reads)].filter((m) => !m[1]).map((m) => where(file, src, m.index));
+    });
+    expect(shared).toEqual([]);
   });
 
   test('[UB-01][UA-08] Tailwind typography helpers resolve the App Builder font in the editor', () => {

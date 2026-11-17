@@ -60,7 +60,7 @@
     }
 
     &.active {
-      color: var(--text-accent, var(--indigo9));
+      color: var(--editor-text-accent, var(--indigo9));
       border-color: var(--border-accent-weak);
       background: var(--background-accent-weak);
     }
@@ -98,7 +98,7 @@
     }
 
     &.active {
-      color: var(--text-accent, var(--indigo9));
+      color: var(--editor-text-accent, var(--indigo9));
       border-color: var(--border-accent-weak);
       background: var(--background-accent-weak);
     }
@@ -136,7 +136,7 @@
   }
 
   .code-search-error {
-    color: var(--text-danger);
+    color: var(--editor-text-danger, var(--text-danger));
   }
 
   // Shared header-row reset: group and entity headers are buttons so they toggle on click / Enter.
@@ -216,7 +216,7 @@
     color: var(--text-placeholder);
 
     &.current {
-      color: var(--text-accent, var(--indigo9));
+      color: var(--editor-text-accent, var(--indigo9));
     }
   }
 
@@ -237,7 +237,7 @@
     border-radius: 4px;
     font-size: var(--app-builder-small-font-size, 10px);
     line-height: 16px;
-    color: var(--text-accent, var(--indigo9));
+    color: var(--editor-text-accent, var(--indigo9));
     background: var(--background-accent-weak);
   }
 

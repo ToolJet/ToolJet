@@ -603,7 +603,7 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getAppBuilderTypographyVariables()).toEqual({
       '--app-builder-font-family': "'IBM Plex Sans', sans-serif",
       '--app-builder-code-font-family': "'Source Code Pro', monospace",
-      '--app-builder-canvas-font-family': "'IBM Plex Sans', sans-serif",
+      '--app-builder-canvas-font-family': "'IBM Plex Sans'",
       '--app-builder-small-font-size': '12px',
     });
   });

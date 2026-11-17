@@ -273,7 +273,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
         >
           +
         </button>
-        <Tooltip id="tooltip-for-add-row" className="tooltip" />
+        <Tooltip id="tooltip-for-add-row" className="tooltip tj-widget-overlay" />
       </div>
       <div className="card-footer d-flex custom-gap-4">
         <ButtonSolid
