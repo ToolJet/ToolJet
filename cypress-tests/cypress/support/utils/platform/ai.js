@@ -3,8 +3,12 @@ import { aiSelectors } from "Selectors/platform/ai";
 import { aiText } from "Texts/platform/ai";
 
 
-export const navigateToLlmKeyPage = () => {
-  cy.visit("/settings/llm-key");
+export const navigateToLlmKeyPage = (workspaceId = Cypress.env("workspaceId")) => {
+  cy.visit(
+    Cypress.env("environment") === "Cloud"
+      ? `/${workspaceId}/settings/llm-key`
+      : "/settings/llm-key"
+  );
   cy.get('[data-cy="card-title"]').should("be.visible").and('contain.text', aiText.llmKeyCardTitle);
 };
 
@@ -199,4 +203,17 @@ export const verifyFixWithAiInStyles = (appName, options = {}) => {
     cy.get('.tw-text-text-default.tw-mb-2').should("contain.text", "backgroundColor");
   }
   cy.apiDeleteApp();
+};
+
+
+// Cloud: log the signup admin back in and give the test a new workspace of its own, so its plan
+// is set before the server caches a licence for it. A Cloud user can own at most 5 workspaces.
+export const createFreshCloudWorkspace = (adminEmail, loginWorkspaceId, password = "password") => {
+  const name = `cloud-ai-${Date.now()}`;
+  cy.apiLogin(adminEmail, password, loginWorkspaceId);
+  return cy.apiCreateWorkspace(name, name).then(({ body }) => {
+    const workspaceId = body.organization_id || body.id;
+    Cypress.env("workspaceId", workspaceId);
+    return workspaceId;
+  });
 };

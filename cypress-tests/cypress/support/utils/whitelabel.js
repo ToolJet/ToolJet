@@ -5,7 +5,18 @@ import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { openInstanceSettings } from "Support/utils/platform/eeCommon";
 import { whitelabelTestData } from "Constants/constants/whitelabel";
 
-export const openWhiteLabelingSettings = () => {
+export const openWhiteLabelingSettings = (
+  workspaceId = Cypress.env("workspaceId")
+) => {
+  // Cloud keeps white labelling per workspace under /:workspaceId/settings
+  if (Cypress.env("environment") === "Cloud") {
+    cy.intercept("PUT", `**/api/white-labelling/${workspaceId}`).as(
+      "saveWhitelabel"
+    );
+    cy.visit(`/${workspaceId}/settings/white-labelling`);
+    cy.get(whiteLabelSelectors.appLogoInput).should("be.visible");
+    return;
+  }
   cy.intercept("PUT", "**/api/white-labelling").as("saveWhitelabel");
   openInstanceSettings();
   cy.get(whiteLabelSelectors.navWhiteLabellingListItem).click();
@@ -59,11 +70,15 @@ export const verifyWhiteLabelingUI = () => {
 export const fillWhiteLabelingForm = (
   logo = whitelabelTestData.logo,
   pageTitle = whitelabelTestData.pageTitle,
-  favicon = whitelabelTestData.favicon
+  favicon = whitelabelTestData.favicon,
+  loginBanner
 ) => {
   cy.clearAndType(whiteLabelSelectors.appLogoInput, logo);
   cy.clearAndType(whiteLabelSelectors.pageTitleInput, pageTitle);
   cy.clearAndType(whiteLabelSelectors.favIconInput, favicon);
+  if (loginBanner !== undefined) {
+    cy.clearAndType(whiteLabelSelectors.loginBannerInput, loginBanner);
+  }
 };
 
 export const saveWhiteLabelingChanges = () => {
@@ -212,9 +227,16 @@ export const verifyInvitationEmail = (
 export const verifyWhiteLabelInputs = (
   logo = whitelabelTestData.logo,
   pageTitle = whitelabelTestData.pageTitle,
-  favicon = whitelabelTestData.favicon
+  favicon = whitelabelTestData.favicon,
+  loginBanner
 ) => {
   const decodeValue = (val) => val.replace(/&amp;/g, "&");
+
+  if (loginBanner !== undefined) {
+    cy.get(whiteLabelSelectors.loginBannerInput)
+      .invoke("val")
+      .then((val) => expect(decodeValue(val)).to.eq(loginBanner));
+  }
 
   cy.get(whiteLabelSelectors.appLogoInput)
     .invoke("val")
