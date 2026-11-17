@@ -7,7 +7,7 @@ Describe the app you need, and ToolJet AI plans it, builds it on the canvas with
 
 <img className="screenshot-full img-full" src="/img/tooljet-ai/generate-app/app-v2.png" alt="An app built by ToolJet AI on the canvas, with the AI chat beside it" />
 
-<!-- TODO screenshot: /img/tooljet-ai/generate-app/app-v3.png | img-full | alt: An app that ToolJet AI just built on the canvas, with the AI chat beside it showing the build's summary, what it built and what you could do next | shows: replaces app-v2.png above, which shows the old chat: a finished first build of a visual app in the App Builder with the AI chat open on the summary line (Built in m:ss, n steps), What I built and the numbered What you could do next buttons -->
+<img className="screenshot-full img-full" src="/img/tooljet-ai/generate-app/app-v3.png" alt="An app that ToolJet AI just built on the canvas, with the AI chat beside it showing the build's summary, what it built and what you could do next" />
 
 :::info
 This page covers **Start with a prompt**, the AI built into ToolJet. To build the same apps from Claude Code, Codex, or another coding agent, see [ToolJet MCP](./mcp/app-generation.md) instead.

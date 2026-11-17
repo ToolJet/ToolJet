@@ -34,7 +34,7 @@ Each one changes the primary color, the app background and the surfaces, in ligh
 2. Under **Canvas styles**, open the **Theme** dropdown. Each theme has a swatch of its primary color.
 3. Select a theme, for example **ToolJet Navy**.
 
-<!-- TODO screenshot: /img/app-builder/custom-theme/theme-dropdown-built-in.png | img-m | alt: The Theme dropdown in Global settings listing ToolJet and the seven built-in themes, each with a swatch of its primary color | shows: Carrier Directory in the App Builder with Global settings open, Canvas styles expanded and the Theme dropdown open, eight themes with swatches and the Default pill on ToolJet -->
+<img className="screenshot-full img-s" src="/img/app-builder/custom-theme/theme-dropdown-built-in.png" alt="The Theme dropdown open in Global settings with ToolJet Navy selected, each theme shown with a swatch of its primary color and the workspace default marked Default" />
 
 Components that [take their colors from the theme](#3-use-theme-styles-in-your-components) switch to the new palette. To start every new app on a built-in theme, make it the workspace default under [Manage Themes](#manage-themes).
 
