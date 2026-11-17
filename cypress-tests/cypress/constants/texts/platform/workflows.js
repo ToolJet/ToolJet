@@ -138,6 +138,7 @@ export const inputsText = {
   booleanDefault: "Default value must be true or false",
   arrayDefault: "Default value must be a valid JSON array",
   objectDefault: "Default value must be a valid JSON object",
+  objectShapeDefault: "Default value must be an object",
   runDialogTitle: "Run workflow",
   noInputsConfigured: "No workflow inputs configured",
   requiredError: (name) => `Parameter "${name}" is required`,

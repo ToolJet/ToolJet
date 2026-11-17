@@ -248,7 +248,7 @@ describe("Workflows - workflow inputs", SLOW_API, () => {
 
     pickSelectOption(typeControl, "object");
     card(0).find(inputsSelector.defaultValue).clear().type("[1]");
-    card(0).find(inputsSelector.error).should("contain.text", inputsText.objectDefault);
+    card(0).find(inputsSelector.error).should("contain.text", inputsText.objectShapeDefault);
     invalidDefaultNotSaved("object");
 
     card(0).find(inputsSelector.defaultValue).clear().type("{{}}");
