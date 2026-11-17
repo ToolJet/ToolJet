@@ -1,5 +1,5 @@
 /** @group platform */
-import { DropAppVersionReviewVersionForeignKeys1793500000000 as Migration } from '../../../../migrations/1793500000000-DropAppVersionReviewVersionForeignKeys';
+import { DropAppVersionReviewVersionForeignKeys1793500000000 as Migration } from '../../../../migrations/schema/1793500000000-DropAppVersionReviewVersionForeignKeys';
 
 // A review is kept, marked invalid, when a version it points at is deleted. With the original foreign keys the
 // database got there first: ON DELETE CASCADE dropped a review whose version was deleted, and ON DELETE SET NULL
