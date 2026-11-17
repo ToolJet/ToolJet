@@ -88,30 +88,51 @@ describe("Canvas matches the Viewer", { testIsolation: false }, () => {
   before(seed);
   after(() => cy.apiDeleteApp(Cypress.env("parityAppId")));
 
-  forEachTheme((theme) =>
-    it(`[golden-rule] widgets and their overlays render the same in the editor and the Viewer (${theme})`, () => {
-      // The canvas and the Viewer both follow the app's own theme; the builder theme matches it here.
-      api("PUT", `/v2/apps/${Cypress.env("parityAppId")}/versions/${Cypress.env("parityVersionId")}/global_settings`, {
-        globalSettings: { appMode: theme },
-      });
-      cy.viewport(1440, 960);
-      cy.window().then((win) => win.localStorage.setItem("darkMode", String(theme === "dark")));
-      const editor = {};
-      const viewer = {};
-      cy.openApp("", Cypress.env("workspaceId"), Cypress.env("parityAppId"), '[data-cy="draggable-widget-button1"]');
-      collect(editor);
-      cy.then(() => cy.visit(`/applications/${Cypress.env("parityAppId")}/home?version=v1&env=development`));
-      collect(viewer);
-      cy.then(() =>
-        cy.writeFile(`${EVIDENCE_DIR}/parity/${theme}.json`, `${JSON.stringify({ run: EVIDENCE_RUN, editor, viewer }, null, 2)}\n`)
+  // Workspace custom CSS lands in both the editor and the Viewer; an app font set on <body> must reach
+  // the canvas as it reaches the Viewer.
+  const APP_FONT = "body { font-family: Georgia, serif; }";
+  const withAppFont = (appFont) =>
+    appFont &&
+    cy.document().then((doc) => {
+      const style = doc.createElement("style");
+      style.textContent = appFont;
+      doc.head.appendChild(style);
+    });
+
+  const compare = (theme, label, appFont) => {
+    // The canvas and the Viewer both follow the app's own theme; the builder theme matches it here.
+    api("PUT", `/v2/apps/${Cypress.env("parityAppId")}/versions/${Cypress.env("parityVersionId")}/global_settings`, {
+      globalSettings: { appMode: theme },
+    });
+    cy.viewport(1440, 960);
+    cy.window().then((win) => win.localStorage.setItem("darkMode", String(theme === "dark")));
+    const editor = {};
+    const viewer = {};
+    cy.openApp("", Cypress.env("workspaceId"), Cypress.env("parityAppId"), '[data-cy="draggable-widget-button1"]');
+    withAppFont(appFont);
+    collect(editor);
+    cy.then(() => cy.visit(`/applications/${Cypress.env("parityAppId")}/home?version=v1&env=development`));
+    withAppFont(appFont);
+    collect(viewer);
+    cy.then(() =>
+      cy.writeFile(`${EVIDENCE_DIR}/parity/${label}.json`, `${JSON.stringify({ run: EVIDENCE_RUN, editor, viewer }, null, 2)}\n`)
+    );
+    cy.then(() => {
+      // Styles only: cell text can differ for data reasons (the evidence file keeps it).
+      const styles = (rows) => (rows || []).map(([, style]) => style);
+      Object.keys(viewer).forEach((key) =>
+        expect(styles(editor[key]), `${key} (${label})`).to.deep.equal(styles(viewer[key]))
       );
-      cy.then(() => {
-        // Styles only: cell text can differ for data reasons (the evidence file keeps it).
-        const styles = (rows) => (rows || []).map(([, style]) => style);
-        Object.keys(viewer).forEach((key) =>
-          expect(styles(editor[key]), `${key} (${theme})`).to.deep.equal(styles(viewer[key]))
-        );
-      });
-    })
+    });
+  };
+
+  forEachTheme((theme) =>
+    it(`[golden-rule] widgets and their overlays render the same in the editor and the Viewer (${theme})`, () =>
+      compare(theme, theme)
+    )
+  );
+
+  it("[golden-rule] an app font from custom CSS reaches the canvas as it reaches the Viewer", () =>
+    compare("light", "app-font", APP_FONT)
   );
 });
