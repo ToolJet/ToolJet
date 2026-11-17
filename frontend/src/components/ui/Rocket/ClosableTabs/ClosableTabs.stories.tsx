@@ -42,7 +42,7 @@ export default {
 
 export const Default = { render: () => <Interactive names={NAMES} width={960} /> };
 
-// Tabs shrink to 128px, then the list scrolls; a chevron shows on each side that has hidden tabs.
+// Tabs shrink to 128px, then the list scrolls; a chevron is enabled on each side that has hidden tabs.
 export const Overflow = { render: () => <Interactive names={MANY} width={720} /> };
 
 export const TopIndicator = { render: () => <Interactive names={NAMES} width={960} indicator="top" /> };

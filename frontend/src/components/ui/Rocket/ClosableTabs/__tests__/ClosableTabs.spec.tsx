@@ -107,46 +107,35 @@ describe('ClosableTabs | indicator', () => {
 });
 
 describe('ClosableTabs | overflow', () => {
-  it('shows no chevrons while every tab fits', () => {
+  const left = () => screen.getByRole('button', { name: 'Scroll tabs left' });
+  const right = () => screen.getByRole('button', { name: 'Scroll tabs right' });
+
+  it('shows both chevrons, disabled, while every tab fits', () => {
     const restore = mockLayout({ clientWidth: 600, scrollWidth: 600 });
     render(<Harness />);
 
-    expect(screen.queryByRole('button', { name: 'Scroll tabs left' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Scroll tabs right' })).not.toBeInTheDocument();
+    expect(left()).toBeDisabled();
+    expect(right()).toBeDisabled();
     restore();
   });
 
-  it('shows only the right chevron at the start, and only the left one at the end', () => {
+  it('enables only the right chevron at the start, and only the left one at the end', () => {
     const restore = mockLayout({ clientWidth: 300, scrollWidth: 600 });
     render(<Harness />);
 
-    expect(screen.getByRole('button', { name: 'Scroll tabs right' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Scroll tabs left' })).not.toBeInTheDocument();
+    expect(left()).toBeDisabled();
+    expect(right()).toBeEnabled();
 
     const list = screen.getByRole('tablist');
     list.scrollLeft = 300;
     fireEvent.scroll(list);
 
-    expect(screen.getByRole('button', { name: 'Scroll tabs left' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Scroll tabs right' })).not.toBeInTheDocument();
+    expect(left()).toBeEnabled();
+    expect(right()).toBeDisabled();
     restore();
   });
 
-  it('keeps the room of a chevron that has nothing left to scroll to, so the tabs do not jump', () => {
-    const restore = mockLayout({ clientWidth: 300, scrollWidth: 600 });
-    render(<Harness />);
-
-    const list = screen.getByRole('tablist');
-    list.scrollLeft = 300;
-    fireEvent.scroll(list);
-
-    const hiddenRight = screen.getByRole('button', { name: 'Scroll tabs right', hidden: true });
-    expect(hiddenRight).toBeDisabled();
-    expect(hiddenRight.parentElement).toHaveAttribute('aria-hidden', 'true');
-    restore();
-  });
-
-  it('shows both chevrons in the middle', () => {
+  it('enables both chevrons in the middle', () => {
     const restore = mockLayout({ clientWidth: 300, scrollWidth: 900 });
     render(<Harness />);
 
@@ -154,8 +143,8 @@ describe('ClosableTabs | overflow', () => {
     list.scrollLeft = 200;
     fireEvent.scroll(list);
 
-    expect(screen.getByRole('button', { name: 'Scroll tabs left' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Scroll tabs right' })).toBeInTheDocument();
+    expect(left()).toBeEnabled();
+    expect(right()).toBeEnabled();
     restore();
   });
 });

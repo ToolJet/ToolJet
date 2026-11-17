@@ -37,7 +37,7 @@ export interface ClosableTabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 
 }
 
 const SCROLL_STEP = 200;
-// Sub-pixel scroll positions would otherwise leave a chevron showing at the very end.
+// Sub-pixel scroll positions would otherwise leave a chevron enabled at the very end.
 const EDGE_TOLERANCE = 1;
 
 function Divider() {
@@ -48,21 +48,9 @@ function Divider() {
   );
 }
 
-// A chevron and its divider. While the list cannot scroll that way it is hidden, but still takes its room.
-function ScrollSlot({ hidden, children }: { hidden: boolean; children: ReactNode }) {
-  return (
-    <div
-      aria-hidden={hidden || undefined}
-      className={cn('tw-flex tw-shrink-0 tw-items-center tw-gap-1', hidden && 'tw-invisible')}
-    >
-      {children}
-    </div>
-  );
-}
-
-// Tabs that close. Each is 200px wide and shrinks to 128px before the list scrolls; a chevron (with a divider) shows on
-// a side only while tabs are hidden past that side. Fills whatever room its parent gives it, so put it in a flex row and
-// let the other items be `shrink-0`.
+// Tabs that close. Each is 200px wide and shrinks to 128px before the list scrolls. A chevron (with a divider) always
+// sits on each side; it is disabled while no tabs are hidden past that side. Fills whatever room its parent gives it, so
+// put it in a flex row and let the other items be `shrink-0`.
 const ClosableTabs = forwardRef<HTMLDivElement, ClosableTabsProps>(function ClosableTabs(
   {
     tabs,
@@ -80,29 +68,15 @@ const ClosableTabs = forwardRef<HTMLDivElement, ClosableTabsProps>(function Clos
 ) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef(new Map<string, HTMLButtonElement>());
-  // `overflowing` decides whether the two chevron slots take room at all; `edges` only says which one is usable.
-  // Once the tabs overflow both slots stay in the layout (the one at the end is hidden, not removed). Removing it would
-  // widen the list under the user's scroll and make the tabs jump.
-  const [view, setView] = useState({ overflowing: false, left: false, right: false });
-  const overflowingRef = useRef(false);
+  const [canScroll, setCanScroll] = useState({ left: false, right: false });
 
   const measure = useCallback(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
     const { scrollLeft, clientWidth, scrollWidth } = scroller;
-    const wasOverflowing = overflowingRef.current;
-    // Room the slots take from the list: root minus list. Overflow only ends once the tabs fit without the slots;
-    // ending it earlier would widen the list, put the tabs back into overflow, and the chevrons would flicker.
-    const slots = wasOverflowing ? (scroller.parentElement?.clientWidth ?? 0) - clientWidth : 0;
-    const overflowing = wasOverflowing ? scrollWidth > clientWidth + slots : scrollWidth > clientWidth + EDGE_TOLERANCE;
-    overflowingRef.current = overflowing;
-    const left = overflowing && scrollLeft > EDGE_TOLERANCE;
-    const right = overflowing && scrollLeft + clientWidth < scrollWidth - EDGE_TOLERANCE;
-    setView((previous) =>
-      previous.overflowing === overflowing && previous.left === left && previous.right === right
-        ? previous
-        : { overflowing, left, right }
-    );
+    const left = scrollLeft > EDGE_TOLERANCE;
+    const right = scrollLeft + clientWidth < scrollWidth - EDGE_TOLERANCE;
+    setCanScroll((previous) => (previous.left === left && previous.right === right ? previous : { left, right }));
   }, []);
 
   useLayoutEffect(measure, [measure, tabs]);
@@ -146,21 +120,18 @@ const ClosableTabs = forwardRef<HTMLDivElement, ClosableTabsProps>(function Clos
 
   return (
     <div ref={ref} className={cn('tw-flex tw-min-w-0 tw-items-center tw-gap-1', className)} {...props}>
-      {view.overflowing && (
-        <ScrollSlot hidden={!view.left}>
-          <Button
-            variant="ghost"
-            size="medium"
-            iconOnly
-            aria-label={scrollLeftLabel}
-            disabled={!view.left}
-            onClick={() => scrollBy(-1)}
-          >
-            <ChevronLeft />
-          </Button>
-          <Divider />
-        </ScrollSlot>
-      )}
+      <Button
+        variant="ghost"
+        size="medium"
+        iconOnly
+        aria-label={scrollLeftLabel}
+        disabled={!canScroll.left}
+        onClick={() => scrollBy(-1)}
+        className="tw-shrink-0"
+      >
+        <ChevronLeft />
+      </Button>
+      <Divider />
       <div
         ref={scrollerRef}
         role="tablist"
@@ -244,21 +215,18 @@ const ClosableTabs = forwardRef<HTMLDivElement, ClosableTabsProps>(function Clos
           );
         })}
       </div>
-      {view.overflowing && (
-        <ScrollSlot hidden={!view.right}>
-          <Divider />
-          <Button
-            variant="ghost"
-            size="medium"
-            iconOnly
-            aria-label={scrollRightLabel}
-            disabled={!view.right}
-            onClick={() => scrollBy(1)}
-          >
-            <ChevronRight />
-          </Button>
-        </ScrollSlot>
-      )}
+      <Divider />
+      <Button
+        variant="ghost"
+        size="medium"
+        iconOnly
+        aria-label={scrollRightLabel}
+        disabled={!canScroll.right}
+        onClick={() => scrollBy(1)}
+        className="tw-shrink-0"
+      >
+        <ChevronRight />
+      </Button>
     </div>
   );
 });
