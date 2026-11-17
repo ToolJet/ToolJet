@@ -12,7 +12,7 @@ export interface CreateTableDrawerProps {
 
 // Controlled: whoever has a "Create new table" button owns the open state. A created table becomes the open one.
 export default function CreateTableDrawer({ isOpen, onClose }: CreateTableDrawerProps) {
-  const { organizationId, setSelectedTable, setTables } = useTooljetDatabaseContext();
+  const { organizationId, openTable, setTables } = useTooljetDatabaseContext();
 
   const handleCreated = (tableInfo: TjdbTable) => {
     tooljetDatabaseService
@@ -23,8 +23,8 @@ export default function CreateTableDrawer({ isOpen, onClose }: CreateTableDrawer
           return;
         }
         if (Array.isArray(data?.result) && data.result.length > 0) {
-          setSelectedTable({ table_name: tableInfo.table_name, id: tableInfo.id });
           setTables(data.result);
+          openTable({ table_name: tableInfo.table_name, id: tableInfo.id });
         }
       });
     onClose();

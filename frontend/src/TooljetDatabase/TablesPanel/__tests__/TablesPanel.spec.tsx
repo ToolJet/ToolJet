@@ -11,6 +11,8 @@ import {
 } from '@/TooljetDatabase/TooljetDatabaseContext';
 import { SCHEMA_ENV_TOOLTIP } from '@/TooljetDatabase/constants';
 import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
+import { useOpenTabs } from '../useOpenTabs';
+import { useTablesLimit } from '../useTablesLimit';
 import { TablesPanel } from '../TablesPanel';
 
 // jsdom has no layout, so focus-trap finds no tabbable node and throws. External adapter, not product logic.
@@ -85,6 +87,8 @@ function Harness({ canEditTjdb = true, canEditSchema = true, onCollapse = () => 
   const [selectedTable, setSelectedTable] = useState<Partial<TjdbTable>>({});
   const [tablesLoaded, setTablesLoaded] = useState(false);
   const [loadingState, setLoadingState] = useState(false);
+  const tabs = useOpenTabs({ organizationId: 'org-1', tables, selectedTable, setSelectedTable });
+  const { reached: tablesLimitReached } = useTablesLimit(tables.length, tablesLoaded);
   const value = {
     organizationId: 'org-1',
     canEditTjdb,
@@ -93,6 +97,8 @@ function Harness({ canEditTjdb = true, canEditSchema = true, onCollapse = () => 
     setTables,
     selectedTable,
     setSelectedTable,
+    ...tabs,
+    tablesLimitReached,
     tablesLoaded,
     setTablesLoaded,
     loadingState,
@@ -121,15 +127,21 @@ const openMenuOf = async (name: string) => {
   return screen.findByRole('menu');
 };
 
+// The tabs a previous visit left in this browser.
+const saveTabs = (ids: string[], activeId: string | null) =>
+  window.localStorage.setItem('tjdb-open-tabs:org-1', JSON.stringify({ ids, activeId }));
+
 beforeEach(() => {
   window.localStorage.clear();
+  // Most tests start with orders open; the ones about a fresh visit clear it.
+  saveTabs([ORDERS.id], ORDERS.id);
   window.URL.createObjectURL = jest.fn(() => 'blob:export');
   window.URL.revokeObjectURL = jest.fn();
   useTjdbStore.setState({ migrationsVersion: 0 });
 });
 
 describe('TablesPanel | list', () => {
-  it('shows the title, the tables and their count, with the first table open', async () => {
+  it('shows the title, the tables and their count, with the saved tab open', async () => {
     serve();
     render(<Harness />);
 
@@ -141,6 +153,31 @@ describe('TablesPanel | list', () => {
     await waitFor(() => expect(openTable()).toHaveTextContent('orders'));
     expect(row('orders')).toHaveAttribute('aria-current', 'true');
     expect(row('users')).not.toHaveAttribute('aria-current');
+  });
+
+  it('opens no table on a first visit', async () => {
+    window.localStorage.clear();
+    serve();
+    render(<Harness />);
+    await screen.findByRole('button', { name: 'orders' });
+
+    expect(openTable()).toHaveTextContent('');
+    expect(row('orders')).not.toHaveAttribute('aria-current');
+  });
+
+  it('opens the table the link names, on top of the saved tabs', async () => {
+    serve();
+    render(<Harness />, { route: `/workspace/database?table=${USERS.id}` });
+
+    await waitFor(() => expect(openTable()).toHaveTextContent('users'));
+  });
+
+  it('drops a saved tab whose table no longer exists', async () => {
+    saveTabs(['gone-id', USERS.id], 'gone-id');
+    serve();
+    render(<Harness />);
+
+    await waitFor(() => expect(openTable()).toHaveTextContent('users'));
   });
 
   it('opens the table App Builder handed over, and clears the handoff', async () => {
@@ -320,7 +357,8 @@ describe('TablesPanel | delete table', () => {
     expect(useTjdbStore.getState().migrationsVersion).toBe(1);
   });
 
-  it('moves to the first table when the open table is the one deleted', async () => {
+  it('moves to the neighbouring tab when the open table is the one deleted', async () => {
+    saveTabs([ORDERS.id, USERS.id], ORDERS.id);
     serve();
     render(<Harness />);
     await waitFor(() => expect(openTable()).toHaveTextContent('orders'));
@@ -330,5 +368,18 @@ describe('TablesPanel | delete table', () => {
     await userEvent.click(await screen.findByRole('button', { name: /delete/i }));
 
     await waitFor(() => expect(openTable()).toHaveTextContent('users'));
+  });
+
+  it('leaves no table open when the only open table is the one deleted', async () => {
+    serve();
+    render(<Harness />);
+    await waitFor(() => expect(openTable()).toHaveTextContent('orders'));
+
+    await openMenuOf('orders');
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Delete table' }));
+    await userEvent.click(await screen.findByRole('button', { name: /delete/i }));
+
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'orders' })).not.toBeInTheDocument());
+    expect(openTable()).toHaveTextContent('');
   });
 });

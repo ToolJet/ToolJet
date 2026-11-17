@@ -4,6 +4,7 @@ import React, { useContext, ReactNode, Dispatch, SetStateAction } from 'react';
 // `useContext(TooljetDatabaseContext)` and `useTooljetDatabaseContext()` therefore resolve against
 // the same provider.
 import { TooljetDatabaseContext } from './context';
+import type { OpenTabs } from './TablesPanel/useOpenTabs';
 
 /** A table as the page holds it. The open table is `{}` while none is open. */
 export type TjdbTable = { id: string; table_name: string };
@@ -15,12 +16,21 @@ export type TooljetDatabaseContextValue = {
   setOrganizationId: Dispatch<SetStateAction<string | null>>;
   selectedTable: Partial<TjdbTable>;
   setSelectedTable: Dispatch<SetStateAction<Partial<TjdbTable>>>;
+  /** Tables open in tabs, in tab order. The active one is `selectedTable`. */
+  openTabIds: string[];
+  openTable: OpenTabs['openTable'];
+  closeTab: OpenTabs['closeTab'];
+  closeOtherTabs: OpenTabs['closeOtherTabs'];
+  closeAllTabs: OpenTabs['closeAllTabs'];
+  applyTables: OpenTabs['applyTables'];
   selectedTableData: unknown[];
   setSelectedTableData: Dispatch<SetStateAction<unknown[]>>;
   tables: unknown[];
   setTables: Dispatch<SetStateAction<unknown[]>>;
   tablesLoaded: boolean;
   setTablesLoaded: Dispatch<SetStateAction<boolean>>;
+  /** The workspace has used all the tables its plan allows. Read once per page, in `index.jsx`. */
+  tablesLimitReached: boolean;
   columns: unknown[];
   setColumns: Dispatch<SetStateAction<unknown[]>>;
   totalRecords: number;

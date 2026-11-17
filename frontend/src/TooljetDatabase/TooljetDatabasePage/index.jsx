@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import cx from 'classnames';
 import Table from '../Table';
-import { PanelLeftOpen } from 'lucide-react';
-import { Button } from '@/components/ui/Rocket/Button/Button';
+import { Table as TableIcon } from 'lucide-react';
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/Rocket/Empty/Empty';
 import { TablesPanel } from '../TablesPanel/TablesPanel';
+import { TableTabStrip } from '../TablesPanel/TableTabStrip';
 import CreateTableDrawer from '../Drawers/CreateTableDrawer';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import Warning from '../Icons/warning.svg';
@@ -104,24 +105,22 @@ const TooljetDatabasePage = ({ totalTables }) => {
       {!isPanelCollapsed && <TablesPanel onCollapse={() => setIsPanelCollapsed(true)} />}
       <div
         className={cx('tw-min-w-0 tw-flex-1 animation-fade database-page-content-wrap vh-100')}
-        style={isPanelCollapsed ? { '--tjdb-above-table': '48px' } : undefined}
+        style={{ '--tjdb-above-table': '48px' }}
       >
-        {isPanelCollapsed && (
-          <div className="tw-flex tw-h-12 tw-items-center tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-pl-2">
-            <Button
-              variant="ghost"
-              size="medium"
-              iconOnly
-              aria-label="Expand tables panel"
-              data-cy="expand-tables-panel"
-              onClick={() => setIsPanelCollapsed(false)}
-            >
-              <PanelLeftOpen />
-            </Button>
-          </div>
-        )}
+        <TableTabStrip panelCollapsed={isPanelCollapsed} onExpandPanel={() => setIsPanelCollapsed(false)} />
         {totalTables === 0 && !loadingState && <EmptyState />}
         {totalTables === 0 && loadingState && <LoadingState />}
+        {totalTables > 0 && isEmpty(selectedTable) && (
+          <Empty data-cy="no-table-open">
+            <EmptyMedia variant="icon">
+              <TableIcon />
+            </EmptyMedia>
+            <EmptyHeader>
+              <EmptyTitle>No table open</EmptyTitle>
+              <EmptyDescription>Pick a table from the panel, or use + to open or create one.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        )}
         {!isEmpty(selectedTable) && (
           <div className={cx('col')}>
             <Table />

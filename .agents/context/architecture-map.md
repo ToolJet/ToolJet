@@ -102,6 +102,8 @@ sequenceDiagram
 
 Raw SQL and seed-data migrations (`TooljetDbRawSqlMigrationService`) let an authenticated org member run arbitrary SQL against a table's tenant schema; the SQL commit (tenant DB) and the migration-record commit (main DB) are two independent transactions, so a crash between them is a known, currently-undetected gap (main DB's migration row can end up confirmed for tenant-DB SQL that never committed). Environment promote/replay walks these recorded migrations across environments in sequence.
 
+On the frontend, the database page (`frontend/src/TooljetDatabase/`) keeps its open-table tabs in React state (`useOpenTabs`) and mirrors them to browser `localStorage` (`tjdb-open-tabs:<workspaceId>`) and the `?table=<id>` query param; there is no server-side tab state.
+
 ### 5. Queue and execute background work
 
 Nest schedules and BullMQ share Redis configuration from `AppModuleLoader`. Workflow scheduling/execution queues are registered in `server/src/modules/workflows/module.ts`; processors and schedule bootstrap are registered only when `WORKER=true`. `npm run worker:prod` starts the same compiled server entry with that flag. The non-Cloud deployment also exposes Bull Board under `/jobs`, protected by configured basic authentication. **Boundary:** public workflow contracts are present, but some CE webhook methods throw `Method not implemented`, so full behavior is edition-dependent.

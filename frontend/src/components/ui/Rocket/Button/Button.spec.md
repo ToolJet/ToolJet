@@ -63,6 +63,8 @@ Medium padding and gap follow the Dashboards file (Text button, 28px: px 10, gap
 | secondary | shadow | default | Elevations/100 | tw-shadow-elevation-100 |
 | secondary+danger | border | default | border/danger-weak | tw-border-border-danger-weak |
 | secondary+danger | text + icon | default | icon/danger | tw-text-text-danger |
+| ghost (iconOnly) | icon | default | icon/strong | tw-text-icon-strong |
+| ghost (iconOnly) | icon | disabled | icon/disabled | disabled:tw-text-icon-disabled (full opacity) |
 | ghost | background | hover | — | hover:tw-bg-interactive-hover |
 | ghost | background | pressed | — | active:tw-bg-interactive-selected |
 | ghost | text + icon | default | icon/strong | tw-text-text-medium |

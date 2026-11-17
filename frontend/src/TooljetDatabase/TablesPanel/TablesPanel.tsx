@@ -18,7 +18,6 @@ import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import { TableRow } from './TableRow';
 import { useTableActions } from './TableActionsHost';
 import { useTables } from './useTables';
-import { useTablesLimit } from './useTablesLimit';
 
 export interface TablesPanelProps {
   /** Hides the panel. Showing it again is the page's job. */
@@ -28,11 +27,10 @@ export interface TablesPanelProps {
 // The left panel of the database page: lists the workspace's tables, searches them, creates one, and carries each
 // table's row menu.
 export function TablesPanel({ onCollapse }: TablesPanelProps) {
-  const { selectedTable, setSelectedTable, canEditTjdb, canEditSchema } = useTooljetDatabaseContext();
+  const { selectedTable, openTable, canEditTjdb, canEditSchema, tablesLimitReached } = useTooljetDatabaseContext();
   const { tables, loading, refetch } = useTables();
-  const { reached: tablesLimitReached } = useTablesLimit(tables);
-  // After a delete, keep the open table unless it was the one deleted.
-  const { run, host } = useTableActions({ refetchTables: () => refetch({ keepOpenTable: true }) });
+  // After a delete the open tabs drop the deleted table on their own.
+  const { run, host } = useTableActions({ refetchTables: refetch });
   const [query, setQuery] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -107,7 +105,7 @@ export function TablesPanel({ onCollapse }: TablesPanelProps) {
             key={table.id}
             table={table}
             selected={table.id === selectedTable.id}
-            onSelect={(next) => setSelectedTable({ table_name: next.table_name, id: next.id })}
+            onSelect={openTable}
             onAction={run}
             canEditTjdb={canEditTjdb}
             canEditSchema={canEditSchema}

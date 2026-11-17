@@ -8,6 +8,8 @@ import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import { TooljetDatabaseContext } from './context';
 import { TooljetDatabaseProvider } from './TooljetDatabaseContext';
 import TjdbHeaderEnvironment from './HeaderEnvironment';
+import { useOpenTabs } from './TablesPanel/useOpenTabs';
+import { useTablesLimit } from './TablesPanel/useTablesLimit';
 import { useHeaderSearchConfig } from '@/_hooks/useHeaderSearchConfig';
 import { useTjdbActions, useIsDevelopmentEnvironment } from './_stores/tjdbStore';
 import './styles/styles.scss';
@@ -23,6 +25,13 @@ const TooljetDatabase = () => {
   // `tables` starts empty, so "no tables yet" and "workspace has none" look the same until the first list fetch succeeds.
   const [tablesLoaded, setTablesLoaded] = useState(false);
   const [selectedTable, setSelectedTable] = useState({});
+  const { reached: tablesLimitReached } = useTablesLimit(tables.length, tablesLoaded);
+  const { openTabIds, openTable, closeTab, closeOtherTabs, closeAllTabs, applyTables } = useOpenTabs({
+    organizationId,
+    tables,
+    selectedTable,
+    setSelectedTable,
+  });
   const [selectedTableData, setSelectedTableData] = useState([]);
 
   const [totalRecords, setTotalRecords] = useState(0);
@@ -78,10 +87,17 @@ const TooljetDatabase = () => {
       setTables,
       tablesLoaded,
       setTablesLoaded,
+      tablesLimitReached,
       columns,
       setColumns,
       selectedTable,
       setSelectedTable,
+      openTabIds,
+      openTable,
+      closeTab,
+      closeOtherTabs,
+      closeAllTabs,
+      applyTables,
       selectedTableData,
       setSelectedTableData,
       totalRecords,
@@ -106,8 +122,10 @@ const TooljetDatabase = () => {
       organizationId,
       tables,
       tablesLoaded,
+      tablesLimitReached,
       columns,
       selectedTable,
+      openTabIds,
       selectedTableData,
       totalRecords,
       foreignKeys,

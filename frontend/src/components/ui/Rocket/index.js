@@ -213,4 +213,5 @@ export {
   PopoverTrigger,
 } from './Popover/Popover';
 export { SearchInput } from './SearchInput/SearchInput';
+export { ClosableTabs } from './ClosableTabs/ClosableTabs';
 export { SidePanel, SidePanelHeader, SidePanelSection, SidePanelBody } from './SidePanel/SidePanel';

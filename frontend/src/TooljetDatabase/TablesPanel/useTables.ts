@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { useTooljetDatabaseContext, type TjdbTable } from '../TooljetDatabaseContext';
@@ -15,51 +15,30 @@ function takeTableDetailsHandoff(): TjdbTable | null {
   }
 }
 
-export interface FetchTablesOptions {
-  /** Keep the table that is open now, if it still exists, instead of opening the first one. */
-  keepOpenTable?: boolean;
-}
-
-// Owns the page's table list: loads it, decides which table is open, and keeps the open table's details merged in.
+// Owns the page's table list: loads it, hands it to the open tabs (which restore or prune themselves), and keeps the
+// open table's details merged in.
 export function useTables() {
-  const { organizationId, tables, selectedTable, setTables, setTablesLoaded, setSelectedTable, setLoadingState } =
+  const { organizationId, tables, selectedTable, setTables, setTablesLoaded, applyTables, setLoadingState } =
     useTooljetDatabaseContext();
   const [loading, setLoading] = useState(false);
 
-  const openTableRef = useRef(selectedTable);
-  openTableRef.current = selectedTable;
+  const fetchTables = useCallback(async () => {
+    setLoading(true);
+    setLoadingState(true);
+    const { error, data } = await tooljetDatabaseService.findAll(organizationId);
+    setLoading(false);
+    setLoadingState(false);
 
-  const fetchTables = useCallback(
-    async ({ keepOpenTable = false }: FetchTablesOptions = {}) => {
-      setLoading(true);
-      setLoadingState(true);
-      const { error, data } = await tooljetDatabaseService.findAll(organizationId);
-      setLoading(false);
-      setLoadingState(false);
+    if (error) {
+      toast.error(error?.message ?? 'Failed to fetch tables');
+      return;
+    }
 
-      if (error) {
-        toast.error(error?.message ?? 'Failed to fetch tables');
-        return;
-      }
-
-      setTablesLoaded(true);
-      const result: TjdbTable[] = data?.result ?? [];
-      if (result.length === 0) {
-        setTables([]);
-        setSelectedTable({});
-        return;
-      }
-
-      setTables(result);
-      const handoff = takeTableDetailsHandoff();
-      if (handoff) {
-        setSelectedTable(handoff);
-      } else if (!(keepOpenTable && result.some((table) => table.id === openTableRef.current.id))) {
-        setSelectedTable({ table_name: result[0].table_name, id: result[0].id });
-      }
-    },
-    [organizationId, setLoadingState, setSelectedTable, setTables, setTablesLoaded]
-  );
+    setTablesLoaded(true);
+    const result: TjdbTable[] = data?.result ?? [];
+    setTables(result);
+    applyTables(result, takeTableDetailsHandoff());
+  }, [organizationId, setLoadingState, applyTables, setTables, setTablesLoaded]);
 
   useEffect(() => {
     fetchTables();
