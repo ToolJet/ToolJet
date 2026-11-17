@@ -8,6 +8,8 @@ import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibra
 import { getLibraryComponentRuntime } from './LibraryComponent/inlineRuntime';
 import SdkComponentHost from './LibraryComponent/SdkComponentHost';
 import { compareBundleFor } from '@/AppBuilder/_helpers/codeModeHooks';
+import { hasCustomComponentAccess } from '@/AppBuilder/_helpers/customComponentAccess';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const DevBadge = ({ label }) => (
   <div className="tw-absolute tw-left-0 -tw-bottom-6 tw-h-5 tw-inline-flex tw-items-center tw-px-1 tw-py-0.5 tw-rounded-md tw-text-white tw-text-sm tw-font-medium tw-whitespace-nowrap tw-pointer-events-none tw-z-10 tw-bg-background-success-strong">
@@ -23,11 +25,8 @@ const LibraryComponent = ({ properties = {}, ...props }) => {
   const { libraryId, correlationId, componentName } = properties;
 
   const currentMode = useStore((state) => state.modeStore?.modules?.canvas?.currentMode ?? 'view');
-  const licensed = useStore(
-    (state) =>
-      state.license?.featureAccess?.customComponentLibraries === true ||
-      state.license?.featureAccess?.codeAppsDevTrack === true
-  );
+  const { moduleId } = useModuleContext();
+  const licensed = useStore((state) => hasCustomComponentAccess(state, moduleId));
 
   const effectiveRevision = useEffectiveLibraryRevision(correlationId);
   const isDevPin = Boolean(effectiveRevision?.startsWith?.('dev:'));
