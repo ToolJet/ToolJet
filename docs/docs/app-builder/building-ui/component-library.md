@@ -27,4 +27,23 @@ Components can be added to the canvas by dragging and dropping them onto the can
 | **Miscellaneous** | [Filepicker](/docs/widgets/file-picker/), [Code Editor](/docs/widgets/code-editor/), [Color Picker](/docs/widgets/color-picker/), [Bounded Box](/docs/widgets/bounded-box/), [QR Scanner](/docs/widgets/qr-scanner/) |
 | **Legacy** | [Modal](/docs/3.5.0-LTS/widgets/modal/), [Datetime Picker](/docs/widgets/datepicker/), [Radio Button](/docs/3.5.0-LTS/widgets/radio-button/), [Toggle Switch](/docs/3.5.0-LTS/widgets/toggle-switch/), [Dropdown](/docs/2.50.0-LTS/widgets/dropdown/), [Multiselect](/docs/widgets/multiselect/) |
 
-Components published to your workspace through [Custom Component Libraries](/docs/app-builder/custom-component-library/overview) appear in the **Custom** tab of the component library.
+## Choose a Component Library
+
+In the component library on the right (**Add new component**), the first tab's title is a picker for the library the app is built with, for example **Rocket 2.0**. Click it to switch between:
+
+| <div style={{ width:"180px"}}> Library </div> | <div style={{ width:"420px"}}> What It Is </div> |
+|:---------- | :---------- |
+| **ToolJet UI 1.0** | ToolJet's built-in components, listed in [Available Components](#available-components). |
+| **Rocket 2.0** | A component pack in the style of shadcn/ui: inputs, data tables, charts, forms, layouts and more. |
+| **Ant Design** | A component pack built on Ant Design. |
+| **Custom libraries** | Libraries published to your workspace through [Custom Component Libraries](/docs/app-builder/custom-component-library/overview). Listed only on plans that include them. |
+
+<img className="screenshot-full img-s" src="/img/app-builder/components/component-library-picker.png" alt="Add new component panel with the library picker open, listing ToolJet UI 1.0, Rocket 2.0 and Ant Design" />
+
+Rocket 2.0 and Ant Design ship with ToolJet, like its built-in components, so they need no setup. A pack's components are grouped into the same sections as the built-in ones, such as **Buttons**, **Data**, **Charts**, **Layouts** and **Text inputs**. Drag one onto the canvas and configure it from the **Properties** panel. Pack components follow the app's theme, including its brand colors, corner radius and font.
+
+- **New apps** start on **Rocket 2.0**. An app created before the picker existed starts on the library most of its components come from.
+- **The choice is saved with the app version.** When you ask ToolJet AI or an agent connected through the [ToolJet MCP server](/docs/build-with-ai/mcp/overview) to build the app, it builds with the library you picked. An app on a custom library is built with ToolJet UI 1.0 components.
+- **Switching libraries changes what the panel offers.** Components already on the canvas stay as they are, so one app can mix components from different libraries.
+
+If a pack component can't load, for example because its pack isn't installed on the server, the canvas shows the reason in place of the component.
