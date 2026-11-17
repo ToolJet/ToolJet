@@ -211,7 +211,8 @@ export const Stat = () => {
       displayName: 'Set secondary value',
       params: [{ handle: 'text', displayName: 'Change', defaultValue: '' }],
     },
-    (next: unknown) => setChange(text(next))
+    // As Set primary value: a number that is no figure (NaN, Infinity) sets nothing, not the word.
+    (next: unknown) => setChange(typeof next === 'number' && !Number.isFinite(next) ? '' : text(next))
   );
   // The Trend a change written as words points (a figure's own sign wins).
   ToolJet.useAction(
