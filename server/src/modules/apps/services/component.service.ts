@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
@@ -25,6 +26,8 @@ import { AbilityService } from '@modules/ability/interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
 import { AppsRepository } from '../repository';
 import * as _ from 'lodash';
+
+const MODULE_CONTAINER_BOTTOM_PADDING = 10;
 
 // Components whose list properties are sent whole by the editor; an incoming list replaces the stored one.
 const WHOLE_ARRAY_TYPES = [
@@ -249,6 +252,11 @@ export class ComponentsService implements IComponentsService {
           await manager.update(Component, { id: componentId }, { parent: resolvedParent });
         }
       }
+
+      // A resize of the container itself is the builder's choice; moving its children is not.
+      if (moduleContainerId && !(moduleContainerId in componenstLayoutDiff)) {
+        await this.fitModuleContainerToChildren(moduleContainerId, manager);
+      }
     });
 
     const operationTimestamp = Date.now();
@@ -340,6 +348,8 @@ export class ComponentsService implements IComponentsService {
 
       const transformedComponent: Component = new Component();
       transformedComponent.id = componentId;
+      // The component's identity across versions; never taken from the client, so a paste gets its own.
+      transformedComponent.co_relation_id = randomUUID();
       transformedComponent.name = componentData.name;
       transformedComponent.type = componentData.type;
       transformedComponent.parent = componentData.parent || null;
@@ -847,6 +857,30 @@ export class ComponentsService implements IComponentsService {
     }
     if (layoutsToInsert.length > 0) {
       await manager.save(Layout, layoutsToInsert);
+    }
+    if (moduleContainerId) {
+      await this.fitModuleContainerToChildren(moduleContainerId, manager);
+    }
+  }
+
+  /**
+   * Grows the ModuleContainer so every direct child sits inside it; a child placed below its
+   * bottom edge would be clipped from the module. Never shrinks it.
+   */
+  protected async fitModuleContainerToChildren(moduleContainerId: string, manager: EntityManager) {
+    const children = await manager.find(Component, { where: { parent: moduleContainerId }, select: ['id'] });
+    if (children.length === 0) return;
+    const childLayouts = await manager.find(Layout, { where: { componentId: In(children.map((child) => child.id)) } });
+    const containerLayouts = await manager.find(Layout, { where: { componentId: moduleContainerId } });
+    for (const containerLayout of containerLayouts) {
+      const bottoms = childLayouts
+        .filter((layout) => layout.type === containerLayout.type)
+        .map((layout) => (layout.top ?? 0) + (layout.height ?? 0));
+      if (bottoms.length === 0) continue;
+      const requiredHeight = Math.max(...bottoms) + MODULE_CONTAINER_BOTTOM_PADDING;
+      if (requiredHeight > (containerLayout.height ?? 0)) {
+        await manager.update(Layout, { id: containerLayout.id }, { height: requiredHeight });
+      }
     }
   }
 

@@ -51,6 +51,8 @@ export function createBatchManager<S extends StoreWithDependencies>(
   let _depth = 0;
   let _mutations: TaggedMutation<S>[] = [];
   let _depPaths: DepPath[] = [];
+  // `path|moduleId` of every buffered write, so a dedup against committed state can tell a newer write is pending.
+  let _pendingPaths: Set<string> = new Set();
   // Post-flush callbacks: keyed for deduplication (same key → only first callback registered).
   let _postFlushKeys: Set<string> = new Set();
   let _postFlushCallbacks: TaggedCallback[] = [];
@@ -58,6 +60,7 @@ export function createBatchManager<S extends StoreWithDependencies>(
   const resetBuffers = () => {
     _mutations = [];
     _depPaths = [];
+    _pendingPaths = new Set();
     _postFlushKeys = new Set();
     _postFlushCallbacks = [];
   };
@@ -112,6 +115,7 @@ export function createBatchManager<S extends StoreWithDependencies>(
       _depth = 0;
       _mutations = [];
       _depPaths = [];
+      _pendingPaths = new Set();
       _postFlushKeys = new Set();
       _postFlushCallbacks = [];
     },
@@ -123,8 +127,13 @@ export function createBatchManager<S extends StoreWithDependencies>(
 
     bufferMutation: (mutation: Mutation<S>, moduleId: string, depPaths?: DepPath[]) => {
       _mutations.push({ mutation, moduleId });
-      if (depPaths?.length) _depPaths.push(...depPaths);
+      if (depPaths?.length) {
+        _depPaths.push(...depPaths);
+        depPaths.forEach(({ path, moduleId: m }) => _pendingPaths.add(`${path}|${m}`));
+      }
     },
+
+    hasPendingWrite: (path: string, moduleId: string) => _pendingPaths.has(`${path}|${moduleId}`),
 
     bufferDepPath: (path: string, moduleId: string) => {
       _depPaths.push({ path, moduleId });
@@ -167,6 +176,7 @@ export function createBatchManager<S extends StoreWithDependencies>(
 
       _mutations = _mutations.filter((m) => m.moduleId !== moduleId);
       _depPaths = _depPaths.filter((p) => p.moduleId !== moduleId);
+      _pendingPaths = new Set(_depPaths.map(({ path, moduleId: m }) => `${path}|${m}`));
 
       const keep: TaggedCallback[] = [];
       _postFlushCallbacks.forEach((p) => {

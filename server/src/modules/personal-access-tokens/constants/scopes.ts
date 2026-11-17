@@ -1,3 +1,4 @@
+import { FEATURE_KEY as BRANCH_FEATURE } from '@modules/workspace-branches/constants';
 import { FEATURE_KEY as GROUP_FEATURE } from '@modules/group-permissions/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { FEATURE_KEY as ORGANIZATION_USER_FEATURE } from '@modules/organization-users/constants';
@@ -57,6 +58,7 @@ export const PAT_BUNDLE_MODULES: Record<PAT_BUNDLE, MODULES[]> = {
     // An app's stored source: read and written with the app's own permissions. Import, publish and dev uploads act
     // only on a library no other app uses (checked in the service, for every caller).
     MODULES.CODE_MODE_SOURCE,
+    MODULES.WORKSPACE_BRANCHES,
   ],
   [PAT_BUNDLE.DATA]: [
     MODULES.DATA_QUERY,
@@ -81,7 +83,6 @@ export const PAT_BUNDLE_MODULES: Record<PAT_BUNDLE, MODULES[]> = {
     MODULES.LOGIN_CONFIGS,
     MODULES.GIT_SYNC,
     MODULES.GIT_SYNC_CONFIGS,
-    MODULES.WORKSPACE_BRANCHES,
     MODULES.SMTP,
     MODULES.CONFIGS,
   ],
@@ -228,6 +229,7 @@ const ALLOWED_MODULES: ReadonlySet<MODULES> = new Set(
 );
 
 const PAT_ALLOWED_FEATURES: Partial<Record<MODULES, ReadonlySet<string>>> = {
+  [MODULES.WORKSPACE_BRANCHES]: new Set([BRANCH_FEATURE.LIST_BRANCHES]),
   [MODULES.GROUP_PERMISSIONS]: new Set([
     GROUP_FEATURE.GET_ALL,
     GROUP_FEATURE.GET_ONE,
