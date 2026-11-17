@@ -92,6 +92,8 @@ export interface Terms {
     generatedFrom?: 'API';
     customerId?: string;
     createdBy?: string;
+    // Monthly AI credits per builder; set on cloud licenses sold on the plan limits from the cutoff.
+    aiCreditsPerBuilder?: number;
   };
   workflows?: {
     enabled?: boolean;
