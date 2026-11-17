@@ -127,6 +127,26 @@ export const IconCard = ({ icon: Icon, title, content, color, href, badge, compa
     </Card>
 );
 
+export const ShotCard = ({ icon: Icon, title, content, color, href, image, alt = '' }) => {
+    const src = useBaseUrl(image);
+    return (
+        <Card href={href} className="h-full transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+            <div className="h-full flex flex-col overflow-hidden rounded-lg">
+                <div className="aspect-[16/10] overflow-hidden border-0 border-b border-solid border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                    <img src={src} alt={alt} loading="lazy" className="w-full h-full object-cover object-left-top transition-transform duration-300 ease-in-out group-hover:scale-[1.02]" />
+                </div>
+                <div className="p-5 flex-grow">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Icon className={`w-4 h-4 ${color}`} />
+                        <h3 className="text-base font-semibold text-black dark:text-white m-0">{title}</h3>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 m-0">{content}</p>
+                </div>
+            </div>
+        </Card>
+    );
+};
+
 export const SmallCard = ({ icon: Icon, title, href }) => (
     <Card href={href} className="h-[72px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
         <div className="p-3 h-full flex items-center justify-between">
@@ -305,7 +325,7 @@ style={{
                     <FeatureBanner {...highlights.banner} />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {highlights.cards.map((card, index) => (
-                            <IconCard key={index} {...card} compact />
+                            <ShotCard key={index} {...card} />
                         ))}
                     </div>
                 </SectionContainer>

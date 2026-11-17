@@ -3,7 +3,7 @@ id: app-history
 title: App History
 ---
 
-<PlanBadge type="enterprise" />
+<PlanBadge type="pro" />
 
 App History keeps a timeline of the changes made to an app version in the App Builder. Use it to see who changed what and when, and to restore the app to an earlier point if a change breaks something.
 

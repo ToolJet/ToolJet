@@ -69,42 +69,54 @@ export const highlights = {
             title: "Compare Versions",
             color: "text-blue-500",
             content: "See two versions side by side, screen by screen, and get approval before release.",
-            href: "/docs/development-lifecycle/release/compare-versions/"
+            href: "/docs/development-lifecycle/release/compare-versions/",
+            image: "/img/home/highlights/compare-versions.jpg",
+            alt: "Two versions of the same screen side by side in Compare versions"
         },
         {
             icon: Blocks,
             title: "Component Libraries",
             color: "text-blue-500",
             content: "Build visual apps with ToolJet UI, Rocket 2.0 or Ant Design components.",
-            href: "/docs/app-builder/building-ui/component-library/"
+            href: "/docs/app-builder/building-ui/component-library/",
+            image: "/img/home/highlights/component-libraries.jpg",
+            alt: "The same Carrier Directory page built in Rocket 2.0 and in Ant Design"
         },
         {
             icon: ShieldCheck,
             title: "App Security",
             color: "text-blue-500",
             content: "Every version is checked before release. Your workspace policy decides what can ship.",
-            href: "/docs/build-with-ai/react-builder/security/"
+            href: "/docs/build-with-ai/react-builder/security/",
+            image: "/img/home/highlights/app-security.jpg",
+            alt: "The Security panel showing a version that blocks release, with Fix with AI on the issue"
         },
         {
             icon: Sparkles,
             title: "AI Chat",
             color: "text-blue-500",
             content: "Questions up front, live progress while it builds, and a summary of what was built.",
-            href: "/docs/build-with-ai/use-ai-in-tooljet/"
+            href: "/docs/build-with-ai/use-ai-in-tooljet/",
+            image: "/img/home/highlights/ai-chat.jpg",
+            alt: "The AI chat summary of a finished build beside the app it built"
         },
         {
             icon: Palette,
             title: "Built-in Themes",
             color: "text-blue-500",
             content: "Seven ready-made themes to give your apps a consistent look.",
-            href: "/docs/app-builder/custom-theme/"
+            href: "/docs/app-builder/custom-theme/",
+            image: "/img/home/highlights/built-in-themes.jpg",
+            alt: "The same page in ToolJet Navy and ToolJet Emerald"
         },
         {
             icon: Laptop,
             title: "Build Locally",
             color: "text-blue-500",
             content: "Clone an app with the ToolJet CLI and edit it in your own editor, with a live preview in ToolJet.",
-            href: "/docs/build-with-ai/react-builder/local-development/"
+            href: "/docs/build-with-ai/react-builder/local-development/",
+            image: "/img/home/highlights/build-locally.jpg",
+            alt: "The Open locally panel with buttons to open the app in VS Code, Cursor or Windsurf"
         }
     ]
 };
