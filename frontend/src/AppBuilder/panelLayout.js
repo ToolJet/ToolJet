@@ -175,7 +175,6 @@ export const getQuerySearchFocusStyle = (surface) =>
     ? {
         '--query-search-focus-background': 'var(--background-surface-layer-01)',
         '--query-search-focus-border': 'var(--border-accent-strong)',
-        '--query-search-focus-shadow': 'none',
       }
     : undefined;
 

@@ -346,11 +346,6 @@
       background: var(--interactive-hover) !important;
     }
 
-    &:focus-visible {
-      outline: 2px solid var(--interactive-focus-outline);
-      outline-offset: 2px;
-    }
-
     &.is-done {
       color: var(--icon-success, var(--grass9)) !important;
     }

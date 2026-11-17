@@ -17,11 +17,6 @@
     border: 1px solid var(--border-weak) !important;
   }
 
-  // Keyboard focus needs a visible ring; outline is suppressed above.
-  &:focus-visible {
-    box-shadow: 0 0 0 2px var(--interactive-focus-inner-shadow), 0 0 0 4px var(--interactive-focus-outline) !important;
-  }
-
   &:hover {
     border: 1px solid var(--border-weak) !important;
     box-shadow: var(--elevation-100-box-shadow);

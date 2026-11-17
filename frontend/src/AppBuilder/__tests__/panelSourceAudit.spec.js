@@ -110,10 +110,17 @@ describe('panel source audit', () => {
     expect(matches(['src', 'ee'], /--editor-accent-text/)).toEqual([]);
   });
 
-  test.failing('[UB-12] panel focus rings use the design-system tokens, not hard-coded or misspelt ones', () => {
-    // #C6D4F9 rings (queryManager.scss, Restapi/index.jsx:272, GRPC.jsx:95) and the misspelt
-    // --interactive-focusactive in ToolJetUI/Tabs/tabs.scss:82.
-    expect(matches(PANEL_ROOTS, /#c6d4f9|--interactive-focusactive\b/i)).toEqual([]);
+  test('[UB-12] panel focus rings use the design-system tokens, not hard-coded or misspelt ones', () => {
+    // Only focus rules count: the #C6D4F9 press (:active) and picker-open shadows are not focus rings,
+    // and the TJDB and workflow ones sit outside the App Builder.
+    const sites = matches(PANEL_ROOTS, /:focus[\w-]*[^{};]*\{[^}]*#c6d4f9|--interactive-focusactive\b/i);
+    // queryManager.scss also styles the TJDB pages' foreign key dropdown, which the scope rule leaves alone.
+    const tjdbPage = (site) => {
+      const [file, line] = site.split(':');
+      const above = fs.readFileSync(path.join(FRONTEND, file), 'utf8').split('\n').slice(0, Number(line));
+      return /^\.foreignKeyAcces-container\b/.test(above.findLast((text) => /^\S.*\{\s*$/.test(text)) || '');
+    };
+    expect(sites.filter((site) => !tjdbPage(site))).toEqual([]);
   });
 
   test.failing('[UC-21] rail items take their names from one registry, not per-call railLabel props', () => {

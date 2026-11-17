@@ -334,12 +334,12 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getQuerySearchClassName('bottom', false)).toBe('queries-search d-flex');
   });
 
-  // Break this catches: focusing the compact left search adds a strong blue fill or halo.
-  it('uses a quiet border-only focus treatment for left query search', () => {
+  // Break this catches: focusing the compact left search adds a strong blue fill. Its ring is the
+  // editor's one focus ring (Shared/Panel/panel.scss), not a halo of its own.
+  it('uses a quiet border focus treatment for left query search', () => {
     expect(getQuerySearchFocusStyle('left')).toEqual({
       '--query-search-focus-background': 'var(--background-surface-layer-01)',
       '--query-search-focus-border': 'var(--border-accent-strong)',
-      '--query-search-focus-shadow': 'none',
     });
     expect(getQuerySearchFocusStyle('bottom')).toBeUndefined();
   });

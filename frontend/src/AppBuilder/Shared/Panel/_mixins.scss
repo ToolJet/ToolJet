@@ -1,0 +1,6 @@
+// The editor chrome's one keyboard focus ring, the design-system Button's ring (components/ui/Button).
+// !important because legacy chrome rules draw their own :focus rings with !important.
+@mixin focus-ring {
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--background-surface-layer-01), 0 0 0 4px var(--interactive-focus-outline) !important;
+}

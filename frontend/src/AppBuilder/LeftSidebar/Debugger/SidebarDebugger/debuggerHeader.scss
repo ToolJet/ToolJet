@@ -51,13 +51,12 @@
     }
   }
 
-  // Focus state - focus ring on inner content
+  // Focus state - the ring is the editor's one focus ring (Shared/Panel/panel.scss) on the tab
   &:focus-visible {
     outline: none;
 
     .debugger-tab-content {
       background-color: var(--bg-surface-layer-01, #ffffff);
-      box-shadow: 0px 0px 0px 2px var(--interactive-focus-outline, #4368e3);
     }
 
     .debugger-tab-label {
@@ -85,7 +84,6 @@
     &:focus-visible {
       .debugger-tab-content {
         background-color: var(--bg-surface-layer-01, #ffffff);
-        box-shadow: 0px 0px 0px 2px var(--interactive-focus-outline, #4368e3);
       }
     }
   }

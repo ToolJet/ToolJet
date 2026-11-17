@@ -1,4 +1,19 @@
 // Shared chrome for the editor's panels. One place for the numbers every panel header must agree on.
+@import './mixins';
+
+// Every keyboard stop in the editor chrome shows the one ring. Widgets render a customer's app, so the
+// canvas and the modals and overlays widgets open keep their own focus styles, as in the Viewer.
+// Code fields and react-select ring their visible box, not the text node or the input inside it.
+$widget-scopes: '.main-editor-canvas *, .tj-modal-widget-content *, .tj-widget-overlay *';
+
+body.app-builder-chrome {
+  :focus-visible:not(.cm-content, input[id^='react-select-'], #{$widget-scopes}),
+  .cm-editor.cm-focused:not(#{$widget-scopes}),
+  [class*='-control']:has(input[id^='react-select-']:focus-visible):not(#{$widget-scopes}) {
+    @include focus-ring;
+  }
+}
+
 .tj-panel-header {
   position: sticky;
   top: 0;
