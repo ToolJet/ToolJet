@@ -5,6 +5,9 @@ hide_title: true
 ---
 
 import Link from '@docusaurus/Link';
+import { useVersionedHref } from '@site/src/components/DocBlocks';
+
+export const VLink = ({ to, ...props }) => <Link to={useVersionedHref(to)} {...props} />;
 
 export const FlowStep = ({ number, title, description }) => (
     <div style={{
@@ -25,7 +28,7 @@ export const FlowStep = ({ number, title, description }) => (
 );
 
 export const CapabilityCard = ({ icon, title, description, img, href, features, badge }) => (
-    <Link to={href} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
+    <VLink to={href} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
         <div style={{
             border: '1px solid var(--ifm-toc-border-color)',
             borderRadius: '10px', overflow: 'hidden',
@@ -67,11 +70,11 @@ export const CapabilityCard = ({ icon, title, description, img, href, features, 
                 </div>
             )}
         </div>
-    </Link>
+    </VLink>
 );
 
 export const NextStepCard = ({ title, description, href }) => (
-    <Link to={href} style={{ textDecoration: 'none', display: 'block' }}>
+    <VLink to={href} style={{ textDecoration: 'none', display: 'block' }}>
         <div style={{
             border: '1px solid var(--ifm-toc-border-color)',
             borderRadius: '10px', padding: '16px 18px',
@@ -86,7 +89,7 @@ export const NextStepCard = ({ title, description, href }) => (
             <div style={{ fontSize: '12.5px', color: 'var(--ifm-color-emphasis-700)', lineHeight: 1.5 }}>{description}</div>
             <span style={{ fontSize: '12px', color: '#4d72fa', fontWeight: 500, marginTop: '2px' }}>Learn more →</span>
         </div>
-    </Link>
+    </VLink>
 );
 
 

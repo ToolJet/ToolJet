@@ -5,9 +5,12 @@ sidebar_label: Overview
 ---
 
 import Link from '@docusaurus/Link';
+import { useVersionedHref } from '@site/src/components/DocBlocks';
+
+export const VLink = ({ to, ...props }) => <Link to={useVersionedHref(to)} {...props} />;
 
 export const FeatureCard = ({ icon, title, description, href, badge }) => (
-    <Link to={href} style={{ textDecoration: 'none' }}>
+    <VLink to={href} style={{ textDecoration: 'none' }}>
         <div style={{
             border: '1px solid var(--ifm-toc-border-color)',
             borderRadius: '10px',
@@ -42,11 +45,11 @@ export const FeatureCard = ({ icon, title, description, href, badge }) => (
                 <div style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)', lineHeight: '1.5' }}>{description}</div>
             </div>
         </div>
-    </Link>
+    </VLink>
 );
 
 export const ConfigCard = ({ title, description, href, label, labelColor, labelBg, features }) => (
-    <Link to={href} style={{ textDecoration: 'none' }}>
+    <VLink to={href} style={{ textDecoration: 'none' }}>
         <div style={{
             border: '1px solid var(--ifm-toc-border-color)',
             borderRadius: '10px',
@@ -82,7 +85,7 @@ export const ConfigCard = ({ title, description, href, label, labelColor, labelB
                 {features.map((f, i) => <li key={i} style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)' }}>{f}</li>)}
             </ul>
         </div>
-    </Link>
+    </VLink>
 );
 
 export const SectionSubtitle = ({ text }) => (
@@ -258,7 +261,7 @@ The bar steps aside while a build runs. To hide it for good, select **Hide the b
 
 <SectionSubtitle text="Understand how ToolJet handles your data when AI is involved" />
 
-<Link to="/docs/build-with-ai/privacy" style={{ textDecoration: 'none' }}>
+<VLink to="/docs/build-with-ai/privacy" style={{ textDecoration: 'none' }}>
     <div style={{
         border: '1px solid var(--ifm-toc-border-color)',
         borderRadius: '10px',
@@ -278,6 +281,6 @@ The bar steps aside while a build runs. To hide it for good, select **Hide the b
             <div style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)' }}>What data is shared with AI, how it's protected, and your deployment options.</div>
         </div>
     </div>
-</Link>
+</VLink>
 
 <br/>

@@ -319,7 +319,7 @@ img {
 }
 
 .img-s {
-  max-width: 360px !important;
+  max-width: min(360px, 100%) !important;
   box-shadow: none !important;
   border-radius: 6px !important;
   border: 1px solid #E4E7EB !important;
@@ -327,7 +327,7 @@ img {
 }
 
 .img-m {
-  max-width: 480px !important;
+  max-width: min(480px, 100%) !important;
   box-shadow: none !important;
   border-radius: 6px !important;
   border: 1px solid #E4E7EB !important;
@@ -335,7 +335,7 @@ img {
 }
 
 .img-l {
-  max-width: 640px !important;
+  max-width: min(640px, 100%) !important;
   box-shadow: none !important;
   border-radius: 6px !important;
   border: 1px solid #E4E7EB !important;

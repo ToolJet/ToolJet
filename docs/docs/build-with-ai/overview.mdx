@@ -6,9 +6,12 @@ hide_title: true
 ---
 
 import Link from '@docusaurus/Link';
+import { useVersionedHref } from '@site/src/components/DocBlocks';
+
+export const VLink = ({ to, ...props }) => <Link to={useVersionedHref(to)} {...props} />;
 
 export const FeatureCard = ({ icon, title, description, href, badge }) => (
-    <Link to={href} style={{ textDecoration: 'none' }}>
+    <VLink to={href} style={{ textDecoration: 'none' }}>
         <div style={{
             border: '1px solid var(--ifm-toc-border-color)',
             borderRadius: '10px',
@@ -43,7 +46,7 @@ export const FeatureCard = ({ icon, title, description, href, badge }) => (
                 <div style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)', lineHeight: '1.5' }}>{description}</div>
             </div>
         </div>
-    </Link>
+    </VLink>
 );
 
 export const SectionSubtitle = ({ text }) => (
@@ -116,7 +119,7 @@ Both can create and modify apps. The difference is where you drive them from, wh
 | --- | --- | --- |
 | **Where you build** | The AI chat inside ToolJet, in your browser | Your own coding agent, such as Claude Code or Codex |
 | **What it does** | Generates and modifies apps, modules, queries, and code; answers questions from the docs | Creates and modifies apps, manages users, and queries your instance in natural language |
-| **What it can build** | Visual apps and [React Builder](/docs/build-with-ai/react-builder/overview) apps | Visual apps. For React Builder apps, a coding agent works through the [ToolJet CLI](/docs/build-with-ai/react-builder/local-development) |
+| **What it can build** | Visual apps and [React Builder](./react-builder/overview.md) apps | Visual apps. For React Builder apps, a coding agent works through the [ToolJet CLI](./react-builder/local-development.md) |
 | **Which model runs it** | ToolJet Managed AI by default, or your own key via [BYOK](/docs/setup/tooljet-ai/bring-your-own-key) on Enterprise Cloud or Self-hosted deployments | Whichever model your AI client is already running |
 | **What it consumes** | [ToolJet AI credits](/docs/build-with-ai/ai-credits) by default; BYOK uses your own key and does not consume ToolJet AI credits | [AI model tokens](#credits-vs-tokens), billed by your model provider |
 | **Setup needed** | None, it is available out of the box | A personal access token and an [MCP server install](/docs/build-with-ai/mcp/setup) |
