@@ -5,7 +5,7 @@ title: App Security
 
 ToolJet checks every React Builder app for you: its code, its npm packages and its queries. Each issue says what was found, where it is and how to fix it, and a version that fails your workspace's policy is held back from release.
 
-<!-- TODO screenshot: /img/build-with-ai/react-builder/security/security-panel-blocking-issue.png | img-m | alt: The Security panel showing Blocks release for a version, with an issue that says what was found and where, and a Fix with AI button | shows: state C (Carrier Portal clone): Security panel open on the version whose outside fetch call blocks release, with the issue card and Fix with AI visible -->
+<img className="screenshot-full img-m" src="/img/build-with-ai/react-builder/security/security-panel-blocking-issue.png" alt="The Security panel showing Blocks release for a version, with an issue that says what was found and where, and a Fix with AI button" />
 
 ## How ToolJet Protects Your Apps
 
@@ -122,9 +122,9 @@ Some issues have another route:
 
 Every release and promotion of a React Builder app passes the release gate. In short, it passes when the saved version has a finished check of its current code and nothing fails the workspace's policy. Otherwise, the release and promote dialogs say why and lock the confirm button.
 
-<!-- TODO screenshot: /img/build-with-ai/react-builder/security/release-dialog-gate.png | img-m | alt: The release dialog with its confirm button locked and a line that says which issues block the release | shows: state C (Carrier Portal clone): release confirmation dialog for the blocked version, with the Blocks release line, its issues and Release anyway… visible -->
+<img className="screenshot-full img-s" src="/img/build-with-ai/react-builder/security/release-dialog-gate.png" alt="The Promote v1 dialog from Development to Staging, with Blocks promotion: 1 issue, the issue Sends data outside ToolJet, a Promote anyway button, and the Promote button locked" />
 
-If a held version has to ship, a workspace admin or an app editor with release permission can click **Release anyway…** and give a reason, which is kept in the audit trail. The decision lasts until the next check or policy change. The button isn't offered while the version needs a new check, for example after its code changed.
+If a held version has to ship, a workspace admin or an app editor with release permission can click **Release anyway…** (**Promote anyway…** in the promote dialog) and give a reason, which is kept in the audit trail. The decision lasts until the next check or policy change. The button isn't offered while the version needs a new check, for example after its code changed.
 
 Visual apps aren't checked, so the gate never holds them. See [Release Gate Rules](./security-policy.md#release-gate-rules) for every rule.
 

@@ -43,9 +43,9 @@ To change a restriction later, click **Change** on its row. To remove it, select
 
 ## What Users See
 
-Someone outside a screen's groups doesn't find the screen in the app's navigation. If they follow a link to it, the app keeps its layout and shows "You don't have access to this screen" in place of the content. Someone who can't open any screen sees only that message.
+Someone outside a screen's groups doesn't find the screen in the app's navigation. If they follow a link to it, they see "You don't have access to this screen" in place of the app, with a button back to the first screen they can open.
 
-<!-- TODO screenshot: /img/build-with-ai/react-builder/access-control/no-access-screen.png | img-full | alt: The released app for a Finance user who followed a link to Carriers: the app keeps its sidebar and shows "You don't have access to this screen" where the content would be | shows: state E (v2 released, signed in as Daniel Okafor from the Finance group): the released Northwind Dispatch opened at the Carriers route; the navigation lists Overview, Shipments and Billing, not Carriers -->
+<img className="screenshot-full img-m" src="/img/build-with-ai/react-builder/access-control/no-access-screen.png" alt="The released app for a Finance user who followed a link to the Carriers screen: the message &quot;You don't have access to this screen&quot; and a Go to Overview button" />
 
 A restricted query fails for them instead of returning data, and your code gets the failure as the query's `error`. See [Runtime API](./runtime-api.md#errors).
 
