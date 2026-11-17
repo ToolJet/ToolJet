@@ -59,7 +59,7 @@ A React Builder app has no component properties to set. Instead, the style inspe
 3. In the **Design** view, change the element's size, spacing, color, text or shape.
 4. Under **Applies to**, choose where the change goes. Check the preview of the code change, then click **Apply**.
 
-<!-- TODO screenshot: /img/build-with-ai/react-builder/editor/style-inspector.png | img-full | alt: A KPI card picked on the canvas, with the style inspector beside it showing the card's size, spacing, color, text and shape settings | shows: state A (Northwind Dispatch v3 draft), style inspector open in the Design view with the "In motion" KPI card picked on the Overview screen; crop the picked element plus the right sidebar -->
+<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/editor/style-inspector.png" alt="A KPI card picked on the canvas, with the style inspector beside it showing the card's size, spacing, color, text and shape settings" />
 
 **Undo** reverts your last edit. To change a piece of text, double-click it on the canvas. Right-click an element for more, such as **Open code** and **Ask AI about this**.
 
