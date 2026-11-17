@@ -9,6 +9,7 @@
   "viewer | DATA_SOURCE | AUTHORIZE | POST | /data-sources/:id/authorize_oauth2 | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.authorizeOauth2",
   "viewer | DATA_SOURCE | CREATE | POST | /data-sources | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.createGlobalDataSources",
   "viewer | DATA_SOURCE | DELETE | DELETE | /data-sources/:id | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.delete",
+  "viewer | DATA_SOURCE | GET | GET | /data-sources | version=2 | src/modules/data-sources/dashboard/dashboard.controller.ts | DataSourcesDashboardController.list",
   "viewer | DATA_SOURCE | GET | GET | /data-sources/:organizationId | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.fetchGlobalDataSources",
   "viewer | DATA_SOURCE | GET_BY_ENVIRONMENT | GET | /data-sources/:id/environment/:environment_id | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.getDataSourceByEnvironment",
   "viewer | DATA_SOURCE | GET_FOR_APP | GET | /data-sources/:organizationId/environments/:environmentId/versions/:versionId | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.fetchGlobalDataSourcesForVersion",

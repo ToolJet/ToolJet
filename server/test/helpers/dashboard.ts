@@ -1,8 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import { App } from '@entities/app.entity';
 import { AppVersion } from '@entities/app_version.entity';
+import { DataSource } from '@entities/data_source.entity';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
+import { FolderDataSource } from '@entities/folder_data_source.entity';
 import { PinnedItem } from '@entities/pinned_item.entity';
 import { User } from '@entities/user.entity';
 import { UserAppActivity } from '@entities/user_app_activity.entity';
@@ -64,4 +67,41 @@ export async function seedDataSourceActivity(
     lastViewedAt: opts.lastViewedAt ?? null,
     lastEditedAt: opts.lastEditedAt ?? null,
   } as UserDataSourceActivity);
+}
+
+/** Global data source + its active version row on `branchId` (default branch when omitted), optionally foldered. */
+export async function seedDashboardDataSource(
+  _nestApp: INestApplication,
+  opts: {
+    organizationId: string;
+    name: string;
+    kind?: string;
+    createdBy?: string;
+    folder?: Folder;
+    branchId?: string;
+  }
+): Promise<{ dataSource: DataSource; version: DataSourceVersion }> {
+  const branchId = opts.branchId ?? (await resolveOrSeedDefaultBranch(opts.organizationId)).id;
+  const dataSource = await saveEntity(DataSource, {
+    name: opts.name,
+    kind: opts.kind ?? 'postgresql',
+    type: 'default',
+    scope: 'global',
+    organizationId: opts.organizationId,
+    createdBy: opts.createdBy ?? null,
+  } as unknown as DataSource);
+  const version = await saveEntity(DataSourceVersion, {
+    dataSourceId: dataSource.id,
+    name: opts.name,
+    isActive: true,
+    branchId,
+  } as DataSourceVersion);
+  if (opts.folder) {
+    await saveEntity(FolderDataSource, {
+      folderId: opts.folder.id,
+      dataSourceId: dataSource.id,
+      branchId,
+    } as FolderDataSource);
+  }
+  return { dataSource, version };
 }

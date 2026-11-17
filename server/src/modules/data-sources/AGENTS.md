@@ -27,6 +27,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 | `guards/validate-query-source.guard.ts` | `ValidateDataSourceGuard` — loads + org-checks the data source for param `id` |
 | `dto/index.ts` | `CreateDataSourceDto`, `UpdateDataSourceDto`, `TestDataSourceDto`, `InvokeDataSourceMethodDto`, `ValidateOptionsDto`, ... |
 | `dashboard/activity.service.ts` + `activity.interceptor.ts` | Dashboard v2 view/edit attribution (see "Dashboard v2 schema" below) |
+| `dashboard/dashboard.controller.ts` + `dashboard.service.ts` | `GET /api/v2/data-sources` — paginated root / folder / search list (see "Dashboard v2 list" below) |
 
 ## Edition split
 
@@ -52,6 +53,12 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 - `data_sources.created_by` (nullable uuid, FK `users(id)` `ON DELETE SET NULL`) — set in `DataSourcesUtilService.create` only; git-sync import, sample and static sources leave it `NULL`.
 - `user_data_source_activity` (`user_id`, `data_source_id`, `branch_id` composite PK) mirrors apps' `user_app_activity`. Writer: `dashboard/activity.interceptor.ts` (global `APP_INTERCEPTOR`, registered only when `isMainImport`) upserts `last_viewed_at` after a successful `GET :id/environment/:environment_id` and `last_edited_at` after a successful v1 `PUT :id` (version-agnostic route match, so the Task 6 v2 `PUT` is picked up too), keyed off `request.tj_data_source` set by `ValidateDataSourceGuard`. Same 5-minute / "still latest editor" throttle as apps' `DashboardActivityService`; best-effort (a failed upsert is logged, never fails the request).
 - `pinned_items.data_source_id` extends the apps pin table (`chk_pinned_items_one_resource` now allows exactly one of `app_id`/`folder_id`/`data_source_id`; `uq_pinned_items_user_branch_data_source` enforces one pin per user+branch+data source). No write endpoints yet (Task 4).
+
+## Dashboard v2 list
+
+- `GET /api/v2/data-sources?page&page_size&folder_id&search&branch_id` mirrors apps' `GET /api/v2/apps` (`apps/dashboard/`): `queries.ts` CTEs (`visible_data_sources`, `visible_folders`, `pins`) reuse apps' `SqlParams`, `PIN_ORDER`, `ENTRY_ORDER`, `likePattern`.
+- Rules in `dashboard/actions.ts` (pure, unit-tested): visibility copies `allGlobalDS`, folder visibility copies `FolderDataSourcesService.filterFoldersByPermissions`, folder actions copy `FoldersService.checkFolderManagePermission` / `assertFolderDeletable`. A data source's row on a branch = its active DSV there, else (no row at all there) the default branch's active DSV.
+- Ordering column: edit-capable caller → own `last_edited_at`, else own `last_viewed_at`. `DataSourcesDashboardService` is factory-provided (edition-resolved `GitSyncConfigsUtilService`).
 
 ## Related modules
 

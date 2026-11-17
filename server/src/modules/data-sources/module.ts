@@ -20,6 +20,10 @@ import { FolderDataSourcesModule } from '@modules/folder-data-sources/module';
 import { CustomDomainsModule } from '@modules/custom-domains/module';
 import { DataSourceActivityService } from './dashboard/activity.service';
 import { DataSourceActivityInterceptor } from './dashboard/activity.interceptor';
+import { DataSourcesDashboardController } from './dashboard/dashboard.controller';
+import { DataSourcesDashboardService } from './dashboard/dashboard.service';
+import { DataSource } from 'typeorm';
+import { AbilityService } from '@modules/ability/interfaces/IService';
 
 export class DataSourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -45,6 +49,7 @@ export class DataSourcesModule extends SubModule {
     ]);
 
     const { DataQueriesUtilService } = await this.getProviders(configs, 'data-queries', ['util.service']);
+    const { GitSyncConfigsUtilService } = await this.getProviders(configs, 'git-sync-configs', ['util.service']);
 
     return this.cacheModule(cacheKey, {
       module: DataSourcesModule,
@@ -76,9 +81,16 @@ export class DataSourcesModule extends SubModule {
         GitSyncDataSourceCreateGuard,
         GitSyncDataSourceEditGuard,
         DataSourceActivityService,
+        // Factory: the service is CE-only, but its deps must be the edition-resolved classes.
+        {
+          provide: DataSourcesDashboardService,
+          useFactory: (dataSource, abilityService, gitSyncConfigsUtilService) =>
+            new DataSourcesDashboardService(dataSource, abilityService, gitSyncConfigsUtilService),
+          inject: [DataSource, AbilityService, GitSyncConfigsUtilService],
+        },
         ...(isMainImport ? [{ provide: APP_INTERCEPTOR, useClass: DataSourceActivityInterceptor }] : []),
       ],
-      controllers: isMainImport ? [DataSourcesController] : [],
+      controllers: isMainImport ? [DataSourcesController, DataSourcesDashboardController] : [],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
     });
   }
