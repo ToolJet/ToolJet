@@ -4,26 +4,26 @@ import FormData = require('form-data');
 import { buildUploadFormData } from './upload-form';
 import { parseApiErrorMessage } from '../api-error';
 import { ensureCompatible } from '../compatibility';
+import { type DirectIdentity, credentialFetchOptions, credentialHeaders } from '../direct-credential';
 
 export class ApiClient {
   private readonly baseUrl: string;
 
   /**
-   * `apiToken` is a personal access token, or with `session` the ToolJet session token of the user an in-product build
-   * runs as (its MCP server has no personal token): then requests carry the session cookie and workspace instead.
+   * `apiToken` is a personal access token, or with `direct` a credential ToolJet takes as it is (direct-credential.ts):
+   * the ToolJet session or MCP OAuth delegation of the user a build runs as (its MCP server has no personal token).
+   * Then requests carry that credential and the workspace instead.
    */
   constructor(
     baseUrl: string,
     private readonly apiToken: string,
-    private readonly session?: { workspaceId: string }
+    private readonly direct?: DirectIdentity
   ) {
     this.baseUrl = baseUrl.replace(/\/+$/, '');
   }
 
   private authHeaders(): Record<string, string> {
-    return this.session
-      ? { Cookie: `tj_auth_token=${this.apiToken}`, 'tj-workspace-id': this.session.workspaceId }
-      : { Authorization: `Bearer ${this.apiToken}` };
+    return credentialHeaders(this.apiToken, this.direct);
   }
 
   private async handleResponse<T>(res: import('node-fetch').Response): Promise<T> {
@@ -44,6 +44,7 @@ export class ApiClient {
         'Content-Type': 'application/json',
       },
       body: body ? JSON.stringify(body) : undefined,
+      ...credentialFetchOptions(this.direct?.kind),
     });
 
     return this.handleResponse<T>(res);
@@ -61,6 +62,7 @@ export class ApiClient {
         method,
         headers: { ...this.authHeaders(), ...form.getHeaders() },
         body: form,
+        ...credentialFetchOptions(this.direct?.kind),
       })
         .then((res) => this.handleResponse<T>(res))
         .then(resolve, reject);
@@ -79,6 +81,7 @@ export class ApiClient {
     const res = await fetch(`${this.baseUrl}/api/custom-component-libraries/${correlationId}`, {
       method: 'GET',
       headers: this.authHeaders(),
+      ...credentialFetchOptions(this.direct?.kind),
     });
 
     if (res.status === 404) return { exists: false };

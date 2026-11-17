@@ -4,7 +4,7 @@ import * as path from 'path';
 import { Auth } from '../library/auth';
 import { validateOriginUrl } from '../library/target-validation';
 import { isServerMode } from '../server-mode';
-import { resolveTarget, signedInServer, type Target } from './session';
+import { directIdentity, resolveTarget, signedInServer, type Target } from './session';
 
 /*
   Which ToolJet instance a project belongs to. `tooljet app clone` (and `init --create`) record the instance the app
@@ -82,8 +82,9 @@ export function resolveAppTarget(flags: TargetFlags = {}, root?: string): Target
     if (wanted && origin !== wanted) {
       throw new Error(`--instance is ${wanted} but ${describeSource(flags)} is ${origin}.`);
     }
-    // The MCP server sets the environment for a server-mode build; the project's record is not a user's terminal.
-    if (!wanted && bound && origin !== bound && !isServerMode() && target.kind !== 'session') {
+    // The MCP server sets the environment for a server-mode build, and for one that runs as the user's own session or
+    // OAuth delegation; the project's record is not a user's terminal.
+    if (!wanted && bound && origin !== bound && !isServerMode() && !directIdentity(target)) {
       throw new Error(
         `This project belongs to ${bound}, but ${describeSource(flags)} is ${origin}. ` +
           `To run it against ${origin} anyway, add --instance ${origin}.`
