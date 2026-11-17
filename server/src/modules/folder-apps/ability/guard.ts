@@ -78,7 +78,7 @@ export class FeatureAbilityGuard extends AbilityGuard {
       const appIds: string[] = request.body?.app_id ? [request.body.app_id] : request.body.app_ids;
       const apps = await this.dataSource.manager.find(App, {
         where: { id: In(appIds), organizationId: request.user.organizationId },
-        select: ['id', 'userId', 'type'],
+        select: ['id', 'userId', 'type', 'organizationId'],
       });
       if (apps.length !== new Set(appIds).size) return false;
 
