@@ -180,6 +180,8 @@ export const Collapse = () => {
 // Ant's Dropdown on a Button: children (the button text), menu items [{ key, label, danger, disabled }], type
 // (primary, default), trigger (click, hover), placement, arrow. Event onClick for a menu item, with its key exposed
 // as selectedKey (Ant passes { key }); onButtonClick for the button half when split.
+const PLACEMENTS = ['bottomLeft', 'bottom', 'bottomRight', 'topLeft', 'top', 'topRight'] as const;
+
 export const Dropdown = () => {
   const [children] = ToolJet.useStateString({ name: 'children', label: 'Text', initialValue: 'Actions' });
   const [items] = ToolJet.useStateArray({
@@ -193,9 +195,10 @@ export const Dropdown = () => {
       { key: 'delete', label: 'Delete', danger: true },
     ],
   });
+  // Not "Type": the editor hides the fx toggle on a field labelled exactly that (QA PF-283).
   const [type] = ToolJet.useStateEnumeration({
     name: 'type',
-    label: 'Type',
+    label: 'Button type',
     enumDefinition: ['default', 'primary'],
     initialValue: 'default',
   });
@@ -214,7 +217,7 @@ export const Dropdown = () => {
   const [placement] = ToolJet.useStateEnumeration({
     name: 'placement',
     label: 'Placement',
-    enumDefinition: ['bottomLeft', 'bottom', 'bottomRight', 'topLeft', 'top', 'topRight'],
+    enumDefinition: [...PLACEMENTS],
     initialValue: 'bottomLeft',
   });
   const [arrow] = ToolJet.useStateBoolean({ name: 'arrow', label: 'Arrow', initialValue: false });
@@ -269,7 +272,8 @@ export const Dropdown = () => {
     open: list.open,
     onOpenChange: (next: boolean) => list.onOpenChange(next),
     trigger: [trigger as 'click'],
-    placement: placement as 'bottomLeft',
+    // Ant calls placement.includes, so an object bound to it crashed the widget (QA PF-090).
+    placement: oneOf(placement, PLACEMENTS, 'bottomLeft'),
     arrow,
     disabled,
     autoFocus: focusList,
