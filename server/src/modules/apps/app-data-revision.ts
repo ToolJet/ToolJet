@@ -3,6 +3,7 @@ import { EntityManager } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { findUserGroupsWithAppAccess } from '@modules/group-permissions/repository';
+import { HELD_MIGRATION_LOCKS_SQL } from '../../migration-helpers/migration-locks';
 
 // License terms the released-app and released-version responses depend on: permission filtering,
 // page groups and modules, JS libraries (stripped without the license), and the environment and
@@ -27,14 +28,23 @@ export interface AppDataRevisionScope {
   licenseTerms: unknown;
 }
 
-// Database triggers (migration AddViewerCacheStamps) set this whenever something changes what the
+// `stamp`: set by database triggers (migration AddViewerCacheStamps) whenever something changes what the
 // released app shows without a new release: its permissions, the theme, an embedded module, a link.
-async function getAppChangeStamp(manager: EntityManager, appId: string): Promise<string | null> {
-  const rows: { stamp: string | null }[] = await manager.query(
-    'SELECT updated_at::text AS stamp FROM app_viewer_cache_stamps WHERE app_id = $1',
+// `epoch`: the last migration id handed out. In async mode a data migration can rewrite components after the new
+// server version is already serving, so the version alone would keep the pre-migration copy. Read from the
+// sequence, not the table: an upgrade holds LOCK TABLE migrations until it commits. The sequence moves before the
+// run commits, so a held active lock marks the epoch too: nothing read mid-run is cached under the final key.
+async function getChangeStamps(
+  manager: EntityManager,
+  appId: string
+): Promise<{ stamp: string | null; epoch: string | null }> {
+  const [row]: { stamp: string | null; epoch: string | null }[] = await manager.query(
+    `SELECT (SELECT updated_at::text FROM app_viewer_cache_stamps WHERE app_id = $1) AS stamp,
+            (SELECT last_value::text FROM migrations_id_seq)
+              || CASE WHEN (SELECT migrating FROM (${HELD_MIGRATION_LOCKS_SQL}) migration_locks) THEN ':migrating' ELSE '' END AS epoch`,
     [appId]
   );
-  return rows[0]?.stamp ?? null;
+  return { stamp: row?.stamp ?? null, epoch: row?.epoch ?? null };
 }
 
 // Permissions are checked against these groups, so joining or leaving one, or a group gaining or
@@ -52,19 +62,18 @@ async function getViewerGroupIds(
 // Cache key for a released app's data, used by the viewer's IndexedDB cache and the version
 // endpoint's ETag. The change stamp and the viewer's groups cover data changes; the server
 // version and license are read live, since they change with no database write or differ between
-// servers mid-deploy. The server version also covers migrations, which only ship with a new
-// version. Not apps.updated_at, which every draft edit bumps. Null means "don't cache".
+// servers mid-deploy. Not apps.updated_at, which every draft edit bumps. Null means "don't cache".
 // Adding something the released app shows? See "Released-app viewer cache" in AGENTS.md.
 export async function getAppDataRevision(
   manager: EntityManager,
   app: Pick<App, 'id' | 'name' | 'isPublic' | 'isMaintenanceOn' | 'organizationId'>,
   scope: AppDataRevisionScope
 ): Promise<string | null> {
-  let appStamp: string | null;
+  let stamps: { stamp: string | null; epoch: string | null };
   let groupIds: string[];
   try {
-    [appStamp, groupIds] = await Promise.all([
-      getAppChangeStamp(manager, app.id),
+    [stamps, groupIds] = await Promise.all([
+      getChangeStamps(manager, app.id),
       getViewerGroupIds(manager, app, scope.userId),
     ]);
   } catch {
@@ -76,7 +85,8 @@ export async function getAppDataRevision(
     app.isPublic,
     app.isMaintenanceOn,
     scope.versionId,
-    appStamp,
+    stamps.stamp,
+    stamps.epoch,
     scope.userId ?? null,
     groupIds,
     globalThis.TOOLJET_VERSION ?? null,
