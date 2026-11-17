@@ -78,8 +78,11 @@ export const getRuntimePanelContentStyle = (isExpanded, panelTop) =>
 export const getCanvasReservedBottom = (runtimeContentHeight, isMobile) =>
   isMobile ? RUNTIME_PANEL_COLLAPSED_HEIGHT : runtimeContentHeight;
 
-export const getRuntimePanelMeasuredHeight = (isExpanded, measuredHeight) =>
-  isExpanded ? measuredHeight + RUNTIME_PANEL_COLLAPSED_HEIGHT : 0;
+// The drawer animates its height, so reading the DOM when a drag or an expand ends gets a mid-transition
+// value (PL-35). Its content starts at topPercent of the viewport and sits on the tab bar, so the two span
+// the rest of the viewport.
+export const getRuntimePanelCommittedHeight = (isExpanded, topPercent, viewportPx) =>
+  isExpanded ? (viewportPx * (100 - topPercent)) / 100 : 0;
 
 export const getLeftPanelReservedBottom = (isExpanded, measuredHeight) =>
   isExpanded ? Math.max(measuredHeight, RUNTIME_PANEL_COLLAPSED_HEIGHT) : RUNTIME_PANEL_COLLAPSED_HEIGHT;

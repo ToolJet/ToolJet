@@ -14,6 +14,7 @@ import {
   openEditor,
   openPanel,
   seedPanelApp,
+  settledValue,
 } from "Support/utils/appBuilder/panelAudit";
 
 // 683x600 is a 1024px screen at 150% zoom. QA ids come from the panel redesign QA report
@@ -439,9 +440,11 @@ describe("Panel sweep", { testIsolation: false }, () => {
 
     flow("[UC-14] New page stays pinned at the bottom of the Pages panel", (violations) => {
       openPanel("pages");
-      cy.get(".add-new-page").then(($button) => {
-        const panel = $button[0].closest(".left-sidebar-panel-content").getBoundingClientRect();
-        const gap = Math.round(panel.bottom - $button[0].getBoundingClientRect().bottom);
+      // The Pages panel ends where the drawer starts, so its bottom moves until the drawer height settles.
+      settledValue((doc) => {
+        const button = doc.querySelector(".add-new-page");
+        return Math.round(button.closest(".left-sidebar-panel-content").getBoundingClientRect().bottom - button.getBoundingClientRect().bottom);
+      }).then((gap) => {
         if (gap > 24) violations.push(`New page sits ${gap}px above the panel bottom`);
       });
     });

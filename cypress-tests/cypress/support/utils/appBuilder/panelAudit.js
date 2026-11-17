@@ -146,6 +146,21 @@ export const PANELS = {
 
 export const openPanel = (name) => PANELS[name].open();
 
+// Yields `measure(doc)` once it has held for `ms`, so nothing is read while a panel still animates or
+// follows the drawer's committed height.
+export const settledValue = (measure, ms = 500) => {
+  let last;
+  let since;
+  return cy
+    .document()
+    .should((doc) => {
+      const now = JSON.stringify(measure(doc));
+      if (now !== last) [last, since] = [now, Date.now()];
+      expect(Date.now() - since, "ms the measurement has held").to.be.at.least(ms);
+    })
+    .then(() => JSON.parse(last));
+};
+
 export const AUDIT_CHECKS = [
   { ids: ["UB-04"], key: "unnamed", title: "every focusable control has an accessible name" },
   { ids: ["UB-05", "UB-06", "UB-07", "UB-08"], key: "lowContrast", title: "text reaches WCAG AA on its background" },

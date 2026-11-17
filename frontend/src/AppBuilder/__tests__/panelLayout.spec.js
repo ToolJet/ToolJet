@@ -6,7 +6,7 @@ import {
   RUNTIME_PANEL_ITEMS,
   getRuntimePanelContentStyle,
   getCanvasReservedBottom,
-  getRuntimePanelMeasuredHeight,
+  getRuntimePanelCommittedHeight,
   getRuntimePanelTheme,
   getRightPanelForSelection,
   getPageSettingsSections,
@@ -158,11 +158,13 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getCanvasReservedBottom(240, true)).toBe(38);
   });
 
-  // Break this catches: closing the drawer stores an in-flight expanded height and restores the blank canvas gap.
-  it('never measures transitional content height for a collapsed drawer', () => {
-    expect(getRuntimePanelMeasuredHeight(false, 222)).toBe(0);
-    // Open content sits on the tab bar, so the reserved height includes the bar.
-    expect(getRuntimePanelMeasuredHeight(true, 222)).toBe(260);
+  // Break this catches (PL-35): a closed drawer keeps a reserve, or an open one reserves less than the
+  // content plus the tab bar under it, leaving a dead strip between the canvas and the drawer.
+  it('reserves the drawer from its top edge to the viewport bottom, and nothing when closed', () => {
+    expect(getRuntimePanelCommittedHeight(false, 70, 900)).toBe(0);
+    expect(getRuntimePanelCommittedHeight(true, 70, 900)).toBe(270);
+    expect(getRuntimePanelCommittedHeight(true, 45, 900)).toBe(495);
+    expect(getRuntimePanelCommittedHeight(true, 92, 900)).toBe(72);
   });
 
   // Break this catches: either side panel snaps shut or the bottom drawer uses a different motion curve.

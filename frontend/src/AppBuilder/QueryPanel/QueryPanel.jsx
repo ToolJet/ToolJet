@@ -17,13 +17,15 @@ import {
   RUNTIME_PANEL_ITEMS,
   PANEL_MOTION,
   getRuntimePanelContentStyle,
-  getRuntimePanelMeasuredHeight,
+  getRuntimePanelCommittedHeight,
   getRuntimePanelRightOffset,
   getRuntimePanelTheme,
   getRuntimeTabClickAction,
 } from '@/AppBuilder/panelLayout';
 
 const RUNTIME_PANEL_ICONS = { inspect: ScanSearch, debugger: Bug };
+
+const getDragTop = (clientY) => Math.min(Math.max((clientY / window.innerHeight) * 100, 45), 92);
 
 export const QueryPanel = ({ darkMode }) => {
   const { moduleId, appType } = useModuleContext();
@@ -50,7 +52,7 @@ export const QueryPanel = ({ darkMode }) => {
   const panelRef = useRef(null);
   const [height, setHeight] = useState(panelPreferences.current.panelTop ?? 70);
   const [isResizeHandleActive, setResizeHandleActive] = useState(false);
-  const [windowSize, isWindowResizing] = useWindowResize();
+  const [windowSize] = useWindowResize();
 
   useEffect(() => {
     const unsubscribe = useStore.subscribe(({ queryPanel: { selectedQuery } }, prevState) => {
@@ -69,10 +71,11 @@ export const QueryPanel = ({ darkMode }) => {
     return unsubscribe;
   }, []);
 
+  // A drag commits once, on release, so the canvas does not re-layout on every move.
   useEffect(() => {
-    const measuredHeight = panelRef.current?.offsetHeight ?? 0;
-    setQueryPanelHeight(getRuntimePanelMeasuredHeight(isQueryPaneExpanded, measuredHeight));
-  }, [windowSize.height, isQueryPaneExpanded, isWindowResizing, setQueryPanelHeight]);
+    if (isDraggingQueryPane) return;
+    setQueryPanelHeight(getRuntimePanelCommittedHeight(isQueryPaneExpanded, height, windowSize.height));
+  }, [windowSize.height, isQueryPaneExpanded, isDraggingQueryPane, height, setQueryPanelHeight]);
 
   useEffect(() => {
     if (isQueryPaneExpanded) {
@@ -124,7 +127,7 @@ export const QueryPanel = ({ darkMode }) => {
       const panelTop = Math.round(panelRef.current.getBoundingClientRect().top);
       const overHandle = event.clientY >= panelTop && event.clientY <= panelTop + 3;
       if (overHandle !== isResizeHandleActive) setResizeHandleActive(overHandle);
-      if (isDraggingQueryPane) setHeight(Math.min(Math.max((event.clientY / window.innerHeight) * 100, 45), 92));
+      if (isDraggingQueryPane) setHeight(getDragTop(event.clientY));
     },
     [isDraggingQueryPane, isResizeHandleActive]
   );
@@ -132,11 +135,14 @@ export const QueryPanel = ({ darkMode }) => {
   useEventListener('mousemove', onMouseMove);
   useEventListener(
     'mouseup',
-    () => {
+    (event) => {
       if (!isDraggingQueryPane) return;
+      // Taken from the release point, because `height` is a render behind when the last move and the
+      // release land in the same frame.
+      const panelTop = getDragTop(event.clientY);
       setIsDraggingQueryPane(false);
-      persistPanel(true, height);
-      setQueryPanelHeight(getRuntimePanelMeasuredHeight(true, panelRef.current?.offsetHeight ?? 0));
+      setHeight(panelTop);
+      persistPanel(true, panelTop);
     },
     document
   );
