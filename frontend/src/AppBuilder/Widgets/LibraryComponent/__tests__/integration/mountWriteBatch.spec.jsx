@@ -94,7 +94,7 @@ describe('pack mount store writes', () => {
       await waitFor(() => expect(view.container.ownerDocument.querySelectorAll('[data-cy]')).toHaveLength(10));
       await waitFor(() => ids.forEach((id) => expect(exposed(id)).toEqual({ value: 'a', checked: true })));
       unsubscribe();
-      // 10 widgets x 2 variables were 20 updates; now the mount commit's writes are one (dependency updates aside).
+      // 10 widgets x 2 variables were 20 updates; now the mount commit's writes are one.
       expect(updates).toBe(1);
       expect(useStore.getState().isExposedValueBatching()).toBe(false);
     }
