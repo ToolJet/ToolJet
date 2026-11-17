@@ -13,8 +13,7 @@ export const stripePlanPrices = {
   },
 };
 
-// GET /organization/payment/:orgId/plan and /plan-prices call Stripe, which a local or CI
-// deployment does not have. These stubs return what the server sends once Stripe answers.
+// These endpoints call Stripe, which local and CI deployments don't have.
 export const stubCurrentSubscription = (subscription = null) => {
   const body = subscription
     ? {

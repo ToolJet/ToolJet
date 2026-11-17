@@ -7,7 +7,6 @@ const isoDaysFromNow = (days) =>
 
 const LOOPBACK_HOSTS = ["localhost", "127.0.0.1", "::1"];
 
-// Seeds write straight to the app DB, so both the server and the DB must be a local throwaway deployment.
 const assertCloudTarget = () => {
   const serverHost = new URL(Cypress.env("server_host")).hostname;
   const db = Cypress.env("app_db") || {};

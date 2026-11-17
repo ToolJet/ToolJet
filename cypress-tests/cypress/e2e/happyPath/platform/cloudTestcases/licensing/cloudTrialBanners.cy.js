@@ -50,7 +50,6 @@ describe("Cloud Licensing — Trial Banners", { retries: 0 }, () => {
     cy.window({ log: false }).then((win) => win.localStorage.setItem("walkthroughCompleted", "true"));
   });
 
-  // Workspace on the free plan whose owner has not used a trial yet.
   const resetToUnclaimedBasic = () => {
     cy.apiSetCloudPlan("basic", { workspaceId: signup.workspaceId });
     cy.runSqlQueryOnDB(`UPDATE users SET trial_claimed_at = NULL WHERE id = '${signup.userId}';`);

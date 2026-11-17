@@ -54,8 +54,7 @@ const balanceBody = (balance) => ({
   plan: { topup: 0, recurring: balance, total: balance },
 });
 
-// Port 0 / unset disables the stub. A taken port fails the run: a foreign process
-// answering on it would silently decide the AI credit tests.
+// A taken port must fail the run, or another process would answer the AI credit tests.
 const startAiGatewayStub = (port) =>
   new Promise((resolve, reject) => {
     if (aiGatewayServer || !port) return resolve();

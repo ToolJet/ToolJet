@@ -72,8 +72,6 @@ describe("Cloud Subscription — Footer Actions", { retries: 0 }, () => {
     verifyPaidFooter(cloudSubscriptionText.pricesUnavailableTotal);
   });
 
-  // Suspected product bug: SubscriptionFooter reads planForm.invoice / planForm.currentPeriodEnd,
-  // but fetchCurrentPlanDetails never copies them into planForm, so it always shows "Due today".
   it.skip("should show the subscription's next due date in the paid footer", () => {
     const periodEnd = new Date(Date.now() + 20 * 24 * 60 * 60 * 1000);
     cy.apiSetCloudPlan("pro", { workspaceId });

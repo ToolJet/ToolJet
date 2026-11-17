@@ -15,7 +15,6 @@ export const cloudSubscriptionText = {
     team: "Team plan",
   },
 
-  // Display label on the page -> key in the limits API response
   limitLabels: {
     totalUsers: "Total users",
     builders: "Builders",
@@ -25,7 +24,6 @@ export const cloudSubscriptionText = {
     rows: "Rows",
   },
 
-  // Feature access labels keyed by the /api/license/access field they reflect
   featureLabels: {
     customGroups: "Custom user groups",
     google: "Google SSO",

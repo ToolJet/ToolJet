@@ -5,7 +5,6 @@ import { createFreshCloudWorkspace } from "Support/utils/platform/ai";
 
 const formatCredits = (value) => Number(value).toLocaleString("en-US");
 
-// Same DD/MM/YYYY (UTC) format the Subscription page uses.
 const formatDate = (iso) => {
   const d = new Date(iso);
   const pad = (n) => String(n).padStart(2, "0");

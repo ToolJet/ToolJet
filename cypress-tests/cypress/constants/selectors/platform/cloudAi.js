@@ -1,4 +1,3 @@
-// Cloud Subscription page AI credits block and Add AI credits modal: most elements have no data-cy.
 export const cloudAiSelectors = {
   creditsBlock: ".ai-top-up-container",
   creditsRow: ".ai-top-up-container .inner-container",

@@ -8,7 +8,6 @@ import { whitelabelTestData } from "Constants/constants/whitelabel";
 export const openWhiteLabelingSettings = (
   workspaceId = Cypress.env("workspaceId")
 ) => {
-  // Cloud keeps white labelling per workspace under /:workspaceId/settings
   if (Cypress.env("environment") === "Cloud") {
     cy.intercept("PUT", `**/api/white-labelling/${workspaceId}`).as(
       "saveWhitelabel"

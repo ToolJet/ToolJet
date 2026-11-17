@@ -1245,7 +1245,6 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig, organizationId = Cypress.env("workspaceId")) => {
-  // Cloud stores white labelling per workspace; other editions keep one instance-level config.
   const scope = Cypress.env("environment") === "Cloud" ? `/${organizationId}` : "";
   return cy.getAuthHeaders().then((headers) => {
     return cy

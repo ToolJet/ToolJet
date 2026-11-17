@@ -31,7 +31,6 @@ module.exports = defineConfig({
     specPattern: ["cypress/e2e/happyPath/platform/cloudTestcases/**/*.cy.js"],
 
     testIsolation: true,
-    // Repo convention: every spec sets retries: 0, so a flake shows up as a failure instead of hiding behind a retry.
     retries: {
       runMode: 0,
       openMode: 0,

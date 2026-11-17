@@ -206,8 +206,7 @@ export const verifyFixWithAiInStyles = (appName, options = {}) => {
 };
 
 
-// Cloud: log the signup admin back in and give the test a new workspace of its own, so its plan
-// is set before the server caches a licence for it. A Cloud user can own at most 5 workspaces.
+// A fresh workspace per test lets its plan be set before the server caches its licence.
 export const createFreshCloudWorkspace = (adminEmail, loginWorkspaceId, password = "password") => {
   const name = `cloud-ai-${Date.now()}`;
   cy.apiLogin(adminEmail, password, loginWorkspaceId);

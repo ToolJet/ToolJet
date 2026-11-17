@@ -701,7 +701,6 @@ export const multiEnvAppSetup = (appName) => {
   );
 };
 
-// Cloud pricing table (UpgradePlanModal). currentPlan null = no column marked (trial).
 export const verifyUpgradePlanModal = ({ currentPlan = null } = {}) => {
   const { plans, planNames, currentPlan: currentText } = cloudLicenseText.upgradeModal;
 
@@ -740,6 +739,5 @@ export const closeUpgradePlanModal = () => {
   cy.get(cloudLicenseSelectors.upgradePlanModal).should("not.exist");
 };
 
-// Cloud licence button in the dashboard header (LicenseNavBarActions).
 export const navBarLicenseButton = (text) =>
   cy.get(cloudLicenseSelectors.navBarActions).contains("button", text);

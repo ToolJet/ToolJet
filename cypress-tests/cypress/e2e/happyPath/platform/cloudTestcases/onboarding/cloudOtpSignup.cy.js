@@ -105,7 +105,6 @@ describe("Cloud Onboarding — OTP Signup", { retries: 0 }, () => {
         headers,
         failOnStatusCode: false,
       }).then(({ status, body }) => {
-        // The licence gate (no MFA term on cloud plans) rejects before the service's edition 403.
         expect(status, "mfa/setup status").to.equal(451);
         expect(body.message).to.equal(onboardingText.planFeatureBlockedError);
       });
