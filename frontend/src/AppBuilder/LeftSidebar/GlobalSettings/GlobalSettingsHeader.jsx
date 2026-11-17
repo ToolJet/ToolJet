@@ -1,4 +1,5 @@
 import React from 'react';
+import { getPanelCloseLabel, SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 import { Button } from '@/components/ui/Button/Button';
 import cx from 'classnames';
 import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
@@ -6,9 +7,9 @@ import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
 const GlobalSettingsHeader = ({ darkMode, onClose, onBackToSearch }) => {
   return (
     <PanelHeader
-      title="App settings"
+      title={SIDEBAR_ITEMS.settings.name}
       onClose={onClose}
-      closeLabel="Close app settings"
+      closeLabel={getPanelCloseLabel('settings')}
       closeDataCy="global-settings-close-button"
       className={cx('global-settings-header', { 'dark-theme': darkMode })}
       titleClassName="global-settings-header-title"

@@ -121,14 +121,15 @@ describe('panel source audit', () => {
     expect(sites.filter((site) => !tjdbPage(site))).toEqual([]);
   });
 
-  test.failing('[UC-21] rail items take their names from one registry, not per-call railLabel props', () => {
-    // LeftSidebar.jsx:260-351 and the ee rail icons each set tip, railLabel and aria names by hand.
+  test('[UC-21] rail items take their names from one registry, not per-call railLabel props', () => {
     expect(matches(RAIL_FILES, /\brailLabel=/)).toEqual([]);
   });
 
-  test.failing('[UC-24] panel search fields say what they search instead of a bare "Search"', () => {
-    // CodeSearch.tsx:396, DependencyViewer.tsx:128, RuntimeInspector.jsx:296, among others.
-    expect(matches(PANEL_ROOTS, /placeholder=(?:"Search"|\{\s*['"]Search['"]\s*\})/)).toEqual([]);
+  test('[UC-24] panel search fields say what they search instead of a bare "Search"', () => {
+    // The TJDB query editor's select is shared with the TJDB pages, which the scope rule leaves alone.
+    const tjdbShared = 'src/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/SelectBox.jsx';
+    const bare = matches(PANEL_ROOTS, /placeholder=(?:"Search"|\{\s*['"]Search['"]\s*\})/);
+    expect(bare.filter((site) => !site.startsWith(`${tjdbShared}:`))).toEqual([]);
   });
 
   test('[UB-09] each segmented-toggle rule sets one font size', () => {
@@ -140,10 +141,9 @@ describe('panel source audit', () => {
     // A small size reads --app-builder-small-font-size with its old value as the fallback, so it is
     // 12px in the editor and unchanged where shared styles render outside it.
     const onScale = /^(?:(?:12|13|14|16)px|var\(--app-builder-small-font-size,)/;
-    // Fixed boxes that cannot fit 12px: the rail label (42px item; its size waits on the rail names in U7)
-    // and the 72x26 palette tile title, an allowed type-scale exception. The data-source suggestion
-    // heading is shared with the data-sources page, which keeps its size.
-    const pendingFit = ['.left-sidebar-item-label', '.component-title', '.suggestion-container'];
+    // The 72x26 palette tile title cannot fit 12px, an allowed type-scale exception. The data-source
+    // suggestion heading is shared with the data-sources page, which keeps its size.
+    const pendingFit = ['.component-title', '.suggestion-container'];
     const sheets = files([...PANEL_ROOTS, 'src/_styles/left-sidebar.scss'], /\.scss$/);
     const offScale = sheets.flatMap((file) => {
       const src = fs.readFileSync(file, 'utf8');

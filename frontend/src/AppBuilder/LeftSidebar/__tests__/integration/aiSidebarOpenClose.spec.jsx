@@ -1,5 +1,5 @@
 /**
- * AI sidebar open/close, with the real enterprise rail item and chat: the "AI agent" rail item
+ * AI sidebar open/close, with the real enterprise rail item and chat: the "AI chat" rail item
  * opens the AI chat in the left panel, and the chat goes away from its own close button or from a
  * second click on the rail item. The community edition has no AI rail item, so these are skipped there.
  */
@@ -20,7 +20,7 @@ const leftPanel = () => ({ item: state().selectedSidebarItem, open: state().isSi
 const eeTest = process.env.TOOLJET_EDITION === 'ce' ? test.skip : test;
 const publicConfig = window.public_config;
 
-const aiRailItem = () => screen.getByRole('button', { name: 'AI agent' });
+const aiRailItem = () => screen.getByRole('button', { name: 'AI chat' });
 const chatPanel = () => screen.queryByRole('dialog');
 const openChat = async (user) => {
   await user.click(aiRailItem());

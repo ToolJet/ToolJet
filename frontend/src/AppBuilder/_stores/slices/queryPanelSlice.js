@@ -117,7 +117,7 @@ export const createQueryPanelSlice = (set, get) => ({
         false,
         'setRuntimePanelTab'
       ),
-    // Every "inspect this" entry point (State inspector, Entity usage links) lands here.
+    // Every "inspect this" entry point (Open inspector, Entity usage links) lands here.
     openRuntimeInspector: (path) => {
       get().setSelectedNodePath(path);
       set(

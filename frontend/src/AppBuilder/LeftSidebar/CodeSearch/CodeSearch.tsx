@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { getPanelCloseLabel, SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
 import { ChevronsDownUp, ChevronsUpDown, FileText, type LucideIcon } from 'lucide-react';
@@ -380,9 +381,9 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
     <div ref={rootRef} className={cx('code-search', { 'dark-theme': darkMode })} onKeyDown={handleKeyDown}>
       <div className="inspector-header code-search-header">
         <PanelHeader
-          title="Code search"
+          title={SIDEBAR_ITEMS.search.name}
           onClose={onClose}
-          closeLabel="Close code search"
+          closeLabel={getPanelCloseLabel('search')}
           closeDataCy="code-search-close-button"
           divider={false}
         />
@@ -393,7 +394,8 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTerm(e.target.value)}
               onClear={() => setTerm('')}
               size="medium"
-              placeholder="Search"
+              placeholder="Search code"
+              aria-label="Search code"
               value={term}
               {...(term && { trailingAction: 'clear' })}
             />

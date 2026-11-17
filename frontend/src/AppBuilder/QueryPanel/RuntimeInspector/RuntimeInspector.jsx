@@ -48,6 +48,7 @@ import {
   containsSelectedPath,
 } from './runtimeInspectorUtils';
 import RuntimePanelCloseButton from '@/AppBuilder/QueryPanel/RuntimePanelCloseButton';
+import { getRuntimeSearchName } from '@/AppBuilder/panelLayout';
 import RuntimeFilterSelect from '@/AppBuilder/QueryPanel/RuntimeFilterSelect';
 import './styles.scss';
 
@@ -293,8 +294,8 @@ const RuntimeInspector = ({ darkMode, moduleId, appType, onClose }) => {
           <input
             value={searchValue}
             onChange={(event) => setSearchValue(event.target.value)}
-            placeholder="Search"
-            aria-label="Search inspector"
+            placeholder={getRuntimeSearchName('inspect')}
+            aria-label={getRuntimeSearchName('inspect')}
             data-cy="inspector-search-input"
           />
           {searchValue && (
@@ -329,6 +330,7 @@ const RuntimeInspector = ({ darkMode, moduleId, appType, onClose }) => {
         />
         {onClose && (
           <RuntimePanelCloseButton
+            tab="inspect"
             onClose={onClose}
             dataCy="runtime-inspector-close-button"
             className="runtime-inspector__close--end"

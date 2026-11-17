@@ -46,7 +46,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Custom Component** | A user-created component built with React for functionality beyond built-in components | — |
 | **Layout** | Positioning metadata (top, left, width, height) for a component on the canvas grid | — |
 | **Canvas** | The visual workspace area in the App-Builder where components are placed | — |
-| **Left Sidebar** | App-Builder navigation rail and contextual panel containing Pages, Components, Queries, and Settings | — |
+| **Left Sidebar** | App-Builder navigation rail and contextual panel containing Pages, Components, Queries, and Settings. Each rail item is named after the panel it opens (`SIDEBAR_ITEMS` in `frontend/src/AppBuilder/panelLayout.js`): one name for its accessible name, tooltip, panel title and "Close <name>" button | — |
 | **Right Sidebar** | App-Builder panel for component properties and styles | — |
 | **Toolbar** | The top bar of the App-Builder with version management, undo/redo, preview, and release | — |
 | **Module** | A reusable app-level building block shared across apps (EE feature; app type `MODULE`) | "module" also means a NestJS backend module — always qualify |
@@ -77,7 +77,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Environment-Specific Configuration** | Constants and secrets can hold different values per environment (dev/staging/prod) | — |
 | **Inspector** | The Runtime Drawer tab for viewing runtime state: a split view with an entity list (sections: Queries, Components, Globals, Variables, Page, Constants) beside the selected entity's values | Debugger (separate tab) |
 | **Debugger** | The Runtime Drawer tab listing runtime logs (errors, warnings, info, success) from queries, transformations, events and component validation, filterable by level and page, beside the selected log's details | Console (the browser console is separate) |
-| **Runtime Drawer** | The collapsible bottom App-Builder panel containing Inspector and Debugger | Query Panel (legacy bottom panel) |
+| **Runtime Drawer** | The collapsible bottom App-Builder panel containing Inspector and Debugger. In the UI it is always called by its open tab ("Open inspector", "Close debugger"), never "runtime panel" (`RUNTIME_PANEL_ITEMS`, `getRuntimeToggleLabel`) | Query Panel (legacy bottom panel) |
 | **Transformation** | A JavaScript/Python transform applied to query results before binding to components | — |
 
 ## Versioning & Deployment

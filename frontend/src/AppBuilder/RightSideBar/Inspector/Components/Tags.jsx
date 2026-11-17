@@ -446,7 +446,7 @@ export const Tags = ({
 
   items.push({
     id: ADDITIONAL_ACTIONS_ACCORDION_ID,
-    title: `Additional Actions`,
+    title: `Additional actions`,
     isOpen: true,
     children: additionalActions.map((property) => {
       return renderElement(

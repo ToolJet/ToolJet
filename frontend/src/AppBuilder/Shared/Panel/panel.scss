@@ -116,3 +116,18 @@ body.app-builder-chrome {
     background: var(--interactive-hover);
   }
 }
+
+// Panel copy is sentence case (UC-26). Accordion titles that ask for title case capitalise only
+// their first letter in the editor ("Trigger button", "Additional actions"); elsewhere they keep
+// Bootstrap's text-capitalize.
+body.app-builder-chrome .accordion-title-text.text-capitalize {
+  text-transform: none !important;
+
+  .accordion-title-label {
+    display: inline-block;
+
+    &::first-letter {
+      text-transform: uppercase;
+    }
+  }
+}

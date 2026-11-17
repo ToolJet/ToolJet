@@ -1,5 +1,8 @@
 import {
-  LEFT_PANEL_SECTIONS,
+  SIDEBAR_ITEMS,
+  getPanelCloseLabel,
+  getRuntimeSearchName,
+  getRuntimeToggleLabel,
   PANEL_MOTION,
   EDITOR_CANVAS_WIDTH,
   RUNTIME_PANEL_COLLAPSED_HEIGHT,
@@ -105,25 +108,6 @@ const tooljetDbJoinSortSource = fs.readFileSync(
 describe('AB-PANEL-001 app builder panel composition', () => {
   // Break this catches: a migrated surface is accidentally restored to the old right or bottom navigation.
   it('keeps build navigation on the left and runtime diagnostics in the bottom drawer', () => {
-    expect(LEFT_PANEL_SECTIONS).toEqual([
-      {
-        id: 'build',
-        items: [
-          { id: 'pages', label: 'Pages', icon: 'files' },
-          { id: 'components', label: 'Components', icon: 'blocks' },
-          { id: 'queries', label: 'Queries', icon: 'database-zap' },
-          { id: 'libraries', label: 'Libraries', icon: 'box' },
-        ],
-      },
-      {
-        id: 'manage',
-        items: [
-          { id: 'dependencies', label: 'Dependencies', icon: 'network' },
-          { id: 'apphistory', label: 'App history', icon: 'history' },
-          { id: 'settings', label: 'Settings', icon: 'settings' },
-        ],
-      },
-    ]);
     expect(RUNTIME_PANEL_ITEMS.map(({ id }) => id)).toEqual(['inspect', 'debugger']);
     expect(RUNTIME_PANEL_COLLAPSED_HEIGHT).toBe(38);
     expect(EDITOR_CANVAS_WIDTH).toBe('calc(100% - 54px)');
@@ -205,21 +189,6 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     };
     expect(getRuntimePanelTheme(false)).toEqual(tokens);
     expect(getRuntimePanelTheme(true)).toEqual(tokens);
-  });
-
-  // Break this catches: generic or mismatched glyphs replace the approved Lucide rail icons.
-  it('uses the selected-anchor prototype icon set for every implemented rail destination', () => {
-    const railIcons = LEFT_PANEL_SECTIONS.flatMap(({ items }) => items).map(({ id, icon }) => [id, icon]);
-
-    expect(railIcons).toEqual([
-      ['pages', 'files'],
-      ['components', 'blocks'],
-      ['queries', 'database-zap'],
-      ['libraries', 'box'],
-      ['dependencies', 'network'],
-      ['apphistory', 'history'],
-      ['settings', 'settings'],
-    ]);
   });
 
   it('shows Libraries only for licensed apps outside the module editor', () => {
@@ -686,5 +655,35 @@ describe('AB-PANEL-001 app builder panel composition', () => {
   it('uses an exact viewport calculation instead of a fractional vh conversion', () => {
     expect(getLeftPanelHeight(false, 224)).toBe('calc(100vh - 86px)');
     expect(getLeftPanelHeight(true, 224)).toBe('calc(100vh - 272px)');
+  });
+});
+
+describe('AB-PANEL-NAMES panel and drawer names', () => {
+  // Break this catches: renaming a panel moves the data-cy hook that Cypress specs click.
+  it('keeps every rail data-cy hook frozen', () => {
+    expect(Object.fromEntries(Object.entries(SIDEBAR_ITEMS).map(([panel, { cy }]) => [panel, cy]))).toEqual({
+      tooljetai: 'ai-agent',
+      pages: 'pages',
+      components: 'components',
+      queries: 'queries',
+      libraries: 'libraries',
+      search: 'code-search',
+      dependencies: 'dependencies',
+      apphistory: 'app-history',
+      settings: 'settings',
+    });
+  });
+
+  it('closes a panel by its name, keeping acronyms', () => {
+    expect(getPanelCloseLabel('settings')).toBe('Close app settings');
+    expect(getPanelCloseLabel('tooljetai')).toBe('Close AI chat');
+  });
+
+  // UC-23: the drawer is called Inspector or Debugger at every entry point.
+  it('names the drawer after its tab, and each search box after what it searches', () => {
+    expect(getRuntimeToggleLabel(true, 'inspect')).toBe('Close inspector');
+    expect(getRuntimeToggleLabel(false, 'debugger')).toBe('Open debugger');
+    expect(getRuntimeSearchName('inspect')).toBe('Search inspector');
+    expect(getRuntimeSearchName('debugger')).toBe('Search logs');
   });
 });

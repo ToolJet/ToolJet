@@ -20,7 +20,7 @@ import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
 import Beta from '@/_ui/Beta';
 import './styles.scss';
-import { getComponentPickerClassName } from '@/AppBuilder/panelLayout';
+import { getComponentPickerClassName, getPanelCloseLabel, SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 
 // Simple error boundary component for module errors
 class ModuleErrorBoundary extends React.Component {
@@ -219,6 +219,12 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surfac
   // Remove renderSection, replace with Tabs/Tab logic below
 
   const searchBox = () => {
+    const searchName =
+      activeTab === 'components'
+        ? t('globals.searchComponents', 'Search widgets')
+        : activeTab === 'custom'
+          ? t('globals.searchCustomComponents', 'Search components')
+          : t('globals.searchModules', 'Search modules');
     return (
       <div className={`input-icon tj-app-input ${isModuleEditor ? '' : 'mt-3'}`}>
         <SearchBox
@@ -229,13 +235,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surfac
             setSearchQuery('');
             filterComponents('');
           }}
-          placeholder={
-            activeTab === 'components'
-              ? t('globals.searchComponents', 'Search widgets')
-              : activeTab === 'custom'
-                ? t('globals.searchCustomComponents', 'Search components')
-                : t('globals.searchModules', 'Search modules')
-          }
+          placeholder={searchName}
+          ariaLabel={searchName}
           customClass={`tj-widgets-search-input tj-text-xsm`}
           showClearButton={false}
           width={266}
@@ -249,9 +250,9 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surfac
       {isModuleEditor || edition === 'ce' ? (
         <>
           <PanelHeader
-            title="Components"
+            title={SIDEBAR_ITEMS.components.name}
             onClose={handleToggle}
-            closeLabel="Close components"
+            closeLabel={getPanelCloseLabel('components')}
             closeDataCy="components-close-button"
             divider={false}
           />
@@ -261,9 +262,9 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surfac
       ) : (
         <>
           <PanelHeader
-            title="Add new component"
+            title={SIDEBAR_ITEMS.components.name}
             onClose={handleToggle}
-            closeLabel="Close components"
+            closeLabel={getPanelCloseLabel('components')}
             closeDataCy="components-close-button"
             divider={false}
           />

@@ -1,5 +1,6 @@
 import React from 'react';
 import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
+import { getRuntimeSearchName } from '@/AppBuilder/panelLayout';
 import InputComponent from '@/components/ui/Input/Index';
 import '../panelHeader.scss';
 
@@ -17,7 +18,8 @@ const InspectorHeader = ({ darkMode, onClose, searchValue, onSearchChange, onSea
             onChange={(e) => onSearchChange(e.target.value)}
             onClear={onSearchClear}
             size="medium"
-            placeholder="Search"
+            placeholder={getRuntimeSearchName('inspect')}
+            aria-label={getRuntimeSearchName('inspect')}
             value={searchValue}
             {...(searchValue && { trailingAction: 'clear' })}
             data-cy="inspector-search-input"

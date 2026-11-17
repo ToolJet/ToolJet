@@ -55,7 +55,7 @@ test('clicking a log shows that log in the detail pane', () => {
 });
 
 test('typing in the search box keeps only the matching logs', () => {
-  fireEvent.change(screen.getByRole('textbox', { name: 'Filter logs' }), { target: { value: 'users' } });
+  fireEvent.change(screen.getByRole('textbox', { name: 'Search logs' }), { target: { value: 'users' } });
 
   expect(rows()).toHaveLength(1);
   expect(list()).toHaveTextContent('Completed');
@@ -63,7 +63,7 @@ test('typing in the search box keeps only the matching logs', () => {
 });
 
 test('a search with no match says so instead of claiming there are no logs', () => {
-  fireEvent.change(screen.getByRole('textbox', { name: 'Filter logs' }), { target: { value: 'zzqqxx' } });
+  fireEvent.change(screen.getByRole('textbox', { name: 'Search logs' }), { target: { value: 'zzqqxx' } });
 
   expect(rows()).toHaveLength(0);
   expect(list()).toHaveTextContent('No logs match');
@@ -97,4 +97,9 @@ test('a log row shows its full source line on hover', () => {
   const source = list().querySelector('.runtime-debugger__row-source');
   expect(source).toHaveTextContent('fetchOrders');
   expect(source).toHaveAttribute('title', source.textContent);
+});
+
+// UC-23/UC-24: the search box says what it searches, and its placeholder is its name.
+test('the search box is named "Search logs", like its placeholder', () => {
+  expect(screen.getByRole('textbox', { name: 'Search logs' })).toHaveAttribute('placeholder', 'Search logs');
 });

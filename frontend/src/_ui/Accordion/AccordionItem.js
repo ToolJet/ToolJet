@@ -53,7 +53,7 @@ const AccordionItem = ({ open = true, index, title, isTitleCase = true, isDeprec
               fontSize: '12px',
             }}
           >
-            {title}
+            <span className="accordion-title-label">{title}</span>
             {isDeprecated && (
               <IconAlertTriangle size={16} stroke={1.5} aria-label="Deprecated" color="var(--icon-danger)" />
             )}

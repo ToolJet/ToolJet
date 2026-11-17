@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { getPanelCloseLabel, SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import RawPanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
@@ -103,10 +104,10 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps
     <div className={`left-sidebar-dependency-viewer ${darkMode ? 'dark-theme' : ''}`}>
       <div className={`inspector-header ${darkMode ? 'dark-theme' : ''}`}>
         <PanelHeader
-          title="Dependencies"
+          title={SIDEBAR_ITEMS.dependencies.name}
           titleDataCy="dependency-viewer-title"
           onClose={onClose}
-          closeLabel="Close dependencies"
+          closeLabel={getPanelCloseLabel('dependencies')}
           closeDataCy="dependency-viewer-close-button"
           divider={false}
         />
@@ -125,7 +126,8 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps
               onChange={(e: any) => setSearchValue(e.target.value)}
               onClear={() => setSearchValue('')}
               size="medium"
-              placeholder="Search"
+              placeholder="Search dependencies"
+              aria-label="Search dependencies"
               value={searchValue}
               {...(searchValue && { trailingAction: 'clear' })}
               data-cy="dependency-viewer-search-input"

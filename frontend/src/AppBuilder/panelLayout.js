@@ -1,24 +1,21 @@
-export const LEFT_PANEL_SECTIONS = [
-  {
-    id: 'build',
-    items: [
-      { id: 'pages', label: 'Pages', icon: 'files' },
-      { id: 'components', label: 'Components', icon: 'blocks' },
-      { id: 'queries', label: 'Queries', icon: 'database-zap' },
-      { id: 'libraries', label: 'Libraries', icon: 'box' },
-    ],
-  },
-  {
-    id: 'manage',
-    items: [
-      { id: 'dependencies', label: 'Dependencies', icon: 'network' },
-      { id: 'apphistory', label: 'App history', icon: 'history' },
-      { id: 'settings', label: 'Settings', icon: 'settings' },
-    ],
-  },
-];
+// One entry per left rail item, keyed by the panel it opens. `name` is that panel's title, the rail
+// item's accessible name and tooltip, and the close button's "Close <name>"; `label` is the short text
+// under the icon; `cy` is frozen to the data-cy hook Cypress specs click (`left-sidebar-<cy>-button`).
+export const SIDEBAR_ITEMS = {
+  tooljetai: { name: 'AI chat', label: 'AI', cy: 'ai-agent' },
+  pages: { name: 'Pages', label: 'Pages', cy: 'pages' },
+  components: { name: 'Components', label: 'Add', cy: 'components' },
+  queries: { name: 'Queries', label: 'Queries', cy: 'queries' },
+  libraries: { name: 'Libraries', label: 'Libraries', cy: 'libraries' },
+  search: { name: 'Code search', label: 'Search', cy: 'code-search' },
+  dependencies: { name: 'Dependencies', label: 'Deps', cy: 'dependencies' },
+  apphistory: { name: 'App history', label: 'History', cy: 'app-history' },
+  settings: { name: 'App settings', label: 'Settings', cy: 'settings' },
+};
 
-export const LEFT_PANEL_ITEMS = LEFT_PANEL_SECTIONS.flatMap(({ items }) => items);
+// "Close app settings", "Close AI chat": the name's first word drops its capital unless it is an acronym.
+export const getPanelCloseLabel = (panel) =>
+  `Close ${SIDEBAR_ITEMS[panel].name.replace(/^[A-Z](?=[a-z])/, (letter) => letter.toLowerCase())}`;
 
 export const RUNTIME_PANEL_COLLAPSED_HEIGHT = 38;
 
@@ -107,10 +104,19 @@ export const getRuntimeTabClickAction = (tab, activeTab, isExpanded) => {
   return tab === activeTab ? 'close' : 'switch';
 };
 
+// The bottom drawer's two tabs. Every entry point (tab, canvas handle, component menu, toggle, close)
+// calls them by `label`, and each search box's placeholder is also its accessible name.
 export const RUNTIME_PANEL_ITEMS = [
-  { id: 'inspect', label: 'Inspector' },
-  { id: 'debugger', label: 'Debugger' },
+  { id: 'inspect', label: 'Inspector', search: 'Search inspector' },
+  { id: 'debugger', label: 'Debugger', search: 'Search logs' },
 ];
+
+const runtimeItem = (id) => RUNTIME_PANEL_ITEMS.find((item) => item.id === id) ?? RUNTIME_PANEL_ITEMS[0];
+
+export const getRuntimeSearchName = (id) => runtimeItem(id).search;
+
+export const getRuntimeToggleLabel = (isExpanded, activeTab) =>
+  `${isExpanded ? 'Close' : 'Open'} ${runtimeItem(activeTab).label.toLowerCase()}`;
 
 export const getRightPanelForSelection = (selectionType) => {
   if (selectionType === 'component') return 'configuration';

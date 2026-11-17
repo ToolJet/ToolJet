@@ -48,6 +48,7 @@ import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
 import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
+import { getRuntimeToggleLabel } from '@/AppBuilder/panelLayout';
 import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -60,7 +61,7 @@ import '../ComponentManagerTab/styles.scss';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
-    label: 'Inspect',
+    label: getRuntimeToggleLabel(false, 'inspect'),
     value: 'inspect',
     icon: <SquareDashedMousePointer size={16} color="var(--icon-weak)" />,
   },

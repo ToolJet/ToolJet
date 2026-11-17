@@ -27,7 +27,7 @@ import { shallow } from 'zustand/shallow';
 import { ToolTip as InspectorTooltip } from '../Inspector/Elements/Components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
-import { getPageSettingsSections } from '@/AppBuilder/panelLayout';
+import { getPageSettingsSections, getPanelCloseLabel, SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 import './PageMenu/style.scss';
 import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
@@ -168,9 +168,9 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
     <div className={cx('inspector pages-settings', { 'pages-settings--navigation': isNavigationSurface })}>
       <div>
         <PanelHeader
-          title={isNavigationSurface ? 'Pages' : 'Page configuration'}
+          title={isNavigationSurface ? SIDEBAR_ITEMS.pages.name : 'Page configuration'}
           onClose={handleToggle}
-          closeLabel={isNavigationSurface ? 'Close pages' : 'Close page configuration'}
+          closeLabel={isNavigationSurface ? getPanelCloseLabel('pages') : 'Close page configuration'}
           closeDataCy="pages-close-button"
           divider={false}
           className={cx({ disabled: shouldFreeze })}

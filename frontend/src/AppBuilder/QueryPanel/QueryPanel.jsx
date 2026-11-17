@@ -22,6 +22,7 @@ import {
   getRuntimePanelRightOffset,
   getRuntimePanelTheme,
   getRuntimeTabClickAction,
+  getRuntimeToggleLabel,
 } from '@/AppBuilder/panelLayout';
 
 const RUNTIME_PANEL_ICONS = { inspect: ScanSearch, debugger: Bug };
@@ -191,11 +192,11 @@ export const QueryPanel = ({ darkMode }) => {
             aria-hidden="true"
           />
         )}
-        <ToolTip message="Toggle runtime panel" placement="top">
+        <ToolTip message={getRuntimeToggleLabel(isQueryPaneExpanded, activeTab)} placement="top">
           <button
             className="runtime-panel-toggle"
             onClick={toggleRuntimePanel}
-            aria-label="Toggle runtime panel"
+            aria-label={getRuntimeToggleLabel(isQueryPaneExpanded, activeTab)}
             // Kept from the old Queries toggle: Cypress specs open and close the bottom panel through it.
             data-cy="query-manager-toggle-button"
           >

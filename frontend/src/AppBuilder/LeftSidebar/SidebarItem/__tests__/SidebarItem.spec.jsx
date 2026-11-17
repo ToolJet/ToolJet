@@ -1,28 +1,39 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { AppBuilderTooltipProvider } from '@/AppBuilder/_contexts/AppBuilderTooltipContext';
 import { SidebarItem } from '../SidebarItem';
 
 describe('AB-PANEL-002 selected-anchor rail item', () => {
   // Break this catches: the compact rail loses the visible hover/selected label from the approved prototype.
   it('renders a persistent rail label hook and selected state for the active item', () => {
     render(
-      <SidebarItem icon="pages" tip="" railLabel="Pages" selectedSidebarItem="pages" className="left-sidebar-item">
+      <SidebarItem panel="pages" selectedSidebarItem="pages" className="left-sidebar-item">
         <svg aria-hidden="true" />
       </SidebarItem>
     );
 
     expect(screen.getByText('Pages')).toHaveClass('left-sidebar-item-label');
-    expect(screen.getByRole('button')).toHaveClass('sidebar-item--active');
+    expect(screen.getByRole('button', { name: 'Pages' })).toHaveClass('sidebar-item--active');
   });
 
-  it('supports an accessible label without requiring a visual tooltip', () => {
+  // UC-21: a short label ("Settings") names the panel in full ("App settings") on hover.
+  it('shows the panel name as the tooltip when the label is shorter', async () => {
+    jest.useFakeTimers();
     render(
-      <SidebarItem icon="tooljetai" tip="" accessibleLabel="AI agent" className="left-sidebar-item">
-        <svg aria-hidden="true" />
-      </SidebarItem>
+      <AppBuilderTooltipProvider>
+        <SidebarItem panel="settings" className="left-sidebar-item">
+          <svg aria-hidden="true" />
+        </SidebarItem>
+      </AppBuilderTooltipProvider>
     );
 
-    expect(screen.getByRole('button', { name: 'AI agent' })).toBeInTheDocument();
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    const item = screen.getByRole('button', { name: 'App settings' });
+    expect(item).toHaveAttribute('data-cy', 'left-sidebar-settings-button');
+    expect(item).toHaveTextContent('Settings');
+
+    fireEvent.pointerMove(item, { pointerType: 'mouse' });
+    act(() => jest.advanceTimersByTime(450));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('App settings');
+    jest.useRealTimers();
   });
 });

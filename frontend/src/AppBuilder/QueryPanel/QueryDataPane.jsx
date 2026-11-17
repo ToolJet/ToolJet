@@ -35,6 +35,8 @@ import {
   getQuerySearchFocusStyle,
   getQueryToolbarClassName,
   isQuerySearchPersistent,
+  getPanelCloseLabel,
+  SIDEBAR_ITEMS,
 } from '@/AppBuilder/panelLayout';
 
 const QueryFolderTree = withEditionSpecificComponent(QueryFolderTreeBase, 'Appbuilder');
@@ -135,7 +137,8 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
         setSearchTermForFilters(val.target.value);
       }}
       onClearCallback={() => setSearchTermForFilters('')}
-      placeholder={t('globals.search', 'Search')}
+      placeholder={t('globals.searchQueries', 'Search queries')}
+      ariaLabel={t('globals.searchQueries', 'Search queries')}
       customClass="query-manager-search-box-wrapper flex-grow-1"
       showClearButton
       clearTextOnBlur={false}
@@ -146,9 +149,9 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
     <div className={getQueryListClassName(surface)} style={getQuerySearchFocusStyle(surface)}>
       <div className={`queries-container ${darkMode && 'theme-dark'} d-flex flex-column h-100`}>
         <PanelHeader
-          title="Queries"
+          title={SIDEBAR_ITEMS.queries.name}
           onClose={onClose}
-          closeLabel="Close queries"
+          closeLabel={getPanelCloseLabel('queries')}
           closeDataCy="close-query-panel"
           className={getQueryPanelHeaderClassName(surface)}
         >

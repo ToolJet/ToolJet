@@ -384,16 +384,17 @@
     }
   }
 
+  // 12px labels outgrow the 42px item ("Libraries" is 48px), so the label spans the 52px rail.
   .left-sidebar-item-label {
     position: absolute;
-    right: 1px;
-    bottom: 3px;
-    left: 1px;
+    right: -5px;
+    bottom: 1px;
+    left: -5px;
     overflow: hidden;
     color: var(--left-rail-muted);
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 400;
-    line-height: 1;
+    line-height: 14px;
     text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;

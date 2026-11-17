@@ -114,7 +114,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             <div className={`tj-list-btn mx-1 ${selectedDataSources.length ? 'd-flex' : ''}`}>
               <MenuButton
                 id="filter-by-datasource"
-                text="Data Source"
+                text="Data source"
                 callback={handlePageCallback}
                 disabled={dataQueries.length === 0}
                 noMargin

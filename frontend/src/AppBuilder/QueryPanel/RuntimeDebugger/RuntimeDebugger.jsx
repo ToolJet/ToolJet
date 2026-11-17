@@ -40,6 +40,7 @@ import {
 // Toolbar, search, filter chips, detail header, and value styles are shared with the Inspector.
 import '@/AppBuilder/QueryPanel/RuntimeInspector/styles.scss';
 import RuntimePanelCloseButton from '@/AppBuilder/QueryPanel/RuntimePanelCloseButton';
+import { getRuntimeSearchName } from '@/AppBuilder/panelLayout';
 import RuntimeFilterSelect from '@/AppBuilder/QueryPanel/RuntimeFilterSelect';
 import './styles.scss';
 
@@ -195,8 +196,8 @@ const RuntimeDebugger = ({ darkMode, onClose }) => {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search logs"
-            aria-label="Filter logs"
+            placeholder={getRuntimeSearchName('debugger')}
+            aria-label={getRuntimeSearchName('debugger')}
             data-cy="debugger-search-input"
           />
           {query && (
@@ -264,7 +265,7 @@ const RuntimeDebugger = ({ darkMode, onClose }) => {
             <Trash2 size={14} />
           </button>
         </ToolTip>
-        {onClose && <RuntimePanelCloseButton onClose={onClose} dataCy="debugger-close-button" />}
+        {onClose && <RuntimePanelCloseButton tab="debugger" onClose={onClose} dataCy="debugger-close-button" />}
       </div>
 
       <div className="runtime-inspector__body">
