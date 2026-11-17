@@ -1,6 +1,6 @@
 export const moduleContainerConfig = {
   name: 'ModuleContainer',
-  displayName: 'Module container',
+  displayName: 'Module Container',
   description: 'Module Container',
   component: 'ModuleContainer',
   defaultSize: {

@@ -1,6 +1,6 @@
 export const qrscannerConfig = {
   name: 'QrScanner',
-  displayName: 'QR scanner',
+  displayName: 'QR Scanner',
   description: 'Scan QR codes and hold its data',
   component: 'QrScanner',
   defaultSize: {

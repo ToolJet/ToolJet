@@ -1,6 +1,6 @@
 export const flexContainerConfig = {
   name: 'FlexContainer',
-  displayName: 'Flex container',
+  displayName: 'Flex Container',
   description: 'Auto-layout flex container',
   defaultSize: {
     width: 15,

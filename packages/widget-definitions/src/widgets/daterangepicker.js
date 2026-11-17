@@ -1,6 +1,6 @@
 export const daterangepickerConfig = {
   name: 'DateRangePicker',
-  displayName: 'Date range picker',
+  displayName: 'Date Range Picker',
   description: 'Choose date ranges',
   component: 'DaterangePicker',
   defaultSize: {

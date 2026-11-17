@@ -1,6 +1,6 @@
 export const boundedBoxConfig = {
   name: 'BoundedBox',
-  displayName: 'Bounded box',
+  displayName: 'Bounded Box',
   description: 'An infinitely customizable image annotation widget',
   component: 'BoundedBox',
   defaultSize: {

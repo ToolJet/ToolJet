@@ -1,6 +1,6 @@
 export const numberinputConfig = {
   name: 'NumberInput',
-  displayName: 'Number input',
+  displayName: 'Number Input',
   description: 'Numeric input field',
   component: 'NumberInput',
   defaultSize: {

@@ -1,6 +1,6 @@
 export const emailinputConfig = {
   name: 'EmailInput',
-  displayName: 'Email input',
+  displayName: 'Email Input',
   description: 'Email input field',
   component: 'EmailInput',
   defaultSize: {

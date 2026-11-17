@@ -1,6 +1,6 @@
 export const passinputConfig = {
   name: 'PasswordInput',
-  displayName: 'Password input',
+  displayName: 'Password Input',
   description: 'Secure text input',
   component: 'PasswordInput',
   defaultSize: {

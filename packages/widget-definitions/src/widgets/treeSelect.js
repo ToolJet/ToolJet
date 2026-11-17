@@ -1,6 +1,6 @@
 export const treeSelectConfig = {
   name: 'TreeSelect',
-  displayName: 'Tree select',
+  displayName: 'Tree Select',
   description: 'Hierarchical item selector',
   defaultSize: {
     width: 12,

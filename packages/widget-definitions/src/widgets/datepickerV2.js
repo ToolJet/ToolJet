@@ -1,6 +1,6 @@
 export const datePickerV2Config = {
   name: 'DatePicker',
-  displayName: 'Date picker',
+  displayName: 'Date Picker',
   description: 'Choose date',
   component: 'DatePickerV2',
   defaultSize: {

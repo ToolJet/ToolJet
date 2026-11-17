@@ -1,6 +1,6 @@
 export const keyValuePairConfig = {
   name: 'KeyValuePair',
-  displayName: 'Key value pair',
+  displayName: 'Key Value Pair',
   description: 'Display data in key-value format',
   component: 'KeyValuePair',
   defaultSize: {

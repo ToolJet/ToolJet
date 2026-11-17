@@ -549,9 +549,9 @@ export const Inspector = ({
             <small className="widget-documentation-link-text">
               {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
                 componentMeta:
-                  componentMeta.component === 'ToggleSwitch'
+                  componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
-                    : componentMeta.component === 'ToggleSwitchV2'
+                    : componentMeta.displayName === 'Toggle Switch'
                       ? 'Toggle Switch'
                       : componentMeta.component,
               })}
@@ -638,7 +638,7 @@ export const Inspector = ({
 
   const renderAppNameInput = () => {
     if (isModuleContainer) {
-      return <ModuleEditorBanner title="Module container" customStyles={{ height: 28, width: 150, marginTop: 3 }} />;
+      return <ModuleEditorBanner title="Module Container" customStyles={{ height: 28, width: 150, marginTop: 3 }} />;
     }
 
     return (

@@ -1,6 +1,6 @@
 export const richtextareaConfig = {
   name: 'RichTextEditor',
-  displayName: 'Text editor',
+  displayName: 'Text Editor',
   description: 'Rich text editor',
   component: 'RichTextEditor',
   defaultSize: {

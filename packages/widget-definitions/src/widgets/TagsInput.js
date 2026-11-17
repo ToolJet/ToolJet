@@ -1,6 +1,6 @@
 export const tagsInputConfig = {
   name: 'TagsInput',
-  displayName: 'Tags input',
+  displayName: 'Tags Input',
   description: 'Tag input with create, select, and delete functionality',
   defaultSize: {
     width: 10,

@@ -1,6 +1,6 @@
 export const filepickerConfig = {
   name: 'FilePicker',
-  displayName: 'File picker',
+  displayName: 'File Picker',
   description: 'File Picker',
   component: 'FilePicker',
   defaultSize: {

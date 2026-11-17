@@ -1,6 +1,6 @@
 export const currencyinputConfig = {
   name: 'CurrencyInput',
-  displayName: 'Currency input',
+  displayName: 'Currency Input',
   description: 'Currency input field',
   component: 'CurrencyInput',
   defaultSize: {

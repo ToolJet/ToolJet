@@ -1,6 +1,6 @@
 export const jsonEditorConfig = {
   name: 'JSONEditor',
-  displayName: 'JSON editor',
+  displayName: 'JSON Editor',
   description: 'Edit JSON data',
   component: 'JSONEditor',
   defaultSize: {

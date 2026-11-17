@@ -1,6 +1,6 @@
 export const radiobuttonV2Config = {
   name: 'RadioButton',
-  displayName: 'Radio button',
+  displayName: 'Radio Button',
   description: 'Select one from multiple choices',
   component: 'RadioButtonV2',
   defaultSize: {

@@ -1,6 +1,6 @@
 export const toggleswitchConfig = {
   name: 'ToggleSwitchLegacy',
-  displayName: 'Toggle switch (Legacy)',
+  displayName: 'Toggle Switch (Legacy)',
   description: 'User-controlled on-off switch',
   component: 'ToggleSwitch',
   defaultSize: {

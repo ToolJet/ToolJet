@@ -1,6 +1,6 @@
 export const timePickerConfig = {
   name: 'TimePicker',
-  displayName: 'Time picker',
+  displayName: 'Time Picker',
   description: 'Choose date and time',
   component: 'TimePicker',
   defaultSize: {

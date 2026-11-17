@@ -1,6 +1,6 @@
 export const phoneinputConfig = {
   name: 'PhoneInput',
-  displayName: 'Phone input',
+  displayName: 'Phone Input',
   description: 'Phone input field',
   component: 'PhoneInput',
   defaultSize: {

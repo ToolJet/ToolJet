@@ -1,6 +1,6 @@
 export const htmlConfig = {
   name: 'Html',
-  displayName: 'HTML viewer',
+  displayName: 'HTML Viewer',
   description: 'View HTML content',
   component: 'Html',
   defaultSize: {

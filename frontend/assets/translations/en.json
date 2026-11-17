@@ -839,19 +839,19 @@
             "description": "Show pop-up windows"
         },
         "TextInput": {
-            "displayName": "Text input",
+            "displayName": "Text Input",
             "description": "User text input field"
         },
         "NumberInput": {
-            "displayName": "Number input",
+            "displayName": "Number Input",
             "description": "Numeric input field"
         },
         "PasswordInput": {
-            "displayName": "Password input",
+            "displayName": "Password Input",
             "description": "Secure text input"
         },
         "Datepicker": {
-            "displayName": "Date picker",
+            "displayName": "Date Picker",
             "description": "Choose date and time"
         },
         "Checkbox": {
@@ -859,19 +859,19 @@
             "description": "Single checkbox toggle"
         },
         "Radio-button": {
-            "displayName": "Radio button",
+            "displayName": "Radio Button",
             "description": "Select one from multiple choices"
         },
         "ToggleSwitch": {
-            "displayName": "Toggle switch",
+            "displayName": "Toggle Switch",
             "description": "User-controlled on-off switch"
         },
         "Textarea": {
-            "displayName": "Text area",
+            "displayName": "Text Area",
             "description": "Multi-line text input"
         },
         "DateRangePicker": {
-            "displayName": "Date range picker",
+            "displayName": "Date Range Picker",
             "description": "Choose date ranges"
         },
         "Text": {
@@ -891,11 +891,11 @@
             "description": "Single item selector"
         },
         "Multiselect": {
-            "displayName": "Multi select",
+            "displayName": "Multi Select",
             "description": "Multiple item selector"
         },
         "RichTextEditor": {
-            "displayName": "Text editor",
+            "displayName": "Text Editor",
             "description": "Rich text editor"
         },
         "Map": {
@@ -903,7 +903,7 @@
             "description": "Display map locations"
         },
         "QrScanner": {
-            "displayName": "QR scanner",
+            "displayName": "QR Scanner",
             "description": "Scan QR codes and hold its data"
         },
         "StarRating": {
@@ -915,7 +915,7 @@
             "description": "Separator between components"
         },
         "FilePicker": {
-            "displayName": "File picker",
+            "displayName": "File Picker",
             "description": "File Picker"
         },
         "Calendar": {
@@ -927,7 +927,7 @@
             "description": "Embed external content"
         },
         "CodeEditor": {
-            "displayName": "Code editor",
+            "displayName": "Code Editor",
             "description": "Edit source code"
         },
         "Tabs": {
@@ -939,7 +939,7 @@
             "description": "Countdown or stopwatch"
         },
         "Listview": {
-            "displayName": "List view",
+            "displayName": "List View",
             "description": "List multiple items"
         },
         "Tags": {
@@ -951,7 +951,7 @@
             "description": "Navigate pages"
         },
         "CircularProgressbar": {
-            "displayName": "Circular progressbar",
+            "displayName": "Circular Progressbar",
             "description": "Show circular progress"
         },
         "Spinner": {
@@ -963,7 +963,7 @@
             "description": "Show key metrics"
         },
         "RangeSlider": {
-            "displayName": "Range slider",
+            "displayName": "Range Slider",
             "description": "Adjust value range"
         },
         "Timeline": {
@@ -971,19 +971,19 @@
             "description": "Show event timeline"
         },
         "SvgImage": {
-            "displayName": "SVG image",
+            "displayName": "Svg Image",
             "description": "Display SVG graphics"
         },
         "Html": {
-            "displayName": "HTML viewer",
+            "displayName": "HTML Viewer",
             "description": "View HTML content"
         },
         "VerticalDivider": {
-            "displayName": "Vertical divider",
+            "displayName": "Vertical Divider",
             "description": "Vertical line separator"
         },
         "CustomComponent": {
-            "displayName": "Custom component",
+            "displayName": "Custom Component",
             "description": "Create React components"
         },
         "ButtonGroup": {
@@ -999,15 +999,15 @@
             "description": "Step-by-step navigation aid"
         },
         "KanbanBoard": {
-            "displayName": "Kanban board",
+            "displayName": "Kanban Board",
             "description": "Task management board"
         },
         "ColorPicker": {
-            "displayName": "Color picker",
+            "displayName": "Color Picker",
             "description": "Choose colors from a palette"
         },
         "TreeSelect": {
-            "displayName": "Tree select",
+            "displayName": "Tree Select",
             "description": "Hierarchical item selector"
         }
     },

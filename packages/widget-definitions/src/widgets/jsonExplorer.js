@@ -1,6 +1,6 @@
 export const jsonExplorerConfig = {
   name: 'JSONExplorer',
-  displayName: 'JSON explorer',
+  displayName: 'JSON Explorer',
   description: 'Explore JSON data',
   component: 'JSONExplorer',
   defaultSize: {
