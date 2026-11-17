@@ -1,6 +1,6 @@
 export const listviewConfig = {
   name: 'Listview',
-  displayName: 'List View',
+  displayName: 'List view',
   description: 'List multiple items',
   defaultSize: {
     width: 15,

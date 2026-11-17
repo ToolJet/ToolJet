@@ -1,6 +1,6 @@
 export const radiobuttonConfig = {
   name: 'RadioButtonLegacy',
-  displayName: 'Radio Button (Legacy)',
+  displayName: 'Radio button (Legacy)',
   description: 'Select one from multiple choices',
   component: 'RadioButton',
   defaultSize: {

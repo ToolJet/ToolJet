@@ -1,6 +1,6 @@
 export const reorderableListConfig = {
   name: 'ReorderableList',
-  displayName: 'Reorderable List',
+  displayName: 'Reorderable list',
   description: 'Reorderable List',
   component: 'ReorderableList',
   defaultSize: {

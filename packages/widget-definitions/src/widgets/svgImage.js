@@ -1,6 +1,6 @@
 export const svgImageConfig = {
   name: 'SvgImage',
-  displayName: 'Svg Image',
+  displayName: 'SVG image',
   description: 'Display SVG graphics',
   component: 'SvgImage',
   properties: {

@@ -1,6 +1,6 @@
 export const textareaConfig = {
   name: 'Textarea',
-  displayName: 'Text Area',
+  displayName: 'Text area',
   description: 'Multi-line text input',
   component: 'TextArea',
   defaultSize: {

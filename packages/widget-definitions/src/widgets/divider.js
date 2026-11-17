@@ -1,6 +1,6 @@
 export const dividerConfig = {
   name: 'HorizontalDivider',
-  displayName: 'Horizontal Divider',
+  displayName: 'Horizontal divider',
   description: 'Separator between components',
   component: 'Divider',
   defaultSize: {

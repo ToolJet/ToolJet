@@ -132,6 +132,25 @@ describe('panel source audit', () => {
     expect(bare.filter((site) => !site.startsWith(`${tjdbShared}:`))).toEqual([]);
   });
 
+  test('[UC-26] component palette names are sentence case', () => {
+    // Words after the first are lowercase, except acronyms ("JSON", "QR") and the "(Legacy)" tag.
+    const titleCased = (name) =>
+      name
+        .split(' ')
+        .slice(1)
+        .some((word) => /^[A-Z][a-z]/.test(word) && word !== '(Legacy)');
+    const widgetFiles = files(['../packages/widget-definitions/src/widgets'], /\.js$/);
+    expect(widgetFiles.length).toBeGreaterThan(0);
+    const definitions = widgetFiles.flatMap((file) => {
+      const name = fs.readFileSync(file, 'utf8').match(/^ {2}displayName: '([^']+)'/m)?.[1];
+      return name && titleCased(name) ? [`${path.basename(file)}: ${name}`] : [];
+    });
+    const translations = Object.entries(require(path.join(FRONTEND, 'assets/translations/en.json')).widget)
+      .filter(([, entry]) => entry?.displayName && titleCased(entry.displayName))
+      .map(([key, entry]) => `en.json widget.${key}: ${entry.displayName}`);
+    expect([...definitions, ...translations]).toEqual([]);
+  });
+
   test('[UB-09] each segmented-toggle rule sets one font size', () => {
     const scss = fs.readFileSync(path.join(FRONTEND, 'src/ToolJetUI/SwitchGroup/toggleGroup.scss'), 'utf8');
     expect(rulesWithRepeatedDeclaration(scss, 'font-size')).toEqual([]);

@@ -1,6 +1,6 @@
 export const textinputConfig = {
   name: 'TextInput',
-  displayName: 'Text Input',
+  displayName: 'Text input',
   description: 'User text input field',
   component: 'TextInput',
   defaultSize: {

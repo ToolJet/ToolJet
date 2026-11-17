@@ -1,6 +1,6 @@
 export const audioRecorderConfig = {
   name: 'AudioRecorder',
-  displayName: 'Audio Recorder',
+  displayName: 'Audio recorder',
   description: 'Records audio',
   component: 'AudioRecorder',
   defaultSize: {

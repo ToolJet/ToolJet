@@ -1,6 +1,6 @@
 export const colorPickerConfig = {
   name: 'ColorPicker',
-  displayName: 'Color Picker',
+  displayName: 'Color picker',
   description: 'Choose colors from a palette',
   component: 'ColorPicker',
   properties: {

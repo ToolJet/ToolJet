@@ -248,7 +248,7 @@ describe('Horizontal Divider widget', () => {
     expect(serverConfig).toEqual(frontendConfig);
     expect(frontendConfig).toMatchObject({
       name: 'HorizontalDivider',
-      displayName: 'Horizontal Divider',
+      displayName: 'Horizontal divider',
       component: 'Divider',
       defaultSize: { width: 10, height: 10 },
       events: {},

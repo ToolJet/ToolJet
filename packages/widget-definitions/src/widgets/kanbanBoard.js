@@ -2,7 +2,7 @@
 
 export const kanbanBoardConfig = {
   name: 'KanbanBoard',
-  displayName: 'Kanban Board',
+  displayName: 'Kanban board',
   description: 'Task management board',
   component: 'KanbanBoard',
   defaultSize: {

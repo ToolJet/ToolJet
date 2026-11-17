@@ -1,6 +1,6 @@
 export const codeEditorConfig = {
   name: 'CodeEditor',
-  displayName: 'Code Editor',
+  displayName: 'Code editor',
   description: 'Edit source code',
   component: 'CodeEditor',
   defaultSize: {

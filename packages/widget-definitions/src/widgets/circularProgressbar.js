@@ -1,6 +1,6 @@
 export const circularProgressbarConfig = {
   name: 'CircularProgressBar',
-  displayName: 'Circular Progressbar',
+  displayName: 'Circular progressbar',
   description: 'Show circular progress',
   component: 'CircularProgressBar',
   defaultSize: {

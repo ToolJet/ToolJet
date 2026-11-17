@@ -1,6 +1,6 @@
 export const customComponentConfig = {
   name: 'CustomComponent',
-  displayName: 'Custom Component',
+  displayName: 'Custom component',
   description: 'Create React components',
   component: 'CustomComponent',
   properties: {

@@ -1,6 +1,6 @@
 export const toggleSwitchV2Config = {
   name: 'ToggleSwitch',
-  displayName: 'Toggle Switch',
+  displayName: 'Toggle switch',
   description: 'User-controlled on-off switch',
   component: 'ToggleSwitchV2',
   defaultSize: {
