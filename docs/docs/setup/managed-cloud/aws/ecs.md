@@ -26,6 +26,14 @@ ToolJet provides Terraform modules that provision all required AWS resources inc
 
 [_ToolJet Terraform for ECS_](https://github.com/ToolJet/ToolJet/tree/develop/terraform/ECS)
 
+:::note
+This configuration is maintained on the `develop` branch and isn't versioned with LTS releases. Review it before you use it:
+- It creates the RDS instance with the username and password `postgres`.
+- It runs Redis as a `redis:6.2` sidecar without the AOF persistence and `noeviction` settings that the [Workflows](#workflows) section requires.
+- It passes `REDIS_USER`, which the workflow job queue doesn't read. Set `REDIS_USERNAME` instead.
+- It doesn't set `WORKER`. Add `WORKER=true` to the ToolJet container to enable workflow scheduling.
+:::
+
 ### Deploy using CloudFormation
 
 **Use CloudFormation if:** You prefer AWS-native infrastructure automation or need one-click deployments.
@@ -219,6 +227,10 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 - **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
 - **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
 
+:::note Python nodes
+Python nodes in workflows run in an [NsJail](https://github.com/google/nsjail) sandbox that needs the `SYS_ADMIN` Linux capability. Fargate tasks can't be given this capability, so Python nodes fail on Fargate unless you turn the sandbox off with `TOOLJET_WORKFLOW_SANDBOX_BYPASS=true` on every ToolJet task. Read [Python sandbox on self-hosted deployments](/docs/workflows/external-libraries/py#self-hosted-deployments) before you do this.
+:::
+
 :::warning
 **External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment).
 :::
@@ -261,7 +273,7 @@ For production deployments, ensure your ElastiCache Redis cluster is in the same
 If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
 :::
 
-New LTS versions are released every 3-5 months with an end-of-life of at least 18 months. To check the latest LTS version, visit the [_ToolJet Docker Hub_](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of at least 18 months. To check the latest LTS version, visit the [_ToolJet Docker Hub_](https://hub.docker.com/r/tooljet/tooljet/tags) page. LTS tags use the format `vX.Y.Z-lts`, for example `tooljet/tooljet:v3.20.251-lts`. The `tooljet/tooljet:ee-lts-latest` tag always points to the newest LTS release.
 
 ### Prerequisites for Upgrading
 

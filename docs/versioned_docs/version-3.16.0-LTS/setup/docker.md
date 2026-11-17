@@ -27,6 +27,10 @@ If you don’t already have a server, you can use Terraform scripts to quickly s
 - Deploy on [Azure VM](https://github.com/ToolJet/ToolJet/tree/develop/terraform/Azure_VM)
 - Deploy on [GCP VM](https://github.com/ToolJet/ToolJet/tree/develop/terraform/GCP)
 
+:::note
+These Terraform scripts are maintained on the `develop` branch and aren't versioned with LTS releases. They create the VM and install Docker only. Deploy ToolJet on it with the steps below.
+:::
+
 ### Installing Docker and Docker Compose
 
 Install docker and docker-compose on the server.
@@ -122,7 +126,7 @@ If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your
       :::info
       i. Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
 
-      ii. If there are self signed HTTPS endpoints that ToolJet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
+      ii. If ToolJet needs to connect to HTTPS endpoints signed by your own certificate authority, follow [Custom CA Certificates](#custom-ca-certificates). Setting `NODE_EXTRA_CA_CERTS` in `.env` alone has no effect on the ToolJet image.
 
       iii. If you're running a linux server, `docker` might need sudo permissions. In that case you can either run:
       `sudo docker-compose up -d`
@@ -135,9 +139,46 @@ If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your
 
 Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
 
+### How the ToolJet Container Starts
+
+Each time the ToolJet container (`tooljet/tooljet`) starts, its startup script does the following:
+
+1. Loads variables from `/app/.env` if that file exists inside the container. Values in this file replace variables of the same name passed with `env_file` or `environment`. The `.env` file next to `docker-compose.yaml` isn't inside the container unless you mount it.
+2. Starts Redis inside the container when `REDIS_HOST` is empty or `localhost`. Otherwise it waits up to 300 seconds for Redis at `REDIS_HOST` and `REDIS_PORT` (default `6379`) and exits if Redis isn't reachable. It skips this wait when `REDIS_URL` is set.
+3. Starts PostgREST inside the container when `PGRST_HOST` starts with `localhost:`, using `PGRST_DB_URI` and `PGRST_SERVER_PORT`. Otherwise ToolJet uses the PostgREST server at `PGRST_HOST`.
+4. Waits up to 300 seconds for PostgreSQL at `PG_HOST` and `PG_PORT` (default `5432`), or at the host and port in `DATABASE_URL` when it's set, and exits if PostgreSQL isn't reachable.
+5. Runs database migrations, then starts ToolJet.
+
+### Custom CA Certificates
+
+If ToolJet connects to HTTPS endpoints signed by your own certificate authority (CA), ToolJet must trust that CA through `NODE_EXTRA_CA_CERTS`. The startup script sets `NODE_EXTRA_CA_CERTS` to the AWS RDS certificate bundle in the image, which replaces any value passed with `env_file` or `environment`. Set it in a file mounted at `/app/.env` instead, because the startup script reads that file afterwards.
+
+1. Copy your CA certificate, in PEM format, into a `certs` folder next to `docker-compose.yaml`, and create a `ca.env` file that sets `NODE_EXTRA_CA_CERTS`. If ToolJet also connects to Amazon RDS over SSL, append the [RDS certificate bundle](https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem) to the same file.
+   ```bash
+   mkdir certs
+   cp /path/to/your-ca.pem certs/ca.pem
+   echo "NODE_EXTRA_CA_CERTS=/certs/ca.pem" > ca.env
+   ```
+2. Mount both files into the `tooljet` service in `docker-compose.yaml`:
+   ```yaml
+   services:
+     tooljet:
+       volumes:
+         - ./ca.env:/app/.env:ro
+         - ./certs/ca.pem:/certs/ca.pem:ro
+   ```
+3. Restart ToolJet with `docker compose up -d`.
+
+The container runs as a non-root user, so both files must be readable by all users, for example with `chmod 644`.
+
 ### Docker Backup (Only For In-Built PostgreSQL)
 
 The below bash script will help with taking back-up and as well as restoring:
+
+- Run it from the directory that has your `.env` and `docker-compose.yaml` files. It reads `PG_HOST` from `.env` to find the PostgreSQL container.
+- **Backup** runs `pg_dumpall`, which saves every database in the container, including the ToolJet Database, to a `.sql` file in the current directory.
+- **Restore** runs that `.sql` file against the PostgreSQL container.
+- It connects as the `postgres` user, so it works only when `PG_USER` is `postgres`, the default in `.env.internal.example`.
 
 1. Download the script:
    ```bash
@@ -201,7 +242,10 @@ services:
     environment:
       SERVE_CLIENT: "true"
       PORT: "80"
+      WORKER: "true"
     command: npm run start:prod
+    depends_on:
+      - redis
 
   tooljet-worker-1:
     container_name: tooljet-worker-1
@@ -244,6 +288,8 @@ volumes:
 - **tooljet-worker-1 & tooljet-worker-2**: Dedicated workers that only process workflow jobs (WORKER=true, no ports)
 - **redis**: External stateful Redis with persistence for the job queue
 
+To keep the web server from processing queued jobs, set `WORKER: "false"` on the `tooljet` service. Workflows that run synchronously, such as a webhook call to the `/trigger` endpoint or a workflow run from an app with **Run workflows synchronously** turned on (the default), still run on the web server.
+
 **Redis Environment Variables:**
 
 Add these to your **.env** file to connect to the external Redis:
@@ -271,7 +317,7 @@ REDIS_PASSWORD=
 If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
 :::
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. LTS tags use the format `vX.Y.Z-lts`, for example `tooljet/tooljet:v3.20.251-lts`. The `tooljet/tooljet:ee-lts-latest` tag always points to the newest LTS release.
 
 ### Prerequisites for Upgrading
 

@@ -23,10 +23,10 @@ Marketplace can be accessed from '/integrations' route.
 
 ### 2. Installing tooljet-cli
 
-ToolJet marketplace uses [tooljet-cli](https://www.npmjs.com/package/@tooljet/cli) to build and publish plugins. You can install it using npm.
+ToolJet marketplace uses [tooljet-cli](https://www.npmjs.com/package/@tooljet/cli) to create and manage plugins. You can install it using npm.
 
 ```bash
-npm install -g tooljet-cli
+npm install -g @tooljet/cli
 
 # verify the installation
 tooljet --version
@@ -42,10 +42,6 @@ tooljet plugin create github
 ```
 
 Provide the plugin name and select the plugin type, which is a `api` in this case.
-Select `yes` when asked to create a new plugin for marketplace.
-
-Provide the repository URL if hosted on GitHub, otherwise leave it blank.
-
 When you create a plugin using the ToolJet CLI, an object is automatically added to the plugins.json file, which is located in the `ToolJet/server/src/assets/marketplace/` directory. This object contains metadata about the plugin, such as its name, description, version, author, and other details.
 This plugins.json file serves as a registry of all the plugins that are available for use in ToolJet. When ToolJet server starts up, it reads this file and loads all the plugins that are listed in it.
 

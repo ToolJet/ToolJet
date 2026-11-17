@@ -80,7 +80,7 @@ docker-compose --version
 If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
 :::
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. LTS tags use the format `vX.Y.Z-lts`, for example `tooljet/tooljet:v3.20.251-lts`. The `tooljet/tooljet:ee-lts-latest` tag always points to the newest LTS release.
 
 ### Prerequisites for Upgrading
 

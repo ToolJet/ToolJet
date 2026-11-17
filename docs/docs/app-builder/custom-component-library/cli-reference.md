@@ -20,12 +20,16 @@ Custom Component Libraries are currently in beta and not recommended for product
 
 This page lists the ToolJet CLI commands, flags, limits and naming rules for Custom Component Libraries.
 
+:::info
+These commands are only in `@tooljet/cli@0.0.15-beta.1`. The latest stable release, `0.0.14`, doesn't include them.
+:::
+
 ## Commands
 
 | <div style={{ width:"250px"}}> Command </div> | <div style={{ width:"120px"}}> Run From </div> | <div style={{ width:"300px"}}> What It Does </div> |
 |:---------- | :---------- | :------------ |
 | `tooljet login` | Anywhere | Asks for your ToolJet origin URL and personal access token. |
-| `tooljet library init <dir>` | Anywhere | Registers a library in the workspace and creates the project. |
+| `tooljet library init <dir>` | Anywhere | Registers a library in the workspace and creates the project. Requires `tooljet login` first. |
 | `tooljet library build` | Library directory | Builds to `dist/`. No sign-in needed and nothing is uploaded. |
 | `tooljet library dev` | Library directory | Watches `src/` and uploads to your dev track on every save. |
 | `tooljet library publish -v <version>` | Library directory | Builds and publishes a new version. |
@@ -39,7 +43,7 @@ This page lists the ToolJet CLI commands, flags, limits and naming rules for Cus
 | `--url` and `--token` | `dev`, `publish` | Target a workspace directly instead of using the stored login. Use both together. |
 | `--debounce` | `dev` | Milliseconds to wait after a save before rebuilding. Defaults to `300`. |
 | `--version`, `-v` | `publish` | Required. The version to publish. |
-| `--message` | `publish` | Optional. A message describing the version. |
+| `--message`, `-m` | `publish` | Optional. A message describing the version. |
 | `--skip-type-check` | `publish` | Publish even if there are TypeScript errors. |
 
 ## Limits

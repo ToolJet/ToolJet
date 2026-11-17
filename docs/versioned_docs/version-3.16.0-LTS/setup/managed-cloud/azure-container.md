@@ -150,6 +150,10 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 - **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
 - **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
 
+:::note Python nodes
+Python nodes in workflows run in an [NsJail](https://github.com/google/nsjail) sandbox that needs the `SYS_ADMIN` Linux capability. Azure Container Apps doesn't run privileged containers. If Python nodes fail, turn the sandbox off with `TOOLJET_WORKFLOW_SANDBOX_BYPASS=true` on every ToolJet container app. Read [Python sandbox on self-hosted deployments](/docs/workflows/external-libraries/py#self-hosted-deployments) before you do this.
+:::
+
 :::warning
 **External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment). Configure the Redis connection using the following environment variables:
 
@@ -167,7 +171,7 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
 :::
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. LTS tags use the format `vX.Y.Z-lts`, for example `tooljet/tooljet:v3.20.251-lts`. The `tooljet/tooljet:ee-lts-latest` tag always points to the newest LTS release.
 
 ### Prerequisites for Upgrading
 

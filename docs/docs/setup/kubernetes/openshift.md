@@ -81,7 +81,7 @@ PostgREST provides the REST API layer for ToolJet Database. These variables are 
 PGRST_HOST=localhost:3001
 PGRST_LOG_LEVEL=info
 PGRST_DB_PRE_CONFIG=postgrest.pre_config
-PGRST_SERVER_PORT=3001
+PGRST_SERVER_PORT=3001 # must match the port in PGRST_HOST
 PGRST_JWT_SECRET=<generate using openssl rand -hex 32>
 PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
 ```
@@ -93,6 +93,18 @@ Use `openssl rand -hex 32` to generate a secure value for `PGRST_JWT_SECRET`. Po
 :::info
 For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).
 :::
+
+The deployment template reads the PostgreSQL connection from a secret named `tooljet-secret`. Create it before you import the YAML:
+
+```bash
+oc create secret generic tooljet-secret \
+  --from-literal=pg_host=<postgresql-database-host> \
+  --from-literal=pg_user=<username> \
+  --from-literal=pg_pass=<password> \
+  --from-literal=pg_db=tooljet_production
+```
+
+Set the remaining variables directly in `deployment.yaml`, replacing the placeholders and setting `PGRST_DB_URI`.
 
 2. Once you have logged into the Openshift developer dashboard click on `+Add` tab. Select import YAML from the local machine.
    :::note
@@ -186,7 +198,16 @@ This example deployment creates:
 - A Secret for optional password authentication
 
 :::info
-Update the `redis-secret` in the Redis deployment YAML with a secure password before deploying to production.
+The template stores a password in `redis-secret`, but its `redis-server` command doesn't use it, so Redis starts without authentication. To require a password, set a secure value in `redis-secret` and change two commands in the Redis container:
+
+```yaml
+command: ["sh", "-c", "exec redis-server /etc/redis/redis.conf --requirepass \"$REDIS_PASSWORD\""]
+readinessProbe:
+  exec:
+    command: ["sh", "-c", "REDISCLI_AUTH=\"$REDIS_PASSWORD\" redis-cli ping"]
+```
+
+Set the same value in ToolJet's `REDIS_PASSWORD`.
 
 This is an example configuration that you can customize to your needs. However, **AOF (Append Only File) persistence** and **`maxmemory-policy noeviction`** are critical settings that must be maintained for BullMQ job queue reliability.
 :::
@@ -213,7 +234,7 @@ REDIS_PASSWORD=your-secure-redis-password-here  # Match the password in redis-se
 If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
 :::
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. LTS tags use the format `vX.Y.Z-lts`, for example `tooljet/tooljet:v3.20.251-lts`. The `tooljet/tooljet:ee-lts-latest` tag always points to the newest LTS release.
 
 ### Prerequisites for Upgrading
 
