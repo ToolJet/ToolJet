@@ -31,6 +31,7 @@ import {
   replaceSubpathPlaceHoldersInStaticAssets,
   setupCsrfOriginCheck,
   setSecurityHeaders,
+  setupEditionEarlyRoutes,
   buildVersion,
   rawBodyBuffer,
   setupGlobalAgent,
@@ -128,6 +129,8 @@ async function bootstrap() {
       defaultVersion: VERSION_NEUTRAL,
     });
     appLogger.log('✅ API versioning enabled');
+
+    await setupEditionEarlyRoutes(app, configService, appLogger);
 
     // Setup security headers
     appLogger.log('Setting up security headers...');

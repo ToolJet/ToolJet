@@ -1,0 +1,161 @@
+// The inner field is the wrapper's last child, so its last:tw-mb-0 removes
+// the shared spacing. Keep section spacing on these sibling wrappers instead.
+.library-style-field:not(:last-child) {
+  margin-bottom: 8px;
+}
+
+// Compact style controls share one column, regardless of label or value length.
+// Explicit stacked fields and expression mode retain the editor's full-width layout.
+// A switch is content-width, so in the 142px column it would sit at the left; switch
+// rows keep the shared flex layout (switch at the right edge), as on the Properties tab.
+.library-style-field .wrapper-div-code-editor:not(.codeShow-active) {
+  > .code-flex-wrapper:has(> :nth-child(3)):not(:has(.form-switch)) {
+    position: relative;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 24px 142px;
+    column-gap: 4px;
+
+    > .field {
+      min-width: 0;
+      grid-column: 1;
+      grid-row: 1;
+      overflow-wrap: anywhere;
+    }
+
+    > .flex-grow-1 {
+      grid-column: 2;
+      grid-row: 1;
+      min-width: 0;
+
+      .fx-common {
+        margin-right: 0;
+      }
+    }
+
+    > :last-child {
+      grid-column: 3;
+      grid-row: 1;
+      min-width: 0;
+      max-width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+
+      &.row.fx-container > .col {
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      // A dropdown renders `.row.fx-container > .field` (no `.col`), so it keeps the row's
+      // 8px gutter padding, and its control has a fixed 144px width. Fill the column exactly.
+      &.row.fx-container > .field {
+        padding-left: 0;
+        padding-right: 0;
+
+        .react-select__control {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+// A pack component's Properties tab opens with its library and component name (design option D):
+// [icon] Library · Component, on the layer-02 surface, in placeholder-tone text.
+//
+// When both names don't fit, the library name gives way first, so the component name stays whole. The library keeps
+// at least min(its full name, 40% of the strip): once it is down to that, the component name is cut too, so it never
+// takes more than about 60% while the library is cut. A short library name is never cut, so a long component name may
+// then use the rest. CSS can't write min(max-content, 40%), so two hidden, zero-height copies of the library name
+// (attr(data-name)) size its box: ::before sets its full width and adds nothing to its minimum; ::after sets the minimum.
+.pack-identity-strip {
+  container-type: inline-size;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 16px;
+  background: var(--background-surface-layer-02);
+  color: var(--text-placeholder);
+  font-size: 13px;
+  line-height: 18px;
+
+  .pack-identity-strip-text {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Shrinks before the component name does (a far larger flex-shrink), down to its content minimum.
+  .pack-identity-strip-library {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 100000 auto;
+  }
+
+  .pack-identity-strip-icon,
+  .pack-identity-strip-dot {
+    flex: none;
+  }
+
+  // Its minimum is its ::after: min(full name, what is left of 40% after the icon, the dot and their gaps).
+  .pack-identity-strip-library-name {
+    display: grid;
+    flex: 0 1 auto;
+
+    > .pack-identity-strip-text {
+      grid-area: 1 / 1;
+      // Sized by the grid cell, never by its own text, so it adds nothing to the box's minimum.
+      width: 0;
+      min-width: 100%;
+    }
+
+    &::before,
+    &::after {
+      content: attr(data-name);
+      grid-area: 1 / 1;
+      height: 0;
+      // clip, not hidden: a scroll container's minimum is 0, so hidden would drop the 40% floor.
+      overflow: clip;
+      visibility: hidden;
+    }
+
+    // Full width when there is room; breaks anywhere, so its minimum is a single character.
+    &::before {
+      word-break: break-all;
+    }
+
+    &::after {
+      // 40% of the strip, less the icon and the two gaps around the dot and the dot itself (36px), so a cut-off
+      // component name gets 60%.
+      max-width: calc(40cqw - 36px);
+      white-space: nowrap;
+    }
+  }
+
+  .pack-identity-strip-component {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+}
+
+.library-component-revision {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-weak);
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--text-placeholder);
+}
+
+.library-component-revision-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.library-component-revision-value {
+  color: var(--text-default);
+  font-weight: 500;
+}

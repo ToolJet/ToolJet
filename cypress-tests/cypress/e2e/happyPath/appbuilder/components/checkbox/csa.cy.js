@@ -1,6 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
 import { addCSA } from "Support/utils/appBuilder/csa";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec
 // run; testIsolation's per-test AUT reset leaves that client stale, so 2nd+
@@ -14,7 +15,7 @@ describe('Checkbox Component Tests', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Checkbox-App`);
         cy.openApp();
         cy.dragAndDropWidget("Checkbox", 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     // CSA facet — all handles fire from an "On click" trigger via Control

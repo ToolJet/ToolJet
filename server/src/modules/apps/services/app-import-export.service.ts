@@ -47,7 +47,10 @@ import {
   resolveLegacyPageTargetSlugs,
   resolvePageTargetCorelationId,
 } from 'src/helpers/go_to_app_link.helper';
-import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
+import {
+  isChildOfSlottedParent,
+  remapFlexContainerChildOrder,
+} from '@modules/versions/helpers/version-copy-parent.helper';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { LayoutDimensionUnits } from '../constants';
 import { convertAppDefinitionFromSinglePageToMultiPage } from 'src/../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -619,7 +622,8 @@ export class AppImportExportService {
           : [];
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
       const moduleAppIds = appModules.map((moduleComponent) => ({
-        moduleId: moduleComponent.properties?.moduleAppId.value,
+        // A ModuleViewer saved without a module has no moduleAppId; the dedupe below drops it (QA DVRL-1).
+        moduleId: moduleComponent.properties?.moduleAppId?.value,
         // moduleVersionId.value holds the version's co_relation_id (portable git identity).
         // The git-sync adapter writes co_relation_id as the version `id` in exported JSON,
         // so pulled/imported data and locally-created refs both use co_relation_id.
@@ -1342,7 +1346,7 @@ export class AppImportExportService {
     manager?: EntityManager,
     branchId?: string,
     isTemplateApp = false
-  ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
+  ): Promise<{ newApp: App; resourceMapping: AppResourceMappings; codeMissing: boolean }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
         throw new BadRequestException('Invalid params for app import');
@@ -1413,6 +1417,10 @@ export class AppImportExportService {
         isTemplateApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
+      // Git sync carries an app's code in its own folder; every other import reads it from the file.
+      const { codeMissing } = isGitApp
+        ? { codeMissing: false }
+        : await this.restoreCodeModeApp(manager, user, appParams, importedApp.id, appName, resourceMapping, cloning);
       await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
       // Update latest version as editing version
@@ -1430,7 +1438,7 @@ export class AppImportExportService {
       const newApp = await manager.findOne(App, {
         where: { id: importedApp.id },
       });
-      return { newApp, resourceMapping };
+      return { newApp, resourceMapping, codeMissing };
     }, manager);
   }
 
@@ -1676,6 +1684,24 @@ export class AppImportExportService {
     resourceMapping: AppResourceMappings
   ): Promise<void> {
     return;
+  }
+
+  /** Adds an app's stored code to its export definition (ee). `limited`: the result has to fit an import request. */
+  async addCodeToExport(_user: User, _definition: { appV2: App }, _limited: boolean): Promise<void> {
+    return;
+  }
+
+  /** Restores an app's stored code from its import definition (ee). codeMissing: the file should have had code and did not. */
+  protected async restoreCodeModeApp(
+    _manager: EntityManager,
+    _user: User,
+    _appParams: Record<string, any>,
+    _appId: string,
+    _appName: string,
+    _resourceMapping: AppResourceMappings,
+    _cloning: boolean
+  ): Promise<{ codeMissing: boolean }> {
+    return { codeMissing: false };
   }
 
   async createImportedAppForUser(
@@ -2129,6 +2155,8 @@ export class AppImportExportService {
                   newLayout.height = layout.height;
                   if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
                   if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
+                  if (layout.grow != null) newLayout.grow = layout.grow;
+                  if (layout.minWidthPx != null) newLayout.minWidthPx = layout.minWidthPx;
                   newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
                   componentLayouts.push(newLayout);
@@ -2653,11 +2681,11 @@ export class AppImportExportService {
           // Preserve virtual container parents (canvas-header, canvas-footer) as-is
           // These are not UUID-based and should not be remapped
           if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
-            const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
+            const isParentSlotted = isSlotChild(component, pageComponents, parentId);
             const isParentHeaderOrFooter =
               component?.parent && (component?.parent.includes('header') || component?.parent.includes('footer'));
 
-            if (isParentTabOrCalendar) {
+            if (isParentSlotted) {
               const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
 
               const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
@@ -2774,6 +2802,8 @@ export class AppImportExportService {
                 newLayout.height = layout.height;
                 if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
                 if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
+                if (layout.grow != null) newLayout.grow = layout.grow;
+                if (layout.minWidthPx != null) newLayout.minWidthPx = layout.minWidthPx;
                 newLayout.component = savedComponent;
                 newLayout.co_relation_id = layout.id;
 
@@ -5212,14 +5242,9 @@ function transformComponentData(
     // Preserve virtual container parents (canvas-header, canvas-footer) as-is
     // These are not UUID-based and should not be remapped
     if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
-      const isParentTabOrCalendar = isChildOfTabsOrCalendar(
-        component,
-        allComponents,
-        parentId,
-        isNormalizedAppDefinitionSchema
-      );
+      const isParentSlotted = isSlotChild(component, allComponents, parentId);
 
-      if (isParentTabOrCalendar) {
+      if (isParentSlotted) {
         const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
         const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
         const mappedParentId = componentsMapping[_parentId];
@@ -5288,28 +5313,10 @@ function transformComponentData(
   return transformedComponents;
 }
 
-const isChildOfTabsOrCalendar = (
-  component,
-  allComponents = [],
-  componentParentId = undefined,
-  isNormalizedAppDefinitionSchema: boolean
-) => {
-  if (componentParentId) {
-    const parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-
-    const parentComponent = allComponents.find((comp) => comp.id === parentId);
-
-    if (parentComponent) {
-      if (!isNormalizedAppDefinitionSchema) {
-        return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
-      }
-
-      return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
-    }
-  }
-
-  return false;
-};
+// A child of a slotted parent (a tab, a Calendar popover, a pack or library component's ToolJet.Slot): its parent is
+// `{parentId}-{slotId}`, remapped on the base id with the slot kept.
+const isSlotChild = (component, allComponents = [], componentParentId = undefined) =>
+  !!componentParentId && !!component?.parent && isChildOfSlottedParent(component.parent, allComponents);
 
 const isChildOfKanbanModal = (
   component,
