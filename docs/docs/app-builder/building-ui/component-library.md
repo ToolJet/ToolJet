@@ -22,6 +22,7 @@ Components are the building blocks of ToolJet applications, used to create inter
     badge="81 components"
     description="Components in the style of shadcn/ui. New apps start here."
     img="/img/app-builder/building-ui/component-library/carrier-directory-rocket.png"
+    href="/docs/component-reference/rocket"
     features={['Data Table, Form, Kanban, Calendar and 11 charts', 'Always follows your app theme']}
   />
   <CapabilityCard
@@ -29,6 +30,7 @@ Components are the building blocks of ToolJet applications, used to create inter
     badge="86 components"
     description="Components built on Ant Design, with its own look."
     img="/img/app-builder/building-ui/component-library/carrier-directory-ant-design.png"
+    href="/docs/component-reference/ant-design"
     features={['Table, Tree, Transfer, Drawer and 13 charts', 'Follows your app theme once you apply one']}
   />
 </CardGrid>

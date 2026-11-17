@@ -5,48 +5,48 @@ title: Button
 
 <div className="badge badge--primary">Rocket 2.0</div>
 
-A button that runs an action when clicked, such as submitting a form, running a query or opening another page.
+The **Button** component runs an action when it is clicked, such as submitting a form, running a query or opening another page. Inside a **Form**, a click on its submit button submits the form first.
 
 :::info
-Every Rocket 2.0 component also has the [common settings](../common-settings.md): Visibility, Disable and Loading, the matching actions, and Devices. They are not repeated here.
+Every Rocket 2.0 component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
 :::
 
 ## Properties
 
-| Property | Values | Default |
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
 |:--|:--|:--|
-| Label | Text | `Button` |
-| Variant | Default, Secondary, Outline, Ghost, Destructive, Link | Default |
-| Size | Sm, Default, Lg | Default |
+| Label | Text shown on the button. | Text. Default: `Button` |
+| Variant | Overall look of the button. **Destructive** is red for actions that delete or remove data; **Link** looks like a text link. | Default, Secondary, Outline, Ghost, Destructive, Link. Default: Default |
+| Size | Height and text size of the button. | Sm, Default, Lg. Default: Default |
 
 ## Events
 
-| Event | Fires when |
+| <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On click](../common-settings.md#events) | The user clicks the component. |
-| [On hover](../common-settings.md#events) | The pointer moves onto the component. |
+| [On click](../common-settings.md#events) | Triggers when the user clicks the button. |
+| [On hover](../common-settings.md#events) | Triggers when the pointer moves onto the button. |
 
-## Component Actions
+## Component Specific Actions (CSA)
 
 Run these from an event handler with **Control Component**, or from a RunJS query.
 
-| Action | Parameters | How to call it |
+| <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
-| Click | — | `components.button1.click()` |
-| Set text | Text | `components.button1.setText("New text")` |
+| Click | Clicks the button, which fires its **On click** event. | `components.button1.click()` |
+| Set text | Changes the button's label until the **Label** property changes. | `components.button1.setText("New text")` |
 
 ## Exposed Variables
 
-| Variable | Holds | How to read it |
+| <div style={{ width:"150px"}}> Variable </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
-| `text` | The Label property. | `{{components.button1.text}}` |
-| `variant` | The Variant property. | `{{components.button1.variant}}` |
-| `size` | The Size property. | `{{components.button1.size}}` |
-| `buttonText` | The text the button shows now, including a label set with Set text. | `{{components.button1.buttonText}}` |
+| `text` | Text shown on the button. | `{{components.button1.text}}` |
+| `variant` | Overall look of the button. **Destructive** is red for actions that delete or remove data; **Link** looks like a text link. | `{{components.button1.variant}}` |
+| `size` | Height and text size of the button. | `{{components.button1.size}}` |
+| `buttonText` | The text the button shows now, including a label set with **Set text**. | `{{components.button1.buttonText}}` |
 
 ## Styles
 
-| Style | Default |
+| <div style={{ width:"250px"}}> Style </div> | <div style={{ width:"250px"}}> Default </div> |
 |:--|:--|
 | Button background | Theme: Brand primary |
 | Button hover background | Theme: Brand primary |

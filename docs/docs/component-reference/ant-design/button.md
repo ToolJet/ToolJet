@@ -5,56 +5,56 @@ title: Button
 
 <div className="badge badge--primary">Ant Design</div>
 
-An Ant Design button that runs an action when clicked, such as submitting a form, running a query or opening a link.
+The **Button** component is Ant Design's button. It runs an action when clicked, such as submitting a form or running a query, or opens a link when **Href** is set.
 
 :::info
-Every Ant Design component also has the [common settings](../common-settings.md): Visibility, Disable and Loading, the matching actions, and Devices. They are not repeated here.
+Every Ant Design component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
 :::
 
 ## Properties
 
-| Property | Values | Default |
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
 |:--|:--|:--|
-| Text | Text | `Button` |
-| Color | `primary`, `default`, `danger` | `primary` |
-| Variant | `solid`, `outlined`, `dashed`, `filled`, `text`, `link` | `solid` |
-| Size | `small`, `middle`, `large` | `middle` |
-| Shape | `default`, `round` | `default` |
-| Block | On or off | On |
-| Href | Text | — |
-| Target | `_self`, `_blank` | `_blank` |
+| Text | Text shown on the button. | Text. Default: `Button` |
+| Color | Color of the button. Use `danger` for actions that delete or remove data. | `primary`, `default`, `danger`. Default: `primary` |
+| Variant | Fill style. `solid` is filled, `outlined` and `dashed` have a border, `filled` has a light fill, and `text` and `link` have no border. | `solid`, `outlined`, `dashed`, `filled`, `text`, `link`. Default: `solid` |
+| Size | Height and text size of the button. | `small`, `middle`, `large`. Default: `middle` |
+| Shape | `round` gives the button fully rounded ends. | `default`, `round`. Default: `default` |
+| Block | Makes the button fill the width of its box. | On or off. Default: On |
+| Href | A URL to open when the button is clicked. The button then behaves as a link. | Text |
+| Target | Where **Href** opens: `_blank` for a new tab, `_self` for the same tab. | `_self`, `_blank`. Default: `_blank` |
 
 ## Events
 
-| Event | Fires when |
+| <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On click](../common-settings.md#events) | The user clicks the component. |
+| [On click](../common-settings.md#events) | Triggers when the user clicks the button. |
 
-## Component Actions
+## Component Specific Actions (CSA)
 
 Run these from an event handler with **Control Component**, or from a RunJS query.
 
-| Action | Parameters | How to call it |
+| <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
-| Click | — | `components.button1.click()` |
-| Focus | — | `components.button1.focus()` |
+| Click | Clicks the button, which fires its **On click** event. | `components.button1.click()` |
+| Focus | Moves keyboard focus to the button. | `components.button1.focus()` |
 
 ## Exposed Variables
 
-| Variable | Holds | How to read it |
+| <div style={{ width:"150px"}}> Variable </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
-| `children` | The Text property. | `{{components.button1.children}}` |
-| `color` | The Color property. | `{{components.button1.color}}` |
-| `variant` | The Variant property. | `{{components.button1.variant}}` |
-| `size` | The Size property. | `{{components.button1.size}}` |
-| `shape` | The Shape property. | `{{components.button1.shape}}` |
-| `block` | The Block property. | `{{components.button1.block}}` |
-| `href` | The Href property. | `{{components.button1.href}}` |
-| `target` | The Target property. | `{{components.button1.target}}` |
+| `children` | Text shown on the button. | `{{components.button1.children}}` |
+| `color` | Color of the button. Use `danger` for actions that delete or remove data. | `{{components.button1.color}}` |
+| `variant` | Fill style. `solid` is filled, `outlined` and `dashed` have a border, `filled` has a light fill, and `text` and `link` have no border. | `{{components.button1.variant}}` |
+| `size` | Height and text size of the button. | `{{components.button1.size}}` |
+| `shape` | `round` gives the button fully rounded ends. | `{{components.button1.shape}}` |
+| `block` | Makes the button fill the width of its box. | `{{components.button1.block}}` |
+| `href` | A URL to open when the button is clicked. The button then behaves as a link. | `{{components.button1.href}}` |
+| `target` | Where **Href** opens: `_blank` for a new tab, `_self` for the same tab. | `{{components.button1.target}}` |
 
 ## Styles
 
-| Style | Default |
+| <div style={{ width:"250px"}}> Style </div> | <div style={{ width:"250px"}}> Default </div> |
 |:--|:--|
 | Primary color | Theme: Brand primary |
 | Text color | Theme: Primary text |
