@@ -163,6 +163,16 @@ describe('project instance', () => {
       expect(lib.resolveAppTarget({}, root).url).to.equal('http://localhost:3000');
     });
 
+    it("a build that runs as the user's session or OAuth delegation is not checked against the record either", () => {
+      lib.writeProjectInstance(root, REAL);
+      process.env.TOOLJET_URL = 'http://localhost:3000';
+      process.env.TOOLJET_WORKSPACE_ID = 'w1';
+      for (const claims of [{ sub: 'dev@tooljet.io' }, { sub: 'user-1', aud: 'tooljet:mcp:delegation' }]) {
+        process.env.TOOLJET_SESSION_TOKEN = `h.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.s`;
+        expect(lib.resolveAppTarget({}, root).url).to.equal('http://localhost:3000');
+      }
+    });
+
     it("dependency installs ask the project's instance for the SDK", () => {
       expect(lib.projectServer(root)).to.equal(REAL);
       lib.writeProjectInstance(root, OTHER);

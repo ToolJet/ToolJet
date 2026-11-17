@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 
-import { ApiError, type Session } from './session';
+import { ApiError, directIdentity, type Session } from './session';
+import { credentialFetchOptions, credentialHeaders } from '../direct-credential';
 import type { AppJson, Snapshot, SnapshotColumn } from './project';
 
 /* The ToolJet calls `tooljet app` makes, all through the user's session (session.ts). */
@@ -280,17 +281,16 @@ export async function findOrCreateLibrary(session: Session, correlationId: strin
 }
 
 async function fetchWithToken(session: Session, path: string, body: unknown) {
-  // The library routes take the personal access token itself, or (an in-product build) the user's session.
+  // The library routes take the personal access token itself, or (an in-product or OAuth build) the user's session
+  // or delegation.
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const fetch = require('node-fetch');
-  const auth =
-    session.kind === 'session'
-      ? { Cookie: `tj_auth_token=${session.token}`, 'tj-workspace-id': session.organizationId }
-      : { Authorization: `Bearer ${session.token}` };
+  const direct = directIdentity(session);
   const res = await fetch(`${session.url}/api${path}`, {
     method: 'POST',
-    headers: { ...auth, 'Content-Type': 'application/json' },
+    headers: { ...credentialHeaders(session.token, direct), 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+    ...credentialFetchOptions(direct?.kind),
   });
   const text = await res.text();
   if (!res.ok) {

@@ -2,7 +2,7 @@ import { Command, Flags } from '@oclif/core';
 import * as path from 'path';
 
 import { Project } from '../../lib/app/project';
-import { openSession } from '../../lib/app/session';
+import { directIdentity, openSession } from '../../lib/app/session';
 import { resolveAppTarget } from '../../lib/app/instance';
 import { appLibrary, appLibraryLine, devBundleOwnerId, pullSnapshot, syncApp } from '../../lib/app/remote';
 import { checkSources } from '../../lib/app/check';
@@ -84,11 +84,7 @@ export default class AppPublish extends Command {
       );
       const { correlationId, name: libraryName } = library;
       if (changed) this.log(formatSuccess(appLibraryLine(library)));
-      await new ApiClient(
-        target.url,
-        target.token,
-        target.kind === 'session' ? { workspaceId: target.workspaceId! } : undefined
-      ).uploadDev(correlationId, result.distDir);
+      await new ApiClient(target.url, target.token, directIdentity(target)).uploadDev(correlationId, result.distDir);
       await syncApp(
         session,
         { ...app, version },
