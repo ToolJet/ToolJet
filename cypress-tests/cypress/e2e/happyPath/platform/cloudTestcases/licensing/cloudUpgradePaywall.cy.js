@@ -60,6 +60,7 @@ describe("Cloud Licensing — Upgrade Paywall", { retries: 0 }, () => {
     cy.apiSetCloudPlan("basic", { workspaceId: signup.workspaceId });
     cy.visit(`/${signup.workspaceSlug}/audit-logs`);
 
+    cy.get('[role="dialog"]').contains("button", "Cancel").click();
     cy.get(licenseSelectors.paidFeatureButton).first().should("be.visible").click();
     cy.location().should((location) => {
       expect(location.pathname).to.contain("/settings/subscription");

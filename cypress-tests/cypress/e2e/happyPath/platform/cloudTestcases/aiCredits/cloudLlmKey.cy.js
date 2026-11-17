@@ -59,8 +59,9 @@ describe("Cloud AI Credits — LLM Key", { retries: 0 }, () => {
       verifyKeyMasked();
       cy.get(aiSelectors.llmKeyEnvToggle).should("not.exist");
 
-      navigateToLlmKeyPage(secondId);
-      cy.get('[data-cy="tooljet-managed-description"]').should("be.visible");
+      cy.visit(`/${secondId}/settings/llm-key`);
+      cy.location("pathname", { timeout: 60000 }).should("eq", `/${secondId}/settings/white-labelling`);
+      cy.get(aiSelectors.llmKeyListItem).should("have.class", "tj-list-item-disabled");
       cy.get(aiSelectors.llmKeyInput).should("not.exist");
     });
   });

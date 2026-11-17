@@ -80,4 +80,27 @@ describe("Cloud Onboarding — Workspace Signup and Invites", { retries: 0 }, ()
       "super admin"
     );
   });
+
+  it("should show the same check-your-mail screen for a known and an unknown email", () => {
+    const knownEmail = uniqueEmail("cloud-forgot-known");
+    cy.apiCloudSignup({ email: knownEmail, name: fake.firstName });
+    cy.clearCookies();
+
+    [knownEmail, uniqueEmail("cloud-forgot-unknown")].forEach((email) => {
+      cy.visit("/forgot-password");
+      cy.get(onboardingSelectors.forgotEmailInput).clear().type(email);
+      cy.get(commonSelectors.resetPasswordLinkButton).click();
+      cy.get(onboardingSelectors.checkYourMailHeader).verifyVisibleElement(
+        "have.text",
+        commonText.emailPageHeader
+      );
+      cy.contains(commonText.resetPasswordEmailDescription(email)).should("be.visible");
+    });
+  });
+
+  it("should reject an invalid password reset link", () => {
+    cy.clearCookies();
+    cy.visit("/reset-password/invalid-token");
+    cy.contains(commonText.inalidInvitationLinkHeader).should("be.visible");
+  });
 });
