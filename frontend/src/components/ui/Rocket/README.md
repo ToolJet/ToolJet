@@ -44,6 +44,8 @@ Rocket is ToolJet's component library built on a 3-layer architecture: shadcn/Ra
 | Tabs | TabsList, TabsTrigger, TabsContent | 3 variants × 3 sizes |
 | StatusDot | — | 5 tones, 2 sizes, decorative |
 | EnvironmentSwitcher | — | Controlled pill + menu: status dot, optional number, disabled options with reason |
+| Tag | — | 5 variants (solid, background, outline, warning, neutral), static or clickable, removable, loading |
+| LinkButton | — | Ghost underlined text action, danger |
 
 ## Usage
 

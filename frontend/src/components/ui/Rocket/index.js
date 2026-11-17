@@ -213,5 +213,7 @@ export {
   PopoverTrigger,
 } from './Popover/Popover';
 export { SearchInput } from './SearchInput/SearchInput';
+export { Tag, tagVariants } from './Tag/Tag';
+export { LinkButton, linkButtonVariants } from './LinkButton/LinkButton';
 export { ClosableTabs } from './ClosableTabs/ClosableTabs';
 export { SidePanel, SidePanelHeader, SidePanelSection, SidePanelBody } from './SidePanel/SidePanel';
