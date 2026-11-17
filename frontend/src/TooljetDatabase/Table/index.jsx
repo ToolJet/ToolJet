@@ -736,8 +736,6 @@ const Table = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleDeleteRow = () => setIsDeleteRowsDialogOpen(true);
-
   const deleteSelectedRows = async () => {
     setIsDeleteRowsDialogOpen(false);
     const selectedRows = Object.keys(selectedRowIds).map((key) => rows[key]);
@@ -1172,12 +1170,10 @@ const Table = () => {
         isSeedDataDrawerOpen={isSeedDataDrawerOpen}
         setIsSeedDataDrawerOpen={setIsSeedDataDrawerOpen}
         selectedRowIds={selectedRowIds}
-        handleDeleteRow={handleDeleteRow}
         rows={rows}
         isEditRowDrawerOpen={isEditRowDrawerOpen}
         setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
         setFilterEnable={setFilterEnable}
-        filterEnable={filterEnable}
         isDirectRowExpand={isDirectRowExpand}
         setIsDirectRowExpand={setIsDirectRowExpand}
         referencedColumnDetails={referencedColumnDetails}
@@ -1186,9 +1182,9 @@ const Table = () => {
       />
       <div
         style={{
-          // 48px navbar + 96 for table bar + 52 px in footer, plus whatever the page puts above the table (the strip
-          // with the expand button while the tables panel is collapsed).
-          height: 'calc(100vh - 164px - var(--tjdb-above-table, 0px))',
+          // 48px navbar + 48px toolbar + 60px for the column header row and footer, plus whatever the page puts above
+          // the table (the tab strip).
+          height: 'calc(100vh - 156px - var(--tjdb-above-table, 0px))',
         }}
         className={cx(
           `table-responsive border-0 tj-db-table animation-fade ${rows.length === 0 ? 'tj-table-empty' : 'tj-table'}`,
