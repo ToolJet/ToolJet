@@ -1,4 +1,5 @@
 import { DynamicModule } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { DataSourcesRepository } from './repository';
@@ -17,6 +18,8 @@ import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { FolderDataSourcesModule } from '@modules/folder-data-sources/module';
 import { CustomDomainsModule } from '@modules/custom-domains/module';
+import { DataSourceActivityService } from './dashboard/activity.service';
+import { DataSourceActivityInterceptor } from './dashboard/activity.interceptor';
 
 export class DataSourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -72,6 +75,8 @@ export class DataSourcesModule extends SubModule {
         OrganizationRepository,
         GitSyncDataSourceCreateGuard,
         GitSyncDataSourceEditGuard,
+        DataSourceActivityService,
+        ...(isMainImport ? [{ provide: APP_INTERCEPTOR, useClass: DataSourceActivityInterceptor }] : []),
       ],
       controllers: isMainImport ? [DataSourcesController] : [],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
