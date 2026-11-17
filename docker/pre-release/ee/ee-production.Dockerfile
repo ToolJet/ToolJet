@@ -303,7 +303,7 @@ RUN mkdir -p /app/code-mode/custom-component-sdk /app/code-mode/apps && \
     tar -xzf /tmp/custom-component-sdk.tgz -C /app/code-mode/custom-component-sdk --strip-components=1 && \
     mv /tmp/custom-component-sdk.tgz /app/server/code-mode-cli/custom-component-sdk.tgz && \
     npm install -g /app/server/code-mode-cli/tooljet-cli.tgz && tooljet --version && \
-    chown -R appuser:0 /app/code-mode && chmod -R g=u /app/code-mode
+    chown -R appuser:0 /app/code-mode /app/server/code-mode-cli && chmod -R g=u /app/code-mode
 ENV TOOLJET_SDK_SPEC=file:/app/code-mode/custom-component-sdk \
     TOOLJET_CODE_APP_ROOT=/app/code-mode/apps \
     TOOLJET_APP_SCANNER_BIN=/app/server/ee/packages/app-scanner/bin/tj-app-scan.js \
@@ -313,8 +313,9 @@ COPY ./docker/pre-release/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 # Set group write permissions for frontend build files to support RedHat arbitrary user assignment
 RUN chmod -R g+w /app/frontend/build
 # tooljet-mcp bundle for the socket relay (ee-server#827). data/ must sit next to mcp/,
-# not inside it — bundle resolves it as ../data. package.json ships for its "type":"module".
-COPY --from=mcp-builder --chown=appuser:0 /mcp/bundle/index.js ./app/mcp/index.js
+# not inside it — bundle resolves it as ../data. package.json ships for its "type":"module". The whole
+# bundle/ folder: index.js imports the chunk files next to it.
+COPY --from=mcp-builder --chown=appuser:0 /mcp/bundle/ ./app/mcp/
 COPY --from=mcp-builder --chown=appuser:0 /mcp/package.json ./app/mcp/package.json
 COPY --from=mcp-builder --chown=appuser:0 /mcp/data ./app/data
 
