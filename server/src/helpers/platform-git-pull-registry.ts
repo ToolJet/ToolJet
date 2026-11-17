@@ -38,6 +38,17 @@ export function scrubGitCredentials(message: string): string {
 export interface IPlatformGitPullService {
   hydrateStubApp(stubApp: any, user: any, branchId?: string, tagSha?: string, tagName?: string): Promise<any>;
   /**
+   * Run `fn` with every hydration inside it pinned to the branch's workspace pull commit,
+   * instead of the branch HEAD. Runs `fn` unpinned when no workspace pull has been recorded.
+   */
+  runPinnedToWorkspacePull<T>(organizationId: string, branchId: string, fn: () => Promise<T>): Promise<T>;
+  /**
+   * Opening a real (non-stub) draft inside runPinnedToWorkspacePull: pull it at the workspace
+   * pull commit when it is behind that commit. Returns the refreshed app, or null when the
+   * draft is kept as it is (already there, ahead, edited since, or no pin).
+   */
+  pullDraftIfBehindWorkspacePull(app: any, user: any, branchId: string): Promise<{ app: any } | null>;
+  /**
    * Last path segment of an `appPath` like `apps/folder/my-app` → `my-app`, or
    * `modules/my-module` → `my-module`. Used by callers that need to resolve a
    * module/app name from moduleMeta/appMeta entries.
