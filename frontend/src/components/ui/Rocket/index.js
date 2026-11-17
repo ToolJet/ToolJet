@@ -198,6 +198,8 @@ export {
 } from './Table/Table';
 export { Skeleton, skeletonClasses } from './Skeleton/Skeleton';
 export { TruncatingText } from './TruncatingText/TruncatingText';
+export { StatusDot, statusDotVariants } from './StatusDot/StatusDot';
+export { EnvironmentSwitcher } from './EnvironmentSwitcher/EnvironmentSwitcher';
 export { Checkbox, checkboxVariants } from './Checkbox/Checkbox';
 export { RadioGroup, RadioGroupItem, radioGroupItemVariants } from './RadioGroup/RadioGroup';
 export { Textarea, textareaVariants } from './Textarea/Textarea';

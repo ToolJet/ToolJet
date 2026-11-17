@@ -42,6 +42,8 @@ Rocket is ToolJet's component library built on a 3-layer architecture: shadcn/Ra
 | Empty | EmptyHeader, EmptyMedia, EmptyTitle + 3 more | SVG illustrations, page-level states |
 | Breadcrumb | BreadcrumbList, BreadcrumbLink, BreadcrumbPage + 3 more | Ellipsis, custom separator |
 | Tabs | TabsList, TabsTrigger, TabsContent | 3 variants × 3 sizes |
+| StatusDot | — | 5 tones, 2 sizes, decorative |
+| EnvironmentSwitcher | — | Controlled pill + menu: status dot, optional number, disabled options with reason |
 
 ## Usage
 

@@ -60,7 +60,7 @@ export default function ExportCsvModal({
         });
       });
     // Deliberately keyed on show/tableId only, not on environments/relationsByEnvironment -
-    // relationsByEnvironment only changes via a promote (EnvironmentSwitcher.refetchTables, called
+    // relationsByEnvironment only changes via a promote (useTableMigrations.refetchTables, called
     // from PromotePreviewView after promoteTable succeeds), and a promote is only reachable from
     // inside MigrationHistoryDrawer. That drawer and this modal cannot both be open: both are
     // full-viewport, focus-trapped overlays (react-bootstrap Modal backdrop z-index ~1040+;

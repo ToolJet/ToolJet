@@ -8,7 +8,8 @@ import { server } from '@/test/msw/server';
 import { render, screen, waitFor, act } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { TooljetDatabaseContext } from '@/TooljetDatabase';
-import EnvironmentSwitcher from '@/TooljetDatabase/EnvironmentSwitcher';
+import TjdbHeaderEnvironment from '@/TooljetDatabase/HeaderEnvironment';
+import HeaderEnvironmentSelect from '@/_ui/Header/HeaderEnvironmentSelect';
 import MigrationHistoryDrawer from '@/TooljetDatabase/Drawers/MigrationHistoryDrawer';
 import ExportCsvModal from '@/TooljetDatabase/ExportCsvModal';
 import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
@@ -27,7 +28,7 @@ const LAPSED_STAGING = { id: 'env-staging', name: 'staging', priority: 2, enable
 const LAPSED_ENVIRONMENTS = [DEVELOPMENT, LAPSED_STAGING];
 const BOTH_HAVE_RELATION = LAPSED_ENVIRONMENTS.map((env) => ({ environment_id: env.id, has_relation: true }));
 
-// The sparkle the App Builder's environment toggle puts on a plan-locked environment.
+// The sparkle the migration history drawer puts on a plan-locked environment tab.
 const UPGRADE_ICON = '[data-cy="enterprise-gradient-sm-icon"]';
 
 const serveLapsedLicence = () =>
@@ -61,20 +62,21 @@ describe('TJDB after a multi-environment licence lapse', () => {
     act(() => useTjdbStore.setState({ environments: LAPSED_ENVIRONMENTS, selectedEnvironment: DEVELOPMENT }));
 
     render(
-      <TooljetDatabaseContext.Provider
-        value={{ organizationId: 'org-1', tables: [], setTables: () => {}, selectedTable: {} }}
-      >
-        <EnvironmentSwitcher />
-      </TooljetDatabaseContext.Provider>
+      <>
+        <HeaderEnvironmentSelect />
+        <TooljetDatabaseContext.Provider
+          value={{ organizationId: 'org-1', tables: [], setTables: () => {}, selectedTable: {} }}
+        >
+          <TjdbHeaderEnvironment />
+        </TooljetDatabaseContext.Provider>
+      </>
     );
-    await userEvent.click(screen.getByRole('button', { name: /development/i }));
+    await userEvent.click(screen.getByRole('button', { name: /development environment/i }));
 
-    const staging = await screen.findByRole('button', { name: /staging/i });
-    const development = document.querySelector('[data-cy="development-environment-option"]');
-    expect(staging).toBeDisabled();
-    expect(development).toBeEnabled();
-    expect(staging.querySelector(UPGRADE_ICON)).toBeInTheDocument();
-    expect(development.querySelector(UPGRADE_ICON)).not.toBeInTheDocument();
+    const staging = await screen.findByRole('menuitemcheckbox', { name: /staging/i });
+    const development = screen.getByRole('menuitemcheckbox', { name: /development/i });
+    expect(staging).toHaveAttribute('aria-disabled', 'true');
+    expect(development).not.toHaveAttribute('aria-disabled', 'true');
   });
 
   // Export is the one thing a lapse does not take away: a workspace leaving multi-environment can

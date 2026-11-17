@@ -1,8 +1,9 @@
 import type { StateCreator, StoreApi, UseBoundStore } from 'zustand';
 
 import { createZustandStoreWithImmer } from '@/_stores/utils';
+import type { EnvironmentSwitcherOption } from '@/components/ui/Rocket/EnvironmentSwitcher/EnvironmentSwitcher';
 
-export interface HeaderEnvironment {
+export interface HeaderEnvironment extends Pick<EnvironmentSwitcherOption, 'meta' | 'disabled' | 'disabledReason'> {
   id: string;
   name: string;
 }
@@ -12,6 +13,8 @@ export interface HeaderEnvironmentSelectConfig {
   /** The environment in force; undefined while the environments load. */
   environmentId: string | undefined;
   onChange: (environmentId: string) => void;
+  /** Shown when the select is hovered or focused. */
+  tooltip?: string;
 }
 
 interface HeaderEnvironmentStore {

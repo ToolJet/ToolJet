@@ -21,6 +21,8 @@ import SelectionBar from './components/SelectionBar';
 import { CONSTANT_SOURCES, useConstantsListQueryParams } from './hooks/useConstantsListQueryParams';
 import { useConstantsListStore } from './store/constantsListStore';
 
+const ENVIRONMENT_TOOLTIP = 'Choose which environment’s values the list shows.';
+
 const ConstantModal = lazy(() => import('./components/ConstantModal'));
 
 // The list API rejects a longer `search`.
@@ -132,7 +134,10 @@ const ManageOrgConstantsSettings = () => {
 
   // The select lives in the header, right of the search; nothing is shown when switching is not available.
   const headerEnvironmentSelect = useMemo(
-    () => (showEnv ? { environments: modalEnvironments, environmentId, onChange: setEnv } : null),
+    () =>
+      showEnv
+        ? { environments: modalEnvironments, environmentId, onChange: setEnv, tooltip: ENVIRONMENT_TOOLTIP }
+        : null,
     [showEnv, modalEnvironments, environmentId, setEnv]
   );
   useHeaderEnvironmentSelect(headerEnvironmentSelect);

@@ -6,7 +6,6 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
-import { TJDB_HEADER_SLOT_ID } from '@/TooljetDatabase/HeaderSlotPortal';
 
 import NewLayoutHeader from './NewLayoutHeader';
 import BranchingActionButtons from './BranchingActionButtons';
@@ -24,7 +23,6 @@ function Header({
 
   const location = useLocation();
   const pathname = routes(location?.pathname.split('/').pop(), location?.pathname);
-  const isDatabasePage = location.pathname.split('/').filter(Boolean).includes('database');
 
   if (showNewHeader) {
     return <NewLayoutHeader featureAccess={featureAccess} />;
@@ -125,8 +123,6 @@ function Header({
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}
-              {/* The TJDB page portals its environment switcher in here: it needs the page's context, which this Header sits above. */}
-              {isDatabasePage && <div id={TJDB_HEADER_SLOT_ID} className="tw-contents" />}
             </div>
           </div>
         </div>

@@ -13,8 +13,9 @@ type LayoutRouteWrapperProps = {
   guard: Guard;
 };
 
-// Pages (matched on the end of the URL path) that render the redesigned header.
-const NEW_HEADER_PATHS = ['/workspace-constants'];
+// Pages (matched on the end of the URL path) that render the redesigned header. A page that keeps its state in the
+// path after these segments would silently fall back to the old header, so such state belongs in the query string.
+const NEW_HEADER_PATHS = ['/workspace-constants', '/database'];
 
 const LayoutRouteWrapper = ({ darkMode, switchDarkMode, guard: Guard }: LayoutRouteWrapperProps) => {
   const location = useLocation();

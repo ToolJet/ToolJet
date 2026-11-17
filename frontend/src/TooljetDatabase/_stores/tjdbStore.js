@@ -19,6 +19,8 @@ const initialState = {
   // switch has to clear. Never select this into a component - it is a callback slot, not state.
   onEnvironmentSwitch: null,
   migrationsVersion: 0,
+  // The history drawer is opened from more than one place (the header's environment menu, the table toolbar).
+  isMigrationHistoryOpen: false,
 };
 
 // Per tab, so a reload or a trip out of the dashboard returns to the same environment. Only the
@@ -113,12 +115,21 @@ export const useTjdbStore = create(
             state.onEnvironmentSwitch = handler;
           }),
 
-        // Bumped whenever a migration is recorded. EnvironmentSwitcher owns the migration-chain fetch
+        // Bumped whenever a migration is recorded. useTableMigrations owns the migration-chain fetch
         // in local state; this is the one signal that tells it to re-read. Called from useMigrationModal
         // and TableListItem (which calls deleteTable directly).
         bumpMigrations: () =>
           set((state) => {
             state.migrationsVersion += 1;
+          }),
+
+        openMigrationHistory: () =>
+          set((state) => {
+            state.isMigrationHistoryOpen = true;
+          }),
+        closeMigrationHistory: () =>
+          set((state) => {
+            state.isMigrationHistoryOpen = false;
           }),
 
         // The one ordered environment switch. Two independent useEffects used to do this - one for

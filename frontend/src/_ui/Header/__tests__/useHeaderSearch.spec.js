@@ -55,4 +55,10 @@ describe('useHeaderSearch', () => {
     act(() => jest.advanceTimersByTime(300));
     expect(debounced()).toBe('abc');
   });
+
+  it('tells the header when the page hides the search', () => {
+    useSearchStore.getState().setSearchConfig({ hidden: true });
+    const { result } = renderHook(() => useHeaderSearch(), { wrapper });
+    expect(result.current.hidden).toBe(true);
+  });
 });

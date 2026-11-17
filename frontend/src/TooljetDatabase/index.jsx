@@ -7,8 +7,8 @@ import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling'
 import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import { TooljetDatabaseContext } from './context';
 import { TooljetDatabaseProvider } from './TooljetDatabaseContext';
-import { HeaderSlotPortal } from './HeaderSlotPortal';
-import EnvironmentSwitcher from './EnvironmentSwitcher';
+import TjdbHeaderEnvironment from './HeaderEnvironment';
+import { useHeaderSearchConfig } from '@/_hooks/useHeaderSearchConfig';
 import { useTjdbActions, useIsDevelopmentEnvironment } from './_stores/tjdbStore';
 import './styles/styles.scss';
 
@@ -35,6 +35,9 @@ const TooljetDatabase = () => {
 
   const { collapseSidebar, setCollapseSidebar, setEnableCollapsibleSidebar } = useOutletContext();
   const navigate = useNavigate();
+  // The design has no global search in the header: tables are searched in the tables panel.
+  useHeaderSearchConfig({ hidden: true });
+
   const { admin, user_permissions } = authenticationService.currentSessionValue;
   const canEditTjdb = admin || !!user_permissions?.tjdb_c_r_u_d;
   const isDevelopmentEnvironment = useIsDevelopmentEnvironment();
@@ -142,9 +145,7 @@ const TooljetDatabase = () => {
   return (
     <div className="page-wrapper tooljet-database">
       <TooljetDatabaseProvider value={value}>
-        <HeaderSlotPortal>
-          <EnvironmentSwitcher />
-        </HeaderSlotPortal>
+        <TjdbHeaderEnvironment />
         <TooljetDatabasePage totalTables={tables.length || 0} collapseSidebar={collapseSidebar} />
       </TooljetDatabaseProvider>
     </div>

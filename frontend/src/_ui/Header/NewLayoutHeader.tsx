@@ -12,7 +12,7 @@ import HeaderEnvironmentSelect from './HeaderEnvironmentSelect';
 import BranchingActionButtons from './BranchingActionButtons';
 
 export default function NewLayoutHeader({ featureAccess }: { featureAccess: IFeatureAccess }) {
-  const searchProps = useHeaderSearch();
+  const { hidden: searchHidden, ...searchProps } = useHeaderSearch();
 
   return (
     <header
@@ -22,9 +22,10 @@ export default function NewLayoutHeader({ featureAccess }: { featureAccess: IFea
     >
       <OrganizationList variant="v2" />
 
-      <SearchInput {...searchProps} />
+      {!searchHidden && <SearchInput {...searchProps} />}
 
-      <div className="tw-flex tw-items-center tw-justify-end tw-gap-2.5">
+      {/* Pinned to the last column, so it stays at the right edge when the page hides the search. */}
+      <div className="tw-col-start-3 tw-flex tw-items-center tw-justify-end tw-gap-2.5">
         {/* Shared by several pages: BranchingActionButtons decides for itself where git controls show. */}
         <BranchingActionButtons />
         {Object.keys(featureAccess).length > 0 && <LicenseBanner showNavBarActions limits={featureAccess} />}

@@ -8,6 +8,7 @@ import type { ISearchConfig, ISearchStore, ISearchStoreInitialState, SearchStore
 export const DEFAULT_SEARCH_CONFIG: ISearchConfig = {
   placeholder: 'Search',
   debounceMs: 300,
+  hidden: false,
 };
 
 const initialState: ISearchStoreInitialState = {

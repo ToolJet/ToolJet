@@ -10,7 +10,7 @@ export function useHeaderSearch() {
   const setSearchQuery = useSearchStore((state) => state.setSearchQuery);
   const clearSearch = useSearchStore((state) => state.clearSearch);
   const setDebouncedSearchQuery = useSearchStore((state) => state.setDebouncedSearchQuery);
-  const { placeholder, debounceMs } = useSearchStore((state) => state.searchConfig);
+  const { placeholder, debounceMs, hidden } = useSearchStore((state) => state.searchConfig);
 
   // Typing again, clearing or leaving the page cancels the pending update through this cleanup
   useEffect(() => {
@@ -25,5 +25,5 @@ export function useHeaderSearch() {
     clearSearch();
   }, [pathname, clearSearch]);
 
-  return { placeholder, value: searchQuery, onChange: setSearchQuery, onClear: clearSearch };
+  return { placeholder, hidden, value: searchQuery, onChange: setSearchQuery, onClear: clearSearch };
 }

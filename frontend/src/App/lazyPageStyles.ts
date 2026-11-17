@@ -14,6 +14,5 @@ import '@/TooljetDatabase/Drawers/BulkUploadDrawer/styles.scss';
 import '@/TooljetDatabase/Drawers/MigrationHistoryDrawer/styles.scss';
 import '@/TooljetDatabase/Drawers/SeedDataDrawer/styles.scss';
 import '@/TooljetDatabase/MigrationConfirmModal/styles.scss';
-import '@/TooljetDatabase/EnvironmentSwitcher/styles.scss';
 import '@/TooljetDatabase/_components/SqlEditor.scss';
 import '@/SettingsPage/resources/styles/two-factor-auth-card.styles.scss';
