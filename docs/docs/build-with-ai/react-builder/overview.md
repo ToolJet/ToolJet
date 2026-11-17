@@ -118,16 +118,6 @@ You choose a build mode when you create an app, and the app keeps it. Both modes
 | You edit in | The visual App Builder | The Code panel, the style inspector, or your own editor |
 | Before release | The standard release flow | The same flow, plus a security check of the code and its packages |
 
-## From Prompt to Production
-
-<CardGrid columns={3}>
-  <FlowStep number="1" title="Create" description="Pick React Builder when you create the app, or start from a prompt." href="/docs/build-with-ai/react-builder/create-app" />
-  <FlowStep number="2" title="Build" description="Use the AI chat, the Code panel or your own editor. Each save shows on the canvas." href="/docs/build-with-ai/react-builder/editor" />
-  <FlowStep number="3" title="Set access" description="Choose who can open each screen and who can run each query." href="/docs/build-with-ai/react-builder/access-control" />
-  <FlowStep number="4" title="Save a version" description="ToolJet builds the code, checks it and keeps that build with the version." href="/docs/build-with-ai/react-builder/versions-and-history" />
-  <FlowStep number="5" title="Review and release" description="Compare it with what is live, get approval, then release and promote." href="/docs/development-lifecycle/release/compare-versions" />
-</CardGrid>
-
 ## Where to Go Next
 
 <CardGrid min={190}>
