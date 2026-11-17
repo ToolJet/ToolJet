@@ -31,6 +31,29 @@ const TONE_STATUS: Record<string, 'success' | 'exception' | 'normal' | 'active'>
   success: 'success',
   danger: 'exception',
 };
+// Ant's own status words keep their bar: the tone alone turned "exception" blue and "active" plain green (QA PF-020).
+const ANT_PROGRESS_STATUS = ['success', 'exception', 'active', 'normal'] as const;
+const progressStatus = (status: string, tone: string) => {
+  const own = status.trim().toLowerCase();
+  return (ANT_PROGRESS_STATUS as readonly string[]).includes(own)
+    ? (own as (typeof ANT_PROGRESS_STATUS)[number])
+    : (TONE_STATUS[tone] ?? 'normal');
+};
+
+// Ant's List draws no background, so Container background changed nothing; set only when the style is (QA PKB-41).
+const listBackground = (tokens: unknown) =>
+  (tokens as Record<string, string>)['--tj-ant-color-bg-container'] ? 'tj-ant-list-bg' : undefined;
+
+// A row picked from the keyboard as from the pointer: a Tab stop that Enter and Space pick (QA PKB-31).
+const rowKeys = (pick: () => void) => ({
+  tabIndex: 0,
+  onKeyDown: (e: React.KeyboardEvent) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    pick();
+  },
+});
+
 const plainRow = (row: Row) => {
   const { __key: _k, ...rest } = row as Row & { __key?: string };
   return rest;
@@ -485,45 +508,50 @@ export const RecordList = () => {
         loading={loading}
         locale={{ emptyText }}
         rowKey="key"
-        renderItem={(it) => (
-          <List.Item
-            className={it.key === selectedItemId ? 'tj-ant-item is-selected' : 'tj-ant-item'}
-            onClick={() => {
-              // Clicking the selected record again unselects it, with no click event, as in the Rocket Record list
-              // (team testing, 2026-10-29: a selection could not be undone).
-              if (it.key === selectedItemId) return select(null);
-              select(it as unknown as Selectable);
-              onItemClicked();
-            }}
-            extra={
-              it.status || it.value ? (
-                <Space size={8}>
-                  {it.status ? (
-                    <PackTag color={toneTag(it.status, statusColors)}>{chipLabel(it.status)}</PackTag>
-                  ) : null}
-                  {it.value ? <Typography.Text strong>{it.value}</Typography.Text> : null}
-                </Space>
-              ) : undefined
-            }
-          >
-            <List.Item.Meta
-              avatar={
-                showAvatar && avatarField ? (
-                  <RowAvatar image={it.image} name={it.avatarName} shape={avatarShape as 'circle'} />
+        className={listBackground(tokens)}
+        renderItem={(it) => {
+          const pick = () => {
+            // Clicking the selected record again unselects it, with no click event, as in the Rocket Record list
+            // (team testing, 2026-10-29: a selection could not be undone).
+            if (it.key === selectedItemId) return select(null);
+            select(it as unknown as Selectable);
+            onItemClicked();
+          };
+          return (
+            <List.Item
+              className={it.key === selectedItemId ? 'tj-ant-item is-selected' : 'tj-ant-item'}
+              onClick={pick}
+              {...rowKeys(pick)}
+              extra={
+                it.status || it.value ? (
+                  <Space size={8}>
+                    {it.status ? (
+                      <PackTag color={toneTag(it.status, statusColors)}>{chipLabel(it.status)}</PackTag>
+                    ) : null}
+                    {it.value ? <Typography.Text strong>{it.value}</Typography.Text> : null}
+                  </Space>
                 ) : undefined
               }
-              title={it.title}
-              description={
-                it.meta || it.progress !== null ? (
-                  <>
-                    {it.meta ? <div>{it.meta}</div> : null}
-                    {it.progress !== null ? <Progress percent={it.progress} size="small" /> : null}
-                  </>
-                ) : undefined
-              }
-            />
-          </List.Item>
-        )}
+            >
+              <List.Item.Meta
+                avatar={
+                  showAvatar && avatarField ? (
+                    <RowAvatar image={it.image} name={it.avatarName} shape={avatarShape as 'circle'} />
+                  ) : undefined
+                }
+                title={it.title}
+                description={
+                  it.meta || it.progress !== null ? (
+                    <>
+                      {it.meta ? <div>{it.meta}</div> : null}
+                      {it.progress !== null ? <Progress percent={it.progress} size="small" /> : null}
+                    </>
+                  ) : undefined
+                }
+              />
+            </List.Item>
+          );
+        }}
       />
     </AntProvider>
   );
@@ -798,45 +826,50 @@ export const ProgressList = () => {
           split={false}
           locale={{ emptyText }}
           rowKey="key"
-          renderItem={(it) => (
-            <List.Item
-              className={
-                it.key === selectedItemId
-                  ? 'tj-ant-item tj-ant-progress-row is-selected'
-                  : 'tj-ant-item tj-ant-progress-row'
-              }
-              onClick={() => {
-                // Clicking the selected item again unselects it, with no click event, as in the Record list (team testing, 2026-10-29).
-                if (it.key === selectedItemId) return select(null);
-                select(it as unknown as Selectable);
-                onItemClicked();
-              }}
-            >
-              <div className="tj-ant-progress-head">
-                <Typography.Text>{it.label}</Typography.Text>
-                <Typography.Text type="secondary">
-                  {[
-                    showValues && it.value ? (it.target ? `${it.value} / ${it.target}` : it.value) : '',
-                    showPercent && it.pct !== null && !it.relative ? `${Math.round(it.pct)}%` : '',
-                  ]
-                    .filter(Boolean)
-                    .join('  ')}
-                </Typography.Text>
-              </div>
-              <Progress
-                percent={it.pct ?? 0}
-                showInfo={false}
-                size={{ height: stroke }}
-                status={TONE_STATUS[it.tone] ?? 'normal'}
-                strokeColor={it.tone === 'warning' ? 'var(--ant-color-warning)' : undefined}
-              />
-              {it.caption ? (
-                <Typography.Text type="secondary" className="tj-ant-progress-caption">
-                  {it.caption}
-                </Typography.Text>
-              ) : null}
-            </List.Item>
-          )}
+          className={listBackground(tokens)}
+          renderItem={(it) => {
+            const pick = () => {
+              // Clicking the selected item again unselects it, with no click event, as in the Record list (team testing, 2026-10-29).
+              if (it.key === selectedItemId) return select(null);
+              select(it as unknown as Selectable);
+              onItemClicked();
+            };
+            return (
+              <List.Item
+                className={
+                  it.key === selectedItemId
+                    ? 'tj-ant-item tj-ant-progress-row is-selected'
+                    : 'tj-ant-item tj-ant-progress-row'
+                }
+                onClick={pick}
+                {...rowKeys(pick)}
+              >
+                <div className="tj-ant-progress-head">
+                  <Typography.Text>{it.label}</Typography.Text>
+                  <Typography.Text type="secondary">
+                    {[
+                      showValues && it.value ? (it.target ? `${it.value} / ${it.target}` : it.value) : '',
+                      showPercent && it.pct !== null && !it.relative ? `${Math.round(it.pct)}%` : '',
+                    ]
+                      .filter(Boolean)
+                      .join('  ')}
+                  </Typography.Text>
+                </div>
+                <Progress
+                  percent={it.pct ?? 0}
+                  showInfo={false}
+                  size={{ height: stroke }}
+                  status={progressStatus(it.status, it.tone)}
+                  strokeColor={it.tone === 'warning' ? 'var(--ant-color-warning)' : undefined}
+                />
+                {it.caption ? (
+                  <Typography.Text type="secondary" className="tj-ant-progress-caption">
+                    {it.caption}
+                  </Typography.Text>
+                ) : null}
+              </List.Item>
+            );
+          }}
         />
       </SpinOver>
     </AntProvider>

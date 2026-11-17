@@ -18,6 +18,10 @@
 }
 /* Lists and tables fill the box: a bordered list's border, and a table's surface with its pagination at the foot,
    reach its bottom instead of ending in a blank band. */
+/* Container background on a list (QA PKB-41): the class is set only when the style is. */
+.tj-ant-root .ant-list.tj-ant-list-bg {
+  background: var(--tj-ant-color-bg-container);
+}
 .tj-ant-list.tj-ant--fill > .ant-list {
   min-height: 100%;
   box-sizing: border-box;
