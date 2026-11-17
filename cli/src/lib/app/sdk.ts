@@ -22,7 +22,7 @@ import { isServerMode } from '../server-mode';
   - what is uploaded or put in a build's manifest names the template's published version, whatever this checkout uses;
   - a file: path that does not exist on this machine becomes that version, with the lockfile entry to match.
 
-  npm's published SDK can lag behind this server (0.1.0-beta.3 has no useQuery, useGlobals, useNavigation or useTheme). So
+  npm's published SDK can lag behind this server (0.1.0-beta.3 had no useQuery, useGlobals, useNavigation or useTheme). So
   after an install a project whose SDK lacks those types gets the one TOOLJET_SDK_SPEC names, else the one its ToolJet
   serves, with --no-save: package.json and the lockfile keep naming the published version.
 */
