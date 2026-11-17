@@ -15,6 +15,7 @@ Deployment and protocol configuration lives in `ToolJet/tooljet-mcp`, `docs/oaut
 - The JWT strategy resolves Git branch context for delegated and viewer identities, including principals cached by the global guard. Preserve browser/PAT precedence: `branch_id`, legacy `x-branch-id`, then the authenticated workspace's default branch. Authenticate and validate workspace/app bindings before resolving the branch.
 - `dto.ts` defines the browser API contracts. Map database rows explicitly; preserve existing wire fields when storage changes.
 - Scope checks in `scope.interceptor.ts` share the PAT capability ceiling. They never replace the user's current permissions, workspace binding or edition gates.
+- A delegation needs a consented bundle for every route. Two kinds of route are admitted outside their module's bundle, and the interceptor names theirs: plugin `GET_SPEC` (data), and the two custom component library routes a Code mode build uses, `UPLOAD_DEV_BUNDLE` and `LIST_LIBRARIES` (apps). A token's other library routes are not granted to a delegation. Widening either list needs a case in `test/modules/mcp-oauth/scope.spec.ts`.
 - Only the configured MCP service may exchange an access token. A mismatched exchange secret returns `401 invalid_client` internally; the MCP boundary reports a service failure (503) without a user login challenge. Never log secrets or credential bodies.
 
 ## Revocation and concurrency

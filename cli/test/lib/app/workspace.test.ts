@@ -4,7 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { Project } from '../../../src/lib/app/project';
-import { pickVersion } from '../../../src/lib/app/remote';
+import { pickVersion, syncApp } from '../../../src/lib/app/remote';
 import { checkoutVersion, cloneApp, cloneFolder, pullProject } from '../../../src/lib/app/workspace';
 import { ApiError, type Session } from '../../../src/lib/app/session';
 import { readSourceState } from '../../../src/lib/app/source-upload';
@@ -268,6 +268,68 @@ describe('tooljet app clone, pull and checkout', () => {
     await checkoutVersion(fakeSession(), project, 'v9').catch((e) => (error = e));
     expect(error?.message).to.equal('No version "v9". Versions: v2 (draft), v1 (released)');
     expect(fs.readFileSync(path.join(project.root, 'app.json'), 'utf8')).to.equal(before);
+  });
+
+  /*
+    A module is drawn inside other apps, in its module container: it has no page for code to own. ToolJet answers for
+    one like an app, with type "module", on both reads (the app and a version of it).
+  */
+  describe('on a module', () => {
+    const moduleSession = (options?: { onBranch?: boolean }) => {
+      const session = fakeSession('none', options);
+      const api = session.api;
+      session.api = async (p: string, init?: { method?: string }) => {
+        const res = await api(p, init);
+        return res?.slug ? { ...res, type: 'module' } : res;
+      };
+      return session;
+    };
+    const refusal = async (run: Promise<unknown>): Promise<string> => {
+      let error: Error | undefined;
+      await run.catch((e) => (error = e));
+      return error?.message ?? 'no error';
+    };
+
+    it('clone is refused before a folder is made', async () => {
+      const session = moduleSession();
+      expect(await refusal(cloneApp(session, 'app-1'))).to.equal(
+        '"Orders Desk" is a module. Code mode is for apps only, so nothing was changed.'
+      );
+      expect(fs.readdirSync(tmp)).to.deep.equal([]);
+      expect(session.calls).to.deep.equal(['GET /apps/app-1']);
+    });
+
+    it('clone is refused on a git sync branch too, where the first read has no name', async () => {
+      expect(await refusal(cloneApp(moduleSession({ onBranch: true }), 'app-1'))).to.equal(
+        'This app is a module. Code mode is for apps only, so nothing was changed.'
+      );
+      expect(fs.readdirSync(tmp)).to.deep.equal([]);
+    });
+
+    it('pull is refused on the editing version and on a checked-out one, and the snapshot stays', async () => {
+      const { project } = await cloneApp(fakeSession(), 'app-1');
+      const hooks = () => fs.readFileSync(path.join(project.frontend, 'src', 'tooljet.gen.ts'), 'utf8');
+      const editing = hooks();
+      expect(await refusal(pullProject(moduleSession(), project))).to.contain('is a module');
+      expect(project.readSnapshot()?.versionId).to.equal('ver-2');
+      expect(hooks()).to.equal(editing);
+
+      await checkoutVersion(fakeSession(), project, 'v1');
+      const checkedOut = hooks();
+      const session = moduleSession();
+      expect(await refusal(pullProject(session, project))).to.contain('is a module');
+      expect(session.calls).to.deep.equal(['GET /v2/apps/app-1/versions/ver-1']);
+      expect(project.readSnapshot()?.versionId).to.equal('ver-1');
+      expect(hooks()).to.equal(checkedOut);
+    });
+
+    it('the link step of dev and publish writes nothing to it', async () => {
+      const { project } = await cloneApp(fakeSession(), 'app-1');
+      const session = moduleSession();
+      const library = { id: 'lib-1', correlationId: 'corr-1234', name: 'Orders Desk', componentName: 'App' };
+      expect(await refusal(syncApp(session, project.readApp(), library, 'dev:user-1'))).to.contain('is a module');
+      expect(session.calls).to.deep.equal(['GET /apps/app-1']);
+    });
   });
 
   it('app.json rejects a malformed version', () => {
