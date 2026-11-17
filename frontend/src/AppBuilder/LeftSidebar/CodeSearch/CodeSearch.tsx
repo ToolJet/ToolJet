@@ -25,10 +25,12 @@ import {
 import { runSearch, disposeSearchWorker } from './searchWorker';
 import { navigateToResult } from './navigateToResult';
 import { Chevron, CountBadge, EntityIcon, ResultRow } from './ResultRow';
+import RawPanelSectionHeader from '@/AppBuilder/Shared/Panel/PanelSectionHeader';
 import RawPanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
 import { NoMatchesEmptyState as RawNoMatchesEmptyState } from '@/AppBuilder/Shared/Panel/PanelEmptyState';
 import '@/AppBuilder/LeftSidebar/panelHeader.scss';
 import './codeSearch.scss';
+const PanelSectionHeader = RawPanelSectionHeader as React.ComponentType<any>;
 
 // Untyped JS components.
 const PanelHeader = RawPanelHeader as React.ComponentType<any>;
@@ -297,11 +299,13 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
       const groupOpen = !collapsed.has(`group:${group.key}`);
       return (
         <div key={group.key} className="code-search-group">
-          <button type="button" className="code-search-group-header" onClick={() => toggle(`group:${group.key}`)}>
-            <Chevron open={groupOpen} />
-            <span className="code-search-group-title">{SECTION_TITLES[group.key]}</span>
-            <CountBadge count={group.count} />
-          </button>
+          <PanelSectionHeader
+            className="code-search-group-header"
+            title={SECTION_TITLES[group.key]}
+            count={group.count.toLocaleString()}
+            open={groupOpen}
+            onToggle={() => toggle(`group:${group.key}`)}
+          />
           {groupOpen &&
             group.entities.map((entity) => {
               const key = entityKey(group, entity);

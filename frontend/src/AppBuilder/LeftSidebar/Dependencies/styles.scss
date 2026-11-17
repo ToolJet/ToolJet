@@ -39,26 +39,6 @@
   }
 }
 
-.dependency-section-chevron-box {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.dependency-section-chevron {
-  color: var(--icon-strong);
-}
-
-.dependency-section-title {
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 18px;
-  color: var(--text-default);
-}
-
 .dependency-section-body {
   padding: 0 16px 8px 32px;
 }

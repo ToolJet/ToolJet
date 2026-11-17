@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 import useStore from '@/AppBuilder/_stores/store';
+import { NoMatchesEmptyState } from '@/AppBuilder/Shared/Panel/PanelEmptyState';
 import { ToolTip } from '@/_components/ToolTip';
 import CustomJSONViewer from '@/AppBuilder/LeftSidebar/LeftSidebarInspector/CustomJSONViewer/CustomJSONViewer';
 import { copyToClipboard } from '@/AppBuilder/LeftSidebar/LeftSidebarInspector/utils';
@@ -303,9 +304,14 @@ const RuntimeDebugger = ({ darkMode, onClose }) => {
               </li>
             );
           })}
-          {visibleLogs.length === 0 && (
-            <li className="runtime-inspector__muted">{logs.length ? 'No logs match' : 'No logs yet'}</li>
-          )}
+          {visibleLogs.length === 0 &&
+            (query ? (
+              <li>
+                <NoMatchesEmptyState term={query} onClearSearch={() => setQuery('')} />
+              </li>
+            ) : (
+              <li className="runtime-inspector__muted">{logs.length ? 'No logs match' : 'No logs yet'}</li>
+            ))}
         </ul>
 
         <section className="runtime-inspector__detail" aria-label="Selected log">

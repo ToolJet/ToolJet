@@ -297,7 +297,8 @@
 #add-new-page-popover, #edit-page-popover {
     margin-left: 40px;
     padding: 8px;    
-    button {
+    // Page menu rows are `.list-item-popover-option`, styled with the query menu (ToolJetUI/List).
+    button:not(.list-item-popover-option) {
         border: 0px;
         padding: 8px;
         width: 100%;
@@ -597,4 +598,23 @@
 // Dark Pages panel: Tabler's dark .form-control keeps its light border.
 .theme-dark .pages-settings .form-control {
     border-color: var(--border-default);
+}
+
+// Page and page group menu rows are buttons drawn as `.list-item-popover-option` rows (UB-02).
+#edit-page-popover button.list-item-popover-option {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text-default);
+  font: inherit;
+  text-align: left;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
 }

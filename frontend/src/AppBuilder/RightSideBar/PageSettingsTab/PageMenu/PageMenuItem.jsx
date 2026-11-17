@@ -340,7 +340,7 @@ export const PageMenuItem = withRouter(
                     id="edit-page-popover"
                     className={`${darkMode && 'dark-theme theme-dark'}`}
                   >
-                    <div className="menu-options mb-0">
+                    <div className="list-item-popover-body">
                       <PageOptions
                         text="Edit page details"
                         icon="editable"
@@ -386,6 +386,7 @@ export const PageMenuItem = withRouter(
                           </ToolTip>
                         }
                         icon="trash"
+                        danger
                         darkMode={darkMode}
                         disabled={isHomePage}
                         onClick={(e) => {

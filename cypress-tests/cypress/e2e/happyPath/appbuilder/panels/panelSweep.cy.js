@@ -542,10 +542,12 @@ describe("Panel sweep", { testIsolation: false }, () => {
           found.each((_, header) => {
             const text = probe.textElements(header)[0] || header;
             const count = [...header.querySelectorAll("*")].find((el) => el !== text && /^\d+$/.test(el.textContent.trim()));
+            // A header may lead with an entity icon; the caret is the chevron, else its only icon.
+            const caret = header.querySelector('svg[class*="caret"], svg[class*="chevron"]') || header.querySelector("svg");
             headers.push({
               surface,
               style: probe.pick(text, ["font-size", "font-weight", "color"]),
-              caret: header.querySelector("svg").getBoundingClientRect().left < text.getBoundingClientRect().left ? "leading" : "trailing",
+              caret: caret.getBoundingClientRect().left < text.getBoundingClientRect().left ? "leading" : "trailing",
               count: /\(\d+\)$/.test(text.innerText.trim()) ? "in the title" : count && probe.pick(count, ["font-size", "color", "background-color"]),
             });
           });

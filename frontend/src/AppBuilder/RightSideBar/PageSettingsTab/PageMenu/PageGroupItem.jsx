@@ -139,7 +139,7 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
                 }}
               >
                 <Popover id="edit-page-popover" className={`${darkMode && 'dark-theme theme-dark'}`}>
-                  <div className="menu-options mb-0">
+                  <div className="list-item-popover-body">
                     <PageOptions
                       text="Edit group details"
                       icon="editable"
@@ -160,6 +160,7 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
                     <PageOptions
                       text="Delete group"
                       icon="trash"
+                      danger
                       darkMode={darkMode}
                       onClick={(e) => {
                         e.stopPropagation();

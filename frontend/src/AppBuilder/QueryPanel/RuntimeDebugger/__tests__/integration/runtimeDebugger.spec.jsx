@@ -62,11 +62,16 @@ test('typing in the search box keeps only the matching logs', () => {
   expect(detail()).toHaveTextContent('fetchUsers');
 });
 
-test('a search with no match says so instead of claiming there are no logs', () => {
-  fireEvent.change(screen.getByRole('textbox', { name: 'Search logs' }), { target: { value: 'zzqqxx' } });
+// Break this catches (UC-25): the debugger words its no-match state apart from every other panel.
+test('a search with no match shows the shared no-match state, which clears the search', () => {
+  const search = screen.getByRole('textbox', { name: 'Search logs' });
+  fireEvent.change(search, { target: { value: 'zzqqxx' } });
 
-  expect(rows()).toHaveLength(0);
-  expect(list()).toHaveTextContent('No logs match');
+  expect(within(list()).queryAllByRole('button', { name: /Completed|Failed/ })).toHaveLength(0);
+  expect(list()).toHaveTextContent('No matches for “zzqqxx”');
+
+  fireEvent.click(within(list()).getByRole('button', { name: 'Clear search' }));
+  expect(search).toHaveValue('');
 });
 
 test('the level filter keeps only logs of that level', () => {

@@ -277,21 +277,21 @@
 /* // Danger-variants--- */
 
 .tj-primary-danger-btn {
-    background: #E54D2E;
+    background: var(--editor-danger-fill, #E54D2E);
     border: none;
     color: #FFFCFC;
 
     &:hover {
-        background: var(--tomato10);
+        background: var(--editor-danger-fill-hover, var(--tomato10));
     }
 
     &:active {
-        background: var(--tomato11);
+        background: var(--editor-danger-fill-hover, var(--tomato11));
         color: #F0F4FF
     }
 
     &:focus-visible {
-        background: var(--tomato10);
+        background: var(--editor-danger-fill-hover, var(--tomato10));
         border: none;
         box-shadow: 0px 0px 0px 4px var(--tomato6);
         outline: none;
@@ -406,22 +406,22 @@
     /* // Danger-variants--- */
 
     .tj-primary-danger-btn {
-        background: var(--tomato9);
+        background: var(--editor-danger-fill, var(--tomato9));
         border: none;
         color: #FFFCFC;
 
         &:hover {
-            background: var(--tomato10);
+            background: var(--editor-danger-fill-hover, var(--tomato10));
             color: #FFFCFC;
         }
 
         &:active {
-            background: var(--tomato11);
+            background: var(--editor-danger-fill-hover, var(--tomato11));
             color: #F0F4FF;
         }
 
         &:focus-visible {
-            background: var(--tomato10);
+            background: var(--editor-danger-fill-hover, var(--tomato10));
             border: none;
             box-shadow: 0px 0px 0px 4px var(--tomato6);
             outline: none;

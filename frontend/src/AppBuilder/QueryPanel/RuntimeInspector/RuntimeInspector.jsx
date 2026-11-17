@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 
 import useStore from '@/AppBuilder/_stores/store';
+import { NoMatchesEmptyState } from '@/AppBuilder/Shared/Panel/PanelEmptyState';
+import PanelSectionHeader from '@/AppBuilder/Shared/Panel/PanelSectionHeader';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
@@ -340,24 +342,26 @@ const RuntimeInspector = ({ darkMode, moduleId, appType, onClose }) => {
 
       <div className="runtime-inspector__body">
         <nav className="runtime-inspector__list" aria-label="Inspector entries">
-          {categories.length === 0 && <div className="runtime-inspector__muted">No matches</div>}
+          {categories.length === 0 &&
+            (searchValue ? (
+              <NoMatchesEmptyState term={searchValue} onClearSearch={() => setSearchValue('')} />
+            ) : (
+              <div className="runtime-inspector__muted">No matches</div>
+            ))}
           {categories.map((item) => {
             const Icon = CATEGORY_ICONS[item.id] ?? Blocks;
             const isCollapsed = !isSearching && category === ALL_CATEGORIES && collapsedCategories.has(item.id);
             return (
               <section key={item.id} className="runtime-inspector__group">
-                <button
-                  type="button"
+                <PanelSectionHeader
                   className="runtime-inspector__group-header"
-                  onClick={() => toggleIn(setCollapsedCategories)(item.id)}
-                  aria-expanded={!isCollapsed}
-                  data-cy={`inspector-${item.id}-expand-button`}
-                >
-                  <ChevronRight size={12} className={cx('runtime-inspector__chevron', { 'is-open': !isCollapsed })} />
-                  <Icon size={13} />
-                  <span>{getCategoryLabel(item)}</span>
-                  <span className="runtime-inspector__count">{item.children.length}</span>
-                </button>
+                  icon={<Icon size={13} />}
+                  title={getCategoryLabel(item)}
+                  count={item.children.length}
+                  open={!isCollapsed}
+                  onToggle={() => toggleIn(setCollapsedCategories)(item.id)}
+                  dataCy={`inspector-${item.id}-expand-button`}
+                />
                 {!isCollapsed &&
                   (item.children.length ? (
                     <EntryList

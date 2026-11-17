@@ -1,21 +1,15 @@
 import React from 'react';
-import { Button } from '@/components/ui/Button/Button';
+import cx from 'classnames';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-const PageOptions = ({ type, text, icon, onClick, darkMode, disabled }) => {
-  return (
-    <div className="field">
-      <Button
-        disabled={disabled}
-        onClick={onClick}
-        style={{ height: '30px', fontWeight: '400' }}
-        className={`${darkMode ? 'page-options-dark' : ''}`}
-        leadingIcon={icon}
-        variant="secondary"
-      >
-        {text}
-      </Button>
-    </div>
-  );
-};
+// A page or page group menu row, drawn like the query menu's rows (`.list-item-popover-option`).
+const PageOptions = ({ text, icon, onClick, disabled, danger = false }) => (
+  <button type="button" className={cx('list-item-popover-option', { disabled })} disabled={disabled} onClick={onClick}>
+    <span className="list-item-popover-menu-option-icon">
+      <SolidIcon name={icon} width="16" fill={danger ? 'var(--editor-text-danger, var(--text-danger))' : undefined} />
+    </span>
+    <span className={cx('list-item-option-menu-label', { 'tw-text-editor-text-danger': danger })}>{text}</span>
+  </button>
+);
 
 export default PageOptions;

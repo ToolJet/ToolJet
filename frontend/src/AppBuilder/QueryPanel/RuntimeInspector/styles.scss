@@ -182,21 +182,6 @@
     }
   }
 
-  &__chevron {
-    flex-shrink: 0;
-    transition: transform 0.15s ease;
-
-    &.is-open {
-      transform: rotate(90deg);
-    }
-  }
-
-  &__count {
-    margin-left: auto;
-    font-size: var(--app-builder-small-font-size, 11px);
-    color: var(--text-placeholder);
-  }
-
   &__entry {
     display: flex;
     align-items: center;

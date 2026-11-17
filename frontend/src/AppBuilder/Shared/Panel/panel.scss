@@ -173,3 +173,45 @@ body.app-builder-chrome .accordion-title-text.text-capitalize {
     }
   }
 }
+
+.tj-panel-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-default);
+  font-family: 'IBM Plex Sans', sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tj-panel-section-header__title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tj-panel-section-header__count {
+  flex-shrink: 0;
+  color: var(--text-placeholder);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.tj-panel-section-header__caret {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--icon-default);
+  transition: transform 120ms ease;
+
+  &.is-open {
+    transform: rotate(180deg);
+  }
+}
