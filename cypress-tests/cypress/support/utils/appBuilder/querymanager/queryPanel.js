@@ -23,6 +23,18 @@ export const resizeQueryPanel = (height = "90") => {
 
 /**
  * @tjBlock  querymanager
+ * @tjUsage  expandFoldedQueryPanel()
+ * @tjDom    .query-pane collapsed class + query-manager-toggle-button
+ */
+// EE: a blank app's empty canvas folds the query panel once per page load; reopen it after that fold.
+export const expandFoldedQueryPanel = () => {
+  cy.get(".query-pane").should("have.class", "collapsed");
+  cy.get('[data-cy="query-manager-toggle-button"]').click();
+  cy.get(".query-pane").should("not.have.class", "collapsed");
+};
+
+/**
+ * @tjBlock  querymanager
  * @tjUsage  closeQueryPanel()
  * @tjDom    .query-pane collapsed class + query-manager-toggle-button
  */
