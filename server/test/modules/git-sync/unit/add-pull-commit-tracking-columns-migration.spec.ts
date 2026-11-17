@@ -2,7 +2,7 @@
 import { INestApplication } from '@nestjs/common';
 import { QueryRunner } from 'typeorm';
 import { closeTestApp, getDefaultDataSource, initTestApp } from 'test-helper';
-import { AddPullCommitTrackingColumns1793250000600 } from '../../../../migrations/1793250000600-AddPullCommitTrackingColumns';
+import { AddPullCommitTrackingColumns1794921700100 } from '@migrations/schema/1794921700100-AddPullCommitTrackingColumns';
 
 jest.setTimeout(60_000);
 
@@ -15,9 +15,9 @@ jest.setTimeout(60_000);
  * ACCESS EXCLUSIVE lock, and other spec files hold row locks on them in their suite transactions
  * for as long as they run, which deadlocks when Jest runs them side by side.
  */
-describe('AddPullCommitTrackingColumns1793250000600 (TC-30)', () => {
+describe('AddPullCommitTrackingColumns1794921700100 (TC-30)', () => {
   let nestApp: INestApplication;
-  const migration = new AddPullCommitTrackingColumns1793250000600();
+  const migration = new AddPullCommitTrackingColumns1794921700100();
   const COLUMNS = {
     organization_git_sync_branches: ['workspace_pull_commit_sha', 'workspace_pull_commit_message', 'workspace_pull_at'],
     app_versions: ['synced_commit_sha', 'synced_commit_message', 'synced_at'],

@@ -7,7 +7,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * timestamps are for display only. All nullable, no backfill: a null means "unknown", and
  * the open path falls back to today's behaviour.
  */
-export class AddPullCommitTrackingColumns1793250000600 implements MigrationInterface {
+export class AddPullCommitTrackingColumns1794921700100 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       ALTER TABLE organization_git_sync_branches
