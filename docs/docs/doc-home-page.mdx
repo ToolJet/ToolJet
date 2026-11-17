@@ -23,6 +23,7 @@ import {
     sectionCards
 } from './homePageData';
 import Link from '@docusaurus/Link';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import { useVersionedHref } from '@site/src/components/DocBlocks';
 
 {/* // Reusable components */}
@@ -109,7 +110,7 @@ export const NewPill = ({ className = '' }) => (
 );
 
 export const IconCard = ({ icon: Icon, title, content, color, href, badge, compact }) => (
-    <Card href={href} className={`${compact ? 'h-[220px]' : 'h-[280px]'} transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative`}>
+    <Card href={href} className={`${compact ? 'md:h-[220px]' : 'h-[280px]'} transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative`}>
         <div className="p-8 h-full flex flex-col">
             <CardHeader>
                 <div className="flex items-start justify-between">
@@ -127,19 +128,25 @@ export const IconCard = ({ icon: Icon, title, content, color, href, badge, compa
     </Card>
 );
 
-export const WideCard = ({ icon: Icon, title, content, color, href }) => (
-    <Card href={href} className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
-        <div className="p-8 flex flex-col md:flex-row md:items-center gap-5">
-            <div className="w-12 h-12 shrink-0 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg bg-gray-100 dark:bg-gray-700">
-                <Icon className={`w-6 h-6 ${color}`} />
+export const WideCard = ({ icon: Icon, title, content, color, href, image, alt = '' }) => {
+    const src = useBaseUrl(image);
+    return (
+        <Card href={href} className="md:h-[220px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+            <div className="h-full grid grid-cols-1 md:grid-cols-2 overflow-hidden rounded-lg">
+                <div className="p-8 flex flex-col min-w-0">
+                    <div className="w-12 h-12 mb-5 shrink-0 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg bg-gray-100 dark:bg-gray-700">
+                        <Icon className={`w-6 h-6 ${color}`} />
+                    </div>
+                    <CardTitle>{title}</CardTitle>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 m-0 mt-2">{content}</p>
+                </div>
+                <div className="h-[200px] md:h-full overflow-hidden border-0 border-t md:border-t-0 md:border-l border-solid border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                    <img src={src} alt={alt} loading="lazy" className="w-full h-full object-cover object-left-top transition-transform duration-300 ease-in-out group-hover:scale-[1.02]" />
+                </div>
             </div>
-            <div className="min-w-0">
-                <CardTitle>{title}</CardTitle>
-                <p className="text-sm text-gray-600 dark:text-gray-400 m-0 mt-2">{content}</p>
-            </div>
-        </div>
-    </Card>
-);
+        </Card>
+    );
+};
 
 export const SmallCard = ({ icon: Icon, title, href }) => (
     <Card href={href} className="h-[72px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">

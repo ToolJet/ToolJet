@@ -28,8 +28,10 @@ export const aiCard = {
     icon: BrainCircuit,
     title: "Build With ToolJet AI or Your Own Coding Agent",
     color: "text-blue-500",
-    content: "Describe the app you need and ToolJet AI builds it. Or connect Claude Code, Codex or any MCP-compatible agent to your workspace and build ToolJet apps without leaving your editor.",
-    href: "/docs/build-with-ai/overview/"
+    content: "Describe the app and ToolJet AI builds it, or connect Claude Code, Codex or any MCP-compatible agent and build from your editor.",
+    href: "/docs/build-with-ai/overview/",
+    image: "/img/home/build-with-ai.jpg",
+    alt: "The AI chat summary of a finished build beside the app it built, with the Build from your own agent bar at the top"
 };
 
 export const platformCards = [
