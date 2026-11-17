@@ -253,6 +253,10 @@ export const Carousel = () => {
             } else if (e.key === 'ArrowRight') {
               e.preventDefault();
               go(indexRef.current + 1);
+            } else if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) {
+              // Tab lands on the carousel first: Enter or Space there clicks the current slide, as a click on it does.
+              e.preventDefault();
+              clickSlide(indexRef.current);
             }
           }}
           onMouseEnter={() => setHovered(true)}
