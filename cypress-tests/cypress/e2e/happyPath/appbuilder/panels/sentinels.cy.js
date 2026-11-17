@@ -19,6 +19,8 @@ const STYLE = [
 const dataCy = (name) => `[data-cy="${name}"]`;
 const appName = `sentinel-viewer-${Date.now()}`;
 const dataSourceName = `sentinel-restapi-${Date.now()}`;
+const tableName = `sentinel_table_${Date.now()}`;
+const workflowName = `sentinel-workflow-${Date.now()}`;
 const ws = () => Cypress.env("workspaceId");
 // Box keys that follow workspace data: audit logs pagination is centred and reads "/ <total pages>",
 // and the right-aligned TJDB environment switcher shows the last migration's name.
@@ -195,6 +197,23 @@ const seedDataSource = () =>
     )
   );
 
+// TJDB and Workflows show empty states on a fresh workspace; one table and one workflow give them the
+// controls the sentinels read, whatever the workspace already holds.
+const seedPageData = () => {
+  // Deferred: the workspace id is known only once login has run.
+  cy.then(() =>
+    api("POST", `/tooljet-db/organizations/${ws()}/table`, {
+      table_name: tableName,
+      columns: [
+        { column_name: "id", data_type: "serial", constraints_type: { is_primary_key: true, is_not_null: true, is_unique: false } },
+      ],
+    })
+  );
+  cy.then(() => api("POST", "/apps", { icon: "sentfast", name: workflowName, type: "workflow" })).then((workflow) =>
+    Cypress.env("sentinelWorkflowId", workflow.id)
+  );
+};
+
 const sameAsBaseline = (name, facts) => {
   if (EVIDENCE_RUN === "base") return;
   cy.readFile(`cypress/evidence/base/sentinels/${name}.json`, { log: false }).then((base) => {
@@ -208,10 +227,13 @@ describe("Sentinels outside the editor", { testIsolation: false }, () => {
     cy.apiLogin();
     seedViewerApp();
     seedDataSource();
+    seedPageData();
   });
   after(() => {
     cy.apiDeleteApp(Cypress.env("sentinelAppId"));
     cy.apiDeleteDataSource(dataSourceName);
+    cy.then(() => api("DELETE", `/tooljet-db/organizations/${ws()}/table/${tableName}`));
+    cy.then(() => Cypress.env("sentinelWorkflowId") && api("DELETE", `/apps/${Cypress.env("sentinelWorkflowId")}`));
   });
 
   forEachTheme((theme) =>

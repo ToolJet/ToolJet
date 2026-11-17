@@ -12,12 +12,12 @@ import Grpc from './GRPC';
 import Grpcv2 from './GRPCv2';
 import tooljetDbOperations from './TooljetDatabase/operations.json';
 
-import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import { querySelectStyle } from '@/_ui/Select/styles';
 import { getQueryPluginSchemaForSurface } from '@/AppBuilder/QueryManager/utils';
 
-const computeSelectStyles = (width) => {
+const selectStylesFor = (surface) => (width) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  return queryManagerSelectComponentStyle(darkMode, width);
+  return querySelectStyle(surface, darkMode, width);
 };
 
 export const allSources = {
@@ -28,7 +28,7 @@ export const allSources = {
           animateSelectMenus={props.surface === 'right'}
           schema={getQueryPluginSchemaForSurface(allOperations[currentValue], props.surface)}
           {...props}
-          computeSelectStyles={computeSelectStyles}
+          computeSelectStyles={selectStylesFor(props.surface)}
           layout="horizontal"
         />
       </div>
@@ -58,7 +58,7 @@ export const source = (props) => (
       animateSelectMenus={props.surface === 'right'}
       schema={props.pluginSchema}
       {...props}
-      computeSelectStyles={computeSelectStyles}
+      computeSelectStyles={selectStylesFor(props.surface)}
       layout="horizontal"
     />
   </div>

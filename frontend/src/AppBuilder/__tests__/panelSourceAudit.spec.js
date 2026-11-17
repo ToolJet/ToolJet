@@ -136,8 +136,9 @@ describe('panel source audit', () => {
     // 12px in the editor and unchanged where shared styles render outside it.
     const onScale = /^(?:(?:12|13|14|16)px|var\(--app-builder-small-font-size,)/;
     // Fixed boxes that cannot fit 12px: the rail label (42px item; its size waits on the rail names in U7)
-    // and the 72x26 palette tile title, an allowed type-scale exception.
-    const pendingFit = ['.left-sidebar-item-label', '.component-title'];
+    // and the 72x26 palette tile title, an allowed type-scale exception. The data-source suggestion
+    // heading is shared with the data-sources page, which keeps its size.
+    const pendingFit = ['.left-sidebar-item-label', '.component-title', '.suggestion-container'];
     const sheets = files([...PANEL_ROOTS, 'src/_styles/left-sidebar.scss'], /\.scss$/);
     const offScale = sheets.flatMap((file) => {
       const src = fs.readFileSync(file, 'utf8');

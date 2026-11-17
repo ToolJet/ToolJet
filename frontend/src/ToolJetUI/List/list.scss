@@ -52,9 +52,14 @@ button:focus:not(:focus-visible) {
   color: var(--slate12) !important
 }
 
+// Editor menus use the 12px small size, not the 12.25px Bootstrap popovers default to; other pages
+// (workflow dependency menus) keep the default.
+.app-builder-chrome .list-item-popover-body {
+  font-size: 12px;
+}
+
 .list-item-popover-body {
   padding: 4px;
-  font-size: 12px; // not the 12.25px Bootstrap popovers default to
   min-width: 10.625rem; // 170px
   color: var(--slate12);
   border-radius: 6px;

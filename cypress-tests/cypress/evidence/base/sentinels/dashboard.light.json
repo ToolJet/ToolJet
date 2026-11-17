@@ -12,7 +12,7 @@
       "font-size": "16px",
       "font-weight": "500",
       "line-height": "24px",
-      "x": 74,
+      "x": 68,
       "y": 19,
       "width": 91.53,
       "height": 24
@@ -29,7 +29,7 @@
       "font-size": "14px",
       "font-weight": "500",
       "line-height": "20px",
-      "x": 472.92,
+      "x": 466.92,
       "y": 13.5,
       "width": 51.66,
       "height": 20
@@ -131,7 +131,7 @@
       "font-size": "14px",
       "font-weight": "400",
       "line-height": "20px",
-      "x": 10.5,
+      "x": 7.5,
       "y": 872,
       "width": 32,
       "height": 32
@@ -148,7 +148,7 @@
       "font-size": "14px",
       "font-weight": "400",
       "line-height": "20px",
-      "x": 10.5,
+      "x": 7.5,
       "y": 920,
       "width": 32,
       "height": 32

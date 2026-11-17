@@ -7,7 +7,7 @@ import { CreateRow } from './CreateRow';
 import { UpdateRows } from './UpdateRows';
 import { DeleteRows } from './DeleteRows';
 import { toast } from 'react-hot-toast';
-import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import { querySelectStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
 import { JoinTable } from './JoinTable';
 import { difference } from 'lodash';
@@ -34,9 +34,10 @@ const ToolJetDbOperations = ({
   optionsChanged,
   renderCopilot,
   environmentId,
+  surface,
 }) => {
   const computeSelectStyles = (darkMode, width) => {
-    return queryManagerSelectComponentStyle(darkMode, width);
+    return querySelectStyle(surface, darkMode, width);
   };
   const navigate = useNavigate();
   const { current_organization_id: organizationId } = authenticationService.currentSessionValue;

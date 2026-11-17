@@ -86,9 +86,9 @@
       "height": 28
     },
     "[data-cy=\"togglr-button-dark\"]": {
-      "color": "rgb(106, 114, 124)",
+      "color": "rgb(172, 178, 185)",
       "background-color": "rgba(0, 0, 0, 0)",
-      "border-top-color": "rgb(106, 114, 124)",
+      "border-top-color": "rgb(172, 178, 185)",
       "border-top-width": "0px",
       "border-radius": "0px",
       "box-shadow": "none",
