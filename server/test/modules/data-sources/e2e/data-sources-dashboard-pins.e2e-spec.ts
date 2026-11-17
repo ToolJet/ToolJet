@@ -1,7 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { PinnedItem } from '@entities/pinned_item.entity';
+import { User } from '@entities/user.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { AbilityService } from '@modules/ability/service';
+import { MODULES } from '@modules/app/constants/modules';
 import { APP_TYPES } from '@modules/apps/constants';
 import { DATA_SOURCE_FOLDER_TYPE } from '@modules/folders/constants';
 import {
@@ -19,6 +22,28 @@ import {
   seedPin,
 } from 'test-helper';
 
+// CE resolves no granular data-source grants, so a per-data-source use grant is layered onto the
+// real permission resolve for one user (mirrors data-sources-dashboard-list.e2e-spec.ts).
+function grantDataSources(user: User, grant: { use?: string[]; configure?: string[] }) {
+  const original = AbilityService.prototype.resourceActionsPermission;
+  return jest.spyOn(AbilityService.prototype, 'resourceActionsPermission').mockImplementation(async function (
+    this: AbilityService,
+    ...args: Parameters<AbilityService['resourceActionsPermission']>
+  ) {
+    const permissions = await original.apply(this, args);
+    const dataSourcePermissions = permissions[MODULES.GLOBAL_DATA_SOURCE];
+    if (args[0].id !== user.id || !dataSourcePermissions) return permissions;
+    return {
+      ...permissions,
+      [MODULES.GLOBAL_DATA_SOURCE]: {
+        ...dataSourcePermissions,
+        usableDataSourcesId: grant.use ?? [],
+        configurableDataSourceId: grant.configure ?? [],
+      },
+    };
+  });
+}
+
 /** @group platform */
 describe('DataSourcesPinsController', () => {
   let nestApp: INestApplication;
@@ -28,6 +53,10 @@ describe('DataSourcesPinsController', () => {
 
   beforeAll(async () => {
     ({ app: nestApp } = await initTestApp());
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   afterAll(async () => {
@@ -117,6 +146,35 @@ describe('DataSourcesPinsController', () => {
         .expect(204);
 
       expect(await findEntity(PinnedItem, { folderId: appFolder.id })).toBeNull();
+    });
+
+    it('should hide a pin after the caller loses access, without deleting it or blocking reorder', async () => {
+      const admin = await createAdmin(nestApp, 'ds-pin-revoke-owner@tooljet.io');
+      const endUser = await createEndUser(nestApp, 'ds-pin-revoke@tooljet.io', { workspace: admin.workspace });
+      const org = admin.workspace.id;
+      const { dataSource } = await seedDashboardDataSource(nestApp, { organizationId: org, name: 'Revoked' });
+
+      grantDataSources(endUser.user, { use: [dataSource.id] });
+      await http()
+        .post('/api/v2/data-sources/pins')
+        .set('Cookie', endUser.cookie)
+        .set('tj-workspace-id', org)
+        .send({ resource_type: 'data_source', resource_ids: [dataSource.id] })
+        .expect(204);
+
+      jest.restoreAllMocks();
+      grantDataSources(endUser.user, { use: [] });
+
+      const res = await list(endUser.cookie, org);
+      expect(res.body.items.find((i: { id: string }) => i.id === dataSource.id)).toBeUndefined();
+      expect(await findEntity(PinnedItem, { dataSourceId: dataSource.id })).not.toBeNull();
+
+      await http()
+        .put('/api/v2/data-sources/pins/order')
+        .set('Cookie', endUser.cookie)
+        .set('tj-workspace-id', org)
+        .send({ items: [] })
+        .expect(204);
     });
 
     it('should not show a pin made on a feature branch on the default branch', async () => {
@@ -217,6 +275,49 @@ describe('DataSourcesPinsController', () => {
         .set('Cookie', admin.cookie)
         .set('tj-workspace-id', org)
         .send({ items: [] })
+        .expect(400);
+    });
+
+    it('should 400 when the request includes an id that is not currently pinned (extra id)', async () => {
+      const admin = await createAdmin(nestApp, 'ds-pin-order-extra@tooljet.io');
+      const org = admin.workspace.id;
+      const branch = await resolveOrSeedDefaultBranch(org);
+      const { dataSource: pinned } = await seedDashboardDataSource(nestApp, {
+        organizationId: org,
+        name: 'Pinned only',
+      });
+      const { dataSource: notPinned } = await seedDashboardDataSource(nestApp, {
+        organizationId: org,
+        name: 'Not pinned',
+      });
+      await seedPin(admin.user, { dataSourceId: pinned.id, branchId: branch.id, position: 0 });
+
+      await http()
+        .put('/api/v2/data-sources/pins/order')
+        .set('Cookie', admin.cookie)
+        .set('tj-workspace-id', org)
+        .send({
+          items: [
+            { resource_type: 'data_source', resource_id: pinned.id },
+            { resource_type: 'data_source', resource_id: notPinned.id },
+          ],
+        })
+        .expect(400);
+    });
+
+    it('should 400 when the request swaps a pinned id for an unpinned one (missing + extra)', async () => {
+      const admin = await createAdmin(nestApp, 'ds-pin-order-swap@tooljet.io');
+      const org = admin.workspace.id;
+      const branch = await resolveOrSeedDefaultBranch(org);
+      const { dataSource: pinned } = await seedDashboardDataSource(nestApp, { organizationId: org, name: 'Pinned' });
+      const { dataSource: other } = await seedDashboardDataSource(nestApp, { organizationId: org, name: 'Other' });
+      await seedPin(admin.user, { dataSourceId: pinned.id, branchId: branch.id, position: 0 });
+
+      await http()
+        .put('/api/v2/data-sources/pins/order')
+        .set('Cookie', admin.cookie)
+        .set('tj-workspace-id', org)
+        .send({ items: [{ resource_type: 'data_source', resource_id: other.id }] })
         .expect(400);
     });
   });
