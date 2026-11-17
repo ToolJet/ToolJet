@@ -141,6 +141,50 @@ async function installDeps(repo: Repo, state: State, dirs: string[], force: bool
   } else ui.info('plugins: build up to date');
 }
 
+// Component packs: the server serves server/builtin-packs/, which only packs/build-builtin.mjs fills (the Dockerfiles
+// and CI run it). Without it the Components panel offers no packs. Branches without packs/builtin.json have none.
+export const hasPacks = (root: string) => existsSync(join(root, 'packs', 'builtin.json'));
+
+// A build is reused or redone per committed packs + cli tree: an uncommitted pack edit needs `--force` (or the script).
+async function packsHash(repo: Repo) {
+  const trees = await Promise.all(['packs', 'cli'].map((p) => capture('git', ['rev-parse', `HEAD:${p}`], { cwd: repo.root })));
+  return trees.map((r) => r.out).join(':');
+}
+
+async function reusePacksBuild(repo: Repo, hash: string, to: string) {
+  for (const w of await worktrees(repo.main)) {
+    const from = join(w.path, 'server', 'builtin-packs');
+    if (w.path === repo.root || loadState(w.path).deps?.['packs:build'] !== hash || !existsSync(from)) continue;
+    try {
+      await rm(to, { recursive: true, force: true });
+      await cloneDir(repo, from, to);
+      return w.path;
+    } catch {
+      await rm(to, { recursive: true, force: true });
+      return false;
+    }
+  }
+  return false;
+}
+
+export async function buildPacks(repo: Repo, state: State, force: boolean) {
+  const deps = (state.deps ??= {});
+  const hash = await packsHash(repo);
+  const out = join(repo.root, 'server', 'builtin-packs');
+  if (!force && deps['packs:build'] === hash && existsSync(out)) return ui.info('packs: build up to date');
+  const t = Date.now();
+  const from = !force && (await reusePacksBuild(repo, hash, out));
+  if (from) ui.ok(`packs: build cloned from ${from} ${since(t)}`);
+  else {
+    ui.step('packs: build');
+    const log = logFile(repo.root, 'packs-build');
+    await run('cli build', 'npm', ['run', 'build'], { cwd: join(repo.root, 'cli'), log });
+    await run('packs build', process.execPath, ['packs/build-builtin.mjs', '--install'], { cwd: repo.root, log });
+    ui.ok(`packs: built ${since(t)}`);
+  }
+  deps['packs:build'] = hash;
+}
+
 function envSource(repo: Repo, prefer: '.env.test' | '.env') {
   const files = prefer === '.env.test' ? ['.env.test', '.env'] : ['.env'];
   const src = files.map((f) => join(repo.main, f)).find(existsSync);
@@ -187,7 +231,15 @@ export async function setup(repo: Repo, o: SetupOpts) {
   }
 
   // root: husky, lint-staged and typescript, so pre-commit hooks work in the worktree
-  await installDeps(repo, state, ['root', 'server', 'plugins', ...(o.frontend || o.app ? ['frontend'] : [])], o.force);
+  // cli: the packs build compiles each pack with it
+  const packs = o.app && hasPacks(repo.root);
+  await installDeps(
+    repo,
+    state,
+    ['root', 'server', 'plugins', ...(o.frontend || o.app ? ['frontend'] : []), ...(packs ? ['cli'] : [])],
+    o.force,
+  );
+  if (packs) await buildPacks(repo, state, o.force);
   saveState(repo.root, { ...state, branch: repo.branch });
   if (existsSync(envTest)) await dbSetup(repo, 'test');
   else ui.warn('no .env.test — skipping test DB');
@@ -228,8 +280,8 @@ export async function setup(repo: Repo, o: SetupOpts) {
 
 export const setupOptions = {
   frontend: { type: 'boolean', desc: 'Also install frontend deps' },
-  app: { type: 'boolean', desc: 'Make it runnable: dev DB, free ports, .env (implies --frontend)' },
-  force: { type: 'boolean', desc: 'Reinstall deps and rebuild plugins even if up to date' },
+  app: { type: 'boolean', desc: 'Make it runnable: dev DB, free ports, .env, component packs (implies --frontend)' },
+  force: { type: 'boolean', desc: 'Reinstall deps and rebuild plugins and packs even if up to date' },
 } as const;
 
 export const setupCmd: Command = {
