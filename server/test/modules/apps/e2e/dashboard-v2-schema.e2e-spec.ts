@@ -16,6 +16,7 @@ import {
   createUser,
   closeTestApp,
   deleteEntities,
+  ensureAppEnvironments,
   findEntity,
   initTestApp,
   login,
@@ -97,7 +98,12 @@ describe('Dashboard v2 schema', () => {
       const branch = await resolveOrSeedDefaultBranch(admin.workspace.id);
       const dataSource = await seedDashboardDataSource(nestApp, { user: admin.user, name: 'Cascade data source' });
       await seedPin(admin.user, { dataSourceId: dataSource.id, branchId: branch.id, position: 0 });
-      await seedDataSourceActivity(nestApp, { userId: admin.user.id, dataSourceId: dataSource.id, branchId: branch.id, lastEditedAt: new Date() });
+      await seedDataSourceActivity(nestApp, {
+        userId: admin.user.id,
+        dataSourceId: dataSource.id,
+        branchId: branch.id,
+        lastEditedAt: new Date(),
+      });
 
       await deleteEntities(DataSource, { id: dataSource.id });
 
@@ -162,6 +168,7 @@ describe('Dashboard v2 schema', () => {
 
     it('should store created_by as the caller on POST /api/data-sources', async () => {
       const admin = await createAdmin(nestApp, 'dash-schema-ds-create@tooljet.io');
+      await ensureAppEnvironments(nestApp, admin.workspace.id);
       const loggedUser = await login(nestApp, admin.user.email);
 
       const response = await request(nestApp.getHttpServer())
