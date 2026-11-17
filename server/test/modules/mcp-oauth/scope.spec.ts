@@ -60,6 +60,20 @@ describe('OAuth delegated scope enforcement', () => {
       interceptor.intercept(context({ user: {}, oauthDelegatedUser: user }, MODULES.GLOBAL_DATA_SOURCE), next)
     ).toThrow();
   });
+  test('apps consent permits branch discovery but not branch administration or viewer discovery', () => {
+    const request: any = { user: { ...user }, method: 'GET' };
+    const ctx = context(request, MODULES.WORKSPACE_BRANCHES);
+    Reflect.defineMetadata('tjFeatureId', 'LIST_BRANCHES', action);
+    interceptor.intercept(ctx, next);
+    expect(next.handle).toHaveBeenCalledTimes(1);
+    request.user.oauthScopes = ['data'];
+    expect(() => interceptor.intercept(ctx, next)).toThrow();
+    request.user = { ...user, oauthAppId: 'clay-app' };
+    expect(() => interceptor.intercept(ctx, next)).toThrow();
+    request.user = { ...user };
+    Reflect.defineMetadata('tjFeatureId', 'CREATE_BRANCH', action);
+    expect(() => interceptor.intercept(ctx, next)).toThrow();
+  });
   test('data scope permits GET_SPEC only and cannot administer plugins', () => {
     const request = { user: { ...user, oauthScopes: ['data'] }, method: 'GET' };
     const ctx = context(request, MODULES.PLUGINS);

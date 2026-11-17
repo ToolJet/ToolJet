@@ -11,7 +11,7 @@ Owns personal access tokens (PATs) and their exchange for workspace sessions.
 
 ## Invariants
 
-- Workspace PATs can reach Apps, Data, Workflows, and the explicitly allowed Workspace Users features.
+- Workspace PATs can reach Apps, Data, Workflows, and the explicitly allowed Workspace Users features. Apps includes only `LIST_BRANCHES` from Workspace Branches so clients can target an existing branch; branch creation/switching/deletion, Git configuration and push/pull remain denied.
 - Workflow creation, execution, status, and node routes use the existing module metadata; do not add controller-specific PAT checks.
 - Scope access never overrides owner permissions or edition/license gates.
 - OAuth delegated and viewer requests share these scope bundles and ceilings through `../mcp-oauth/scope.interceptor.ts`; changing `constants/scopes.ts` changes PAT and OAuth access together.

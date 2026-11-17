@@ -677,7 +677,7 @@ export class AppImportExportService {
           // the unresolvable reference instead — the parent app still pushes.
           const moduleAppExists = await manager.findOne(App, {
             where: { id: resolvedId, organizationId: appToExport.organizationId },
-            select: ['id'],
+            select: ['id', 'organizationId'],
           });
           if (!moduleAppExists) {
             console.warn(
