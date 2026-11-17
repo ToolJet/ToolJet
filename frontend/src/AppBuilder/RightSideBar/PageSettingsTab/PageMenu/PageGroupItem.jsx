@@ -5,7 +5,7 @@ import { RenameInput } from './RenameInput';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import PageOptions from './PageOptions';
 import { Overlay, Popover } from 'react-bootstrap';
-import { AddEditPagePopup } from './AddNewPagePopup';
+import { AddEditPagePopup, getPagePopupPopperConfig } from './AddNewPagePopup';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
@@ -177,7 +177,8 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
               <Overlay
                 target={optionsBtnRef.current}
                 show={showEditPopover && newPagePopupConfig?.mode == 'edit' && isEditing}
-                placement="left-start"
+                placement="right-start"
+                popperConfig={getPagePopupPopperConfig(optionsBtnRef.current)}
                 rootClose
                 onHide={() => {
                   setNewPagePopupConfig({ show: false, mode: null, type: null });

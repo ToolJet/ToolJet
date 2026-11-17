@@ -23,6 +23,7 @@ import { shallow } from 'zustand/shallow';
 import { Button } from '@/components/ui/Button/Button';
 import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { getPastPanelOffset } from '@/AppBuilder/panelLayout';
 
 const POPOVER_TITLES = {
   add: {
@@ -40,6 +41,19 @@ const POPOVER_TITLES = {
     group: 'Edit nav group',
   },
 };
+
+// Measures the panel's shell, not its content, because the content slides in with a transform.
+export const getPagePopupPopperConfig = (target) => ({
+  modifiers: [
+    {
+      name: 'offset',
+      options: {
+        offset: (rects) =>
+          getPastPanelOffset(target?.closest('.sidebar-h-100-popover')?.getBoundingClientRect().right)(rects),
+      },
+    },
+  ],
+});
 
 const OPEN_APP_MODES = [
   { label: 'New tab', value: 'new_tab' },

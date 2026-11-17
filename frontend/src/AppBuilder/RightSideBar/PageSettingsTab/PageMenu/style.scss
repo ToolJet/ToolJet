@@ -466,6 +466,51 @@
     background: var(--background-surface-layer-01);
 }
 
+// The Pages panel pins its title, tabs and New page footer, and only the tab content between them scrolls
+// (UC-14).
+.pages-settings--navigation {
+    height: 100%;
+
+    > div {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .pages-settings__tabs,
+    .pages-settings__tabs > .tj-tabs {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .pages-settings__tabs .tab-content {
+        flex: 1;
+        min-height: 0;
+        height: auto;
+    }
+}
+
+.pages-settings__footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-weak);
+}
+
+// Floating, the popup fits the viewport and scrolls below its title row (LR-23).
+#add-new-page-popup:not(.add-new-page-popup--embedded) {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 16px);
+
+    // Beats the global `.popover .popover-body { overflow: visible !important }` in popover.scss.
+    .popover-body {
+        min-height: 0;
+        overflow-y: auto !important;
+        @include hover-reveal-scrollbar;
+    }
+}
+
 #add-new-page-popup.add-new-page-popup--embedded {
     position: static;
     display: block;

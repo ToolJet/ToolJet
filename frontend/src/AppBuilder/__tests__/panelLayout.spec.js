@@ -7,6 +7,7 @@ import {
   getRuntimePanelContentStyle,
   getCanvasReservedBottom,
   getRuntimePanelCommittedHeight,
+  getPastPanelOffset,
   getRuntimePanelTheme,
   getRightPanelForSelection,
   getPageSettingsSections,
@@ -165,6 +166,13 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getRuntimePanelCommittedHeight(true, 70, 900)).toBe(270);
     expect(getRuntimePanelCommittedHeight(true, 45, 900)).toBe(495);
     expect(getRuntimePanelCommittedHeight(true, 92, 900)).toBe(72);
+  });
+
+  // Break this catches (LR-23): a page popup measured from its row or button, which ends inside the Pages
+  // panel, opens over the panel instead of past it.
+  it('starts a page popup 8px past the Pages panel edge, whatever it opens from', () => {
+    expect(getPastPanelOffset(404)({ reference: { x: 64, width: 279 } })).toEqual([0, 69]);
+    expect(getPastPanelOffset(404)({ reference: { x: 54, width: 342 } })).toEqual([0, 16]);
   });
 
   // Break this catches: either side panel snaps shut or the bottom drawer uses a different motion curve.

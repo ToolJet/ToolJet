@@ -14,7 +14,7 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Overlay, Popover } from 'react-bootstrap';
 import PageOptions from './PageOptions';
-import { AddEditPagePopup } from './AddNewPagePopup';
+import { AddEditPagePopup, getPagePopupPopperConfig } from './AddNewPagePopup';
 import { ToolTip } from '@/_components';
 import Skip from '@/_ui/Icon/solidIcons/Skip';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
@@ -430,6 +430,7 @@ export const PageMenuItem = withRouter(
                   target={optionBtnRef.current}
                   show={showEditPopover && newPagePopupConfig?.mode == 'edit' && isEditingPage}
                   placement="right-start"
+                  popperConfig={getPagePopupPopperConfig(optionBtnRef.current)}
                   rootClose={!nestedPopoverOpen}
                   onHide={() => {
                     setEditingPage(null);

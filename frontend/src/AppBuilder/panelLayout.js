@@ -84,6 +84,12 @@ export const getCanvasReservedBottom = (runtimeContentHeight, isMobile) =>
 export const getRuntimePanelCommittedHeight = (isExpanded, topPercent, viewportPx) =>
   isExpanded ? (viewportPx * (100 - topPercent)) / 100 : 0;
 
+// Page popups open from rows and buttons that end inside the Pages panel. Popper measures the offset from
+// that reference, so the distance reaches 8px past the panel's right edge instead (LR-23).
+export const getPastPanelOffset =
+  (panelRightPx) =>
+  ({ reference }) => [0, panelRightPx + 8 - reference.x - reference.width];
+
 export const getLeftPanelReservedBottom = (isExpanded, measuredHeight) =>
   isExpanded ? Math.max(measuredHeight, RUNTIME_PANEL_COLLAPSED_HEIGHT) : RUNTIME_PANEL_COLLAPSED_HEIGHT;
 

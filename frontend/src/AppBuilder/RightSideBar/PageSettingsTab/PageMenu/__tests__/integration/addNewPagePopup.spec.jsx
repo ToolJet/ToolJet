@@ -28,11 +28,18 @@
  */
 import '@/test/setupMsw';
 import React from 'react';
-import { render, act, fireEvent } from '@testing-library/react';
+import { render, act, fireEvent, screen, waitFor } from '@/test/test-utils';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import useStore from '@/AppBuilder/_stores/store';
+import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
+import { createAppBuilderControls } from '@/test/app-builder/controls';
 import { AddEditPagePopup } from '../../AddNewPagePopup';
+import { AddNewPageMenu } from '../../AddNewPageMenu';
+import { PageMenuItem } from '../../PageMenuItem';
+import { PageGroupItem } from '../../PageGroupItem';
+// Imported last: imported first, PageSettings enters the ColorSwatches import cycle before it resolves.
+import { PageSettings } from '@/AppBuilder/RightSideBar/PageSettingsTab/PageSettings';
 
 const state = () => useStore.getState();
 
@@ -172,4 +179,114 @@ describe('AddEditPagePopup page name', () => {
     await rename('Home');
     expect(state().modules.canvas.pages[0].name).toBe('Home');
   });
+});
+
+// LR-23: page popups open from rows and buttons inside the Pages panel. Measured from those, New page and
+// Edit page details opened over the panel and Edit group off the left edge of the screen.
+describe('[LR-23] page popups open past the Pages panel', () => {
+  const PANEL = { x: 54, y: 48, left: 54, top: 48, right: 404, bottom: 852, width: 350, height: 804 };
+  // Every element inside the panel stands in for the row or button a popup opens from.
+  const ROW = { x: 64, y: 200, left: 64, top: 200, right: 343, bottom: 232, width: 279, height: 32 };
+  const controls = createAppBuilderControls();
+  let rect;
+
+  beforeEach(() => {
+    controls.observers.install();
+    rect = jest.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function () {
+      if (this.classList.contains('sidebar-h-100-popover')) return PANEL;
+      return this.closest('.sidebar-h-100-popover')
+        ? ROW
+        : { ...ROW, x: 0, y: 0, left: 0, top: 0, right: 0, bottom: 0 };
+    });
+    seedFreshApp();
+    const s = state();
+    s.setPages(
+      [
+        ...s.modules.canvas.pages,
+        { id: 'group-1', name: 'Group A', handle: 'group-a', isPageGroup: true, icon: 'IconFolder', components: {} },
+      ],
+      'canvas'
+    );
+    s.setPageSettings(s.computePageSettings({}), 'canvas');
+  });
+
+  afterEach(() => {
+    rect.mockRestore();
+    controls.restore();
+  });
+
+  const openInPagesPanel = async (ui, open) => {
+    const { unmount } = render(
+      <ModuleProvider moduleId="canvas" isModuleMode={false}>
+        <div className="sidebar-h-100-popover">
+          <div className="left-sidebar-panel-content">{ui}</div>
+        </div>
+      </ModuleProvider>
+    );
+    await open();
+    await waitFor(() => {
+      const popup = document.getElementById('add-new-page-popup');
+      expect(popup).toHaveAttribute('data-popper-placement', 'right-start');
+      expect(popup.style.transform).toMatch(/^translate\(412px, /);
+    });
+    // A mounted row cannot render once the store resets after the test.
+    unmount();
+  };
+
+  test('New page opens 8px past the panel', () =>
+    openInPagesPanel(<AddNewPageMenu darkMode={false} />, async () => {
+      fireEvent.click(screen.getByRole('button', { name: /new page/i }));
+    }));
+
+  test('Edit page details opens 8px past the panel', () =>
+    openInPagesPanel(<PageMenuItem page={state().modules.canvas.pages[0]} darkMode={false} />, async () => {
+      fireEvent.click(document.querySelectorAll('.action-btn-wrapper .icon-btn')[1]);
+      fireEvent.click(await screen.findByRole('button', { name: 'Edit page details' }));
+    }));
+
+  test('Edit group opens 8px past the panel, not off the left edge', () =>
+    openInPagesPanel(<PageGroupItem page={state().modules.canvas.pages[1]} darkMode={false} />, async () => {
+      fireEvent.click(screen.getByText('Group A'));
+    }));
+});
+
+// UC-14: with 19 pages New page sat below the fold, and reaching it scrolled the panel title away. It sits in
+// a footer below the tabs, outside the region that scrolls, on either tab.
+test('[UC-14] New page sits in the Pages panel footer, outside the scrolling tabs', async () => {
+  const controls = createAppBuilderControls();
+  controls.observers.install();
+  seedFreshApp();
+  const s = state();
+  s.setPages(
+    [
+      ...s.modules.canvas.pages,
+      ...Array.from({ length: 18 }, (_, i) => ({
+        id: `page-${i + 2}`,
+        name: `Page ${i + 2}`,
+        handle: `page-${i + 2}`,
+        components: {},
+      })),
+    ],
+    'canvas'
+  );
+  s.setPageSettings(s.computePageSettings({}), 'canvas');
+  let view;
+  await act(async () => {
+    view = render(
+      <ModuleProvider moduleId="canvas" isModuleMode={false}>
+        <PageSettings surface="navigation" onClose={() => {}} />
+      </ModuleProvider>
+    );
+  });
+
+  expect(screen.getByText('Page 19')).toBeInTheDocument();
+  const newPage = screen.getByRole('button', { name: /new page/i });
+  const inTabs = () => screen.getAllByRole('tabpanel', { hidden: true }).some((panel) => panel.contains(newPage));
+  expect(inTabs()).toBe(false);
+
+  fireEvent.click(screen.getByRole('tab', { name: 'Styles' }));
+  expect(screen.getByRole('button', { name: /new page/i })).toBe(newPage);
+  expect(inTabs()).toBe(false);
+  view.unmount();
+  controls.restore();
 });

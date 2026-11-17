@@ -125,7 +125,6 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
             classNames="page-handler"
           />
         ),
-        <AddNewPageMenu key="new-page" darkMode={darkMode} />,
       ],
     },
   ];
@@ -166,7 +165,7 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
   ];
 
   return (
-    <div className="inspector pages-settings">
+    <div className={cx('inspector pages-settings', { 'pages-settings--navigation': isNavigationSurface })}>
       <div>
         <PanelHeader
           title={isNavigationSurface ? 'Pages' : 'Page configuration'}
@@ -176,7 +175,7 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
           divider={false}
           className={cx({ disabled: shouldFreeze })}
         />
-        <div className={cx({ disabled: shouldFreeze })}>
+        <div className={cx('pages-settings__tabs', { disabled: shouldFreeze })}>
           <Tabs activeKey={activeTab} onSelect={setActiveTab} id={`page-settings-${surface}`}>
             <Tab className="page-selector-panel-body" eventKey="properties" title="Properties">
               <div className="tj-text-xsm color-slate12 ">
@@ -194,6 +193,11 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
             </Tab>
           </Tabs>
         </div>
+        {isNavigationSurface && (
+          <div className={cx('pages-settings__footer', { disabled: shouldFreeze })}>
+            <AddNewPageMenu darkMode={darkMode} />
+          </div>
+        )}
         <DeletePageConfirmationModal darkMode={darkMode} />
         {appPagePermissionEnabled && (
           <AppPermissionsModal
