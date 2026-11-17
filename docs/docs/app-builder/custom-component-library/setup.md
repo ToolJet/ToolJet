@@ -54,16 +54,22 @@ Revoking a token takes effect immediately and can't be undone. Any CLI session o
 Install the CLI and sign in:
 
 ```bash
-npm i @tooljet/cli@0.0.15-beta.1
+npm install -g @tooljet/cli@0.0.15-beta.1
 tooljet login
 ```
 
+The CLI needs Node.js 18 or later.
+
 `tooljet login` asks for two values:
 
-- **ToolJet origin URL**: For example, `https://app.tooljet.ai`. Enter only the protocol and host. Any path is removed.
+- **ToolJet origin URL**: For example, `https://app.tooljet.ai`. Enter only the protocol and host. Any path is removed. The URL must use `https://`. Plain `http://` is only accepted for `localhost` and `127.0.0.1`, so a local ToolJet instance works too.
 - **API token**: Your personal access token. The input is masked.
 
+The CLI checks the token with ToolJet and prints `✓ Authenticated as <your email>`.
+
 You can run `tooljet login` from any directory.
+
+The credentials are saved in `~/.tooljet/credentials.json`, which only your user account can read. Because each token belongs to one workspace, signing in with a token from another workspace adds that workspace to the file. The CLI uses the workspace you signed in to most recently.
 
 ## Create a Library
 
@@ -71,7 +77,9 @@ You can run `tooljet login` from any directory.
 tooljet library init my-components
 ```
 
-The argument is the **directory name**. It must start with a letter and can contain only letters, numbers, hyphens and underscores.
+You must be signed in before you run `init`. Otherwise it stops with `Not authenticated. Run: tooljet login`.
+
+The argument is the **directory name**. It must start with a letter and can contain only letters, numbers, hyphens and underscores. A directory with that name must not already exist.
 
 The command then asks for a **display name**. App builders see this name in the **Custom** tab. The display name must start with a letter, can contain letters, numbers, spaces, hyphens and underscores, and can be up to 100 characters long.
 
@@ -84,8 +92,10 @@ my-components/
 ├─ .tooljet/config.json   # libraryName + correlationId. Do not edit or delete.
 ├─ src/
 │  ├─ index.ts            # Export barrel. Only React components exported here become components in ToolJet.
+│  ├─ global.d.ts         # Type declarations for CSS and CSS module imports.
 │  └─ components/
 │     └─ HelloWorld/index.tsx
+├─ .gitignore             # Ignores node_modules/ and dist/.
 ├─ package.json
 └─ tsconfig.json
 ```
