@@ -149,6 +149,7 @@ export const approvalSelector = {
   outcomeButton: (key) => `[data-cy="approval-outcome-${key}"]`,
   anyOutcomeButton: '[data-cy^="approval-outcome-"]',
   cancel: '[data-cy="approval-cancel"]',
+  cancelConfirm: '[data-cy="approval-cancel-confirm"]',
   pageIndicator: '[data-cy="approvals-page-indicator"]',
 };
 

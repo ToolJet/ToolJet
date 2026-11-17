@@ -153,6 +153,7 @@ export enum LICENSE_FIELD {
   PUBLIC_APP = 'publicAppEnabled',
   CUSTOM_COMPONENT_LIBRARIES = 'customComponentLibrariesEnabled',
   AI_CREDIT_LIMITS = 'aiCreditLimitsEnabled',
+  VERSION_REVIEW = 'versionReviewEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {
@@ -183,6 +184,10 @@ export enum LICENSE_TYPE {
   ENTERPRISE = 'enterprise',
   BUSINESS = 'business',
 }
+
+// Plans below Pro. Features "on Pro and above" are off on these and on an expired or missing
+// licence (plan 'basic'); a trial has no plan name, so it gets them.
+export const PLANS_BELOW_PRO: readonly string[] = [LICENSE_TYPE.BASIC, 'starter', 'basicplus'];
 
 export enum LICENSE_LIMIT {
   UNLIMITED = 'UNLIMITED',

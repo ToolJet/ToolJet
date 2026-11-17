@@ -48,6 +48,14 @@ export const promoteEnv = (fromEnv) => {
   cy.reload();
 };
 
+// The version menu stays open after a promote; while open, its env toggle duplicates the header pill's env data-cy.
+export const closeVersionMenu = () => {
+  cy.get("body").then(($body) => {
+    if ($body.find(multiEnvSelector.versionMenuEnvToggle).length) cy.get("body").type("{esc}");
+  });
+  cy.get(multiEnvSelector.versionMenuEnvToggle).should("not.exist");
+};
+
 export const appPromote = (fromEnv, toEnv) => {
   const commonActions = () => {
     cy.get(multiEnvSelector.environmentsTag(fromEnv)).click();
@@ -63,6 +71,7 @@ export const appPromote = (fromEnv, toEnv) => {
     cy.get(commonEeSelectors.promoteButton, { timeout: 10000 }).click();
     cy.wait("@promoteApi", { timeout: 15000 });
     cy.wait(2000);
+    closeVersionMenu();
   };
 
   const transitions = {

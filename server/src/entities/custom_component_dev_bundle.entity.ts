@@ -27,6 +27,17 @@ export class CustomComponentDevBundle extends BaseEntity {
   @Column({ type: 'timestamptz', name: 'uploaded_at', default: () => 'now()' })
   uploadedAt: Date;
 
+  // Content hash of the source this build was made from, when the upload said so; null otherwise. Reset on every upload.
+  @Column({ name: 'source_content_hash', type: 'varchar', length: 64, nullable: true })
+  sourceContentHash: string | null;
+
+  // The source revision that claim names, and a digest of the bytes uploaded with it.
+  @Column({ name: 'source_revision', type: 'integer', nullable: true })
+  sourceRevision: number | null;
+
+  @Column({ name: 'source_bundle_digest', type: 'varchar', length: 64, nullable: true })
+  sourceBundleDigest: string | null;
+
   @ManyToOne(() => CustomComponentLibrary, (library) => library.id)
   @JoinColumn({ name: 'library_id' })
   library: CustomComponentLibrary;

@@ -143,6 +143,7 @@ export const instanceSettingsSelector = {
 };
 
 export const multiEnvSelector = {
+  versionMenuEnvToggle: ".environment-toggle",
   envContainer: '[data-cy="env-container"]',
   envArrow: '[data-cy="env-arrow"]',
   selectedEnvName: '[data-cy="selected-current-env-name"]',

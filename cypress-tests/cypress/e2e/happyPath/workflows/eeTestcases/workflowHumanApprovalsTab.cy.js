@@ -212,8 +212,7 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
     });
   });
 
-  // Name search is not supported by contract: the filter matches approver user id, group id and email only.
-  it("The approver filter matches an approver's user id, group id or email and does not match their displayed or group name", () => {
+  it("The approver filter matches an approver's user id, group id, email, displayed name or group name", () => {
     data.groupName = `hitl-grp-${Date.now()}`;
     data.approverEmail = `hitl-filter-${Date.now()}@example.com`;
     createApproverGroup(data.groupName, [Cypress.env("user_id")]).then((groupId) => {
@@ -238,16 +237,16 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
             visitApprovals();
             cy.get(approvalSelector.row(request.id)).should("be.visible");
 
-            [Cypress.env("user_id"), groupId, data.approverEmail].forEach((term) => {
-              cy.get(approvalSelector.filterApprover).clear().type(term);
-              cy.get(approvalSelector.row(request.id)).should("be.visible");
-            });
+            [Cypress.env("user_id"), groupId, data.approverEmail, userName, data.groupName].forEach(
+              (term) => {
+                cy.get(approvalSelector.filterApprover).clear().type(term);
+                cy.get(approvalSelector.row(request.id)).should("be.visible");
+              }
+            );
 
-            [userName, data.groupName].forEach((term) => {
-              cy.get(approvalSelector.filterApprover).clear().type(term);
-              cy.get(approvalSelector.row(request.id)).should("not.exist");
-              cy.get(approvalSelector.empty).should("contain.text", humanText.noApprovalsMatch);
-            });
+            cy.get(approvalSelector.filterApprover).clear().type(`no-approver-${Date.now()}`);
+            cy.get(approvalSelector.row(request.id)).should("not.exist");
+            cy.get(approvalSelector.empty).should("contain.text", humanText.noApprovalsMatch);
           });
       });
     });
