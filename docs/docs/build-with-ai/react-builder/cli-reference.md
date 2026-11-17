@@ -279,7 +279,7 @@ tooljet app dev --trust-remote-config
 
 ## `tooljet app publish`
 
-Saves the app's draft as a version, as **Save version** does in the editor. It installs exactly the lockfile, runs the `app check` rules, builds for production, stores the code on ToolJet, runs the security scan with the workspace policy, and saves the version. ToolJet freezes the code with the version. `publish` doesn't release or promote the version.
+Saves the app's draft as a version, the same as clicking **Save version** in the editor. It installs exactly the lockfile, runs the `app check` rules, builds for production, stores the code on ToolJet, runs the security scan with the workspace policy, and saves the version. ToolJet freezes the code with the version. `publish` doesn't release or promote the version.
 
 | <div style={{ width:"200px"}}> Flag </div> | <div style={{ width:"100px"}}> Default </div> | <div style={{ width:"350px"}}> Description </div> |
 |:---------- | :---------- | :------------ |

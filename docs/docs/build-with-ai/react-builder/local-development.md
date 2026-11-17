@@ -81,7 +81,7 @@ Run these in the project folder.
 | `tooljet app dev` | While you work. It rebuilds on every save and shows the app live in the editor. |
 | `tooljet app pull` | After a query changes in ToolJet. It rewrites the typed hooks in `frontend/src/tooljet.gen.ts`. |
 | `tooljet app check` | Before you publish. It fails when the code names a query, screen or link the app doesn't have, and runs the security scan. |
-| `tooljet app publish` | When the work is ready. It saves the draft as a version, as **Save version** does in the editor. |
+| `tooljet app publish` | When the work is ready. It saves the draft as a version, the same as clicking **Save version** in the editor. |
 
 You create and edit queries in ToolJet's query editor, not in code. `publish` doesn't release the version: you do that in ToolJet. See [Versions and History](./versions-and-history.md).
 
