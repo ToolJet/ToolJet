@@ -1,0 +1,73 @@
+{
+  "page": {
+    "[data-cy=\"create-new-workflows-button\"]": {
+      "color": "rgb(244, 246, 250)",
+      "background-color": "rgb(62, 99, 221)",
+      "border-top-color": "rgba(0, 0, 0, 0)",
+      "border-top-width": "1px",
+      "border-radius": "6px 0px 0px 6px",
+      "box-shadow": "none",
+      "outline-style": "none",
+      "font-family": "\"IBM Plex Sans\"",
+      "font-size": "14px",
+      "font-weight": "500",
+      "line-height": "20px",
+      "x": 67.5,
+      "y": 52,
+      "width": 209,
+      "height": 40
+    },
+    "[data-cy=\"import-dropdown-menu\"]": {
+      "color": "rgb(244, 246, 250)",
+      "background-color": "rgb(62, 99, 221)",
+      "border-top-color": "rgba(0, 0, 0, 0)",
+      "border-top-width": "1px",
+      "border-radius": "0px 6px 6px 0px",
+      "box-shadow": "none",
+      "outline-style": "none",
+      "font-family": "\"IBM Plex Sans\"",
+      "font-size": "14px",
+      "font-weight": "500",
+      "line-height": "20px",
+      "x": 275.5,
+      "y": 52,
+      "width": 40,
+      "height": 40
+    },
+    "[data-cy=\"all-workflows-link\"]": {
+      "color": "rgb(49, 55, 57)",
+      "background-color": "rgba(136, 144, 153, 0.08)",
+      "border-top-color": "rgb(49, 55, 57)",
+      "border-top-width": "0px",
+      "border-radius": "6px",
+      "box-shadow": "none",
+      "outline-style": "none",
+      "font-family": "\"IBM Plex Sans\"",
+      "font-size": "12px",
+      "font-weight": "400",
+      "line-height": "20px",
+      "x": 68,
+      "y": 152,
+      "width": 247,
+      "height": 32
+    },
+    "[data-cy=\"home-page-search-bar\"]": {
+      "color": "rgb(49, 55, 57)",
+      "background-color": "rgba(0, 0, 0, 0)",
+      "border-top-color": "rgb(49, 55, 57)",
+      "border-top-width": "0px",
+      "border-radius": "0px",
+      "box-shadow": "none",
+      "outline-style": "none",
+      "font-family": "\"IBM Plex Sans\"",
+      "font-size": "14px",
+      "font-weight": "400",
+      "line-height": "20px",
+      "x": 448,
+      "y": 80,
+      "width": 880,
+      "height": 48
+    }
+  },
+  "darkClass": false
+}

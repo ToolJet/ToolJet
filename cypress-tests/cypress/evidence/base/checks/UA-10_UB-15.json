@@ -1,0 +1,8 @@
+[
+  "light [32,\"8px\",\"rgb(204, 209, 213)\"]: code-search, components, dependencies, queries",
+  "light [30,\"4px\",\"rgb(27, 31, 36)\"]: debugger, inspect",
+  "light [20,\"4px\",\"rgb(27, 31, 36)\"]: overlay-new-query",
+  "dark [32,\"8px\",\"rgb(60, 67, 75)\"]: code-search, components, dependencies, queries",
+  "dark [30,\"4px\",\"rgb(250, 252, 255)\"]: debugger, inspect",
+  "dark [20,\"4px\",\"rgb(250, 252, 255)\"]: overlay-new-query"
+]

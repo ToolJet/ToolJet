@@ -1,0 +1,8 @@
+[
+  "light {\"background-color\":\"rgb(251, 252, 253)\",\"border-top-color\":\"rgb(228, 231, 235)\",\"border-top-width\":\"1px\",\"border-radius\":\"8px\",\"box-shadow\":\"rgba(136, 144, 153, 0.08) 0px 0px 1px 0px, rgba(136, 144, 153, 0.12) 0px 1px 1px 0px\"}: overlay-version",
+  "light {\"background-color\":\"rgb(251, 252, 253)\",\"border-top-color\":\"rgb(241, 243, 245)\",\"border-top-width\":\"1px\",\"border-radius\":\"6px\",\"box-shadow\":\"rgba(16, 24, 40, 0.06) 0px 2px 4px -2px, rgba(16, 24, 40, 0.1) 0px 4px 8px -2px\"}: overlay-page-menu, overlay-query-menu",
+  "light {\"background-color\":\"rgb(252, 252, 253)\",\"border-top-color\":\"rgb(228, 231, 235)\",\"border-top-width\":\"1px\",\"border-radius\":\"10px\",\"box-shadow\":\"rgba(48, 50, 51, 0.05) 0px 0px 1px 0px, rgba(48, 50, 51, 0.1) 0px 4px 8px 0px\"}: overlay-new-query",
+  "dark {\"background-color\":\"rgb(31, 41, 54)\",\"border-top-color\":\"rgb(43, 48, 54)\",\"border-top-width\":\"1px\",\"border-radius\":\"8px\",\"box-shadow\":\"rgba(133, 140, 148, 0.08) 0px 0px 1px 0px, rgba(133, 140, 148, 0.12) 0px 1px 1px 0px\"}: overlay-version",
+  "dark {\"background-color\":\"rgb(31, 41, 54)\",\"border-top-color\":\"rgb(32, 36, 37)\",\"border-top-width\":\"1px\",\"border-radius\":\"6px\",\"box-shadow\":\"rgba(16, 24, 40, 0.06) 0px 2px 4px -2px, rgba(16, 24, 40, 0.1) 0px 4px 8px -2px\"}: overlay-page-menu, overlay-query-menu",
+  "dark {\"background-color\":\"rgb(31, 41, 54)\",\"border-top-color\":\"rgb(251, 252, 253)\",\"border-top-width\":\"0px\",\"border-radius\":\"6px\",\"box-shadow\":\"none\"}: overlay-new-query"
+]

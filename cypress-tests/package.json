@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "cy:run": "cypress run --browser=chrome 103, --headless",
-    "cy:open": "cypress open --browser=chrome 103, --e2e"
+    "cy:open": "cypress open --browser=chrome 103, --e2e",
+    "cy:panels": "cypress run --browser chrome --config-file cypress-panels.config.js"
   },
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^5.12.0",

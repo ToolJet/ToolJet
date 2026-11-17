@@ -1,0 +1,10 @@
+[
+  "overlay-query-menu light 1440x960: Inter x6",
+  "overlay-query-filter light 1440x960: Inter x10",
+  "overlay-new-query light 1440x960: Inter x15",
+  "overlay-page-menu light 1440x960: Inter x5",
+  "overlay-query-menu dark 1440x960: Inter x6",
+  "overlay-query-filter dark 1440x960: Inter x10",
+  "overlay-new-query dark 1440x960: Inter x16",
+  "overlay-page-menu dark 1440x960: Inter x5"
+]

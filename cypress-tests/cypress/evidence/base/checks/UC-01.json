@@ -1,0 +1,12 @@
+[
+  "light 1440x960: close y pages=58 components=58 queries=57.5 libraries=64 code-search=58 dependencies=58 settings=57.5",
+  "light 1440x960: title y pages=62 components=62 queries=61.5 libraries=68 code-search=62 dependencies=62 settings=61.5",
+  "light 683x600: close y pages=58 components=58 queries=57.5 libraries=64 code-search=58 dependencies=58 settings=57.5",
+  "light 683x600: close inset pages=16 components=16 queries=16 libraries=16 code-search=16 dependencies=16 settings=22",
+  "light 683x600: title y pages=62 components=62 queries=61.5 libraries=68 code-search=62 dependencies=62 settings=61.5",
+  "dark 1440x960: close y pages=58 components=58 queries=57.5 libraries=64 code-search=58 dependencies=58 settings=57.5",
+  "dark 1440x960: title y pages=62 components=62 queries=61.5 libraries=68 code-search=62 dependencies=62 settings=61.5",
+  "dark 683x600: close y pages=58 components=58 queries=57.5 libraries=64 code-search=58 dependencies=58 settings=57.5",
+  "dark 683x600: close inset pages=16 components=16 queries=16 libraries=16 code-search=16 dependencies=16 settings=22",
+  "dark 683x600: title y pages=62 components=62 queries=61.5 libraries=68 code-search=62 dependencies=62 settings=61.5"
+]

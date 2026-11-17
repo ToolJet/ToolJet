@@ -84,6 +84,8 @@ module.exports = defineConfig({
       "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
       "cypress/e2e/happyPath/appbuilder/**/*.cy.js"
     ],
+    // The panel audit runs through cypress-panels.config.js (npm run cy:panels), not in CI.
+    excludeSpecPattern: ["cypress/e2e/happyPath/appbuilder/panels/**/*"],
     numTestsKeptInMemory: 1,
     redirectionLimit: 7,
     experimentalRunAllSpecs: true,

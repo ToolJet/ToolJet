@@ -1,0 +1,10 @@
+[
+  "components light 1440x960: rail \"Components\" opens \"Add new component\"",
+  "settings light 1440x960: rail \"Settings\" opens \"App settings\"",
+  "components light 683x600: rail \"Components\" opens \"Add new component\"",
+  "settings light 683x600: rail \"Settings\" opens \"App settings\"",
+  "components dark 1440x960: rail \"Components\" opens \"Add new component\"",
+  "settings dark 1440x960: rail \"Settings\" opens \"App settings\"",
+  "components dark 683x600: rail \"Components\" opens \"Add new component\"",
+  "settings dark 683x600: rail \"Settings\" opens \"App settings\""
+]

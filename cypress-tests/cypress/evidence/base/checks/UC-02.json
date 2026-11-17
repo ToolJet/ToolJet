@@ -1,0 +1,6 @@
+[
+  "light {\"top\":12,\"right\":10,\"y\":60}: query",
+  "light {\"top\":10,\"right\":10,\"y\":58}: component",
+  "dark {\"top\":12,\"right\":10,\"y\":60}: query",
+  "dark {\"top\":10,\"right\":10,\"y\":58}: component"
+]

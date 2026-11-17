@@ -8,3 +8,6 @@
 /.nyc_output
 /cypress/.webpack_cache
 /.claude
+/cypress/evidence/*
+!/cypress/evidence/base/
+/cypress/evidence/**/*.png

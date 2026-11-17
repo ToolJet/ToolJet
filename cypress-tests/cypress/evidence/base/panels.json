@@ -1,0 +1,4488 @@
+{
+  "pages.light.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Pages",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "tabs": {
+      "height": 36,
+      "activeColor": "rgb(77, 114, 250)"
+    },
+    "search": [],
+    "rows": {
+      "page-menu-item": {
+        "radius": "6px",
+        "fontSize": "12px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 22
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 17,
+      "10px": 4
+    },
+    "offScale": [
+      "div[data-cy=togglr-button-top] \"Top\" 10px",
+      "div[data-cy=togglr-button-side] \"Side\" 10px",
+      "div[data-cy=togglr-button-true] \"True\" 10px",
+      "div[data-cy=togglr-button-false] \"False\" 10px"
+    ],
+    "titleCase": [],
+    "lightAreas": [
+      "div.tj-panel-header \"Pages\"",
+      "div.nav-item \"Properties\"",
+      "div.nav-item \"Styles\"",
+      "button.tw-flex.tw-justify-center \"New page\"",
+      "button.tw-flex.tw-justify-center",
+      "input.form-control",
+      "input.form-check-input",
+      "div[data-cy=togglr-button-side] \"Side\"",
+      "div.false.react-select__control \"Text and icon\"",
+      "div[data-cy=togglr-button-true] \"True\""
+    ],
+    "railName": "Pages",
+    "railLabel": "Pages",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button.tw-flex.tw-justify-center",
+        "input.form-check-input",
+        "input.form-check-input",
+        "input.form-check-input"
+      ],
+      "lowContrast": [
+        "div[data-cy=togglr-button-false] \"False\" 4.31:1",
+        "div[data-cy=togglr-button-top] \"Top\" 4.31:1"
+      ],
+      "ringless": [
+        "button.ToggleGroupItem.undefined \"Side\"",
+        "button.ToggleGroupItem.undefined \"True\"",
+        "button.nav-link.active \"Properties\"",
+        "input.form-check-input",
+        "input.form-check-input",
+        "input[data-cy=-select-dropdown-input]",
+        "li.page-handler \"Home\"",
+        "li.page-handler \"Second\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input.form-check-input",
+        "border or fill only | input.form-control",
+        "outline 2px | button.tw-flex.tw-justify-center",
+        "outline 2px | button.tw-flex.tw-justify-center \"New page\"",
+        "outline 2px | button[data-cy=pages-close-button]"
+      ],
+      "walk": "returned to button[data-cy=pages-close-button] after 13 stops"
+    }
+  },
+  "components.light.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Add new component",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "tabs": {
+      "height": 36,
+      "activeColor": "rgb(77, 114, 250)"
+    },
+    "search": [
+      {
+        "placeholder": "Search components",
+        "name": null,
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(204, 209, 213)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 104
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 17,
+      "8px": 1,
+      "10px": 85
+    },
+    "offScale": [
+      "div.beta-tag-container.tw-py-0.5 \"Beta\" 8px",
+      "div.component-title \"Button\" 10px",
+      "div.component-title \"Table\" 10px",
+      "div.component-title \"Form\" 10px",
+      "div.component-title \"Text Input\" 10px",
+      "div.component-title \"Date Time Picker\" 10px",
+      "div.component-title \"Text\" 10px",
+      "div.component-title \"Button\" 10px",
+      "div.component-title \"Button Group\" 10px",
+      "div.component-title \"Popover Menu\" 10px",
+      "div.component-title \"File button\" 10px",
+      "div.component-title \"Table\" 10px",
+      "div.component-title \"Chart\" 10px",
+      "div.component-title \"Key Value Pair\" 10px",
+      "div.component-title \"Form\" 10px",
+      "div.component-title \"Modal\" 10px",
+      "div.component-title \"Container\" 10px",
+      "div.component-title \"Accordion\" 10px",
+      "div.component-title \"Tabs\" 10px",
+      "div.component-title \"List View\" 10px",
+      "div.component-title \"Calendar\" 10px",
+      "div.component-title \"Kanban\" 10px",
+      "div.component-title \"Text Input\" 10px",
+      "div.component-title \"Email Input\" 10px",
+      "div.component-title \"Password Input\" 10px",
+      "div.component-title \"Text Area\" 10px",
+      "div.component-title \"Text Editor\" 10px",
+      "div.component-title \"Number Input\" 10px",
+      "div.component-title \"Phone Input\" 10px",
+      "div.component-title \"Currency Input\" 10px",
+      "div.component-title \"Range Slider\" 10px",
+      "div.component-title \"Rating\" 10px",
+      "div.component-title \"Dropdown\" 10px",
+      "div.component-title \"Multi Select\" 10px",
+      "div.component-title \"Tags Input\" 10px",
+      "div.component-title \"Checkbox\" 10px",
+      "div.component-title \"Toggle Switch\" 10px",
+      "div.component-title \"Radio Button\" 10px",
+      "div.component-title \"File input\" 10px",
+      "div.component-title \"Tree Select\" 10px",
+      "div.component-title \"Cascader\" 10px",
+      "div.component-title \"Date Picker\" 10px",
+      "div.component-title \"Time Picker\" 10px",
+      "div.component-title \"Date Time Picker\" 10px",
+      "div.component-title \"Date Range Picker\" 10px",
+      "div.component-title \"Navigation\" 10px",
+      "div.component-title \"Link\" 10px",
+      "div.component-title \"Steps\" 10px",
+      "div.component-title \"Pagination\" 10px",
+      "div.component-title \"Icon\" 10px",
+      "div.component-title \"Image\" 10px",
+      "div.component-title \"Svg Image\" 10px",
+      "div.component-title \"PDF\" 10px",
+      "div.component-title \"Map\" 10px",
+      "div.component-title \"Audio Recorder\" 10px",
+      "div.component-title \"Camera\" 10px",
+      "div.component-title \"Text\" 10px",
+      "div.component-title \"Tags\" 10px",
+      "div.component-title \"Circular Progressbar\" 10px",
+      "div.component-title \"Progressbar\" 10px",
+      "div.component-title \"Horizontal Divider\" 10px",
+      "div.component-title \"Vertical Divider\" 10px",
+      "div.component-title \"Statistics\" 10px",
+      "div.component-title \"Timeline\" 10px",
+      "div.component-title \"Timer\" 10px",
+      "div.component-title \"Spinner\" 10px",
+      "div.component-title \"JSON Explorer\" 10px",
+      "div.component-title \"Custom Component\" 10px",
+      "div.component-title \"HTML Viewer\" 10px",
+      "div.component-title \"Iframe\" 10px",
+      "div.component-title \"File Picker\" 10px",
+      "div.component-title \"Code Editor\" 10px",
+      "div.component-title \"Color Picker\" 10px",
+      "div.component-title \"Bounded Box\" 10px",
+      "div.component-title \"QR Scanner\" 10px",
+      "div.component-title \"Chat\" 10px",
+      "div.component-title \"Reorderable List\" 10px",
+      "div.component-title \"JSON Editor\" 10px",
+      "div.component-title \"Modal (Legacy)\" 10px",
+      "div.component-title \"Date Picker (Legacy)\" 10px",
+      "div.component-title \"Radio Button (Legacy)\" 10px",
+      "div.component-title \"Toggle Switch (Legacy)\" 10px",
+      "div.component-title \"Dropdown (Legacy)\" 10px",
+      "div.component-title \"Multi Select (Legacy)\" 10px",
+      "div.component-title \"Range Slider (Legacy)\" 10px",
+      "div.component-title \"Button Group (Legacy)\" 10px"
+    ],
+    "titleCase": [
+      "Button Group",
+      "Popover Menu",
+      "Button Group (Legacy)"
+    ],
+    "lightAreas": [
+      "div.tj-panel-header \"Add new component\"",
+      "div.nav-item \"Components\"",
+      "div.nav-item \"Modules\"",
+      "div.nav-item \"Custom Beta\"",
+      "div.search-box-wrapper.tj-widgets-search-input",
+      "input[data-cy=widget-search-box-search-bar] \"Search components\"",
+      "div.component-image-wrapper \"Button\"",
+      "div[data-cy=widget-list-box-button]",
+      "div.component-image-wrapper \"Table\"",
+      "div[data-cy=widget-list-box-table]",
+      "div.component-image-wrapper \"Form\"",
+      "div[data-cy=widget-list-box-form]",
+      "div.component-image-wrapper \"Text Input\"",
+      "div[data-cy=widget-list-box-text-input]",
+      "div.component-image-wrapper \"Date Time Picker\"",
+      "div[data-cy=widget-list-box-date-time-picker]",
+      "div.component-image-wrapper \"Text\"",
+      "div[data-cy=widget-list-box-text]",
+      "div.component-image-wrapper \"Button\"",
+      "div[data-cy=widget-list-box-button]",
+      "div.component-image-wrapper \"Button Group\"",
+      "div[data-cy=widget-list-box-button-group]",
+      "div.component-image-wrapper \"Popover Menu\"",
+      "div[data-cy=widget-list-box-popover-menu]",
+      "div.component-image-wrapper \"File button\"",
+      "div[data-cy=widget-list-box-file-button]",
+      "div.component-image-wrapper \"Table\"",
+      "div[data-cy=widget-list-box-table]",
+      "div.component-image-wrapper \"Chart\"",
+      "div[data-cy=widget-list-box-chart]",
+      "div.component-image-wrapper \"Key Value Pair\"",
+      "div[data-cy=widget-list-box-key-value-pair]",
+      "div.component-image-wrapper \"Form\"",
+      "div[data-cy=widget-list-box-form]",
+      "div.component-image-wrapper \"Modal\"",
+      "div[data-cy=widget-list-box-modal]",
+      "div.component-image-wrapper \"Container\"",
+      "div[data-cy=widget-list-box-container]",
+      "div.component-image-wrapper \"Accordion\"",
+      "div[data-cy=widget-list-box-accordion]",
+      "div.component-image-wrapper \"Tabs\"",
+      "div[data-cy=widget-list-box-tabs]",
+      "div.component-image-wrapper \"List View\"",
+      "div[data-cy=widget-list-box-list-view]",
+      "div.component-image-wrapper \"Calendar\"",
+      "div[data-cy=widget-list-box-calendar]",
+      "div.component-image-wrapper \"Kanban\"",
+      "div[data-cy=widget-list-box-kanban]",
+      "div.component-image-wrapper \"Text Input\"",
+      "div[data-cy=widget-list-box-text-input]",
+      "div.component-image-wrapper \"Email Input\"",
+      "div[data-cy=widget-list-box-email-input]",
+      "div.component-image-wrapper \"Password Input\"",
+      "div[data-cy=widget-list-box-password-input]",
+      "div.component-image-wrapper \"Text Area\"",
+      "div[data-cy=widget-list-box-text-area]",
+      "div.component-image-wrapper \"Text Editor\"",
+      "div[data-cy=widget-list-box-text-editor]",
+      "div.component-image-wrapper \"Number Input\"",
+      "div[data-cy=widget-list-box-number-input]",
+      "div.component-image-wrapper \"Phone Input\"",
+      "div[data-cy=widget-list-box-phone-input]",
+      "div.component-image-wrapper \"Currency Input\"",
+      "div[data-cy=widget-list-box-currency-input]",
+      "div.component-image-wrapper \"Range Slider\"",
+      "div[data-cy=widget-list-box-range-slider]",
+      "div.component-image-wrapper \"Rating\"",
+      "div[data-cy=widget-list-box-rating]",
+      "div.component-image-wrapper \"Dropdown\"",
+      "div[data-cy=widget-list-box-dropdown]",
+      "div.component-image-wrapper \"Multi Select\"",
+      "div[data-cy=widget-list-box-multi-select]",
+      "div.component-image-wrapper \"Tags Input\"",
+      "div[data-cy=widget-list-box-tags-input]",
+      "div.component-image-wrapper \"Checkbox\"",
+      "div[data-cy=widget-list-box-checkbox]",
+      "div.component-image-wrapper \"Toggle Switch\"",
+      "div[data-cy=widget-list-box-toggle-switch]",
+      "div.component-image-wrapper \"Radio Button\"",
+      "div[data-cy=widget-list-box-radio-button]",
+      "div.component-image-wrapper \"File input\"",
+      "div[data-cy=widget-list-box-file-input]",
+      "div.component-image-wrapper \"Tree Select\"",
+      "div[data-cy=widget-list-box-tree-select]",
+      "div.component-image-wrapper \"Cascader\"",
+      "div[data-cy=widget-list-box-cascader]",
+      "div.component-image-wrapper \"Date Picker\"",
+      "div[data-cy=widget-list-box-date-picker]",
+      "div.component-image-wrapper \"Time Picker\"",
+      "div[data-cy=widget-list-box-time-picker]",
+      "div.component-image-wrapper \"Date Time Picker\"",
+      "div[data-cy=widget-list-box-date-time-picker]",
+      "div.component-image-wrapper \"Date Range Picker\"",
+      "div[data-cy=widget-list-box-date-range-picker]",
+      "div.component-image-wrapper \"Navigation\"",
+      "div[data-cy=widget-list-box-navigation]",
+      "div.component-image-wrapper \"Link\"",
+      "div[data-cy=widget-list-box-link]",
+      "div.component-image-wrapper \"Steps\"",
+      "div[data-cy=widget-list-box-steps]",
+      "div.component-image-wrapper \"Pagination\"",
+      "div[data-cy=widget-list-box-pagination]",
+      "div.component-image-wrapper \"Icon\"",
+      "div[data-cy=widget-list-box-icon]",
+      "div.component-image-wrapper \"Image\"",
+      "div[data-cy=widget-list-box-image]",
+      "div.component-image-wrapper \"Svg Image\"",
+      "div[data-cy=widget-list-box-svg-image]",
+      "div.component-image-wrapper \"PDF\"",
+      "div[data-cy=widget-list-box-pdf]",
+      "div.component-image-wrapper \"Map\"",
+      "div[data-cy=widget-list-box-map]",
+      "div.component-image-wrapper \"Audio Recorder\"",
+      "div[data-cy=widget-list-box-audio-recorder]",
+      "div.component-image-wrapper \"Camera\"",
+      "div[data-cy=widget-list-box-camera]",
+      "div.component-image-wrapper \"Text\"",
+      "div[data-cy=widget-list-box-text]",
+      "div.component-image-wrapper \"Tags\"",
+      "div[data-cy=widget-list-box-tags]",
+      "div.component-image-wrapper \"Circular Progressbar\"",
+      "div[data-cy=widget-list-box-circular-progressbar]",
+      "div.component-image-wrapper \"Progressbar\"",
+      "div[data-cy=widget-list-box-progressbar]",
+      "div.component-image-wrapper \"Horizontal Divider\"",
+      "div[data-cy=widget-list-box-horizontal-divider]",
+      "div.component-image-wrapper \"Vertical Divider\"",
+      "div[data-cy=widget-list-box-vertical-divider]",
+      "div.component-image-wrapper \"Statistics\"",
+      "div[data-cy=widget-list-box-statistics]",
+      "div.component-image-wrapper \"Timeline\"",
+      "div[data-cy=widget-list-box-timeline]",
+      "div.component-image-wrapper \"Timer\"",
+      "div[data-cy=widget-list-box-timer]",
+      "div.component-image-wrapper \"Spinner\"",
+      "div[data-cy=widget-list-box-spinner]",
+      "div.component-image-wrapper \"JSON Explorer\"",
+      "div[data-cy=widget-list-box-json-explorer]",
+      "div.component-image-wrapper \"Custom Component\"",
+      "div[data-cy=widget-list-box-custom-component]",
+      "div.component-image-wrapper \"HTML Viewer\"",
+      "div[data-cy=widget-list-box-html-viewer]",
+      "div.component-image-wrapper \"Iframe\"",
+      "div[data-cy=widget-list-box-iframe]",
+      "div.component-image-wrapper \"File Picker\"",
+      "div[data-cy=widget-list-box-file-picker]",
+      "div.component-image-wrapper \"Code Editor\"",
+      "div[data-cy=widget-list-box-code-editor]",
+      "div.component-image-wrapper \"Color Picker\"",
+      "div[data-cy=widget-list-box-color-picker]",
+      "div.component-image-wrapper \"Bounded Box\"",
+      "div[data-cy=widget-list-box-bounded-box]",
+      "div.component-image-wrapper \"QR Scanner\"",
+      "div[data-cy=widget-list-box-qr-scanner]",
+      "div.component-image-wrapper \"Chat\"",
+      "div[data-cy=widget-list-box-chat]",
+      "div.component-image-wrapper \"Reorderable List\"",
+      "div[data-cy=widget-list-box-reorderable-list]",
+      "div.component-image-wrapper \"JSON Editor\"",
+      "div[data-cy=widget-list-box-json-editor]",
+      "div.component-image-wrapper \"Modal (Legacy)\"",
+      "div[data-cy=widget-list-box-modal-(legacy)]",
+      "div.component-image-wrapper \"Date Picker (Legacy)\"",
+      "div[data-cy=widget-list-box-date-picker-(legacy)]",
+      "div.component-image-wrapper \"Radio Button (Legacy)\"",
+      "div[data-cy=widget-list-box-radio-button-(legacy)]",
+      "div.component-image-wrapper \"Toggle Switch (Legacy)\"",
+      "div[data-cy=widget-list-box-toggle-switch-(legacy)]",
+      "div.component-image-wrapper \"Dropdown (Legacy)\"",
+      "div[data-cy=widget-list-box-dropdown-(legacy)]",
+      "div.component-image-wrapper \"Multi Select (Legacy)\"",
+      "div[data-cy=widget-list-box-multi-select-(legacy)]",
+      "div.component-image-wrapper \"Range Slider (Legacy)\"",
+      "div[data-cy=widget-list-box-range-slider-(legacy)]",
+      "div.component-image-wrapper \"Button Group (Legacy)\"",
+      "div[data-cy=widget-list-box-button-group-(legacy)]"
+    ],
+    "railName": "Components",
+    "railLabel": "Add",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "button.nav-link.active \"Components\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=widget-search-box-search-bar] \"Search components\"",
+        "outline 2px | button[data-cy=components-close-button]"
+      ],
+      "walk": "returned to button[data-cy=components-close-button] after 3 stops"
+    }
+  },
+  "queries.light.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": -0.5,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Queries",
+      "x": 64,
+      "y": 61.5,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 9.5,
+      "right": 16,
+      "y": 57.5
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": null,
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(204, 209, 213)"
+      }
+    ],
+    "rows": {
+      "query-row": {
+        "radius": "6px",
+        "fontSize": "13px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 6
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 1,
+      "13px": 4
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "div.left-sidebar-query-list \"Queries New query restapi1 cus\"",
+      "div.queries-container.false \"Queries New query restapi1 cus\"",
+      "div.tj-panel-header.tj-panel-header--divider \"Queries New query\"",
+      "button[data-cy=show-ds-popover-button] \"New query\"",
+      "div.queries-header.queries-toolbar",
+      "input[data-cy=query-manager-search-bar] \"Search\"",
+      "div.query-row.pe-2 \"restapi1\"",
+      "button[data-cy=query-handler-menu-restapi1]"
+    ],
+    "railName": "Queries",
+    "railLabel": "Queries",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button[data-cy=query-filter-button]",
+        "button[data-cy=query-handler-menu-restapi1]"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "li.query-folder-handler \"customerOrdersWithInvoicesAndS\"",
+        "li.query-folder-handler \"restapi1\"",
+        "li.query-folder-handler \"runjs1\"",
+        "li.query-folder-handler \"setDeepNestedVariables\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | button[data-cy=query-filter-button]",
+        "border or fill only | input[data-cy=query-manager-search-bar] \"Search\"",
+        "outline 2px | button[data-cy=close-query-panel]",
+        "outline 2px | button[data-cy=query-handler-menu-restapi1]",
+        "outline 2px | button[data-cy=show-ds-popover-button] \"New query\""
+      ],
+      "walk": "returned to button[data-cy=show-ds-popover-button] \"New query\" after 9 stops"
+    }
+  },
+  "libraries.light.1440x960": {
+    "header": {
+      "height": 61,
+      "closeOffsetY": -0.5,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Libraries",
+      "x": 64,
+      "y": 68,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 16,
+      "right": 16,
+      "y": 64
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 3
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 2
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "button[data-cy=app-libraries-javascript-add-button] \"Add new library\""
+    ],
+    "railName": "Libraries",
+    "railLabel": "Libraries",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button[data-cy=app-libraries-close-button]"
+      ],
+      "lowContrast": [],
+      "ringless": [],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=app-libraries-close-button]",
+        "outline 2px | button[data-cy=app-libraries-javascript-add-button] \"Add new library\"",
+        "outline 2px | button[data-cy=app-libraries-javascript-script-button]"
+      ],
+      "walk": "returned to button[data-cy=app-libraries-close-button] after 3 stops"
+    }
+  },
+  "code-search.light.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Code search",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": "",
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(204, 209, 213)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 2
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 1
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "div.tj-panel-header \"Code search\"",
+      "input.tw-h-[32px].tw-peer \"Search\""
+    ],
+    "railName": "Code search",
+    "railLabel": "Search",
+    "betaClearance": -6,
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "button.code-search-toggle",
+        "button.code-search-toggle.code-search-toggle--text \".*\"",
+        "button.code-search-toggle.code-search-toggle--text \"Aa\"",
+        "button.code-search-toggle.code-search-toggle--text \"ab\""
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=code-search-close-button]",
+        "shadow 1px 2px | input.tw-h-[32px].tw-peer \"Search\""
+      ],
+      "walk": "returned to button[data-cy=code-search-close-button] after 6 stops"
+    }
+  },
+  "dependencies.light.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Dependencies",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": "",
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(204, 209, 213)"
+      }
+    ],
+    "rows": {
+      "dependency-row": {
+        "radius": "4px",
+        "fontSize": "12px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 6
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 5
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "div.tj-panel-header \"Dependencies\"",
+      "input[data-cy=dependency-viewer-search-input] \"Search\""
+    ],
+    "railName": "Dependencies",
+    "railLabel": "Deps",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "div[data-cy=dependency-row-component-textinput1] \"textinput1 Text Input\"",
+        "div[data-cy=dependency-row-query-customerorderswithinvoicesandshippingaddressesforthecurrentbillingperiod] \"customerOrdersWithInvoicesAndS\"",
+        "div[data-cy=dependency-section-components] \"Components (1)\"",
+        "div[data-cy=dependency-section-queries] \"Queries (1)\""
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=dependency-viewer-close-button]",
+        "shadow 1px 2px | input[data-cy=dependency-viewer-search-input] \"Search\""
+      ],
+      "walk": "returned to button[data-cy=dependency-viewer-close-button] after 6 stops"
+    }
+  },
+  "settings.light.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": -0.5,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "App settings",
+      "x": 64,
+      "y": 61.5,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 9.5,
+      "right": 16,
+      "y": 57.5
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 17
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 12,
+      "11px": 1,
+      "10px": 3
+    },
+    "offScale": [
+      "label[data-cy=helper-text] \"URL-friendly 'slug' consists o\" 11px",
+      "div[data-cy=togglr-button-auto] \"Auto\" 10px",
+      "div[data-cy=togglr-button-light] \"Light\" 10px",
+      "div[data-cy=togglr-button-dark] \"Dark\" 10px"
+    ],
+    "titleCase": [],
+    "lightAreas": [
+      "div.tj-panel-header.tj-panel-header--divider \"App settings\"",
+      "input[data-cy=app-slug-input-field] \"Unique app slug\"",
+      "button[data-cy=toggle-maintenance-mode]",
+      "button[data-cy=export-app-button] \"Export app\"",
+      "input[data-cy=maximum-canvas-width-input-field] \"0\"",
+      "select[data-cy=dropdown-max-canvas-width-type] \"% px\"",
+      "div[data-cy=togglr-button-light] \"Light\"",
+      "div.false.react-select__control \"ToolJet\""
+    ],
+    "railName": "Settings",
+    "railLabel": "Settings",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button[data-cy=toggle-maintenance-mode]"
+      ],
+      "lowContrast": [
+        "div[data-cy=togglr-button-auto] \"Auto\" 4.31:1",
+        "div[data-cy=togglr-button-dark] \"Dark\" 4.31:1"
+      ],
+      "ringless": [
+        "button.ToggleGroupItem.undefined \"Light\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=maximum-canvas-width-input-field] \"0\"",
+        "border or fill only | select[data-cy=dropdown-max-canvas-width-type] \"% px\"",
+        "outline 2px | button[data-cy=export-app-button] \"Export app\"",
+        "outline 2px | button[data-cy=global-settings-close-button]",
+        "outline 2px | button[data-cy=toggle-maintenance-mode]",
+        "shadow 1px 2px | input[data-cy=app-slug-input-field] \"Unique app slug\"",
+        "shadow 1px | input.dummyInput-DummyInput"
+      ],
+      "walk": "returned to button[data-cy=global-settings-close-button] after 8 stops"
+    }
+  },
+  "query.light.1440x960": {
+    "header": {
+      "height": 80,
+      "closeOffsetY": null,
+      "closeInsetRight": null
+    },
+    "title": {
+      "text": "runjs1",
+      "x": 967,
+      "y": 58,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(62, 82, 91)"
+    },
+    "close": {
+      "top": 12,
+      "right": 10,
+      "y": 60
+    },
+    "tabs": {
+      "height": 32,
+      "activeColor": "rgb(27, 31, 36)"
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 8
+    },
+    "sizes": {
+      "13px": 3,
+      "12px": 5
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "div.editor-sidebar.right-panel-shell \"runjs1 Setup Settings Preview \"",
+      "div.query-panel-resize-handle",
+      "div.right-panel-content \"runjs1 Setup Settings Preview \"",
+      "div.right-sidebar-query-configuration \"runjs1 Setup Settings Preview \"",
+      "div.query-manager.query-manager--right \"runjs1 Setup Settings Preview \"",
+      "div.row.header \"runjs1 Setup Settings Preview\"",
+      "button[data-cy=query-run-button]",
+      "button[data-cy=query-preview-button] \"Preview\"",
+      "div.query-details.query-details--right \"Parameters Add Code 1 return [\"",
+      "button[data-cy=query-param-add-button] \"Add\"",
+      "button.tw-flex.tw-justify-center",
+      "div.cm-editor.ͼ1 \"1 return [1, 2, 3]\"",
+      "div.preview-toggle \"Preview\"",
+      "div[data-cy=preview-raw-data-container]"
+    ],
+    "audit": {
+      "unnamed": [
+        "button.tw-flex.tw-justify-center",
+        "button[data-cy=query-run-button]"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "a.query-documentation-link",
+        "div.cm-content.cm-lineWrapping \"return [1, 2, 3]\"",
+        "div.query-panel-resize-handle"
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button.app-name-inline-trigger.edit-app-name-button \"runjs1\"",
+        "outline 2px | button.tw-flex.tw-justify-center",
+        "outline 2px | button[data-cy=query-configuration-close-button]",
+        "outline 2px | button[data-cy=query-open-code-editor-tab]",
+        "outline 2px | button[data-cy=query-param-add-button] \"Add\"",
+        "outline 2px | button[data-cy=query-preview-button] \"Preview\"",
+        "outline 2px | button[data-cy=query-run-button]"
+      ],
+      "walk": "left the surface after 10 stops"
+    }
+  },
+  "component.light.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "button1",
+      "x": 1163,
+      "y": 57,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 10,
+      "right": 10,
+      "y": 58
+    },
+    "tabs": {
+      "height": 36,
+      "activeColor": "rgb(77, 114, 250)"
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 21
+    },
+    "sizes": {
+      "12px": 18,
+      "10px": 3
+    },
+    "offScale": [
+      "div[data-cy=togglr-button-plainText] \"Plain text\" 10px",
+      "div[data-cy=togglr-button-markdown] \"Markdown\" 10px",
+      "div[data-cy=togglr-button-html] \"HTML\" 10px"
+    ],
+    "titleCase": [
+      "Additional Actions"
+    ],
+    "lightAreas": [
+      "div.editor-sidebar.right-panel-shell \"Properties Styles Data Label B\"",
+      "div.right-panel-content \"Properties Styles Data Label B\"",
+      "div.panel-header.false",
+      "div.nav-item \"Properties\"",
+      "div.nav-item \"Styles\"",
+      "div.cm-editor.ͼ1 \"Button\"",
+      "div.tw-mb-2.tw-flex",
+      "button[data-cy=add-event-handler] \"New event handler\"",
+      "input[data-cy=loading-state-toggle-button]",
+      "input[data-cy=collapse-when-hidden-toggle-button]",
+      "input[data-cy=disable-toggle-button]",
+      "div[data-cy=togglr-button-plainText] \"Plain text\"",
+      "div.cm-editor.ͼ1 \"Enter tooltip text\"",
+      "input[data-cy=show-on-mobile-toggle-button]",
+      "span.widget-documentation-link \"Read documentation for Button\""
+    ],
+    "audit": {
+      "unnamed": [
+        "button[data-cy=menu-icon]",
+        "input[data-cy=collapse-when-hidden-toggle-button]",
+        "input[data-cy=disable-toggle-button]",
+        "input[data-cy=loading-state-toggle-button]",
+        "input[data-cy=show-on-desktop-toggle-button]",
+        "input[data-cy=show-on-mobile-toggle-button]",
+        "input[data-cy=visibility-toggle-button]"
+      ],
+      "lowContrast": [
+        "div[data-cy=togglr-button-html] \"HTML\" 4.31:1",
+        "div[data-cy=togglr-button-markdown] \"Markdown\" 4.31:1"
+      ],
+      "ringless": [
+        "a[data-cy=widget-documentation-link] \"Read documentation for Button\"",
+        "button.ToggleGroupItem.undefined \"Plain text\"",
+        "button.nav-link.active \"Properties\"",
+        "div.cm-content.cm-lineWrapping \"Button\"",
+        "div.cm-content.cm-lineWrapping \"Enter tooltip text\"",
+        "input[data-cy=collapse-when-hidden-toggle-button]",
+        "input[data-cy=disable-toggle-button]",
+        "input[data-cy=loading-state-toggle-button]",
+        "input[data-cy=show-on-desktop-toggle-button]",
+        "input[data-cy=show-on-mobile-toggle-button]",
+        "input[data-cy=visibility-toggle-button]"
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=add-event-handler] \"New event handler\"",
+        "outline 2px | button[data-cy=inspector-close-button]",
+        "outline 2px | button[data-cy=menu-icon]",
+        "shadow 1px | input[data-cy=edit-widget-name]"
+      ],
+      "walk": "left the surface after 15 stops"
+    }
+  },
+  "inspect.light.1440x960": {
+    "close": {
+      "top": -235.5,
+      "right": 316,
+      "y": 682.5
+    },
+    "tabs": {
+      "height": 38,
+      "activeColor": "rgb(27, 31, 36)"
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": "Search inspector",
+        "height": 30,
+        "border-radius": "4px",
+        "border-top-color": "rgb(27, 31, 36)"
+      }
+    ],
+    "rows": {
+      "runtime-inspector__entry": {
+        "radius": "4px",
+        "fontSize": "13px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 41
+    },
+    "sizes": {
+      "12px": 16,
+      "10px": 1,
+      "11px": 6,
+      "13px": 18
+    },
+    "offScale": [
+      "span.runtime-panel-badge \"1\" 10px",
+      "span.runtime-inspector__count \"4\" 11px",
+      "span.runtime-inspector__count \"2\" 11px",
+      "span.runtime-inspector__count \"6\" 11px",
+      "span.runtime-inspector__count \"0\" 11px",
+      "span.runtime-inspector__count \"4\" 11px",
+      "span.runtime-inspector__count \"1\" 11px"
+    ],
+    "titleCase": [],
+    "lightAreas": [
+      "div.query-pane.runtime-panel-bar \"Inspector Debugger 1\"",
+      "div.query-pane.runtime-panel-content \"All Queries Components Globals\"",
+      "div[data-cy=runtime-inspector] \"All Queries Components Globals\"",
+      "button.runtime-inspector__filter.is-active \"All\""
+    ],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [
+        "span.runtime-panel-badge \"1\" 1.00:1"
+      ],
+      "ringless": [
+        "button.runtime-inspector__filter \"Components\"",
+        "button.runtime-inspector__filter \"Constants\"",
+        "button.runtime-inspector__filter \"Globals\"",
+        "button.runtime-inspector__filter \"Page\"",
+        "button.runtime-inspector__filter \"Queries\"",
+        "button.runtime-inspector__filter \"Variables\"",
+        "button.runtime-inspector__filter.is-active \"All\"",
+        "button.runtime-inspector__twisty",
+        "button[data-cy=inspector-appversion-subnode-label] \"appVersion\"",
+        "button[data-cy=inspector-button1-subnode-label] \"button1\"",
+        "button[data-cy=inspector-components-expand-button] \"Components 2\"",
+        "button[data-cy=inspector-constants-expand-button] \"Constants 1\"",
+        "button[data-cy=inspector-currentuser-subnode-label] \"currentUser\"",
+        "button[data-cy=inspector-customerorderswithinvoicesandshippingaddressesforthecurrentbillingperiod-subnode-label] \"customerOrdersWithInvoicesAndS\"",
+        "button[data-cy=inspector-environment-subnode-label] \"environment\"",
+        "button[data-cy=inspector-globals-expand-button] \"Globals 6\"",
+        "button[data-cy=inspector-handle-subnode-label] \"handle\"",
+        "button[data-cy=inspector-id-subnode-label] \"id\"",
+        "button[data-cy=inspector-mode-subnode-label] \"mode\"",
+        "button[data-cy=inspector-name-subnode-label] \"name\"",
+        "button[data-cy=inspector-page-expand-button] \"Page 4\"",
+        "button[data-cy=inspector-qa-remaining-1103-subnode-label] \"qa_remaining_1103\"",
+        "button[data-cy=inspector-queries-expand-button] \"Queries 4\"",
+        "button[data-cy=inspector-restapi1-subnode-label] \"restapi1\"",
+        "button[data-cy=inspector-runjs1-subnode-label] \"runjs1\"",
+        "button[data-cy=inspector-setdeepnestedvariables-subnode-label] \"setDeepNestedVariables\"",
+        "button[data-cy=inspector-textinput1-subnode-label] \"textinput1\"",
+        "button[data-cy=inspector-theme-subnode-label] \"theme\"",
+        "button[data-cy=inspector-urlparams-subnode-label] \"urlparams\"",
+        "button[data-cy=inspector-variables-expand-button] \"Variables 0\"",
+        "button[data-cy=inspector-variables-subnode-label] \"variables\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=inspector-search-input] \"Search\"",
+        "outline 2px | button[data-cy=query-manager-toggle-button]",
+        "outline 2px | button[data-cy=runtime-inspector-close-button]",
+        "outline 2px | button[data-cy=runtime-panel-tab-debugger] \"Debugger 1\"",
+        "outline 2px | button[data-cy=runtime-panel-tab-inspect] \"Inspector\""
+      ],
+      "walk": "left the surface after 36 stops"
+    }
+  },
+  "debugger.light.1440x960": {
+    "close": {
+      "top": -235.5,
+      "right": 304,
+      "y": 682.5
+    },
+    "tabs": {
+      "height": 38,
+      "activeColor": "rgb(27, 31, 36)"
+    },
+    "search": [
+      {
+        "placeholder": "Search logs",
+        "name": "Filter logs",
+        "height": 30,
+        "border-radius": "4px",
+        "border-top-color": "rgb(27, 31, 36)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 37
+    },
+    "sizes": {
+      "12px": 27,
+      "11px": 7,
+      "13px": 3
+    },
+    "offScale": [
+      "span.runtime-debugger__count \"1\" 11px",
+      "span.runtime-debugger__count \"1\" 11px",
+      "span.runtime-debugger__count \"0\" 11px",
+      "span.runtime-debugger__count \"0\" 11px",
+      "span.runtime-debugger__count \"0\" 11px",
+      "span.runtime-debugger__row-time \"<age>\" 11px",
+      "span.runtime-debugger__badge.is-error \"Error\" 11px"
+    ],
+    "titleCase": [],
+    "lightAreas": [
+      "div.query-pane.runtime-panel-bar \"Inspector Debugger\"",
+      "div.query-pane.runtime-panel-content \"All 1 Errors 1 Warnings 0 Info\"",
+      "div[data-cy=runtime-debugger] \"All 1 Errors 1 Warnings 0 Info\"",
+      "button[data-cy=debugger-filter-all] \"All 1\"",
+      "button[data-cy=debugger-scope-page] \"This page\"",
+      "button[data-cy=debugger-log-row] \"Expected a value of type strin\"",
+      "span.runtime-debugger__badge.is-error \"Error\""
+    ],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [
+        "div \"\"<id>\"\" 3.40:1",
+        "div \"{1}\" 2.53:1",
+        "div \"{1}\" 2.53:1",
+        "span.runtime-debugger__badge.is-error \"Error\" 4.31:1",
+        "span.runtime-debugger__row-source \"Component Property · textinput\" 4.28:1",
+        "span.runtime-debugger__row-time \"<age>\" 4.28:1"
+      ],
+      "ringless": [
+        "button[data-cy=debugger-filter-all] \"All 1\"",
+        "button[data-cy=debugger-filter-error] \"Errors 1\"",
+        "button[data-cy=debugger-filter-info] \"Info 0\"",
+        "button[data-cy=debugger-filter-success] \"Success 0\"",
+        "button[data-cy=debugger-filter-warning] \"Warnings 0\"",
+        "button[data-cy=debugger-log-action] \"Select component\"",
+        "button[data-cy=debugger-log-row] \"Expected a value of type strin\"",
+        "button[data-cy=debugger-scope-all] \"All pages\"",
+        "button[data-cy=debugger-scope-page] \"This page\"",
+        "div.runtime-inspector__values.runtime-debugger__detail-body \"Expected a value of type strin\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=debugger-search-input] \"Search logs\"",
+        "outline 2px | button[data-cy=debugger-clear-button]",
+        "outline 2px | button[data-cy=debugger-close-button]",
+        "outline 2px | button[data-cy=debugger-copy-details]",
+        "outline 2px | button[data-cy=query-manager-toggle-button]",
+        "outline 2px | button[data-cy=runtime-panel-tab-debugger] \"Debugger\"",
+        "outline 2px | button[data-cy=runtime-panel-tab-inspect] \"Inspector\""
+      ],
+      "walk": "left the surface after 17 stops"
+    }
+  },
+  "header.light.1440x960": {
+    "tabs": {
+      "height": null,
+      "activeColor": null
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 6
+    },
+    "sizes": {
+      "13px": 6
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "header.navbar.navbar-expand-md \"<masked> Prev\"",
+      "button[data-cy=button-change-layout-to-desktop]",
+      "button[data-cy=editor-preview-button] \"Preview\"",
+      "button[data-cy=version-switcher-button] \"v1 Development\"",
+      "button[data-cy=lifecycle-cta-button] \"Configure Git\"",
+      "div.nav-item \"Share\"",
+      "button[data-cy=editor-app-share-button] \"Share\""
+    ],
+    "overflowX": 0,
+    "offscreen": [],
+    "controlCentres": [
+      [
+        "button[data-cy=edit-app-name-button] \"<masked>\"",
+        23.5
+      ],
+      [
+        "button[data-cy=button-change-layout-to-desktop]",
+        23.5
+      ],
+      [
+        "button[data-cy=button-change-layout-to-mobile]",
+        23.5
+      ],
+      [
+        "a[data-cy=editor-preview-Link] \"Preview\"",
+        23.5
+      ],
+      [
+        "button[data-cy=editor-preview-button] \"Preview\"",
+        23.5
+      ],
+      [
+        "button[data-cy=version-switcher-button] \"v1 Development\"",
+        23.5
+      ],
+      [
+        "button[data-cy=lifecycle-cta-button] \"Configure Git\"",
+        23.5
+      ],
+      [
+        "button[data-cy=editor-app-share-button] \"Share\"",
+        23.5
+      ]
+    ],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "button[data-cy=version-switcher-button] \"v1 Development\""
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=button-change-layout-to-desktop]",
+        "outline 2px | button[data-cy=edit-app-name-button] \"<masked>\"",
+        "outline 2px | button[data-cy=editor-app-share-button] \"Share\"",
+        "outline 2px | button[data-cy=editor-preview-button] \"Preview\"",
+        "outline 2px | button[data-cy=lifecycle-cta-button] \"Configure Git\""
+      ],
+      "walk": "left the surface after 6 stops"
+    }
+  },
+  "pages.light.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Pages",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "tabs": {
+      "height": 36,
+      "activeColor": "rgb(77, 114, 250)"
+    },
+    "search": [],
+    "rows": {
+      "page-menu-item": {
+        "radius": "6px",
+        "fontSize": "12px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 22
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 17,
+      "10px": 4
+    },
+    "offScale": [
+      "div[data-cy=togglr-button-top] \"Top\" 10px",
+      "div[data-cy=togglr-button-side] \"Side\" 10px",
+      "div[data-cy=togglr-button-true] \"True\" 10px",
+      "div[data-cy=togglr-button-false] \"False\" 10px"
+    ],
+    "titleCase": [],
+    "lightAreas": [
+      "div.tj-panel-header \"Pages\"",
+      "div.nav-item \"Properties\"",
+      "div.nav-item \"Styles\"",
+      "button.tw-flex.tw-justify-center \"New page\"",
+      "button.tw-flex.tw-justify-center",
+      "input.form-control",
+      "input.form-check-input",
+      "div[data-cy=togglr-button-side] \"Side\"",
+      "div.false.react-select__control \"Text and icon\"",
+      "div[data-cy=togglr-button-true] \"True\""
+    ],
+    "railName": "Pages",
+    "railLabel": "Pages",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button.tw-flex.tw-justify-center",
+        "input.form-check-input",
+        "input.form-check-input",
+        "input.form-check-input"
+      ],
+      "lowContrast": [
+        "div[data-cy=togglr-button-false] \"False\" 4.31:1",
+        "div[data-cy=togglr-button-top] \"Top\" 4.31:1"
+      ],
+      "ringless": [
+        "button.ToggleGroupItem.undefined \"Side\"",
+        "button.ToggleGroupItem.undefined \"True\"",
+        "button.nav-link.active \"Properties\"",
+        "input.form-check-input",
+        "input.form-check-input",
+        "input[data-cy=-select-dropdown-input]",
+        "li.page-handler \"Home\"",
+        "li.page-handler \"Second\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input.form-check-input",
+        "border or fill only | input.form-control",
+        "outline 2px | button.tw-flex.tw-justify-center",
+        "outline 2px | button.tw-flex.tw-justify-center \"New page\"",
+        "outline 2px | button[data-cy=pages-close-button]"
+      ],
+      "walk": "returned to button[data-cy=pages-close-button] after 13 stops"
+    }
+  },
+  "components.light.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Add new component",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 195,
+      "right": 16,
+      "y": 58
+    },
+    "tabs": {
+      "height": 36,
+      "activeColor": "rgb(77, 114, 250)"
+    },
+    "search": [
+      {
+        "placeholder": "Search components",
+        "name": null,
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(204, 209, 213)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 104
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 17,
+      "8px": 1,
+      "10px": 85
+    },
+    "offScale": [
+      "div.beta-tag-container.tw-py-0.5 \"Beta\" 8px",
+      "div.component-title \"Button\" 10px",
+      "div.component-title \"Table\" 10px",
+      "div.component-title \"Form\" 10px",
+      "div.component-title \"Text Input\" 10px",
+      "div.component-title \"Date Time Picker\" 10px",
+      "div.component-title \"Text\" 10px",
+      "div.component-title \"Button\" 10px",
+      "div.component-title \"Button Group\" 10px",
+      "div.component-title \"Popover Menu\" 10px",
+      "div.component-title \"File button\" 10px",
+      "div.component-title \"Table\" 10px",
+      "div.component-title \"Chart\" 10px",
+      "div.component-title \"Key Value Pair\" 10px",
+      "div.component-title \"Form\" 10px",
+      "div.component-title \"Modal\" 10px",
+      "div.component-title \"Container\" 10px",
+      "div.component-title \"Accordion\" 10px",
+      "div.component-title \"Tabs\" 10px",
+      "div.component-title \"List View\" 10px",
+      "div.component-title \"Calendar\" 10px",
+      "div.component-title \"Kanban\" 10px",
+      "div.component-title \"Text Input\" 10px",
+      "div.component-title \"Email Input\" 10px",
+      "div.component-title \"Password Input\" 10px",
+      "div.component-title \"Text Area\" 10px",
+      "div.component-title \"Text Editor\" 10px",
+      "div.component-title \"Number Input\" 10px",
+      "div.component-title \"Phone Input\" 10px",
+      "div.component-title \"Currency Input\" 10px",
+      "div.component-title \"Range Slider\" 10px",
+      "div.component-title \"Rating\" 10px",
+      "div.component-title \"Dropdown\" 10px",
+      "div.component-title \"Multi Select\" 10px",
+      "div.component-title \"Tags Input\" 10px",
+      "div.component-title \"Checkbox\" 10px",
+      "div.component-title \"Toggle Switch\" 10px",
+      "div.component-title \"Radio Button\" 10px",
+      "div.component-title \"File input\" 10px",
+      "div.component-title \"Tree Select\" 10px",
+      "div.component-title \"Cascader\" 10px",
+      "div.component-title \"Date Picker\" 10px",
+      "div.component-title \"Time Picker\" 10px",
+      "div.component-title \"Date Time Picker\" 10px",
+      "div.component-title \"Date Range Picker\" 10px",
+      "div.component-title \"Navigation\" 10px",
+      "div.component-title \"Link\" 10px",
+      "div.component-title \"Steps\" 10px",
+      "div.component-title \"Pagination\" 10px",
+      "div.component-title \"Icon\" 10px",
+      "div.component-title \"Image\" 10px",
+      "div.component-title \"Svg Image\" 10px",
+      "div.component-title \"PDF\" 10px",
+      "div.component-title \"Map\" 10px",
+      "div.component-title \"Audio Recorder\" 10px",
+      "div.component-title \"Camera\" 10px",
+      "div.component-title \"Text\" 10px",
+      "div.component-title \"Tags\" 10px",
+      "div.component-title \"Circular Progressbar\" 10px",
+      "div.component-title \"Progressbar\" 10px",
+      "div.component-title \"Horizontal Divider\" 10px",
+      "div.component-title \"Vertical Divider\" 10px",
+      "div.component-title \"Statistics\" 10px",
+      "div.component-title \"Timeline\" 10px",
+      "div.component-title \"Timer\" 10px",
+      "div.component-title \"Spinner\" 10px",
+      "div.component-title \"JSON Explorer\" 10px",
+      "div.component-title \"Custom Component\" 10px",
+      "div.component-title \"HTML Viewer\" 10px",
+      "div.component-title \"Iframe\" 10px",
+      "div.component-title \"File Picker\" 10px",
+      "div.component-title \"Code Editor\" 10px",
+      "div.component-title \"Color Picker\" 10px",
+      "div.component-title \"Bounded Box\" 10px",
+      "div.component-title \"QR Scanner\" 10px",
+      "div.component-title \"Chat\" 10px",
+      "div.component-title \"Reorderable List\" 10px",
+      "div.component-title \"JSON Editor\" 10px",
+      "div.component-title \"Modal (Legacy)\" 10px",
+      "div.component-title \"Date Picker (Legacy)\" 10px",
+      "div.component-title \"Radio Button (Legacy)\" 10px",
+      "div.component-title \"Toggle Switch (Legacy)\" 10px",
+      "div.component-title \"Dropdown (Legacy)\" 10px",
+      "div.component-title \"Multi Select (Legacy)\" 10px",
+      "div.component-title \"Range Slider (Legacy)\" 10px",
+      "div.component-title \"Button Group (Legacy)\" 10px"
+    ],
+    "titleCase": [
+      "Button Group",
+      "Popover Menu",
+      "Button Group (Legacy)"
+    ],
+    "lightAreas": [
+      "div.tj-panel-header \"Add new component\"",
+      "div.nav-item \"Components\"",
+      "div.nav-item \"Modules\"",
+      "div.nav-item \"Custom Beta\"",
+      "div.search-box-wrapper.tj-widgets-search-input",
+      "input[data-cy=widget-search-box-search-bar] \"Search components\"",
+      "div.component-image-wrapper \"Button\"",
+      "div[data-cy=widget-list-box-button]",
+      "div.component-image-wrapper \"Table\"",
+      "div[data-cy=widget-list-box-table]",
+      "div.component-image-wrapper \"Form\"",
+      "div[data-cy=widget-list-box-form]",
+      "div.component-image-wrapper \"Text Input\"",
+      "div[data-cy=widget-list-box-text-input]",
+      "div.component-image-wrapper \"Date Time Picker\"",
+      "div[data-cy=widget-list-box-date-time-picker]",
+      "div.component-image-wrapper \"Text\"",
+      "div[data-cy=widget-list-box-text]",
+      "div.component-image-wrapper \"Button\"",
+      "div[data-cy=widget-list-box-button]",
+      "div.component-image-wrapper \"Button Group\"",
+      "div[data-cy=widget-list-box-button-group]",
+      "div.component-image-wrapper \"Popover Menu\"",
+      "div[data-cy=widget-list-box-popover-menu]",
+      "div.component-image-wrapper \"File button\"",
+      "div[data-cy=widget-list-box-file-button]",
+      "div.component-image-wrapper \"Table\"",
+      "div[data-cy=widget-list-box-table]",
+      "div.component-image-wrapper \"Chart\"",
+      "div[data-cy=widget-list-box-chart]",
+      "div.component-image-wrapper \"Key Value Pair\"",
+      "div[data-cy=widget-list-box-key-value-pair]",
+      "div.component-image-wrapper \"Form\"",
+      "div[data-cy=widget-list-box-form]",
+      "div.component-image-wrapper \"Modal\"",
+      "div[data-cy=widget-list-box-modal]",
+      "div.component-image-wrapper \"Container\"",
+      "div[data-cy=widget-list-box-container]",
+      "div.component-image-wrapper \"Accordion\"",
+      "div[data-cy=widget-list-box-accordion]",
+      "div.component-image-wrapper \"Tabs\"",
+      "div[data-cy=widget-list-box-tabs]",
+      "div.component-image-wrapper \"List View\"",
+      "div[data-cy=widget-list-box-list-view]",
+      "div.component-image-wrapper \"Calendar\"",
+      "div[data-cy=widget-list-box-calendar]",
+      "div.component-image-wrapper \"Kanban\"",
+      "div[data-cy=widget-list-box-kanban]",
+      "div.component-image-wrapper \"Text Input\"",
+      "div[data-cy=widget-list-box-text-input]",
+      "div.component-image-wrapper \"Email Input\"",
+      "div[data-cy=widget-list-box-email-input]",
+      "div.component-image-wrapper \"Password Input\"",
+      "div[data-cy=widget-list-box-password-input]",
+      "div.component-image-wrapper \"Text Area\"",
+      "div[data-cy=widget-list-box-text-area]",
+      "div.component-image-wrapper \"Text Editor\"",
+      "div[data-cy=widget-list-box-text-editor]",
+      "div.component-image-wrapper \"Number Input\"",
+      "div[data-cy=widget-list-box-number-input]",
+      "div.component-image-wrapper \"Phone Input\"",
+      "div[data-cy=widget-list-box-phone-input]",
+      "div.component-image-wrapper \"Currency Input\"",
+      "div[data-cy=widget-list-box-currency-input]",
+      "div.component-image-wrapper \"Range Slider\"",
+      "div[data-cy=widget-list-box-range-slider]",
+      "div.component-image-wrapper \"Rating\"",
+      "div[data-cy=widget-list-box-rating]",
+      "div.component-image-wrapper \"Dropdown\"",
+      "div[data-cy=widget-list-box-dropdown]",
+      "div.component-image-wrapper \"Multi Select\"",
+      "div[data-cy=widget-list-box-multi-select]",
+      "div.component-image-wrapper \"Tags Input\"",
+      "div[data-cy=widget-list-box-tags-input]",
+      "div.component-image-wrapper \"Checkbox\"",
+      "div[data-cy=widget-list-box-checkbox]",
+      "div.component-image-wrapper \"Toggle Switch\"",
+      "div[data-cy=widget-list-box-toggle-switch]",
+      "div.component-image-wrapper \"Radio Button\"",
+      "div[data-cy=widget-list-box-radio-button]",
+      "div.component-image-wrapper \"File input\"",
+      "div[data-cy=widget-list-box-file-input]",
+      "div.component-image-wrapper \"Tree Select\"",
+      "div[data-cy=widget-list-box-tree-select]",
+      "div.component-image-wrapper \"Cascader\"",
+      "div[data-cy=widget-list-box-cascader]",
+      "div.component-image-wrapper \"Date Picker\"",
+      "div[data-cy=widget-list-box-date-picker]",
+      "div.component-image-wrapper \"Time Picker\"",
+      "div[data-cy=widget-list-box-time-picker]",
+      "div.component-image-wrapper \"Date Time Picker\"",
+      "div[data-cy=widget-list-box-date-time-picker]",
+      "div.component-image-wrapper \"Date Range Picker\"",
+      "div[data-cy=widget-list-box-date-range-picker]",
+      "div.component-image-wrapper \"Navigation\"",
+      "div[data-cy=widget-list-box-navigation]",
+      "div.component-image-wrapper \"Link\"",
+      "div[data-cy=widget-list-box-link]",
+      "div.component-image-wrapper \"Steps\"",
+      "div[data-cy=widget-list-box-steps]",
+      "div.component-image-wrapper \"Pagination\"",
+      "div[data-cy=widget-list-box-pagination]",
+      "div.component-image-wrapper \"Icon\"",
+      "div[data-cy=widget-list-box-icon]",
+      "div.component-image-wrapper \"Image\"",
+      "div[data-cy=widget-list-box-image]",
+      "div.component-image-wrapper \"Svg Image\"",
+      "div[data-cy=widget-list-box-svg-image]",
+      "div.component-image-wrapper \"PDF\"",
+      "div[data-cy=widget-list-box-pdf]",
+      "div.component-image-wrapper \"Map\"",
+      "div[data-cy=widget-list-box-map]",
+      "div.component-image-wrapper \"Audio Recorder\"",
+      "div[data-cy=widget-list-box-audio-recorder]",
+      "div.component-image-wrapper \"Camera\"",
+      "div[data-cy=widget-list-box-camera]",
+      "div.component-image-wrapper \"Text\"",
+      "div[data-cy=widget-list-box-text]",
+      "div.component-image-wrapper \"Tags\"",
+      "div[data-cy=widget-list-box-tags]",
+      "div.component-image-wrapper \"Circular Progressbar\"",
+      "div[data-cy=widget-list-box-circular-progressbar]",
+      "div.component-image-wrapper \"Progressbar\"",
+      "div[data-cy=widget-list-box-progressbar]",
+      "div.component-image-wrapper \"Horizontal Divider\"",
+      "div[data-cy=widget-list-box-horizontal-divider]",
+      "div.component-image-wrapper \"Vertical Divider\"",
+      "div[data-cy=widget-list-box-vertical-divider]",
+      "div.component-image-wrapper \"Statistics\"",
+      "div[data-cy=widget-list-box-statistics]",
+      "div.component-image-wrapper \"Timeline\"",
+      "div[data-cy=widget-list-box-timeline]",
+      "div.component-image-wrapper \"Timer\"",
+      "div[data-cy=widget-list-box-timer]",
+      "div.component-image-wrapper \"Spinner\"",
+      "div[data-cy=widget-list-box-spinner]",
+      "div.component-image-wrapper \"JSON Explorer\"",
+      "div[data-cy=widget-list-box-json-explorer]",
+      "div.component-image-wrapper \"Custom Component\"",
+      "div[data-cy=widget-list-box-custom-component]",
+      "div.component-image-wrapper \"HTML Viewer\"",
+      "div[data-cy=widget-list-box-html-viewer]",
+      "div.component-image-wrapper \"Iframe\"",
+      "div[data-cy=widget-list-box-iframe]",
+      "div.component-image-wrapper \"File Picker\"",
+      "div[data-cy=widget-list-box-file-picker]",
+      "div.component-image-wrapper \"Code Editor\"",
+      "div[data-cy=widget-list-box-code-editor]",
+      "div.component-image-wrapper \"Color Picker\"",
+      "div[data-cy=widget-list-box-color-picker]",
+      "div.component-image-wrapper \"Bounded Box\"",
+      "div[data-cy=widget-list-box-bounded-box]",
+      "div.component-image-wrapper \"QR Scanner\"",
+      "div[data-cy=widget-list-box-qr-scanner]",
+      "div.component-image-wrapper \"Chat\"",
+      "div[data-cy=widget-list-box-chat]",
+      "div.component-image-wrapper \"Reorderable List\"",
+      "div[data-cy=widget-list-box-reorderable-list]",
+      "div.component-image-wrapper \"JSON Editor\"",
+      "div[data-cy=widget-list-box-json-editor]",
+      "div.component-image-wrapper \"Modal (Legacy)\"",
+      "div[data-cy=widget-list-box-modal-(legacy)]",
+      "div.component-image-wrapper \"Date Picker (Legacy)\"",
+      "div[data-cy=widget-list-box-date-picker-(legacy)]",
+      "div.component-image-wrapper \"Radio Button (Legacy)\"",
+      "div[data-cy=widget-list-box-radio-button-(legacy)]",
+      "div.component-image-wrapper \"Toggle Switch (Legacy)\"",
+      "div[data-cy=widget-list-box-toggle-switch-(legacy)]",
+      "div.component-image-wrapper \"Dropdown (Legacy)\"",
+      "div[data-cy=widget-list-box-dropdown-(legacy)]",
+      "div.component-image-wrapper \"Multi Select (Legacy)\"",
+      "div[data-cy=widget-list-box-multi-select-(legacy)]",
+      "div.component-image-wrapper \"Range Slider (Legacy)\"",
+      "div[data-cy=widget-list-box-range-slider-(legacy)]",
+      "div.component-image-wrapper \"Button Group (Legacy)\"",
+      "div[data-cy=widget-list-box-button-group-(legacy)]"
+    ],
+    "railName": "Components",
+    "railLabel": "Add",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "button.nav-link.active \"Components\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=widget-search-box-search-bar] \"Search components\"",
+        "outline 2px | button[data-cy=components-close-button]"
+      ],
+      "walk": "returned to button[data-cy=components-close-button] after 3 stops"
+    }
+  },
+  "queries.light.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": -0.5,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Queries",
+      "x": 64,
+      "y": 61.5,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 9.5,
+      "right": 16,
+      "y": 57.5
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": null,
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(204, 209, 213)"
+      }
+    ],
+    "rows": {
+      "query-row": {
+        "radius": "6px",
+        "fontSize": "13px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 6
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 1,
+      "13px": 4
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "div.left-sidebar-query-list \"Queries New query restapi1 cus\"",
+      "div.queries-container.false \"Queries New query restapi1 cus\"",
+      "div.tj-panel-header.tj-panel-header--divider \"Queries New query\"",
+      "button[data-cy=show-ds-popover-button] \"New query\"",
+      "div.queries-header.queries-toolbar",
+      "input[data-cy=query-manager-search-bar] \"Search\"",
+      "div.query-row.pe-2 \"restapi1\"",
+      "button[data-cy=query-handler-menu-restapi1]"
+    ],
+    "railName": "Queries",
+    "railLabel": "Queries",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button[data-cy=query-filter-button]",
+        "button[data-cy=query-handler-menu-restapi1]"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "li.query-folder-handler \"customerOrdersWithInvoicesAndS\"",
+        "li.query-folder-handler \"restapi1\"",
+        "li.query-folder-handler \"runjs1\"",
+        "li.query-folder-handler \"setDeepNestedVariables\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | button[data-cy=query-filter-button]",
+        "border or fill only | input[data-cy=query-manager-search-bar] \"Search\"",
+        "outline 2px | button[data-cy=close-query-panel]",
+        "outline 2px | button[data-cy=query-handler-menu-restapi1]",
+        "outline 2px | button[data-cy=show-ds-popover-button] \"New query\""
+      ],
+      "walk": "returned to button[data-cy=show-ds-popover-button] \"New query\" after 9 stops"
+    }
+  },
+  "libraries.light.683x600": {
+    "header": {
+      "height": 61,
+      "closeOffsetY": -0.5,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Libraries",
+      "x": 64,
+      "y": 68,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 16,
+      "right": 16,
+      "y": 64
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 3
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 2
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "button[data-cy=app-libraries-javascript-add-button] \"Add new library\""
+    ],
+    "railName": "Libraries",
+    "railLabel": "Libraries",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button[data-cy=app-libraries-close-button]"
+      ],
+      "lowContrast": [],
+      "ringless": [],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=app-libraries-close-button]",
+        "outline 2px | button[data-cy=app-libraries-javascript-add-button] \"Add new library\"",
+        "outline 2px | button[data-cy=app-libraries-javascript-script-button]"
+      ],
+      "walk": "returned to button[data-cy=app-libraries-close-button] after 3 stops"
+    }
+  },
+  "code-search.light.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Code search",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": "",
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(204, 209, 213)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 2
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 1
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "div.tj-panel-header \"Code search\"",
+      "input.tw-h-[32px].tw-peer \"Search\""
+    ],
+    "railName": "Code search",
+    "railLabel": "Search",
+    "betaClearance": -6,
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "button.code-search-toggle",
+        "button.code-search-toggle.code-search-toggle--text \".*\"",
+        "button.code-search-toggle.code-search-toggle--text \"Aa\"",
+        "button.code-search-toggle.code-search-toggle--text \"ab\""
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=code-search-close-button]",
+        "shadow 1px 2px | input.tw-h-[32px].tw-peer \"Search\""
+      ],
+      "walk": "returned to button[data-cy=code-search-close-button] after 6 stops"
+    }
+  },
+  "dependencies.light.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Dependencies",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": "",
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(204, 209, 213)"
+      }
+    ],
+    "rows": {
+      "dependency-row": {
+        "radius": "4px",
+        "fontSize": "12px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 6
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 5
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "div.tj-panel-header \"Dependencies\"",
+      "input[data-cy=dependency-viewer-search-input] \"Search\""
+    ],
+    "railName": "Dependencies",
+    "railLabel": "Deps",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "div[data-cy=dependency-row-component-textinput1] \"textinput1 Text Input\"",
+        "div[data-cy=dependency-row-query-customerorderswithinvoicesandshippingaddressesforthecurrentbillingperiod] \"customerOrdersWithInvoicesAndS\"",
+        "div[data-cy=dependency-section-components] \"Components (1)\"",
+        "div[data-cy=dependency-section-queries] \"Queries (1)\""
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=dependency-viewer-close-button]",
+        "shadow 1px 2px | input[data-cy=dependency-viewer-search-input] \"Search\""
+      ],
+      "walk": "returned to button[data-cy=dependency-viewer-close-button] after 6 stops"
+    }
+  },
+  "settings.light.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": -0.5,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "App settings",
+      "x": 64,
+      "y": 61.5,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 9.5,
+      "right": 22,
+      "y": 57.5
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 17
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 12,
+      "11px": 1,
+      "10px": 3
+    },
+    "offScale": [
+      "label[data-cy=helper-text] \"URL-friendly 'slug' consists o\" 11px",
+      "div[data-cy=togglr-button-auto] \"Auto\" 10px",
+      "div[data-cy=togglr-button-light] \"Light\" 10px",
+      "div[data-cy=togglr-button-dark] \"Dark\" 10px"
+    ],
+    "titleCase": [],
+    "lightAreas": [
+      "div.tj-panel-header.tj-panel-header--divider \"App settings\"",
+      "input[data-cy=app-slug-input-field] \"Unique app slug\"",
+      "button[data-cy=toggle-maintenance-mode]",
+      "button[data-cy=export-app-button] \"Export app\"",
+      "input[data-cy=maximum-canvas-width-input-field] \"0\"",
+      "select[data-cy=dropdown-max-canvas-width-type] \"% px\"",
+      "div[data-cy=togglr-button-light] \"Light\"",
+      "div.false.react-select__control \"ToolJet\""
+    ],
+    "railName": "Settings",
+    "railLabel": "Settings",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button[data-cy=toggle-maintenance-mode]"
+      ],
+      "lowContrast": [
+        "div[data-cy=togglr-button-auto] \"Auto\" 4.31:1",
+        "div[data-cy=togglr-button-dark] \"Dark\" 4.31:1"
+      ],
+      "ringless": [
+        "button.ToggleGroupItem.undefined \"Light\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=maximum-canvas-width-input-field] \"0\"",
+        "border or fill only | select[data-cy=dropdown-max-canvas-width-type] \"% px\"",
+        "outline 2px | button[data-cy=export-app-button] \"Export app\"",
+        "outline 2px | button[data-cy=global-settings-close-button]",
+        "outline 2px | button[data-cy=toggle-maintenance-mode]",
+        "shadow 1px 2px | input[data-cy=app-slug-input-field] \"Unique app slug\"",
+        "shadow 1px | input.dummyInput-DummyInput"
+      ],
+      "walk": "returned to button[data-cy=global-settings-close-button] after 8 stops"
+    }
+  },
+  "query.light.683x600": {
+    "header": {
+      "height": 80,
+      "closeOffsetY": null,
+      "closeInsetRight": null
+    },
+    "title": {
+      "text": "runjs1",
+      "x": 210,
+      "y": 58,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(62, 82, 91)"
+    },
+    "close": {
+      "top": 12,
+      "right": 10,
+      "y": 60
+    },
+    "tabs": {
+      "height": 32,
+      "activeColor": "rgb(27, 31, 36)"
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 8
+    },
+    "sizes": {
+      "13px": 3,
+      "12px": 5
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "div.editor-sidebar.right-panel-shell \"runjs1 Setup Settings Preview \"",
+      "div.query-panel-resize-handle",
+      "div.right-panel-content \"runjs1 Setup Settings Preview \"",
+      "div.right-sidebar-query-configuration \"runjs1 Setup Settings Preview \"",
+      "div.query-manager.query-manager--right \"runjs1 Setup Settings Preview \"",
+      "div.row.header \"runjs1 Setup Settings Preview\"",
+      "button[data-cy=query-run-button]",
+      "button[data-cy=query-preview-button] \"Preview\"",
+      "div.query-details.query-details--right \"Parameters Add Code 1 return [\"",
+      "button[data-cy=query-param-add-button] \"Add\"",
+      "button.tw-flex.tw-justify-center",
+      "div.cm-editor.ͼ1 \"1 return [1, 2, 3]\"",
+      "div.preview-toggle \"Preview\"",
+      "div[data-cy=preview-raw-data-container]"
+    ],
+    "audit": {
+      "unnamed": [
+        "button.tw-flex.tw-justify-center",
+        "button[data-cy=query-run-button]"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "a.query-documentation-link",
+        "div.cm-content.cm-lineWrapping \"return [1, 2, 3]\"",
+        "div.query-panel-resize-handle"
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button.app-name-inline-trigger.edit-app-name-button \"runjs1\"",
+        "outline 2px | button.tw-flex.tw-justify-center",
+        "outline 2px | button[data-cy=query-configuration-close-button]",
+        "outline 2px | button[data-cy=query-open-code-editor-tab]",
+        "outline 2px | button[data-cy=query-param-add-button] \"Add\"",
+        "outline 2px | button[data-cy=query-preview-button] \"Preview\"",
+        "outline 2px | button[data-cy=query-run-button]"
+      ],
+      "walk": "left the surface after 10 stops"
+    }
+  },
+  "component.light.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "button1",
+      "x": 406,
+      "y": 57,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(27, 31, 36)"
+    },
+    "close": {
+      "top": 10,
+      "right": 10,
+      "y": 58
+    },
+    "tabs": {
+      "height": 36,
+      "activeColor": "rgb(77, 114, 250)"
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 21
+    },
+    "sizes": {
+      "12px": 18,
+      "10px": 3
+    },
+    "offScale": [
+      "div[data-cy=togglr-button-plainText] \"Plain text\" 10px",
+      "div[data-cy=togglr-button-markdown] \"Markdown\" 10px",
+      "div[data-cy=togglr-button-html] \"HTML\" 10px"
+    ],
+    "titleCase": [
+      "Additional Actions"
+    ],
+    "lightAreas": [
+      "div.editor-sidebar.right-panel-shell \"Properties Styles Data Label B\"",
+      "div.right-panel-content \"Properties Styles Data Label B\"",
+      "div.panel-header.false",
+      "div.nav-item \"Properties\"",
+      "div.nav-item \"Styles\"",
+      "div.cm-editor.ͼ1 \"Button\"",
+      "div.tw-mb-2.tw-flex",
+      "button[data-cy=add-event-handler] \"New event handler\"",
+      "input[data-cy=loading-state-toggle-button]",
+      "input[data-cy=collapse-when-hidden-toggle-button]",
+      "input[data-cy=disable-toggle-button]",
+      "div[data-cy=togglr-button-plainText] \"Plain text\"",
+      "div.cm-editor.ͼ1 \"Enter tooltip text\"",
+      "input[data-cy=show-on-mobile-toggle-button]",
+      "span.widget-documentation-link \"Read documentation for Button\""
+    ],
+    "audit": {
+      "unnamed": [
+        "button[data-cy=menu-icon]",
+        "input[data-cy=collapse-when-hidden-toggle-button]",
+        "input[data-cy=disable-toggle-button]",
+        "input[data-cy=loading-state-toggle-button]",
+        "input[data-cy=show-on-desktop-toggle-button]",
+        "input[data-cy=show-on-mobile-toggle-button]",
+        "input[data-cy=visibility-toggle-button]"
+      ],
+      "lowContrast": [
+        "div[data-cy=togglr-button-html] \"HTML\" 4.31:1",
+        "div[data-cy=togglr-button-markdown] \"Markdown\" 4.31:1"
+      ],
+      "ringless": [
+        "a[data-cy=widget-documentation-link] \"Read documentation for Button\"",
+        "button.ToggleGroupItem.undefined \"Plain text\"",
+        "button.nav-link.active \"Properties\"",
+        "div.cm-content.cm-lineWrapping \"Button\"",
+        "div.cm-content.cm-lineWrapping \"Enter tooltip text\"",
+        "input[data-cy=collapse-when-hidden-toggle-button]",
+        "input[data-cy=disable-toggle-button]",
+        "input[data-cy=loading-state-toggle-button]",
+        "input[data-cy=show-on-desktop-toggle-button]",
+        "input[data-cy=show-on-mobile-toggle-button]",
+        "input[data-cy=visibility-toggle-button]"
+      ],
+      "hidden": [
+        "input[data-cy=collapse-when-hidden-toggle-button] (covered by span.widget-documentation-link \"Read documentation for Button\")",
+        "input[data-cy=show-on-mobile-toggle-button] (covered by svg)",
+        "input[data-cy=visibility-toggle-button] (covered by span.widget-documentation-link \"Read documentation for Button\")"
+      ],
+      "rings": [
+        "outline 2px | button[data-cy=add-event-handler] \"New event handler\"",
+        "outline 2px | button[data-cy=inspector-close-button]",
+        "outline 2px | button[data-cy=menu-icon]",
+        "shadow 1px | input[data-cy=edit-widget-name]"
+      ],
+      "walk": "left the surface after 15 stops"
+    }
+  },
+  "inspect.light.683x600": {
+    "close": {
+      "top": -127.5,
+      "right": 316,
+      "y": 430.5
+    },
+    "tabs": {
+      "height": 38,
+      "activeColor": "rgb(27, 31, 36)"
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": "Search inspector",
+        "height": 30,
+        "border-radius": "4px",
+        "border-top-color": "rgb(27, 31, 36)"
+      }
+    ],
+    "rows": {
+      "runtime-inspector__entry": {
+        "radius": "4px",
+        "fontSize": "13px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 34
+    },
+    "sizes": {
+      "12px": 9,
+      "10px": 1,
+      "11px": 6,
+      "13px": 18
+    },
+    "offScale": [
+      "span.runtime-panel-badge \"1\" 10px",
+      "span.runtime-inspector__count \"4\" 11px",
+      "span.runtime-inspector__count \"2\" 11px",
+      "span.runtime-inspector__count \"6\" 11px",
+      "span.runtime-inspector__count \"0\" 11px",
+      "span.runtime-inspector__count \"4\" 11px",
+      "span.runtime-inspector__count \"1\" 11px"
+    ],
+    "titleCase": [],
+    "lightAreas": [
+      "div.query-pane.runtime-panel-bar \"Inspector Debugger 1\"",
+      "div.query-pane.runtime-panel-content \"All types Queries Components G\"",
+      "div[data-cy=runtime-inspector] \"All types Queries Components G\"",
+      "select[data-cy=inspector-filter-select] \"All types Queries Components G\""
+    ],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [
+        "span.runtime-panel-badge \"1\" 1.00:1"
+      ],
+      "ringless": [
+        "button.runtime-inspector__twisty",
+        "button[data-cy=inspector-appversion-subnode-label] \"appVersion\"",
+        "button[data-cy=inspector-button1-subnode-label] \"button1\"",
+        "button[data-cy=inspector-components-expand-button] \"Components 2\"",
+        "button[data-cy=inspector-constants-expand-button] \"Constants 1\"",
+        "button[data-cy=inspector-currentuser-subnode-label] \"currentUser\"",
+        "button[data-cy=inspector-customerorderswithinvoicesandshippingaddressesforthecurrentbillingperiod-subnode-label] \"customerOrdersWithInvoicesAndS\"",
+        "button[data-cy=inspector-environment-subnode-label] \"environment\"",
+        "button[data-cy=inspector-globals-expand-button] \"Globals 6\"",
+        "button[data-cy=inspector-handle-subnode-label] \"handle\"",
+        "button[data-cy=inspector-id-subnode-label] \"id\"",
+        "button[data-cy=inspector-mode-subnode-label] \"mode\"",
+        "button[data-cy=inspector-name-subnode-label] \"name\"",
+        "button[data-cy=inspector-page-expand-button] \"Page 4\"",
+        "button[data-cy=inspector-qa-remaining-1103-subnode-label] \"qa_remaining_1103\"",
+        "button[data-cy=inspector-queries-expand-button] \"Queries 4\"",
+        "button[data-cy=inspector-restapi1-subnode-label] \"restapi1\"",
+        "button[data-cy=inspector-runjs1-subnode-label] \"runjs1\"",
+        "button[data-cy=inspector-setdeepnestedvariables-subnode-label] \"setDeepNestedVariables\"",
+        "button[data-cy=inspector-textinput1-subnode-label] \"textinput1\"",
+        "button[data-cy=inspector-theme-subnode-label] \"theme\"",
+        "button[data-cy=inspector-urlparams-subnode-label] \"urlparams\"",
+        "button[data-cy=inspector-variables-expand-button] \"Variables 0\"",
+        "button[data-cy=inspector-variables-subnode-label] \"variables\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=inspector-search-input] \"Search\"",
+        "border or fill only | select[data-cy=inspector-filter-select] \"All types Queries Components G\"",
+        "outline 2px | button[data-cy=query-manager-toggle-button]",
+        "outline 2px | button[data-cy=runtime-inspector-close-button]",
+        "outline 2px | button[data-cy=runtime-panel-tab-debugger] \"Debugger 1\"",
+        "outline 2px | button[data-cy=runtime-panel-tab-inspect] \"Inspector\""
+      ],
+      "walk": "left the surface after 30 stops"
+    }
+  },
+  "debugger.light.683x600": {
+    "close": {
+      "top": -127.5,
+      "right": 293,
+      "y": 430.5
+    },
+    "tabs": {
+      "height": 38,
+      "activeColor": "rgb(27, 31, 36)"
+    },
+    "search": [
+      {
+        "placeholder": "Search logs",
+        "name": "Filter logs",
+        "height": 30,
+        "border-radius": "4px",
+        "border-top-color": "rgb(27, 31, 36)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 25
+    },
+    "sizes": {
+      "12px": 20,
+      "13px": 3,
+      "11px": 2
+    },
+    "offScale": [
+      "span.runtime-debugger__row-time \"<age>\" 11px",
+      "span.runtime-debugger__badge.is-error \"Error\" 11px"
+    ],
+    "titleCase": [],
+    "lightAreas": [
+      "div.query-pane.runtime-panel-bar \"Inspector Debugger\"",
+      "div.query-pane.runtime-panel-content \"All levels (1) Errors (1) Warn\"",
+      "div[data-cy=runtime-debugger] \"All levels (1) Errors (1) Warn\"",
+      "select[data-cy=debugger-filter-select] \"All levels (1) Errors (1) Warn\"",
+      "button[data-cy=debugger-log-row] \"Expected a value of type strin\"",
+      "span.runtime-debugger__badge.is-error \"Error\""
+    ],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [
+        "div \"\"<id>\"\" 3.40:1",
+        "div \"{1}\" 2.53:1",
+        "div \"{1}\" 2.53:1",
+        "span.runtime-debugger__badge.is-error \"Error\" 4.31:1",
+        "span.runtime-debugger__row-source \"Component Property · textinput\" 4.28:1",
+        "span.runtime-debugger__row-time \"<age>\" 4.28:1"
+      ],
+      "ringless": [
+        "button[data-cy=debugger-log-action] \"Select component\"",
+        "button[data-cy=debugger-log-row] \"Expected a value of type strin\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=debugger-search-input] \"Search logs\"",
+        "border or fill only | select[data-cy=debugger-filter-select] \"All levels (1) Errors (1) Warn\"",
+        "outline 2px | button[data-cy=debugger-clear-button]",
+        "outline 2px | button[data-cy=debugger-close-button]",
+        "outline 2px | button[data-cy=debugger-copy-details]",
+        "outline 2px | button[data-cy=query-manager-toggle-button]",
+        "outline 2px | button[data-cy=runtime-panel-tab-debugger] \"Debugger\"",
+        "outline 2px | button[data-cy=runtime-panel-tab-inspect] \"Inspector\""
+      ],
+      "walk": "left the surface after 10 stops"
+    }
+  },
+  "header.light.683x600": {
+    "tabs": {
+      "height": null,
+      "activeColor": null
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 6
+    },
+    "sizes": {
+      "13px": 6
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "header.navbar.navbar-expand-md \"<masked> Prev\"",
+      "button[data-cy=button-change-layout-to-desktop]",
+      "button[data-cy=editor-preview-button] \"Preview\"",
+      "button[data-cy=version-switcher-button] \"v1 Development\"",
+      "button[data-cy=lifecycle-cta-button] \"Configure Git\"",
+      "div.nav-item \"Share\"",
+      "button[data-cy=editor-app-share-button] \"Share\""
+    ],
+    "overflowX": 0,
+    "offscreen": [],
+    "controlCentres": [
+      [
+        "button[data-cy=edit-app-name-button] \"<masked>\"",
+        24
+      ],
+      [
+        "button[data-cy=button-change-layout-to-desktop]",
+        24
+      ],
+      [
+        "button[data-cy=button-change-layout-to-mobile]",
+        24
+      ],
+      [
+        "a[data-cy=editor-preview-Link] \"Preview\"",
+        24
+      ],
+      [
+        "button[data-cy=editor-preview-button] \"Preview\"",
+        24
+      ],
+      [
+        "button[data-cy=version-switcher-button] \"v1 Development\"",
+        24
+      ],
+      [
+        "button[data-cy=lifecycle-cta-button] \"Configure Git\"",
+        24
+      ],
+      [
+        "button[data-cy=editor-app-share-button] \"Share\"",
+        24
+      ]
+    ],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "button[data-cy=version-switcher-button] \"v1 Development\""
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=button-change-layout-to-desktop]",
+        "outline 2px | button[data-cy=edit-app-name-button] \"<masked>\"",
+        "outline 2px | button[data-cy=editor-app-share-button] \"Share\"",
+        "outline 2px | button[data-cy=editor-preview-button] \"Preview\"",
+        "outline 2px | button[data-cy=lifecycle-cta-button] \"Configure Git\""
+      ],
+      "walk": "left the surface after 6 stops"
+    }
+  },
+  "pages.dark.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Pages",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "tabs": {
+      "height": 36,
+      "activeColor": "rgb(77, 114, 250)"
+    },
+    "search": [],
+    "rows": {
+      "page-menu-item": {
+        "radius": "6px",
+        "fontSize": "12px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 22
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 17,
+      "10px": 4
+    },
+    "offScale": [
+      "div[data-cy=togglr-button-top] \"Top\" 10px",
+      "div[data-cy=togglr-button-side] \"Side\" 10px",
+      "div[data-cy=togglr-button-true] \"True\" 10px",
+      "div[data-cy=togglr-button-false] \"False\" 10px"
+    ],
+    "titleCase": [],
+    "lightAreas": [],
+    "railName": "Pages",
+    "railLabel": "Pages",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button.tw-flex.tw-justify-center",
+        "input.form-check-input",
+        "input.form-check-input",
+        "input.form-check-input"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "button.ToggleGroupItem.undefined \"Side\"",
+        "button.ToggleGroupItem.undefined \"True\"",
+        "button.nav-link.active \"Properties\"",
+        "input.form-check-input",
+        "input.form-check-input",
+        "input.form-control",
+        "input[data-cy=-select-dropdown-input]",
+        "li.page-handler \"Home\"",
+        "li.page-handler \"Second\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input.form-check-input",
+        "outline 2px | button.tw-flex.tw-justify-center",
+        "outline 2px | button.tw-flex.tw-justify-center \"New page\"",
+        "outline 2px | button[data-cy=pages-close-button]"
+      ],
+      "walk": "returned to button[data-cy=pages-close-button] after 13 stops"
+    }
+  },
+  "components.dark.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Add new component",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "tabs": {
+      "height": 36,
+      "activeColor": "rgb(77, 114, 250)"
+    },
+    "search": [
+      {
+        "placeholder": "Search components",
+        "name": null,
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(60, 67, 75)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 104
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 17,
+      "8px": 1,
+      "10px": 85
+    },
+    "offScale": [
+      "div.beta-tag-container.tw-py-0.5 \"Beta\" 8px",
+      "div.component-title \"Button\" 10px",
+      "div.component-title \"Table\" 10px",
+      "div.component-title \"Form\" 10px",
+      "div.component-title \"Text Input\" 10px",
+      "div.component-title \"Date Time Picker\" 10px",
+      "div.component-title \"Text\" 10px",
+      "div.component-title \"Button\" 10px",
+      "div.component-title \"Button Group\" 10px",
+      "div.component-title \"Popover Menu\" 10px",
+      "div.component-title \"File button\" 10px",
+      "div.component-title \"Table\" 10px",
+      "div.component-title \"Chart\" 10px",
+      "div.component-title \"Key Value Pair\" 10px",
+      "div.component-title \"Form\" 10px",
+      "div.component-title \"Modal\" 10px",
+      "div.component-title \"Container\" 10px",
+      "div.component-title \"Accordion\" 10px",
+      "div.component-title \"Tabs\" 10px",
+      "div.component-title \"List View\" 10px",
+      "div.component-title \"Calendar\" 10px",
+      "div.component-title \"Kanban\" 10px",
+      "div.component-title \"Text Input\" 10px",
+      "div.component-title \"Email Input\" 10px",
+      "div.component-title \"Password Input\" 10px",
+      "div.component-title \"Text Area\" 10px",
+      "div.component-title \"Text Editor\" 10px",
+      "div.component-title \"Number Input\" 10px",
+      "div.component-title \"Phone Input\" 10px",
+      "div.component-title \"Currency Input\" 10px",
+      "div.component-title \"Range Slider\" 10px",
+      "div.component-title \"Rating\" 10px",
+      "div.component-title \"Dropdown\" 10px",
+      "div.component-title \"Multi Select\" 10px",
+      "div.component-title \"Tags Input\" 10px",
+      "div.component-title \"Checkbox\" 10px",
+      "div.component-title \"Toggle Switch\" 10px",
+      "div.component-title \"Radio Button\" 10px",
+      "div.component-title \"File input\" 10px",
+      "div.component-title \"Tree Select\" 10px",
+      "div.component-title \"Cascader\" 10px",
+      "div.component-title \"Date Picker\" 10px",
+      "div.component-title \"Time Picker\" 10px",
+      "div.component-title \"Date Time Picker\" 10px",
+      "div.component-title \"Date Range Picker\" 10px",
+      "div.component-title \"Navigation\" 10px",
+      "div.component-title \"Link\" 10px",
+      "div.component-title \"Steps\" 10px",
+      "div.component-title \"Pagination\" 10px",
+      "div.component-title \"Icon\" 10px",
+      "div.component-title \"Image\" 10px",
+      "div.component-title \"Svg Image\" 10px",
+      "div.component-title \"PDF\" 10px",
+      "div.component-title \"Map\" 10px",
+      "div.component-title \"Audio Recorder\" 10px",
+      "div.component-title \"Camera\" 10px",
+      "div.component-title \"Text\" 10px",
+      "div.component-title \"Tags\" 10px",
+      "div.component-title \"Circular Progressbar\" 10px",
+      "div.component-title \"Progressbar\" 10px",
+      "div.component-title \"Horizontal Divider\" 10px",
+      "div.component-title \"Vertical Divider\" 10px",
+      "div.component-title \"Statistics\" 10px",
+      "div.component-title \"Timeline\" 10px",
+      "div.component-title \"Timer\" 10px",
+      "div.component-title \"Spinner\" 10px",
+      "div.component-title \"JSON Explorer\" 10px",
+      "div.component-title \"Custom Component\" 10px",
+      "div.component-title \"HTML Viewer\" 10px",
+      "div.component-title \"Iframe\" 10px",
+      "div.component-title \"File Picker\" 10px",
+      "div.component-title \"Code Editor\" 10px",
+      "div.component-title \"Color Picker\" 10px",
+      "div.component-title \"Bounded Box\" 10px",
+      "div.component-title \"QR Scanner\" 10px",
+      "div.component-title \"Chat\" 10px",
+      "div.component-title \"Reorderable List\" 10px",
+      "div.component-title \"JSON Editor\" 10px",
+      "div.component-title \"Modal (Legacy)\" 10px",
+      "div.component-title \"Date Picker (Legacy)\" 10px",
+      "div.component-title \"Radio Button (Legacy)\" 10px",
+      "div.component-title \"Toggle Switch (Legacy)\" 10px",
+      "div.component-title \"Dropdown (Legacy)\" 10px",
+      "div.component-title \"Multi Select (Legacy)\" 10px",
+      "div.component-title \"Range Slider (Legacy)\" 10px",
+      "div.component-title \"Button Group (Legacy)\" 10px"
+    ],
+    "titleCase": [
+      "Button Group",
+      "Popover Menu",
+      "Button Group (Legacy)"
+    ],
+    "lightAreas": [],
+    "railName": "Components",
+    "railLabel": "Add",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "button.nav-link.active \"Components\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=widget-search-box-search-bar] \"Search components\"",
+        "outline 2px | button[data-cy=components-close-button]"
+      ],
+      "walk": "returned to button[data-cy=components-close-button] after 3 stops"
+    }
+  },
+  "queries.dark.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": -0.5,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Queries",
+      "x": 64,
+      "y": 61.5,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 9.5,
+      "right": 16,
+      "y": 57.5
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": null,
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(60, 67, 75)"
+      }
+    ],
+    "rows": {
+      "query-row": {
+        "radius": "6px",
+        "fontSize": "13px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 6
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 1,
+      "13px": 4
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "railName": "Queries",
+    "railLabel": "Queries",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button[data-cy=query-filter-button]",
+        "button[data-cy=query-handler-menu-restapi1]"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "li.query-folder-handler \"customerOrdersWithInvoicesAndS\"",
+        "li.query-folder-handler \"restapi1\"",
+        "li.query-folder-handler \"runjs1\"",
+        "li.query-folder-handler \"setDeepNestedVariables\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | button[data-cy=query-filter-button]",
+        "border or fill only | input[data-cy=query-manager-search-bar] \"Search\"",
+        "outline 2px | button[data-cy=close-query-panel]",
+        "outline 2px | button[data-cy=query-handler-menu-restapi1]",
+        "outline 2px | button[data-cy=show-ds-popover-button] \"New query\""
+      ],
+      "walk": "returned to button[data-cy=show-ds-popover-button] \"New query\" after 9 stops"
+    }
+  },
+  "libraries.dark.1440x960": {
+    "header": {
+      "height": 61,
+      "closeOffsetY": -0.5,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Libraries",
+      "x": 64,
+      "y": 68,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 16,
+      "right": 16,
+      "y": 64
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 3
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 2
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "railName": "Libraries",
+    "railLabel": "Libraries",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button[data-cy=app-libraries-close-button]"
+      ],
+      "lowContrast": [],
+      "ringless": [],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=app-libraries-close-button]",
+        "outline 2px | button[data-cy=app-libraries-javascript-add-button] \"Add new library\"",
+        "outline 2px | button[data-cy=app-libraries-javascript-script-button]"
+      ],
+      "walk": "returned to button[data-cy=app-libraries-close-button] after 3 stops"
+    }
+  },
+  "code-search.dark.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Code search",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": "",
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(60, 67, 75)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 2
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 1
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "railName": "Code search",
+    "railLabel": "Search",
+    "betaClearance": -6,
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "button.code-search-toggle",
+        "button.code-search-toggle.code-search-toggle--text \".*\"",
+        "button.code-search-toggle.code-search-toggle--text \"Aa\"",
+        "button.code-search-toggle.code-search-toggle--text \"ab\""
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=code-search-close-button]",
+        "shadow 1px 2px | input.tw-h-[32px].tw-peer \"Search\""
+      ],
+      "walk": "returned to button[data-cy=code-search-close-button] after 6 stops"
+    }
+  },
+  "dependencies.dark.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Dependencies",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": "",
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(60, 67, 75)"
+      }
+    ],
+    "rows": {
+      "dependency-row": {
+        "radius": "4px",
+        "fontSize": "12px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 6
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 5
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "railName": "Dependencies",
+    "railLabel": "Deps",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "div[data-cy=dependency-row-component-textinput1] \"textinput1 Text Input\"",
+        "div[data-cy=dependency-row-query-customerorderswithinvoicesandshippingaddressesforthecurrentbillingperiod] \"customerOrdersWithInvoicesAndS\"",
+        "div[data-cy=dependency-section-components] \"Components (1)\"",
+        "div[data-cy=dependency-section-queries] \"Queries (1)\""
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=dependency-viewer-close-button]",
+        "shadow 1px 2px | input[data-cy=dependency-viewer-search-input] \"Search\""
+      ],
+      "walk": "returned to button[data-cy=dependency-viewer-close-button] after 6 stops"
+    }
+  },
+  "settings.dark.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": -0.5,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "App settings",
+      "x": 64,
+      "y": 61.5,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 9.5,
+      "right": 16,
+      "y": 57.5
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 17
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 12,
+      "11px": 1,
+      "10px": 3
+    },
+    "offScale": [
+      "label[data-cy=helper-text] \"URL-friendly 'slug' consists o\" 11px",
+      "div[data-cy=togglr-button-auto] \"Auto\" 10px",
+      "div[data-cy=togglr-button-light] \"Light\" 10px",
+      "div[data-cy=togglr-button-dark] \"Dark\" 10px"
+    ],
+    "titleCase": [],
+    "lightAreas": [],
+    "railName": "Settings",
+    "railLabel": "Settings",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button[data-cy=toggle-maintenance-mode]"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "button.ToggleGroupItem.undefined \"Light\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=maximum-canvas-width-input-field] \"0\"",
+        "border or fill only | select[data-cy=dropdown-max-canvas-width-type] \"% px\"",
+        "outline 2px | button[data-cy=export-app-button] \"Export app\"",
+        "outline 2px | button[data-cy=global-settings-close-button]",
+        "outline 2px | button[data-cy=toggle-maintenance-mode]",
+        "shadow 1px 2px | input[data-cy=app-slug-input-field] \"Unique app slug\"",
+        "shadow 1px | input.dummyInput-DummyInput"
+      ],
+      "walk": "returned to button[data-cy=global-settings-close-button] after 8 stops"
+    }
+  },
+  "query.dark.1440x960": {
+    "header": {
+      "height": 80,
+      "closeOffsetY": null,
+      "closeInsetRight": null
+    },
+    "title": {
+      "text": "runjs1",
+      "x": 967,
+      "y": 58,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(244, 246, 250)"
+    },
+    "close": {
+      "top": 12,
+      "right": 10,
+      "y": 60
+    },
+    "tabs": {
+      "height": 32,
+      "activeColor": "rgb(250, 252, 255)"
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 8
+    },
+    "sizes": {
+      "13px": 3,
+      "12px": 5
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "audit": {
+      "unnamed": [
+        "button.tw-flex.tw-justify-center",
+        "button[data-cy=query-run-button]"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "a.query-documentation-link",
+        "div.cm-content.cm-lineWrapping \"return [1, 2, 3]\"",
+        "div.query-panel-resize-handle"
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button.app-name-inline-trigger.edit-app-name-button \"runjs1\"",
+        "outline 2px | button.tw-flex.tw-justify-center",
+        "outline 2px | button[data-cy=query-configuration-close-button]",
+        "outline 2px | button[data-cy=query-open-code-editor-tab]",
+        "outline 2px | button[data-cy=query-param-add-button] \"Add\"",
+        "outline 2px | button[data-cy=query-preview-button] \"Preview\"",
+        "outline 2px | button[data-cy=query-run-button]"
+      ],
+      "walk": "left the surface after 10 stops"
+    }
+  },
+  "component.dark.1440x960": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "button1",
+      "x": 1163,
+      "y": 57,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 10,
+      "right": 10,
+      "y": 58
+    },
+    "tabs": {
+      "height": 36,
+      "activeColor": "rgb(77, 114, 250)"
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 21
+    },
+    "sizes": {
+      "12px": 18,
+      "10px": 3
+    },
+    "offScale": [
+      "div[data-cy=togglr-button-plainText] \"Plain text\" 10px",
+      "div[data-cy=togglr-button-markdown] \"Markdown\" 10px",
+      "div[data-cy=togglr-button-html] \"HTML\" 10px"
+    ],
+    "titleCase": [
+      "Additional Actions"
+    ],
+    "lightAreas": [],
+    "audit": {
+      "unnamed": [
+        "button[data-cy=menu-icon]",
+        "input[data-cy=collapse-when-hidden-toggle-button]",
+        "input[data-cy=disable-toggle-button]",
+        "input[data-cy=loading-state-toggle-button]",
+        "input[data-cy=show-on-desktop-toggle-button]",
+        "input[data-cy=show-on-mobile-toggle-button]",
+        "input[data-cy=visibility-toggle-button]"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "a[data-cy=widget-documentation-link] \"Read documentation for Button\"",
+        "button.ToggleGroupItem.undefined \"Plain text\"",
+        "button.nav-link.active \"Properties\"",
+        "div.cm-content.cm-lineWrapping \"Button\"",
+        "div.cm-content.cm-lineWrapping \"Enter tooltip text\"",
+        "input[data-cy=collapse-when-hidden-toggle-button]",
+        "input[data-cy=disable-toggle-button]",
+        "input[data-cy=loading-state-toggle-button]",
+        "input[data-cy=show-on-desktop-toggle-button]",
+        "input[data-cy=show-on-mobile-toggle-button]",
+        "input[data-cy=visibility-toggle-button]"
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=add-event-handler] \"New event handler\"",
+        "outline 2px | button[data-cy=inspector-close-button]",
+        "outline 2px | button[data-cy=menu-icon]",
+        "shadow 1px | input[data-cy=edit-widget-name]"
+      ],
+      "walk": "left the surface after 15 stops"
+    }
+  },
+  "inspect.dark.1440x960": {
+    "close": {
+      "top": -235.5,
+      "right": 316,
+      "y": 682.5
+    },
+    "tabs": {
+      "height": 38,
+      "activeColor": "rgb(250, 252, 255)"
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": "Search inspector",
+        "height": 30,
+        "border-radius": "4px",
+        "border-top-color": "rgb(250, 252, 255)"
+      }
+    ],
+    "rows": {
+      "runtime-inspector__entry": {
+        "radius": "4px",
+        "fontSize": "13px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 41
+    },
+    "sizes": {
+      "12px": 16,
+      "10px": 1,
+      "11px": 6,
+      "13px": 18
+    },
+    "offScale": [
+      "span.runtime-panel-badge \"1\" 10px",
+      "span.runtime-inspector__count \"4\" 11px",
+      "span.runtime-inspector__count \"2\" 11px",
+      "span.runtime-inspector__count \"6\" 11px",
+      "span.runtime-inspector__count \"0\" 11px",
+      "span.runtime-inspector__count \"4\" 11px",
+      "span.runtime-inspector__count \"1\" 11px"
+    ],
+    "titleCase": [],
+    "lightAreas": [],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [
+        "button.runtime-inspector__filter.is-active \"All\" 3.03:1"
+      ],
+      "ringless": [
+        "button.runtime-inspector__filter \"Components\"",
+        "button.runtime-inspector__filter \"Constants\"",
+        "button.runtime-inspector__filter \"Globals\"",
+        "button.runtime-inspector__filter \"Page\"",
+        "button.runtime-inspector__filter \"Queries\"",
+        "button.runtime-inspector__filter \"Variables\"",
+        "button.runtime-inspector__filter.is-active \"All\"",
+        "button.runtime-inspector__twisty",
+        "button[data-cy=inspector-appversion-subnode-label] \"appVersion\"",
+        "button[data-cy=inspector-button1-subnode-label] \"button1\"",
+        "button[data-cy=inspector-components-expand-button] \"Components 2\"",
+        "button[data-cy=inspector-constants-expand-button] \"Constants 1\"",
+        "button[data-cy=inspector-currentuser-subnode-label] \"currentUser\"",
+        "button[data-cy=inspector-customerorderswithinvoicesandshippingaddressesforthecurrentbillingperiod-subnode-label] \"customerOrdersWithInvoicesAndS\"",
+        "button[data-cy=inspector-environment-subnode-label] \"environment\"",
+        "button[data-cy=inspector-globals-expand-button] \"Globals 6\"",
+        "button[data-cy=inspector-handle-subnode-label] \"handle\"",
+        "button[data-cy=inspector-id-subnode-label] \"id\"",
+        "button[data-cy=inspector-mode-subnode-label] \"mode\"",
+        "button[data-cy=inspector-name-subnode-label] \"name\"",
+        "button[data-cy=inspector-page-expand-button] \"Page 4\"",
+        "button[data-cy=inspector-qa-remaining-1103-subnode-label] \"qa_remaining_1103\"",
+        "button[data-cy=inspector-queries-expand-button] \"Queries 4\"",
+        "button[data-cy=inspector-restapi1-subnode-label] \"restapi1\"",
+        "button[data-cy=inspector-runjs1-subnode-label] \"runjs1\"",
+        "button[data-cy=inspector-setdeepnestedvariables-subnode-label] \"setDeepNestedVariables\"",
+        "button[data-cy=inspector-textinput1-subnode-label] \"textinput1\"",
+        "button[data-cy=inspector-theme-subnode-label] \"theme\"",
+        "button[data-cy=inspector-urlparams-subnode-label] \"urlparams\"",
+        "button[data-cy=inspector-variables-expand-button] \"Variables 0\"",
+        "button[data-cy=inspector-variables-subnode-label] \"variables\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=inspector-search-input] \"Search\"",
+        "outline 2px | button[data-cy=query-manager-toggle-button]",
+        "outline 2px | button[data-cy=runtime-inspector-close-button]",
+        "outline 2px | button[data-cy=runtime-panel-tab-debugger] \"Debugger 1\"",
+        "outline 2px | button[data-cy=runtime-panel-tab-inspect] \"Inspector\""
+      ],
+      "walk": "left the surface after 36 stops"
+    }
+  },
+  "debugger.dark.1440x960": {
+    "close": {
+      "top": -235.5,
+      "right": 304,
+      "y": 682.5
+    },
+    "tabs": {
+      "height": 38,
+      "activeColor": "rgb(250, 252, 255)"
+    },
+    "search": [
+      {
+        "placeholder": "Search logs",
+        "name": "Filter logs",
+        "height": 30,
+        "border-radius": "4px",
+        "border-top-color": "rgb(250, 252, 255)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 37
+    },
+    "sizes": {
+      "12px": 27,
+      "11px": 7,
+      "13px": 3
+    },
+    "offScale": [
+      "span.runtime-debugger__count \"1\" 11px",
+      "span.runtime-debugger__count \"1\" 11px",
+      "span.runtime-debugger__count \"0\" 11px",
+      "span.runtime-debugger__count \"0\" 11px",
+      "span.runtime-debugger__count \"0\" 11px",
+      "span.runtime-debugger__row-time \"<age>\" 11px",
+      "span.runtime-debugger__badge.is-error \"Error\" 11px"
+    ],
+    "titleCase": [],
+    "lightAreas": [],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [
+        "button[data-cy=debugger-filter-all] \"All 1\" 3.03:1",
+        "button[data-cy=debugger-log-action] \"Select component\" 3.07:1",
+        "button[data-cy=debugger-scope-page] \"This page\" 3.03:1",
+        "span.runtime-debugger__badge.is-error \"Error\" 3.69:1",
+        "span.runtime-debugger__count \"1\" 3.03:1"
+      ],
+      "ringless": [
+        "button[data-cy=debugger-filter-all] \"All 1\"",
+        "button[data-cy=debugger-filter-error] \"Errors 1\"",
+        "button[data-cy=debugger-filter-info] \"Info 0\"",
+        "button[data-cy=debugger-filter-success] \"Success 0\"",
+        "button[data-cy=debugger-filter-warning] \"Warnings 0\"",
+        "button[data-cy=debugger-log-action] \"Select component\"",
+        "button[data-cy=debugger-log-row] \"Expected a value of type strin\"",
+        "button[data-cy=debugger-scope-all] \"All pages\"",
+        "button[data-cy=debugger-scope-page] \"This page\"",
+        "div.runtime-inspector__values.runtime-debugger__detail-body \"Expected a value of type strin\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=debugger-search-input] \"Search logs\"",
+        "outline 2px | button[data-cy=debugger-clear-button]",
+        "outline 2px | button[data-cy=debugger-close-button]",
+        "outline 2px | button[data-cy=debugger-copy-details]",
+        "outline 2px | button[data-cy=query-manager-toggle-button]",
+        "outline 2px | button[data-cy=runtime-panel-tab-debugger] \"Debugger\"",
+        "outline 2px | button[data-cy=runtime-panel-tab-inspect] \"Inspector\""
+      ],
+      "walk": "left the surface after 17 stops"
+    }
+  },
+  "header.dark.1440x960": {
+    "tabs": {
+      "height": null,
+      "activeColor": null
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 6
+    },
+    "sizes": {
+      "13px": 6
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "overflowX": 0,
+    "offscreen": [],
+    "controlCentres": [
+      [
+        "button[data-cy=edit-app-name-button] \"<masked>\"",
+        23.5
+      ],
+      [
+        "button[data-cy=button-change-layout-to-desktop]",
+        23.5
+      ],
+      [
+        "button[data-cy=button-change-layout-to-mobile]",
+        23.5
+      ],
+      [
+        "a[data-cy=editor-preview-Link] \"Preview\"",
+        23.5
+      ],
+      [
+        "button[data-cy=editor-preview-button] \"Preview\"",
+        23.5
+      ],
+      [
+        "button[data-cy=version-switcher-button] \"v1 Development\"",
+        23.5
+      ],
+      [
+        "button[data-cy=lifecycle-cta-button] \"Configure Git\"",
+        23.5
+      ],
+      [
+        "button[data-cy=editor-app-share-button] \"Share\"",
+        23.5
+      ]
+    ],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [
+        "span \"Configure Git\" 3.03:1",
+        "span \"Share\" 3.03:1"
+      ],
+      "ringless": [
+        "button[data-cy=version-switcher-button] \"v1 Development\""
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=button-change-layout-to-desktop]",
+        "outline 2px | button[data-cy=edit-app-name-button] \"<masked>\"",
+        "outline 2px | button[data-cy=editor-app-share-button] \"Share\"",
+        "outline 2px | button[data-cy=editor-preview-button] \"Preview\"",
+        "outline 2px | button[data-cy=lifecycle-cta-button] \"Configure Git\""
+      ],
+      "walk": "left the surface after 6 stops"
+    }
+  },
+  "pages.dark.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Pages",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "tabs": {
+      "height": 36,
+      "activeColor": "rgb(77, 114, 250)"
+    },
+    "search": [],
+    "rows": {
+      "page-menu-item": {
+        "radius": "6px",
+        "fontSize": "12px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 22
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 17,
+      "10px": 4
+    },
+    "offScale": [
+      "div[data-cy=togglr-button-top] \"Top\" 10px",
+      "div[data-cy=togglr-button-side] \"Side\" 10px",
+      "div[data-cy=togglr-button-true] \"True\" 10px",
+      "div[data-cy=togglr-button-false] \"False\" 10px"
+    ],
+    "titleCase": [],
+    "lightAreas": [],
+    "railName": "Pages",
+    "railLabel": "Pages",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button.tw-flex.tw-justify-center",
+        "input.form-check-input",
+        "input.form-check-input",
+        "input.form-check-input"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "button.ToggleGroupItem.undefined \"Side\"",
+        "button.ToggleGroupItem.undefined \"True\"",
+        "button.nav-link.active \"Properties\"",
+        "input.form-check-input",
+        "input.form-check-input",
+        "input.form-control",
+        "input[data-cy=-select-dropdown-input]",
+        "li.page-handler \"Home\"",
+        "li.page-handler \"Second\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input.form-check-input",
+        "outline 2px | button.tw-flex.tw-justify-center",
+        "outline 2px | button.tw-flex.tw-justify-center \"New page\"",
+        "outline 2px | button[data-cy=pages-close-button]"
+      ],
+      "walk": "returned to button[data-cy=pages-close-button] after 13 stops"
+    }
+  },
+  "components.dark.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Add new component",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 195,
+      "right": 16,
+      "y": 58
+    },
+    "tabs": {
+      "height": 36,
+      "activeColor": "rgb(77, 114, 250)"
+    },
+    "search": [
+      {
+        "placeholder": "Search components",
+        "name": null,
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(60, 67, 75)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 104
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 17,
+      "8px": 1,
+      "10px": 85
+    },
+    "offScale": [
+      "div.beta-tag-container.tw-py-0.5 \"Beta\" 8px",
+      "div.component-title \"Button\" 10px",
+      "div.component-title \"Table\" 10px",
+      "div.component-title \"Form\" 10px",
+      "div.component-title \"Text Input\" 10px",
+      "div.component-title \"Date Time Picker\" 10px",
+      "div.component-title \"Text\" 10px",
+      "div.component-title \"Button\" 10px",
+      "div.component-title \"Button Group\" 10px",
+      "div.component-title \"Popover Menu\" 10px",
+      "div.component-title \"File button\" 10px",
+      "div.component-title \"Table\" 10px",
+      "div.component-title \"Chart\" 10px",
+      "div.component-title \"Key Value Pair\" 10px",
+      "div.component-title \"Form\" 10px",
+      "div.component-title \"Modal\" 10px",
+      "div.component-title \"Container\" 10px",
+      "div.component-title \"Accordion\" 10px",
+      "div.component-title \"Tabs\" 10px",
+      "div.component-title \"List View\" 10px",
+      "div.component-title \"Calendar\" 10px",
+      "div.component-title \"Kanban\" 10px",
+      "div.component-title \"Text Input\" 10px",
+      "div.component-title \"Email Input\" 10px",
+      "div.component-title \"Password Input\" 10px",
+      "div.component-title \"Text Area\" 10px",
+      "div.component-title \"Text Editor\" 10px",
+      "div.component-title \"Number Input\" 10px",
+      "div.component-title \"Phone Input\" 10px",
+      "div.component-title \"Currency Input\" 10px",
+      "div.component-title \"Range Slider\" 10px",
+      "div.component-title \"Rating\" 10px",
+      "div.component-title \"Dropdown\" 10px",
+      "div.component-title \"Multi Select\" 10px",
+      "div.component-title \"Tags Input\" 10px",
+      "div.component-title \"Checkbox\" 10px",
+      "div.component-title \"Toggle Switch\" 10px",
+      "div.component-title \"Radio Button\" 10px",
+      "div.component-title \"File input\" 10px",
+      "div.component-title \"Tree Select\" 10px",
+      "div.component-title \"Cascader\" 10px",
+      "div.component-title \"Date Picker\" 10px",
+      "div.component-title \"Time Picker\" 10px",
+      "div.component-title \"Date Time Picker\" 10px",
+      "div.component-title \"Date Range Picker\" 10px",
+      "div.component-title \"Navigation\" 10px",
+      "div.component-title \"Link\" 10px",
+      "div.component-title \"Steps\" 10px",
+      "div.component-title \"Pagination\" 10px",
+      "div.component-title \"Icon\" 10px",
+      "div.component-title \"Image\" 10px",
+      "div.component-title \"Svg Image\" 10px",
+      "div.component-title \"PDF\" 10px",
+      "div.component-title \"Map\" 10px",
+      "div.component-title \"Audio Recorder\" 10px",
+      "div.component-title \"Camera\" 10px",
+      "div.component-title \"Text\" 10px",
+      "div.component-title \"Tags\" 10px",
+      "div.component-title \"Circular Progressbar\" 10px",
+      "div.component-title \"Progressbar\" 10px",
+      "div.component-title \"Horizontal Divider\" 10px",
+      "div.component-title \"Vertical Divider\" 10px",
+      "div.component-title \"Statistics\" 10px",
+      "div.component-title \"Timeline\" 10px",
+      "div.component-title \"Timer\" 10px",
+      "div.component-title \"Spinner\" 10px",
+      "div.component-title \"JSON Explorer\" 10px",
+      "div.component-title \"Custom Component\" 10px",
+      "div.component-title \"HTML Viewer\" 10px",
+      "div.component-title \"Iframe\" 10px",
+      "div.component-title \"File Picker\" 10px",
+      "div.component-title \"Code Editor\" 10px",
+      "div.component-title \"Color Picker\" 10px",
+      "div.component-title \"Bounded Box\" 10px",
+      "div.component-title \"QR Scanner\" 10px",
+      "div.component-title \"Chat\" 10px",
+      "div.component-title \"Reorderable List\" 10px",
+      "div.component-title \"JSON Editor\" 10px",
+      "div.component-title \"Modal (Legacy)\" 10px",
+      "div.component-title \"Date Picker (Legacy)\" 10px",
+      "div.component-title \"Radio Button (Legacy)\" 10px",
+      "div.component-title \"Toggle Switch (Legacy)\" 10px",
+      "div.component-title \"Dropdown (Legacy)\" 10px",
+      "div.component-title \"Multi Select (Legacy)\" 10px",
+      "div.component-title \"Range Slider (Legacy)\" 10px",
+      "div.component-title \"Button Group (Legacy)\" 10px"
+    ],
+    "titleCase": [
+      "Button Group",
+      "Popover Menu",
+      "Button Group (Legacy)"
+    ],
+    "lightAreas": [],
+    "railName": "Components",
+    "railLabel": "Add",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "button.nav-link.active \"Components\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=widget-search-box-search-bar] \"Search components\"",
+        "outline 2px | button[data-cy=components-close-button]"
+      ],
+      "walk": "returned to button[data-cy=components-close-button] after 3 stops"
+    }
+  },
+  "queries.dark.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": -0.5,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Queries",
+      "x": 64,
+      "y": 61.5,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 9.5,
+      "right": 16,
+      "y": 57.5
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": null,
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(60, 67, 75)"
+      }
+    ],
+    "rows": {
+      "query-row": {
+        "radius": "6px",
+        "fontSize": "13px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 6
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 1,
+      "13px": 4
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "railName": "Queries",
+    "railLabel": "Queries",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button[data-cy=query-filter-button]",
+        "button[data-cy=query-handler-menu-restapi1]"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "li.query-folder-handler \"customerOrdersWithInvoicesAndS\"",
+        "li.query-folder-handler \"restapi1\"",
+        "li.query-folder-handler \"runjs1\"",
+        "li.query-folder-handler \"setDeepNestedVariables\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | button[data-cy=query-filter-button]",
+        "border or fill only | input[data-cy=query-manager-search-bar] \"Search\"",
+        "outline 2px | button[data-cy=close-query-panel]",
+        "outline 2px | button[data-cy=query-handler-menu-restapi1]",
+        "outline 2px | button[data-cy=show-ds-popover-button] \"New query\""
+      ],
+      "walk": "returned to button[data-cy=show-ds-popover-button] \"New query\" after 9 stops"
+    }
+  },
+  "libraries.dark.683x600": {
+    "header": {
+      "height": 61,
+      "closeOffsetY": -0.5,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Libraries",
+      "x": 64,
+      "y": 68,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 16,
+      "right": 16,
+      "y": 64
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 3
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 2
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "railName": "Libraries",
+    "railLabel": "Libraries",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button[data-cy=app-libraries-close-button]"
+      ],
+      "lowContrast": [],
+      "ringless": [],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=app-libraries-close-button]",
+        "outline 2px | button[data-cy=app-libraries-javascript-add-button] \"Add new library\"",
+        "outline 2px | button[data-cy=app-libraries-javascript-script-button]"
+      ],
+      "walk": "returned to button[data-cy=app-libraries-close-button] after 3 stops"
+    }
+  },
+  "code-search.dark.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Code search",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": "",
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(60, 67, 75)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 2
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 1
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "railName": "Code search",
+    "railLabel": "Search",
+    "betaClearance": -6,
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "button.code-search-toggle",
+        "button.code-search-toggle.code-search-toggle--text \".*\"",
+        "button.code-search-toggle.code-search-toggle--text \"Aa\"",
+        "button.code-search-toggle.code-search-toggle--text \"ab\""
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=code-search-close-button]",
+        "shadow 1px 2px | input.tw-h-[32px].tw-peer \"Search\""
+      ],
+      "walk": "returned to button[data-cy=code-search-close-button] after 6 stops"
+    }
+  },
+  "dependencies.dark.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "Dependencies",
+      "x": 64,
+      "y": 62,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 10,
+      "right": 16,
+      "y": 58
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": "",
+        "height": 32,
+        "border-radius": "8px",
+        "border-top-color": "rgb(60, 67, 75)"
+      }
+    ],
+    "rows": {
+      "dependency-row": {
+        "radius": "4px",
+        "fontSize": "12px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 6
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 5
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "railName": "Dependencies",
+    "railLabel": "Deps",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "div[data-cy=dependency-row-component-textinput1] \"textinput1 Text Input\"",
+        "div[data-cy=dependency-row-query-customerorderswithinvoicesandshippingaddressesforthecurrentbillingperiod] \"customerOrdersWithInvoicesAndS\"",
+        "div[data-cy=dependency-section-components] \"Components (1)\"",
+        "div[data-cy=dependency-section-queries] \"Queries (1)\""
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=dependency-viewer-close-button]",
+        "shadow 1px 2px | input[data-cy=dependency-viewer-search-input] \"Search\""
+      ],
+      "walk": "returned to button[data-cy=dependency-viewer-close-button] after 6 stops"
+    }
+  },
+  "settings.dark.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": -0.5,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "App settings",
+      "x": 64,
+      "y": 61.5,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 9.5,
+      "right": 22,
+      "y": 57.5
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 17
+    },
+    "sizes": {
+      "14px": 1,
+      "12px": 12,
+      "11px": 1,
+      "10px": 3
+    },
+    "offScale": [
+      "label[data-cy=helper-text] \"URL-friendly 'slug' consists o\" 11px",
+      "div[data-cy=togglr-button-auto] \"Auto\" 10px",
+      "div[data-cy=togglr-button-light] \"Light\" 10px",
+      "div[data-cy=togglr-button-dark] \"Dark\" 10px"
+    ],
+    "titleCase": [],
+    "lightAreas": [],
+    "railName": "Settings",
+    "railLabel": "Settings",
+    "betaClearance": null,
+    "audit": {
+      "unnamed": [
+        "button[data-cy=toggle-maintenance-mode]"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "button.ToggleGroupItem.undefined \"Light\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=maximum-canvas-width-input-field] \"0\"",
+        "border or fill only | select[data-cy=dropdown-max-canvas-width-type] \"% px\"",
+        "outline 2px | button[data-cy=export-app-button] \"Export app\"",
+        "outline 2px | button[data-cy=global-settings-close-button]",
+        "outline 2px | button[data-cy=toggle-maintenance-mode]",
+        "shadow 1px 2px | input[data-cy=app-slug-input-field] \"Unique app slug\"",
+        "shadow 1px | input.dummyInput-DummyInput"
+      ],
+      "walk": "returned to button[data-cy=global-settings-close-button] after 8 stops"
+    }
+  },
+  "query.dark.683x600": {
+    "header": {
+      "height": 80,
+      "closeOffsetY": null,
+      "closeInsetRight": null
+    },
+    "title": {
+      "text": "runjs1",
+      "x": 210,
+      "y": 58,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(244, 246, 250)"
+    },
+    "close": {
+      "top": 12,
+      "right": 10,
+      "y": 60
+    },
+    "tabs": {
+      "height": 32,
+      "activeColor": "rgb(250, 252, 255)"
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 8
+    },
+    "sizes": {
+      "13px": 3,
+      "12px": 5
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "audit": {
+      "unnamed": [
+        "button.tw-flex.tw-justify-center",
+        "button[data-cy=query-run-button]"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "a.query-documentation-link",
+        "div.cm-content.cm-lineWrapping \"return [1, 2, 3]\"",
+        "div.query-panel-resize-handle"
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button.app-name-inline-trigger.edit-app-name-button \"runjs1\"",
+        "outline 2px | button.tw-flex.tw-justify-center",
+        "outline 2px | button[data-cy=query-configuration-close-button]",
+        "outline 2px | button[data-cy=query-open-code-editor-tab]",
+        "outline 2px | button[data-cy=query-param-add-button] \"Add\"",
+        "outline 2px | button[data-cy=query-preview-button] \"Preview\"",
+        "outline 2px | button[data-cy=query-run-button]"
+      ],
+      "walk": "left the surface after 10 stops"
+    }
+  },
+  "component.dark.683x600": {
+    "header": {
+      "height": 48,
+      "closeOffsetY": 0,
+      "closeInsetRight": 16
+    },
+    "title": {
+      "text": "button1",
+      "x": 406,
+      "y": 57,
+      "font-size": "14px",
+      "font-weight": "500",
+      "color": "rgb(250, 252, 255)"
+    },
+    "close": {
+      "top": 10,
+      "right": 10,
+      "y": 58
+    },
+    "tabs": {
+      "height": 36,
+      "activeColor": "rgb(77, 114, 250)"
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 21
+    },
+    "sizes": {
+      "12px": 18,
+      "10px": 3
+    },
+    "offScale": [
+      "div[data-cy=togglr-button-plainText] \"Plain text\" 10px",
+      "div[data-cy=togglr-button-markdown] \"Markdown\" 10px",
+      "div[data-cy=togglr-button-html] \"HTML\" 10px"
+    ],
+    "titleCase": [
+      "Additional Actions"
+    ],
+    "lightAreas": [],
+    "audit": {
+      "unnamed": [
+        "button[data-cy=menu-icon]",
+        "input[data-cy=collapse-when-hidden-toggle-button]",
+        "input[data-cy=disable-toggle-button]",
+        "input[data-cy=loading-state-toggle-button]",
+        "input[data-cy=show-on-desktop-toggle-button]",
+        "input[data-cy=show-on-mobile-toggle-button]",
+        "input[data-cy=visibility-toggle-button]"
+      ],
+      "lowContrast": [],
+      "ringless": [
+        "a[data-cy=widget-documentation-link] \"Read documentation for Button\"",
+        "button.ToggleGroupItem.undefined \"Plain text\"",
+        "button.nav-link.active \"Properties\"",
+        "div.cm-content.cm-lineWrapping \"Button\"",
+        "div.cm-content.cm-lineWrapping \"Enter tooltip text\"",
+        "input[data-cy=collapse-when-hidden-toggle-button]",
+        "input[data-cy=disable-toggle-button]",
+        "input[data-cy=loading-state-toggle-button]",
+        "input[data-cy=show-on-desktop-toggle-button]",
+        "input[data-cy=show-on-mobile-toggle-button]",
+        "input[data-cy=visibility-toggle-button]"
+      ],
+      "hidden": [
+        "input[data-cy=collapse-when-hidden-toggle-button] (covered by span.widget-documentation-link \"Read documentation for Button\")",
+        "input[data-cy=show-on-mobile-toggle-button] (covered by svg)",
+        "input[data-cy=visibility-toggle-button] (covered by span.widget-documentation-link \"Read documentation for Button\")"
+      ],
+      "rings": [
+        "outline 2px | button[data-cy=add-event-handler] \"New event handler\"",
+        "outline 2px | button[data-cy=inspector-close-button]",
+        "outline 2px | button[data-cy=menu-icon]",
+        "shadow 1px | input[data-cy=edit-widget-name]"
+      ],
+      "walk": "left the surface after 15 stops"
+    }
+  },
+  "inspect.dark.683x600": {
+    "close": {
+      "top": -127.5,
+      "right": 316,
+      "y": 430.5
+    },
+    "tabs": {
+      "height": 38,
+      "activeColor": "rgb(250, 252, 255)"
+    },
+    "search": [
+      {
+        "placeholder": "Search",
+        "name": "Search inspector",
+        "height": 30,
+        "border-radius": "4px",
+        "border-top-color": "rgb(250, 252, 255)"
+      }
+    ],
+    "rows": {
+      "runtime-inspector__entry": {
+        "radius": "4px",
+        "fontSize": "13px"
+      }
+    },
+    "families": {
+      "IBM Plex Sans": 34
+    },
+    "sizes": {
+      "12px": 9,
+      "10px": 1,
+      "11px": 6,
+      "13px": 18
+    },
+    "offScale": [
+      "span.runtime-panel-badge \"1\" 10px",
+      "span.runtime-inspector__count \"4\" 11px",
+      "span.runtime-inspector__count \"2\" 11px",
+      "span.runtime-inspector__count \"6\" 11px",
+      "span.runtime-inspector__count \"0\" 11px",
+      "span.runtime-inspector__count \"4\" 11px",
+      "span.runtime-inspector__count \"1\" 11px"
+    ],
+    "titleCase": [],
+    "lightAreas": [],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [
+        "button.runtime-inspector__twisty",
+        "button[data-cy=inspector-appversion-subnode-label] \"appVersion\"",
+        "button[data-cy=inspector-button1-subnode-label] \"button1\"",
+        "button[data-cy=inspector-components-expand-button] \"Components 2\"",
+        "button[data-cy=inspector-constants-expand-button] \"Constants 1\"",
+        "button[data-cy=inspector-currentuser-subnode-label] \"currentUser\"",
+        "button[data-cy=inspector-customerorderswithinvoicesandshippingaddressesforthecurrentbillingperiod-subnode-label] \"customerOrdersWithInvoicesAndS\"",
+        "button[data-cy=inspector-environment-subnode-label] \"environment\"",
+        "button[data-cy=inspector-globals-expand-button] \"Globals 6\"",
+        "button[data-cy=inspector-handle-subnode-label] \"handle\"",
+        "button[data-cy=inspector-id-subnode-label] \"id\"",
+        "button[data-cy=inspector-mode-subnode-label] \"mode\"",
+        "button[data-cy=inspector-name-subnode-label] \"name\"",
+        "button[data-cy=inspector-page-expand-button] \"Page 4\"",
+        "button[data-cy=inspector-qa-remaining-1103-subnode-label] \"qa_remaining_1103\"",
+        "button[data-cy=inspector-queries-expand-button] \"Queries 4\"",
+        "button[data-cy=inspector-restapi1-subnode-label] \"restapi1\"",
+        "button[data-cy=inspector-runjs1-subnode-label] \"runjs1\"",
+        "button[data-cy=inspector-setdeepnestedvariables-subnode-label] \"setDeepNestedVariables\"",
+        "button[data-cy=inspector-textinput1-subnode-label] \"textinput1\"",
+        "button[data-cy=inspector-theme-subnode-label] \"theme\"",
+        "button[data-cy=inspector-urlparams-subnode-label] \"urlparams\"",
+        "button[data-cy=inspector-variables-expand-button] \"Variables 0\"",
+        "button[data-cy=inspector-variables-subnode-label] \"variables\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=inspector-search-input] \"Search\"",
+        "border or fill only | select[data-cy=inspector-filter-select] \"All types Queries Components G\"",
+        "outline 2px | button[data-cy=query-manager-toggle-button]",
+        "outline 2px | button[data-cy=runtime-inspector-close-button]",
+        "outline 2px | button[data-cy=runtime-panel-tab-debugger] \"Debugger 1\"",
+        "outline 2px | button[data-cy=runtime-panel-tab-inspect] \"Inspector\""
+      ],
+      "walk": "left the surface after 30 stops"
+    }
+  },
+  "debugger.dark.683x600": {
+    "close": {
+      "top": -127.5,
+      "right": 293,
+      "y": 430.5
+    },
+    "tabs": {
+      "height": 38,
+      "activeColor": "rgb(250, 252, 255)"
+    },
+    "search": [
+      {
+        "placeholder": "Search logs",
+        "name": "Filter logs",
+        "height": 30,
+        "border-radius": "4px",
+        "border-top-color": "rgb(250, 252, 255)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 25
+    },
+    "sizes": {
+      "12px": 20,
+      "13px": 3,
+      "11px": 2
+    },
+    "offScale": [
+      "span.runtime-debugger__row-time \"<age>\" 11px",
+      "span.runtime-debugger__badge.is-error \"Error\" 11px"
+    ],
+    "titleCase": [],
+    "lightAreas": [],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [
+        "button[data-cy=debugger-log-action] \"Select component\" 3.07:1",
+        "span.runtime-debugger__badge.is-error \"Error\" 3.69:1"
+      ],
+      "ringless": [
+        "button[data-cy=debugger-log-action] \"Select component\"",
+        "button[data-cy=debugger-log-row] \"Expected a value of type strin\""
+      ],
+      "hidden": [],
+      "rings": [
+        "border or fill only | input[data-cy=debugger-search-input] \"Search logs\"",
+        "border or fill only | select[data-cy=debugger-filter-select] \"All levels (1) Errors (1) Warn\"",
+        "outline 2px | button[data-cy=debugger-clear-button]",
+        "outline 2px | button[data-cy=debugger-close-button]",
+        "outline 2px | button[data-cy=debugger-copy-details]",
+        "outline 2px | button[data-cy=query-manager-toggle-button]",
+        "outline 2px | button[data-cy=runtime-panel-tab-debugger] \"Debugger\"",
+        "outline 2px | button[data-cy=runtime-panel-tab-inspect] \"Inspector\""
+      ],
+      "walk": "left the surface after 10 stops"
+    }
+  },
+  "header.dark.683x600": {
+    "tabs": {
+      "height": null,
+      "activeColor": null
+    },
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 6
+    },
+    "sizes": {
+      "13px": 6
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "overflowX": 0,
+    "offscreen": [],
+    "controlCentres": [
+      [
+        "button[data-cy=edit-app-name-button] \"<masked>\"",
+        24
+      ],
+      [
+        "button[data-cy=button-change-layout-to-desktop]",
+        24
+      ],
+      [
+        "button[data-cy=button-change-layout-to-mobile]",
+        24
+      ],
+      [
+        "a[data-cy=editor-preview-Link] \"Preview\"",
+        24
+      ],
+      [
+        "button[data-cy=editor-preview-button] \"Preview\"",
+        24
+      ],
+      [
+        "button[data-cy=version-switcher-button] \"v1 Development\"",
+        24
+      ],
+      [
+        "button[data-cy=lifecycle-cta-button] \"Configure Git\"",
+        24
+      ],
+      [
+        "button[data-cy=editor-app-share-button] \"Share\"",
+        24
+      ]
+    ],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [
+        "span \"Configure Git\" 3.03:1",
+        "span \"Share\" 3.03:1"
+      ],
+      "ringless": [
+        "button[data-cy=version-switcher-button] \"v1 Development\""
+      ],
+      "hidden": [],
+      "rings": [
+        "outline 2px | button[data-cy=button-change-layout-to-desktop]",
+        "outline 2px | button[data-cy=edit-app-name-button] \"<masked>\"",
+        "outline 2px | button[data-cy=editor-app-share-button] \"Share\"",
+        "outline 2px | button[data-cy=editor-preview-button] \"Preview\"",
+        "outline 2px | button[data-cy=lifecycle-cta-button] \"Configure Git\""
+      ],
+      "walk": "left the surface after 6 stops"
+    }
+  },
+  "overlay-version.light.1440x960": {
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 4
+    },
+    "sizes": {
+      "13px": 2,
+      "12px": 1,
+      "11px": 1
+    },
+    "offScale": [
+      "button[data-cy=v1-save-version-button] \"Save version\" 11px"
+    ],
+    "titleCase": [],
+    "lightAreas": [
+      "div.version-manager-popover.popover \"Development Staging Production\"",
+      "div.popover-body \"Development Staging Production\"",
+      "div.environment-toggle__bar.d-flex \"Development Staging Production\"",
+      "span[data-cy=v1-draft-tag] \"Draft\"",
+      "button[data-cy=v1-save-version-button] \"Save version\""
+    ],
+    "surfaceStyle": {
+      "background-color": "rgb(251, 252, 253)",
+      "border-top-color": "rgb(228, 231, 235)",
+      "border-top-width": "1px",
+      "border-radius": "8px",
+      "box-shadow": "rgba(136, 144, 153, 0.08) 0px 0px 1px 0px, rgba(136, 144, 153, 0.12) 0px 1px 1px 0px"
+    },
+    "audit": {
+      "unnamed": [
+        "button[data-cy=v1-version-more-menu-button]"
+      ],
+      "lowContrast": [
+        "span[data-cy=v1-draft-tag] \"Draft\" 4.28:1"
+      ],
+      "ringless": [],
+      "hidden": [],
+      "rings": [],
+      "walk": "not walked"
+    }
+  },
+  "overlay-query-menu.light.1440x960": {
+    "search": [],
+    "rows": {},
+    "families": {
+      "Inter": 6
+    },
+    "sizes": {
+      "12px": 6
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "div.popover.bs-popover-bottom \"Rename Duplicate View dependen\"",
+      "div.list-item-popover-body \"Rename Duplicate View dependen\""
+    ],
+    "surfaceStyle": {
+      "background-color": "rgb(251, 252, 253)",
+      "border-top-color": "rgb(241, 243, 245)",
+      "border-top-width": "1px",
+      "border-radius": "6px",
+      "box-shadow": "rgba(16, 24, 40, 0.06) 0px 2px 4px -2px, rgba(16, 24, 40, 0.1) 0px 4px 8px -2px"
+    },
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [
+        "div.list-item-option-menu-label.color-tomato9 \"Delete\" 3.77:1"
+      ],
+      "ringless": [],
+      "hidden": [],
+      "rings": [],
+      "walk": "not walked"
+    }
+  },
+  "overlay-query-filter.light.1440x960": {
+    "search": [],
+    "rows": {},
+    "families": {
+      "Inter": 10
+    },
+    "sizes": {
+      "12px": 10
+    },
+    "offScale": [],
+    "titleCase": [
+      "Data Source"
+    ],
+    "lightAreas": [],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [
+        "span[data-cy=label-filter-by] \"Filter by\" 3.24:1",
+        "span[data-cy=label-sort-by] \"Sort by\" 3.24:1"
+      ],
+      "ringless": [],
+      "hidden": [],
+      "rings": [],
+      "walk": "not walked"
+    }
+  },
+  "overlay-new-query.light.1440x960": {
+    "search": [
+      {
+        "placeholder": "Search for data source",
+        "name": null,
+        "height": 20,
+        "border-radius": "4px",
+        "border-top-color": "rgb(27, 31, 36)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "Inter": 15
+    },
+    "sizes": {
+      "12px": 15
+    },
+    "offScale": [],
+    "titleCase": [
+      "Tooljet Database"
+    ],
+    "lightAreas": [
+      "div \"New folder Defaults REST API R\""
+    ],
+    "surfaceStyle": {
+      "background-color": "rgb(252, 252, 253)",
+      "border-top-color": "rgb(228, 231, 235)",
+      "border-top-width": "1px",
+      "border-radius": "10px",
+      "box-shadow": "rgba(48, 50, 51, 0.05) 0px 0px 1px 0px, rgba(48, 50, 51, 0.1) 0px 4px 8px 0px"
+    },
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [],
+      "hidden": [],
+      "rings": [],
+      "walk": "not walked"
+    }
+  },
+  "overlay-page-menu.light.1440x960": {
+    "search": [],
+    "rows": {},
+    "families": {
+      "Inter": 5
+    },
+    "sizes": {
+      "12px": 5
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [
+      "div.false.show \"Edit page details Mark as home\"",
+      "button.tw-flex.tw-justify-center \"Edit page details\"",
+      "button.tw-flex.tw-justify-center \"Mark as home\"",
+      "button.tw-flex.tw-justify-center \"Duplicate page\"",
+      "button.tw-flex.tw-justify-center \"Delete page\"",
+      "button.tw-flex.tw-justify-center \"Page permission\""
+    ],
+    "surfaceStyle": {
+      "background-color": "rgb(251, 252, 253)",
+      "border-top-color": "rgb(241, 243, 245)",
+      "border-top-width": "1px",
+      "border-radius": "6px",
+      "box-shadow": "rgba(16, 24, 40, 0.06) 0px 2px 4px -2px, rgba(16, 24, 40, 0.1) 0px 4px 8px -2px"
+    },
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [],
+      "hidden": [],
+      "rings": [],
+      "walk": "not walked"
+    }
+  },
+  "overlay-version.dark.1440x960": {
+    "search": [],
+    "rows": {},
+    "families": {
+      "IBM Plex Sans": 4
+    },
+    "sizes": {
+      "13px": 2,
+      "12px": 1,
+      "11px": 1
+    },
+    "offScale": [
+      "button[data-cy=v1-save-version-button] \"Save version\" 11px"
+    ],
+    "titleCase": [],
+    "lightAreas": [],
+    "surfaceStyle": {
+      "background-color": "rgb(31, 41, 54)",
+      "border-top-color": "rgb(43, 48, 54)",
+      "border-top-width": "1px",
+      "border-radius": "8px",
+      "box-shadow": "rgba(133, 140, 148, 0.08) 0px 0px 1px 0px, rgba(133, 140, 148, 0.12) 0px 1px 1px 0px"
+    },
+    "audit": {
+      "unnamed": [
+        "button[data-cy=v1-version-more-menu-button]"
+      ],
+      "lowContrast": [
+        "button[data-cy=development-environment-name] \"Development\" 3.07:1",
+        "span[data-cy=v1-draft-tag] \"Draft\" 3.71:1"
+      ],
+      "ringless": [],
+      "hidden": [],
+      "rings": [],
+      "walk": "not walked"
+    }
+  },
+  "overlay-query-menu.dark.1440x960": {
+    "search": [],
+    "rows": {},
+    "families": {
+      "Inter": 6
+    },
+    "sizes": {
+      "12px": 6
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "surfaceStyle": {
+      "background-color": "rgb(31, 41, 54)",
+      "border-top-color": "rgb(32, 36, 37)",
+      "border-top-width": "1px",
+      "border-radius": "6px",
+      "box-shadow": "rgba(16, 24, 40, 0.06) 0px 2px 4px -2px, rgba(16, 24, 40, 0.1) 0px 4px 8px -2px"
+    },
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [
+        "div.list-item-option-menu-label.color-tomato9 \"Delete\" 3.80:1"
+      ],
+      "ringless": [],
+      "hidden": [],
+      "rings": [],
+      "walk": "not walked"
+    }
+  },
+  "overlay-query-filter.dark.1440x960": {
+    "search": [],
+    "rows": {},
+    "families": {
+      "Inter": 10
+    },
+    "sizes": {
+      "12px": 10
+    },
+    "offScale": [],
+    "titleCase": [
+      "Data Source"
+    ],
+    "lightAreas": [],
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [
+        "span[data-cy=label-filter-by] \"Filter by\" 3.22:1",
+        "span[data-cy=label-sort-by] \"Sort by\" 3.22:1"
+      ],
+      "ringless": [],
+      "hidden": [],
+      "rings": [],
+      "walk": "not walked"
+    }
+  },
+  "overlay-new-query.dark.1440x960": {
+    "search": [
+      {
+        "placeholder": "Search for data source",
+        "name": null,
+        "height": 20,
+        "border-radius": "4px",
+        "border-top-color": "rgb(250, 252, 255)"
+      }
+    ],
+    "rows": {},
+    "families": {
+      "Inter": 16
+    },
+    "sizes": {
+      "12.25px": 1,
+      "12px": 15
+    },
+    "offScale": [
+      "div.react-tooltip.core-styles-module_tooltip \"QA Env Auth 1103\" 12.25px"
+    ],
+    "titleCase": [
+      "Tooljet Database"
+    ],
+    "lightAreas": [],
+    "surfaceStyle": {
+      "background-color": "rgb(31, 41, 54)",
+      "border-top-color": "rgb(251, 252, 253)",
+      "border-top-width": "0px",
+      "border-radius": "6px",
+      "box-shadow": "none"
+    },
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [],
+      "hidden": [],
+      "rings": [],
+      "walk": "not walked"
+    }
+  },
+  "overlay-page-menu.dark.1440x960": {
+    "search": [],
+    "rows": {},
+    "families": {
+      "Inter": 5
+    },
+    "sizes": {
+      "12px": 5
+    },
+    "offScale": [],
+    "titleCase": [],
+    "lightAreas": [],
+    "surfaceStyle": {
+      "background-color": "rgb(31, 41, 54)",
+      "border-top-color": "rgb(32, 36, 37)",
+      "border-top-width": "1px",
+      "border-radius": "6px",
+      "box-shadow": "rgba(16, 24, 40, 0.06) 0px 2px 4px -2px, rgba(16, 24, 40, 0.1) 0px 4px 8px -2px"
+    },
+    "audit": {
+      "unnamed": [],
+      "lowContrast": [],
+      "ringless": [],
+      "hidden": [],
+      "rings": [],
+      "walk": "not walked"
+    }
+  }
+}
