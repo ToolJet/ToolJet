@@ -2,17 +2,6 @@ import * as probe from "./probe";
 
 export const forEachTheme = (fn) => ["light", "dark"].forEach(fn);
 
-// `--env evidence=base` records the baseline that later runs (default "head") are compared with.
-export const EVIDENCE_RUN = Cypress.env("evidence") || "head";
-export const EVIDENCE_DIR = `cypress/evidence/${EVIDENCE_RUN}`;
-
-export const guardBaseline = () => {
-  if (EVIDENCE_RUN !== "base" || Cypress.env("overwriteBase")) return;
-  cy.exec(`test -e ${EVIDENCE_DIR}`, { failOnNonZeroExit: false, log: false }).then(({ exitCode }) => {
-    if (exitCode === 0) throw new Error(`${EVIDENCE_DIR} exists; pass --env overwriteBase=true to re-record it`);
-  });
-};
-
 const LEFT = ".left-sidebar-panel-content";
 const RIGHT = ".right-panel-shell";
 const DRAWER = ".runtime-panel";
@@ -178,32 +167,9 @@ export const expectClean = (ids, violations) => expect(violations, tags(ids)).to
 const MAX_STOPS = 40;
 const STILL = "panel-audit-still";
 
-const store = {};
-
-const record = (file, name, facts, mask) => {
-  store[file] = { ...store[file], [name]: { ...store[file]?.[name], ...facts } };
-  const text = mask.reduce((json, value) => json.split(value).join("<masked>"), JSON.stringify(store[file], null, 2));
-  cy.writeFile(`${EVIDENCE_DIR}/${file}`, `${text}\n`, { log: false });
-};
-
-// Written before any assertion so a failing run still leaves evidence. `mask` hides per-run values
-// like app names.
-export const evidence = (name, measure, { file = "panels.json", mask = [] } = {}) => {
-  cy.screenshot(`evidence/${EVIDENCE_RUN}/${name}`, { capture: "viewport", overwrite: true });
-  let facts;
-  cy.document().then((doc) => {
-    facts = measure ? measure(doc) : {};
-    record(file, name, facts, mask);
-  });
-  return cy.then(() => facts);
-};
-
 // Asserts every AUDIT_CHECKS entry except those with an id in `skip`, for callers that only want the
 // raw audit (see [UC-05] in panelSweep).
-export const auditPanel = (
-  root,
-  { skip = new Set(), evidenceName, file = "panels.json", mask = [], walk: walkFocus = true } = {}
-) => {
+export const auditPanel = (root, { skip = new Set(), walk: walkFocus = true } = {}) => {
   const audit = { unnamed: [], lowContrast: [], ringless: [], hidden: [], rings: [], walk: "" };
   const rest = new Map();
   const stops = [];
@@ -339,7 +305,6 @@ export const auditPanel = (
       .filter(Array.isArray)
       .forEach((list) => list.sort());
   });
-  cy.then(() => evidenceName && record(file, evidenceName, { audit }, mask));
   return cy.then(() => {
     AUDIT_CHECKS.filter(({ ids }) => !ids.some((id) => skip.has(id))).forEach(({ ids, key }) =>
       expect(audit[key], `${tags(ids)} ${root}`).to.deep.equal([])

@@ -1,6 +1,0 @@
-[
-  "light \"6px\": pages, queries",
-  "light \"4px\": dependencies, inspect",
-  "dark \"6px\": pages, queries",
-  "dark \"4px\": dependencies, inspect"
-]

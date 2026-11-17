@@ -1,6 +1,5 @@
 import {
   api,
-  evidence,
   forEachTheme,
   openEditor,
   openPanel,
@@ -35,10 +34,9 @@ const popupEdges = (doc) => {
   };
 };
 
-const expectPastPanel = (which, name) => {
+const expectPastPanel = (which) => {
   cy.get(POPUP).should("be.visible");
   settledValue(popupEdges).then((edges) => {
-    evidence(name, () => edges, { file: "page-popups.json", mask: [appName] });
     const { popup, panelRight, viewport: [width, height] } = edges;
     // Where it can't fit past the panel (panel + 8px gap + popup > viewport), it overlaps the panel.
     if (panelRight + 8 + popup.right - popup.left <= width) {
@@ -82,17 +80,17 @@ describe("Page popups", { testIsolation: false }, () => {
         openPanel("pages");
 
         cy.get(".page-group-item").first().click();
-        expectPastPanel("Edit group", `page-popup-group.${theme}.${size}`);
+        expectPastPanel("Edit group");
         closePopup();
 
         cy.get('[data-cy="pages-name-second"]').closest(".page-menu-item").as("row").realHover();
         cy.get("@row").find(".action-btn-wrapper .icon-btn").last().click({ force: true });
         cy.contains("#edit-page-popover button", "Edit page details").click();
-        expectPastPanel("Edit page details", `page-popup-edit.${theme}.${size}`);
+        expectPastPanel("Edit page details");
         closePopup();
 
         cy.get(".add-new-page").click();
-        expectPastPanel("New page", `page-popup-new.${theme}.${size}`);
+        expectPastPanel("New page");
         cy.get('[data-cy="left-sidebar-queries-button"]').click();
         cy.get('[data-cy="left-sidebar-queries-button"]').should("have.class", "sidebar-item--active");
         cy.get(POPUP).should("not.exist");

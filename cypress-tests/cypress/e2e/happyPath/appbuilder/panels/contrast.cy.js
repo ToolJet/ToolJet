@@ -1,8 +1,6 @@
 import * as probe from "Support/utils/appBuilder/probe";
 import {
-  evidence,
   forEachTheme,
-  guardBaseline,
   openEditor,
   openPanel,
   seedPanelApp,
@@ -120,7 +118,6 @@ const violations = (facts) =>
 
 describe("Panel text contrast", { testIsolation: false }, () => {
   before(() => {
-    guardBaseline();
     cy.clearAllLocalStorage();
     seedPanelApp(appName);
     cy.apiAddQueryToApp({
@@ -145,10 +142,8 @@ describe("Panel text contrast", { testIsolation: false }, () => {
             cy.document().should((doc) => expect([...doc.querySelectorAll(selector)].some(probe.isVisible), selector).to.equal(true))
           );
           cy.wait(300);
-          evidence(`contrast-${title.replace(/^(\[[^\]]+\])+ /, "").replace(/\W+/g, "-")}.${theme}`, measure(parts), {
-            file: "contrast.json",
-            mask: [appName],
-          }).then((facts) => {
+          cy.document().then((doc) => {
+            const facts = measure(parts)(doc);
             close();
             expect(violations(facts), title).to.deep.equal([]);
           });
@@ -159,8 +154,7 @@ describe("Panel text contrast", { testIsolation: false }, () => {
         openPanel("queries");
         cy.get('.query-card-leading:has([data-cy="list-query-restapi1"]) .query-icon svg').then(($svg) => {
           const shortfalls = glyphShortfalls($svg[0]);
-          evidence(`contrast-rest-icon.${theme}`, () => ({ shortfalls }), { file: "contrast.json", mask: [appName] });
-          cy.then(() => expect(shortfalls, "REST icon glyphs").to.deep.equal([]));
+          expect(shortfalls, "REST icon glyphs").to.deep.equal([]);
         });
       });
     })

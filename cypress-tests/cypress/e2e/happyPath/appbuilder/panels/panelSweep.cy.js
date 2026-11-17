@@ -1,16 +1,13 @@
 import * as probe from "Support/utils/appBuilder/probe";
 import {
   AUDIT_CHECKS,
-  EVIDENCE_DIR,
   LONG_QUERY,
   PANELS,
   SHORT_QUERY,
   auditPanel,
-  evidence,
   expectClean,
   expectTheme,
   forEachTheme,
-  guardBaseline,
   openEditor,
   openPanel,
   seedPanelApp,
@@ -48,9 +45,7 @@ const TOOLTIP = '.app-builder-tooltip, .tooltip, [role="tooltip"]';
 const PAGE_TOGGLES = ["Mark as home", "Hide this page on navigation", "Disable page"];
 
 const idsOf = (title) => title.match(/[A-Z]+-\d+[a-z]?(?=\])/g);
-const writeCheck = (ids, violations) => cy.writeFile(`${EVIDENCE_DIR}/checks/${ids.join("_")}.json`, violations);
 
-// Violations are written as evidence before the ratchet asserts, so a failing run still leaves them.
 const flow = (title, body) => {
   const ids = idsOf(title);
   let violations;
@@ -59,8 +54,6 @@ const flow = (title, body) => {
     () => {
       violations = [];
       body(violations);
-      cy.then(() => evidence(`flow-${ids.join("_")}`, () => ({ violations }), { file: "flows.json", mask: [appName] }));
-      cy.then(() => writeCheck(ids, violations));
     },
     () => cy.then(() => expectClean(ids, violations))
   );
@@ -365,7 +358,6 @@ const textStart = (node) => {
 
 describe("Panel sweep", { testIsolation: false }, () => {
   before(() => {
-    guardBaseline();
     // The drawer keeps its height in localStorage, and the PL-35 drag of an earlier run moves it.
     cy.clearAllLocalStorage();
     seedPanelApp(appName);
@@ -382,17 +374,16 @@ describe("Panel sweep", { testIsolation: false }, () => {
 
         Object.keys(PANELS).forEach((surface) =>
           step(`[sweep] ${surface} (${theme} ${size})`, () => {
-            const name = `${surface}.${theme}.${size}`;
             expectTheme(theme);
             openPanel(surface);
             // Facts describe the resting panel, not a field it autofocuses on open.
             cy.document().then((doc) => doc.activeElement?.blur());
             // Panels slide and fade in for ~200ms (PANEL_MOTION); measure the settled frame.
             cy.wait(400);
-            evidence(name, surfaceFacts(surface), { mask: [appName] }).then((facts) =>
-              sweep.push({ surface, theme, viewport: size, facts })
+            cy.document().then((doc) =>
+              sweep.push({ surface, theme, viewport: size, facts: surfaceFacts(surface)(doc) })
             );
-            auditPanel(PANELS[surface].root, { evidenceName: name, mask: [appName] }).then((audit) => {
+            auditPanel(PANELS[surface].root).then((audit) => {
               sweep.at(-1).audit = audit;
             });
           })
@@ -409,7 +400,6 @@ describe("Panel sweep", { testIsolation: false }, () => {
 
       Object.entries(OVERLAYS).forEach(([overlay, { root, text, open }]) =>
         step(`[sweep] overlay ${overlay} (${theme})`, () => {
-          const name = `overlay-${overlay}.${theme}.1440x960`;
           expectTheme(theme);
           parkMouse();
           cy.get("body").type("{esc}");
@@ -422,10 +412,13 @@ describe("Panel sweep", { testIsolation: false }, () => {
             .then(($el) => {
               const el = $el[0];
               cy.wait(300);
-              evidence(name, () => ({ ...probe.panelFacts(el), surfaceStyle: overlaySurface(el) }), {
-                mask: [appName],
-              }).then((facts) => sweep.push({ surface: `overlay-${overlay}`, theme, viewport: "1440x960", facts }));
-              auditPanel(el, { walk: false, evidenceName: name, mask: [appName] }).then((audit) => {
+              sweep.push({
+                surface: `overlay-${overlay}`,
+                theme,
+                viewport: "1440x960",
+                facts: { ...probe.panelFacts(el), surfaceStyle: overlaySurface(el) },
+              });
+              auditPanel(el, { walk: false }).then((audit) => {
                 sweep.at(-1).audit = audit;
               });
             });
@@ -794,7 +787,7 @@ describe("Panel sweep", { testIsolation: false }, () => {
         expect([...declared].filter((t) => !finished.has(t)), "sweep steps that did not finish").to.deep.equal([]);
         expect(sweep, "surfaces swept").to.have.length(SURFACE_COUNT);
         const violations = run();
-        writeCheck(ids, violations).then(() => expectClean(ids, violations));
+        expectClean(ids, violations);
       })
     );
   });

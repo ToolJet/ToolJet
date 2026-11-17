@@ -1,7 +1,0 @@
-[
-  "[{\"font-size\":\"12px\",\"font-weight\":\"500\",\"color\":\"rgb(27, 31, 36)\"},\"trailing\"]: components, pages",
-  "[{\"font-size\":\"12px\",\"font-weight\":\"500\",\"color\":\"rgb(27, 31, 36)\"},\"leading\"]: code-search, dependencies, inspect",
-  "count \"in the title\": dependencies",
-  "count {\"font-size\":\"10px\",\"color\":\"rgb(27, 31, 36)\",\"background-color\":\"rgba(136, 144, 153, 0.08)\"}: code-search",
-  "count {\"font-size\":\"11px\",\"color\":\"rgb(106, 114, 124)\",\"background-color\":\"rgba(0, 0, 0, 0)\"}: inspect"
-]

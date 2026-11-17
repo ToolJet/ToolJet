@@ -1,9 +1,0 @@
-[
-  "switch [32,18]: component, pages",
-  "switch [28,16]: settings",
-  "input [36,\"4px\"]: pages",
-  "input [20,\"4px\"]: pages",
-  "input [32,\"8px\"]: queries, settings",
-  "input [32,\"6px 0px 0px 6px\"]: settings",
-  "input [30,\"6px\"]: component"
-]

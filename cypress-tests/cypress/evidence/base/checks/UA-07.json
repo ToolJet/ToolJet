@@ -1,6 +1,0 @@
-[
-  "light \"rgb(27, 31, 36)\": code-search, component, components, dependencies, libraries, pages, queries, settings",
-  "light \"rgb(62, 82, 91)\": query",
-  "dark \"rgb(250, 252, 255)\": code-search, component, components, dependencies, libraries, pages, queries, settings",
-  "dark \"rgb(244, 246, 250)\": query"
-]

@@ -1,4 +1,0 @@
-[
-  "button[data-cy=query-manager-toggle-button] has no tooltip",
-  "button[data-cy=query-handler-menu-runjs1] has no tooltip"
-]

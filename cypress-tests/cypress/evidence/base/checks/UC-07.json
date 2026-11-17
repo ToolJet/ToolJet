@@ -1,5 +1,0 @@
-[
-  "code-search: span.code-search-row-preview \"queries.customerOrdersWithInvo\" is clipped, no full text on hover",
-  "code-search: span.code-search-row-preview \"\"customerOrdersWithInvoicesAnd\" is clipped, no full text on hover",
-  "debugger: span.runtime-debugger__row-source \"Queries · customerOrdersWithIn\" is clipped, no full text on hover"
-]
