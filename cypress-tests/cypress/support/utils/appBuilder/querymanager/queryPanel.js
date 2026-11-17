@@ -47,3 +47,17 @@ export const closeQueryPanel = () => {
     }
   });
 };
+
+/**
+ * @tjBlock  querymanager
+ * @tjUsage  openQueryPanel()
+ * @tjDom    .query-pane collapsed class + query-manager-toggle-button
+ */
+export const openQueryPanel = () => {
+  cy.get(".query-pane").then(($panel) => {
+    if ($panel.hasClass("collapsed")) {
+      cy.get('[data-cy="query-manager-toggle-button"]').click();
+    }
+  });
+  cy.get(".query-pane").should("not.have.class", "collapsed");
+};
