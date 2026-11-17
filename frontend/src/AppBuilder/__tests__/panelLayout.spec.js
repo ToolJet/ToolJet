@@ -1,6 +1,9 @@
 import {
   SIDEBAR_ITEMS,
   getPanelCloseLabel,
+  PREVIEW_PANEL,
+  QUERY_HEADER_PX,
+  QUERY_TABS_PX,
   getRuntimeSearchName,
   getRuntimeToggleLabel,
   PANEL_MOTION,
@@ -36,8 +39,6 @@ import {
   getRightPanelReservedWidth,
   getCanvasMinWidth,
   getRuntimeTabClickAction,
-  getQueryHeaderClassName,
-  getQueryHeaderControlPresentation,
   getQueryDetailsClassName,
   isCodeQueryLayout,
   getQueryDetailsStyle,
@@ -46,8 +47,6 @@ import {
   QUERY_FIELD_LABEL_CLASS_NAME,
   QUERY_FIELD_HELPER_CLASS_NAME,
   getQueryTypographyClassName,
-  getQueryTabClassName,
-  getQueryTabsStyle,
   getLeftPanelReservedBottom,
   getLeftPanelHeight,
   shouldShowLibraries,
@@ -185,7 +184,7 @@ describe('AB-PANEL-001 app builder panel composition', () => {
       text: 'var(--text-default)',
       muted: 'var(--text-placeholder)',
       border: 'var(--border-weak)',
-      accent: 'var(--primary-accent-strong)',
+      accent: 'var(--border-accent-strong)',
     };
     expect(getRuntimePanelTheme(false)).toEqual(tokens);
     expect(getRuntimePanelTheme(true)).toEqual(tokens);
@@ -602,47 +601,17 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     });
   });
 
-  // Break this catches: Run and Preview fall back into normal flow and float between the query tabs and form.
-  it('anchors right-side query actions in the compact header grid', () => {
-    expect(getQueryHeaderClassName('right')).toBe(
-      'row header query-manager-header--right query-manager-header--polished'
-    );
-    expect(getQueryHeaderClassName('bottom')).toBe('row header');
-    expect(getQueryTabsStyle('right')).toEqual({
-      gap: '3px',
-      '--query-tab-font-size': '12px',
-      '--query-tab-font-weight': 500,
-      '--query-tab-line-height': '20px',
-    });
-    expect(getQueryTabsStyle('bottom')).toEqual({ gap: '3px', marginBottom: '-15px' });
-    expect(getQueryTabClassName('right', true)).toBe('query-manager-tab query-manager-tab--right is-active');
-    expect(getQueryTabClassName('right', false)).toBe('query-manager-tab query-manager-tab--right');
-    expect(getQueryTabClassName('bottom', true)).toBe('query-manager-tab is-active');
+  // Break this catches: the preview opens over the query fields under the 48px header and 36px tabs.
+  it('reserves the query header, its tab strip and one row of fields above the preview', () => {
+    expect(PREVIEW_PANEL.reservedAbovePx).toBe(QUERY_HEADER_PX + QUERY_TABS_PX + 40);
+    expect([QUERY_HEADER_PX, QUERY_TABS_PX]).toEqual([48, 36]);
   });
 
-  // Break this catches: Run, Preview, and Close drift to different control heights in the query header.
-  it('uses one coherent size contract for every query header action', () => {
-    const controls = ['run', 'preview', 'close'].map(getQueryHeaderControlPresentation);
-
-    expect(controls.map(({ size }) => size)).toEqual(['medium', 'medium', 'medium']);
-    expect(controls.every(({ className }) => className.includes('query-header-control'))).toBe(true);
-  });
-
-  // Break this catches: the right-panel Preview label inherits the shared 500-weight button text.
-  // Break this catches: Preview gets its own font weight and stops matching the "+ Add" button beside it.
-  it('gives Preview the same presentation as the other query header buttons', () => {
-    expect(getQueryHeaderControlPresentation('preview', 'right')).toEqual(
-      getQueryHeaderControlPresentation('preview', 'bottom')
-    );
-    expect(getQueryHeaderControlPresentation('preview', 'right').style).toBeUndefined();
-  });
-
-  // Break this catches: the query Close icon is sized on its own (16px) while every other panel's is 14px.
-  it('leaves the query Close icon at the shared panel close size', () => {
-    expect(getQueryHeaderControlPresentation('close')).toEqual({
-      className: 'query-header-control query-header-control--close',
-      size: 'medium',
-    });
+  // Break this catches: the query close button names itself apart from the registry.
+  it('names right panel close buttons from the registry', () => {
+    expect(getPanelCloseLabel('query')).toBe('Close query configuration');
+    expect(getPanelCloseLabel('component')).toBe('Close component configuration');
+    expect(getPanelCloseLabel('page')).toBe('Close page configuration');
   });
 
   // Break this catches: a stale expanded drawer measurement leaves a dead strip below the left panel.

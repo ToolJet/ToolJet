@@ -170,7 +170,7 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
         <PanelHeader
           title={isNavigationSurface ? SIDEBAR_ITEMS.pages.name : 'Page configuration'}
           onClose={handleToggle}
-          closeLabel={isNavigationSurface ? getPanelCloseLabel('pages') : 'Close page configuration'}
+          closeLabel={getPanelCloseLabel(isNavigationSurface ? 'pages' : 'page')}
           closeDataCy="pages-close-button"
           divider={false}
           className={cx({ disabled: shouldFreeze })}

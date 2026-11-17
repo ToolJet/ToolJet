@@ -48,7 +48,7 @@ import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
 import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
-import { getRuntimeToggleLabel } from '@/AppBuilder/panelLayout';
+import { getPanelCloseLabel, getRuntimeToggleLabel } from '@/AppBuilder/panelLayout';
 import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -765,7 +765,7 @@ export const Inspector = ({
               </>
             )}
             <PanelCloseButton
-              label="Close component configuration"
+              label={getPanelCloseLabel('component')}
               onClose={handleRightSidebarToggle}
               dataCy="inspector-close-button"
             />

@@ -2,10 +2,15 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow-y: auto; // scrolls under its own pinned header (Shared/Panel/PanelHeader)
 
-  > * {
-    flex-shrink: 0;
+  .global-settings-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+
+    > * {
+      flex-shrink: 0;
+    }
   }
 
   // Main content section (Slug, App Link, Maintenance Mode, Export)

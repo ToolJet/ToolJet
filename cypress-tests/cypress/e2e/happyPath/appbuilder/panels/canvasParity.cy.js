@@ -1,5 +1,5 @@
 import * as probe from "Support/utils/appBuilder/probe";
-import { EVIDENCE_DIR, EVIDENCE_RUN, api, forEachTheme } from "Support/utils/appBuilder/panelAudit";
+import { EVIDENCE_DIR, EVIDENCE_RUN, api, forEachTheme, panelLogin } from "Support/utils/appBuilder/panelAudit";
 
 // Golden rule of the panel QA fixes: ToolJet chrome changes never reach a customer's app. The edit
 // canvas renders every widget, and every overlay a widget opens, exactly as the Viewer does.
@@ -32,7 +32,7 @@ const fingerprint = (root) =>
     .map((el) => [el.textContent.trim().slice(0, 30), probe.pick(el, STYLE)]);
 
 const seed = () => {
-  cy.apiLogin();
+  panelLogin();
   cy.apiCreateApp(appName);
   cy.then(() => api("GET", `/apps/${Cypress.env("appId")}`)).then((app) => {
     Cypress.env("parityAppId", app.id);

@@ -13,21 +13,35 @@ export const SIDEBAR_ITEMS = {
   settings: { name: 'App settings', label: 'Settings', cy: 'settings' },
 };
 
+// Right panels, keyed by what they configure. `name` reads in the close button's "Close <name>".
+export const RIGHT_PANEL_ITEMS = {
+  query: { name: 'Query configuration' },
+  component: { name: 'Component configuration' },
+  page: { name: 'Page configuration' },
+};
+
 // "Close app settings", "Close AI chat": the name's first word drops its capital unless it is an acronym.
 export const getPanelCloseLabel = (panel) =>
-  `Close ${SIDEBAR_ITEMS[panel].name.replace(/^[A-Z](?=[a-z])/, (letter) => letter.toLowerCase())}`;
+  `Close ${(SIDEBAR_ITEMS[panel] ?? RIGHT_PANEL_ITEMS[panel]).name.replace(/^[A-Z](?=[a-z])/, (letter) =>
+    letter.toLowerCase()
+  )}`;
 
 export const RUNTIME_PANEL_COLLAPSED_HEIGHT = 38;
 
+// The query editor's 48px panel header, and the 36px Setup / Transformation / Settings strip below it.
+export const QUERY_HEADER_PX = 48;
+export const QUERY_TABS_PX = 36;
+
 // Query preview docks at the bottom of the right-side query panel (containerClassName). It opens at
 // defaultRatio of that panel, resizes from its top edge, collapses below minPx, and always leaves
-// reservedAbovePx for the query fields above it. Closed, it matches the closed runtime panel bar.
+// reservedAbovePx: the header, the tab strip and one 40px row of query fields above it. Closed, it
+// matches the closed runtime panel bar.
 export const PREVIEW_PANEL = {
   containerClassName: 'right-sidebar-query-configuration',
   collapsedPx: RUNTIME_PANEL_COLLAPSED_HEIGHT,
   defaultRatio: 0.4,
   minPx: 50,
-  reservedAbovePx: 120,
+  reservedAbovePx: QUERY_HEADER_PX + QUERY_TABS_PX + 40,
 };
 
 export const PANEL_MOTION = {
@@ -52,7 +66,7 @@ const RUNTIME_PANEL_THEME = {
   text: 'var(--text-default)',
   muted: 'var(--text-placeholder)',
   border: 'var(--border-weak)',
-  accent: 'var(--primary-accent-strong)',
+  accent: 'var(--border-accent-strong)',
 };
 
 // Kept as a function of darkMode for callers; the tokens already resolve per theme.
@@ -328,24 +342,3 @@ export const getTooljetDbModeControlPresentation = () => ({
   type: 'dropdown',
   useMenuPortal: false,
 });
-
-export const getQueryHeaderClassName = (surface) =>
-  `row header${surface === 'right' ? ' query-manager-header--right query-manager-header--polished' : ''}`;
-
-export const getQueryHeaderControlPresentation = (control) => ({
-  className: `query-header-control${control === 'close' ? ' query-header-control--close' : ''}`,
-  size: 'medium',
-});
-
-export const getQueryTabClassName = (surface, isActive) =>
-  `query-manager-tab${surface === 'right' ? ' query-manager-tab--right' : ''}${isActive ? ' is-active' : ''}`;
-
-export const getQueryTabsStyle = (surface) =>
-  surface === 'right'
-    ? {
-        gap: '3px',
-        '--query-tab-font-size': '12px',
-        '--query-tab-font-weight': 500,
-        '--query-tab-line-height': '20px',
-      }
-    : { gap: '3px', marginBottom: '-15px' };

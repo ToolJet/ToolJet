@@ -200,4 +200,28 @@ describe('panel source audit', () => {
       .map(([name, { fontFamily }]) => `${name}: ${fontFamily}`);
     expect(offChain).toEqual([]);
   });
+
+  test('[UA-01][UA-02][UC-02] no panel hand-rolls a header or an absolutely placed close button', () => {
+    // Every panel header is Shared/Panel/PanelHeader; these were the 80px query grid, the query close
+    // pinned over it and the 61px Libraries header.
+    expect(
+      matches(
+        PANEL_ROOTS,
+        /query-manager-header--right|right-sidebar-query-close|app-libraries-header|grid-template-rows: 32px 32px/
+      )
+    ).toEqual([]);
+  });
+
+  test('[UA-16] query tabs are buttons, not clickable paragraphs', () => {
+    expect(matches(['src/AppBuilder/QueryManager'], /<p[^>]*role="tab"/s)).toEqual([]);
+  });
+
+  test('[UC-01] App settings scrolls its body, not the panel that holds the pinned header', () => {
+    const styles = fs.readFileSync(
+      path.join(FRONTEND, 'src/AppBuilder/LeftSidebar/GlobalSettings/styles.scss'),
+      'utf8'
+    );
+    const panelRule = styles.slice(0, styles.indexOf('.global-settings-body'));
+    expect(panelRule).not.toMatch(/overflow-y:\s*auto/);
+  });
 });

@@ -1,5 +1,5 @@
 import * as probe from "Support/utils/appBuilder/probe";
-import { EVIDENCE_DIR, EVIDENCE_RUN, api, forEachTheme, guardBaseline } from "Support/utils/appBuilder/panelAudit";
+import { EVIDENCE_DIR, EVIDENCE_RUN, api, forEachTheme, guardBaseline, panelLogin } from "Support/utils/appBuilder/panelAudit";
 
 // Surfaces outside the App Builder editor that the panel QA fixes must leave alone: any run other
 // than the baseline must match the baseline recorded at 4bdaed6682 exactly.
@@ -224,7 +224,7 @@ const sameAsBaseline = (name, facts) => {
 describe("Sentinels outside the editor", { testIsolation: false }, () => {
   before(() => {
     guardBaseline();
-    cy.apiLogin();
+    panelLogin();
     seedViewerApp();
     seedDataSource();
     seedPageData();

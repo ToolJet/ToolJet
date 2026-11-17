@@ -163,9 +163,20 @@
     }
   }
 
+  // A narrow drawer moves the log action and copy button to a second row rather than squeeze the
+  // title, which keeps its full width up to the drawer's (UC-08).
+  &__detail-header.runtime-inspector__detail-header {
+    flex-wrap: wrap;
+    row-gap: 0;
+    height: auto;
+    min-height: 40px;
+    padding-block: 6px;
+  }
+
   &__detail-title {
-    flex: 1 1 auto;
-    min-width: 80px;
+    flex: 1 0 auto;
+    max-width: 100%;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

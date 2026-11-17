@@ -11,7 +11,7 @@ const path = require('path');
 const styles = fs.readFileSync(path.join(__dirname, '../../../_styles/queryManager.scss'), 'utf8');
 
 const SURFACES = [
-  '.query-manager-header--right',
+  '.query-manager-header',
   '.preview-section .preview-toggle',
   '.preview-section .preview-content',
   '.preview-data-container',

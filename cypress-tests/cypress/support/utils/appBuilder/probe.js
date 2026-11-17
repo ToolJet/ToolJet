@@ -173,7 +173,7 @@ export const lightness = (colour) => {
   return a < 1 ? null : (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 };
 
-const HEADER = ".tj-panel-header, .app-libraries-header, .query-manager-header--right, .panel-header";
+const HEADER = ".tj-panel-header, .panel-header";
 const CLOSE = '[aria-label^="Close"], [data-cy*="close"]';
 const TABLIST = '.runtime-panel-bar, [role="tablist"], .nav-tabs, .query-manager-tabs';
 const ACTIVE_TAB =
@@ -235,7 +235,11 @@ export const panelFacts = (root) => {
       right: round(box(root).x + box(root).width - box(close).x - box(close).width),
       y: box(close).y,
     },
-    tabs: tablist && { height: activeTab && box(activeTab).height, activeColor: activeTab && pick(activeTab, ["color"]).color },
+    // The colour of the active tab's text as drawn, not its button's: tj-tabs colour an inner label.
+    tabs: tablist && {
+      height: activeTab && box(activeTab).height,
+      activeColor: activeTab && pick(textElements(activeTab)[0] || activeTab, ["color"]).color,
+    },
     search: [...root.querySelectorAll(SEARCH)].filter(isVisible).map((input) => ({
       placeholder: input.placeholder,
       name: input.getAttribute("aria-label"),

@@ -35,8 +35,12 @@ export const SHORT_QUERY = "setDeepNestedVariables";
 // Long enough to clip in every panel list (UC-07); its error log gives the debugger a long row.
 export const LONG_QUERY = "customerOrdersWithInvoicesAndShippingAddressesForTheCurrentBillingPeriod";
 
+// `--env panelWorkspaceId=<id>` pins the workspace: the admin's default one may be a git-sync
+// workspace, which refuses new apps on its default branch.
+export const panelLogin = () => cy.apiLogin(undefined, undefined, Cypress.env("panelWorkspaceId") || "");
+
 export const seedPanelApp = (appName) => {
-  cy.apiLogin();
+  panelLogin();
   cy.apiCreateApp(appName);
   cy.then(() => api("GET", `/apps/${Cypress.env("appId")}`)).then((app) => {
     const version = app.editing_version;

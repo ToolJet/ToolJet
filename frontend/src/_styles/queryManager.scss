@@ -5,11 +5,6 @@
 $border-radius: 4px;
 
 .query-manager {
-  // The right-panel query editor sits under the editor header, so it has no top band.
-  .row.header:not(.query-manager-header--right) {
-    border-top: 3px solid var(--slate5);
-  }
-
   .react-select__value-container {
     margin-bottom: 0px !important;
   }
@@ -243,14 +238,6 @@ $border-radius: 4px;
   }
 }
 
-// Centred on the query name row (10px header padding + 32px row), 16px from the edge like every panel.
-.right-sidebar-query-close {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  z-index: 5;
-}
-
 .query-header-control {
   height: 28px !important;
   min-height: 28px;
@@ -289,28 +276,18 @@ $border-radius: 4px;
   min-height: 0;
   background: var(--background-surface-layer-01);
 
-  .query-manager-header--right {
-    position: relative;
-    display: grid;
-    grid-template-rows: 32px 32px;
-    grid-template-columns: minmax(0, 1fr) auto;
-    row-gap: 6px;
-    flex: 0 0 80px;
-    min-height: 80px;
-    padding: 10px 52px 0 16px !important;
-    border-top: 0;
-    border-bottom: 1px solid var(--border-weak);
+  // The 48px panel header (Shared/Panel/PanelHeader) and the 36px tab strip below it.
+  .query-manager-header {
+    flex: 0 0 auto;
     background: var(--background-surface-layer-01);
-    z-index: 2;
 
-    > .col {
-      display: contents;
+    // The name editor's error note hangs below the title, so the title does not clip.
+    .query-manager-header__title {
+      display: flex;
+      overflow: visible;
     }
 
     .query-name-breadcrum {
-      grid-row: 1;
-      grid-column: 1;
-      align-self: center;
       min-width: 0;
       margin-left: 0 !important;
 
@@ -327,7 +304,8 @@ $border-radius: 4px;
         min-width: 0;
         padding: 0 !important;
         color: var(--text-default);
-        font-size: 13px;
+        font-size: 14px;
+        font-weight: 500;
         line-height: 20px;
       }
 
@@ -342,7 +320,8 @@ $border-radius: 4px;
       .query-inline-name-input {
         overflow-x: auto;
         color: var(--text-default);
-        font-size: 13px;
+        font-size: 14px;
+        font-weight: 500;
         line-height: 20px;
       }
 
@@ -378,7 +357,8 @@ $border-radius: 4px;
           background: transparent !important;
           box-shadow: none;
           color: var(--text-default);
-          font-size: 13px;
+          font-size: 14px;
+          font-weight: 500;
           line-height: 20px;
 
           &:hover {
@@ -387,52 +367,39 @@ $border-radius: 4px;
         }
       }
     }
+  }
 
-    .query-manager-tabs {
-      grid-row: 2;
-      grid-column: 1 / -1;
-      align-self: end;
-      min-width: 0;
-      height: 32px;
-      gap: 4px !important;
+  // Same spec as the panel tabs (tj-tabs): 12px/500, placeholder text, default text and an accent
+  // underline when active.
+  .query-manager-tabs {
+    display: flex;
+    gap: 4px;
+    height: 36px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border-weak);
+  }
+
+  .query-manager-tab {
+    height: 36px;
+    padding: 0 8px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--text-placeholder);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    cursor: pointer;
+    transition: color 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      color: var(--text-default);
     }
 
-    .query-header-buttons {
-      display: flex;
-      grid-row: 1;
-      grid-column: 2;
-      align-items: center;
-      align-self: center;
-      gap: 4px;
-      width: auto;
-      height: 32px;
-      margin: 0;
-    }
-
-    .query-manager-tab--right {
-      position: relative;
-      height: 32px !important;
-      padding: 0 10px;
-      border: 0;
-      border-bottom: 2px solid transparent;
-      background: transparent;
-      color: var(--text-placeholder);
-      font-size: var(--query-tab-font-size, 13px);
-      font-weight: var(--query-tab-font-weight, 400);
-      line-height: var(--query-tab-line-height, 20px);
-      cursor: pointer;
-      transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease;
-
-      // Underline tabs (panel, query, drawer) all hover the same way: text colour only.
-      &:hover {
-        color: var(--text-default);
-      }
-
-      &.is-active {
-        border-bottom-color: var(--border-accent-strong);
-        background: transparent;
-        color: var(--text-default);
-      }
+    &.is-active {
+      border-bottom-color: var(--border-accent-strong);
+      color: var(--text-default);
     }
   }
 
@@ -1141,12 +1108,6 @@ $border-radius: 4px;
       &>div:first-child {
         gap: 10px;
         padding: 0.25rem 1rem;
-      }
-
-      .query-header-buttons {
-        gap: 4px;
-        flex: 0 0 auto;
-        width: auto;
       }
     }
   }
@@ -3383,7 +3344,7 @@ $border-radius: 4px;
 // mode), the same token as the left panel. The legacy `.query-manager .header` / `.preview-section`
 // rules paint these with --base and --slate3; this block comes last and is scoped deeper, so it wins.
 .right-sidebar-query-configuration .query-manager--right {
-  .query-manager-header--right,
+  .query-manager-header,
   .preview-section .preview-toggle,
   .preview-section .preview-content,
   .preview-data-container {

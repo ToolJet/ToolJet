@@ -96,7 +96,7 @@ const LogDetail = ({ log, pageName }) => {
 
   return (
     <>
-      <div className="runtime-inspector__detail-header">
+      <div className="runtime-inspector__detail-header runtime-debugger__detail-header">
         <span className={cx('runtime-debugger__badge', `is-${level}`)}>{LEVEL_LABELS[level]}</span>
         <span className="runtime-debugger__detail-title" title={getLogTitle(log)}>
           {getLogTitle(log)}
