@@ -877,6 +877,19 @@ const sidebars = {
         },
         "tooljet-db/data-types",
         "tooljet-db/table-operations",
+        {
+          "type": "category",
+          "label": "Migrations",
+          "link": {
+            "type": "doc",
+            "id": "tooljet-db/migrations/overview"
+          },
+          "items": [
+            "tooljet-db/migrations/overview",
+            "tooljet-db/migrations/run-migrations"
+          ]
+        },
+        "tooljet-db/manage-data",
         "tooljet-db/querying-tooljet-db"
       ]
     },
