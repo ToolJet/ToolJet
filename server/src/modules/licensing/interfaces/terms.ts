@@ -36,6 +36,7 @@ export interface Terms {
     appWhiteLabelling?: boolean;
     scim?: boolean;
     mfa?: boolean;
+    aiCreditLimits?: boolean;
     customDomains?: boolean;
     google?: boolean;
     github?: boolean;
