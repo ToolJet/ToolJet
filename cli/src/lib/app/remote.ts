@@ -17,14 +17,26 @@ export interface RemoteApp {
   queries: any[];
 }
 
-/** The app as ToolJet's editor reads it: its editing version, or the given version (`tooljet app checkout`). */
+/**
+ * The app as ToolJet's editor reads it: its editing version, or the given version (`tooljet app checkout`).
+ *
+ * Refuses a module. ToolJet answers for one like an app, but a module is drawn inside other apps, in its module
+ * container, and has no page for code to own: `dev` put a code component in that container and added another on
+ * every run. Every command reads the app here before it changes anything, so none of them reaches a module.
+ */
 export async function readApp(session: Session, appId: string, versionId?: string): Promise<RemoteApp> {
   const app = await session.api(versionId ? `/v2/apps/${appId}/versions/${versionId}` : `/apps/${appId}`);
   const version = app.editing_version ?? {};
+  // Under git sync branching the name is the branch draft's (app_name); the app's own is empty.
+  const name = app.name ?? version.app_name ?? version.appName;
+  if (app.type === 'module') {
+    throw new Error(
+      `${name ? `"${name}"` : 'This app'} is a module. Code mode is for apps only, so nothing was changed.`
+    );
+  }
   return {
     id: app.id,
-    // Under git sync branching the name is the branch draft's (app_name); the app's own is empty.
-    name: app.name ?? version.app_name ?? version.appName,
+    name,
     slug: app.slug,
     versionId: version.id,
     versionStatus: version.status,
