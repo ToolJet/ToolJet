@@ -188,6 +188,7 @@ jobs:
           ENABLE_AI_FEATURES=true
           TJ_AI_GATEWAY_URL=http://host.docker.internal:3200
           CLOUD_API_KEY=cypress-cloud-stub
+          DISABLE_TOOLJET_TELEMETRY=true
           EOF
 
       - name: Start the cloud stack
