@@ -10,11 +10,11 @@ import {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// Fraction of a day that keeps the expiry later today (UTC), so the trial is not yet expired.
-const daysUntilEndOfUtcDay = () => {
+const LAST_DAY_MIN_MS = 30 * 60 * 1000;
+
+const msUntilEndOfUtcDay = () => {
   const now = new Date();
-  const endOfDay = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 55);
-  return (endOfDay - now.getTime()) / DAY_MS;
+  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59) - now.getTime();
 };
 
 const licenseRequest = (method, path, workspaceId, body) =>
@@ -71,11 +71,14 @@ describe("Cloud Licensing — Trial Banners", { retries: 0 }, () => {
     navBarLicenseButton(cloudLicenseText.navBar.daysLeft(5)).should("be.visible");
   });
 
-  it("should show trial ends today on the last trial day", () => {
+  it("should show trial ends today on the last trial day", function () {
+    // Too close to UTC midnight the seeded trial would already be expired.
+    const msLeft = msUntilEndOfUtcDay();
+    if (msLeft < LAST_DAY_MIN_MS) this.skip();
     cy.apiSetCloudPlan("trial", {
       workspaceId: signup.workspaceId,
       terms: trialTerms,
-      expiryDays: daysUntilEndOfUtcDay(),
+      expiryDays: msLeft / DAY_MS,
     });
     cy.visit(`/${signup.workspaceSlug}`);
 
