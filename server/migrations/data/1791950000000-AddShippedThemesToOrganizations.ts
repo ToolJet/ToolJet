@@ -1,6 +1,8 @@
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
-import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
+import { processDataInBatches } from '@helpers/migration.helper';
 import { shippedThemes } from '@modules/organization-themes/constants/shipped-themes';
+
+const MIGRATION_NAME = 'AddShippedThemesToOrganizations1791950000000';
 
 /**
  * Adds the colour themes ToolJet ships (constants/shipped-themes.ts) to every existing workspace, beside its basic
@@ -16,22 +18,21 @@ export class AddShippedThemesToOrganizations1791950000000 implements MigrationIn
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
     const [{ count }] = await entityManager.query(`SELECT COUNT(*)::int AS count FROM organizations`);
+    console.log(`${MIGRATION_NAME}: [START] Add ${shippedThemes.length} shipped themes to workspaces: ${count}`);
     if (count === 0 || shippedThemes.length === 0) {
-      console.log('AddShippedThemesToOrganizations1791950000000: no workspaces to update.');
+      console.log(`${MIGRATION_NAME}: [SUCCESS] Add shipped themes finished. No workspaces to update.`);
       return;
     }
 
     const themes = JSON.stringify(shippedThemes.map(({ name, definition }) => ({ name, definition })));
-    const migrationProgress = new MigrationProgress(
-      'AddShippedThemesToOrganizations1791950000000',
-      Math.ceil(count / AddShippedThemesToOrganizations1791950000000.BATCH_SIZE)
-    );
+    let done = 0;
+    let inserted = 0;
 
     const fetchBatch = (manager: EntityManager, skip: number, take: number): Promise<Array<{ id: string }>> =>
       manager.query(`SELECT id FROM organizations ORDER BY id LIMIT $1 OFFSET $2`, [take, skip]);
 
     const processBatch = async (manager: EntityManager, organizations: Array<{ id: string }>) => {
-      await manager.query(
+      const added: unknown[] = await manager.query(
         `
         INSERT INTO organization_themes (name, organization_id, definition, is_default, is_basic, created_at, updated_at)
         SELECT t.name, o.id, t.definition::json, false, false, now(), now()
@@ -42,10 +43,13 @@ export class AddShippedThemesToOrganizations1791950000000 implements MigrationIn
           WHERE ot.organization_id = o.id AND lower(ot.name) = lower(t.name)
         )
         ON CONFLICT DO NOTHING
+        RETURNING 1
         `,
         [organizations.map(({ id }) => id), themes]
       );
-      migrationProgress.show();
+      done += organizations.length;
+      inserted += added.length;
+      console.log(`${MIGRATION_NAME}: [PROGRESS] ${done}/${count} (${((done / count) * 100).toFixed(1)}%)`);
     };
 
     await processDataInBatches(
@@ -54,6 +58,7 @@ export class AddShippedThemesToOrganizations1791950000000 implements MigrationIn
       processBatch,
       AddShippedThemesToOrganizations1791950000000.BATCH_SIZE
     );
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Add shipped themes finished. Themes added: ${inserted}`);
   }
 
   public async down(): Promise<void> {

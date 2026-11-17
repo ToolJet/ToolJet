@@ -3,14 +3,16 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 // Scans of app versions, their findings, exceptions to findings, and each workspace's scan policy.
 // organization_id is on every table so reads can be scoped to a workspace without a join.
+// Keys to existing tables (apps, app_versions, users, organizations) are added in the data phase by
+// AddCodeModeAndReviewForeignKeys1794896718037: adding them here would stop writes to those tables while old pods serve.
 export class CreateAppSecurityScans1792460000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS app_version_scans (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        organization_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-        app_id uuid NOT NULL REFERENCES apps(id) ON DELETE CASCADE,
-        app_version_id uuid NOT NULL REFERENCES app_versions(id) ON DELETE CASCADE,
+        organization_id uuid NOT NULL,
+        app_id uuid NOT NULL,
+        app_version_id uuid NOT NULL,
         source varchar(20) NOT NULL CHECK (source IN ('builder', 'dev', 'publish', 'external', 'production')),
         gate varchar(10) NOT NULL CHECK (gate IN ('pass', 'fail')),
         summary jsonb NOT NULL DEFAULT '{}',
@@ -34,7 +36,7 @@ export class CreateAppSecurityScans1792460000000 implements MigrationInterface {
       CREATE TABLE IF NOT EXISTS scan_findings (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         scan_id uuid NOT NULL REFERENCES app_version_scans(id) ON DELETE CASCADE,
-        organization_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+        organization_id uuid NOT NULL,
         check_id varchar(200) NOT NULL,
         rule_id varchar(300) NOT NULL,
         severity varchar(10) NOT NULL CHECK (severity IN ('critical', 'high', 'medium', 'low')),
@@ -56,8 +58,8 @@ export class CreateAppSecurityScans1792460000000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS scan_exceptions (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        organization_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-        app_id uuid NULL REFERENCES apps(id) ON DELETE CASCADE,
+        organization_id uuid NOT NULL,
+        app_id uuid NULL,
         rule_id varchar(300) NOT NULL,
         fingerprint varchar(128) NOT NULL,
         reason text NOT NULL,
@@ -77,7 +79,7 @@ export class CreateAppSecurityScans1792460000000 implements MigrationInterface {
 
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS workspace_scan_policies (
-        organization_id uuid PRIMARY KEY REFERENCES organizations(id) ON DELETE CASCADE,
+        organization_id uuid PRIMARY KEY,
         policy jsonb NOT NULL DEFAULT '{}',
         updated_by uuid NULL,
         updated_at timestamp NOT NULL DEFAULT now()

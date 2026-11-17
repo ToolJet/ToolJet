@@ -1,18 +1,20 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 // Per app version source files, with a revision for optimistic concurrency and an owner ('platform' or 'repository').
+// Keys to existing tables (apps, app_versions, users, organizations) are added in the data phase by
+// AddCodeModeAndReviewForeignKeys1794896718037: adding them here would stop writes to those tables while old pods serve.
 export class CreateCodeModeSources1792480000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS code_mode_sources (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        app_version_id uuid NOT NULL UNIQUE REFERENCES app_versions(id) ON DELETE CASCADE,
+        app_version_id uuid NOT NULL UNIQUE,
         revision integer NOT NULL DEFAULT 1,
         content_hash varchar(64) NOT NULL,
         owner varchar(16) NOT NULL DEFAULT 'platform' CHECK (owner IN ('platform', 'repository')),
         library_correlation_id uuid NULL,
         total_size integer NOT NULL DEFAULT 0,
-        updated_by uuid NULL REFERENCES users(id) ON DELETE SET NULL,
+        updated_by uuid NULL,
         created_at timestamp NOT NULL DEFAULT now(),
         updated_at timestamp NOT NULL DEFAULT now()
       )

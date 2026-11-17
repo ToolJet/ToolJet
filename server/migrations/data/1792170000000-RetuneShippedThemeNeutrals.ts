@@ -2,6 +2,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 import { TJDefaultTheme } from '@modules/organization-themes/constants';
 import { shippedThemes } from '@modules/organization-themes/constants/shipped-themes';
 
+const MIGRATION_NAME = 'RetuneShippedThemeNeutrals1792170000000';
+
 // The shipped themes as AddShippedThemesToOrganizations wrote them: the basic theme with the palette's
 // primary, app background and second surface. Frozen here, so later palette changes do not change what this matches.
 const FIRST_PALETTES: Array<{
@@ -87,6 +89,8 @@ export class RetuneShippedThemeNeutrals1792170000000 implements MigrationInterfa
       first: firstShippedDefinition(theme.name),
       next: theme.definition,
     }));
+    const retuned = themes.filter((theme) => theme.first);
+    console.log(`${MIGRATION_NAME}: [START] Retune shipped theme neutrals: ${retuned.length} themes`);
     // The new definitions go in as json, keys in the order written: the column is json, and the app's theme loader
     // depends on that order (border.radius before border.colors; through jsonb, colors came first and the radius pass
     // set --cc-default-border to "undefined"). The match compares as jsonb, which ignores key order.
@@ -95,8 +99,9 @@ export class RetuneShippedThemeNeutrals1792170000000 implements MigrationInterfa
           SET definition = v.next, updated_at = now()
          FROM json_to_recordset($1::json) AS v(name text, first jsonb, next json)
         WHERE t.name = v.name AND t.definition::jsonb = v.first`,
-      [JSON.stringify(themes.filter((theme) => theme.first))]
+      [JSON.stringify(retuned)]
     );
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Retune shipped theme neutrals finished.`);
   }
 
   public async down(): Promise<void> {
