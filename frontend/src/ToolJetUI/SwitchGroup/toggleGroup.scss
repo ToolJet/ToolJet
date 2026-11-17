@@ -8,11 +8,9 @@
 
 .ToggleGroupItem {
   all: unset;
-  // Unselected options must stay readable (--text-disabled was 1.89:1 on the track).
-  color: var(--text-placeholder);
+  color: var(--text-medium);
   min-height: 28px;
   display: flex;
-  font-size: 12px;
   line-height: 20px;
   font-weight: 500;
   align-items: center;
@@ -45,7 +43,6 @@
     color: var(--text-default);
     padding: 4px;
     height: 28px;
-    font-size: 10px;
     width: 100%;
     text-align: center;
     display: flex;

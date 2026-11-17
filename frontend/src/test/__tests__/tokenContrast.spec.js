@@ -74,43 +74,82 @@ describe('panel text tokens reach WCAG AA in both themes', () => {
     expect(shortfalls({ fg, bg: [envBar] })).toEqual([]);
   });
 
-  test.failing('[UB-05] unselected segmented-toggle options on the toggle track', () => {
-    // toggleGroup.scss `.ToggleGroupItem` text on the translucent `.ToggleGroup` track: 4.31:1 in light.
+  test('[UB-05] unselected segmented-toggle options on the toggle track', () => {
     const fg = readToken(toggleGroup, '.ToggleGroupItem', 'color');
     const track = readToken(toggleGroup, '.ToggleGroup', 'background-color');
     expect(shortfalls({ fg, bg: [track, surface] })).toEqual([]);
   });
 
-  test.failing('[UB-06] selected environment tab in the version popover', () => {
-    // environment-toggle.scss `&.selected` is --indigo9 on --indigo3: 3.03:1 in dark.
+  test('[UB-06] selected environment tab in the version popover', () => {
     const fg = readToken(environmentToggle, '&.selected', 'color');
     const bg = readToken(environmentToggle, '&.selected', 'background-color');
     expect(shortfalls({ fg, bg: [bg, envBar] })).toEqual([]);
   });
 
-  test.failing('[UB-07] accent text token is defined for both themes and readable on panels', () => {
-    // --text-accent exists only in .dark-theme (componentdesign.scss:209, 3.42:1); the editor fell back
-    // to --editor-accent-text on .apploader, which the loaded editor never renders.
-    expect(shortfalls({ fg: 'var(--text-accent)', bg: [surface] })).toEqual([]);
+  test('[UB-06] version tags (Draft, Released, source branch) in the version popover', () => {
+    const tags = [
+      ...read('AppBuilder/Header/VersionManager/VersionDropdownItem.jsx').matchAll(
+        /backgroundColor: '([^']+)',\s*color: '([^']+)'/g
+      ),
+    ];
+    expect(tags).toHaveLength(3);
+    expect(tags.flatMap(([, bg, fg]) => shortfalls({ fg, bg: [bg, surface] }))).toEqual([]);
   });
 
-  test.failing('[UB-08] danger and success text on the panel surface', () => {
-    // Dark --text-danger #D03F43 and --text-success #318344 reach 3.41:1 and 3.40:1 on #1E2226.
+  test('[UB-07] accent text is readable on panels in both themes', () => {
+    expect(shortfalls({ fg: 'var(--text-accent, var(--indigo9))', bg: [surface] })).toEqual([]);
+  });
+
+  test('[UB-08] danger and success text on the panel surface', () => {
     expect([
       ...shortfalls({ fg: 'var(--text-danger)', bg: [surface] }),
       ...shortfalls({ fg: 'var(--text-success)', bg: [surface] }),
     ]).toEqual([]);
   });
 
-  test.failing('[UB-08] filter and sort popup labels', () => {
-    // FilterandSortPopup.jsx:109,135 label rows use color-slate9: 3.24:1 in light.
+  test('[UB-08] filter and sort popup labels', () => {
     const fg = filterLabelColour();
     expect(fg).toBeDefined();
     expect(shortfalls({ fg, bg: [surface] })).toEqual([]);
   });
 
-  test.failing('[UA-22] REST API dark icon letters on their cloud reach 3:1 for graphics', () => {
-    // plugins/packages/restapi/lib/darkIcon.svg: white letters on a #CFD3D8 cloud.
+  test.each(['is-error', 'is-warning', 'is-success'])('[UB-08] debugger %s badge on its tint', (state) => {
+    const scss = read('AppBuilder/QueryPanel/RuntimeDebugger/styles.scss');
+    const fg = readToken(scss, `&.${state}`, 'color');
+    const bg = readToken(scss, `&.${state}`, 'background');
+    expect(shortfalls({ fg, bg: [bg, surface] })).toEqual([]);
+  });
+
+  test('[UB-08] drawer Debugger toggle badge', () => {
+    const scss = read('_styles/queryManager.scss');
+    const fg = readToken(scss, '.runtime-panel-badge', 'color');
+    const bg = readToken(scss, '.runtime-panel-badge', 'background');
+    expect(shortfalls({ fg, bg: [bg] })).toEqual([]);
+  });
+
+  test('[UB-08] inspector and debugger JSON values', () => {
+    const dir = 'AppBuilder/LeftSidebar/LeftSidebarInspector/CustomJSONViewer/Components';
+    const colours = fs
+      .readdirSync(path.join(__dirname, '../..', dir))
+      .flatMap((file) => [...read(`${dir}/${file}`).matchAll(/color: '([^']+)'/g)].map((m) => [file, m[1]]));
+    expect(colours.length).toBeGreaterThan(0);
+    expect(colours.flatMap(([file, fg]) => shortfalls({ fg, bg: [surface] }).map((s) => `${file} ${s}`))).toEqual([]);
+  });
+
+  test('[UB-08] Share modal slug hint', () => {
+    const fg = readToken(read('_styles/theme.scss'), '.label-info', 'color');
+    expect(shortfalls({ fg, bg: [surface] })).toEqual([]);
+  });
+
+  test('[UB-08] ToolJet database select placeholder', () => {
+    const select = read('AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect.jsx');
+    const placeholder = select.match(/showPlaceHolder \? \(\s*<span\s+style=\{\{\s*color: 'var\(--([\w-]+)/)?.[1];
+    expect(placeholder).toBeDefined();
+    const fg = readToken(read('_styles/queryManager.scss'), '.tooljetdb-query-details', `--${placeholder}`);
+    expect(shortfalls({ fg, bg: [surface] })).toEqual([]);
+  });
+
+  test('[UA-22] REST API dark icon letters on their cloud reach 3:1 for graphics', () => {
     const svg = fs.readFileSync(path.join(__dirname, '../../../../plugins/packages/restapi/lib/darkIcon.svg'), 'utf8');
     const [cloud, letters] = [...svg.matchAll(/<path[^>]*fill="([^"]+)"/g)].map((m) => m[1]);
     expect(contrastRatio(letters === 'white' ? '#fff' : letters, cloud)).toBeGreaterThanOrEqual(3);

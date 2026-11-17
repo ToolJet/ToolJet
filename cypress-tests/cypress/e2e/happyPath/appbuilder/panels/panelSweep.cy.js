@@ -337,13 +337,16 @@ const CHECKS = [
   },
 ];
 
+// Off the page: a screenshot hides the Cypress reporter and slides the app under any on-page point.
+const parkMouse = () => cy.get("body").realMouseMove(-10000, -10000, { position: "topLeft" });
+
 // Hovers near the left edge, which stays visible when the text is clipped.
 const tooltipShows = (el, text) => {
   cy.wrap(el).realHover({ position: "left" });
   cy.wait(800);
   return cy.get("body").then(($body) => {
     const shown = $body.find(TOOLTIP).filter(":visible").filter((_, tip) => tip.innerText.includes(text)).length > 0;
-    cy.get(".header").realHover({ position: "topLeft" });
+    parkMouse();
     return cy.wrap(shown, { log: false });
   });
 };
@@ -403,6 +406,7 @@ describe("Panel sweep", { testIsolation: false }, () => {
         step(`[sweep] overlay ${overlay} (${theme})`, () => {
           const name = `overlay-${overlay}.${theme}.1440x960`;
           expectTheme(theme);
+          parkMouse();
           cy.get("body").type("{esc}");
           open();
           // Waiting for the text also waits for overlays that load their content after opening.
@@ -605,7 +609,7 @@ describe("Panel sweep", { testIsolation: false }, () => {
           violations.push(`rail theme toggle shows no editor tooltip${other.length ? `, but "${other.first().text().trim()}" in ${probe.label(other[0])}` : ""}`);
         }
       });
-      cy.get(".header").realHover({ position: "topLeft" });
+      parkMouse();
     });
 
     // 1440x900 is the QA report's viewport.
@@ -693,7 +697,7 @@ describe("Panel sweep", { testIsolation: false }, () => {
         openPanel("queries");
         cy.get('[data-cy="list-query-restapi1"]').click();
         // The pointer is parked off the menu so only the steps below hover an option.
-        cy.get(".header").realHover({ position: "topLeft" });
+        parkMouse();
         expectDistinct(theme, () => cy.get('[data-cy="method-select-dropdown-input"]').click({ force: true }), "selected", "GET", "POST");
         expectDistinct(theme, () => ["ArrowDown", "ArrowDown"].forEach((key) => cy.realPress(key)), "focused", "PUT", "POST");
         // react-select ignores the first pointer move after a key press, so the pointer moves twice.
@@ -705,7 +709,7 @@ describe("Panel sweep", { testIsolation: false }, () => {
           "POST"
         );
         cy.realPress("Escape");
-        cy.get(".header").realHover({ position: "topLeft" });
+        parkMouse();
       });
     });
 

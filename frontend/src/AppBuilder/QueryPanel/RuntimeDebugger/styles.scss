@@ -12,7 +12,7 @@
     align-items: center;
 
     &.is-active .runtime-debugger__count {
-      color: var(--editor-accent-text, var(--indigo9));
+      color: var(--text-accent, var(--indigo9));
     }
 
     &.is-empty:not(.is-active) {
@@ -43,7 +43,7 @@
       }
 
       &.is-active {
-        color: var(--editor-accent-text, var(--indigo9)) !important;
+        color: var(--text-accent, var(--indigo9)) !important;
         background: var(--indigo3) !important;
         border-color: var(--indigo5) !important;
       }
@@ -77,6 +77,11 @@
 
     &.is-selected {
       background: var(--background-accent-weak) !important;
+
+      .runtime-debugger__row-source,
+      .runtime-debugger__row-time {
+        color: var(--text-medium);
+      }
     }
   }
 
@@ -138,18 +143,18 @@
     line-height: 16px;
 
     &.is-error {
-      color: var(--text-danger);
-      background: var(--background-error-weak);
+      color: var(--red11);
+      background: var(--red3);
     }
 
     &.is-warning {
-      color: var(--text-warning);
-      background: var(--background-warning-weak);
+      color: var(--orange11);
+      background: var(--orange3);
     }
 
     &.is-success {
-      color: var(--text-success);
-      background: var(--background-success-weak);
+      color: var(--grass11);
+      background: var(--grass3);
     }
 
     &.is-info {
@@ -173,7 +178,7 @@
     height: 28px;
     padding: 0 8px !important;
     border-radius: 6px;
-    color: var(--editor-accent-text, var(--indigo9)) !important;
+    color: var(--text-accent, var(--indigo9)) !important;
     font-size: 12px !important;
     white-space: nowrap;
 

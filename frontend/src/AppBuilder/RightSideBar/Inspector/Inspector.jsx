@@ -702,7 +702,7 @@ export const Inspector = ({
                                 <div className="list-item-popover-menu-option-icon">{option.icon}</div>
                                 <div
                                   className={classNames('list-item-option-menu-label', {
-                                    'color-tomato9': option.value === 'delete',
+                                    'tw-text-text-danger': option.value === 'delete',
                                     'color-disabled': option.value === 'permission' && !hasAppPermissionComponent,
                                   })}
                                 >

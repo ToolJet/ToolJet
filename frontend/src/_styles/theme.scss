@@ -7819,13 +7819,6 @@ tbody {
 
 .apploader {
   height: 100vh;
-  // Blue accent text (active tabs, filter pills, link buttons). --indigo9 is too dim on dark surfaces
-  // (3.03:1), so dark mode uses --indigo11, Radix's high-contrast text step.
-  --editor-accent-text: var(--indigo9);
-
-  &.dark-theme {
-    --editor-accent-text: var(--indigo11);
-  }
 
   &.module-mode {
     height: 100%;
@@ -13818,6 +13811,10 @@ tbody {
 }
 
 .shareable-link-container {
+  .label-info {
+    color: var(--text-placeholder);
+  }
+
   .copy-container {
     width: 0px;
     margin-right: -12px;

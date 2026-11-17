@@ -196,8 +196,8 @@ $border-radius: 4px;
   height: 16px;
   padding: 0 4px;
   border-radius: 8px;
-  color: white;
-  background: var(--background-danger-strong);
+  color: var(--text-on-solid);
+  background: var(--background-error-strong);
   font-size: 10px;
   line-height: 16px;
 }
@@ -278,6 +278,10 @@ $border-radius: 4px;
 
 .query-documentation-tooltip {
   z-index: 10050 !important;
+}
+
+.tooljetdb-query-details {
+  --tdb-select-placeholder: var(--text-placeholder);
 }
 
 .query-manager--right {
@@ -1983,7 +1987,7 @@ $border-radius: 4px;
 
       &.active {
         box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
-        color: var(--editor-accent-text, var(--indigo9)) !important;
+        color: var(--text-accent, var(--indigo9)) !important;
       }
     }
   }

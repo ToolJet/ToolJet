@@ -2,7 +2,6 @@
 // A panel check tagged with an id in this set expects violations, so it fails once it finds none
 // and passes again only after the id is deleted here.
 export const KNOWN_OPEN = new Set([
-  "UB-05", "UB-06", "UB-07", "UB-08",
   "UB-01", "UA-08", "UB-09", "UA-12",
   "UB-12", "UB-13", "UA-27",
   "UB-04", "UB-11", "UB-10",

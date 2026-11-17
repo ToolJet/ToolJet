@@ -28,10 +28,17 @@ const DATA_SIZED = {
   [dataCy("tjdb-environment-switcher-button")]: ["x", "width"],
 };
 
-// Appendix C of the plan: changes outside the editor that a unit makes on purpose. One entry per
-// changed value, e.g. { unit: "U3", file: "viewer.dark", path: ["page", '[data-cy="textinput1-label"]', "color"],
-// value: "rgb(…)" }. Every value without an entry must equal the baseline.
-const ALLOWED = [];
+// Appendix C of the plan: changes outside the editor that a unit makes on purpose.
+const OFF_TOGGLE = dataCy("togglr-button-dark");
+const ADD_BUTTON = dataCy("body-add-button");
+const ALLOWED = [
+  { unit: "U3", file: "themes.light", path: ["page", OFF_TOGGLE, "color"], from: "rgb(106, 114, 124)", value: "rgb(45, 52, 59)" },
+  { unit: "U3", file: "themes.light", path: ["page", OFF_TOGGLE, "border-top-color"], from: "rgb(106, 114, 124)", value: "rgb(45, 52, 59)" },
+  { unit: "U3", file: "themes.dark", path: ["page", OFF_TOGGLE, "color"], from: "rgb(133, 140, 148)", value: "rgb(207, 211, 216)" },
+  { unit: "U3", file: "themes.dark", path: ["page", OFF_TOGGLE, "border-top-color"], from: "rgb(133, 140, 148)", value: "rgb(207, 211, 216)" },
+  { unit: "U3", file: "data-source.dark", path: ["page", ADD_BUTTON, "color"], from: "rgb(62, 99, 221)", value: "rgb(158, 177, 255)" },
+  { unit: "U3", file: "data-source.dark", path: ["page", ADD_BUTTON, "border-top-color"], from: "rgb(62, 99, 221)", value: "rgb(158, 177, 255)" },
+];
 
 const fingerprint = (doc, selectors) =>
   Object.fromEntries(
@@ -204,10 +211,9 @@ const seedDataSource = () =>
 const sameAsBaseline = (name, facts) => {
   if (EVIDENCE_RUN === "base") return;
   cy.readFile(`cypress/evidence/base/sentinels/${name}.json`, { log: false }).then((base) => {
-    const expected = ALLOWED.filter((entry) => entry.file === name).reduce(
-      (json, { path, value }) => Cypress._.set(json, path, value),
-      Cypress._.cloneDeep(base)
-    );
+    const allowed = ALLOWED.filter((entry) => entry.file === name);
+    allowed.forEach(({ path, from }) => expect(Cypress._.get(base, path), `baseline ${name} ${path.join(" ")}`).to.equal(from));
+    const expected = allowed.reduce((json, { path, value }) => Cypress._.set(json, path, value), Cypress._.cloneDeep(base));
     expect(facts, `${name} matches the baseline at 4bdaed6682 plus its Appendix C entries`).to.deep.equal(expected);
   });
 };

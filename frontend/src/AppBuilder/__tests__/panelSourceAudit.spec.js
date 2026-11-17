@@ -106,9 +106,12 @@ describe('panel source audit', () => {
     expect(unnamedIconOnly()).toEqual([]);
   });
 
-  test.failing('[UB-07] no style reads --editor-accent-text, which the loaded editor never defines', () => {
-    // theme.scss:7820-7828 scopes it to .apploader; 12 uses fall back to --indigo9.
+  test('[UB-07] no style reads --editor-accent-text, which the loaded editor never defines', () => {
     expect(matches(['src', 'ee'], /--editor-accent-text/)).toEqual([]);
+  });
+
+  test('[UB-07] panels read --text-accent with a fallback, because light leaves it undefined for pages outside the editor', () => {
+    expect(matches(PANEL_ROOTS, /var\(--text-accent\)/)).toEqual([]);
   });
 
   test.failing('[UB-12] panel focus rings use the design-system tokens, not hard-coded or misspelt ones', () => {
@@ -127,8 +130,7 @@ describe('panel source audit', () => {
     expect(matches(PANEL_ROOTS, /placeholder=(?:"Search"|\{\s*['"]Search['"]\s*\})/)).toEqual([]);
   });
 
-  test.failing('[UB-09] each segmented-toggle rule sets one font size', () => {
-    // toggleGroup.scss:14 and :22 both set font-size on .ToggleGroupItem, so 12px becomes 10px.
+  test('[UB-09] each segmented-toggle rule sets one font size', () => {
     const scss = fs.readFileSync(path.join(FRONTEND, 'src/ToolJetUI/SwitchGroup/toggleGroup.scss'), 'utf8');
     expect(rulesWithRepeatedDeclaration(scss, 'font-size')).toEqual([]);
   });

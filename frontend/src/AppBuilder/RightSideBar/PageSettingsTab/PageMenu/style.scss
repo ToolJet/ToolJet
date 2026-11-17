@@ -365,7 +365,7 @@
         background-color: var(--background-surface-layer-01);
         border-color: var(--border-default);
         border-radius: 6px;
-        color: var(--text-accent);
+        color: var(--text-accent, var(--indigo9));
         font-weight: 400;
         font-size: 12px;
         line-height: 16px;
