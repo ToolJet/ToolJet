@@ -151,6 +151,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         pluginId: createArgumentsDto.pluginId,
         organizationId: user.organizationId,
         scope: DataSourceScopes.GLOBAL,
+        createdBy: user.id,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

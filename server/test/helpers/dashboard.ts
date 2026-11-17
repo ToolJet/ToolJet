@@ -6,6 +6,7 @@ import { FolderApp } from '@entities/folder_app.entity';
 import { PinnedItem } from '@entities/pinned_item.entity';
 import { User } from '@entities/user.entity';
 import { UserAppActivity } from '@entities/user_app_activity.entity';
+import { UserDataSourceActivity } from '@entities/user_data_source_activity.entity';
 import { createApplication, createApplicationVersion, resolveOrSeedDefaultBranch } from './seed';
 import { saveEntity, updateEntity } from './utils';
 
@@ -25,13 +26,14 @@ export async function seedDashboardApp(
 
 export async function seedPin(
   user: User,
-  opts: { appId?: string; folderId?: string; branchId: string; position: number }
+  opts: { appId?: string; folderId?: string; dataSourceId?: string; branchId: string; position: number }
 ): Promise<PinnedItem> {
   return saveEntity(PinnedItem, {
     userId: user.id,
     branchId: opts.branchId,
     appId: opts.appId ?? null,
     folderId: opts.folderId ?? null,
+    dataSourceId: opts.dataSourceId ?? null,
     position: opts.position,
   } as PinnedItem);
 }
@@ -49,4 +51,17 @@ export async function seedActivity(
     lastViewedAt: at.lastViewedAt ?? null,
     lastEditedAt: at.lastEditedAt ?? null,
   } as UserAppActivity);
+}
+
+export async function seedDataSourceActivity(
+  _nestApp: INestApplication,
+  opts: { userId: string; dataSourceId: string; branchId: string; lastViewedAt?: Date; lastEditedAt?: Date }
+): Promise<UserDataSourceActivity> {
+  return saveEntity(UserDataSourceActivity, {
+    userId: opts.userId,
+    dataSourceId: opts.dataSourceId,
+    branchId: opts.branchId,
+    lastViewedAt: opts.lastViewedAt ?? null,
+    lastEditedAt: opts.lastEditedAt ?? null,
+  } as UserDataSourceActivity);
 }

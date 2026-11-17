@@ -46,6 +46,12 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 - Marketplace plugins run in a `vm` sandbox (`PluginsServiceSelector.findMarketplacePluginService`). `...global` copies only enumerable globals, so web globals like `MessagePort`/`DOMException` must be listed explicitly or bundled libraries (e.g. undici 7) fail at load.
 - NEVER abbreviate `data_source` as `ds` in code or docs.
 
+## Dashboard v2 schema
+
+- `data_sources.created_by` (nullable uuid, FK `users(id)` `ON DELETE SET NULL`) — set in `DataSourcesUtilService.create` only; git-sync import, sample and static sources leave it `NULL`.
+- `user_data_source_activity` (`user_id`, `data_source_id`, `branch_id` composite PK) mirrors apps' `user_app_activity`; no writer yet (Task 2).
+- `pinned_items.data_source_id` extends the apps pin table (`chk_pinned_items_one_resource` now allows exactly one of `app_id`/`folder_id`/`data_source_id`; `uq_pinned_items_user_branch_data_source` enforces one pin per user+branch+data source). No write endpoints yet (Task 4).
+
 ## Related modules
 
 - `data-queries` — queries belong to a data source; `DataQueriesUtilService` is registered inside this module for option parsing.
