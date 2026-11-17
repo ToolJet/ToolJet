@@ -19,7 +19,7 @@ You choose a build mode when you create an app, and the app keeps it. A visual a
 <TabItem value="prompt" label="From a prompt" default>
 
 1. Open the Home page, or click **Start with a prompt** on the dashboard. Describe the app in the prompt box and send it.
-2. The first time, ToolJet asks how it should build the app. Click **Code mode**, and the build starts. After that, the prompt box shows the build mode it will use, and you can switch it there.
+2. The first time, ToolJet asks how it should build the app. Click **React Builder**, and the build starts. After that, the prompt box shows the build mode it will use, and you can switch it there.
 3. The editor opens with the AI chat, and the app is named from your prompt. If the AI asks a question, pick an option and click **Continue**.
 4. Watch the build move through its three stages: Data, Build and Check. Your screens appear on the canvas near the end. Click **Stop** if you want to change course.
 
