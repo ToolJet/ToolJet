@@ -1,0 +1,47 @@
+import { buildGitPrUrl } from '@/_helpers/gitPrUrl';
+
+// What the branch menu's pull request button does, from the branch's review status (see
+// workspaceBranchesService.getBranchReviewStatus). With git branching on, every app committed on the branch needs an
+// approved review before its pull request is created.
+
+const WAITING = new Set(['none', 'open', 'changes_requested']);
+
+export const pullRequestAction = (status) => {
+  if (status?.pullRequest?.status === 'open')
+    return { label: 'View pull request', url: status.pullRequest.url, disabled: false, reason: null };
+  // Unknown (still loading, or the status could not be read): the server-side checks still apply in git.
+  if (!status || status.ready) return { label: 'Create pull request', url: null, disabled: false, reason: null };
+  const waiting = status.apps.filter((app) => WAITING.has(app.status)).map((app) => app.name);
+  return {
+    label: 'Create pull request',
+    url: null,
+    disabled: true,
+    reason: waiting.length
+      ? `Needs an approved review first: ${waiting.join(', ')}`
+      : 'Every app committed on this branch needs an approved review first',
+  };
+};
+
+// Provider-neutral git config reads. orgGit carries whichever provider is active — git_https for
+// GitHub, git_lab for GitLab — so reading only git_https broke Create PR / default-branch detection
+// on GitLab workspaces (repoUrl came back empty → "Unable to determine repository URL").
+const resolveRepoUrl = (orgGit) =>
+  orgGit?.git_https?.https_url || orgGit?.git_https?.repository || orgGit?.git_lab?.gitlab_url || '';
+export const resolveDefaultBranchName = (orgGit) =>
+  orgGit?.git_https?.github_branch || orgGit?.git_lab?.gitlab_branch || 'main';
+// Only assert a provider when one is actually known/enabled; otherwise leave it undefined so
+// buildGitPrUrl falls back to host detection instead of mislabeling the repo as GitHub.
+const resolveGitType = (orgGit) =>
+  orgGit?.git_type ||
+  orgGit?.gitType ||
+  (orgGit?.git_lab?.is_enabled ? 'gitlab' : orgGit?.git_https?.is_enabled ? 'github_https' : undefined);
+
+// Where the pull request button goes: the branch's open pull request, else the provider's page for a new one.
+export const pullRequestUrl = (status, orgGit, branchName) =>
+  pullRequestAction(status).url ??
+  buildGitPrUrl({
+    repoUrl: resolveRepoUrl(orgGit),
+    gitType: resolveGitType(orgGit),
+    sourceBranch: branchName,
+    defaultBranch: resolveDefaultBranchName(orgGit),
+  });

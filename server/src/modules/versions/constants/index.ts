@@ -40,4 +40,6 @@ export const REVIEW_AUDIT_KEYS = {
   OVERRIDE: 'REVIEW_OVERRIDE',
   CLOSED: 'REVIEW_CLOSED',
   REOPENED: 'REVIEW_REOPENED',
+  // Written by git sync, not a review step: a branch's pull request merged before its review approved it.
+  MERGED_WITHOUT_APPROVAL: 'REVIEW_MERGED_WITHOUT_APPROVAL',
 } as const;

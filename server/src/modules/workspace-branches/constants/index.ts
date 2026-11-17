@@ -13,6 +13,7 @@ export enum FEATURE_KEY {
   PULL_APP = 'PULL_APP',
   PULL_MODULE = 'PULL_MODULE',
   GET_ENTITY_TAGS = 'GET_ENTITY_TAGS',
+  BRANCH_REVIEW_STATUS = 'BRANCH_REVIEW_STATUS',
 }
 
 // Git-sync background queue. Lives in src so module registration (CE + EE)

@@ -1,4 +1,9 @@
-import { WorkspaceBranchListResponse, CheckUpdatesResponse, PullWorkspaceResponse } from './IService';
+import {
+  WorkspaceBranchListResponse,
+  CheckUpdatesResponse,
+  PullWorkspaceResponse,
+  BranchReviewStatusResponse,
+} from './IService';
 
 export interface IWorkspaceBranchController {
   list(user: any): Promise<WorkspaceBranchListResponse>;
@@ -11,5 +16,6 @@ export interface IWorkspaceBranchController {
   checkForUpdates(user: any, branch: string): Promise<CheckUpdatesResponse>;
   listRemoteBranches(user: any): Promise<{ branches: any[] }>;
   getPullRequests(user: any): Promise<any>;
+  getBranchReviewStatus(user: any, branchId: string): Promise<BranchReviewStatusResponse>;
   pullModule(user: any, dto: any): Promise<{ success: boolean; draftVersionId: string | null }>;
 }
