@@ -218,3 +218,16 @@ export function searchCountsQuery(s: DataSourceDashboardScope, search: string): 
     SELECT ${COUNTS} FROM matches`;
   return { sql, params: p.values };
 }
+
+export type PinKind = 'data_source' | 'folder';
+export type PinIds = Record<PinKind, string[]>;
+
+// Data source and folder ids never collide (uuids), so one id column serves both kinds.
+export function visibleIdsQuery(s: DataSourceDashboardScope, ids: PinIds): BuiltQuery {
+  const p = new SqlParams();
+  const sql = `${dashboardCtes(s, p)}
+    SELECT id FROM visible_data_sources WHERE id = ANY(${p.add(ids.data_source)}::uuid[])
+    UNION ALL
+    SELECT id FROM visible_folders WHERE id = ANY(${p.add(ids.folder)}::uuid[])`;
+  return { sql, params: p.values };
+}

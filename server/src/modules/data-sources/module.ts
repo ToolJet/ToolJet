@@ -22,6 +22,8 @@ import { DataSourceActivityService } from './dashboard/activity.service';
 import { DataSourceActivityInterceptor } from './dashboard/activity.interceptor';
 import { DataSourcesDashboardController } from './dashboard/dashboard.controller';
 import { DataSourcesDashboardService } from './dashboard/dashboard.service';
+import { DataSourcesPinsController } from './dashboard/pins.controller';
+import { DataSourcesPinsService } from './dashboard/pins.service';
 import { DataSource } from 'typeorm';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 
@@ -88,9 +90,12 @@ export class DataSourcesModule extends SubModule {
             new DataSourcesDashboardService(dataSource, abilityService, gitSyncConfigsUtilService),
           inject: [DataSource, AbilityService, GitSyncConfigsUtilService],
         },
+        DataSourcesPinsService,
         ...(isMainImport ? [{ provide: APP_INTERCEPTOR, useClass: DataSourceActivityInterceptor }] : []),
       ],
-      controllers: isMainImport ? [DataSourcesController, DataSourcesDashboardController] : [],
+      controllers: isMainImport
+        ? [DataSourcesController, DataSourcesDashboardController, DataSourcesPinsController]
+        : [],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
     });
   }

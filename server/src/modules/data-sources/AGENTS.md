@@ -52,13 +52,19 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 
 - `data_sources.created_by` (nullable uuid, FK `users(id)` `ON DELETE SET NULL`) — set in `DataSourcesUtilService.create` only; git-sync import, sample and static sources leave it `NULL`.
 - `user_data_source_activity` (`user_id`, `data_source_id`, `branch_id` composite PK) mirrors apps' `user_app_activity`. Writer: `dashboard/activity.interceptor.ts` (global `APP_INTERCEPTOR`, registered only when `isMainImport`) upserts `last_viewed_at` after a successful `GET :id/environment/:environment_id` and `last_edited_at` after a successful v1 `PUT :id` (version-agnostic route match, so the Task 6 v2 `PUT` is picked up too), keyed off `request.tj_data_source` set by `ValidateDataSourceGuard`. Same 5-minute / "still latest editor" throttle as apps' `DashboardActivityService`; best-effort (a failed upsert is logged, never fails the request).
-- `pinned_items.data_source_id` extends the apps pin table (`chk_pinned_items_one_resource` now allows exactly one of `app_id`/`folder_id`/`data_source_id`; `uq_pinned_items_user_branch_data_source` enforces one pin per user+branch+data source). No write endpoints yet (Task 4).
+- `pinned_items.data_source_id` extends the apps pin table (`chk_pinned_items_one_resource` now allows exactly one of `app_id`/`folder_id`/`data_source_id`; `uq_pinned_items_user_branch_data_source` enforces one pin per user+branch+data source).
 
 ## Dashboard v2 list
 
 - `GET /api/v2/data-sources?page&page_size&folder_id&search&branch_id` mirrors apps' `GET /api/v2/apps` (`apps/dashboard/`): `queries.ts` CTEs (`visible_data_sources`, `visible_folders`, `pins`) reuse apps' `SqlParams`, `PIN_ORDER`, `ENTRY_ORDER`, `likePattern`.
 - Rules in `dashboard/actions.ts` (pure, unit-tested): visibility copies `allGlobalDS`, folder visibility copies `FolderDataSourcesService.filterFoldersByPermissions`, folder actions copy `FoldersService.checkFolderManagePermission` / `assertFolderDeletable`. A data source's row on a branch = its active DSV there, else (no row at all there) the default branch's active DSV.
 - Ordering column: edit-capable caller → own `last_edited_at`, else own `last_viewed_at`. `DataSourcesDashboardService` is factory-provided (edition-resolved `GitSyncConfigsUtilService`).
+
+## Dashboard v2 pins
+
+- `POST /api/v2/data-sources/pins`, `DELETE /api/v2/data-sources/pins/:resource_type/:resource_id`, `PUT /api/v2/data-sources/pins/order` (`dashboard/pins.controller.ts` + `pins.service.ts`). Per user, per branch; one pin space (`resource_type` is `data_source` or `folder`, no `type` field — unlike apps' pins, which fan out per app type).
+- Visibility reuses the dashboard list's `visible_data_sources` / `visible_folders` CTEs (`queries.ts` `visibleIdsQuery`); an app-folder id is invisible here because `visible_folders` already filters to `DATA_SOURCE_FOLDER_TYPE`.
+- Reorder (`pins.service.ts` `planReorder`) keys pins by `data_source_id ? 'data_source' : 'folder'` — copied from apps' `pins.service.ts` rather than reused, since the apps version keys `app_id ? 'app' : 'folder'` and would collapse every data-source pin to `folder:null`. Only the caller's data-source-page pins (rows with `data_source_id` set, or `folder_id` pointing at a data-source folder) are in scope; app / app-folder pins in the same `pinned_items` table keep their `position` slots.
 
 ## Related modules
 

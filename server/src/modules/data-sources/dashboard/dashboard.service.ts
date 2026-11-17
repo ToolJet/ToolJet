@@ -13,10 +13,12 @@ import {
   DataSourceEntryRow,
   folderHeaderQuery,
   folderPageQuery,
+  PinIds,
   rootCountsQuery,
   rootPageQuery,
   searchCountsQuery,
   searchPageQuery,
+  visibleIdsQuery,
 } from './queries';
 import {
   DataSourceDashboardEntryDto,
@@ -70,6 +72,16 @@ export class DataSourcesDashboardService {
       git: { enabled: git.isEnabled, multiBranch: git.isMultiBranchingEnabled },
     };
     return { scope, permissions };
+  }
+
+  async resolveBranchId(user: User, branchId?: string): Promise<string> {
+    return branchId ?? (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch.id;
+  }
+
+  async visibleIds(user: User, branchId: string, ids: PinIds): Promise<Set<string>> {
+    if (ids.data_source.length + ids.folder.length === 0) return new Set();
+    const { scope } = await this.resolveScope(user, branchId);
+    return new Set((await this.run<{ id: string }>(visibleIdsQuery(scope, ids))).map((row) => row.id));
   }
 
   async list(user: User, query: ListDataSourcesV2QueryDto): Promise<ListDataSourcesV2ResponseDto> {
