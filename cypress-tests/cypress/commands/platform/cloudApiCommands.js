@@ -208,3 +208,24 @@ Cypress.Commands.add(
         domain = EXCLUDED.domain, status = EXCLUDED.status, updated_at = now();`);
   }
 );
+
+// Without the licence PostgREST the server silently treats every workspace as Basic.
+Cypress.Commands.add("verifyCloudLicensing", () => {
+  const email = `cloud-preflight-${Date.now()}-${Cypress._.random(1e6)}@tooljet.test`;
+  cy.apiCloudSignup({ email, name: "Preflight" }).then(({ workspaceId }) =>
+    cy.apiGetLicenseAccess(workspaceId).then((access) => {
+      const type = access.licenseStatus?.licenseType;
+      if (type !== "trial") {
+        throw new Error(
+          `A new cloud signup reads as "${type}" instead of "trial": workspace licences are not reaching the server. Check the licence PostgREST (ORGANIZATION_LICENSE_URL).`
+        );
+      }
+    })
+  );
+  cy.clearCookies();
+  cy.then(() => Cypress.env("workspaceId", undefined));
+});
+
+if (Cypress.env("environment") === "Cloud") {
+  before(() => cy.verifyCloudLicensing());
+}
