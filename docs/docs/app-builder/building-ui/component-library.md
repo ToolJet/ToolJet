@@ -28,11 +28,11 @@ Components are the building blocks of ToolJet applications, used to create inter
     title="Ant Design"
     badge="86 components"
     description="Components built on Ant Design, with its own look."
+    img="/img/app-builder/building-ui/component-library/carrier-directory-ant-design.png"
     features={['Table, Tree, Transfer, Drawer and 13 charts', 'Follows your app theme once you apply one']}
   />
 </CardGrid>
 
-<!-- TODO screenshot: /img/app-builder/building-ui/component-library/carrier-directory-ant-design.png | card img prop (Ant Design card) | alt: The Carrier Directory screen built with Ant Design components | shows: the same Carrier Directory page built in Ant Design, same 1100x620 crop -->
 
 ### Switch to Another Library
 
