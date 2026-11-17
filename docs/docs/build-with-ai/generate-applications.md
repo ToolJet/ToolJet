@@ -59,7 +59,7 @@ To answer in your own words, select **Something else** and type your reply in th
 
 The chat shows the build's stage, a running clock and the step it's working on. A new app is built in three stages: Data, where the AI gets to know your data, then Build, then Check, where it checks that everything works.
 
-<!-- TODO screenshot: /img/build-with-ai/ai-chat/build-progress.png | img-s | alt: The AI chat during a build, with the Data, Build and Check stages, a running clock and the latest steps | shows: a new app's build in the Build stage: the title Building your app, the Data, Build and Check stepper with Data done, the clock and the trail of the latest status lines; crop the chat panel (400 px wide) -->
+<img className="screenshot-full img-s" src="/img/build-with-ai/ai-chat/build-progress.png" alt="The AI chat during a build, with the Data, Build and Check stages, a running clock and the latest steps" />
 
 On the canvas, a visual app fills in as each change lands. A React Builder app's screens appear once their code is built, near the end of the build.
 

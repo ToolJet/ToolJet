@@ -9,7 +9,7 @@ import TabItem from '@theme/TabItem';
 
 Describe the app you need, and ToolJet AI builds it as a working React app, with its screens, data and queries. You can also start from a blank app and build it yourself, in the browser or in your own editor.
 
-<!-- TODO screenshot: /img/build-with-ai/react-builder/create-app/ai-build-result.png | img-full | alt: A React Builder app on the canvas beside the AI chat, which shows the build's summary and See what changed | shows: the flagship app in the editor with the AI chat open after an AI turn, with the turn summary line and See what changed visible in the chat -->
+<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/create-app/ai-build-result.png" alt="A React Builder app on the canvas beside the AI chat, which shows the build's summary and See what changed" />
 
 ## Create the App
 
