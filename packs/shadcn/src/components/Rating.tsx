@@ -75,6 +75,12 @@ export const Rating = () => {
   // On mount an untouched Default value leaves a rating the app set (`value`, the pack's earlier name) alone.
   const keptOnMount = defaultValue === 4 && Number.isFinite(Number(rawValue));
   useReseed(defaultValue, () => setValue(M.normalizeRating(defaultValue, max, half)), { onMount: !keptOnMount });
+  // A Default value that is empty or not a number (the host hands such text over as null) seeds nothing, which left the
+  // rating null; none is 0, as the native Star rating exposes. Not the user's change, so no onChange.
+  useEffect(() => {
+    const unset = (v: unknown) => v === null || v === undefined || v === '' || !Number.isFinite(Number(v));
+    if (unset(defaultValue) && unset(rawValue)) setValue(0);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // A Default value changed in the same render already fits the new maximum; refitting the old rating would undo it.
   const lastDefault = useRef(defaultValue);
   const defaultChanged = lastDefault.current !== defaultValue;
