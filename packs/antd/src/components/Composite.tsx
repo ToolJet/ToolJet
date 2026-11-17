@@ -16,6 +16,7 @@ import { progressEntries, progressItem, progressMax } from '../lib/ui2/charts/pr
 import { useValueSetter } from '../lib/sameValue';
 import { LOCALE_HINT } from '../lib/locale';
 import { onPointerIn } from '../lib/pointerEnter';
+import { useOfferedValue } from '../lib/offeredValue';
 
 // The tone a status word reads as (lists/model chipTone) -> Ant's Tag status colour.
 const TONE_TAG: Record<string, string> = {
@@ -1169,9 +1170,10 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
     label: 'Allow deselect',
     initialValue: false,
   });
+  // Not "Type": the editor hides the fx toggle on a field labelled exactly that (QA PF-281).
   const [type] = ToolJet.useStateEnumeration({
     name: 'type',
-    label: 'Type',
+    label: 'Button type',
     enumDefinition: ['default', 'primary', 'dashed', 'text'],
     initialValue: 'default',
   });
@@ -1247,15 +1249,20 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
   };
   // The value takes the mode's shape and holds only values a button has: single to multiple kept text, multiple to
   // single kept an array, and actions or none kept the old selection. Not while there are no buttons yet (a query not
-  // yet run). Fires no event.
+  // yet run). Fires no event. A value dropped in actions mode comes back when the mode selects again (QA PF-005).
   const choosing = mode === 'single' || mode === 'multiple';
-  const kept = list.length ? selected.filter((v) => list.some((b) => b.value === v)) : selected;
-  const shaped: unknown = !choosing ? '' : mode === 'multiple' ? kept.map(rawOf) : kept.length ? rawOf(kept[0]) : '';
-  const shapedKey = JSON.stringify(shaped);
-  useEffect(() => {
-    if (JSON.stringify(value) !== shapedKey) setValue(shaped as string);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shapedKey, JSON.stringify(value)]);
+  const shape = (v: unknown): unknown => {
+    if (!choosing) return '';
+    const sel = Array.isArray(v) ? v.map(str) : v === '' || v === undefined || v === null ? [] : [str(v)];
+    const kept = list.length ? sel.filter((x) => list.some((b) => b.value === x)) : sel;
+    return mode === 'multiple' ? kept.map(rawOf) : kept.length ? rawOf(kept[0]) : '';
+  };
+  useOfferedValue<unknown>(
+    value,
+    (next) => setValue(next as string),
+    shape,
+    `${mode}|${JSON.stringify(list.map((b) => b.value))}`
+  );
   ToolJet.useAction(
     { name: 'setSelected', displayName: 'Set selected', params: [{ handle: 'value', displayName: 'Value' }] },
     (v) => {
@@ -1286,7 +1293,8 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
   };
   return (
     <AntProvider tokens={tokens}>
-      <SpinOver loading={loading}>
+      {/* An inline wrapper shrinks to the buttons, so Block could not stretch them (QA PKB-77). */}
+      <SpinOver loading={loading} as={block ? 'block' : 'inline'}>
         {label ? <div className="tj-ant-field-label">{label}</div> : null}
         <Space.Compact
           direction={direction as 'horizontal'}
