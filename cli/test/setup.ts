@@ -12,6 +12,8 @@ chai.use(
 export const mochaHooks = {
   beforeAll(): void {
     nock.disableNetConnect();
+    // Tests fake each server route they use; test/lib/compatibility.test.ts turns the version check back on.
+    process.env.TOOLJET_SKIP_VERSION_CHECK = '1';
   },
 
   afterEach(): void {

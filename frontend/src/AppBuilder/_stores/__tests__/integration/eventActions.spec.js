@@ -21,6 +21,7 @@
  */
 import useStore from '@/AppBuilder/_stores/store';
 import { seedApp, componentDefinition, binding } from '@/test/app-builder';
+import { setSdkActionReadiness } from '@/AppBuilder/_utils/sdkActionReadiness';
 
 const s = () => useStore.getState();
 
@@ -381,5 +382,118 @@ describe('confirmed latent bugs', () => {
 
     expect(closeRow1).toHaveBeenCalled();
     expect(closeRow0).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * QA item 33: a pack component exposes its actions once its manifest is read, after the page's first render, so an
+ * On page load "Control component → Open" on a pack Dialog found no `open` and did nothing. The action now waits for
+ * a pack (SDK) component's action while the widget is loading, holding the event's next actions as an awaited action
+ * does. A widget not mounted yet (hidden in this layout, in a tab not opened) does not hold them, and a native
+ * component's missing action still does not hold the chain.
+ */
+describe('control-component on a pack component whose actions are not exposed yet', () => {
+  const openDialog = (componentId) =>
+    handler({
+      id: 'open',
+      index: 0,
+      actionId: 'control-component',
+      componentId,
+      componentSpecificActionHandle: 'open',
+      componentSpecificActionParams: [{ handle: 'reason', value: '{{"page load"}}' }],
+    });
+  const thenSet = () => setVariable({ index: 1, id: 'after', value: 'SET' });
+  const seedDialog = () => {
+    seedApp({ d1: componentDefinition('d1', 'dialog1', 'PackComponent') });
+    bootEditor();
+    s().setExposedValue('d1', 'isVisible', true);
+  };
+  const loading = () => setSdkActionReadiness('canvas', 'd1', { status: 'loading' });
+  afterEach(() => setSdkActionReadiness('canvas', 'd1', null));
+
+  test('runs the action once the loading component exposes it, with its arguments', async () => {
+    seedDialog();
+    loading();
+    s().eventsSlice.setEvents([openDialog('d1')], 'canvas');
+
+    fire();
+    await drain();
+    const open = jest.fn();
+    s().setExposedValue('d1', 'open', open);
+    await drain();
+
+    expect(open).toHaveBeenCalledTimes(1);
+    expect(open).toHaveBeenCalledWith('page load');
+  });
+
+  test('holds the next handler while the component loads, as an awaited action does', async () => {
+    seedDialog();
+    loading();
+    const order = [];
+    s().eventsSlice.setEvents([openDialog('d1'), thenSet()], 'canvas');
+
+    fire();
+    await drain();
+    expect(variables().items).toBeUndefined();
+    s().setExposedValue('d1', 'open', () => order.push('open'));
+    await drain();
+    await drain();
+
+    expect(order).toEqual(['open']);
+    expect(variables().items).toBe('SET');
+  });
+
+  test('does not hold the next handler when the loaded pack component has no such action', async () => {
+    seedDialog();
+    setSdkActionReadiness('canvas', 'd1', { status: 'ready', actions: new Set(['close']) });
+    s().eventsSlice.setEvents([openDialog('d1'), thenSet()], 'canvas');
+
+    fire();
+    await drain();
+    await drain();
+
+    expect(variables().items).toBe('SET');
+  });
+
+  test('does not hold the next handler for a widget not mounted, and still runs its action should it load', async () => {
+    seedDialog();
+    s().eventsSlice.setEvents([openDialog('d1'), thenSet()], 'canvas');
+
+    fire();
+    await drain();
+    await drain();
+    expect(variables().items).toBe('SET');
+
+    loading();
+    const open = jest.fn();
+    s().setExposedValue('d1', 'open', open);
+    await drain();
+    expect(open).toHaveBeenCalledWith('page load');
+  });
+
+  test("does not wait for a native component's missing action", async () => {
+    seedApp({ b1: componentDefinition('b1', 'button1', 'Button') });
+    bootEditor();
+    s().setExposedValue('b1', 'isVisible', true);
+    s().eventsSlice.setEvents([openDialog('b1'), thenSet()], 'canvas');
+
+    fire();
+    await drain();
+    await drain();
+
+    expect(variables().items).toBe('SET');
+  });
+
+  test("runs a native component's action as before", async () => {
+    seedApp({ b1: componentDefinition('b1', 'button1', 'Button') });
+    bootEditor();
+    const open = jest.fn();
+    s().setExposedValue('b1', 'open', open);
+    s().eventsSlice.setEvents([openDialog('b1')], 'canvas');
+
+    fire();
+    await drain();
+
+    expect(open).toHaveBeenCalledWith('page load');
   });
 });

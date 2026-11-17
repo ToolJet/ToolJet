@@ -194,6 +194,17 @@ describe("Workflows - workflow inputs", SLOW_API, () => {
       ]);
     });
   };
+  // A named input is saved straight away; an invalid default stays a local draft and is never saved.
+  const invalidDefaultNotSaved = (type) => {
+    cy.wait(2500);
+    savedInputs().then((inputs) => {
+      const byKey = Object.fromEntries(inputs.map((input) => [input.key, input]));
+      expect(inputs).to.have.length(2);
+      expect(byKey.keeper).to.deep.include({ defaultValue: "k" });
+      expect(byKey.limit).to.deep.include({ type });
+      expect(byKey.limit.defaultValue).to.be.undefined;
+    });
+  };
 
   // Skipped: a duplicate input name overwrites the saved input.
   it.skip("A duplicate input name shows a clear message and the saved inputs stay unchanged", () => {
@@ -208,7 +219,7 @@ describe("Workflows - workflow inputs", SLOW_API, () => {
     savedStaysUnchanged();
   });
 
-  it("Blank and invalid-default inputs show a clear message and are not saved", () => {
+  it("A blank input is not saved and an invalid default is never saved", () => {
     const typeControl = `${inputsSelector.card}:eq(0) ${inputsSelector.typeControl}`;
 
     seedInputsWorkflow([keeperInput()]);
@@ -223,28 +234,31 @@ describe("Workflows - workflow inputs", SLOW_API, () => {
     pickSelectOption(typeControl, "number");
     card(0).find(inputsSelector.defaultValue).type("abc");
     card(0).find(inputsSelector.error).should("contain.text", inputsText.numberDefault);
-    savedStaysUnchanged();
+    invalidDefaultNotSaved("number");
 
     pickSelectOption(typeControl, "boolean");
     card(0).find(inputsSelector.defaultValue).clear().type("yes");
     card(0).find(inputsSelector.error).should("contain.text", inputsText.booleanDefault);
-    savedStaysUnchanged();
+    invalidDefaultNotSaved("boolean");
 
     pickSelectOption(typeControl, "array");
     card(0).find(inputsSelector.defaultValue).clear().type("{{}");
     card(0).find(inputsSelector.error).should("contain.text", inputsText.arrayDefault);
-    savedStaysUnchanged();
+    invalidDefaultNotSaved("array");
 
     pickSelectOption(typeControl, "object");
     card(0).find(inputsSelector.defaultValue).clear().type("[1]");
-    card(0).find(inputsSelector.error).should("contain.text", inputsText.objectDefault);
-    savedStaysUnchanged();
+    card(0).find(inputsSelector.error).should("contain.text", inputsText.objectShapeDefault);
+    invalidDefaultNotSaved("object");
 
     card(0).find(inputsSelector.defaultValue).clear().type("{{}}");
     card(0).find(inputsSelector.error).should("not.exist");
     cy.apiWaitForWorkflowDefinition(
-      (definition) => definition.workflowInputs?.some((input) => input.key === "limit"),
-      "the now-valid input to be saved"
+      (definition) =>
+        definition.workflowInputs?.some(
+          (input) => input.key === "limit" && JSON.stringify(input.defaultValue) === "{}"
+        ),
+      "the now-valid default to be saved"
     );
   });
 

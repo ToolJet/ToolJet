@@ -87,4 +87,87 @@ describe('LibraryComponent drop-time identity stamping', () => {
     });
     expect(unsized.layouts.desktop).toMatchObject({ width: 12, height: 200 });
   });
+
+  it('[LibraryComponent-DROP-003] does not save a hidden prop, which has no Inspector field', () => {
+    // Break this catches: a drop saving a hidden prop's sample (a Rocket Number Input's value 1), which then sets the
+    // field on every load over the Default value the builder set (QA item 17).
+    const dropped = addNewWidgetToTheEditor('PackComponent', 'desktop', realCanvas, 'canvas', undefined, {
+      pack: 'shadcn',
+      componentName: 'NumberInput',
+      props: [
+        { name: 'defaultValue', type: 'number', default: 1 },
+        { name: 'value', type: 'number', default: 1, inspector: 'hidden' },
+      ],
+    });
+
+    const { properties } = dropped.component.definition;
+    expect(properties.defaultValue.value).toBe('{{1}}');
+    expect(properties.value).toBeUndefined();
+  });
+
+  it('[LibraryComponent-DROP-002] stamps manifest style defaults into definition.styles, not properties', () => {
+    // Break this catches: dropping the styles loop (the Styles tab opens empty and the bundle falls back to
+    // its own initialValue), or stamping styles into properties (they'd surface as component props).
+    const dropped = addNewWidgetToTheEditor('LibraryComponent', 'desktop', realCanvas, 'canvas', undefined, {
+      libraryId: 'lib-42',
+      correlationId: '11111111-2222-3333-4444-555555555555',
+      libraryName: 'My UI Library',
+      componentName: 'Card',
+      props: [],
+      styles: [
+        { name: 'accentColor', type: 'string', inspector: 'color', default: 'var(--cc-primary-brand)' },
+        { name: 'padding', type: 'number', default: 16 },
+      ],
+    });
+
+    const { styles, properties } = dropped.component.definition;
+    expect(styles.accentColor.value).toBe('var(--cc-primary-brand)');
+    expect(styles.padding.value).toBe('{{16}}');
+    expect(styles.boxShadow).toBeDefined();
+    expect(properties.accentColor).toBeUndefined();
+  });
+
+  it('[LibraryComponent-DROP-004] stamps a number-field style default as a plain number, not as code', () => {
+    // Break this catches: {{160}} stamped for a numberInput style, which opens the field in code mode, where a
+    // builder types 200px and the style falls back to its default (Rocket RK-28).
+    const dropped = addNewWidgetToTheEditor('LibraryComponent', 'desktop', realCanvas, 'canvas', undefined, {
+      libraryId: 'lib-42',
+      correlationId: '11111111-2222-3333-4444-555555555555',
+      libraryName: 'My UI Library',
+      componentName: 'Card',
+      props: [],
+      styles: [
+        { name: 'panelHeight', type: 'number', inspector: 'numberInput', default: 160 },
+        { name: 'radius', type: 'number', inspector: 'numberInput' },
+        { name: 'padding', type: 'number', default: 16 },
+      ],
+    });
+
+    const { styles } = dropped.component.definition;
+    expect(styles.panelHeight.value).toBe(160);
+    expect(styles.radius.value).toBe('');
+    expect(styles.padding.value).toBe('{{16}}');
+  });
+
+  // A pack component is named after its own name. The widget registry has native widgets under some of the same
+  // component names with a different registry name (ButtonGroup is ButtonGroupLegacy), which named it buttongrouplegacy1.
+  it.each([
+    ['ButtonGroup', 'buttongroup1'],
+    ['Modal', 'modal1'],
+    ['TextArea', 'textarea1'],
+    ['Divider', 'divider1'],
+  ])(
+    '[PackComponent-NAME-001] names a dropped pack %s %s, not after the native widget it shares a name with',
+    (componentName, name) => {
+      // Break this catches: the pack component's name being looked up in the native widget registry, so it takes that
+      // widget's name (buttongrouplegacy1, textarea1 for TextArea, horizontaldivider1).
+      const newComponent = addNewWidgetToTheEditor('PackComponent', 'desktop', realCanvas, 'canvas', undefined, {
+        pack: 'shadcn',
+        componentName,
+        props: [],
+      });
+
+      expect(newComponent.name).toBe(name);
+    }
+  );
 });

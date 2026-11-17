@@ -11,6 +11,8 @@ export interface HistoryEntryDto {
     email: string;
   };
   isAiGenerated: boolean;
+  // Set on an AI turn's entry: the chat message it came from (opens that turn in the compare view).
+  aiMessageId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
