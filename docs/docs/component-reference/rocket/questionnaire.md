@@ -7,10 +7,6 @@ title: Questionnaire
 
 The **Questionnaire** component asks a series of questions one at a time, with answer cards, a progress bar and **Previous**, **Skip**, **Next** and **Submit** buttons. Use it for onboarding flows, surveys or intake forms.
 
-:::info
-Every Rocket 2.0 component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -24,21 +20,44 @@ Every Rocket 2.0 component also has the [common settings](../common-settings.md)
 | Completed text | Message shown under **Completed title** after the user submits. | Text. Default: `We will use them to set up your workspace.` |
 | Surface | **Card** draws the questionnaire in a bordered box; **Plain** shows it without one. | Card, Plain. Default: Card |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On step changed](../common-settings.md#events) | Triggers when the questionnaire moves to another question. |
-| [On submit](../common-settings.md#events) | Triggers when the user submits and every required question is answered. |
+| On step changed | Triggers when the questionnaire moves to another question. |
+| On submit | Triggers when the user submits and every required question is answered. |
 
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
 | Reset | Restores the default answers and goes back to the first question. | `components.questionnaire1.reset()` |
 | Go to question | Moves to the question given by **Index or name**, a position starting at `0` or a question's `name`. It reopens a submitted questionnaire. | `components.questionnaire1.goTo("{{0}}")` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.questionnaire1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.questionnaire1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.questionnaire1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -56,6 +75,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `currentIndex` | The position of the current question, starting at `0`. | `{{components.questionnaire1.currentIndex}}` |
 | `currentItem` | The current question's `name`, `prompt`, `type` and `required`. | `{{components.questionnaire1.currentItem}}` |
 | `isComplete` | Whether the user has submitted the questionnaire. | `{{components.questionnaire1.isComplete}}` |
+| `isVisible` | Whether the component is visible. | `{{components.questionnaire1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.questionnaire1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.questionnaire1.isDisabled}}` |
 
 ## Styles
 
@@ -68,3 +90,6 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Description and answer description color | Theme: Placeholder text |
 | Radius | — |
 | Question typeface | Theme font |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

@@ -7,10 +7,6 @@ title: Chat
 
 The **Chat** component shows a conversation between the user and a respondent, such as an AI assistant or a support agent, with a box for typing messages. Your app sends each message to a query and adds the reply with the **Append to history** action.
 
-:::info
-Every Ant Design component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -31,16 +27,36 @@ Every Ant Design component also has the [common settings](../common-settings.md)
 | History loading | Shows a spinner in place of the messages, while past messages load. | On or off. Default: Off |
 | Input disabled | Stops the user from typing and sending messages. | On or off. Default: Off |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On message sent](../common-settings.md#events) | Triggers when the user sends a message, by pressing Enter or the send button, or when the **Send message** action runs. |
-| [On clear history](../common-settings.md#events) | Triggers when the messages are cleared, by the clear button or the **Clear history** action. |
+| On message sent | Triggers when the user sends a message, by pressing Enter or the send button, or when the **Send message** action runs. |
+| On clear history | Triggers when the messages are cleared, by the clear button or the **Clear history** action. |
 
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
@@ -54,6 +70,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Disable input | Turns the message box off or on. | `components.chat1.setInputDisable("")` |
 | Set user avatar | Changes the user's avatar to the image at the given **Avatar URL**. | `components.chat1.setUserAvatar("")` |
 | Set respondent avatar | Changes the respondent's avatar to the image at the given **Avatar URL**. | `components.chat1.setResponderAvatar("")` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.chat1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.chat1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.chat1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -77,6 +96,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `history` | All messages in the conversation, each with `message`, `type`, `name`, `avatar` and `timestamp`. | `{{components.chat1.history}}` |
 | `lastMessage` | The last message the user sent. | `{{components.chat1.lastMessage}}` |
 | `lastResponse` | The last respondent message added to the conversation. | `{{components.chat1.lastResponse}}` |
+| `isVisible` | Whether the component is visible. | `{{components.chat1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.chat1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.chat1.isDisabled}}` |
 
 ## Styles
 
@@ -87,3 +109,6 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Container background | Theme: Surface 1 |
 | Border color | Theme: Default border |
 | Border radius | — |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

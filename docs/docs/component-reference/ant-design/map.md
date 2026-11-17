@@ -7,10 +7,6 @@ title: Map
 
 The **Map** component shows locations from your data as pins on an interactive map, with optional routes, areas and a heat layer. Use it to track deliveries, stores or field staff, or to let users pick a location.
 
-:::info
-Every Ant Design component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -64,19 +60,39 @@ Every Ant Design component also has the [common settings](../common-settings.md)
 | Tile URL (empty for the default basemap) | Address of your own map tiles, with `{z}`, `{x}` and `{y}` placeholders. Leave it empty for the default map. | Text |
 | Tile attribution | Credit text shown for the tiles in **Tile URL**. | Text |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On marker click](../common-settings.md#events) | Triggers when the user clicks a pin. |
-| [On map clicked](../common-settings.md#events) | Triggers when the user clicks the map outside the pins. |
-| [On shape clicked](../common-settings.md#events) | Triggers when the user clicks a route line or an area. |
-| [On location picked](../common-settings.md#events) | Triggers when the user picks a location by clicking the map, dragging the picked pin or choosing a search result. |
-| [On bounds change](../common-settings.md#events) | Triggers when the user pans or zooms the map. Moves made by the actions don't fire it. |
+| On marker click | Triggers when the user clicks a pin. |
+| On map clicked | Triggers when the user clicks the map outside the pins. |
+| On shape clicked | Triggers when the user clicks a route line or an area. |
+| On location picked | Triggers when the user picks a location by clicking the map, dragging the picked pin or choosing a search result. |
+| On bounds change | Triggers when the user pans or zooms the map. Moves made by the actions don't fire it. |
 
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
@@ -88,6 +104,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Set picked location | Places the picked pin at the given **Latitude** and **Longitude**, without firing **On location picked**. | `components.map1.setPickedLocation("{{37.7749}}", "{{-122.4194}}")` |
 | Clear picked location | Removes the picked pin. | `components.map1.clearPickedLocation()` |
 | Set map style | Changes the base map to the given style: `streets`, `satellite`, `light` or `dark`. | `components.map1.setMapStyle("satellite")` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.map1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.map1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.map1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -150,6 +169,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `center` | The `lat` and `lng` of the center of the map's current view. | `{{components.map1.center}}` |
 | `zoom` | The map's current zoom level. | `{{components.map1.zoom}}` |
 | `bounds` | The edges of the current view, as `north`, `south`, `east` and `west`, and as `northEast` and `southWest` points. | `{{components.map1.bounds}}` |
+| `isVisible` | Whether the component is visible. | `{{components.map1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.map1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.map1.isDisabled}}` |
 
 ## Styles
 
@@ -160,3 +182,6 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Accent (pins without a status, the selection) | Theme: Brand primary |
 | Group count color | Theme: Primary text |
 | Radius | — |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

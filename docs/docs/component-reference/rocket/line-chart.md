@@ -7,10 +7,6 @@ title: Line Chart
 
 The **Line Chart** component plots one or more series as lines, which suits trends over time such as revenue by month or daily sign-ups.
 
-:::info
-Every Rocket 2.0 component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -38,20 +34,43 @@ Every Rocket 2.0 component also has the [common settings](../common-settings.md)
 | Highlight clicked point | Keeps the clicked point emphasized until another point is clicked or **Clear clicked point** runs. | On or off. Default: Off |
 | Loading look | What shows while the component is loading: a **Spinner** or a **Skeleton** block. | Spinner, Skeleton. Default: Spinner |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On click](../common-settings.md#events) | Triggers when the user clicks a point on the chart. |
-| [On double click](../common-settings.md#events) | Triggers when the user double-clicks the chart. |
+| On click | Triggers when the user clicks a point on the chart. |
+| On double click | Triggers when the user double-clicks the chart. |
 
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
 | Clear clicked point | Clears the clicked point and removes its highlight. | `components.linechart1.clearClickedPoint()` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.linechart1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.linechart1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.linechart1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -80,6 +99,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `highlightClicked` | Keeps the clicked point emphasized until another point is clicked or **Clear clicked point** runs. | `{{components.linechart1.highlightClicked}}` |
 | `loadingIndicator` | What shows while the component is loading: a **Spinner** or a **Skeleton** block. | `{{components.linechart1.loadingIndicator}}` |
 | `clickedDataPoint` | The data row of the point the user clicked last. | `{{components.linechart1.clickedDataPoint}}` |
+| `isVisible` | Whether the component is visible. | `{{components.linechart1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.linechart1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.linechart1.isDisabled}}` |
 
 ## Styles
 
@@ -90,3 +112,6 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Axis label color | Theme: Placeholder text |
 | Legend text color | Theme: Placeholder text |
 | Target line color | Theme: Placeholder text |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

@@ -7,10 +7,6 @@ title: Dropdown Menu
 
 The **Dropdown Menu** component is a button that opens a list of actions, such as **Edit**, **Duplicate** or **Delete**. Use it to group row or record actions without crowding the page.
 
-:::info
-Every Rocket 2.0 component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -28,22 +24,45 @@ Every Rocket 2.0 component also has the [common settings](../common-settings.md)
 | Menu side | Which side of the button the menu opens on. | Bottom, Top, Right, Left. Default: Bottom |
 | Options loading state | Shows placeholder lines in the menu instead of the items, for example while a query loads them. | On or off. Default: Off |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On select](../common-settings.md#events) | Triggers when the user clicks a menu item. |
-| [On open](../common-settings.md#events) | Triggers when the menu opens. |
-| [On close](../common-settings.md#events) | Triggers when the menu closes. |
+| On select | Triggers when the user clicks a menu item. |
+| On open | Triggers when the menu opens. |
+| On close | Triggers when the menu closes. |
 
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
 | Open | Opens the menu. | `components.dropdownmenu1.open()` |
 | Close | Closes the menu. | `components.dropdownmenu1.close()` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.dropdownmenu1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.dropdownmenu1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.dropdownmenu1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -64,6 +83,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `lastClickedOption` | The menu item the user clicked last, with its `label`, `description` and `value`. | `{{components.dropdownmenu1.lastClickedOption}}` |
 | `selectedItem` | The value of the menu item the user clicked last. | `{{components.dropdownmenu1.selectedItem}}` |
 | `isOpen` | `true` while the menu is open. | `{{components.dropdownmenu1.isOpen}}` |
+| `isVisible` | Whether the component is visible. | `{{components.dropdownmenu1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.dropdownmenu1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.dropdownmenu1.isDisabled}}` |
 
 ## Styles
 
@@ -81,6 +103,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Item hover text color | Theme: Primary text |
 | Item description and shortcut color | Theme: Placeholder text |
 | Item icon color | Theme: Placeholder text |
-| Destructive item color | `var(--cc-error-systemStatus)` |
+| Destructive item color | Theme: Error |
 | Menu radius | — |
 | Menu width (px) | — |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

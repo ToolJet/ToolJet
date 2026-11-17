@@ -7,10 +7,6 @@ title: List
 
 The **List** component shows records as rows, each with a title, a description and optional avatar and tag, or as rows of your own components. Use it for feeds, notifications or any list users pick an item from.
 
-:::info
-Every Ant Design component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -32,20 +28,44 @@ Every Ant Design component also has the [common settings](../common-settings.md)
 | Page size | Number of rows per page, with page controls under the list. Leave it at `0` to show every row. | Number. Default: `0` |
 | Empty text | Message shown when there are no records. | Text. Default: `No data` |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+| Dynamic height | Lets the component grow with its content in the running app instead of keeping a fixed height. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On item click](../common-settings.md#events) | Triggers when the user clicks a row. |
+| On item click | Triggers when the user clicks a row. |
 
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
 | Select item | Selects the row whose **Row key** field matches the given value and moves to its page. It doesn't fire **On item click**. | `components.list1.selectItem("")` |
 | Clear selection | Clears the selected row. | `components.list1.clearSelection()` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.list1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.list1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.list1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -69,6 +89,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `emptyText` | Message shown when there are no records. | `{{components.list1.emptyText}}` |
 | `selectedItem` | The record of the selected row. It is empty when nothing is selected. | `{{components.list1.selectedItem}}` |
 | `selectedItemKey` | Value of **Row key** for the selected row. | `{{components.list1.selectedItemKey}}` |
+| `isVisible` | Whether the component is visible. | `{{components.list1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.list1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.list1.isDisabled}}` |
 
 ## Styles
 
@@ -79,3 +102,6 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Container background | Theme: Surface 1 |
 | Border color | Theme: Default border |
 | Border radius | — |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

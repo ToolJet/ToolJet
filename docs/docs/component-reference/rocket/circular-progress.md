@@ -7,10 +7,6 @@ title: Circular Progress
 
 The **Circular Progress** component shows progress as a ring that fills from `0` to `100`, such as the share of orders shipped or a task's completion.
 
-:::info
-Every Rocket 2.0 component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -24,13 +20,35 @@ Every Rocket 2.0 component also has the [common settings](../common-settings.md)
 | Sub-label | Smaller text shown under the centre text, such as `Complete`. | Text. Default: `Complete` |
 | Loading look | What the component shows while it is loading: a **Spinner** or a **Skeleton** placeholder. | Spinner, Skeleton. Default: Spinner |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+| Dynamic height | Lets the component grow with its content in the running app instead of keeping a fixed height. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
 | Set value | Sets how full the ring is to **Value**, kept between `0` and `100`. | `components.circularprogress1.setValue("")` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.circularprogress1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.circularprogress1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.circularprogress1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -44,6 +62,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `text` | Text shown in the middle of the ring when **Centre text** is **Custom**. | `{{components.circularprogress1.text}}` |
 | `label` | Smaller text shown under the centre text, such as `Complete`. | `{{components.circularprogress1.label}}` |
 | `loadingIndicator` | What the component shows while it is loading: a **Spinner** or a **Skeleton** placeholder. | `{{components.circularprogress1.loadingIndicator}}` |
+| `isVisible` | Whether the component is visible. | `{{components.circularprogress1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.circularprogress1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.circularprogress1.isDisabled}}` |
 
 ## Styles
 
@@ -54,3 +75,6 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Centre text color | Theme: Primary text |
 | Sub-label color | Theme: Placeholder text |
 | Alignment | Center |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

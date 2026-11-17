@@ -7,10 +7,6 @@ title: Accordion
 
 The **Accordion** component shows a list of sections with a title each, where the user opens a section to read its text. Use it for FAQs, help text or details that should stay out of the way until needed.
 
-:::info
-Every Rocket 2.0 component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -21,17 +17,38 @@ Every Rocket 2.0 component also has the [common settings](../common-settings.md)
 | Open item (value) | Opens the section whose `value` matches. It also updates to the value of the first open section as the user opens and closes them. | Text |
 | Loading look | What shows while the component is loading: a **Spinner** or a grey **Skeleton** block. | Spinner, Skeleton. Default: Spinner |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+| Dynamic height | Lets the component grow with its content in the running app instead of keeping a fixed height. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On change](../common-settings.md#events) | Triggers when the set of open sections changes. |
-| [On expand](../common-settings.md#events) | Triggers when a section opens. |
-| [On collapse](../common-settings.md#events) | Triggers when a section closes. |
+| On change | Triggers when the set of open sections changes. |
+| On expand | Triggers when a section opens. |
+| On collapse | Triggers when a section closes. |
 
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
@@ -39,6 +56,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Collapse | Closes the section at **Index (empty: all)**, or every section when the index is empty. | `components.accordion1.collapse("")` |
 | Open item | Opens the section whose `value` matches **Item value**. | `components.accordion1.open("")` |
 | Collapse all | Closes every section. | `components.accordion1.collapseAll()` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.accordion1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.accordion1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.accordion1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -51,6 +71,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `loadingIndicator` | What shows while the component is loading: a **Spinner** or a grey **Skeleton** block. | `{{components.accordion1.loadingIndicator}}` |
 | `openIndexes` | Positions of the open sections, counting from `0`. | `{{components.accordion1.openIndexes}}` |
 | `isExpanded` | `true` when at least one section is open. | `{{components.accordion1.isExpanded}}` |
+| `isVisible` | Whether the component is visible. | `{{components.accordion1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.accordion1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.accordion1.isDisabled}}` |
 
 ## Styles
 
@@ -61,3 +84,6 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Divider color | Theme: Default border |
 | Chevron color | Theme: Placeholder text |
 | Divider (legacy) | — |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

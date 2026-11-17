@@ -7,10 +7,6 @@ title: Dialog
 
 The **Dialog** component opens a window over the app with a title, a description, an area for other components and **Confirm** and **Cancel** buttons. Use it to confirm a risky action or to collect details in a small form without leaving the page.
 
-:::info
-Every Rocket 2.0 component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -26,23 +22,46 @@ Every Rocket 2.0 component also has the [common settings](../common-settings.md)
 | Confirm and cancel buttons | Shows the confirm and cancel buttons at the bottom of the dialog. | On or off. Default: On |
 | Body height (px) | Height of the components area in pixels. | Number. Default: `240` |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On close](../common-settings.md#events) | Triggers when the dialog closes for any reason. |
-| [On open](../common-settings.md#events) | Triggers when the dialog opens. |
-| [On confirm](../common-settings.md#events) | Triggers when the user clicks the confirm button. |
-| [On cancel](../common-settings.md#events) | Triggers when the user dismisses the dialog with the cancel button, the close icon, the Escape key or a click on the backdrop. |
+| On close | Triggers when the dialog closes for any reason. |
+| On open | Triggers when the dialog opens. |
+| On confirm | Triggers when the user clicks the confirm button. |
+| On cancel | Triggers when the user dismisses the dialog with the cancel button, the close icon, the Escape key or a click on the backdrop. |
 
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
 | Open | Opens the dialog. | `components.dialog1.open()` |
 | Close | Closes the dialog. It fires **On close** but not **On cancel**. | `components.dialog1.close()` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.dialog1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.dialog1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.dialog1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -59,6 +78,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `showFooter` | Shows the confirm and cancel buttons at the bottom of the dialog. | `{{components.dialog1.showFooter}}` |
 | `bodyHeight` | Height of the components area in pixels. | `{{components.dialog1.bodyHeight}}` |
 | `show` | `true` while the dialog is open. | `{{components.dialog1.show}}` |
+| `isVisible` | Whether the component is visible. | `{{components.dialog1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.dialog1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.dialog1.isDisabled}}` |
 
 ## Styles
 
@@ -68,3 +90,6 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Button text | Theme: Primary text |
 | Dialog background | Theme: Surface 1 |
 | Dialog radius | — |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

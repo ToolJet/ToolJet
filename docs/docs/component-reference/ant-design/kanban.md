@@ -7,10 +7,6 @@ title: Kanban
 
 The **Kanban** component shows records as cards in columns by status, such as tasks under To do, In progress and Done. Users drag cards between columns, and your app saves each change with a query.
 
-:::info
-Every Ant Design component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -41,21 +37,41 @@ Every Ant Design component also has the [common settings](../common-settings.md)
 | Empty column message | Message shown in a column with no cards. | Text. Default: `No cards` |
 | Badge colours by value | Colors for badge values, such as `{ High: '#dc2626' }`. A value can also be `{text, background}` to set both colors. | Object |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On card moved](../common-settings.md#events) | Triggers when a card moves to another column or place, by the user or the **Move card** action. |
-| [On add card click](../common-settings.md#events) | Triggers when the user clicks a column's **Add card** button. |
-| [On card added](../common-settings.md#events) | Triggers when the **Add card** action adds a card. |
-| [On card updated](../common-settings.md#events) | Triggers when the **Update card data** action changes a card. |
-| [On card removed](../common-settings.md#events) | Triggers when a card is deleted, by its delete button or the **Delete card** action. |
-| [On card selected](../common-settings.md#events) | Triggers when the user clicks a card to select it. Clicking the selected card again clears the selection without firing this event. |
-| [On update](../common-settings.md#events) | Triggers when the cards change in any way: a move, an add, an update or a delete. |
+| On card moved | Triggers when a card moves to another column or place, by the user or the **Move card** action. |
+| On add card click | Triggers when the user clicks a column's **Add card** button. |
+| On card added | Triggers when the **Add card** action adds a card. |
+| On card updated | Triggers when the **Update card data** action changes a card. |
+| On card removed | Triggers when a card is deleted, by its delete button or the **Delete card** action. |
+| On card selected | Triggers when the user clicks a card to select it. Clicking the selected card again clears the selection without firing this event. |
+| On update | Triggers when the cards change in any way: a move, an add, an update or a delete. |
 
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
@@ -64,6 +80,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Delete card | Removes the card with the given **Card id** from the board. | `components.kanban1.deleteCard("")` |
 | Update card data | Changes fields of the card with the given **Card id** to the given **Values**, such as `{ title: 'Renamed' }`. | `components.kanban1.updateCardData("", "{{{ title: 'Renamed' }}}")` |
 | Clear selection | Clears the selected card and closes its details. | `components.kanban1.clearSelection()` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.kanban1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.kanban1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.kanban1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -101,6 +120,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `lastAddedCard` | The card the **Add card** action added last. | `{{components.kanban1.lastAddedCard}}` |
 | `lastUpdatedCard` | The card as it is after the last **Update card data** action. | `{{components.kanban1.lastUpdatedCard}}` |
 | `lastRemovedCard` | The card deleted last. | `{{components.kanban1.lastRemovedCard}}` |
+| `isVisible` | Whether the component is visible. | `{{components.kanban1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.kanban1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.kanban1.isDisabled}}` |
 
 ## Styles
 
@@ -125,3 +147,6 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Progress color (else the primary) | Theme: Brand primary |
 | Card radius | — |
 | Card shadow | None |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

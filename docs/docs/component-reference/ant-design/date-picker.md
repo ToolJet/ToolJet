@@ -7,10 +7,6 @@ title: Date Picker
 
 The **Date Picker** component lets users pick a date from a calendar, such as a due date or a delivery date. It can also pick a week, month, quarter or year, or a date and time.
 
-:::info
-Every Ant Design component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -30,21 +26,45 @@ Every Ant Design component also has the [common settings](../common-settings.md)
 | Variant | Style of the field box. `outlined` has a border, `filled` has a gray fill, `borderless` has neither, and `underlined` has only a bottom line. | `outlined`, `filled`, `borderless`, `underlined`. Default: `outlined` |
 | Size | Height and text size of the field. | `small`, `middle`, `large`. Default: `middle` |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+| Dynamic height | Lets the component grow with its content in the running app instead of keeping a fixed height. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On change](../common-settings.md#events) | Triggers when the selected date changes, by the user or an action. |
-| [On open change](../common-settings.md#events) | Triggers when the calendar opens or closes. |
+| On change | Triggers when the selected date changes, by the user or an action. |
+| On open change | Triggers when the calendar opens or closes. |
 
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
 | Set field value | Changes the date to the one given as `YYYY-MM-DD` and fires **On change**. Text that isn't a date is ignored; empty text clears the field. | `components.datepicker1.setFieldValue("")` |
 | Reset field | Returns the date to the **Value** property's value. | `components.datepicker1.resetFields()` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.datepicker1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.datepicker1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.datepicker1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -64,6 +84,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `allowClear` | Shows a button in the field that clears the date. | `{{components.datepicker1.allowClear}}` |
 | `variant` | Style of the field box. `outlined` has a border, `filled` has a gray fill, `borderless` has neither, and `underlined` has only a bottom line. | `{{components.datepicker1.variant}}` |
 | `size` | Height and text size of the field. | `{{components.datepicker1.size}}` |
+| `isVisible` | Whether the component is visible. | `{{components.datepicker1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.datepicker1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.datepicker1.isDisabled}}` |
 
 ## Styles
 
@@ -74,3 +97,6 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Container background | Theme: Surface 1 |
 | Border color | Theme: Default border |
 | Border radius | — |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

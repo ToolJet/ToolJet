@@ -7,10 +7,6 @@ title: Range Picker
 
 The **Range Picker** component is Ant Design's date range input. Users pick a start and an end date in one field, for example to filter a report by period.
 
-:::info
-Every Ant Design component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -28,20 +24,44 @@ Every Ant Design component also has the [common settings](../common-settings.md)
 | Variant | Border style of the field. `filled` uses a light background, `borderless` has no border, and `underlined` shows only a bottom line. | `outlined`, `filled`, `borderless`, `underlined`. Default: `outlined` |
 | Size | Height and text size of the field. | `small`, `middle`, `large`. Default: `middle` |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+| Dynamic height | Lets the component grow with its content in the running app instead of keeping a fixed height. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On change](../common-settings.md#events) | Triggers when the picked range changes, including when it's cleared. |
+| On change | Triggers when the picked range changes, including when it's cleared. |
 
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
 | Set field value | Sets the range to the given **Value**, a pair of `YYYY-MM-DD` dates. | `components.rangepicker1.setFieldValue("")` |
 | Reset field | Sets the field back to the **Value** property. | `components.rangepicker1.resetFields()` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.rangepicker1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.rangepicker1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.rangepicker1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -61,6 +81,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `size` | Height and text size of the field. | `{{components.rangepicker1.size}}` |
 | `startDate` | Start of the range as `YYYY-MM-DD`, or empty. | `{{components.rangepicker1.startDate}}` |
 | `endDate` | End of the range as `YYYY-MM-DD`, or empty. | `{{components.rangepicker1.endDate}}` |
+| `isVisible` | Whether the component is visible. | `{{components.rangepicker1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.rangepicker1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.rangepicker1.isDisabled}}` |
 
 ## Styles
 
@@ -71,3 +94,6 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Container background | Theme: Surface 1 |
 | Border color | Theme: Default border |
 | Border radius | — |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

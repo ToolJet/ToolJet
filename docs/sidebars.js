@@ -832,7 +832,6 @@ const sidebars = {
                 "component-reference/ant-design/upload"
               ]
             },
-            "component-reference/common-settings",
             {
               "type": "category",
               "label": "Custom Component Libraries",

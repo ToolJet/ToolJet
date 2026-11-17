@@ -7,10 +7,6 @@ title: Calendar
 
 The **Calendar** component shows a month on the page for the user to pick one date, several dates or a date range. Markers can flag days with events, such as deliveries or leave.
 
-:::info
-Every Rocket 2.0 component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -31,22 +27,45 @@ Every Rocket 2.0 component also has the [common settings](../common-settings.md)
 | Show border | Draws a border around the calendar. | On or off. Default: On |
 | Loading look | What shows while the component is loading: a **Spinner** or a grey **Skeleton** block. | Spinner, Skeleton. Default: Spinner |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On select](../common-settings.md#events) | Triggers when the selected dates change, by a click or by the **Select date** or **Clear** action. |
-| [On month changed](../common-settings.md#events) | Triggers when the user moves to another month. |
+| On select | Triggers when the selected dates change, by a click or by the **Select date** or **Clear** action. |
+| On month changed | Triggers when the user moves to another month. |
 
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
 | Select date | Selects **Date** and shows its month. In **Range** mode, **End date** sets the end of the range; in **Multiple** mode, the date is added to the selection. Dates the user couldn't pick are ignored. | `components.calendar1.selectDate("", "")` |
 | Clear | Clears the selected dates. | `components.calendar1.clear()` |
 | Set month | Shows the month that contains **Date**, such as `2026-03` or `2026-03-14`. | `components.calendar1.setMonth("")` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.calendar1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.calendar1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.calendar1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -75,6 +94,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `visibleMonth` | The first month on screen, in `YYYY-MM` form. | `{{components.calendar1.visibleMonth}}` |
 | `visibleStart` | First day of the months on screen. | `{{components.calendar1.visibleStart}}` |
 | `visibleEnd` | Last day of the months on screen. | `{{components.calendar1.visibleEnd}}` |
+| `isVisible` | Whether the component is visible. | `{{components.calendar1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.calendar1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.calendar1.isDisabled}}` |
 
 ## Styles
 
@@ -93,3 +115,6 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Marker dot color | Theme: Brand primary |
 | Calendar radius | — |
 | Day size (px) | — |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

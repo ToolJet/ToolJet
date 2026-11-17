@@ -7,10 +7,6 @@ title: Schedule
 
 The **Schedule** component shows bookings on a timeline, with resources such as rooms, people or vehicles down the side and time across. The user can click a booking to open it or click a free slot to book it.
 
-:::info
-Every Rocket 2.0 component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -40,12 +36,42 @@ Every Rocket 2.0 component also has the [common settings](../common-settings.md)
 | Status colors | A color for each status word, for example `{ "on site": "#0ea5e9" }`. Overrides the automatic tone. | Object |
 | Loading look | What shows while the schedule is loading: a spinner or a skeleton outline. | Spinner, Skeleton. Default: Spinner |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [On booking clicked](../common-settings.md#events) | Triggers when the user clicks a booking. |
-| [On slot clicked](../common-settings.md#events) | Triggers when the user clicks a free or partly booked slot. |
+| On booking clicked | Triggers when the user clicks a booking. |
+| On slot clicked | Triggers when the user clicks a free or partly booked slot. |
+
+## Component Specific Actions (CSA)
+
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
+
+| <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
+|:--|:--|:--|
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.schedule1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.schedule1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.schedule1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -78,6 +104,9 @@ Every Rocket 2.0 component also has the [common settings](../common-settings.md)
 | `selectedBooking` | The data row of the booking the user clicked last. | `{{components.schedule1.selectedBooking}}` |
 | `selectedBookingId` | The id of the clicked booking, from **Id field**. | `{{components.schedule1.selectedBookingId}}` |
 | `selectedSlot` | The slot the user clicked last: `resourceId`, `resource`, `start`, `end`, `date`, `startTime`, `endTime` and a readable `label`. | `{{components.schedule1.selectedSlot}}` |
+| `isVisible` | Whether the component is visible. | `{{components.schedule1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.schedule1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.schedule1.isDisabled}}` |
 
 ## Styles
 
@@ -87,5 +116,8 @@ Every Rocket 2.0 component also has the [common settings](../common-settings.md)
 | Grid line color | Theme: Default border |
 | Label color | Theme: Placeholder text |
 | Booking accent (bookings without a status, the selection) | Theme: Brand primary |
-| Current time line color | `var(--cc-error-systemStatus)` |
+| Current time line color | Theme: Error |
 | Radius | — |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).

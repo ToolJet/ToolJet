@@ -7,10 +7,6 @@ title: Data Table
 
 The **Data Table** component shows rows of data in columns, with search, sorting, filters, pagination and row selection. Use it to list records from a query, such as orders or users, and to act on the rows people pick.
 
-:::info
-Every Rocket 2.0 component also has the [common settings](../common-settings.md): Visibility, Disable, Loading and Devices, the actions and exposed variables that go with them, and Box shadow. They are not repeated here.
-:::
-
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
@@ -55,25 +51,46 @@ Every Rocket 2.0 component also has the [common settings](../common-settings.md)
 | Empty description | A second line under the empty message. | Text |
 | Loading look | What the table shows while it is loading: a spinner or skeleton rows. | Spinner, Skeleton. Default: Spinner |
 
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+| Dynamic height | Lets the component grow with its content in the running app instead of keeping a fixed height. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
 ## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
 
 | <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
 |:--|:--|
-| [Row clicked](../common-settings.md#events) | Triggers when the user clicks a row. |
-| [Selection changed](../common-settings.md#events) | Triggers when the selected rows change, from a click, a checkbox or a selection action. |
-| [Action button clicked](../common-settings.md#events) | Triggers when the user clicks a button in a button column. The row the button is on is selected first. |
-| [Search](../common-settings.md#events) | Triggers when the search text changes, shortly after the user stops typing. |
-| [Sort applied](../common-settings.md#events) | Triggers when the sort changes, from a header click or the **Set sort** action. |
-| [Filter changed](../common-settings.md#events) | Triggers when the filters change, from the filter button or a filter action. |
-| [Page changed](../common-settings.md#events) | Triggers when the user moves to another page or **Set page** changes the page. |
-| [Refresh](../common-settings.md#events) | Triggers when the user clicks the refresh button. |
-| [Row hovered](../common-settings.md#events) | Triggers when the pointer moves onto a row. |
-| [Header clicked](../common-settings.md#events) | Triggers when the user clicks a column header. |
-| [Table data downloaded](../common-settings.md#events) | Triggers when the table data is downloaded, from the download button or the **Download table data** action. |
+| Row clicked | Triggers when the user clicks a row. |
+| Selection changed | Triggers when the selected rows change, from a click, a checkbox or a selection action. |
+| Action button clicked | Triggers when the user clicks a button in a button column. The row the button is on is selected first. |
+| Search | Triggers when the search text changes, shortly after the user stops typing. |
+| Sort applied | Triggers when the sort changes, from a header click or the **Set sort** action. |
+| Filter changed | Triggers when the filters change, from the filter button or a filter action. |
+| Page changed | Triggers when the user moves to another page or **Set page** changes the page. |
+| Refresh | Triggers when the user clicks the refresh button. |
+| Row hovered | Triggers when the pointer moves onto a row. |
+| Header clicked | Triggers when the user clicks a column header. |
+| Table data downloaded | Triggers when the table data is downloaded, from the download button or the **Download table data** action. |
 
 ## Component Specific Actions (CSA)
 
-Run these from an event handler with **Control Component**, or from a RunJS query.
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
@@ -89,6 +106,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Set sort | Sorts by the column in **Column key**, in the **Direction** `asc` or `desc`. Any other direction removes the sort. | `components.datatable1.setSort("", "asc")` |
 | Set search text | Sets the search text and searches the table. | `components.datatable1.setSearchText("")` |
 | Download table data | Downloads the current rows as a CSV or JSON file, depending on **Type (csv or json)**. | `components.datatable1.downloadTableData("csv")` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.datatable1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.datatable1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.datatable1.setLoading(false)` |
 
 ## Exposed Variables
 
@@ -148,6 +168,9 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `hoveredRow` | The row under the pointer, as an object. | `{{components.datatable1.hoveredRow}}` |
 | `hoveredRowId` | The position of the hovered row in **Table data**. | `{{components.datatable1.hoveredRowId}}` |
 | `selectedColumnHeader` | The column header last clicked, with its `name` and `key`. | `{{components.datatable1.selectedColumnHeader}}` |
+| `isVisible` | Whether the component is visible. | `{{components.datatable1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.datatable1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.datatable1.isDisabled}}` |
 
 ## Styles
 
@@ -168,3 +191,6 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Font size (px) | `14` |
 | Header casing | As typed |
 | Border around the table | On |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
