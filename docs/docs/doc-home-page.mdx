@@ -30,8 +30,8 @@ import { useVersionedHref } from '@site/src/components/DocBlocks';
 export const Card = ({ className = '', href, children }) => {
     const to = useVersionedHref(href);
     const cardContent = (
-        <div className={`relative rounded-lg bg-white dark:bg-gray-800 group pt-[0.5px] pb-[3px] shadow-[inset_0_0_0_1.2px_rgba(243,244,246,1)] dark:shadow-[inset_0_0_0_1.2px_rgba(55,65,81,1)] pb-2.25 ${className}`}>
-            <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50"
+        <div className={`relative rounded-xl bg-white dark:bg-gray-800 group pt-[0.5px] pb-[3px] shadow-[0_1px_2px_rgba(15,23,42,0.06),0_4px_12px_rgba(15,23,42,0.06)] dark:shadow-none pb-2.25 ${className}`}>
+            <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-50"
                 style={{
                     background: 'linear-gradient(to bottom, #3B82F6, transparent) border-box',
                     border: '0px',
@@ -40,7 +40,7 @@ export const Card = ({ className = '', href, children }) => {
                     pointerEvents: 'none'
                 }}>
             </div>
-            <div className="m-0.5 relative z-10 h-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <div className="m-0.5 relative z-10 h-full overflow-hidden rounded-xl border border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                 {children}
             </div>
         </div>
@@ -122,7 +122,7 @@ export const IconCard = ({ icon: Icon, title, content, color, href, badge, compa
                 <CardTitle>{title}</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow">
-                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-5">{content}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 md:line-clamp-5">{content}</p>
             </CardContent>
         </div>
     </Card>
@@ -132,7 +132,7 @@ export const WideCard = ({ icon: Icon, title, content, color, href, image, alt =
     const src = useBaseUrl(image);
     return (
         <Card href={href} className="md:h-[220px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
-            <div className="h-full grid grid-cols-1 md:grid-cols-2 overflow-hidden rounded-lg">
+            <div className="h-full grid grid-cols-1 md:grid-cols-2">
                 <div className="p-8 flex flex-col min-w-0">
                     <div className="w-12 h-12 mb-5 shrink-0 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg bg-gray-100 dark:bg-gray-700">
                         <Icon className={`w-6 h-6 ${color}`} />
@@ -140,8 +140,8 @@ export const WideCard = ({ icon: Icon, title, content, color, href, image, alt =
                     <CardTitle>{title}</CardTitle>
                     <p className="text-sm text-gray-600 dark:text-gray-400 m-0 mt-2">{content}</p>
                 </div>
-                <div className="h-[200px] md:h-full overflow-hidden border-0 border-t md:border-t-0 md:border-l border-solid border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                    <img src={src} alt={alt} loading="lazy" className="w-full h-full object-cover object-left-top transition-transform duration-300 ease-in-out group-hover:scale-[1.02]" />
+                <div className="flex items-center justify-center p-5 md:p-6 bg-slate-50 dark:bg-gray-800">
+                    <img src={src} alt={alt} loading="lazy" className="block max-h-[172px] w-auto max-w-full rounded-lg border border-solid border-gray-200 dark:border-gray-700 shadow-sm transition-transform duration-300 ease-in-out group-hover:scale-[1.02]" />
                 </div>
             </div>
         </Card>
@@ -247,15 +247,15 @@ style={{
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {builderCards.map((card, index) => (
                             <IconCard key={index} {...card} compact />
                         ))}
                     </div>
-                    <div className="mt-4">
+                    <div className="mt-6">
                         <WideCard {...aiCard} />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                         {platformCards.map((card, index) => (
                             <IconCard key={index} {...card} />
                         ))}

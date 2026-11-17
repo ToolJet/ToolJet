@@ -30,8 +30,8 @@ export const aiCard = {
     color: "text-blue-500",
     content: "Describe the app and ToolJet AI builds it, or connect Claude Code, Codex or any MCP-compatible agent and build from your editor.",
     href: "/docs/build-with-ai/overview/",
-    image: "/img/home/build-with-ai.jpg",
-    alt: "The AI chat summary of a finished build beside the app it built, with the Build from your own agent bar at the top"
+    image: "/img/home/build-with-ai.png",
+    alt: "The AI chat asking What would you like to build today?, with the Build from your own agent bar and its Connect button at the top"
 };
 
 export const platformCards = [
