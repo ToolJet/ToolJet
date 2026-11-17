@@ -158,6 +158,14 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getPastPanelOffset(404)({ reference: { x: 54, width: 342 } })).toEqual([0, 16]);
   });
 
+  // Break this catches: at 683px (1024px at 150% zoom) a 304px popup can't fit past a 403px panel and
+  // runs 33px off screen; it clamps 8px inside the viewport, over the panel's edge, instead.
+  it('clamps a page popup 8px inside the viewport when it cannot fit past the Pages panel', () => {
+    const rects = { reference: { x: 64, width: 279 }, popper: { width: 304 } };
+    expect(getPastPanelOffset(403, 683)(rects)).toEqual([0, 683 - 8 - 304 - 64 - 279]);
+    expect(getPastPanelOffset(404, 1440)(rects)).toEqual([0, 69]);
+  });
+
   // Break this catches: either side panel snaps shut or the bottom drawer uses a different motion curve.
   it('shares the prototype motion timing across left and bottom panels', () => {
     expect(PANEL_MOTION).toEqual({

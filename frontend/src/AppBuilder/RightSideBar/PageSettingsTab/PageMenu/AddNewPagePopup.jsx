@@ -49,7 +49,10 @@ export const getPagePopupPopperConfig = (target) => ({
       name: 'offset',
       options: {
         offset: (rects) =>
-          getPastPanelOffset(target?.closest('.sidebar-h-100-popover')?.getBoundingClientRect().right)(rects),
+          getPastPanelOffset(
+            target?.closest('.sidebar-h-100-popover')?.getBoundingClientRect().right,
+            window.innerWidth
+          )(rects),
       },
     },
   ],

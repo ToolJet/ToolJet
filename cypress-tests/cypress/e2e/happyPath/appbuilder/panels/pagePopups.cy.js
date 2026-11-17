@@ -8,13 +8,15 @@ import {
   settledValue,
 } from "Support/utils/appBuilder/panelAudit";
 
-// Page popups open beside the Pages panel, fully inside the viewport (LR-23), and New page stays in reach
+// Page popups open beside the Pages panel when they fit, always fully inside the viewport (LR-23), and New page stays in reach
 // under a long page list without scrolling the panel title away (UC-14).
 const appName = `page-popups-${Date.now()}`;
+// 683x600 is 1024px at 150% zoom, where a popup can't fit past the Pages panel and clamps to the viewport.
 const VIEWPORTS = [
   [1440, 900],
   [1024, 768],
   [1440, 600],
+  [683, 600],
 ];
 const POPUP = "#add-new-page-popup:not(.add-new-page-popup--embedded)";
 const SHELL = ".sidebar-h-100-popover";
@@ -38,7 +40,12 @@ const expectPastPanel = (which, name) => {
   settledValue(popupEdges).then((edges) => {
     evidence(name, () => edges, { file: "page-popups.json", mask: [appName] });
     const { popup, panelRight, viewport: [width, height] } = edges;
-    expect(popup.left, `${which} left vs panel right`).to.be.at.least(panelRight);
+    // Where it can't fit past the panel (panel + 8px gap + popup > viewport), it overlaps the panel.
+    if (panelRight + 8 + popup.right - popup.left <= width) {
+      expect(popup.left, `${which} left vs panel right`).to.be.at.least(panelRight);
+    } else {
+      expect(popup.right, `${which} right clamps 8px inside the viewport`).to.be.closeTo(width - 8, 1);
+    }
     expect(popup.right, `${which} right`).to.be.at.most(width);
     expect(popup.top, `${which} top`).to.be.at.least(0);
     expect(popup.bottom, `${which} bottom`).to.be.at.most(height);

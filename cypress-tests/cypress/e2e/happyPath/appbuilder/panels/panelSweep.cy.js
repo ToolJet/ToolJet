@@ -137,6 +137,8 @@ const headerFacts = (doc) => {
   };
 };
 
+const boxGap = (a, b) => Math.max(a.left - b.right, b.left - a.right, a.top - b.bottom, b.top - a.bottom);
+
 const railFacts = (doc, rail) => {
   const button = doc.querySelector(`[data-cy="left-sidebar-${rail}-button"]`);
   const beta = button.querySelector('[class*="beta"]');
@@ -144,8 +146,8 @@ const railFacts = (doc, rail) => {
   return {
     railName: button.getAttribute("aria-label"),
     railLabel: button.querySelector(".left-sidebar-item-label")?.innerText,
-    betaClearance:
-      beta && glyph ? Math.round(beta.getBoundingClientRect().left - glyph.getBoundingClientRect().right) : null,
+    // The gap between the two boxes: the pill sits up and to the right, so either side may clear it.
+    betaClearance: beta && glyph ? Math.round(boxGap(beta.getBoundingClientRect(), glyph.getBoundingClientRect())) : null,
   };
 };
 

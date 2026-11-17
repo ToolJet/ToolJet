@@ -507,8 +507,8 @@
   // Same Beta pill as the components panel, scaled onto the 16px search glyph.
   .search-icon .code-search-beta-tag {
     position: absolute;
-    // Off the glyph's top-right corner, badge-style, so the pill never covers the magnifier.
-    top: -12px;
+    // Off the glyph's top-right corner, badge-style, 2px clear of the magnifier (UC-18).
+    top: -14px;
     right: -16px;
     z-index: 1;
     pointer-events: none;
