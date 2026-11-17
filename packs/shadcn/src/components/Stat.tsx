@@ -474,7 +474,15 @@ export const Stat = () => {
           isCard && box.width > 0 && box.width < NARROW_CARD && 'is-narrow',
           !reserveLabel && 'is-short'
         )}
+        // A tab stop announced as a button named by what it shows; Enter or Space clicks it, as the Badge does.
+        role="button"
+        tabIndex={0}
         onClick={onClick}
+        onKeyDown={(e) => {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          e.preventDefault();
+          onClick();
+        }}
         style={isCard && shadow ? { boxShadow: shadow } : undefined}
       >
         {body}
