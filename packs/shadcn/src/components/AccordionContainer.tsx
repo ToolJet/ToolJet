@@ -23,7 +23,8 @@ export const AccordionContainer = () => {
   const [rawSections] = ToolJet.useStateArray({
     name: 'sections',
     label: 'Sections',
-    description: 'Array of { id, title } objects. Keep ids stable: dropped components stay with their section id.',
+    description:
+      'Array of { id, title } objects. Keep ids stable: dropped components stay with their section id. Up to 50 sections are shown.',
     initialValue: [
       { id: 'general', title: 'General' },
       { id: 'billing', title: 'Billing' },
