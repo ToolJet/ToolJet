@@ -40,4 +40,12 @@ export const onboardingText = {
   builderUserRole: "Builder",
   endUserRole: "End-user",
   userMetadataLabel: "User metadata",
+  backToSignupText: "Back to sign up",
+  resetPasswordInfoCloud: "Contact admin to reset your password",
+  resetPasswordInfoSelfHosted: "Contact super admin to reset your password",
+  otpCooldownError: "Please wait 30 seconds before requesting again.",
+  invalidOtpError: "Invalid or expired OTP.",
+  userAlreadyExistsError: "User already exists with this email",
+  planFeatureBlockedError:
+    "Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.",
 };
