@@ -1,8 +1,11 @@
 /**
- * The workflow-, module- and data-source-folder backfills give an existing workspace's default
- * groups exactly what a new workspace gets, on every plan and edition. The reference is the real
- * new-workspace seeding (GroupPermissionsUtilService.createDefaultGroups), not a copy of its
+ * The workflow-, module- and data-source-folder backfills give an existing workspace's admin and
+ * end-user groups exactly what a new workspace gets, on every plan and edition. The reference is the
+ * real new-workspace seeding (GroupPermissionsUtilService.createDefaultGroups), not a copy of its
  * constants, so the backfills can't silently drift from it.
+ *
+ * Builder groups are the deliberate exception: they get the folder create/delete flags but no folder
+ * granular permission, so on a paid plan a builder doesn't get "Edit folder" on every folder.
  *
  * @group platform
  */
@@ -103,17 +106,18 @@ describe('Folder permission backfills', () => {
   }
 
   describe('on a workspace without folder permissions', () => {
-    it('should give the default groups exactly what a new workspace gets', async () => {
+    it('should give admin and end-user groups exactly what a new workspace gets', async () => {
       const workspaceId = await newWorkspace();
       const newWorkspacePermissions = await folderPermissionsOf(workspaceId);
       await removeFolderPermissions(workspaceId);
 
       await runFolderBackfills();
 
-      expect(await folderPermissionsOf(workspaceId)).toEqual(newWorkspacePermissions);
+      const withoutBuilder = (groups: { name: string }[]) => groups.filter((group) => group.name !== 'builder');
+      expect(withoutBuilder(await folderPermissionsOf(workspaceId))).toEqual(withoutBuilder(newWorkspacePermissions));
     });
 
-    it('should give builders edit access on every folder type, like a new workspace', async () => {
+    it('should give builders the folder create/delete flags but no folder granular permission', async () => {
       const workspaceId = await newWorkspace();
       await removeFolderPermissions(workspaceId);
 
@@ -122,17 +126,13 @@ describe('Folder permission backfills', () => {
       const builder = (await folderPermissionsOf(workspaceId)).find((group) => group.name === 'builder');
       expect(builder).toMatchObject({
         workflow_folder_create: true,
+        workflow_folder_delete: true,
         module_folder_create: true,
+        module_folder_delete: true,
         data_source_folder_create: true,
+        data_source_folder_delete: true,
+        folder_permissions: [],
       });
-      const builderFolderAccess = builder.folder_permissions
-        .map((permission) => [permission.type, permission.can_edit_folder])
-        .sort(([a], [b]) => a.localeCompare(b));
-      expect(builderFolderAccess).toEqual([
-        ['data_source_folder', true],
-        ['module_folder', true],
-        ['workflow_folder', true],
-      ]);
     });
   });
 

@@ -7,6 +7,9 @@ export class SeedFolderPermissions1766500000001 implements MigrationInterface {
     // automatically on migration; a folder (App folders) permission is granted to a custom
     // group only when an admin explicitly configures it. Scoping to pg.type = 'default' here
     // (and dropping the custom-groups seeding below) keeps custom groups untouched.
+    // Builder groups get no folder permission either: an is_all "Edit folder" row would let every
+    // builder edit every app folder on a paid plan. Builders manage the folders they create, and get
+    // more only through a custom group. Free plans never read these rows (hardcoded role).
     await queryRunner.query(`
       INSERT INTO granular_permissions (group_id, name, type, is_all)
       SELECT
@@ -16,6 +19,7 @@ export class SeedFolderPermissions1766500000001 implements MigrationInterface {
         true as is_all
       FROM permission_groups pg
       WHERE pg.type = 'default'
+      AND pg.name <> 'builder'
       AND NOT EXISTS (
         SELECT 1 FROM granular_permissions gp
         WHERE gp.group_id = pg.id AND gp.type = 'folder'
@@ -23,7 +27,7 @@ export class SeedFolderPermissions1766500000001 implements MigrationInterface {
     `);
 
     // Step 2: Create folders_group_permissions for each new granular permission
-    // Set permissions based on group type (admin, builder, end_user)
+    // Set permissions based on group type (admin, end_user)
 
     // Admin groups: Edit folder permission (highest level)
     // Radio button approach: only the selected permission level is true
@@ -40,27 +44,6 @@ export class SeedFolderPermissions1766500000001 implements MigrationInterface {
       WHERE gp.type = 'folder'
         AND pg.type = 'default'
         AND pg.name = 'admin'
-        AND NOT EXISTS (
-          SELECT 1 FROM folders_group_permissions fgp 
-          WHERE fgp.granular_permission_id = gp.id
-        );
-    `);
-
-    // Builder groups: Edit folder permission (per PRD: "Edit folders - All folders")
-    // Radio button approach: only the selected permission level is true
-    // Implied permissions (edit apps, view apps) are derived at runtime
-    await queryRunner.query(`
-      INSERT INTO folders_group_permissions (granular_permission_id, can_edit_folder, can_edit_apps, can_view_apps)
-      SELECT 
-        gp.id as granular_permission_id,
-        true as can_edit_folder,
-        false as can_edit_apps,
-        false as can_view_apps
-      FROM granular_permissions gp
-      JOIN permission_groups pg ON gp.group_id = pg.id
-      WHERE gp.type = 'folder'
-        AND pg.type = 'default'
-        AND pg.name = 'builder'
         AND NOT EXISTS (
           SELECT 1 FROM folders_group_permissions fgp 
           WHERE fgp.granular_permission_id = gp.id
