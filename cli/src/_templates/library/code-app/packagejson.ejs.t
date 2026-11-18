@@ -21,7 +21,7 @@ to: <%= name %>/package.json
     "@radix-ui/react-switch": "^1.4.1",
     "@radix-ui/react-tabs": "^1.2.1",
     "@radix-ui/react-tooltip": "^1.4.1",
-    "@tooljet/custom-component-sdk": "0.1.0-beta.4",
+    "@tooljet/custom-component-sdk": "1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.61.0",

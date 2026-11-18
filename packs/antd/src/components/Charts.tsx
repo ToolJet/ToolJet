@@ -932,6 +932,9 @@ export const Funnel = () => {
     const n = toNumber(v);
     return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency, null, p.locale);
   };
+  // A set Text color draws the stage labels (theme.text: the style read as a plain colour, which the canvas needs);
+  // unset, they stay white, turned dark where a stage is too narrow to hold them.
+  const labelColor = (tokens as Record<string, string>)['--tj-ant-color-text'] ? theme.text : '';
   return (
     <AntProvider tokens={tokens} fill>
       <Frame
@@ -948,15 +951,18 @@ export const Funnel = () => {
           data={rows}
           xField={p.xField}
           yField={y}
+          // Stages coloured by a group field (QA PF-230: the field was declared but never passed on); empty, each stage
+          // takes its own colour as before.
+          colorField={p.colorField || undefined}
           scale={{ color: { range: theme.palette }, ...(flat ? { y: { domain: [-1, 1] } } : {}) }}
           legend={false}
           label={{
             text: (d: Row) => `${str(d[p.xField])}  ${fmt(d[y])}${share(d[y] as number)}`,
-            fill: '#fff',
+            fill: labelColor || '#fff',
             position: 'inside',
             // White text on a stage too narrow to hold it fell on the light background; the colour now turns dark
-            // there (G2 picks the readable one against what is behind the label).
-            transform: [{ type: 'contrastReverse' }],
+            // there (G2 picks the readable one against what is behind the label). A set Text color is kept as set.
+            transform: labelColor ? [] : [{ type: 'contrastReverse' }],
           }}
           tooltip={{ items: [{ field: y, valueFormatter: fmt }] }}
           interaction={tooltipInteraction(tips)}

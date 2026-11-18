@@ -18,6 +18,13 @@ const numbersOf = (data: unknown, field: string): number[] =>
     )
     .filter((n): n is number => n !== null);
 
+// Enter and Space press a clickable chart, as they do a button; other keys do nothing (QA PF-241).
+const onPressKeys = (press: () => void) => (e: React.KeyboardEvent) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  e.preventDefault();
+  press();
+};
+
 // A trend line with no axes, Ant's Tiny chart (@ant-design/plots): data (numbers, or rows with valueField), type (line,
 // area, column), smooth, colorByTrend (green up, red down; lowerIsBetter flips it), color, valuePrefix / valueSuffix
 // for the tooltip; trend (up, down, flat) and lastValue exposed; events onClick, onDoubleClick.
@@ -96,9 +103,18 @@ export const Sparkline = () => {
   const Chart = type === 'area' ? Tiny.Area : type === 'column' ? Tiny.Column : Tiny.Line;
   const fmt = (v: unknown) => `${valuePrefix}${formatNumber(toNumber(v) ?? 0)}${valueSuffix}`;
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-spark">
+    <AntProvider tokens={tokens} fill className="tj-ant-spark tj-ant-chart-box">
       <ChartVeil loading={loading}>
-        <div ref={ref} className="tj-ant-spark-body" onClick={() => onClick()} onDoubleClick={() => onDoubleClick()}>
+        <div
+          ref={ref}
+          className="tj-ant-spark-body tj-ant-mini-focus"
+          role="button"
+          aria-label={trend ? `Sparkline, trend ${trend}` : 'Sparkline'}
+          tabIndex={0}
+          onKeyDown={onPressKeys(() => onClick())}
+          onClick={() => onClick()}
+          onDoubleClick={() => onDoubleClick()}
+        >
           {!theme.ready ? null : values.length ? (
             <Chart
               autoFit
@@ -224,7 +240,7 @@ export const RadialChart = () => {
       )
       .filter((r): r is { name: string; value: number } => !!r && !!r.name);
     return (
-      <AntProvider tokens={tokens} fill className="tj-ant-chart-frame">
+      <AntProvider tokens={tokens} fill className="tj-ant-chart-frame tj-ant-chart-box">
         <ChartVeil loading={loading}>
           <RadialCategories
             rows={rows}
@@ -241,16 +257,21 @@ export const RadialChart = () => {
   }
   const max = Math.max(1, toNumber(maxValue) ?? 100);
   const pct = Math.max(0, Math.min(100, ((toNumber(value) ?? 0) / max) * 100));
+  const pick = () => {
+    setClickedDataPoint({ value: toNumber(value) ?? 0, maxValue: max, percent: pct });
+    onClick();
+  };
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-ring tj-ant-ring--fill">
+    <AntProvider tokens={tokens} fill className="tj-ant-ring tj-ant-ring--fill tj-ant-chart-box">
       <SpinOver loading={loading} as="fill">
         <div
           ref={ringBox}
-          className="tj-ant-ring-box tj-ant-ring-fit"
-          onClick={() => {
-            setClickedDataPoint({ value: toNumber(value) ?? 0, maxValue: max, percent: pct });
-            onClick();
-          }}
+          className="tj-ant-ring-box tj-ant-ring-fit tj-ant-mini-focus"
+          role="button"
+          aria-label={`${centerLabel || 'Radial chart'}, ${centerValue || `${Math.round(pct)}%`}`}
+          tabIndex={0}
+          onKeyDown={onPressKeys(pick)}
+          onClick={pick}
         >
           <Progress
             type={type as 'dashboard'}
@@ -301,7 +322,18 @@ const RadialCategories = ({
   );
   // The box is drawn while empty too: it is measured once, on mount.
   return (
-    <div ref={ref} className="tj-ant-chart-fill">
+    // A Tab stop named by its rings; a ring is picked by pointer only, as in the other charts (QA PF-241).
+    <div
+      ref={ref}
+      className="tj-ant-chart-fill tj-ant-mini-focus"
+      role="img"
+      aria-label={
+        rows.length
+          ? `Radial chart: ${rows.map((r) => `${r.name} ${formatNumber(r.value)}`).join(', ')}`
+          : 'Radial chart, no data'
+      }
+      tabIndex={0}
+    >
       {!rows.length ? (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" />
       ) : !theme.ready ? null : (

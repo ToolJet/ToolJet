@@ -5,6 +5,8 @@ import { licenseSelectors } from "Selectors/platform/license";
 import { fillUserInviteForm } from "Support/utils/manageUsers";
 import { createAndUpdateConstant } from "Support/utils/workspaceConstants";
 import { licenseText } from "Texts/platform/license";
+import { cloudLicenseSelectors } from "Selectors/platform/cloudLicense";
+import { cloudLicenseText } from "Texts/platform/cloudLicense";
 
 export const getLicenseExpiryDate = () => {
   return cy
@@ -586,9 +588,9 @@ export const bulkUploadUsersViaCSV = (
   });
 };
 
-export const verifyLimitBanner = (heading, infoText) => {
-  cy.verifyElement(licenseSelectors.limitHeading("usage"), heading);
-  cy.verifyElement(licenseSelectors.limitInfo("usage"), infoText);
+export const verifyLimitBanner = (heading, infoText, type = "usage") => {
+  cy.verifyElement(licenseSelectors.limitHeading(type), heading);
+  cy.verifyElement(licenseSelectors.limitInfo(type), infoText);
 };
 
 export const verifyUpgradeModal = (messageText, hasAdditionalInfo = false) => {
@@ -698,3 +700,44 @@ export const multiEnvAppSetup = (appName) => {
     ["development", "staging", "production"]
   );
 };
+
+export const verifyUpgradePlanModal = ({ currentPlan = null } = {}) => {
+  const { plans, planNames, currentPlan: currentText } = cloudLicenseText.upgradeModal;
+
+  cy.get(cloudLicenseSelectors.upgradePlanModal)
+    .should("be.visible")
+    .and("contain.text", cloudLicenseText.upgradeModal.title);
+  cy.get(cloudLicenseSelectors.planColumns).should("have.length", plans.length);
+  plans.forEach((plan) => {
+    cy.get(cloudLicenseSelectors.planColumn(plan))
+      .find("h3")
+      .should("have.text", planNames[plan]);
+  });
+
+  cy.get(cloudLicenseSelectors.billingToggle("yearly"))
+    .should("have.attr", "aria-checked", "true")
+    .and("contain.text", cloudLicenseText.upgradeModal.yearly);
+  cy.get(cloudLicenseSelectors.billingToggle("monthly"))
+    .should("have.attr", "aria-checked", "false")
+    .and("contain.text", cloudLicenseText.upgradeModal.monthly)
+    .click()
+    .should("have.attr", "aria-checked", "true");
+  cy.get(cloudLicenseSelectors.billingToggle("yearly")).should("have.attr", "aria-checked", "false");
+
+  if (currentPlan) {
+    cy.get(cloudLicenseSelectors.planActionButton(currentPlan)).should("have.text", currentText);
+    cy.get(cloudLicenseSelectors.upgradePlanTable)
+      .find(`button:contains("${currentText}")`)
+      .should("have.length", 1);
+  } else {
+    cy.get(cloudLicenseSelectors.upgradePlanTable).should("not.contain.text", currentText);
+  }
+};
+
+export const closeUpgradePlanModal = () => {
+  cy.get(cloudLicenseSelectors.upgradePlanModalClose).click();
+  cy.get(cloudLicenseSelectors.upgradePlanModal).should("not.exist");
+};
+
+export const navBarLicenseButton = (text) =>
+  cy.get(cloudLicenseSelectors.navBarActions).contains("button", text);

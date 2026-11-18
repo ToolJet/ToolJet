@@ -27,7 +27,9 @@ const ACCEPTS: Record<string, PropertyType[]> = {
   'shadcn.DatePicker.value': ['string', 'array'],
   // A date, several, or a range as [start, end] or { from, to }.
   'shadcn.Calendar.defaultValue': ['string', 'array', 'object'],
-  'antd.Select.value': ['string', 'array'],
+  // Option values keep their type: the number 1 and the text '1' are two options (Ant Select only).
+  'antd.Select.value': ['string', 'array', 'number', 'boolean'],
+  'antd.Segmented.value': ['string', 'number', 'boolean'],
   'antd.TreeSelect.value': ['string', 'array'],
   'mui.ToggleButtonGroup.value': ['string', 'array'],
   // A list, or the same list as text ("a, b, c"; Hero's facts joined by " · ").
