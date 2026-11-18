@@ -1205,6 +1205,30 @@
 .tj-ant-chart-frame > div {
   height: 100%;
 }
+/* RadialChart's and Sparkline's box takes Background, Border color and Border radius as the other charts' (.tj-ant-chart)
+   does: they are not drawn in that frame, so the styles changed nothing on them (QA PKB-41). */
+.tj-ant-chart-box {
+  box-sizing: border-box;
+  background-color: var(--tj-ant-color-bg-container, transparent);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--tj-ant-color-border-secondary, transparent);
+  border-radius: var(--tj-ant-border-radius, 0);
+  padding: calc(var(--tj-ant-border-radius, 0px) * 0.3);
+}
+/* Their Tab stop (QA PF-241): a ring drawn over the plot's canvas, as the charts' body has. */
+.tj-ant-mini-focus {
+  position: relative;
+  outline: none;
+}
+.tj-ant-mini-focus:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow: inset 0 0 0 2px var(--ant-color-primary);
+}
 .tj-ant-strength {
   display: flex;
   align-items: center;
