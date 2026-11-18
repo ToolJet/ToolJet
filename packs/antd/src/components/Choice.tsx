@@ -95,7 +95,8 @@ export const RadioGroup = (props: Record<string, unknown>) => {
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const check = ToolJet.useValidation({ kind: 'choice', value: str(value), present: value !== '' });
-  const tokens = useTokenStyles();
+  // Border radius rounds the button options only: a default radio is a circle (QA PF-273).
+  const tokens = useTokenStyles({ visibleWhen: { key: 'optionType', value: 'button' } });
   ToolJet.useComponentSettings({
     role: 'radio',
     fit: true,
@@ -136,7 +137,7 @@ export const RadioGroup = (props: Record<string, unknown>) => {
   }, [offered, options.length, loading]);
 
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} className="tj-ant-radio-root tj-ant-fit-scroll">
       <FormField {...field} check={check} htmlFor={fieldId}>
         <SpinOver loading={loading} as="inline">
           {/* Read as one group named by its label (the label's htmlFor names no group; Ant's group has no role). */}
@@ -321,7 +322,8 @@ export const Rate = (props: Record<string, unknown>) => {
   };
   useValueActions(change, props.value);
   const tips = Array.isArray(tooltips) ? tooltips.map(str) : [];
-  const stars = Math.max(1, Math.min(20, Number(count) || 5));
+  // Whole stars: 3.5 reached rc-rate, which threw building that many (QA PKB-79).
+  const stars = Math.max(1, Math.min(20, Math.trunc(Number(count)) || 5));
   // Ant draws a literal 9 of 5 stars as 5, and 2.3 as 2 (2.5 with halves).
   const drawn = useFittedValue(
     value,
@@ -330,7 +332,8 @@ export const Rate = (props: Record<string, unknown>) => {
   );
 
   return (
-    <AntProvider tokens={tokens}>
+    // Container background, Border color and Border radius style the box; Primary color fills the stars (QA PKB-41).
+    <AntProvider tokens={tokens} className="tj-ant-rate tj-ant-chart-box">
       <FormField {...field} check={check}>
         <SpinOver loading={loading} as="inline">
           <AntRate
