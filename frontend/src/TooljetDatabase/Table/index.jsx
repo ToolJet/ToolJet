@@ -33,9 +33,11 @@ const Table = () => {
     getConfigurationProperty,
     canEditTjdb,
     canEditSchema,
+    totalRecords,
   } = useTooljetDatabaseContext();
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
   const developmentEnvironment = useTjdbStore((state) => state.environments.find((env) => env.priority === 1));
+  const hasQueryFilters = useTjdbStore((state) => Object.keys(state.queryFilters).length > 0);
   const selectedTableMissingFromEnvironment = isTableMissingFromEnvironment(
     tables,
     selectedTable.id,
@@ -130,7 +132,9 @@ const Table = () => {
   if (!selectedTable) return null;
 
   const isEmptyTable = gridRows.length === 0 && !rowsLoading;
-  const openCreateRowDrawer = canEditTjdb ? () => setIsCreateRowDrawerOpen(true) : undefined;
+  // Only a table with no rows at all loses the add row. A filter with no match, or a page emptied by a delete while the
+  // table has more, keeps it mounted: unmounting would drop an inline draft.
+  const hasNoRowsAtAll = isEmptyTable && !hasQueryFilters && !totalRecords;
 
   return (
     <div>
@@ -164,7 +168,7 @@ const Table = () => {
             canEditSchema={canEditSchema}
             canSelectRows={canEditTjdb}
             canEditCells={canEditTjdb}
-            onAddRow={isEmptyTable ? undefined : openCreateRowDrawer}
+            canAddRows={canEditTjdb && !hasNoRowsAtAll}
             onAddColumn={() => setIsCreateColumnDrawerOpen(true)}
           />
         </div>

@@ -18,7 +18,7 @@ type GridBodyProps = {
   cell: CellNavState;
   onFocusCell: (rowIndex: number, columnId: string) => void;
   onEditCell: (rowIndex: number, columnId: string) => void;
-  onSaveCell: (rowIndex: number, columnId: string, value: string | null) => Promise<boolean>;
+  onSaveCell: (rowId: string, columnId: string, value: string | null) => Promise<boolean>;
   onStopEditing: () => void;
 };
 

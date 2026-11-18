@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, userEvent, within } from '@/test/test-utils';
+import { render, screen, within } from '@/test/test-utils';
 import { useTjdbStore } from '../../../_stores/tjdbStore';
 import { TooljetDatabaseContext } from '../../../context';
 import { TableGrid, type TableGridProps } from '../TableGrid';
@@ -195,27 +195,19 @@ describe('TableGrid | footer and gating', () => {
     expect(screen.queryByRole('button', { name: 'Add column' })).not.toBeInTheDocument();
   });
 
-  it('shows the add row footer when a handler is given', () => {
-    setup({ onAddRow: jest.fn() });
+  it('gives the add column cell a stable Cypress hook', () => {
+    setup({ canEditSchema: true });
 
+    expect(screen.getByRole('button', { name: 'Add column' })).toHaveAttribute('data-cy', 'add-column-button');
+  });
+
+  it('shows the add row footer only when rows can be added', () => {
+    const { unmount } = setup({ canAddRows: true });
     expect(screen.getByRole('button', { name: 'Add row' })).toBeInTheDocument();
-  });
-});
+    unmount();
 
-describe('TableGrid | column menu', () => {
-  it('opens the menu callback with the column from its header button', async () => {
-    const onOpenColumnMenu = jest.fn();
-    setup({ onOpenColumnMenu });
-
-    await userEvent.click(screen.getByRole('button', { name: 'title column options' }));
-
-    expect(onOpenColumnMenu).toHaveBeenCalledWith(COLUMNS[1], expect.any(HTMLElement));
-  });
-
-  it('has no menu button when the schema is not editable', () => {
-    setup({ canEditSchema: false });
-
-    expect(screen.queryByRole('button', { name: /column options/ })).not.toBeInTheDocument();
+    setup({ canAddRows: false });
+    expect(screen.queryByRole('button', { name: 'Add row' })).not.toBeInTheDocument();
   });
 });
 

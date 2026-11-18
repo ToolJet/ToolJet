@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import { Button } from '@/components/ui/Rocket/Button/Button';
 import { LinkButton } from '@/components/ui/Rocket/LinkButton/LinkButton';
@@ -15,12 +15,23 @@ type SelectionBarProps = {
   canSelectRows: boolean;
   /** Why Delete is off, when it is. */
   deleteBlockedReason?: string;
+  /** Opens the edit row drawer. Edit is one row only. */
+  onEdit: () => void;
+  /** Why Edit is off, when it is (more than one row, or a row that cannot be matched safely). */
+  editBlockedReason?: string;
   onClear: () => void;
 };
 
-// Floats over the bottom of the grid while rows are selected. Delete is the only bulk action; Edit (one row) waits
-// for the row drawer.
-export function SelectionBar({ rows, primaryKeys, canSelectRows, deleteBlockedReason, onClear }: SelectionBarProps) {
+// Floats over the bottom of the grid while rows are selected: Edit (one row at a time) and Delete.
+export function SelectionBar({
+  rows,
+  primaryKeys,
+  canSelectRows,
+  deleteBlockedReason,
+  onEdit,
+  editBlockedReason,
+  onClear,
+}: SelectionBarProps) {
   const { selectedTable } = useTooljetDatabaseContext();
   const invalidateRows = useInvalidateTableRows();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -57,6 +68,17 @@ export function SelectionBar({ rows, primaryKeys, canSelectRows, deleteBlockedRe
         </span>
         <LinkButton onClick={onClear}>Clear</LinkButton>
         <Separator orientation="vertical" className="tw-h-4" />
+        <span title={editBlockedReason}>
+          <Button
+            variant="secondary"
+            leadingVisual={<Pencil />}
+            disabled={!!editBlockedReason}
+            onClick={onEdit}
+            data-cy="edit-row-button"
+          >
+            Edit
+          </Button>
+        </span>
         <span title={deleteBlockedReason}>
           <Button
             variant="secondary"

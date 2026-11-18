@@ -8,7 +8,7 @@ import { useTjdbStore } from '../../../_stores/tjdbStore';
 import { TooljetDatabaseContext } from '../../../context';
 import { useTableRows } from '../../../rows/useTableRows';
 import { TableGrid } from '../TableGrid';
-import type { GridColumn } from '../useTableGrid';
+import type { GridColumn, GridRow } from '../useTableGrid';
 
 jest.mock('react-hot-toast', () => {
   const toast = jest.fn() as jest.Mock & { error: jest.Mock; success: jest.Mock };
@@ -531,6 +531,86 @@ describe('TableGrid | cell navigation and editing', () => {
 
       expect(editor()).not.toBeInTheDocument();
       expect(patches).toHaveLength(0);
+    });
+  });
+
+  describe('refetch while editing', () => {
+    // Rows as a prop, so a test can hand the grid a refetch that shifts them.
+    const mountRows = (rows: GridRow[]) => {
+      const ui = (next: GridRow[]) => (
+        <TooljetDatabaseContext.Provider
+          value={
+            {
+              selectedTable: { id: 'table-1', table_name: 'orders' },
+              foreignKeys: [],
+              handleRefetchQuery: jest.fn(),
+            } as unknown as React.ContextType<typeof TooljetDatabaseContext>
+          }
+        >
+          <TableGrid columns={COLUMNS} rows={next} isLoading={false} canEditSchema canSelectRows canEditCells />
+        </TooljetDatabaseContext.Provider>
+      );
+      const view = render(ui(rows));
+      return (next: GridRow[]) => view.rerender(ui(next));
+    };
+    const first = { id: 1, title: 'a' };
+    const second = { id: 2, title: 'b' };
+
+    it('keeps the editor and its draft on the row it was opened on, and saves to that row', async () => {
+      const refetch = mountRows([first, second]);
+      await userEvent.dblClick(cellAt('2', 'title'));
+      await userEvent.type(field('title'), 'X');
+
+      refetch([{ id: 9, title: 'new' }, first, second]);
+
+      expect(within(screen.getByTestId('grid-row-2')).getByRole('textbox')).toBeInTheDocument();
+      expect(within(screen.getByTestId('grid-row-1')).queryByRole('textbox')).not.toBeInTheDocument();
+      expect(field('title')).toHaveValue('bX');
+      expect(focusedCell()).toBe(cellAt('2', 'title'));
+
+      await userEvent.type(field('title'), 'Y{Enter}');
+
+      await waitFor(() => expect(patches).toHaveLength(1));
+      expect(patches[0].url.searchParams.get('id')).toBe('eq.2');
+      expect(patches[0].body).toEqual({ title: 'bXY' });
+      await waitFor(() => expect(editor()).not.toBeInTheDocument());
+      expect(focusedCell()).toBe(cellAt('2', 'title'));
+    });
+
+    it('closes the editor when its row is gone, instead of moving it to the row that took its place', async () => {
+      const refetch = mountRows([first, second, { id: 3, title: 'c' }]);
+      await userEvent.dblClick(cellAt('2', 'title'));
+
+      refetch([first, { id: 3, title: 'c' }]);
+
+      await waitFor(() => expect(editor()).not.toBeInTheDocument());
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+      expect(patches).toHaveLength(0);
+    });
+
+    it('does not close another editor when an earlier save resolves late', async () => {
+      let release: () => void = () => undefined;
+      server.use(
+        http.patch('*/tooljet-db/proxy/:tableId', async ({ request }) => {
+          patches.push({ url: new URL(request.url), body: (await request.json()) as Record<string, unknown> });
+          await new Promise<void>((resolve) => {
+            release = resolve;
+          });
+          return HttpResponse.json([]);
+        })
+      );
+      mountRows([first, second]);
+      await userEvent.dblClick(cellAt('1', 'title'));
+      await userEvent.type(field('title'), 'X{Enter}');
+      await waitFor(() => expect(patches).toHaveLength(1));
+
+      await userEvent.click(document.body);
+      await userEvent.dblClick(cellAt('2', 'title'));
+      expect(within(screen.getByTestId('grid-row-2')).getByRole('textbox')).toBeInTheDocument();
+      release();
+
+      await waitFor(() => expect(toast.success).toHaveBeenCalled());
+      expect(within(screen.getByTestId('grid-row-2')).getByRole('textbox')).toBeInTheDocument();
     });
   });
 });

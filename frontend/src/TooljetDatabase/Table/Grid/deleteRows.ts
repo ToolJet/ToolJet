@@ -24,7 +24,7 @@ export const buildDeleteQuery = (primaryKeys: string[], rows: GridRow[]): string
 
 // bigint values lose precision once JSON is parsed (past 2^53 another row would match), and jsonb values have no
 // filter text. Either way the delete could hit the wrong rows, so it is not offered.
-const UNSAFE_KEY_TYPES = ['bigint', 'jsonb'];
+export const UNSAFE_KEY_TYPES = ['bigint', 'jsonb'];
 
 export const getDeleteBlockedReason = (primaryKeys: string[], columns: GridColumn[]): string | undefined => {
   if (primaryKeys.length === 0) return 'Rows can only be deleted from a table with a primary key';

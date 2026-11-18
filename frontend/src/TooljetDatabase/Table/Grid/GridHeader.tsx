@@ -18,10 +18,18 @@ type GridHeaderProps = {
   canEditSchema: boolean;
   canSelectRows: boolean;
   onAddColumn?: () => void;
-  onOpenColumnMenu?: (column: GridColumn, anchor: HTMLElement) => void;
+  onEditColumn?: (column: GridColumn) => void;
+  onDeleteColumn?: (column: GridColumn) => void;
 };
 
-export function GridHeader({ table, canEditSchema, canSelectRows, onAddColumn, onOpenColumnMenu }: GridHeaderProps) {
+export function GridHeader({
+  table,
+  canEditSchema,
+  canSelectRows,
+  onAddColumn,
+  onEditColumn,
+  onDeleteColumn,
+}: GridHeaderProps) {
   const [headerGroup] = table.getHeaderGroups();
   // Counted from the rows on screen, not from the selection state, which can still hold ids a refetch removed.
   const rowCount = table.getRowModel().rows.length;
@@ -48,7 +56,13 @@ export function GridHeader({ table, canEditSchema, canSelectRows, onAddColumn, o
             />
           </div>
         ) : (
-          <HeaderCell key={header.id} header={header} canEditSchema={canEditSchema} onOpenMenu={onOpenColumnMenu} />
+          <HeaderCell
+            key={header.id}
+            header={header}
+            canEditSchema={canEditSchema}
+            onEditColumn={onEditColumn}
+            onDeleteColumn={onDeleteColumn}
+          />
         )
       )}
       <div className="tw-min-w-0 tw-flex-1 tw-bg-background-surface-layer-02" />
@@ -58,7 +72,14 @@ export function GridHeader({ table, canEditSchema, canSelectRows, onAddColumn, o
           className="tw-sticky tw-right-0 tw-z-30 tw-flex tw-shrink-0 tw-items-center tw-border-0 tw-border-l tw-border-solid tw-border-border-weak tw-bg-background-surface-layer-02 tw-px-2"
           style={{ width: ADD_COLUMN_WIDTH, height: ROW_HEIGHT }}
         >
-          <Button variant="ghost" size="medium" iconOnly aria-label="Add column" onClick={onAddColumn}>
+          <Button
+            variant="ghost"
+            size="medium"
+            iconOnly
+            aria-label="Add column"
+            onClick={onAddColumn}
+            data-cy="add-column-button"
+          >
             <Plus />
           </Button>
         </div>

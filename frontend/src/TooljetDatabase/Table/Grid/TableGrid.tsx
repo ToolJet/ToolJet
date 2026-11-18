@@ -1,9 +1,8 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/Rocket/Button/Button';
 import { Table } from '@/components/ui/Rocket/Table/Table';
 import { TableSkeleton } from '@/components/ui/blocks/TableSkeleton';
 import { useTjdbStore } from '../../_stores/tjdbStore';
@@ -16,6 +15,7 @@ import {
   scrollLeftToReveal,
   type CellFocus,
   type CellNavAction,
+  type CellNavState,
 } from './cellNavigation';
 import {
   hasEditableKey,
@@ -25,13 +25,17 @@ import {
   toStoredValue,
   type CellValue,
 } from './cellEditing';
+import { EditRowDrawer } from './EditRowDrawer';
 import { GridBody } from './GridBody';
 import { GridHeader } from './GridHeader';
+import { InlineAddRows } from './InlineAddRows';
 import { getDeleteBlockedReason } from './deleteRows';
+import { getEditBlockedReason } from './editRow';
 import { SelectionBar } from './SelectionBar';
 import type { SortRule } from '../../rows/rowsQuery';
 import { toSortingState } from './sortState';
 import { useCellNavigation } from './useCellNavigation';
+import { useColumnActions } from './useColumnActions';
 import { useRowSelection } from './useRowSelection';
 import './tableGrid.scss';
 import {
@@ -50,22 +54,23 @@ export type TableGridProps = {
   isLoading: boolean;
   /** A refetch is running behind the rows on screen: shows a progress bar and dims the rows. */
   isRefetching?: boolean;
-  /** Gates the add column cell and each header's menu button. */
+  /** Gates the add column cell and each header's menu (edit and delete column). */
   canEditSchema: boolean;
   /** Enables the row checkboxes, and with them the bulk bar. */
   canSelectRows?: boolean;
   /** Lets a cell be edited. Navigation works without it. */
   canEditCells?: boolean;
-  onAddRow?: () => void;
+  /** Shows the add row footer, which opens an inline row at the foot of the grid. */
+  canAddRows?: boolean;
   onAddColumn?: () => void;
-  onOpenColumnMenu?: (column: GridColumn, anchor: HTMLElement) => void;
 };
 
 const SKELETON_ROWS = 10;
 const MIN_SKELETON_COLUMNS = 5;
 
 // The table body: pinned and resizable columns, sort indicators, virtualised rows. Sort order and the rows themselves
-// come from the server. Rows can be selected (for bulk delete), cells focused with the keyboard and edited in place.
+// come from the server. Rows can be selected (to edit one or delete several), cells focused with the keyboard and
+// edited in place, a row added inline, and a column edited or deleted from its header menu.
 export function TableGrid({
   columns,
   rows,
@@ -74,9 +79,8 @@ export function TableGrid({
   canEditSchema,
   canSelectRows = false,
   canEditCells = false,
-  onAddRow,
+  canAddRows = false,
   onAddColumn,
-  onOpenColumnMenu,
 }: TableGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sortFilters = useTjdbStore((state: { sortFilters: Record<string, SortRule> }) => state.sortFilters);
@@ -119,6 +123,10 @@ export function TableGrid({
   const primaryKeys = useMemo(() => listAllPrimaryKeyColumns(columns) as string[], [columns]);
   const deleteBlockedReason = useMemo(() => getDeleteBlockedReason(primaryKeys, columns), [primaryKeys, columns]);
   const selectedRows = table.getSelectedRowModel().rows.map((row) => row.original);
+  const editBlockedReason =
+    selectedRows.length === 1 ? getEditBlockedReason(primaryKeys, columns, selectedRows[0]) : 'Select one row to edit';
+  const [editingRow, setEditingRow] = useState<GridRow | null>(null);
+  const { editColumn, deleteColumn, overlays: columnOverlays } = useColumnActions(rows);
   const { rows: tableRows } = table.getRowModel();
   const visibleColumnIds = useMemo(
     () => table.getVisibleLeafColumns().map((column) => column.id),
@@ -127,7 +135,18 @@ export function TableGrid({
     [table, columns]
   );
   const columnIds = useMemo(() => visibleColumnIds.filter((id) => id !== SELECT_COLUMN_ID), [visibleColumnIds]);
-  const { cell, dispatch } = useCellNavigation({ rowCount: tableRows.length, columnIds });
+  const { cell: storedCell, dispatch } = useCellNavigation({ rowCount: tableRows.length, columnIds });
+  // The editor belongs to a row, not to a position: a refetch under the same view can move rows (or remove one) while
+  // it is open. The focused cell follows the row; a row that is gone closes the editor.
+  const [editingRowId, setEditingRowId] = useState<string | null>(null);
+  const editingIndex = storedCell?.editing ? tableRows.findIndex((row) => row.id === editingRowId) : -1;
+  const cell: CellNavState = storedCell?.editing
+    ? { ...storedCell, rowIndex: editingIndex >= 0 ? editingIndex : storedCell.rowIndex, editing: editingIndex >= 0 }
+    : storedCell;
+  const editorRowLost = !!storedCell?.editing && editingIndex < 0;
+  useEffect(() => {
+    if (editorRowLost) dispatch({ type: 'stopEditing' });
+  }, [editorRowLost, dispatch]);
 
   // Here, not in GridBody: a child's layout effect runs before this component attaches scrollRef, so the
   // virtualizer would not find its scroll element on mount. The sticky header covers the first 40px of that element,
@@ -139,15 +158,16 @@ export function TableGrid({
     estimateSize: () => ROW_HEIGHT,
     getItemKey,
     overscan: 8,
-    // The sticky header (and the add row footer) cover rows the virtualizer counts as visible.
-    scrollPaddingEnd: ROW_HEIGHT * (onAddRow ? 2 : 1),
+    // The sticky header (and the add row footer, and the new row above it while there is one) cover rows the
+    // virtualizer counts as visible.
+    scrollPaddingEnd: ROW_HEIGHT * (canAddRows ? 3 : 1),
   });
 
   // The handlers below are passed to memoised rows, so they stay the same functions and read what they need from here.
   const columnsByName = useMemo(() => new Map(columns.map((column) => [column.accessor, column])), [columns]);
   const canEdit = canEditCells && hasEditableKey(primaryKeys, columns);
-  const latest = useRef({ tableRows, columnsByName, primaryKeys, canEdit });
-  latest.current = { tableRows, columnsByName, primaryKeys, canEdit };
+  const latest = useRef({ tableRows, columnsByName, primaryKeys, canEdit, cell, editingRowId });
+  latest.current = { tableRows, columnsByName, primaryKeys, canEdit, cell, editingRowId };
   const savingRef = useRef(false);
 
   const focusGrid = useCallback(() => scrollRef.current?.focus({ preventScroll: true }), []);
@@ -161,16 +181,24 @@ export function TableGrid({
   );
 
   const stopEditing = useCallback(() => {
+    // The stored cell can still hold the row's old position: land on where the row is now.
+    const open = latest.current.cell;
+    if (open?.editing) dispatch({ type: 'focus', rowIndex: open.rowIndex, columnId: open.columnId });
     dispatch({ type: 'stopEditing' });
     focusGrid();
   }, [dispatch, focusGrid]);
 
   const saveCell = useCallback(
-    async (rowIndex: number, columnId: string, value: CellValue) => {
-      const row = latest.current.tableRows[rowIndex]?.original;
+    async (rowId: string, columnId: string, value: CellValue) => {
+      const row = latest.current.tableRows.find((candidate) => candidate.id === rowId)?.original;
       const column = latest.current.columnsByName.get(columnId);
       const tableId = selectedTable.id;
-      if (!row || !column || !tableId || savingRef.current) return false;
+      if (!column || !tableId || savingRef.current) return false;
+      if (!row) {
+        toast.error('This row is no longer in the table');
+        stopEditing();
+        return false;
+      }
 
       savingRef.current = true;
       try {
@@ -190,7 +218,9 @@ export function TableGrid({
           (cached) => primaryKeys.every((key) => cached[key] === row[key]),
           { [columnId]: toStoredValue(column.dataType, value) }
         );
-        stopEditing();
+        // The save can resolve after the editor was closed and another opened: only close the one that finished.
+        const { cell: open, editingRowId: openRowId } = latest.current;
+        if (open?.editing && openRowId === rowId && open.columnId === columnId) stopEditing();
         return true;
       } finally {
         savingRef.current = false;
@@ -202,15 +232,17 @@ export function TableGrid({
   const editCell = useCallback(
     (rowIndex: number, columnId: string) => {
       const { tableRows: rows, columnsByName, primaryKeys: keys, canEdit: allowed } = latest.current;
-      const row = rows[rowIndex]?.original;
+      const gridRow = rows[rowIndex];
+      const row = gridRow?.original;
       const column = columnsByName.get(columnId);
       if (!allowed || !row || !column || !isEditableColumn(column) || !hasExactKeyValues(keys, row)) return;
 
       // A boolean has nothing to type: it flips on the spot, and NULL becomes true.
       if (column.dataType === 'boolean') {
-        saveCell(rowIndex, columnId, row[columnId] !== true);
+        saveCell(gridRow.id, columnId, row[columnId] !== true);
         return;
       }
+      setEditingRowId(gridRow.id);
       dispatch({ type: 'focus', rowIndex, columnId });
       dispatch({ type: 'startEditing' });
     },
@@ -292,7 +324,8 @@ export function TableGrid({
             canEditSchema={canEditSchema}
             canSelectRows={canSelectRows}
             onAddColumn={onAddColumn}
-            onOpenColumnMenu={onOpenColumnMenu}
+            onEditColumn={editColumn}
+            onDeleteColumn={deleteColumn}
           />
           {isRefetching && (
             <div
@@ -326,15 +359,7 @@ export function TableGrid({
               onStopEditing={stopEditing}
             />
           )}
-          {onAddRow && (
-            <div className="tw-sticky tw-bottom-0 tw-z-10 tw-h-10 tw-w-full tw-shrink-0 tw-border-0 tw-border-t tw-border-solid tw-border-border-weak tw-bg-page-weak">
-              <div className="tw-sticky tw-left-0 tw-flex tw-h-full tw-w-fit tw-items-center tw-pl-3">
-                <Button variant="ghost" onClick={onAddRow} leadingVisual={<Plus />}>
-                  Add row
-                </Button>
-              </div>
-            </div>
-          )}
+          {canAddRows && <InlineAddRows table={table} showTrailingCell={canEditSchema} />}
         </div>
       </div>
       <SelectionBar
@@ -342,8 +367,14 @@ export function TableGrid({
         primaryKeys={primaryKeys}
         canSelectRows={canSelectRows}
         deleteBlockedReason={deleteBlockedReason}
+        onEdit={() => setEditingRow(selectedRows[0])}
+        editBlockedReason={editBlockedReason}
         onClear={clearSelection}
       />
+      {canSelectRows && (
+        <EditRowDrawer row={editingRow} onClose={() => setEditingRow(null)} onEdited={() => setEditingRow(null)} />
+      )}
+      {canEditSchema && columnOverlays}
     </div>
   );
 }

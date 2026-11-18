@@ -35,7 +35,7 @@ type GridRowProps = {
   /** Stable callbacks: this row is memoised. */
   onFocusCell: (rowIndex: number, columnId: string) => void;
   onEditCell: (rowIndex: number, columnId: string) => void;
-  onSaveCell: (rowIndex: number, columnId: string, value: string | null) => Promise<boolean>;
+  onSaveCell: (rowId: string, columnId: string, value: string | null) => Promise<boolean>;
   onStopEditing: () => void;
 };
 
@@ -110,7 +110,7 @@ function GridRowComponent({
                   value={cell.getValue()}
                   column={meta.column}
                   foreignKey={meta.foreignKey}
-                  onSave={(value) => onSaveCell(row.index, column.id, value)}
+                  onSave={(value) => onSaveCell(row.id, column.id, value)}
                   onCancel={onStopEditing}
                 />
               ) : (

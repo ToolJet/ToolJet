@@ -393,15 +393,19 @@ describe('TableGrid | row selection', () => {
       setup({ columns: [column('id', dataType, true), column('title', 'text')], rows: [{ id: 1, title: 'x' }] });
       await selectRows('1');
 
-      expect(within(getBar()).getByRole('button', { name: 'Delete' })).toBeDisabled();
-      expect(within(getBar()).getByTitle(new RegExp(dataType))).toBeInTheDocument();
+      const deleteButton = within(getBar()).getByRole('button', { name: 'Delete' });
+      expect(deleteButton).toBeDisabled();
+      expect(deleteButton.closest('span')).toHaveAttribute('title', expect.stringContaining(dataType));
     });
 
     it('says why Delete is off when the table has no primary key', async () => {
       setup({ columns: [column('title', 'text')], rows: [{ title: 'x' }] });
       await selectRows('0');
 
-      expect(within(getBar()).getByTitle(/primary key/)).toBeInTheDocument();
+      expect(within(getBar()).getByRole('button', { name: 'Delete' }).closest('span')).toHaveAttribute(
+        'title',
+        expect.stringContaining('primary key')
+      );
     });
 
     it('shows no bar once rows can no longer be selected', async () => {

@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
+import { TooljetDatabaseContext } from '../context';
 import { useTjdbActions } from '../_stores/tjdbStore';
 import MigrationConfirmModal from './index';
 
@@ -46,7 +46,7 @@ const emptyState = {
  * own JSX; `runMigration(options)` opens it.
  */
 export default function useMigrationModal() {
-  const { organizationId, tables } = useContext(TooljetDatabaseContext);
+  const { organizationId, tables = [] } = useContext(TooljetDatabaseContext);
   const { bumpMigrations } = useTjdbActions();
   const [state, setState] = useState(emptyState);
   const optionsRef = useRef(null);

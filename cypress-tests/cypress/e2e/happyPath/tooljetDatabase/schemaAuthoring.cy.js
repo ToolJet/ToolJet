@@ -26,7 +26,7 @@ describe('ToolJet Database environments - authoring schema changes in the UI', (
   const openEditColumn = (columnName) => {
     cy.get(tooljetDatabaseSelectors.columnHeader(columnName))
       .closest('[role="columnheader"]')
-      .find('.tjdb-menu-icon')
+      .find(tooljetDatabaseSelectors.columnMenuIcon)
       .click({ force: true });
     cy.get(tooljetDatabaseSelectors.editColumnOption).click();
   };

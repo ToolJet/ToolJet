@@ -16,6 +16,8 @@ export type GridColumn = {
   accessor: string;
   dataType: string;
   constraints_type?: { is_primary_key?: boolean; is_not_null?: boolean };
+  /** The column's SQL default, as the table metadata returns it. */
+  column_default?: string | null;
   /** Display text for a value, when the stored value is not what the cell should read (time zones). */
   formatValue?: (value: unknown) => string;
 };

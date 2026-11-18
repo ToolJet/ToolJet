@@ -9,10 +9,13 @@ import {
   KeyRound,
   Link2,
   MoreVertical,
+  Pencil,
   Square,
+  Trash2,
   Variable,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Rocket/Button/Button';
+import DropdownMenu from '@/components/ui/Rocket/DropdownMenu';
 import TruncatedText from '@/components/ui/Rocket/Tooltip/TruncatedText';
 import { cn } from '@/lib/utils';
 import { ROW_HEIGHT, type GridColumn, type GridColumnMeta, type GridRow } from './useTableGrid';
@@ -33,10 +36,11 @@ type HeaderCellProps = {
   header: Header<GridRow, unknown>;
   /** The menu button is shown only when the schema can be edited. */
   canEditSchema: boolean;
-  onOpenMenu?: (column: GridColumn, anchor: HTMLElement) => void;
+  onEditColumn?: (column: GridColumn) => void;
+  onDeleteColumn?: (column: GridColumn) => void;
 };
 
-export function HeaderCell({ header, canEditSchema, onOpenMenu }: HeaderCellProps) {
+export function HeaderCell({ header, canEditSchema, onEditColumn, onDeleteColumn }: HeaderCellProps) {
   const { column } = header;
   const meta = column.columnDef.meta as GridColumnMeta;
   const name = meta.column.Header;
@@ -92,23 +96,56 @@ export function HeaderCell({ header, canEditSchema, onOpenMenu }: HeaderCellProp
         </span>
       )}
       {canEditSchema && (
-        <Button
-          variant="ghost"
-          size="medium"
-          iconOnly
-          aria-label={`${name} column options`}
-          data-cy="column-menu-icon"
-          // Out of the layout at rest (so a sort arrow sits at the cell's edge), in it on hover, focus and resize.
-          className={cn(
-            'tw-w-0 -tw-ml-1 tw-shrink-0 tw-overflow-hidden tw-opacity-0',
-            'group-hover:tw-ml-0 group-hover:tw-w-7 group-hover:tw-opacity-100',
-            'group-focus-within:tw-ml-0 group-focus-within:tw-w-7 group-focus-within:tw-opacity-100',
-            resizing && 'tw-ml-0 tw-w-7 tw-opacity-100'
-          )}
-          onClick={(event) => onOpenMenu?.(meta.column, event.currentTarget)}
-        >
-          <MoreVertical />
-        </Button>
+        <DropdownMenu
+          align="end"
+          sections={[
+            {
+              id: 'column',
+              items: [
+                {
+                  id: 'edit',
+                  label: 'Edit column',
+                  icon: <Pencil />,
+                  onSelect: () => onEditColumn?.(meta.column),
+                  'data-cy': 'edit-column-option',
+                },
+                {
+                  id: 'delete',
+                  label: 'Delete column',
+                  icon: <Trash2 />,
+                  destructive: true,
+                  // A table keeps its primary key.
+                  disabled: meta.isPrimaryKey,
+                  wrapper: (item) => (
+                    <span title={meta.isPrimaryKey ? 'Primary key columns cannot be deleted' : undefined}>{item}</span>
+                  ),
+                  onSelect: () => onDeleteColumn?.(meta.column),
+                  'data-cy': 'delete-column-option',
+                },
+              ],
+            },
+          ]}
+          trigger={
+            <Button
+              variant="ghost"
+              size="medium"
+              iconOnly
+              aria-label={`${name} column options`}
+              data-cy="column-menu-icon"
+              // Out of the layout at rest (so a sort arrow sits at the cell's edge), in it on hover, focus, resize and
+              // while its menu is open.
+              className={cn(
+                'tw-w-0 -tw-ml-1 tw-shrink-0 tw-overflow-hidden tw-opacity-0',
+                'group-hover:tw-ml-0 group-hover:tw-w-7 group-hover:tw-opacity-100',
+                'group-focus-within:tw-ml-0 group-focus-within:tw-w-7 group-focus-within:tw-opacity-100',
+                'data-[state=open]:tw-ml-0 data-[state=open]:tw-w-7 data-[state=open]:tw-opacity-100',
+                resizing && 'tw-ml-0 tw-w-7 tw-opacity-100'
+              )}
+            >
+              <MoreVertical />
+            </Button>
+          }
+        />
       )}
       {column.getCanResize() && (
         <div

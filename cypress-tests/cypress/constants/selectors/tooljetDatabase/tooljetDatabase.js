@@ -28,7 +28,7 @@ export const tooljetDatabaseSelectors = {
   seedDataOption: '[data-cy="seed-data-sql-option"]',
   // the row checkbox has no data-cy, so it is found through the row that holds the id cell
   rowOf: (rowId) => `[data-cy="id-${rowId}-column-id-table-cell"]`,
-  editRowButton: '[data-cy="edit-row-button-text"]',
+  editRowButton: '[data-cy="edit-row-button"]',
   deleteRowsButton: '[data-cy="delete-row-records-button"]',
   rowInput: (column) => `[data-cy="${column}-input-field"]`,
   cell: (rowId, column) => `[data-cy="id-${rowId}-column-${column}-table-cell"]`,
@@ -57,7 +57,8 @@ export const tooljetDatabaseSelectors = {
   searchInput: '[data-cy="tables-search-bar"]',
 
   // columns
-  addColumnPlus: 'th.add-icon-column .icon-styles', // no data-cy on the header plus icon
+  addColumnPlus: '[data-cy="add-column-button"]',
+  columnMenuIcon: '[data-cy="column-menu-icon"]',
   columnNameInput: '[data-cy="column-name-input-field"]',
   dataTypeDropdown: '[data-cy="data-type-dropdown-section"]',
   dropdownOption: '[class*="option"]',
