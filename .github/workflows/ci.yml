@@ -322,6 +322,11 @@ jobs:
           npm --prefix cli ci --include=dev --no-audit --no-fund
           npm --prefix cli run build
           node packs/build-builtin.mjs --install
+      # MUI is disabled for release, but frontend specs and shared helpers still import its source.
+      # Remove this step when MUI is re-enabled in packs/builtin.json; the pack build installs it then.
+      - name: Install MUI dependencies for tests
+        working-directory: .
+        run: npm --prefix packs/mui ci --include=dev --no-audit --no-fund
       # Layout first: a misfiled or *.test.* spec silently never runs, so this
       # must fail the build before the suite reports a misleading green.
       - name: Validate test layout
