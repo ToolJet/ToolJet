@@ -493,12 +493,14 @@ const SdkComponentHost = ({
   const fitsPopups = fitsDynamicHeight && holdsComponentsInPopup(manifestComponent);
 
   // Slot drop areas exist only inline: the iframe shell has no way to host ToolJet components.
+  // PKB-43: fallbackWidth lets a slot in a hidden tab/panel mount at load, as a native Tabs' bodies do.
   const renderSlot = (slotName: string) => (
     <LibrarySlotCanvas
       id={`${id}-${slotName}`}
       darkMode={darkMode}
       fitContent={fitsSlots}
       currentLayout={hostProps.currentLayout}
+      fallbackWidth={hostProps.width}
     />
   );
   // A popup's drop area (a dialog's body) is drawn in the popup, outside the widget's box.

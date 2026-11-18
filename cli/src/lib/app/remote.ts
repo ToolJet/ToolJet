@@ -48,8 +48,18 @@ export async function readApp(session: Session, appId: string, versionId?: strin
   };
 }
 
+/**
+ * Creates a Code mode app. A server that ignores `buildMode` stores the app as visual, which no `tooljet app`
+ * command can build, so that refuses rather than recording the app's id in app.json.
+ */
 export async function createApp(session: Session, name: string): Promise<{ id: string }> {
-  const app = await session.api('/apps', { method: 'POST', body: { name, type: 'front-end' } });
+  const app = await session.api('/apps', { method: 'POST', body: { name, type: 'front-end', buildMode: 'code' } });
+  if ((app?.buildMode ?? app?.build_mode) !== 'code') {
+    throw new Error(
+      `ToolJet created "${name}" (${app?.id}) as a Visual app, not in Code mode, so it was not linked to this project. ` +
+        'Update ToolJet to a version with Code mode, then delete that app and run this again.'
+    );
+  }
   return { id: app.id };
 }
 
