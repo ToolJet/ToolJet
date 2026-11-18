@@ -16,6 +16,22 @@
   overflow: auto;
   box-sizing: border-box;
 }
+/* A Radio Group in a fixed box (Dynamic height off): options past the box scroll inside it, as the ToolJet Radio's,
+   instead of being cut off by the host (QA PKB-76). With Dynamic height on, the box grows with them. */
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-radio-root {
+  height: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+}
+/* An option is never wider than the box: a long label wraps, breaking a word longer than the box, instead of running
+   out to the box's edge and being cut there. */
+.tj-ant-radio-root .ant-radio-wrapper {
+  max-width: 100%;
+}
+.tj-ant-radio-root .ant-radio-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 /* Lists and tables fill the box: a bordered list's border, and a table's surface with its pagination at the foot,
    reach its bottom instead of ending in a blank band. */
 .tj-ant-list.tj-ant--fill > .ant-list {

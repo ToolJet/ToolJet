@@ -95,7 +95,8 @@ export const RadioGroup = (props: Record<string, unknown>) => {
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const check = ToolJet.useValidation({ kind: 'choice', value: str(value), present: value !== '' });
-  const tokens = useTokenStyles();
+  // Border radius rounds the button options only: a default radio is a circle (QA PF-273).
+  const tokens = useTokenStyles({ visibleWhen: { key: 'optionType', value: 'button' } });
   ToolJet.useComponentSettings({
     role: 'radio',
     fit: true,
@@ -136,7 +137,7 @@ export const RadioGroup = (props: Record<string, unknown>) => {
   }, [offered, options.length, loading]);
 
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} className="tj-ant-radio-root">
       <FormField {...field} check={check} htmlFor={fieldId}>
         <SpinOver loading={loading} as="inline">
           {/* Read as one group named by its label (the label's htmlFor names no group; Ant's group has no role). */}
