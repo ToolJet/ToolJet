@@ -88,7 +88,7 @@ export function ConditionSelect({
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (
-          <SelectItem key={option.value} value={option.value} showCheckIcon={false} className="tw-gap-1.5">
+          <SelectItem key={option.value} value={option.value} className="tw-gap-1.5">
             {option.icon}
             <SelectItemText>{option.label}</SelectItemText>
           </SelectItem>
