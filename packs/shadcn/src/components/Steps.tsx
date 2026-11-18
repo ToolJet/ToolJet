@@ -105,10 +105,17 @@ export const Steps = () => {
   }, [currentStep, shown]);
   // Hiding or showing another step keeps the step you are on, not its position (showing Gamma moved Delta to Gamma).
   const currentId = useRef<string | null>(null);
+  // Hiding the step you are on goes to the nearest step that is not disabled, after it first, then before it: it
+  // landed on whatever step took its place, a disabled one included (DVRL-51).
   useEffect(() => {
     const id = currentId.current;
     const i = id === null ? -1 : shown.findIndex((s) => String(s.id) === id);
     if (i >= 0 && i !== live.current.index) moveTo(i);
+    if (i >= 0 || id === null || all.some((s) => String(s.id) === id && s.visible)) return;
+    const was = Math.max(0, Math.round(Number(currentStepIndex) || 0));
+    const after = enabledFrom(was, 1);
+    const next = after >= 0 ? after : enabledFrom(Math.min(was, shown.length - 1), -1);
+    if (next >= 0) moveTo(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shown]);
   // The index an effect above may just have moved to (Current step (id) on load), not this render's: remembering the
