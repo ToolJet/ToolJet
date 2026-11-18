@@ -301,7 +301,7 @@
     },
     {
       "componentType": "LibraryComponent",
-      "status": "verified",
+      "status": "approved",
       "contract": "ee/test/app-builder/widgets/LibraryComponent/TESTING.md"
     },
     {

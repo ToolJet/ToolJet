@@ -3,31 +3,48 @@ import FormData = require('form-data');
 
 import { buildUploadFormData } from './upload-form';
 import { parseApiErrorMessage } from '../api-error';
+import { ensureCompatible } from '../compatibility';
+import { type DirectIdentity, credentialFetchOptions, credentialHeaders } from '../direct-credential';
 
 export class ApiClient {
   private readonly baseUrl: string;
 
-  constructor(baseUrl: string, private readonly apiToken: string) {
+  /**
+   * `apiToken` is a personal access token, or with `direct` a credential ToolJet takes as it is (direct-credential.ts):
+   * the ToolJet session or MCP OAuth delegation of the user a build runs as (its MCP server has no personal token).
+   * Then requests carry that credential and the workspace instead.
+   */
+  constructor(
+    baseUrl: string,
+    private readonly apiToken: string,
+    private readonly direct?: DirectIdentity
+  ) {
     this.baseUrl = baseUrl.replace(/\/+$/, '');
+  }
+
+  private authHeaders(): Record<string, string> {
+    return credentialHeaders(this.apiToken, this.direct);
   }
 
   private async handleResponse<T>(res: import('node-fetch').Response): Promise<T> {
     if (!res.ok) {
       const text = await res.text();
-      throw new Error(parseApiErrorMessage(res.status, text));
+      throw new Error(`${parseApiErrorMessage(res.status, text)} (on ${this.baseUrl})`);
     }
 
     return res.json() as Promise<T>;
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+    await ensureCompatible(this.baseUrl);
     const res = await fetch(`${this.baseUrl}/api${path}`, {
       method,
       headers: {
-        Authorization: `Bearer ${this.apiToken}`,
+        ...this.authHeaders(),
         'Content-Type': 'application/json',
       },
       body: body ? JSON.stringify(body) : undefined,
+      ...credentialFetchOptions(this.direct?.kind),
     });
 
     return this.handleResponse<T>(res);
@@ -36,14 +53,16 @@ export class ApiClient {
   // Attaching the 'error' listener before starting the fetch is what matters here — a stream
   // failure while reading a file (deleted mid-upload, permission error) surfaces as a rejected
   // promise instead of an unhandled 'error' event that would crash the process.
-  private sendForm<T>(method: string, path: string, form: FormData): Promise<T> {
+  private async sendForm<T>(method: string, path: string, form: FormData): Promise<T> {
+    await ensureCompatible(this.baseUrl);
     return new Promise<T>((resolve, reject) => {
       form.once('error', (err: unknown) => reject(err instanceof Error ? err : new Error(String(err))));
 
       fetch(`${this.baseUrl}/api${path}`, {
         method,
-        headers: { Authorization: `Bearer ${this.apiToken}`, ...form.getHeaders() },
+        headers: { ...this.authHeaders(), ...form.getHeaders() },
         body: form,
+        ...credentialFetchOptions(this.direct?.kind),
       })
         .then((res) => this.handleResponse<T>(res))
         .then(resolve, reject);
@@ -58,15 +77,17 @@ export class ApiClient {
   // GET /api/custom-component-libraries/:correlationId — reports whether the library exists,
   // rather than throwing on a 404, so callers can decide whether to offer to create it.
   async verifyLibrary(correlationId: string): Promise<{ exists: boolean }> {
+    await ensureCompatible(this.baseUrl);
     const res = await fetch(`${this.baseUrl}/api/custom-component-libraries/${correlationId}`, {
       method: 'GET',
-      headers: { Authorization: `Bearer ${this.apiToken}` },
+      headers: this.authHeaders(),
+      ...credentialFetchOptions(this.direct?.kind),
     });
 
     if (res.status === 404) return { exists: false };
     if (!res.ok) {
       const text = await res.text();
-      throw new Error(parseApiErrorMessage(res.status, text));
+      throw new Error(`${parseApiErrorMessage(res.status, text)} (on ${this.baseUrl})`);
     }
 
     return { exists: true };

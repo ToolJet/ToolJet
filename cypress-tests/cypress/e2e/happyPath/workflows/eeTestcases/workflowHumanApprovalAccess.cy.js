@@ -264,6 +264,8 @@ describe("Workflows - approvals access by role", SLOW_API, () => {
       openApprovalRequest(request.id);
       cy.intercept("POST", "/api/workflow-approvals/*/cancel").as("cancelRequest");
       cy.get(approvalSelector.cancel).click();
+      cy.contains(humanText.cancelConfirmPrompt).should("be.visible");
+      cy.get(approvalSelector.cancelConfirm).click();
       cy.wait("@cancelRequest").its("response.statusCode").should("be.oneOf", [200, 201]);
       cy.verifyToastMessage(
         commonSelectors.toastMessage,

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 
 export const IFrame = function IFrame({
   width,
@@ -126,7 +127,11 @@ export const IFrame = function IFrame({
           key={exposedVariablesTemporaryState.url}
           width={width - 4}
           height={height}
-          src={exposedVariablesTemporaryState.url}
+          src={
+            strictMode.strictFrameUrl
+              ? strictMode.strictFrameUrl(exposedVariablesTemporaryState.url)
+              : exposedVariablesTemporaryState.url
+          }
           title="IFrame Widget"
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

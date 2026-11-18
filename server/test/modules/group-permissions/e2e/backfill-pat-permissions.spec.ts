@@ -10,7 +10,7 @@ import {
 } from 'test-helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { Organization } from 'src/entities/organization.entity';
-import { BackfillPatPermissionsOnDefaultGroups1791891636602 } from '../../../../data-migrations/1791891636602-BackfillPatPermissionsOnDefaultGroups';
+import { BackfillPatPermissionsOnDefaultGroups1791891636602 } from '@migrations/data/1791891636602-BackfillPatPermissionsOnDefaultGroups';
 
 /**
  * BackfillPatPermissionsOnDefaultGroups | data migration against the real schema.

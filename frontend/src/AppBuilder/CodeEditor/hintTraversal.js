@@ -1,5 +1,11 @@
 // Pure helpers for building autocomplete hints. No store imports, so any module can use them.
 
+/**
+ * Arrays at or above this length get one hint describing the array, templated off element 0;
+ * shorter ones get a hint per element (`data.0.name`, `data.1.name`, ...). Inherited from the
+ * legacy reference builder in _stores/utils.js. traverseObjectToHints and computeShapeHash must
+ * share it, or the shape hash stops matching what the hints actually contain.
+ */
 export const ARRAY_HINT_TEMPLATE_THRESHOLD = 10;
 
 /**

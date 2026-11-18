@@ -1,6 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
 import { addCSA } from "Support/utils/appBuilder/csa";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // CSA facet — every handle in config.actions, driven from Button "On click"
 // Control-Component actions. Button onClick CSAs fire at RUNTIME, so the
@@ -19,7 +20,7 @@ describe('Toggle Switch — csa facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-ToggleSwitch-CSA-App-${Date.now().toString().slice(-6)}`);
         cy.openApp();
         cy.dragAndDropWidget('Toggle Switch', 500, 100); // source: toggleswitchv2.js:3
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     it('should verify all the CSA from toggleswitch1 (On click)', () => {

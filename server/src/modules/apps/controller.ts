@@ -8,6 +8,8 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
+  Optional,
   Param,
   Post,
   Put,
@@ -37,10 +39,14 @@ import { IAppsController } from './interfaces/IController';
 import { AiCookies } from '@modules/auth/decorators/ai-cookie.decorator';
 import { Response } from 'express';
 import { isHttpsEnabled, getCookieDomain } from '@helpers/utils.helper';
+import { CodeModeSourceService } from '@modules/code-mode-source/service';
 
 @InitModule(MODULES.APP)
 @Controller('apps')
 export class AppsController implements IAppsController {
+  // Property injection, so edition subclasses keep their constructors. Hooks for the build mode and release checks.
+  @Optional() @Inject(CodeModeSourceService) protected readonly codeModeSourceService?: CodeModeSourceService;
+
   constructor(protected readonly appsService: AppsService) {}
 
   @InitFeature(FEATURE_KEY.CREATE)
@@ -69,7 +75,8 @@ export class AppsController implements IAppsController {
       response.clearCookie('tj_template_id', clearOptions);
     }
 
-    return this.appsService.create(user, appCreateDto);
+    const hooks = this.codeModeSourceService ?? new CodeModeSourceService();
+    return hooks.createApp(user, appCreateDto.buildMode, () => this.appsService.create(user, appCreateDto));
   }
 
   @InitFeature(FEATURE_KEY.GET_APP_AUTHENTICATION_CONFIG)
@@ -221,7 +228,8 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.RELEASE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/release')
-  releaseVersion(@User() user: UserEntity, @App() app: AppEntity, @Body() versionReleaseDto: VersionReleaseDto) {
+  async releaseVersion(@User() user: UserEntity, @App() app: AppEntity, @Body() versionReleaseDto: VersionReleaseDto) {
+    await this.codeModeSourceService?.assertReleasable(app, versionReleaseDto.versionToBeReleased);
     return this.appsService.release(app, user, versionReleaseDto);
   }
 }

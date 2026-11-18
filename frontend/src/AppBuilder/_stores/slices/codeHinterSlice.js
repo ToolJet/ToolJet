@@ -1,14 +1,8 @@
 import { createJavaScriptSuggestions } from '@/AppBuilder/CodeEditor/utils';
 import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
 import { ARRAY_HINT_TEMPLATE_THRESHOLD, traverseObjectToHints } from '@/AppBuilder/CodeEditor/hintTraversal';
-import { ROW_SCOPED_WIDGET_TYPES, ROW_SCOPED_RESOLVABLE_KEY_MAP } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { ROW_SCOPED_RESOLVABLE_KEY_MAP, isRowScopedParent } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
-/**
- * Arrays at or above this length get one hint describing the array, templated off element 0;
- * shorter ones get a hint per element (`data.0.name`, `data.1.name`, ...). Inherited from the
- * legacy reference builder in _stores/utils.js. traverseObjectToHints and computeShapeHash must
- * share it, or the shape hash stops matching what the hints actually contain.
- */
 
 /**
  * Module-level single-entry caches for context hints.
@@ -428,7 +422,7 @@ export const createCodeHinterSlice = (set, get) => ({
       visited.add(baseParentId);
       const parentType = getParentComponentType(currentParentId, moduleId);
 
-      if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {
+      if (isRowScopedParent(parentType, currentParentId, baseParentId)) {
         const resolvableKey = ROW_SCOPED_RESOLVABLE_KEY_MAP[parentType];
         nearestListViewOrKanbanId = nearestListViewOrKanbanId || baseParentId;
         const resolvables = customResolvables[baseParentId];
