@@ -131,6 +131,10 @@ probe catch the mechanical cases; this lens covers what they cannot judge.
   shapes.
 - **Rollback.** The previous image must run on the database after the schema phase, and after a failed data phase.
 - **Entities.** A schema change matched by its entity; an entity field no released code can read yet is fine.
+- **Branch-local corrections.** In a PR into main or a release line, a migration marked `dev-only-migration:`, or
+  one that backfills, converts or drops state whose introducing migration is not on the base yet, is a finding.
+  LTS upgrades and fresh installs never hold that state; the fix belongs in the original migration
+  (server/AGENTS.md, Migrations: "Branch-local changes").
 
 Phrase as what an upgrading instance sees: the phase, the lock or the read, and who is stalled or misread.
 
