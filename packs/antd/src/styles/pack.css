@@ -1193,11 +1193,15 @@
 
 /* Divider. Border color (else Primary color) is the line, Ant's split colour when unset; the text's line takes it
    through Ant's inherited border colour (QA PKB-41). A long text ends in an ellipsis inside the box: Ant keeps it on
-   one line, past the right edge (QA PKB-68). */
+   one line, past the right edge (QA PKB-68). Ant's two lines are 50% wide each, so the lines give way first and the
+   text is cut past 85% of the box: some line always shows, so it still reads as a divider, not a text. */
 .tj-ant-divider .ant-divider {
   border-color: var(--tj-ant-color-border, var(--tj-ant-color-primary, var(--ant-color-split)));
 }
 .tj-ant-divider .ant-divider-inner-text {
+  flex-shrink: 0;
+  max-width: 85%;
+  box-sizing: border-box;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

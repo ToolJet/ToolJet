@@ -50,6 +50,18 @@ describe('Ant Design Divider with a long Text', () => {
     expect(getComputedStyle(text).minWidth).toBe('0');
     expect(v.root().querySelector('.ant-divider-inner-text [title]').getAttribute('title')).toBe(LONG);
   });
+
+  // Ant's two line segments are 50% wide each, so they always fill the box and a text that could shrink was cut short
+  // in a box with plenty of room ("devan…"). The lines give way first; the text is cut past 85% of the box, so some
+  // line always shows and it still reads as a divider, not a text.
+  test('[PackComponent-DIVIDER-006] a text that fits the box is shown whole', async () => {
+    const v = await mountPack('antd', 'Divider', { children: 'Section' });
+    const text = copyWithPackCss(v.root()).querySelector('.ant-divider-inner-text');
+
+    expect(getComputedStyle(text).flexShrink).toBe('0');
+    expect(getComputedStyle(text).maxWidth).toBe('85%');
+    expect(getComputedStyle(text).boxSizing).toBe('border-box');
+  });
 });
 
 // PKB-41: only Text color changed the Divider. Border color (else Primary color) now colours the line, and Container
