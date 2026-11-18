@@ -62,10 +62,17 @@ describe('Ant Design Pagination: the page-size list', () => {
     expect(pagination.shadow().querySelectorAll('.ant-select-dropdown')).toHaveLength(0);
     const [list] = pagination.layerLists();
     const options = [...list.querySelectorAll('.ant-select-item-option')];
-    expect(options.map((option) => option.textContent)).toEqual(['10 / page', '20 / page', '50 / page', '100 / page']);
+    // The default page size is 1; Ant adds the current size to the list when it is not one of the options.
+    expect(options.map((option) => option.textContent)).toEqual([
+      '1 / page',
+      '10 / page',
+      '20 / page',
+      '50 / page',
+      '100 / page',
+    ]);
 
     act(() => {
-      fireEvent.click(options[2]);
+      fireEvent.click(options.find((option) => option.textContent === '50 / page'));
     });
     expect(pagination.exposed.pageSize).toBe(50);
   });
