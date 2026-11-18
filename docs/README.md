@@ -108,7 +108,7 @@ The two suggested workflows are:
 yarn install
 ```
 
-**Note:** Please note that if you make any changes that will be reflected in the upcoming version of the ToolJet documentation, you should set the **includeCurrentVersion** value to `true` in the docusaurus.config.js file. After making the necessary changes, be sure to set the value back to `false` and then commit the changes. Setting the value to `true` will load the `docs/docs/` base directory as the `next` version for local development, allowing you to preview the changes.
+**Note:** The latest LTS docs live in `versioned_docs/version-<latest>-LTS/` and are served at `/docs/`. The `docs/docs/` directory is the beta (`next`) version, served at `/docs/beta/`; it is always included in the build (`includeCurrentVersion: true`). To build only the beta and latest LTS versions locally, run `build_lts=false yarn start`.
 
 ### Local Development
 ```console

@@ -1,12 +1,12 @@
 # ToolJet docs: guide for writing changes
 
-This directory is the Docusaurus source for docs.tooljet.com. It lives on the `documentation` branch. Code changes ship from other branches (mainly `lts-3.16`) and are never edited from here.
+This directory is the Docusaurus source for docs.tooljet.com. It lives on the `documentation` branch. Code changes ship from other branches (mainly the current LTS code branch) and are never edited from here.
 
 ## Where content goes
 
-- **Current docs:** `versioned_docs/version-3.16.0-LTS/`, with its sidebar at `versioned_sidebars/version-3.16.0-LTS-sidebars.json`. Almost all new and updated content goes here.
-- `docs/` (the "next" version) and `sidebars.js` are not actively maintained. Don't edit them unless asked.
-- Older versions (`version-3.5.0-LTS`, `version-3.0.0-LTS`, `version-2.50.0-LTS`) only get corrections such as broken links or wrong facts. Never backport new features there.
+- **Current docs:** `versioned_docs/version-4.0.0-LTS/`, with its sidebar at `versioned_sidebars/version-4.0.0-LTS-sidebars.json`. Almost all new and updated content goes here.
+- `docs/` and `sidebars.js` are the beta ("next") version, served at `/docs/beta/`. Edit them only for next-version work, or when asked.
+- Older versions (`version-3.16.0-LTS`, `version-3.5.0-LTS`, `version-3.0.0-LTS`, `version-2.50.0-LTS`) only get corrections such as broken links or wrong facts. Never backport new features there.
 - `versions.json` lists the available versions, newest first.
 - Images go in `static/img/<topic>/<page>/<name>.png` and are referenced as `/img/<topic>/<page>/<name>.png`. Use lowercase file names with dashes.
 
@@ -62,11 +62,11 @@ This directory is the Docusaurus source for docs.tooljet.com. It lives on the `d
 
 ## Environment variables
 
-New or changed env vars belong in `versioned_docs/version-3.16.0-LTS/setup/configuration/env-vars.md` (or the relevant setup page). Include the name, whether it's required, the default, and what it controls.
+New or changed env vars belong in `versioned_docs/version-4.0.0-LTS/setup/configuration/env-vars.md` (or the relevant setup page). Include the name, whether it's required, the default, and what it controls.
 
 ## Commits and PRs
 
 - Branch from `documentation` as `docs/<short-topic>` (automation uses `docs/pr-<source PR number>`), and open the PR against `documentation`.
 - Commit messages look like `docs: <what changed>` or `[docs]: <what changed>`.
 - Do not add `Co-Authored-By` trailers or "Generated with Claude Code" lines to commits or PR descriptions.
-- Don't run `yarn build` as part of routine edits. If you need a local preview, see `README.md` (it requires toggling `includeCurrentVersion`, which must not be committed as `true`).
+- Don't run `yarn build` as part of routine edits. For a local preview, run `npm start` in `docs/`; `build_lts=false npx docusaurus start` builds only the beta and latest LTS versions, which is faster.
