@@ -1,6 +1,7 @@
-import { INestApplication } from '@nestjs/common';
+import { BadRequestException, INestApplication } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as request from 'supertest';
+import { randomUUID } from 'crypto';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
@@ -11,6 +12,7 @@ import { AbilityService } from '@modules/ability/service';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { MODULES } from '@modules/app/constants/modules';
 import { DataSourceActivityService } from '@modules/data-sources/dashboard/activity.service';
+import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
@@ -22,10 +24,12 @@ import {
   ensureAppEnvironments,
   findEntity,
   getAllEnvironments,
+  getDefaultDataSource,
   getEntityRepository,
   initTestApp,
   resolveOrSeedDefaultBranch,
   updateEntity,
+  withRealTransactions,
 } from 'test-helper';
 
 type Option = { key: string; value: string; encrypted: boolean };
@@ -90,20 +94,25 @@ describe('DataSourcesDashboardController save all environments', () => {
 
   // Workspace with its environments and default branch, plus a REST API data source created
   // through the real endpoint so every environment has its options row.
+  const createDataSource = async (admin: TestUser, name: string): Promise<string> => {
+    const created = await request(nestApp.getHttpServer())
+      .post('/api/data-sources')
+      .set('tj-workspace-id', admin.workspace.id)
+      .set('Cookie', admin.cookie)
+      .send({ name, kind: 'restapi', options: [urlOption('https://initial.example.com')] })
+      .expect(201);
+    return created.body.id;
+  };
+
   const setup = async (email: string) => {
     const admin = await createAdmin(nestApp, email);
     const org = admin.workspace.id;
     await ensureAppEnvironments(nestApp, org);
     const branch = await resolveOrSeedDefaultBranch(org);
-    const created = await request(nestApp.getHttpServer())
-      .post('/api/data-sources')
-      .set('tj-workspace-id', org)
-      .set('Cookie', admin.cookie)
-      .send({ name: 'Orders API', kind: 'restapi', options: [urlOption('https://initial.example.com')] })
-      .expect(201);
+    const dataSourceId = await createDataSource(admin, 'Orders API');
     const environments = await getAllEnvironments(nestApp, org);
     const env = (name: string) => environments.find((environment) => environment.name === name);
-    return { admin, org, branch, dataSourceId: created.body.id as string, env };
+    return { admin, org, branch, dataSourceId, env };
   };
 
   const saveAll = (user: TestUser, dataSourceId: string, body: Record<string, unknown>, branchId?: string) =>
@@ -146,9 +155,32 @@ describe('DataSourcesDashboardController save all environments', () => {
               environmentId: env(name).id,
               updatedFields: ['options'],
             }),
+            metadata: expect.objectContaining({
+              transactionId: expect.any(String),
+              route: `[PUT] /api/v2/data-sources/${dataSourceId}`,
+              totalDuration: expect.any(Number),
+            }),
           })
         )
       );
+    });
+
+    it('should refuse a name another data source uses, once and before writing any environment', async () => {
+      const { admin, org, dataSourceId, env } = await setup('ds-save-all-name-taken@tooljet.io');
+      await createDataSource(admin, 'Billing API');
+      withMultiEnvironment();
+
+      const res = await saveAll(admin, dataSourceId, {
+        name: 'Billing API',
+        environments: [
+          { environment_id: env('development').id, options: [urlOption('https://dev.example.com')] },
+          { environment_id: env('staging').id, options: [urlOption('https://staging.example.com')] },
+        ],
+      }).expect(400);
+
+      expect(res.body.message).toBe('A data source with name "Billing API" already exists in this workspace');
+      expect(await findEntity(DataSource, { id: dataSourceId })).toMatchObject({ name: 'Orders API' });
+      expect(await urlIn(dataSourceId, org, env('development'))).toBe('https://initial.example.com');
     });
 
     it('should write nothing and name the environment when one entry is refused', async () => {
@@ -250,8 +282,8 @@ describe('DataSourcesDashboardController save all environments', () => {
       expect(await urlIn(dataSourceId, org, env('staging'))).toBe('https://initial.example.com');
     });
 
-    it('should refuse duplicate environments, another workspace environment and a sample data source', async () => {
-      const { admin, dataSourceId, env } = await setup('ds-save-all-refusals@tooljet.io');
+    it('should refuse duplicate environments, another workspace environment, empty options and a sample data source', async () => {
+      const { admin, org, dataSourceId, env } = await setup('ds-save-all-refusals@tooljet.io');
       const other = await setup('ds-save-all-refusals-other@tooljet.io');
       withMultiEnvironment();
       const entry = (environment: AppEnvironment) => ({
@@ -262,6 +294,10 @@ describe('DataSourcesDashboardController save all environments', () => {
       await saveAll(admin, dataSourceId, { environments: [entry(env('staging')), entry(env('staging'))] }).expect(400);
       await saveAll(admin, dataSourceId, { environments: [entry(other.env('staging'))] }).expect(404);
       await saveAll(admin, dataSourceId, { environments: [] }).expect(400);
+      await saveAll(admin, dataSourceId, { environments: [{ environment_id: env('staging').id, options: [] }] }).expect(
+        400
+      );
+      expect(await urlIn(dataSourceId, org, env('staging'))).toBe('https://initial.example.com');
       await updateEntity(DataSource, dataSourceId, { type: 'sample' } as never);
       await saveAll(admin, dataSourceId, { environments: [entry(env('staging'))] }).expect(400);
     });
@@ -341,9 +377,49 @@ describe('DataSourcesDashboardController save all environments', () => {
         expect.objectContaining({
           metadata: {
             options: [urlOption('https://x.example.com'), { key: 'password', value: null, encrypted: true }],
+            transactionId: expect.any(String),
+            route: `[PUT] /api/v2/data-sources/${dataSourceId}`,
+            totalDuration: expect.any(Number),
           },
         }),
       ]);
+    });
+  });
+
+  // Real transactions end the suite transaction, so this describe stays last in the file.
+  describe('PUT /api/v2/data-sources/:id | Rollback', () => {
+    it('should roll back every environment when a later one fails to write', async () => {
+      await withRealTransactions(async () => {
+        const email = `ds-save-all-rollback-${randomUUID()}@tooljet.io`;
+        try {
+          const { admin, org, dataSourceId, env } = await setup(email);
+          withMultiEnvironment();
+          const original = DataSourcesUtilService.prototype.updateWithManager;
+          jest
+            .spyOn(DataSourcesUtilService.prototype, 'updateWithManager')
+            .mockImplementationOnce(function (this: DataSourcesUtilService, ...args) {
+              return original.apply(this, args);
+            })
+            .mockRejectedValueOnce(new BadRequestException('Write failed'));
+
+          const res = await saveAll(admin, dataSourceId, {
+            environments: [
+              { environment_id: env('development').id, options: [urlOption('https://dev.example.com')] },
+              { environment_id: env('staging').id, options: [urlOption('https://staging.example.com')] },
+            ],
+          }).expect(400);
+
+          expect(res.body.message).toBe('staging: Write failed');
+          expect(await urlIn(dataSourceId, org, env('development'))).toBe('https://initial.example.com');
+        } finally {
+          const workspaces = `SELECT ou.organization_id FROM organization_users ou
+            JOIN users u ON u.id = ou.user_id WHERE u.email = $1`;
+          await getDefaultDataSource().query(`DELETE FROM data_sources WHERE organization_id IN (${workspaces})`, [
+            email,
+          ]);
+          await getDefaultDataSource().query(`DELETE FROM organizations WHERE id IN (${workspaces})`, [email]);
+        }
+      });
     });
   });
 });

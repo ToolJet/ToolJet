@@ -6,12 +6,10 @@ import {
   TestUser,
   closeTestApp,
   createAdmin,
-  createUser,
   ensureAppEnvironments,
   findEntity,
   getAllEnvironments,
   initTestApp,
-  login,
   resolveOrSeedDefaultBranch,
   seedDataSourceActivity,
 } from 'test-helper';
@@ -169,27 +167,24 @@ describe('Data sources dashboard activity write paths', () => {
     });
   });
 
-  describe('Guard failure | No write', () => {
-    it('should write nothing when the request is refused', async () => {
-      const admin = await createAdmin(nestApp, 'ds-act-403-admin@tooljet.io');
+  describe('Failed request | No write', () => {
+    it('should write nothing when the request passes the guards and then fails', async () => {
+      const admin = await createAdmin(nestApp, 'ds-act-failed@tooljet.io');
       await ensureAppEnvironments(nestApp, admin.workspace.id);
-      const dataSourceId = await createGlobalDataSource(nestApp, admin, 'Guarded data source');
-      const endUser = await createUser(nestApp, {
-        email: 'ds-act-403-user@tooljet.io',
-        groups: ['all_users'],
-        organization: admin.workspace,
-      });
-      const { tokenCookie } = await login(nestApp, endUser.user.email);
+      await resolveOrSeedDefaultBranch(admin.workspace.id);
+      const dataSourceId = await createGlobalDataSource(nestApp, admin, 'Renamed data source');
+      await createGlobalDataSource(nestApp, admin, 'Taken name');
       const environments = await getAllEnvironments(nestApp, admin.workspace.id);
       const defaultEnv = environments.find((e) => e.isDefault) || environments[0];
 
       const response = await request(nestApp.getHttpServer())
-        .get(`/api/data-sources/${dataSourceId}/environment/${defaultEnv.id}`)
+        .put(`/api/data-sources/${dataSourceId}?environment_id=${defaultEnv.id}`)
         .set('tj-workspace-id', admin.workspace.id)
-        .set('Cookie', tokenCookie);
+        .set('Cookie', admin.cookie)
+        .send({ name: 'Taken name', options: [] });
 
-      expect(response.statusCode).toBe(403);
-      expect(await findEntity(UserDataSourceActivity, { userId: endUser.user.id, dataSourceId })).toBeNull();
+      expect(response.statusCode).toBe(400);
+      expect(await findEntity(UserDataSourceActivity, { userId: admin.user.id, dataSourceId })).toBeNull();
     });
   });
 });

@@ -1,6 +1,7 @@
 import { Transform, Type } from 'class-transformer';
 import {
   ArrayMinSize,
+  ArrayNotEmpty,
   ArrayUnique,
   IsArray,
   IsNotEmpty,
@@ -16,8 +17,9 @@ export class SaveDataSourceEnvironmentDto {
   @IsUUID()
   environment_id: string;
 
-  // Same option items as the v1 update body, passed through unchanged.
+  // Same option items as the v1 update body, passed through unchanged; empty would wipe the environment.
   @IsArray()
+  @ArrayNotEmpty()
   options: Array<Record<string, unknown>>;
 }
 

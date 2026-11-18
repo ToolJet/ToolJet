@@ -474,6 +474,62 @@ describe('DataSourcesDashboardController', () => {
       });
       expect(ids(onFeature.body)).not.toContain(deleted.id);
     });
+
+    it("should take the folder, last editor and caller's activity from the listed branch and the caller's own row", async () => {
+      const admin = await createAdmin(nestApp, 'data-source-dash-vis-branch-activity@tooljet.io');
+      const other = await createAdmin(nestApp, 'data-source-dash-vis-branch-activity-other@tooljet.io', {
+        workspace: admin.workspace,
+      });
+      const org = admin.workspace.id;
+      const branch = await resolveOrSeedDefaultBranch(org);
+      const feature = await saveEntity(WorkspaceBranch, { organizationId: org, name: 'feature-y' } as WorkspaceBranch);
+      const folder = await dataSourceFolder(org, 'Default only');
+      const { dataSource: defaultOnly } = await seedDashboardDataSource(nestApp, {
+        organizationId: org,
+        name: 'A default only',
+        folder,
+      });
+      const { dataSource: othersActivity } = await seedDashboardDataSource(nestApp, {
+        organizationId: org,
+        name: 'B others activity',
+      });
+      const { dataSource: ownEdit } = await seedDashboardDataSource(nestApp, {
+        organizationId: org,
+        name: 'C own edit',
+      });
+      await seedDataSourceActivity(nestApp, {
+        userId: other.user.id,
+        dataSourceId: defaultOnly.id,
+        branchId: branch.id,
+        lastEditedAt: new Date('2026-05-01'),
+      });
+      await seedDataSourceActivity(nestApp, {
+        userId: other.user.id,
+        dataSourceId: othersActivity.id,
+        branchId: feature.id,
+        lastEditedAt: new Date('2026-06-01'),
+        lastViewedAt: new Date('2026-06-01'),
+      });
+      await seedDataSourceActivity(nestApp, {
+        userId: admin.user.id,
+        dataSourceId: ownEdit.id,
+        branchId: feature.id,
+        lastEditedAt: new Date('2026-01-01'),
+      });
+
+      const onDefault = await list(nestApp, admin.cookie, org, { folder_id: folder.id });
+      const onFeature = await list(nestApp, admin.cookie, org, { branch_id: feature.id });
+
+      expect(onDefault.body.items).toMatchObject([
+        { id: defaultOnly.id, modified_by: { id: other.user.id }, folder: { id: folder.id } },
+      ]);
+      expect(onFeature.body.items).toMatchObject([
+        { id: folder.id, kind: 'folder', data_source_count: 0 },
+        { id: ownEdit.id, last_modified_at: new Date('2026-01-01').toISOString() },
+        { id: defaultOnly.id, folder: null, modified_by: null },
+        { id: othersActivity.id, modified_by: { id: other.user.id }, last_viewed_at: null },
+      ]);
+    });
   });
 
   describe('GET /api/v2/data-sources | Owner, modified by and actions', () => {

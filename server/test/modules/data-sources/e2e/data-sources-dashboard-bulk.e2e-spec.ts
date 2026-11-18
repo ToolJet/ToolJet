@@ -129,6 +129,12 @@ describe('DataSourcesDashboardController bulk routes', () => {
               resourceType: MODULES.GLOBAL_DATA_SOURCE,
               resourceId: dataSource.id,
               userId: admin.user.id,
+              metadata: expect.objectContaining({
+                deletedAt: expect.any(String),
+                transactionId: expect.any(String),
+                route: '[POST] /api/v2/data-sources/bulk-delete',
+                totalDuration: expect.any(Number),
+              }),
             })
           )
         )
@@ -296,6 +302,49 @@ describe('DataSourcesDashboardController bulk routes', () => {
       expect(await folderOf(dataSource.id)).toBeNull();
     });
 
+    it("should 404 for a target folder the user can't see", async () => {
+      const admin = await createAdmin(nestApp, 'ds-bulk-move-hidden-admin@tooljet.io');
+      const org = admin.workspace.id;
+      const endUser = await createEndUser(nestApp, 'ds-bulk-move-hidden@tooljet.io', { workspace: admin.workspace });
+      const hidden = await dataSourceFolder(org, 'Hidden', admin.user.id);
+      await seed(org, 'Secret', hidden);
+      const dataSource = await seed(org, 'Usable');
+      grantDataSources(endUser.user, { use: [dataSource.id] });
+
+      await post('bulk-move', endUser.cookie, org, { data_source_ids: [dataSource.id], folder_id: hidden.id }).expect(
+        404
+      );
+      expect(await folderOf(dataSource.id)).toBeNull();
+    });
+
+    it('should move and remove only on the requested branch, leaving other branches untouched', async () => {
+      const admin = await createAdmin(nestApp, 'ds-bulk-move-branch@tooljet.io');
+      const org = admin.workspace.id;
+      const branch = await resolveOrSeedDefaultBranch(org);
+      const feature = await saveEntity(WorkspaceBranch, {
+        organizationId: org,
+        name: 'feature',
+        isDefault: false,
+      } as WorkspaceBranch);
+      const source = await dataSourceFolder(org, 'Source');
+      const target = await dataSourceFolder(org, 'Target');
+      const dataSource = await seed(org, 'Foldered', source);
+
+      await post('bulk-move', admin.cookie, org, {
+        data_source_ids: [dataSource.id],
+        folder_id: target.id,
+        branch_id: feature.id,
+      }).expect(200);
+      expect(await folderOf(dataSource.id, feature.id)).toBe(target.id);
+      expect(await folderOf(dataSource.id, branch.id)).toBe(source.id);
+
+      await post('bulk-remove', admin.cookie, org, { data_source_ids: [dataSource.id], branch_id: feature.id }).expect(
+        200
+      );
+      expect(await folderOf(dataSource.id, feature.id)).toBeNull();
+      expect(await folderOf(dataSource.id, branch.id)).toBe(source.id);
+    });
+
     it('should accept more than 50 data source ids', async () => {
       const admin = await createAdmin(nestApp, 'ds-bulk-move-many@tooljet.io');
       const org = admin.workspace.id;
@@ -419,6 +468,34 @@ describe('DataSourcesDashboardController bulk routes', () => {
       expect(await exists(free.id)).toBe(false);
       expect(await exists(used.id)).toBe(true);
       expect(await folderOf(used.id)).toBeNull();
+    });
+
+    it('should leave a data source placed in the folder only on another branch alone in folder_and_data_sources mode', async () => {
+      const admin = await createAdmin(nestApp, 'ds-bulk-fdel-other-branch@tooljet.io');
+      const org = admin.workspace.id;
+      const feature = await saveEntity(WorkspaceBranch, {
+        organizationId: org,
+        name: 'feature',
+        isDefault: false,
+      } as WorkspaceBranch);
+      const folder = await dataSourceFolder(org, 'Mixed');
+      const here = await seed(org, 'Here', folder);
+      const elsewhere = await seed(org, 'Elsewhere');
+      await saveEntity(FolderDataSource, {
+        folderId: folder.id,
+        dataSourceId: elsewhere.id,
+        branchId: feature.id,
+      } as FolderDataSource);
+
+      const res = await post('folders/bulk-delete', admin.cookie, org, {
+        folder_ids: [folder.id],
+        mode: 'folder_and_data_sources',
+      }).expect(200);
+
+      expect(res.body).toEqual({ blocked_ids: [] });
+      expect(await folderExists(folder.id)).toBe(false);
+      expect(await exists(here.id)).toBe(false);
+      expect(await exists(elsewhere.id)).toBe(true);
     });
 
     it("should block a folder the user can't delete, a non-data-source folder, and write nothing", async () => {

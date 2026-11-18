@@ -2211,7 +2211,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return `${baseName}_${counter}`;
   }
 
-  private async ensureUniqueActiveNameForUpdate(
+  async ensureUniqueActiveNameForUpdate(
     name: string,
     currentDataSourceId: string,
     organizationId: string,

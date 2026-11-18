@@ -1,6 +1,5 @@
 import { BadRequestException, HttpException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import * as requestIp from 'request-ip';
 import { DataSource, EntityManager } from 'typeorm';
 import { DataSource as DataSourceEntity } from '@entities/data_source.entity';
 import { User } from '@entities/user.entity';
@@ -9,19 +8,18 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import type { AbilityService } from '@modules/ability/interfaces/IService';
 import { UserPermissions } from '@modules/ability/types';
 import type { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
-import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 import type { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { assertGitSyncCreateAllowedForOrg } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import type { LicenseTermsService } from '@modules/licensing/interfaces/IService';
-import { RequestContext } from '@modules/request-context/service';
 import { FEATURE_KEY } from '../constants';
 import { FEATURES } from '../constants/feature';
 import { assertDataSourceEditAllowed } from '../guards/git-sync-datasource.guard';
 import { redactEncryptedOptions } from '../util.service';
 import type { DataSourcesUtilService } from '../util.service';
+import { emitRequestAuditLogEntry } from './audit-log';
 import { dataSourceActions, folderActions, isEditCapable, resolveFolderAccess, visibleDataSourceIds } from './actions';
 import {
   BuiltQuery,
@@ -187,16 +185,23 @@ export class DataSourcesDashboardService {
     if (!multiEnvironment && dto.environments.length !== 1) {
       throw new BadRequestException('Saving several environments at once needs multi-environment support');
     }
+    if (dto.name) {
+      await this.dataSourcesUtilService.ensureUniqueActiveNameForUpdate(
+        dto.name,
+        dataSourceId,
+        organizationId,
+        this.dataSource.manager,
+        resolvedBranchId
+      );
+    }
 
     for (const environment of dto.environments) {
       await this.forEnvironment(environmentNames.get(environment.environment_id), async () => {
-        if (environment.options.length) {
-          await this.dataSourcesUtilService.validateNoConstantsOnDefaultBranch(
-            resolvedBranchId,
-            environment.options,
-            organizationId
-          );
-        }
+        await this.dataSourcesUtilService.validateNoConstantsOnDefaultBranch(
+          resolvedBranchId,
+          environment.options,
+          organizationId
+        );
         await assertDataSourceEditAllowed(this.gitSyncConfigsUtilService, this.appEnvironmentUtilService, {
           organizationId,
           dataSourceId,
@@ -254,20 +259,18 @@ export class DataSourcesDashboardService {
     }
   }
 
-  // One DATA_SOURCE_UPDATE entry per environment, shaped like the v1 update's; the request-context
-  // local is cleared so the response interceptor doesn't log the request a second time.
+  // One DATA_SOURCE_UPDATE entry per environment, shaped like the v1 update's.
   private emitUpdateAuditLogEntry(
     user: User,
     dataSource: DataSourceEntity,
     dto: SaveAllDataSourceEnvironmentsDto,
     environment: SaveDataSourceEnvironmentDto
   ): void {
-    const context = RequestContext.currentContext;
     const metadata = {
       ...(dto.name !== undefined && { name: dto.name }),
       options: redactEncryptedOptions(environment.options),
     };
-    this.eventEmitter.emit('auditLogEntry', {
+    emitRequestAuditLogEntry(this.eventEmitter, {
       userId: user.id,
       organizationId: user.organizationId,
       resourceId: dataSource.id,
@@ -281,12 +284,9 @@ export class DataSourcesDashboardService {
         updatedFields: Object.keys(metadata),
       },
       metadata,
-      ipAddress: context?.req ? requestIp.getClientIp(context.req) : undefined,
-      userAgent: context?.req?.headers['user-agent'],
       resourceType: MODULES.GLOBAL_DATA_SOURCE,
       actionType: FEATURES[MODULES.GLOBAL_DATA_SOURCE][FEATURE_KEY.UPDATE].auditLogsKey,
     });
-    if (context?.res?.locals) delete context.res.locals[AUDIT_LOGS_REQUEST_CONTEXT_KEY];
   }
 
   private offset(query: ListDataSourcesV2QueryDto): number {

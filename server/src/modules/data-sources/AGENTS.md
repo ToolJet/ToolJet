@@ -53,7 +53,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 ## Dashboard v2 schema
 
 - `data_sources.created_by` (nullable uuid, FK `users(id)` `ON DELETE SET NULL`) — set in `DataSourcesUtilService.create` only; git-sync import, sample and static sources leave it `NULL`.
-- `user_data_source_activity` (`user_id`, `data_source_id`, `branch_id` composite PK) mirrors apps' `user_app_activity`. Writer: `dashboard/activity.interceptor.ts` (global `APP_INTERCEPTOR`, registered only when `isMainImport`) upserts `last_viewed_at` after a successful `GET :id/environment/:environment_id` and `last_edited_at` after a successful v1 `PUT :id` (version-agnostic route match, so the Task 6 v2 `PUT` is picked up too), keyed off `request.tj_data_source` set by `ValidateDataSourceGuard`. Same 5-minute / "still latest editor" throttle as apps' `DashboardActivityService`; best-effort (a failed upsert is logged, never fails the request).
+- `user_data_source_activity` (`user_id`, `data_source_id`, `branch_id` composite PK) mirrors apps' `user_app_activity`. Writer: `dashboard/activity.interceptor.ts` (global `APP_INTERCEPTOR`, registered only when `isMainImport`) upserts `last_viewed_at` after a successful `GET :id/environment/:environment_id` and `last_edited_at` after a successful v1 `PUT :id` (version-agnostic route match, so the v2 save-all `PUT` is picked up too), keyed off `request.tj_data_source` set by `ValidateDataSourceGuard`. Same 5-minute / "still latest editor" throttle as apps' `DashboardActivityService`; best-effort (a failed upsert is logged, never fails the request).
 - `pinned_items.data_source_id` extends the apps pin table (`chk_pinned_items_one_resource` now allows exactly one of `app_id`/`folder_id`/`data_source_id`; `uq_pinned_items_user_branch_data_source` enforces one pin per user+branch+data source).
 
 ## Dashboard v2 list
@@ -79,7 +79,8 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 
 - Every data-source dashboard route resolves `branch_id` within the caller's workspace (`resolveScope` / `resolveBranchId`, 404 otherwise); the activity interceptor skips a foreign one. Id arrays are capped at 500. Audit metadata carries `null` for encrypted option values (save-all and v1 update).
 - `PUT /api/v2/data-sources/:id?branch_id` `{ name?, environments: [{ environment_id, options }] }` → 204. Runs `DataSourcesUtilService.updateWithManager` (the v1 `update` body, on a passed manager) per entry inside one `dbTransactionWrap`; refusals are prefixed with the environment name. Without the multi-environment licence exactly one entry (written to every environment, as v1).
-- Refusals checked before writing: sample (400), environment outside the workspace (404), duplicate `environment_id` (400, DTO), constants on default branch (400) and the git-sync edit rule per entry — `assertDataSourceEditAllowed` (`guards/git-sync-datasource.guard.ts`, also what `GitSyncDataSourceEditGuard` calls). One `DATA_SOURCE_UPDATE` audit entry per environment.
+- Refusals checked before writing: sample (400), environment outside the workspace (404), duplicate `environment_id` or empty `options` (400, DTO), a name already taken (400, checked once, unprefixed), constants on default branch (400) and the git-sync edit rule per entry — `assertDataSourceEditAllowed` (`guards/git-sync-datasource.guard.ts`, also what `GitSyncDataSourceEditGuard` calls). One `DATA_SOURCE_UPDATE` audit entry per environment.
+- Save-all and bulk delete emit one audit entry per item through `dashboard/audit-log.ts` `emitRequestAuditLogEntry`, which adds the request metadata (`transactionId`, `route`, `totalDuration`, OAuth fields) `ResponseInterceptor` adds to v1 entries.
 
 ## Related modules
 

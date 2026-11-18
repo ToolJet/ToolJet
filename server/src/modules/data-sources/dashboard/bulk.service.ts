@@ -1,6 +1,5 @@
 import { HttpException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import * as requestIp from 'request-ip';
 import { DataSource } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { UserPermissions } from '@modules/ability/types';
@@ -17,6 +16,7 @@ import { FEATURES } from '../constants/feature';
 import { canDeleteDataSource, canManageFolderDataSources } from './actions';
 import { DataSourceDashboardScope, visibleIdsQuery } from './queries';
 import { DataSourcesDashboardService } from './dashboard.service';
+import { emitRequestAuditLogEntry } from './audit-log';
 import {
   BulkDeleteDataSourcesDto,
   BulkMoveDataSourcesDto,
@@ -201,10 +201,8 @@ export class DataSourcesBulkService {
     const logsData = context?.res?.locals?.[AUDIT_LOGS_REQUEST_CONTEXT_KEY];
     if (!logsData?.userId) return;
 
-    this.eventEmitter.emit('auditLogEntry', {
+    emitRequestAuditLogEntry(this.eventEmitter, {
       ...logsData,
-      ipAddress: requestIp.getClientIp(context.req),
-      userAgent: context.req?.headers['user-agent'],
       resourceType: MODULES.GLOBAL_DATA_SOURCE,
       actionType: FEATURES[MODULES.GLOBAL_DATA_SOURCE][FEATURE_KEY.DELETE].auditLogsKey,
     });
