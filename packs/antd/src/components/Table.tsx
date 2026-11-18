@@ -365,10 +365,13 @@ export const Table = () => {
     };
   });
 
-  // selectedRowKeys keep the ids' own type (1, not '1'), as the data has them.
+  // selectedRowKeys keep the ids' own type (1, not '1'), as the data has them. The selection it already has changes
+  // nothing and fires nothing: selectRow of a row already selected and clearSelection with nothing selected fired On
+  // selection change (QA PF-120).
   const select = (keys: React.Key[]) => {
     const set = new Set(keys.map(String));
     const hits = keyed.filter((k) => set.has(k.key));
+    if (hits.length === chosenKeys.length && hits.every((k) => chosenKeys.includes(k.key))) return;
     setSelectedRowKeys(hits.map((k) => k.id));
     setSelectedRows(hits.map((k) => k.row));
     onSelectionChange();
@@ -396,13 +399,15 @@ export const Table = () => {
   ToolJet.useAction(
     { name: 'selectRow', displayName: 'Select row', params: [{ handle: 'key', displayName: 'Row key' }] },
     (key) => {
-      // The first row holding the id.
+      // The first row holding the id. A key no row holds changes nothing (QA PF-120): it cleared the clicked row and
+      // fired On selection change.
       const hit = keyed.find((k) => k.text === str(key));
-      setSelectedRow(hit?.row ?? {});
+      if (!hit) return;
+      setSelectedRow(hit.row);
       if (selectionType === 'none') return;
       // Checkbox selection adds the row to those selected (it replaced the whole selection); radio picks only it.
       const kept = selectionType === 'checkbox' ? chosenKeys : [];
-      select(hit ? [...kept.filter((k) => k !== hit.key), hit.key] : kept);
+      select([...kept.filter((k) => k !== hit.key), hit.key]);
     }
   );
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => {

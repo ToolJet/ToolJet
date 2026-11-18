@@ -19,7 +19,7 @@ import {
 import { DownOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AntProvider, usePopupTheme, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
+import { AntProvider, ownBoxStyle, usePopupTheme, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { SkeletonSwap, SpinOver } from '../lib/Loading';
 import { oneOf, str, toArray, toKeyedItems, type Row } from '../lib/data';
 import { toNumber } from '../lib/format';
@@ -52,10 +52,13 @@ const toMenuItems = (raw: unknown): MenuItem[] =>
     if (r.type === 'divider') return { key: `divider-${i}`, label: '', type: 'divider' };
     const key = str(r.key ?? r.value ?? r.id ?? r.label);
     if (!key) return null;
+    // A blank label is no item either: { key, label: '' } drew an empty row (QA PF-286). No label at all shows the key.
+    const label = str(r.label ?? r.title ?? key);
+    if (!label.trim()) return null;
     const children = kids();
     return {
       key,
-      label: str(r.label ?? r.title ?? key),
+      label,
       danger: Boolean(r.danger) || undefined,
       disabled: Boolean(r.disabled) || undefined,
       ...(children.length ? { children } : {}),
@@ -379,8 +382,15 @@ export const Menu = () => {
   const anchor = useRef<HTMLElement | null>(null);
   // rc-menu's own keys (the arrows, Enter) find the items through the document (lib/menuLookup).
   const menuId = useMenuLookup(anchor);
+  // Border color set: the menu's edge line in it (pack.css .tj-ant-menu--border); it did nothing (QA PKB-41).
+  const ownBorder = Boolean((tokens as Record<string, unknown>)['--tj-ant-color-border']);
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-menu" ownerRef={anchor}>
+    <AntProvider
+      tokens={tokens}
+      fill
+      className={ownBorder ? 'tj-ant-menu tj-ant-menu--border' : 'tj-ant-menu'}
+      ownerRef={anchor}
+    >
       <SpinOver loading={loading} as="fill">
         <WithPopupTheme>
           {(popup) => (
@@ -471,8 +481,10 @@ export const Breadcrumb = () => {
       ),
     };
   });
+  // Primary color colours the crumb links (pack.css .tj-ant-breadcrumb); Container background, Border color and Border
+  // radius draw the box (QA PKB-41). Crumbs that wrap past a narrow box scroll, not cut off (QA PKB-76).
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} fill className="tj-ant-breadcrumb tj-ant-scroll" style={ownBoxStyle(tokens)}>
       <SpinOver loading={loading}>
         <AntBreadcrumb items={list} separator={separator || '/'} />
       </SpinOver>
@@ -803,8 +815,10 @@ export const Spin = () => {
     defaultWidth: 4,
     defaultHeight: 6,
   });
+  // Box Styles draw the widget box (ownBoxStyle, QA PKB-41); a tip taller than the box scrolls from the top
+  // (pack.css .tj-ant-spin-root): it ran below a short box, which cut it off (QA PF-224).
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-center">
+    <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-scroll tj-ant-spin-root" style={ownBoxStyle(tokens)}>
       {spinning || loading ? (
         <div className="tj-ant-spin">
           <AntSpin size={size as 'default'} />

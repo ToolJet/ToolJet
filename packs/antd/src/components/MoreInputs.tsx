@@ -405,7 +405,9 @@ export const TimePicker = (props: Record<string, unknown>) => {
     const d = parseDate(v, 'HH:mm:ss') ?? parseDate(v, 'HH:mm');
     if (d || isBlankDate(v)) change(d);
   }, props.value);
-  const current = parseDate(value, valueFormat) ?? parseDate(value, 'HH:mm');
+  // Read with or without seconds whatever the Format: 09:30:45 on an HH:mm field, read as HH:mm only, showed an empty
+  // field though the value was kept (QA PF-070).
+  const current = parseDate(value, valueFormat) ?? parseDate(value, 'HH:mm:ss') ?? parseDate(value, 'HH:mm');
   const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
   return (
     <AntProvider tokens={tokens} ownerRef={panel.anchor}>

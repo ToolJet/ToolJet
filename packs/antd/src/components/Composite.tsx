@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Badge, Button, Card, Empty, List, Progress, Space, Statistic, Tag, Typography } from 'antd';
 import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { AntProvider, ownBoxStyle, useTokenStyles } from '../lib/AntProvider';
 import { safeUrl } from '../lib/ui2/display/chat/values';
 import { PackTag } from '../lib/PackTag';
 import { SpinOver, TextBone } from '../lib/Loading';
@@ -16,6 +16,7 @@ import { progressEntries, progressItem, progressMax } from '../lib/ui2/charts/pr
 import { useValueSetter } from '../lib/sameValue';
 import { LOCALE_HINT } from '../lib/locale';
 import { onPointerIn } from '../lib/pointerEnter';
+import { keyboardPick } from '../lib/keyboardPick';
 
 // The tone a status word reads as (lists/model chipTone) -> Ant's Tag status colour.
 const TONE_TAG: Record<string, string> = {
@@ -220,7 +221,8 @@ export const SummaryStrip = () => {
   const [items] = ToolJet.useStateArray({
     name: 'items',
     label: 'Items',
-    description: "[{ label, value, delta: 0.12 (a fraction: +12%), caption: 'vs last month' }]",
+    // The strip shows at most six, as the Rocket 2.0 strip it follows; the rest were dropped with no hint (QA PF-011).
+    description: "[{ label, value, delta: 0.12 (a fraction: +12%), caption: 'vs last month' }]. Shows the first 6.",
     initialValue: [
       // Percents are fractions (0.021 is 2.1%, a delta of 0.12 is +12%), as Ant's Descriptions and Statistic read them
       // (QA AD-43).
@@ -288,8 +290,11 @@ export const SummaryStrip = () => {
   });
   const figures = summaryFigures(toArray(items), { valueFormat, currency, deltaFormat, locale });
   const fontSize = size === 'sm' ? 20 : size === 'lg' ? 30 : 24;
+  // Primary color, once set, colours the figures: it did nothing on the strip (QA PKB-41).
+  const figureColor = (tokens as Record<string, string | undefined>)['--tj-ant-color-primary'];
+  // Fills the box and scrolls what does not fit: items below a short box were cut off and out of reach (QA PKB-76).
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} fill className="tj-ant-scroll">
       <div
         className={`tj-ant-strip is-${appearance} is-${align}`}
         style={{ gridTemplateColumns: `repeat(${Math.max(1, figures.length)}, minmax(0, 1fr))` }}
@@ -303,7 +308,7 @@ export const SummaryStrip = () => {
               value={f.value}
               // A null or missing value showed Ant's 0; it shows a dash, as the Rocket strip does.
               valueRender={loading ? () => <TextBone part="figure" /> : f.value === '' ? () => '–' : undefined}
-              valueStyle={{ fontSize }}
+              valueStyle={{ fontSize, ...(figureColor ? { color: figureColor } : {}) }}
             />
             {f.delta || f.caption ? (
               <div className="tj-ant-stat-trend">
@@ -653,7 +658,14 @@ export const CardGrid = () => {
                 <TextBone part="trend" />
               </Card>
             ))
-          : items.slice(0, grow.shown).map((it) => (
+          : items.slice(0, grow.shown).map((it) => {
+              const pick = () => {
+                // Clicking the selected item again unselects it, with no click event, as in the Record list (team testing, 2026-10-29).
+                if (it.key === selectedItemId) return select(null);
+                select(it as unknown as Selectable);
+                onCardClicked();
+              };
+              return (
               <Card
                 key={it.key}
                 hoverable={hoverable}
@@ -664,12 +676,10 @@ export const CardGrid = () => {
                     <img alt={it.title} src={it.image} style={{ aspectRatio: imageAspect, objectFit: 'cover' }} />
                   ) : undefined
                 }
-                onClick={() => {
-                  // Clicking the selected item again unselects it, with no click event, as in the Record list (team testing, 2026-10-29).
-                  if (it.key === selectedItemId) return select(null);
-                  select(it as unknown as Selectable);
-                  onCardClicked();
-                }}
+                onClick={pick}
+                // A Tab stop that Enter and Space pick, as a click does: a card could not be reached from the keyboard
+                // (QA PKB-31).
+                {...keyboardPick(pick)}
               >
                 {it.eyebrow ? <div className="tj-ant-hero-eyebrow">{it.eyebrow}</div> : null}
                 <Card.Meta
@@ -695,7 +705,8 @@ export const CardGrid = () => {
                 {it.progress !== null ? <Progress percent={it.progress} size="small" /> : null}
                 {it.meta ? <Typography.Text type="secondary">{it.meta}</Typography.Text> : null}
               </Card>
-            ))}
+              );
+            })}
         {!loading && grow.more ? <div ref={grow.sentinelRef} className="tj-ant-grow-sentinel" aria-hidden /> : null}
       </div>
     </AntProvider>
@@ -1360,8 +1371,10 @@ export const CircularProgress = () => {
   // on both sides in a 3-column box.
   const asked = Math.max(32, Math.min(400, Number(size) || 120));
   const [ringBox, px] = useFitSquare<HTMLDivElement>(asked);
+  // Box Styles draw the widget box: Ant's ring has no surface for them, so they did nothing (QA PKB-41). A label taller
+  // than the box scrolls, as the ToolJet Text does: it ran past the bottom, which cut it off (QA PF-215).
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-ring">
+    <AntProvider tokens={tokens} fill className="tj-ant-ring tj-ant-scroll" style={ownBoxStyle(tokens)}>
       <SpinOver loading={loading} as="fill">
         {/* --tj-ring-size: read by pack.css under Dynamic height */}
         <div

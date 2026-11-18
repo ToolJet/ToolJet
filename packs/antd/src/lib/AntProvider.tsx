@@ -91,6 +91,24 @@ export const useTokenStyles = () => {
   }, [colorPrimary, colorText, colorBgContainer, colorBorder, borderRadius]);
 };
 
+/**
+ * The widget box drawn by the component's own Container background, Border color and Border radius (useTokenStyles),
+ * for a component with no surface of its own that Ant would draw them on (Spin, Circular Progress): they did nothing
+ * there (QA PKB-41). Unset, the box stays bare. Passed to AntProvider's style, the root that fills the box.
+ */
+export const ownBoxStyle = (tokens: CSSProperties): CSSProperties => {
+  const own = tokens as Record<string, string | undefined>;
+  const bg = own['--tj-ant-color-bg-container'];
+  const border = own['--tj-ant-color-border'];
+  const radius = own['--tj-ant-border-radius'];
+  return {
+    ...(bg ? { backgroundColor: bg } : {}),
+    ...(border ? { border: `1px solid ${border}` } : {}),
+    ...(radius ? { borderRadius: radius } : {}),
+    ...(bg || border || radius ? { boxSizing: 'border-box' } : {}),
+  };
+};
+
 // Dark app, dark Ant: whether the app is dark (its surface colour: the theme's --tj-surface when one is applied, else
 // the page's own --cc-surface1-surface) puts the root on antd's dark algorithm (.tj-ant-dark in antd.css). One
 // observer on <html> and <body> for every instance.

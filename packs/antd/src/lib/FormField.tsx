@@ -1,8 +1,25 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { Form } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 
 type Check = { error: string; required: boolean };
+
+// The field's validation message. While it shows, the field's own inputs (in the control area, not a popup's) are
+// aria-invalid="true", as a ToolJet Text Input's is: Ant sets it only on a Form.Item bound to a Form's field (name),
+// so a screen reader was not told the field is invalid (QA PF-063). Marked again after every render, as Ant may draw
+// new inputs (the OTP's boxes); unmarked when the message goes.
+const InvalidMessage = ({ message }: { message: string }) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const item = ref.current?.closest('.ant-form-item');
+    const inputs = item
+      ? [...item.querySelectorAll('.ant-form-item-control-input input:not([type="hidden"]), .ant-form-item-control-input textarea')]
+      : [];
+    inputs.forEach((input) => input.setAttribute('aria-invalid', 'true'));
+    return () => inputs.forEach((input) => input.removeAttribute('aria-invalid'));
+  });
+  return <span ref={ref}>{message}</span>;
+};
 
 // Ant's own field layout, Form.Item, for every form control: label (with the required mark), the control, `extra`
 // help text, and the host's validation message as `help` with validateStatus. No Form state: the control is
@@ -31,7 +48,7 @@ export const FormField = ({
       htmlFor={htmlFor}
       required={check.required}
       validateStatus={check.error ? 'error' : undefined}
-      help={check.error || undefined}
+      help={check.error ? <InvalidMessage message={check.error} /> : undefined}
       extra={extra || undefined}
       style={{ marginBottom: 0 }}
     >
