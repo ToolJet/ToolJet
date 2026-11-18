@@ -4,22 +4,26 @@ const MIGRATION_NAME = 'AddWorkflowFolderGranularPermissionsToExistingAdminGroup
 const RESOURCE_TYPE = 'workflow_folder';
 const PERMISSION_NAME = 'Workflow folders';
 
-// What a new workspace's default groups get (DEFAULT_GROUP_PERMISSIONS + DEFAULT_RESOURCE_PERMISSIONS in
-// src/modules/group-permissions/constants). Copied as literals: those constants can change after this ships.
+// Copied as literals: the group-permission constants can change after this ships.
+// Builders get the create/delete flags only, never a folder granular permission: an is_all "Edit folder"
+// row would let every builder edit every folder on a paid plan. Admins grant builders folder access
+// through custom groups. On a free plan the rows are never read (hardcoded role), so this changes nothing there.
 const SEEDS = [
-  { roles: ['admin', 'builder'], setCreateDelete: true, canEditFolder: true, canViewApps: false },
-  { roles: ['end-user'], setCreateDelete: false, canEditFolder: false, canViewApps: true },
+  { roles: ['admin'], setCreateDelete: true, folderPermission: { canEditFolder: true, canViewApps: false } },
+  { roles: ['builder'], setCreateDelete: true, folderPermission: null },
+  { roles: ['end-user'], setCreateDelete: false, folderPermission: { canEditFolder: false, canViewApps: true } },
 ];
 
 /**
- * Gives the default groups of every existing workspace the workflow-folder permissions a new
- * workspace gets, on every plan and edition:
- * - admin, builder: workflow_folder_create/delete = true and "Edit folder" on all workflow folders
- * - end_user: "View" on all workflow folders
+ * Gives the default groups of every existing workspace workflow-folder permissions, on every plan and
+ * edition:
+ * - admin: workflow_folder_create/delete = true and "Edit folder" on all workflow folders
+ * - builder: workflow_folder_create/delete = true only. No granular permission, so on a paid plan a builder
+ *   manages the folders they create and gets more only through a custom group.
+ * - end-user: "View" on all workflow folders
  *
  * No licence check. On a restricted plan or with custom groups off, EE resolves permissions from a
- * hardcoded role and never reads these rows, so they grant nothing there. They take effect if the
- * workspace later gets custom groups, the same as for a new workspace. Custom groups are never touched.
+ * hardcoded role and never reads these rows. Custom groups are never touched.
  *
  * Idempotent: a group that already has a workflow_folder granular permission is skipped, flags
  * included, so a re-run keeps whatever an admin changed since.
@@ -56,16 +60,24 @@ export class AddWorkflowFolderGranularPermissionsToExistingAdminGroups1784112436
           ),
           new_granular AS (
             INSERT INTO granular_permissions (name, type, group_id, is_all)
-            SELECT '${PERMISSION_NAME}', '${RESOURCE_TYPE}', id, true FROM targets
+            SELECT '${PERMISSION_NAME}', '${RESOURCE_TYPE}', id, true FROM targets WHERE $3::boolean
             RETURNING id
+          ),
+          new_folder_permissions AS (
+            INSERT INTO folders_group_permissions (granular_permission_id, can_edit_folder, can_edit_apps, can_view_apps)
+            SELECT id, $4::boolean, false, $5::boolean FROM new_granular
           )
-          INSERT INTO folders_group_permissions (granular_permission_id, can_edit_folder, can_edit_apps, can_view_apps)
-          SELECT id, $3::boolean, false, $4::boolean FROM new_granular
-          RETURNING id
+          SELECT count(*)::int AS groups FROM targets
         `,
-        [seed.roles, seed.setCreateDelete, seed.canEditFolder, seed.canViewApps]
+        [
+          seed.roles,
+          seed.setCreateDelete,
+          seed.folderPermission !== null,
+          seed.folderPermission?.canEditFolder ?? false,
+          seed.folderPermission?.canViewApps ?? false,
+        ]
       );
-      seeded += rows.length;
+      seeded += rows[0].groups;
       console.log(`${MIGRATION_NAME}: [PROGRESS] ${seeded}/${total} (${seed.roles.join(', ')})`);
     }
 
