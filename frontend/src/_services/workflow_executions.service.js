@@ -161,8 +161,10 @@ function terminate(executionId) {
   return fetch(`${config.apiUrl}/workflow_executions/${executionId}/terminate`, requestOptions).then(handleResponse);
 }
 
-function streamSSE(workflowExecutionId) {
-  return new EventSource(`${config.apiUrl}/workflow_executions/${workflowExecutionId}/stream`, {
+// streamToken comes from the trigger response; the stream accepts no other credential.
+function streamSSE(workflowExecutionId, streamToken) {
+  const query = streamToken ? `?token=${encodeURIComponent(streamToken)}` : '';
+  return new EventSource(`${config.apiUrl}/workflow_executions/${workflowExecutionId}/stream${query}`, {
     withCredentials: true,
   });
 }
