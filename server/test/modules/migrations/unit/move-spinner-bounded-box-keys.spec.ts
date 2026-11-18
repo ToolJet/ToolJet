@@ -1,6 +1,6 @@
 // Platform readers check properties.visibility first, so an unmoved saved hidden/disabled widget would reappear.
-import { MoveSpinnerKeysToProperties1792300000000 } from '../../../../data-migrations/1792300000000-MoveSpinnerKeysToProperties';
-import { MoveBoundedBoxKeysToProperties1792300000001 } from '../../../../data-migrations/1792300000001-MoveBoundedBoxKeysToProperties';
+import { MoveSpinnerKeysToProperties1792300000000 } from '../../../../migrations/data/1792300000000-MoveSpinnerKeysToProperties';
+import { MoveBoundedBoxKeysToProperties1792300000001 } from '../../../../migrations/data/1792300000001-MoveBoundedBoxKeysToProperties';
 
 describe('Spinner keys migration', () => {
   it('[Spinner-VIS-002] moves a saved hidden Spinner and its tooltip into properties', () => {
