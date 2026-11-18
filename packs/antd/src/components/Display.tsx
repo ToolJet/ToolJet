@@ -957,6 +957,13 @@ export const Descriptions = () => {
     defaultHeight: 23,
   });
   const raw: unknown = rawItems;
+  // Container background fills the box, Border color draws the bordered lines (Ant's split colour) and Primary color
+  // the labels (pack.css .tj-ant-desc): all three did nothing (QA PKB-41).
+  const own = tokens as Record<string, string | undefined>;
+  const boxStyle = {
+    ...(own['--tj-ant-color-bg-container'] ? { backgroundColor: own['--tj-ant-color-bg-container'] } : {}),
+    ...(own['--tj-ant-color-border'] ? { '--tj-ant-color-split': own['--tj-ant-color-border'] } : {}),
+  } as React.CSSProperties;
   const entries: Row[] = Array.isArray(raw)
     ? raw
         .map((r): Row | null =>
@@ -991,7 +998,7 @@ export const Descriptions = () => {
     };
   });
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-scroll">
+    <AntProvider tokens={tokens} fill className="tj-ant-desc tj-ant-scroll" style={boxStyle}>
       <SkeletonSwap
         loading={loading}
         look={<Skeleton active title={!!title} paragraph={{ rows: Math.max(2, Math.min(6, items.length || 3)) }} />}

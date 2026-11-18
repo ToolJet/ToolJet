@@ -66,7 +66,8 @@ export const Sparkline = () => {
   });
   const [type] = ToolJet.useStateEnumeration({
     name: 'type',
-    label: 'Type',
+    // Not 'Type': the Inspector gives a property labelled Type no fx toggle (QA PF-218). The key stays type.
+    label: 'Chart type',
     enumDefinition: ['line', 'area', 'bar'],
     initialValue: 'area',
     inspector: 'switch',

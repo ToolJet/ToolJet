@@ -14,6 +14,7 @@ import { ClearX, isEnter, useReseed } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import type { Hsva } from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
+import { useFocusEvents } from '../lib/ui2/choice/looks';
 import '../styles/ui2-inputs.css';
 
 const LOOKS: Look[] = [
@@ -145,6 +146,9 @@ export const ColorPicker = () => {
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
   const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
+  // On focus and On blur follow the swatch's focus, the palette counting as inside it (as the Select's do): they fired
+  // only when the palette opened and closed, never for Tab or Set focus / Set blur (QA PF-129).
+  const focus = useFocusEvents(onFocus, onBlur);
 
   const alpha = allowAlpha === true;
   const value = M.normalizeHex(rawValue, alpha) ?? '';
@@ -203,7 +207,14 @@ export const ColorPicker = () => {
       setDraft(value);
     }
     setOpen(next);
-    (next ? onFocus : onBlur)();
+    focus.opened(next);
+    // Closed with focus elsewhere (a click outside): the field is left.
+    if (!next)
+      setTimeout(() => {
+        const el = triggerRef.current;
+        const root = el?.getRootNode() as Document | ShadowRoot | undefined;
+        if (!el || root?.activeElement !== el) focus.leave();
+      }, 0);
   };
   const commitLive = () => commit(hexOf(hsvaRef.current));
   const area = useDrag(({ x, y }) => setHsva({ ...hsvaRef.current, s: x, v: 1 - y }), commitLive);
@@ -268,6 +279,7 @@ export const ColorPicker = () => {
         disabled={disabled}
         aria-label={swatchOnly ? `Color ${value || 'not set'}` : undefined}
         className={cn('ui2-box ui2-color-trigger', swatchOnly && 'is-swatch')}
+        {...focus.handlers}
       >
         <span className={cn('ui2-color-chip', !live && 'is-empty')} style={M.swatchStyle(live)} />
         {swatchOnly ? null : (

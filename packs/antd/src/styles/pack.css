@@ -1018,7 +1018,12 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--ant-color-primary);
+  color: var(--ant-color-primary-text);
+}
+/* On the dark theme's tint the primary read 2.47:1 (QA PF-009): its lighter shade reads 3.6:1, as the light theme's
+   primary does on its tint. */
+.tj-ant-dark .tj-ant-hero-eyebrow {
+  color: var(--ant-color-primary-text-hover);
 }
 .tj-ant-hero-sub {
   margin: 0 !important;
@@ -1391,6 +1396,12 @@
   flex-direction: column;
   gap: 10px;
   outline: none;
+}
+/* The questionnaire takes focus for its shortcut keys: a keyboard focus ring shows where (QA PF-024). */
+.tj-ant-quiz:focus-visible {
+  outline: 2px solid var(--ant-color-primary-border);
+  outline-offset: 4px;
+  border-radius: var(--ant-border-radius);
 }
 .tj-ant-quiz-choices {
   display: flex;
@@ -1789,4 +1800,19 @@
 .tj-ant-item:focus-visible {
   outline: 2px solid var(--ant-color-primary-border);
   outline-offset: -2px;
+}
+
+/* Initials on an avatar: dark text on the primary tint, readable in light and dark; white on Ant's grey was 1.83:1
+   (QA PF-008, PF-022). */
+.ant-avatar.tj-ant-initials {
+  background: var(--ant-color-primary-bg);
+  color: var(--ant-color-text);
+}
+/* Descriptions: Primary color, when set, colours the labels (Ant's tertiary text otherwise) (QA PKB-41). */
+.tj-ant-desc .tj.ant-descriptions {
+  --ant-descriptions-label-color: var(--tj-ant-color-primary, var(--ant-color-text-tertiary));
+}
+/* A bordered Descriptions colours its labels with Ant's secondary text, not the label colour. */
+.tj-ant-desc .ant-descriptions.ant-descriptions-bordered > .ant-descriptions-view .ant-descriptions-row > .ant-descriptions-item-label {
+  color: var(--tj-ant-color-primary, var(--ant-color-text-secondary));
 }

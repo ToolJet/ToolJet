@@ -21,6 +21,15 @@
 .ui2-chart .recharts-surface {
   overflow: visible;
 }
+/* The chart is a Tab stop (chartParts ChartArea): a keyboard focus ring over it. */
+.ui2-chart-area[role='img'] {
+  outline: none;
+}
+.ui2-chart-area[role='img']:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: -2px;
+  border-radius: var(--ui-radius);
+}
 .ui2-chart .recharts-wrapper:focus,
 .ui2-chart .recharts-surface:focus,
 .ui2-chart .recharts-sector:focus {

@@ -53,7 +53,8 @@ export const RowAvatar = ({
   image ? (
     <Avatar src={image} size={size} shape={shape} />
   ) : (
-    <Avatar size={size} shape={shape}>
+    // Readable initials (pack.css .tj-ant-initials): white on Ant's grey was 1.83:1 (QA PF-008).
+    <Avatar size={size} shape={shape} className="tj-ant-initials">
       {initials(name)}
     </Avatar>
   );

@@ -662,6 +662,15 @@ export const PhoneInput = (props: Record<string, unknown>) => {
     if (c && c !== picked) setPicked(c);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+  // A bound Default country that changes moves an empty field to it, as a bound Only countries does: it stayed on the
+  // first country (QA PF-067). A number already entered keeps its own country.
+  const firstDefault = useRef(defaultCountry);
+  useEffect(() => {
+    if (firstDefault.current === defaultCountry) return;
+    firstDefault.current = defaultCountry;
+    if (!value && fallback !== picked) setPicked(fallback);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultCountry]);
   const national = nationalOf(value, picked);
   const info = phoneInfo(national, picked);
   const check = ToolJet.useValidation({ kind: 'text', value: info.value, present: !!info.value });
@@ -717,6 +726,8 @@ export const PhoneInput = (props: Record<string, unknown>) => {
                   disabled={disabled || !allowCountryChange}
                   // One Tab stop, the number, as a ToolJet Phone input has: the country is picked with the pointer.
                   tabIndex={-1}
+                  // Named for screen readers: the field's label names only the number (QA PF-068).
+                  aria-label="Country"
                   showSearch
                   popupMatchSelectWidth={false}
                   optionFilterProp="search"

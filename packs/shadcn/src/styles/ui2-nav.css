@@ -1380,6 +1380,8 @@
 }
 .n2-group > .ui-btn:focus-visible {
   z-index: 1;
+  /* The Button's focus ring, which .n2-group > .ui-btn's box-shadow: none took away (QA PF-298). */
+  box-shadow: 0 0 0 3px var(--ui-ring);
 }
 .n2-group.is-horizontal > .ui-btn:not(:first-child) {
   border-top-left-radius: 0;

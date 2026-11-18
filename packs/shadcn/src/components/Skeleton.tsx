@@ -66,7 +66,8 @@ export const Skeleton = () => {
       style={{
         ...themeVars({ bg: background || undefined, radius }),
         ...(fill ? { ['--lk-bg' as string]: fill } : {}),
-        ...(isSet(background) ? { background } : {}),
+        // Text only: a Background bound to a number or an object is ignored, as a bad colour is (QA PF-259).
+        ...(typeof background === 'string' && isSet(background) ? { background } : {}),
       }}
     >
       {shape === 'profile' ? (

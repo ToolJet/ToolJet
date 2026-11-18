@@ -138,6 +138,7 @@ export const DropdownMenu = () => {
   ToolJet.useComponentSettings({ role: 'dropdownmenu', fit: false, loading: 'own', defaultWidth: 6, defaultHeight: 4 });
 
   const [anchorRef, container] = usePortalContainer();
+  const editing = ToolJet.useEditing();
   const [open, setOpen] = useState(false);
   // Open as of the last change, ahead of the next render: the owner guard and the disabled effect below can both close
   // the menu in one commit, which is still one close (one onClose).
@@ -242,7 +243,15 @@ export const DropdownMenu = () => {
   };
 
   return (
-    <div className="ui" ref={anchorRef} style={{ display: 'flex', alignItems: 'center', ...vars }}>
+    <div
+      className="ui"
+      ref={anchorRef}
+      style={{ display: 'flex', alignItems: 'center', ...vars }}
+      // In the editor a press on the trigger moves the widget, as a press on a Button does: Radix opens the menu on
+      // pointerdown and cancels it, so the browser sent no mousedown and the canvas never started a drag (QA PF-299).
+      // The press stops here, before Radix; a click opens the menu instead (onClick below).
+      onPointerDownCapture={editing ? (e) => e.stopPropagation() : undefined}
+    >
       <Menu.Root modal={false} open={open && !disabled} onOpenChange={changeOpen}>
         <Menu.Trigger asChild disabled={disabled}>
           <button
@@ -253,6 +262,7 @@ export const DropdownMenu = () => {
             onKeyDown={(e) => {
               if (['Enter', ' ', 'ArrowDown'].includes(e.key)) openedByKeyboard.current = true;
             }}
+            onClick={editing ? () => changeOpen(!openRef.current) : undefined}
             aria-label={iconOnly ? text || 'More actions' : undefined}
             title={iconOnly && text ? text : undefined}
             className={cn(

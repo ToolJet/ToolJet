@@ -33,10 +33,25 @@ const ACCEPTS: Record<string, PropertyType[]> = {
   // A list, or the same list as text ("a, b, c"; Hero's facts joined by " · ").
   'shadcn.Avatar.names': ['string', 'array'],
   'shadcn.Hero.meta': ['array', 'string'],
+  // The Ant Hero draws facts ([{ label, value }]) and a { label, value } as text: as a text property the host blanked
+  // them before the Hero saw them (QA PF-010).
+  'antd.Hero.meta': ['string', 'array', 'object'],
+  'antd.Hero.title': ['string', 'array', 'object'],
+  // Rows, or an object of label: value (the Ant Descriptions' help says so): as an array property the object reached
+  // it as [] and drew no rows (QA PF-004).
+  'antd.Descriptions.items': ['array', 'object'],
   'shadcn.Sparkline.data': ['array', 'string'],
   'shadcn.Tags.tags': ['array', 'string', 'number'],
   'shadcn.TagsInput.defaultValue': ['array', 'string'],
   'shadcn.TagsInput.values': ['array', 'string'],
+  // One default value as text ('banana'), as the Select takes it: as an array property it reached the Multi Select as []
+  // and picked nothing (QA PF-140).
+  'shadcn.MultiSelect.defaultValue': ['array', 'string'],
+  // A place as text ('37.78,-122.41') or as { lat, lng }, as the Map's help says: as text properties the object was
+  // blanked and nothing was drawn (QA PF-169).
+  'shadcn.Map.routeStart': ['string', 'object'],
+  'shadcn.Map.defaultPickedLocation': ['string', 'object'],
+  'shadcn.Map.defaultCenter': ['string', 'object'],
   // A figure, or a list: a Hero's aside facts, a Stat's trend points (numbers or [{ x, y }]).
   'shadcn.Hero.asideValue': ['string', 'array'],
   'shadcn.Stat.trendData': ['string', 'array'],

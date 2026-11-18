@@ -181,6 +181,9 @@ export const Navigation = () => {
   ToolJet.useAction(
     { name: 'selectItem', displayName: 'Select item', params: [{ handle: 'id', displayName: 'Item value' }] },
     (v) => {
+      // A disabled item is not chosen, as a click on it is not (QA PF-288).
+      const target = findNav(latest.current.items, v);
+      if (target?.item.disabled || target?.parent?.disabled) return;
       moveTo(v === undefined || v === null ? '' : String(v));
     }
   );
