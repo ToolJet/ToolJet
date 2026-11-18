@@ -1,4 +1,4 @@
-import { Command } from '@oclif/core';
+import { Command, Flags } from '@oclif/core';
 
 import { build } from '../../lib/library/builder';
 import { formatError, formatSuccess, formatDuration, formatWarning } from '../../lib/log';
@@ -10,11 +10,22 @@ export default class Build extends Command {
 
   static examples = [`$ tooljet library build`, `$ tooljet lib build`];
 
+  static flags = {
+    // development is the build `tooljet app dev` uploads (it keeps the source locations the editor's inspector reads):
+    // a build service makes it with this flag, then `app dev --once --prebuilt dist` uploads it.
+    env: Flags.string({
+      description: 'Build for production (default) or development',
+      options: ['production', 'development'],
+      default: 'production',
+    }),
+  };
+
   async run(): Promise<void> {
+    const { flags } = await this.parse(Build);
     try {
       this.log(`Building your component library...\n`);
 
-      const result = await build(process.cwd(), { env: 'production' });
+      const result = await build(process.cwd(), { env: flags.env as 'production' | 'development' });
 
       const tsCompiledMsg = `TypeScript compiled (${result.tsErrors} errors)`;
       const buildTime = formatDuration(result.buildMs);

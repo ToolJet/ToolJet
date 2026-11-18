@@ -6,7 +6,11 @@ import { getHostURL, getSubpath } from '@/_helpers/routes';
 import urlJoin from 'url-join';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 import { logoutAction } from '@/AppBuilder/_utils/auth';
+import { isCompareMuted } from '@/AppBuilder/_utils/compareFrame';
+import { awaitSdkAction, getSdkActionReadiness } from '@/AppBuilder/_utils/sdkActionReadiness';
+import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
@@ -98,6 +102,8 @@ export const createEventsSlice = (set, get) => ({
       // stale value. Resolve every pending write that isn't part of an explicit mount-time
       // bracket (ListView/Form/page-switch) — never touches bracket-protected writes.
       get().flushImplicitBatchEntries();
+      // A dialog the compare view opened in its read-only frame runs none of its own actions.
+      if (isCompareMuted(id)) return;
       const events = get().eventsSlice.module[moduleId].events;
       const componentEvents = events.filter((event) => event.sourceId === id);
       const mode = getCurrentMode(moduleId);
@@ -301,7 +307,7 @@ export const createEventsSlice = (set, get) => ({
       // names are safe here. Return: prevents double-execution for names that ALSO
       // appear in the standard list.
       if (options?.isCustomComponentEvent) {
-        return executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+        return executeActionsForEventId(eventName, events, mode, customVariables, moduleId, sourceSubContainerIndex);
       }
 
       if (eventName === 'onPageLoad') {
@@ -699,6 +705,7 @@ export const createEventsSlice = (set, get) => ({
               //! if resolvecode default value should be the value itself not empty string ... Ask KAVIN
               const resolvedValue = getResolvedValue(event.url, customVariables, moduleId);
               // const url = resolveReferences(event.url, undefined, customVariables);
+              if (strictMode.strictUrlAllowed && !strictMode.strictUrlAllowed(resolvedValue)) return Promise.resolve();
               window.open(resolvedValue, event?.windowTarget === 'currentTab' ? '_self' : '_blank');
               return Promise.resolve();
             }
@@ -787,6 +794,7 @@ export const createEventsSlice = (set, get) => ({
             case 'set-localstorage-value': {
               const key = getResolvedValue(event.key, customVariables, moduleId);
               const value = getResolvedValue(event.value, customVariables, moduleId);
+              if (strictMode.isStrict?.()) return Promise.resolve();
               localStorage.setItem(key, value);
 
               return Promise.resolve();
@@ -970,15 +978,48 @@ export const createEventsSlice = (set, get) => ({
                 const parent = componentDefinition?.component?.parent;
                 const parentDefinition = getComponentDefinition(parent, moduleId);
                 const parentType = parentDefinition?.component?.component;
-                let component = getExposedValueOfComponent(event.componentId, moduleId, sourceSubContainerIndex);
-                if (parentType === 'Form' && componentName) {
-                  component = getExposedValueOfComponent(parent, moduleId)?.children?.[componentName];
+                const readComponent = () =>
+                  parentType === 'Form' && componentName
+                    ? getExposedValueOfComponent(parent, moduleId)?.children?.[componentName]
+                    : getExposedValueOfComponent(event.componentId, moduleId, sourceSubContainerIndex);
+                const component = readComponent();
+                const handle = event.componentSpecificActionHandle;
+
+                // A pack (or custom) component exposes its actions once its manifest is read, after the page's first
+                // render: an On page load action on it found none and did nothing (QA item 33). It waits for the
+                // action while the widget is still loading (sdkActionReadiness); a native component's actions are
+                // there from its first render, as before.
+                if (
+                  event.componentId &&
+                  isSdkComponentType(componentDefinition?.component?.component) &&
+                  typeof component?.[handle] !== 'function'
+                ) {
+                  const args = event.componentSpecificActionParams.map((param) =>
+                    getResolvedValue(param.value, customVariables, moduleId)
+                  );
+                  const mounted = !!getSdkActionReadiness(moduleId, event.componentId);
+                  const run = awaitSdkAction({
+                    moduleId,
+                    componentId: event.componentId,
+                    handle,
+                    read: () => readComponent()?.[handle],
+                    subscribeStore: useStore.subscribe,
+                  }).then((action) => action?.(...args));
+                  // A widget not mounted yet may never be (hidden in this layout, in a tab not opened): the event's
+                  // next actions go on without it, and the action still runs should it mount and load in time.
+                  if (mounted) return run;
+                  run.catch((error) =>
+                    get().eventsSlice.logError('control_component', 'control-component', error, eventObj, {
+                      eventId: event.eventId,
+                    })
+                  );
+                  return Promise.resolve();
                 }
 
                 if (!event.componentId || !Object.keys(component).length) {
                   throw new Error('No component ID provided for control-component action.');
                 }
-                const action = component?.[event.componentSpecificActionHandle];
+                const action = component?.[handle];
                 // let action = '';
                 // let actionArguments = '';
                 // check if component id not found then try to find if its available as child widget else continue
@@ -1082,7 +1123,8 @@ export const createEventsSlice = (set, get) => ({
                   });
                   const currentUrlParams = new URLSearchParams(window.location.search);
                   currentUrlParams.forEach((value, key) => {
-                    if (key === 'version' || key === 'env') {
+                    // snapshot: a stored snapshot is being rendered; switching page must keep it.
+                    if (key === 'version' || key === 'env' || key === 'snapshot') {
                       // if version or env is in current url query param but not in resolved params then add it to resolvedQueryParams
                       const exists = resolvedQueryParams.some(([resolvedKey]) => resolvedKey === key);
                       if (!exists) {

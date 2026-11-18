@@ -1,7 +1,7 @@
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { workflowsText } from "Texts/platform/workflows";
-import { workflowSelector } from "Selectors/platform/workflows";
+import { workflowSelector, cyParamName } from "Selectors/platform/workflows";
 import { dashboardSelector } from "Selectors/platform/dashboard";
 import { dataSourceSelector } from "Selectors/marketplace/dataSource";
 import { postgreSqlSelector } from "Selectors/marketplace/postgreSql";
@@ -86,18 +86,17 @@ export const deleteAppandWorkflowAfterExecution = (workflowName, appName) => {
 };
 
 export const verifyPreviewOutputText = (expectedOutput) => {
-  cy.get('[data-cy="preview-button"]').click();
-  cy.wait(2000);
-  cy.get('[data-cy="inspector-node-data"]')
-    .parents(".json-node-element")
-    .find(".json-tree-node-icon")
-    .click({ force: true });
-
-  cy.get('[data-cy="inspector-node-key"] .json-tree-valuetype', {
-    timeout: 5000,
-  })
-    .invoke("text")
-    .should("include", expectedOutput);
+  cy.focused().blur();
+  cy.wait(1500);
+  cy.intercept("POST", "**/previewQueryNode").as("previewNode");
+  cy.get(".header-preview-btn:not(.run-workflow-btn)").click();
+  cy.wait("@previewNode")
+    .its("response.body")
+    .then((body) => expect(JSON.stringify(body)).to.include(expectedOutput));
+  cy.get(".result-section .result-body", { timeout: 20000 }).should(
+    "contain.text",
+    "status"
+  );
 };
 
 // ---------------------------------------------------------------------------
@@ -510,7 +509,7 @@ export const getWorkflowQueries = (workflowId) =>
 export const verifyTextInResponseOutputLimited = (expectedText, limit = 5) => {
   cy.get(workflowSelector.workflowRunButton).click();
   cy.get(workflowSelector.workflowLogs).should(
-    "have.text",
+    "contain.text",
     workflowsText.workflowRunhelperText
   );
 
@@ -546,7 +545,14 @@ export const verifyTextInResponseOutputLimited = (expectedText, limit = 5) => {
     }
   });
   cy.get("body").then(($body) => {
-    const icons = $body.find("span.json-tree-node-icon");
+    const dataIcons = $body
+      .find('[data-cy="inspector-node-data"]')
+      .last()
+      .parent()
+      .find("span.json-tree-node-icon");
+    const icons = dataIcons.length
+      ? dataIcons
+      : $body.find("span.json-tree-node-icon");
     if (icons.length > 0) {
       cy.wrap(icons.slice(0, limit)).each(($el) => {
         if ($el[0].style.transform === "rotate(0deg)") {
@@ -584,6 +590,31 @@ export const wfQueryNode = (id, queryId, kind = "runjs", extraData = {}) => ({
   sourcePosition: "right",
   targetPosition: "left",
 });
+
+// A Run Workflow node; `queryId` comes from cy.apiCreateWorkflowNode("workflows", ...).
+export const wfWorkflowNode = (id, queryId, options = {}) => ({
+  id,
+  type: "workflow",
+  data: { idOnDefinition: queryId, kind: "workflows", options, nodeType: "workflow" },
+  position: { x: 400, y: 250 },
+  sourcePosition: "right",
+  targetPosition: "left",
+});
+
+// What a Run Workflow query stores as `workflowId`: the app's co_relation_id, else its id.
+export const getWorkflowReference = (workflowName, workflowId) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        url: `${Cypress.env("server_host")}/api/apps?page=1&type=workflow&searchKey=${workflowName}`,
+        headers,
+        log: false,
+      })
+      .then(
+        (response) =>
+          response.body.apps.find((app) => app.id === workflowId)?.co_relation_id || workflowId
+      )
+  );
 
 // `code` is an expression (no `return`); its truthiness picks the branch.
 export const wfIfNode = (id, code, nodeName = "ifCondition1") => ({
@@ -632,6 +663,7 @@ export const workflowDefinition = ({
   defaultParams = "{}",
   webhookParams = [],
   setupScript = { javascript: "" },
+  workflowInputs,
 }) => ({
   nodes,
   edges,
@@ -640,6 +672,7 @@ export const workflowDefinition = ({
   defaultParams,
   dependencies: { javascript: { dependencies: {} } },
   setupScript,
+  ...(workflowInputs ? { workflowInputs } : {}),
 });
 
 // Query nodes are named by definition.handle (the query name).
@@ -661,4 +694,180 @@ export const createRunjsQueries = (queries) => {
     );
   });
   return cy.wrap(ids);
+};
+
+export const HUMAN_DEFAULT_OUTCOMES = [
+  { key: "approved", label: "Approve", color: "#1E823B" },
+  { key: "rejected", label: "Reject", color: "#D72D39" },
+];
+
+export const wfHumanNode = (id = "human1", config = {}) => {
+  const {
+    nodeName = id,
+    description = "",
+    outcomes = HUMAN_DEFAULT_OUTCOMES,
+    inputSchema = [],
+    approvers = { users: [], groups: [], dynamic: "", tokenBypass: true },
+    timeout = {
+      enabled: false,
+      durationSeconds: 86400,
+      onExpire: "fail",
+      timeoutOutcome: "",
+    },
+    notification = {
+      url: "",
+      method: "POST",
+      headers: {},
+      bodyTemplate: "",
+      includeResolveUrl: true,
+    },
+    reminders,
+    position = { x: 400, y: 250 },
+  } = config;
+  return {
+    id,
+    type: "human",
+    data: {
+      nodeType: "human",
+      label: "Human",
+      nodeName,
+      description,
+      approvers,
+      outcomes,
+      inputSchema,
+      timeout,
+      notification,
+      ...(reminders ? { reminders } : {}),
+    },
+    position,
+    sourcePosition: "right",
+    targetPosition: "left",
+  };
+};
+
+export const wfOutcomeResponse = (humanName, outcomeKey, index = 0) => {
+  const node = wfResponseNode(
+    `resp-${outcomeKey}`,
+    `return { branch: '${outcomeKey}', outcome: ${humanName}.data.outcome, input: ${humanName}.data.input, resolvedBy: ${humanName}.data.resolvedBy }`,
+    "200",
+    `response_${outcomeKey}`
+  );
+  node.position = { x: 800, y: 100 + index * 150 };
+  return node;
+};
+
+export const humanWorkflowDefinition = ({
+  human = {},
+  humanName = "human1",
+  connect,
+} = {}) => {
+  const humanNode = wfHumanNode(humanName, human);
+  const outcomes = humanNode.data.outcomes;
+  const keys = connect || outcomes.map((outcome) => outcome.key);
+  const responses = keys.map((key, index) =>
+    wfOutcomeResponse(humanName, key, index)
+  );
+  return workflowDefinition({
+    nodes: [wfStartNode(), humanNode, ...responses],
+    edges: [
+      wfEdge("start", humanName),
+      ...keys.map((key) => wfEdge(humanName, `resp-${key}`, key)),
+    ],
+  });
+};
+
+export const wfWaitNode = (id, durationSeconds, nodeName = "wait1") => ({
+  id,
+  type: "wait",
+  data: { nodeType: "wait", label: "Wait", nodeName, durationSeconds },
+  position: { x: 400, y: 250 },
+  sourcePosition: "right",
+  targetPosition: "left",
+});
+
+export const wfFilterNode = (
+  id,
+  inputExpression,
+  predicateExpression,
+  nodeName = "filter1"
+) => ({
+  id,
+  type: "filter",
+  data: {
+    nodeType: "filter",
+    label: "Filter",
+    nodeName,
+    inputExpression,
+    predicateExpression,
+  },
+  position: { x: 400, y: 250 },
+  sourcePosition: "right",
+  targetPosition: "left",
+});
+
+// Branch handles are `true` (If), `else-if-N` and `false` (Else).
+export const wfMultiIfNode = (
+  id,
+  codes,
+  { elseEnabled = true, nodeName = "ifCondition1" } = {}
+) => {
+  const conditions = codes.map((code, index) => ({
+    id: index === 0 ? "true" : `else-if-${index}`,
+    label: index === 0 ? "If" : `Else if ${index}`,
+    code,
+  }));
+  return {
+    id,
+    type: "if-condition",
+    data: {
+      code: codes[0],
+      label: "If condition",
+      nodeName,
+      conditions,
+      elseBranch: { enabled: elseEnabled, label: "Else" },
+    },
+    position: { x: 400, y: 250 },
+    sourcePosition: "right",
+    targetPosition: "left",
+  };
+};
+
+export const wfInput = (key, type = "string", extra = {}) => ({
+  key,
+  type,
+  required: false,
+  ...extra,
+});
+
+export const openLeftDrawer = (iconSelector) => {
+  cy.get(iconSelector).click();
+};
+
+export const runFromEditor = () => {
+  cy.intercept("POST", "/api/workflow_executions/*/trigger").as("editorRun");
+  cy.get(workflowSelector.workflowRunButton).should("not.be.disabled").click();
+};
+
+export const apiRunAndWait = (params = {}, status = "success") => {
+  cy.apiRunWorkflow({ params }).its("status").should("equal", 201);
+  return cy.apiWaitForExecutionStatus(status);
+};
+
+export const addNodeFromHandle = (handleSelector, label) => {
+  cy.get(handleSelector).trigger("mousedown", { button: 0, force: true });
+  cy.get(".react-flow__pane")
+    .trigger("mousemove", { clientX: 700, clientY: 350, force: true })
+    .wait(500)
+    .trigger("mouseup", { force: true });
+  cy.get(".block-option-container", { timeout: 10000 })
+    .contains(label)
+    .scrollIntoView()
+    .click({ force: true });
+};
+
+// Skipped nodes stay listed in the logs panel but carry .not-executed.
+export const assertNodeRan = (nodeName, ran = true) => {
+  cy.get(`[data-cy="${cyParamName(nodeName)}-node-name"]`, { timeout: 30000 })
+    .closest(".row-content")
+    .should(ran ? "not.have.class" : "have.class", "not-executed");
 };

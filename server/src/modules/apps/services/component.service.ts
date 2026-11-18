@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
@@ -25,6 +26,47 @@ import { AbilityService } from '@modules/ability/interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
 import { AppsRepository } from '../repository';
 import * as _ from 'lodash';
+
+const MODULE_CONTAINER_BOTTOM_PADDING = 10;
+
+// Components whose list properties are sent whole by the editor; an incoming list replaces the stored one.
+const WHOLE_ARRAY_TYPES = [
+  'DropdownV2',
+  'MultiselectV2',
+  'PopoverMenu',
+  'ModuleContainer',
+  'Tabs',
+  'Steps',
+  'RadioButtonV2',
+  'Tags',
+  'TagsInput',
+  'Navigation',
+  'TreeSelect',
+  'Cascader',
+  'ButtonGroupV2',
+];
+
+// Pack components (built-in packs and custom component libraries) store every property as a plain value.
+const PACK_TYPES = ['PackComponent', 'LibraryComponent'];
+
+/** One definition column (properties, styles, ...) of a stored component with an update's values merged in: a deep
+ *  merge, with arrays merged by position except where a component type sends them whole. */
+export function mergeComponentDefinitionColumn(type: string, stored: unknown, incoming: unknown) {
+  return _.mergeWith(stored, incoming, (objValue, srcValue) => {
+    if ((type === 'Table' || type === 'Form' || type === 'KeyValuePair') && _.isArray(objValue)) {
+      // Arrays are sent whole, so replace: merging keeps stored tail entries and resurrects deletions
+      return srcValue;
+    } else if (type === 'Form' && _.isObject(srcValue)) {
+      // Handle Form component with object srcValue like JSONData & JSONSchema
+      return srcValue;
+    } else if (WHOLE_ARRAY_TYPES.includes(type) && _.isArray(objValue)) {
+      return _.isArray(srcValue) ? srcValue : Object.values(srcValue);
+    } else if (PACK_TYPES.includes(type) && _.isArray(objValue) && _.isArray(srcValue)) {
+      // A pack's tabs, steps or rows come whole: merged by position, a removed item came back
+      return srcValue;
+    }
+  });
+}
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
@@ -210,6 +252,11 @@ export class ComponentsService implements IComponentsService {
           await manager.update(Component, { id: componentId }, { parent: resolvedParent });
         }
       }
+
+      // A resize of the container itself is the builder's choice; moving its children is not.
+      if (moduleContainerId && !(moduleContainerId in componenstLayoutDiff)) {
+        await this.fitModuleContainerToChildren(moduleContainerId, manager);
+      }
     });
 
     const operationTimestamp = Date.now();
@@ -301,6 +348,8 @@ export class ComponentsService implements IComponentsService {
 
       const transformedComponent: Component = new Component();
       transformedComponent.id = componentId;
+      // The component's identity across versions; never taken from the client, so a paste gets its own.
+      transformedComponent.co_relation_id = randomUUID();
       transformedComponent.name = componentData.name;
       transformedComponent.type = componentData.type;
       transformedComponent.parent = componentData.parent || null;
@@ -357,13 +406,15 @@ export class ComponentsService implements IComponentsService {
         height: number;
         widthPx?: number;
         fillWidth?: boolean;
+        grow?: number;
+        minWidthPx?: number;
         updatedAt: Date | null;
       }
     > = {};
 
     layoutData.forEach((layout) => {
       if (layout && layout.type) {
-        const { type, top, left, width, height, widthPx, fillWidth, updatedAt } = layout;
+        const { type, top, left, width, height, widthPx, fillWidth, grow, minWidthPx, updatedAt } = layout;
 
         // Note: adjustedLeftValue logic will be handled BEFORE calling this function
         // so 'left' here is already the final desired value for the output.
@@ -378,6 +429,8 @@ export class ComponentsService implements IComponentsService {
           updatedAt: updatedAt ?? null,
           ...(widthPx != null ? { widthPx } : {}),
           ...(fillWidth != null ? { fillWidth } : {}),
+          ...(grow != null ? { grow } : {}),
+          ...(minWidthPx != null ? { minWidthPx } : {}),
         };
       }
     });
@@ -761,6 +814,8 @@ export class ComponentsService implements IComponentsService {
           newLayout.height = layout.height;
           if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
           if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
+          if (layout.grow != null) newLayout.grow = layout.grow;
+          if (layout.minWidthPx != null) newLayout.minWidthPx = layout.minWidthPx;
           newLayout.component = component;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 
@@ -788,6 +843,8 @@ export class ComponentsService implements IComponentsService {
               height: layout.height,
               widthPx: layout.widthPx,
               fillWidth: layout.fillWidth,
+              grow: layout.grow,
+              minWidthPx: layout.minWidthPx,
               dimensionUnit: layout.dimensionUnit,
             }
           );
@@ -800,6 +857,30 @@ export class ComponentsService implements IComponentsService {
     }
     if (layoutsToInsert.length > 0) {
       await manager.save(Layout, layoutsToInsert);
+    }
+    if (moduleContainerId) {
+      await this.fitModuleContainerToChildren(moduleContainerId, manager);
+    }
+  }
+
+  /**
+   * Grows the ModuleContainer so every direct child sits inside it; a child placed below its
+   * bottom edge would be clipped from the module. Never shrinks it.
+   */
+  protected async fitModuleContainerToChildren(moduleContainerId: string, manager: EntityManager) {
+    const children = await manager.find(Component, { where: { parent: moduleContainerId }, select: ['id'] });
+    if (children.length === 0) return;
+    const childLayouts = await manager.find(Layout, { where: { componentId: In(children.map((child) => child.id)) } });
+    const containerLayouts = await manager.find(Layout, { where: { componentId: moduleContainerId } });
+    for (const containerLayout of containerLayouts) {
+      const bottoms = childLayouts
+        .filter((layout) => layout.type === containerLayout.type)
+        .map((layout) => (layout.top ?? 0) + (layout.height ?? 0));
+      if (bottoms.length === 0) continue;
+      const requiredHeight = Math.max(...bottoms) + MODULE_CONTAINER_BOTTOM_PADDING;
+      if (requiredHeight > (containerLayout.height ?? 0)) {
+        await manager.update(Layout, { id: containerLayout.id }, { height: requiredHeight });
+      }
     }
   }
 
@@ -860,42 +941,10 @@ export class ComponentsService implements IComponentsService {
         const columnsUpdated = Object.keys(updatedDefinition);
 
         const newComponentsData = columnsUpdated.reduce((acc, column) => {
-          const newColumnData = _.mergeWith(
+          const newColumnData = mergeComponentDefinitionColumn(
+            componentData.type,
             componentData[column === 'others' ? 'displayPreferences' : column],
-            updatedDefinition[column],
-            (objValue, srcValue) => {
-              if (
-                (componentData.type === 'Table' ||
-                  componentData.type === 'Form' ||
-                  componentData.type === 'KeyValuePair') &&
-                _.isArray(objValue)
-              ) {
-                // Arrays are sent whole, so replace: merging keeps stored tail entries and resurrects deletions
-                return srcValue;
-              } else if (componentData.type === 'Form' && _.isObject(srcValue)) {
-                // Handle Form component with object srcValue like JSONData & JSONSchema
-                return srcValue;
-              } else if (
-                [
-                  'DropdownV2',
-                  'MultiselectV2',
-                  'PopoverMenu',
-                  'ModuleContainer',
-                  'Tabs',
-                  'Steps',
-                  'RadioButtonV2',
-                  'Tags',
-                  'TagsInput',
-                  'Navigation',
-                  'TreeSelect',
-                  'Cascader',
-                  'ButtonGroupV2',
-                ].includes(componentData.type) &&
-                _.isArray(objValue)
-              ) {
-                return _.isArray(srcValue) ? srcValue : Object.values(srcValue);
-              }
-            }
+            updatedDefinition[column]
           );
 
           if (column === 'others') {
