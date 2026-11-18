@@ -10,17 +10,47 @@ const BATCH_SIZE = 2000;
  * nor writes.
  */
 export class BackfillCodeModeBuildMode1792470000000 implements DataMigration {
+  private static isCodePage(propertiesText: string, componentId: string): boolean {
+    let properties: { codePage?: { value?: unknown } } | null;
+    try {
+      properties = JSON.parse(propertiesText);
+    } catch {
+      throw new Error(`${MIGRATION_NAME}: Could not parse properties of component ${componentId}`);
+    }
+    const value = properties?.codePage?.value;
+    return value === true || value === 'true' || value === '{{true}}';
+  }
+
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const apps: Array<{ id: string }> = await queryRunner.query(`
-      SELECT DISTINCT v.app_id AS id
-        FROM components c
-        JOIN pages p ON p.id = c.page_id
-        JOIN app_versions v ON v.id = p.app_version_id
-        JOIN apps a ON a.id = v.app_id
-       WHERE a.build_mode = 'visual'
-         AND c.properties -> 'codePage' ->> 'value' IN ('{{true}}', 'true')
-       ORDER BY 1
-    `);
+    const appIds = new Set<string>();
+    let lastId: string | null = null;
+    console.log(`${MIGRATION_NAME}: [START] Find apps with a code-page root`);
+    // JSON operators decode every string, including unrelated code containing \u0000. Read only root pack/library
+    // candidates as text and parse in JS, which supports null characters without changing the saved content.
+    while (true) {
+      const candidates: Array<{ component_id: string; app_id: string; properties: string }> = await queryRunner.query(
+        `SELECT c.id AS component_id, v.app_id, c.properties::text AS properties
+           FROM components c
+           JOIN pages p ON p.id = c.page_id
+           JOIN app_versions v ON v.id = p.app_version_id
+           JOIN apps a ON a.id = v.app_id
+          WHERE a.build_mode = 'visual'
+            AND c.type IN ('LibraryComponent', 'PackComponent')
+            AND (c.parent IS NULL OR c.parent = '')
+            AND ($1::uuid IS NULL OR c.id > $1::uuid)
+          ORDER BY c.id
+          LIMIT $2`,
+        [lastId, BATCH_SIZE]
+      );
+      for (const candidate of candidates) {
+        if (BackfillCodeModeBuildMode1792470000000.isCodePage(candidate.properties, candidate.component_id)) {
+          appIds.add(candidate.app_id);
+        }
+      }
+      if (candidates.length < BATCH_SIZE) break;
+      lastId = candidates[candidates.length - 1].component_id;
+    }
+    const apps = [...appIds].sort().map((id) => ({ id }));
     const total = apps.length;
     console.log(`${MIGRATION_NAME}: [START] Set build mode to code for apps with a code page: ${total}`);
 
