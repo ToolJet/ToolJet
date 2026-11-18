@@ -22,7 +22,7 @@ Tab list for open items that can be closed (the TJDB open tables). Tabs are 200p
 ## Behaviour
 
 - Tabs shrink from 200px to 128px; past that the list scrolls (no visible scrollbar).
-- A chevron button plus a 1px divider always sits on each side, in the layout, so nothing shifts. A chevron is disabled while no tabs are hidden past its side (both, when every tab fits). In the Figma overflow frame the list is half-width; in the page it takes all the room its parent leaves, so give it a flex row and make sibling items `shrink-0`.
+- While the tabs overflow, a chevron button plus a 1px divider sits on each side, both in the layout, so nothing shifts as you scroll. A chevron is disabled when no tabs are hidden past its side. While every tab fits (including none open) no chevron shows. The chevrons leave the layout only once the tabs fit without them (no flicker at the threshold). In the Figma overflow frame the list is half-width; in the page it takes all the room its parent leaves, so give it a flex row and make sibling items `shrink-0`.
 - The selected tab is scrolled fully into view when it changes.
 - Selected: label `text/default`, icon `icon/accent`, 2px `border/accent-strong` underline across the whole tab. Unselected: `text/placeholder`, icon `icon/default`.
 - The close button (ghost, small, `lucide/x`) is shown on hover, on keyboard focus, and on the selected tab. It stays in the layout while hidden, so nothing shifts.
