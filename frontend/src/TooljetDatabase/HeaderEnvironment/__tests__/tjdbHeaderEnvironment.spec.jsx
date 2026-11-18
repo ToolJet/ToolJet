@@ -151,17 +151,42 @@ describe('TJDB environment select in the page Header', () => {
     expect(await screen.findByRole('menuitemcheckbox', { name: /Development/ })).toBeInTheDocument();
   });
 
-  test('should keep the select until the table list has loaded', () => {
-    renderHeaderAndPage(contextValue({ tables: [], selectedTable: {}, tablesLoaded: false }));
+  // A table that has no relation in the chosen environment errors, so with nothing open there is nothing to switch.
+  test('should hide the select when tables exist but none is open', () => {
+    renderHeaderAndPage(contextValue({ selectedTable: {} }));
+
+    expect(trigger()).not.toBeInTheDocument();
+  });
+
+  test('should hide the select on staging when none is open and the workspace has tables', () => {
+    act(() => useTjdbStore.setState({ selectedEnvironment: STAGING }));
+
+    renderHeaderAndPage(contextValue({ selectedTable: {} }));
+
+    expect(trigger()).not.toBeInTheDocument();
+  });
+
+  test('should show the select again once a table opens', () => {
+    const { rerender } = renderHeaderAndPage(contextValue({ selectedTable: {} }));
+    expect(trigger()).not.toBeInTheDocument();
+
+    rerender(
+      <>
+        <header>
+          <HeaderEnvironmentSelect />
+        </header>
+        <TooljetDatabaseContext.Provider value={contextValue()}>
+          <TjdbHeaderEnvironment />
+        </TooljetDatabaseContext.Provider>
+      </>
+    );
 
     expect(trigger()).toBeInTheDocument();
   });
 
-  test('should skip the migrations request when no table is open', async () => {
+  test('should skip the migrations request when no table is open', () => {
     renderHeaderAndPage(contextValue({ selectedTable: {} }));
-    await userEvent.click(trigger());
 
-    await screen.findByRole('menuitemcheckbox', { name: /Staging/ });
     expect(migrationRequests).toEqual([]);
   });
 

@@ -30,11 +30,13 @@ const TjdbHeaderEnvironment = () => {
     [tables, tableId]
   );
 
-  // A workspace with no tables has nothing to switch between. Only on Development though: Create table is disabled
-  // elsewhere, so on another environment the select is the way back to Development.
-  const noTablesToSwitch =
-    tablesLoaded && tables.length === 0 && selectedEnvironment && selectedEnvironment.priority === 1;
-  const showSelect = environments.length > 1 && !!selectedEnvironment && !noTablesToSwitch;
+  // With no table open there is nothing to switch: a table that has no relation in the chosen environment errors.
+  // The exception is a workspace with no tables on a non-Development environment: Create table is disabled there, so
+  // the select is the way back to Development.
+  const emptyWorkspaceOutsideDevelopment =
+    tablesLoaded && tables.length === 0 && selectedEnvironment && selectedEnvironment.priority !== 1;
+  const showSelect =
+    environments.length > 1 && !!selectedEnvironment && (!!tableId || emptyWorkspaceOutsideDevelopment);
 
   const headerSelect = useMemo(() => {
     if (!showSelect) return null;

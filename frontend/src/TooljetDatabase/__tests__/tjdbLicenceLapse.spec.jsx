@@ -65,7 +65,12 @@ describe('TJDB after a multi-environment licence lapse', () => {
       <>
         <HeaderEnvironmentSelect />
         <TooljetDatabaseContext.Provider
-          value={{ organizationId: 'org-1', tables: [], setTables: () => {}, selectedTable: {} }}
+          value={{
+            organizationId: 'org-1',
+            tables: [{ id: 'table-1', table_name: 'orders', environments: BOTH_HAVE_RELATION }],
+            setTables: () => {},
+            selectedTable: { id: 'table-1', table_name: 'orders' },
+          }}
         >
           <TjdbHeaderEnvironment />
         </TooljetDatabaseContext.Provider>
