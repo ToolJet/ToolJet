@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   getCoreRowModel,
   useReactTable,
@@ -9,6 +9,7 @@ import {
   type SortingState,
 } from '@tanstack/react-table';
 import { listAllPrimaryKeyColumns } from '../../constants';
+import { readColumnWidths, writeColumnWidths } from './columnWidths';
 
 // A column as tjdbStore.fetchTableMetadata returns it.
 export type GridColumn = {
@@ -50,6 +51,9 @@ type UseTableGridArgs = {
   rowSelection: RowSelectionState;
   onRowSelectionChange: OnChangeFn<RowSelectionState>;
   canSelectRows: boolean;
+  /** Where widths are remembered (per workspace and table); without both ids they are not. */
+  workspaceId?: string;
+  tableId?: string;
 };
 
 // Headless: the TanStack instance and nothing that renders. The first primary key column is pinned after the
@@ -64,8 +68,13 @@ export const useTableGrid = ({
   rowSelection,
   onRowSelectionChange,
   canSelectRows,
+  workspaceId,
+  tableId,
 }: UseTableGridArgs) => {
-  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
+  // Read once: the grid mounts per table. A saved width for a column the table no longer has is never looked up.
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>(() =>
+    workspaceId && tableId ? readColumnWidths(workspaceId, tableId) : {}
+  );
 
   const primaryKeys = useMemo(() => listAllPrimaryKeyColumns(columns) as string[], [columns]);
   const pinnedKey = primaryKeys[0];
@@ -120,7 +129,7 @@ export const useTableGrid = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const data = useMemo(() => rows.slice(), [rows, getRowId]);
 
-  return useReactTable<GridRow>({
+  const instance = useReactTable<GridRow>({
     data,
     columns: columnDefs,
     getCoreRowModel: getCoreRowModel(),
@@ -134,4 +143,24 @@ export const useTableGrid = ({
     onColumnSizingChange: setColumnSizing,
     onRowSelectionChange,
   });
+
+  // Saved when a resize ends (or a width is reset), never while the handle is moving.
+  const isResizing = !!instance.getState().columnSizingInfo.isResizingColumn;
+  const savedSizing = useRef(columnSizing);
+  useEffect(() => {
+    if (isResizing || savedSizing.current === columnSizing) return;
+    savedSizing.current = columnSizing;
+    if (workspaceId && tableId) {
+      writeColumnWidths(
+        workspaceId,
+        tableId,
+        columnSizing,
+        columns.map((column) => column.accessor)
+      );
+    }
+    // Only a change of sizing or the end of a resize saves.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columnSizing, isResizing]);
+
+  return instance;
 };

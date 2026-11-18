@@ -199,9 +199,6 @@ function TableSchema({
             className={`list-group-item mb-1 mt-2 table-schema  ${index == indexHover ? 'foreignKey-hover' : ''}`}
           >
             <div className="table-schema-row">
-              {/* <div className="col-1">
-                  <DragIcon />
-                </div> */}
               <div className="m-0 pe-0 ps-1 columnName" data-cy="column-name-input-field">
                 <input
                   onChange={(e) => {

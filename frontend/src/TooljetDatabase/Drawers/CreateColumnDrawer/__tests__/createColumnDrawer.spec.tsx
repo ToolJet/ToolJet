@@ -6,7 +6,7 @@ import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import { render, screen, waitFor, userEvent, act } from '@/test/test-utils';
 import { TooljetDatabaseProvider, type TooljetDatabaseContextValue } from '@/TooljetDatabase/TooljetDatabaseContext';
-import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
+import { DEFAULT_VIEW, selectView, useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
 import CreateColumnDrawer from '..';
 
 // The drawer's only job here is what it does once the form reports success.
@@ -58,7 +58,9 @@ describe('CreateColumnDrawer | page reset after a column is added', () => {
         HttpResponse.json({ result: { columns: [], foreign_keys: [], configurations: {} } })
       )
     );
-    act(() => useTjdbStore.setState({ pageCount: 3 }));
+    act(() =>
+      useTjdbStore.setState({ viewTableId: 'table-1', views: { 'table-1': { ...DEFAULT_VIEW, pageCount: 3 } } })
+    );
   });
 
   it('resets the grid to page 1 by default, as the grid header relies on', async () => {
@@ -66,7 +68,7 @@ describe('CreateColumnDrawer | page reset after a column is added', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'submit column' }));
 
-    await waitFor(() => expect(useTjdbStore.getState().pageCount).toBe(1));
+    await waitFor(() => expect(selectView(useTjdbStore.getState()).pageCount).toBe(1));
   });
 
   it('leaves the page alone when told the table is not the open one', async () => {
@@ -76,6 +78,6 @@ describe('CreateColumnDrawer | page reset after a column is added', () => {
 
     // The refetch runs in the same tick as the page reset, so once it has run the reset has had its chance.
     await waitFor(() => expect(page.handleRefetchQuery).toHaveBeenCalled());
-    expect(useTjdbStore.getState().pageCount).toBe(3);
+    expect(selectView(useTjdbStore.getState()).pageCount).toBe(3);
   });
 });

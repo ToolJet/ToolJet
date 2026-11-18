@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import { server } from '@/test/msw/server';
 import { render, screen, waitFor, act } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
-import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
+import { DEFAULT_VIEW, useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
 import { TooljetDatabaseContext } from '@/TooljetDatabase';
 import { useTableRows, useInvalidateTableRows } from '@/TooljetDatabase/rows/useTableRows';
 import SeedDataDrawer from '@/TooljetDatabase/Drawers/SeedDataDrawer';
@@ -112,9 +112,14 @@ describe('SeedDataDrawer', () => {
     );
     act(() =>
       useTjdbStore.setState({
-        queryFilters: { 0: { column: 'status', operator: 'eq', value: 'open' } },
-        pageSize: 10,
-        pageCount: 2,
+        views: {
+          [SELECTED_TABLE.id]: {
+            ...DEFAULT_VIEW,
+            queryFilters: { 0: { column: 'status', operator: 'eq', value: 'open' } },
+            pageSize: 10,
+            pageCount: 2,
+          },
+        },
       })
     );
 

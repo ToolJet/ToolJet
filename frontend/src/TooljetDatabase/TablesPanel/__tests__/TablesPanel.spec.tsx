@@ -10,7 +10,7 @@ import {
   type TooljetDatabaseContextValue,
 } from '@/TooljetDatabase/TooljetDatabaseContext';
 import { SCHEMA_ENV_TOOLTIP } from '@/TooljetDatabase/constants';
-import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
+import { DEFAULT_VIEW, useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
 import { useOpenTabs } from '../useOpenTabs';
 import { useTablesLimit } from '../useTablesLimit';
 import { TablesPanel } from '../TablesPanel';
@@ -22,6 +22,15 @@ jest.mock(
     ({ children }: { children: React.ReactNode }) =>
       children
 );
+
+// The real form is a long flow of its own; what matters here is what the host does once an edit has saved.
+jest.mock('@/TooljetDatabase/Forms/TableForm', () => ({
+  __esModule: true,
+  default: ({ onEdit, selectedTable }: { onEdit: (name: string) => void; selectedTable: { table_name: string } }) =>
+    jest
+      .requireActual('react')
+      .createElement('button', { onClick: () => onEdit(selectedTable.table_name) }, 'Save table edit'),
+}));
 
 const ORDERS: TjdbTable = { id: 'orders-id', table_name: 'orders' };
 const USERS: TjdbTable = { id: 'users-id', table_name: 'users' };
@@ -335,6 +344,48 @@ describe('TablesPanel | row menu', () => {
     await waitFor(() => expect(requests.metadata).toContain('users'));
     expect(requests.metadata).not.toContain('orders');
     expect(openTable()).toHaveTextContent('orders');
+  });
+});
+
+describe('TablesPanel | edit table', () => {
+  const FILTER = { 0: { column: 'status', operator: 'eq', value: 'open' } };
+
+  it('forgets the saved view of the edited table, open or not, because the edit may drop the column it filters on', async () => {
+    serve();
+    render(<Harness />);
+    await waitFor(() => expect(openTable()).toHaveTextContent('orders'));
+    act(() =>
+      useTjdbStore.setState({
+        views: {
+          [ORDERS.id]: { ...DEFAULT_VIEW, queryFilters: FILTER },
+          [USERS.id]: { ...DEFAULT_VIEW, queryFilters: FILTER, pageCount: 3 },
+        },
+      })
+    );
+
+    await openMenuOf('users');
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Edit table' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Save table edit' }));
+
+    await waitFor(() => expect(useTjdbStore.getState().views[USERS.id]).toBeUndefined());
+    expect(useTjdbStore.getState().views[ORDERS.id]).toBeDefined();
+  });
+
+  it('puts the open table back on its first page and default view', async () => {
+    serve();
+    render(<Harness />);
+    await waitFor(() => expect(openTable()).toHaveTextContent('orders'));
+    act(() => {
+      useTjdbStore.getState().actions.openTableView(ORDERS.id);
+      useTjdbStore.getState().actions.setQueryFilters(FILTER);
+      useTjdbStore.getState().actions.setPageCount(4);
+    });
+
+    await openMenuOf('orders');
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Edit table' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Save table edit' }));
+
+    await waitFor(() => expect(useTjdbStore.getState().views[ORDERS.id]).toBeUndefined());
   });
 });
 

@@ -16,7 +16,7 @@ import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { isEmpty, omit } from 'lodash';
 import config from 'config';
 import { shallow } from 'zustand/shallow';
-import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
+import { useTjdbStore, useTjdbActions, selectView } from '../_stores/tjdbStore';
 
 const Header = ({
   isCreateColumnDrawerOpen,
@@ -38,7 +38,7 @@ const Header = ({
   const [uploadResult, setUploadResult] = useState(null);
   const { selectedTable, organizationId, handleRefetchQuery } = useTooljetDatabaseContext();
   const { queryFilters, sortFilters } = useTjdbStore(
-    (state) => ({ queryFilters: state.queryFilters, sortFilters: state.sortFilters }),
+    (state) => ({ queryFilters: selectView(state).queryFilters, sortFilters: selectView(state).sortFilters }),
     shallow
   );
   const { setQueryFilters, setSortFilters, openMigrationHistory } = useTjdbActions();

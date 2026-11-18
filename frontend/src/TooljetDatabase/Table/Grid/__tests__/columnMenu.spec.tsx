@@ -4,7 +4,7 @@ import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import { act, cleanup, render, screen, userEvent, waitFor } from '@/test/test-utils';
 import { UnsavedChangesGuard } from '../../../_components/UnsavedChangesGuard';
-import { useTjdbStore } from '../../../_stores/tjdbStore';
+import { DEFAULT_VIEW, useTjdbStore } from '../../../_stores/tjdbStore';
 import { TooljetDatabaseContext } from '../../../context';
 import { TableGrid, type TableGridProps } from '../TableGrid';
 import type { GridColumn } from '../useTableGrid';
@@ -202,6 +202,39 @@ describe('TableGrid | column menu', () => {
     await waitFor(() => expect(dropped).toEqual(['title']));
     await waitFor(() => expect(handleRefetchQuery).toHaveBeenCalled());
     expect(setColumns).toHaveBeenCalled();
+  });
+
+  it('forgets the saved view of the table once a column is dropped, since it may filter or sort on it', async () => {
+    act(() =>
+      useTjdbStore.setState({
+        viewTableId: 'table-1',
+        views: {
+          'table-1': { ...DEFAULT_VIEW, queryFilters: { 0: { column: 'title', operator: 'eq', value: 'a' } } },
+          'table-2': { ...DEFAULT_VIEW, pageCount: 2 },
+        },
+      })
+    );
+    setup();
+
+    await openMenu('title');
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Delete column' }));
+    await userEvent.click(await byDataCy('migration-confirm-run'));
+
+    await waitFor(() => expect(useTjdbStore.getState().views['table-1']).toBeUndefined());
+    expect(useTjdbStore.getState().views['table-2']).toBeDefined();
+  });
+
+  it('keeps the saved view when the drop is cancelled', async () => {
+    const view = { ...DEFAULT_VIEW, pageCount: 2 };
+    act(() => useTjdbStore.setState({ viewTableId: 'table-1', views: { 'table-1': view } }));
+    setup();
+
+    await openMenu('title');
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Delete column' }));
+    await userEvent.click(await byDataCy('migration-confirm-cancel'));
+
+    await waitFor(() => expect(document.querySelector('[data-cy="migration-confirm-modal"]')).toBeNull());
+    expect(useTjdbStore.getState().views['table-1']).toEqual(view);
   });
 
   it('drops nothing when the confirmation is cancelled', async () => {

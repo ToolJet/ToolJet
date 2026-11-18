@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import TableFooter from './Footer';
@@ -12,7 +12,7 @@ import {
   convertDateToTimeZoneFormatted,
   getLocalTimeZone,
 } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
-import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
+import { useTjdbStore, useTjdbActions, selectView } from '../_stores/tjdbStore';
 import './styles.scss';
 
 const TIMESTAMP_TYPE = 'timestamp with time zone';
@@ -37,7 +37,7 @@ const Table = () => {
   } = useTooljetDatabaseContext();
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
   const developmentEnvironment = useTjdbStore((state) => state.environments.find((env) => env.priority === 1));
-  const hasQueryFilters = useTjdbStore((state) => Object.keys(state.queryFilters).length > 0);
+  const hasQueryFilters = useTjdbStore((state) => Object.keys(selectView(state).queryFilters).length > 0);
   const selectedTableMissingFromEnvironment = isTableMissingFromEnvironment(
     tables,
     selectedTable.id,
@@ -48,8 +48,15 @@ const Table = () => {
     fetchTableMetadata: fetchMetadata,
     setQueryFilters,
     openTableView,
+    setScrollTop,
     switchEnvironment,
   } = useTjdbActions();
+
+  // Read, not subscribed to: the grid uses it once, when its rows first render, and its own reports would otherwise
+  // re-render this page after every scroll pause.
+  const initialScrollTop = useTjdbStore.getState().views[selectedTable.id]?.scrollTop ?? 0;
+  const tableId = selectedTable.id;
+  const handleScrollEnd = useCallback((scrollTop) => setScrollTop(tableId, scrollTop), [setScrollTop, tableId]);
 
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
@@ -161,6 +168,8 @@ const Table = () => {
         <div className={isEmptyTable ? 'tw-shrink-0' : 'tw-min-h-0 tw-flex-1'}>
           <TableGrid
             key={selectedTable.id}
+            initialScrollTop={initialScrollTop}
+            onScrollEnd={handleScrollEnd}
             columns={gridColumns}
             rows={gridRows}
             isLoading={rowsLoading}

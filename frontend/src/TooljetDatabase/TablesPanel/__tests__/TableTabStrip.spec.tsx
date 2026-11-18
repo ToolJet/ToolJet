@@ -11,6 +11,7 @@ import {
   type TooljetDatabaseContextValue,
 } from '@/TooljetDatabase/TooljetDatabaseContext';
 import { SCHEMA_ENV_TOOLTIP } from '@/TooljetDatabase/constants';
+import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
 import { UnsavedChangesGuard } from '@/TooljetDatabase/_components/UnsavedChangesGuard';
 import { setUnsaved, useUnsavedChanges } from '@/TooljetDatabase/_stores/unsavedChanges';
 import { TableTabStrip } from '../TableTabStrip';
@@ -121,6 +122,21 @@ describe('TableTabStrip | tabs', () => {
 
     expect(screen.queryByRole('tab', { name: 'orders' })).not.toBeInTheDocument();
     expect(activeTable()).toHaveTextContent('users');
+  });
+
+  it('drops the view of a closed tab and keeps the others', async () => {
+    render(<Harness />);
+    await screen.findByRole('tab', { name: 'orders' });
+    act(() => {
+      const { setScrollTop } = useTjdbStore.getState().actions;
+      setScrollTop(ORDERS.id, 120);
+      setScrollTop(USERS.id, 80);
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Close orders' }));
+
+    expect(Object.keys(useTjdbStore.getState().views)).toEqual([USERS.id]);
+    expect(useTjdbStore.getState().views[USERS.id].scrollTop).toBe(80);
   });
 
   it('shows the expand button only while the panel is collapsed', async () => {

@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { cn } from '@/lib/utils';
 import { Table } from '@/components/ui/Rocket/Table/Table';
 import { TableSkeleton } from '@/components/ui/blocks/TableSkeleton';
-import { useTjdbStore } from '../../_stores/tjdbStore';
+import { selectView, useTjdbStore } from '../../_stores/tjdbStore';
 import { listAllPrimaryKeyColumns } from '../../constants';
 import { patchCachedRow } from '../../rows/useTableRows';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
@@ -63,10 +63,15 @@ export type TableGridProps = {
   /** Shows the add row footer, which opens an inline row at the foot of the grid. */
   canAddRows?: boolean;
   onAddColumn?: () => void;
+  /** Where the grid scrolls to once its rows first render (the position this table had when it was last open). */
+  initialScrollTop?: number;
+  /** Called with the vertical position once scrolling pauses. */
+  onScrollEnd?: (scrollTop: number) => void;
 };
 
 const SKELETON_ROWS = 10;
 const MIN_SKELETON_COLUMNS = 5;
+const SCROLL_END_DELAY_MS = 150;
 
 // The table body: pinned and resizable columns, sort indicators, virtualised rows. Sort order and the rows themselves
 // come from the server. Rows can be selected (to edit one or delete several), cells focused with the keyboard and
@@ -81,11 +86,15 @@ export function TableGrid({
   canEditCells = false,
   canAddRows = false,
   onAddColumn,
+  initialScrollTop = 0,
+  onScrollEnd,
 }: TableGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const sortFilters = useTjdbStore((state: { sortFilters: Record<string, SortRule> }) => state.sortFilters);
+  const sortFilters = useTjdbStore(
+    (state: { views: Record<string, unknown> }) => selectView(state).sortFilters as Record<string, SortRule>
+  );
   const sorting = useMemo(() => toSortingState(sortFilters), [sortFilters]);
-  const { foreignKeys, selectedTable } = useTooljetDatabaseContext();
+  const { foreignKeys, selectedTable, organizationId } = useTooljetDatabaseContext();
   const queryClient = useQueryClient();
   const environmentId = useTjdbStore(
     (state: { selectedEnvironment: { id: string } | null }) => state.selectedEnvironment?.id ?? null
@@ -119,6 +128,8 @@ export function TableGrid({
     rowSelection,
     onRowSelectionChange,
     canSelectRows,
+    workspaceId: organizationId ?? undefined,
+    tableId: selectedTable.id,
   });
   const primaryKeys = useMemo(() => listAllPrimaryKeyColumns(columns) as string[], [columns]);
   const deleteBlockedReason = useMemo(() => getDeleteBlockedReason(primaryKeys, columns), [primaryKeys, columns]);
@@ -187,6 +198,32 @@ export function TableGrid({
     dispatch({ type: 'stopEditing' });
     focusGrid();
   }, [dispatch, focusGrid]);
+
+  // Restored once, when this table's first rows are on screen: before that the scroll area has no height to scroll.
+  // Not while the view is still another table's: the rows on screen can be a cached page of a different view, which
+  // would clamp the position, and the clamped one would then be reported over the saved one.
+  const viewIsForTable = useTjdbStore(
+    (state: { viewTableId: string | null }) => state.viewTableId === selectedTable.id
+  );
+  const scrollRestored = useRef(false);
+  const hasRows = viewIsForTable && !isLoading && tableRows.length > 0;
+  useLayoutEffect(() => {
+    if (!hasRows || scrollRestored.current) return;
+    scrollRestored.current = true;
+    if (scrollRef.current && initialScrollTop > 0) scrollRef.current.scrollTop = initialScrollTop;
+    // The position is read once; later changes of it are this grid's own reports.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasRows]);
+
+  const scrollEndTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => clearTimeout(scrollEndTimer.current), []);
+  const handleScroll = () => {
+    // The open editor is anchored to its cell, so it would be left behind by a scroll.
+    if (cell?.editing) stopEditing();
+    if (!onScrollEnd || !viewIsForTable) return;
+    clearTimeout(scrollEndTimer.current);
+    scrollEndTimer.current = setTimeout(() => onScrollEnd(scrollRef.current?.scrollTop ?? 0), SCROLL_END_DELAY_MS);
+  };
 
   const saveCell = useCallback(
     async (rowId: string, columnId: string, value: CellValue) => {
@@ -306,8 +343,7 @@ export function TableGrid({
         tabIndex={0}
         aria-activedescendant={cell ? cellDomId(cell.rowIndex, visibleColumnIds.indexOf(cell.columnId)) : undefined}
         onKeyDown={handleKeyDown}
-        // The open editor is anchored to its cell, so it would be left behind by a scroll.
-        onScroll={() => cell?.editing && stopEditing()}
+        onScroll={handleScroll}
         className={cn(
           'tw-h-full tw-min-h-0 tw-w-full tw-overflow-auto tw-bg-page-weak',
           // The focus ring is on the cell once there is one.

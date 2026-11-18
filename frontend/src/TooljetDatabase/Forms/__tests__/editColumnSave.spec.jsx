@@ -9,7 +9,7 @@ import { render, screen, waitFor, act } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { TooljetDatabaseContext } from '@/TooljetDatabase';
 import EditColumnForm from '@/TooljetDatabase/Forms/EditColumnForm';
-import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
+import { DEFAULT_VIEW, useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
 import { hasUnsavedChanges } from '@/TooljetDatabase/_stores/unsavedChanges';
 
 // jsdom has no layout, so focus-trap finds no tabbable node and throws. External adapter, not product logic.
@@ -121,6 +121,48 @@ describe('Edit column Save', () => {
     await userEvent.keyboard('{Enter}');
 
     expect(document.querySelector('[data-cy="migration-confirm-modal"]')).toBeNull();
+  });
+});
+
+describe('Edit column saved view', () => {
+  const VIEW = { ...DEFAULT_VIEW, queryFilters: { 0: { column: 'owner', operator: 'eq', value: 'a' } } };
+
+  beforeEach(() => {
+    act(() => useTjdbStore.getState().actions.resetStore());
+    server.use(
+      http.patch('*/tooljet-db/organizations/:organizationId/table/:tableName/column', () => HttpResponse.json({})),
+      http.get('*/tooljet-db/organizations/:organizationId/table/:tableName', () =>
+        HttpResponse.json({ result: { columns: [], foreign_keys: [], configurations: {} } })
+      )
+    );
+  });
+
+  const seedViews = () =>
+    act(() => useTjdbStore.setState({ views: { 'table-1': VIEW, 'table-2': VIEW }, viewTableId: 'table-1' }));
+
+  test('should forget the view of the table once a rename is saved, since it may filter on the old name', async () => {
+    renderForm(column(true));
+    seedViews();
+
+    await userEvent.type(await byDataCy('column-name-input-field'), 's');
+    await userEvent.click(await saveButton());
+    await userEvent.click(await byDataCy('migration-confirm-run'));
+
+    await waitFor(() => expect(useTjdbStore.getState().views['table-1']).toBeUndefined());
+    expect(useTjdbStore.getState().views['table-2']).toEqual(VIEW);
+  });
+
+  test('should keep the view when the column is not renamed', async () => {
+    renderForm(column(true));
+    seedViews();
+
+    const notNullSwitch = screen.getByText('NOT NULL').closest('.row').querySelector('input[type="checkbox"]');
+    await userEvent.click(notNullSwitch);
+    await userEvent.click(await saveButton());
+    await userEvent.click(await byDataCy('migration-confirm-run'));
+
+    await waitFor(() => expect(document.querySelector('[data-cy="migration-confirm-modal"]')).toBeNull());
+    expect(useTjdbStore.getState().views['table-1']).toEqual(VIEW);
   });
 });
 

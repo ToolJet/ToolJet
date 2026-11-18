@@ -89,7 +89,7 @@ const ColumnForm = ({
     setConfigurations,
   } = useTooljetDatabaseContext();
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
-  const { fetchTableMetadata, setQueryFilters } = useTjdbActions();
+  const { fetchTableMetadata, setQueryFilters, resetView } = useTjdbActions();
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
   const { runMigration, modal: migrationModal } = useMigrationModal();
@@ -599,7 +599,11 @@ const ColumnForm = ({
         };
         return tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
       },
-      onSuccess: finish,
+      onSuccess: () => {
+        // The saved filters and sort may name the old column name.
+        if (isRenamed) resetView(selectedTable.id);
+        finish();
+      },
     });
   };
 

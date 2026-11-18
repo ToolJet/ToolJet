@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
-import { useTjdbStore } from '../_stores/tjdbStore';
+import { selectView, useTjdbStore } from '../_stores/tjdbStore';
 import { buildRowsQuery } from './rowsQuery';
 
 export type TableRow = Record<string, unknown>;
@@ -12,22 +12,28 @@ type RowsPage = { rows: TableRow[]; total: number };
 const ROWS_KEY = ['tjdb', 'rows'] as const;
 const EMPTY_ROWS: TableRow[] = [];
 
-type TjdbViewState = {
+type TableView = {
   queryFilters: Parameters<typeof buildRowsQuery>[0]['filters'];
   sortFilters: Parameters<typeof buildRowsQuery>[0]['sort'];
   pageCount: number;
   pageSize: number;
+};
+
+type TjdbViewState = {
+  views: Record<string, TableView | undefined>;
   selectedEnvironment: { id: string } | null;
   viewTableId: string | null;
 };
 
-const selectRowsQuery = (state: TjdbViewState) =>
-  buildRowsQuery({
-    filters: state.queryFilters,
-    sort: state.sortFilters,
-    page: state.pageCount,
-    pageSize: state.pageSize,
+const selectRowsQuery = (state: TjdbViewState) => {
+  const view: TableView = selectView(state);
+  return buildRowsQuery({
+    filters: view.queryFilters,
+    sort: view.sortFilters,
+    page: view.pageCount,
+    pageSize: view.pageSize,
   });
+};
 
 // Names the page of rows on screen: it changes with the environment, the open table, and every filter, sort, page
 // and page size change. Page-scoped state (a row selection) resets when it changes instead of watching each input.
@@ -43,8 +49,8 @@ export const useTableRows = (tableId: string | undefined, { enabled = true }: { 
   // A string selector, so the component re-renders only when the query itself changes.
   const query = useTjdbStore(selectRowsQuery);
   const environmentId = useTjdbStore((state: TjdbViewState) => state.selectedEnvironment?.id ?? null);
-  // The view is reset for a newly opened table one render after the table changes (openTableView). Until then it
-  // still holds the previous table's filters, which can name columns this table lacks.
+  // The view follows a newly opened table one render after the table changes (openTableView). Until then it
+  // is still the previous table's, whose filters can name columns this table lacks.
   const viewIsForTable = useTjdbStore((state: TjdbViewState) => state.viewTableId === tableId);
 
   const result = useQuery<RowsPage, Error>({

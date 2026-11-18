@@ -103,15 +103,14 @@ const DrawerLoading = () => (
 
 interface EditTableBodyProps {
   table: TjdbTable;
-  isOpenTable: boolean;
   onRenamed: (table: TjdbTable) => void;
   onClose: () => void;
 }
 
 // Runs inside TableSchemaScope, so `context` describes `table` whichever table the grid has open.
-function EditTableBody({ table, isOpenTable, onRenamed, onClose }: EditTableBodyProps) {
+function EditTableBody({ table, onRenamed, onClose }: EditTableBodyProps) {
   const context = useTooljetDatabaseContext();
-  const { fetchTableMetadata, setPageCount } = useTjdbActions();
+  const { fetchTableMetadata, resetView } = useTjdbActions();
   const { selectedColumns, selectedTableData } = useMemo(
     () => buildEditTableFormData(context.columns as TableColumn[]),
     [context.columns]
@@ -128,9 +127,10 @@ function EditTableBody({ table, isOpenTable, onRenamed, onClose }: EditTableBody
         context.setForeignKeys([...metadata.foreignKeys]);
       }
     );
-    // The scope refetches the grid only when `table` is the open table; the page number is the page's own state.
+    // The edit can rename or drop columns, so the saved filters and sort of this table (open or not) may name a
+    // column that is gone. The scope refetches the grid only when `table` is the open table.
+    resetView(table.id);
     context.handleRefetchQuery();
-    if (isOpenTable) setPageCount(1);
     onClose();
   };
 
@@ -237,12 +237,7 @@ export function useTableActions({ refetchTables }: { refetchTables: () => void }
           className="tj-db-drawer"
         >
           <TableSchemaScope table={active.table} fallback={<DrawerLoading />} onError={close}>
-            <EditTableBody
-              table={active.table}
-              isOpenTable={selectedTable.id === active.table.id}
-              onRenamed={handleRenamed}
-              onClose={close}
-            />
+            <EditTableBody table={active.table} onRenamed={handleRenamed} onClose={close} />
           </TableSchemaScope>
         </Drawer>
       )}

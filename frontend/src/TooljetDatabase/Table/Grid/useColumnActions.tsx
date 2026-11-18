@@ -16,7 +16,7 @@ import type { GridColumn, GridRow } from './useTableGrid';
 export function useColumnActions(rows: GridRow[]) {
   const { organizationId, selectedTable, setColumns, setForeignKeys, setConfigurations, handleRefetchQuery } =
     useTooljetDatabaseContext();
-  const { fetchTableMetadata } = useTjdbActions();
+  const { fetchTableMetadata, resetView } = useTjdbActions();
   const { runMigration, modal } = useMigrationModal();
   const [isEditOpen, setIsEditOpen] = useState(false);
   // Kept while the drawer slides out.
@@ -41,6 +41,8 @@ export function useColumnActions(rows: GridRow[]) {
       run: (migrationName: string) =>
         tooljetDatabaseService.deleteColumn(organizationId, selectedTable.table_name, columnName, migrationName),
       onSuccess: async () => {
+        // The saved filters and sort may name the dropped column.
+        resetView(selectedTable.id);
         const metadata = await fetchTableMetadata(organizationId, selectedTable.table_name);
         if (metadata) {
           setConfigurations(metadata.configurations);

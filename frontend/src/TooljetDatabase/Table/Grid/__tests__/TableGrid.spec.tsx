@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, within } from '@/test/test-utils';
-import { useTjdbStore } from '../../../_stores/tjdbStore';
+import { act, fireEvent, render, screen, within } from '@/test/test-utils';
+import { DEFAULT_VIEW, useTjdbStore } from '../../../_stores/tjdbStore';
 import { TooljetDatabaseContext } from '../../../context';
 import { TableGrid, type TableGridProps } from '../TableGrid';
 import type { GridColumn } from '../useTableGrid';
@@ -47,7 +47,7 @@ const setup = (props: Partial<TableGridProps> = {}) =>
   render(<TableGrid columns={COLUMNS} rows={ROWS} isLoading={false} canEditSchema {...props} />);
 
 const setSort = (sortFilters: Record<string, { column: string; order: string }>) =>
-  useTjdbStore.setState({ sortFilters });
+  useTjdbStore.setState({ viewTableId: 'table-1', views: { 'table-1': { ...DEFAULT_VIEW, sortFilters } } });
 
 describe('TableGrid | header', () => {
   it('keeps the Cypress hooks of the previous grid', () => {
@@ -234,5 +234,166 @@ describe('TableGrid | refetch', () => {
 
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.getByRole('rowgroup')).not.toHaveClass('tw-opacity-60');
+  });
+});
+
+describe('TableGrid | column widths', () => {
+  const inTable = (ui: React.ReactElement) => (
+    <TooljetDatabaseContext.Provider
+      value={
+        { selectedTable: { id: 'table-1' }, organizationId: 'ws-1', foreignKeys: [] } as unknown as React.ContextType<
+          typeof TooljetDatabaseContext
+        >
+      }
+    >
+      {ui}
+    </TooljetDatabaseContext.Provider>
+  );
+  const KEY = 'tjdb-col-widths:ws-1:table-1';
+  const grid = () => inTable(<TableGrid columns={COLUMNS} rows={ROWS} isLoading={false} canEditSchema />);
+  const savedWidths = () => JSON.parse(window.localStorage.getItem(KEY) ?? 'null');
+
+  beforeEach(() => window.localStorage.clear());
+  afterEach(() => jest.restoreAllMocks());
+
+  it('opens a table with the widths saved for it', () => {
+    window.localStorage.setItem(KEY, JSON.stringify({ title: 333, removed: 500 }));
+    render(grid());
+
+    expect(screen.getByRole('columnheader', { name: /title/ })).toHaveStyle({ width: '333px' });
+    expect(screen.getByRole('columnheader', { name: /views/ })).toHaveStyle({ width: '200px' });
+  });
+
+  it('opens with default widths when storage throws', () => {
+    const getItem = Storage.prototype.getItem;
+    jest.spyOn(Storage.prototype, 'getItem').mockImplementation(function (this: Storage, key: string) {
+      if (key === KEY) throw new Error('blocked');
+      return getItem.call(this, key);
+    });
+    render(grid());
+
+    expect(screen.getByRole('columnheader', { name: /title/ })).toHaveStyle({ width: '200px' });
+  });
+
+  it('saves when a resize ends, not while the handle moves', () => {
+    render(grid());
+    const handle = screen.getByRole('separator', { name: 'Resize title column' });
+
+    fireEvent.mouseDown(handle, { clientX: 100 });
+    fireEvent.mouseMove(document, { clientX: 150 });
+    expect(screen.getByRole('columnheader', { name: /title/ })).toHaveStyle({ width: '250px' });
+    expect(savedWidths()).toBeNull();
+
+    fireEvent.mouseUp(document, { clientX: 150 });
+
+    expect(savedWidths()).toEqual({ title: 250 });
+  });
+
+  it('forgets a width that was reset to the default', () => {
+    window.localStorage.setItem(KEY, JSON.stringify({ title: 333 }));
+    render(grid());
+
+    fireEvent.doubleClick(screen.getByRole('separator', { name: 'Resize title column' }));
+
+    expect(savedWidths()).toBeNull();
+  });
+
+  it('does not save without a workspace and table to save under', () => {
+    render(<TableGrid columns={COLUMNS} rows={ROWS} isLoading={false} canEditSchema />);
+
+    fireEvent.mouseDown(screen.getByRole('separator', { name: 'Resize title column' }), { clientX: 100 });
+    fireEvent.mouseMove(document, { clientX: 150 });
+    fireEvent.mouseUp(document, { clientX: 150 });
+
+    expect(window.localStorage.length).toBe(0);
+  });
+});
+
+describe('TableGrid | scroll position', () => {
+  const scroller = () => screen.getByRole('grid');
+  const tableGrid = (props: Partial<TableGridProps> = {}) => (
+    <TooljetDatabaseContext.Provider
+      value={
+        { selectedTable: { id: 'table-1' }, foreignKeys: [] } as unknown as React.ContextType<
+          typeof TooljetDatabaseContext
+        >
+      }
+    >
+      <TableGrid columns={COLUMNS} rows={ROWS} isLoading={false} canEditSchema {...props} />
+    </TooljetDatabaseContext.Provider>
+  );
+
+  beforeEach(() => act(() => useTjdbStore.setState({ viewTableId: 'table-1' })));
+  afterEach(() => jest.useRealTimers());
+
+  it("waits for the view to be this table's before scrolling, since rows of another view can be on screen", () => {
+    act(() => useTjdbStore.setState({ viewTableId: 'table-2' }));
+    render(tableGrid({ initialScrollTop: 240 }));
+    expect(scroller().scrollTop).toBe(0);
+
+    act(() => useTjdbStore.setState({ viewTableId: 'table-1' }));
+
+    expect(scroller().scrollTop).toBe(240);
+  });
+
+  it("reports no position while the view is another table's", () => {
+    jest.useFakeTimers();
+    act(() => useTjdbStore.setState({ viewTableId: 'table-2' }));
+    const onScrollEnd = jest.fn();
+    render(tableGrid({ onScrollEnd }));
+
+    scroller().scrollTop = 100;
+    fireEvent.scroll(scroller());
+    jest.advanceTimersByTime(500);
+
+    expect(onScrollEnd).not.toHaveBeenCalled();
+  });
+
+  it('scrolls to the saved position once the rows are on screen', () => {
+    const { rerender } = render(tableGrid({ rows: [], isLoading: true, initialScrollTop: 240 }));
+    expect(scroller().scrollTop).toBe(0);
+
+    rerender(tableGrid({ initialScrollTop: 240 }));
+
+    expect(scroller().scrollTop).toBe(240);
+  });
+
+  it('restores only once: later changes of the saved position leave the scroll alone', () => {
+    const { rerender } = render(tableGrid({ initialScrollTop: 240 }));
+    scroller().scrollTop = 600;
+
+    rerender(tableGrid({ initialScrollTop: 10 }));
+
+    expect(scroller().scrollTop).toBe(600);
+  });
+
+  it('reports the position once scrolling pauses', () => {
+    jest.useFakeTimers();
+    const onScrollEnd = jest.fn();
+    render(tableGrid({ onScrollEnd }));
+
+    scroller().scrollTop = 100;
+    fireEvent.scroll(scroller());
+    jest.advanceTimersByTime(100);
+    scroller().scrollTop = 160;
+    fireEvent.scroll(scroller());
+    jest.advanceTimersByTime(100);
+    expect(onScrollEnd).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(100);
+
+    expect(onScrollEnd).toHaveBeenCalledTimes(1);
+    expect(onScrollEnd).toHaveBeenCalledWith(160);
+  });
+
+  it('reports nothing after the grid is gone', () => {
+    jest.useFakeTimers();
+    const onScrollEnd = jest.fn();
+    const { unmount } = render(tableGrid({ onScrollEnd }));
+    fireEvent.scroll(scroller());
+
+    unmount();
+    jest.advanceTimersByTime(500);
+
+    expect(onScrollEnd).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTjdbActions } from '../_stores/tjdbStore';
 import { runUnlessDirty } from '../_stores/unsavedChanges';
 import type { TjdbTable } from '../TooljetDatabaseContext';
 import {
@@ -57,6 +58,7 @@ export interface OpenTabs {
 export function useOpenTabs({ organizationId, tables, selectedTable, setSelectedTable }: UseOpenTabsArgs): OpenTabs {
   const [openTabIds, setOpenTabIds] = useState<string[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
+  const { pruneViews } = useTjdbActions();
 
   // The callbacks below are handed to hooks that capture them once, so they read the latest state through refs.
   const stateRef = useRef<TabsState>({ ids: openTabIds, activeId: selectedTable.id ?? null });
@@ -124,6 +126,11 @@ export function useOpenTabs({ organizationId, tables, selectedTable, setSelected
     },
     [organizationId, show]
   );
+
+  // A table's view (filters, sort, page, scroll) lasts as long as its tab.
+  useEffect(() => {
+    pruneViews(openTabIds);
+  }, [openTabIds, pruneViews]);
 
   // Persist, and keep the address bar pointing at the open table. Nothing is written until the first restore, or the
   // empty initial state would overwrite what was saved.
