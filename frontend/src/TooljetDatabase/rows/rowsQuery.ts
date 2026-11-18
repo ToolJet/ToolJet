@@ -15,7 +15,14 @@ export type RowsView = {
 export const isQueryableFilter = ({ column, operator, value }: FilterCondition): boolean =>
   !!column && !!operator && !!value && (operator === 'is' || value.toLowerCase() !== 'null');
 
-export const isCompleteSort = ({ column, order }: SortRule): boolean => !!column && !!order;
+const isCompleteSort = ({ column, order }: SortRule): boolean => !!column && !!order;
+
+// The complete rules in priority order, one per column: a later rule on the same column never changes the order, so
+// it is dropped here and the header numbers columns by the order the database actually uses.
+export const appliedSorts = (sort: Record<string, SortRule> = {}): SortRule[] =>
+  Object.values(sort)
+    .filter(isCompleteSort)
+    .filter((rule, index, rules) => rules.findIndex(({ column }) => column === rule.column) === index);
 
 // Pure, so the same view always yields the same string: it is the rows query's cache key.
 export const buildRowsQuery = ({ filters, sort, page, pageSize }: RowsView): string => {
@@ -23,9 +30,7 @@ export const buildRowsQuery = ({ filters, sort, page, pageSize }: RowsView): str
   Object.values(filters)
     .filter(isQueryableFilter)
     .forEach(({ column, operator, value }) => query.filter(column, operator, value));
-  Object.values(sort)
-    .filter(isCompleteSort)
-    .forEach(({ column, order }) => query.order(column, order));
+  appliedSorts(sort).forEach(({ column, order }) => query.order(column, order));
   query.limit(pageSize).offset((page - 1) * pageSize);
   return query.url.toString();
 };

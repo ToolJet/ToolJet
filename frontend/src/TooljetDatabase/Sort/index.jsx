@@ -80,7 +80,12 @@ const Sort = ({ filters, setFilters }) => {
             key={key}
             label={index === 0 ? 'Sort by' : 'Then by'}
             condition={condition}
-            columns={columns}
+            // A second rule on a column already sorted by changes nothing, so each row offers only the free columns.
+            columns={columns.filter(
+              ({ accessor }) =>
+                accessor === condition.column ||
+                !draftRows.some(([other, sort]) => other !== key && sort.column === accessor)
+            )}
             onChange={(patch) => updateRow(key, patch)}
             onRemove={() => setDraft((previous) => omit(previous, key))}
             data-cy={`sort-row-${key}`}

@@ -153,6 +153,17 @@ describe('Sort popover', () => {
     expect(setFilters).toHaveBeenCalledWith({ 0: { column: 'id', order: 'desc' } });
   });
 
+  it('offers a column only to the row that sorts by it', async () => {
+    setupSort({ 0: { column: 'id', order: 'asc' } });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sort' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Add sort' }));
+    await userEvent.click(screen.getAllByRole('combobox', { name: 'Column' })[1]);
+
+    expect(await screen.findByRole('option', { name: 'name' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'id' })).not.toBeInTheDocument();
+  });
+
   it('labels the first row "Sort by" and the following ones "Then by"', async () => {
     setupSort();
 

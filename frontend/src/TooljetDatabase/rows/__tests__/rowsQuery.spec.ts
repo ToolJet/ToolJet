@@ -55,6 +55,23 @@ describe('buildRowsQuery', () => {
     expect(query.get('order')).toBe('tag.asc,title.desc');
   });
 
+  it('orders by a column once, by its first rule', () => {
+    const query = params(
+      buildRowsQuery({
+        filters: {},
+        sort: {
+          0: { column: 'id', order: 'asc' },
+          1: { column: 'id', order: 'desc' },
+          2: { column: 'tag', order: 'asc' },
+        },
+        page: 1,
+        pageSize: 50,
+      })
+    );
+
+    expect(query.get('order')).toBe('id.asc,tag.asc');
+  });
+
   it('gives the same string for the same view, so it can key the cache', () => {
     const view = { filters: { 0: { column: 'tag', operator: 'eq', value: 'v1' } }, sort: {}, page: 2, pageSize: 100 };
 
