@@ -26,10 +26,15 @@ describe("App creation", () => {
             "have.text",
             commonText.createApp
         );
-        cy.get(commonSelectors.appNameLabel).verifyVisibleElement(
-            "have.text",
-            commonText.appName
-        );
+        // With the build mode choice (EE, Code mode on), the name field is relabelled.
+        cy.get(commonSelectors.appNameLabel)
+            .should("be.visible")
+            .and(($label) => {
+                const hasBuildMode = Cypress.$(commonSelectors.createAppBuildMode).length > 0;
+                expect($label.text()).to.eq(
+                    hasBuildMode ? commonText.createAppBuildModeNameLabel : commonText.appName
+                );
+            });
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.attr",
             "placeholder",
