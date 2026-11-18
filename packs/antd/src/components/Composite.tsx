@@ -1057,7 +1057,8 @@ export const Icon = () => {
   const [size] = ToolJet.useStateNumber({ name: 'size', label: 'Size (px)', initialValue: 20, min: 8, max: 200 });
   const [type] = ToolJet.useStateEnumeration({
     name: 'type',
-    label: 'Type',
+    // Not 'Type': the Inspector gives a property labelled Type no fx toggle (QA PF-282). The key stays type.
+    label: 'Tone',
     enumDefinition: ['default', 'muted', 'primary', 'success', 'warning', 'danger'],
     initialValue: 'default',
   });
@@ -1096,10 +1097,20 @@ export const Icon = () => {
   const wantedPx = Math.max(8, Math.min(200, Number(size) || 20));
   const wantedBox = Math.max(wantedPx + 8, Number(chipSize) || 40);
   // The chip fits the widget's box: the 40px default chip in the default 4-row box was cut 2px top and bottom.
-  const [fitRef, box] = useFitSquare<HTMLDivElement>(wantedBox);
-  const px = chip === 'none' ? wantedPx : Math.min(wantedPx, Math.max(8, box - 8));
+  // A plain icon fits it too: Size 200 in a 60px box was cut off (QA PKB-76).
+  const [fitRef, box] = useFitSquare<HTMLDivElement>(chip === 'none' ? wantedPx : wantedBox);
+  const px = chip === 'none' ? Math.min(wantedPx, box) : Math.min(wantedPx, Math.max(8, box - 8));
+  // Container background and Border color fill and frame the chip, or a plain icon's box: they did nothing (QA PKB-41).
+  const own = tokens as Record<string, string | undefined>;
+  const ownBg = own['--tj-ant-color-bg-container'];
+  const ownBorder = own['--tj-ant-color-border'];
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-start">
+    <AntProvider
+      tokens={tokens}
+      fill
+      className="tj-ant-center tj-ant-start"
+      style={chip === 'none' ? ownBoxStyle(tokens) : undefined}
+    >
       <SpinOver loading={loading} as="fill">
         <div ref={fitRef} className="tj-ant-icon-fit">
           <span
@@ -1111,7 +1122,8 @@ export const Icon = () => {
                 ? {
                     width: box,
                     height: box,
-                    background: `color-mix(in srgb, ${color} 12%, transparent)`,
+                    background: ownBg || `color-mix(in srgb, ${color} 12%, transparent)`,
+                    ...(ownBorder ? { border: `1px solid ${ownBorder}`, boxSizing: 'border-box' as const } : {}),
                     borderRadius: chip === 'circle' ? '50%' : 'var(--ant-border-radius-lg)',
                   }
                 : {}),

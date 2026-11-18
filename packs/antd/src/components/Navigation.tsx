@@ -30,6 +30,7 @@ import { ownerAvailable, useOwnedPopup, useOwnerShown } from '../lib/useOwnerGua
 import { useValueSetter } from '../lib/sameValue';
 import { useMenuLookup } from '../lib/menuLookup';
 import { useProjectedEscape } from '../lib/useProjectedEscape';
+import { useFitSquare } from '../lib/fitText';
 
 type MenuItem = {
   key: string;
@@ -1296,54 +1297,69 @@ export const QRCode = () => {
     defaultWidth: 6,
     defaultHeight: 18,
   });
-  const px = Math.max(48, Math.min(600, toNumber(size) ?? 160));
+  const wantedPx = Math.max(48, Math.min(600, toNumber(size) ?? 160));
+  // The code shrinks to fit the widget's box: a Size larger than the box spilled out of it (QA PF-227).
+  const [fitRef, px] = useFitSquare<HTMLDivElement>(wantedPx);
   const fits = useMemo(() => !value || fitsQrCode(value, String(errorLevel)), [value, errorLevel]);
   // Ant fills the modules from its JS token (light mode's black) as an SVG attribute, which the pack's dark mode and
   // theme colours (CSS variables) never reach (AD-25). currentColor follows the box's CSS colour instead, and the box
   // takes the container background (it was transparent, so Container background did nothing). A set Color or
   // Background still wins; with only a Background set, the modules keep Ant's dark default (light on a white Background
   // would vanish).
+  // Primary color draws the modules when Text color is not set, and Border color the bordered frame: both did nothing
+  // (QA PKB-41).
+  const own = tokens as Record<string, string | undefined>;
+  const moduleColor = own['--tj-ant-color-text'] ? undefined : own['--tj-ant-color-primary'];
   const colors = {
     color: color || (bgColor ? undefined : 'currentColor'),
     bgColor: bgColor || undefined,
-    style: { color: 'var(--ant-color-text)', backgroundColor: bgColor || 'var(--ant-color-bg-container)' },
+    style: {
+      color: moduleColor || 'var(--ant-color-text)',
+      backgroundColor: bgColor || 'var(--ant-color-bg-container)',
+      ...(bordered && own['--tj-ant-color-border'] ? { borderColor: own['--tj-ant-color-border'] } : {}),
+    },
   };
+  // Ant raises the error level as far as the code's size allows (boostLevel), so L, M and Q drew the same code for a
+  // short value (QA PF-226): the level picked is the one used.
+  const level = { errorLevel: oneOf(errorLevel, ['L', 'M', 'Q', 'H'] as const, 'M'), boostLevel: false };
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center">
-      {value && !fits ? (
-        <AntQRCode
-          {...colors}
-          value="-"
-          size={px}
-          status="expired"
-          bordered={bordered}
-          statusRender={() => <span>Too long for a QR code</span>}
-          type="svg"
-        />
-      ) : value ? (
-        <AntQRCode
-          {...colors}
-          value={value}
-          size={px}
-          errorLevel={oneOf(errorLevel, ['L', 'M', 'Q', 'H'] as const, 'M')}
-          icon={icon || undefined}
-          bordered={bordered}
-          status={loading ? 'loading' : 'active'}
-          type="svg"
-        />
-      ) : loading ? (
-        <AntQRCode {...colors} value="-" size={px} status="loading" bordered={bordered} type="svg" />
-      ) : (
-        <AntQRCode
-          {...colors}
-          value="-"
-          size={px}
-          status="expired"
-          bordered={bordered}
-          statusRender={() => <span>No value</span>}
-          type="svg"
-        />
-      )}
+      <div ref={fitRef} className="tj-ant-fit-box">
+        {value && !fits ? (
+          <AntQRCode
+            {...colors}
+            value="-"
+            size={px}
+            status="expired"
+            bordered={bordered}
+            statusRender={() => <span>Too long for a QR code</span>}
+            type="svg"
+          />
+        ) : value ? (
+          <AntQRCode
+            {...colors}
+            value={value}
+            size={px}
+            {...level}
+            icon={icon || undefined}
+            bordered={bordered}
+            status={loading ? 'loading' : 'active'}
+            type="svg"
+          />
+        ) : loading ? (
+          <AntQRCode {...colors} value="-" size={px} status="loading" bordered={bordered} type="svg" />
+        ) : (
+          <AntQRCode
+            {...colors}
+            value="-"
+            size={px}
+            status="expired"
+            bordered={bordered}
+            statusRender={() => <span>No value</span>}
+            type="svg"
+          />
+        )}
+      </div>
     </AntProvider>
   );
 };
