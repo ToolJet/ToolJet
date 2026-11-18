@@ -24,9 +24,9 @@ class TestAbilityGuard extends AbilityGuard {
 describe('AbilityGuard', () => {
   let guard: TestAbilityGuard;
   let reflector: { get: jest.Mock };
-  let moduleRef: { resolve: jest.Mock };
+  let moduleRef: { resolve: jest.Mock; get: jest.Mock };
   let licenseTermsService: { getLicenseTermsInstance: jest.Mock; getLicenseTerms: jest.Mock };
-  let transactionLogger: { log: jest.Mock };
+  let transactionLogger: { log: jest.Mock; error: jest.Mock };
   let banListRepo: { findOne: jest.Mock };
   let orgRepo: { findOne: jest.Mock };
   let dataSource: { getRepository: jest.Mock };
@@ -61,12 +61,17 @@ describe('AbilityGuard', () => {
     reflector = { get: jest.fn() };
     ability = { can: jest.fn().mockReturnValue(true) };
     abilityFactory = { createAbility: jest.fn().mockResolvedValue(ability) };
-    moduleRef = { resolve: jest.fn().mockResolvedValue(abilityFactory) };
+    // The guard looks up the audit engine to record denied requests; a no-op engine keeps that inert here.
+    const auditEngine = {
+      schedule: (work: () => Promise<void>) => work(),
+      denied: jest.fn().mockResolvedValue(undefined),
+    };
+    moduleRef = { resolve: jest.fn().mockResolvedValue(abilityFactory), get: jest.fn().mockReturnValue(auditEngine) };
     licenseTermsService = {
       getLicenseTermsInstance: jest.fn().mockResolvedValue(true),
       getLicenseTerms: jest.fn().mockResolvedValue(true),
     };
-    transactionLogger = { log: jest.fn() };
+    transactionLogger = { log: jest.fn(), error: jest.fn() };
     banListRepo = { findOne: jest.fn().mockResolvedValue(null) };
     orgRepo = { findOne: jest.fn().mockResolvedValue(null) };
     dataSource = {

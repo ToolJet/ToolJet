@@ -6,9 +6,11 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 export const FEATURES: FeaturesConfig = {
   [MODULES.APP_GIT]: {
     // Used for importing an application from git to any workspace
+    // Audited as RESOURCE_PULL_COMMIT when the import finishes (GitSyncAuditService). The import sets request
+    // audit fields as a side effect, so the per-request row is skipped.
     [FEATURE_KEY.GIT_CREATE_APP]: {
       license: LICENSE_FIELD.GIT_SYNC,
-      auditLogsKey: 'GIT_SYNC_APP_CREATE',
+      skipAuditLogs: true,
     },
     // Used to fetch the latest git commit data for syncing the application
     [FEATURE_KEY.GIT_GET_APP]: {
@@ -27,13 +29,16 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.GIT_SYNC,
     },
     // Push an application to git
+    // Audited as RESOURCE_PUSH_COMMIT when the push finishes (GitSyncAuditService). The app export sets
+    // request audit fields as a side effect, so the per-request row is skipped.
     [FEATURE_KEY.GIT_SYNC_APP]: {
       license: LICENSE_FIELD.GIT_SYNC,
-      auditLogsKey: 'GIT_SYNC_PUSH',
+      skipAuditLogs: true,
     },
-    // Update the application with latest git commit
+    // Update the application with latest git commit. Audited as RESOURCE_PULL_COMMIT.
     [FEATURE_KEY.GIT_UPDATE_APP]: {
       license: LICENSE_FIELD.GIT_SYNC,
+      skipAuditLogs: true,
     },
     // Rename app/version name
     [FEATURE_KEY.GIT_APP_VERSION_RENAME]: {

@@ -13,6 +13,7 @@ import { MODULES } from '../constants/modules';
 import { isSuperAdmin } from '@helpers/utils.helper';
 import { cloneDeep } from 'lodash';
 import { TransactionLogger } from '@modules/logging/service';
+import { IAuditEngine } from '@modules/audit-logs/events/interfaces';
 
 // User should be present or app should be public
 @Injectable()
@@ -39,6 +40,19 @@ export abstract class AbilityGuard implements CanActivate {
   }
   protected getResource(request?: any): ResourceDetails | ResourceDetails[] {
     return;
+  }
+
+  private async recordDenied(context: ExecutionContext): Promise<void> {
+    try {
+      const engine = this.moduleRef.get(IAuditEngine, { strict: false });
+      await engine.schedule(() =>
+        engine.denied(context).catch((error) => {
+          this.transactionLogger.error(`Audit denied event failed: ${(error as Error)?.message}`);
+        })
+      );
+    } catch (error) {
+      this.transactionLogger.error(`Audit denied event failed: ${(error as Error)?.message}`);
+    }
   }
 
   private async checkWorkspaceSuspended(orgId: string): Promise<void> {
@@ -129,6 +143,7 @@ export abstract class AbilityGuard implements CanActivate {
 
         if (featureInfo.isSuperAdminFeature && !isSuperAdmin(user)) {
           // If the user is not super admin and the feature is a super admin feature
+          await this.recordDenied(context);
           throw new ForbiddenException({
             message: 'You do not have permission to access this resource',
             organizationId: app?.organizationId,
@@ -176,6 +191,7 @@ export abstract class AbilityGuard implements CanActivate {
         );
 
         if (forbiddenFeature) {
+          await this.recordDenied(context);
           const errorMessage = this.getForbiddenMessage(forbiddenFeature, resourceId);
           throw new ForbiddenException({
             message: errorMessage || 'You do not have permission to access this resource',
