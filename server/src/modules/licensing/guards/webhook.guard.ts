@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException, HttpE
 import { EntityManager } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { LicenseTermsService } from '../interfaces/IService';
-import { LICENSE_FIELD, LICENSE_LIMIT } from '../constants';
+import { LICENSE_FIELD } from '../constants';
 import { AppsRepository } from '@modules/apps/repository';
 import { APP_TYPES } from '@modules/apps/constants';
 import { isUUID } from 'class-validator';
@@ -20,12 +20,6 @@ export class WebhookGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const organizationId =
-      typeof request.headers['tj-workspace-id'] === 'object'
-        ? request.headers['tj-workspace-id'][0]
-        : request.headers['tj-workspace-id'];
-    const workflowsLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKFLOWS, organizationId);
-
     const isUuid = isUUID(request?.params?.idOrName);
     const workflowApp = await this.appsRepository.findOne({
       where: {
@@ -81,69 +75,9 @@ export class WebhookGuard implements CanActivate {
       throw new HttpException(`Webhook endpoint disabled or doesn't exists`, 403);
     }
 
-    // Workspace Level -
-    if (workflowsLimit.workspace) {
-      const needsDailyCheck = workflowsLimit.workspace.daily_executions !== LICENSE_LIMIT.UNLIMITED;
-      const needsMonthlyCheck = workflowsLimit.workspace.monthly_executions !== LICENSE_LIMIT.UNLIMITED;
-
-      if (needsDailyCheck || needsMonthlyCheck) {
-        const workspaceCounts = (
-          await this.manager.query(
-            `SELECT
-              COUNT(*) FILTER (WHERE we.created_at >= date_trunc('day', current_date)) as daily_count,
-              COUNT(*) as monthly_count
-            FROM apps a
-            INNER JOIN app_versions av ON av.app_id = a.id
-            INNER JOIN workflow_executions we ON we.app_version_id = av.id
-            WHERE a.organization_id = $1
-            AND we.created_at >= date_trunc('month', current_date)
-            AND we.created_at < date_trunc('month', current_date) + interval '1 month'`,
-            [workflowApp.organizationId]
-          )
-        )[0];
-
-        if (needsDailyCheck && parseInt(workspaceCounts.daily_count, 10) >= workflowsLimit.workspace.daily_executions) {
-          throw new HttpException('Maximum daily limit for workflow execution has reached for this workspace', 451);
-        }
-
-        if (
-          needsMonthlyCheck &&
-          parseInt(workspaceCounts.monthly_count, 10) >= workflowsLimit.workspace.monthly_executions
-        ) {
-          throw new HttpException('Maximum monthly limit for workflow execution has reached for this workspace', 451);
-        }
-      }
-    }
-
-    // Instance Level -
-    if (workflowsLimit.instance) {
-      const needsDailyCheck = workflowsLimit.instance.daily_executions !== LICENSE_LIMIT.UNLIMITED;
-      const needsMonthlyCheck = workflowsLimit.instance.monthly_executions !== LICENSE_LIMIT.UNLIMITED;
-
-      if (needsDailyCheck || needsMonthlyCheck) {
-        const instanceCounts = (
-          await this.manager.query(
-            `SELECT
-              COUNT(*) FILTER (WHERE we.created_at >= date_trunc('day', current_date)) as daily_count,
-              COUNT(*) as monthly_count
-            FROM workflow_executions we
-            WHERE we.created_at >= date_trunc('month', current_date)
-            AND we.created_at < date_trunc('month', current_date) + interval '1 month'`
-          )
-        )[0];
-
-        if (needsDailyCheck && parseInt(instanceCounts.daily_count, 10) >= workflowsLimit.instance.daily_executions) {
-          throw new HttpException('Maximum daily limit for workflow execution has been reached', 451);
-        }
-
-        if (
-          needsMonthlyCheck &&
-          parseInt(instanceCounts.monthly_count, 10) >= workflowsLimit.instance.monthly_executions
-        ) {
-          throw new HttpException('Maximum monthly limit for workflow execution has been reached', 451);
-        }
-      }
-    }
+    // The daily/monthly execution quota is reserved where the run is created
+    // (ExecutionQuotaService, via WorkflowExecutionsService.create), so it applies to the trigger
+    // routes only and never blocks reading a run's status.
 
     return true;
   }

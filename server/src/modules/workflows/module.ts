@@ -49,6 +49,7 @@ import { AppHistoryModule } from '@modules/app-history/module';
 import { WorkflowApprovalRequestRepository } from './repositories/workflow-approval-request.repository';
 import { WorkflowExecutionRepository } from './repositories/workflow-execution.repository';
 import { WORKFLOW_APPROVAL_TIMEOUT_QUEUE } from './constants';
+import { ExecutionQuotaService } from './admission/execution-quota.service';
 
 const WORKFLOW_SCHEDULE_QUEUE = 'workflow-schedule-queue';
 const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
@@ -162,6 +163,8 @@ export class WorkflowsModule extends SubModule {
           inject: [ConfigService, RedisThrottlerStorage],
           useFactory: webhookThrottlerOptions,
         }),
+        // RedisThrottlerStorage for RunRateLimitGuard
+        RateLimitModule,
         // Register BullMQ queues for workflow scheduling and execution
         BullModule.registerQueue({
           name: WORKFLOW_SCHEDULE_QUEUE,
@@ -248,6 +251,7 @@ export class WorkflowsModule extends SubModule {
         WorkflowExecutionRepository,
         WorkflowApprovalsService,
         WorkflowApprovalTimeoutService,
+        ExecutionQuotaService,
         ...(isMainImport
           ? [
               WorkflowStreamService,
