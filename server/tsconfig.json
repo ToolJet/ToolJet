@@ -51,5 +51,6 @@
   "exclude": [
     "node_modules",
     "dist",
+    "ee/packages",
   ]
 }

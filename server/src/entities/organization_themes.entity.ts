@@ -7,9 +7,11 @@ import {
   BaseEntity,
   JoinColumn,
   ManyToOne,
+  AfterLoad,
 } from 'typeorm';
 import { Organization } from '@entities/organization.entity';
 import { Definition } from '@modules/organization-themes/dto';
+import { isShippedTheme } from '@modules/organization-themes/constants/shipped-themes';
 @Entity({ name: 'organization_themes' })
 export class OrganizationThemes extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -41,4 +43,12 @@ export class OrganizationThemes extends BaseEntity {
   organization: Organization;
 
   isDisabled: boolean;
+
+  // Not a column: whether this is the workspace's copy of a shipped theme, which every plan can apply.
+  isShipped: boolean;
+
+  @AfterLoad()
+  markShipped() {
+    this.isShipped = isShippedTheme(this);
+  }
 }

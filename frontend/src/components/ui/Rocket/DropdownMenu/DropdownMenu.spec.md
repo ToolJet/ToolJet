@@ -17,7 +17,7 @@
 |---|---|---|
 | content bg | default | `tw-bg-background-surface-layer-01` |
 | content border | default | `tw-border-solid tw-border-border-default` |
-| content shadow | default | `tw-shadow-[var(--elevation-300-box-shadow)]` |
+| content shadow | default | `tw-shadow-elevation-300` |
 | item text | default | `tw-text-text-default` |
 | item bg | hover/focus | `focus:tw-bg-interactive-hover` |
 | item text | destructive | `tw-text-text-danger` |
@@ -26,7 +26,8 @@
 | label text | default | `tw-text-text-default tw-font-semibold` |
 | separator | default | `tw-bg-border-default` |
 | shortcut text | default | `tw-text-text-placeholder` |
-| check/radio indicator | default | `tw-text-text-default` |
+| check indicator | default | `tw-text-text-default` |
+| radio indicator | brand check (as Select) | `tw-text-text-brand` |
 
 ## Sub-components
 
@@ -37,7 +38,7 @@
 | `DropdownMenuContent` | HOC wrapper | token bg/border/shadow |
 | `DropdownMenuItem` | HOC wrapper | token text + hover + destructive + disabled |
 | `DropdownMenuCheckboxItem` | HOC wrapper | token text + hover + disabled + indicator |
-| `DropdownMenuRadioItem` | HOC wrapper | token text + hover + disabled + indicator |
+| `DropdownMenuRadioItem` | Radix primitive | token text + hover + disabled + brand check |
 | `DropdownMenuLabel` | HOC wrapper | token text + font |
 | `DropdownMenuSeparator` | HOC wrapper | token bg |
 | `DropdownMenuShortcut` | HOC wrapper | token text |

@@ -88,7 +88,10 @@ const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVar
       className={cx('th tj-text-xsm font-weight-400', {
         'resizing-column': header.column.getIsResizing(),
         'has-actions': header.column.columnDef.header === 'Actions',
-        'selector-header': header.column.columnDef.type === 'selector',
+        'compact-actions': !!header.column.columnDef.meta?.compactActions,
+        // The selection column marks itself in meta (buildTableColumn); the look keeps its header at the cells' width.
+        'selector-header':
+          header.column.columnDef.type === 'selector' || header.column.columnDef.meta?.columnType === 'selector',
         // lets the header grow with wrapped text instead of overflowing the fixed 32px height
         'header-wrap': isHeaderWrapped,
         'dark-theme': darkMode,

@@ -4,6 +4,7 @@ import { shallow } from 'zustand/shallow';
 import { getDeleteBlockers } from '@/AppBuilder/_utils/entityUsage';
 import EntityDeleteDialog from '@/AppBuilder/Shared/EntityDelete/EntityDeleteDialog';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { withoutCodePageRoots } from '@/AppBuilder/_helpers/codeModeHooks';
 
 /**
  * `showWidgetDeleteConfirmation` and its targets are single, app-wide values, but this
@@ -47,7 +48,8 @@ export const DeleteWidgetConfirmation = ({ darkMode }) => {
       // Only ids this canvas actually owns. A stale or foreign id would otherwise become a
       // subject with no resolvable name and no discoverable dependents — i.e. a dialog
       // offering to delete something it knows nothing about.
-      .filter((id) => id && allComponents[id]);
+      .filter((id) => id && allComponents[id])
+      .filter((id) => withoutCodePageRoots([id], allComponents).length);
     const queries = state.dataQuery?.queries?.modules?.[moduleId] ?? [];
 
     return {

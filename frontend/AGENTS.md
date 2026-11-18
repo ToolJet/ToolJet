@@ -120,6 +120,7 @@ No change may break existing saved applications. Always ask: would an app saved 
 - Viewer (`/applications/*`) and editor are separate lazy bundles via `RootRouter.jsx`. Never import editor-only code into viewer paths
 - Avoid `JSON.parse(JSON.stringify(...))` and `_.cloneDeep` in render or hot paths — use Immer
 - Watch for O(N) loops inside already-O(N) resolution paths (eager resolution for ListView children)
+- Inline pack components mount only after code and CSS are ready. Keep mount-batching effects aligned with both signals so delayed or failed stylesheets do not leave initial SDK writes unbatched.
 
 ### App Builder store
 
