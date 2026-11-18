@@ -111,8 +111,11 @@ export const Steps = () => {
     if (i >= 0 && i !== live.current.index) moveTo(i);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shown]);
+  // The index an effect above may just have moved to (Current step (id) on load), not this render's: remembering the
+  // render's index kept the step it opened on, and the id was undone once the steps settled (PF-132).
   useEffect(() => {
-    currentId.current = shown[index] ? String(shown[index].id) : null;
+    const at = live.current.index;
+    currentId.current = shown[at] ? String(shown[at].id) : null;
     setCurrentStepId(currentId.current ?? '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, all]);
