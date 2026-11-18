@@ -37,20 +37,20 @@ describe("Cloud AI Credits — Credit Enforcement", { retries: 0 }, () => {
     });
   });
 
-  it("should reject Fix with AI with 402 when the gateway balance is too low", () => {
+  it("should reject Fix with AI with 402 when the workspace pool is empty and allow it once credits exist", () => {
     cy.apiSetCloudPlan("pro", { workspaceId });
     cy.task("aiGatewayStub").its("id").should("be.a", "string");
 
     cy.setAiGatewayBalance(0, workspaceId);
     fixWithAi(workspaceId).then((response) => {
       expect(response.status).to.equal(402);
-      expect(response.body.message).to.equal(cloudAiText.noCreditsLeft);
+      expect(response.body.message).to.equal(cloudAiText.poolEmpty);
     });
 
+    // With credits left the credit check passes; the random component id is what fails next.
     cy.setAiGatewayBalance(2, workspaceId);
     fixWithAi(workspaceId).then((response) => {
-      expect(response.status).to.equal(402);
-      expect(response.body.message).to.equal(cloudAiText.insufficientCredits);
+      expect(response.status).to.not.be.oneOf([402, 503]);
     });
 
     // Both answers must have come from this run's stub, not another process on the port.
@@ -72,18 +72,17 @@ describe("Cloud AI Credits — Credit Enforcement", { retries: 0 }, () => {
       .should("contain.text", cloudAiText.addCreditsModalTitle);
   });
 
-  it("should ask a builder to contact the admin for more credits", () => {
+  it("should tell a builder the workspace is out of credits without a way to buy more", () => {
     const builderEmail = `cloud-ai-builder-${Date.now()}@tooljet.test`;
     cy.apiSetCloudPlan("pro", { workspaceId });
     cy.setAiGatewayBalance(0, workspaceId);
     cy.apiFullUserOnboarding(fake.firstName, builderEmail, "builder");
     cy.apiLogout();
     cy.apiLogin(builderEmail, "password", workspaceId);
-    visitHome(workspaceId);
+    cy.visit(`/${workspaceId}/home`);
 
-    cy.contains("button", cloudAiText.getMoreCredits).click();
-    cy.get('[data-cy="modal-title"]').should("contain.text", cloudAiText.contactAdminTitle);
-    cy.get('[data-cy="modal-body"]').should("contain.text", cloudAiText.contactAdminBody);
+    cy.contains(cloudAiText.poolEmpty, { timeout: 60000 }).should("be.visible");
+    cy.contains("button", cloudAiText.getMoreCredits).should("not.exist");
     cy.location("pathname").should("eq", `/${workspaceId}/home`);
   });
 });

@@ -1,5 +1,5 @@
 export const cloudSettingsText = {
-  adminNavItems: ["White labelling", "Custom domain", "LLM key", "Subscription"],
+  adminNavItems: ["White labelling", "Custom domain", "LLM key", "AI credits usage", "Subscription"],
   whiteLabellingTitle: "White labelling",
   paidFeature: "Paid feature",
   loginBannerLabel: "Login page image",
