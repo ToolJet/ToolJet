@@ -839,7 +839,7 @@ export const Result = () => {
     defaultHeight: 30,
   });
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} className="tj-ant-fit-scroll tj-ant-chart-box">
       <SpinOver loading={loading} as="block">
         <AntResult
           status={oneOf(status, RESULT_STATUSES, 'info')}
