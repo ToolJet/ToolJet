@@ -154,4 +154,20 @@ describe('Sort popover', () => {
 
     expect(setFilters).toHaveBeenCalledWith({ 0: { column: 'id', order: 'desc' } });
   });
+
+  it('labels the first row "Sort by" and the following ones "Then by"', async () => {
+    setupSort();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sort' }));
+    expect(await screen.findByText('Sort by')).toBeInTheDocument();
+    expect(screen.queryByText('Then by')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add sort' }));
+    expect(screen.getAllByText('Sort by')).toHaveLength(1);
+    expect(screen.getAllByText('Then by')).toHaveLength(1);
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'Remove sort' })[0]);
+    expect(screen.getByText('Sort by')).toBeInTheDocument();
+    expect(screen.queryByText('Then by')).not.toBeInTheDocument();
+  });
 });

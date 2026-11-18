@@ -87,9 +87,10 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
         applyDisabled={!canApply}
         onApply={apply}
       >
-        {draftRows.map(([key, condition]) => (
+        {draftRows.map(([key, condition], index) => (
           <SortConditionRow
             key={key}
+            label={index === 0 ? 'Sort by' : 'Then by'}
             condition={condition}
             columns={columns}
             onChange={(patch) => updateRow(key, patch)}

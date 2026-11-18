@@ -11,6 +11,8 @@ export interface SortCondition {
 }
 
 export interface SortConditionRowProps {
+  /** Above the row: "Sort by" for the first, "Then by" for the rest. */
+  label: string;
   condition: SortCondition;
   columns: FilterColumn[];
   onChange: (patch: SortCondition) => void;
@@ -24,7 +26,14 @@ const ORDER_OPTIONS = [
 ];
 
 // One sort condition: column and order in a segmented row. Order waits for a column and starts as ascending.
-export function SortConditionRow({ condition, columns, onChange, onRemove, 'data-cy': dataCy }: SortConditionRowProps) {
+export function SortConditionRow({
+  label,
+  condition,
+  columns,
+  onChange,
+  onRemove,
+  'data-cy': dataCy,
+}: SortConditionRowProps) {
   const { column = '', order = '' } = condition;
   const columnOptions = columns.map(({ accessor, dataType }) => ({
     value: accessor,
@@ -33,29 +42,32 @@ export function SortConditionRow({ condition, columns, onChange, onRemove, 'data
   }));
 
   return (
-    <ConditionRow data-cy={dataCy}>
-      <ConditionCell>
-        <ConditionSelect
-          aria-label="Column"
-          placeholder="Column"
-          value={column}
-          options={columnOptions}
-          onValueChange={(next) => onChange({ column: next, order: order || 'asc' })}
-          data-cy="select-column-field"
-        />
-      </ConditionCell>
-      <ConditionCell>
-        <ConditionSelect
-          aria-label="Order"
-          placeholder="Order"
-          value={order}
-          options={ORDER_OPTIONS}
-          disabled={!column}
-          onValueChange={(next) => onChange({ order: next })}
-          data-cy="select-order-field"
-        />
-      </ConditionCell>
-      <ConditionRemove label="Remove sort" onClick={onRemove} />
-    </ConditionRow>
+    <div className="tw-flex tw-flex-col tw-gap-1">
+      <p className="tw-m-0 tw-font-body-small tw-text-text-medium">{label}</p>
+      <ConditionRow data-cy={dataCy}>
+        <ConditionCell>
+          <ConditionSelect
+            aria-label="Column"
+            placeholder="Column"
+            value={column}
+            options={columnOptions}
+            onValueChange={(next) => onChange({ column: next, order: order || 'asc' })}
+            data-cy="select-column-field"
+          />
+        </ConditionCell>
+        <ConditionCell>
+          <ConditionSelect
+            aria-label="Order"
+            placeholder="Order"
+            value={order}
+            options={ORDER_OPTIONS}
+            disabled={!column}
+            onValueChange={(next) => onChange({ order: next })}
+            data-cy="select-order-field"
+          />
+        </ConditionCell>
+        <ConditionRemove label="Remove sort" onClick={onRemove} />
+      </ConditionRow>
+    </div>
   );
 }
