@@ -201,7 +201,7 @@ export const Segmented = (props: Record<string, unknown>) => {
   const [value, setValue] = ToolJet.useStateString({
     name: 'value',
     label: 'Value',
-    description: 'Empty selects the first option.',
+    description: 'Empty selects nothing.',
     initialValue: '',
   });
   const [block] = ToolJet.useStateBoolean({
@@ -235,7 +235,7 @@ export const Segmented = (props: Record<string, unknown>) => {
     role: 'togglegroup',
     fit: true,
     loading: 'own',
-    usage: "Ant's Segmented: options [{label, value}], value (empty: the first), block; onChange.",
+    usage: "Ant's Segmented: options [{label, value}], value (empty: nothing selected), block; onChange.",
     roleActions: { setValue: 'setFieldValue' },
     defaultWidth: 14,
     defaultHeight: 6,
@@ -247,7 +247,13 @@ export const Segmented = (props: Record<string, unknown>) => {
   const key = value === '' ? '' : keyForValue(options, value);
   // An empty value selects nothing (null; undefined would make Ant select the first option), so a required
   // Segmented does not look filled.
-  const current = options.find((o) => o.value === key)?.key ?? (null as unknown as string);
+  const matched = options.find((o) => o.value === key);
+  const current = matched?.key ?? (null as unknown as string);
+  // A bound value takes its option's own value, as a click does: the number 2 with only a text '2' option kept 2 (PF-274).
+  useEffect(() => {
+    if (matched && matched.data !== value) setValue(matched.data as never);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(value), JSON.stringify(options)]);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
@@ -261,7 +267,8 @@ export const Segmented = (props: Record<string, unknown>) => {
     <AntProvider tokens={tokens}>
       <FormField {...field} check={check}>
         <div style={{ width: '100%', textAlign: block ? undefined : (alignment as 'left') }}>
-          <SpinOver loading={loading} as="inline">
+          {/* An inline wrapper shrinks to the buttons, so Block could not stretch them (PKB-77). */}
+          <SpinOver loading={loading} as={block ? 'block' : 'inline'}>
             {options.length ? (
               <AntSegmented
                 aria-label={field.label || undefined}
@@ -274,7 +281,12 @@ export const Segmented = (props: Record<string, unknown>) => {
                 // One Tab stop, the radio that takes the arrow keys: rc-segmented also makes its frame a stop, where
                 // the arrow keys do nothing.
                 tabIndex={-1}
-                onChange={(v) => change(options.find((o) => o.key === v)?.data ?? '')}
+                onChange={(v) => {
+                  const o = options.find((x) => x.key === v);
+                  // rc-segmented's arrow keys step onto a disabled option; the browser then moves past it (PKB-78).
+                  if (o?.disabled) return;
+                  change(o?.data ?? '');
+                }}
               />
             ) : (
               <span />
