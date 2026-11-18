@@ -630,12 +630,7 @@ export const Progress = () => {
     min: 0,
     max: 50,
   });
-  const [strokeColor] = ToolJet.useStateString({
-    name: 'strokeColor',
-    label: 'Stroke color',
-    inspector: 'color',
-    initialValue: '',
-  });
+  // No Stroke color: the bar, ring and steps take the Primary color style (Ant's default progress colour).
   const [title] = ToolJet.useStateString({
     name: 'title',
     label: 'Title',
@@ -666,12 +661,17 @@ export const Progress = () => {
       size={isLine ? undefined : ringPx}
       status={status === 'normal' ? undefined : (status as 'active')}
       showInfo={showInfo}
-      steps={isLine && Number(steps) > 0 ? Number(steps) : undefined}
-      strokeColor={strokeColor || undefined}
+      // Within the declared 1 to 50: max only limits the inspector field, and a bound 1e9 reached Ant, which threw
+      // building that many segments (QA PF-213).
+      steps={isLine && Number(steps) >= 1 ? Math.min(50, Math.trunc(Number(steps))) : undefined}
     />
   );
   return (
-    <AntProvider tokens={tokens} fill className={isLine ? 'tj-ant-progress-line' : 'tj-ant-center'}>
+    <AntProvider
+      tokens={tokens}
+      fill
+      className={`${isLine ? 'tj-ant-progress-line' : 'tj-ant-center'} tj-ant-chart-box`}
+    >
       <SpinOver loading={loading} as="fill">
         {title && isLine ? <div className="tj-ant-progress-title">{title}</div> : null}
         {isLine ? (

@@ -277,6 +277,17 @@
   flex-direction: column;
   justify-content: center;
 }
+/* The title and bar sit in the Spin wrapper, which fills the box: centred there, not on the root (the wrapper took the
+   root's centring, and the bar sat at the top). A title taller than the box scrolls inside it instead of running past
+   the bottom; safe centring starts it at the top then, where plain centring put half of it above, out of reach (QA
+   PF-214). */
+.tj-ant-progress-line > .tj-ant-spin-fill > .ant-spin-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  justify-content: safe center;
+  overflow: auto;
+}
 .tj-ant-progress-line .ant-progress {
   margin: 0;
 }
@@ -1238,8 +1249,8 @@
 .tj-ant-chart-frame > div {
   height: 100%;
 }
-/* RadialChart's, Sparkline's and Steps' box takes Background, Border color and Border radius as the charts'
-   (.tj-ant-chart) does: they have no frame of their own, so the styles changed nothing on them (QA PKB-41). */
+/* RadialChart's, Sparkline's, Steps', Result's and Progress' box takes Background, Border color and Border radius as
+   the charts' (.tj-ant-chart) does: they have no frame of their own, so the styles changed nothing on them (QA PKB-41). */
 .tj-ant-chart-box {
   box-sizing: border-box;
   background-color: var(--tj-ant-color-bg-container, transparent);
