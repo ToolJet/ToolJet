@@ -2,6 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useVersionedHref from './useVersionedHref';
+import ICONS from './icons';
 import './DocBlocks.css';
 
 /**
@@ -21,9 +22,20 @@ export default function Card({ href, className, children }) {
   );
 }
 
-/** Icon slot: an emoji string or a React node, hidden from assistive tech. */
+/**
+ * Icon slot, hidden from assistive tech. A name from `icons.js` ("database")
+ * renders that line icon in a tinted tile; any other string or node is shown as is.
+ */
 export function CardIcon({ children }) {
   if (!children) return null;
+  const Icon = typeof children === 'string' ? ICONS[children] : undefined;
+  if (Icon) {
+    return (
+      <span className="docblk-card__icon docblk-card__icon--tile" aria-hidden="true">
+        <Icon size={20} strokeWidth={1.75} />
+      </span>
+    );
+  }
   return (
     <span className="docblk-card__icon" aria-hidden="true">
       {children}

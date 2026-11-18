@@ -328,7 +328,7 @@ The license key can be configured via an environment variable to avoid re-enteri
 
 #### Version Reviews
 
-Require an approved [version review](../../development-lifecycle/release/compare-versions.md#request-a-review) before a version is released or promoted. Reviews are available on the Pro plan and above.
+Require an approved [version review](../../development-lifecycle/release/compare-versions.md#request-a-review) before a version is released or promoted.
 
 | **Variable** | **Description** | **Default** |
 |:--- |:--- |:--- |
@@ -337,7 +337,7 @@ Require an approved [version review](../../development-lifecycle/release/compare
 
 ### React Builder
 
-These variables configure apps built in [React Builder](../../build-with-ai/react-builder/overview.md).
+These variables configure apps built in [React Builder](../../app-builder/react-builder/overview.md).
 
 #### React Builder App Isolation
 
@@ -347,7 +347,7 @@ A React Builder app's code runs in a frame that the browser treats as a separate
 |:--- |:--- |:--- |
 | `CODE_MODE_ISOLATION` | `on`: released apps, Preview, the editor canvas and version comparisons all run isolated. `viewer`: only released apps and Preview run isolated; the editor and comparisons, where admins and builders open other people's code, run on the ToolJet origin. `off`: no isolation. `viewer` and `off` are for self-hosted instances where every app builder is trusted, and log a warning at startup. Any other value means `on`, with a warning. ToolJet Cloud always runs `on`. The in-browser build always runs in its own sandboxed frame. | `on` |
 | `CODE_MODE_SANDBOX_URL` | An optional second domain for the app frame. It must use `https`, must not share a site with `TOOLJET_HOST`, and must route to this server. `https://sandbox.example.com` serves the frame from that domain, and every app still runs on the browser's `null` origin. `https://*.example-usercontent.com` gives each app an origin of its own, `a<app id without dashes>.example-usercontent.com`, which needs wildcard DNS and a wildcard certificate. When unset, the frame comes from this server on the `null` origin. An invalid value is ignored with a warning in the server log. Has no effect while isolation is `off`. | Unset |
-| `CODE_MODE_STRICT_BINDINGS` | Strict mode for isolated React Builder apps. Set `false` to turn it off, only for a self-hosted pilot with trusted authors. ToolJet Cloud ignores it. Visual apps are never affected. See [Isolation](../../build-with-ai/react-builder/runtime-api.md#isolation) for what strict mode blocks. | On whenever the app is isolated |
+| `CODE_MODE_STRICT_BINDINGS` | Strict mode for isolated React Builder apps. Set `false` to turn it off, only for a self-hosted pilot with trusted authors. ToolJet Cloud ignores it. Visual apps are never affected. See [Isolation](../../app-builder/react-builder/runtime-api.md#isolation) for what strict mode blocks. | On whenever the app is isolated |
 | `CODE_MODE_CDN_URL` | The package CDN the in-browser build fetches packages from. Point it at an address that answers directly: the build follows no redirects. | `https://esm.sh` |
 
 The second domain serves only the frame document. Every other path on it returns 404, and it sets and reads no cookies. With a per-app domain and `ENABLE_CUSTOM_DOMAINS=true`, an app's frame accepts code only from `TOOLJET_HOST` and the custom domain of the workspace that owns the app.
@@ -358,7 +358,7 @@ Isolation protects the viewer's session, not the data the app is given. App code
 
 #### React Builder Security Checks
 
-ToolJet checks every React Builder app version before release. See [App Security](../../build-with-ai/react-builder/security.md) and, for the rules an admin sets, [Security Policy](../../build-with-ai/react-builder/security-policy.md).
+ToolJet checks every React Builder app version before release. See [App Security](../../app-builder/react-builder/security.md) and, for the rules an admin sets, [Security Policy](../../app-builder/react-builder/security-policy.md).
 
 | **Variable** | **Description** | **Default** |
 |:--- |:--- |:--- |
@@ -410,7 +410,7 @@ To connect ToolJet with Google services like Google Sheets, create OAuth credent
 
 #### Google Maps API
 
-To use the Maps widget in ToolJet, create a Google Maps API key and set:
+To use the Map component in ToolJet, create a Google Maps API key and set:
 
 - `GOOGLE_MAPS_API_KEY`: Google Maps API key
 

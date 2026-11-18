@@ -96,4 +96,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Error color | Theme: Error |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

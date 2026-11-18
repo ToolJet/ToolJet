@@ -9,35 +9,34 @@ import TabItem from '@theme/TabItem';
 
 <DocHero
   title="Compare and Review Versions"
-  description="See exactly what changed between two versions of an app, with the screens side by side. Then ask a teammate to approve the version before it reaches your users."
-  chips={['Visual and React Builder apps', 'Side-by-side screens', 'Code and query changes', 'Approval before release']}
+  description="Compare versions shows the differences between two versions of an application, including its screens side by side. A version review records a reviewer's approval of a version before it is released."
 />
 
 <PlanBadge type="pro" />
 
 <img className="screenshot-full img-full" src="/img/development-lifecycle/release/compare-versions/compare-side-by-side.png" alt="Compare versions showing one screen in two versions side by side: the bar chart has become a stacked area chart, and a list of shipments that need attention has replaced the table" />
 
-## What You Can Do
+## Overview
 
-<SectionSubtitle text="It works the same way for visual apps and React Builder apps." />
+Compare versions and version reviews work the same way for visual applications and React Builder applications.
 
 <CardGrid columns={3}>
   <FeatureCard
-    icon="🔍"
-    title="Compare two versions"
-    description="Pick any two versions and see every change: screens before and after, queries, settings and, in React Builder apps, code and access."
+    icon="git-compare"
+    title="Compare Two Versions"
+    description="Shows the changes between two versions: screens before and after, queries and settings, and in React Builder applications, code and access."
     href="#compare-two-versions"
   />
   <FeatureCard
-    icon="📨"
-    title="Request a review"
-    description="Ask teammates to check a saved version before it goes live. They see the same comparison you do."
+    icon="send"
+    title="Request a Review"
+    description="Sends a version to one or more reviewers. Reviewers see the same comparison as the author."
     href="#request-a-review"
   />
   <FeatureCard
-    icon="✅"
-    title="Approve or request changes"
-    description="Reviewers comment beside the changes, then approve the version or send it back. An open review holds the release."
+    icon="check-circle"
+    title="Approve or Request Changes"
+    description="Reviewers comment on the changes, then approve the version or request changes. An open review holds the release."
     href="#approve-or-request-changes"
   />
 </CardGrid>
@@ -52,7 +51,7 @@ The steps depend on how the app is built.
 1. In the App Builder header, click **Compare versions**.
 2. Pick the two versions under **From** and **To**. The swap button between them switches sides.
 3. Go through the change list on the left. It groups what changed by page, then queries and settings.
-4. Choose how the pages are shown. Pick a **Screen size**, and use **Layout** to switch from side by side to a slider you drag across the page. Under **Render**, choose **Live data** to run each version's queries, or **Layout only, runs no queries**.
+4. Choose how the pages are shown. Pick a **Screen size**, and use **Layout** to switch from side by side to a slider dragged across the page. Under **Render**, choose **Live data** to run each version's queries, or **Layout only, runs no queries**.
 
 After an AI edit, **See what changed** under the chat turn opens this same view, with the app as it was before the edit on the left.
 
@@ -62,12 +61,12 @@ After an AI edit, **See what changed** under the chat turn opens this same view,
 1. In the editor's header, click **Compare versions**, then pick the versions under **From** and **To**.
 2. Read the summary on the left: the changed files, queries and settings, and any change to who can open a screen or run a query. Then click **See screens and code**.
 3. Switch between the two views:
-   - **Screens** shows each screen before and after, side by side or with a slider, at the width you choose. A dot marks the screens and widths that look different.
+   - **Screens** shows each screen before and after, side by side or with a slider, at the selected width. A dot marks the screens and widths that look different.
    - **Code** lists the changed files and shows what changed in each one.
 
 <img className="screenshot-full img-full" src="/img/development-lifecycle/release/compare-versions/code-diff.png" alt="The Code view of a comparison: the changed files with their added and removed lines on the left, and the changes to Overview.tsx between v2 and v3" />
 
-The same view opens from **See what changed** under an AI chat turn, on an App history entry, and in the release and promote dialogs. Queries that write data are blocked while you compare, so comparing never changes your data.
+The same view opens from **See what changed** under an AI chat turn, on an App history entry, and in the release and promote dialogs. Queries that write data are blocked during a comparison, so comparing never changes data.
 
 </TabItem>
 </Tabs>
@@ -92,7 +91,7 @@ Reviewers open the review from the notification or from **Compare versions**. Th
 - **Approve** the version. An approval covers exactly what the comparison showed. If the version changes afterwards, it needs a fresh approval.
 - **Request changes** to block the release. The author addresses them, then clicks **Ask for re-review**.
 
-You can't approve a review you opened yourself.
+The author of a review can't approve it.
 
 <img className="screenshot-full img-m" src="/img/development-lifecycle/release/compare-versions/review-panel.png" alt="The review panel beside a comparison: the request to release v3 in place of v2, the reviewer's approval with the next step, and the comments" />
 
@@ -100,10 +99,10 @@ You can't approve a review you opened yourself.
 
 A review also decides whether the version can go out.
 
-- A version with an open review that isn't approved can't be released, promoted or moved to another environment. This holds whether or not your instance requires reviews.
+- A version with an open review that isn't approved can't be released, promoted or moved to another environment. This holds whether or not the instance requires reviews.
 - The release dialog shows where the review stands, with a button to open the review or request one.
 - A version released from an approved review can be released again later, for example to roll back, as long as its content still matches what was approved.
-- In a React Builder app, the [security check](../../build-with-ai/react-builder/security.md) runs first, then the review check.
+- In a React Builder app, the [security check](../../app-builder/react-builder/security.md) runs first, then the review check.
 
 <details id="tj-dropdown">
 <summary>**Required Reviews, Permissions and Releasing Without Approval**</summary>
@@ -140,9 +139,9 @@ The author and the reviewers are emailed.
   <NextStepCard title="Version Control" description="Create, save and manage an app's versions." href="/docs/development-lifecycle/release/version-control" />
   <NextStepCard title="Release and Rollback" description="Release a version, or go back to an earlier one." href="/docs/development-lifecycle/release/release-rollback" />
   <NextStepCard title="App History" description="Every change to an app, and how to restore one." href="/docs/app-builder/app-history" />
-  <NextStepCard title="App Security" description="The checks a React Builder version passes before release." href="/docs/build-with-ai/react-builder/security" />
+  <NextStepCard title="App Security" description="The checks a React Builder version passes before release." href="/docs/app-builder/react-builder/security" />
 </CardGrid>
 
-:::info Availability
-Compare versions and version reviews are available on the Pro plan and above and during a trial, and the **Compare versions** button is labelled Beta in the product. They cover apps, not workflows or modules.
+:::info
+Compare versions and version reviews cover apps, not workflows or modules.
 :::

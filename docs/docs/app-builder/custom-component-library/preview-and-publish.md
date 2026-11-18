@@ -18,7 +18,7 @@ sidebar_label: Preview and Publish
 Custom Component Libraries are currently in beta and not recommended for production use.
 :::
 
-While you build, use dev mode to see your components in the App Builder as you save. When they're ready, publish a version that app builders can pin in their apps.
+During development, dev mode shows the components in the App Builder on each save. A published version can then be pinned by app builders in their applications.
 
 ## Preview Changes with Dev Mode
 
@@ -32,17 +32,17 @@ The CLI watches `src/`, rebuilds on every save, and uploads the result to your *
 
 To see your dev build in the App Builder:
 
-1. Click the library picker at the top of the components panel and choose your library under Custom libraries.
+1. Click the library picker at the top of the components panel and choose the library under Custom libraries.
 2. Open the library's **Version** picker.
-3. Select the **Dev preview** entry that shows your email.
+3. Select the **Dev preview** entry that shows the developer's email.
 
 <!-- TODO screenshot: /img/app-builder/custom-component-library/dev-preview-version.png | img-m | alt: The Version picker of a custom library in the components panel, open on a Dev preview entry next to the published versions | shows: a visual app in the App Builder with a custom library picked in the library picker and its Version picker open: published versions plus a Dev preview entry with a fictional user's email; no real name or email -->
 
-The library's components on the canvas now run your dev build and carry a `dev: <your email>` badge.
+The library's components on the canvas now run the dev build and carry a `dev: <email>` badge.
 
 Keep these points in mind:
 
-- **A dev build can't be saved into a version.** While a library is set to a dev preview, the app's draft uses that build, and **Save version** stops with "Cannot save: 1 custom component library is pinned to a developer preview build. Select a published revision before saving this version." Choose a published version in the **Version** picker before you save.
+- **A dev build can't be saved into a version.** While a library is set to a dev preview, the app's draft uses that build, and **Save version** stops with "Cannot save: 1 custom component library is pinned to a developer preview build. Select a published revision before saving this version." Choose a published version in the **Version** picker before saving.
 - **Each developer gets their own dev build.** Two developers working on the same library don't overwrite each other's previews.
 - **Empty builds aren't uploaded.** If the build finds no components in `src/index.ts`, the CLI skips the upload and tells you.
 
@@ -63,7 +63,7 @@ Keep these points in mind:
 tooljet library build
 ```
 
-This builds the library to `dist/` without uploading anything. It doesn't need you to be signed in, and it exits with code `1` on TypeScript errors, so it works well as a CI check.
+This builds the library to `dist/` without uploading anything. It doesn't need a signed-in CLI, and it exits with code `1` on TypeScript errors, so it works well as a CI check.
 
 For a faster check, type-check the code and its stylesheets without building:
 
@@ -99,4 +99,4 @@ tooljet library publish --version 1.2.0 --url https://app.tooljet.ai --token <yo
 
 ## Next Steps
 
-Your library now appears in the App Builder's library picker, under Custom libraries. See [Use Custom Components in the App Builder](./use-in-app-builder.md).
+The library now appears in the App Builder's library picker, under Custom libraries. See [Use Custom Components in the App Builder](./use-in-app-builder.md).

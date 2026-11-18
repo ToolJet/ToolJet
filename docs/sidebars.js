@@ -224,6 +224,11 @@ const sidebars = {
             "build-with-ai/mcp/security"
           ]
         },
+        {
+          "type": "ref",
+          "id": "app-builder/react-builder/overview",
+          "label": "React Builder"
+        },
         "build-with-ai/privacy"
       ]
     },
@@ -237,36 +242,13 @@ const sidebars = {
         "app-builder/overview",
         {
           "type": "category",
-          "label": "React Builder",
-          "className": "sidebar-badge-new",
+          "label": "Visual Builder",
           "link": {
             "type": "doc",
-            "id": "build-with-ai/react-builder/overview"
+            "id": "app-builder/visual-builder/overview"
           },
           "items": [
-            "build-with-ai/react-builder/overview",
-            "build-with-ai/react-builder/create-app",
-            "build-with-ai/react-builder/editor",
-            "build-with-ai/react-builder/local-development",
-            "build-with-ai/react-builder/access-control",
-            "build-with-ai/react-builder/versions-and-history",
-            "build-with-ai/react-builder/security",
-            {
-              "type": "category",
-              "label": "Reference",
-              "items": [
-                "build-with-ai/react-builder/project-structure",
-                "build-with-ai/react-builder/runtime-api",
-                "build-with-ai/react-builder/cli-reference",
-                "build-with-ai/react-builder/security-policy"
-              ]
-            }
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Visual Builder",
-          "items": [
+            "app-builder/visual-builder/overview",
             {
               "type": "category",
               "label": "UI and Themes",
@@ -283,6 +265,440 @@ const sidebars = {
                 },
                 "app-builder/custom-theme",
                 "app-builder/customstyles"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Components",
+              "link": {
+                "type": "doc",
+                "id": "app-builder/building-ui/component-library"
+              },
+              "items": [
+                {
+                  "type": "category",
+                  "label": "ToolJet UI 1.0",
+                  "items": [
+                    "widgets/audio-recorder",
+                    "widgets/accordion",
+                    "widgets/bounded-box",
+                    "widgets/button",
+                    "widgets/button-group-v2",
+                    "widgets/calendar",
+                    "widgets/camera",
+                    "widgets/cascader",
+                    {
+                      "type": "category",
+                      "label": "Chart",
+                      "items": [
+                        "widgets/chart/chart-properties",
+                        "widgets/chart/chart-examples",
+                        "widgets/chart/transforming-data-for-charts"
+                      ]
+                    },
+                    {
+                      "type": "category",
+                      "label": "Chat",
+                      "items": [
+                        "widgets/chat/overview",
+                        "widgets/chat/properties",
+                        "widgets/chat/csa",
+                        "widgets/chat/markdown"
+                      ]
+                    },
+                    "widgets/checkbox",
+                    "widgets/circular-progress-bar",
+                    "widgets/code-editor",
+                    "widgets/color-picker",
+                    "widgets/container",
+                    "widgets/currency-input",
+                    {
+                      "type": "category",
+                      "label": "Custom Component",
+                      "link": {
+                        "type": "doc",
+                        "id": "widgets/custom-component/custom-component"
+                      },
+                      "items": [
+                        "widgets/custom-component/custom-component",
+                        "widgets/custom-component/pass-query-params-in-custom-components"
+                      ]
+                    },
+                    "widgets/date-range-picker",
+                    "widgets/date-picker-v2",
+                    "widgets/datetime-picker-v2",
+                    "widgets/divider",
+                    "widgets/dropdown",
+                    "widgets/email-input",
+                    "widgets/file-picker",
+                    "widgets/file-input",
+                    "widgets/file-button",
+                    "widgets/flex-container",
+                    {
+                      "type": "category",
+                      "label": "Form",
+                      "items": [
+                        "widgets/form/generate-form",
+                        "widgets/form/properties",
+                        "widgets/form/csa",
+                        "widgets/form/schema",
+                        "widgets/form/use-form-component"
+                      ]
+                    },
+                    "widgets/html",
+                    "widgets/icon",
+                    "widgets/iframe",
+                    {
+                      "type": "category",
+                      "label": "Image",
+                      "link": {
+                        "type": "doc",
+                        "id": "widgets/image/image"
+                      },
+                      "items": [
+                        "widgets/image/image",
+                        "widgets/image/loading-image-pdf-from-db"
+                      ]
+                    },
+                    "widgets/json-editor",
+                    "widgets/json-explorer",
+                    "widgets/kanban",
+                    "widgets/key-value-pair",
+                    "widgets/link",
+                    {
+                      "type": "category",
+                      "label": "List View",
+                      "link": {
+                        "type": "doc",
+                        "id": "widgets/listview/listview"
+                      },
+                      "items": [
+                        "widgets/listview/listview",
+                        "widgets/listview/display-listview-record-on-new-page"
+                      ]
+                    },
+                    "widgets/map",
+                    "widgets/modal-v2",
+                    "widgets/multiselect",
+                    "widgets/navigation",
+                    "widgets/number-input",
+                    "widgets/password-input",
+                    "widgets/pagination",
+                    {
+                      "type": "category",
+                      "label": "PDF",
+                      "link": {
+                        "type": "doc",
+                        "id": "widgets/pdf/pdf"
+                      },
+                      "items": [
+                        "widgets/pdf/pdf",
+                        "widgets/pdf/loading-image-pdf-from-db"
+                      ]
+                    },
+                    "widgets/phone-input",
+                    "widgets/popover-menu",
+                    "widgets/progress-bar",
+                    "widgets/qr-scanner",
+                    "widgets/radio-button-v2",
+                    "widgets/range-slider",
+                    "widgets/reorderable-list",
+                    "widgets/spinner",
+                    "widgets/star-rating",
+                    "widgets/statistics",
+                    "widgets/steps",
+                    "widgets/svg-image",
+                    {
+                      "type": "category",
+                      "label": "Table",
+                      "items": [
+                        "widgets/table/table-properties",
+                        "widgets/table/table-columns",
+                        "widgets/table/table-csa-and-variables",
+                        {
+                          "type": "category",
+                          "label": "Serverside Operations",
+                          "items": [
+                            "widgets/table/serverside-operations/overview",
+                            "widgets/table/serverside-operations/search",
+                            "widgets/table/serverside-operations/sort",
+                            "widgets/table/serverside-operations/filter",
+                            "widgets/table/serverside-operations/pagination"
+                          ]
+                        },
+                        "widgets/table/dynamic-column",
+                        "widgets/table/conditional-formatting",
+                        "widgets/table/bulk-row-operations"
+                      ]
+                    },
+                    {
+                      "type": "category",
+                      "label": "Tabs",
+                      "link": {
+                        "type": "doc",
+                        "id": "widgets/tabs/tabs"
+                      },
+                      "items": [
+                        "widgets/tabs/tabs",
+                        "widgets/tabs/print-multi-tabs-report"
+                      ]
+                    },
+                    "widgets/tags",
+                    "widgets/tags-input",
+                    "widgets/text-input",
+                    "widgets/text",
+                    "widgets/text-area",
+                    "widgets/rich-text-editor",
+                    "widgets/timeline",
+                    "widgets/timer",
+                    "widgets/time-picker",
+                    "widgets/toggle-switch-v2",
+                    "widgets/tree-select",
+                    "widgets/vertical-divider",
+                    {
+                      "type": "category",
+                      "label": "Legacy Components",
+                      "items": [
+                        {
+                          "type": "link",
+                          "label": "Modal",
+                          "href": "https://docs.tooljet.com/docs/3.5.0-LTS/widgets/modal"
+                        },
+                        "widgets/datepicker",
+                        {
+                          "type": "link",
+                          "label": "Radio Button",
+                          "href": "https://docs.tooljet.com/docs/3.5.0-LTS/widgets/radio-button"
+                        },
+                        {
+                          "type": "link",
+                          "label": "Dropdown",
+                          "href": "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/dropdown"
+                        },
+                        {
+                          "type": "link",
+                          "label": "Multiselect",
+                          "href": "https://docs.tooljet.com/docs/2.50.0-lts/widgets/multiselect/"
+                        },
+                        {
+                          "type": "link",
+                          "label": "Range Slider",
+                          "href": "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/range-slider"
+                        },
+                        "widgets/button-group",
+                        "widgets/toggle-switch-legacy"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "Rocket 2.0",
+                  "link": {
+                    "type": "generated-index",
+                    "title": "Rocket 2.0 Components",
+                    "description": "Reference pages for every component in the Rocket 2.0 library.",
+                    "slug": "/component-reference/rocket"
+                  },
+                  "items": [
+                    "component-reference/rocket/accordion",
+                    "component-reference/rocket/accordion-container",
+                    "component-reference/rocket/alert",
+                    "component-reference/rocket/area-chart",
+                    "component-reference/rocket/avatar",
+                    "component-reference/rocket/badge",
+                    "component-reference/rocket/bar-chart",
+                    "component-reference/rocket/breadcrumb",
+                    "component-reference/rocket/button",
+                    "component-reference/rocket/button-group",
+                    "component-reference/rocket/calendar",
+                    "component-reference/rocket/card",
+                    "component-reference/rocket/card-grid",
+                    "component-reference/rocket/carousel",
+                    "component-reference/rocket/chat",
+                    "component-reference/rocket/checkbox",
+                    "component-reference/rocket/circular-progress",
+                    "component-reference/rocket/color-picker",
+                    "component-reference/rocket/combo-chart",
+                    "component-reference/rocket/combobox",
+                    "component-reference/rocket/currency-input",
+                    "component-reference/rocket/data-table",
+                    "component-reference/rocket/date-picker",
+                    "component-reference/rocket/date-time-picker",
+                    "component-reference/rocket/dialog",
+                    "component-reference/rocket/dropdown-menu",
+                    "component-reference/rocket/empty",
+                    "component-reference/rocket/file-upload",
+                    "component-reference/rocket/form",
+                    "component-reference/rocket/funnel-chart",
+                    "component-reference/rocket/heading",
+                    "component-reference/rocket/heatmap-chart",
+                    "component-reference/rocket/hero",
+                    "component-reference/rocket/icon",
+                    "component-reference/rocket/image",
+                    "component-reference/rocket/input",
+                    "component-reference/rocket/kanban",
+                    "component-reference/rocket/key-value",
+                    "component-reference/rocket/line-chart",
+                    "component-reference/rocket/link",
+                    "component-reference/rocket/list-view",
+                    "component-reference/rocket/map",
+                    "component-reference/rocket/multi-select",
+                    "component-reference/rocket/navigation",
+                    "component-reference/rocket/number-input",
+                    "component-reference/rocket/otp-input",
+                    "component-reference/rocket/pagination",
+                    "component-reference/rocket/password-input",
+                    "component-reference/rocket/phone-input",
+                    "component-reference/rocket/pie-chart",
+                    "component-reference/rocket/progress",
+                    "component-reference/rocket/progress-list",
+                    "component-reference/rocket/questionnaire",
+                    "component-reference/rocket/radar-chart",
+                    "component-reference/rocket/radial-chart",
+                    "component-reference/rocket/radio-group",
+                    "component-reference/rocket/rating",
+                    "component-reference/rocket/record-list",
+                    "component-reference/rocket/scatter-chart",
+                    "component-reference/rocket/schedule",
+                    "component-reference/rocket/select",
+                    "component-reference/rocket/separator",
+                    "component-reference/rocket/skeleton",
+                    "component-reference/rocket/slider",
+                    "component-reference/rocket/sparkline",
+                    "component-reference/rocket/spinner",
+                    "component-reference/rocket/split-pane",
+                    "component-reference/rocket/stat",
+                    "component-reference/rocket/stepper",
+                    "component-reference/rocket/steps",
+                    "component-reference/rocket/summary-strip",
+                    "component-reference/rocket/switch",
+                    "component-reference/rocket/tabs-container",
+                    "component-reference/rocket/tags",
+                    "component-reference/rocket/tags-input",
+                    "component-reference/rocket/text",
+                    "component-reference/rocket/tabs",
+                    "component-reference/rocket/textarea",
+                    "component-reference/rocket/time-picker",
+                    "component-reference/rocket/timeline",
+                    "component-reference/rocket/toggle-group"
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "Ant Design",
+                  "link": {
+                    "type": "generated-index",
+                    "title": "Ant Design Components",
+                    "description": "Reference pages for every component in the Ant Design library.",
+                    "slug": "/component-reference/ant-design"
+                  },
+                  "items": [
+                    "component-reference/ant-design/alert",
+                    "component-reference/ant-design/area",
+                    "component-reference/ant-design/auto-complete",
+                    "component-reference/ant-design/avatar",
+                    "component-reference/ant-design/badge",
+                    "component-reference/ant-design/bar",
+                    "component-reference/ant-design/breadcrumb",
+                    "component-reference/ant-design/button",
+                    "component-reference/ant-design/button-group",
+                    "component-reference/ant-design/calendar",
+                    "component-reference/ant-design/card",
+                    "component-reference/ant-design/card-grid",
+                    "component-reference/ant-design/carousel",
+                    "component-reference/ant-design/cascader",
+                    "component-reference/ant-design/chat",
+                    "component-reference/ant-design/checkbox",
+                    "component-reference/ant-design/circular-progress",
+                    "component-reference/ant-design/collapse",
+                    "component-reference/ant-design/color-picker",
+                    "component-reference/ant-design/column",
+                    "component-reference/ant-design/combobox",
+                    "component-reference/ant-design/currency-input",
+                    "component-reference/ant-design/date-picker",
+                    "component-reference/ant-design/date-time-picker",
+                    "component-reference/ant-design/descriptions",
+                    "component-reference/ant-design/divider",
+                    "component-reference/ant-design/drawer",
+                    "component-reference/ant-design/dropdown",
+                    "component-reference/ant-design/dual-axes",
+                    "component-reference/ant-design/empty",
+                    "component-reference/ant-design/funnel",
+                    "component-reference/ant-design/gauge",
+                    "component-reference/ant-design/heatmap",
+                    "component-reference/ant-design/hero",
+                    "component-reference/ant-design/icon",
+                    "component-reference/ant-design/image",
+                    "component-reference/ant-design/input",
+                    "component-reference/ant-design/input-number",
+                    "component-reference/ant-design/kanban",
+                    "component-reference/ant-design/line",
+                    "component-reference/ant-design/link",
+                    "component-reference/ant-design/list",
+                    "component-reference/ant-design/map",
+                    "component-reference/ant-design/menu",
+                    "component-reference/ant-design/modal",
+                    "component-reference/ant-design/otp",
+                    "component-reference/ant-design/pagination",
+                    "component-reference/ant-design/password",
+                    "component-reference/ant-design/phone-input",
+                    "component-reference/ant-design/pie",
+                    "component-reference/ant-design/progress",
+                    "component-reference/ant-design/progress-list",
+                    "component-reference/ant-design/qr-code",
+                    "component-reference/ant-design/questionnaire",
+                    "component-reference/ant-design/radar",
+                    "component-reference/ant-design/radial-chart",
+                    "component-reference/ant-design/radio-group",
+                    "component-reference/ant-design/range-picker",
+                    "component-reference/ant-design/rate",
+                    "component-reference/ant-design/record-list",
+                    "component-reference/ant-design/result",
+                    "component-reference/ant-design/scatter",
+                    "component-reference/ant-design/schedule",
+                    "component-reference/ant-design/segmented",
+                    "component-reference/ant-design/select",
+                    "component-reference/ant-design/skeleton",
+                    "component-reference/ant-design/slider",
+                    "component-reference/ant-design/sparkline",
+                    "component-reference/ant-design/spin",
+                    "component-reference/ant-design/statistic",
+                    "component-reference/ant-design/steps",
+                    "component-reference/ant-design/summary-strip",
+                    "component-reference/ant-design/switch",
+                    "component-reference/ant-design/table",
+                    "component-reference/ant-design/tabs",
+                    "component-reference/ant-design/tag",
+                    "component-reference/ant-design/tags",
+                    "component-reference/ant-design/text",
+                    "component-reference/ant-design/text-area",
+                    "component-reference/ant-design/time-picker",
+                    "component-reference/ant-design/timeline",
+                    "component-reference/ant-design/title",
+                    "component-reference/ant-design/transfer",
+                    "component-reference/ant-design/tree",
+                    "component-reference/ant-design/tree-select",
+                    "component-reference/ant-design/upload"
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "Custom Component Libraries",
+                  "link": {
+                    "type": "doc",
+                    "id": "app-builder/custom-component-library/overview"
+                  },
+                  "items": [
+                    "app-builder/custom-component-library/overview",
+                    "app-builder/custom-component-library/setup",
+                    "app-builder/custom-component-library/build-components",
+                    "app-builder/custom-component-library/preview-and-publish",
+                    "app-builder/custom-component-library/use-in-app-builder",
+                    "app-builder/custom-component-library/manage-libraries",
+                    "app-builder/custom-component-library/cli-reference"
+                  ]
+                }
               ]
             },
             {
@@ -419,434 +835,28 @@ const sidebars = {
         },
         {
           "type": "category",
-          "label": "Components",
+          "label": "React Builder",
+          "className": "sidebar-badge-new",
           "link": {
             "type": "doc",
-            "id": "app-builder/building-ui/component-library"
+            "id": "app-builder/react-builder/overview"
           },
           "items": [
+            "app-builder/react-builder/overview",
+            "app-builder/react-builder/create-app",
+            "app-builder/react-builder/editor",
+            "app-builder/react-builder/local-development",
+            "app-builder/react-builder/access-control",
+            "app-builder/react-builder/versions-and-history",
+            "app-builder/react-builder/security",
             {
               "type": "category",
-              "label": "ToolJet UI 1.0",
+              "label": "Reference",
               "items": [
-                "widgets/audio-recorder",
-                "widgets/accordion",
-                "widgets/bounded-box",
-                "widgets/button",
-                "widgets/button-group-v2",
-                "widgets/calendar",
-                "widgets/camera",
-                "widgets/cascader",
-                {
-                  "type": "category",
-                  "label": "Chart",
-                  "items": [
-                    "widgets/chart/chart-properties",
-                    "widgets/chart/chart-examples",
-                    "widgets/chart/transforming-data-for-charts"
-                  ]
-                },
-                {
-                  "type": "category",
-                  "label": "Chat",
-                  "items": [
-                    "widgets/chat/overview",
-                    "widgets/chat/properties",
-                    "widgets/chat/csa",
-                    "widgets/chat/markdown"
-                  ]
-                },
-                "widgets/checkbox",
-                "widgets/circular-progress-bar",
-                "widgets/code-editor",
-                "widgets/color-picker",
-                "widgets/container",
-                "widgets/currency-input",
-                {
-                  "type": "category",
-                  "label": "Custom Component",
-                  "link": {
-                    "type": "doc",
-                    "id": "widgets/custom-component/custom-component"
-                  },
-                  "items": [
-                    "widgets/custom-component/custom-component",
-                    "widgets/custom-component/pass-query-params-in-custom-components"
-                  ]
-                },
-                "widgets/date-range-picker",
-                "widgets/date-picker-v2",
-                "widgets/datetime-picker-v2",
-                "widgets/divider",
-                "widgets/dropdown",
-                "widgets/email-input",
-                "widgets/file-picker",
-                "widgets/file-input",
-                "widgets/file-button",
-                "widgets/flex-container",
-                {
-                  "type": "category",
-                  "label": "Form",
-                  "items": [
-                    "widgets/form/generate-form",
-                    "widgets/form/properties",
-                    "widgets/form/csa",
-                    "widgets/form/schema",
-                    "widgets/form/use-form-component"
-                  ]
-                },
-                "widgets/html",
-                "widgets/icon",
-                "widgets/iframe",
-                {
-                  "type": "category",
-                  "label": "Image",
-                  "link": {
-                    "type": "doc",
-                    "id": "widgets/image/image"
-                  },
-                  "items": [
-                    "widgets/image/image",
-                    "widgets/image/loading-image-pdf-from-db"
-                  ]
-                },
-                "widgets/json-editor",
-                "widgets/json-explorer",
-                "widgets/kanban",
-                "widgets/key-value-pair",
-                "widgets/link",
-                {
-                  "type": "category",
-                  "label": "List View",
-                  "link": {
-                    "type": "doc",
-                    "id": "widgets/listview/listview"
-                  },
-                  "items": [
-                    "widgets/listview/listview",
-                    "widgets/listview/display-listview-record-on-new-page"
-                  ]
-                },
-                "widgets/map",
-                "widgets/modal-v2",
-                "widgets/multiselect",
-                "widgets/navigation",
-                "widgets/number-input",
-                "widgets/password-input",
-                "widgets/pagination",
-                {
-                  "type": "category",
-                  "label": "PDF",
-                  "link": {
-                    "type": "doc",
-                    "id": "widgets/pdf/pdf"
-                  },
-                  "items": [
-                    "widgets/pdf/pdf",
-                    "widgets/pdf/loading-image-pdf-from-db"
-                  ]
-                },
-                "widgets/phone-input",
-                "widgets/popover-menu",
-                "widgets/progress-bar",
-                "widgets/qr-scanner",
-                "widgets/radio-button-v2",
-                "widgets/range-slider",
-                "widgets/reorderable-list",
-                "widgets/spinner",
-                "widgets/star-rating",
-                "widgets/statistics",
-                "widgets/steps",
-                "widgets/svg-image",
-                {
-                  "type": "category",
-                  "label": "Table",
-                  "items": [
-                    "widgets/table/table-properties",
-                    "widgets/table/table-columns",
-                    "widgets/table/table-csa-and-variables",
-                    {
-                      "type": "category",
-                      "label": "Serverside Operations",
-                      "items": [
-                        "widgets/table/serverside-operations/overview",
-                        "widgets/table/serverside-operations/search",
-                        "widgets/table/serverside-operations/sort",
-                        "widgets/table/serverside-operations/filter",
-                        "widgets/table/serverside-operations/pagination"
-                      ]
-                    },
-                    "widgets/table/dynamic-column",
-                    "widgets/table/conditional-formatting",
-                    "widgets/table/bulk-row-operations"
-                  ]
-                },
-                {
-                  "type": "category",
-                  "label": "Tabs",
-                  "link": {
-                    "type": "doc",
-                    "id": "widgets/tabs/tabs"
-                  },
-                  "items": [
-                    "widgets/tabs/tabs",
-                    "widgets/tabs/print-multi-tabs-report"
-                  ]
-                },
-                "widgets/tags",
-                "widgets/tags-input",
-                "widgets/text-input",
-                "widgets/text",
-                "widgets/text-area",
-                "widgets/rich-text-editor",
-                "widgets/timeline",
-                "widgets/timer",
-                "widgets/time-picker",
-                "widgets/toggle-switch-v2",
-                "widgets/tree-select",
-                "widgets/vertical-divider",
-                {
-                  "type": "category",
-                  "label": "Legacy Components",
-                  "items": [
-                    {
-                      "type": "link",
-                      "label": "Modal",
-                      "href": "https://docs.tooljet.com/docs/3.5.0-LTS/widgets/modal"
-                    },
-                    "widgets/datepicker",
-                    {
-                      "type": "link",
-                      "label": "Radio Button",
-                      "href": "https://docs.tooljet.com/docs/3.5.0-LTS/widgets/radio-button"
-                    },
-                    {
-                      "type": "link",
-                      "label": "Dropdown",
-                      "href": "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/dropdown"
-                    },
-                    {
-                      "type": "link",
-                      "label": "Multiselect",
-                      "href": "https://docs.tooljet.com/docs/2.50.0-lts/widgets/multiselect/"
-                    },
-                    {
-                      "type": "link",
-                      "label": "Range Slider",
-                      "href": "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/range-slider"
-                    },
-                    "widgets/button-group",
-                    "widgets/toggle-switch-legacy"
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "category",
-              "label": "Rocket 2.0",
-              "link": {
-                "type": "generated-index",
-                "title": "Rocket 2.0 Components",
-                "description": "Reference pages for every component in the Rocket 2.0 library.",
-                "slug": "/component-reference/rocket"
-              },
-              "items": [
-                "component-reference/rocket/accordion",
-                "component-reference/rocket/accordion-container",
-                "component-reference/rocket/alert",
-                "component-reference/rocket/area-chart",
-                "component-reference/rocket/avatar",
-                "component-reference/rocket/badge",
-                "component-reference/rocket/bar-chart",
-                "component-reference/rocket/breadcrumb",
-                "component-reference/rocket/button",
-                "component-reference/rocket/button-group",
-                "component-reference/rocket/calendar",
-                "component-reference/rocket/card",
-                "component-reference/rocket/card-grid",
-                "component-reference/rocket/carousel",
-                "component-reference/rocket/chat",
-                "component-reference/rocket/checkbox",
-                "component-reference/rocket/circular-progress",
-                "component-reference/rocket/color-picker",
-                "component-reference/rocket/combo-chart",
-                "component-reference/rocket/combobox",
-                "component-reference/rocket/currency-input",
-                "component-reference/rocket/data-table",
-                "component-reference/rocket/date-picker",
-                "component-reference/rocket/date-time-picker",
-                "component-reference/rocket/dialog",
-                "component-reference/rocket/dropdown-menu",
-                "component-reference/rocket/empty",
-                "component-reference/rocket/file-upload",
-                "component-reference/rocket/form",
-                "component-reference/rocket/funnel-chart",
-                "component-reference/rocket/heading",
-                "component-reference/rocket/heatmap-chart",
-                "component-reference/rocket/hero",
-                "component-reference/rocket/icon",
-                "component-reference/rocket/image",
-                "component-reference/rocket/input",
-                "component-reference/rocket/kanban",
-                "component-reference/rocket/key-value",
-                "component-reference/rocket/line-chart",
-                "component-reference/rocket/link",
-                "component-reference/rocket/list-view",
-                "component-reference/rocket/map",
-                "component-reference/rocket/multi-select",
-                "component-reference/rocket/navigation",
-                "component-reference/rocket/number-input",
-                "component-reference/rocket/otp-input",
-                "component-reference/rocket/pagination",
-                "component-reference/rocket/password-input",
-                "component-reference/rocket/phone-input",
-                "component-reference/rocket/pie-chart",
-                "component-reference/rocket/progress",
-                "component-reference/rocket/progress-list",
-                "component-reference/rocket/questionnaire",
-                "component-reference/rocket/radar-chart",
-                "component-reference/rocket/radial-chart",
-                "component-reference/rocket/radio-group",
-                "component-reference/rocket/rating",
-                "component-reference/rocket/record-list",
-                "component-reference/rocket/scatter-chart",
-                "component-reference/rocket/schedule",
-                "component-reference/rocket/select",
-                "component-reference/rocket/separator",
-                "component-reference/rocket/skeleton",
-                "component-reference/rocket/slider",
-                "component-reference/rocket/sparkline",
-                "component-reference/rocket/spinner",
-                "component-reference/rocket/split-pane",
-                "component-reference/rocket/stat",
-                "component-reference/rocket/stepper",
-                "component-reference/rocket/steps",
-                "component-reference/rocket/summary-strip",
-                "component-reference/rocket/switch",
-                "component-reference/rocket/tabs-container",
-                "component-reference/rocket/tags",
-                "component-reference/rocket/tags-input",
-                "component-reference/rocket/text",
-                "component-reference/rocket/tabs",
-                "component-reference/rocket/textarea",
-                "component-reference/rocket/time-picker",
-                "component-reference/rocket/timeline",
-                "component-reference/rocket/toggle-group"
-              ]
-            },
-            {
-              "type": "category",
-              "label": "Ant Design",
-              "link": {
-                "type": "generated-index",
-                "title": "Ant Design Components",
-                "description": "Reference pages for every component in the Ant Design library.",
-                "slug": "/component-reference/ant-design"
-              },
-              "items": [
-                "component-reference/ant-design/alert",
-                "component-reference/ant-design/area",
-                "component-reference/ant-design/auto-complete",
-                "component-reference/ant-design/avatar",
-                "component-reference/ant-design/badge",
-                "component-reference/ant-design/bar",
-                "component-reference/ant-design/breadcrumb",
-                "component-reference/ant-design/button",
-                "component-reference/ant-design/button-group",
-                "component-reference/ant-design/calendar",
-                "component-reference/ant-design/card",
-                "component-reference/ant-design/card-grid",
-                "component-reference/ant-design/carousel",
-                "component-reference/ant-design/cascader",
-                "component-reference/ant-design/chat",
-                "component-reference/ant-design/checkbox",
-                "component-reference/ant-design/circular-progress",
-                "component-reference/ant-design/collapse",
-                "component-reference/ant-design/color-picker",
-                "component-reference/ant-design/column",
-                "component-reference/ant-design/combobox",
-                "component-reference/ant-design/currency-input",
-                "component-reference/ant-design/date-picker",
-                "component-reference/ant-design/date-time-picker",
-                "component-reference/ant-design/descriptions",
-                "component-reference/ant-design/divider",
-                "component-reference/ant-design/drawer",
-                "component-reference/ant-design/dropdown",
-                "component-reference/ant-design/dual-axes",
-                "component-reference/ant-design/empty",
-                "component-reference/ant-design/funnel",
-                "component-reference/ant-design/gauge",
-                "component-reference/ant-design/heatmap",
-                "component-reference/ant-design/hero",
-                "component-reference/ant-design/icon",
-                "component-reference/ant-design/image",
-                "component-reference/ant-design/input",
-                "component-reference/ant-design/input-number",
-                "component-reference/ant-design/kanban",
-                "component-reference/ant-design/line",
-                "component-reference/ant-design/link",
-                "component-reference/ant-design/list",
-                "component-reference/ant-design/map",
-                "component-reference/ant-design/menu",
-                "component-reference/ant-design/modal",
-                "component-reference/ant-design/otp",
-                "component-reference/ant-design/pagination",
-                "component-reference/ant-design/password",
-                "component-reference/ant-design/phone-input",
-                "component-reference/ant-design/pie",
-                "component-reference/ant-design/progress",
-                "component-reference/ant-design/progress-list",
-                "component-reference/ant-design/qr-code",
-                "component-reference/ant-design/questionnaire",
-                "component-reference/ant-design/radar",
-                "component-reference/ant-design/radial-chart",
-                "component-reference/ant-design/radio-group",
-                "component-reference/ant-design/range-picker",
-                "component-reference/ant-design/rate",
-                "component-reference/ant-design/record-list",
-                "component-reference/ant-design/result",
-                "component-reference/ant-design/scatter",
-                "component-reference/ant-design/schedule",
-                "component-reference/ant-design/segmented",
-                "component-reference/ant-design/select",
-                "component-reference/ant-design/skeleton",
-                "component-reference/ant-design/slider",
-                "component-reference/ant-design/sparkline",
-                "component-reference/ant-design/spin",
-                "component-reference/ant-design/statistic",
-                "component-reference/ant-design/steps",
-                "component-reference/ant-design/summary-strip",
-                "component-reference/ant-design/switch",
-                "component-reference/ant-design/table",
-                "component-reference/ant-design/tabs",
-                "component-reference/ant-design/tag",
-                "component-reference/ant-design/tags",
-                "component-reference/ant-design/text",
-                "component-reference/ant-design/text-area",
-                "component-reference/ant-design/time-picker",
-                "component-reference/ant-design/timeline",
-                "component-reference/ant-design/title",
-                "component-reference/ant-design/transfer",
-                "component-reference/ant-design/tree",
-                "component-reference/ant-design/tree-select",
-                "component-reference/ant-design/upload"
-              ]
-            },
-            {
-              "type": "category",
-              "label": "Custom Component Libraries",
-              "link": {
-                "type": "doc",
-                "id": "app-builder/custom-component-library/overview"
-              },
-              "items": [
-                "app-builder/custom-component-library/overview",
-                "app-builder/custom-component-library/setup",
-                "app-builder/custom-component-library/build-components",
-                "app-builder/custom-component-library/preview-and-publish",
-                "app-builder/custom-component-library/use-in-app-builder",
-                "app-builder/custom-component-library/manage-libraries",
-                "app-builder/custom-component-library/cli-reference"
+                "app-builder/react-builder/project-structure",
+                "app-builder/react-builder/runtime-api",
+                "app-builder/react-builder/cli-reference",
+                "app-builder/react-builder/security-policy"
               ]
             }
           ]

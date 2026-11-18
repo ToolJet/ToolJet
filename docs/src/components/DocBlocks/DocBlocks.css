@@ -279,6 +279,28 @@
   box-shadow: none;
 }
 
+/* A named line icon (see icons.js): a tinted tile in the brand colour. */
+.docblk-card__icon--tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--ifm-color-primary) 22%, transparent);
+  background: color-mix(in srgb, var(--ifm-color-primary) 10%, transparent);
+  color: var(--ifm-color-primary);
+}
+
+.docblk-card__icon--tile svg {
+  width: 20px;
+  height: 20px;
+}
+
+.docblk-card--link:hover .docblk-card__icon--tile {
+  background: color-mix(in srgb, var(--ifm-color-primary) 16%, transparent);
+}
+
 .docblk-card__features {
   --docblk-features-gap: calc(4px + var(--ifm-list-item-margin, 0.25rem));
   --docblk-features-size: 14px;

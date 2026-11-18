@@ -30,7 +30,7 @@ A library is listed once it has a published version or a dev upload.
 
 ## Add and Configure a Component
 
-Drag a tile onto the canvas. A custom component works like any built-in component. You can resize, move and rename it, and bind it to queries. The component is named after the component itself (for example, *currencyinput1*), and it is dropped at the default size the author set with `useComponentSettings`.
+Drag a tile onto the canvas. A custom component works like any built-in component. It can be resized, moved, renamed and bound to queries. The component is named after the component itself (for example, *currencyinput1*), and it is dropped at the default size the author set with `useComponentSettings`.
 
 The component properties panel opens with a line that names the library and the component, and a Revision row. Below them are these sections:
 
@@ -56,7 +56,7 @@ Actions declared by the author appear wherever you choose component actions. For
 
 Each app pins one version of each library. The pinned version is saved with the app version, so it carries over when you release, clone, export or import the app.
 
-- The first time you drop a component from a library into an app, the app pins the version the panel shows. That is the latest version, unless you picked another one.
+- The first time a component from a library is dropped into an app, the app pins the version the panel shows. That is the latest version, unless another version was selected.
 - To change the version, pick the library in the library picker, open its **Version** picker and choose a version.
 - **Changing the version updates every component from that library in the app at once.** It only happens when you choose a version. Publishing a new version never changes a running app.
 - Previewed and released apps always render the pinned version.

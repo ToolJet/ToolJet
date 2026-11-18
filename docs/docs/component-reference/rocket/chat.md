@@ -111,7 +111,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Background | Theme: Surface 1 |
 | Border | Theme: Default border |
 | Border radius | — |
-| Accent (your messages, send button, focus) | Theme: Brand primary |
+| Accent (own messages, send button, focus) | Theme: Brand primary |
 | Reply bubble background | Theme: Surface 3 |
 | Name color | Theme: Primary text |
 | Message text color | Theme: Primary text |
@@ -122,4 +122,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Send icon color | Theme: Surface 1 |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

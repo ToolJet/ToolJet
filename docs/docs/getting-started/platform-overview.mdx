@@ -5,7 +5,7 @@ hide_title: true
 ---
 
 import Link from '@docusaurus/Link';
-import { useVersionedHref } from '@site/src/components/DocBlocks';
+import { useVersionedHref, CardIcon } from '@site/src/components/DocBlocks';
 
 export const VLink = ({ to, ...props }) => <Link to={useVersionedHref(to)} {...props} />;
 
@@ -42,7 +42,7 @@ export const CapabilityCard = ({ icon, title, description, img, href, features, 
         >
             <div style={{ padding: '18px 18px 14px', flex: img ? 'none' : 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '24px', lineHeight: 1 }}>{icon}</span>
+                    <CardIcon>{icon}</CardIcon>
                     {badge && (
                         <span style={{
                             fontSize: '10px', fontWeight: 700, padding: '2px 8px',
@@ -103,10 +103,10 @@ export const NextStepCard = ({ title, description, href }) => (
     <div style={{ fontSize: '12px', fontWeight: 700, color: '#1d4ed8', marginBottom: '8px', letterSpacing: '0.07em', textTransform: 'uppercase' }}>ToolJet Platform Overview</div>
     <h1 style={{ fontSize: '30px', fontWeight: 700, margin: '0 0 10px', color: '#1e3a5f', lineHeight: 1.2 }}>Build internal tools, faster</h1>
     <p style={{ fontSize: '15px', color: '#1e40af', margin: '0 0 24px', maxWidth: '640px', lineHeight: 1.65 }}>
-        ToolJet is an AI-native platform for building applications, agents, and automated workflows. Build visually, with AI, from your coding agent or in React, on top of 80+ data source integrations and enterprise-grade access control.
+        ToolJet is an AI-native platform for building applications, agents, and automated workflows. Applications can be built visually, with ToolJet AI, from a coding agent through ToolJet MCP, or in React with React Builder, and connect to more than 80 datasources.
     </p>
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-        {['AI App Generation', 'React Builder', 'ToolJet MCP', 'AI Agents', '70+ UI Components', '80+ Data Sources', 'Version Control', 'Role Based Access Control', 'SSO'].map(label => (
+        {['AI App Generation', 'AI Agents', '70+ UI Components', '80+ Data Sources', 'Version Control', 'Role Based Access Control', 'SSO'].map(label => (
             <span key={label} style={{
                 display: 'inline-block', padding: '4px 12px',
                 borderRadius: '20px', fontSize: '12px', fontWeight: 600,
@@ -119,36 +119,36 @@ export const NextStepCard = ({ title, description, href }) => (
 
 <img className="img-full screenshot-full" src="/img/platform-overview/platform-overview-v5.png" alt="ToolJet Platform Overview"  />
 
-## Four Ways to Build
+## Ways to Build Applications
 
 <p style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)', marginTop: '-8px', marginBottom: '16px' }}>
-    ToolJet began as a visual, low-code builder for internal tools. It has since added AI app generation, an MCP server for coding agents and React Builder for apps written in React. All four share the same data sources, permissions and release flow.
+    ToolJet provides four ways to build an application. All four use the same datasources, permissions and release process.
 </p>
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginBottom: '48px' }}>
     <CapabilityCard
-        icon="🧩"
-        title="Visual builder"
-        description="Drag components onto a canvas and connect them to your data."
-        href="/docs/app-builder/overview"
+        icon="layout"
+        title="Visual Builder"
+        description="Components are dragged onto a canvas and connected to queries."
+        href="/docs/app-builder/visual-builder/overview"
     />
     <CapabilityCard
-        icon="⚡"
+        icon="sparkles"
         title="ToolJet AI"
-        description="Describe the app in plain language and let ToolJet generate it."
+        description="ToolJet AI generates an application from a plain-language description."
         href="/docs/build-with-ai/overview"
     />
     <CapabilityCard
-        icon="🔌"
+        icon="plug"
         title="ToolJet MCP"
-        description="Build from Claude Code, Codex or another coding agent."
+        description="Coding agents such as Claude Code and Codex build applications through the ToolJet MCP server."
         href="/docs/build-with-ai/mcp/overview"
     />
     <CapabilityCard
-        icon="⚛️"
+        icon="code"
         title="React Builder"
-        description="Write the app in React, with AI, in your browser or in your own editor."
-        href="/docs/build-with-ai/react-builder/overview"
+        description="Applications are written in React and TypeScript, with ToolJet AI, in the browser or in a local code editor."
+        href="/docs/app-builder/react-builder/overview"
         badge="New"
     />
 </div>
@@ -161,7 +161,7 @@ export const NextStepCard = ({ title, description, href }) => (
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '48px' }}>
     <FlowStep number="1" title="Generate with AI" description="Describe what you need. ToolJet builds the layout, components, and queries automatically." />
-    <FlowStep number="2" title="Build Visually or in Code" description="Customize with drag-and-drop components and themes, or write the app in React with React Builder." />
+    <FlowStep number="2" title="Build Visually or in Code" description="Build with drag-and-drop components and themes, or write the application in React with React Builder." />
     <FlowStep number="3" title="Connect Data" description="Integrate 80+ databases, APIs, and SaaS services. All connections are proxied for security." />
     <FlowStep number="4" title="Automate with Agents" description="Deploy AI agents that query data, trigger workflows, and handle multi-step processes." />
     <FlowStep number="5" title="Secure and Deploy" description="RBAC, multi-environment management, GitSync, version reviews, and audit logs." />
@@ -175,7 +175,7 @@ export const NextStepCard = ({ title, description, href }) => (
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '14px', marginBottom: '48px' }}>
     <CapabilityCard
-        icon="⚡"
+        icon="sparkles"
         title="ToolJet AI"
         description="Generate a working application from a plain-language prompt."
         features={[
@@ -186,7 +186,7 @@ export const NextStepCard = ({ title, description, href }) => (
         href="/docs/build-with-ai/overview"
     />
     <CapabilityCard
-        icon="🤖"
+        icon="bot"
         title="Agent Builder"
         description="Create and deploy intelligent agents that orchestrate multi-step workflows autonomously."
         features={[
@@ -198,30 +198,30 @@ export const NextStepCard = ({ title, description, href }) => (
         badge="Self Hosted"
     />
     <CapabilityCard
-        icon="⚛️"
+        icon="code"
         title="React Builder"
-        description="Build apps in React and TypeScript, with ToolJet handling sign-in, data and releases."
+        description="Applications written in React and TypeScript. ToolJet provides authentication, queries and releases."
         features={[
-            'Generate the app with AI, then edit the code in your browser',
-            'Work in your own editor through the ToolJet CLI',
-            'Every version is checked for security before release',
+            'Generated with ToolJet AI and edited in the browser',
+            'Developed locally through the ToolJet CLI',
+            'Security checks on every version before release',
         ]}
-        href="/docs/build-with-ai/react-builder/overview"
+        href="/docs/app-builder/react-builder/overview"
         badge="New"
     />
     <CapabilityCard
-        icon="🔌"
+        icon="plug"
         title="ToolJet MCP"
-        description="Connect a coding agent to your workspace and build ToolJet apps from your editor."
+        description="Connects a coding agent to a ToolJet workspace to build applications from a code editor."
         features={[
-            'Works with Claude Code, Codex and other MCP clients',
-            'Creates and modifies apps, queries and tables',
-            'Runs on the model your agent already uses',
+            'Supports Claude Code, Codex and other MCP clients',
+            'Creates and modifies applications, queries and tables',
+            'Uses the model configured in the coding agent',
         ]}
         href="/docs/build-with-ai/mcp/overview"
     />
     <CapabilityCard
-        icon="🧩"
+        icon="layout"
         title="Visual App Builder"
         description="Build interfaces with a drag-and-drop editor and 82+ pre-built components."
         features={[
@@ -229,10 +229,10 @@ export const NextStepCard = ({ title, description, href }) => (
             'Add custom logic using JavaScript or Python',
             'Responsive layouts for desktop and mobile',
         ]}
-        href="/docs/app-builder/overview"
+        href="/docs/app-builder/visual-builder/overview"
     />
     <CapabilityCard
-        icon="🔌"
+        icon="plug"
         title="Integrations"
         description="Connect to 80+ databases, REST APIs, SaaS tools, and cloud services out of the box."
         features={[
@@ -243,7 +243,7 @@ export const NextStepCard = ({ title, description, href }) => (
         href="/docs/data-sources/overview"
     />
     <CapabilityCard
-        icon="🗄️"
+        icon="database"
         title="ToolJet Database"
         description="A built-in PostgreSQL-backed database, no external setup required."
         features={[
@@ -254,7 +254,7 @@ export const NextStepCard = ({ title, description, href }) => (
         href="/docs/tooljet-db/tooljet-database"
     />
     <CapabilityCard
-        icon="⚙️"
+        icon="workflow"
         title="Workflow Automation"
         description="Automate multi-step business processes with a visual workflow editor."
         features={[
@@ -266,7 +266,7 @@ export const NextStepCard = ({ title, description, href }) => (
         badge="Self Hosted"
     />
     <CapabilityCard
-        icon="🔒"
+        icon="lock"
         title="Security & Access Control"
         description="Protect applications and data with enterprise-grade controls."
         features={[
@@ -277,7 +277,7 @@ export const NextStepCard = ({ title, description, href }) => (
         href="/docs/user-management/overview"
     />
     <CapabilityCard
-        icon="🚀"
+        icon="layers"
         title="Deployment & Environments"
         description="Ship with confidence using integrated lifecycle management."
         features={[
@@ -306,8 +306,8 @@ export const NextStepCard = ({ title, description, href }) => (
     />
     <NextStepCard
         title="React Builder"
-        description="Build apps in React with AI or in your own editor."
-        href="/docs/build-with-ai/react-builder/overview"
+        description="Build applications in React with ToolJet AI or in a local code editor."
+        href="/docs/app-builder/react-builder/overview"
     />
     <NextStepCard
         title="App Builder"

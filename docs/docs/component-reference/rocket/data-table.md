@@ -16,7 +16,7 @@ The **Data Table** component shows rows of data in columns, with search, sorting
 | Row id field | The field that identifies each row. The table uses it to keep the same records selected when the data reloads. | Text. Default: `id` |
 | Pagination | Splits the rows into pages with page controls in the footer. | On or off. Default: On |
 | Rows per page | How many rows each page shows. | Number. Default: `10` |
-| Server-side pagination (data is one page) | Treats **Table data** as one page at a time. Use the **Page changed** event and the `pageIndex` value to fetch each page from your query. | On or off. Default: Off |
+| Server-side pagination (data is one page) | Treats **Table data** as one page at a time. Use the **Page changed** event and the `pageIndex` value to fetch each page from the query. | On or off. Default: Off |
 | Total records (server-side) | The total number of rows across all pages when pagination is server-side. The table uses it for the page count and the row count. | Number. Default: `0` |
 | Previous page enabled (server-side) | Turns the previous page button on or off when pagination is server-side. | On or off. Default: On |
 | Next page enabled (server-side) | Turns the next page button on or off when pagination is server-side. | On or off. Default: On |
@@ -26,11 +26,11 @@ The **Data Table** component shows rows of data in columns, with search, sorting
 | Columns button text | Text on the button that lets users show or hide columns. | Text. Default: `Columns` |
 | Row count text | Text for the row count in the footer. `{count}` is replaced by the number of rows. | Text. Default: `{count} rows` |
 | No matching rows message | Message shown when a search or filter matches no rows. | Text. Default: `No matching rows.` |
-| Server-side search | Leaves searching to your query: the table stops filtering rows itself and only reports the text in `searchText`. | On or off. Default: Off |
+| Server-side search | Leaves searching to the query: the table stops filtering rows itself and only reports the text in `searchText`. | On or off. Default: Off |
 | Column sorting | Lets users sort by a column by clicking its header. Each click cycles through ascending, descending and no sort. | On or off. Default: On |
-| Server-side sort | Leaves sorting to your query: the table stops reordering rows itself and only reports the sort in `sortApplied`. | On or off. Default: Off |
+| Server-side sort | Leaves sorting to the query: the table stops reordering rows itself and only reports the sort in `sortApplied`. | On or off. Default: Off |
 | Filter button | Shows the filter button, where users add conditions on columns. | On or off. Default: On |
-| Server-side filters | Leaves filtering to your query: the table stops filtering rows itself and only reports the conditions in `filters`. | On or off. Default: Off |
+| Server-side filters | Leaves filtering to the query: the table stops filtering rows itself and only reports the conditions in `filters`. | On or off. Default: Off |
 | Row selection | Lets users select a row by clicking it. | On or off. Default: On |
 | Bulk selection (checkboxes) | Adds a checkbox to each row and to the header so users can select several rows at once. | On or off. Default: Off |
 | Highlight selected row | Shades the selected row so it stands out. | On or off. Default: On |
@@ -38,7 +38,7 @@ The **Data Table** component shows rows of data in columns, with search, sorting
 | Default selected row (\{ key: value \}) | The row selected when the data loads, matched by one field and value, for example `{ id: 1 }`. | Object |
 | Hide column chooser | Hides the button that lets users show or hide columns. | On or off. Default: Off |
 | Download button | Shows a download button that saves the current rows, after search, filters and sorting, as a CSV or JSON file. | On or off. Default: Off |
-| Refresh button | Shows a refresh button that fires the **Refresh** event, so you can rerun the query that fills the table. | On or off. Default: Off |
+| Refresh button | Shows a refresh button that fires the **Refresh** event, to rerun the query that fills the table. | On or off. Default: Off |
 | Row count in the footer | Shows the number of rows in the footer. | On or off. Default: On |
 | Row height | Height of each row. | Condensed, Regular, Spacious. Default: Regular |
 | Rows | Row style. **Striped** shades every other row; **Bordered** draws lines between cells. | Regular, Striped, Bordered. Default: Regular |
@@ -119,7 +119,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `idField` | The field that identifies each row. The table uses it to keep the same records selected when the data reloads. | `{{components.datatable1.idField}}` |
 | `enablePagination` | Splits the rows into pages with page controls in the footer. | `{{components.datatable1.enablePagination}}` |
 | `rowsPerPage` | How many rows each page shows. | `{{components.datatable1.rowsPerPage}}` |
-| `serverSidePagination` | Treats **Table data** as one page at a time. Use the **Page changed** event and the `pageIndex` value to fetch each page from your query. | `{{components.datatable1.serverSidePagination}}` |
+| `serverSidePagination` | Treats **Table data** as one page at a time. Use the **Page changed** event and the `pageIndex` value to fetch each page from the query. | `{{components.datatable1.serverSidePagination}}` |
 | `totalRecords` | The total number of rows across all pages when pagination is server-side. The table uses it for the page count and the row count. | `{{components.datatable1.totalRecords}}` |
 | `enablePrevButton` | Turns the previous page button on or off when pagination is server-side. | `{{components.datatable1.enablePrevButton}}` |
 | `enableNextButton` | Turns the next page button on or off when pagination is server-side. | `{{components.datatable1.enableNextButton}}` |
@@ -129,11 +129,11 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `columnsLabel` | Text on the button that lets users show or hide columns. | `{{components.datatable1.columnsLabel}}` |
 | `rowCountLabel` | Text for the row count in the footer. `{count}` is replaced by the number of rows. | `{{components.datatable1.rowCountLabel}}` |
 | `noMatchText` | Message shown when a search or filter matches no rows. | `{{components.datatable1.noMatchText}}` |
-| `serverSideSearch` | Leaves searching to your query: the table stops filtering rows itself and only reports the text in `searchText`. | `{{components.datatable1.serverSideSearch}}` |
+| `serverSideSearch` | Leaves searching to the query: the table stops filtering rows itself and only reports the text in `searchText`. | `{{components.datatable1.serverSideSearch}}` |
 | `enabledSort` | Lets users sort by a column by clicking its header. Each click cycles through ascending, descending and no sort. | `{{components.datatable1.enabledSort}}` |
-| `serverSideSort` | Leaves sorting to your query: the table stops reordering rows itself and only reports the sort in `sortApplied`. | `{{components.datatable1.serverSideSort}}` |
+| `serverSideSort` | Leaves sorting to the query: the table stops reordering rows itself and only reports the sort in `sortApplied`. | `{{components.datatable1.serverSideSort}}` |
 | `showFilterButton` | Shows the filter button, where users add conditions on columns. | `{{components.datatable1.showFilterButton}}` |
-| `serverSideFilter` | Leaves filtering to your query: the table stops filtering rows itself and only reports the conditions in `filters`. | `{{components.datatable1.serverSideFilter}}` |
+| `serverSideFilter` | Leaves filtering to the query: the table stops filtering rows itself and only reports the conditions in `filters`. | `{{components.datatable1.serverSideFilter}}` |
 | `allowSelection` | Lets users select a row by clicking it. | `{{components.datatable1.allowSelection}}` |
 | `showBulkSelector` | Adds a checkbox to each row and to the header so users can select several rows at once. | `{{components.datatable1.showBulkSelector}}` |
 | `highlightSelectedRow` | Shades the selected row so it stands out. | `{{components.datatable1.highlightSelectedRow}}` |
@@ -141,7 +141,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `defaultSelectedRow` | The row selected when the data loads, matched by one field and value, for example `{ id: 1 }`. | `{{components.datatable1.defaultSelectedRow}}` |
 | `hideColumnSelectorButton` | Hides the button that lets users show or hide columns. | `{{components.datatable1.hideColumnSelectorButton}}` |
 | `showDownloadButton` | Shows a download button that saves the current rows, after search, filters and sorting, as a CSV or JSON file. | `{{components.datatable1.showDownloadButton}}` |
-| `showRefreshButton` | Shows a refresh button that fires the **Refresh** event, so you can rerun the query that fills the table. | `{{components.datatable1.showRefreshButton}}` |
+| `showRefreshButton` | Shows a refresh button that fires the **Refresh** event, to rerun the query that fills the table. | `{{components.datatable1.showRefreshButton}}` |
 | `showRowCount` | Shows the number of rows in the footer. | `{{components.datatable1.showRowCount}}` |
 | `cellSize` | Height of each row. | `{{components.datatable1.cellSize}}` |
 | `tableType` | Row style. **Striped** shades every other row; **Bordered** draws lines between cells. | `{{components.datatable1.tableType}}` |
@@ -193,4 +193,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Border around the table | On |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

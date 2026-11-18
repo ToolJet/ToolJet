@@ -24,12 +24,12 @@ This page lists the ToolJet CLI commands, flags, limits, naming rules and projec
 
 | <div style={{ width:"250px"}}> Command </div> | <div style={{ width:"120px"}}> Run From </div> | <div style={{ width:"300px"}}> What It Does </div> |
 |:---------- | :---------- | :------------ |
-| `tooljet login` | Anywhere | Asks for your ToolJet origin URL and personal access token. |
-| `tooljet auth login --url <origin>` | Anywhere | Signs in through your browser, with no token to paste. |
+| `tooljet login` | Anywhere | Asks for the ToolJet origin URL and a personal access token. |
+| `tooljet auth login --url <origin>` | Anywhere | Signs in through the browser, with no token to paste. |
 | `tooljet library init <dir>` | Anywhere | Registers a library in the workspace and creates the project. |
 | `tooljet library build` | Library directory | Builds to `dist/`. No sign-in needed and nothing is uploaded. |
 | `tooljet library typecheck` | Library directory | Type-checks the code and parses its stylesheets without building. Nothing is uploaded. |
-| `tooljet library dev` | Library directory | Watches `src/` and uploads to your dev track on every save. |
+| `tooljet library dev` | Library directory | Watches `src/` and uploads to the developer's dev track on every save. |
 | `tooljet library publish -v <version>` | Library directory | Builds and publishes a new version. |
 
 `lib` is an alias for `library` in all five library commands.
@@ -41,8 +41,8 @@ This page lists the ToolJet CLI commands, flags, limits, naming rules and projec
 | <div style={{ width:"200px"}}> Flag </div> | <div style={{ width:"150px"}}> Commands </div> | <div style={{ width:"300px"}}> Purpose </div> |
 |:---------- | :---------- | :------------ |
 | `--display-name` | `init` | The library's display name. Skips the prompt. |
-| `--local` | `init` | Creates the project only: no sign-in, and no library is registered in a workspace. `dev` or `publish` registers it later, after asking you. |
-| `--template` | `init` | `new`, the default, creates a custom component library. `code-app` creates a whole React app on shadcn/ui, Tailwind and React Router. To work on a React Builder app, see [Build Locally](../../build-with-ai/react-builder/local-development.md) instead. |
+| `--local` | `init` | Creates the project only: no sign-in, and no library is registered in a workspace. `dev` or `publish` registers it later, after a confirmation prompt. |
+| `--template` | `init` | `new`, the default, creates a custom component library. `code-app` creates a whole React app on shadcn/ui, Tailwind and React Router. To work on a React Builder app, see [Build Locally](../react-builder/local-development.md) instead. |
 | `--env` | `build` | `production`, the default, or `development`. |
 | `--json` | `typecheck` | Prints the result as JSON. |
 | `--url` and `--token` | `dev`, `publish` | Target a workspace directly instead of using the stored login. Use both together. |

@@ -21,7 +21,7 @@ Saved versions are finalized checkpoints created from drafts. Saved versions are
 
 A draft can be saved as a version when you are ready to promote or release your changes. Only saved versions can be promoted to staging or production, while draft versions remain editable. This helps maintain a clear separation between in-progress work and versions that are ready for deployment or testing.
 
-A React Builder app's code is saved with the version too. See **[Versions and History](../../build-with-ai/react-builder/versions-and-history.md#save-a-version)**.
+A React Builder app's code is saved with the version too. See **[Versions and History](../../app-builder/react-builder/versions-and-history.md#save-a-version)**.
 
 ### Color Schema
 The following color schema represents the status of ToolJet apps across different stages of the development lifecycle.

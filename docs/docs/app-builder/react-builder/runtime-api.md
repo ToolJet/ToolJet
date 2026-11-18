@@ -20,7 +20,7 @@ The hooks work in any component or custom hook inside the app, not only in the r
 
 ## Run Queries
 
-You create and edit queries in ToolJet's query editor. The code runs them by name.
+Queries are created and edited in ToolJet's query editor. The code runs them by name.
 
 ```tsx
 const orders = useAppQuery('orders');
@@ -55,9 +55,9 @@ Declare parameters in the query editor, and read them in the query as `{{paramet
 await updateStatus.run({ id: order.id, status: 'shipped' });
 ```
 
-- A parameter you don't pass uses the default set in the query.
+- When `run()` is called with no parameters, the query's default values are used. When any parameter is passed, pass every parameter the query needs: the others are empty, not their defaults.
 - ToolJet drops values for parameters the query doesn't declare. With `useAppQuery`, passing an undeclared parameter is a TypeScript error. Declare the parameter in the query and read it there.
-- Don't cast `useAppQuery`, its `run`, or the values you pass to `run`. A cast hides undeclared parameters, and `tooljet app check` fails on it. To type the rows, cast what `run()` returns, or `data`.
+- Don't cast `useAppQuery`, its `run`, or the values passed to `run`. A cast hides undeclared parameters, and `tooljet app check` fails on it. To type the rows, cast what `run()` returns, or `data`.
 
 ### Errors
 
@@ -70,7 +70,7 @@ A failed run rejects with a `QueryError`:
 | `query` | The query name. |
 | `result` | The raw result of the failed run. |
 
-Running a name the app doesn't have fails with `No query named "<name>" in this app`. Run `tooljet app check` to catch these before you publish.
+Running a name the app doesn't have fails with `No query named "<name>" in this app`. Run `tooljet app check` to catch these before publishing.
 
 ### Write, Then Refresh
 
@@ -312,7 +312,7 @@ ToolJet runs a React Builder app's code in a sandboxed frame, apart from the Too
 
 - The browser treats the frame as a separate origin, so the app's code can't read the viewer's session, cookies or the ToolJet page.
 - The app reaches ToolJet only through a message channel that the page checks, and its queries run with the viewer's permissions.
-- By default the app reaches only your ToolJet instance, so its data goes through queries.
+- By default the app reaches only its ToolJet instance, so its data goes through queries.
 - By default the app is isolated everywhere it runs: the released app, Preview, the editor and version comparisons.
 
 Isolation protects the viewer's session, not the data the app is given. App code still sees what its queries return. What the app may read and write is controlled by [query permissions](./access-control.md) on the server.
@@ -323,7 +323,7 @@ On self-hosted ToolJet, an admin can change how apps are isolated with the `CODE
 
 ### Call Other Addresses
 
-App code can't call `fetch` or make other network requests to outside addresses. By default it reaches only your ToolJet instance, so all data goes through queries. Queries run on the ToolJet server with the data source's credentials, so keep secrets in data sources, never in the code.
+App code can't call `fetch` or make other network requests to outside addresses. By default it reaches only its ToolJet instance, so all data goes through queries. Queries run on the ToolJet server with the datasource's credentials, so keep secrets in datasources, never in the code.
 
 A workspace admin can allow more addresses for apps to connect to, load images or fonts from, and so on. See [Allow Outside Addresses](./security-policy.md#allow-outside-addresses).
 
@@ -334,7 +334,7 @@ ToolJet runs a React Builder app in an isolated frame, apart from the ToolJet pa
 - **RunJS and RunPy queries, and queries with a transformation**, are refused with `React Builder apps can't run JavaScript or Python on the page. Move this logic into the app's code.` Do that work in the app's code instead.
 - **`{{ }}` bindings** are evaluated with a limited interpreter. Only known values and a fixed set of methods are allowed. Anything else fails with a message that ends `isn't allowed in a React Builder app's bindings. Move this logic into the app's code.`
 - **App JavaScript libraries and preloaded scripts** don't load.
-- **The legacy Custom component widget** is refused.
+- **The legacy Custom Component** is refused.
 - **The IFrame component** loads only `http://`, `https://` or relative addresses. Other addresses load a blank page.
 - **The Open webpage action** opens only `http://`, `https://` or same-site paths.
 - **The Set local storage action** does nothing.

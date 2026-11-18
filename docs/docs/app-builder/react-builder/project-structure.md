@@ -4,9 +4,9 @@ title: React Builder Project Structure
 sidebar_label: Project Structure
 ---
 
-This page is the reference for the files in a React Builder project: what each one holds, the rules ToolJet applies to them, and what ToolJet stores. To get a project onto your computer, see [Build Locally](./local-development.md). To edit the same files in ToolJet, see [Edit in the Browser](./editor.md).
+This page is the reference for the files in a React Builder project: what each one holds, the rules ToolJet applies to them, and what ToolJet stores. To get a project onto a local computer, see [Build Locally](./local-development.md). To edit the same files in ToolJet, see [Edit in the Browser](./editor.md).
 
-A React Builder app is a React and TypeScript project. `app.json` names the app and its screens, and `frontend/` holds the source. ToolJet keeps sign-in, permissions, environments, data sources and queries. You get a project when you clone an app or create one with the CLI.
+A React Builder app is a React and TypeScript project. `app.json` names the app and its screens, and `frontend/` holds the source. ToolJet keeps sign-in, permissions, environments, datasources and queries. A project is created by cloning an app or by creating one with the CLI.
 
 ## Files and Folders
 
@@ -72,7 +72,7 @@ For the files the CLI writes in `.tooljet/`, see the [CLI reference](./cli-refer
 | `routes[].id` | Yes | Starts with a lowercase letter. Lowercase letters, digits, `_` and `-` only. Unique. |
 | `routes[].path` | Yes | Starts with `/`. Unique. Use `:name` for a parameter, for example `/orders/:id`. |
 | `routes[].title` | No | The screen's title. Shown in menus and in the screen's page name. |
-| `version` | No | `{ "id", "name" }` of the version you work on. Set it with `tooljet app checkout`. Local only: ToolJet never stores it. |
+| `version` | No | `{ "id", "name" }` of the version in use. Set it with `tooljet app checkout`. Local only: ToolJet never stores it. |
 | `branch` | No | A workspace Git branch to work on instead of the branch the folder's Git checkout is on. |
 
 The CLI checks `app.json` every time it reads it, and stops with a message such as `app.json: route id "Orders" must start with a letter and use lowercase letters, digits, _ and -`. The rules:
@@ -91,7 +91,7 @@ Each route in `app.json` gets a hidden page in the app, named `<code page handle
 
 `tooljet app dev` and `tooljet app publish` create these pages. `pull` doesn't change them.
 
-Keep the `<Route path>` elements in your code the same as the paths in `app.json`. `tooljet app check` fails when they differ, because permissions are tied to the routes in `app.json`.
+Keep the `<Route path>` elements in the code the same as the paths in `app.json`. `tooljet app check` fails when they differ, because permissions are tied to the routes in `app.json`.
 
 :::warning
 Limiting a screen hides the screen, not its code. Everyone who can open the app downloads every screen's code, constants and query names. Don't put secrets in a screen's code. To protect data, limit the queries the screen uses.
@@ -99,7 +99,7 @@ Limiting a screen hides the screen, not its code. Everyone who can open the app 
 
 ## `tooljet.gen.ts`
 
-`frontend/src/tooljet.gen.ts` gives your code typed access to the app's queries, routes and pages. `tooljet app pull` and `tooljet app dev` write it from the app. Don't edit it: your changes are overwritten on the next pull. GitSync never commits it.
+`frontend/src/tooljet.gen.ts` gives the code typed access to the app's queries, routes and pages. `tooljet app pull` and `tooljet app dev` write it from the app. Don't edit it: changes are overwritten on the next pull. GitSync commits it with the rest of the code, because the browser build can't generate it.
 
 It exports:
 
@@ -116,7 +116,7 @@ Query results are typed as follows:
 
 - ToolJet Database **List rows** and **Join tables** queries return `<Table>Row[]`.
 - Other ToolJet Database operations return `<Table>Row[] | unknown`.
-- Every other query (SQL, REST API and so on) returns `unknown`. Narrow or cast the result in your code.
+- Every other query (SQL, REST API and so on) returns `unknown`. Narrow or cast the result in the code.
 
 Column types map to `number`, `boolean` or `string`. JSON columns map to `unknown`. Nullable columns add `| null`.
 
@@ -127,7 +127,7 @@ For how to use these, see [Runtime API](./runtime-api.md).
 The project uses Tailwind CSS with theme tokens defined as CSS variables. The build loads CSS in this order:
 
 1. `frontend/styles/theme.css`
-2. The CSS your code imports
+2. The CSS the code imports
 3. `frontend/styles/global.css`
 
 ### Theme Tokens
@@ -150,7 +150,7 @@ ToolJet sets the `--tj-*` variables. The second value is a fallback.
 | `--chart-1` to `--chart-5` | Chart series |
 | `--radius`, `--font-sans` | Corner radius and font |
 
-To use your own brand colors instead of the app theme, replace the `var(--tj-...)` with a color:
+To use brand colors instead of the app theme, replace the `var(--tj-...)` with a color:
 
 ```css
 --primary: #0f766e;
@@ -192,7 +192,7 @@ Put app-wide rules and overrides for a UI library in `frontend/styles/global.css
 | `table.tsx` | `Table`, `TableHeader`, `TableBody`, `TableHead`, `TableRow`, `TableCell` |
 | `tabs.tsx` | `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent`, `Switch`, `Tooltip`, `TooltipProvider`, `TooltipTrigger`, `TooltipContent`, `Separator` |
 
-You can edit these files or add your own components.
+These files can be edited, and new components can be added.
 
 ### Charts
 
@@ -221,7 +221,7 @@ A series without a color gets the app's accent, then the theme's chart colors. G
 
 ### Other UI Libraries
 
-You can use another React UI library, such as Ant Design or MUI. Connect it to the app theme with `useToolJetTheme()`, which returns ready-made theme objects for both. See [Use the App Theme in Code](./runtime-api.md#use-the-app-theme-in-code).
+Another React UI library, such as Ant Design or MUI, can also be used. Connect it to the app theme with `useToolJetTheme()`, which returns ready-made theme objects for both. See [Use the App Theme in Code](./runtime-api.md#use-the-app-theme-in-code).
 
 ## Dependencies
 
@@ -236,9 +236,9 @@ React Builder installs packages from the npm registry only.
 
 ToolJet refuses to store a project that breaks these rules, with a message such as `frontend/package.json: ... React Builder installs packages from the npm registry only: no git, URL, file:, link:, alias or workspace dependencies.`
 
-ToolJet stores `frontend/.npmrc` with only `ignore-scripts=true`. It drops every other line, including registry tokens. Keep registry authentication in your user-level `.npmrc`.
+ToolJet stores `frontend/.npmrc` with only `ignore-scripts=true`. It drops every other line, including registry tokens. Keep registry authentication in the user-level `.npmrc`.
 
-To check packages before you add them, run `tooljet app vet`. It checks for malware and known vulnerabilities, versions published in the last 7 days, licenses and the blocklist. See [`tooljet app vet`](./cli-reference.md#tooljet-app-vet).
+To check packages before adding them, run `tooljet app vet`. It checks for malware and known vulnerabilities, versions published in the last 7 days, licenses and the blocklist. See [`tooljet app vet`](./cli-reference.md#tooljet-app-vet).
 
 ## What ToolJet Stores
 
@@ -251,7 +251,7 @@ When the CLI or the editor saves the app's code, ToolJet stores only the project
 
 ToolJet doesn't store:
 
-- Binary files, such as PNG images or fonts. Use SVG, or load them from an address your workspace allows. See [Allow Outside Addresses](./security-policy.md#allow-outside-addresses).
+- Binary files, such as PNG images or fonts. Use SVG, or load them from an address the workspace allows. See [Allow Outside Addresses](./security-policy.md#allow-outside-addresses).
 - Dot files and folders inside `frontend/src/` and `frontend/styles/`, and `node_modules`.
 - The `version` field in `app.json`.
 - Lockfiles other than `package-lock.json`.
@@ -275,8 +275,8 @@ A React Builder app's code has one owner at a time. Each upload from the CLI set
 | <div style={{ width:"150px"}}> Owner </div> | <div style={{ width:"450px"}}> What It Means </div> |
 |:---------- | :---------- |
 | ToolJet | The default. The **Code** panel, the style inspector and ToolJet AI edit the code, and `tooljet app dev --source platform` stores each local save on ToolJet. |
-| Your repository | The code is edited in a Git repository and uploaded with `tooljet app dev --source repository` or `tooljet app publish --source repository`. In ToolJet, the code is read-only: the **Code** panel shows "This code lives in your Git repository", and the style inspector and **Fix with AI** are off. |
+| Repository | The code is edited in a Git repository and uploaded with `tooljet app dev --source repository` or `tooljet app publish --source repository`. In ToolJet, the code is read-only: the **Code** panel shows "This code lives in your Git repository", and the style inspector and **Fix with AI** are off. |
 
-Uploading with `--source platform` hands editing to ToolJet. If ToolJet holds editor or AI changes that your upload would overwrite, the upload is refused until you run `tooljet app source-pull`, or pass `--source-replace` to replace them.
+Uploading with `--source platform` hands editing to ToolJet. If ToolJet holds editor or AI changes that the upload would overwrite, the upload is refused until `tooljet app source-pull` is run, or pass `--source-replace` to replace them.
 
 With GitSync, the owner also decides what a commit does to the app's `code/` folder. See [Move an App](./versions-and-history.md#move-an-app).

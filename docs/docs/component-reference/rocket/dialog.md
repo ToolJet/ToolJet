@@ -18,7 +18,7 @@ The **Dialog** component opens a window over the app with a title, a description
 | Confirm label | Text on the confirm button. | Text. Default: `Continue` |
 | Cancel label | Text on the cancel button. | Text. Default: `Cancel` |
 | Destructive confirm | Makes the confirm button red, for actions that delete or remove data. | On or off. Default: On |
-| Components in the body | Adds an area under the description where you can drop other components, such as a form. What users type there is kept when the dialog closes. | On or off. Default: On |
+| Components in the body | Adds an area under the description for other components, such as a form. What users type there is kept when the dialog closes. | On or off. Default: On |
 | Confirm and cancel buttons | Shows the confirm and cancel buttons at the bottom of the dialog. | On or off. Default: On |
 | Body height (px) | Height of the components area in pixels. | Number. Default: `240` |
 
@@ -74,7 +74,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `confirmText` | Text on the confirm button. | `{{components.dialog1.confirmText}}` |
 | `cancelText` | Text on the cancel button. | `{{components.dialog1.cancelText}}` |
 | `destructive` | Makes the confirm button red, for actions that delete or remove data. | `{{components.dialog1.destructive}}` |
-| `showBody` | Adds an area under the description where you can drop other components, such as a form. What users type there is kept when the dialog closes. | `{{components.dialog1.showBody}}` |
+| `showBody` | Adds an area under the description for other components, such as a form. What users type there is kept when the dialog closes. | `{{components.dialog1.showBody}}` |
 | `showFooter` | Shows the confirm and cancel buttons at the bottom of the dialog. | `{{components.dialog1.showFooter}}` |
 | `bodyHeight` | Height of the components area in pixels. | `{{components.dialog1.bodyHeight}}` |
 | `show` | `true` while the dialog is open. | `{{components.dialog1.show}}` |
@@ -92,4 +92,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Dialog radius | — |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

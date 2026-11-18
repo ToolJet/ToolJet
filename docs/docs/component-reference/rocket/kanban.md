@@ -15,7 +15,7 @@ The **Kanban** component shows records as cards on a board, with one column per 
 | Columns (in order) | The board's columns in order, each with an `id` and a `title`, and optionally a `color` that adds a dot. A status that no column lists gets its own column at the end. | Array |
 | Status field | The field in each card whose value decides which column the card sits in. Moving a card changes this field. | Text. Default: `status` |
 | Id field | The field that identifies each card. Actions such as **Move card** and **Delete card** find cards by this value. | Text. Default: `id` |
-| Card content | What each card shows. **Fields** builds the card from the field properties below; **Custom** lets you design the card with components that read the card as `{{cardData}}`. | Fields, Custom. Default: Fields |
+| Card content | What each card shows. **Fields** builds the card from the field properties below; **Custom** builds the card from components that read the card as `{{cardData}}`. | Fields, Custom. Default: Fields |
 | Card height (custom content) | Minimum height of each card when **Card content** is **Custom**. A card grows to fit its components. | Number. Default: `96` |
 | Title field | The field shown as the card's title. | Text. Default: `title` |
 | Description field | The field shown as text under the title. Leave empty to hide it. | Text |
@@ -32,7 +32,7 @@ The **Kanban** component shows records as cards on a board, with one column per 
 | Collapsible columns | Shows a button on each column header that collapses the column to a narrow strip. | On or off. Default: On |
 | Columns collapsed at start (ids) | The ids of columns that start collapsed. | Array |
 | Drag to move | Lets users drag cards to reorder them or move them to another column. | On or off. Default: On |
-| Add card button on columns | Shows an **Add card** button at the bottom of each column. Clicking it fires **On add card click** so you can open a form; it does not add a card by itself. | On or off. Default: Off |
+| Add card button on columns | Shows an **Add card** button at the bottom of each column. Clicking it fires **On add card click**, which can open a form. It does not add a card by itself. | On or off. Default: Off |
 | Delete button on cards | Shows a delete button on each card that removes the card from the board. | On or off. Default: Off |
 | Empty column message | Text shown in a column that has no cards. | Text. Default: `No cards` |
 | Badge colours by value | Colors for badge values, for example `{ High: '#dc2626' }`. A value can also be `{ text, background }`. | Object |
@@ -93,7 +93,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `columns` | The board's columns in order, each with an `id` and a `title`, and optionally a `color` that adds a dot. A status that no column lists gets its own column at the end. | `{{components.kanban1.columns}}` |
 | `statusField` | The field in each card whose value decides which column the card sits in. Moving a card changes this field. | `{{components.kanban1.statusField}}` |
 | `idField` | The field that identifies each card. Actions such as **Move card** and **Delete card** find cards by this value. | `{{components.kanban1.idField}}` |
-| `cardLayout` | What each card shows. **Fields** builds the card from the field properties below; **Custom** lets you design the card with components that read the card as `{{cardData}}`. | `{{components.kanban1.cardLayout}}` |
+| `cardLayout` | What each card shows. **Fields** builds the card from the field properties below; **Custom** builds the card from components that read the card as `{{cardData}}`. | `{{components.kanban1.cardLayout}}` |
 | `cardHeight` | Minimum height of each card when **Card content** is **Custom**. A card grows to fit its components. | `{{components.kanban1.cardHeight}}` |
 | `titleField` | The field shown as the card's title. | `{{components.kanban1.titleField}}` |
 | `descriptionField` | The field shown as text under the title. Leave empty to hide it. | `{{components.kanban1.descriptionField}}` |
@@ -110,7 +110,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `collapsibleColumns` | Shows a button on each column header that collapses the column to a narrow strip. | `{{components.kanban1.collapsibleColumns}}` |
 | `collapsedColumns` | The ids of columns that start collapsed. | `{{components.kanban1.collapsedColumns}}` |
 | `allowDrag` | Lets users drag cards to reorder them or move them to another column. | `{{components.kanban1.allowDrag}}` |
-| `allowAdd` | Shows an **Add card** button at the bottom of each column. Clicking it fires **On add card click** so you can open a form; it does not add a card by itself. | `{{components.kanban1.allowAdd}}` |
+| `allowAdd` | Shows an **Add card** button at the bottom of each column. Clicking it fires **On add card click**, which can open a form. It does not add a card by itself. | `{{components.kanban1.allowAdd}}` |
 | `allowDelete` | Shows a delete button on each card that removes the card from the board. | `{{components.kanban1.allowDelete}}` |
 | `emptyText` | Text shown in a column that has no cards. | `{{components.kanban1.emptyText}}` |
 | `badgeColors` | Colors for badge values, for example `{ High: '#dc2626' }`. A value can also be `{ text, background }`. | `{{components.kanban1.badgeColors}}` |
@@ -147,4 +147,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Card shadow | Small |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

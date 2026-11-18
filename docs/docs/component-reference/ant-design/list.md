@@ -5,14 +5,14 @@ title: List
 
 <div className="badge badge--primary">Ant Design</div>
 
-The **List** component shows records as rows, each with a title, a description and optional avatar and tag, or as rows of your own components. Use it for feeds, notifications or any list users pick an item from.
+The **List** component shows records as rows, each with a title, a description and optional avatar and tag, or as rows of custom components. Use it for feeds, notifications or any list users pick an item from.
 
 ## Properties
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
 |:--|:--|:--|
 | Data source | The records to show, usually a query's data, one row per record. | Array |
-| Render item | What each row shows. `meta` shows the fields set below; `components` repeats the components you place in the first row for every record, which read the record as `{{listItem}}`. | Fields (List.Item.Meta), Components. Default: Fields (List.Item.Meta) |
+| Render item | What each row shows. `meta` shows the fields set below; `components` repeats the components placed in the first row for every record, which read the record as `{{listItem}}`. | Fields (List.Item.Meta), Components. Default: Fields (List.Item.Meta) |
 | Title field | Field shown as each row's title. | Text. Default: `title` |
 | Description field | Field shown under the title. | Text. Default: `description` |
 | Avatar field | Field shown as an avatar at the left. An image URL shows the picture; other text shows its first letter. | Text |
@@ -72,7 +72,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | <div style={{ width:"150px"}}> Variable </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
 | `dataSource` | The records to show, usually a query's data, one row per record. | `{{components.list1.dataSource}}` |
-| `renderItem` | What each row shows. `meta` shows the fields set below; `components` repeats the components you place in the first row for every record, which read the record as `{{listItem}}`. | `{{components.list1.renderItem}}` |
+| `renderItem` | What each row shows. `meta` shows the fields set below; `components` repeats the components placed in the first row for every record, which read the record as `{{listItem}}`. | `{{components.list1.renderItem}}` |
 | `titleField` | Field shown as each row's title. | `{{components.list1.titleField}}` |
 | `descriptionField` | Field shown under the title. | `{{components.list1.descriptionField}}` |
 | `avatarField` | Field shown as an avatar at the left. An image URL shows the picture; other text shows its first letter. | `{{components.list1.avatarField}}` |
@@ -104,4 +104,4 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | Border radius | — |
 | Box shadow | `0px 0px 0px 0px #00000040` |
 
-A default that starts with **Theme:** follows the app's theme until you set the style yourself. See [App Themes](../../app-builder/custom-theme.md).
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).
