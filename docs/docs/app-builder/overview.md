@@ -32,18 +32,24 @@ The build mode is selected when an application is created, and the application k
 
 ToolJet applications are commonly used for internal tools such as:
 
-* Inventory management system
-* Purchase order tracker
-* Customer onboarding portal
-* Loan origination and underwriting tool
-* Fraud detection dashboard
-* Expense approval workflow
-* Timesheet tracker
-* Employee onboarding app
-* Internal ticketing system
-* Compliance reporting dashboard
-* Sales pipeline tracker
-* Digital asset management portal
+<div style={{ columnCount: 2, columnGap: '2rem' }}>
+
+- Inventory management system
+- Purchase order tracker
+- Customer onboarding portal
+- Loan origination and underwriting tool
+- Fraud detection dashboard
+- Expense approval workflow
+- Timesheet tracker
+- Employee onboarding app
+- Internal ticketing system
+- Compliance reporting dashboard
+- Sales pipeline tracker
+- Digital asset management portal
+
+</div>
+
+To see ToolJet in action, explore the demos on [ToolJet Discover](https://discover.tooljet.com/).
 
 <br/>
 ---
