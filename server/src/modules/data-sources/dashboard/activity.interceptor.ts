@@ -19,8 +19,7 @@ export type ActivitySignal = {
 };
 
 // GET by environment is the call the frontend makes when the connection form opens or switches
-// environment. The v1 PUT (rename included) is an edit; once the Task 6 v2 PUT lands it matches
-// the same suffix, so no further change is needed here.
+// environment. A PUT on the data source (v1 update or v2 save-all) is an edit.
 const VIEW_ROUTE = /\/data-sources\/:id\/environment\/:environment_id$/;
 const EDIT_ROUTE = /\/data-sources\/:id$/;
 

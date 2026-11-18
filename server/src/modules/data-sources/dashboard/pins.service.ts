@@ -61,7 +61,6 @@ export class DataSourcesPinsService {
     const visible = await this.dashboardService.visibleIds(user, branchId, pinIds);
     const ids = dto.resource_ids.filter((id) => visible.has(id));
     if (ids.length === 0) return;
-    // ponytail: MAX+1 without a lock; concurrent pins may tie on position (ties fall through to the mode order).
     // Conflicting (already-pinned) rows leave a gap in positions; only relative order matters.
     await this.dataSource.query(
       `INSERT INTO pinned_items (user_id, branch_id, ${PIN_COLUMN[dto.resource_type]}, position)

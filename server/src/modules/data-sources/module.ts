@@ -92,7 +92,6 @@ export class DataSourcesModule extends SubModule {
         GitSyncDataSourceCreateGuard,
         GitSyncDataSourceEditGuard,
         DataSourceActivityService,
-        // Factory: the service is CE-only, but its deps must be the edition-resolved classes.
         {
           provide: DataSourcesDashboardService,
           useFactory: (
