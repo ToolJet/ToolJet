@@ -1,0 +1,135 @@
+---
+id: marketplace-plugin-azurerepos
+title: Azure Repos
+---
+
+ToolJet offers the capability to establish a connection with Azure Repos in order to read from and commit to Git repositories for source control and version management.
+
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
+## Connection
+
+To connect with Azure Repos, you will need the **Organization Name (e.g., https://dev.azure.com/your-organization)** and a **Personal Access Token (PAT)**.
+Generate a Personal Access Token(PAT) by navigating to User Settings, then selecting Personal Access Tokens. Ensure the token includes the necessary scopes based on the operations you want to perform.
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/connection.png" alt="Azure Repos Connection TJ"/>
+
+## Supported Operations
+
+1. **[Get Azure Repository](#get-azure-repository)**
+2. **[Get Repository Commits](#get-repository-commits)**
+3. **[Get Repository Branches](#get-repository-branches)**
+4. **[Get Repository Pushes](#get-repository-pushes)**
+5. **[Get Project Pull Requests](#get-project-pull-requests)**
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/listops.png" alt="Azure Repos supported operations"/>
+
+
+### Get Azure Repository
+
+Lists the repositories in an Azure DevOps project, with the details of each repository.
+
+#### Required Parameter
+
+- **Project**
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/azure-query.png" alt="get azure repository"/>
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+
+```json
+Project: test
+```
+
+</details>
+
+### Get Repository Commits
+
+Fetches a list of commits made to a selected repository.
+
+#### Required Parameters
+
+- **Project name** - Name of the Azure DevOps project.
+- **Repository commits** - Name or ID of the repository.
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/commit-query.png" alt="get repository commits"/>
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+
+```json
+Project name: test
+Repository commits: ToolJet
+```
+
+</details>
+
+### Get Repository Branches
+
+Lists all branches available in a specified Azure repository.
+
+#### Required Parameters
+
+- **Project name** - Name of the Azure DevOps project.
+- **Repository commits** - Name or ID of the repository.
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/branch-query.png" alt="get repository branches"/>
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+
+```json
+Project: test
+Repository commits: ToolJet
+```
+
+</details>
+
+### Get Repository Pushes
+
+Retrieves information about recent pushes made to the repository.
+
+#### Required Parameters
+
+- **Project name** - Name of the Azure DevOps project.
+- **Repository commits** - Name or ID of the repository.
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins//azurerepos/push-query.png" alt="get repository pushes"/>
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+
+```json
+Project: test
+Repository commits: ToolJet
+```
+
+</details>
+
+### Get Project Pull Requests
+
+Fetches pull requests across all repositories in the selected project.
+
+#### Required Parameter
+
+- **Project pull requests** - Name of the Azure DevOps project.
+
+#### Optional Parameter
+
+- **Status** - Filters pull requests by status: **All**, **Active**, **Completed**, or **Abandoned**.
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/pr-query.png" alt="get project pull requests"/>
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+
+```json
+Project pull requests: test
+```
+
+</details>
+
+

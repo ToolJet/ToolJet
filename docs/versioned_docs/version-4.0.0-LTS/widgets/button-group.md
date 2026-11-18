@@ -1,0 +1,86 @@
+---
+id: button-group
+title: Button Group
+---
+
+The **Button Group** component is used to group a series of buttons together in a single line. It is used to group related buttons.
+
+:::info
+This is a legacy component. You'll find it in the **Legacy** section of the components panel. Check out the new version of the button group component [here](/docs/widgets/button-group-v2).
+:::
+
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/widgets/button-group/buttongroup1.png" alt="Button group" />
+
+## Properties
+
+| <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| :----------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| label | Sets the title of the button-group. | Any **String** value: `Select the options` or `{{queries.queryname.data.text}}`.     |
+| values | Sets the values of the Button Group items. | **Array** of strings and numbers: `{{[1,2,3]}}`. |
+| Labels | Sets the labels of the Button Group items. | **Array** of strings and numbers: `{{['A','B','C']}}`. |
+| Default selected | Sets the initial selected values. | **Array** of strings and numbers: `{{[1]}}` selects the button whose value is `1`. |
+| Enable multiple selection | Toggle on or off to enable multiple selection.    | **Boolean** value: `{{true}}` or `{{false}}`. |
+
+## Events
+
+| <div style={{ width:"100px"}}> Events </div> | <div style={{ width:"100px"}}> Description </div>                    |
+| :------------------------------------------- | :------------------------------------------------------------------- |
+| On click                                     | Triggers whenever the user clicks on the button in the Button Group. |
+
+:::info
+Check [Action Reference](/docs/actions/run-query) docs to get the detailed information about all the **Actions**.
+:::
+
+## Component Specific Actions (CSA)
+
+The following action can be triggered using an event or a RunJS query:
+
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+| :------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
+| Select option | Selects buttons by value. Pass a value or an array of values. Values not in **values** are ignored, and matching is type-strict, so `1` doesn't match `"1"`. With multiple selection off, only the first matching value is selected. Doesn't fire **On click**. | `components.buttongrouplegacy1.setSelected(1)` |
+
+## Exposed Variables
+
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
+| selected | Holds the selected button values. When the app loads, and after a click with multiple selection off, it's an array (e.g., `[1]`). After a click with multiple selection on, or after **Select option**, it's a comma-separated string (e.g., `1,2`). | Accessible dynamically with JS (for e.g., `{{components.buttongrouplegacy1.selected}}`). |
+
+## General
+
+#### Tooltip
+
+A Tooltip is often used to display additional information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as plain text.
+
+<img className="screenshot-full" src="/img/widgets/button-group/grouptooltip.png" alt="Button group layout" />
+
+## Devices
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+## Styles
+
+| <div style={{ width:"135px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| :------------------------------------------ | :------------------------------------------------ | :--------------------------------------------------- |
+| Background color | Set a background color for the buttons in buttons group. | Choose a color from the picker or enter the Hex color code. ex: `#000000`. |
+| Text color | Set a text color for the buttons in buttons group. | Choose a color from the picker or enter the Hex color code. ex: `#000000`. |
+| Visibility | Make the component visible or hidden. | **`{{true}}`** or **`{{false}}`**, By default, its value is set to `{{true}}`. |
+| Disable | Disable the component. | **`{{true}}`** or **`{{false}}`**, By default, its value is set to `{{false}}`. |
+| Border radius | Add a border radius to the buttons in the component using this property. | Any numerical value from `0` to `100`. |
+| Selected text color | Use this property to modify the text color of selected button. | Choose a color from the picker or enter the Hex color code. ex: `#000000`. |
+| Selected background color | Use this property to modify the background color of selected button. | Choose a color from the picker or enter the Hex color code. ex: `#000000`. |
+| Alignment | Aligns the buttons to the **Left**, **Center** or **Right**. | By default, its value is set to **Left**. |
+| Padding | Sets the padding around the component. | **Default** keeps the standard padding; **None** removes it. |
+| Box shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent X, Y, blur, spread, and color. Example: `9px 11px 5px 5px #00000040`. |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::

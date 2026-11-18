@@ -1,0 +1,95 @@
+---
+id: questionnaire
+title: Questionnaire
+---
+
+<div className="badge badge--primary">Rocket 2.0</div>
+
+The **Questionnaire** component asks a series of questions one at a time, with answer cards, a progress bar and **Previous**, **Skip**, **Next** and **Submit** buttons. Use it for onboarding flows, surveys or intake forms.
+
+## Properties
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Items | Questions to ask, in order. Each has a `name` and a `prompt`, and can set a `description`, `required`, a `type` of `single`, `multiple` or `text`, `choices`, an `other` free-text choice and a `placeholder`. | Array |
+| Default answers | Answers filled in when the questionnaire starts, keyed by question `name`. | Object |
+| Answer shortcuts | Keys shown on the answer cards that pick an answer: **Letters** (A, B, C), **Numbers** (1, 2, 3) or **None**. | Letters, Numbers, None. Default: Letters |
+| Show progress | Shows a bar and a count of how far through the questions the user is. | On or off. Default: On |
+| Submit button label | Text on the button shown on the last question. | Text. Default: `Submit` |
+| Completed title | Heading shown after the user submits. | Text. Default: `Thanks for your answers` |
+| Completed text | Message shown under **Completed title** after the user submits. | Text. Default: `We will use them to set up your workspace.` |
+| Surface | **Card** draws the questionnaire in a bordered box; **Plain** shows it without one. | Card, Plain. Default: Card |
+
+### Additional Actions
+
+Each of these can be switched on or off, or set with a logical expression by clicking **fx**.
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Visibility | Shows or hides the component. Hidden components keep their space unless Collapse when hidden is on. | On or off. Default: On |
+| Collapse when hidden | Removes the hidden component's space, so the components below it move up. | On or off. Default: Off |
+| Loading state | Shows the component's loading look and blocks interaction, for example while a query runs. | On or off. Default: Off |
+| Disable | Stops the user from interacting with the component. | On or off. Default: Off |
+
+### Devices
+
+| <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+|:--|:--|:--|
+| Show on desktop | Shows the component in the desktop layout. | On or off. Default: On |
+| Show on mobile | Shows the component in the mobile layout. | On or off. Default: Off |
+
+## Events
+
+Add a handler from the **Events** section of the properties panel. See [Event Triggers](../../app-builder/events/event-triggers.md) for the steps.
+
+| <div style={{ width:"180px"}}> Event </div> | <div style={{ width:"420px"}}> Description </div> |
+|:--|:--|
+| On step changed | Triggers when the questionnaire moves to another question. |
+| On submit | Triggers when the user submits and every required question is answered. |
+
+## Component Specific Actions (CSA)
+
+Run these from an event handler with **Control Component**, or from a RunJS query. See [Component Specific Actions](../../app-builder/events/use-case/csa.md).
+
+| <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
+|:--|:--|:--|
+| Reset | Restores the default answers and goes back to the first question. | `components.questionnaire1.reset()` |
+| Go to question | Moves to the question given by **Index or name**, a position starting at `0` or a question's `name`. It reopens a submitted questionnaire. | `components.questionnaire1.goTo("{{0}}")` |
+| Set visibility | Shows the component when `true`, hides it when `false`. | `components.questionnaire1.setVisibility(false)` |
+| Set disable | Disables the component when `true`, enables it when `false`. | `components.questionnaire1.setDisable(false)` |
+| Set loading | Turns the loading state on with `true`, off with `false`. | `components.questionnaire1.setLoading(false)` |
+
+## Exposed Variables
+
+| <div style={{ width:"150px"}}> Variable </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
+|:--|:--|:--|
+| `items` | Questions to ask, in order. Each has a `name` and a `prompt`, and can set a `description`, `required`, a `type` of `single`, `multiple` or `text`, `choices`, an `other` free-text choice and a `placeholder`. | `{{components.questionnaire1.items}}` |
+| `defaultAnswers` | Answers filled in when the questionnaire starts, keyed by question `name`. | `{{components.questionnaire1.defaultAnswers}}` |
+| `shortcuts` | Keys shown on the answer cards that pick an answer: **Letters** (A, B, C), **Numbers** (1, 2, 3) or **None**. | `{{components.questionnaire1.shortcuts}}` |
+| `showProgress` | Shows a bar and a count of how far through the questions the user is. | `{{components.questionnaire1.showProgress}}` |
+| `submitLabel` | Text on the button shown on the last question. | `{{components.questionnaire1.submitLabel}}` |
+| `completeTitle` | Heading shown after the user submits. | `{{components.questionnaire1.completeTitle}}` |
+| `completeText` | Message shown under **Completed title** after the user submits. | `{{components.questionnaire1.completeText}}` |
+| `surface` | **Card** draws the questionnaire in a bordered box; **Plain** shows it without one. | `{{components.questionnaire1.surface}}` |
+| `answers` | The answers keyed by question `name`: the chosen value for a single choice, a list of values for a multiple choice, and the text for a text question. | `{{components.questionnaire1.answers}}` |
+| `currentIndex` | The position of the current question, starting at `0`. | `{{components.questionnaire1.currentIndex}}` |
+| `currentItem` | The current question's `name`, `prompt`, `type` and `required`. | `{{components.questionnaire1.currentItem}}` |
+| `isComplete` | Whether the user has submitted the questionnaire. | `{{components.questionnaire1.isComplete}}` |
+| `isVisible` | Whether the component is visible. | `{{components.questionnaire1.isVisible}}` |
+| `isLoading` | Whether the component is in its loading state. | `{{components.questionnaire1.isLoading}}` |
+| `isDisabled` | Whether the component is disabled. | `{{components.questionnaire1.isDisabled}}` |
+
+## Styles
+
+| <div style={{ width:"250px"}}> Style </div> | <div style={{ width:"250px"}}> Default </div> |
+|:--|:--|
+| Accent (progress, selected answer, buttons) | Theme: Brand primary |
+| Background | Theme: Surface 1 |
+| Border and answer card border | Theme: Default border |
+| Question color | Theme: Primary text |
+| Description and answer description color | Theme: Placeholder text |
+| Radius | — |
+| Question typeface | Theme font |
+| Box shadow | `0px 0px 0px 0px #00000040` |
+
+A default that starts with **Theme:** follows the app's theme until the style is set to another value. See [App Themes](../../app-builder/custom-theme.md).

@@ -1,0 +1,158 @@
+---
+id: firestore
+title: Cloud Firestore
+---
+
+ToolJet can connect to **Cloud Firestore** databases to read and write data.
+
+## Connection
+
+To establish a connection with the **Cloud Firestore** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Cloud Firestore as the data source.
+
+ToolJet requires the following to connect to Cloud Firestore:
+
+- **Private key**
+
+For generating a private key check out **[Firestore's official documentation](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#iam-service-account-keys-create-console)**.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-connection.png"  alt="cloud firestore connection"/>
+
+## Querying Firestore
+
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **Cloud Firestore** datasource added in previous step.
+3. Select the desired operation from the dropdown and enter the required parameters.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
+
+:::tip
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/app-builder/custom-code/transform-data)**
+:::
+
+## Supported Operations
+
+- **[Get Document](#get-document)**
+- **[Query collection](#query-collection)**
+- **[Add Document to Collection](#add-document-to-collection)**
+- **[Update Document](#update-document)**
+- **[Set Document](#set-document)**
+- **[Bulk update using document ID](#bulk-update-using-document-id)**
+- **[Delete Document](#delete-document)**
+
+### Get Document
+
+Use this operation to get the data in a document.
+
+#### Required Parameters
+
+- **Path**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-get-doc.png" alt="firestore get"/>
+
+### Query Collection
+
+Use this operation to query all the documents in a collection. Check firestore doc **[here](https://firebase.google.com/docs/reference/js/v8/firebase.database.Query)**.
+
+#### Required Parameters
+
+- **Path**
+
+#### Optional parameters
+
+- **Order**
+- **Order type**
+- **Limit**
+- **Field**
+- **Operator**
+- **Value**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-query-collection.png" alt="firestore collection" style={{marginBottom:'15px'}}/>
+
+### Add Document to Collection
+
+Use this operation for creating a new document in a collection.
+
+#### Required Parameters
+
+- **Collection**
+- **Body**.
+
+#### Example
+
+```json
+{
+  "Author": "Shubh",
+  "id": 5
+}
+```
+
+<img style={{marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-add-doc.png" alt="firestore add document" />
+
+### Update Document
+
+Use this operation for updating the existing document in a collection. Also, it only updates fields if they exist, but doesn't replace an entire object like **[set operation](#set-document)**.
+
+#### Required Parameters
+
+- **Path**
+- **Body**
+
+#### Example
+
+```json
+{
+  "Author": "Raj Deepak",
+  "id": 3
+}
+```
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-update-doc.png" alt="firestore update" />
+
+### Set Document
+
+This operation replaces your chosen object with the value that you provide. So if your object has 5 fields, and you use Set operation and pass object with 3 fields, it will now have 3 fields.
+
+#### Required Parameters
+
+- **Path**
+- **Body**
+
+#### Example
+
+```json
+{
+  "Author": "Meena",
+  "id": 9
+}
+```
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-set-doc.png" alt="firestore set" />
+
+### Bulk Update Using Document ID
+
+Use this operation for bulk updating documents.
+
+#### Required Parameters
+
+- **Collection**
+- **Key for document ID**
+- **Records**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-bulk-update.png" alt="firestore bulk" />
+
+### Delete Document
+
+Use this operation for deleting a document in a collection.
+
+#### Required Parameters
+
+- **Path**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-del-doc.png" alt="firestore delete"/>
+
+## Transforming Firestore Query Result for Table Widget
+
+The Firestore query result is in the form of object so we’ll need to transform it into array.
+
+```js
+return (data = Array(data));
+```

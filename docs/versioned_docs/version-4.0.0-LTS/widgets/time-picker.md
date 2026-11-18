@@ -1,0 +1,134 @@
+---
+id: time-picker
+title: Time Picker
+---
+
+The **Time Picker** component can be used for selecting time without date input. It offers customizable formats, validation, and styling.
+
+## Properties
+
+| Property      | Description                                                                 | Expected Value                         |
+| :------------ | :-------------------------------------------------------------------------- | -------------------------------------- |
+| Label         | The text to be used as the label for the Time Picker.                       | String (e.g., `Time of Arrival`).      |
+| Time Format   | Select the time format from the dropdown. Default time format is **HH:mm**. | Select from dropdown (e.g. `hh:mm A`). |
+| Placeholder   | Hint text shown in the input when no time is selected.                      | String (default: `Select time`).       |
+| Default value | The default value that the component will hold when the app is loaded.      | String (e.g., `11:00`).                |
+
+## Events
+
+| Event     | Description                                                |
+| :-------- | :--------------------------------------------------------- |
+| On select | Triggers whenever the user selects a time.                 |
+| On focus  | Triggers whenever the user clicks inside the time picker.  |
+| On blur   | Triggers whenever the user clicks outside the time picker. |
+
+:::info
+Check [Action Reference](/docs/actions/run-query) docs to get the detailed information about all the **Actions**.
+:::
+
+## Component Specific Actions (CSA)
+
+Following actions of component can be controlled using the Component Specific Actions(CSA), which can be triggered by an event or by the given RunJS query:
+
+| Action                | <div style={{ width:"200px"}}> Description </div>                 | How To Access                                       |
+| :-------------------- | :---------------------------------------------------------------- | :-------------------------------------------------- |
+| setValue( )           | Sets the time value. Pass a time in the selected **Time Format**, or pass a format as the second argument. Doesn't trigger **On select**. | `components.timepicker1.setValue('10:30')`          |
+| setMinTime( )         | Sets the minimum time that can be selected in the time picker.    | `components.timepicker1.setMinTime(value)`          |
+| setMaxTime( )         | Sets the maximum time that can be selected in the time picker.    | `components.timepicker1.setMaxTime(value)`          |
+| clearValue( )         | Clears the value of the time picker.                              | `components.timepicker1.clearValue()`               |
+| setVisibility( )      | Sets the visibility state of the time picker.                     | `components.timepicker1.setVisibility(false)`            |
+| setLoading( )         | Sets the loading state of the time picker.                        | `components.timepicker1.setLoading(true)`           |
+| setDisable( )         | Disables the time picker.                                         | `components.timepicker1.setDisable(true)`               |
+| setFocus( )           | Sets the focus of the cursor on the time picker and opens it.     | `components.timepicker1.setFocus()`                 |
+| setBlur( )            | Removes the focus of the cursor from the time picker.             | `components.timepicker1.setBlur()`                  |
+
+## Exposed Variables
+
+Following exposed variables can be dynamically accessed using the given JS query:
+
+| Variables     | <div style={{ width:"200px"}}> Description </div>                    | How To Access                              |
+| :------------ | :------------------------------------------------------------------- | :----------------------------------------- |
+| value         | Holds the selected time as a string in the selected **Time Format**, or `null` when empty. | `{{components.timepicker1.value}}`         |
+| label         | Holds the value of the component's label.                            | `{{components.timepicker1.label}}`         |
+| minTime       | Holds the earliest selectable time.                                  | `{{components.timepicker1.minTime}}`       |
+| maxTime       | Holds the latest selectable time.                                    | `{{components.timepicker1.maxTime}}`       |
+| timeFormat    | Returns the time format as a string.                                 | `{{components.timepicker1.timeFormat}}`    |
+| isValid       | Indicates if the input meets validation criteria.                    | `{{components.timepicker1.isValid}}`      |
+| isMandatory   | Indicates if the field is Mandatory.                                 | `{{components.timepicker1.isMandatory}}`   |
+| isLoading     | Indicates if the component is loading.                               | `{{components.timepicker1.isLoading}}`     |
+| isVisible     | Indicates if the component is visible.                               | `{{components.timepicker1.isVisible}}`     |
+| isDisabled    | Indicates if the component is disabled.                              | `{{components.timepicker1.isDisabled}}`    |
+
+## Validation
+
+| Validation Option         | <div style={{ width:"200px"}}> Description </div>                                      | Expected Value                                                                                                                                          |
+| :------------------------ | :------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Min Time                  | Specifies the earliest selectable time. Any time before the Min Time will be disabled. | String (for e.g., `05:35`)                                                                                                                              |
+| Max Time                  | Specifies the latest selectable time. Any time after the Max Time will be disabled.    | String (for e.g., `15:45`)                                                                                                                              |
+| Custom validation         | Add a custom validation for the time input using the ternary operator.                 | Custom Validation Statement (for e.g., `{{moment(components.timepicker1.value, 'HH:mm').format('HH:mm') > moment().format('HH:mm') ? true : 'You are late!' }}`) |
+| Make this field mandatory | Makes the field mandatory.                                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.                            |
+
+## Additional Actions
+
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div>                            | <div style={{ width:"250px"}}> Configuration Options </div>                                                                  |
+| :------------------------------------------- | :--------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| Enable clear button | Shows a clear button inside the field while it has a value. Clicking it clears the value. The button is hidden while the component is disabled or loading. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Loading state                                | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility                                   | Controls component visibility.                                               | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable                                      | Enables or disables the component.                                           | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Select the time of arrival.`).                                                                                |
+
+## Devices
+
+| Property        | Description                                  | Expected Value                                                                                                                    |
+| :-------------- | :------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile  | Makes the component visible in mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+## Styles
+
+### Label
+
+| Property    | Description                                                                        |
+| ----------- | ---------------------------------------------------------------------------------- |
+| Label Color | Sets the color of the label text.                                                  |
+| Size | Sets the font size of the label, in pixels. Defaults to `12`. Enter a number or click on **fx** and enter code that returns a number. |
+| Alignment   | Determines the label's position, choose between top/side and left/right alignment. |
+| Direction | When alignment is set to `side`, places the label to the left or right of the field. Select **Left** or **Right** using the icon toggles. |
+| Width       | Specifies the percentage of the component’s width that the label should occupy.    |
+
+### Color
+
+| Property   | Description                                                         |
+| ---------- | ------------------------------------------------------------------- |
+| Background | Sets the background color of the component.                         |
+| Border     | Defines the color of the component’s border.                        |
+| Accent     | Specifies the accent color used for highlights or focus indicators. |
+| Text       | Sets the text color inside the component.                           |
+| Error text | Color applied to error messages.                                    |
+
+### Input Field
+
+| Property      | Description                                                              |
+| ------------- | ------------------------------------------------------------------------ |
+| Icon          | Adds an icon to the component, usually for visual cues or actions.       |
+| Icon Color    | Sets the color of the icon.                                              |
+| Icon Position | Defines the position of the icon (e.g., left, right).                    |
+| Border radius | Controls the roundness of the component's input field.                   |
+| Box shadow    | Applies shadow styling to the input field.                               |
+| Padding       | Sets the internal spacing between the content and the input field edges. |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::
+
+:::info
+Any property having **fx** button next to its field can be **programmatically configured**.
+:::
