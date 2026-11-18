@@ -503,19 +503,22 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
 }
 
 /*
- * Webhook rate limits count in Redis (`@modules/rate-limit`), so unlike in-memory throttling they
- * outlive a test app: a suite that trips a limit would leave the route blocked for the next one.
- * Each suite starts with no counters, as it did when throttling was per app.
+ * Webhook rate limits (`tj:rl:*`, `@modules/rate-limit`) and workflow execution quotas
+ * (`tj:wfq:*`) count in Redis, so they outlive a test app: a suite that trips a limit would leave
+ * it tripped for the next one, and quota counters would not match the suite's database rows.
+ * Each suite starts with no counters.
  */
 async function clearRateLimitCounters(app: INestApplication): Promise<void> {
   try {
     const redis = app.get(RedisService, { strict: false }).getClient();
-    let cursor = '0';
-    do {
-      const [next, keys] = await redis.scan(cursor, 'MATCH', 'tj:rl:*', 'COUNT', 500);
-      if (keys.length) await redis.del(...keys);
-      cursor = next;
-    } while (cursor !== '0');
+    for (const pattern of ['tj:rl:*', 'tj:wfq:*']) {
+      let cursor = '0';
+      do {
+        const [next, keys] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 500);
+        if (keys.length) await redis.del(...keys);
+        cursor = next;
+      } while (cursor !== '0');
+    }
   } catch {
     // No Redis in this suite: nothing was counted there either
   }
