@@ -140,6 +140,7 @@ export const Select = (props: Record<string, unknown>) => {
     commit(many ? stored : (stored[0] ?? ''));
   };
   const commit = (stored: unknown) => {
+    release();
     if (!valueSetter.set(stored)) return;
     // Set with the value, so an onChange handler reads them already.
     const picked = optionsFor(stored);
@@ -161,7 +162,13 @@ export const Select = (props: Record<string, unknown>) => {
     // The option's own value: the number 1 with only a text '1' option exposes '1', as a pick of it does.
     return offered(single) ? valueForKey(options, keyForValue(options, single)) : '';
   };
-  useOfferedValue<unknown>(value, (next) => setValue(next as string), shape, `${prune}|${mode}|${JSON.stringify(options)}`);
+  const release = useOfferedValue<unknown>(
+    value,
+    (next) => setValue(next as string),
+    shape,
+    `${prune}|${mode}|${JSON.stringify(options)}`,
+    props.value
+  );
   // The selected option(s) follow the value however it changes (a pick, a binding, a Form's clearForm emptying it) and
   // the options' labels: set only on a pick, a cleared Form kept exposing the old choice.
   const optionsKey = JSON.stringify(options);
@@ -174,6 +181,7 @@ export const Select = (props: Record<string, unknown>) => {
   // A cleared Form also forgets the last search, and in multiple and tags modes empties to no values ([]), not to the
   // single mode's '' the host clears every text value to.
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => {
+    release();
     setSearchValue('');
     if (many) setValue([] as unknown as string);
   });

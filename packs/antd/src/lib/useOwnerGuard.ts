@@ -61,16 +61,25 @@ const useWatch = (active: boolean, check: () => boolean, onBlocked: () => void) 
   }, [active, check]);
 };
 
-/** Whether `scroller` holds `el`, across the shadow roots `el` sits in. */
+/** The node above `node` as drawn: a slotted element's slot, a shadow root's host. */
+const drawnParent = (node: Node): Node | null =>
+  (node instanceof Element && node.assignedSlot) || node.parentNode || (node instanceof ShadowRoot ? node.host : null);
+
+/** Whether `scroller` holds `el` as drawn, across shadow roots and the slots `el` is projected into. */
 const holds = (scroller: Node, el: Element | null): boolean => {
-  let node: Node | null = el;
-  while (node) {
-    if (scroller === node || scroller.contains(node)) return true;
-    const root = node.getRootNode();
-    node = root instanceof ShadowRoot ? root.host : null;
-  }
+  for (let node: Node | null = el; node; node = drawnParent(node)) if (node === scroller) return true;
   return false;
 };
+
+/** The shadow roots around `el` as drawn: a scroll event stays inside the root it happens in. */
+const shadowRootsAround = (el: Element | null): ShadowRoot[] => {
+  const roots: ShadowRoot[] = [];
+  for (let node: Node | null = el; node; node = drawnParent(node)) if (node instanceof ShadowRoot) roots.push(node);
+  return roots;
+};
+
+/** The scroll events AntProvider sends to each pack root so Ant realigns its popups: no scroll of their own. */
+export const forwardedScrolls = new WeakSet<Event>();
 
 /** The popup sits in the shared layer, so a scroll around the anchor left it behind its field (QA PKB-73). */
 const useCloseOnScroll = (active: boolean, anchorRef: RefObject<Element | null>, onScroll: () => void) => {
@@ -81,10 +90,11 @@ const useCloseOnScroll = (active: boolean, anchorRef: RefObject<Element | null>,
     const listener = (e: Event) => {
       // The real scroller, not the shadow host the event was retargeted to.
       const target = e.composedPath?.()[0] ?? e.target;
-      if (target instanceof Node && holds(target, anchorRef.current)) latest.current();
+      if (!forwardedScrolls.has(e) && target instanceof Node && holds(target, anchorRef.current)) latest.current();
     };
-    window.addEventListener('scroll', listener, true);
-    return () => window.removeEventListener('scroll', listener, true);
+    const targets: EventTarget[] = [window, ...shadowRootsAround(anchorRef.current)];
+    targets.forEach((t) => t.addEventListener('scroll', listener, true));
+    return () => targets.forEach((t) => t.removeEventListener('scroll', listener, true));
   }, [active, anchorRef]);
 };
 

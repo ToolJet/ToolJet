@@ -43,3 +43,39 @@ describe('Ant Design ButtonGroup: Mode changed by a binding', () => {
     expect(v.events).toEqual([]);
   });
 });
+
+describe('Ant Design ButtonGroup: values whose type changes', () => {
+  // Break this catches: buttons going from the text '1' to the number 1 look like the same buttons, so the value stays
+  // the text '1' and a query comparing it with the number 1 stops matching.
+  test('[PackComponent-ANTBUTTONGROUP-003] buttons changed from text 1 to number 1 expose the number', async () => {
+    const v = await mountPack('antd', 'ButtonGroup', { mode: 'single', value: '1', buttons: ['1', '2'] });
+    await settle();
+    expect(v.exposed.value).toBe('1');
+
+    await v.update({ props: { mode: 'single', value: '1', buttons: [1, 2] } });
+    await settle();
+
+    expect(v.exposed.value).toBe(1);
+  });
+});
+
+describe('Ant Design ButtonGroup: a clear after a dropped value', () => {
+  // Break this catches: a value cleared after the drop comes back when a button later offers the dropped one.
+  test('[PackComponent-ANTBUTTONGROUP-004] Clear after the drop keeps no selection when the button arrives', async () => {
+    const v = await mountPack(
+      'antd',
+      'ButtonGroup',
+      { mode: 'single', value: 'qa', buttons: ['design'] },
+      { actions: new Map() }
+    );
+    await settle();
+    expect(v.exposed.value).toBe('');
+    await v.run('clear');
+    await settle();
+
+    await v.update({ props: { mode: 'single', value: 'qa', buttons: ['design', 'qa'] } });
+    await settle();
+
+    expect(v.exposed.value).toBe('');
+  });
+});

@@ -48,6 +48,34 @@ describe('Ant Design Select: a value no option offers', () => {
 
     expect(v.exposed.value).toBe('design');
   });
+
+  // Break this catches: a value cleared after the drop (setFieldValue to empty) comes back when the options later offer
+  // the dropped one, because the clear left the value as it was ('').
+  test('[PackComponent-ANTSELECT-008] a clear after the drop keeps the field empty when the option arrives', async () => {
+    const v = await mountPack('antd', 'Select', { value: 'qa', options: [design] }, { actions: new Map() });
+    await settle();
+    await v.run('setFieldValue', '');
+    await settle();
+
+    await v.update({ props: { value: 'qa', options: [design, { label: 'QA', value: 'qa' }] } });
+    await settle();
+
+    expect(v.exposed.value).toBe('');
+  });
+
+  // Break this catches: Value changed to empty after the drop does not count as a new value, so the old dropped value
+  // comes back when the options offer it.
+  test('[PackComponent-ANTSELECT-009] Value changed to empty after the drop keeps the field empty when the option arrives', async () => {
+    const v = await mountPack('antd', 'Select', { value: 'qa', options: [design] });
+    await settle();
+    await v.update({ props: { value: '', options: [design] } });
+    await settle();
+
+    await v.update({ props: { value: '', options: [design, { label: 'QA', value: 'qa' }] } });
+    await settle();
+
+    expect(v.exposed.value).toBe('');
+  });
 });
 
 describe('Ant Design Select: a bound number', () => {
@@ -108,6 +136,24 @@ describe('Ant Design Select: the open list when the page scrolls', () => {
     await settle();
 
     expect(v.exposed.open).toBe(true);
+  });
+
+  // Break this catches: a scroll event does not leave a shadow root, so a scroll inside a pack container's own scroller
+  // (an Ant List's rows, the field slotted into one) never reached the window listener and the list stayed open.
+  test('[PackComponent-ANTSELECT-010] a scroll of a shadow-root scroller the field is slotted into closes the list', async () => {
+    const v = await mountPack('antd', 'Select', { options: [design] });
+    const host = document.createElement('div');
+    document.body.append(host);
+    const scroller = document.createElement('div');
+    scroller.append(document.createElement('slot'));
+    host.attachShadow({ mode: 'open' }).append(scroller);
+    host.append(v.view.container);
+    await openList(v);
+
+    fireEvent.scroll(scroller);
+    await settle();
+
+    expect(v.exposed.open).toBe(false);
   });
 });
 

@@ -1269,12 +1269,6 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
       : [str(current)];
   // Exposed as the buttons give their values: 1 stays 1, not '1'. A value no button has stays as it was given.
   const rawOf = (v: string) => list.find((b) => b.value === v)?.raw ?? v;
-  // A selection it already has changes nothing and fires nothing (lib/sameValue).
-  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as string));
-  const set = (next: string[]) => {
-    const values = next.map(rawOf);
-    if (valueSetter.set(mode === 'multiple' ? values : (values[0] ?? ''))) onChange();
-  };
   // The value takes the mode's shape and holds only values a button has: single to multiple kept text, multiple to
   // single kept an array, and actions or none kept the old selection. Not while there are no buttons yet (a query not
   // yet run). Fires no event. A value dropped in actions mode comes back when the mode selects again (QA PF-005).
@@ -1285,12 +1279,21 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
     const kept = list.length ? sel.filter((x) => list.some((b) => b.value === x)) : sel;
     return mode === 'multiple' ? kept.map(rawOf) : kept.length ? rawOf(kept[0]) : '';
   };
-  useOfferedValue<unknown>(
+  // The buttons' own values (1 and '1' differ), so a type change shapes the value again.
+  const release = useOfferedValue<unknown>(
     value,
     (next) => setValue(next as string),
     shape,
-    `${mode}|${JSON.stringify(list.map((b) => b.value))}`
+    `${mode}|${JSON.stringify(list.map((b) => b.raw))}`,
+    props.value
   );
+  // A selection it already has changes nothing and fires nothing (lib/sameValue).
+  const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as string));
+  const set = (next: string[]) => {
+    release();
+    const values = next.map(rawOf);
+    if (valueSetter.set(mode === 'multiple' ? values : (values[0] ?? ''))) onChange();
+  };
   ToolJet.useAction(
     { name: 'setSelected', displayName: 'Set selected', params: [{ handle: 'value', displayName: 'Value' }] },
     (v) => {

@@ -789,6 +789,7 @@ export const TreeSelect = (props: Record<string, unknown>) => {
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
+    release();
     const arr = Array.isArray(v) ? v.map(str) : v === undefined || v === null || v === '' ? [] : [str(v)];
     if (valueSetter.set(many ? arr : (arr[0] ?? ''))) onChange();
   };
@@ -799,7 +800,7 @@ export const TreeSelect = (props: Record<string, unknown>) => {
   const tree = toTree(treeData);
   const offered = treeValues(tree);
   const prune = tree.length > 0 && !loading;
-  useOfferedValue<unknown>(
+  const release = useOfferedValue<unknown>(
     value,
     (next) => setValue(next as never),
     (v) => {
@@ -807,12 +808,14 @@ export const TreeSelect = (props: Record<string, unknown>) => {
       const kept = prune ? all.filter((x) => offered.has(x)) : all;
       return many ? kept : (kept[0] ?? '');
     },
-    `${prune}|${many}|${[...offered].join('\u0000')}`
+    `${prune}|${many}|${[...offered].join('\u0000')}`,
+    props.value
   );
   // A cleared Form empties a multiple TreeSelect to no values ([]), not to the '' the host clears text values to.
-  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(
-    () => many && setValue([] as unknown as string)
-  );
+  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => {
+    release();
+    if (many) setValue([] as unknown as string);
+  });
   useFieldActions(change, props.value);
   const list = useOwnedPopup(disabled, (open) => !open && check.touch());
   // A value no node offers shows the placeholder, as in the Select: Ant drew it as bare text (QA AD-35).
@@ -969,15 +972,17 @@ export const Cascader = (props: Record<string, unknown>) => {
   // hold it (lib/offeredValue, QA AD-57). Not while the options are empty or loading, so a default waits for them.
   // Fires no event.
   const prune = cascade.length > 0 && !loading;
-  useOfferedValue<string[]>(
+  const release = useOfferedValue<string[]>(
     path,
     (next) => setValue(next as never),
     (p) => (prune && p.length > 0 && !holds(cascade, p) ? [] : p),
-    `${prune}|${JSON.stringify(cascade)}`
+    `${prune}|${JSON.stringify(cascade)}`,
+    props.value
   );
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
+    release();
     if (!valueSetter.set(toArray(v).map(str))) return;
     onChange();
   };

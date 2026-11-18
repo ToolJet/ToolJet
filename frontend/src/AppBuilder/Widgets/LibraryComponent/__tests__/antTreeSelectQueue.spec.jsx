@@ -48,3 +48,36 @@ describe('Ant Design TreeSelect: Expand all by default changed after load', () =
     expect(openGroups()).toBe(0);
   });
 });
+
+describe('Ant Design TreeSelect and Cascader: a clear after a dropped value', () => {
+  const design = { title: 'Design', label: 'Design', value: 'design' };
+  const qa = { title: 'QA', label: 'QA', value: 'qa' };
+
+  // Break this catches: a value cleared after the drop comes back when the tree later offers the dropped one.
+  test('[PackComponent-ANTTREESELECT-002] TreeSelect cleared after the drop stays empty when the node arrives', async () => {
+    const v = await mountPack('antd', 'TreeSelect', { value: 'qa', treeData: [design] }, { actions: new Map() });
+    await settle();
+    expect(v.exposed.value).toBe('');
+    await v.run('setFieldValue', '');
+    await settle();
+
+    await v.update({ props: { value: 'qa', treeData: [design, qa] } });
+    await settle();
+
+    expect(v.exposed.value).toBe('');
+  });
+
+  // Break this catches: a path cleared after the drop comes back when the options later hold the dropped one.
+  test('[PackComponent-ANTTREESELECT-003] Cascader cleared after the drop stays empty when the path arrives', async () => {
+    const v = await mountPack('antd', 'Cascader', { value: ['qa'], options: [design] }, { actions: new Map() });
+    await settle();
+    expect(v.exposed.value).toEqual([]);
+    await v.run('setFieldValue', []);
+    await settle();
+
+    await v.update({ props: { value: ['qa'], options: [design, qa] } });
+    await settle();
+
+    expect(v.exposed.value).toEqual([]);
+  });
+});

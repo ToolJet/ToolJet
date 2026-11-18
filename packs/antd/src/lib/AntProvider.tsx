@@ -5,6 +5,7 @@ import { createCache, StyleProvider } from '@ant-design/cssinjs';
 // The module Ant's icons insert their styles through (@ant-design/icons utils.js useInsertStyles).
 import { clearContainerCache } from 'rc-util/es/Dom/dynamicCSS';
 import { usePortalContainer } from './usePortalContainer';
+import { forwardedScrolls } from './useOwnerGuard';
 import { RADIUS_HINT, THEME_COLOR, useThemeColor, useThemeNumber } from './themeStyles';
 
 // Must match THEME in scripts/extract-styles.mjs: the static antd.css is written for these class names (`.tj`
@@ -198,7 +199,12 @@ const forwardScroll = (e: Event) => {
   if (scrollFrame) return;
   scrollFrame = requestAnimationFrame(() => {
     scrollFrame = 0;
-    scrollRoots.forEach((r) => r !== e.target && r.dispatchEvent(new Event('scroll')));
+    scrollRoots.forEach((r) => {
+      if (r === e.target) return;
+      const forwarded = new Event('scroll');
+      forwardedScrolls.add(forwarded);
+      r.dispatchEvent(forwarded);
+    });
   });
 };
 const watchScroll = (root: Element) => {
