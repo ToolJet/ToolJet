@@ -101,7 +101,9 @@ describe('TableGrid | header', () => {
     render(
       <TooljetDatabaseContext.Provider
         value={
-          { foreignKeys: [{ column_names: ['views'] }] } as unknown as React.ContextType<typeof TooljetDatabaseContext>
+          { selectedTable: {}, foreignKeys: [{ column_names: ['views'] }] } as unknown as React.ContextType<
+            typeof TooljetDatabaseContext
+          >
         }
       >
         <TableGrid columns={COLUMNS} rows={ROWS} isLoading={false} canEditSchema />

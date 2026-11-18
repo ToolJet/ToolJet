@@ -15,12 +15,19 @@ export type GridColumn = {
   Header: string;
   accessor: string;
   dataType: string;
-  constraints_type?: { is_primary_key?: boolean };
+  constraints_type?: { is_primary_key?: boolean; is_not_null?: boolean };
   /** Display text for a value, when the stored value is not what the cell should read (time zones). */
   formatValue?: (value: unknown) => string;
 };
 export type GridRow = Record<string, unknown>;
-export type GridColumnMeta = { column: GridColumn; isPrimaryKey: boolean; isForeignKey: boolean };
+/** The column a single-column foreign key points at: where the cell editor reads its values. */
+export type ForeignKeyTarget = { tableId: string; column: string };
+export type GridColumnMeta = {
+  column: GridColumn;
+  isPrimaryKey: boolean;
+  isForeignKey: boolean;
+  foreignKey?: ForeignKeyTarget;
+};
 
 export const SELECT_COLUMN_ID = 'select';
 export const SELECT_COLUMN_WIDTH = 40;
@@ -36,6 +43,7 @@ type UseTableGridArgs = {
   columns: GridColumn[];
   rows: GridRow[];
   foreignKeyColumns: ReadonlySet<string>;
+  foreignKeyTargets: ReadonlyMap<string, ForeignKeyTarget>;
   sorting: SortingState;
   rowSelection: RowSelectionState;
   onRowSelectionChange: OnChangeFn<RowSelectionState>;
@@ -49,6 +57,7 @@ export const useTableGrid = ({
   columns,
   rows,
   foreignKeyColumns,
+  foreignKeyTargets,
   sorting,
   rowSelection,
   onRowSelectionChange,
@@ -73,6 +82,7 @@ export const useTableGrid = ({
           column,
           isPrimaryKey: primaryKeys.includes(column.accessor),
           isForeignKey: foreignKeyColumns.has(column.accessor),
+          foreignKey: foreignKeyTargets.get(column.accessor),
         };
         return {
           id: column.accessor,
@@ -85,7 +95,7 @@ export const useTableGrid = ({
         };
       }),
     ],
-    [columns, primaryKeys, pinnedKey, foreignKeyColumns]
+    [columns, primaryKeys, pinnedKey, foreignKeyColumns, foreignKeyTargets]
   );
 
   const columnPinning = useMemo(

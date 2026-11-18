@@ -2,7 +2,10 @@ import React, { memo } from 'react';
 import type { Column, ColumnSizingState, Row } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/Rocket/Checkbox/Checkbox';
 import { cn } from '@/lib/utils';
+import { cellDomId } from './cellNavigation';
 import { CellContent } from './cells/CellContent';
+import { CELL_RING } from './cells/CellEditorShell';
+import { CellEditor } from './cells/CellEditor';
 import { isNumericType } from './cells/dataTypes';
 import {
   ADD_COLUMN_WIDTH,
@@ -25,6 +28,15 @@ type GridRowProps = {
   /** Props, not read from the row: the row object outlives a selection change, so this is what re-renders it. */
   isSelected: boolean;
   canSelect: boolean;
+  /** Column of the focused cell when it is in this row, so only the affected rows re-render. */
+  focusedColumnId: string | null;
+  /** The focused cell of this row is being edited. */
+  isEditing: boolean;
+  /** Stable callbacks: this row is memoised. */
+  onFocusCell: (rowIndex: number, columnId: string) => void;
+  onEditCell: (rowIndex: number, columnId: string) => void;
+  onSaveCell: (rowIndex: number, columnId: string, value: string | null) => Promise<boolean>;
+  onStopEditing: () => void;
 };
 
 // The Cypress hook the previous grid had: id-<row id>-column-<column>-table-cell, lower-cased.
@@ -34,7 +46,19 @@ const cellDataCy = (row: Row<GridRowData>, columnId: string) =>
 // The token is translucent, so it is laid over the opaque cell colour: pinned cells stay solid while scrolling.
 const SELECTED_OVERLAY = 'tw-bg-gradient-to-r tw-from-interactive-selected tw-to-interactive-selected';
 
-function GridRowComponent({ row, start, showTrailingCell, isSelected, canSelect }: GridRowProps) {
+function GridRowComponent({
+  row,
+  start,
+  showTrailingCell,
+  isSelected,
+  canSelect,
+  focusedColumnId,
+  isEditing,
+  onFocusCell,
+  onEditCell,
+  onSaveCell,
+  onStopEditing,
+}: GridRowProps) {
   return (
     <div
       role="row"
@@ -43,26 +67,34 @@ function GridRowComponent({ row, start, showTrailingCell, isSelected, canSelect 
       className="tw-absolute tw-left-0 tw-top-0 tw-flex tw-w-full"
       style={{ height: ROW_HEIGHT, transform: `translateY(${start}px)` }}
     >
-      {row.getVisibleCells().map((cell) => {
+      {row.getVisibleCells().map((cell, columnIndex) => {
         const { column } = cell;
         const pinned = column.getIsPinned() === 'left';
         const meta = column.columnDef.meta as GridColumnMeta | undefined;
         const isSelect = column.id === SELECT_COLUMN_ID;
+        const isFocused = column.id === focusedColumnId;
+        const isEditingCell = isFocused && isEditing;
         return (
           <div
             key={cell.id}
+            id={cellDomId(row.index, columnIndex)}
             role="gridcell"
             data-cy={cellDataCy(row, column.id)}
             className={cn(
               'tw-flex tw-shrink-0 tw-items-center tw-overflow-hidden tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-bg-page-weak',
               'tw-font-body-large',
-              isSelect ? 'tw-pl-4' : 'tw-px-3',
+              isSelect ? 'tw-pl-4' : isEditingCell ? 'tw-p-0' : 'tw-px-3',
               pinned && 'tw-sticky tw-z-10',
               column.getIsLastColumn('left') && 'tw-border-r',
               isSelected && SELECTED_OVERLAY,
+              isFocused && CELL_RING,
               meta && isNumericType(meta.column.dataType) && 'tw-justify-end'
             )}
             style={{ width: column.getSize(), height: ROW_HEIGHT, left: pinned ? column.getStart('left') : undefined }}
+            // Not while editing: the editor sits inside this cell (its popover too, by way of the React tree), so
+            // every click in it would land here and take the focus back from its field.
+            onClick={isSelect || isEditingCell ? undefined : () => onFocusCell(row.index, column.id)}
+            onDoubleClick={isSelect || isEditingCell ? undefined : () => onEditCell(row.index, column.id)}
           >
             {isSelect ? (
               <Checkbox
@@ -72,13 +104,22 @@ function GridRowComponent({ row, start, showTrailingCell, isSelected, canSelect 
                 onCheckedChange={(checked) => row.toggleSelected(checked === true)}
               />
             ) : (
-              meta && (
+              meta &&
+              (isEditingCell ? (
+                <CellEditor
+                  value={cell.getValue()}
+                  column={meta.column}
+                  foreignKey={meta.foreignKey}
+                  onSave={(value) => onSaveCell(row.index, column.id, value)}
+                  onCancel={onStopEditing}
+                />
+              ) : (
                 <CellContent
                   value={cell.getValue()}
                   isPrimaryKey={meta.isPrimaryKey}
                   formatValue={meta.column.formatValue}
                 />
-              )
+              ))
             )}
           </div>
         );

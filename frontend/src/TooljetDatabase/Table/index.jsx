@@ -163,6 +163,7 @@ const Table = () => {
             isRefetching={rowsRefetching}
             canEditSchema={canEditSchema}
             canSelectRows={canEditTjdb}
+            canEditCells={canEditTjdb}
             onAddRow={isEmptyTable ? undefined : openCreateRowDrawer}
             onAddColumn={() => setIsCreateColumnDrawerOpen(true)}
           />
