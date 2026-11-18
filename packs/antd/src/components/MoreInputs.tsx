@@ -27,7 +27,7 @@ import { boundedTree } from '../lib/tree';
 import { UNIT } from './DatePicker';
 import { useValueSetter } from '../lib/sameValue';
 import { useOfferedValue } from '../lib/offeredValue';
-import { isBlankDate, parseDate as strictDate, parseTime } from '../lib/dates';
+import { isBlankDate, parseDate as strictDate, parseTime, PERIOD_FORMAT, startOfPeriod } from '../lib/dates';
 import '../styles/controls.css';
 
 const useFieldActions = (change: (v: unknown) => void, initial: unknown) => {
@@ -514,8 +514,16 @@ export const RangePicker = (props: Record<string, unknown>) => {
   }, [JSON.stringify(value)]);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  // A week, month, quarter or year picker shows that period and saves its first day, as the Date Picker does: it showed
+  // and saved full dates (PKB-71). The Format it was dropped with (YYYY-MM-DD) counts as no Format for a period picker.
+  const period = str(picker) || 'date';
+  const ownFormat = str(format).trim();
+  const shownFormat =
+    ownFormat && !(period !== 'date' && ownFormat === 'YYYY-MM-DD') ? ownFormat : period === 'date' ? 'YYYY-MM-DD' : PERIOD_FORMAT[period];
   const change = (next: unknown) => {
-    const arr = toArray(next).map((v) => (dayjs.isDayjs(v) ? v : parseDate(v)));
+    const arr = toArray(next)
+      .map((v) => (dayjs.isDayjs(v) ? v : parseDate(v)))
+      .map((d) => (d ? startOfPeriod(d as Dayjs, period) : d));
     if (valueSetter.set(arr.length === 2 && arr[0] && arr[1] ? arr.map((d) => (d as Dayjs).format('YYYY-MM-DD')) : []))
       onChange();
   };
@@ -548,7 +556,7 @@ export const RangePicker = (props: Record<string, unknown>) => {
                 id={fieldId as never}
                 style={{ width: '100%' }}
                 value={pair[0] || pair[1] ? [pair[0] ?? null, pair[1] ?? null] : null}
-                format={str(format).trim() || 'YYYY-MM-DD'}
+                format={shownFormat}
                 picker={picker as 'date'}
                 minDate={parseDate(minDate) ?? undefined}
                 maxDate={parseDate(maxDate) ?? undefined}
