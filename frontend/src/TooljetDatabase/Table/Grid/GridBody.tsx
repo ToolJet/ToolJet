@@ -10,11 +10,12 @@ type GridBodyProps = {
   /** Created by the component that owns the scroll element, so it finds the element on mount. */
   virtualizer: Virtualizer<HTMLDivElement, Element>;
   showTrailingCell: boolean;
+  canSelectRows: boolean;
   /** Rows are about to be replaced by a refetch. */
   dimmed?: boolean;
 };
 
-export function GridBody({ table, virtualizer, showTrailingCell, dimmed = false }: GridBodyProps) {
+export function GridBody({ table, virtualizer, showTrailingCell, canSelectRows, dimmed = false }: GridBodyProps) {
   const { rows } = table.getRowModel();
   const { columnSizing } = table.getState();
   const columns = table.getVisibleLeafColumns();
@@ -35,6 +36,8 @@ export function GridBody({ table, virtualizer, showTrailingCell, dimmed = false 
             columnSizing={columnSizing}
             columns={columns}
             showTrailingCell={showTrailingCell}
+            isSelected={row.getIsSelected()}
+            canSelect={canSelectRows}
           />
         ) : null;
       })}

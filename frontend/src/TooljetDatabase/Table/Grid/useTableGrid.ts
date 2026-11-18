@@ -4,6 +4,8 @@ import {
   useReactTable,
   type ColumnDef,
   type ColumnSizingState,
+  type OnChangeFn,
+  type RowSelectionState,
   type SortingState,
 } from '@tanstack/react-table';
 import { listAllPrimaryKeyColumns } from '../../constants';
@@ -14,6 +16,8 @@ export type GridColumn = {
   accessor: string;
   dataType: string;
   constraints_type?: { is_primary_key?: boolean };
+  /** Display text for a value, when the stored value is not what the cell should read (time zones). */
+  formatValue?: (value: unknown) => string;
 };
 export type GridRow = Record<string, unknown>;
 export type GridColumnMeta = { column: GridColumn; isPrimaryKey: boolean; isForeignKey: boolean };
@@ -33,11 +37,23 @@ type UseTableGridArgs = {
   rows: GridRow[];
   foreignKeyColumns: ReadonlySet<string>;
   sorting: SortingState;
+  rowSelection: RowSelectionState;
+  onRowSelectionChange: OnChangeFn<RowSelectionState>;
+  canSelectRows: boolean;
 };
 
 // Headless: the TanStack instance and nothing that renders. The first primary key column is pinned after the
-// checkbox column; sorting is display-only, so the server's order is what the rows already are.
-export const useTableGrid = ({ columns, rows, foreignKeyColumns, sorting }: UseTableGridArgs) => {
+// checkbox column; sorting is display-only, so the server's order is what the rows already are. Selection is controlled
+// by the caller, keyed by row id (the primary key values).
+export const useTableGrid = ({
+  columns,
+  rows,
+  foreignKeyColumns,
+  sorting,
+  rowSelection,
+  onRowSelectionChange,
+  canSelectRows,
+}: UseTableGridArgs) => {
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
 
   const primaryKeys = useMemo(() => listAllPrimaryKeyColumns(columns) as string[], [columns]);
@@ -101,7 +117,9 @@ export const useTableGrid = ({ columns, rows, foreignKeyColumns, sorting }: UseT
     enableColumnPinning: true,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
-    state: { sorting, columnSizing, columnPinning },
+    enableRowSelection: canSelectRows,
+    state: { sorting, columnSizing, columnPinning, rowSelection },
     onColumnSizingChange: setColumnSizing,
+    onRowSelectionChange,
   });
 };

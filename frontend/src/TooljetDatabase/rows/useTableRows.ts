@@ -21,18 +21,27 @@ type TjdbViewState = {
   viewTableId: string | null;
 };
 
+const selectRowsQuery = (state: TjdbViewState) =>
+  buildRowsQuery({
+    filters: state.queryFilters,
+    sort: state.sortFilters,
+    page: state.pageCount,
+    pageSize: state.pageSize,
+  });
+
+// Names the page of rows on screen: it changes with the environment, the open table, and every filter, sort, page
+// and page size change. Page-scoped state (a row selection) resets when it changes instead of watching each input.
+export const useRowsViewKey = () =>
+  useTjdbStore(
+    (state: TjdbViewState) =>
+      `${state.selectedEnvironment?.id ?? ''}|${state.viewTableId ?? ''}|${selectRowsQuery(state)}`
+  );
+
 // The open page of a table's rows, derived from the store's view: changing filters, sort, page or environment
 // in the store is what triggers the read. Writes don't refetch by hand; they call useInvalidateTableRows.
 export const useTableRows = (tableId: string | undefined, { enabled = true }: { enabled?: boolean } = {}) => {
   // A string selector, so the component re-renders only when the query itself changes.
-  const query = useTjdbStore((state: TjdbViewState) =>
-    buildRowsQuery({
-      filters: state.queryFilters,
-      sort: state.sortFilters,
-      page: state.pageCount,
-      pageSize: state.pageSize,
-    })
-  );
+  const query = useTjdbStore(selectRowsQuery);
   const environmentId = useTjdbStore((state: TjdbViewState) => state.selectedEnvironment?.id ?? null);
   // The view is reset for a newly opened table one render after the table changes (openTableView). Until then it
   // still holds the previous table's filters, which can name columns this table lacks.

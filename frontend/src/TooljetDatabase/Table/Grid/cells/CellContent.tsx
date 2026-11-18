@@ -3,15 +3,15 @@ import TruncatedText from '@/components/ui/Rocket/Tooltip/TruncatedText';
 import { cn } from '@/lib/utils';
 import { formatCellValue } from './dataTypes';
 
-type CellContentProps = { value: unknown; isPrimaryKey: boolean };
+type CellContentProps = { value: unknown; isPrimaryKey: boolean; formatValue?: (value: unknown) => string };
 
 // Text for every type: booleans read true/false and JSON is its serialised form.
 // Alignment is the cell's job (numbers right-align), so this only truncates.
-export function CellContent({ value, isPrimaryKey }: CellContentProps) {
+export function CellContent({ value, isPrimaryKey, formatValue = formatCellValue }: CellContentProps) {
   if (value === null || value === undefined) {
     return <span className="tw-text-text-placeholder">NULL</span>;
   }
-  const text = formatCellValue(value);
+  const text = formatValue(value);
   return (
     <TruncatedText
       as="span"

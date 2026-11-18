@@ -109,31 +109,23 @@ const Table = () => {
 
   // Primary keys first, as the grid pins the first of them next to the checkbox column.
   const gridColumns = useMemo(
-    () => [
-      ...columns.filter((column) => column.constraints_type?.is_primary_key),
-      ...columns.filter((column) => !column.constraints_type?.is_primary_key),
-    ],
-    [columns]
-  );
-
-  // Timestamps are shown in the time zone configured for their column, which is data the grid knows nothing about.
-  const gridRows = useMemo(() => {
-    const timestampColumns = columns.filter((column) => column.dataType === TIMESTAMP_TYPE);
-    if (timestampColumns.length === 0) return selectedTableData;
-    return selectedTableData.map((row) => {
-      const formatted = { ...row };
-      timestampColumns.forEach(({ accessor, Header }) => {
-        if (row[accessor] === null || row[accessor] === undefined) return;
-        formatted[accessor] = convertDateToTimeZoneFormatted(
-          row[accessor],
-          getConfigurationProperty(Header, 'timezone', getLocalTimeZone())
-        );
-      });
-      return formatted;
-    });
+    () =>
+      [
+        ...columns.filter((column) => column.constraints_type?.is_primary_key),
+        ...columns.filter((column) => !column.constraints_type?.is_primary_key),
+      ].map((column) => {
+        if (column.dataType !== TIMESTAMP_TYPE) return column;
+        const timeZone = getConfigurationProperty(column.Header, 'timezone', getLocalTimeZone());
+        return { ...column, formatValue: (value) => convertDateToTimeZoneFormatted(value, timeZone) };
+      }),
     // getConfigurationProperty is rebuilt every render and only reads `configurations`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columns, selectedTableData, configurations]);
+    [columns, configurations]
+  );
+
+  // The grid works on raw rows: row ids and the delete filter come from them. Timestamps are shown in the time zone
+  // configured for their column, which is data the grid knows nothing about, so the column carries the formatter.
+  const gridRows = selectedTableData;
 
   if (!selectedTable) return null;
 
@@ -170,6 +162,7 @@ const Table = () => {
             isLoading={rowsLoading}
             isRefetching={rowsRefetching}
             canEditSchema={canEditSchema}
+            canSelectRows={canEditTjdb}
             onAddRow={isEmptyTable ? undefined : openCreateRowDrawer}
             onAddColumn={() => setIsCreateColumnDrawerOpen(true)}
           />

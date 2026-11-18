@@ -22,16 +22,23 @@ type GridRowProps = {
    * re-renders a mounted row with the new columns. */
   columns: Column<GridRowData>[];
   showTrailingCell: boolean;
+  /** Props, not read from the row: the row object outlives a selection change, so this is what re-renders it. */
+  isSelected: boolean;
+  canSelect: boolean;
 };
 
 // The Cypress hook the previous grid had: id-<row id>-column-<column>-table-cell, lower-cased.
 const cellDataCy = (row: Row<GridRowData>, columnId: string) =>
   `id-${row.original.id}-column-${columnId}-table-cell`.toLowerCase().replace(/\s+/g, '-');
 
-function GridRowComponent({ row, start, showTrailingCell }: GridRowProps) {
+// The token is translucent, so it is laid over the opaque cell colour: pinned cells stay solid while scrolling.
+const SELECTED_OVERLAY = 'tw-bg-gradient-to-r tw-from-interactive-selected tw-to-interactive-selected';
+
+function GridRowComponent({ row, start, showTrailingCell, isSelected, canSelect }: GridRowProps) {
   return (
     <div
       role="row"
+      aria-selected={isSelected}
       data-testid={`grid-row-${row.id}`}
       className="tw-absolute tw-left-0 tw-top-0 tw-flex tw-w-full"
       style={{ height: ROW_HEIGHT, transform: `translateY(${start}px)` }}
@@ -52,22 +59,42 @@ function GridRowComponent({ row, start, showTrailingCell }: GridRowProps) {
               isSelect ? 'tw-pl-4' : 'tw-px-3',
               pinned && 'tw-sticky tw-z-10',
               column.getIsLastColumn('left') && 'tw-border-r',
+              isSelected && SELECTED_OVERLAY,
               meta && isNumericType(meta.column.dataType) && 'tw-justify-end'
             )}
             style={{ width: column.getSize(), height: ROW_HEIGHT, left: pinned ? column.getStart('left') : undefined }}
           >
             {isSelect ? (
-              <Checkbox disabled aria-label="Select row" />
+              <Checkbox
+                aria-label="Select row"
+                checked={isSelected}
+                disabled={!canSelect}
+                onCheckedChange={(checked) => row.toggleSelected(checked === true)}
+              />
             ) : (
-              meta && <CellContent value={cell.getValue()} isPrimaryKey={meta.isPrimaryKey} />
+              meta && (
+                <CellContent
+                  value={cell.getValue()}
+                  isPrimaryKey={meta.isPrimaryKey}
+                  formatValue={meta.column.formatValue}
+                />
+              )
             )}
           </div>
         );
       })}
-      <div className="tw-h-10 tw-min-w-0 tw-flex-1 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak" />
+      <div
+        className={cn(
+          'tw-h-10 tw-min-w-0 tw-flex-1 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak',
+          isSelected && SELECTED_OVERLAY
+        )}
+      />
       {showTrailingCell && (
         <div
-          className="tw-sticky tw-right-0 tw-z-10 tw-h-10 tw-shrink-0 tw-border-0 tw-border-b tw-border-l tw-border-solid tw-border-border-weak tw-bg-page-weak"
+          className={cn(
+            'tw-sticky tw-right-0 tw-z-10 tw-h-10 tw-shrink-0 tw-border-0 tw-border-b tw-border-l tw-border-solid tw-border-border-weak tw-bg-page-weak',
+            isSelected && SELECTED_OVERLAY
+          )}
           style={{ width: ADD_COLUMN_WIDTH }}
         />
       )}

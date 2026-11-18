@@ -16,12 +16,18 @@ import {
 type GridHeaderProps = {
   table: Table<GridRow>;
   canEditSchema: boolean;
+  canSelectRows: boolean;
   onAddColumn?: () => void;
   onOpenColumnMenu?: (column: GridColumn, anchor: HTMLElement) => void;
 };
 
-export function GridHeader({ table, canEditSchema, onAddColumn, onOpenColumnMenu }: GridHeaderProps) {
+export function GridHeader({ table, canEditSchema, canSelectRows, onAddColumn, onOpenColumnMenu }: GridHeaderProps) {
   const [headerGroup] = table.getHeaderGroups();
+  // Counted from the rows on screen, not from the selection state, which can still hold ids a refetch removed.
+  const rowCount = table.getRowModel().rows.length;
+  const selectedCount = table.getSelectedRowModel().rows.length;
+  const allSelected = rowCount > 0 && selectedCount === rowCount;
+  const someSelected = selectedCount > 0 && !allSelected;
 
   return (
     <div role="row" className="tw-sticky tw-top-0 tw-z-20 tw-flex tw-w-full" style={{ height: ROW_HEIGHT }}>
@@ -33,7 +39,13 @@ export function GridHeader({ table, canEditSchema, onAddColumn, onOpenColumnMenu
             className="tw-sticky tw-left-0 tw-z-30 tw-flex tw-shrink-0 tw-items-center tw-bg-background-surface-layer-02 tw-pl-4"
             style={{ width: SELECT_COLUMN_WIDTH, height: ROW_HEIGHT }}
           >
-            <Checkbox disabled aria-label="Select all rows" />
+            <Checkbox
+              aria-label="Select all rows"
+              checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+              disabled={!canSelectRows || rowCount === 0}
+              // Partly selected clears, like a mail list: Radix would report `true` and select the rest.
+              onCheckedChange={() => table.toggleAllRowsSelected(!allSelected && !someSelected)}
+            />
           </div>
         ) : (
           <HeaderCell key={header.id} header={header} canEditSchema={canEditSchema} onOpenMenu={onOpenColumnMenu} />
