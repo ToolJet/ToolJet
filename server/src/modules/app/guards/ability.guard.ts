@@ -7,6 +7,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { FeatureConfig, ResourceDetails } from '../types';
 import { App } from '@entities/app.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 import { Organization } from '@entities/organization.entity';
 import { WorkspaceBanList } from '@entities/workspace_ban_list.entity';
 import { MODULES } from '../constants/modules';
@@ -68,6 +69,10 @@ export abstract class AbilityGuard implements CanActivate {
       const request = context.switchToHttp().getRequest();
       const user = request.user;
       const app: App = request.tj_app;
+      // "Public" lets anonymous viewers open a front-end app, so permission checks are skipped for
+      // it. A workflow is only ever run, never viewed: even if one is marked public (import, old
+      // data), its routes keep their full permission checks.
+      const isPublicApp = !!app?.isPublic && app?.type !== APP_TYPES.WORKFLOW;
       // Guard instances are singleton-scoped in Nest's DI container, so `this.resource`
       // persists across requests. It must always be overwritten (even with undefined) so a
       // request with no app in context can't inherit a stale value set by an earlier request.
@@ -135,18 +140,18 @@ export abstract class AbilityGuard implements CanActivate {
           });
         }
 
-        if (app?.isPublic && !featureInfo.shouldNotSkipPublicApp && !user?.oauthGrantId) {
+        if (isPublicApp && !featureInfo.shouldNotSkipPublicApp && !user?.oauthGrantId) {
           // No need to do validations if app is public
           return true;
         }
 
-        if (app?.isPublic && featureInfo.shouldNotSkipPublicApp && !user) {
+        if (isPublicApp && featureInfo.shouldNotSkipPublicApp && !user) {
           // App is public and feature should not skip public app check and user is not available
           return false;
         }
       }
 
-      if (!user && !app?.isPublic) {
+      if (!user && !isPublicApp) {
         return false;
       }
 
@@ -184,7 +189,7 @@ export abstract class AbilityGuard implements CanActivate {
         }
         return true;
       }
-      if (!app || !app?.isPublic) {
+      if (!app || !isPublicApp) {
         // If user is not available the app object should be there and app should be public
         return false;
       }
