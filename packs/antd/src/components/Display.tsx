@@ -1174,7 +1174,8 @@ export const Timeline = () => {
   });
   const [reverse] = ToolJet.useStateBoolean({ name: 'reverse', label: 'Reverse', initialValue: false });
   const { loading } = ToolJet.useControlState();
-  const tokens = useTokenStyles();
+  // Container background fills only the dots' centres here (Ant's dotBg), so it is labelled for them.
+  const tokens = useTokenStyles({ colorBgContainer: 'Handle color' });
   ToolJet.useComponentSettings({
     role: 'timeline',
     fit: true,

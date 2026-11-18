@@ -1178,7 +1178,8 @@
 /* Timeline. With labels (or alternate / right), Ant puts an entry from the middle at half the width less 12px and keeps
    its start margin (margin + the 10px dot), so a long entry ran past the box's right edge (QA PF-039): the width leaves
    the margin out. Border color is the line between entries and Border radius the dots' corners; unset, Ant's split
-   colour and round dots (QA PKB-41). */
+   colour and round dots (QA PKB-41). Ant lifts every entry's text by the gap between its line height and font size to
+   line it up with its dot, so the first entry sat half above the box: the Timeline leaves that much room at its top. */
 .tj-ant-timeline .ant-timeline.ant-timeline-label .ant-timeline-item-left .ant-timeline-item-content,
 .tj-ant-timeline .ant-timeline.ant-timeline-alternate .ant-timeline-item-left .ant-timeline-item-content,
 .tj-ant-timeline .ant-timeline.ant-timeline-right .ant-timeline-item-left .ant-timeline-item-content {
@@ -1186,6 +1187,7 @@
 }
 .tj-ant-timeline .ant-timeline {
   --ant-timeline-tail-color: var(--tj-ant-color-border, var(--ant-color-split));
+  padding-top: calc(var(--ant-font-size) * var(--ant-line-height) - var(--ant-font-size));
 }
 .tj-ant-timeline .ant-timeline .ant-timeline-item-head {
   border-radius: var(--tj-ant-border-radius, 50%);

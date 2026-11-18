@@ -1,3 +1,4 @@
+import { toolJetSdk } from '@/AppBuilder/Widgets/LibraryComponent/inlineRuntime';
 import { installBrowserStubs } from './fuzz/packTestEnv';
 import { mountPack } from './packMount';
 import { ANT_PACK_CSS, copyWithPackCss, removeCopies } from './antPackCss';
@@ -14,6 +15,7 @@ jest.mock('@/AppBuilder/Widgets/LibraryComponent/inlineRuntime', () => ({
 
 afterEach(() => {
   removeCopies();
+  jest.restoreAllMocks();
   document.body.innerHTML = '';
 });
 
@@ -116,5 +118,31 @@ describe('Ant Design Timeline taller than its box', () => {
 
     expect(getComputedStyle(root).height).toBe('100%');
     expect(getComputedStyle(root).overflow).toBe('auto');
+  });
+});
+
+// The style Ant calls Container background fills the dots' centres, the only thing it colours on a Timeline, so it is
+// labelled Handle color. The saved style is still colorBgContainer: apps that set it keep their colour.
+describe('Ant Design Timeline Handle color', () => {
+  test('[PackComponent-TIMELINE-007] the colorBgContainer style is labelled Handle color', async () => {
+    const real = toolJetSdk.useStyleString;
+    const declaredStyles = {};
+    jest.spyOn(toolJetSdk, 'useStyleString').mockImplementation((options) => {
+      declaredStyles[options.name] = options;
+      return real(options);
+    });
+    await mountPack('antd', 'Timeline', {});
+
+    expect(declaredStyles.colorBgContainer.label).toBe('Handle color');
+  });
+});
+
+// The first entry's text sat half above the box: Ant lifts every entry's text (and time label) by the gap between its
+// line height and font size, to line it up with its dot. The Timeline leaves that much room at its top.
+describe('Ant Design Timeline first entry', () => {
+  test('[PackComponent-TIMELINE-008] the Timeline leaves room at its top for the lifted first entry', () => {
+    expect(declared('.tj-ant-timeline .ant-timeline', 'padding-top')).toBe(
+      'calc(var(--ant-font-size) * var(--ant-line-height) - var(--ant-font-size))'
+    );
   });
 });
