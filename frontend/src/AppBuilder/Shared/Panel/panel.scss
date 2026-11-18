@@ -56,6 +56,12 @@ body.app-builder-chrome {
   }
 }
 
+// The header sticks to the top of the panel's scroller, so anything scrolled into view (keyboard focus,
+// scrollIntoView) has to stop below it rather than slide under it.
+.tj-panel {
+  scroll-padding-top: 48px;
+}
+
 .tj-panel-header {
   position: sticky;
   top: 0;
