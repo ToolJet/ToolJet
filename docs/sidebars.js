@@ -19,7 +19,7 @@ const sidebars = {
       "items": [
         "doc-home-page",
         "getting-started/platform-overview",
-        "getting-started/quickstart-guide",
+        // "getting-started/quickstart-guide",
         {
           "type": "category",
           "label": "Deployment",
