@@ -3,6 +3,7 @@ import Drawer from '@/_ui/Drawer';
 import CreateRowForm from '../../Forms/RowForm';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
 import { useTjdbActions } from '../../_stores/tjdbStore';
+import { useGuardedClose } from '../../_stores/unsavedChanges';
 
 const CreateRowDrawer = ({
   isCreateRowDrawerOpen,
@@ -13,15 +14,12 @@ const CreateRowDrawer = ({
   const { handleRefetchQuery } = useTooljetDatabaseContext();
   const { setSortFilters, setQueryFilters } = useTjdbActions();
   const [shouldResetRowForm, setShouldResetRowForm] = useState(0);
+  // Backdrop, Cancel and Escape ask about unsaved input; creating the row closes through `onCreate`, unasked.
+  const requestClose = useGuardedClose('createRow', () => setIsCreateRowDrawerOpen(false));
 
   return (
     <>
-      <Drawer
-        isOpen={isCreateRowDrawerOpen}
-        onClose={() => setIsCreateRowDrawerOpen(false)}
-        position="right"
-        className="tj-db-drawer"
-      >
+      <Drawer isOpen={isCreateRowDrawerOpen} onClose={requestClose} position="right" className="tj-db-drawer">
         <CreateRowForm
           onCreate={(shouldKeepDrawerOpen) => {
             setSortFilters({});
@@ -33,7 +31,7 @@ const CreateRowDrawer = ({
             if (!shouldKeepDrawerOpen) setIsCreateRowDrawerOpen(false);
             setShouldResetRowForm((prev) => prev + 1);
           }}
-          onClose={() => setIsCreateRowDrawerOpen(false)}
+          onClose={requestClose}
           referencedColumnDetails={referencedColumnDetails}
           setReferencedColumnDetails={setReferencedColumnDetails}
           initiator="CreateRowForm"

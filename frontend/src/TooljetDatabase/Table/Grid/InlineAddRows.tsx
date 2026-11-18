@@ -6,6 +6,7 @@ import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { Button } from '@/components/ui/Rocket/Button/Button';
 import { cn } from '@/lib/utils';
 import { useTjdbStore } from '../../_stores/tjdbStore';
+import { useReportUnsaved } from '../../_stores/unsavedChanges';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
 import { isNumericType } from './cells/dataTypes';
 import { CELL_RING } from './cells/CellEditorShell';
@@ -102,6 +103,11 @@ export function InlineAddRows({ table, showTrailingCell }: InlineAddRowsProps) {
     setDraftEnvironment(environmentId);
     dispatch({ type: 'reset' });
   }
+  // Unsaved: a cell has a value (a cleared cell has no entry in `values`), or the row is on its way to the server.
+  useReportUnsaved(
+    'inlineAddRow',
+    draft.status === 'saving' || (draft.status === 'drafting' && Object.keys(draft.values).length > 0)
+  );
 
   const fields = useRef(new Map<string, HTMLInputElement | HTMLSelectElement>());
   const addButtonRef = useRef<HTMLButtonElement>(null);

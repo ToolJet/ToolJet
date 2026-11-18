@@ -6,6 +6,7 @@ import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import { useReportUnsaved } from '../_stores/unsavedChanges';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import Drawer from '@/_ui/Drawer';
 import ForeignKeyTableForm from './ForeignKeyTableForm';
@@ -52,6 +53,11 @@ const ColumnForm = ({
   const [targetColumn, setTargetColumn] = useState([]);
   const [onDelete, setOnDelete] = useState([]);
   const [onUpdate, setOnUpdate] = useState([]);
+  // Unsaved: anything differs from the empty form. The foreign key sub-drawer is not looked at beyond its toggle.
+  useReportUnsaved(
+    'createColumn',
+    columnName !== '' || !!defaultValue || !!dataType || isNotNull || isUniqueConstraint || isForeignKey
+  );
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;

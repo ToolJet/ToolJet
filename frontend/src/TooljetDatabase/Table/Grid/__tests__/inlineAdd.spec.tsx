@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import { server } from '@/test/msw/server';
 import { act, cleanup, render, screen, userEvent, waitFor, within } from '@/test/test-utils';
 import { useTjdbStore } from '../../../_stores/tjdbStore';
+import { hasUnsavedChanges } from '../../../_stores/unsavedChanges';
 import { TooljetDatabaseContext } from '../../../context';
 import { TableGrid, type TableGridProps } from '../TableGrid';
 import type { GridColumn } from '../useTableGrid';
@@ -230,5 +231,69 @@ describe('TableGrid | inline add row', () => {
 
     expect(screen.queryByRole('row', { name: 'New row' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Add row' })).toBeInTheDocument();
+  });
+
+  describe('unsaved input', () => {
+    const unsaved = () => hasUnsavedChanges('inlineAddRow');
+
+    it('is unsaved once a cell has a value, and clean again when it is cleared', async () => {
+      setup();
+      await openRow();
+      expect(unsaved()).toBe(false);
+
+      await userEvent.type(field('title'), 'Hello');
+      expect(unsaved()).toBe(true);
+
+      await userEvent.clear(field('title'));
+      expect(unsaved()).toBe(false);
+    });
+
+    it('is clean after Cancel and after the row is saved', async () => {
+      setup();
+      await openRow();
+      await userEvent.type(field('title'), 'Hello');
+      await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      expect(unsaved()).toBe(false);
+
+      await openRow();
+      await userEvent.type(field('title'), 'Hello');
+      await userEvent.keyboard('{Enter}');
+      await waitFor(() => expect(handleRefetchQuery).toHaveBeenCalled());
+      await waitFor(() => expect(unsaved()).toBe(false));
+    });
+
+    it('is unsaved while the row is being saved', async () => {
+      let release: () => void = () => {};
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      server.use(
+        http.post('*/tooljet-db/proxy/:tableId', async () => {
+          await gate;
+          return HttpResponse.json([{ id: 2 }]);
+        })
+      );
+      setup();
+      await openRow();
+      await userEvent.type(field('title'), 'Hello');
+
+      await userEvent.keyboard('{Enter}');
+      expect(unsaved()).toBe(true);
+
+      release();
+      await waitFor(() => expect(unsaved()).toBe(false));
+    });
+
+    it('is dropped with the draft when the environment changes', async () => {
+      setup();
+      await openRow();
+      await userEvent.type(field('title'), 'Hello');
+      expect(unsaved()).toBe(true);
+
+      act(() => useTjdbStore.setState({ selectedEnvironment: { id: 'env-2', priority: 2 } }));
+
+      await waitFor(() => expect(unsaved()).toBe(false));
+      expect(screen.queryByRole('row', { name: 'New row' })).not.toBeInTheDocument();
+    });
   });
 });

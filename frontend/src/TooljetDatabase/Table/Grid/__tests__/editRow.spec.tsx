@@ -3,7 +3,9 @@ import React from 'react';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import { act, cleanup, render, screen, userEvent, waitFor, within } from '@/test/test-utils';
+import { UnsavedChangesGuard } from '../../../_components/UnsavedChangesGuard';
 import { useTjdbStore } from '../../../_stores/tjdbStore';
+import { hasUnsavedChanges } from '../../../_stores/unsavedChanges';
 import { TooljetDatabaseContext } from '../../../context';
 import { getEditBlockedReason } from '../editRow';
 import { TableGrid, type TableGridProps } from '../TableGrid';
@@ -119,6 +121,7 @@ describe('TableGrid | edit row drawer', () => {
         }
       >
         <TableGrid columns={columns} rows={rows} isLoading={false} canEditSchema canSelectRows {...gridProps} />
+        <UnsavedChangesGuard />
       </TooljetDatabaseContext.Provider>
     );
   };
@@ -249,5 +252,78 @@ describe('TableGrid | edit row drawer', () => {
     setup({ canSelectRows: false });
 
     expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+  });
+
+  describe('closing with unsaved input', () => {
+    const header = () => document.querySelector('[data-cy="edit-row-header"]');
+    const openForm = async () => {
+      await selectRow('1');
+      await userEvent.click(editButton());
+      return byDataCy('title-input-field');
+    };
+    const dialog = () => screen.queryByText('Discard unsaved changes?');
+
+    it('closes straight away on Cancel when nothing was changed', async () => {
+      setup();
+      await openForm();
+      expect(hasUnsavedChanges('editRow')).toBe(false);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      expect(dialog()).not.toBeInTheDocument();
+      await waitFor(() => expect(header()).toBeNull());
+    });
+
+    it('is clean again when a value is typed back to the original', async () => {
+      setup();
+      const title = await openForm();
+
+      await userEvent.type(title, '!');
+      expect(hasUnsavedChanges('editRow')).toBe(true);
+      await userEvent.type(title, '{Backspace}');
+
+      expect(hasUnsavedChanges('editRow')).toBe(false);
+    });
+
+    it('asks on Cancel after a change, keeps the drawer and the value on Keep editing, and closes on Discard', async () => {
+      setup();
+      const title = await openForm();
+      await userEvent.type(title, '!');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      expect(await screen.findByText('Unsaved input in the row edit will be lost.')).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Keep editing' }));
+
+      expect(header()).not.toBeNull();
+      expect(await byDataCy('title-input-field')).toHaveValue('one!');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      await userEvent.click(await screen.findByRole('button', { name: 'Discard' }));
+
+      await waitFor(() => expect(header()).toBeNull());
+      expect(hasUnsavedChanges('editRow')).toBe(false);
+    });
+
+    it('asks when the backdrop is pressed', async () => {
+      setup();
+      const title = await openForm();
+      await userEvent.type(title, '!');
+
+      await userEvent.click(document.querySelector('.tj-db-drawer .backdrop') as HTMLElement);
+
+      expect(await screen.findByText('Discard unsaved changes?')).toBeInTheDocument();
+      expect(header()).not.toBeNull();
+    });
+
+    it('does not ask when the row is saved', async () => {
+      setup();
+      const title = await openForm();
+      await userEvent.type(title, '!');
+
+      await userEvent.click(await byDataCy('save-changes-button'));
+
+      await waitFor(() => expect(patches).toHaveLength(1));
+      expect(dialog()).not.toBeInTheDocument();
+    });
   });
 });

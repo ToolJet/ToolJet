@@ -3,6 +3,7 @@ import { isEqual } from 'lodash';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import { useReportUnsaved } from '../_stores/unsavedChanges';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { postgresErrorCode, renderDatatypeIcon } from '../constants';
 import { ToolTip } from '@/_components/ToolTip';
@@ -117,6 +118,10 @@ const RowForm = ({
   const [activeTab, setActiveTab] = useState(defaultActiveTab());
   const [inputValues, setInputValues] = useState(inputValuesDefaultValues());
   const [errorMap, setErrorMap] = useState({});
+  // "Any field touched", not "differs from the defaults": a timestamp column's default is the time the form opened, so
+  // the defaults are never equal twice. Cleared when "Create & add another" resets the form.
+  const [touched, setTouched] = useState(false);
+  useReportUnsaved('createRow', touched);
 
   useEffect(() => {
     rowColumns.map(({ accessor, dataType, column_default }, index) => {
@@ -209,6 +214,7 @@ const RowForm = ({
     } else {
       newInputValues[index] = { value: '', checkboxValue: false, disabled: false, label: '' };
     }
+    setTouched(true);
     setInputValues(newInputValues);
     saveData(dataType, columnName, newInputValues, index, defaultValue);
   };
@@ -251,6 +257,7 @@ const RowForm = ({
       disabled: isNull,
       label: isNull ? null : value,
     };
+    setTouched(true);
     setInputValues(newInputValues);
     setData({ ...data, [columnName]: isNull ? null : value });
     if (isNull) {
@@ -268,6 +275,7 @@ const RowForm = ({
       disabled: inputValues[index].disabled,
       label: inputValues[index].value,
     };
+    setTouched(true);
     setInputValues(newInputValues);
     setData({ ...data, [columnName]: value });
   };
@@ -302,6 +310,7 @@ const RowForm = ({
 
   useEffect(() => {
     if (shouldResetRowForm) {
+      setTouched(false);
       setActiveTab(defaultActiveTab());
       setInputValues(inputValuesDefaultValues());
       setData(defaultDataValues());

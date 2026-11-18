@@ -6,6 +6,7 @@ import EditColumnForm from '../../Forms/EditColumnForm';
 import { CHANGE_TYPE } from '../../MigrationConfirmModal';
 import useMigrationModal from '../../MigrationConfirmModal/useMigrationModal';
 import { useTjdbActions } from '../../_stores/tjdbStore';
+import { useGuardedClose } from '../../_stores/unsavedChanges';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
 import type { GridColumn, GridRow } from './useTableGrid';
 
@@ -21,6 +22,9 @@ export function useColumnActions(rows: GridRow[]) {
   // Kept while the drawer slides out.
   const editedColumn = useRef<GridColumn | null>(null);
   const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
+  const closeEdit = () => setIsEditOpen(false);
+  // Backdrop, Cancel and Escape ask about unsaved input; the form's own `onClose` (after a save) does not.
+  const requestCloseEdit = useGuardedClose('editColumn', closeEdit);
 
   const editColumn = (column: GridColumn) => {
     editedColumn.current = column;
@@ -53,7 +57,7 @@ export function useColumnActions(rows: GridRow[]) {
     <>
       <Drawer
         isOpen={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
+        onClose={requestCloseEdit}
         position="right"
         drawerStyle={undefined}
         className="tj-db-drawer"
@@ -63,7 +67,8 @@ export function useColumnActions(rows: GridRow[]) {
             key={editedColumn.current.accessor}
             selectedColumn={editedColumn.current}
             setColumns={setColumns}
-            onClose={() => setIsEditOpen(false)}
+            onClose={closeEdit}
+            onCancel={requestCloseEdit}
             rows={rows}
             isEditColumn={true}
             referencedColumnDetails={referencedColumnDetails}

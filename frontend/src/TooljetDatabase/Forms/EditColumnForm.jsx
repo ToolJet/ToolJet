@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
+import { useReportUnsaved } from '../_stores/unsavedChanges';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, renderDatatypeIcon } from '../constants';
 import Drawer from '@/_ui/Drawer';
 import ForeignKeyTableForm from './ForeignKeyTableForm';
@@ -65,6 +66,8 @@ const infoBoxClass = (tone) =>
 
 const ColumnForm = ({
   onClose,
+  // What Cancel and Escape do, when that differs from `onClose` (which also runs after a save).
+  onCancel,
   selectedColumn,
   setColumns,
   rows,
@@ -245,6 +248,20 @@ const ColumnForm = ({
   const columnUuid = configurations?.columns?.column_names?.[selectedColumn?.Header];
   const columnConfigurations = configurations?.columns?.configurations?.[columnUuid] || {};
   const [timezone, setTimezone] = useState(columnConfigurations?.timezone || getLocalTimeZone());
+  // Unsaved: name, default, type, not-null, unique or time zone differs from the column as opened, or a foreign key is
+  // being added. Edits made inside the foreign key sub-drawer are not tracked until they set `createForeignKeyInEdit`.
+  const [openedDataType] = useState(dataType?.value);
+  const [openedTimezone] = useState(timezone);
+  useReportUnsaved(
+    'editColumn',
+    columnName !== selectedColumn?.Header ||
+      (defaultValue ?? '') !== (selectedColumn?.column_default ?? '') ||
+      dataType?.value !== openedDataType ||
+      isNotNull !== nullValue ||
+      isUniqueConstraint !== uniqueConstraintValue ||
+      (isTimestamp && timezone !== openedTimezone) ||
+      createForeignKeyInEdit
+  );
 
   const existingReferencedTableName = foreignKeys[selectedForeignkeyIndex]?.referenced_table_name;
   const existingReferencedColumnName = foreignKeys[selectedForeignkeyIndex]?.referenced_column_names[0];
@@ -1419,7 +1436,7 @@ const ColumnForm = ({
         </div>
         <DrawerFooter
           isEditMode={true}
-          onClose={onClose}
+          onClose={onCancel ?? onClose}
           onEdit={handleEdit}
           shouldDisableCreateBtn={disabledSaveButton}
           showToolTipForFkOnReadDocsSection={true}

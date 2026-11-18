@@ -3,6 +3,7 @@ import Drawer from '@/_ui/Drawer';
 import CreateColumnForm from '../../Forms/ColumnForm';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
 import { useTjdbActions } from '../../_stores/tjdbStore';
+import { useGuardedClose } from '../../_stores/unsavedChanges';
 
 const CreateColumnDrawer = ({
   setIsCreateColumnDrawerOpen,
@@ -17,15 +18,12 @@ const CreateColumnDrawer = ({
   const { organizationId, selectedTable, setColumns, handleRefetchQuery, setForeignKeys, setConfigurations } =
     useTooljetDatabaseContext();
   const { fetchTableMetadata, setPageCount } = useTjdbActions();
+  // Backdrop, Cancel and Escape ask about unsaved input; creating the column closes through `onCreate`, unasked.
+  const requestClose = useGuardedClose('createColumn', () => setIsCreateColumnDrawerOpen(false));
 
   return (
     <>
-      <Drawer
-        isOpen={isCreateColumnDrawerOpen}
-        onClose={() => setIsCreateColumnDrawerOpen(false)}
-        position="right"
-        className="tj-db-drawer"
-      >
+      <Drawer isOpen={isCreateColumnDrawerOpen} onClose={requestClose} position="right" className="tj-db-drawer">
         <CreateColumnForm
           onCreate={() => {
             fetchTableMetadata(organizationId, selectedTable.table_name).then((metadata) => {
@@ -38,7 +36,7 @@ const CreateColumnDrawer = ({
             if (resetPage) setPageCount(1);
             setIsCreateColumnDrawerOpen(false);
           }}
-          onClose={() => setIsCreateColumnDrawerOpen(false)}
+          onClose={requestClose}
           rows={rows}
           referencedColumnDetails={referencedColumnDetails}
           setReferencedColumnDetails={setReferencedColumnDetails}

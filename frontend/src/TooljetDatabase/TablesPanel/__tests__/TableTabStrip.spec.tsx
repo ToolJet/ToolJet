@@ -4,13 +4,15 @@ import React, { useState } from 'react';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import { useLocation } from 'react-router-dom';
-import { render, screen, waitFor, within, userEvent } from '@/test/test-utils';
+import { act, render, screen, waitFor, within, userEvent } from '@/test/test-utils';
 import {
   TooljetDatabaseProvider,
   type TjdbTable,
   type TooljetDatabaseContextValue,
 } from '@/TooljetDatabase/TooljetDatabaseContext';
 import { SCHEMA_ENV_TOOLTIP } from '@/TooljetDatabase/constants';
+import { UnsavedChangesGuard } from '@/TooljetDatabase/_components/UnsavedChangesGuard';
+import { setUnsaved, useUnsavedChanges } from '@/TooljetDatabase/_stores/unsavedChanges';
 import { TableTabStrip } from '../TableTabStrip';
 import { useOpenTabs } from '../useOpenTabs';
 import { useTablesLimit } from '../useTablesLimit';
@@ -70,12 +72,14 @@ function Harness({
   return (
     <TooljetDatabaseProvider value={value as unknown as TooljetDatabaseContextValue}>
       <TableTabStrip panelCollapsed={collapsed} onExpandPanel={onExpand} />
+      <UnsavedChangesGuard />
       <LocationProbe />
       <output data-testid="open-table">{selectedTable.table_name ?? ''}</output>
     </TooljetDatabaseProvider>
   );
 }
 
+const useUnsavedChangesSources = () => Object.keys(useUnsavedChanges.getState().sources);
 const activeTable = () => screen.getByTestId('open-table');
 const savedTabs = () => JSON.parse(window.localStorage.getItem('tjdb-open-tabs:org-1') ?? 'null');
 
@@ -231,5 +235,114 @@ describe('TableTabStrip | open tabs menu', () => {
 
     expect(screen.queryAllByRole('tab')).toHaveLength(0);
     expect(activeTable()).toHaveTextContent('');
+  });
+});
+
+describe('TableTabStrip | unsaved changes', () => {
+  const markDirty = () => act(() => setUnsaved('inlineAddRow', true));
+  const dialog = () => screen.queryByText('Discard unsaved changes?');
+
+  it('asks before switching tabs, and keeps the table and the draft on Keep editing', async () => {
+    render(<Harness />);
+    await screen.findByRole('tab', { name: 'orders' });
+    markDirty();
+
+    await userEvent.click(screen.getByRole('tab', { name: 'users' }));
+    expect(dialog()).toBeInTheDocument();
+    expect(screen.getByText('Unsaved input in the new row will be lost.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Keep editing' }));
+
+    expect(activeTable()).toHaveTextContent('orders');
+    expect(dialog()).not.toBeInTheDocument();
+    expect(useUnsavedChangesSources()).toContain('inlineAddRow');
+  });
+
+  it('switches tabs after Discard', async () => {
+    render(<Harness />);
+    await screen.findByRole('tab', { name: 'orders' });
+    markDirty();
+
+    await userEvent.click(screen.getByRole('tab', { name: 'users' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Discard' }));
+
+    await waitFor(() => expect(activeTable()).toHaveTextContent('users'));
+  });
+
+  it('switches without asking when nothing is unsaved', async () => {
+    render(<Harness />);
+
+    await userEvent.click(await screen.findByRole('tab', { name: 'users' }));
+
+    expect(dialog()).not.toBeInTheDocument();
+    expect(activeTable()).toHaveTextContent('users');
+  });
+
+  it('does not ask for the tab that is already open', async () => {
+    render(<Harness />);
+    await screen.findByRole('tab', { name: 'orders' });
+    markDirty();
+
+    await userEvent.click(screen.getByRole('tab', { name: 'orders' }));
+
+    expect(dialog()).not.toBeInTheDocument();
+  });
+
+  it('asks before closing the open tab, and closes it after Discard', async () => {
+    render(<Harness />);
+    await screen.findByRole('tab', { name: 'orders' });
+    markDirty();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Close orders' }));
+    expect(dialog()).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Keep editing' }));
+    expect(screen.getByRole('tab', { name: 'orders' })).toBeInTheDocument();
+    expect(activeTable()).toHaveTextContent('orders');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Close orders' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Discard' }));
+
+    await waitFor(() => expect(screen.queryByRole('tab', { name: 'orders' })).not.toBeInTheDocument());
+    expect(activeTable()).toHaveTextContent('users');
+  });
+
+  it('closes a tab that is not open without asking: the draft belongs to the open table', async () => {
+    render(<Harness />);
+    await screen.findByRole('tab', { name: 'orders' });
+    markDirty();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Close users' }));
+
+    expect(dialog()).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'users' })).not.toBeInTheDocument();
+    expect(activeTable()).toHaveTextContent('orders');
+  });
+
+  it('asks before another table is picked from the picker', async () => {
+    render(<Harness />);
+    await screen.findByRole('tab', { name: 'orders' });
+    markDirty();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Open or create a table' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Invoices' }));
+    expect(dialog()).toBeInTheDocument();
+    expect(activeTable()).toHaveTextContent('orders');
+    await userEvent.click(screen.getByRole('button', { name: 'Discard' }));
+
+    await waitFor(() => expect(activeTable()).toHaveTextContent('Invoices'));
+  });
+
+  it('asks before the open-tabs menu closes every tab, but not for "Close other tabs"', async () => {
+    render(<Harness />);
+    await screen.findByRole('tab', { name: 'orders' });
+    markDirty();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Open tabs and tab actions' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Close other tabs' }));
+    expect(dialog()).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Open tabs and tab actions' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Close all tabs' }));
+    expect(dialog()).toBeInTheDocument();
+    expect(activeTable()).toHaveTextContent('orders');
   });
 });

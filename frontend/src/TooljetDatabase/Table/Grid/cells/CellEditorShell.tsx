@@ -66,8 +66,10 @@ export function CellEditorShell({
         // Each editor focuses its own field, without scrolling the grid (a scroll closes the editor).
         onOpenAutoFocus={(event) => event.preventDefault()}
         onFocusOutside={(event) => event.preventDefault()}
+        // An unsaved draft is not dropped by a press elsewhere: the press may start a tab or environment switch, which
+        // asks about it. Escape and Cancel still close it.
         onPointerDownOutside={(event) => {
-          if (cellRef.current?.contains(event.target as Node)) event.preventDefault();
+          if (canSave || cellRef.current?.contains(event.target as Node)) event.preventDefault();
         }}
       >
         {children}

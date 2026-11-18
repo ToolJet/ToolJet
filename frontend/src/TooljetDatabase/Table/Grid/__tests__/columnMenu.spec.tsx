@@ -3,6 +3,7 @@ import React from 'react';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import { act, cleanup, render, screen, userEvent, waitFor } from '@/test/test-utils';
+import { UnsavedChangesGuard } from '../../../_components/UnsavedChangesGuard';
 import { useTjdbStore } from '../../../_stores/tjdbStore';
 import { TooljetDatabaseContext } from '../../../context';
 import { TableGrid, type TableGridProps } from '../TableGrid';
@@ -113,6 +114,7 @@ describe('TableGrid | column menu', () => {
         }
       >
         <TableGrid columns={COLUMNS} rows={ROWS} isLoading={false} canEditSchema {...props} />
+        <UnsavedChangesGuard />
       </TooljetDatabaseContext.Provider>
     );
 
@@ -157,6 +159,24 @@ describe('TableGrid | column menu', () => {
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Edit column' }));
 
     expect(await byDataCy('column-name-input-field')).toHaveValue('title');
+  });
+
+  it('closes the edit column drawer on Cancel unasked when untouched, and asks once the name is changed', async () => {
+    setup();
+    await openMenu('title');
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Edit column' }));
+    const name = await byDataCy('column-name-input-field');
+
+    await userEvent.type(name, 's');
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(await screen.findByText('Unsaved input in the column edit will be lost.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Keep editing' }));
+    expect(name).toHaveValue('titles');
+
+    await userEvent.type(name, '{Backspace}');
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByText('Discard unsaved changes?')).not.toBeInTheDocument();
+    await waitFor(() => expect(document.querySelector('[data-cy="column-name-input-field"]')).toBeNull());
   });
 
   it('cannot delete a primary key column, but can edit it', async () => {

@@ -9,6 +9,7 @@ import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import { TooljetDatabaseContext } from './context';
 import { TooljetDatabaseProvider } from './TooljetDatabaseContext';
 import TjdbHeaderEnvironment from './HeaderEnvironment';
+import { UnsavedChangesGuard } from './_components/UnsavedChangesGuard';
 import { useOpenTabs } from './TablesPanel/useOpenTabs';
 import { useTablesLimit } from './TablesPanel/useTablesLimit';
 import { useHeaderSearchConfig } from '@/_hooks/useHeaderSearchConfig';
@@ -145,6 +146,7 @@ const TooljetDatabase = () => {
     <div className="page-wrapper tooljet-database">
       <TooljetDatabaseProvider value={value}>
         <TjdbHeaderEnvironment />
+        <UnsavedChangesGuard />
         <TooljetDatabasePage totalTables={tables.length || 0} />
       </TooljetDatabaseProvider>
     </div>

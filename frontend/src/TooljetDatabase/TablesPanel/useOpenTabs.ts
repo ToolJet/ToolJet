@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { runUnlessDirty } from '../_stores/unsavedChanges';
 import type { TjdbTable } from '../TooljetDatabaseContext';
 import {
   closeAllTabs,
@@ -75,20 +76,35 @@ export function useOpenTabs({ organizationId, tables, selectedTable, setSelected
     [setSelectedTable]
   );
 
+  // Switching the open table drops whatever unsaved input the old one holds (the grid's add row, an open editor), so
+  // it asks first. Closing a tab that is not open, or opening the open one, changes nothing and never asks.
   const openTable = useCallback(
     (table: TjdbTable) => {
-      if (!tablesRef.current.some((candidate) => candidate.id === table.id)) {
-        tablesRef.current = [...tablesRef.current, table];
-      }
-      setOpenTabIds(openTab(stateRef.current, table.id).ids);
-      setSelectedTable({ id: table.id, table_name: table.table_name });
+      const open = () => {
+        if (!tablesRef.current.some((candidate) => candidate.id === table.id)) {
+          tablesRef.current = [...tablesRef.current, table];
+        }
+        setOpenTabIds(openTab(stateRef.current, table.id).ids);
+        setSelectedTable({ id: table.id, table_name: table.table_name });
+      };
+      if (table.id === stateRef.current.activeId) open();
+      else runUnlessDirty(open);
     },
     [setSelectedTable]
   );
 
-  const closeOne = useCallback((id: string) => show(closeTab(stateRef.current, id)), [show]);
-  const closeOthers = useCallback((id: string) => show(closeOtherTabs(stateRef.current, id)), [show]);
-  const closeAll = useCallback(() => show(closeAllTabs()), [show]);
+  const showAfter = useCallback(
+    (next: () => TabsState) => {
+      const apply = () => show(next());
+      if (next().activeId === stateRef.current.activeId) apply();
+      else runUnlessDirty(apply);
+    },
+    [show]
+  );
+
+  const closeOne = useCallback((id: string) => showAfter(() => closeTab(stateRef.current, id)), [showAfter]);
+  const closeOthers = useCallback((id: string) => showAfter(() => closeOtherTabs(stateRef.current, id)), [showAfter]);
+  const closeAll = useCallback(() => showAfter(closeAllTabs), [showAfter]);
 
   const applyTables = useCallback(
     (tables: TjdbTable[], opened?: TjdbTable | null) => {

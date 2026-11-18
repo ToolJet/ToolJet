@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useReportUnsaved } from '../../../_stores/unsavedChanges';
 import type { ForeignKeyTarget, GridColumn } from '../useTableGrid';
 import { CELL_RING, CellEditorShell, useCellDraft } from './CellEditorShell';
 import { isNumericType } from './dataTypes';
@@ -17,6 +18,7 @@ type CellEditorProps = {
 // Replaces the cell's text while it is edited: an input for text and numbers, a value picker for a foreign key.
 export function CellEditor({ value, column, foreignKey, onSave, onCancel }: CellEditorProps) {
   const draft = useCellDraft(value);
+  useReportUnsaved('cellEditor', draft.changed);
   const [saving, setSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const nullable = column.constraints_type?.is_not_null === false;

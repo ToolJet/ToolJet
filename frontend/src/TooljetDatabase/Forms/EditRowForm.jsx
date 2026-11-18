@@ -3,6 +3,7 @@ import { isEqual } from 'lodash';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import { useReportUnsaved } from '../_stores/unsavedChanges';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { renderDatatypeIcon, listAllPrimaryKeyColumns, postgresErrorCode } from '../constants';
 import { buildRowFilter, hasExactKeyValues } from '../Table/Grid/cellEditing';
@@ -63,6 +64,16 @@ const EditRowForm = ({
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
   const currentValue = selectedRowObj;
   const [inputValues, setInputValues] = useState([]);
+  // The values as loaded, to tell an edit from an untouched form (typing a value back counts as untouched).
+  const [loadedValues, setLoadedValues] = useState(null);
+  useReportUnsaved(
+    'editRow',
+    loadedValues !== null &&
+      !isEqual(
+        inputValues.map(({ value }) => value),
+        loadedValues
+      )
+  );
   const [errorMap, setErrorMap] = useState({});
 
   const [disabledSaveButton, setDisabledSaveButton] = useState(false);
@@ -90,13 +101,13 @@ const EditRowForm = ({
         )
       );
 
-      setInputValues(
-        editRowColumns.map((column) => {
-          const stored = currentValue[column.accessor];
-          const value = stored === null ? null : stored ? stored : '';
-          return { value: value, disabled: stored === null || matchesDefault(column), label: value };
-        })
-      );
+      const loaded = editRowColumns.map((column) => {
+        const stored = currentValue[column.accessor];
+        const value = stored === null ? null : stored ? stored : '';
+        return { value: value, disabled: stored === null || matchesDefault(column), label: value };
+      });
+      setInputValues(loaded);
+      setLoadedValues(loaded.map(({ value }) => value));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentValue]);

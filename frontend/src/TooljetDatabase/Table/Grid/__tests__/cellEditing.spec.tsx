@@ -7,6 +7,7 @@ import { act, cleanup, fireEvent, render, screen, userEvent, waitFor, within } f
 import { useTjdbStore } from '../../../_stores/tjdbStore';
 import { TooljetDatabaseContext } from '../../../context';
 import { useTableRows } from '../../../rows/useTableRows';
+import { hasUnsavedChanges } from '../../../_stores/unsavedChanges';
 import { TableGrid } from '../TableGrid';
 import type { GridColumn, GridRow } from '../useTableGrid';
 
@@ -611,6 +612,46 @@ describe('TableGrid | cell navigation and editing', () => {
 
       await waitFor(() => expect(toast.success).toHaveBeenCalled());
       expect(within(screen.getByTestId('grid-row-2')).getByRole('textbox')).toBeInTheDocument();
+    });
+  });
+
+  describe('unsaved input', () => {
+    const unsaved = () => hasUnsavedChanges('cellEditor');
+
+    it('is unsaved only while the draft differs from the cell value', async () => {
+      await setup();
+      await userEvent.dblClick(cellAt('1', 'title'));
+      expect(unsaved()).toBe(false);
+
+      await userEvent.type(field('title'), '!');
+      expect(unsaved()).toBe(true);
+
+      await userEvent.type(field('title'), '{Backspace}');
+      expect(unsaved()).toBe(false);
+    });
+
+    it('is clean once the editor closes', async () => {
+      await setup();
+      await userEvent.dblClick(cellAt('1', 'title'));
+      await userEvent.type(field('title'), '!');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      await waitFor(() => expect(unsaved()).toBe(false));
+    });
+
+    // The press that starts a tab or environment switch would otherwise close the editor first, and the switch would
+    // find nothing unsaved to ask about.
+    it('stays open on an outside press while the draft is unsaved', async () => {
+      await setup();
+      await userEvent.dblClick(cellAt('1', 'title'));
+      await userEvent.type(field('title'), '!');
+
+      await userEvent.click(document.body);
+
+      expect(editor()).toBeInTheDocument();
+      expect(field('title')).toHaveValue('First post!');
+      expect(unsaved()).toBe(true);
     });
   });
 });

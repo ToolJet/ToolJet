@@ -5,6 +5,7 @@ import { useLicenseStore } from '@/_stores/licenseStore';
 import { isMultiEnvLicenseInvalid, getMultiEnvLicenseLockMessage } from '@/_helpers/multiEnvLicense';
 import { TooljetDatabaseContext } from '../context';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
+import { runUnlessDirty } from '../_stores/unsavedChanges';
 import MigrationHistoryDrawer from '../Drawers/MigrationHistoryDrawer';
 import { buildHeaderEnvironments } from './buildHeaderEnvironments';
 import { useTableMigrations } from './useTableMigrations';
@@ -52,8 +53,9 @@ const TjdbHeaderEnvironment = () => {
         lockMessage: getMultiEnvLicenseLockMessage(featureAccess),
       }),
       environmentId: selectedEnvironment.id,
+      // The switch drops the grid's add row and any open editor, so unsaved input is asked about first.
       onChange: (environmentId) =>
-        switchEnvironment(environments.find((environment) => environment.id === environmentId)),
+        runUnlessDirty(() => switchEnvironment(environments.find((environment) => environment.id === environmentId))),
     };
   }, [
     showSelect,

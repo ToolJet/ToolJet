@@ -10,6 +10,7 @@ import userEvent from '@testing-library/user-event';
 import { TooljetDatabaseContext } from '@/TooljetDatabase';
 import EditColumnForm from '@/TooljetDatabase/Forms/EditColumnForm';
 import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
+import { hasUnsavedChanges } from '@/TooljetDatabase/_stores/unsavedChanges';
 
 // jsdom has no layout, so focus-trap finds no tabbable node and throws. External adapter, not product logic.
 jest.mock(
@@ -37,7 +38,7 @@ const byDataCy = (dataCy) =>
     return element;
   });
 
-const renderForm = (selectedColumn) => {
+const renderForm = (selectedColumn, formProps = {}) => {
   server.use(
     http.get('*/tooljet-db/organizations/:organizationId/table/:tableId/dependents', () =>
       HttpResponse.json({ result: { count: 0 } })
@@ -65,6 +66,7 @@ const renderForm = (selectedColumn) => {
         rows={[]}
         referencedColumnDetails={[]}
         setReferencedColumnDetails={jest.fn()}
+        {...formProps}
       />
     </TooljetDatabaseContext.Provider>
   );
@@ -119,5 +121,43 @@ describe('Edit column Save', () => {
     await userEvent.keyboard('{Enter}');
 
     expect(document.querySelector('[data-cy="migration-confirm-modal"]')).toBeNull();
+  });
+});
+
+describe('Edit column unsaved input', () => {
+  beforeEach(() => {
+    act(() => useTjdbStore.getState().actions.resetStore());
+  });
+
+  test('should be clean as opened, unsaved once the name differs, clean again when typed back', async () => {
+    renderForm(column(true));
+    const name = await byDataCy('column-name-input-field');
+    expect(hasUnsavedChanges('editColumn')).toBe(false);
+
+    await userEvent.type(name, 's');
+    expect(hasUnsavedChanges('editColumn')).toBe(true);
+
+    await userEvent.type(name, '{Backspace}');
+    expect(hasUnsavedChanges('editColumn')).toBe(false);
+  });
+
+  test('should be unsaved when NOT NULL is switched', async () => {
+    renderForm(column(false));
+
+    const notNullSwitch = screen.getByText('NOT NULL').closest('.row').querySelector('input[type="checkbox"]');
+    await userEvent.click(notNullSwitch);
+
+    expect(hasUnsavedChanges('editColumn')).toBe(true);
+  });
+
+  test('should send Cancel to onCancel and leave onClose for after a save', async () => {
+    const onClose = jest.fn();
+    const onCancel = jest.fn();
+    renderForm(column(true), { onClose, onCancel });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
   });
 });

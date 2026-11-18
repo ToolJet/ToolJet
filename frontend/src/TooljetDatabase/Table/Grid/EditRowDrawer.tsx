@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import Drawer from '@/_ui/Drawer';
 import EditRowForm from '../../Forms/EditRowForm';
+import { useGuardedClose } from '../../_stores/unsavedChanges';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
 import type { GridColumn, GridRow } from './useTableGrid';
 
@@ -17,6 +18,8 @@ type EditRowDrawerProps = {
 export function EditRowDrawer({ row, onClose, onEdited }: EditRowDrawerProps) {
   const { handleRefetchQuery, columns } = useTooljetDatabaseContext();
   const [referencedColumnDetails, setReferencedColumnDetails] = useState<unknown[]>([]);
+  // Backdrop, Cancel and Escape ask about unsaved input; a save closes through `onEdited`, unasked.
+  const requestClose = useGuardedClose('editRow', onClose);
   // Kept while the drawer slides out, when `row` is already null.
   const [shownRow, setShownRow] = useState(row);
   if (row && row !== shownRow) setShownRow(row);
@@ -34,7 +37,7 @@ export function EditRowDrawer({ row, onClose, onEdited }: EditRowDrawerProps) {
   if (!!row !== session.open) setSession({ open: !!row, count: session.count + (row ? 1 : 0) });
 
   return (
-    <Drawer isOpen={!!row} onClose={onClose} position="right" drawerStyle={undefined} className="tj-db-drawer">
+    <Drawer isOpen={!!row} onClose={requestClose} position="right" drawerStyle={undefined} className="tj-db-drawer">
       {values && (
         <EditRowForm
           key={session.count}
@@ -42,7 +45,7 @@ export function EditRowDrawer({ row, onClose, onEdited }: EditRowDrawerProps) {
             handleRefetchQuery();
             onEdited();
           }}
-          onClose={onClose}
+          onClose={requestClose}
           selectedRowObj={values}
           referencedColumnDetails={referencedColumnDetails}
           setReferencedColumnDetails={setReferencedColumnDetails}

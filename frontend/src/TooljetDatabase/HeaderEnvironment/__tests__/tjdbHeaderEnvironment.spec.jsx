@@ -10,6 +10,8 @@ import HeaderEnvironmentSelect from '@/_ui/Header/HeaderEnvironmentSelect';
 import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
 import { useHeaderEnvironmentStore } from '@/_stores/headerEnvironmentStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
+import { UnsavedChangesGuard } from '@/TooljetDatabase/_components/UnsavedChangesGuard';
+import { setUnsaved } from '@/TooljetDatabase/_stores/unsavedChanges';
 
 // jsdom has no layout, so focus-trap finds no tabbable node and throws. External adapter, not product logic.
 jest.mock(
@@ -45,6 +47,7 @@ const renderHeaderAndPage = (value) =>
       </header>
       <TooljetDatabaseContext.Provider value={value}>
         <TjdbHeaderEnvironment />
+        <UnsavedChangesGuard />
       </TooljetDatabaseContext.Provider>
     </>
   );
@@ -104,6 +107,44 @@ describe('TJDB environment select in the page Header', () => {
     await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: /Staging/ }));
 
     expect(useTjdbStore.getState().selectedEnvironment).toEqual(STAGING);
+  });
+
+  describe('with unsaved input', () => {
+    const openStaging = async () => {
+      await userEvent.click(trigger());
+      await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: /Staging/ }));
+    };
+
+    test('should ask before switching, and stay on the environment after Keep editing', async () => {
+      renderHeaderAndPage(contextValue());
+      act(() => setUnsaved('inlineAddRow', true));
+
+      await openStaging();
+      expect(await screen.findByText('Discard unsaved changes?')).toBeInTheDocument();
+      expect(useTjdbStore.getState().selectedEnvironment).toEqual(DEVELOPMENT);
+      await userEvent.click(screen.getByRole('button', { name: 'Keep editing' }));
+
+      expect(useTjdbStore.getState().selectedEnvironment).toEqual(DEVELOPMENT);
+    });
+
+    test('should switch after Discard', async () => {
+      renderHeaderAndPage(contextValue());
+      act(() => setUnsaved('cellEditor', true));
+
+      await openStaging();
+      await userEvent.click(await screen.findByRole('button', { name: 'Discard' }));
+
+      await waitFor(() => expect(useTjdbStore.getState().selectedEnvironment).toEqual(STAGING));
+    });
+
+    test('should not ask when nothing is unsaved', async () => {
+      renderHeaderAndPage(contextValue());
+
+      await openStaging();
+
+      expect(screen.queryByText('Discard unsaved changes?')).not.toBeInTheDocument();
+      expect(useTjdbStore.getState().selectedEnvironment).toEqual(STAGING);
+    });
   });
 
   test('should list the open table’s migrations in the history drawer', async () => {
