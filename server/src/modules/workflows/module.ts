@@ -51,6 +51,7 @@ import { WorkflowExecutionRepository } from './repositories/workflow-execution.r
 import { WORKFLOW_APPROVAL_TIMEOUT_QUEUE } from './constants';
 import { ExecutionQuotaService } from './admission/execution-quota.service';
 import { QueueDepthTracker } from './admission/queue-depth';
+import { ConcurrencyLimiter } from './admission/concurrency-limiter';
 
 const WORKFLOW_SCHEDULE_QUEUE = 'workflow-schedule-queue';
 const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
@@ -256,6 +257,7 @@ export class WorkflowsModule extends SubModule {
         WorkflowApprovalTimeoutService,
         ExecutionQuotaService,
         QueueDepthTracker,
+        ConcurrencyLimiter,
         SyncRunService,
         ...(isMainImport
           ? [
