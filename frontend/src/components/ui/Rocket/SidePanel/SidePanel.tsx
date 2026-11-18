@@ -1,5 +1,6 @@
 import React, { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { ROCKET_SCROLLBAR } from '../scrollbar';
 
 // Slim, fixed-width panel for the left edge of a page (Figma "Tables panel", 232px). Presentational: showing and
 // hiding is the page's job, so there is no collapse state here.
@@ -82,7 +83,11 @@ const SidePanelBody = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>
   return (
     <div
       ref={ref}
-      className={cn('tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-0.5 tw-overflow-y-auto tw-p-2', className)}
+      className={cn(
+        'tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-0.5 tw-overflow-y-auto tw-p-2',
+        ROCKET_SCROLLBAR,
+        className
+      )}
       {...props}
     />
   );

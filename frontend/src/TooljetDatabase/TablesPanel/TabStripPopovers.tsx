@@ -2,6 +2,7 @@ import React, { useState, type ButtonHTMLAttributes, type ReactNode } from 'reac
 import { Plus, Table, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SearchInput } from '@/components/ui/Rocket/SearchInput/SearchInput';
+import { ROCKET_SCROLLBAR } from '@/components/ui/Rocket/scrollbar';
 import Tooltip from '@/components/ui/Rocket/Tooltip';
 import TruncatedText from '@/components/ui/Rocket/Tooltip/TruncatedText';
 import type { TjdbTable } from '../TooljetDatabaseContext';
@@ -72,7 +73,10 @@ export function TablePicker({ tables, selectedId, onPick, onCreate, createDisabl
           autoFocus
           data-cy="tab-picker-search"
         />
-        <div className="tw-flex tw-max-h-[264px] tw-flex-col tw-overflow-y-auto" data-cy="tab-picker-list">
+        <div
+          className={cn('tw-flex tw-max-h-[264px] tw-flex-col tw-overflow-y-auto', ROCKET_SCROLLBAR)}
+          data-cy="tab-picker-list"
+        >
           {visible.map((table) => (
             <PickerRow
               key={table.id}
@@ -120,7 +124,10 @@ export function OpenTabsList({ tabs, activeId, onPick, onCloseOthers, onCloseAll
           <span className="tw-font-title-section-title tw-uppercase">Open tabs</span>
           <span className="tw-font-body-small">{tabs.length}</span>
         </div>
-        <div className="tw-flex tw-max-h-[264px] tw-flex-col tw-overflow-y-auto" data-cy="open-tabs-list">
+        <div
+          className={cn('tw-flex tw-max-h-[264px] tw-flex-col tw-overflow-y-auto', ROCKET_SCROLLBAR)}
+          data-cy="open-tabs-list"
+        >
           {tabs.map((table) => (
             <PickerRow
               key={table.id}

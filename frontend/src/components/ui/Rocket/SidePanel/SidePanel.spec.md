@@ -13,7 +13,7 @@ Slim, fixed-width panel for the left edge of a page: header (title and icon acti
 | `SidePanel` | `<aside>`; forward every attribute, so pass `aria-label`. |
 | `SidePanelHeader` | `title` (rendered as `<h2>`) and optional `actions` (icon buttons, 2px apart). |
 | `SidePanelSection` | `label` (uppercase) and optional `count`. A count of `0` still shows. |
-| `SidePanelBody` | Scrolling column for the list. 8px padding, 2px gap. |
+| `SidePanelBody` | Scrolling column for the list. 8px padding, 2px gap. Scrollbar is the Rocket one (`Rocket/scrollbar.ts`). |
 
 Anything between the section row and the body (a search field, filters) is the caller's markup.
 
