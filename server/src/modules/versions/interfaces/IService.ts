@@ -26,7 +26,8 @@ export interface IVersionService {
   getAllVersions(
     app: App,
     branchId?: string,
-    includeDefaultBranchVersions?: boolean
+    includeDefaultBranchVersions?: boolean,
+    includeAllBranchVersions?: boolean
   ): Promise<{ versions: Array<AppVersion> }>;
 
   createVersion(app: App, user: User, versionCreateDto: VersionCreateDto): Promise<any>;

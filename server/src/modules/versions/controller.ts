@@ -24,9 +24,15 @@ export class VersionController implements IVersionController {
   fetchVersions(
     @User() user: UserEntity,
     @App() app: AppEntity,
-    @Query('includeDefaultBranchVersions') includeDefaultBranchVersions?: string
+    @Query('includeDefaultBranchVersions') includeDefaultBranchVersions?: string,
+    @Query('includeAllBranchVersions') includeAllBranchVersions?: string
   ) {
-    return this.versionService.getAllVersions(app, user.branchId, includeDefaultBranchVersions === 'true');
+    return this.versionService.getAllVersions(
+      app,
+      user.branchId,
+      includeDefaultBranchVersions === 'true',
+      includeAllBranchVersions === 'true'
+    );
   }
 
   @InitFeature(FEATURE_KEY.APP_VERSION_CREATE)

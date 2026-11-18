@@ -5,6 +5,7 @@ import {
   WorkspaceBranchListResponse,
   CheckUpdatesResponse,
   PullWorkspaceResponse,
+  BranchReviewStatusResponse,
 } from './interfaces/IService';
 import { CreateBranchDto, WorkspacePushDto, PullConflictResolutionDto } from './dto';
 
@@ -100,6 +101,10 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
   }
 
   async getPullRequests(organizationId: string): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  async getBranchReviewStatus(organizationId: string, branchId: string): Promise<BranchReviewStatusResponse> {
     throw new NotFoundException();
   }
 

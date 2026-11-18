@@ -121,6 +121,11 @@ export class AppVersion extends BaseEntity {
   @Column({ name: 'git_tree_sha', type: 'varchar', length: 64, nullable: true, default: null })
   gitTreeSha: string;
 
+  // Content fingerprint of what this version last pushed to git. A review on a git branch only covers committed
+  // content, so the draft must still match it.
+  @Column({ name: 'committed_fingerprint', type: 'varchar', length: 80, nullable: true, default: null })
+  committedFingerprint: string;
+
   @Column({ name: 'source_tag', type: 'varchar', length: 256, nullable: true })
   sourceTag: string;
 

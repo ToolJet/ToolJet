@@ -1157,9 +1157,15 @@
     cursor: pointer;
     transition: all 0.15s ease;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: var(--indigo2);
       border-color: var(--indigo8);
+    }
+
+    // Waiting for the branch's apps to be approved; the title says which.
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
     }
 
     svg {
