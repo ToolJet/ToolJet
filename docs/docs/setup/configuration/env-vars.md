@@ -343,7 +343,7 @@ Good to know:
 
 ### React Builder
 
-These variables configure apps built in [React Builder](../../app-builder/react-builder/overview.md). Parts of the editor still call React Builder **Code mode**, and some of these variables use the `CODE_MODE_` prefix.
+These variables configure apps built in [React Builder](../../app-builder/react-builder/overview.md).
 
 #### React Builder App Isolation
 
