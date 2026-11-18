@@ -30,6 +30,11 @@ describe('pack properties that take more than their declared type', () => {
     expect(reaches('shadcn', 'MultiSelect', 'defaultValue', 'array', ['banana'])).toEqual(['banana']);
   });
 
+  test('[PackComponent-TYPES-005] Ant Collapse active key takes one key as text (PF-093)', () => {
+    expect(reaches('antd', 'Collapse', 'activeKey', 'array', 'panel2')).toBe('panel2');
+    expect(reaches('antd', 'Collapse', 'activeKey', 'array', ['panel2'])).toEqual(['panel2']);
+  });
+
   test.each(['routeStart', 'defaultPickedLocation', 'defaultCenter'])(
     '[PackComponent-TYPES-004] Rocket Map %s takes { lat, lng } (PF-169)',
     (name) => {

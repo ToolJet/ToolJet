@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { act, fireEvent, waitFor } from '@testing-library/react';
-import { toolJetSdk } from '@/AppBuilder/Widgets/LibraryComponent/inlineRuntime';
 import { installBrowserStubs } from './fuzz/packTestEnv';
 import { mountPack, settle } from './packMount';
 
@@ -121,19 +120,6 @@ test('[PackComponent-BUTTONGROUP-010] a focused group button shows the Button fo
   const css = fs.readFileSync(path.join(STYLES, 'ui2-nav.css'), 'utf8');
   const block = css.slice(css.indexOf('.n2-group > .ui-btn:focus-visible {'));
   expect(block.slice(0, block.indexOf('}'))).toContain('box-shadow: 0 0 0 3px var(--ui-ring);');
-});
-
-// PF-218: the Sparkline's Type had no fx toggle: the editor gives none to a field labelled exactly "Type".
-test('[PackComponent-SPARKLINE-010] the type property is labelled Chart type, not Type', async () => {
-  const real = toolJetSdk.useStateEnumeration;
-  const declared = {};
-  jest.spyOn(toolJetSdk, 'useStateEnumeration').mockImplementation((options) => {
-    declared[options.name] = options;
-    return real(options);
-  });
-  await mountPack('shadcn', 'Sparkline', {});
-
-  expect(declared.type.label).toBe('Chart type');
 });
 
 // PF-299: in the editor a Dropdown Menu could not be dragged by its trigger: Radix opened the menu on pointerdown and

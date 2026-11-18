@@ -47,6 +47,9 @@ const ACCEPTS: Record<string, PropertyType[]> = {
   // One default value as text ('banana'), as the Select takes it: as an array property it reached the Multi Select as []
   // and picked nothing (QA PF-140).
   'shadcn.MultiSelect.defaultValue': ['array', 'string'],
+  // One open panel's key as text ('panel2'), as the Ant Tabs takes it: as an array property it reached the Collapse as
+  // [] and opened nothing (QA PF-093).
+  'antd.Collapse.activeKey': ['array', 'string'],
   // A place as text ('37.78,-122.41') or as { lat, lng }, as the Map's help says: as text properties the object was
   // blanked and nothing was drawn (QA PF-169).
   'shadcn.Map.routeStart': ['string', 'object'],

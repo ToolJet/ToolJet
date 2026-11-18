@@ -1,7 +1,7 @@
 import React from 'react';
 import { Switch as AntSwitch } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { AntProvider, ownBoxStyle, useTokenStyles } from '../lib/AntProvider';
 import { FormField, useFieldProps } from '../lib/FormField';
 import { useFormValue } from '../lib/formValue';
 import { useValueSetter } from '../lib/sameValue';
@@ -73,10 +73,14 @@ export const Switch = (props: Record<string, unknown>) => {
   // A Form's clearForm unchecks it (the host clears only `value`).
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => checkedSetter.set(false));
 
+  const box = ownBoxStyle(tokens);
   return (
+    // Container background, Border color and Border radius draw the widget box (ownBoxStyle): Ant's Switch has no
+    // surface they reach, and they did nothing (QA PKB-41). A drawn box keeps the label off its edge.
     <AntProvider
       tokens={tokens}
       className={disabled ? 'tj-ant-switch tj-ant-compact tj-ant-host-disabled' : 'tj-ant-switch tj-ant-compact'}
+      style={box.boxSizing ? { ...box, paddingInline: 8 } : box}
     >
       <FormField {...field} check={check} htmlFor={fieldId}>
         <AntSwitch

@@ -130,8 +130,10 @@
   box-sizing: border-box;
   min-width: 0;
 }
-/* One line, shrunk to fit by useFitText, cut only past that. */
+/* One line, shrunk to fit by useFitText, cut only past that. Primary color colours the figure (it did nothing on a
+   Statistic, QA PKB-41); unset, it keeps Ant's heading colour, which Text color sets. */
 .tj-ant-stat .ant-statistic-content {
+  color: var(--tj-ant-color-primary, var(--ant-color-text-heading));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
