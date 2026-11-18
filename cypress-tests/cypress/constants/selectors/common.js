@@ -511,6 +511,7 @@ export const whiteLabelSelectors = {
   appLogoInput: '[data-cy="input-field-app-logo"]',
   pageTitleInput: '[data-cy="input-field-page-title"]',
   favIconInput: '[data-cy="input-field-fav-icon"]',
+  loginBannerInput: '[data-cy="input-field-login-banner"]',
   appLogoHelpText: '[data-cy="app-logo-help-text"]',
   favIconHelpText: '[data-cy="fav-icon-help-text"]',
   cancelButton: '[data-cy="cancel-button"]',
