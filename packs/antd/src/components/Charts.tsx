@@ -213,6 +213,7 @@ const toSeries = (rows: Row[], xField: string, yFields: string[], colorField: st
 
 // While loading, the chart's own loader covers the chart, which stays mounted.
 export const Frame = ({
+  name,
   title,
   empty,
   loading,
@@ -220,6 +221,8 @@ export const Frame = ({
   ready = true,
   children,
 }: {
+  /** The chart's type, its accessible name when there is no title. */
+  name: string;
   title: string;
   empty: boolean;
   loading: boolean;
@@ -250,7 +253,12 @@ export const Frame = ({
           {title}
         </Typography.Title>
       ) : null}
-      <div className="tj-ant-chart-body">
+      <div
+        className="tj-ant-chart-body"
+        role="img"
+        aria-label={empty && !loading ? `${title || name}, no data` : title || name}
+        tabIndex={0}
+      >
         {empty && !loading ? (
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" />
         ) : ready ? (
@@ -393,8 +401,16 @@ export const Column = () => {
       : baseLabel;
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
+      <Frame
+        name="Column chart"
+        title={p.title}
+        empty={!rows.length}
+        loading={p.loading}
+        chartRef={ref}
+        ready={theme.ready}
+      >
         <Chart
+          key={s.color ?? ''}
           {...(common as object)}
           label={label}
           data={s.data}
@@ -451,14 +467,22 @@ export const Line = () => {
       : undefined;
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
+      <Frame
+        name="Line chart"
+        title={p.title}
+        empty={!rows.length}
+        loading={p.loading}
+        chartRef={ref}
+        ready={theme.ready}
+      >
         <AntLine
+          key={s.color ?? ''}
           {...(common as object)}
           data={s.data}
           xField={s.x}
           yField={s.y}
           colorField={s.color}
-          shapeField={smooth ? 'smooth' : undefined}
+          shapeField={smooth ? 'smooth' : 'line'}
           point={points}
           style={{
             lineWidth: 2,
@@ -499,20 +523,29 @@ export const Area = () => {
   const fillOpacity = s.color && !stack ? 0.25 : 0.4;
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
+      <Frame
+        name="Area chart"
+        title={p.title}
+        empty={!rows.length}
+        loading={p.loading}
+        chartRef={ref}
+        ready={theme.ready}
+      >
         <AntArea
+          key={s.color ?? ''}
           {...(common as object)}
           data={s.data}
           xField={s.x}
           yField={s.y}
           colorField={s.color}
           stack={stack && !!s.color}
-          shapeField={smooth ? 'smooth' : undefined}
+          shapeField={smooth ? 'smooth' : 'area'}
           style={{
             fillOpacity: h ? h.opacity(bySeries, fillOpacity) : fillOpacity,
             fill: s.color ? undefined : theme.brand,
           }}
           line={{
+            shapeField: smooth ? 'smooth' : 'line',
             style: {
               lineWidth: 2,
               stroke: s.color ? undefined : theme.brand,
@@ -622,7 +655,7 @@ export const Pie = () => {
   };
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={title} empty={!rows.length} loading={loading} chartRef={ref} ready={theme.ready}>
+      <Frame name="Pie chart" title={title} empty={!rows.length} loading={loading} chartRef={ref} ready={theme.ready}>
         <AntPie
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}
@@ -693,8 +726,16 @@ export const Bar = () => {
   const r = Math.max(0, Number(radius) || 0);
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
+      <Frame
+        name="Bar chart"
+        title={p.title}
+        empty={!rows.length}
+        loading={p.loading}
+        chartRef={ref}
+        ready={theme.ready}
+      >
         <AntBar
+          key={s.color ?? ''}
           {...(common as object)}
           data={s.data}
           xField={s.x}
@@ -822,7 +863,14 @@ export const DualAxes = () => {
         };
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
+      <Frame
+        name="Dual axes chart"
+        title={p.title}
+        empty={!rows.length}
+        loading={p.loading}
+        chartRef={ref}
+        ready={theme.ready}
+      >
         <AntDualAxes
           // Ant merges a new config into the chart's last one, so a setting turned off kept its old effect: labels
           // stayed after Label off, the shared range after Shared axis off, the groups after Color field was emptied.
@@ -884,24 +932,37 @@ export const Funnel = () => {
     const n = toNumber(v);
     return n === null ? str(v) : formatNumber(n, p.yFormatter as 'auto', p.currency, null, p.locale);
   };
+  // A set Text color draws the stage labels (theme.text: the style read as a plain colour, which the canvas needs);
+  // unset, they stay white, turned dark where a stage is too narrow to hold them.
+  const labelColor = (tokens as Record<string, string>)['--tj-ant-color-text'] ? theme.text : '';
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
+      <Frame
+        name="Funnel chart"
+        title={p.title}
+        empty={!rows.length}
+        loading={p.loading}
+        chartRef={ref}
+        ready={theme.ready}
+      >
         <AntFunnel
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}
           data={rows}
           xField={p.xField}
           yField={y}
+          // Stages coloured by a group field (QA PF-230: the field was declared but never passed on); empty, each stage
+          // takes its own colour as before.
+          colorField={p.colorField || undefined}
           scale={{ color: { range: theme.palette }, ...(flat ? { y: { domain: [-1, 1] } } : {}) }}
           legend={false}
           label={{
             text: (d: Row) => `${str(d[p.xField])}  ${fmt(d[y])}${share(d[y] as number)}`,
-            fill: '#fff',
+            fill: labelColor || '#fff',
             position: 'inside',
             // White text on a stage too narrow to hold it fell on the light background; the colour now turns dark
-            // there (G2 picks the readable one against what is behind the label).
-            transform: [{ type: 'contrastReverse' }],
+            // there (G2 picks the readable one against what is behind the label). A set Text color is kept as set.
+            transform: labelColor ? [] : [{ type: 'contrastReverse' }],
           }}
           tooltip={{ items: [{ field: y, valueFormatter: fmt }] }}
           interaction={tooltipInteraction(tips)}
@@ -991,7 +1052,7 @@ export const Gauge = () => {
   const fontSize = room > 0 ? Math.max(10, Math.min(28, Math.floor((room * 0.5) / (shown.length * 0.6)))) : 28;
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={title} empty={false} loading={loading} chartRef={ref} ready={theme.ready}>
+      <Frame name="Gauge" title={title} empty={false} loading={loading} chartRef={ref} ready={theme.ready}>
         <AntGauge
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}
@@ -1060,8 +1121,16 @@ export const Radar = () => {
   const h = p.highlight;
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
+      <Frame
+        name="Radar chart"
+        title={p.title}
+        empty={!rows.length}
+        loading={p.loading}
+        chartRef={ref}
+        ready={theme.ready}
+      >
         <AntRadar
+          key={s.color ?? ''}
           {...(common as object)}
           data={s.data}
           xField={s.x}
@@ -1129,8 +1198,16 @@ export const Scatter = () => {
   const common = useCommon(p, theme, { color: p.colorField || undefined, y, labelAt: 'above' }, tips);
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
+      <Frame
+        name="Scatter chart"
+        title={p.title}
+        empty={!rows.length}
+        loading={p.loading}
+        chartRef={ref}
+        ready={theme.ready}
+      >
         <AntScatter
+          key={`${p.colorField || ''}|${sizeField || ''}`}
           {...(common as object)}
           data={rows}
           xField={p.xField}
@@ -1206,7 +1283,7 @@ export const Heatmap = () => {
   const rows = toRows(rawData).map((r) => ({ ...r, [colorField]: toNumber(r[colorField]) ?? 0 }));
   return (
     <AntProvider tokens={tokens} fill>
-      <Frame title={title} empty={!rows.length} loading={loading} chartRef={ref} ready={theme.ready}>
+      <Frame name="Heatmap" title={title} empty={!rows.length} loading={loading} chartRef={ref} ready={theme.ready}>
         <AntHeatmap
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}

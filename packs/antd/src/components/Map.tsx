@@ -699,6 +699,15 @@ export const Map = () => {
           zIndexOffset: isSel ? 1000 : 0,
         });
         marker.on('click', () => fns.current.clickPoint(key));
+        // A focused marker (Leaflet makes it a Tab stop) takes Enter and Space as a click, opening its popup; Escape
+        // closes it. Leaflet's own keys open only a bindPopup popup, and close one only while the map has focus (QA PF-242).
+        marker.on('keydown', (e) => {
+          const { key: pressed } = (e as L.LeafletKeyboardEvent).originalEvent;
+          if (pressed === 'Escape') m.closePopup();
+          if (pressed !== 'Enter' && pressed !== ' ') return;
+          (e as L.LeafletKeyboardEvent).originalEvent.preventDefault();
+          fns.current.clickPoint(key);
+        });
       } else {
         const members = item.cluster.members.map((p) => [p.lat, p.lng] as L.LatLngTuple);
         marker = L.marker([item.lat, item.lng], {

@@ -1,11 +1,11 @@
 {
   "basic": {
     "planName": "Basic",
-    "Apps": 2,
+    "Apps": 3,
     "Workspaces": 1,
-    "Total Users": 52,
-    "Builders": 2,
-    "End Users": 50,
+    "Total Users": 11,
+    "Builders": 1,
+    "End Users": 10,
     "Super Admins": 1,
     "Workflows": 2,
     "Tables": "Unlimited"

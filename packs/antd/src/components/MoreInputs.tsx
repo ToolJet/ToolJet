@@ -24,6 +24,7 @@ import { str, toArray, toOptions, type Row } from '../lib/data';
 import { closesOnEscape, useOwnedPopup } from '../lib/useOwnerGuard';
 import { useFormValue } from '../lib/formValue';
 import { boundedTree } from '../lib/tree';
+import { UNIT } from './DatePicker';
 import { useValueSetter } from '../lib/sameValue';
 import { useOfferedValue } from '../lib/offeredValue';
 import { isBlankDate, parseDate as strictDate, parseTime } from '../lib/dates';
@@ -473,12 +474,25 @@ export const RangePicker = (props: Record<string, unknown>) => {
   const pair = React.useMemo(() => toArray(value).map((v) => parseDate(v)), [JSON.stringify(value)]); // eslint-disable-line react-hooks/exhaustive-deps
   // A range whose start is after its end (a default or setFieldValue; a pick is always in order) is not valid.
   const reversed = !!pair[0] && !!pair[1] && pair[0].isAfter(pair[1]);
+  // A range outside Min date or Max date is invalid, as the DatePicker's value is (PKB-70); compared at the picker's
+  // unit, a quarter picker is left to Ant's greying.
+  const unit = UNIT[String(picker)];
+  const lo = parseDate(minDate);
+  const hi = parseDate(maxDate);
+  const outside =
+    !unit || !pair[0] || !pair[1]
+      ? ''
+      : lo && pair[0].isBefore(lo, unit)
+        ? `Minimum date is ${str(minDate).trim()}`
+        : hi && pair[1].isAfter(hi, unit)
+          ? `Maximum date is ${str(maxDate).trim()}`
+          : '';
   // A range is filled only with both dates: a required one with no end date is invalid, as ToolJet's own Date range
   // picker (AD-27). The field still shows the start date it exposes as startDate.
   const check = ToolJet.useValidation({
     kind: 'date',
     value: pair[0] && pair[1] ? str(toArray(value)[0]) : '',
-    rule: reversed ? 'The start date is after the end date' : '',
+    rule: reversed ? 'The start date is after the end date' : outside,
   });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
@@ -775,6 +789,7 @@ export const TreeSelect = (props: Record<string, unknown>) => {
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
+    release();
     const arr = Array.isArray(v) ? v.map(str) : v === undefined || v === null || v === '' ? [] : [str(v)];
     if (valueSetter.set(many ? arr : (arr[0] ?? ''))) onChange();
   };
@@ -785,7 +800,7 @@ export const TreeSelect = (props: Record<string, unknown>) => {
   const tree = toTree(treeData);
   const offered = treeValues(tree);
   const prune = tree.length > 0 && !loading;
-  useOfferedValue<unknown>(
+  const release = useOfferedValue<unknown>(
     value,
     (next) => setValue(next as never),
     (v) => {
@@ -793,12 +808,14 @@ export const TreeSelect = (props: Record<string, unknown>) => {
       const kept = prune ? all.filter((x) => offered.has(x)) : all;
       return many ? kept : (kept[0] ?? '');
     },
-    `${prune}|${many}|${[...offered].join('\u0000')}`
+    `${prune}|${many}|${[...offered].join('\u0000')}`,
+    props.value
   );
   // A cleared Form empties a multiple TreeSelect to no values ([]), not to the '' the host clears text values to.
-  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(
-    () => many && setValue([] as unknown as string)
-  );
+  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => {
+    release();
+    if (many) setValue([] as unknown as string);
+  });
   useFieldActions(change, props.value);
   const list = useOwnedPopup(disabled, (open) => !open && check.touch());
   // A value no node offers shows the placeholder, as in the Select: Ant drew it as bare text (QA AD-35).
@@ -809,6 +826,8 @@ export const TreeSelect = (props: Record<string, unknown>) => {
         <WithPopupTheme>
           {(popup) => (
             <AntTreeSelect
+              // Ant reads treeDefaultExpandAll only on mount, so turning it off later kept every group open (QA PF-082).
+              key={treeDefaultExpandAll ? 'expand-all' : 'collapsed'}
               id={fieldId}
               style={{ width: '100%' }}
               treeData={tree}
@@ -953,15 +972,17 @@ export const Cascader = (props: Record<string, unknown>) => {
   // hold it (lib/offeredValue, QA AD-57). Not while the options are empty or loading, so a default waits for them.
   // Fires no event.
   const prune = cascade.length > 0 && !loading;
-  useOfferedValue<string[]>(
+  const release = useOfferedValue<string[]>(
     path,
     (next) => setValue(next as never),
     (p) => (prune && p.length > 0 && !holds(cascade, p) ? [] : p),
-    `${prune}|${JSON.stringify(cascade)}`
+    `${prune}|${JSON.stringify(cascade)}`,
+    props.value
   );
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
+    release();
     if (!valueSetter.set(toArray(v).map(str))) return;
     onChange();
   };

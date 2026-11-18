@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 /**
  * Keeps a choice field's value to what its options offer, and gives a value it dropped back once they offer it.
@@ -13,16 +13,26 @@ import { useEffect, useRef } from 'react';
  * `restrict` gives a value as the field can hold it now: the same value when the options offer it, less of it or empty
  * when they do not, and as it is while there is nothing to judge it by (options loading or empty). `optionsKey` changes
  * with the options, so a dropped value is looked at again each time they change.
+ *
+ * A pick, an action or a Form clear can leave the value as the drop left it (empty), so the caller calls the returned
+ * `release` from them; a new `given` (the Value property) forgets the dropped value too.
  */
 export const useOfferedValue = <T>(
   value: T,
   setValue: (next: T) => void,
   restrict: (v: T) => T,
-  optionsKey: string
+  optionsKey: string,
+  given?: unknown
 ) => {
   const held = useRef<{ dropped: T; left: string } | null>(null);
   const valueKey = JSON.stringify(value) ?? '';
+  const givenKey = JSON.stringify(given) ?? '';
+  const lastGiven = useRef(givenKey);
   useEffect(() => {
+    if (lastGiven.current !== givenKey) {
+      lastGiven.current = givenKey;
+      held.current = null;
+    }
     if (held.current && held.current.left !== valueKey) held.current = null;
     const wanted = held.current ? held.current.dropped : value;
     const next = restrict(wanted);
@@ -30,5 +40,8 @@ export const useOfferedValue = <T>(
     held.current = nextKey === (JSON.stringify(wanted) ?? '') ? null : { dropped: wanted, left: nextKey };
     if (nextKey !== valueKey) setValue(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [valueKey, optionsKey]);
+  }, [valueKey, optionsKey, givenKey]);
+  return useCallback(() => {
+    held.current = null;
+  }, []);
 };

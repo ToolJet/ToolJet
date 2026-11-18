@@ -16,10 +16,10 @@ import {
   Timeline as AntTimeline,
   Typography,
 } from 'antd';
-import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined } from '@ant-design/icons';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
-import { THEME_COLOR, useThemeColor } from '../lib/themeStyles';
+import { RADIUS_HINT, THEME_COLOR, useThemeColor, useThemeNumber } from '../lib/themeStyles';
 import { SkeletonSwap, SpinOver, TextBone } from '../lib/Loading';
 import { oneOf, str, toArray, type Row } from '../lib/data';
 import { formatCell, formatFigure, formatNumber, parseFormat, toNumber, type NumberFormat } from '../lib/format';
@@ -35,6 +35,34 @@ const TONE_TAG_STATUS: Record<string, string | undefined> = {
   danger: 'error',
   info: 'processing',
   neutral: undefined,
+};
+
+// Ant matches preset colours case-sensitively and paints anything else as a white-on-fill custom colour (QA PF-036).
+const TAG_PRESETS = new Set(
+  [
+    'blue',
+    'purple',
+    'cyan',
+    'green',
+    'magenta',
+    'pink',
+    'red',
+    'orange',
+    'yellow',
+    'volcano',
+    'geekblue',
+    'gold',
+    'lime',
+  ]
+    .flatMap((n) => [n, `${n}-inverse`])
+    .concat(['success', 'processing', 'error', 'warning'])
+);
+const tagColor = (value: string): string | undefined => {
+  const v = value.trim();
+  const lower = v.toLowerCase();
+  if (!v || lower === 'default') return undefined;
+  if (TAG_PRESETS.has(lower)) return lower;
+  return typeof CSS !== 'undefined' && CSS.supports ? (CSS.supports('color', v) ? v : undefined) : v;
 };
 
 // Ant's Tag: its text is its children; color (a status preset, a palette name, or any CSS colour), bordered, closable;
@@ -56,7 +84,10 @@ export const Tag = () => {
   const [closed, setClosed] = ToolJet.useStateBoolean({ name: 'closed', initialValue: false, inspector: 'hidden' });
   ToolJet.useAction({ name: 'reopen', displayName: 'Reopen' }, () => setClosed(false));
   const { loading } = ToolJet.useControlState();
-  const tokens = useTokenStyles();
+  // Only Border color and Border radius: the tag's colours come from Color alone (no Primary, Text or Container colour
+  // styles). Same style names as before, so saved values still apply.
+  const borderColor = useThemeColor('colorBorder', 'Border color', THEME_COLOR.border);
+  const borderRadius = useThemeNumber('borderRadius', 'Border radius', RADIUS_HINT);
   ToolJet.useComponentSettings({
     role: 'badge',
     fit: true,
@@ -77,24 +108,38 @@ export const Tag = () => {
     defaultWidth: 4,
     defaultHeight: 3,
   });
-  const c = str(color).trim();
+  const c = tagColor(str(color));
+  // Border color and Border radius style the tag itself and win over Color; Bordered turns the border on and off.
+  const radius = borderRadius === '' || borderRadius == null ? NaN : Number(borderRadius);
+  const tagStyle = {
+    marginInlineEnd: 0,
+    ...(borderColor && bordered ? { borderColor } : {}),
+    ...(Number.isFinite(radius) ? { borderRadius: radius } : {}),
+  };
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider>
       <SkeletonSwap loading={loading} look={<Skeleton.Button active size="small" />}>
         {children && !closed ? (
           <AntTag
-            color={c && c !== 'default' ? c : undefined}
+            className="tj-ant-tag"
+            title={children}
+            color={c}
             bordered={bordered}
             closable={closable}
+            closeIcon={
+              <button type="button" className="tj-ant-tag-close" aria-label="Remove tag">
+                <CloseOutlined />
+              </button>
+            }
             onClose={(e) => {
               // The tag is hidden here, not by Ant, so the reopen action can show it again.
               e.preventDefault();
               setClosed(true);
               onClose();
             }}
-            style={{ marginInlineEnd: 0 }}
+            style={tagStyle}
           >
-            {children}
+            <span className="tj-ant-tag-text">{children}</span>
           </AntTag>
         ) : null}
       </SkeletonSwap>
@@ -315,7 +360,8 @@ export const Title = () => {
   });
   const lv = Math.max(1, Math.min(5, Math.round(toNumber(String(level).replace(/^h/i, '')) ?? 3))) as 1;
   return (
-    <AntProvider tokens={tokens}>
+    // A long title in a short box scrolls inside it (Dynamic height off), as a ToolJet Text does (QA PF-211).
+    <AntProvider tokens={tokens} className="tj-ant-fit-scroll">
       <SkeletonSwap loading={loading} look={<Skeleton active paragraph={false} />}>
         <Typography.Title
           level={lv}
@@ -381,7 +427,8 @@ export const Text = () => {
   });
   const rows = Math.max(0, Number(ellipsis) || 0);
   return (
-    <AntProvider tokens={tokens}>
+    // A long text in a short box scrolls inside it (Dynamic height off), as a ToolJet Text does (QA PF-212).
+    <AntProvider tokens={tokens} className="tj-ant-fit-scroll">
       <SkeletonSwap
         loading={loading}
         look={<Skeleton active title={false} paragraph={{ rows: Math.max(1, Math.min(4, rows || 2)) }} />}
@@ -585,12 +632,7 @@ export const Progress = () => {
     min: 0,
     max: 50,
   });
-  const [strokeColor] = ToolJet.useStateString({
-    name: 'strokeColor',
-    label: 'Stroke color',
-    inspector: 'color',
-    initialValue: '',
-  });
+  // No Stroke color: the bar, ring and steps take the Primary color style (Ant's default progress colour).
   const [title] = ToolJet.useStateString({
     name: 'title',
     label: 'Title',
@@ -621,12 +663,17 @@ export const Progress = () => {
       size={isLine ? undefined : ringPx}
       status={status === 'normal' ? undefined : (status as 'active')}
       showInfo={showInfo}
-      steps={isLine && Number(steps) > 0 ? Number(steps) : undefined}
-      strokeColor={strokeColor || undefined}
+      // Within the declared 1 to 50: max only limits the inspector field, and a bound 1e9 reached Ant, which threw
+      // building that many segments (QA PF-213).
+      steps={isLine && Number(steps) >= 1 ? Math.min(50, Math.trunc(Number(steps))) : undefined}
     />
   );
   return (
-    <AntProvider tokens={tokens} fill className={isLine ? 'tj-ant-progress-line' : 'tj-ant-center'}>
+    <AntProvider
+      tokens={tokens}
+      fill
+      className={`${isLine ? 'tj-ant-progress-line' : 'tj-ant-center'} tj-ant-chart-box`}
+    >
       <SpinOver loading={loading} as="fill">
         {title && isLine ? <div className="tj-ant-progress-title">{title}</div> : null}
         {isLine ? (
@@ -757,7 +804,7 @@ export const Empty = () => {
     defaultHeight: 14,
   });
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-center">
+    <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-empty">
       <SpinOver loading={loading} as="fill">
         <AntEmpty
           description={description || false}
@@ -794,7 +841,7 @@ export const Result = () => {
     defaultHeight: 30,
   });
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} className="tj-ant-fit-scroll tj-ant-chart-box">
       <SpinOver loading={loading} as="block">
         <AntResult
           status={oneOf(status, RESULT_STATUSES, 'info')}
@@ -1025,7 +1072,7 @@ export const Steps = () => {
     (n) => go(Number(n) || 0)
   );
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} className="tj-ant-steps tj-ant-fit-scroll tj-ant-chart-box">
       <SpinOver loading={loading} as="block">
         <AntSteps
           items={items}

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { DatePicker as AntDatePicker } from 'antd';
+import { DatePicker as AntDatePicker, Grid } from 'antd';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { ToolJet } from '@tooljet/custom-component-sdk';
@@ -40,7 +40,12 @@ const bound = (v: unknown, edge: 'start' | 'end'): Dayjs | undefined => {
 };
 
 // The unit a picker's value is compared at: a month picker's value is that month, whatever day it holds.
-const UNIT: Record<string, 'day' | 'week' | 'month' | 'year'> = { date: 'day', week: 'week', month: 'month', year: 'year' };
+export const UNIT: Record<string, 'day' | 'week' | 'month' | 'year'> = {
+  date: 'day',
+  week: 'week',
+  month: 'month',
+  year: 'year',
+};
 const range = (from: number, to: number) => Array.from({ length: Math.max(0, to - from) }, (_, i) => from + i);
 
 /**
@@ -203,6 +208,9 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
     if (!open) check.touch();
     onOpenChange();
   });
+  // QA PF-069: date panel + time panel is 401px (457 with 12h), wider than a phone. On Ant's xs screens the time panel
+  // stacks under the dates (controls.css).
+  const stack = Grid.useBreakpoint().xs === true && showTime;
   const timeFormat = use12Hours ? 'hh:mm A' : 'HH:mm';
   const step = Math.max(1, Number(minuteStep) || 1) as 1;
 
@@ -236,7 +244,7 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
                 variant={look.variant}
                 size={look.size}
                 status={check.error ? 'error' : undefined}
-                popupClassName={popup.className}
+                popupClassName={stack ? `${popup.className ?? ''} tj-ant-datetime--stack`.trim() : popup.className}
                 popupStyle={popup.style}
                 open={panel.open}
                 onOpenChange={panel.onOpenChange}
