@@ -79,7 +79,8 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
         description="Records are ordered by the first row, then by the next."
         addLabel="Add sort"
         onAdd={addRow}
-        emptyText="No sorting applied."
+        emptyTitle="No sorting applied"
+        emptyDescription="Add a sort to order the records."
         clearDisabled={filledRows.length === 0}
         onClearAll={() => setDraft({})}
         onCancel={() => setShow(false)}

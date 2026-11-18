@@ -100,6 +100,12 @@ describe('Filter popover', () => {
 
     await userEvent.click(screen.getAllByRole('button', { name: 'Remove filter' })[0]);
     expect(screen.getAllByRole('combobox', { name: 'Column' })).toHaveLength(1);
+
+    // Removing the last row leaves the empty state, and Add filter brings a row back.
+    await userEvent.click(screen.getByRole('button', { name: 'Remove filter' }));
+    expect(screen.getByText('No filters applied')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Add filter' }));
+    expect(screen.getAllByRole('combobox', { name: 'Column' })).toHaveLength(1);
   });
 
   it('applies an emptied list once the applied filters are cleared', async () => {
@@ -107,50 +113,22 @@ describe('Filter popover', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Filter' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Clear all' }));
+    expect(screen.getByText('No filters applied')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Apply' }));
 
     expect(setFilters).toHaveBeenCalledWith({});
-  });
-});
-
-describe('Filter popover | empty state', () => {
-  // The design's empty Filter is one blank row, never an empty list.
-  const expectBlankRow = () => {
-    expect(screen.getAllByRole('combobox', { name: 'Column' })).toHaveLength(1);
-    expect(screen.getByRole('combobox', { name: 'Operation' })).toBeDisabled();
-    expect(screen.getByRole('textbox', { name: 'Value' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Clear all' })).toBeDisabled();
-  };
-
-  it('leaves one blank row after Clear all, and Apply can still clear the applied filters', async () => {
-    const { setFilters } = setupFilter({ 0: { column: 'id', operator: 'eq', value: '1' } });
-
-    await userEvent.click(screen.getByRole('button', { name: 'Filter' }));
-    await userEvent.click(await screen.findByRole('button', { name: 'Clear all' }));
-
-    expectBlankRow();
-    await userEvent.click(screen.getByRole('button', { name: 'Apply' }));
-    expect(setFilters).toHaveBeenCalledWith({});
-  });
-
-  it('leaves one blank row when the last row is removed', async () => {
-    setupFilter();
-
-    await userEvent.click(screen.getByRole('button', { name: 'Filter' }));
-    await userEvent.click(await screen.findByRole('button', { name: 'Remove filter' }));
-
-    expectBlankRow();
   });
 });
 
 describe('Sort popover', () => {
-  it('shows "No sorting applied." once the last row is removed, and Apply stays off', async () => {
+  it('shows the empty state once the last row is removed, and Apply stays off', async () => {
     setupSort();
 
     await userEvent.click(screen.getByRole('button', { name: 'Sort' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Remove sort' }));
 
-    expect(screen.getByText('No sorting applied.')).toBeInTheDocument();
+    expect(screen.getByText('No sorting applied')).toBeInTheDocument();
+    expect(screen.getByText('Add a sort to order the records.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
   });
 

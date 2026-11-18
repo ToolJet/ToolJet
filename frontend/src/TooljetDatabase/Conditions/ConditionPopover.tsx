@@ -10,8 +10,9 @@ export interface ConditionPopoverProps {
   description: string;
   addLabel: string;
   onAdd: () => void;
-  /** Shown instead of the rows when there are none. */
-  emptyText?: string;
+  /** Shown in a dashed box instead of the rows when there are none. */
+  emptyTitle: string;
+  emptyDescription: string;
   clearDisabled: boolean;
   onClearAll: () => void;
   onCancel: () => void;
@@ -30,7 +31,8 @@ export function ConditionPopover({
   description,
   addLabel,
   onAdd,
-  emptyText,
+  emptyTitle,
+  emptyDescription,
   clearDisabled,
   onClearAll,
   onCancel,
@@ -68,7 +70,13 @@ export function ConditionPopover({
             {children}
           </div>
         ) : (
-          emptyText && <p className="tw-m-0 tw-font-body-default tw-text-text-placeholder">{emptyText}</p>
+          <div
+            className="tw-box-border tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-rounded-medium tw-border tw-border-dashed tw-border-border-default tw-px-6 tw-py-4 tw-text-center"
+            data-cy={`${dataCy}-empty-state`}
+          >
+            <p className="tw-m-0 tw-font-title-default tw-text-text-default">{emptyTitle}</p>
+            <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">{emptyDescription}</p>
+          </div>
         )}
       </div>
       <div className="tw-flex tw-items-center tw-justify-between tw-gap-1.5 tw-border-0 tw-border-t tw-border-solid tw-border-border-weak tw-px-4 tw-py-3">

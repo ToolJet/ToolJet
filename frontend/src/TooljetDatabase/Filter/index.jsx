@@ -15,7 +15,7 @@ import { useTjdbActions } from '../_stores/tjdbStore';
 const hasAnyValue = ({ column, operator, value }) => !isEmpty(column) || !isEmpty(operator) || !isEmpty(value);
 const isComplete = ({ column, operator, value }) => !isEmpty(column) && !isEmpty(operator) && !isEmpty(value);
 
-// The empty Filter is one blank row, never an empty list.
+// What the popover opens on when nothing is applied: one starter row.
 const blankDraft = () => ({ 0: {} });
 
 const generateMessage = (operator) => {
@@ -122,10 +122,12 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery,
         className="tw-w-[620px]"
         title="Filter"
         description="Records must match every condition."
+        emptyTitle="No filters applied"
+        emptyDescription="Add a filter to narrow down the records."
         addLabel="Add filter"
         onAdd={addRow}
         clearDisabled={filledRows.length === 0}
-        onClearAll={() => setDraft(blankDraft())}
+        onClearAll={() => setDraft({})}
         onCancel={() => setShow(false)}
         applyDisabled={!canApply}
         onApply={apply}
@@ -136,12 +138,7 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery,
             condition={condition}
             columns={columns}
             onChange={(patch) => updateRow(key, patch)}
-            onRemove={() =>
-              setDraft((previous) => {
-                const rows = omit(previous, key);
-                return isEmpty(rows) ? blankDraft() : rows;
-              })
-            }
+            onRemove={() => setDraft((previous) => omit(previous, key))}
             data-cy={`filter-row-${key}`}
           />
         ))}
