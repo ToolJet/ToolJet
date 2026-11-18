@@ -1428,6 +1428,29 @@
   flex: 1 1 auto;
   width: 100%;
 }
+/* Link styles (QA PF-032): each class is set only when its style is, so a plain Link is unchanged. */
+.tj-ant-root .tj-ant-link.has-text {
+  color: var(--tj-ant-color-text);
+}
+.tj-ant-root .tj-ant-link.has-bg,
+.tj-ant-root .tj-ant-link.has-border {
+  display: inline-block;
+  padding: 2px 8px;
+}
+.tj-ant-root .tj-ant-link.has-bg {
+  background: var(--tj-ant-color-bg-container);
+}
+.tj-ant-root .tj-ant-link.has-border {
+  border: 1px solid var(--tj-ant-color-border);
+}
+.tj-ant-root .tj-ant-link.has-radius {
+  border-radius: var(--tj-ant-border-radius);
+}
+/* Disabled wins over Text color. */
+.tj-ant-root .tj-ant-link.ant-typography-disabled {
+  color: var(--ant-color-text-disabled);
+  cursor: not-allowed;
+}
 /* Ant's Segmented draws neither the primary nor the border colour, so those two styles changed nothing (QA PKB-41).
    Each reads only the variable its style sets: a Segmented without them keeps the stock look. */
 .tj-ant-root .ant-segmented {

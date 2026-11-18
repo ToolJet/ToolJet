@@ -982,7 +982,7 @@ export const Link = () => {
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onHover = ToolJet.useEventCallback({ name: 'onHover' });
   const ref = useRef<HTMLAnchorElement>(null);
-  const { loading } = ToolJet.useControlState();
+  const { loading, disabled } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'link',
@@ -1011,6 +1011,16 @@ export const Link = () => {
   const Ext = antIcon('ExportOutlined');
   // A javascript: or data: href would run script on click; only web, mail and phone links are kept.
   const link = safeUrl(href);
+  // Each style the Link draws only when it is set, so a Link without them keeps its look (QA PF-032).
+  const set = tokens as Record<string, string>;
+  const looks = [
+    set['--tj-ant-color-text'] ? 'has-text' : '',
+    set['--tj-ant-color-bg-container'] ? 'has-bg' : '',
+    set['--tj-ant-color-border'] ? 'has-border' : '',
+    set['--tj-ant-border-radius'] ? 'has-radius' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-start">
       <SpinOver loading={loading}>
@@ -1019,7 +1029,10 @@ export const Link = () => {
           href={link || undefined}
           target={link ? target : undefined}
           strong={strong}
-          className={`tj-ant-link is-${underline}`}
+          // The Link never read its disabled state: it stayed blue with a hand cursor (QA PF-033).
+          disabled={disabled}
+          aria-disabled={disabled || undefined}
+          className={`tj-ant-link is-${underline} ${looks}`.trim()}
           // Without an href an <a> takes no Tab, and Tab skipped the Link (a ToolJet Link takes it): it takes it, and
           // Enter clicks it, as Enter on a link does.
           tabIndex={link ? undefined : 0}
