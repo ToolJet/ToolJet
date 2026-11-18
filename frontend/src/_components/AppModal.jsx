@@ -34,8 +34,12 @@ export function AppModal({
   dependentPluginsDetail = [],
   dependentPlugins = [],
   modalType,
-  // Edition-specific fields under the name (the enterprise build mode choice on "Create app").
+  // Edition-specific fields under the name.
   extraContent = null,
+  // Edition-specific fields above the name (the enterprise build mode choice on "Create app").
+  leadingContent = null,
+  // The name field's label, when a dialog words it differently from "<type> name".
+  nameLabel,
   // isAutoCommit = false,
 }) {
   if (!selectedAppName && templateDetails) {
@@ -173,8 +177,9 @@ export function AppModal({
         <FormWrapper callback={handleAction} id="createAppForm">
           <div className="row workspace-folder-modal custom-gap-16">
             <div className="col modal-main tj-app-input">
+              {leadingContent && <div className="tw-mb-6">{leadingContent}</div>}
               <label className="tj-input-label" data-cy={`${generateCypressDataCy(appTypeName)}-name-label`}>
-                {`${appTypeName} name`}
+                {nameLabel ?? `${appTypeName} name`}
               </label>
               <input
                 type="text"

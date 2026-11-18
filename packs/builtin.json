@@ -4,6 +4,9 @@
     "packs/antd",
     "packs/mui"
   ],
+  "disabled": {
+    "mui": "Not released yet: turned back on once it is tested. Remove this entry to ship it again."
+  },
   "displayNames": {
     "shadcn": {
       "TabsContainer": "Tabs",

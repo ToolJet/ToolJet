@@ -83,6 +83,9 @@ export const onboardingSelectors = {
   valueInputField: (header, index) => {
     return `[data-cy="${cyParamName(header)}-value-input-field-${cyParamName(index)}"]`;
   },
+  checkYourMailHeader: '[data-cy="check-your-mail-header"]',
+  backToSignupButton: '[data-cy="back-to-signup"]',
+  resetPasswordInfoBanner: '[data-cy="reset-password-info-banner"]',
   deleteButton: (header, index) => {
     return `[data-cy="${cyParamName(header)}-delete-button-${cyParamName(index)}"]`;
   },

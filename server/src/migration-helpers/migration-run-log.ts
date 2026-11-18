@@ -1,6 +1,6 @@
 import { LOCK_SENTINEL_MIGRATION_NAMES } from './migration-locks';
 
-export type MigrationStepStatus = 'pending' | 'running' | 'done' | 'failed';
+export type MigrationStepStatus = 'pending' | 'running' | 'done' | 'failed' | 'rolled_back';
 
 export interface MigrationStep {
   name: string;
@@ -145,6 +145,16 @@ export function markFailed(run: RunProgress): RunProgress {
   return {
     ...run,
     migrations: run.migrations.map((step) => (step.status === 'running' ? { ...step, status: 'failed' } : step)),
+  };
+}
+
+/** A failed run's transaction undid its done steps: done but missing from the `migrations` table means rolled back. */
+export function markRolledBack(run: RunProgress, applied: ReadonlySet<string>): RunProgress {
+  return {
+    ...run,
+    migrations: run.migrations.map((step) =>
+      step.status === 'done' && !applied.has(step.name) ? { ...step, status: 'rolled_back' } : step
+    ),
   };
 }
 

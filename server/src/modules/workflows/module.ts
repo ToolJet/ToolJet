@@ -43,6 +43,9 @@ import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { UsersModule } from '@modules/users/module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
+import { WorkflowApprovalRequestRepository } from './repositories/workflow-approval-request.repository';
+import { WorkflowExecutionRepository } from './repositories/workflow-execution.repository';
+import { WORKFLOW_APPROVAL_TIMEOUT_QUEUE } from './constants';
 
 const WORKFLOW_SCHEDULE_QUEUE = 'workflow-schedule-queue';
 const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
@@ -80,6 +83,12 @@ export class WorkflowsModule extends SubModule {
       SecurityModeDetectorService,
       PythonBundleGenerationService,
       PyPiRegistryService,
+      WorkflowApprovalsService,
+      WorkflowApprovalsController,
+      WorkflowApprovalTimeoutService,
+      WorkflowApprovalTimeoutProcessor,
+      ApprovalTimeoutBootstrapService,
+      WaitResumeWatchdogService,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
       'controllers/workflow-executions.controller',
@@ -107,6 +116,12 @@ export class WorkflowsModule extends SubModule {
       'services/security-mode-detector.service',
       'services/python-bundle-generation.service',
       'services/pypi-registry.service',
+      'services/workflow-approvals.service',
+      'controllers/workflow-approvals.controller',
+      'services/workflow-approval-timeout.service',
+      'processors/workflow-approval-timeout.processor',
+      'services/approval-timeout-bootstrap.service',
+      'services/wait-resume-watchdog.service',
     ]);
 
     // Get apps related providers
@@ -155,6 +170,11 @@ export class WorkflowsModule extends SubModule {
         BullModule.registerQueue({
           name: WORKFLOW_EXECUTION_QUEUE,
         }),
+        BullModule.registerQueue({
+          name: WORKFLOW_APPROVAL_TIMEOUT_QUEUE,
+          // Fired timers are not kept; boot-time re-arm skips reminders that are already due.
+          defaultJobOptions: { removeOnComplete: true, removeOnFail: 100 },
+        }),
         // Register queues with Bull Board for dashboard visibility. AppModule only mounts the Bull
         // Board root outside Cloud, and forFeature can't resolve without it.
         ...(getTooljetEdition() !== TOOLJET_EDITIONS.Cloud
@@ -165,6 +185,10 @@ export class WorkflowsModule extends SubModule {
               }),
               BullBoardModule.forFeature({
                 name: WORKFLOW_EXECUTION_QUEUE,
+                adapter: BullMQAdapter,
+              }),
+              BullBoardModule.forFeature({
+                name: WORKFLOW_APPROVAL_TIMEOUT_QUEUE,
                 adapter: BullMQAdapter,
               }),
             ]
@@ -221,6 +245,10 @@ export class WorkflowsModule extends SubModule {
         WorkflowAccessGuard,
         RolesRepository,
         GroupPermissionsRepository,
+        WorkflowApprovalRequestRepository,
+        WorkflowExecutionRepository,
+        WorkflowApprovalsService,
+        WorkflowApprovalTimeoutService,
         ...(isMainImport
           ? [
               WorkflowStreamService,
@@ -228,7 +256,14 @@ export class WorkflowsModule extends SubModule {
               // Only register BullMQ processors and schedule bootstrap when WORKER=true
               // This allows running dedicated HTTP-only instances and worker instances
               ...(process.env.WORKER === 'true'
-                ? [WorkflowScheduleProcessor, WorkflowExecutionProcessor, ScheduleBootstrapService]
+                ? [
+                    WorkflowScheduleProcessor,
+                    WorkflowExecutionProcessor,
+                    ScheduleBootstrapService,
+                    WorkflowApprovalTimeoutProcessor,
+                    ApprovalTimeoutBootstrapService,
+                    WaitResumeWatchdogService,
+                  ]
                 : []),
             ]
           : []),
@@ -239,6 +274,7 @@ export class WorkflowsModule extends SubModule {
         WorkflowWebhooksController,
         WorkflowSchedulesController,
         WorkflowBundlesController,
+        WorkflowApprovalsController,
       ],
     });
   }

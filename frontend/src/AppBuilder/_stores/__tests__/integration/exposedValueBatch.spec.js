@@ -286,6 +286,24 @@ describe('setExposedValue vs setExposedValues: the dedup asymmetry is deliberate
     // plural.
     expect(state().getResolvedComponent('c2').properties.text).toBe('SENTINEL');
   });
+
+  test('setExposedValue (singular) still writes when another write for the same key is buffered', () => {
+    seedInputAndLabel();
+
+    // A widget mounting under RenderWidget's hold: it publishes one value, then corrects it back to what the store
+    // already holds (CurrencyInput: the string '0', then the number 0). The dedup must judge against the buffered
+    // write, not the committed one, or the correction is dropped and the stale value wins at flush.
+    state().startExposedValueBatch();
+    try {
+      state().setExposedValues('c1', 'components', { value: 'stale' });
+      state().setExposedValue('c1', 'value', '');
+    } finally {
+      state().flushExposedValueBatch();
+    }
+
+    expect(state().getExposedValueOfComponent('c1').value).toBe('');
+    expect(state().getResolvedComponent('c2').properties.text).toBe('');
+  });
 });
 
 describe('harness hermeticity', () => {

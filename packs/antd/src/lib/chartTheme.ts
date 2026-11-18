@@ -116,7 +116,7 @@ export const useChartTheme = (ref: React.RefObject<HTMLElement>) => {
         muted: probe('--ant-color-text-tertiary', LIGHT.muted),
         // Axis labels and titles in antd's secondary text: the tertiary (45% black) read as very faint on a canvas.
         axis: probe('--ant-color-text-secondary', LIGHT.axis),
-        border: probe('--ant-color-split', LIGHT.border),
+        border: probe('--tj-ant-color-border', '') || probe('--ant-color-split', LIGHT.border),
         surface: probe('--ant-color-bg-container', LIGHT.surface),
         dark: root.classList.contains('tj-ant-dark'),
         ready: true,
@@ -197,4 +197,8 @@ export const useTooltipLayer = (ref: React.RefObject<HTMLElement>, dark: boolean
 };
 
 /** The tooltip interaction every chart takes: the themed look, drawn in the chart's tooltip layer. */
-export const tooltipInteraction = (mount: HTMLElement | undefined) => ({ tooltip: { css: TOOLTIP_CSS, ...(mount ? { mount } : {}) } });
+// The hover line lets clicks through to the area or line under it: drawn at the hovered x, it took a click on that
+// x and no element was clicked (G2 already does this for the hover markers).
+export const tooltipInteraction = (mount: HTMLElement | undefined) => ({
+  tooltip: { css: TOOLTIP_CSS, crosshairsPointerEvents: 'none', ...(mount ? { mount } : {}) },
+});

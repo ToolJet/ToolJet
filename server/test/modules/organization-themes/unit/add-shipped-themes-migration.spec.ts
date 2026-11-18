@@ -2,7 +2,7 @@
  * The data migration that adds the shipped colour themes to existing workspaces reads workspaces in batches and adds
  * each batch's themes with one INSERT ... SELECT, so a cloud with many workspaces runs one statement per batch.
  */
-import { AddShippedThemesToOrganizations1791950000000 as Migration } from '../../../../data-migrations/1791950000000-AddShippedThemesToOrganizations';
+import { AddShippedThemesToOrganizations1791950000000 as Migration } from '../../../../migrations/data/1791950000000-AddShippedThemesToOrganizations';
 import { shippedThemes } from '../../../../src/modules/organization-themes/constants/shipped-themes';
 
 function makeQueryRunner(organizationCount: number) {

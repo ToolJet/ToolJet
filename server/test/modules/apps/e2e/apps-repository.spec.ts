@@ -12,7 +12,9 @@ import {
   findEntityOrFail,
   resolveOrSeedDefaultBranch,
   getDefaultDataSource,
+  createWorkflowDataQuery,
 } from 'test-helper';
+import { DataSource as DataSourceEntity } from 'src/entities/data_source.entity';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppsRepository } from '@modules/apps/repository';
@@ -237,6 +239,7 @@ describe('AppsRepository', () => {
     let nestApp: INestApplication;
     let appsRepository: AppsRepository;
     let branchlessApp: App & { organizationId: string };
+    let admin: Awaited<ReturnType<typeof createAdmin>>;
     const branchlessSlug = 'branchless-custom-slug';
 
     beforeAll(async () => {
@@ -244,7 +247,7 @@ describe('AppsRepository', () => {
       appsRepository = nestApp.get<AppsRepository>(AppsRepository);
 
       // Workspace with no WorkspaceBranch rows — simulates git-sync OFF.
-      const admin = await createAdmin(nestApp, 'apps-repo-nogitsync@tooljet.io');
+      admin = await createAdmin(nestApp, 'apps-repo-nogitsync@tooljet.io');
       branchlessApp = (await createApplication(nestApp, { name: 'no-gitsync-app', user: admin.user })) as App & {
         organizationId: string;
       };
@@ -278,6 +281,45 @@ describe('AppsRepository', () => {
       const result = await appsRepository.findByIdOrSlug(branchlessApp.id);
       expect(result).not.toBeNull();
       expect(result!.id).toBe(branchlessApp.id);
+    });
+
+    // Between the data phase and cleanup, a late 3.21.58 write leaves its version with no branch.
+    it('findWorkflowConsumers on the default branch lists an app whose version has no branch yet', async () => {
+      const db = getDefaultDataSource();
+      const organizationId = branchlessApp.organizationId;
+      const workflow = await createApplication(nestApp, {
+        name: 'called-workflow',
+        user: admin.user,
+        type: 'workflow',
+      });
+      const [{ id: versionId, branch_id: branchId }] = await db.query(
+        'SELECT id, branch_id FROM app_versions WHERE app_id = $1',
+        [branchlessApp.id]
+      );
+      const workflowsDataSource = await saveEntity(DataSourceEntity, {
+        id: uuidv4(),
+        name: 'workflows',
+        kind: 'workflows',
+        type: 'default',
+        scope: 'global',
+        appVersionId: null,
+        organizationId,
+      });
+      await createWorkflowDataQuery(nestApp, { id: versionId } as AppVersion, workflowsDataSource, {
+        name: 'call-workflow',
+        options: { workflowId: workflow.id },
+      });
+      await db.query('ALTER TABLE app_versions ALTER COLUMN branch_id DROP NOT NULL');
+      try {
+        await db.query('UPDATE app_versions SET branch_id = NULL WHERE id = $1', [versionId]);
+
+        const consumers = await appsRepository.findWorkflowConsumers(organizationId, workflow.id, branchId);
+
+        expect(consumers).toEqual([expect.objectContaining({ id: branchlessApp.id, type: 'front-end' })]);
+      } finally {
+        await db.query('UPDATE app_versions SET branch_id = $2 WHERE id = $1', [versionId, branchId]);
+        await db.query('ALTER TABLE app_versions ALTER COLUMN branch_id SET NOT NULL');
+      }
     });
   });
 

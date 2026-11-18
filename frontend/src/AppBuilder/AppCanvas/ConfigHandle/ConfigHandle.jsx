@@ -15,6 +15,7 @@ import Popover from '@/_ui/Popover';
 import dynamicHeightSvg from '@assets/images/dynamic-height-info.svg?url';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import { getInvalidLicenseTooltip } from './utils';
+import { hasCustomComponentAccess } from '@/AppBuilder/_helpers/customComponentAccess';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const MentionComponentInChat = lazy(() => import('./MentionComponentInChat'));
@@ -39,11 +40,7 @@ export const ConfigHandle = ({
 }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
   const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
-  const hasCustomComponentLibrariesAccess = useStore(
-    (state) =>
-      state.license?.featureAccess?.customComponentLibraries === true ||
-      state.license?.featureAccess?.codeAppsDevTrack === true
-  );
+  const hasCustomComponentLibrariesAccess = useStore((state) => hasCustomComponentAccess(state, moduleId));
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(

@@ -85,7 +85,8 @@ export interface SendVersionReviewEmailPayload {
     | 'changes_requested'
     | 'released'
     | 'overridden'
-    | 'rereview_requested';
+    | 'rereview_requested'
+    | 'approvals_reset';
   /** The comment, note or reason with mentions written as @Name; null when there is none. */
   note: string | null;
   appName: string;
@@ -106,4 +107,13 @@ export interface SendWorkspaceBannedEmailPayload {
   to: string;
   adminName: string;
   workspaceName: string;
+}
+
+export interface SendWorkflowApprovalEmailPayload {
+  to: string[];
+  organizationId: string;
+  workflowName: string;
+  nodeName: string;
+  description: string;
+  reminder: boolean;
 }

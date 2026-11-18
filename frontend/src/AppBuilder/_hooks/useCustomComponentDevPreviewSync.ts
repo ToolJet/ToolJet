@@ -4,6 +4,7 @@ import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibra
 import { dashlessId, normalizePin } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
+import { hasCustomComponentAccess } from '@/AppBuilder/_helpers/customComponentAccess';
 
 // CCL endpoints are unimplemented on CE (server/src/.../controller.ts is a stub).
 const isCclSupportedEdition = () => ['ee', 'cloud'].includes(fetchEdition());
@@ -13,11 +14,7 @@ export default function useCustomComponentDevPreviewSync(appId: string | number 
   const pins: Record<string, string> | undefined = useStore(
     (state: any) => state.globalSettings?.customComponentLibraries
   );
-  const hasCustomComponentLibrariesAccess = useStore(
-    (state: any) =>
-      state.license?.featureAccess?.customComponentLibraries === true ||
-      state.license?.featureAccess?.codeAppsDevTrack === true
-  );
+  const hasCustomComponentLibrariesAccess = useStore((state: any) => hasCustomComponentAccess(state));
   const libraries = useCustomComponentLibrariesStore((state: any) => state.libraries);
 
   const devPinKeys = useMemo(() => {

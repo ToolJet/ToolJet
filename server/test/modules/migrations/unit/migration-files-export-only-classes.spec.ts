@@ -1,14 +1,14 @@
 /**
  * TypeORM loads every export of a migration file as a migration class: one exported helper function in a data
  * migration stopped `db:migrate:data` with "someClass is not a constructor" before any data migration ran (found by a
- * migration dry run on a copy of staging data). Every file in migrations/ and data-migrations/ exports its class and
+ * migration dry run on a copy of staging data). Every file in the migrations/ phase folders exports its class and
  * nothing else; a helper is a static method of the class or lives outside these folders.
  */
 import * as fs from 'fs';
 import * as path from 'path';
 
 const SERVER = path.resolve(__dirname, '../../../..');
-const files = ['migrations', 'data-migrations'].flatMap((dir) =>
+const files = ['migrations/schema', 'migrations/data', 'migrations/cleanup'].flatMap((dir) =>
   fs
     .readdirSync(path.join(SERVER, dir))
     .filter((f) => /\.ts$/.test(f))
