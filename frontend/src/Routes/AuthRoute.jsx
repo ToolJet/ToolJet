@@ -38,8 +38,7 @@ export const AuthRoute = ({ children }) => {
   const searchParams = new URLSearchParams(location.search);
   const oauthReturn = searchParams.get('redirectTo');
   const requiresMcpReauthentication =
-    location.pathname.startsWith('/login/') &&
-    Boolean(organizationSlug) &&
+    (location.pathname === '/login' || location.pathname.startsWith('/login/')) &&
     isMcpOAuthConsentPath(oauthReturn) &&
     searchParams.get('oauth_reauthenticate') === '1';
   const navigate = useNavigate();

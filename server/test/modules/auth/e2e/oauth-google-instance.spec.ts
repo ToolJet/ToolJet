@@ -15,9 +15,11 @@ describe('OAuthController', () => {
   let orgUserRepository: Repository<OrganizationUser>;
 
   const token = 'some-Token';
-  let originalDisableSignups: string | undefined;
+  const originalDisableSignups = process.env.DISABLE_SIGNUPS;
 
   beforeAll(async () => {
+    // CE derives the instance signup setting from DISABLE_SIGNUPS; first-time instance SSO sign-in needs it on
+    process.env.DISABLE_SIGNUPS = 'false';
     ({ app } = await initTestApp());
     configService = app.get(ConfigService);
     userRepository = getEntityRepository(User);
@@ -26,7 +28,6 @@ describe('OAuthController', () => {
     // Instance SSO signup now respects the real enableSignUp flag (no longer defaults to true
     // for the synthetic instance-SSO org). In CE, getSettings() reads getDefaultInstanceSettings(),
     // where ENABLE_SIGNUP derives from DISABLE_SIGNUPS — so first-user SSO signup needs this set.
-    originalDisableSignups = process.env.DISABLE_SIGNUPS;
     process.env.DISABLE_SIGNUPS = 'false';
   });
 
@@ -36,7 +37,8 @@ describe('OAuthController', () => {
   });
 
   afterAll(async () => {
-    process.env.DISABLE_SIGNUPS = originalDisableSignups;
+    if (originalDisableSignups === undefined) delete process.env.DISABLE_SIGNUPS;
+    else process.env.DISABLE_SIGNUPS = originalDisableSignups;
     await closeTestApp(app);
   }, 60_000);
 

@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { EntityManager } from 'typeorm';
 import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
@@ -11,7 +12,10 @@ import { Layout } from 'src/entities/layout.entity';
 import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
-import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
+import {
+  isChildOfSlottedParent,
+  remapFlexContainerChildOrder,
+} from '@modules/versions/helpers/version-copy-parent.helper';
 import { PageHelperService } from './page.util.service';
 import * as _ from 'lodash';
 import * as uuid from 'uuid';
@@ -316,8 +320,7 @@ export class PageService implements IPageService {
 
         if (parentComponent) {
           return (
-            parentComponent.type === 'Tabs' ||
-            parentComponent.type === 'Calendar' ||
+            isChildOfSlottedParent(componentParentId, allOriginalComponents) ||
             parentComponent.type === 'Kanban' ||
             isChildOfHeaderOrFooter(componentParentId)
           );
@@ -363,7 +366,7 @@ export class PageService implements IPageService {
             id: newComponentId,
             pageId: clonePageId,
             parent: null,
-            co_relation_id: undefined,
+            co_relation_id: randomUUID(),
             createdAt: undefined,
             updatedAt: undefined,
           });

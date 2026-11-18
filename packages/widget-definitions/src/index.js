@@ -40,6 +40,7 @@ export { paginationConfig } from './widgets/pagination.js';
 export { circularProgressbarConfig } from './widgets/circularProgressbar.js';
 export { spinnerConfig } from './widgets/spinner.js';
 export { libraryComponentConfig } from './widgets/libraryComponent.js';
+export { packComponentConfig } from './widgets/packComponent.js';
 export { statisticsConfig } from './widgets/statistics.js';
 export { rangeSliderConfig } from './widgets/rangeslider.js';
 export { rangeSliderV2Config } from './widgets/rangesliderV2.js';
@@ -83,4 +84,10 @@ export { fileButtonConfig } from './widgets/fileButton.js';
 export { buttonGroupV2Config } from './widgets/buttonGroupV2.js';
 export { flexContainerConfig } from './widgets/flexContainer.js';
 
-export { NEW_REVAMPED_COMPONENTS, universalProps, legacyUniversalProps, combineProperties } from './utils.js';
+export {
+  NEW_REVAMPED_COMPONENTS,
+  universalProps,
+  legacyUniversalProps,
+  combineProperties,
+  dropNewContainerDefaults,
+} from './utils.js';

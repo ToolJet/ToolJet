@@ -28,16 +28,16 @@ type OwnPins = Record<string, string>;
 
 export const streamKey = (libraryId: string, userId: string): string => `${libraryId}:${userId}`;
 
-// A user's email doesn't vary by library, so this flattens every library's devBundles
-// into one userId -> email map instead of resolving it per pin/library.
-export function buildDevPreviewEmailsByUserId(libraries: CustomComponentLibrary[]): Record<string, string> {
-  const emailsByUserId: Record<string, string> = {};
-  libraries.forEach((lib) => {
-    lib.devBundles?.forEach((bundle) => {
-      if (bundle.userEmail) emailsByUserId[bundle.userId] = bundle.userEmail;
-    });
-  });
-  return emailsByUserId;
+// The library list names dev builds by user id only (every workspace member reads it), so the one email
+// known here is the signed-in user's own, from the session. Anyone else's dev preview shows its user id.
+export function buildDevPreviewEmailsByUserId(currentUser?: { id?: string; email?: string }): Record<string, string> {
+  return currentUser?.id && currentUser.email ? { [currentUser.id]: currentUser.email } : {};
+}
+
+// Seeds the manifest cache only with manifests the list carries in full: one whose embedded source the list
+// left out (a code app's files) is fetched from its manifest file when needed, so the code panel still has them.
+export function seedableManifest(lib: CustomComponentLibrary): CustomComponentLibrary['manifest'] | undefined {
+  return lib.manifestSourceOmitted ? undefined : lib.manifest;
 }
 
 // Resolves devPinKeys (keyed by correlationId) against the library list, returning only

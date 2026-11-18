@@ -39,9 +39,14 @@ export abstract class LicenseInitService {
    * services. Both read through the passed `manager` (the migration's shared queryRunner).
    * - getPlanForMigration: instance-level plan (self-hosted CE/EE); reuses initForMigration.
    * - getPlanForMigrationCloud: per-organization plan from organization_license (Cloud).
+   * - getLicenseInstanceForMigrationCloud: the per-organization license itself (Cloud), for
+   *   migrations gated on a license term other than the plan. Pass it to getLicenseFieldValue.
+   *   Never use LicenseTermsService.getLicenseTerms in a migration on Cloud: it fetches over HTTP
+   *   and silently falls back to the basic plan when that fails.
    */
   abstract getPlanForMigration(manager?: EntityManager): Promise<string>;
   abstract getPlanForMigrationCloud(manager: EntityManager, organizationId: string): Promise<string>;
+  abstract getLicenseInstanceForMigrationCloud(manager: EntityManager, organizationId: string): Promise<LicenseBase>;
   abstract init(): Promise<void>;
   abstract initForCloud(): Promise<void>;
   abstract getLicenseFieldValue(type: any, licenseInstance: LicenseBase): any;

@@ -12,6 +12,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 type Actions = APP_RESOURCE_ACTIONS.VIEW;
 type Subjects = InferSubjects<typeof AppVersion | typeof User | typeof App> | 'all';
 export type AppsAbility = Ability<[Actions, Subjects]>;
+type WorkflowAbility = Ability<[APP_RESOURCE_ACTIONS.VIEW | APP_RESOURCE_ACTIONS.UPDATE, Subjects]>;
 
 @Injectable()
 export class AppsAbilityFactory {
@@ -52,7 +53,7 @@ export class AppsAbilityFactory {
   }
   /** Workflows have their own granular permission namespace, separate from front-end apps. */
   async workflowActions(user: User, id: string) {
-    const { can, build } = new AbilityBuilder<AppsAbility>(Ability as AbilityClass<AppsAbility>);
+    const { can, build } = new AbilityBuilder<WorkflowAbility>(Ability as AbilityClass<WorkflowAbility>);
     const permissions = await this.abilityService.resourceActionsPermission(user, {
       organizationId: user.organizationId,
       resources: [{ resource: MODULES.WORKFLOWS, resourceId: id }],
@@ -67,6 +68,14 @@ export class AppsAbilityFactory {
       workflows?.executableWorkflowsId?.includes(id)
     ) {
       can(APP_RESOURCE_ACTIONS.VIEW, App);
+    }
+    if (
+      isSuperAdmin(user) ||
+      permissions?.isAdmin ||
+      workflows?.isAllEditable ||
+      workflows?.editableWorkflowsId?.includes(id)
+    ) {
+      can(APP_RESOURCE_ACTIONS.UPDATE, App);
     }
     return build({ detectSubjectType: (item) => item.constructor as ExtractSubjectType<Subjects> });
   }

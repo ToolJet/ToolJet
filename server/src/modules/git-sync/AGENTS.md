@@ -57,7 +57,7 @@ logic is in `server/ee/git-sync/`.
 - **One `apps` row per `co_relation_id`**, per organization and type. Every pull lookup keys on it and
   keeps only the first match, so duplicates trip the `enforce_app_versions_*` name/slug triggers and the
   pull fails on every run. `idx_apps_co_relation_id` is non-unique and `CREATE TRIGGER` never validates
-  existing rows, so duplicates accumulated silently until data-migrations/1793400000000 detached them and
+  existing rows, so duplicates accumulated silently until migrations/data/1793400000000 detached them and
   added `idx_apps_org_type_co_relation_id_unique`. `logConflictingRows`
   (`ee/platform-git-sync/pull.service.ts`) logs the colliding rows as versioned JSON; paste that line into
   `check-pull-error.html` at the repo root to get the app, the rule and the repair SQL.
@@ -98,7 +98,7 @@ logic is in `server/ee/git-sync/`.
   `enforce_app_versions_app_name_branch_unique` is the opposite: scoped to `NEW.branch_id`, and it
   exempts the app's own rows only on the DEFAULT branch (`av.app_id <> NEW.app_id`). On a feature
   branch two rows of one app — a stub and a non-stub, which `fetchLatestVersionsForBranch` relies
-  on coexisting — cannot share a name. data-migrations/1793400000000 handles both: the default
+  on coexisting — cannot share a name. migrations/data/1793400000000 handles both: the default
   branch takes one name for every row, then each remaining row is written individually, one per
   branch keeping the plain name and the rest taking it plus their own version id.
 - **A NULL `app_versions.status` counts as a DRAFT to every version trigger.** The column is
@@ -110,6 +110,10 @@ logic is in `server/ee/git-sync/`.
   `GitSyncConfigsUtilService.getDetails`, which replaces `orgGit.gitHttps` wholesale — reinstating
   `githubPrivateKey` if it was stripped earlier. `getDetails` now shallow-clones its argument, but
   the ordering in `findAppGitConfigs` is still the guard that matters.
+- **Pass `{ manager }` to `getDetails` when you already hold a connection.** Without it, `getDetails`
+  opens its own transaction (and `ensureResolved` its own lookup) — a second pooled connection per
+  call. Called per row (e.g. `AppsSubscriber.afterLoad`), that exhausts the pool. The rare
+  missing-default-branch fallback still writes in its own transaction, never on the caller's manager.
 - **The app-git import lane creates referenced workflow rows, and gates them.** `createGitApp` (and the two tag-import helpers) pre-create + hydrate embedded **workflows** as well as modules, via `pullAndHydrateWorkflowRefs` → `hydrateReferencedWorkflowStubs`. Creating them requires `workflowCreate` (`assertWorkflowCreatePermission`), asserted **before** hydration — after it, the check would always see zero missing. Workflows reached through a module are handled by `hydrateStubApp` step 6b during that module's hydration, so this lane must not walk into modules.
 - Pull / create-branch clone the default `organization_git_sync_branches` row's `branch_name`, not the
   configured branch. Env config keeps it in sync via `reconcileDefaultBranchName` (`ee/git-sync/default-branch.util.ts`)

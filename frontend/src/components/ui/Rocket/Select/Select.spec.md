@@ -27,6 +27,12 @@ Wraps shadcn Select (Radix `@radix-ui/react-select`).
 | className | string | — | — |
 | disabled | boolean | — | false |
 
+## Props (SelectContent)
+
+| Prop | Type | Default | Notes |
+|---|---|---|---|
+| container | HTMLElement \| null | `document.body` | Element the menu portals into. Pass the overlay's root when the select lives in a full-screen overlay, so the menu stacks above it and takes its theme (e.g. `.dark-theme`). |
+
 ## Sizes (trigger)
 
 | Value | Height | Font size | Tailwind |

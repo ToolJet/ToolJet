@@ -1,9 +1,11 @@
+import { isCodeModeAllowed } from '@modules/code-mode-source/constants';
 import {
   DEFAULT_PAGES_LIMIT,
   ENTERPRISE_DEFAULT_PAGES_LIMIT,
   LICENSE_LIMIT,
   LICENSE_TYPE,
   NON_ENTERPRISE_PLANS,
+  PLANS_BELOW_PRO,
 } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
 import {
@@ -503,6 +505,19 @@ export default class LicenseBase {
     return !!this._app?.features?.customComponentLibraries;
   }
 
+  // Version compare, AI-turn snapshots and reviews: trial and Pro and above. A licence can set it
+  // either way; without that term it follows the plan, so existing licences need no reissue.
+  public get versionReview(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS?.app?.features?.versionReview;
+    }
+    const term = this._app?.features?.versionReview;
+    if (term !== undefined) {
+      return !!term;
+    }
+    return !PLANS_BELOW_PRO.includes(this._plan?.toLowerCase());
+  }
+
   public get saml(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.saml;
@@ -618,6 +633,19 @@ export default class LicenseBase {
     return this._aiPlan || 'credits';
   }
 
+  /** The licence's raw `features.aiCreditLimits` value. */
+  protected get aiCreditLimitsFlag(): unknown {
+    return (this._features as any)?.aiCreditLimits;
+  }
+
+  /** Per-builder AI credit limits, self-hosted: Enterprise and trial; Team (business) and basic don't. */
+  // Strict opt-in, like mfa: the licence must set `features.aiCreditLimits: true`; a missing key is off.
+  // Cloud overrides this in OrganizationLicense.
+  public get aiCreditLimits(): boolean {
+    if (!this.aiFeature || this.IsBasicPlan || this.aiCreditLimitsFlag !== true) return false;
+    return this.licenseType === LICENSE_TYPE.ENTERPRISE || this.licenseType === LICENSE_TYPE.TRIAL;
+  }
+
   public get updatedAt(): Date {
     return this._updatedDate;
   }
@@ -627,6 +655,11 @@ export default class LicenseBase {
       return LICENSE_TYPE.BASIC;
     }
     return this._type || LICENSE_TYPE.ENTERPRISE;
+  }
+
+  // The license's own type, kept after expiry (licenseType reports BASIC by then).
+  public get termsType(): string {
+    return this._type;
   }
 
   public get features(): object {
@@ -674,7 +707,12 @@ export default class LicenseBase {
       queryFolders: this.queryFolders,
       workspaceEnv: this.workspaceEnv,
       customComponentLibraries: this.customComponentLibraries,
+      // Not licence terms: what this server's edition supports (code-mode-source/constants).
+      codeAppsDevTrack: isCodeModeAllowed(),
+      codeModeApps: isCodeModeAllowed(),
+      versionReview: this.versionReview,
       aiPlan: this.aiPlan,
+      aiCreditLimits: this.aiCreditLimits,
       publicApp: this.publicApp,
     };
   }
@@ -753,15 +791,17 @@ export default class LicenseBase {
     return this.getEnterpriseOnlyFlag(this._app?.features?.release);
   }
 
+  // App history: trial and Pro and above, like version compare (AI turns are compared and undone through
+  // history). A licence can set it either way; without that term it follows the plan.
   public get appHistory(): boolean {
-    if (this.IsBasicPlan || this.licenseType === LICENSE_TYPE.TRIAL || this.licenseType === LICENSE_TYPE.BUSINESS) {
+    if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.history;
     }
-
-    if (this._app?.features?.history === undefined) {
-      return false;
+    const term = this._app?.features?.history;
+    if (term !== undefined) {
+      return !!term;
     }
-    return !!this._app?.features?.history;
+    return !PLANS_BELOW_PRO.includes(this._plan?.toLowerCase());
   }
 
   public get workspaceEnv(): boolean {

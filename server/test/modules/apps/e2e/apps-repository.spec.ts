@@ -11,9 +11,15 @@ import {
   saveEntity,
   findEntityOrFail,
   resolveOrSeedDefaultBranch,
+  getDefaultDataSource,
+  createWorkflowDataQuery,
 } from 'test-helper';
+import { DataSource as DataSourceEntity } from 'src/entities/data_source.entity';
 import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
 import { AppsRepository } from '@modules/apps/repository';
+import { AppsSubscriber } from '@modules/apps/subscribers/apps.subscriber';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { WorkspaceBranch } from 'src/entities/workspace_branch.entity';
@@ -233,6 +239,7 @@ describe('AppsRepository', () => {
     let nestApp: INestApplication;
     let appsRepository: AppsRepository;
     let branchlessApp: App & { organizationId: string };
+    let admin: Awaited<ReturnType<typeof createAdmin>>;
     const branchlessSlug = 'branchless-custom-slug';
 
     beforeAll(async () => {
@@ -240,7 +247,7 @@ describe('AppsRepository', () => {
       appsRepository = nestApp.get<AppsRepository>(AppsRepository);
 
       // Workspace with no WorkspaceBranch rows — simulates git-sync OFF.
-      const admin = await createAdmin(nestApp, 'apps-repo-nogitsync@tooljet.io');
+      admin = await createAdmin(nestApp, 'apps-repo-nogitsync@tooljet.io');
       branchlessApp = (await createApplication(nestApp, { name: 'no-gitsync-app', user: admin.user })) as App & {
         organizationId: string;
       };
@@ -274,6 +281,140 @@ describe('AppsRepository', () => {
       const result = await appsRepository.findByIdOrSlug(branchlessApp.id);
       expect(result).not.toBeNull();
       expect(result!.id).toBe(branchlessApp.id);
+    });
+
+    // Between the data phase and cleanup, a late 3.21.58 write leaves its version with no branch.
+    it('findWorkflowConsumers on the default branch lists an app whose version has no branch yet', async () => {
+      const db = getDefaultDataSource();
+      const organizationId = branchlessApp.organizationId;
+      const workflow = await createApplication(nestApp, {
+        name: 'called-workflow',
+        user: admin.user,
+        type: 'workflow',
+      });
+      const [{ id: versionId, branch_id: branchId }] = await db.query(
+        'SELECT id, branch_id FROM app_versions WHERE app_id = $1',
+        [branchlessApp.id]
+      );
+      const workflowsDataSource = await saveEntity(DataSourceEntity, {
+        id: uuidv4(),
+        name: 'workflows',
+        kind: 'workflows',
+        type: 'default',
+        scope: 'global',
+        appVersionId: null,
+        organizationId,
+      });
+      await createWorkflowDataQuery(nestApp, { id: versionId } as AppVersion, workflowsDataSource, {
+        name: 'call-workflow',
+        options: { workflowId: workflow.id },
+      });
+      await db.query('ALTER TABLE app_versions ALTER COLUMN branch_id DROP NOT NULL');
+      try {
+        await db.query('UPDATE app_versions SET branch_id = NULL WHERE id = $1', [versionId]);
+
+        const consumers = await appsRepository.findWorkflowConsumers(organizationId, workflow.id, branchId);
+
+        expect(consumers).toEqual([expect.objectContaining({ id: branchlessApp.id, type: 'front-end' })]);
+      } finally {
+        await db.query('UPDATE app_versions SET branch_id = $2 WHERE id = $1', [versionId, branchId]);
+        await db.query('ALTER TABLE app_versions ALTER COLUMN branch_id SET NOT NULL');
+      }
+    });
+  });
+
+  // Regression: slug lookups joined one App entity per matching default-branch version row,
+  // and AppsSubscriber.afterLoad ran gitSyncConfigsUtilService.getDetails for each one in
+  // parallel — each opening its own pooled connection while the outer query's connection was
+  // still held. An app with ~12+ versions exhausted a 25-connection pool inside a single
+  // request, so /api/session?appId=<slug> and /api/apps/app-authentication-config/<slug>
+  // failed with a 5s pg-pool connect timeout. Neither caller reads the hydrated fields.
+  describe('slug lookups on an app with many default-branch versions', () => {
+    const VERSION_COUNT = 15;
+    const sharedSlug = 'many-versions-shared-slug';
+    let nestApp: INestApplication;
+    let appsRepository: AppsRepository;
+    let manyVersionsApp: App & { organizationId: string };
+    let getDetailsSpy: jest.SpyInstance;
+
+    beforeAll(async () => {
+      ({ app: nestApp } = await initTestApp());
+      appsRepository = nestApp.get<AppsRepository>(AppsRepository);
+
+      const admin = await createAdmin(nestApp, 'apps-repo-many-versions@tooljet.io');
+      manyVersionsApp = (await createApplication(nestApp, {
+        name: 'many-versions-app',
+        user: admin.user,
+      })) as App & { organizationId: string };
+
+      // Metadata propagation copies the slug onto every version row of the app.
+      for (let i = 0; i < VERSION_COUNT; i++) {
+        const version = await createApplicationVersion(nestApp, manyVersionsApp, { name: `v${i}` });
+        await updateEntity(AppVersion, version.id, { slug: sharedSlug });
+      }
+    });
+
+    beforeEach(() => {
+      // Spy on the exact util instance the registered subscriber holds (edition-agnostic).
+      const subscriber = getDefaultDataSource().subscribers.find((s) => s instanceof AppsSubscriber) as unknown as {
+        gitSyncConfigsUtilService: GitSyncConfigsUtilService;
+      };
+      expect(subscriber).toBeDefined();
+      getDetailsSpy = jest.spyOn(subscriber.gitSyncConfigsUtilService, 'getDetails');
+    });
+
+    afterEach(() => {
+      getDetailsSpy.mockRestore();
+    });
+
+    afterAll(async () => {
+      await closeTestApp(nestApp);
+    }, 60000);
+
+    it('retrieveAppDataUsingSlug resolves the app without per-version afterLoad hydration', async () => {
+      const result = await appsRepository.retrieveAppDataUsingSlug(sharedSlug);
+
+      expect(result.organizationId).toBe(manyVersionsApp.organizationId);
+      expect(getDetailsSpy).not.toHaveBeenCalled();
+    });
+
+    it('GET /api/apps/app-authentication-config/:slug resolves without per-version afterLoad hydration', async () => {
+      const response = await request(nestApp.getHttpServer()).get(`/api/apps/app-authentication-config/${sharedSlug}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.organizationId).toBe(manyVersionsApp.organizationId);
+      expect(getDetailsSpy).not.toHaveBeenCalled();
+    });
+
+    // These callers (app-auth / private-app-auth / valid-app guards) keep afterLoad hydration, so
+    // the query must load exactly one App — not one per version row sharing the slug.
+    it('findAppBySlug hydrates a single App, not one per version row', async () => {
+      const found = await appsRepository.findAppBySlug(sharedSlug);
+
+      expect(found.id).toBe(manyVersionsApp.id);
+      expect(getDetailsSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('findBySlug hydrates a single App, not one per version row', async () => {
+      const found = await appsRepository.findBySlug(sharedSlug, manyVersionsApp.organizationId, null);
+
+      expect(found.id).toBe(manyVersionsApp.id);
+      expect(getDetailsSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('findByAppName hydrates a single App, not one per version row', async () => {
+      const defaultBranch = await getDefaultDataSource()
+        .getRepository(WorkspaceBranch)
+        .findOneOrFail({ where: { organizationId: manyVersionsApp.organizationId, isDefault: true } });
+
+      const found = await appsRepository.findByAppName(
+        manyVersionsApp.name,
+        manyVersionsApp.organizationId,
+        defaultBranch.id
+      );
+
+      expect(found.id).toBe(manyVersionsApp.id);
+      expect(getDetailsSpy).toHaveBeenCalledTimes(1);
     });
   });
 

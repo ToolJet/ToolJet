@@ -1,0 +1,160 @@
+import { Injectable } from '@nestjs/common';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.entity';
+import { App } from '@entities/app.entity';
+import { AppsRepository } from '@modules/apps/repository';
+import { AppEnvironment } from '@entities/app_environments.entity';
+import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
+import { WorkflowExecution } from '@entities/workflow_execution.entity';
+import { AppVersion } from '@entities/app_version.entity';
+import { ApprovalListFilters, ApprovalListRow } from '../types/approval-list';
+
+const APPROVER_SNAPSHOT_KEYS = ['users', 'groups', 'emails', 'notificationEmails'] as const;
+
+export const escapeLikePattern = (value: string): string => value.replace(/[\\%_]/g, (char) => `\\${char}`);
+
+const approverValuesSql = (column: string): string =>
+  APPROVER_SNAPSHOT_KEYS.map(
+    (key) => `CASE WHEN jsonb_typeof(${column}->'${key}') = 'array' THEN ${column}->'${key}' ELSE '[]'::jsonb END`
+  ).join(' || ');
+
+const snapshotArraySql = (column: string, key: string): string =>
+  `jsonb_array_elements_text(CASE WHEN jsonb_typeof(${column}->'${key}') = 'array' THEN ${column}->'${key}' ELSE '[]'::jsonb END)`;
+
+@Injectable()
+export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprovalRequest> {
+  constructor(
+    private dataSource: DataSource,
+    private readonly appsRepository: AppsRepository
+  ) {
+    super(WorkflowApprovalRequest, dataSource.createEntityManager());
+  }
+
+  findByToken(token: string): Promise<WorkflowApprovalRequest | null> {
+    return this.findOne({ where: { token } });
+  }
+
+  findPendingForNode(workflowExecutionId: string, executionNodeId: string): Promise<WorkflowApprovalRequest | null> {
+    return this.findOne({ where: { workflowExecutionId, executionNodeId, status: 'pending' } });
+  }
+
+  async listForOrganization(
+    organizationId: string,
+    filters: ApprovalListFilters,
+    page: number,
+    perPage: number
+  ): Promise<{ rows: ApprovalListRow[]; total: number }> {
+    const idQuery = this.createQueryBuilder('request').where('request.organization_id = :organizationId', {
+      organizationId,
+    });
+    this.applyListFilters(idQuery, filters);
+
+    const total = await idQuery.getCount();
+
+    idQuery
+      .select('request.id')
+      .orderBy('request.createdAt', 'DESC')
+      // id tiebreaker: created_at ties would repeat or drop rows across pages.
+      .addOrderBy('request.id', 'DESC')
+      .skip((page - 1) * perPage)
+      .take(perPage);
+
+    const ids = (await idQuery.getMany()).map((r) => r.id);
+    if (ids.length === 0) return { rows: [], total };
+
+    const decorated = await this.createQueryBuilder('request')
+      .leftJoinAndMapOne('request.app', App, 'app', 'app.id = request.app_id')
+      .leftJoinAndMapOne('request.node', WorkflowExecutionNode, 'node', 'node.id = request.execution_node_id')
+      .leftJoinAndMapOne('request.environment', AppEnvironment, 'env', 'env.id = request.environment_id')
+      .where('request.id IN (:...ids)', { ids })
+      .getMany();
+
+    const byId = new Map(decorated.map((row) => [row.id, row]));
+    const rows = ids
+      .map((id) => byId.get(id))
+      .filter((row): row is WorkflowApprovalRequest => row !== undefined) as ApprovalListRow[];
+
+    // The join above carries raw `apps.name`, which is NULL for workflows created since the name
+    // moved onto app_versions. Resolve the canonical name the Workflows page shows.
+    await this.appsRepository.overlayWorkflowNames(
+      organizationId,
+      rows.map((row) => row.app).filter((app): app is App => !!app)
+    );
+    await this.fillNamesFromRunVersions(rows);
+
+    return { rows, total };
+  }
+
+  private async fillNamesFromRunVersions(rows: ApprovalListRow[]): Promise<void> {
+    const unnamed = rows.filter((row) => row.app && !row.app.name);
+    if (!unnamed.length) return;
+    const found: { id: string; appName: string | null }[] = await this.manager
+      .createQueryBuilder(WorkflowExecution, 'execution')
+      .innerJoin(AppVersion, 'version', 'version.id = execution.app_version_id')
+      .select('execution.id', 'id')
+      .addSelect('version.app_name', 'appName')
+      .where('execution.id IN (:...ids)', { ids: unnamed.map((row) => row.workflowExecutionId) })
+      .getRawMany();
+    const names = new Map(found.map((row) => [row.id, row.appName]));
+    for (const row of unnamed) row.app.name = names.get(row.workflowExecutionId) || row.app.name;
+  }
+
+  private applyListFilters(query: SelectQueryBuilder<WorkflowApprovalRequest>, filters: ApprovalListFilters): void {
+    if (filters.statuses?.length) {
+      query.andWhere('request.status IN (:...statuses)', { statuses: filters.statuses });
+    }
+    if (filters.appId) {
+      query.andWhere('request.app_id = :appId', { appId: filters.appId });
+    }
+    if (filters.environmentId) {
+      query.andWhere('request.environment_id = :environmentId', { environmentId: filters.environmentId });
+    }
+    if (filters.folderId) {
+      // Subquery, not join: id query must stay join-free for LIMIT pushdown.
+      query.andWhere(
+        'request.app_id IN (SELECT folder_apps.app_id FROM folder_apps WHERE folder_apps.folder_id = :folderId)',
+        { folderId: filters.folderId }
+      );
+    }
+    if (filters.from) {
+      query.andWhere('request.created_at >= :from', { from: filters.from });
+    }
+    if (filters.to) {
+      query.andWhere('request.created_at <= :to', { to: filters.to });
+    }
+    if (filters.resolvableBy) {
+      const { userId, email, groupIds } = filters.resolvableBy;
+      const matches = [
+        `EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'users')} AS approver_user WHERE approver_user = :resolverUserId)`,
+        `EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'emails')} AS approver_email WHERE lower(trim(approver_email)) = :resolverEmail)`,
+      ];
+      if (groupIds.length) {
+        matches.push(
+          `EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'groups')} AS approver_group WHERE approver_group IN (:...resolverGroupIds))`
+        );
+      }
+      query.andWhere(`(${matches.join(' OR ')})`, {
+        resolverUserId: userId,
+        resolverEmail: email,
+        resolverGroupIds: groupIds,
+      });
+    }
+    if (filters.approver) {
+      query.andWhere(
+        `(EXISTS (SELECT 1 FROM jsonb_array_elements_text(${approverValuesSql('request.approvers_snapshot')}) AS approver_value
+            WHERE approver_value ILIKE :approver ESCAPE '\\')
+          OR EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'users')} AS approver_user
+            JOIN users ON users.id::text = approver_user
+            JOIN organization_users ON organization_users.user_id = users.id
+              AND organization_users.organization_id = request.organization_id
+            WHERE concat_ws(' ', users.first_name, users.last_name) ILIKE :approver ESCAPE '\\'
+              OR users.email ILIKE :approver ESCAPE '\\')
+          OR EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'groups')} AS approver_group
+            JOIN permission_groups ON permission_groups.id::text = approver_group
+              AND permission_groups.organization_id = request.organization_id
+            WHERE permission_groups.name ILIKE :approver ESCAPE '\\'))`,
+        { approver: `%${escapeLikePattern(filters.approver)}%` }
+      );
+    }
+  }
+}

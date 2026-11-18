@@ -49,7 +49,6 @@ Following actions of the component can be controlled using the component specifi
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"160px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
-| clear()        | Clears the selected option.      | Employ a RunJS query (for e.g.,  <br/> `await components.radiobutton1.clear()`) or trigger it using an event. |
 | setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.radiobutton1.setVisibility(false)`) or trigger it using an event. |
 | setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.radiobutton1.setLoading(true)`) or trigger it using an event. |
 | setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.radiobutton1.setDisable(true)`) or trigger it using an event. |
