@@ -1,4 +1,4 @@
-// The ToolJet runtime has useEditing; the published SDK types (0.1.0-beta.3) do not yet. Delete once the SDK declares it.
+// The ToolJet runtime has useEditing; the published SDK types (1.0.0) do not yet. Delete once the SDK declares it.
 import '@tooljet/custom-component-sdk';
 
 declare module '@tooljet/custom-component-sdk/dist/types' {
