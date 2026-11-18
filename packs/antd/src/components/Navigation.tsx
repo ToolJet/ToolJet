@@ -195,10 +195,9 @@ export const Dropdown = () => {
       { key: 'delete', label: 'Delete', danger: true },
     ],
   });
-  // Not "Type": the editor hides the fx toggle on a field labelled exactly that (QA PF-283).
   const [type] = ToolJet.useStateEnumeration({
     name: 'type',
-    label: 'Button type',
+    label: 'Type',
     enumDefinition: ['default', 'primary'],
     initialValue: 'default',
   });

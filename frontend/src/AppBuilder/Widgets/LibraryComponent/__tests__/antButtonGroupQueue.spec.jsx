@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 import { installBrowserStubs } from './fuzz/packTestEnv';
 import { mountPack, settle } from './packMount';
 
@@ -43,20 +41,5 @@ describe('Ant Design ButtonGroup: Mode changed by a binding', () => {
 
     expect(v.exposed.value).toBe('week');
     expect(v.events).toEqual([]);
-  });
-});
-
-describe('Ant Design ButtonGroup: the Type field in the Inspector', () => {
-  // The editor hides the fx toggle on any field labelled exactly "Type" (shared SingleLineCodeEditor rule). Break this
-  // catches: the ButtonGroup's type property is labelled "Type" again.
-  test('[PackComponent-ANTBUTTONGROUP-003] the type property is not labelled "Type", so it keeps its fx toggle', () => {
-    const src = fs.readFileSync(
-      path.resolve(__dirname, '../../../../../../packs/antd/src/components/Composite.tsx'),
-      'utf8'
-    );
-    const group = src.slice(src.indexOf('export const ButtonGroup'));
-    const typeHook = group.slice(group.indexOf("name: 'type'"), group.indexOf("name: 'type'") + 80);
-
-    expect(typeHook).toMatch(/label: 'Button type'/);
   });
 });

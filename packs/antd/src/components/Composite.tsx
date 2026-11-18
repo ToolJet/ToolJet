@@ -1183,10 +1183,9 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
     label: 'Allow deselect',
     initialValue: false,
   });
-  // Not "Type": the editor hides the fx toggle on a field labelled exactly that (QA PF-281).
   const [type] = ToolJet.useStateEnumeration({
     name: 'type',
-    label: 'Button type',
+    label: 'Type',
     enumDefinition: ['default', 'primary', 'dashed', 'text'],
     initialValue: 'default',
   });

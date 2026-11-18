@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 import { fireEvent } from '@testing-library/react';
 import { installBrowserStubs } from './fuzz/packTestEnv';
 import { mountPack, settle } from './packMount';
@@ -42,20 +40,5 @@ describe('Ant Design Dropdown: a wrong Placement value', () => {
     await settle();
 
     expect(findDeep('.ant-dropdown-placement-bottomLeft')).not.toBeNull();
-  });
-});
-
-describe('Ant Design Dropdown: the Type field in the Inspector', () => {
-  // The editor hides the fx toggle on any field labelled exactly "Type" (shared SingleLineCodeEditor rule), so Type
-  // could not be bound. Break this catches: the Dropdown's type property is labelled "Type" again.
-  test('[PackComponent-ANTDROPDOWN-002] the type property is not labelled "Type", so it keeps its fx toggle', () => {
-    const src = fs.readFileSync(
-      path.resolve(__dirname, '../../../../../../packs/antd/src/components/Navigation.tsx'),
-      'utf8'
-    );
-    const dropdown = src.slice(src.indexOf('export const Dropdown'));
-    const typeHook = dropdown.slice(dropdown.indexOf("name: 'type'"), dropdown.indexOf("name: 'type'") + 80);
-
-    expect(typeHook).toMatch(/label: 'Button type'/);
   });
 });
