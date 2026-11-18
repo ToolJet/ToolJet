@@ -206,6 +206,12 @@ export const verifyFixWithAiInStyles = (appName, options = {}) => {
 };
 
 
+// The auth cookie is tied to one workspace, so switch the session before calling or opening another one.
+export const loginToWorkspace = (adminEmail, workspaceId, password = "password") => {
+  cy.clearCookies();
+  cy.apiLogin(adminEmail, password, workspaceId);
+};
+
 // A fresh workspace per test lets its plan be set before the server caches its licence.
 export const createFreshCloudWorkspace = (adminEmail, loginWorkspaceId, password = "password") => {
   const name = `cloud-ai-${Date.now()}-${Cypress._.random(1e6)}`;

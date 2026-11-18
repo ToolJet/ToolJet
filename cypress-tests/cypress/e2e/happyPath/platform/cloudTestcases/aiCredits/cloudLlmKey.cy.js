@@ -5,6 +5,7 @@ import { aiText } from "Texts/platform/ai";
 import { cloudAiText } from "Texts/platform/cloudAi";
 import {
   createFreshCloudWorkspace,
+  loginToWorkspace,
   navigateToLlmKeyPage,
   verifyKeyMasked,
 } from "Support/utils/platform/ai";
@@ -46,18 +47,21 @@ describe("Cloud AI Credits — LLM Key", { retries: 0 }, () => {
       const workspaceId = firstId;
       cy.apiSetCloudPlan("pro", { workspaceId: secondId, terms: byokTerms });
 
+      loginToWorkspace(adminEmail, workspaceId);
       cy.apiUpdateLLMKey(`sk-ant-${Date.now()}`, "byok", false, { workspaceId, provider: "anthropic" });
 
       getKeySettings(workspaceId).then((settings) => {
         expect(settings).to.include({ provider: "anthropic", hasKey: true, supportsEnvConfig: false });
       });
-      getKeySettings(secondId).then((settings) => {
-        expect(settings.provider).to.equal("tooljet_managed");
-      });
 
       navigateToLlmKeyPage(workspaceId);
       verifyKeyMasked();
       cy.get(aiSelectors.llmKeyEnvToggle).should("not.exist");
+
+      loginToWorkspace(adminEmail, secondId);
+      getKeySettings(secondId).then((settings) => {
+        expect(settings.provider).to.equal("tooljet_managed");
+      });
 
       cy.visit(`/${secondId}/settings/llm-key`);
       cy.location("pathname", { timeout: 60000 }).should("eq", `/${secondId}/settings/white-labelling`);

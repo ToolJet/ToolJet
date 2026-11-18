@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { cloudAiSelectors } from "Selectors/platform/cloudAi";
 import { cloudAiText } from "Texts/platform/cloudAi";
-import { createFreshCloudWorkspace } from "Support/utils/platform/ai";
+import { createFreshCloudWorkspace, loginToWorkspace } from "Support/utils/platform/ai";
 import { stubCurrentSubscription, stubPlanPrices } from "Support/utils/platform/cloudSubscription";
 
 const formatCredits = (value) => Number(value).toLocaleString("en-US");
@@ -168,19 +168,20 @@ describe("Cloud AI Credits — Subscription Page across plans and workspaces", {
       cy.apiSetCloudPlan("pro", { workspaceId: secondId });
       cy.apiSetAiCreditWallets({ workspaceId: secondId, recurring: 3000, topup: 4000 });
 
+      loginToWorkspace(admin.email, workspaceId);
       getAiCreditsBalance(workspaceId).then((wallets) => {
         expect(walletOf(wallets, "recurring").balance).to.equal(1000);
         expect(walletOf(wallets, "topup").balance).to.equal(2000);
       });
-      getAiCreditsBalance(secondId).then((wallets) => {
-        expect(walletOf(wallets, "recurring").balance).to.equal(3000);
-        expect(walletOf(wallets, "topup").balance).to.equal(4000);
-      });
-
       visitSubscription(workspaceId);
       verifyCreditsRow(0, { label: cloudAiText.monthlyRecurring, value: "1,000 / 1,000" });
       verifyCreditsRow(1, { label: cloudAiText.addOnCredits, value: "2,000 / 2,000" });
 
+      loginToWorkspace(admin.email, secondId);
+      getAiCreditsBalance(secondId).then((wallets) => {
+        expect(walletOf(wallets, "recurring").balance).to.equal(3000);
+        expect(walletOf(wallets, "topup").balance).to.equal(4000);
+      });
       visitSubscription(secondId);
       verifyCreditsRow(0, { label: cloudAiText.monthlyRecurring, value: "3,000 / 3,000" });
       verifyCreditsRow(1, { label: cloudAiText.addOnCredits, value: "4,000 / 4,000" });
