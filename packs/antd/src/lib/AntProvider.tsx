@@ -119,7 +119,10 @@ const watchTheme = (listener: () => void) => {
   if (!darkObserver && typeof MutationObserver !== 'undefined') {
     darkObserver = new MutationObserver(() => darkListeners.forEach((l) => l()));
     [document.documentElement, document.body].forEach((node) =>
-      darkObserver!.observe(node, { attributes: true, attributeFilter: ['class', 'style', 'data-theme', 'data-bs-theme'] })
+      darkObserver!.observe(node, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme', 'data-bs-theme'],
+      })
     );
   }
   return () => {
@@ -132,7 +135,9 @@ const isDarkAt = (el: HTMLElement) => {
   if (!surface) return false;
   el.style.setProperty('--tj-ant-probe', surface);
   el.style.color = 'var(--tj-ant-probe)';
-  const rgb = getComputedStyle(el).color.match(/\d+(\.\d+)?/g)?.map(Number) ?? [255, 255, 255];
+  const rgb = getComputedStyle(el)
+    .color.match(/\d+(\.\d+)?/g)
+    ?.map(Number) ?? [255, 255, 255];
   el.style.removeProperty('color');
   el.style.removeProperty('--tj-ant-probe');
   return (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255 < 0.4;
@@ -202,6 +207,27 @@ const onFieldKeyDown = (e: React.KeyboardEvent) => {
   keepSearchOnEscape(e);
 };
 
+// Ant realigns an open popup on 'scroll' of the field's scroll parents, found by walking parentElement. A widget lives in
+// a shadow root, so that walk never reaches the app canvas scroller outside it and a popup stayed put while its field
+// scrolled away. Any scroll is forwarded, once a frame, to each pack root (.tj-cc-root, in Ant's list) as a scroll event.
+const scrollRoots = new Set<Element>();
+let scrollFrame = 0;
+const forwardScroll = (e: Event) => {
+  if (scrollFrame) return;
+  scrollFrame = requestAnimationFrame(() => {
+    scrollFrame = 0;
+    scrollRoots.forEach((r) => r !== e.target && r.dispatchEvent(new Event('scroll')));
+  });
+};
+const watchScroll = (root: Element) => {
+  scrollRoots.add(root);
+  if (scrollRoots.size === 1) document.addEventListener('scroll', forwardScroll, true);
+  return () => {
+    scrollRoots.delete(root);
+    if (!scrollRoots.size) document.removeEventListener('scroll', forwardScroll, true);
+  };
+};
+
 // Every pack component renders inside this: antd's ConfigProvider with popups portalled into ToolJet's popup layer, and
 // a root that declares antd's token variables (the `.tj-ant` rule in antd.css), dark when the app is.
 export const AntProvider = ({
@@ -223,11 +249,18 @@ export const AntProvider = ({
 }) => {
   const [anchorRef, container] = usePortalContainer();
   const { dark, themed } = useAppLook(anchorRef);
+  useEffect(() => {
+    const root = anchorRef.current?.closest('.tj-cc-root');
+    return root ? watchScroll(root) : undefined;
+  }, [anchorRef]);
   // Ant's icons put their styles in each widget's shadow root through rc-util, whose module-level cache maps every root
   // it served to its real parent and never lets go, so a page switch kept every old Ant root (and its listeners)
   // alive. Emptied when a widget unmounts; the cache is only a lookup, refilled on the next insert.
   useEffect(() => () => clearContainerCache(), []);
-  const popup = useMemo(() => ({ className: dark ? 'tj-ant tj-ant-dark' : 'tj-ant', style: tokens ?? {}, container }), [tokens, container, dark]);
+  const popup = useMemo(
+    () => ({ className: dark ? 'tj-ant tj-ant-dark' : 'tj-ant', style: tokens ?? {}, container }),
+    [tokens, container, dark]
+  );
   const ownBackground = Boolean((tokens as Record<string, unknown> | undefined)?.['--tj-ant-color-bg-container']);
   return (
     <div
@@ -236,7 +269,13 @@ export const AntProvider = ({
         if (ownerRef) ownerRef.current = el;
       }}
       // Container background set: it fills the Filled and Borderless fields too (pack.css .tj-ant-own-bg).
-      className={['tj-ant tj-ant-root', dark ? 'tj-ant-dark' : '', fill ? 'tj-ant--fill' : '', ownBackground ? 'tj-ant-own-bg' : '', className ?? '']
+      className={[
+        'tj-ant tj-ant-root',
+        dark ? 'tj-ant-dark' : '',
+        fill ? 'tj-ant--fill' : '',
+        ownBackground ? 'tj-ant-own-bg' : '',
+        className ?? '',
+      ]
         .join(' ')
         .trim()}
       style={{ ...tokens, ...style }}
@@ -261,6 +300,8 @@ export const AntProvider = ({
 
 /** The popup theme for an Ant control whose component renders AntProvider itself: read inside the provider, as a
  *  popup's class and style must be (read beside it, a popup got the default theme: no token overrides, never dark). */
-export const WithPopupTheme = ({ children }: { children: (popup: ReturnType<typeof usePopupTheme>) => React.ReactNode }) => (
-  <>{children(usePopupTheme())}</>
-);
+export const WithPopupTheme = ({
+  children,
+}: {
+  children: (popup: ReturnType<typeof usePopupTheme>) => React.ReactNode;
+}) => <>{children(usePopupTheme())}</>;

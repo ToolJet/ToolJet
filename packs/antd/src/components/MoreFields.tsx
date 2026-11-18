@@ -121,7 +121,8 @@ export const Combobox = (props: Record<string, unknown>) => {
   useOfferedValue<unknown>(
     value,
     (next) => setValue(next as never),
-    (v) => (prune && v !== '' && !offers(v) ? '' : v),
+    // PF-271: an offered value is exposed as its option's own (the host's text '2' becomes the number 2).
+    (v) => (v === '' ? v : offers(v) ? valueForKey(options, keyForValue(options, v)) : prune ? '' : v),
     `${prune}|${JSON.stringify(options)}`
   );
   const expose = (next: unknown) => {
