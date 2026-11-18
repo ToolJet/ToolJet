@@ -1185,6 +1185,12 @@ export const Carousel = () => {
   const owner = useRef<HTMLElement | null>(null);
   const shown = useOwnerShown(owner, !!autoplay);
   const wanted = Math.max(0, Math.min(slides.length - 1, Math.trunc(Number(current) || 0)));
+  // PF-279: antd re-runs goTo(initialSlide) whenever initialSlide changes, so initialSlide must not follow `current`
+  // (afterChange sets it): that re-animated the slide already shown and fired afterChange twice, or endlessly when a
+  // tap landed mid-animation. It is only the first slide, and changes only when the item count does.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const firstSlide = useMemo(() => wanted, [slides.length]);
+  const reported = useRef(wanted);
   useEffect(() => {
     if (!slides.length || wanted === shownSlide.current) return;
     shownSlide.current = wanted;
@@ -1196,7 +1202,7 @@ export const Carousel = () => {
         {slides.length ? (
           <AntCarousel
             ref={carousel as never}
-            initialSlide={wanted}
+            initialSlide={firstSlide}
             autoplay={!!autoplay && shown}
             autoplaySpeed={Math.max(500, Number(autoplaySpeed) || 3000)}
             dots={dots}
@@ -1204,6 +1210,8 @@ export const Carousel = () => {
             effect={effect as 'scrollx'}
             afterChange={(i) => {
               shownSlide.current = i;
+              if (i === reported.current) return;
+              reported.current = i;
               setCurrent(i);
               if (ownerAvailable(owner.current)) afterChange();
             }}
