@@ -3,6 +3,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 // Per app version source files, with a revision for optimistic concurrency and an owner ('platform' or 'repository').
 // Keys to existing tables (apps, app_versions, users, organizations) are added in the data phase by
 // AddCodeModeAndReviewForeignKeys1794896718037: adding them here would stop writes to those tables while old pods serve.
+// git_content_hash is also added by CodeModeSourceSyncHash1793260000000, for databases that ran this table's first
+// version during development.
 export class CreateCodeModeSources1792480000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -14,6 +16,7 @@ export class CreateCodeModeSources1792480000000 implements MigrationInterface {
         owner varchar(16) NOT NULL DEFAULT 'platform' CHECK (owner IN ('platform', 'repository')),
         library_correlation_id uuid NULL,
         total_size integer NOT NULL DEFAULT 0,
+        git_content_hash varchar(64) NULL DEFAULT NULL,
         updated_by uuid NULL,
         created_at timestamp NOT NULL DEFAULT now(),
         updated_at timestamp NOT NULL DEFAULT now()

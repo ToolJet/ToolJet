@@ -5,6 +5,9 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 // BackfillCodeModeSourceRevisions1794808629632.
 // Keys to existing tables (apps, app_versions, users, organizations) are added in the data phase by
 // AddCodeModeAndReviewForeignKeys1794896718037: adding them here would stop writes to those tables while old pods serve.
+// summary, kind and the 'copy' and 'git' origins are also added by AddCodeModeFreezeColumns1792500000000,
+// CodeModeRevisionSummary1792520000000 and CodeModeSourceSyncHash1793260000000, for databases that ran this table's
+// first version during development.
 export class CreateCodeModeSourceRevisions1792490000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -14,8 +17,10 @@ export class CreateCodeModeSourceRevisions1792490000000 implements MigrationInte
         revision integer NOT NULL,
         content_hash varchar(64) NOT NULL,
         files jsonb NOT NULL,
-        origin varchar(16) NOT NULL CHECK (origin IN ('editor', 'import', 'restore')),
+        origin varchar(16) NOT NULL CHECK (origin IN ('editor', 'import', 'restore', 'copy', 'git')),
         restored_from integer NULL,
+        summary varchar(200) NULL DEFAULT NULL,
+        kind varchar(16) NULL DEFAULT NULL,
         created_by uuid NULL,
         created_at timestamp NOT NULL DEFAULT now(),
         CONSTRAINT code_mode_source_revisions_source_revision_unique UNIQUE (source_id, revision)
