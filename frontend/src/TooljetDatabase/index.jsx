@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import TooljetDatabasePage from './TooljetDatabasePage';
-import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
+import { useTableRows, useInvalidateTableRows } from './rows/useTableRows';
+import { isTableMissingFromEnvironment } from './constants';
 import { authenticationService } from '../_services/authentication.service';
 import { useNavigate } from 'react-router-dom';
 import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling';
@@ -11,7 +12,7 @@ import TjdbHeaderEnvironment from './HeaderEnvironment';
 import { useOpenTabs } from './TablesPanel/useOpenTabs';
 import { useTablesLimit } from './TablesPanel/useTablesLimit';
 import { useHeaderSearchConfig } from '@/_hooks/useHeaderSearchConfig';
-import { useTjdbActions, useIsDevelopmentEnvironment } from './_stores/tjdbStore';
+import { useTjdbStore, useTjdbActions, useIsDevelopmentEnvironment } from './_stores/tjdbStore';
 import './styles/styles.scss';
 
 export { TooljetDatabaseContext };
@@ -32,9 +33,7 @@ const TooljetDatabase = () => {
     selectedTable,
     setSelectedTable,
   });
-  const [selectedTableData, setSelectedTableData] = useState([]);
-
-  const [totalRecords, setTotalRecords] = useState(0);
+  // The tables panel's list fetch. Rows have their own loading state (rowsLoading).
   const [loadingState, setLoadingState] = useState(false);
 
   const [configurations, setConfigurations] = useState({});
@@ -54,21 +53,18 @@ const TooljetDatabase = () => {
     navigate('/');
   }
 
+  const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
+  // A table this environment lacks is moved to development by Table/index.jsx; reading it here first would be a 4xx.
   const {
-    handleBuildFilterQuery,
-    handleBuildSortQuery,
-    buildPaginationQuery,
-    resetSortQuery,
-    resetFilterQuery,
-    resetAll,
-    handleRefetchQuery,
-  } = usePostgrestQueryBuilder({
-    organizationId,
-    selectedTable,
-    setSelectedTableData,
-    setTotalRecords,
-    setLoadingState,
+    rows: selectedTableData,
+    total: totalRecords,
+    isLoading: rowsLoading,
+  } = useTableRows(selectedTable.id, {
+    enabled: !isTableMissingFromEnvironment(tables, selectedTable.id, selectedEnvironment),
   });
+  // Kept under its old name for the drawers and forms that refetch after a write; any arguments are ignored,
+  // since the view to refetch is whatever the store holds.
+  const handleRefetchQuery = useInvalidateTableRows();
 
   const getConfigurationProperty = (header, property, fallback) => {
     const columnUuid = configurations?.columns?.column_names?.[header];
@@ -99,15 +95,8 @@ const TooljetDatabase = () => {
       closeAllTabs,
       applyTables,
       selectedTableData,
-      setSelectedTableData,
       totalRecords,
-      setTotalRecords,
-      handleBuildFilterQuery,
-      handleBuildSortQuery,
-      buildPaginationQuery,
-      resetSortQuery,
-      resetFilterQuery,
-      resetAll,
+      rowsLoading,
       handleRefetchQuery,
       loadingState,
       setLoadingState,
@@ -128,6 +117,8 @@ const TooljetDatabase = () => {
       openTabIds,
       selectedTableData,
       totalRecords,
+      rowsLoading,
+      loadingState,
       foreignKeys,
       configurations,
       canEditSchema,

@@ -13,7 +13,7 @@ import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 const hasAnyValue = ({ column, order }) => !isEmpty(column) || !isEmpty(order);
 const isComplete = ({ column, order }) => !isEmpty(column) && !isEmpty(order);
 
-const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => {
+const Sort = ({ filters, setFilters }) => {
   const { columns } = useTooljetDatabaseContext();
   // The popover edits a draft; Apply is what writes it to the store.
   const [draft, setDraft] = useState(() => deepClone(filters));
@@ -42,21 +42,9 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
     setShow(false);
   };
 
+  // Sort cleared from outside (table switch, Clear all) closes the popover.
   useEffect(() => {
-    if (Object.keys(filters).length === 0 && isMounted) {
-      setFilters({});
-      setShow(false);
-      resetSortQuery();
-    } else {
-      Object.keys(filters).map((key) => {
-        if (!isEmpty(filters[key])) {
-          const { column, order } = filters[key];
-          if (!isEmpty(column) && !isEmpty(order)) {
-            handleBuildSortQuery(filters);
-          }
-        }
-      });
-    }
+    if (Object.keys(filters).length === 0 && isMounted) setShow(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(filters)]);
 

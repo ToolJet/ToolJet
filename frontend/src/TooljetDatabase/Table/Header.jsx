@@ -41,17 +41,9 @@ const Header = ({
   const [isBulkUploading, setIsBulkUploading] = useState(false);
   const [errors, setErrors] = useState({ client: [], server: [] });
   const [uploadResult, setUploadResult] = useState(null);
-  const {
-    handleBuildSortQuery,
-    resetFilterQuery,
-    resetSortQuery,
-    handleBuildFilterQuery,
-    selectedTable,
-    organizationId,
-    handleRefetchQuery,
-  } = useTooljetDatabaseContext();
-  const { queryFilters, sortFilters, pageSize } = useTjdbStore(
-    (state) => ({ queryFilters: state.queryFilters, sortFilters: state.sortFilters, pageSize: state.pageSize }),
+  const { selectedTable, organizationId, handleRefetchQuery } = useTooljetDatabaseContext();
+  const { queryFilters, sortFilters } = useTjdbStore(
+    (state) => ({ queryFilters: state.queryFilters, sortFilters: state.sortFilters }),
     shallow
   );
   const { setQueryFilters, setSortFilters, openMigrationHistory } = useTjdbActions();
@@ -78,7 +70,8 @@ const Header = ({
     setIsBulkUploadDrawerOpen(false);
     setQueryFilters({});
     setSortFilters({});
-    handleRefetchQuery({}, {}, 1, pageSize);
+    // Clearing an already-empty view leaves the query unchanged, so the uploaded rows need an explicit refetch.
+    handleRefetchQuery();
     setIsBulkUploading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uploadResult]);
@@ -140,23 +133,8 @@ const Header = ({
         filters={toolbarFilters}
         onRemoveFilter={(id) => setQueryFilters((previous) => omit(previous, id))}
         onClearFilters={() => setQueryFilters({})}
-        filterControl={
-          <Filter
-            filters={queryFilters}
-            setFilters={setQueryFilters}
-            handleBuildFilterQuery={handleBuildFilterQuery}
-            resetFilterQuery={resetFilterQuery}
-            setFilterEnable={setFilterEnable}
-          />
-        }
-        sortControl={
-          <Sort
-            filters={sortFilters}
-            setFilters={setSortFilters}
-            handleBuildSortQuery={handleBuildSortQuery}
-            resetSortQuery={resetSortQuery}
-          />
-        }
+        filterControl={<Filter filters={queryFilters} setFilters={setQueryFilters} setFilterEnable={setFilterEnable} />}
+        sortControl={<Sort filters={sortFilters} setFilters={setSortFilters} />}
         onOpenHistory={openMigrationHistory}
         addData={
           <AddDataMenu

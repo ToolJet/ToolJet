@@ -18,7 +18,7 @@ const Footer = ({ darkMode, dataLoading, tableDataLength }) => {
     { label: '1000 records', value: 1000 },
   ];
 
-  const { selectedTable, totalRecords, buildPaginationQuery } = useTooljetDatabaseContext();
+  const { totalRecords } = useTooljetDatabaseContext();
   const { pageCount, pageSize } = useTjdbStore(
     (state) => ({ pageCount: state.pageCount, pageSize: state.pageSize }),
     shallow
@@ -30,17 +30,13 @@ const Footer = ({ darkMode, dataLoading, tableDataLength }) => {
     pageCount * pageSize > totalRecords ? totalRecords : pageCount * pageSize
   }`;
 
+  // The rows query reads page and size from the store, so setting them is the whole page change.
   const handleSelectChange = (value) => {
     setPageSize(value);
-    setPageCount(1);
-    buildPaginationQuery(value, 0);
   };
 
   const handlePageCountChange = (value) => {
     setPageCount(value);
-    const limit = pageSize;
-    const offset = value === 1 ? 0 : (value - 1) * pageSize;
-    buildPaginationQuery(limit, offset);
   };
 
   const gotoNextPage = (fromInput = false, value = null) => {
@@ -51,10 +47,6 @@ const Footer = ({ darkMode, dataLoading, tableDataLength }) => {
     setPageCount((previous) => {
       return previous + 1;
     });
-
-    const limit = pageSize;
-    const offset = pageCount * pageSize;
-    buildPaginationQuery(limit, offset);
   };
 
   const gotoPreviousPage = () => {
@@ -64,26 +56,14 @@ const Footer = ({ darkMode, dataLoading, tableDataLength }) => {
       }
       return previous - 1;
     });
-
-    const limit = pageSize;
-    const offset = (pageCount - 2) * pageSize;
-    buildPaginationQuery(limit, offset);
   };
 
-  const reset = () => {
-    setPageCount(1);
-    setPageSize(50);
-  };
-
+  // Deleting the last rows of the last page leaves the page number past the end; step back to the new last page.
+  // Filter, sort and size changes return to page 1 in the store, so a changed total alone must not.
   React.useEffect(() => {
-    setPageCount(1);
+    if (totalPage > 0 && pageCount > totalPage) setPageCount(totalPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [totalRecords]);
-
-  React.useEffect(() => {
-    reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTable]);
+  }, [totalPage]);
 
   return (
     <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center col-12">

@@ -32,8 +32,6 @@ function setupFilter(filters: Record<string, object> = {}) {
   const props = {
     filters,
     setFilters: jest.fn(),
-    handleBuildFilterQuery: jest.fn(),
-    resetFilterQuery: jest.fn(),
     setFilterEnable: jest.fn(),
   };
   render(withContext(<Filter {...props} />));
@@ -41,7 +39,7 @@ function setupFilter(filters: Record<string, object> = {}) {
 }
 
 function setupSort(filters: Record<string, object> = {}) {
-  const props = { filters, setFilters: jest.fn(), handleBuildSortQuery: jest.fn(), resetSortQuery: jest.fn() };
+  const props = { filters, setFilters: jest.fn() };
   render(withContext(<Sort {...props} />));
   return props;
 }

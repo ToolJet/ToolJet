@@ -2,7 +2,7 @@ import React from 'react';
 import Drawer from '@/_ui/Drawer';
 import CreateColumnForm from '../../Forms/ColumnForm';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
-import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
+import { useTjdbActions } from '../../_stores/tjdbStore';
 
 const CreateColumnDrawer = ({
   setIsCreateColumnDrawerOpen,
@@ -16,7 +16,6 @@ const CreateColumnDrawer = ({
 }) => {
   const { organizationId, selectedTable, setColumns, handleRefetchQuery, setForeignKeys, setConfigurations } =
     useTooljetDatabaseContext();
-  const pageSize = useTjdbStore((state) => state.pageSize);
   const { fetchTableMetadata, setPageCount } = useTjdbActions();
 
   return (
@@ -35,7 +34,7 @@ const CreateColumnDrawer = ({
               if (metadata.columns.length > 0) setColumns(metadata.columns);
               setForeignKeys([...metadata.foreignKeys]);
             });
-            handleRefetchQuery({}, {}, 1, pageSize);
+            handleRefetchQuery();
             if (resetPage) setPageCount(1);
             setIsCreateColumnDrawerOpen(false);
           }}

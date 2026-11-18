@@ -1,14 +1,8 @@
 import React, { useState } from 'react';
 import Drawer from '@/_ui/Drawer';
-import { toast } from 'react-hot-toast';
 import EditRowForm from '../../Forms/EditRowForm';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
-import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { listAllPrimaryKeyColumns } from '../../constants';
-import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
-import { shallow } from 'zustand/shallow';
-import { useTjdbStore } from '../../_stores/tjdbStore';
 
 const EditRowDrawer = ({
   isEditRowDrawerOpen,
@@ -19,19 +13,7 @@ const EditRowDrawer = ({
   referencedColumnDetails,
   setReferencedColumnDetails,
 }) => {
-  const {
-    organizationId,
-    selectedTable,
-    setSelectedTableData,
-    setTotalRecords,
-    columns,
-    // totalRecords,
-    // selectedTableData,
-  } = useTooljetDatabaseContext();
-  const { pageCount, pageSize } = useTjdbStore(
-    (state) => ({ pageCount: state.pageCount, pageSize: state.pageSize }),
-    shallow
-  );
+  const { handleRefetchQuery } = useTooljetDatabaseContext();
   const [selectedRowObj, setSelectedRowObj] = useState({});
 
   React.useEffect(() => {
@@ -84,31 +66,7 @@ const EditRowDrawer = ({
       >
         <EditRowForm
           onEdit={() => {
-            const limit = pageSize;
-            const pageRange = `${(pageCount - 1) * pageSize + 1}`;
-
-            const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
-            const sortQuery = new PostgrestQueryBuilder();
-            primaryKeyColumns.forEach((primaryKeyColumnName) => {
-              if (selectedRowObj[primaryKeyColumnName]) {
-                sortQuery.order(primaryKeyColumnName, 'desc');
-              }
-            });
-
-            tooljetDatabaseService
-              .findOne(selectedTable.id, `${sortQuery.url.toString()}&limit=${limit}&offset=${pageRange - 1}`)
-              .then(({ headers, data = [], error }) => {
-                if (error) {
-                  toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
-                  return;
-                }
-
-                if (Array.isArray(data) && data?.length > 0) {
-                  const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
-                  setTotalRecords(totalContentRangeRecords);
-                  setSelectedTableData(data);
-                }
-              });
+            handleRefetchQuery();
             setIsEditRowDrawerOpen(false);
           }}
           onClose={() => setIsEditRowDrawerOpen(false)}

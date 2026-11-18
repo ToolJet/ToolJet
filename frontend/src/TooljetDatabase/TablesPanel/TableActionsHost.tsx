@@ -111,7 +111,6 @@ interface EditTableBodyProps {
 // Runs inside TableSchemaScope, so `context` describes `table` whichever table the grid has open.
 function EditTableBody({ table, isOpenTable, onRenamed, onClose }: EditTableBodyProps) {
   const context = useTooljetDatabaseContext();
-  const pageSize = useTjdbStore((state: { pageSize: number }) => state.pageSize);
   const { fetchTableMetadata, setPageCount } = useTjdbActions();
   const { selectedColumns, selectedTableData } = useMemo(
     () => buildEditTableFormData(context.columns as TableColumn[]),
@@ -130,7 +129,7 @@ function EditTableBody({ table, isOpenTable, onRenamed, onClose }: EditTableBody
       }
     );
     // The scope refetches the grid only when `table` is the open table; the page number is the page's own state.
-    context.handleRefetchQuery({}, {}, 1, pageSize);
+    context.handleRefetchQuery();
     if (isOpenTable) setPageCount(1);
     onClose();
   };

@@ -15,6 +15,9 @@ const initialState = {
   sortFilters: {},
   pageCount: 1,
   pageSize: 50,
+  // The table the view above belongs to. Rows are read only once it matches the open table, so the first
+  // read of a newly opened table never carries the previous table's filters (a 400 if the column is absent).
+  viewTableId: null,
   // Set by Table/index.jsx, which is the only component holding every derived cache an environment
   // switch has to clear. Never select this into a component - it is a callback slot, not state.
   onEnvironmentSwitch: null,
@@ -93,13 +96,17 @@ export const useTjdbStore = create(
           };
         },
 
+        // A new filter, sort or page size makes the current page number meaningless, so these return to
+        // page 1 here rather than trusting every caller to remember.
         setQueryFilters: (next) =>
           set((state) => {
             state.queryFilters = applyUpdate(state.queryFilters, next);
+            state.pageCount = 1;
           }),
         setSortFilters: (next) =>
           set((state) => {
             state.sortFilters = applyUpdate(state.sortFilters, next);
+            state.pageCount = 1;
           }),
         setPageCount: (next) =>
           set((state) => {
@@ -108,6 +115,17 @@ export const useTjdbStore = create(
         setPageSize: (next) =>
           set((state) => {
             state.pageSize = applyUpdate(state.pageSize, next);
+            state.pageCount = 1;
+          }),
+
+        // One write for the whole view, so no render ever sees the new table with the old filters.
+        openTableView: (tableId) =>
+          set((state) => {
+            state.queryFilters = {};
+            state.sortFilters = {};
+            state.pageCount = 1;
+            state.pageSize = 50;
+            state.viewTableId = tableId;
           }),
 
         registerEnvironmentSwitchHandler: (handler) =>
@@ -132,10 +150,8 @@ export const useTjdbStore = create(
             state.isMigrationHistoryOpen = false;
           }),
 
-        // The one ordered environment switch. Two independent useEffects used to do this - one for
-        // rows (index.jsx), one for metadata (Table/index.jsx) - with no ordering guarantee between
-        // them, so the grid could briefly render the new environment's rows against the old
-        // environment's columns.
+        // The one ordered environment switch. Rows follow on their own (the environment is in their
+        // query key); the registered handler clears the metadata caches Table/index.jsx owns.
         //
         // Filters and sort are reset rather than carried over: a filter on a column that has not
         // been promoted yet is a PostgREST 400 in the target environment, and "page 7" means

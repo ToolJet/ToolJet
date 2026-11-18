@@ -10,7 +10,6 @@ import Tooltip from '@/components/ui/Rocket/Tooltip';
 import { ConditionPopover } from '../Conditions/ConditionPopover';
 import { FilterConditionRow } from '../Forms/FilterConditionRow';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
-import { useTjdbActions } from '../_stores/tjdbStore';
 
 const hasAnyValue = ({ column, operator, value }) => !isEmpty(column) || !isEmpty(operator) || !isEmpty(value);
 const isComplete = ({ column, operator, value }) => !isEmpty(column) && !isEmpty(operator) && !isEmpty(value);
@@ -30,9 +29,8 @@ const generateMessage = (operator) => {
   return operatorMessage[operator];
 };
 
-const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery, setFilterEnable }) => {
+const Filter = ({ filters, setFilters, setFilterEnable }) => {
   const { columns } = useTooljetDatabaseContext();
-  const { setPageCount } = useTjdbActions();
   // The popover edits a draft; Apply is what writes it to the store.
   const [draft, setDraft] = useState(() => deepClone(filters));
   const [show, setShow] = useState(false);
@@ -59,7 +57,6 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery,
 
   const apply = () => {
     setFilters(Object.fromEntries(Object.entries(draft).filter(([, filter]) => hasAnyValue(filter))));
-    setPageCount(1);
     setShow(false);
   };
 
@@ -67,11 +64,10 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery,
     setFilterEnable(appliedCount > 0);
   }, [appliedCount, setFilterEnable]);
 
+  // The rows query already skips a NULL value with a non-`is` operator; this tells the user and drops it.
   React.useEffect(() => {
     if (Object.keys(filters).length === 0 && isMounted) {
-      setFilters({});
       setShow(false);
-      resetFilterQuery();
     } else {
       let validFilters = { ...filters };
       let hasInvalidFilter = false;
@@ -96,10 +92,6 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery,
 
       if (hasInvalidFilter) {
         setFilters(validFilters);
-      }
-
-      if (Object.keys(validFilters).length > 0) {
-        handleBuildFilterQuery(validFilters);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

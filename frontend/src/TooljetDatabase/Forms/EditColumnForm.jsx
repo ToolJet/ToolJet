@@ -6,7 +6,6 @@ import defaultStyles from '@/_ui/Select/styles';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
-import { shallow } from 'zustand/shallow';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, renderDatatypeIcon } from '../constants';
 import Drawer from '@/_ui/Drawer';
@@ -86,15 +85,6 @@ const ColumnForm = ({
     configurations,
     setConfigurations,
   } = useTooljetDatabaseContext();
-  const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
-    (state) => ({
-      queryFilters: state.queryFilters,
-      sortFilters: state.sortFilters,
-      pageCount: state.pageCount,
-      pageSize: state.pageSize,
-    }),
-    shallow
-  );
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
   const { fetchTableMetadata, setQueryFilters } = useTjdbActions();
 
@@ -287,7 +277,7 @@ const ColumnForm = ({
         tooljetDatabaseService.createForeignKey(organizationId, selectedTable.table_name, data, migrationName),
       onSuccess: async () => {
         await fetchMetaDataApi();
-        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+        handleRefetchQuery();
         toast.success(`Foreign key created successfully`);
         setCreateForeignKeyInEdit(false);
         setIsForeignKeyDraweOpen(false);
@@ -492,7 +482,7 @@ const ColumnForm = ({
 
     const finish = () => {
       fetchMetaDataApi();
-      handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+      handleRefetchQuery();
       toast.success(`Column edited successfully`);
       onClose && onClose();
     };
@@ -611,7 +601,7 @@ const ColumnForm = ({
         tooljetDatabaseService.deleteForeignKey(organizationId, selectedTable.table_name, id, migrationName),
       onSuccess: () => {
         fetchMetaDataApi();
-        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+        handleRefetchQuery();
         setIsForeignKey(false);
         setForeignKeyDetails([]);
         onCloseForeignKeyDrawer();
@@ -658,7 +648,7 @@ const ColumnForm = ({
         tooljetDatabaseService.editForeignKey(organizationId, selectedTable.table_name, id, data, migrationName),
       onSuccess: () => {
         fetchMetaDataApi();
-        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+        handleRefetchQuery();
         onCloseForeignKeyDrawer();
         toast.success(`Foreign key edited successfully`);
       },
@@ -831,7 +821,6 @@ const ColumnForm = ({
     if (!filter) return;
     const newFilters = { 0: { column: castReport.columnName, operator: filter.operator, value: filter.value } };
     setQueryFilters(newFilters);
-    handleRefetchQuery(newFilters, sortFilters, 1, pageSize);
     onClose && onClose();
   };
 

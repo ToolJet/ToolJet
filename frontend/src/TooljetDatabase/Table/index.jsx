@@ -19,7 +19,7 @@ import {
   listAllPrimaryKeyColumns,
   isSqlModeDisabled,
   SCHEMA_ENV_TOOLTIP,
-  envHasRelation,
+  isTableMissingFromEnvironment,
 } from '../constants';
 import Menu from '../Icons/Menu.svg';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
@@ -36,6 +36,8 @@ import {
   getUTCOffset,
 } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import { shallow } from 'zustand/shallow';
+import { useQueryClient } from '@tanstack/react-query';
+import { patchCachedRow } from '../rows/useTableRows';
 import { useTjdbStore, useTjdbActions, useIsDevelopmentEnvironment } from '../_stores/tjdbStore';
 import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 import { CHANGE_TYPE } from '../MigrationConfirmModal';
@@ -48,11 +50,9 @@ const Table = () => {
     columns,
     selectedTable,
     selectedTableData,
-    setSelectedTableData,
     setColumns,
-    resetAll,
     handleRefetchQuery,
-    loadingState,
+    rowsLoading,
     setForeignKeys,
     foreignKeys,
     configurations,
@@ -66,26 +66,17 @@ const Table = () => {
   const isDevelopmentEnvironment = useIsDevelopmentEnvironment();
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
   const developmentEnvironment = useTjdbStore((state) => state.environments.find((env) => env.priority === 1));
-  // Unknown (tables not loaded yet) counts as present: only a table the list says is missing falls back.
-  const relationsForSelectedTable = tables?.find((table) => table.id === selectedTable.id)?.environments;
-  const selectedTableMissingFromEnvironment =
-    !isDevelopmentEnvironment &&
-    !!relationsForSelectedTable &&
-    !envHasRelation(relationsForSelectedTable, selectedEnvironment?.id);
-  const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
-    (state) => ({
-      queryFilters: state.queryFilters,
-      sortFilters: state.sortFilters,
-      pageCount: state.pageCount,
-      pageSize: state.pageSize,
-    }),
-    shallow
+  const selectedTableMissingFromEnvironment = isTableMissingFromEnvironment(
+    tables,
+    selectedTable.id,
+    selectedEnvironment
   );
+  const queryClient = useQueryClient();
   const {
     registerEnvironmentSwitchHandler,
     fetchTableMetadata: fetchMetadata,
     setQueryFilters,
-    setSortFilters,
+    openTableView,
     switchEnvironment,
   } = useTjdbActions();
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
@@ -405,22 +396,12 @@ const Table = () => {
     setForeignKeys([...metadata.foreignKeys]);
   };
 
-  const onSelectedTableChange = () => {
-    resetAll();
-    setSortFilters({});
-    setQueryFilters({});
-    fetchTableMetadata();
-    setSelectedRowIds({});
-  };
-
   useEffect(() => {
-    // A table staging lacks cannot load there; the fallback effect below moves to Development and loads it.
-    if (
-      prevSelectedTableRef.current.id !== selectedTable.id &&
-      !isEmpty(selectedTable) &&
-      !selectedTableMissingFromEnvironment
-    ) {
-      onSelectedTableChange();
+    if (prevSelectedTableRef.current.id !== selectedTable.id && !isEmpty(selectedTable)) {
+      openTableView(selectedTable.id);
+      setSelectedRowIds({});
+      // A table staging lacks cannot load there; the fallback effect below moves to Development and loads it.
+      if (!selectedTableMissingFromEnvironment) fetchTableMetadata();
     }
     prevSelectedTableRef.current = selectedTable;
 
@@ -433,8 +414,8 @@ const Table = () => {
   //
   // selectedRowIds MUST be cleared: stale row ids from development, carried into staging, feed
   // handleDeleteRow - a cross-environment delete by primary key.
+  // Rows need no step here: the environment is part of their query key, so the new environment's read starts on its own.
   const handleEnvironmentSwitch = async () => {
-    setSelectedTableData([]);
     setColumns([]);
     setConfigurations({});
     setForeignKeys([]);
@@ -442,7 +423,6 @@ const Table = () => {
     setReferencedColumnDetails([]);
     setSelectedRowIds({});
     await fetchTableMetadata();
-    handleRefetchQuery({}, {}, 1, useTjdbStore.getState().pageSize);
   };
 
   // Deliberately no dependency array: re-registering on every render is what keeps the handler's
@@ -752,7 +732,7 @@ const Table = () => {
       }
 
       toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable.table_name}"`);
-      handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+      handleRefetchQuery();
       setSelectedRowIds({});
     } else {
       toast.error('Something went wrong - Record Id is incorrect');
@@ -769,7 +749,7 @@ const Table = () => {
         tooljetDatabaseService.deleteColumn(organizationId, selectedTable.table_name, columnName, migrationName),
       onSuccess: async () => {
         await fetchTableMetadata();
-        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+        handleRefetchQuery();
         toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
       },
     });
@@ -849,14 +829,20 @@ const Table = () => {
       return;
     }
 
-    // Optimised by avoiding Refetch API call on Cell-Edit Save and state is updated
-    const selectedTableDataCopy = [...selectedTableData];
-    if (selectedTableDataCopy[rIndex][cellKey] !== undefined) {
-      selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellValue;
-      setSelectedTableData([...selectedTableDataCopy]);
+    // Written into the cache instead of refetching, so the row keeps its place even under a sort on this column.
+    // Without a primary key the row can't be told apart from the others, so the page is read again instead.
+    const savedRow = rows[rIndex]?.values ?? {};
+    if (primaryKeyColumns.length > 0) {
+      patchCachedRow(
+        queryClient,
+        { environmentId: selectedEnvironment?.id ?? null, tableId: selectedTable.id },
+        (row) => primaryKeyColumns.every((primaryKey) => row[primaryKey] === savedRow[primaryKey]),
+        cellData
+      );
+    } else {
+      handleRefetchQuery();
     }
 
-    // handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
     setEditPopover(false);
     handleOnCloseEditMenu();
     setCellClick((prev) => ({
@@ -1178,7 +1164,7 @@ const Table = () => {
             'tjdb-th-bg-dark': darkMode,
           })}
         />
-        {loadingState ? (
+        {rowsLoading ? (
           <table
             className={`table card-table loading-table table-vcenter text-nowrap datatable ${
               darkMode && 'dark-background'
@@ -1729,7 +1715,7 @@ const Table = () => {
             )}
           </table>
         )}
-        {rows.length === 0 && !loadingState && (
+        {rows.length === 0 && !rowsLoading && (
           <div className="tw-flex tw-h-full tw-items-center tw-justify-center">
             {filterEnable ? (
               <EmptyAndNoResultsState
@@ -1753,7 +1739,7 @@ const Table = () => {
         )}
 
         <TableFooter darkMode={darkMode} dataLoading={loading} tableDataLength={tableData.length} />
-        {rows.length === 0 && !loadingState && (
+        {rows.length === 0 && !rowsLoading && (
           <div
             onClick={() => {
               resetCellAndRowSelection();

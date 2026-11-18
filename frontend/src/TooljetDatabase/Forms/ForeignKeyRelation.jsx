@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { shallow } from 'zustand/shallow';
 import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
@@ -16,7 +15,7 @@ import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import { getColumnDataType, dataTypes } from '../constants';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import ChangesComponent from '../ChangesComponent';
-import { useTjdbActions, useTjdbStore } from '../_stores/tjdbStore';
+import { useTjdbActions } from '../_stores/tjdbStore';
 import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 import { CHANGE_TYPE } from '../MigrationConfirmModal';
 
@@ -50,15 +49,6 @@ function ForeignKeyRelation({
   const [onUpdate, setOnUpdate] = useState([]);
   const { fetchTableMetadata } = useTjdbActions();
   const { handleRefetchQuery } = useTooljetDatabaseContext();
-  const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
-    (state) => ({
-      queryFilters: state.queryFilters,
-      sortFilters: state.sortFilters,
-      pageCount: state.pageCount,
-      pageSize: state.pageSize,
-    }),
-    shallow
-  );
   const { runMigration, modal: migrationModal } = useMigrationModal();
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -154,7 +144,7 @@ function ForeignKeyRelation({
           },
         ]);
         fetchMetaDataApi();
-        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+        handleRefetchQuery();
         toast.success(`Foreign key created successfully`);
         onCloseForeignKeyDrawer();
       },
@@ -200,7 +190,7 @@ function ForeignKeyRelation({
       run: (migrationName) => tooljetDatabaseService.editForeignKey(organizationId, tableName, id, data, migrationName),
       onSuccess: () => {
         fetchMetaDataApi();
-        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+        handleRefetchQuery();
         toast.success(`Foreign key edited successfully`);
         onCloseForeignKeyDrawer();
       },
@@ -239,7 +229,7 @@ function ForeignKeyRelation({
       run: (migrationName) => tooljetDatabaseService.deleteForeignKey(organizationId, tableName, id, migrationName),
       onSuccess: () => {
         fetchMetaDataApi();
-        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+        handleRefetchQuery();
         onCloseForeignKeyDrawer();
         toast.success(`Foreign key deleted successfully`);
       },

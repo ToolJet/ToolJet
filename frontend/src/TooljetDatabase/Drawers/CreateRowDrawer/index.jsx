@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import Drawer from '@/_ui/Drawer';
-import { toast } from 'react-hot-toast';
 import CreateRowForm from '../../Forms/RowForm';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
-import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
-import { listAllPrimaryKeyColumns } from '@/TooljetDatabase/constants';
-import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
-import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
+import { useTjdbActions } from '../../_stores/tjdbStore';
 
 const CreateRowDrawer = ({
   isCreateRowDrawerOpen,
@@ -14,8 +10,7 @@ const CreateRowDrawer = ({
   referencedColumnDetails,
   setReferencedColumnDetails,
 }) => {
-  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords, columns } = useTooljetDatabaseContext();
-  const pageSize = useTjdbStore((state) => state.pageSize);
+  const { handleRefetchQuery } = useTooljetDatabaseContext();
   const { setSortFilters, setQueryFilters } = useTjdbActions();
   const [shouldResetRowForm, setShouldResetRowForm] = useState(0);
 
@@ -29,30 +24,9 @@ const CreateRowDrawer = ({
       >
         <CreateRowForm
           onCreate={(shouldKeepDrawerOpen) => {
-            const limit = pageSize;
             setSortFilters({});
             setQueryFilters({});
-
-            const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
-            const sortQuery = new PostgrestQueryBuilder();
-            primaryKeyColumns.map((primaryKeyColumnName) => {
-              sortQuery.order(primaryKeyColumnName, 'desc');
-            });
-
-            tooljetDatabaseService
-              .findOne(selectedTable.id, `${sortQuery.url.toString()}&limit=${limit}`)
-              .then(({ headers, data = [], error }) => {
-                if (error) {
-                  toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
-                  return;
-                }
-
-                if (Array.isArray(data) && data?.length > 0) {
-                  const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
-                  setTotalRecords(totalContentRangeRecords);
-                  setSelectedTableData(data);
-                }
-              });
+            handleRefetchQuery();
 
             const tableElement = document.querySelector('.tj-db-table');
             if (tableElement) tableElement.scrollTop = 0;

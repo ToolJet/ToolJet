@@ -23,8 +23,8 @@ export type TooljetDatabaseContextValue = {
   closeOtherTabs: OpenTabs['closeOtherTabs'];
   closeAllTabs: OpenTabs['closeAllTabs'];
   applyTables: OpenTabs['applyTables'];
+  /** The open page of the open table's rows, from useTableRows. */
   selectedTableData: unknown[];
-  setSelectedTableData: Dispatch<SetStateAction<unknown[]>>;
   tables: unknown[];
   setTables: Dispatch<SetStateAction<unknown[]>>;
   tablesLoaded: boolean;
@@ -34,17 +34,14 @@ export type TooljetDatabaseContextValue = {
   columns: unknown[];
   setColumns: Dispatch<SetStateAction<unknown[]>>;
   totalRecords: number;
-  setTotalRecords: Dispatch<SetStateAction<number>>;
+  /** No rows to show yet for the open view. A refetch behind rows already on screen does not count. */
+  rowsLoading: boolean;
+  /** The tables list fetch, owned by the tables panel. */
   loadingState: boolean;
   setLoadingState: Dispatch<SetStateAction<boolean>>;
-  handleBuildFilterQuery: (...args: unknown[]) => unknown;
-  handleBuildSortQuery: (...args: unknown[]) => unknown;
-  buildPaginationQuery: (...args: unknown[]) => unknown;
-  resetSortQuery: (...args: unknown[]) => unknown;
-  resetFilterQuery: (...args: unknown[]) => unknown;
-  resetAll: (...args: unknown[]) => unknown;
   selectRows: unknown[];
   setSelectRows: Dispatch<SetStateAction<unknown[]>>;
+  /** Refetches the open view after a write. Arguments are ignored. */
   handleRefetchQuery: (...args: unknown[]) => unknown;
   foreignKeys: unknown[];
   configurations: Record<string, unknown>;

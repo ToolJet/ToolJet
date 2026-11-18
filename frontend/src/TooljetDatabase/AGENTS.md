@@ -22,12 +22,14 @@ The workspace's built-in database UI at `/:workspaceId/database`: a tables panel
 | `Table/dataToolbarFilters.ts` | Pure: `queryFilters` to chips (`toToolbarFilters`), visible/overflow split (`splitFilters`) |
 | `Conditions/ConditionPopover.tsx`, `ConditionRow.tsx` | Shared shell (title, add action, rows, Clear all / Cancel / Apply footer) and segmented condition row for the Filter and Sort popovers |
 | `Forms/FilterConditionRow.tsx`, `SortConditionRow.tsx` | One filter or sort condition; operations and value (or order) wait for a column |
-| `Filter/index.jsx`, `Sort/index.jsx` | Trigger + Rocket Popover; edit a draft, Apply writes it to the store; the effects that build the query live here |
+| `Filter/index.jsx`, `Sort/index.jsx` | Trigger + Rocket Popover; edit a draft, Apply writes it to the store |
 | `Table/AddDataMenu.tsx` | "Add data" button + Rocket menu (row, bulk upload, seed SQL) |
 | `Table/Header.jsx` | Wires the toolbar to the store and context; still owns the create/edit/bulk/seed drawers |
 | `TooljetDatabasePage/index.jsx` | Layout, "No table open" state (Rocket `EmptyAndNoResultsState`, centred in the area under the strip); sets `--tjdb-above-table: 48px` for the grid height |
 | `TableActions/TableSchemaScope.tsx` | Row actions load their own table's schema, independent of the open table |
-| `_stores/tjdbStore.js` | zustand: environments, filters, sort, page |
+| `_stores/tjdbStore.js` | zustand, client state only: environments, the view (filters, sort, page, page size) and `viewTableId`, the table it belongs to |
+| `rows/rowsQuery.ts` | Pure: the view to a PostgREST query string (`buildRowsQuery`); skips incomplete and refused filters (`isQueryableFilter`) |
+| `rows/useTableRows.ts` | react-query: the open page of rows + total, keyed `['tjdb','rows',envId,tableId,query]`; `useInvalidateTableRows`; `patchCachedRow` |
 
 Rocket pieces: `components/ui/Rocket/{SidePanel,SearchInput,ClosableTabs,Tag,LinkButton}`.
 
@@ -37,7 +39,9 @@ Rocket pieces: `components/ui/Rocket/{SidePanel,SearchInput,ClosableTabs,Tag,Lin
 - Tabs persist per browser and workspace in `localStorage` key `tjdb-open-tabs:<workspaceId>` as `{ids, activeId}`. Saved state is untrusted: `parseStoredTabs` falls back to "nothing open", `reconcileTabs` drops ids of deleted tables.
 - Restore order on first load: saved tabs, then `?table=<id>` (opened on top), then the App Builder handoff (`localStorage.tableDetails`). Nothing is written (storage or URL) before that first restore.
 - No table is opened by default. First visit, or "Close all tabs", shows the empty state.
-- The environment is not in the URL yet; switching tabs still resets filter/sort/page (effect on `[selectedTable]` in `Table/index.jsx`). Per-tab memory of those is not built.
+- Rows are server state in react-query, never component state. Nothing fetches rows by hand: change the view in the store and the query follows; after a write call `handleRefetchQuery()` (context; an invalidate, any arguments are ignored). A cell save writes the cache with `patchCachedRow`, scoped to one table in one environment (another table can share a primary key).
+- `setQueryFilters`, `setSortFilters` and `setPageSize` return to page 1 in the store. Callers never reset the page themselves.
+- Switching tabs resets the view in one write (`openTableView`, from the `[selectedTable]` effect in `Table/index.jsx`). Rows wait until `viewTableId` matches the open table, so a new table is never read with the previous table's filters. The environment is not in the URL yet; per-tab memory of the view is not built.
 - `ClosableTabs` fills the room its parent gives; keep sibling strip items `shrink-0` or it will not scroll.
 - Preflight is off: a solid border style alone gives the other sides 3px. Use `tw-border-0` plus the one side.
 - The tables quota (`tablesLimitReached`) is read once in `index.jsx` and shared through context; never call `useTablesLimit` from a component. It refetches on a change of table *count* only (a new `tables` array is made on every tab switch).
@@ -45,7 +49,7 @@ Rocket pieces: `components/ui/Rocket/{SidePanel,SearchInput,ClosableTabs,Tag,Lin
 - Cypress `data-cy`: `table-tab-strip`, `<table>-tab` (+ `-close`), `open-or-create-table-button`, `open-tabs-menu-button`, `no-table-open`, `expand-tables-panel`, `data-toolbar`, `data-toolbar-table-name`, `filter-chips`, `filter-chip-<key>`, `more-filters`, `clear-all-filters`, `migration-history-button`, `add-new-data-button`, `filter-button`, `sort-button`, `filter-section`, `filter-add-button`, `filter-clear-all-button`, `filter-cancel-button`, `filter-apply-button`, `filter-row-<key>` (same for `sort-`), `select-column-field`, `select-operation-field`, `select-order-field`, `value-input-field`, `delete-icon`.
 
 - The toolbar has no record count, "n selected" text or Delete rows button (the design moves selection to a bulk action bar that is not built). `handleDeleteRow` is gone from `Table/index.jsx`; its confirm dialog and `deleteSelectedRows` stay, and `deleteRowsConfirm.spec.jsx` is skipped until the bar opens the dialog again. A plain row selection gets no Edit row button either; the expand icon still opens the edit drawer.
-- Filter chips come from `queryFilters`; removing one writes the store and `Filter`'s own effect rebuilds the query. The Filter and Sort triggers are Rocket icon buttons inside a tooltip `<span>`: `OverlayTrigger` must keep the button as its direct child to anchor its popover.
+- Filter chips come from `queryFilters`; removing one writes the store and the rows query follows. `Filter`'s effect only drops (with a toast) a NULL value used with a non-`is` operator; the query already skips it. The Filter and Sort triggers are Rocket icon buttons inside a tooltip `<span>`: `OverlayTrigger` must keep the button as its direct child to anchor its popover.
 - Filter and Sort popovers edit a local draft; only Apply writes `queryFilters` / `sortFilters` (new objects: the store is frozen). A fresh row opens when nothing is applied; Apply ignores empty rows. Picking a sort column defaults the order to ascending. The operator list is still the raw PostgREST set from `_helpers/constants`.
 - Preflight is off: `tw-divide-x` gives every cell a 3px top and bottom border. `ConditionRow` uses `[&>*+*]:tw-border-0 [&>*+*]:tw-border-l` instead.
 - Rocket `PopoverTrigger` does not forward a ref, so a tooltip cannot wrap it directly: put the tooltip on a `<span>` around the trigger.

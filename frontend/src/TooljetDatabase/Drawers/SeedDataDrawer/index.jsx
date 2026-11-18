@@ -20,12 +20,9 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
     setSql('');
   };
 
-  // Same refresh every other TJDB mutation does: keeps the active filters, sort and page, and
-  // applies an empty result too (the grid must not keep showing rows the SQL just deleted).
-  const refetchRows = () => {
-    const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore.getState();
-    handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
-  };
+  // Keeps the active filters, sort and page, and applies an empty result too (the grid must not keep
+  // showing rows the SQL just deleted).
+  const refetchRows = () => handleRefetchQuery();
 
   const handleRunSql = async () => {
     if (!sql.trim()) return;
