@@ -1,0 +1,107 @@
+import { useCallback, useMemo, useState } from 'react';
+import {
+  getCoreRowModel,
+  useReactTable,
+  type ColumnDef,
+  type ColumnSizingState,
+  type SortingState,
+} from '@tanstack/react-table';
+import { listAllPrimaryKeyColumns } from '../../constants';
+
+// A column as tjdbStore.fetchTableMetadata returns it.
+export type GridColumn = {
+  Header: string;
+  accessor: string;
+  dataType: string;
+  constraints_type?: { is_primary_key?: boolean };
+};
+export type GridRow = Record<string, unknown>;
+export type GridColumnMeta = { column: GridColumn; isPrimaryKey: boolean; isForeignKey: boolean };
+
+export const SELECT_COLUMN_ID = 'select';
+export const SELECT_COLUMN_WIDTH = 40;
+export const PINNED_COLUMN_WIDTH = 120;
+export const DEFAULT_COLUMN_WIDTH = 200;
+export const MIN_COLUMN_WIDTH = 80;
+export const ROW_HEIGHT = 40;
+export const ADD_COLUMN_WIDTH = 45;
+
+const EMPTY_PINNING = { left: [SELECT_COLUMN_ID] };
+
+type UseTableGridArgs = {
+  columns: GridColumn[];
+  rows: GridRow[];
+  foreignKeyColumns: ReadonlySet<string>;
+  sorting: SortingState;
+};
+
+// Headless: the TanStack instance and nothing that renders. The first primary key column is pinned after the
+// checkbox column; sorting is display-only, so the server's order is what the rows already are.
+export const useTableGrid = ({ columns, rows, foreignKeyColumns, sorting }: UseTableGridArgs) => {
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
+
+  const primaryKeys = useMemo(() => listAllPrimaryKeyColumns(columns) as string[], [columns]);
+  const pinnedKey = primaryKeys[0];
+
+  const columnDefs = useMemo<ColumnDef<GridRow>[]>(
+    () => [
+      {
+        id: SELECT_COLUMN_ID,
+        size: SELECT_COLUMN_WIDTH,
+        minSize: SELECT_COLUMN_WIDTH,
+        maxSize: SELECT_COLUMN_WIDTH,
+        enableResizing: false,
+      },
+      ...columns.map((column): ColumnDef<GridRow> => {
+        const meta: GridColumnMeta = {
+          column,
+          isPrimaryKey: primaryKeys.includes(column.accessor),
+          isForeignKey: foreignKeyColumns.has(column.accessor),
+        };
+        return {
+          id: column.accessor,
+          // accessorFn, not accessorKey: a column name with a dot would be read as a nested path.
+          accessorFn: (row) => row[column.accessor],
+          header: column.Header,
+          size: column.accessor === pinnedKey ? PINNED_COLUMN_WIDTH : DEFAULT_COLUMN_WIDTH,
+          minSize: MIN_COLUMN_WIDTH,
+          meta,
+        };
+      }),
+    ],
+    [columns, primaryKeys, pinnedKey, foreignKeyColumns]
+  );
+
+  const columnPinning = useMemo(
+    () => (pinnedKey ? { left: [SELECT_COLUMN_ID, pinnedKey] } : EMPTY_PINNING),
+    [pinnedKey]
+  );
+
+  // Composite keys exist, so the id is every key value. Without a key there is nothing stable to use, and rows can
+  // briefly arrive before the columns of their table (a switch to a cached table): their key values are undefined.
+  const getRowId = useCallback(
+    (row: GridRow, index: number) =>
+      primaryKeys.length > 0 && primaryKeys.every((key) => row[key] !== undefined)
+        ? primaryKeys.map((key) => String(row[key])).join('\u0000')
+        : String(index),
+    [primaryKeys]
+  );
+
+  // TanStack rebuilds the row model only when `data` changes, not when getRowId does. A new array when the keys
+  // change gives rows their real ids once the columns arrive.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const data = useMemo(() => rows.slice(), [rows, getRowId]);
+
+  return useReactTable<GridRow>({
+    data,
+    columns: columnDefs,
+    getCoreRowModel: getCoreRowModel(),
+    getRowId,
+    manualSorting: true,
+    enableColumnPinning: true,
+    enableColumnResizing: true,
+    columnResizeMode: 'onChange',
+    state: { sorting, columnSizing, columnPinning },
+    onColumnSizingChange: setColumnSizing,
+  });
+};

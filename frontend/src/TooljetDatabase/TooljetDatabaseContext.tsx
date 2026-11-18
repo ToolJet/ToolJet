@@ -36,6 +36,8 @@ export type TooljetDatabaseContextValue = {
   totalRecords: number;
   /** No rows to show yet for the open view. A refetch behind rows already on screen does not count. */
   rowsLoading: boolean;
+  /** A refetch behind rows already on screen: the opposite of rowsLoading, never both. */
+  rowsRefetching: boolean;
   /** The tables list fetch, owned by the tables panel. */
   loadingState: boolean;
   setLoadingState: Dispatch<SetStateAction<boolean>>;

@@ -59,9 +59,11 @@ const TooljetDatabase = () => {
     rows: selectedTableData,
     total: totalRecords,
     isLoading: rowsLoading,
+    isFetching: rowsFetching,
   } = useTableRows(selectedTable.id, {
     enabled: !isTableMissingFromEnvironment(tables, selectedTable.id, selectedEnvironment),
   });
+  const rowsRefetching = rowsFetching && !rowsLoading;
   // Kept under its old name for the drawers and forms that refetch after a write; any arguments are ignored,
   // since the view to refetch is whatever the store holds.
   const handleRefetchQuery = useInvalidateTableRows();
@@ -97,6 +99,7 @@ const TooljetDatabase = () => {
       selectedTableData,
       totalRecords,
       rowsLoading,
+      rowsRefetching,
       handleRefetchQuery,
       loadingState,
       setLoadingState,
@@ -118,6 +121,7 @@ const TooljetDatabase = () => {
       selectedTableData,
       totalRecords,
       rowsLoading,
+      rowsRefetching,
       loadingState,
       foreignKeys,
       configurations,

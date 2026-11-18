@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
-import EditRowDrawer from '../Drawers/EditRowDrawer';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import CreateRowDrawer from '../Drawers/CreateRowDrawer';
 import BulkUploadDrawer from '../Drawers/BulkUploadDrawer';
@@ -28,12 +27,8 @@ const Header = ({
   isBulkUploadDrawerOpen,
   isSeedDataDrawerOpen,
   setIsSeedDataDrawerOpen,
-  selectedRowIds,
   rows,
-  isEditRowDrawerOpen,
-  setIsEditRowDrawerOpen,
   setFilterEnable,
-  isDirectRowExpand,
   referencedColumnDetails,
   setReferencedColumnDetails,
 }) => {
@@ -145,18 +140,6 @@ const Header = ({
           />
         }
       />
-      {/* Opened from a row's expand icon. The toolbar has no selection controls, so a plain selection gets no button. */}
-      {isDirectRowExpand && Object.keys(selectedRowIds).length === 1 && (
-        <EditRowDrawer
-          isEditRowDrawerOpen={isEditRowDrawerOpen}
-          setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
-          selectedRowIds={selectedRowIds}
-          rows={rows}
-          isDirectRowExpand={isDirectRowExpand}
-          referencedColumnDetails={referencedColumnDetails}
-          setReferencedColumnDetails={setReferencedColumnDetails}
-        />
-      )}
       <CreateColumnDrawer
         isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}

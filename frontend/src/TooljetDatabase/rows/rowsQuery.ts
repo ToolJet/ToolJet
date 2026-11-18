@@ -15,7 +15,7 @@ export type RowsView = {
 export const isQueryableFilter = ({ column, operator, value }: FilterCondition): boolean =>
   !!column && !!operator && !!value && (operator === 'is' || value.toLowerCase() !== 'null');
 
-const isCompleteSort = ({ column, order }: SortRule): boolean => !!column && !!order;
+export const isCompleteSort = ({ column, order }: SortRule): boolean => !!column && !!order;
 
 // Pure, so the same view always yields the same string: it is the rows query's cache key.
 export const buildRowsQuery = ({ filters, sort, page, pageSize }: RowsView): string => {

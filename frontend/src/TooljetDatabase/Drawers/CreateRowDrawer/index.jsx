@@ -28,7 +28,7 @@ const CreateRowDrawer = ({
             setQueryFilters({});
             handleRefetchQuery();
 
-            const tableElement = document.querySelector('.tj-db-table');
+            const tableElement = document.querySelector('[data-cy="tjdb-table-grid"]');
             if (tableElement) tableElement.scrollTop = 0;
             if (!shouldKeepDrawerOpen) setIsCreateRowDrawerOpen(false);
             setShouldResetRowForm((prev) => prev + 1);

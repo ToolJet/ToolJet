@@ -27,6 +27,7 @@ export const TooljetDatabaseContext = createContext({
   setColumns: () => {},
   totalRecords: 0,
   rowsLoading: false,
+  rowsRefetching: false,
   loadingState: false,
   setLoadingState: () => {},
   selectRows: [],

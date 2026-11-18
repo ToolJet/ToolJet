@@ -9,7 +9,7 @@ import '@/TooljetDatabase/Forms/styles.scss';
 import '@/TooljetDatabase/Filter/styles.scss';
 import '@/TooljetDatabase/Table/styles.scss';
 import '@/TooljetDatabase/Table/ActionsPopover/styles.scss';
-import '@/TooljetDatabase/Menu/CellEditMenu/styles.scss';
+import '@/TooljetDatabase/Table/Grid/tableGrid.scss';
 import '@/TooljetDatabase/Drawers/BulkUploadDrawer/styles.scss';
 import '@/TooljetDatabase/Drawers/MigrationHistoryDrawer/styles.scss';
 import '@/TooljetDatabase/Drawers/SeedDataDrawer/styles.scss';
