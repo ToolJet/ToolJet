@@ -70,6 +70,9 @@ export class AppModuleLoader {
       // transaction long enough to be killed. See AppModule.register conditional providers.
       ...(isTest || configs.IS_GET_CONTEXT ? [] : [ScheduleModule.forRoot()]),
       BullModule.forRoot({
+        // Tests: each jest process gets its own queues, so a worker never picks up a job enqueued by
+        // another process (whose rows sit in a different, uncommitted suite transaction)
+        ...(isTest && { prefix: `bull-test-${process.pid}` }),
         // Fallback for queues and jobs that set no retention; finished jobs otherwise stay in Redis forever
         defaultJobOptions: {
           removeOnComplete: { age: 3600, count: 100 },

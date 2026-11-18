@@ -501,14 +501,14 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
 
 /*
  * Webhook rate limits (`tj:rl:*`, `@modules/rate-limit`) and workflow execution quotas
- * (`tj:wfq:*`) count in Redis, so they outlive a test app: a suite that trips a limit would leave
+ * (`tj:wfq:*`) and queue depth (`tj:wfdepth:*`) count in Redis, so they outlive a test app: a suite that trips a limit would leave
  * it tripped for the next one, and quota counters would not match the suite's database rows.
  * Each suite starts with no counters.
  */
 async function clearRateLimitCounters(app: INestApplication): Promise<void> {
   try {
     const redis = app.get(RedisService, { strict: false }).getClient();
-    for (const pattern of ['tj:rl:*', 'tj:wfq:*']) {
+    for (const pattern of ['tj:rl:*', 'tj:wfq:*', 'tj:wfdepth:*']) {
       let cursor = '0';
       do {
         const [next, keys] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 500);

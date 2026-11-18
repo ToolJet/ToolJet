@@ -50,6 +50,7 @@ import { WorkflowApprovalRequestRepository } from './repositories/workflow-appro
 import { WorkflowExecutionRepository } from './repositories/workflow-execution.repository';
 import { WORKFLOW_APPROVAL_TIMEOUT_QUEUE } from './constants';
 import { ExecutionQuotaService } from './admission/execution-quota.service';
+import { QueueDepthTracker } from './admission/queue-depth';
 
 const WORKFLOW_SCHEDULE_QUEUE = 'workflow-schedule-queue';
 const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
@@ -93,6 +94,7 @@ export class WorkflowsModule extends SubModule {
       WorkflowApprovalTimeoutProcessor,
       ApprovalTimeoutBootstrapService,
       WaitResumeWatchdogService,
+      SyncRunService,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
       'controllers/workflow-executions.controller',
@@ -126,6 +128,7 @@ export class WorkflowsModule extends SubModule {
       'processors/workflow-approval-timeout.processor',
       'services/approval-timeout-bootstrap.service',
       'services/wait-resume-watchdog.service',
+      'sync-runs/sync-run.service',
     ]);
 
     // Get apps related providers
@@ -252,6 +255,8 @@ export class WorkflowsModule extends SubModule {
         WorkflowApprovalsService,
         WorkflowApprovalTimeoutService,
         ExecutionQuotaService,
+        QueueDepthTracker,
+        SyncRunService,
         ...(isMainImport
           ? [
               WorkflowStreamService,
@@ -267,7 +272,10 @@ export class WorkflowsModule extends SubModule {
                     ApprovalTimeoutBootstrapService,
                     WaitResumeWatchdogService,
                   ]
-                : []),
+                : process.env.NODE_ENV === 'test'
+                  ? // Sync runs wait for a worker (enqueue-and-wait), so tests run one in-process
+                    [WorkflowExecutionProcessor]
+                  : []),
             ]
           : []),
       ],
