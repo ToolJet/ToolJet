@@ -217,3 +217,4 @@ export { Tag, tagVariants } from './Tag/Tag';
 export { LinkButton, linkButtonVariants } from './LinkButton/LinkButton';
 export { ClosableTabs } from './ClosableTabs/ClosableTabs';
 export { SidePanel, SidePanelHeader, SidePanelSection, SidePanelBody } from './SidePanel/SidePanel';
+export { EmptyAndNoResultsState } from './EmptyAndNoResultsState/EmptyAndNoResultsState';

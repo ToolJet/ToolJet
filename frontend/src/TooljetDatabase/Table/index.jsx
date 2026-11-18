@@ -22,15 +22,13 @@ import {
   envHasRelation,
 } from '../constants';
 import Menu from '../Icons/Menu.svg';
-import Warning from '../Icons/warning.svg';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
-import WarningDark from '../Icons/warning-dark.svg';
 import TjdbTableHeader from './Header';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { AddNewDataPopOver } from '../Table/ActionsPopover/AddNewDataPopOver';
+import { AddDataMenu } from './AddDataMenu';
+import { LinkButton } from '@/components/ui/Rocket/LinkButton/LinkButton';
+import { EmptyAndNoResultsState } from '@/components/ui/Rocket/EmptyAndNoResultsState/EmptyAndNoResultsState';
 import ArrowRight from '../Icons/ArrowRight.svg';
-import Plus from '@/_ui/Icon/solidIcons/Plus';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import {
   convertDateToTimeZoneFormatted,
@@ -100,7 +98,6 @@ const Table = () => {
   const [isDeleteRowsDialogOpen, setIsDeleteRowsDialogOpen] = useState(false);
   const [isSeedDataDrawerOpen, setIsSeedDataDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
-  const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
   const [editColumnHeader, setEditColumnHeader] = useState({
     hoveredColumn: null,
     clickedColumn: null,
@@ -1134,29 +1131,13 @@ const Table = () => {
     );
   }
 
-  const toggleAddNewDataMenu = (isShow) => {
-    setIsAddNewDataMenuOpen(isShow);
-  };
-
   const handleOnClickCreateNewRow = () => {
     resetCellAndRowSelection();
     setIsCreateRowDrawerOpen(true);
   };
 
-  const handleOnClickBulkUpdateData = (isOpenBulkUploadDrawer) => {
-    setIsBulkUploadDrawerOpen(isOpenBulkUploadDrawer);
-  };
-
-  const handleOnClickSeedData = (isOpenSeedDataDrawer) => {
-    setIsSeedDataDrawerOpen(isOpenSeedDataDrawer);
-  };
-
   const emptyHeader = Array.from({ length: 5 }, (_, index) => index + 1);
   const emptyTableData = Array.from({ length: 10 }, (_, index) => index + 1);
-  const emptyData = filterEnable
-    ? 'No data found matching the criteria specified in current filters.'
-    : 'Use Add Row from the menu or directly click on + icon to add a row. You may use the bulk upload option to add multiple rows of data using a csv file.';
-  const emptyMainData = filterEnable ? 'No results found' : 'No data added yet';
 
   return (
     <div>
@@ -1749,45 +1730,25 @@ const Table = () => {
           </table>
         )}
         {rows.length === 0 && !loadingState && (
-          <div className="empty-table-container">
-            <div>
-              <div className={darkMode ? 'warning-icon-container-dark' : 'warning-icon-container'}>
-                {darkMode ? <WarningDark /> : <Warning />}
-              </div>
-              <div
-                className="text-h3"
-                style={{ width: '400px', textAlign: 'center' }}
-                data-cy="do-not-have-records-text"
-              >
-                {emptyMainData}
-                <p className="empty-table-description mb-2">{emptyData}</p>
-              </div>
-              <div style={{ width: '130px', margin: '0px auto' }}>
-                <AddNewDataPopOver
-                  disabled={false}
-                  show={isAddNewDataMenuOpen}
-                  darkMode={darkMode}
-                  toggleAddNewDataMenu={toggleAddNewDataMenu}
-                  handleOnClickCreateNewRow={handleOnClickCreateNewRow}
-                  handleOnClickBulkUpdateData={handleOnClickBulkUpdateData}
-                  handleOnClickSeedData={handleOnClickSeedData}
-                  hideSeedDataOption={isSqlModeDisabled()}
-                >
-                  <span className="col-auto">
-                    <ButtonSolid
-                      variant={`${darkMode ? 'zBlack' : 'tertiary'}`}
-                      disabled={false}
-                      onClick={() => toggleAddNewDataMenu(true)}
-                      size="sm"
-                      className="px-1 pe-3 ps-2 gap-0"
-                    >
-                      <Plus fill="#697177" style={{ height: '16px' }} />
-                      Add new data
-                    </ButtonSolid>
-                  </span>
-                </AddNewDataPopOver>
-              </div>
-            </div>
+          <div className="tw-flex tw-h-full tw-items-center tw-justify-center">
+            {filterEnable ? (
+              <EmptyAndNoResultsState
+                variant="no-results"
+                action={<LinkButton onClick={() => setQueryFilters({})}>Clear filters</LinkButton>}
+              />
+            ) : (
+              <EmptyAndNoResultsState
+                variant="empty"
+                action={
+                  <AddDataMenu
+                    onAddRow={handleOnClickCreateNewRow}
+                    onBulkUpload={() => setIsBulkUploadDrawerOpen(true)}
+                    onSeedData={() => setIsSeedDataDrawerOpen(true)}
+                    hideSeedDataOption={isSqlModeDisabled()}
+                  />
+                }
+              />
+            )}
           </div>
         )}
 

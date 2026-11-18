@@ -17,6 +17,7 @@ The workspace's built-in database UI at `/:workspaceId/database`: a tables panel
 | `TablesPanel/openTabs.ts` | Pure tab rules (open, close, close others/all, reconcile, parse saved state) |
 | `TablesPanel/useOpenTabs.ts` | Tab state, `localStorage` save/restore, `?table=` link |
 | `TablesPanel/TableTabStrip.tsx`, `TabStripPopovers.tsx` | Strip, open-or-create picker, open-tabs menu |
+| `TablesPanel/TablePickerPopover.tsx` | Picker popover + create-table drawer around any trigger button: the strip's plus and the empty page's "Open a table" |
 | `Table/DataToolbar.tsx` | Presentational 48px bar: table name, filter chips (first two, rest in "+N more"), Filter/Sort slots, history, Add data slot |
 | `Table/dataToolbarFilters.ts` | Pure: `queryFilters` to chips (`toToolbarFilters`), visible/overflow split (`splitFilters`) |
 | `Conditions/ConditionPopover.tsx`, `ConditionRow.tsx` | Shared shell (title, add action, rows, Clear all / Cancel / Apply footer) and segmented condition row for the Filter and Sort popovers |
@@ -24,7 +25,7 @@ The workspace's built-in database UI at `/:workspaceId/database`: a tables panel
 | `Filter/index.jsx`, `Sort/index.jsx` | Trigger + Rocket Popover; edit a draft, Apply writes it to the store; the effects that build the query live here |
 | `Table/AddDataMenu.tsx` | "Add data" button + Rocket menu (row, bulk upload, seed SQL) |
 | `Table/Header.jsx` | Wires the toolbar to the store and context; still owns the create/edit/bulk/seed drawers |
-| `TooljetDatabasePage/index.jsx` | Layout, "No table open" state; sets `--tjdb-above-table: 48px` for the grid height |
+| `TooljetDatabasePage/index.jsx` | Layout, "No table open" state (Rocket `EmptyAndNoResultsState`, centred in the area under the strip); sets `--tjdb-above-table: 48px` for the grid height |
 | `TableActions/TableSchemaScope.tsx` | Row actions load their own table's schema, independent of the open table |
 | `_stores/tjdbStore.js` | zustand: environments, filters, sort, page |
 

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import cx from 'classnames';
 import Table from '../Table';
-import { Table as TableIcon } from 'lucide-react';
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/Rocket/Empty/Empty';
+import { Plus as PlusIcon } from 'lucide-react';
+import { Button } from '@/components/ui/Rocket/Button/Button';
+import { EmptyAndNoResultsState } from '@/components/ui/Rocket/EmptyAndNoResultsState/EmptyAndNoResultsState';
 import { TablesPanel } from '../TablesPanel/TablesPanel';
 import { TableTabStrip } from '../TablesPanel/TableTabStrip';
+import { TablePickerPopover } from '../TablesPanel/TablePickerPopover';
 import CreateTableDrawer from '../Drawers/CreateTableDrawer';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import Warning from '../Icons/warning.svg';
@@ -111,15 +113,26 @@ const TooljetDatabasePage = ({ totalTables }) => {
         {totalTables === 0 && !loadingState && <EmptyState />}
         {totalTables === 0 && loadingState && <LoadingState />}
         {totalTables > 0 && isEmpty(selectedTable) && (
-          <Empty data-cy="no-table-open">
-            <EmptyMedia variant="icon">
-              <TableIcon />
-            </EmptyMedia>
-            <EmptyHeader>
-              <EmptyTitle>No table open</EmptyTitle>
-              <EmptyDescription>Pick a table from the panel, or use + to open or create one.</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
+          // Page header (48px) and tab strip (48px) sit above; the state is centred in what is left.
+          <div className="tw-flex tw-h-[calc(100vh-96px)] tw-items-center tw-justify-center" data-cy="no-table-open">
+            <EmptyAndNoResultsState
+              variant="no-table-open"
+              action={
+                <TablePickerPopover
+                  trigger={
+                    <Button
+                      variant="secondary"
+                      size="medium"
+                      leadingVisual={<PlusIcon />}
+                      data-cy="open-a-table-button"
+                    >
+                      Open a table
+                    </Button>
+                  }
+                />
+              }
+            />
+          </div>
         )}
         {!isEmpty(selectedTable) && (
           <div className={cx('col')}>

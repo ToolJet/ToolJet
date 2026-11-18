@@ -3,10 +3,9 @@ import { Menu, PanelLeftOpen, Plus, Table } from 'lucide-react';
 import { Button } from '@/components/ui/Rocket/Button/Button';
 import { ClosableTabs } from '@/components/ui/Rocket/ClosableTabs/ClosableTabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Rocket/Popover/Popover';
-import { SCHEMA_ENV_TOOLTIP } from '../constants';
-import CreateTableDrawer from '../Drawers/CreateTableDrawer';
 import { useTooljetDatabaseContext, type TjdbTable } from '../TooljetDatabaseContext';
-import { OpenTabsList, TAB_STRIP_POPOVER_CLASS, TablePicker } from './TabStripPopovers';
+import { OpenTabsList, TAB_STRIP_POPOVER_CLASS } from './TabStripPopovers';
+import { TablePickerPopover } from './TablePickerPopover';
 
 export interface TableTabStripProps {
   /** While the tables panel is hidden, the strip carries the button that brings it back. */
@@ -24,21 +23,9 @@ function Divider() {
 
 // The open tables as tabs, above the grid: [expand panel] [tabs] | [open or create] ... [open tabs menu].
 export function TableTabStrip({ panelCollapsed, onExpandPanel }: TableTabStripProps) {
-  const {
-    tables,
-    openTabIds,
-    selectedTable,
-    openTable,
-    closeTab,
-    closeOtherTabs,
-    closeAllTabs,
-    canEditTjdb,
-    canEditSchema,
-    tablesLimitReached,
-  } = useTooljetDatabaseContext();
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const { tables, openTabIds, selectedTable, openTable, closeTab, closeOtherTabs, closeAllTabs } =
+    useTooljetDatabaseContext();
   const [tabsMenuOpen, setTabsMenuOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
 
   const known = tables as TjdbTable[];
   const openTables = openTabIds
@@ -85,8 +72,8 @@ export function TableTabStrip({ panelCollapsed, onExpandPanel }: TableTabStripPr
         onClose={closeTab}
       />
       <Divider />
-      <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
-        <PopoverTrigger asChild>
+      <TablePickerPopover
+        trigger={
           <Button
             variant="ghost"
             size="medium"
@@ -97,21 +84,8 @@ export function TableTabStrip({ panelCollapsed, onExpandPanel }: TableTabStripPr
           >
             <Plus />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent align="start" className={TAB_STRIP_POPOVER_CLASS}>
-          <TablePicker
-            tables={known}
-            selectedId={selectedTable.id}
-            onPick={pick(() => setPickerOpen(false))}
-            createDisabled={!canEditSchema || tablesLimitReached}
-            createTooltip={canEditTjdb && !canEditSchema ? SCHEMA_ENV_TOOLTIP : undefined}
-            onCreate={() => {
-              setPickerOpen(false);
-              setCreateOpen(true);
-            }}
-          />
-        </PopoverContent>
-      </Popover>
+        }
+      />
       <div className="tw-min-w-0 tw-flex-1" />
       <Popover open={tabsMenuOpen} onOpenChange={setTabsMenuOpen}>
         <PopoverTrigger asChild>
@@ -143,7 +117,6 @@ export function TableTabStrip({ panelCollapsed, onExpandPanel }: TableTabStripPr
           />
         </PopoverContent>
       </Popover>
-      <CreateTableDrawer isOpen={createOpen} onClose={() => setCreateOpen(false)} />
     </div>
   );
 }
