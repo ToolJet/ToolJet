@@ -71,6 +71,17 @@ describe('ensureCompatible', () => {
     expect(error).to.be.instanceOf(VersionMismatchError);
     expect(error!.message).to.include(`This ToolJet CLI (${CLI_VERSION}) is too old for ${url}, which needs 99.0.0`);
     expect(error!.message).to.include('npm i -g @tooljet/cli@latest');
+    expect(error!.message).to.include(`npm i -g ${url}/api/code-mode/cli/tooljet-cli.tgz`);
+  });
+
+  it('sends a user to the beta tag when the server needs a prerelease CLI', async () => {
+    // latest is the last stable release, older than any prerelease floor: it would downgrade the user and block again.
+    nock(url)
+      .get(COMPATIBILITY_PATH)
+      .reply(200, { ...compatible, minCliVersion: '99.0.0-beta.1' });
+    const error = await failure(ensureCompatible(url));
+    expect(error!.message).to.include('npm i -g @tooljet/cli@beta');
+    expect(error!.message).not.to.include('@tooljet/cli@latest');
   });
 
   it('asks for a ToolJet upgrade when the server speaks an older CLI API', async () => {

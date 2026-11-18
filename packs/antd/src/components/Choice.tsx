@@ -123,6 +123,13 @@ export const RadioGroup = (props: Record<string, unknown>) => {
   // A value no option offers is not kept while nothing shows picked; not while the options are empty or loading (a
   // query not yet run), so a default waits for them. Fires no event.
   const offered = value === '' || options.some((o) => o.value === key);
+  // PF-271: the host hands a bound number as text ('2'); once it names an option, expose that option's own value (2).
+  // One pass: the rewritten value is the option's own, so it matches. Fires no event.
+  const matched = value === '' ? undefined : options.find((o) => o.value === key);
+  React.useEffect(() => {
+    if (matched && matched.data !== value) setValue(matched.data as never);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(value), JSON.stringify(options)]);
   React.useEffect(() => {
     if (!offered && options.length > 0 && !loading) setValue('');
     // eslint-disable-next-line react-hooks/exhaustive-deps

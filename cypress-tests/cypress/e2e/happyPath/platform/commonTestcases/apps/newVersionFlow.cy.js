@@ -1,4 +1,5 @@
 import { fake } from "Fixtures/fake";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import { commonSelectors } from "Selectors/common";
 import { commonEeSelectors, versionModalSelector } from "Selectors/platform/eeCommon";
 import { versionSwitcherSelectors } from "Selectors/platform/version";
@@ -29,7 +30,7 @@ describe("New Version Creation Flow", () => {
 
   it("should verify complete draft and save version lifecycle", () => {
     // Step 1: Verify initial draft state (v1 as draft)
-    cy.get('[data-cy="query-manager-toggle-button"]').click();
+    closeQueryPanel();
 
     openVersionSwitcher();
     cy.get(versionModalSelector.versionName("v1")).should("be.visible");

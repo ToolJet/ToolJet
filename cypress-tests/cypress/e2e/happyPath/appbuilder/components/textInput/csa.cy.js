@@ -8,6 +8,7 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
 import { addCSA } from "Support/utils/appBuilder/csa";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec run.
 describe('Text Input — csa facet', { testIsolation: false }, () => {
@@ -18,7 +19,7 @@ describe('Text Input — csa facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-TICsa-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget("Text Input", 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     it('should verify all the CSA from the text input (On click)', () => {

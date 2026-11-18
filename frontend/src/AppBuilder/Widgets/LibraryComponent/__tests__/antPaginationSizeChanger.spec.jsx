@@ -51,7 +51,7 @@ const mount = async (props) => {
 
 describe('Ant Design Pagination: the page-size list', () => {
   test('[PackComponent-PAGINATION-001] opens in the popup layer, outside the widget, and takes a pick', async () => {
-    // A standard size, so the list holds only Ant's own options: the default (1) is added to the list as "1 / page".
+    // Pin a standard page size so this test does not depend on the pack default.
     const pagination = await mount({ showSizeChanger: true, total: 200, pageSize: 10 });
 
     act(() => {
@@ -65,7 +65,7 @@ describe('Ant Design Pagination: the page-size list', () => {
     expect(options.map((option) => option.textContent)).toEqual(['10 / page', '20 / page', '50 / page', '100 / page']);
 
     act(() => {
-      fireEvent.click(options[2]);
+      fireEvent.click(options.find((option) => option.textContent === '50 / page'));
     });
     expect(pagination.exposed.pageSize).toBe(50);
   });
