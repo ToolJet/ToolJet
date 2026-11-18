@@ -7,11 +7,12 @@ const PERMISSION_NAME = 'Workflow folders';
 // Copied as literals: the group-permission constants can change after this ships.
 // Builders get the create/delete flags only, never a folder granular permission: an is_all "Edit folder"
 // row would let every builder edit every folder on a paid plan. Admins grant builders folder access
-// through custom groups. On a free plan the rows are never read (hardcoded role), so this changes nothing there.
+// through custom groups. End-users get nothing: their app permission already decides which workflows they see,
+// and admins grant workflow-folder access through custom groups. On a free plan the rows are never read
+// (hardcoded role), so this changes nothing there.
 const SEEDS = [
   { roles: ['admin'], setCreateDelete: true, folderPermission: { canEditFolder: true, canViewApps: false } },
   { roles: ['builder'], setCreateDelete: true, folderPermission: null },
-  { roles: ['end-user'], setCreateDelete: false, folderPermission: { canEditFolder: false, canViewApps: true } },
 ];
 
 /**
@@ -20,7 +21,7 @@ const SEEDS = [
  * - admin: workflow_folder_create/delete = true and "Edit folder" on all workflow folders
  * - builder: workflow_folder_create/delete = true only. No granular permission, so on a paid plan a builder
  *   manages the folders they create and gets more only through a custom group.
- * - end-user: "View" on all workflow folders
+ * - end-user: nothing. Access to workflow folders comes only through custom groups.
  *
  * No licence check. On a restricted plan or with custom groups off, EE resolves permissions from a
  * hardcoded role and never reads these rows. Custom groups are never touched.
