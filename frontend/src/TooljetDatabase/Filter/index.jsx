@@ -15,6 +15,9 @@ import { useTjdbActions } from '../_stores/tjdbStore';
 const hasAnyValue = ({ column, operator, value }) => !isEmpty(column) || !isEmpty(operator) || !isEmpty(value);
 const isComplete = ({ column, operator, value }) => !isEmpty(column) && !isEmpty(operator) && !isEmpty(value);
 
+// The empty Filter is one blank row, never an empty list.
+const blankDraft = () => ({ 0: {} });
+
 const generateMessage = (operator) => {
   const operatorMessage = {
     gte: 'Greater than or equal',
@@ -43,7 +46,7 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery,
   const openWith = () => {
     // A fresh row when nothing is applied, else only the rows that have something in them.
     const rows = Object.fromEntries(Object.entries(filters).filter(([, filter]) => hasAnyValue(filter)));
-    setDraft(isEmpty(rows) ? { 0: {} } : deepClone(rows));
+    setDraft(isEmpty(rows) ? blankDraft() : deepClone(rows));
   };
 
   const handleOpenChange = (open) => {
@@ -122,7 +125,7 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery,
         addLabel="Add filter"
         onAdd={addRow}
         clearDisabled={filledRows.length === 0}
-        onClearAll={() => setDraft({})}
+        onClearAll={() => setDraft(blankDraft())}
         onCancel={() => setShow(false)}
         applyDisabled={!canApply}
         onApply={apply}
@@ -133,7 +136,12 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery,
             condition={condition}
             columns={columns}
             onChange={(patch) => updateRow(key, patch)}
-            onRemove={() => setDraft((previous) => omit(previous, key))}
+            onRemove={() =>
+              setDraft((previous) => {
+                const rows = omit(previous, key);
+                return isEmpty(rows) ? blankDraft() : rows;
+              })
+            }
             data-cy={`filter-row-${key}`}
           />
         ))}
