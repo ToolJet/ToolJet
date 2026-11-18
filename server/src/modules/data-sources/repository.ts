@@ -342,9 +342,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
         organizationId,
         scope: DataSourceScopes.GLOBAL,
       });
-      // A data source that already has an owner (e.g. one created via DataSourcesUtilService.create
-      // and later downgraded/upgraded in scope) keeps it; only a never-owned row is attributed to the
-      // converting user.
+      // An existing owner is kept; only an unowned data source gets the converting user.
       await manager
         .createQueryBuilder()
         .update(DataSource)

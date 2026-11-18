@@ -1,13 +1,7 @@
-// migration-lint: allow-destructive pinned_items and its constraints are unreleased (created by
-// 1791000000000-CreateDashboardV2Tables on this branch, never shipped); the foreign key on the new
-// nullable data_sources.created_by column is a new column with no existing values to violate it.
+// migration-lint: allow-destructive the new foreign keys and unique constraint are on new, empty
+// columns; the replaced pinned_items check only widens it to a third column, so every existing row passes.
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-/**
- * Schema for the data sources dashboard: who created a data source, per-user view/edit activity
- * (mirrors user_app_activity), and pinning a data source or a data-source folder (extends
- * pinned_items, which already pins apps and app folders).
- */
 export class AddDataSourceDashboardSchema1793300000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE data_sources ADD COLUMN IF NOT EXISTS created_by uuid`);

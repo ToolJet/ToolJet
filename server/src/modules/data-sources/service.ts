@@ -6,7 +6,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { DataSourcesRepository } from './repository';
-import { DataSourcesUtilService, redactEncryptedOptions } from './util.service';
+import { DataSourcesUtilService } from './util.service';
+import { redactEncryptedOptions } from './audit-redaction';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 import { User } from '@entities/user.entity';
 import { decode } from 'js-base64';
