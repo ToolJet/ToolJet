@@ -234,7 +234,9 @@ const sidebars = {
           "items": [
             "build-with-ai/react-builder/overview",
             "build-with-ai/react-builder/create-app",
-            "build-with-ai/react-builder/editor"
+            "build-with-ai/react-builder/editor",
+            "build-with-ai/react-builder/local-development",
+            "build-with-ai/react-builder/cli-reference"
           ]
         },
         "build-with-ai/privacy"
