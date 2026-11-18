@@ -35,6 +35,8 @@ interface LibrarySlotCanvasProps {
   /** Its component fits its content (Dynamic height in a released app): the drop area takes its components' height. */
   fitContent?: boolean;
   currentLayout?: string;
+  /** Width to lay out at while the drop area is hidden (a closed tab or panel), so its components mount at load. */
+  fallbackWidth?: number;
 }
 
 type Box = { left: number; top: number; width: number; height: number };
@@ -172,9 +174,15 @@ export const fittedSlotHeight = (
 // `<componentId>-<slotName>`, like a Tabs tab. Its size comes from the bundle's layout (the slot it is
 // projected into), so the width the grid divides into columns is measured, not derived from the widget. When the
 // component fits its content it is as tall as its components instead, and the bundle's layout follows it.
-const LibrarySlotCanvas = ({ id, darkMode, fitContent = false, currentLayout = 'desktop' }: LibrarySlotCanvasProps) => {
+const LibrarySlotCanvas = ({
+  id,
+  darkMode,
+  fitContent = false,
+  currentLayout = 'desktop',
+  fallbackWidth,
+}: LibrarySlotCanvasProps) => {
   const ref = useRef<HTMLDivElement>(null);
-  const width = useMeasuredWidth(ref);
+  const width = useMeasuredWidth(ref, fallbackWidth);
   const landingBox = usePopupLandingBox(ref);
   const moduleId: string = useModuleId();
   const { contextPath } = useSubcontainerContext();
