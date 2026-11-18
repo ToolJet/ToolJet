@@ -809,6 +809,8 @@ export const TreeSelect = (props: Record<string, unknown>) => {
         <WithPopupTheme>
           {(popup) => (
             <AntTreeSelect
+              // Ant reads treeDefaultExpandAll only on mount, so turning it off later kept every group open (QA PF-082).
+              key={treeDefaultExpandAll ? 'expand-all' : 'collapsed'}
               id={fieldId}
               style={{ width: '100%' }}
               treeData={tree}
