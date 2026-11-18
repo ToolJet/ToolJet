@@ -25,24 +25,27 @@ const mountOtp = async (value) => {
   const exposed = {};
   const events = [];
   const actions = new Map();
-  render(
-    <InlineLibraryComponent
-      bundleUrl="pack.js"
-      cssUrl="pack.css"
-      cacheKey="ant-otp-overwrite"
-      componentName="OTP"
-      componentProps={{ value, length: 6 }}
-      componentStyles={{}}
-      renderSlot={() => null}
-      setExposedVariable={(key, v) => {
-        exposed[key] = v;
-      }}
-      fireEvent={(event) => events.push(event)}
-      actions={actions}
-      host={makeHost('OTP', { validation: 'text' })}
-      dataCy="ant-otp"
-    />
-  );
+  // Flush the mocked module/CSS loads and their React commits before waiting on shadow-root inputs.
+  await act(async () => {
+    render(
+      <InlineLibraryComponent
+        bundleUrl="pack.js"
+        cssUrl="pack.css"
+        cacheKey="ant-otp-overwrite"
+        componentName="OTP"
+        componentProps={{ value, length: 6 }}
+        componentStyles={{}}
+        renderSlot={() => null}
+        setExposedVariable={(key, v) => {
+          exposed[key] = v;
+        }}
+        fireEvent={(event) => events.push(event)}
+        actions={actions}
+        host={makeHost('OTP', { validation: 'text' })}
+        dataCy="ant-otp"
+      />
+    );
+  });
   const root = () => document.querySelector('[data-cy="ant-otp"]').shadowRoot;
   const boxes = () => [...root().querySelectorAll('.ant-otp-input')];
   await waitFor(() =>
