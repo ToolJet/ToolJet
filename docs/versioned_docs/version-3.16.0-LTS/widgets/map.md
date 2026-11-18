@@ -6,7 +6,7 @@ title: Map
 The **Map** component enables users to display a map on the app. It can be used to display or choose a single location or multiple locations on the map. The Map component can be used to display the location of a business, a store, or a restaurant. It can also be used to display the location of a user on the map. It allows users to interact with the map interface and pick specific points of interest.
 
 :::tip Using Self-hosted
-If you are utilizing the self-hosted version of ToolJet, it is necessary to configure the Google Maps API key as an environment variable. Please refer to the [environment variable setup documentation](/docs/setup/env-vars#google-maps-api).
+If you are utilizing the self-hosted version of ToolJet, it is necessary to configure the Google Maps API key as an environment variable. Please refer to the [environment variable setup documentation](/docs/3.16.0-LTS/setup/env-vars#google-maps-api).
 :::
 
 <img className="screenshot-full" src="/img/widgets/map/map2.png" alt="ToolJet - Component Reference - Map" />
@@ -31,7 +31,7 @@ If you are utilizing the self-hosted version of ToolJet, it is necessary to conf
 | On polygon click                                 | Triggers when the user clicks on the polygon on the map.                                            |
 
 :::info
-For detailed information about all the available **Actions**, please refer to the [Action Reference](/docs/actions/run-query) documentation.
+For detailed information about all the available **Actions**, please refer to the [Action Reference](/docs/3.16.0-LTS/actions/run-query) documentation.
 :::
 
 ## Component Specific Actions (CSA)
@@ -83,8 +83,8 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
 
 :::info
-The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** feature enabled.
 :::

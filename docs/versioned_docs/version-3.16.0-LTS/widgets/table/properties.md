@@ -44,15 +44,15 @@ Example - Passing a query data:
 
 ## Columns
 
-Go to the **[Table Columns](/docs/widgets/table/table-columns)** guide to know more about supported column types.
+Go to the **[Table Columns](/docs/3.16.0-LTS/widgets/table/table-columns)** guide to know more about supported column types.
 
 **Lock column schema**: When this toggle is on, the configured columns are kept as they are: changes in the data no longer add or remove columns. It's off by default, and only shown when **Use dynamic column** is off.
-To stop columns from being added or removed when the shape of the data changes, turn on **[Lock column schema](/docs/widgets/table/table-columns#lock-column-schema)**.
+To stop columns from being added or removed when the shape of the data changes, turn on **[Lock column schema](/docs/3.16.0-LTS/widgets/table/table-columns#lock-column-schema)**.
 
 ## Action Buttons (Deprecated)
 
 :::warning
-**Action Buttons are deprecated** and may be removed in an upcoming release. It is recommended to use the **[Button column type](/docs/widgets/table/table-columns#button)** instead, which supports multiple button columns, icons, tooltips, loading states, and conditional visibility per row.
+**Action Buttons are deprecated** and may be removed in an upcoming release. It is recommended to use the **[Button column type](/docs/3.16.0-LTS/widgets/table/table-columns#button)** instead, which supports multiple button columns, icons, tooltips, loading states, and conditional visibility per row.
 :::
 
 <img className="screenshot-full img-full" src="/img/widgets/table/action-v3.png" alt="ToolJet - Component Reference - Actions" />
@@ -183,7 +183,7 @@ When Server-side pagination is enabled, you'll be able to set the following addi
 - **Number of rows per page**: Set the number of records fetched per page from the server. When both this and **Total records server side** are provided, the Table calculates and displays the total page count and enables **First** and **Last** page navigation.
 
 :::tip
-Check this how-to guide to learn more about **[server-side pagination](/docs/widgets/table/serverside-operations/pagination)**.
+Check this how-to guide to learn more about **[server-side pagination](/docs/3.16.0-LTS/widgets/table/serverside-operations/pagination)**.
 :::
 
 ## Additional Actions
@@ -251,10 +251,10 @@ For **Custom Max Row Height**, the minimum value depends on the Cell height sett
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
 
 :::info
-The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** feature enabled.
 :::
 
 :::info

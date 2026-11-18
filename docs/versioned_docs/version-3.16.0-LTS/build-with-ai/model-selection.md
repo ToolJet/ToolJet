@@ -6,7 +6,7 @@ title: Selecting an AI Model
 ToolJet AI lets you control which LLM powers your AI chats. Depending on your workspace's AI setup, you either pick the provider and model for each chat yourself, or your admin sets them for everyone.
 
 :::info
-Picking a provider and model from the AI chat is available for workspaces using **ToolJet Managed AI Server**, on both ToolJet Cloud and Self-hosted deployments. To use any other model, an admin can configure **OpenRouter** as the LLM provider under [Bring Your Own Key (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key), available on Enterprise plans for both ToolJet Cloud and Self-hosted deployments.
+Picking a provider and model from the AI chat is available for workspaces using **ToolJet Managed AI Server**, on both ToolJet Cloud and Self-hosted deployments. To use any other model, an admin can configure **OpenRouter** as the LLM provider under [Bring Your Own Key (BYOK)](/docs/3.16.0-LTS/setup/tooljet-ai/bring-your-own-key), available on Enterprise plans for both ToolJet Cloud and Self-hosted deployments.
 :::
 
 ## Switching the AI Provider
@@ -32,7 +32,7 @@ To use a model that isn't in this list, see [Selecting an Exact Model](#selectin
 - You can't change the model while the chat is generating; the picker is disabled until the response finishes. A build running in another chat doesn't block switching in this one.
 
 :::info
-If your admin has configured [BYOK](/docs/setup/tooljet-ai/bring-your-own-key) or [ToolJet Enterprise AI](/docs/setup/tooljet-ai/tj-ai-enterprise) with a provider other than **ToolJet managed**, the admin's provider is used and the model picker is not shown.
+If your admin has configured [BYOK](/docs/3.16.0-LTS/setup/tooljet-ai/bring-your-own-key) or [ToolJet Enterprise AI](/docs/3.16.0-LTS/setup/tooljet-ai/tj-ai-enterprise) with a provider other than **ToolJet managed**, the admin's provider is used and the model picker is not shown.
 :::
 
 ## Selecting an Exact Model
@@ -53,10 +53,10 @@ This is configured by an admin for the whole workspace (ToolJet Cloud) or instan
 4. Enter your OpenRouter API key.
 5. Click **Save changes**.
 
-See [Bring Your Own Key (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key) for the full BYOK setup guide.
+See [Bring Your Own Key (BYOK)](/docs/3.16.0-LTS/setup/tooljet-ai/bring-your-own-key) for the full BYOK setup guide.
 
 ## Things to Keep in Mind
 
-- Different providers and models can consume a different number of credits for the same task. See [Understanding AI Credits](/docs/build-with-ai/ai-credits) for how credit consumption is calculated.
+- Different providers and models can consume a different number of credits for the same task. See [Understanding AI Credits](/docs/3.16.0-LTS/build-with-ai/ai-credits) for how credit consumption is calculated.
 - Non-default providers and models haven't yet been individually tuned to match the output quality of the default, so you may notice some difference in results when using them.
 - OpenRouter offers a large number of models. ToolJet lists only the ones that meet the requirements above, but not all of them have been tested with ToolJet. If a model you pick behaves unexpectedly, try switching to a different one.

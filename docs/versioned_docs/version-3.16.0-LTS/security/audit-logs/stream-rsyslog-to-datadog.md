@@ -18,7 +18,7 @@ When to stream ToolJet audit logs to Datadog:
 
 Before setting up the Datadog integration, ensure you have:
 
-1. **ToolJet with rsyslog enabled** - Follow the **[Setup Rsyslog guide](/docs/security/audit-logs/setup-rsyslog)** to enable log file generation
+1. **ToolJet with rsyslog enabled** - Follow the **[Setup Rsyslog guide](/docs/3.16.0-LTS/security/audit-logs/setup-rsyslog)** to enable log file generation
 2. **Datadog account** - Sign up at [https://www.datadoghq.com/](https://www.datadoghq.com/)
 3. **Datadog API key** - Obtain from [Datadog Organization Settings](https://app.datadoghq.com/organization-settings/api-keys)
 4. **Docker Compose setup** - This guide uses Docker Compose for deployment
@@ -364,7 +364,7 @@ ToolJet audit logs contain the following structured fields:
 
 ## Related Resources
 
-- **[Setup Rsyslog](/docs/security/audit-logs/setup-rsyslog)** - Configure audit log generation
+- **[Setup Rsyslog](/docs/3.16.0-LTS/security/audit-logs/setup-rsyslog)** - Configure audit log generation
 - **[Datadog Documentation](https://docs.datadoghq.com/)** - Official Datadog guides
 - **[Datadog Agent Configuration](https://docs.datadoghq.com/agent/guide/agent-configuration-files/)** - Detailed Agent setup
 - **[Log Collection](https://docs.datadoghq.com/logs/log_collection/)** - Datadog log collection guide

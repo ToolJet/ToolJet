@@ -12,11 +12,11 @@ ToolJet AI can generate complete, fully-configured queries directly from the AI 
 To generate a query:
 1. Add a query on the query panel.
 2. Open the AI chat in the App Builder.
-3. Type a prompt describing the query you need by [referencing the specific query](/docs/build-with-ai/referencing-app-resources). <br/>
+3. Type a prompt describing the query you need by [referencing the specific query](/docs/3.16.0-LTS/build-with-ai/referencing-app-resources). <br/>
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/gen-query.png" alt="tooljet generate query" />
 4. The AI generates the query with all the parameters and required fields.
 
-You can use [@mention in AI Chat](/docs/build-with-ai/referencing-app-resources) to reference an existing query and ask the AI to modify it.
+You can use [@mention in AI Chat](/docs/3.16.0-LTS/build-with-ai/referencing-app-resources) to reference an existing query and ask the AI to modify it.
 
 ## Generating Code
 

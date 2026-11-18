@@ -9,7 +9,7 @@ ToolJet has the capability to establish a connection with Google Sheet for both 
 
 If you decide to self-host ToolJet, there are a few additional steps you need to take:
 
-1. Proceed with the setup steps provided in the [Google OAuth 2.0 guide](/docs/setup/env-vars#google-oauth) to configure the necessary settings.
+1. Proceed with the setup steps provided in the [Google OAuth 2.0 guide](/docs/3.16.0-LTS/setup/env-vars#google-oauth) to configure the necessary settings.
 2. Assign the corresponding values obtained from the previous step to the following environment variables:
    - **GOOGLE_CLIENT_ID**
    - **GOOGLE_CLIENT_SECRET**
@@ -18,7 +18,7 @@ If you decide to self-host ToolJet, there are a few additional steps you need to
 
 ## Connection
 
-To establish a connection with the Google Sheet data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the Google Sheet data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/3.16.0-LTS/data-sources/overview)** page through the ToolJet dashboard.
 
 ### Authentication Types
 

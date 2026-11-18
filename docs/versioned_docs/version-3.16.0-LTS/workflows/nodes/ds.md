@@ -151,7 +151,7 @@ At minimum, fill the following fields:
 - **Subject**: Email subject (e.g., Health Check Alert!)
 - **HTML/Text**: The email content you want to send
 
-To learn more about configuring an SMTP data source, refer [this documentation](/docs/data-sources/smtp).
+To learn more about configuring an SMTP data source, refer [this documentation](/docs/3.16.0-LTS/data-sources/smtp).
 
 **Output** :  
 After running the workflow, we get the following email:

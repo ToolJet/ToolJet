@@ -3,7 +3,7 @@ id: entra-id
 title: Microsoft Entra ID
 ---
 
-Microsoft Entra ID can be configured as the Identity Provider for SAML, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Azure Developer Portal. Refer to the [SAML Setup guide](/docs/user-management/sso/saml/setup) to configure SAML in your application.
+Microsoft Entra ID can be configured as the Identity Provider for SAML, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Azure Developer Portal. Refer to the [SAML Setup guide](/docs/3.16.0-LTS/user-management/sso/saml/setup) to configure SAML in your application.
 
 ## Generating Metadata
 

@@ -7,7 +7,7 @@ ToolJet can establish connections with GraphQL endpoints, enabling the execution
 
 ## Connection
 
-To establish a connection with the GraphQL global datasource, you can either click on the **+ Add new datasource** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the GraphQL global datasource, you can either click on the **+ Add new datasource** button located on the query panel or navigate to the **[Data Sources](/docs/3.16.0-LTS/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to a GraphQL datasource.
 
@@ -81,7 +81,7 @@ The method of authentication to use with GraphQL requests.
 ```
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/3.16.0-LTS/app-builder/custom-code/transform-data)
 :::
 
 ## Metadata

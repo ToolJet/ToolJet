@@ -7,7 +7,7 @@ title: Custom Groups
 
 ToolJet allows you to create custom groups to manage permissions, access, and users effectively. Each custom group can be configured with a specific set of permissions and can include only the users who require those permissions. This helps maintain precise control over what users can access and modify within your workspace.
 
-For example, if you have apps built for two teams, HR and Sales, and you want team members to only have access to the apps that are relevant to their team, then you can create two custom groups named HR and Sales, and then select the desired apps by configuring the **[granular access permissions](/docs/user-management/role-based-access/access-control#granular-access-control)**.
+For example, if you have apps built for two teams, HR and Sales, and you want team members to only have access to the apps that are relevant to their team, then you can create two custom groups named HR and Sales, and then select the desired apps by configuring the **[granular access permissions](/docs/3.16.0-LTS/user-management/role-based-access/access-control#granular-access-control)**.
 
 ## Creating Custom Groups
 
@@ -19,7 +19,7 @@ Role Required: **Admin** <br/>
 3. Click **+ Create new group**.
 4. Enter a name for the group and click **Create Group**.
 
-Refer to the **[Access Control](/docs/user-management/role-based-access/access-control)** guide to configure permissions.
+Refer to the **[Access Control](/docs/3.16.0-LTS/user-management/role-based-access/access-control)** guide to configure permissions.
 
 <img className="screenshot-full" src="/img/user-management/rbac/custom-group/new-group.png" alt="Create Custom Group" />
 

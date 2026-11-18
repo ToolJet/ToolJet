@@ -64,7 +64,7 @@ In this example, we will demonstrate how to use custom parameters in a query by 
 
 3. **Execute the REST API query and observe the new row created in the ToolJetDB table.**
 
-**Note:** You can also use parameters in JavaScript queries. Learn more about [JS Query Parameter](/docs/data-sources/run-js/#parameters-in-run-javascript-code). 
+**Note:** You can also use parameters in JavaScript queries. Learn more about [JS Query Parameter](/docs/3.16.0-LTS/data-sources/run-js/#parameters-in-run-javascript-code). 
 
 <img className="screenshot-full img-full" src="/img/how-to/custom-parameters/param-4.png" alt="How to: use custom parameters" />
 

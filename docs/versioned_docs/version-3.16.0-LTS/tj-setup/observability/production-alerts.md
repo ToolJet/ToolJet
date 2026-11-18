@@ -40,7 +40,7 @@ These cover the ToolJet server itself.
 ToolJet executes queries against your connected datasources on the server, so API response time includes the time your datasource takes to reply. A latency breach is often a slow datasource rather than a problem with ToolJet itself.
 :::
 
-Monitor all incoming requests to the ToolJet server rather than a specific route. Both HTTP alerts can be captured at the load balancer or reverse proxy layer, or from ToolJet's [OpenTelemetry metrics](/docs/tj-setup/observability/observability-otel) where you have them enabled.
+Monitor all incoming requests to the ToolJet server rather than a specific route. Both HTTP alerts can be captured at the load balancer or reverse proxy layer, or from ToolJet's [OpenTelemetry metrics](/docs/3.16.0-LTS/tj-setup/observability/observability-otel) where you have them enabled.
 
 ## Database And Cache Alerts
 

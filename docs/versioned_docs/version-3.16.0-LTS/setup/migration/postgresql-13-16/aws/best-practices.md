@@ -27,7 +27,7 @@ slug: /setup/postgresql-13-16/aws/best-practices/
 
 - [AWS RDS PostgreSQL 16.9 Release Notes](https://docs.aws.amazon.com/AmazonRDS/latest/PostgreSQLReleaseNotes/)
 - [AWS RDS SSL/TLS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)
-- [ToolJet Environment Variables Documentation](https://docs.tooljet.com/docs/setup/env-vars/)
+- [ToolJet Environment Variables Documentation](https://docs.tooljet.com/docs/3.16.0-LTS/setup/env-vars/)
 - [Node.js TLS Configuration](https://nodejs.org/api/tls.html)
 
 :::note

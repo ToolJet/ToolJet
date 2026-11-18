@@ -8,7 +8,7 @@ sidebar_label: AMI
 You can effortlessly deploy Amazon Elastic Compute Cloud Service (EC2) by utilizing a **CloudFormation template**. This template will deploy all the services required to run ToolJet on AWS AMI instances.
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/setup/system-requirements).
+You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/3.16.0-LTS/setup/system-requirements).
 
 ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
 
@@ -37,7 +37,7 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
 1. Setup a PostgreSQL database and make sure that the database is accessible from the EC2 instance.
 2. Login to your AWS management console and go to the EC2 management page.
 3. Under the **Images** section, click on the **AMIs** button.
-4. Find the [ToolJet version](/docs/setup/choose-your-tooljet) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_vX.X.X-lts.ubuntu_jammy` in the search bar.
+4. Find the [ToolJet version](/docs/3.16.0-LTS/setup/choose-your-tooljet) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_vX.X.X-lts.ubuntu_jammy` in the search bar.
 
    :::info AMI Region
    ToolJet AMIs are published in the **us-west-1 (N. California)** region. If you want to deploy in a different region, you can copy the AMI to your preferred region using one of the methods below.
@@ -156,7 +156,7 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
 :::info
-For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](/docs/setup/workflow-temporal-to-bullmq-migration/).
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](/docs/3.16.0-LTS/setup/workflow-temporal-to-bullmq-migration/).
 :::
 
 ### Enabling Workflow Scheduling
@@ -193,7 +193,7 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 
 **Note**: After updating the `.env` file, restart the server using `./setup_app`.
 
-**For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).**
+**For additional environment variables, refer to our [environment variables documentation](/docs/3.16.0-LTS/setup/env-vars).**
 
 ## Upgrading to the Latest LTS Version
 
@@ -219,7 +219,7 @@ Ensure both databases are included in your backup before proceeding with the upg
 :::
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
-- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](/docs/setup/upgrade-to-v3/).
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](/docs/3.16.0-LTS/setup/upgrade-to-v3/).
 
 ## Upgrade Steps
 

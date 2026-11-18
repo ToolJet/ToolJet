@@ -54,7 +54,7 @@ You can use the ToolJet Slack App to quickly set up and test Slack integration. 
 On self-hosted ToolJet, you can store your Slack app's credentials in environment variables instead of in the data source.
 
 1. Create a Slack app as described in steps 3–7 of [Custom Slack App](#custom-slack-app), using the **Redirect URI** shown on the Slack data source configuration page.
-2. Set `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET` to the app's Client ID and Client Secret. See [Environment Variables](/docs/setup/env-vars#slack).
+2. Set `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET` to the app's Client ID and Client Secret. See [Environment Variables](/docs/3.16.0-LTS/setup/env-vars#slack).
 3. Add a new Slack data source, select **Use environment variables** from the **Slack app** dropdown, and click **Connect to Slack**.
 4. After authorization, click **Save data source** in ToolJet.
 

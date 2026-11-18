@@ -41,4 +41,4 @@ kubectl exec -it deployment/tooljet -n tooljet -- \
   psql "postgresql://username:password@your-server.postgres.database.azure.com:5432/database?sslmode=require"
 ```
 
-**Reference**: [ToolJet Kubernetes AKS Setup Documentation](https://docs.tooljet.com/docs/setup/kubernetes-aks)
+**Reference**: [ToolJet Kubernetes AKS Setup Documentation](https://docs.tooljet.com/docs/3.16.0-LTS/setup/kubernetes-aks)

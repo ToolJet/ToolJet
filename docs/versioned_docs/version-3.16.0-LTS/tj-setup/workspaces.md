@@ -6,7 +6,7 @@ title: Workspaces
 
 Workspaces are collaborative environments that enable teams to build, customize, and deploy applications, as well as manage data, workflows, and permissions. It helps you organize your organization's apps based on hierarchy or departments, making them easier to manage. For example, if your organization has departments, you can create separate workspaces for each to isolate apps or limit access to particular set of users or developers.
 
-Workspace contains applications, data sources, users (admins, developers, or builders, end users), [access and permission ](/docs/user-management/role-based-access/access-control)settings, and more. You can also set different [login configurations](/docs/user-management/authentication/self-hosted/overview) for each workspace. You can have multiple workspaces within an instance.
+Workspace contains applications, data sources, users (admins, developers, or builders, end users), [access and permission ](/docs/3.16.0-LTS/user-management/role-based-access/access-control)settings, and more. You can also set different [login configurations](/docs/3.16.0-LTS/user-management/authentication/self-hosted/overview) for each workspace. You can have multiple workspaces within an instance.
 
 ## Workspace Creation
 
@@ -42,7 +42,7 @@ To switch between the workspaces,
 ## Archiving Workspaces
 **Role required** - Super Admin
 
--   This feature is available only for self-hosted users, and only [Super Admin](/docs/user-management/role-based-access/super-admin) can archive workspaces. A Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance
+-   This feature is available only for self-hosted users, and only [Super Admin](/docs/3.16.0-LTS/user-management/role-based-access/super-admin) can archive workspaces. A Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance
 -   To archive a workspace, at least one active workspace must exist in the instance.
 
 -   **Impact**
@@ -89,7 +89,7 @@ The default workspace cannot be archived. Please set a different workspace as th
 
 ## Workspace Admin
 
--   A Workspace has a three predefined roles, Admins, Builders and Endusers with predefined permissions. Checkout the [users and groups](/docs/user-management/role-based-access/user-roles) docs for more details.
+-   A Workspace has a three predefined roles, Admins, Builders and Endusers with predefined permissions. Checkout the [users and groups](/docs/3.16.0-LTS/user-management/role-based-access/user-roles) docs for more details.
 -   The user who creates a workspace is automatically assigned as its **Admin**.
 -   An **Admin** can:
     -   Manage users, groups, data and apps within each workspace.
@@ -111,7 +111,7 @@ Admin user has access to all the permission at workspace level, while an end use
 
 <summary> Can applications and workspace settings be shared between workspaces?</summary>
 
-**No**, applications and workspace settings cannot be shared directly between workspaces. Each workspace operates independently, maintaining its own applications and configurations. However, you can **export an application** from one workspace and **import it** into another. For more details, refer to the [Import and Export Applications](/docs/development-lifecycle/import-export/importing-exporting-applications) documentation.
+**No**, applications and workspace settings cannot be shared directly between workspaces. Each workspace operates independently, maintaining its own applications and configurations. However, you can **export an application** from one workspace and **import it** into another. For more details, refer to the [Import and Export Applications](/docs/3.16.0-LTS/development-lifecycle/import-export/importing-exporting-applications) documentation.
 
 </details>
 
@@ -119,7 +119,7 @@ Admin user has access to all the permission at workspace level, while an end use
     <summary>
 Do users have access to all workspaces by default?
     </summary>
-**No**, users need to be **invited** to a specific workspace to access the apps and data within that workspace. Refer to [invite users](/docs/user-management/role-based-access/user-roles) documentation for more details
+**No**, users need to be **invited** to a specific workspace to access the apps and data within that workspace. Refer to [invite users](/docs/3.16.0-LTS/user-management/role-based-access/user-roles) documentation for more details
 
 </details>
 

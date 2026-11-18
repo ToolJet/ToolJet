@@ -20,12 +20,12 @@ You can access this feature by selecting **Learn** from the dropdown on the AI c
 
 ### Examples
 
-1. Custom Schema in [Form](/docs/widgets/form/) component: <br/>
+1. Custom Schema in [Form](/docs/3.16.0-LTS/widgets/form/) component: <br/>
     **Prompt**: Can you create a custom schema for a Form component with two input fields for name, phone number, and a dropdown for gender? <br/>
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/tooljet-ai/learn-with-ai/form.png" alt="tooljet ai doc assistant" />
-2. Dynamic columns in [Table](/docs/widgets/table/) component: <br/>
+2. Dynamic columns in [Table](/docs/3.16.0-LTS/widgets/table/) component: <br/>
     **Prompt**: Can you explain dynamic columns in the Table component? <br/>
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/tooljet-ai/learn-with-ai/table.png" alt="tooljet ai doc assistant" />
- 3. Plotly JSON in [Chart](/docs/widgets/chart/) component: <br/>
+ 3. Plotly JSON in [Chart](/docs/3.16.0-LTS/widgets/chart/) component: <br/>
     **Prompt**: Can you help me with the structure of the Plotly JSON that I can pass into Chart components? <br/>
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/tooljet-ai/learn-with-ai/chart.png" alt="tooljet ai doc assistant" />

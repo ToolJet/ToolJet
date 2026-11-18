@@ -18,7 +18,7 @@ With ToolJet’s **fx** support, you can achieve this in the Disabled property o
 
 This expression disables the **Button** when the **Form** is invalid. No manual toggling needed. Similarly, you could use the same approach to update other properties such as visibility, background color, font size etc. for different components. 
 
-If you are new to ToolJet and want to learn how to access component properties, check out [this guide](/docs/app-builder/building-ui/component-state#available-component-states).
+If you are new to ToolJet and want to learn how to access component properties, check out [this guide](/docs/3.16.0-LTS/app-builder/building-ui/component-state#available-component-states).
 
 ## Use Cases
 

@@ -3,7 +3,7 @@ id: unset-page-variable
 title: Unset page variable
 ---
 
-Use this action to clear a variable that was created using the [Set Page Variable](/docs/actions/set-page-variable) action.
+Use this action to clear a variable that was created using the [Set Page Variable](/docs/3.16.0-LTS/actions/set-page-variable) action.
 
 ## Configuration
 
@@ -23,5 +23,5 @@ await actions.unsetPageVariable('<variableName>');
 `variableName` is the key of the variable that was provided while creating the variable.
 
 :::info
-For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/3.16.0-LTS/actions/run-actions-from-runjs/).
 :::

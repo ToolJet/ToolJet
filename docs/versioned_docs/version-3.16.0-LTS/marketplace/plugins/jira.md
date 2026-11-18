@@ -8,7 +8,7 @@ title: Jira
 ToolJet allows you to connect to your Jira instance to perform various operations such as managing issues, users, worklogs, and boards.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 <div style={{textAlign: 'center'}}>
@@ -17,7 +17,7 @@ Before following this guide, it is assumed that you have already completed the p
 
 ## Connection
 
-To connect to a Jira data source in ToolJet, you can either click the **+Add new data source** button on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page in the ToolJet dashboard.
+To connect to a Jira data source in ToolJet, you can either click the **+Add new data source** button on the query panel or navigate to the **[Data Sources](/docs/3.16.0-LTS/data-sources/overview)** page in the ToolJet dashboard.
 
 To connect to your Jira instance, the following credentials are required:
 
@@ -39,7 +39,7 @@ You can generate a personal access token from your Jira account **Manage account
 2. Choose the resource and operation you want to perform on your Jira instance.
 
 :::tip
-Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/app-builder/custom-code/transform-data)**
+Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/3.16.0-LTS/app-builder/custom-code/transform-data)**
 :::
 
 ## Supported Resources and Operations

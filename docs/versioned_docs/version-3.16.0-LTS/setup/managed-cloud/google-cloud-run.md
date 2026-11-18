@@ -113,7 +113,7 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
    :::
 
 :::info Note on ToolJet Database
-ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [here](/docs/3.16.0-LTS/tooljet-db/tooljet-database).
 :::
 
 5. **Please go to the connection tab. Under the Cloud SQL instance please select the PostgreSQL database which you have set-up.**
@@ -128,7 +128,7 @@ ToolJet Database is a built-in feature that allows you to build apps faster and 
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
 :::info
-For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](/docs/setup/workflow-temporal-to-bullmq-migration/).
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](/docs/3.16.0-LTS/setup/workflow-temporal-to-bullmq-migration/).
 :::
 
 ### Enabling Workflow Scheduling
@@ -163,7 +163,7 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 - `REDIS_TLS=false` - Optional: Enable TLS/SSL (set to 'true')
   :::
 
-**For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).**
+**For additional environment variables, refer to our [environment variables documentation](/docs/3.16.0-LTS/setup/env-vars).**
 
 ## Upgrading to the Latest LTS Version
 
@@ -186,7 +186,7 @@ Ensure both databases are included in your backup before proceeding with the upg
 :::
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
-- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](/docs/setup/upgrade-to-v3/).
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](/docs/3.16.0-LTS/setup/upgrade-to-v3/).
 
 ## <br/>
 

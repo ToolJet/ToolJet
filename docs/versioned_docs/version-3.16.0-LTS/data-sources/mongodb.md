@@ -7,7 +7,7 @@ The MongoDB data source in ToolJet allows you to connect your applications direc
 
 ## Manual Connection
 
-To establish a manual connection with the **MongoDB** data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](/docs/data-sources/overview) page from the ToolJet dashboard.
+To establish a manual connection with the **MongoDB** data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](/docs/3.16.0-LTS/data-sources/overview) page from the ToolJet dashboard.
 
 :::info
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
@@ -116,7 +116,7 @@ SSH tunnelling isn't supported with the **DNS Seed list (mongodb+srv)** format o
 <img className="screenshot-full img-l" src="/img/datasource-reference/mongo-db/mongoDB-operations.png" alt="ToolJet - Mongo query"/>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/3.16.0-LTS/app-builder/custom-code/transform-data)
 :::
 
 ## Supported Operations

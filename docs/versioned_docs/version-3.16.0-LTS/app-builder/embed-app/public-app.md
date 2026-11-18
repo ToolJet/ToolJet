@@ -37,7 +37,7 @@ By embedding the application in the portal, you can achieve:
 
 ## Steps to Embed a Public Application
 
-1. [Create](/docs/getting-started/quickstart-guide) and [release](/docs/development-lifecycle/release/release-rollback/) your ToolJet application.
+1. [Create](/docs/3.16.0-LTS/getting-started/quickstart-guide) and [release](/docs/3.16.0-LTS/development-lifecycle/release/release-rollback/) your ToolJet application.
 2. Click the Share button on the top-right corner of the application builder.
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/app-builder/embed-apps/share.png" alt="Click on the share button on the top right." />
 3. Enable **Make application public** by toggling it on.

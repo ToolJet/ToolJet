@@ -22,7 +22,7 @@ flowchart LR
 ```
 
 :::info
-AI requests still route through ToolJet Managed AI Server when using BYOK. If your organization requires that no data leaves your own infrastructure, refer to [ToolJet AI Enterprise](/docs/setup/tooljet-ai/tj-ai-enterprise).
+AI requests still route through ToolJet Managed AI Server when using BYOK. If your organization requires that no data leaves your own infrastructure, refer to [ToolJet AI Enterprise](/docs/3.16.0-LTS/setup/tooljet-ai/tj-ai-enterprise).
 :::
 
 This means:
@@ -47,7 +47,7 @@ To use OpenAI as your LLM provider, an OpenAI API key is required. You can gener
 
 ### OpenRouter
 
-To use OpenRouter as your LLM provider, an OpenRouter API key is required. You can generate one from [openrouter.ai/keys](https://openrouter.ai/keys). Unlike the other providers, OpenRouter also lets you pick the exact model to use, see [Selecting an Exact Model](/docs/build-with-ai/model-selection#selecting-an-exact-model).
+To use OpenRouter as your LLM provider, an OpenRouter API key is required. You can generate one from [openrouter.ai/keys](https://openrouter.ai/keys). Unlike the other providers, OpenRouter also lets you pick the exact model to use, see [Selecting an Exact Model](/docs/3.16.0-LTS/build-with-ai/model-selection#selecting-an-exact-model).
 
 ToolJet lists only the OpenRouter models that support the `tools`, `response_format`, and `structured_outputs` parameters and have a context window of at least 200,000 tokens. The ToolJet server fetches this list from `https://openrouter.ai/api/v1/models`, so on self-hosted deployments it needs outbound access to `openrouter.ai`.
 
@@ -135,5 +135,5 @@ AI-powered features will fail to execute until a valid key is provided. You will
 <details id="tj-dropdown">
 <summary>**Can users switch the AI provider or model when BYOK is configured?**</summary>
 
-No. With BYOK, the LLM provider (and model, if using OpenRouter) is configured by the admin for the entire workspace and cannot be changed per-user, unless the admin selects **ToolJet managed** as the provider. Per-user provider switching is only available with [ToolJet Managed AI Server](/docs/build-with-ai/model-selection).
+No. With BYOK, the LLM provider (and model, if using OpenRouter) is configured by the admin for the entire workspace and cannot be changed per-user, unless the admin selects **ToolJet managed** as the provider. Per-user provider switching is only available with [ToolJet Managed AI Server](/docs/3.16.0-LTS/build-with-ai/model-selection).
 </details>

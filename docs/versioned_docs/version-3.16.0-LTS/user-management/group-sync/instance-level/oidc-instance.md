@@ -33,7 +33,7 @@ This setup also streamlines the login experience: users can authenticate directl
 ###  Enable Group Sync at Instance Level
 - Naviate to **Instance Settings** > **Instance Login** Tab.
 - Click on the OpenID Connect under the SSO section.
-- Setup the OpenID Connect SSO by following this [guide](/docs/user-management/sso/oidc/setup).
+- Setup the OpenID Connect SSO by following this [guide](/docs/3.16.0-LTS/user-management/sso/oidc/setup).
 - Enable the **Group Sync** toggle and provide the following information:
 
     - **Claim name**: Enter the name of the claim in the OIDC token that contains group information (e.g., `groups`). For a [nested claim](#nested-group-claims), enter its dot path, such as `custom_attributes.groups`.

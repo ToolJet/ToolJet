@@ -6,12 +6,12 @@ title: ServiceNow
 ToolJet allows you to connect to your ServiceNow instance to read and write records through the ServiceNow Table API, inspect table schemas, run Aggregate API stats queries, and invoke Action Fabric workflows and Flow Designer subflows.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
 
-To connect to a ServiceNow data source in ToolJet, you can either click the **+Add new data source** button on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page in the ToolJet dashboard.
+To connect to a ServiceNow data source in ToolJet, you can either click the **+Add new data source** button on the query panel or navigate to the **[Data Sources](/docs/3.16.0-LTS/data-sources/overview)** page in the ToolJet dashboard.
 
 To connect to your ServiceNow instance, the following details are required:
 

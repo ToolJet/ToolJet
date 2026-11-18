@@ -6,7 +6,7 @@ title: HarperDB
 HarperDB is a database and application development platform that is focused on performance and ease of use. With flexible user-defined APIs, simple HTTP/S interface, and a high-performance single-model data store that accommodates both NoSQL and SQL workloads, HarperDB scales with your application from proof of concept to production. ToolJet integrates with HarperDB, providing a streamlined interface for reading and writing data.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>

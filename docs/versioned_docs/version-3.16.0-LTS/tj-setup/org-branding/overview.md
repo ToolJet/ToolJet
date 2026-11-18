@@ -12,7 +12,7 @@ ToolJet gives you control over how the platform looks, feels, and is delivered t
 
 ## Custom Domain
 
-A [custom domain](/docs/tj-setup/org-branding/custom-domain) lets you access ToolJet through your own URL (e.g., `tools.yourcompany.com`) instead of the default ToolJet URL. This is usually the first step in branding a deployment, since every other customization - white labeling, themes, custom styles - is still served from whatever domain you configure here.
+A [custom domain](/docs/3.16.0-LTS/tj-setup/org-branding/custom-domain) lets you access ToolJet through your own URL (e.g., `tools.yourcompany.com`) instead of the default ToolJet URL. This is usually the first step in branding a deployment, since every other customization - white labeling, themes, custom styles - is still served from whatever domain you configure here.
 
 - **Self-hosted**: configured by setting the `TOOLJET_HOST` environment variable to your domain and restarting the deployment. This requires a registered domain and a DNS record pointing to your ToolJet server.
 - **ToolJet Cloud** (Team plan and above): configured per workspace, so different workspaces (e.g., Finance, Operations) can each have their own domain. This involves creating a CNAME record pointing to `app.tooljet.com`, then adding the domain under **Settings > Custom Domain** in the workspace.
@@ -23,7 +23,7 @@ Because authentication flows depend on the application URL, updating a custom do
 
 ## White Labeling
 
-[White Labeling](/docs/tj-setup/org-branding/white-labeling) replaces ToolJet's own branding elements with yours, so the platform itself, not just the apps built on it, appears to be your product. It covers:
+[White Labeling](/docs/3.16.0-LTS/tj-setup/org-branding/white-labeling) replaces ToolJet's own branding elements with yours, so the platform itself, not just the apps built on it, appears to be your product. It covers:
 
 - **Application logo** - shown on the login screen, dashboard, app editor, and deployed apps.
 - **Page title** - the browser tab title.
@@ -38,7 +38,7 @@ If your license or subscription expires, white labeling automatically reverts to
 
 ## App Themes
 
-While white labeling changes ToolJet's own branding elements, [App Themes](/docs/app-builder/custom-theme) change the design system your **built apps** use. A theme is a reusable set of design tokens — brand colors (primary / secondary / tertiary), text colors, border and surface styling, and system state colors (error, success) — defined once per workspace and configured separately for light and dark mode.
+While white labeling changes ToolJet's own branding elements, [App Themes](/docs/3.16.0-LTS/app-builder/custom-theme) change the design system your **built apps** use. A theme is a reusable set of design tokens — brand colors (primary / secondary / tertiary), text colors, border and surface styling, and system state colors (error, success) — defined once per workspace and configured separately for light and dark mode.
 
 Themes work in two steps:
 
@@ -49,7 +49,7 @@ Because components reference theme tokens rather than fixed colors, changing the
 
 ## Custom Styles
 
-[Custom Styles](/docs/app-builder/customstyles) let you apply raw CSS to override the default styles of components - for cases a theme's design tokens don't cover. It's configured from **Workspace Settings > Custom Styles** and works by targeting a component's generated class name, which follows the pattern `._tooljet-<component-name>`:
+[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles) let you apply raw CSS to override the default styles of components - for cases a theme's design tokens don't cover. It's configured from **Workspace Settings > Custom Styles** and works by targeting a component's generated class name, which follows the pattern `._tooljet-<component-name>`:
 
 ```css
 ._tooljet-Button button {

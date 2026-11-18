@@ -30,9 +30,9 @@ To create a new table in the ToolJet Database:
 | **Option** | **Description** |
 | --- | --- |
 | **Column name** | Enter a unique name for the column. |
-| **Data type** | Select the appropriate data type for the column from the dropdown menu. For more information on available data types, see the [Supported Data Types](/docs/tooljet-db/data-types#supported-data-types) section. |
+| **Data type** | Select the appropriate data type for the column from the dropdown menu. For more information on available data types, see the [Supported Data Types](/docs/3.16.0-LTS/tooljet-db/data-types#supported-data-types) section. |
 | **Default value (optional)** | Specify any default value to be assigned to the column. If left blank, the column will allow null values. |
-| **Primary Key** | Check this box to designate the column as the [Primary Key](/docs/tooljet-db/constraints/primary-key). Multiple columns can be selected, creating a composite primary key. |
+| **Primary Key** | Check this box to designate the column as the [Primary Key](/docs/3.16.0-LTS/tooljet-db/constraints/primary-key). Multiple columns can be selected, creating a composite primary key. |
 | **NULL/NOT NULL toggle** | Use this toggle to determine whether the column should allow null values or require a value. By default, null values are permitted. |
 | **Unique toggle** | Click the kebab menu and toggle the **Unique** option to add a unique constraint to the column, ensuring all values are distinct. By default, duplicate values are allowed. |
 | **Foreign Key** | Click the **+ Add Relation** button to establish a foreign key relationship, linking this column to a primary key or unique constraint column(s) in another table. |
@@ -55,7 +55,7 @@ ToolJet Database supports several column constraints to maintain data integrity 
 
 **Not Null**: The not null constraint ensures that the designated column(s) cannot have null values, requiring a value for every row in the table.
 
-For a detailed overview of which constraints are allowed for each data type, refer to the [Permissible Constraints per Data Type](/docs/tooljet-db/data-types#permissible-constraints-per-data-type) table.
+For a detailed overview of which constraints are allowed for each data type, refer to the [Permissible Constraints per Data Type](/docs/3.16.0-LTS/tooljet-db/data-types#permissible-constraints-per-data-type) table.
 
 </div>
 

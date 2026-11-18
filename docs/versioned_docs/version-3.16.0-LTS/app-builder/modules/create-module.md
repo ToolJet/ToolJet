@@ -15,7 +15,7 @@ Follow these steps to get started with creating a module:
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/app-builder/modules/create-module-modal.png" alt="Create Module" />
 3. Add components, queries, and actions just like you would in a normal app. place and resize your components on the **Module container**. 
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/app-builder/modules/module-builder.png" alt="Module Builder" />
-4. Click the module container to open its properties panel. Use the **Input** and **Output** sections to define how the module communicates with the parent application. This makes it easier to build dynamic, reusable modules that work across different data sets and queries. Check out the [Configuring Inputs and Outputs](/docs/app-builder/modules/input-output) guide to learn more. Under **Additional actions**, you can also set **Dynamic height** and **Collapse when hidden**. Each new instance of the module starts with these values, and you can change them for each instance in the application.
+4. Click the module container to open its properties panel. Use the **Input** and **Output** sections to define how the module communicates with the parent application. This makes it easier to build dynamic, reusable modules that work across different data sets and queries. Check out the [Configuring Inputs and Outputs](/docs/3.16.0-LTS/app-builder/modules/input-output) guide to learn more. Under **Additional actions**, you can also set **Dynamic height** and **Collapse when hidden**. Each new instance of the module starts with these values, and you can change them for each instance in the application.
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/app-builder/modules/module-container-property.png" alt="Properties Panel" /> 
 
 ### Use a Module
@@ -35,7 +35,7 @@ Once a module is created, it becomes available in the **Modules** tab of the com
 
 You can reuse the same module multiple times in a single application by dropping it multiple times on the canvas and configuring each instance with different input bindings.
 
-Please refer to the **[Input and Output](/docs/app-builder/modules/input-output)** documentation for detailed information on how to manage the inputs and outputs of a module.
+Please refer to the **[Input and Output](/docs/3.16.0-LTS/app-builder/modules/input-output)** documentation for detailed information on how to manage the inputs and outputs of a module.
 
 :::info
 If no modules exist in the workspace, the **Modules** tab shows a **Create Module** button. On plans without modules, the module cards are disabled.

@@ -43,7 +43,7 @@ You can configure data sources and constants for each environment, and ToolJet w
 
 - **Development** – Developers build and test the application in the ToolJet app builder.
 - **Staging** – The testing or product team validates requirements and tests the application using staging data. Apps and queries cannot be edited in this environment.
-- **Production** – After thorough testing in staging, the application is promoted to production. This can serve as a pre-release environment where you test with production data and constants before releasing the application to end users. Refer to [Release](/docs/development-lifecycle/release/release-rollback) documentation to learn more.
+- **Production** – After thorough testing in staging, the application is promoted to production. This can serve as a pre-release environment where you test with production data and constants before releasing the application to end users. Refer to [Release](/docs/3.16.0-LTS/development-lifecycle/release/release-rollback) documentation to learn more.
 
 <img className="screenshot-full img-l" src="/img/development-lifecycle/environments/Built-in-env.png" alt="self-hosted-env-concept" />
 
@@ -51,7 +51,7 @@ You can configure data sources and constants for each environment, and ToolJet w
 
 ### Environment Access Permission
 
-Admin can configure environment access for user groups or roles from the [Granular Access Control](/docs/user-management/role-based-access/access-control#granular-access-control) page.  
+Admin can configure environment access for user groups or roles from the [Granular Access Control](/docs/3.16.0-LTS/user-management/role-based-access/access-control#granular-access-control) page.  
 Environment access determines the environment the user can access the app, while the user’s application permission (Edit or View) determines what they can do inside that environment.
 
 Final access is decided by both, App Permission (Edit/View) and Environment Access.
@@ -94,7 +94,7 @@ The following examples illustrate how different combinations of application perm
 
 ### Promote Application Permission
 
-Admin can configure the Promote Application permission from the [Permissions](/docs/user-management/role-based-access/user-roles#permissions-for-user-roles) page. This disables the **Promote** button for users who do not have the required permission, allowing only authorized roles, such as team leads, to promote the application from one environment to another. In the example below, the user does not have permission to perform a release. Therefore, the Release button is disabled and cannot be used.
+Admin can configure the Promote Application permission from the [Permissions](/docs/3.16.0-LTS/user-management/role-based-access/user-roles#permissions-for-user-roles) page. This disables the **Promote** button for users who do not have the required permission, allowing only authorized roles, such as team leads, to promote the application from one environment to another. In the example below, the user does not have permission to perform a release. Therefore, the Release button is disabled and cannot be used.
 
 <img className="screenshot-full img-m" src="/img/development-lifecycle/release/release/draft-version/disable-release.png" alt="Disable Release"/>
 
@@ -109,4 +109,4 @@ Each environment has a different impact on your application. Please refer the fo
 | Delete versions     | ✅                       | ✅      | ✅         |
 | Create new versions | ✅                       | ✅      | ✅         |
 
-Checkout the [Environment-Example](/docs/development-lifecycle/environment/self-hosted/example-configuration) guide to learn about multi-environment in ToolJet with a practical example.
+Checkout the [Environment-Example](/docs/3.16.0-LTS/development-lifecycle/environment/self-hosted/example-configuration) guide to learn about multi-environment in ToolJet with a practical example.

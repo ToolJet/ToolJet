@@ -6,7 +6,7 @@ title: Microsoft Graph
 By integrating Microsoft Graph with ToolJet, you can interact with Microsoft 365 services such as Outlook Mail, Calendar, Users, Teams, OneDrive, SharePoint, and OneNote.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
@@ -283,7 +283,7 @@ New data sources default to **Custom app**. On self-hosted ToolJet, the dropdown
 Select **Share Point** in the **Entity** dropdown to work with SharePoint sites, lists, list items, document libraries (drives), files and folders through Microsoft Graph.
 
 :::note
-This entity is part of the Microsoft Graph plugin. ToolJet also has a separate **[SharePoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)** marketplace plugin with its own connection and operations.
+This entity is part of the Microsoft Graph plugin. ToolJet also has a separate **[SharePoint](/docs/3.16.0-LTS/marketplace/plugins/marketplace-plugin-sharepoint)** marketplace plugin with its own connection and operations.
 :::
 
 #### Sites

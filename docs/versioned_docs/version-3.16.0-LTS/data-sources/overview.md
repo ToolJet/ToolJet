@@ -6,7 +6,7 @@ sidebar_label: Overview
 
 Data Sources pull in and push data to various sources, including databases, external APIs, and services. Once a data source is connected to a workspace, the connection can be shared with any application within that workspace.
 
-ToolJet offers a wide range of data sources. If needed, you can develop and integrate a plugin of your choice or use an available one from the marketplace. Checkout **[Marketplace Overview Guide](/docs/marketplace/marketplace-overview)** for more information.
+ToolJet offers a wide range of data sources. If needed, you can develop and integrate a plugin of your choice or use an available one from the marketplace. Checkout **[Marketplace Overview Guide](/docs/3.16.0-LTS/marketplace/marketplace-overview)** for more information.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/overview/datasources-overview.png" alt="Data Sources: Overview" />
 
@@ -20,7 +20,7 @@ ToolJet offers a wide range of data sources. If needed, you can develop and inte
     <img className="screenshot-full img-full" src="/img/datasource-reference/newui/overview/googlesheets-datasource-v3.png" alt="Overview of Data Sources" />
   
 3. Once the data source is added, you'll be required to input the configuration details for establishing a connection. <br/>
-    ***Note: For paid plans, configuration entry and saving are necessary to enable availability across [multiple environments](/docs/development-lifecycle/environment/self-hosted/multi-environment).***
+    ***Note: For paid plans, configuration entry and saving are necessary to enable availability across [multiple environments](/docs/3.16.0-LTS/development-lifecycle/environment/self-hosted/multi-environment).***
     <img className="screenshot-full img-full" src="/img/datasource-reference/newui/overview/gs-dev-v3.png" alt="Overview of Data Sources" />
   
 4. Return to your application query panel. The recently added data source will be accessible within the query panel under the **Available data sources** section. Data Sources that have been added can now be utilized in both **existing applications** and **newly created applications**.
@@ -32,9 +32,9 @@ ToolJet offers a wide range of data sources. If needed, you can develop and inte
 ## Default data sources
 
 By default, 4 data sources will be available on every app on ToolJet:
-- **[ToolJet Database](/docs/tooljet-db/tooljet-database/)**
-- **[RestAPI](/docs/data-sources/restapi/)**
-- **[Run JavaScript Query](/docs/data-sources/run-js/)**
-- **[Run Python Query](/docs/data-sources/run-py/)**
+- **[ToolJet Database](/docs/3.16.0-LTS/tooljet-db/tooljet-database/)**
+- **[RestAPI](/docs/3.16.0-LTS/data-sources/restapi/)**
+- **[Run JavaScript Query](/docs/3.16.0-LTS/data-sources/run-js/)**
+- **[Run Python Query](/docs/3.16.0-LTS/data-sources/run-py/)**
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/newui/overview/default-data-sources.png" alt="Data Sources: Overview" />

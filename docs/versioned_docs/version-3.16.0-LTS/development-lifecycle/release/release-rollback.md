@@ -7,13 +7,13 @@ ToolJet allows you to **[release and share](#release)** your application and **[
 
 ## Release
 
-Releasing an app in ToolJet makes the selected version available to end users, allowing them to access and use the application for their tasks. This ensures a controlled rollout of features and bug fixes while ensuring that users have access to the latest version of the app. After an application is released it can be accessed in multiple ways, refer to **[Share an Application](/docs/development-lifecycle/release/share-app)** guide for more information.
+Releasing an app in ToolJet makes the selected version available to end users, allowing them to access and use the application for their tasks. This ensures a controlled rollout of features and bug fixes while ensuring that users have access to the latest version of the app. After an application is released it can be accessed in multiple ways, refer to **[Share an Application](/docs/3.16.0-LTS/development-lifecycle/release/share-app)** guide for more information.
 
 ### Steps to Release an App
 
 1. Save the required draft version.
 
-2. Promote the required version to the **[production environment](/docs/development-lifecycle/environment/self-hosted/multi-environment)**.
+2. Promote the required version to the **[production environment](/docs/3.16.0-LTS/development-lifecycle/environment/self-hosted/multi-environment)**.
 
 3. Click on the **Release** button beside the version name in **Production** environment.
     <img className="screenshot-full border-none" src="/img/development-lifecycle/release/release/draft-version/release.png" alt="release"/>
@@ -42,6 +42,6 @@ For example, after releasing a new version v1.2.0, users report failures of the 
 
 ## Release Application Permission
 
-Admin can configure the Release Application permission from the [Permissions](/docs/user-management/role-based-access/user-roles#permissions-for-user-roles) page. This disables the **Release** button for users who do not have the required permission, allowing only authorized roles, such as managers, to release the application.
+Admin can configure the Release Application permission from the [Permissions](/docs/3.16.0-LTS/user-management/role-based-access/user-roles#permissions-for-user-roles) page. This disables the **Release** button for users who do not have the required permission, allowing only authorized roles, such as managers, to release the application.
 <img className="screenshot-full img-m" src="/img/development-lifecycle/release/release/draft-version/disable-release.png" alt="Disable Release"/>
 

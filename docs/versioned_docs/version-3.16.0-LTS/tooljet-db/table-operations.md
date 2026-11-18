@@ -28,7 +28,7 @@ To add a new column to a table, either click on the kebab menu icon on the right
 A drawer from the right will open up where you can enter the details for the new column:
 
 - **Column Name**: Enter a unique name for the new column, serving as its key identifier.
-- **Data Type**: Choose the appropriate data type for the column from the [available options](/docs/tooljet-db/data-types#supported-data-types). For more information on data types and their associated constraints, see the [Supported Data Types](/docs/tooljet-db/data-types#supported-data-types) and [Permissible Constraints per Data Type](/docs/tooljet-db/data-types#permissible-constraints-per-data-type) sections.
+- **Data Type**: Choose the appropriate data type for the column from the [available options](/docs/3.16.0-LTS/tooljet-db/data-types#supported-data-types). For more information on data types and their associated constraints, see the [Supported Data Types](/docs/3.16.0-LTS/tooljet-db/data-types#supported-data-types) and [Permissible Constraints per Data Type](/docs/3.16.0-LTS/tooljet-db/data-types#permissible-constraints-per-data-type) sections.
 - **Default Value**: Specify any default value that should be assigned to the column. Optionally, users can leave this field blank. When a table contains rows and NOT NULL is applied to one of its existing or new columns, specifying a default value becomes compulsory.
 - **Foreign Key Relation**: Click on the toggle to add a foreign key relationship to the column. This will open a menu where you can select the target table and column to reference.
 

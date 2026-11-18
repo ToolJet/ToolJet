@@ -672,7 +672,7 @@ On hovering on a column, you can see a delete icon on the right which can be use
 
 ### Hide columns
 
-You can choose which columns to show or hide in the Table using this option. You also have the option to **[hide the column selector button](/docs/widgets/table/#additional-actions)** in the Table properties.
+You can choose which columns to show or hide in the Table using this option. You also have the option to **[hide the column selector button](/docs/3.16.0-LTS/widgets/table/#additional-actions)** in the Table properties.
 
 
 ## Make all columns editable

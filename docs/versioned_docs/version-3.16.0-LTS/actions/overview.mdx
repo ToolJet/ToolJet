@@ -49,42 +49,42 @@ export const ActionSection = ({ title, description, children }) => (
     </div>
 );
 
-Actions define what happens when an [event](/docs/app-builder/events/overview) occurs in a ToolJet application — running a query, displaying an alert, navigating to a different page, updating a variable, and more. They can be configured declaratively through an event handler, or invoked programmatically from a RunJS query.
+Actions define what happens when an [event](/docs/3.16.0-LTS/app-builder/events/overview) occurs in a ToolJet application — running a query, displaying an alert, navigating to a different page, updating a variable, and more. They can be configured declaratively through an event handler, or invoked programmatically from a RunJS query.
 
 <ActionSection title="Run Action" description="Operate on queries, or surface feedback to the user.">
-    <ActionCard title="Run Query" description="Executes a query when triggered." href="/docs/actions/run-query" />
-    <ActionCard title="Reset Query" description="Resets a query's data and state to default." href="/docs/actions/reset-query" />
-    <ActionCard title="Abort Query" description="Cancels an in-flight query request." href="/docs/actions/abort-query" />
-    <ActionCard title="Show Alert" description="Displays an info, success, warning, or error message." href="/docs/actions/show-alert" />
+    <ActionCard title="Run Query" description="Executes a query when triggered." href="/docs/3.16.0-LTS/actions/run-query" />
+    <ActionCard title="Reset Query" description="Resets a query's data and state to default." href="/docs/3.16.0-LTS/actions/reset-query" />
+    <ActionCard title="Abort Query" description="Cancels an in-flight query request." href="/docs/3.16.0-LTS/actions/abort-query" />
+    <ActionCard title="Show Alert" description="Displays an info, success, warning, or error message." href="/docs/3.16.0-LTS/actions/show-alert" />
 </ActionSection>
 
 <ActionSection title="Control Component" description="Change a component's state, visibility, or invoke its component-specific actions (CSAs).">
-    <ActionCard title="Control Component" description="Invokes a component's own custom action (CSA)." href="/docs/actions/control-component" />
-    <ActionCard title="Show Modal" description="Opens a Modal component on the canvas." href="/docs/actions/show-modal" />
-    <ActionCard title="Close Modal" description="Closes an open Modal component." href="/docs/actions/close-modal" />
-    <ActionCard title="Set Table Page" description="Navigates a Table to a specific page index." href="/docs/actions/set-table-page" />
-    <ActionCard title="Scroll Component into View" description="Scrolls a component into the visible viewport." href="/docs/actions/scroll-component-into-view" />
+    <ActionCard title="Control Component" description="Invokes a component's own custom action (CSA)." href="/docs/3.16.0-LTS/actions/control-component" />
+    <ActionCard title="Show Modal" description="Opens a Modal component on the canvas." href="/docs/3.16.0-LTS/actions/show-modal" />
+    <ActionCard title="Close Modal" description="Closes an open Modal component." href="/docs/3.16.0-LTS/actions/close-modal" />
+    <ActionCard title="Set Table Page" description="Navigates a Table to a specific page index." href="/docs/3.16.0-LTS/actions/set-table-page" />
+    <ActionCard title="Scroll Component into View" description="Scrolls a component into the visible viewport." href="/docs/3.16.0-LTS/actions/scroll-component-into-view" />
 </ActionSection>
 
 <ActionSection title="Navigation" description="Move the user between pages or apps.">
-    <ActionCard title="Switch Page" description="Navigates to another page in a Multipage App." href="/docs/actions/switch-page" />
-    <ActionCard title="Go to App" description="Navigates to a different released app." href="/docs/actions/go-to-app" />
-    <ActionCard title="Open Web Page" description="Opens a URL in a new browser tab." href="/docs/actions/open-webpage" />
+    <ActionCard title="Switch Page" description="Navigates to another page in a Multipage App." href="/docs/3.16.0-LTS/actions/switch-page" />
+    <ActionCard title="Go to App" description="Navigates to a different released app." href="/docs/3.16.0-LTS/actions/go-to-app" />
+    <ActionCard title="Open Web Page" description="Opens a URL in a new browser tab." href="/docs/3.16.0-LTS/actions/open-webpage" />
 </ActionSection>
 
 <ActionSection title="Variable" description="Create, update, or clear app-level and page-level variables.">
-    <ActionCard title="Set Page Variable" description="Sets a variable scoped to the current page." href="/docs/actions/set-page-variable" />
-    <ActionCard title="Unset Page Variable" description="Clears a single page-scoped variable." href="/docs/actions/unset-page-variable" />
-    <ActionCard title="Unset All Page Variable" description="Clears every variable on the current page." href="/docs/actions/unset-all-page-var" />
-    <ActionCard title="Set Variable" description="Sets a variable available across the app." href="/docs/actions/set-variable" />
-    <ActionCard title="Unset Variable" description="Clears a single app-level variable." href="/docs/actions/unset-variable" />
-    <ActionCard title="Unset All Variable" description="Clears every variable across the app." href="/docs/actions/unset-all-var" />
+    <ActionCard title="Set Page Variable" description="Sets a variable scoped to the current page." href="/docs/3.16.0-LTS/actions/set-page-variable" />
+    <ActionCard title="Unset Page Variable" description="Clears a single page-scoped variable." href="/docs/3.16.0-LTS/actions/unset-page-variable" />
+    <ActionCard title="Unset All Page Variable" description="Clears every variable on the current page." href="/docs/3.16.0-LTS/actions/unset-all-page-var" />
+    <ActionCard title="Set Variable" description="Sets a variable available across the app." href="/docs/3.16.0-LTS/actions/set-variable" />
+    <ActionCard title="Unset Variable" description="Clears a single app-level variable." href="/docs/3.16.0-LTS/actions/unset-variable" />
+    <ActionCard title="Unset All Variable" description="Clears every variable across the app." href="/docs/3.16.0-LTS/actions/unset-all-var" />
 </ActionSection>
 
 <ActionSection title="Other">
-    <ActionCard title="Logout" description="Logs the current user out of their session." href="/docs/actions/logout" />
-    <ActionCard title="Generate File" description="Builds a CSV, text, or PDF file to download." href="/docs/actions/generate-file" />
-    <ActionCard title="Set Local Storage" description="Writes a key-value pair to local storage." href="/docs/actions/set-localstorage" />
-    <ActionCard title="Copy to Clipboard" description="Copies text to the user's clipboard." href="/docs/actions/copy-to-clipboard" />
-    <ActionCard title="Toggle App Mode" description="Switches the app's theme between light and dark." href="/docs/actions/toggle-app-mode" />
+    <ActionCard title="Logout" description="Logs the current user out of their session." href="/docs/3.16.0-LTS/actions/logout" />
+    <ActionCard title="Generate File" description="Builds a CSV, text, or PDF file to download." href="/docs/3.16.0-LTS/actions/generate-file" />
+    <ActionCard title="Set Local Storage" description="Writes a key-value pair to local storage." href="/docs/3.16.0-LTS/actions/set-localstorage" />
+    <ActionCard title="Copy to Clipboard" description="Copies text to the user's clipboard." href="/docs/3.16.0-LTS/actions/copy-to-clipboard" />
+    <ActionCard title="Toggle App Mode" description="Switches the app's theme between light and dark." href="/docs/3.16.0-LTS/actions/toggle-app-mode" />
 </ActionSection>

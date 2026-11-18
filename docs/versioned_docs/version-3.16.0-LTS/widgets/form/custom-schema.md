@@ -5,9 +5,9 @@ title: Custom Schema
 
 In this guide, we’ll cover some of the most commonly used custom schemas.
 For more information:
-- On how to generate a form, refer to the [Generate Form](/docs/widgets/form/) guide.
-- For available form properties, refer to the [Properties](/docs/widgets/form/properties) guide.
-- For CSAs and exposed variables, refer to the [CSA and Exposed Variables](/docs/widgets/form/csa) guide.
+- On how to generate a form, refer to the [Generate Form](/docs/3.16.0-LTS/widgets/form/) guide.
+- For available form properties, refer to the [Properties](/docs/3.16.0-LTS/widgets/form/properties) guide.
+- For CSAs and exposed variables, refer to the [CSA and Exposed Variables](/docs/3.16.0-LTS/widgets/form/csa) guide.
 
 ## Datepicker
 

@@ -58,7 +58,7 @@ Page permissions control who can access a particular page. You can choose to:
 
 - Allow access to all users with application access
 - Restrict access to selected users
-- Restrict access to selected [user groups](/docs/user-management/role-based-access/user-roles)
+- Restrict access to selected [user groups](/docs/3.16.0-LTS/user-management/role-based-access/user-roles)
 
 To configure page permissions, click the kebab menu (three dots) next to the page name, select **Page permission**, and select a permission option from the popup.
 
@@ -92,7 +92,7 @@ The app header section allows you to control what is displayed in the applicatio
 <img className="screenshot-full img-m" src="/img/app-builder/multi-page/app-header.png" alt="App Builder: Canvas"/>
 
 - **Show app title**: Toggle this on to display the app title in the header. The logo is controlled separately by **Show logo**.
-- **Show logo**: Toggle this on to display the application logo. You can update the logo from the [white labeling](/docs/tj-setup/org-branding/white-labeling/) settings.
+- **Show logo**: Toggle this on to display the application logo. You can update the logo from the [white labeling](/docs/3.16.0-LTS/tj-setup/org-branding/white-labeling/) settings.
 - **Title**: Set a title for the application. This will be displayed in the app header. It defaults to the app name, can't be empty, and can be up to 32 characters long.
 
 :::info
@@ -208,7 +208,7 @@ Exposed variables are values from a page that can be accessed throughout the app
 | handle | Represents the slug of the page within the app. It is automatically set when a page is created, but can be [renamed](#handle) from the page options. | `{{page.handle}}`|
 | name | Indicates the name of the page. | `{{page.name}}` |
 | id | Each page in the ToolJet application receives a unique identifier upon creation. | `{{page.id}}` |
-| variables | Variables object contains all the variables created for a specific page using the [Set Page Variable](/docs/actions/set-page-variable) action.  | `{{page.variables.<pageVariableName>}}`, where `<pageVariableName>` refers to the variable name. |
+| variables | Variables object contains all the variables created for a specific page using the [Set Page Variable](/docs/3.16.0-LTS/actions/set-page-variable) action.  | `{{page.variables.<pageVariableName>}}`, where `<pageVariableName>` refers to the variable name. |
 
 ## Manage Navigation Item
 

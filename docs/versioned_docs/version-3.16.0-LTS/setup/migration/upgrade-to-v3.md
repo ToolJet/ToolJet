@@ -23,7 +23,7 @@ Before attempting to upgrade to the ToolJet 3.0:
 - **Application Review**: Check your apps for breaking and deprecated features listed in this guide.
 - **Test Environment**: Only attempt upgrade in a testing environment first.
 
-To upgrade, checkout the latest docker image **[here](/docs/setup/choose-your-tooljet)**.
+To upgrade, checkout the latest docker image **[here](/docs/3.16.0-LTS/setup/choose-your-tooljet)**.
 
 ## Breaking Changes
 
@@ -265,7 +265,7 @@ Now, you should use:
 {{queries.<queryName>.metadata}}
 ```
 
-The `metadata` object will contain detailed information about the request and response, including request URL, method, headers, parameters, response status code, and headers. You can read more about metadata [here](/docs/data-sources/restapi/metadata-and-cookies/#metadata).
+The `metadata` object will contain detailed information about the request and response, including request URL, method, headers, parameters, response status code, and headers. You can read more about metadata [here](/docs/3.16.0-LTS/data-sources/restapi/metadata-and-cookies/#metadata).
 
 ## System Changes
 
@@ -275,8 +275,8 @@ ToolJet Database is now a core requirement for the ToolJet 3.0.
 To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. <br/>
 Please check the environment variables that you need to configure to set up:
 
-- [PostgREST](/docs/setup/env-vars#postgrest)
-- [ToolJet Database](/docs/setup/env-vars#tooljet-database)
+- [PostgREST](/docs/3.16.0-LTS/setup/env-vars#postgrest)
+- [ToolJet Database](/docs/3.16.0-LTS/setup/env-vars#tooljet-database)
 
 <br/>
 ---

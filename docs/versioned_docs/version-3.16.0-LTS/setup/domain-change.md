@@ -28,4 +28,4 @@ You’ll need to regenerate and update the redirect URL for **each SSO provider*
 6. Save the changes.
 7. Test SSO login to ensure everything is working correctly.
 
-For provider-specific configuration details, refer to your usual **[SSO](/docs/user-management/sso/overview)** setup guides.
+For provider-specific configuration details, refer to your usual **[SSO](/docs/3.16.0-LTS/user-management/sso/overview)** setup guides.

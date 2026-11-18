@@ -7,7 +7,7 @@ ToolJet can connect to MinIo and perform various operation on them.
 
 ## Connection
 
-To establish a connection with the MinIo data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](/docs/data-sources/overview) page from the ToolJet dashboard.
+To establish a connection with the MinIo data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](/docs/3.16.0-LTS/data-sources/overview) page from the ToolJet dashboard.
 
 ToolJet requires the following to connect to your MinIO server:
 
@@ -27,7 +27,7 @@ ToolJet requires the following to connect to your MinIO server:
 4. Click on the **Run** button to run the query
 
 :::tip
-Query results can be transformed using transformations. Read our transformation documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
+Query results can be transformed using transformations. Read our transformation documentation to see how: [link](/docs/3.16.0-LTS/app-builder/custom-code/transform-data)
 :::
 
 ## Supported Operations

@@ -22,4 +22,4 @@ Instead of copy-pasting components or logic across apps, modules give you a cent
 
 <img className="screenshot-full img-full" src="/img/app-builder/modules/module-builder.png" alt="Module Builder" />
 
-To get started with modules, check out the [Create Module](/docs/app-builder/modules/create-module) guide. Once your module is built, you can use it inside any app in your workspace.
+To get started with modules, check out the [Create Module](/docs/3.16.0-LTS/app-builder/modules/create-module) guide. Once your module is built, you can use it inside any app in your workspace.

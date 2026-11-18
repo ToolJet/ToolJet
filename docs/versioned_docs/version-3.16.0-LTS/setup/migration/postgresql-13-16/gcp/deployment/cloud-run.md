@@ -84,4 +84,4 @@ spec:
 gcloud run services replace service.yaml --region=your-region
 ```
 
-**Reference**: [ToolJet Google Cloud Run Setup Documentation](https://docs.tooljet.com/docs/setup/google-cloud-run)
+**Reference**: [ToolJet Google Cloud Run Setup Documentation](https://docs.tooljet.com/docs/3.16.0-LTS/setup/google-cloud-run)

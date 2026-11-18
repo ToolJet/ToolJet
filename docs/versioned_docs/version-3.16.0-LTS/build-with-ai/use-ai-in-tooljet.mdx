@@ -98,37 +98,37 @@ export const SectionSubtitle = ({ text }) => (
         icon="⚡"
         title="App Generation"
         description="Describe your app in plain language. ToolJet AI scaffolds the full UI, queries, and schema; ready to customize."
-        href="/docs/build-with-ai/generate-applications"
+        href="/docs/3.16.0-LTS/build-with-ai/generate-applications"
     />
     <FeatureCard
         icon="🗄️"
         title="Query Generation"
         description="Generate fully configured queries, JavaScript and Python snippets, and let AI organize your query panel."
-        href="/docs/build-with-ai/generate-queries"
+        href="/docs/3.16.0-LTS/build-with-ai/generate-queries"
     />
     <FeatureCard
         icon="💬"
         title="@mention in AI Chat"
         description="Point the AI at an exact component or query with @, so it changes what you meant instead of guessing."
-        href="/docs/build-with-ai/referencing-app-resources"
+        href="/docs/3.16.0-LTS/build-with-ai/referencing-app-resources"
     />
     <FeatureCard
         icon="📚"
         title="Learn with AI"
         description="Ask anything about ToolJet: components, queries, integrations. Get instant, contextual answers from the docs assistant."
-        href="/docs/build-with-ai/ai-docs-assistant"
+        href="/docs/3.16.0-LTS/build-with-ai/ai-docs-assistant"
     />
     <FeatureCard
         icon="🎟️"
         title="Understanding AI Credits"
         description="How credits are consumed, the difference between monthly and add-on credits, and how to buy more."
-        href="/docs/build-with-ai/ai-credits"
+        href="/docs/3.16.0-LTS/build-with-ai/ai-credits"
     />
     <FeatureCard
         icon="🎛️"
         title="Selecting an AI Model"
         description="Switch the LLM provider that powers your chats, or pin an exact model through OpenRouter."
-        href="/docs/build-with-ai/model-selection"
+        href="/docs/3.16.0-LTS/build-with-ai/model-selection"
     />
 </div>
 
@@ -136,7 +136,7 @@ export const SectionSubtitle = ({ text }) => (
 
 <SectionSubtitle text="Choose how AI requests are powered: based on your cost, compliance, and infrastructure needs" />
 
-For a full architecture breakdown and a side-by-side comparison of all four setups, see [Setup ToolJet AI](/docs/setup/tooljet-ai/overview) in the deployment docs.
+For a full architecture breakdown and a side-by-side comparison of all four setups, see [Setup ToolJet AI](/docs/3.16.0-LTS/setup/tooljet-ai/overview) in the deployment docs.
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px', marginBottom: '8px' }}>
     <ConfigCard
@@ -145,7 +145,7 @@ For a full architecture breakdown and a side-by-side comparison of all four setu
         labelColor="#166534"
         title="ToolJet Managed AI"
         description="AI requests are routed through ToolJet AI Cloud and billed against your workspace's AI credits. Zero setup required."
-        href="/docs/build-with-ai/ai-credits"
+        href="/docs/3.16.0-LTS/build-with-ai/ai-credits"
         features={[
             'No configuration needed',
             'Credit-based billing',
@@ -158,7 +158,7 @@ For a full architecture breakdown and a side-by-side comparison of all four setu
         labelColor="#92400e"
         title="Bring Your Own Key"
         description="Use your own LLM API key instead of consuming ToolJet credits. Requests still route through ToolJet AI Cloud."
-        href="/docs/setup/tooljet-ai/bring-your-own-key"
+        href="/docs/3.16.0-LTS/setup/tooljet-ai/bring-your-own-key"
         features={[
             'Direct billing from your LLM provider',
             'Full usage visibility',
@@ -171,7 +171,7 @@ For a full architecture breakdown and a side-by-side comparison of all four setu
         labelColor="#3730a3"
         title="ToolJet AI Enterprise"
         description="Deploy ToolJet's AI server on your own infrastructure. No data leaves your environment ever."
-        href="/docs/setup/tooljet-ai/tj-ai-enterprise"
+        href="/docs/3.16.0-LTS/setup/tooljet-ai/tj-ai-enterprise"
         features={[
             'Fully air-gapped deployment',
             'Your own LLM keys',
@@ -199,7 +199,7 @@ When a chat reaches its context limit, the prompt box shows **You've reached the
 
 ### Build From Your Coding Agent
 
-The top of the AI chat shows a **Prefer your own agent?** banner. Click it to open **Build ToolJet apps from your coding agent**, which lists the commands to connect **Claude Code**, **Codex**, **Grok Build**, or another MCP client (**Others**) to your ToolJet instance through the [ToolJet MCP server](/docs/build-with-ai/mcp/setup). The commands already include your ToolJet URL; replace the token placeholder with a personal access token. Building this way runs on your coding agent's subscription instead of ToolJet AI credits.
+The top of the AI chat shows a **Prefer your own agent?** banner. Click it to open **Build ToolJet apps from your coding agent**, which lists the commands to connect **Claude Code**, **Codex**, **Grok Build**, or another MCP client (**Others**) to your ToolJet instance through the [ToolJet MCP server](/docs/3.16.0-LTS/build-with-ai/mcp/setup). The commands already include your ToolJet URL; replace the token placeholder with a personal access token. Building this way runs on your coding agent's subscription instead of ToolJet AI credits.
 
 To hide the banner, click **x** on it. It stays hidden in that browser.
 
@@ -207,7 +207,7 @@ To hide the banner, click **x** on it. It stays hidden in that browser.
 
 <SectionSubtitle text="Understand how ToolJet handles your data when AI is involved" />
 
-<Link to="/docs/build-with-ai/privacy" style={{ textDecoration: 'none' }}>
+<Link to="/docs/3.16.0-LTS/build-with-ai/privacy" style={{ textDecoration: 'none' }}>
     <div style={{
         border: '1px solid var(--ifm-toc-border-color)',
         borderRadius: '10px',

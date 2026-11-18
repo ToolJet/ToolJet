@@ -5,7 +5,7 @@ title: Overview
 
 The [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP) is an open standard for connecting Large Language Models (LLMs) to external platforms. ToolJet MCP is a server that exposes your ToolJet instance to an AI coding agent, so the agent can build and modify apps in the workspace you already work in, without you leaving your editor.
 
-To connect your agent, follow the [Setup](/docs/build-with-ai/mcp/setup) guide.
+To connect your agent, follow the [Setup](/docs/3.16.0-LTS/build-with-ai/mcp/setup) guide.
 
 ## What You Can Do
 
@@ -90,7 +90,7 @@ To connect your agent, follow the [Setup](/docs/build-with-ai/mcp/setup) guide.
 
 ToolJet MCP authenticates using a Personal Access Token (PAT). The PAT is created by a ToolJet user, scoped to a specific workspace, and operates within the permissions assigned to its owner. As a result, the MCP agent cannot access workspaces or resources beyond the token’s authorized scope.
 
-On ToolJet Cloud, you can also connect with [OAuth](/docs/build-with-ai/mcp/setup#choose-an-authentication-method). The connection is approved by a signed-in ToolJet user for a single workspace and is linked to that user in the same way. The agent operates within the user's current permissions and the permissions approved on the consent screen.
+On ToolJet Cloud, you can also connect with [OAuth](/docs/3.16.0-LTS/build-with-ai/mcp/setup#choose-an-authentication-method). The connection is approved by a signed-in ToolJet user for a single workspace and is linked to that user in the same way. The agent operates within the user's current permissions and the permissions approved on the consent screen.
 
 Because MCP requests are authenticated through a user-linked PAT, changes made by the MCP agent are executed within the PAT owner’s ToolJet permission context. ToolJet’s audit-log system records platform activities, including the acting user, action performed, timestamp, location, and relevant application, query, user, group, or permission event.
 
@@ -145,16 +145,16 @@ ToolJet MCP works with any MCP-compatible client. The following are supported di
 
 </div>
 
-Clients outside this list connect by registering the bundled stdio server manually or, on ToolJet Cloud, by adding ToolJet's hosted server with OAuth if they support remote MCP servers. See [Other MCP Clients](/docs/build-with-ai/mcp/setup/other-clients) for both methods.
+Clients outside this list connect by registering the bundled stdio server manually or, on ToolJet Cloud, by adding ToolJet's hosted server with OAuth if they support remote MCP servers. See [Other MCP Clients](/docs/3.16.0-LTS/build-with-ai/mcp/setup/other-clients) for both methods.
 
 ## Requirements
 
-- A ToolJet personal access token for the workspace you want to build in, or, on ToolJet Cloud, an [OAuth connection](/docs/build-with-ai/mcp/setup#choose-an-authentication-method) approved through your workspace login
+- A ToolJet personal access token for the workspace you want to build in, or, on ToolJet Cloud, an [OAuth connection](/docs/3.16.0-LTS/build-with-ai/mcp/setup#choose-an-authentication-method) approved through your workspace login
 - Node.js 20 or newer, available to your AI client, when you run the server locally with a token
 - An MCP-compatible AI client
 
 ## Related
 
-- [Setup](/docs/build-with-ai/mcp/setup) — create a token, set your environment variables, and install for your client
-- [App Generation](/docs/build-with-ai/mcp/app-generation) — build and modify apps from your agent
-- [App Generation with ToolJet AI](/docs/build-with-ai/generate-applications) — the same outcome using the AI built into ToolJet
+- [Setup](/docs/3.16.0-LTS/build-with-ai/mcp/setup) — create a token, set your environment variables, and install for your client
+- [App Generation](/docs/3.16.0-LTS/build-with-ai/mcp/app-generation) — build and modify apps from your agent
+- [App Generation with ToolJet AI](/docs/3.16.0-LTS/build-with-ai/generate-applications) — the same outcome using the AI built into ToolJet

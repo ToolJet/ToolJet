@@ -6,7 +6,7 @@ title: App Generation
 This guide explains how to generate and modify applications and modules with ToolJet AI, using nothing but a prompt.
 
 :::info
-This page covers **Start with a prompt**, the AI built into ToolJet. To build the same apps from Claude Code, Codex, or another coding agent, see [ToolJet MCP](/docs/build-with-ai/mcp/app-generation) instead.
+This page covers **Start with a prompt**, the AI built into ToolJet. To build the same apps from Claude Code, Codex, or another coding agent, see [ToolJet MCP](/docs/3.16.0-LTS/build-with-ai/mcp/app-generation) instead.
 :::
 
 ## Creating Application
@@ -24,7 +24,7 @@ When the build finishes, the app is ready in the App Builder: UI components, que
 Depending on your prompt, the AI either builds the app straight away or pauses in the chat and waits for your input before it continues. For example, it can ask you to:
 
 - **Answer a question**: The chat shows a card with the question and a list of options. Select an option, or select the option that lets you type your own answer, then click the card's continue button. If the card has a skip button, you can skip the question instead. You can also move between options with the arrow keys and press **Enter** to continue.
-- **Pick a data source**: The card asks you to **Select data source(s)** for the app's data. If you [@mentioned data sources](/docs/build-with-ai/referencing-app-resources#mentioning-data-sources) in your prompt, only those are offered.
+- **Pick a data source**: The card asks you to **Select data source(s)** for the app's data. If you [@mentioned data sources](/docs/3.16.0-LTS/build-with-ai/referencing-app-resources#mentioning-data-sources) in your prompt, only those are offered.
 - **Connect a data source**: If the app needs a data source that isn't connected yet, click **Connect** followed by the data source name to set up the connection without leaving the chat, then click **I've connected** followed by the name to continue the build. On self-hosted deployments, a marketplace plugin that isn't installed shows **Install** instead, which opens the Marketplace in a new tab.
 - **Review the specs**: See [Reviewing the Specs](#reviewing-the-specs).
 
@@ -56,7 +56,7 @@ You can modify any application in ToolJet with AI assistance, whether it's a new
 
 <img className="screenshot-full img-full" src="/img/tooljet-ai/generate-app/modify.png" alt="tooljet generate apps" />
 
-To change one specific component or query rather than letting the AI infer the target, [@mention it in the chat](/docs/build-with-ai/referencing-app-resources).
+To change one specific component or query rather than letting the AI infer the target, [@mention it in the chat](/docs/3.16.0-LTS/build-with-ai/referencing-app-resources).
 
 ## Creating Modules
 
@@ -66,6 +66,6 @@ ToolJet AI can be used to quickly generate Modules, which can then be reused acr
 
 ## Related
 
-- [Query Generation](/docs/build-with-ai/generate-queries) — generate queries, code, and organize your query panel
-- [@mention in AI Chat](/docs/build-with-ai/referencing-app-resources) — target an exact component or query
-- [Understanding AI Credits](/docs/build-with-ai/ai-credits) — how much an operation costs
+- [Query Generation](/docs/3.16.0-LTS/build-with-ai/generate-queries) — generate queries, code, and organize your query panel
+- [@mention in AI Chat](/docs/3.16.0-LTS/build-with-ai/referencing-app-resources) — target an exact component or query
+- [Understanding AI Credits](/docs/3.16.0-LTS/build-with-ai/ai-credits) — how much an operation costs

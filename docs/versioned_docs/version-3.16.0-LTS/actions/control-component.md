@@ -5,7 +5,7 @@ title: Control component (Component Specific Actions)
 
 The **Control Component** action invokes a Component-Specific Action (CSA) — an exclusive action exposed by a particular component, such as setting a Text Input's value or clearing it. CSAs can be triggered either through event handlers or from a RunJS query.
 
-You can find the list of CSAs available for a specific component in that component's own documentation. For example, the CSAs for the **Bounded Box** component are listed in the [Bounded Box](/docs/widgets/bounded-box) documentation.
+You can find the list of CSAs available for a specific component in that component's own documentation. For example, the CSAs for the **Bounded Box** component are listed in the [Bounded Box](/docs/3.16.0-LTS/widgets/bounded-box) documentation.
 
 ## Configuration
 

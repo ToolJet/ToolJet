@@ -21,7 +21,7 @@ Set a numeric value in the **Debounce** field to delay the logout. For example, 
 - Redirects the user to the workspace login page upon logout.
 
 :::info Standalone App URLs
-If your application is accessed via a standalone URL, logging out redirects the user back to the app-specific login page rather than the workspace login page. See [Authentication for Standalone Application URLs](/docs/development-lifecycle/release/share-app#authentication-for-standalone-application-urls) for more details.
+If your application is accessed via a standalone URL, logging out redirects the user back to the app-specific login page rather than the workspace login page. See [Authentication for Standalone Application URLs](/docs/3.16.0-LTS/development-lifecycle/release/share-app#authentication-for-standalone-application-urls) for more details.
 :::
 
 ## Triggering via RunJS
@@ -33,5 +33,5 @@ await actions.logout();
 ```
 
 :::info
-For a full guide on triggering actions from RunJS, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+For a full guide on triggering actions from RunJS, see [Run Actions from RunJS](/docs/3.16.0-LTS/actions/run-actions-from-runjs/).
 :::

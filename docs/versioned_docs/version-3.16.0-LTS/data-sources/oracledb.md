@@ -7,7 +7,7 @@ ToolJet can connect to Oracle databases to read and write data.
 
 ## Connection
 
-To establish a connection with the Oracle DB Datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the Oracle DB Datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/3.16.0-LTS/data-sources/overview)** page through the ToolJet dashboard.
 
 Select the **Connection mode**: **Basic Connection**, **Thick Mode (TNS/Wallet File Path)** or **Thin Mode (TNS/Wallet Zip Upload)**. The fields for each mode are described below.
 
@@ -77,8 +77,8 @@ The following are required to make a Thin Mode Connection with Oracle DB.
 
 ## Supported Operations
 
-- **[SQL mode](/docs/data-sources/oracledb#sql-mode)**
-- **[GUI mode](/docs/data-sources/oracledb#gui-mode)**
+- **[SQL mode](/docs/3.16.0-LTS/data-sources/oracledb#sql-mode)**
+- **[GUI mode](/docs/3.16.0-LTS/data-sources/oracledb#gui-mode)**
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/listops.png" alt="Oracle DB supported operations"/>
 
@@ -270,5 +270,5 @@ In this operation, if a row with the matching primary key exists, it is updated;
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/oracledb/bulk-upsert-pk-gui.png" alt="Bulk Upsert GUI"/>
 
 :::tip
-Query results can be transformed using transformations. Read our transformation documentation to see how: **[link](/docs/app-builder/custom-code/transform-data)**
+Query results can be transformed using transformations. Read our transformation documentation to see how: **[link](/docs/3.16.0-LTS/app-builder/custom-code/transform-data)**
 :::

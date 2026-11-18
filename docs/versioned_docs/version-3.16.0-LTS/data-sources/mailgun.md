@@ -11,7 +11,7 @@ The Mailgun API Datasource supports for interaction with the mail endpoint of th
 
 ## Connection
 
-To establish a connection with the **Mailgun** data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](/docs/data-sources/overview) page from the ToolJet dashboard.
+To establish a connection with the **Mailgun** data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](/docs/3.16.0-LTS/data-sources/overview) page from the ToolJet dashboard.
 
 ToolJet requires the following to connect to your Mailgun:
 - **Domain**: Your Mailgun sending domain. ToolJet sends email through this domain.

@@ -6,14 +6,14 @@ title: PocketBase
 ToolJet connects to your PocketBase database, allowing you to directly interact with your PocketBase backend from the convenience of your ToolJet application.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
 
 - To connect to PocketBase, you need the **Host URL**, **Email**, and **Password**. The Host URL is the URL of your PocketBase instance. Email and password are the credentials of the user who has access to the PocketBase instance.
 
-- Establish a connection to PocketBase by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
+- Establish a connection to PocketBase by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/3.16.0-LTS/data-sources/overview/) page from the ToolJet dashboard.
 
 - Enter your Host URL, email and password into their designated fields.
 
@@ -23,14 +23,14 @@ Before following this guide, it is assumed that you have already completed the p
 
 ## Querying PocketBase
 
-- To perform queries on PocketBase in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/connecting-with-data-sources/creating-managing-queries) located at the bottom panel of the editor.
+- To perform queries on PocketBase in ToolJet, click the **+Add** button in the [query manager](/docs/3.16.0-LTS/app-builder/connecting-with-data-sources/creating-managing-queries) located at the bottom panel of the editor.
 - Select the previously configured PocketBase data source.
 - In the Operation dropdown, select the desired operation type. ToolJet currently [supports](#supported-operations) five query types for PocketBase interactions.
 - Enter the collection name and other required parameters for the selected operation and click on **Run** button to run the query.
   <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/listops.png" alt="PocketBase supported operations" />
 
 :::info
-Query results can be transformed using transformations. Read our [transformations' documentation](/docs/app-builder/custom-code/transform-data).
+Query results can be transformed using transformations. Read our [transformations' documentation](/docs/3.16.0-LTS/app-builder/custom-code/transform-data).
 :::
 
 ## Supported Operations

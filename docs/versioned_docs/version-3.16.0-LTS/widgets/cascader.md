@@ -88,7 +88,7 @@ Available when Dynamic options is enabled. Allows you to add a loading state to 
 | On blur                                      | Triggers whenever the user clicks outside the component.     |
 
 :::info
-Check [Action Reference](/docs/actions/run-query) docs to get detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.16.0-LTS/actions/run-query) docs to get detailed information about all the **Actions**.
 :::
 
 ## Component specific actions (CSA)

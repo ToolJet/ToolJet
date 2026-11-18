@@ -3,7 +3,7 @@ id: onelogin
 title: OneLogin
 ---
 
-OneLogin can be configured as an identity provider (IdP) using OpenID Connect (OIDC), an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the OneLogin Console. Refer to the **[OIDC Setup](/docs/user-management/sso/oidc/setup)** guide to configure OIDC in your application.
+OneLogin can be configured as an identity provider (IdP) using OpenID Connect (OIDC), an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the OneLogin Console. Refer to the **[OIDC Setup](/docs/3.16.0-LTS/user-management/sso/oidc/setup)** guide to configure OIDC in your application.
 
 ## Generating Client ID and Client Secret on OneLogin Admin Portal
 

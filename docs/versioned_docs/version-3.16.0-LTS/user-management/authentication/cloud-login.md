@@ -21,7 +21,7 @@ To configure the authentication:
     
     *   SSO makes it easier for organizations to manage user access. Users can use one login for different tools, and admins can quickly add or remove access when needed. Thus, it improves an organization's onboarding and offboarding experience.
         
-    *   You can configure SSO with Google, GitHub, OpenID Connect, LDAP, and SAML. Please check the [SSO docs](/docs/user-management/sso/overview) for a detailed guide on SSO configuration.
+    *   You can configure SSO with Google, GitHub, OpenID Connect, LDAP, and SAML. Please check the [SSO docs](/docs/3.16.0-LTS/user-management/sso/overview) for a detailed guide on SSO configuration.
 
 ### Allowed Domains (SSO Login)
     
@@ -39,7 +39,7 @@ To configure the authentication:
         
     *   The **Enable Signup** feature lets users create accounts without being invited.
         
-    *   When users sign up with this feature enabled, they are assigned to the end user of that workspace. Workspace admin can later change the [role](/docs/user-management/role-based-access/user-roles) of the user once the user is on-boarded to the workspace.
+    *   When users sign up with this feature enabled, they are assigned to the end user of that workspace. Workspace admin can later change the [role](/docs/3.16.0-LTS/user-management/role-based-access/user-roles) of the user once the user is on-boarded to the workspace.
         
 ## Password Login
     

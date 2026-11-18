@@ -7,7 +7,7 @@ ToolJet can connect to IBM DB2 databases to read and write data using SQL querie
 
 ## Connection
 
-To establish a connection with the IBM DB2 datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the IBM DB2 datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/3.16.0-LTS/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to your IBM DB2 database:
 

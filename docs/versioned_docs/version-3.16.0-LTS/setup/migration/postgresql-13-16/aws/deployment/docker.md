@@ -44,4 +44,4 @@ docker-compose up -d
 docker-compose logs tooljet | grep "TOOLJET APPLICATION STARTED SUCCESSFULLY"
 ```
 
-**Reference**: [ToolJet Docker Setup Documentation](https://docs.tooljet.com/docs/setup/docker)
+**Reference**: [ToolJet Docker Setup Documentation](https://docs.tooljet.com/docs/3.16.0-LTS/setup/docker)

@@ -32,8 +32,8 @@ To choose several components at once within the app-builder, simply hold down th
 - They don't run while your cursor is in a text field or code editor. There, keys such as `cmd + c` and `cmd + z` act on the text instead.
 - **Remove component** asks you to confirm before it deletes the selected components.
 - **Select all** selects every component on the canvas, or every component in the container you're working in. **Paste** adds the copied components to that same container or the canvas.
-- On a released or locked version, and when you don't have permission to edit the app, component shortcuts do nothing. A banner at the top of the canvas explains why. To make changes, create a new version. See [Version Control](/docs/development-lifecycle/release/version-control).
-- In the [module](/docs/app-builder/modules/overview) editor, copy, cut, paste, clone and remove shortcuts are turned off while the **Module container** is selected.
+- On a released or locked version, and when you don't have permission to edit the app, component shortcuts do nothing. A banner at the top of the canvas explains why. To make changes, create a new version. See [Version Control](/docs/3.16.0-LTS/development-lifecycle/release/version-control).
+- In the [module](/docs/3.16.0-LTS/app-builder/modules/overview) editor, copy, cut, paste, clone and remove shortcuts are turned off while the **Module container** is selected.
 
 ## Moving Components with Arrow Keys
 

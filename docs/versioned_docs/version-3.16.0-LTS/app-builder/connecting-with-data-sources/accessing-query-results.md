@@ -14,7 +14,7 @@ To better understand what your query is returning, use the Inspector panel. Clic
 
 <br/>
 
-You can pass query results to a component by using the `{{ }}` syntax. For example, if you have a query named *getEmployees*, you can pass its data to a Table component by setting the table's data property to `{{queries.getEmployees.data}}`. Learn more about binding queries to components [here](/docs/app-builder/connecting-with-data-sources/binding-data-to-components).
+You can pass query results to a component by using the `{{ }}` syntax. For example, if you have a query named *getEmployees*, you can pass its data to a Table component by setting the table's data property to `{{queries.getEmployees.data}}`. Learn more about binding queries to components [here](/docs/3.16.0-LTS/app-builder/connecting-with-data-sources/binding-data-to-components).
 
 ### Quick Actions
 In the Inspector panel, when you hover over a property like data, you’ll see two icons. These icons allow you to quickly copy either the path or value of that property. Here’s what they do:

@@ -9,7 +9,7 @@ Version Control in ToolJet helps you to maintain multiple versions of the applic
 
 For example, to experiment a new feature, you can create a new draft version of the application and try it out, without disturbing the released application. And after through testing, you can release this version. This minimizes downtime, and allows developers to experiment and debug the new feature without disrupting users.
 
-Each version is isolated from the others and can have different environments, such as development, staging, or production. Check out the **[Multi-Environment](/docs/development-lifecycle/environment/self-hosted/multi-environment)** guide for more information. Versions can also be used to rollback to a saved version if needed, checkout **[release and rollback](/docs/development-lifecycle/release/release-rollback)** guide for more information.
+Each version is isolated from the others and can have different environments, such as development, staging, or production. Check out the **[Multi-Environment](/docs/3.16.0-LTS/development-lifecycle/environment/self-hosted/multi-environment)** guide for more information. Versions can also be used to rollback to a saved version if needed, checkout **[release and rollback](/docs/3.16.0-LTS/development-lifecycle/release/release-rollback)** guide for more information.
 
 ## How Draft and Saved Versions Work
 

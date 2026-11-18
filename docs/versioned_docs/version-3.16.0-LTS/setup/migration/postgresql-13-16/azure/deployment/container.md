@@ -40,4 +40,4 @@ az container logs --resource-group your-rg --name tooljet-container | grep "TOOL
 curl http://your-container-fqdn:3000/api/health
 ```
 
-**Reference**: [ToolJet Azure Container Setup Documentation](https://docs.tooljet.com/docs/setup/azure-container)
+**Reference**: [ToolJet Azure Container Setup Documentation](https://docs.tooljet.com/docs/3.16.0-LTS/setup/azure-container)

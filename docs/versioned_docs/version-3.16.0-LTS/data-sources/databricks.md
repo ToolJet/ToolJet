@@ -97,7 +97,7 @@ SQL Parameters:
 - Value: `{{ components.countrySelect.value }}`
 
 :::tip
-You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/app-builder/custom-code/transform-data)
+You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/3.16.0-LTS/app-builder/custom-code/transform-data)
 :::
 
 ## Supported Queries

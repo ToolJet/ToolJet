@@ -18,7 +18,7 @@ To configure the instance-level authentication configuration
 ## SSO (Single Sign-On)
     
 - SSO makes it easier for organizations to manage user access. Users can use one login for different tools, and admins can quickly add or remove access when needed. Thus, it improves an organization's onboarding and offboarding experience.
-- At the instance level you can configure SSO with Google, GitHub, and OpenID Connect. Please check the [SSO docs](/docs/user-management/sso/overview)  for a detailed guide on SSO configuration.
+- At the instance level you can configure SSO with Google, GitHub, and OpenID Connect. Please check the [SSO docs](/docs/3.16.0-LTS/user-management/sso/overview)  for a detailed guide on SSO configuration.
 - You can also configure the Google or Github with Environment Variables. To set Google as default SSO use the following environment variable.
     | Variable | Description | 
     | --------- |:-----:|
@@ -34,14 +34,14 @@ To configure the instance-level authentication configuration
     
 - This feature allows organizations to simplify onboarding by letting users sign up without needing an invitation.
 - The **Enable Signup** feature lets users create accounts without being invited.
-- This feature is available only when the Personal Workspace option is enabled in the Manage Instance settings. When users sign up with this feature enabled, a new personal workspace is automatically created for them, and they are assigned as the admin of that workspace. Refer to [Sign-Up Documentation](/docs/user-management/onboard-users/self-signup-user#enable-sign-up-at-instance-level) to learn more.
+- This feature is available only when the Personal Workspace option is enabled in the Manage Instance settings. When users sign up with this feature enabled, a new personal workspace is automatically created for them, and they are assigned as the admin of that workspace. Refer to [Sign-Up Documentation](/docs/3.16.0-LTS/user-management/onboard-users/self-signup-user#enable-sign-up-at-instance-level) to learn more.
         
 ##   Password Login
     
 - Password login allows users to log in using their email and password. However, organizations can also use SSO for better security and control.
-- Toggle this setting to **enable** or **disable** password login on the login page. Make sure to disable password login only when your SSO is configured otherwise, you will get locked out. Even in this case, Super Admins can always regain access - see [Super Admin Login](/docs/user-management/authentication/self-hosted/super-admin-login).
+- Toggle this setting to **enable** or **disable** password login on the login page. Make sure to disable password login only when your SSO is configured otherwise, you will get locked out. Even in this case, Super Admins can always regain access - see [Super Admin Login](/docs/3.16.0-LTS/user-management/authentication/self-hosted/super-admin-login).
     :::info
-    You can enforce stronger password validation by setting the environment variable `ENABLE_PASSWORD_COMPLEXITY_RULES = true`. Refer to [this guide](/docs/setup/env-vars#configure-stronger-password-validation-rules) to learn more.
+    You can enforce stronger password validation by setting the environment variable `ENABLE_PASSWORD_COMPLEXITY_RULES = true`. Refer to [this guide](/docs/3.16.0-LTS/setup/env-vars#configure-stronger-password-validation-rules) to learn more.
     :::
 
 ## Domain Constraints

@@ -7,7 +7,7 @@ Version Control for Workflows helps you maintain multiple versions of a workflow
 
 For example, you can create a new draft version of a workflow to modify a node or update its logic, without disrupting the currently released workflow. After testing, you can promote and release the new version. This minimizes downtime and allows developers to experiment without affecting production executions.
 
-Each version is isolated and can be promoted across environments such as development, staging, and production. Check out the **[Workflow Environments](/docs/workflows/versions-env/environments)** guide for more information.
+Each version is isolated and can be promoted across environments such as development, staging, and production. Check out the **[Workflow Environments](/docs/3.16.0-LTS/workflows/versions-env/environments)** guide for more information.
 
 ## How Draft and Saved Versions Work
 
@@ -89,7 +89,7 @@ A workflow version can only be released when it has been promoted to the product
 
 To release a version:
 
-1. Ensure the version has been promoted through all environments up to production. Refer to the **[Workflow Environments](/docs/workflows/versions-env/environments)** guide for promotion steps.
+1. Ensure the version has been promoted through all environments up to production. Refer to the **[Workflow Environments](/docs/3.16.0-LTS/workflows/versions-env/environments)** guide for promotion steps.
 2. Once the version is in the production environment, click the **Release** button.
 3. The released version becomes the active workflow that responds to all triggers.
 

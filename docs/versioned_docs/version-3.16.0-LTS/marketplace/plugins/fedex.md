@@ -6,7 +6,7 @@ title: FedEx
 Using this plugin, you can integrate FedEx shipping and tracking services directly into your ToolJet apps to fetch shipment details, create shipping labels, track package status, and calculate rates, etc.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection

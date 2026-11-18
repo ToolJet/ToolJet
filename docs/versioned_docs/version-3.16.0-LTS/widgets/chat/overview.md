@@ -7,9 +7,9 @@ slug: /widgets/chat/
 The **Chat Component** is used to implement a chat-based interface in an application. It can be integrated with AI plugins to build an AI-enabled chatbot or used for traditional chat functionalities, making it suitable for both AI-powered and human-to-human conversations.
 
 This guide explains how to build an AI-enabled support chatbot using the Chat Component. For more details, refer to the following guides:
-- **[Chat Component Properties](/docs/widgets/chat/properties)**
-- **[Component Specific Actions (CSA)](/docs/widgets/chat/csa)**
-- **[Supported Markdown Syntax](/docs/widgets/chat/markdown)**
+- **[Chat Component Properties](/docs/3.16.0-LTS/widgets/chat/properties)**
+- **[Component Specific Actions (CSA)](/docs/3.16.0-LTS/widgets/chat/csa)**
+- **[Supported Markdown Syntax](/docs/3.16.0-LTS/widgets/chat/markdown)**
 
 ## Building AI Enabled Chatbot
 
@@ -26,7 +26,7 @@ This guide explains how to build an AI-enabled support chatbot using the Chat Co
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/widgets/chat/set-component.png" alt="Customize your Chat Component" />
 
-3. Setup an AI query to generate responses. Check out **[marketplace](/docs/marketplace/marketplace-overview)** for all the available plugins. Alternatively, you can configure it with any data source or use it as a chat between multiple users. To do this, specify the type 'response' in the message object.
+3. Setup an AI query to generate responses. Check out **[marketplace](/docs/3.16.0-LTS/marketplace/marketplace-overview)** for all the available plugins. Alternatively, you can configure it with any data source or use it as a chat between multiple users. To do this, specify the type 'response' in the message object.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/widgets/chat/query.png" alt="Setup the AI Query" />
 

@@ -30,7 +30,7 @@ Each component comes with built-in styling options. You can customize text, colo
 
 ## 2. Connecting Your Data
 
-You can connect your application to multiple [data sources](/docs/data-sources/overview) including SQL, NoSQL, vector databases, APIs, spreadsheets, and cloud services. Once connected, you can fetch, update, or manipulate data using queries.
+You can connect your application to multiple [data sources](/docs/3.16.0-LTS/data-sources/overview) including SQL, NoSQL, vector databases, APIs, spreadsheets, and cloud services. Once connected, you can fetch, update, or manipulate data using queries.
 
 A query is an action that interacts with your data source, whether it's fetching records, filtering results, or writing data. It acts as the bridge between your UI and your data.
 

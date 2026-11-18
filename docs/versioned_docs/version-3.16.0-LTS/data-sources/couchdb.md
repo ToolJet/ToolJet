@@ -7,7 +7,7 @@ ToolJet can connect to CouchDB databases to read and write data.
 
 ## Connection
 
-To establish a connection with the CouchDB data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the CouchDB data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/3.16.0-LTS/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to your CouchDB.
 - **Host**: Hostname or IP address of the CouchDB server, without the protocol.

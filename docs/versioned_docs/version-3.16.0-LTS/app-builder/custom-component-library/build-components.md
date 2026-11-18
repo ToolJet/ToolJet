@@ -141,4 +141,4 @@ ToolJet.useComponentSettings({ defaultWidth: 7, defaultHeight: 11 });
 
 ## Next Steps
 
-See your changes live in the App Builder with [dev preview](/docs/app-builder/custom-component-library/preview-and-publish#preview-changes-with-dev-mode), then publish a version.
+See your changes live in the App Builder with [dev preview](/docs/3.16.0-LTS/app-builder/custom-component-library/preview-and-publish#preview-changes-with-dev-mode), then publish a version.

@@ -8,7 +8,7 @@ ToolJet can establish connections with any available REST API endpoint, allowing
 
 ## Setting up a REST API Data Source 
 
-To establish a connection with the REST API data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the REST API data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/3.16.0-LTS/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to a REST API data source:
 
@@ -29,7 +29,7 @@ ToolJet requires the following to connect to a REST API data source:
 ### Authentication
 
 :::info
-For a detailed explanation of the authentication types supported by REST API data sources, refer to the **[Authentication](/docs/data-sources/restapi/authentication)** section.
+For a detailed explanation of the authentication types supported by REST API data sources, refer to the **[Authentication](/docs/3.16.0-LTS/data-sources/restapi/authentication)** section.
 :::
 
 ToolJet supports the following authentication types for REST API data sources:
@@ -51,7 +51,7 @@ ToolJet supports the following authentication types for REST API data sources:
     - **Custom query parameters** (Authorization code only): Extra query parameters added to the authorization URL.
     - **Authentication required for all users** (Authorization code only): When on, each user authorizes with their own account the first time they run a query from this data source. When off, all users share one token.
     - **Audience** (Client credentials only): Sent with the token request when set.
-- **AWS v4**: Signs requests with AWS Signature Version 4. Requires **Region** and **Service**, plus **Access key ID** and **Secret access key** unless **Connect using credential provider chain** is turned on. See **[AWS Signature v4 Authentication](/docs/data-sources/restapi/authentication#aws-signature-v4-authentication)**.
+- **AWS v4**: Signs requests with AWS Signature Version 4. Requires **Region** and **Service**, plus **Access key ID** and **Secret access key** unless **Connect using credential provider chain** is turned on. See **[AWS Signature v4 Authentication](/docs/3.16.0-LTS/data-sources/restapi/authentication#aws-signature-v4-authentication)**.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/authentication.png" alt="REST API - Authentication" />
 
@@ -65,5 +65,5 @@ ToolJet supports the following authentication types for REST API data sources:
 <img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/ssl.png" alt="REST API - SSL Certificate" />
 
 :::info
-To interact with SOAP APIs, refer to the [SOAP API Documentation](/docs/data-sources/soap-api).
+To interact with SOAP APIs, refer to the [SOAP API Documentation](/docs/3.16.0-LTS/data-sources/soap-api).
 :::

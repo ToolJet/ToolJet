@@ -3,7 +3,7 @@ id: creating-managing-queries
 title: Creating and Managing Queries
 ---
 
-A query is a way to interact with your **[data sources](/docs/data-sources/overview)** and acts as the link between your app’s UI and your data. Queries connect your app to configured data sources such as SQL, NoSQL, vector databases, APIs, spreadsheets, and cloud services. Whether it’s retrieving records from your MongoDB collection or updating data in a SQL database, you can use queries to interact with them.
+A query is a way to interact with your **[data sources](/docs/3.16.0-LTS/data-sources/overview)** and acts as the link between your app’s UI and your data. Queries connect your app to configured data sources such as SQL, NoSQL, vector databases, APIs, spreadsheets, and cloud services. Whether it’s retrieving records from your MongoDB collection or updating data in a SQL database, you can use queries to interact with them.
 
 Queries are created in the Query Panel, located at the bottom of the App Builder, where you can either use a visual form-based builder or write code/SQL manually.
 
@@ -38,7 +38,7 @@ Click the **+** icon in the Query Panel header. From the menu that appears, sele
 There are three ways to add queries to a folder.
 
 :::info
-You can also use ToolJet AI's [Auto-sort Queries](/docs/build-with-ai/generate-queries#auto-sort-queries) feature to add queries inside the folder using AI.
+You can also use ToolJet AI's [Auto-sort Queries](/docs/3.16.0-LTS/build-with-ai/generate-queries#auto-sort-queries) feature to add queries inside the folder using AI.
 :::
 
 - **Create directly inside a folder**: Click the three-dot menu on a folder and select **Add new query**. The new query will be created inside that folder.
@@ -81,7 +81,7 @@ For data sources such as MYSQL, PostgreSQL or SQL Server, you can choose SQL mod
 
 <!-- ## JavaScript and Python queries
 
-You can also create JavaScript or Python queries to manipulate your data from other queries, write business logic, or integrate third-party libraries. Learn more about them in **[Running JavaScript](/docs/data-sources/run-js)** and **[Running Python](/docs/data-sources/run-py)** documentation. -->
+You can also create JavaScript or Python queries to manipulate your data from other queries, write business logic, or integrate third-party libraries. Learn more about them in **[Running JavaScript](/docs/3.16.0-LTS/data-sources/run-js)** and **[Running Python](/docs/3.16.0-LTS/data-sources/run-py)** documentation. -->
 
 ## Custom Parameters
 
@@ -98,7 +98,7 @@ For each parameter, you need to specify:
 
 **Syntax for utilizing the parameter:** Employ `parameters.<identifier>` in your query. It's important to note that parameters can only be utilized within the specific query where they are defined.
 
-Learn more about **[Using Custom Parameters](/docs/app-builder/connecting-with-data-sources/use-custom-parameters)**.
+Learn more about **[Using Custom Parameters](/docs/3.16.0-LTS/app-builder/connecting-with-data-sources/use-custom-parameters)**.
 
 <img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui3/queryparams-v2.png" alt="Custom Parameters" style={{marginBottom:'15px'}}/>
 
@@ -122,7 +122,7 @@ Abort cancels the pending request on the client only. This stops the app builder
 
 Abort is not available for **RunJS**, **RunPy**, and **Workflow** queries, since they don't run as cancellable network requests.
 
-Queries can also be aborted programmatically using `queries.<queryName>.abort()`, or as an event action. Learn more in **[Run Actions from RunJS](/docs/actions/run-actions-from-runjs#abort-query)** and the **[Abort Query action reference](/docs/actions/abort-query)**.
+Queries can also be aborted programmatically using `queries.<queryName>.abort()`, or as an event action. Learn more in **[Run Actions from RunJS](/docs/3.16.0-LTS/actions/run-actions-from-runjs#abort-query)** and the **[Abort Query action reference](/docs/3.16.0-LTS/actions/abort-query)**.
 
 ## Query Level Permission
 
@@ -173,7 +173,7 @@ Let users know when actions are completed successfully. This improves UX by givi
 
 ### Retry on Network Errors
 
-This setting is only available for REST API queries. Here, you get an option to automatically retry REST API requests in case of certain network errors or specific HTTP status codes. By default, it retries a failed API request up to 3 times before marking it as failed. Refer to [REST API Documentation](/docs/data-sources/restapi/querying-rest-api/#retry-on-network-errors) for more details.
+This setting is only available for REST API queries. Here, you get an option to automatically retry REST API requests in case of certain network errors or specific HTTP status codes. By default, it retries a failed API request up to 3 times before marking it as failed. Refer to [REST API Documentation](/docs/3.16.0-LTS/data-sources/restapi/querying-rest-api/#retry-on-network-errors) for more details.
 
 ### Disable Query
 

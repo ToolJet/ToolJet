@@ -16,7 +16,7 @@ flowchart LR
 ```
 
 :::info
-See [Setup ToolJet AI &rarr; Overview](/docs/setup/tooljet-ai/overview) for how this fits alongside the other AI setups and how the request is processed end-to-end.
+See [Setup ToolJet AI &rarr; Overview](/docs/3.16.0-LTS/setup/tooljet-ai/overview) for how this fits alongside the other AI setups and how the request is processed end-to-end.
 :::
 
 ## Prerequisites
@@ -36,7 +36,7 @@ If your instance runs behind a firewall, proxy, or restricted egress policy, all
 
 
 
-If your instance uses an [HTTP proxy](/docs/setup/http-proxy), make sure these domains are reachable through it.
+If your instance uses an [HTTP proxy](/docs/3.16.0-LTS/setup/http-proxy), make sure these domains are reachable through it.
 
 ## Closed or Private Networks
 
@@ -72,20 +72,20 @@ To have the MCP server call ToolJet directly inside the container:
 
 ## Setup
 
-1. Confirm your license includes AI credits. If you need to purchase more, follow the **Self-Hosted Deployment** steps under [Buy Add-on Credits](/docs/build-with-ai/ai-credits#buy-add-on-credits).
+1. Confirm your license includes AI credits. If you need to purchase more, follow the **Self-Hosted Deployment** steps under [Buy Add-on Credits](/docs/3.16.0-LTS/build-with-ai/ai-credits#buy-add-on-credits).
 2. Whitelist the domains listed above in your firewall, proxy, or network egress rules.
 3. If your instance can't be reached from the internet, set `ENABLE_MCP_SOCKET_RELAY=true` as described in [Closed or Private Networks](#closed-or-private-networks).
 4. No further configuration is needed. AI features become available in your workspace automatically, billed against your instance's pooled AI credits.
 
 ## Billing
 
-Credits are pooled at the **instance level** for self-hosted deployments. See [Understanding AI Credits](/docs/build-with-ai/ai-credits#credit-allocation) for details.
+Credits are pooled at the **instance level** for self-hosted deployments. See [Understanding AI Credits](/docs/3.16.0-LTS/build-with-ai/ai-credits#credit-allocation) for details.
 
 ## Switching the AI Provider
 
-With this setup, each user can pick the LLM provider and model for their own AI chats. See [Selecting an AI Model](/docs/build-with-ai/model-selection) for details.
+With this setup, each user can pick the LLM provider and model for their own AI chats. See [Selecting an AI Model](/docs/3.16.0-LTS/build-with-ai/model-selection) for details.
 
 ## Switching to a Different Setup
 
-- On Self-hosted Enterprise, use your own LLM API key while continuing to route requests through ToolJet Managed AI Server with [Bring Your Own Key (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key).
-- To keep all AI traffic entirely within your own infrastructure with no data sent to ToolJet Managed AI Server, see [Setup ToolJet Enterprise AI](/docs/setup/tooljet-ai/tj-ai-enterprise).
+- On Self-hosted Enterprise, use your own LLM API key while continuing to route requests through ToolJet Managed AI Server with [Bring Your Own Key (BYOK)](/docs/3.16.0-LTS/setup/tooljet-ai/bring-your-own-key).
+- To keep all AI traffic entirely within your own infrastructure with no data sent to ToolJet Managed AI Server, see [Setup ToolJet Enterprise AI](/docs/3.16.0-LTS/setup/tooljet-ai/tj-ai-enterprise).

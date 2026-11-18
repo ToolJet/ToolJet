@@ -6,7 +6,7 @@ title: Custom Styles
 The Custom Styles feature in ToolJet allows users to apply their own CSS, overriding the default app styles. This is useful for styling that isn't covered by App Themes - such as fonts, shadows, spacing, and other component-specific details - giving you full control over the finer points of your app's appearance.
 
 :::note
-For most branding needs, configure an **[App Theme](/docs/app-builder/custom-theme)** first, it gives you a reusable, workspace-wide design system (brand colors, text, borders, system states) without writing any CSS. Use Custom Styles only for styling that App Themes don't expose.
+For most branding needs, configure an **[App Theme](/docs/3.16.0-LTS/app-builder/custom-theme)** first, it gives you a reusable, workspace-wide design system (brand colors, text, borders, system states) without writing any CSS. Use Custom Styles only for styling that App Themes don't expose.
 :::
 
 <!-- <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/customcss-v2.gif" alt="Custom CSS" /> -->

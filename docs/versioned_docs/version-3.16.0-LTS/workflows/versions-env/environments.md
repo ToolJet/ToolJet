@@ -7,7 +7,7 @@ title: Multi-Environment
 
 Environments for Workflows help manage different stages of workflow development, ensuring smooth transitions between development, testing, and production. They keep changes isolated so that testing and debugging can happen without affecting live workflow executions.
 
-Workflows follow the same environment model as applications in ToolJet. If you are already familiar with multi-environment for apps, the same concepts apply here. Refer to the **[Multi-Environment](/docs/development-lifecycle/environment/self-hosted/multi-environment)** guide for a general overview.
+Workflows follow the same environment model as applications in ToolJet. If you are already familiar with multi-environment for apps, the same concepts apply here. Refer to the **[Multi-Environment](/docs/3.16.0-LTS/development-lifecycle/environment/self-hosted/multi-environment)** guide for a general overview.
 
 ## What are Environments?
 
@@ -74,7 +74,7 @@ Each environment has a different impact on your workflow. Refer to the following
 
 ## Promote Workflow Permission
 
-Admins can configure the Promote permission from the [Permissions](/docs/user-management/role-based-access/user-roles#permissions-for-user-roles) page. This disables the **Promote** button for users who do not have the required permission, allowing only authorized roles to promote workflows from one environment to another.
+Admins can configure the Promote permission from the [Permissions](/docs/3.16.0-LTS/user-management/role-based-access/user-roles#permissions-for-user-roles) page. This disables the **Promote** button for users who do not have the required permission, allowing only authorized roles to promote workflows from one environment to another.
 
 :::info
 Without a multi-environment license, all workflow versions remain in the development environment. The promotion and environment features become available with the appropriate license tier.

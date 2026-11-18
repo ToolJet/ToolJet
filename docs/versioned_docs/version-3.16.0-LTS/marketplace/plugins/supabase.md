@@ -6,7 +6,7 @@ title: Supabase
 ToolJet connects to your Supabase database, allowing you to directly interact with your Supabase back-end from within your ToolJet application.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
@@ -15,7 +15,7 @@ Before following this guide, it is assumed that you have already completed the p
 
   <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/api_settings.png" alt="Supabase API Settings" />
 
-- Establish a connection to Supabase by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
+- Establish a connection to Supabase by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/3.16.0-LTS/data-sources/overview/) page from the ToolJet dashboard.
 
 - Enter your Project URL and Service Role Secret into their designated fields.
 
@@ -25,7 +25,7 @@ Before following this guide, it is assumed that you have already completed the p
 
 ## Querying Supabase
 
-- To perform queries on Supabase in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/connecting-with-data-sources/creating-managing-queries) located at the bottom panel of the editor.
+- To perform queries on Supabase in ToolJet, click the **+Add** button in the [query manager](/docs/3.16.0-LTS/app-builder/connecting-with-data-sources/creating-managing-queries) located at the bottom panel of the editor.
 - Select the previously configured Supabase datasource.
 - In the Operation dropdown, select the desired operation type. ToolJet currently [supports](#supported-operations) five query types for Supabase interactions.
 - Enter the table name and other required parameters for the selected operation and click on **Run** button to run the query.
@@ -33,7 +33,7 @@ Before following this guide, it is assumed that you have already completed the p
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/supabase/listops.png" alt="Supabase supported operations" />
 
 :::info
-Query results can be transformed using transformations. Read our [transformations documentation](/docs/app-builder/custom-code/transform-data).
+Query results can be transformed using transformations. Read our [transformations documentation](/docs/3.16.0-LTS/app-builder/custom-code/transform-data).
 :::
 
 ## Supported Operations

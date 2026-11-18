@@ -3,7 +3,7 @@ id: set-page-variable
 title: Set Page Variable
 ---
 
-Page variables are restricted to the page where they are created and cannot be accessed throughout the entire application like regular variables. Use this action to create a variable and assign a value to it within a [Multipage App](/docs/app-builder/building-ui/pages).
+Page variables are restricted to the page where they are created and cannot be accessed throughout the entire application like regular variables. Use this action to create a variable and assign a value to it within a [Multipage App](/docs/3.16.0-LTS/app-builder/building-ui/pages).
 
 ## Configuration
 
@@ -26,5 +26,5 @@ await actions.setPageVariable('<variableKey>', <variableValue>);
 <img className="screenshot-full" src="/img/actions/page/setpagevar33.png" alt="ToolJet - Action reference - Set Page Variable" />
 
 :::info
-For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/3.16.0-LTS/actions/run-actions-from-runjs/).
 :::

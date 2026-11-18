@@ -11,7 +11,7 @@ import TabItem from '@theme/TabItem';
 Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJet requires a PostgreSQL database to store applications definitions, (encrypted) credentials for datasources and user authentication data.
 
 ::::info
-If you rather want to try out ToolJet on your local machine with Docker, you can follow the steps [here](/docs/setup/try-tooljet/).
+If you rather want to try out ToolJet on your local machine with Docker, you can follow the steps [here](/docs/3.16.0-LTS/setup/try-tooljet/).
 
 :::warning
 To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
@@ -133,7 +133,7 @@ If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your
 
 </Tabs>
 
-Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
+Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/3.16.0-LTS/setup/env-vars)
 
 ### Docker Backup (Only For In-Built PostgreSQL)
 
@@ -154,7 +154,7 @@ The below bash script will help with taking back-up and as well as restoring:
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
 :::info
-For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](/docs/setup/workflow-temporal-to-bullmq-migration/).
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](/docs/3.16.0-LTS/setup/workflow-temporal-to-bullmq-migration/).
 :::
 
 ### Enabling Workflow Scheduling

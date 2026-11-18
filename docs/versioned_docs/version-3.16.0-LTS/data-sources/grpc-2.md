@@ -4,7 +4,7 @@ title: gRPC 2.0
 ---
 
 :::info gRPC 2.0
-This documentation covers the **gRPC 2.0** data source with enhanced features including server reflection and proto file URL import. The [legacy gRPC](/docs/data-sources/grpc) data source is still available but is deprecated.
+This documentation covers the **gRPC 2.0** data source with enhanced features including server reflection and proto file URL import. The [legacy gRPC](/docs/3.16.0-LTS/data-sources/grpc) data source is still available but is deprecated.
 :::
 
 ## What's New in gRPC 2.0
@@ -19,7 +19,7 @@ The new gRPC 2.0 data source provides significant improvements over the legacy v
 
 ## Pre-Requisite: Upgrade ToolJet to Version 2.5 or Above
 
-Find instructions on how to do this in the setup guides located here: [ToolJet Setup](/docs/setup/try-tooljet).
+Find instructions on how to do this in the setup guides located here: [ToolJet Setup](/docs/3.16.0-LTS/setup/try-tooljet).
 
 :::note
 Unlike the legacy gRPC data source, gRPC 2.0 doesn't require proto files on your server unless you choose to import them from the file system. It supports:
@@ -85,7 +85,7 @@ If you self-host ToolJet, you can load `.proto` files from a directory on the To
 When you select **Import .proto files from the file system**, ToolJet scans the directory and lists the services it finds in **Services**. Select at least one service. Only the selected services are available in queries. If the directory doesn't exist or contains no proto files, the list is empty.
 
 ## Connecting to gRPC 2.0
-After configuring your proto schema, establish a connection by going to the [data source](/docs/data-sources/overview) page.
+After configuring your proto schema, establish a connection by going to the [data source](/docs/3.16.0-LTS/data-sources/overview) page.
 
 ### Connection Configuration
 ToolJet gRPC 2.0 requires the following configuration:

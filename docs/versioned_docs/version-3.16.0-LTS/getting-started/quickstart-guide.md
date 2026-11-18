@@ -25,7 +25,7 @@ To begin, create a free **[ToolJet](https://www.tooljet.com/signup)** account an
 <br/>
 
 - Click on the **Create new app** button on the dashboard. Name your application as "Employee Directory".
-- Click and drag a **[Table](/docs/widgets/table/)** component on the canvas. Optionally, you can also design a header by adding more components.
+- Click and drag a **[Table](/docs/3.16.0-LTS/widgets/table/)** component on the canvas. Optionally, you can also design a header by adding more components.
 
 </div>
 
@@ -33,7 +33,7 @@ To begin, create a free **[ToolJet](https://www.tooljet.com/signup)** account an
 
 ### 2. Create a Database Table
 
-Now, create a new table in **[ToolJet’s Database](/docs/tooljet-db/tooljet-database/)** to store employee records.
+Now, create a new table in **[ToolJet’s Database](/docs/3.16.0-LTS/tooljet-db/tooljet-database/)** to store employee records.
 
 <div class="video-container">
     <iframe width="560" height="315" src="https://www.youtube.com/embed/a7qWJajVQ2o?si=KtppkSMB7JK4ANd1&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -56,7 +56,7 @@ To display employees in the application, you will first have to fetch the data f
 </div>
 <br/>
 
-- Click on the **Add** button in the **[Query Panel](/docs/app-builder/connecting-with-data-sources/creating-managing-queries)** to create a new query.
+- Click on the **Add** button in the **[Query Panel](/docs/3.16.0-LTS/app-builder/connecting-with-data-sources/creating-managing-queries)** to create a new query.
 - Select **ToolJet Database** as the data source for the query.
 - Rename the query to _getEmployees_.
 - Choose _employees_ as the Table name, and _List rows_ as the Operation.

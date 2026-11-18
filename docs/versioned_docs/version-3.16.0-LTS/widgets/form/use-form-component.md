@@ -3,9 +3,9 @@ id: use-form-component
 title: Using Form Component
 ---
 
-In this guide, we’ll build a simple app using the **[Form](/docs/widgets/form)** component to:
+In this guide, we’ll build a simple app using the **[Form](/docs/3.16.0-LTS/widgets/form)** component to:
 
-- Add records to **[ToolJet Database](/docs/tooljet-db/tooljet-database/)**
+- Add records to **[ToolJet Database](/docs/3.16.0-LTS/tooljet-db/tooljet-database/)**
 - Validate user inputs
 - Add conditional form behaviour
 - Refresh data automatically after submission
@@ -36,20 +36,20 @@ Add a few sample rows to the table.
 ## Step 3: Create the UI
 
 1. Create a new application.
-2. Drag a **[Table](/docs/widgets/table)** component onto the canvas.
+2. Drag a **[Table](/docs/3.16.0-LTS/widgets/table)** component onto the canvas.
 3. Set the Table's **Data** property to:
 
    ```js
    {{queries.fetchData.data;}}
    ```
 
-4. Drag a **[Modal](/docs/widgets/modal-v2/)** component above the Table.
+4. Drag a **[Modal](/docs/3.16.0-LTS/widgets/modal-v2/)** component above the Table.
 
     <img className="screenshot-full img-full" src="/img/how-to/use-form/v2/ui.png" alt="User Interface" />
 
 ## Step 4: Create the Form
 
-1. Drag a **[Form](/docs/widgets/form)** component inside the **Modal**.
+1. Drag a **[Form](/docs/3.16.0-LTS/widgets/form)** component inside the **Modal**.
 2. Disable the **Header** and **Footer** of the Form from its Properties panel since the Modal already provides these.
 3. In the **Generate form from** field, select the _fetchData_ query.
 4. Adjust the field mapping as needed and click **Generate form**.

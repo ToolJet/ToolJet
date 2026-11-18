@@ -16,7 +16,7 @@ For this guide, we are going to use one of the existing templates on ToolJet: **
 - Go to the **Data sources** on the left-sidebar; you'll find that the **AWS S3 data source** has already been added. All you need to do is update the data source credentials.
 
 :::tip
-Check the [AWS S3 data source reference](/docs/data-sources/s3) to learn more about connection and choosing your preferred authentication method.
+Check the [AWS S3 data source reference](/docs/3.16.0-LTS/data-sources/s3) to learn more about connection and choosing your preferred authentication method.
 :::
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/how-to/uses3presignedurl/connection-v3.png" alt="S3 add datasource" />

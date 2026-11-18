@@ -5,7 +5,7 @@ title: Supported Tools
 
 ToolJet MCP exposes 73 tools to your AI client. You never call these by name: you describe what you want in plain language, and your agent selects the tools it needs. This page is a reference for what your agent is able to do once connected.
 
-For what these add up to in practice, see the [Overview](/docs/build-with-ai/mcp/overview). To connect a client, see [Setup](/docs/build-with-ai/mcp/setup).
+For what these add up to in practice, see the [Overview](/docs/3.16.0-LTS/build-with-ai/mcp/overview). To connect a client, see [Setup](/docs/3.16.0-LTS/build-with-ai/mcp/setup).
 
 ## Workspace and Users
 

@@ -13,7 +13,7 @@ A **Bounded Box** is an infinitely customizable image annotation component that 
 
 | <div style={{ width:"100px"}}> **Property** </div> | <div style={{ width:"100px"}}> **Description** </div> | <div style={{ width:"150px"}}> **Expected Value** </div> |
 | :------------------------------------------------- | :---------------------------------------------------- | :------------------------------------------------------- |
-| Image URL | The URL or image data to show it on the component. | Get the image URL dynamically from database: `{{queries.queryname.data[0].url}}` or use [image's base64 data](/docs/widgets/image/loading-image-pdf-from-db/). |
+| Image URL | The URL or image data to show it on the component. | Get the image URL dynamically from database: `{{queries.queryname.data[0].url}}` or use [image's base64 data](/docs/3.16.0-LTS/widgets/image/loading-image-pdf-from-db/). |
 | Default value | The data that will load the default bounded boxes over the image when the app is loaded.     | Array of objects. Check the [Default value](#default-value) data properties. |
 | Selector | The bounded box support selection using rectangle or point. | Click **fx** to set the value `RECTANGLE` or `POINT`. |
 | List of labels | The list of label that will be displayed in the dropdown while selection in the bounded-box. | Labels in array format: `{{['Tree', 'Car', 'Stree light']}}`. |
@@ -63,7 +63,7 @@ Events are actions that can be triggered programmatically when the user interact
 | On change                                       | Triggered when the label from the dropdown in the selector is changed in the Bounded Box. |
 
 :::info
-Check [Action Reference](/docs/actions/run-query) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.16.0-LTS/actions/run-query) docs to get the detailed information about all the **Actions**.
 :::
 
 ## Component Specific Actions (CSA)
@@ -112,8 +112,8 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
 
 :::info
-The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** feature enabled.
 :::

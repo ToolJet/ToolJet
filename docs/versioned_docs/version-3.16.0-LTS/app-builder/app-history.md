@@ -66,5 +66,5 @@ Renaming only changes the entry's description. It doesn't change the app. The na
 Admins, super admins, and users with edit permission for the app can view the timeline, restore entries, and rename entries.
 
 :::info Self-hosted deployments
-ToolJet writes history entries through a background job queue that uses Redis. At least one ToolJet server must run with `WORKER=true` for changes to be recorded. See [Redis Configuration](/docs/setup/env-vars#redis-configuration) and [Workflow Scheduling](/docs/setup/env-vars#workflow-scheduling) for the related environment variables.
+ToolJet writes history entries through a background job queue that uses Redis. At least one ToolJet server must run with `WORKER=true` for changes to be recorded. See [Redis Configuration](/docs/3.16.0-LTS/setup/env-vars#redis-configuration) and [Workflow Scheduling](/docs/3.16.0-LTS/setup/env-vars#workflow-scheduling) for the related environment variables.
 :::

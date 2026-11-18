@@ -3,7 +3,7 @@ id: permissions
 title: Data Source Permissions
 ---
 
-Admins and Super Admins can configure various permissions for a data source within a workspace, for detailed information on other permissions and access control, refer to the **[Access Control](/docs/user-management/role-based-access/access-control#data-sources)** Guide.
+Admins and Super Admins can configure various permissions for a data source within a workspace, for detailed information on other permissions and access control, refer to the **[Access Control](/docs/3.16.0-LTS/user-management/role-based-access/access-control#data-sources)** Guide.
 
 ## Permissions
 

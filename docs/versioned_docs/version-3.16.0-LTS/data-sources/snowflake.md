@@ -7,7 +7,7 @@ ToolJet can connect to Snowflake databases to read and write data.
 
 ## Connection
 
-To establish a connection with the Snowflake data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview/)** page from the ToolJet dashboard and choose Snowflake as the data source.
+To establish a connection with the Snowflake data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/3.16.0-LTS/data-sources/overview/)** page from the ToolJet dashboard and choose Snowflake as the data source.
 
 The following fields appear for every authentication type:
 
@@ -332,5 +332,5 @@ This basically means If the row exists then update, if not do insert.
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/snowflake/bulk-upsert-gui.png" alt="Snowflake bulk update gui" />
 
 :::tip
-Query results can be transformed using transformations. Read our [transformations](/docs/app-builder/custom-code/transform-data) documentation to learn more.
+Query results can be transformed using transformations. Read our [transformations](/docs/3.16.0-LTS/app-builder/custom-code/transform-data) documentation to learn more.
 :::

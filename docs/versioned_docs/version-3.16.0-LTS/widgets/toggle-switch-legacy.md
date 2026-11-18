@@ -6,7 +6,7 @@ title: Toggle Switch (Legacy)
 The **Toggle Switch (Legacy)** component lets users turn an option on or off.
 
 :::info
-This is a legacy component. You'll find it in the **Legacy** section of the components panel. Check out the new version of the toggle switch component [here](/docs/widgets/toggle-switch-v2).
+This is a legacy component. You'll find it in the **Legacy** section of the components panel. Check out the new version of the toggle switch component [here](/docs/3.16.0-LTS/widgets/toggle-switch-v2).
 :::
 
 ## Properties
@@ -23,7 +23,7 @@ This is a legacy component. You'll find it in the **Legacy** section of the comp
 | On change | Triggers when the user turns the switch on or off. |
 
 :::info
-Check [Action Reference](/docs/actions/run-query) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.16.0-LTS/actions/run-query) docs to get the detailed information about all the **Actions**.
 :::
 
 ## Component Specific Actions (CSA)
@@ -70,10 +70,10 @@ Enter the text under the <b>General</b> accordion. Hovering over the component d
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
 
 :::info
-The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** feature enabled.
 :::
 
 :::info

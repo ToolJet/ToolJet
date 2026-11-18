@@ -18,7 +18,7 @@ You can also send parameters to the other workflow, allowing dynamic control ove
 
 A workflow can call itself recursively. It’s recommended to define an exit condition to avoid creating an infinite loop.
 
-The timeout for each workflow can be configured using the `WORKFLOW_TIMEOUT_SECONDS` environment variable. For more information checkout [Customizing Workflow Configuration](/docs/setup/env-vars#customizing-workflow-configuration).
+The timeout for each workflow can be configured using the `WORKFLOW_TIMEOUT_SECONDS` environment variable. For more information checkout [Customizing Workflow Configuration](/docs/3.16.0-LTS/setup/env-vars#customizing-workflow-configuration).
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/example.png" alt="IF Else Node Example" />
 

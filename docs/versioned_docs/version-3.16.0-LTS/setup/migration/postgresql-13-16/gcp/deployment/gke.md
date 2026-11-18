@@ -72,4 +72,4 @@ spec:
             periodSeconds: 5
 ```
 
-**Reference**: [ToolJet Kubernetes GKE Setup Documentation](https://docs.tooljet.com/docs/setup/kubernetes-gke)
+**Reference**: [ToolJet Kubernetes GKE Setup Documentation](https://docs.tooljet.com/docs/3.16.0-LTS/setup/kubernetes-gke)

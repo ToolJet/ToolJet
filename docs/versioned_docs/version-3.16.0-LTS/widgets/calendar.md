@@ -122,7 +122,7 @@ Determines whether to display a popover whenever an event is clicked. Click on `
 |  **On View Change**   | This event is fired when a different view is selected by the user. The current view is exposed as `currentView`. |
 
 :::info
-Check [Action Reference](/docs/actions/run-query) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.16.0-LTS/actions/run-query) docs to get the detailed information about all the **Actions**.
 :::
 
 ## Component Specific Actions (CSA)
@@ -165,10 +165,10 @@ A Tooltip is often used to specify extra information about something when the us
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
 
 :::info
-The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** feature enabled.
 :::
 
 :::info
