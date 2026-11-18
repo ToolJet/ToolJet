@@ -24,7 +24,7 @@ The base module every other backend module builds on. Owns: the `SubModule` base
 | `loader.ts` | Infra modules: TypeORM (main + `tooljetDb`), BullMQ, ConfigModule, pino logger, otel/Sentry, Redis, `GuardValidatorModule` |
 | `middlewares/migration-gate.middleware.ts` | Upgrade gate, async mode only (blocking mode passes everything): answers API writes with 503 while a migration runs or after a failed run. Details: `server/docs/MIGRATION_FLOW.md` (Upgrade gate) |
 | `constants/cli-compatibility.ts` | What the public `GET /api/cli-compatibility` route (on `AppController`) tells the ToolJet CLI: `MIN_CLI_VERSION` (raise when the server drops something an older CLI uses) and `CLI_API_VERSION` (raise when the server adds something a CLI release needs). The CLI side is `cli/src/lib/compatibility.ts`; a CLI test fails when the two stop matching |
-| `migration-runs/` | `MigrationRunsService`: gate status, and async-mode runs (data phase in a child process). Super-admin `migration-runs` routes. The public `migration-status` route is on `AppController`. Details: `MIGRATION_FLOW.md` (Async mode) |
+| `migration-runs/` | `MigrationRunsService`: gate status, and async-mode runs (data, then cleanup phase, each in a child process). Super-admin `migration-runs` routes. The public `migration-status` route is on `AppController`. Details: `MIGRATION_FLOW.md` (Async mode) |
 | `validators/feature-guard.validator.ts` | `GuardValidator` — boot-time scan asserting every route has an `AbilityGuard` |
 | `interceptors/response.interceptor.ts` | Emits audit-log events after responses, driven by `MODULE_INFO` feature config |
 | `types.ts` | `FeatureConfig`, `ResourceDetails`, `UserAllPermissions` |

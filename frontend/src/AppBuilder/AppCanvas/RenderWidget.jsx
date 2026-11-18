@@ -77,6 +77,8 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
 ];
 
 const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2', 'ShadDialog'];
+// Statistics owns its card tooltip so a cut-off text's own tooltip can take priority over it.
+const WIDGETS_WITH_OWN_TOOLTIP = [...WIDGETS_WITH_PORTALED_CONTENT, 'Statistics'];
 
 // A saved component whose type this build does not register (a retired widget, a widget from a newer ToolJet): a quiet
 // box in its slot instead of an error that takes the page down.
@@ -382,7 +384,7 @@ const RenderWidget = ({
     ? resolvedProperties?.tooltipFormat
     : resolvedGeneralProperties?.tooltipFormat;
   const hasUserTooltip = !!String(userTooltipContent ?? '').trim();
-  const selfScopesTooltip = WIDGETS_WITH_PORTALED_CONTENT.includes(component?.component);
+  const selfScopesTooltip = WIDGETS_WITH_OWN_TOOLTIP.includes(component?.component);
 
   // User-defined CSS class(es), gated by the customStyling license. Trimmed + whitespace-collapsed.
   const userCssClass = hasCustomStyling ? (resolvedStyles?.cssClass ?? '').trim().replace(/\s+/g, ' ') : '';

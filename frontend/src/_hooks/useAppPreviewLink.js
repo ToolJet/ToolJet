@@ -20,6 +20,7 @@ export function useAppPreviewLink() {
     slug,
     currentVersionId,
     selectedVersion,
+    loadedVersionName,
     currentLayout,
   } = useStore(
     (state) => ({
@@ -31,6 +32,7 @@ export function useAppPreviewLink() {
       slug: state.appStore.modules[moduleId].app.slug,
       currentVersionId: state.currentVersionId,
       selectedVersion: state.selectedVersion,
+      loadedVersionName: state.resolvedStore.modules[moduleId]?.exposedValues.globals.appVersion?.name,
       currentLayout: state.currentLayout,
     }),
     shallow
@@ -54,8 +56,11 @@ export function useAppPreviewLink() {
     // slug lookup misses and the app can't be found.
     const previewQuery = withCodeModeParam(
       queryString.stringify({
-        version: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
+        // The app's loaded version is available before the environment dropdown finishes initializing.
+        version:
+          selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name || loadedVersionName,
         ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
+        // Carry the editor's mobile view into preview so it opens in mobile too.
         ...(currentLayout === 'mobile' ? { layout: 'mobile' } : {}),
         ...(currentBranch ? { branch: currentBranch.name } : {}),
       })
@@ -77,6 +82,7 @@ export function useAppPreviewLink() {
     selectedEnvironment?.name,
     selectedVersion?.name,
     selectedVersion?.versionType,
+    loadedVersionName,
     currentBranch,
     currentLayout,
   ]);

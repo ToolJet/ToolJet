@@ -9,6 +9,7 @@ import {
   SendWorkspaceBannedEmailPayload,
   SendAppBuildCompletedEmailPayload,
   SendVersionReviewEmailPayload,
+  SendWorkflowApprovalEmailPayload,
 } from '../dto';
 
 export enum EMAIL_EVENTS {
@@ -22,6 +23,7 @@ export enum EMAIL_EVENTS {
   SEND_WORKSPACE_BANNED_EMAIL = 'sendWorkspaceBannedEmail',
   SEND_APP_BUILD_COMPLETED_EMAIL = 'sendAppBuildCompletedEmail',
   SEND_VERSION_REVIEW_EMAIL = 'sendVersionReviewEmail',
+  SEND_WORKFLOW_APPROVAL_EMAIL = 'sendWorkflowApprovalEmail',
 }
 
 export type EmailEventPayload =
@@ -34,4 +36,5 @@ export type EmailEventPayload =
   | { type: EMAIL_EVENTS.SEND_USER_BANNED_EMAIL; payload: SendUserBannedEmailPayload }
   | { type: EMAIL_EVENTS.SEND_WORKSPACE_BANNED_EMAIL; payload: SendWorkspaceBannedEmailPayload }
   | { type: EMAIL_EVENTS.SEND_APP_BUILD_COMPLETED_EMAIL; payload: SendAppBuildCompletedEmailPayload }
-  | { type: EMAIL_EVENTS.SEND_VERSION_REVIEW_EMAIL; payload: SendVersionReviewEmailPayload };
+  | { type: EMAIL_EVENTS.SEND_VERSION_REVIEW_EMAIL; payload: SendVersionReviewEmailPayload }
+  | { type: EMAIL_EVENTS.SEND_WORKFLOW_APPROVAL_EMAIL; payload: SendWorkflowApprovalEmailPayload };

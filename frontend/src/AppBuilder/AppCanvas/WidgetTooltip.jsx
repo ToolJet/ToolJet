@@ -53,6 +53,8 @@ const WidgetTooltip = ({
   children,
   delayDuration = 500,
   darkMode = false,
+  open,
+  onOpenChange,
 }) => {
   const trimmed = typeof content === 'string' ? content.trim() : '';
   const shouldShowTooltip = show && !!trimmed;
@@ -63,7 +65,7 @@ const WidgetTooltip = ({
 
   return (
     <TooltipProvider delayDuration={shouldShowTooltip ? delayDuration : NEVER_OPEN_DELAY}>
-      <Tooltip>
+      <Tooltip open={open} onOpenChange={onOpenChange}>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
         {shouldShowTooltip && (
           <TooltipContent
@@ -89,6 +91,8 @@ WidgetTooltip.propTypes = {
   show: PropTypes.bool,
   delayDuration: PropTypes.number,
   darkMode: PropTypes.bool,
+  open: PropTypes.bool,
+  onOpenChange: PropTypes.func,
   children: PropTypes.node,
 };
 

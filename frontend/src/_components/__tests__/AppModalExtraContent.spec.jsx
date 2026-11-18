@@ -54,3 +54,40 @@ test('without extraContent the dialog is unchanged', () => {
   expect(document.querySelector('[data-cy="extra-field"]')).toBeNull();
   expect(screen.getByPlaceholderText('Enter app name')).toBeInTheDocument();
 });
+
+test('renders leadingContent above the name field, with the name label a dialog gives', () => {
+  render(
+    <AppModal
+      show
+      closeModal={() => {}}
+      processApp={jest.fn()}
+      title="Create app"
+      actionButton="+ Create app"
+      actionLoadingButton="Creating"
+      appType="front-end"
+      modalType="create"
+      leadingContent={<div data-cy="leading-field">Build mode</div>}
+      nameLabel="What do you want to build today?"
+    />
+  );
+  const leading = document.querySelector('[data-cy="leading-field"]');
+  const label = document.querySelector('[data-cy="app-name-label"]');
+  expect(label).toHaveTextContent('What do you want to build today?');
+  expect(leading.compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+});
+
+test('without nameLabel the name field keeps its "<type> name" label', () => {
+  render(
+    <AppModal
+      show
+      closeModal={() => {}}
+      processApp={jest.fn()}
+      title="Create app"
+      actionButton="+ Create app"
+      actionLoadingButton="Creating"
+      appType="front-end"
+      modalType="create"
+    />
+  );
+  expect(document.querySelector('[data-cy="app-name-label"]')).toHaveTextContent('App name');
+});

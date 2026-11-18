@@ -17,6 +17,7 @@ const NoComponentCanvasContainer = () => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded);
   const aiFeaturesEnabled = useStore((state) => state.ai?.aiFeaturesEnabled);
+  const isCodeApp = useStore((state) => state.appStore?.modules?.canvas?.app?.buildMode === 'code');
 
   const queryBoxText = sampleDataSource
     ? 'Connect to your data source or use our sample data source to start playing around!'
@@ -39,7 +40,8 @@ const NoComponentCanvasContainer = () => {
     setPreviewData(null);
   };
 
-  if (typeof EmptyCanvasAiState === 'function' && aiFeaturesEnabled !== false) {
+  // A Code mode app is never dragged together, so it gets the ways in even without AI (they drop the chat then).
+  if (typeof EmptyCanvasAiState === 'function' && (aiFeaturesEnabled !== false || isCodeApp)) {
     return <EmptyCanvasAiState onInviteCollaborators={openAddUserWorkspaceSetting} />;
   }
 

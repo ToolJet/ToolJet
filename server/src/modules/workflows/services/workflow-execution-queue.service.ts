@@ -1,7 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
-import { WorkflowTriggerType } from '../types';
+import { ResumeState, WorkflowTriggerType } from '../types';
+
+export interface WorkflowResumeOptions {
+  startNodeId?: string;
+  injectedState?: ResumeState;
+  requestId?: string;
+  delayMs?: number;
+}
 
 @Injectable()
 export class WorkflowExecutionQueueService {
@@ -12,7 +19,8 @@ export class WorkflowExecutionQueueService {
     createWorkflowExecutionDto: CreateWorkflowExecutionDto,
     triggeredBy: WorkflowTriggerType = 'manual',
     priority: number = 0,
-    timeout?: number
+    timeout?: number,
+    resumeOptions?: WorkflowResumeOptions
   ): Promise<void> {
     throw new Error('Method not implemented.');
   }

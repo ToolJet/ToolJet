@@ -11,7 +11,7 @@ Owns personal access tokens (PATs) and their exchange for workspace sessions.
 
 ## Invariants
 
-- Workspace PATs can reach Apps, Data, Workflows, and the explicitly allowed Workspace Users features.
+- Workspace PATs can reach Apps, Data, Workflows, and the explicitly allowed Workspace Users features. Apps includes only `LIST_BRANCHES` from Workspace Branches so clients can target an existing branch; branch creation/switching/deletion, Git configuration and push/pull remain denied.
 - `PAT_DENIED_FEATURES` keeps browser-only decisions out of tokens inside allowed modules: releasing past a failed security gate, approving a review, and releasing without one. It is a deny set, so the rest of each module stays reachable.
 - Workflow creation, execution, status, and node routes use the existing module metadata; do not add controller-specific PAT checks.
 - Scope access never overrides owner permissions or edition/license gates.
