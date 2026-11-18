@@ -1,5 +1,6 @@
 /** App factory with caching, license mocking, and DB lifecycle for tests. */
 import { DynamicModule, INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
+import { RedisService } from '@modules/redis/service';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
@@ -454,6 +455,7 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
         setDataSources(slot.app);
         await beginSuiteTransaction();
         configurePlanMock(slot.app, plan);
+        await clearRateLimitCounters(slot.app);
         return { app: slot.app };
       }
     } catch {
@@ -496,7 +498,27 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     _cache[cacheKey] = { app, realClose };
   }
 
+  await clearRateLimitCounters(app);
   return { app };
+}
+
+/*
+ * Webhook rate limits count in Redis (`@modules/rate-limit`), so unlike in-memory throttling they
+ * outlive a test app: a suite that trips a limit would leave the route blocked for the next one.
+ * Each suite starts with no counters, as it did when throttling was per app.
+ */
+async function clearRateLimitCounters(app: INestApplication): Promise<void> {
+  try {
+    const redis = app.get(RedisService, { strict: false }).getClient();
+    let cursor = '0';
+    do {
+      const [next, keys] = await redis.scan(cursor, 'MATCH', 'tj:rl:*', 'COUNT', 500);
+      if (keys.length) await redis.del(...keys);
+      cursor = next;
+    } while (cursor !== '0');
+  } catch {
+    // No Redis in this suite: nothing was counted there either
+  }
 }
 
 // ---------------------------------------------------------------------------
