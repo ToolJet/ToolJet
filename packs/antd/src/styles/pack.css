@@ -16,6 +16,72 @@
   overflow: auto;
   box-sizing: border-box;
 }
+/* A component sized to its content (Radio Group, Steps, Result, Title, Text) in a fixed box (Dynamic height off): what is past the box scrolls
+   inside it, as the ToolJet Radio's does, instead of being cut off by the host (QA PKB-76). With Dynamic height on, the
+   box grows with it. */
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-fit-scroll {
+  height: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+}
+/* An option is never wider than the box: a long label wraps, breaking a word longer than the box, instead of running
+   out to the box's edge and being cut there. */
+.tj-ant-radio-root .ant-radio-wrapper {
+  max-width: 100%;
+}
+.tj-ant-radio-root .ant-radio-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* Rate in a fixed box (Dynamic height off): its box fills the widget, the label and stars centred down it (taller than
+   the box, they start at the top and scroll). With Dynamic height on, the box is the content's height. The stars' row
+   is their own height: Ant's 32px field row and the gap under an inline list left 8px under the stars, so they sat
+   above the middle. */
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-rate {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  justify-content: safe center;
+  overflow: auto;
+}
+/* Rate: the stars fill in the primary colour, which they ignored (Ant's fixed yellow, QA PKB-41): the Primary color style,
+   else the app theme's brand, else Ant's blue. Ant sets the colour on the Rate itself (.tj.ant-rate), so this targets it
+   more closely. */
+.tj-ant-rate .tj.ant-rate {
+  --ant-rate-star-color: var(--ant-color-primary);
+  display: flex;
+}
+.tj-ant-rate .ant-form-item-control-input {
+  min-height: 0;
+}
+.tj-ant-rate .ant-form-item-control-input-content {
+  display: flex;
+}
+/* Empty in a box shorter than it: the picture shrinks to the room the text leaves, instead of its fixed 100px (40px
+   simple) running out of the box's bottom (QA PF-194). */
+.tj-ant-empty .ant-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-height: 100%;
+}
+.tj-ant-empty .ant-empty-image {
+  flex: 0 1 auto;
+  min-height: 0;
+}
+.tj-ant-empty .ant-empty-image svg {
+  height: 100%;
+}
+/* A clickable step's focus: a ring around the whole step, as Tabs and Pagination draw (QA PF-007). Ant rings only the
+   step's icon in a pale tint, which a progress dot or the navigation type all but hide. Drawn inside the step, so the
+   box's scroll does not clip it at the edges. */
+.tj-ant-steps .ant-steps-item-container:focus-visible {
+  outline: var(--ant-line-width-focus) solid var(--ant-color-primary-border);
+  outline-offset: calc(-1 * var(--ant-line-width-focus));
+  border-radius: var(--ant-border-radius-sm);
+}
 /* Lists and tables fill the box: a bordered list's border, and a table's surface with its pagination at the foot,
    reach its bottom instead of ending in a blank band. */
 /* Container background on a list (QA PKB-41): the class is set only when the style is. */
@@ -256,6 +322,17 @@
   flex-direction: column;
   justify-content: center;
 }
+/* The title and bar sit in the Spin wrapper, which fills the box: centred there, not on the root (the wrapper took the
+   root's centring, and the bar sat at the top). A title taller than the box scrolls inside it instead of running past
+   the bottom; safe centring starts it at the top then, where plain centring put half of it above, out of reach (QA
+   PF-214). */
+.tj-ant-progress-line > .tj-ant-spin-fill > .ant-spin-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  justify-content: safe center;
+  overflow: auto;
+}
 .tj-ant-progress-line .ant-progress {
   margin: 0;
 }
@@ -424,11 +501,13 @@
   height: 100%;
   min-height: 0;
 }
-/* The dropzone takes what the box leaves (its border always drawn); its centred content clips inside it. */
+/* The dropzone takes what the box leaves (its border always drawn); its centred content clips inside it. Container
+   background fills it (Ant fills it with its own light grey, so only the Button type took the style: QA PF-276). */
 .tj-ant-upload .ant-upload-drag {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  background-color: var(--tj-ant-color-bg-container, var(--ant-color-fill-alter));
 }
 .tj-ant-upload .ant-upload-list {
   overflow: auto;
@@ -482,7 +561,15 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  border-radius: var(--ant-border-radius);
+  box-sizing: border-box;
+  /* Border color and Border radius (QA PKB-41), set on the root by the Image; unset, no border and the theme radius. */
+  border: var(--tj-image-border, none);
+  border-radius: var(--tj-image-radius, var(--ant-border-radius));
+}
+/* A Tab stop with Preview on (QA PF-225): the ring drawn just inside the picture's box, over the picture. */
+.tj-ant-image .ant-image:focus-visible {
+  outline: var(--ant-line-width-focus) solid var(--ant-color-primary-border);
+  outline-offset: calc(-1 * var(--ant-line-width-focus));
 }
 .tj-ant-image .ant-image-img {
   height: 100%;
@@ -1208,6 +1295,31 @@
 }
 .tj-ant-chart-frame > div {
   height: 100%;
+}
+/* RadialChart's, Sparkline's, Steps', Result's, Progress' and Rate's box takes Background, Border color and Border
+   radius as the charts' (.tj-ant-chart) does: they have no frame of their own, so the styles changed nothing on them
+   (QA PKB-41). */
+.tj-ant-chart-box {
+  box-sizing: border-box;
+  background-color: var(--tj-ant-color-bg-container, transparent);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--tj-ant-color-border-secondary, transparent);
+  border-radius: var(--tj-ant-border-radius, 0);
+  padding: calc(var(--tj-ant-border-radius, 0px) * 0.3);
+}
+/* Their Tab stop (QA PF-241): a ring drawn over the plot's canvas, as the charts' body has. */
+.tj-ant-mini-focus {
+  position: relative;
+  outline: none;
+}
+.tj-ant-mini-focus:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow: inset 0 0 0 2px var(--ant-color-primary);
 }
 .tj-ant-strength {
   display: flex;

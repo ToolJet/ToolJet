@@ -36,8 +36,12 @@ const alpha = (c: string, p: number) => `color-mix(in srgb, ${c} ${p}%, transpar
 export type TokenStyle = 'colorPrimary' | 'colorText' | 'colorBgContainer' | 'colorBorder' | 'borderRadius';
 
 /** `omit`: styles a component has no part for, left out of its Inspector (QA PKB-41). A constant per component, so the
- *  hooks run in the same order on every render. */
-export const useTokenStyles = ({ omit = [] }: { omit?: TokenStyle[] } = {}) => {
+ *  hooks run in the same order on every render. `radius`: options for the Border radius style, e.g. shown only for
+ *  the look that draws it (a Radio Group's buttons). */
+export const useTokenStyles = ({
+  omit = [],
+  radius = {},
+}: { omit?: TokenStyle[]; radius?: Parameters<typeof useThemeNumber>[3] } = {}) => {
   const offered = (name: TokenStyle) => !omit.includes(name);
   const colorPrimary = offered('colorPrimary') ? useThemeColor('colorPrimary', 'Primary color', THEME_COLOR.brand) : '';
   const colorText = offered('colorText') ? useThemeColor('colorText', 'Text color', THEME_COLOR.text) : '';
@@ -45,7 +49,9 @@ export const useTokenStyles = ({ omit = [] }: { omit?: TokenStyle[] } = {}) => {
     ? useThemeColor('colorBgContainer', 'Container background', THEME_COLOR.surface)
     : '';
   const colorBorder = offered('colorBorder') ? useThemeColor('colorBorder', 'Border color', THEME_COLOR.border) : '';
-  const borderRadius = offered('borderRadius') ? useThemeNumber('borderRadius', 'Border radius', RADIUS_HINT) : '';
+  const borderRadius = offered('borderRadius')
+    ? useThemeNumber('borderRadius', 'Border radius', RADIUS_HINT, radius)
+    : '';
   return useMemo(() => {
     const vars: Record<string, string> = {};
     if (isSet(colorPrimary)) {
