@@ -41,6 +41,26 @@ const useFieldActions = (change: (v: unknown) => void, initial: unknown) => {
 // Strict: text that names no real date or time (2026-13-45, 25:99) is no value, not a rolled-over one (lib/dates).
 const COLOR_TEXT =
   /^(#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|(rgba?|hsla?|hsba?|hsva?)\(\s*[-+\d.%]+(\s*[,\s/]\s*[-+\d.%]+){2,3}\s*\))$/i;
+// A CSS colour name (red, rebeccapurple) as hex, as the browser reads it, or null: Ant's own parser read every name as
+// black, and the native Color picker takes names. A canvas keeps its last valid colour when given one it cannot
+// read, so a name that leaves two different starting colours where they were is no colour.
+const colorName = (v: unknown): string | null => {
+  const text = str(v).trim();
+  if (!/^[a-z]+$/i.test(text) || typeof document === 'undefined') return null;
+  const ctx = document.createElement('canvas').getContext?.('2d');
+  if (!ctx) return null;
+  const read = (start: string) => {
+    ctx.fillStyle = start;
+    ctx.fillStyle = text;
+    return String(ctx.fillStyle);
+  };
+  const a = read('#000000');
+  return a === read('#ffffff') && /^#[0-9a-f]{6}$/i.test(a) ? a.toLowerCase() : null;
+};
+const hexToRgb = (hex: string) => {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
+};
 const parseDate = (v: unknown, format?: string): Dayjs | null =>
   format ? parseTime(v, [format, format.replace(/^HH/, 'H')]) : strictDate(v);
 
@@ -1072,16 +1092,22 @@ export const ColorPicker = (props: Record<string, unknown>) => {
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   // A colour the picker can read (hex, rgb(), hsl(), hsb()): anything else showed as #000000 while value kept the text.
   // A value it cannot read is not kept; setFieldValue refuses it.
+  // A colour name is taken as its colour, in the field's format (AD-10: red showed Transparent).
   const readable = (v: unknown) => str(v).trim() === '' || COLOR_TEXT.test(str(v).trim());
+  const fromName = (v: unknown) => {
+    const hex = colorName(v);
+    return hex && format === 'rgb' ? hexToRgb(hex) : hex;
+  };
   useFieldActions((v) => {
-    if (!readable(v)) return;
-    if (valueSetter.set(str(v))) onChange();
+    const next = fromName(v) ?? (readable(v) ? str(v) : null);
+    if (next !== null && valueSetter.set(next)) onChange();
   }, props.value);
   const valueReadable = readable(value);
   useEffect(() => {
-    if (!valueReadable) setValue('');
+    if (valueReadable) return;
+    setValue(fromName(value) ?? '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [valueReadable]);
+  }, [valueReadable, value]);
   const presetList = toArray(presets)
     .map((p) =>
       p && typeof p === 'object' ? { label: str((p as Row).label), colors: toArray((p as Row).colors).map(str) } : null
