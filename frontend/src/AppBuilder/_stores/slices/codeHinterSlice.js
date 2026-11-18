@@ -3,7 +3,6 @@ import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
 import { ARRAY_HINT_TEMPLATE_THRESHOLD, traverseObjectToHints } from '@/AppBuilder/CodeEditor/hintTraversal';
 import { ROW_SCOPED_RESOLVABLE_KEY_MAP, isRowScopedParent } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
-
 /**
  * Module-level single-entry caches for context hints.
  *
