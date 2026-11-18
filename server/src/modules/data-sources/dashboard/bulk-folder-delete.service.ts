@@ -21,6 +21,7 @@ export class DataSourcesBulkFolderDeleteService {
 
   async delete(user: User, dto: BulkDeleteDataSourceFoldersDto): Promise<BulkResultResponseDto> {
     const ctx = await this.dashboardService.resolveScope(user, dto.branch_id);
+    const branchId = dto.branch_id && ctx.scope.branchId;
     const withDataSources = dto.mode === 'folder_and_data_sources';
 
     const plans: FolderPlan[] = [];
@@ -44,7 +45,7 @@ export class DataSourcesBulkFolderDeleteService {
           [plan.folder.id, ctx.scope.branchId]
         );
         const ids = rows.map((row) => row.data_source_id);
-        plan.toDelete = (await this.bulkService.splitDeletable(user, ctx, ids, dto.branch_id)).allowed;
+        plan.toDelete = (await this.bulkService.splitDeletable(user, ctx, ids, branchId)).allowed;
       }
     }
 
@@ -53,7 +54,7 @@ export class DataSourcesBulkFolderDeleteService {
     const refused: string[] = [];
     for (const plan of plans) {
       for (const id of plan.toDelete) {
-        await this.bulkService.deleteOne(id, user, dto.branch_id);
+        await this.bulkService.deleteOne(id, user, branchId);
       }
       try {
         await this.foldersService.deleteFolder(user, plan.folder.id);

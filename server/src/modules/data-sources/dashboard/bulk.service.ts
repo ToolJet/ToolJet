@@ -46,11 +46,12 @@ export class DataSourcesBulkService {
 
   async delete(user: User, dto: BulkDeleteDataSourcesDto): Promise<BulkResultResponseDto> {
     const ctx = await this.dashboardService.resolveScope(user, dto.branch_id);
-    const { allowed, blocked } = await this.splitDeletable(user, ctx, dto.data_source_ids, dto.branch_id);
+    const branchId = dto.branch_id && ctx.scope.branchId;
+    const { allowed, blocked } = await this.splitDeletable(user, ctx, dto.data_source_ids, branchId);
     if (blocked.length) return bulkResult(blocked);
     const refused: string[] = [];
     for (const id of allowed) {
-      if (!(await this.deleteOne(id, user, dto.branch_id))) refused.push(id);
+      if (!(await this.deleteOne(id, user, branchId))) refused.push(id);
     }
     return bulkResult(refused);
   }
@@ -63,7 +64,12 @@ export class DataSourcesBulkService {
     branchId?: string
   ): Promise<{ allowed: string[]; blocked: string[] }> {
     if (ids.length === 0) return { allowed: [], blocked: [] };
-    const rows = new Map((await this.deleteTargets(ctx.scope, ids)).map((row) => [row.id, row]));
+    const listed = await this.listedIds(ctx.scope, ids);
+    const targets = await this.deleteTargets(
+      ctx.scope,
+      ids.filter((id) => listed.has(id))
+    );
+    const rows = new Map(targets.map((row) => [row.id, row]));
     const allowed: string[] = [];
     const blocked: string[] = [];
     for (const id of ids) {
@@ -73,8 +79,8 @@ export class DataSourcesBulkService {
     return { allowed, blocked };
   }
 
-  // DataSourcesService.delete + its audit entry; false on an HttpException refusal. The raw
-  // branch id is passed on purpose: without one, v1 delete removes the whole data source.
+  // DataSourcesService.delete + its audit entry; false on an HttpException refusal. An absent
+  // branch id is passed on as absent on purpose: without one, v1 delete removes the whole data source.
   async deleteOne(id: string, user: User, branchId?: string): Promise<boolean> {
     try {
       await this.dataSourcesService.delete(id, user, branchId);
@@ -87,8 +93,8 @@ export class DataSourcesBulkService {
   }
 
   async move(user: User, dto: BulkMoveDataSourcesDto): Promise<BulkResultResponseDto> {
-    await this.dashboardService.assertFolderWritable(user, dto.branch_id);
     const { scope, permissions } = await this.dashboardService.resolveScope(user, dto.branch_id);
+    await this.dashboardService.assertFolderWritable(user, dto.branch_id && scope.branchId);
     const [folder]: { id: string; owner_id: string | null }[] = await this.dataSource.query(
       `SELECT id, created_by AS owner_id FROM folders WHERE id = $1 AND organization_id = $2 AND type = $3`,
       [dto.folder_id, user.organizationId, DATA_SOURCE_FOLDER_TYPE]
@@ -96,7 +102,7 @@ export class DataSourcesBulkService {
     const visibleQuery = folder && visibleIdsQuery(scope, { data_source: [], folder: [folder.id] });
     const visible = visibleQuery ? await this.dataSource.query(visibleQuery.sql, visibleQuery.params) : [];
     if (!visible.length) throw new NotFoundException('Folder not found');
-    const found = await this.inWorkspace(user, dto.data_source_ids);
+    const found = await this.listedIds(scope, dto.data_source_ids);
     const permitted = canManageFolderDataSources(permissions, user.id, { id: folder.id, ownerId: folder.owner_id });
     const blockedIds = dto.data_source_ids.filter((id) => !found.has(id) || !permitted);
     if (blockedIds.length) return bulkResult(blockedIds);
@@ -105,8 +111,8 @@ export class DataSourcesBulkService {
   }
 
   async remove(user: User, dto: BulkRemoveDataSourcesDto): Promise<BulkResultResponseDto> {
-    await this.dashboardService.assertFolderWritable(user, dto.branch_id);
     const { scope, permissions } = await this.dashboardService.resolveScope(user, dto.branch_id);
+    await this.dashboardService.assertFolderWritable(user, dto.branch_id && scope.branchId);
     const rows: { id: string; folder_id: string | null; folder_owner_id: string | null }[] =
       await this.dataSource.query(
         `SELECT ds.id, f.id AS folder_id, f.created_by AS folder_owner_id
@@ -116,7 +122,7 @@ export class DataSourcesBulkService {
          WHERE ds.id = ANY($1::uuid[]) AND ds.organization_id = $2`,
         [dto.data_source_ids, user.organizationId, scope.branchId]
       );
-    const found = new Set(rows.map((row) => row.id));
+    const found = await this.listedIds(scope, dto.data_source_ids);
     const denied = new Set(
       rows
         .filter(
@@ -145,7 +151,11 @@ export class DataSourcesBulkService {
       await assertGitSyncEditAllowedForOrg(
         this.gitSyncConfigsUtilService,
         user.organizationId,
-        { branchId: row.version_branch_id ?? ctx.scope.branchId, isSynced: !!row.is_synced, secretsOnly: false },
+        {
+          branchId: ctx.scope.branchId,
+          isSynced: row.version_branch_id === ctx.scope.branchId && !!row.is_synced,
+          secretsOnly: false,
+        },
         'data source'
       );
       return true;
@@ -177,11 +187,10 @@ export class DataSourcesBulkService {
     );
   }
 
-  private async inWorkspace(user: User, ids: string[]): Promise<Set<string>> {
-    const rows: { id: string }[] = await this.dataSource.query(
-      `SELECT id FROM data_sources WHERE id = ANY($1::uuid[]) AND organization_id = $2`,
-      [ids, user.organizationId]
-    );
+  // Ids the list shows an admin on the branch (global, not sample, not static); anything else is blocked.
+  private async listedIds(scope: DataSourceDashboardScope, ids: string[]): Promise<Set<string>> {
+    const query = visibleIdsQuery({ ...scope, visibleDataSourceIds: null }, { data_source: ids, folder: [] });
+    const rows: { id: string }[] = await this.dataSource.query(query.sql, query.params);
     return new Set(rows.map((row) => row.id));
   }
 

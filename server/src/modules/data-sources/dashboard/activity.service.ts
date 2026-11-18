@@ -20,11 +20,11 @@ const EDIT_UPSERT = (branchSource: string) => `
          AND other.last_edited_at > user_data_source_activity.last_edited_at
      )`;
 
-// Request branch, else the workspace default branch — resolved from the data source's own
-// workspace, never the request body, so a stale/foreign org id can't redirect the write.
-const DATA_SOURCE_BRANCH = `SELECT COALESCE($3::uuid, (
+// Request branch when it is a branch of the data source's workspace (NULL otherwise, so no write),
+// else the workspace default branch — never the request body's org id.
+const DATA_SOURCE_BRANCH = `SELECT (
   SELECT wb.id FROM organization_git_sync_branches wb JOIN data_sources ds ON ds.organization_id = wb.organization_id
-  WHERE ds.id = $2 AND ds.organization_id = $4 AND wb.is_default))`;
+  WHERE ds.id = $2 AND ds.organization_id = $4 AND (wb.id = $3::uuid OR ($3::uuid IS NULL AND wb.is_default)))`;
 
 @Injectable()
 export class DataSourceActivityService {

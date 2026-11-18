@@ -77,6 +77,25 @@ describe('Data sources dashboard activity write paths', () => {
 
       expect(second.lastViewedAt).toEqual(first.lastViewedAt);
     });
+
+    it("should write no row for another workspace's branch id and still succeed", async () => {
+      const admin = await createAdmin(nestApp, 'ds-act-view-foreign@tooljet.io');
+      const other = await createAdmin(nestApp, 'ds-act-view-foreign-other@tooljet.io');
+      await ensureAppEnvironments(nestApp, admin.workspace.id);
+      await resolveOrSeedDefaultBranch(admin.workspace.id);
+      const foreignBranch = await resolveOrSeedDefaultBranch(other.workspace.id);
+      const dataSourceId = await createGlobalDataSource(nestApp, admin, 'Foreign branch view');
+      const environments = await getAllEnvironments(nestApp, admin.workspace.id);
+      const defaultEnv = environments.find((e) => e.isDefault) || environments[0];
+
+      const response = await request(nestApp.getHttpServer())
+        .get(`/api/data-sources/${dataSourceId}/environment/${defaultEnv.id}?branch_id=${foreignBranch.id}`)
+        .set('tj-workspace-id', admin.workspace.id)
+        .set('Cookie', admin.cookie);
+
+      expect(response.statusCode).toBe(200);
+      expect(await findEntity(UserDataSourceActivity, { userId: admin.user.id, dataSourceId })).toBeNull();
+    });
   });
 
   describe('PUT /api/data-sources/:id | Update data source', () => {

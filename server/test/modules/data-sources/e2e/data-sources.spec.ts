@@ -9,6 +9,8 @@ import {
   createAppWithDependencies,
   login,
   updateEntity,
+  findEntity,
+  resolveOrSeedDefaultBranch,
 } from 'test-helper';
 import { DataSource } from 'src/entities/data_source.entity';
 
@@ -177,6 +179,38 @@ describe('DataSourcesController', () => {
       // this org) — previously an uncaught EntityNotFoundError crashed with a 500.
       expect(response.statusCode).toBe(404);
     });
+
+    it("should 404 for another workspace's branch id and leave the data source unchanged", async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const anotherOrgAdminUserData = await createUser(nestApp, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await ensureAppEnvironments(nestApp, adminUserData.organization.id);
+      await resolveOrSeedDefaultBranch(adminUserData.organization.id);
+      const foreignBranch = await resolveOrSeedDefaultBranch(anotherOrgAdminUserData.organization.id);
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/data-sources')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'branch_scoped_data_source', kind: 'restapi', options: [] });
+      const dataSourceId = createResponse.body.id;
+      const environments = await getAllEnvironments(nestApp, adminUserData.organization.id);
+      const defaultEnv = environments.find((e: any) => e.isDefault) || environments[0];
+
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/data-sources/${dataSourceId}?environment_id=${defaultEnv.id}&branch_id=${foreignBranch.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'renamed_data_source', options: [] });
+
+      expect(response.statusCode).toBe(404);
+      expect(await findEntity(DataSource, { id: dataSourceId })).toMatchObject({ name: 'branch_scoped_data_source' });
+    });
   });
 
   describe('DELETE /api/data-sources/:id | Delete data source', () => {
@@ -204,6 +238,30 @@ describe('DataSourcesController', () => {
         .set('Cookie', loggedUser.tokenCookie);
 
       expect(response.statusCode).toBe(200);
+    });
+
+    it('should refuse to delete a static data source', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await ensureAppEnvironments(nestApp, adminUserData.organization.id);
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/data-sources')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'static_data_source', kind: 'restapi', options: [] });
+      const dataSourceId = createResponse.body.id;
+      await updateEntity(DataSource, dataSourceId, { type: 'static' } as never);
+
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/data-sources/${dataSourceId}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(response.statusCode).toBe(400);
+      expect(await findEntity(DataSource, { id: dataSourceId })).not.toBeNull();
     });
 
     it('should not allow user from another org to delete', async () => {

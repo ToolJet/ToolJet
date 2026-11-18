@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
+import { randomUUID } from 'crypto';
 import { PinnedItem } from '@entities/pinned_item.entity';
 import { User } from '@entities/user.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
@@ -318,6 +319,69 @@ describe('DataSourcesPinsController', () => {
         .set('Cookie', admin.cookie)
         .set('tj-workspace-id', org)
         .send({ items: [{ resource_type: 'data_source', resource_id: other.id }] })
+        .expect(400);
+    });
+  });
+
+  describe('Pins | Workspace scope', () => {
+    it("should 404 for another workspace's branch id on pin, unpin and reorder, and write nothing", async () => {
+      const admin = await createAdmin(nestApp, 'ds-pin-foreign-branch@tooljet.io');
+      const other = await createAdmin(nestApp, 'ds-pin-foreign-branch-other@tooljet.io');
+      const org = admin.workspace.id;
+      const branch = await resolveOrSeedDefaultBranch(org);
+      const foreignBranch = await resolveOrSeedDefaultBranch(other.workspace.id);
+      const { dataSource: pinned } = await seedDashboardDataSource(nestApp, { organizationId: org, name: 'Pinned' });
+      const { dataSource: loose } = await seedDashboardDataSource(nestApp, { organizationId: org, name: 'Loose' });
+      await seedPin(admin.user, { dataSourceId: pinned.id, branchId: branch.id, position: 0 });
+
+      await http()
+        .post('/api/v2/data-sources/pins')
+        .set('Cookie', admin.cookie)
+        .set('tj-workspace-id', org)
+        .send({ resource_type: 'data_source', resource_ids: [loose.id], branch_id: foreignBranch.id })
+        .expect(404);
+      await http()
+        .delete(`/api/v2/data-sources/pins/data_source/${pinned.id}`)
+        .query({ branch_id: foreignBranch.id })
+        .set('Cookie', admin.cookie)
+        .set('tj-workspace-id', org)
+        .expect(404);
+      await http()
+        .put('/api/v2/data-sources/pins/order')
+        .set('Cookie', admin.cookie)
+        .set('tj-workspace-id', org)
+        .send({ items: [{ resource_type: 'data_source', resource_id: pinned.id }], branch_id: foreignBranch.id })
+        .expect(404);
+
+      expect(await getEntityRepository(PinnedItem).find({ where: { userId: admin.user.id } })).toEqual([
+        expect.objectContaining({ dataSourceId: pinned.id, branchId: branch.id }),
+      ]);
+    });
+
+    it("should not pin another workspace's folder", async () => {
+      const admin = await createAdmin(nestApp, 'ds-pin-foreign-folder@tooljet.io');
+      const other = await createAdmin(nestApp, 'ds-pin-foreign-folder-other@tooljet.io');
+      const foreignFolder = await dataSourceFolder(other.workspace.id, 'Foreign');
+
+      await http()
+        .post('/api/v2/data-sources/pins')
+        .set('Cookie', admin.cookie)
+        .set('tj-workspace-id', admin.workspace.id)
+        .send({ resource_type: 'folder', resource_ids: [foreignFolder.id] })
+        .expect(204);
+
+      expect(await getEntityRepository(PinnedItem).count({ where: { userId: admin.user.id } })).toBe(0);
+    });
+
+    it('should 400 for more than 500 ids', async () => {
+      const admin = await createAdmin(nestApp, 'ds-pin-too-many@tooljet.io');
+      const ids = Array.from({ length: 501 }, () => randomUUID());
+
+      await http()
+        .post('/api/v2/data-sources/pins')
+        .set('Cookie', admin.cookie)
+        .set('tj-workspace-id', admin.workspace.id)
+        .send({ resource_type: 'data_source', resource_ids: ids })
         .expect(400);
     });
   });

@@ -58,6 +58,18 @@ const multiBranchGit = (defaultBranch: WorkspaceBranch) =>
     orgGit: null,
   } as never);
 
+const singleBranchGit = (defaultBranch: WorkspaceBranch) =>
+  jest.spyOn(GitSyncConfigsUtilService.prototype, 'getDetails').mockResolvedValue({
+    isEnabled: true,
+    isMultiBranchingEnabled: false,
+    options: {
+      type: null,
+      defaultBranch: { id: defaultBranch.id, name: defaultBranch.name },
+      isBranchingEnabled: false,
+    },
+    orgGit: null,
+  } as never);
+
 /** @group platform */
 describe('DataSourcesDashboardController bulk routes', () => {
   let nestApp: INestApplication;
@@ -468,6 +480,108 @@ describe('DataSourcesDashboardController bulk routes', () => {
         folder_ids: [folder.id],
         mode: 'folder_and_apps',
       }).expect(400);
+    });
+  });
+
+  describe('Bulk routes | Workspace scope and listed data sources', () => {
+    it("should 404 for another workspace's branch id on every bulk route and write nothing", async () => {
+      const admin = await createAdmin(nestApp, 'ds-bulk-foreign-branch@tooljet.io');
+      const other = await createAdmin(nestApp, 'ds-bulk-foreign-branch-other@tooljet.io');
+      const org = admin.workspace.id;
+      const foreignBranch = await resolveOrSeedDefaultBranch(other.workspace.id);
+      const folder = await dataSourceFolder(org, 'Folder');
+      const target = await dataSourceFolder(org, 'Target');
+      const inFolder = await seed(org, 'In folder', folder);
+      const branch_id = foreignBranch.id;
+
+      await post('bulk-delete', admin.cookie, org, { data_source_ids: [inFolder.id], branch_id }).expect(404);
+      await post('bulk-move', admin.cookie, org, {
+        data_source_ids: [inFolder.id],
+        folder_id: target.id,
+        branch_id,
+      }).expect(404);
+      await post('bulk-remove', admin.cookie, org, { data_source_ids: [inFolder.id], branch_id }).expect(404);
+      await post('folders/bulk-delete', admin.cookie, org, {
+        folder_ids: [folder.id],
+        mode: 'folder_and_data_sources',
+        branch_id,
+      }).expect(404);
+
+      expect(await exists(inFolder.id)).toBe(true);
+      expect(await folderExists(folder.id)).toBe(true);
+      expect(await folderOf(inFolder.id)).toBe(folder.id);
+      expect(await getEntityRepository(FolderDataSource).count({ where: { branchId: foreignBranch.id } })).toBe(0);
+    });
+
+    it("should block another workspace's folder in a folder bulk delete", async () => {
+      const admin = await createAdmin(nestApp, 'ds-bulk-fdel-foreign@tooljet.io');
+      const other = await createAdmin(nestApp, 'ds-bulk-fdel-foreign-other@tooljet.io');
+      const foreignFolder = await dataSourceFolder(other.workspace.id, 'Foreign');
+      const foreignDataSource = await seed(other.workspace.id, 'Foreign', foreignFolder);
+
+      const res = await post('folders/bulk-delete', admin.cookie, admin.workspace.id, {
+        folder_ids: [foreignFolder.id],
+        mode: 'folder_and_data_sources',
+      }).expect(200);
+
+      expect(res.body).toEqual({ blocked_ids: [foreignFolder.id] });
+      expect(await folderExists(foreignFolder.id)).toBe(true);
+      expect(await exists(foreignDataSource.id)).toBe(true);
+    });
+
+    it('should block a static data source in bulk delete and bulk move', async () => {
+      const admin = await createAdmin(nestApp, 'ds-bulk-static@tooljet.io');
+      const org = admin.workspace.id;
+      const target = await dataSourceFolder(org, 'Target');
+      const staticDataSource = await seed(org, 'Static');
+      await updateEntity(DataSource, staticDataSource.id, { type: 'static' } as never);
+
+      const deleted = await post('bulk-delete', admin.cookie, org, { data_source_ids: [staticDataSource.id] }).expect(
+        200
+      );
+      expect(deleted.body).toEqual({ blocked_ids: [staticDataSource.id] });
+      const moved = await post('bulk-move', admin.cookie, org, {
+        data_source_ids: [staticDataSource.id],
+        folder_id: target.id,
+      }).expect(200);
+      expect(moved.body).toEqual({ blocked_ids: [staticDataSource.id] });
+
+      expect(await exists(staticDataSource.id)).toBe(true);
+      expect(await folderOf(staticDataSource.id)).toBeNull();
+    });
+
+    it('should block deleting a synced data source on a feature branch under single-branch git sync', async () => {
+      const admin = await createAdmin(nestApp, 'ds-bulk-del-single-branch@tooljet.io');
+      const org = admin.workspace.id;
+      const branch = await resolveOrSeedDefaultBranch(org);
+      const feature = await saveEntity(WorkspaceBranch, {
+        organizationId: org,
+        name: 'feature',
+        isDefault: false,
+      } as WorkspaceBranch);
+      const { dataSource, version } = await seedDashboardDataSource(nestApp, { organizationId: org, name: 'Synced' });
+      await updateEntity(DataSourceVersion, version.id, { isSynced: true } as never);
+      singleBranchGit(branch);
+
+      const res = await post('bulk-delete', admin.cookie, org, {
+        data_source_ids: [dataSource.id],
+        branch_id: feature.id,
+      }).expect(200);
+
+      expect(res.body).toEqual({ blocked_ids: [dataSource.id] });
+      expect(await findEntity(DataSourceVersion, { id: version.id })).toMatchObject({ isActive: true });
+    });
+
+    it('should 400 for more than 500 ids', async () => {
+      const admin = await createAdmin(nestApp, 'ds-bulk-too-many@tooljet.io');
+      const org = admin.workspace.id;
+      const folder = await dataSourceFolder(org, 'Target');
+      const ids = Array.from({ length: 501 }, () => randomUUID());
+
+      await post('bulk-delete', admin.cookie, org, { data_source_ids: ids }).expect(400);
+      await post('bulk-move', admin.cookie, org, { data_source_ids: ids, folder_id: folder.id }).expect(400);
+      await post('bulk-remove', admin.cookie, org, { data_source_ids: ids }).expect(400);
+      await post('folders/bulk-delete', admin.cookie, org, { folder_ids: ids, mode: 'folder_only' }).expect(400);
     });
   });
 });

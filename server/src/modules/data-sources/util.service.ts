@@ -42,6 +42,14 @@ import { DatasourceUserTokenData } from '@entities/data_source_user_token.entity
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { CustomDomainCacheService } from '@modules/custom-domains/cache.service';
 
+// Audit metadata copy of data source options: encrypted values are replaced with null.
+export function redactEncryptedOptions<T>(options: T): T {
+  if (!Array.isArray(options)) return options;
+  return options.map((option) =>
+    option?.['encrypted'] === true || option?.['encrypted'] === 'true' ? { ...option, value: null } : option
+  ) as T;
+}
+
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
   constructor(
@@ -106,7 +114,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
    * Validates that workspace constants are not being added directly on the default (master) branch.
    * PRD requires that workspace constants in encrypted fields must go through a PR workflow.
    */
-  async validateNoConstantsOnDefaultBranch(branchId: string, options: Array<object>): Promise<void> {
+  async validateNoConstantsOnDefaultBranch(
+    branchId: string,
+    options: Array<object>,
+    organizationId: string
+  ): Promise<void> {
     const hasConstantReference = options.some((opt) => {
       if (opt['workspace_constant']) return true;
       if (
@@ -122,10 +134,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (!hasConstantReference) return;
 
     const branch = await dbTransactionWrap(async (manager: EntityManager) => {
-      return manager.findOne(WorkspaceBranch, { where: { id: branchId } });
+      return manager.findOne(WorkspaceBranch, { where: { id: branchId, organizationId } });
     });
+    if (!branch) throw new NotFoundException('Branch not found');
 
-    if (!branch?.isDefault) return;
+    if (!branch.isDefault) return;
 
     // Git sync on but branching not enabled (single-branch mode): there's no other branch to
     // raise a PR from, so the PR-approval requirement doesn't apply — allow constants directly.
@@ -140,7 +153,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   async create(createArgumentsDto: CreateArgumentsDto, user: User, branchId?: string): Promise<DataSource> {
     // Validate: workspace constants cannot be added directly on the default (master) branch
     if (branchId && createArgumentsDto.options?.length) {
-      await this.validateNoConstantsOnDefaultBranch(branchId, createArgumentsDto.options);
+      await this.validateNoConstantsOnDefaultBranch(branchId, createArgumentsDto.options, user.organizationId);
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -584,7 +597,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     // Validate: workspace constants cannot be added directly on the default (master) branch
     if (branchId && options?.length) {
-      await this.validateNoConstantsOnDefaultBranch(branchId, options);
+      await this.validateNoConstantsOnDefaultBranch(branchId, options, organizationId);
     }
 
     try {
@@ -642,10 +655,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     let shouldUpdateDefault = true;
     if (branchId) {
       const branch = await manager.findOne(WorkspaceBranch, {
-        where: { id: branchId },
+        where: { id: branchId, organizationId },
         select: ['id', 'isDefault'],
       });
-      shouldUpdateDefault = !!branch?.isDefault;
+      if (!branch) throw new NotFoundException('Branch not found');
+      shouldUpdateDefault = branch.isDefault;
     }
 
     if (isMultiEnvEnabled) {

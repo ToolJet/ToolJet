@@ -71,12 +71,13 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 ## Dashboard v2 bulk
 
 - `POST /api/v2/data-sources/{bulk-delete,bulk-move,bulk-remove,folders/bulk-delete}` → 200 `{ blocked_ids }`, all-or-nothing (apps' bulk pattern). Factory-provided `DataSourcesBulkService` / `DataSourcesBulkFolderDeleteService` (edition-resolved `DataSourcesService`, `FolderDataSourcesUtilService`, `FoldersService`, `GitSyncConfigsUtilService`).
-- Delete checks (`splitDeletable`): workspace, not sample, `canDeleteDataSource`, no dependent queries, git edit rule on the branch row. Writes via `DataSourcesService.delete` with the raw `branch_id` (absent → whole data source), one `DATA_SOURCE_DELETE` audit entry each.
-- Move / remove: `canManageFolderDataSources` (v1 folder-data-sources ability) on the target / source folder; `assertFolderWritable` guards git-locked default branches (403). Remove uses `FolderDataSourcesUtilService.bulkRemove`.
+- Delete checks (`splitDeletable`): listed on the branch (`listedIds`: global, not sample, not static), `canDeleteDataSource`, no dependent queries, git edit rule on the requested branch. Writes via `DataSourcesService.delete` with the resolved `branch_id` (absent → whole data source), one `DATA_SOURCE_DELETE` audit entry each.
+- Move / remove: only listed ids (`listedIds`), `canManageFolderDataSources` (v1 folder-data-sources ability) on the target / source folder; `assertFolderWritable` guards git-locked default branches (403). Remove uses `FolderDataSourcesUtilService.bulkRemove`.
 - Folder delete: `FoldersService.assertFolderDeletable` per folder; `folder_and_data_sources` deletes only data sources on the branch that pass the delete checks, the rest fall to root.
 
 ## Dashboard v2 save all
 
+- Every data-source dashboard route resolves `branch_id` within the caller's workspace (`resolveScope` / `resolveBranchId`, 404 otherwise); the activity interceptor skips a foreign one. Id arrays are capped at 500. Audit metadata carries `null` for encrypted option values (save-all and v1 update).
 - `PUT /api/v2/data-sources/:id?branch_id` `{ name?, environments: [{ environment_id, options }] }` → 204. Runs `DataSourcesUtilService.updateWithManager` (the v1 `update` body, on a passed manager) per entry inside one `dbTransactionWrap`; refusals are prefixed with the environment name. Without the multi-environment licence exactly one entry (written to every environment, as v1).
 - Refusals checked before writing: sample (400), environment outside the workspace (404), duplicate `environment_id` (400, DTO), constants on default branch (400) and the git-sync edit rule per entry — `assertDataSourceEditAllowed` (`guards/git-sync-datasource.guard.ts`, also what `GitSyncDataSourceEditGuard` calls). One `DATA_SOURCE_UPDATE` audit entry per environment.
 

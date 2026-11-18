@@ -4,6 +4,7 @@ import * as requestIp from 'request-ip';
 import { DataSource, EntityManager } from 'typeorm';
 import { DataSource as DataSourceEntity } from '@entities/data_source.entity';
 import { User } from '@entities/user.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import type { AbilityService } from '@modules/ability/interfaces/IService';
 import { UserPermissions } from '@modules/ability/types';
@@ -19,6 +20,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { FEATURE_KEY } from '../constants';
 import { FEATURES } from '../constants/feature';
 import { assertDataSourceEditAllowed } from '../guards/git-sync-datasource.guard';
+import { redactEncryptedOptions } from '../util.service';
 import type { DataSourcesUtilService } from '../util.service';
 import { dataSourceActions, folderActions, isEditCapable, resolveFolderAccess, visibleDataSourceIds } from './actions';
 import {
@@ -77,6 +79,7 @@ export class DataSourcesDashboardService {
 
   // The single permission resolve for the request; every query below reads from the scope.
   async resolveScope(user: User, branchId?: string): Promise<EntryContext> {
+    await this.assertBranchInWorkspace(user, branchId);
     const permissions = await this.permissions(user);
     const git = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
     const defaultBranchId = git.options.defaultBranch.id;
@@ -98,7 +101,17 @@ export class DataSourcesDashboardService {
   }
 
   async resolveBranchId(user: User, branchId?: string): Promise<string> {
+    await this.assertBranchInWorkspace(user, branchId);
     return branchId ?? (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch.id;
+  }
+
+  private async assertBranchInWorkspace(user: User, branchId?: string): Promise<void> {
+    if (!branchId) return;
+    const branch = await this.dataSource.manager.findOne(WorkspaceBranch, {
+      where: { id: branchId, organizationId: user.organizationId },
+      select: ['id'],
+    });
+    if (!branch) throw new NotFoundException('Branch not found');
   }
 
   async visibleIds(user: User, branchId: string, ids: PinIds): Promise<Set<string>> {
@@ -164,6 +177,7 @@ export class DataSourcesDashboardService {
     branchId?: string
   ): Promise<void> {
     const { organizationId } = user;
+    const resolvedBranchId = await this.resolveBranchId(user, branchId);
     const dataSource = await this.dataSourcesUtilService.findUpdatable(dataSourceId, organizationId);
     const environmentNames = await this.environmentNames(organizationId, dto.environments);
     const multiEnvironment = await this.licenseTermsService.getLicenseTerms(
@@ -173,12 +187,15 @@ export class DataSourcesDashboardService {
     if (!multiEnvironment && dto.environments.length !== 1) {
       throw new BadRequestException('Saving several environments at once needs multi-environment support');
     }
-    const resolvedBranchId = await this.resolveBranchId(user, branchId);
 
     for (const environment of dto.environments) {
       await this.forEnvironment(environmentNames.get(environment.environment_id), async () => {
         if (environment.options.length) {
-          await this.dataSourcesUtilService.validateNoConstantsOnDefaultBranch(resolvedBranchId, environment.options);
+          await this.dataSourcesUtilService.validateNoConstantsOnDefaultBranch(
+            resolvedBranchId,
+            environment.options,
+            organizationId
+          );
         }
         await assertDataSourceEditAllowed(this.gitSyncConfigsUtilService, this.appEnvironmentUtilService, {
           organizationId,
@@ -246,7 +263,10 @@ export class DataSourcesDashboardService {
     environment: SaveDataSourceEnvironmentDto
   ): void {
     const context = RequestContext.currentContext;
-    const metadata = { ...(dto.name !== undefined && { name: dto.name }), options: environment.options };
+    const metadata = {
+      ...(dto.name !== undefined && { name: dto.name }),
+      options: redactEncryptedOptions(environment.options),
+    };
     this.eventEmitter.emit('auditLogEntry', {
       userId: user.id,
       organizationId: user.organizationId,

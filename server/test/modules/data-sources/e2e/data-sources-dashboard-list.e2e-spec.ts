@@ -561,4 +561,15 @@ describe('DataSourcesDashboardController', () => {
       });
     });
   });
+
+  describe('GET /api/v2/data-sources | Workspace scope', () => {
+    it("should 404 for another workspace's branch id", async () => {
+      const admin = await createAdmin(nestApp, 'ds-list-foreign-branch@tooljet.io');
+      const other = await createAdmin(nestApp, 'ds-list-foreign-branch-other@tooljet.io');
+      const foreignBranch = await resolveOrSeedDefaultBranch(other.workspace.id);
+      await seedDashboardDataSource(nestApp, { organizationId: other.workspace.id, name: 'Foreign' });
+
+      await list(nestApp, admin.cookie, admin.workspace.id, { branch_id: foreignBranch.id }).expect(404);
+    });
+  });
 });

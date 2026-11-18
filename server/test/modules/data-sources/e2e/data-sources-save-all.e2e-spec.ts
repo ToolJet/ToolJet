@@ -307,4 +307,43 @@ describe('DataSourcesDashboardController save all environments', () => {
       expect(await urlIn(dataSourceId, org, env('production'))).toBe('https://initial.example.com');
     });
   });
+
+  describe('PUT /api/v2/data-sources/:id | Workspace scope', () => {
+    it("should 404 for another workspace's branch id or data source id and write nothing", async () => {
+      const { admin, org, dataSourceId, env } = await setup('ds-save-all-scope@tooljet.io');
+      const other = await setup('ds-save-all-scope-other@tooljet.io');
+      const body = (environment: AppEnvironment) => ({
+        environments: [{ environment_id: environment.id, options: [urlOption('https://x.example.com')] }],
+      });
+
+      await saveAll(admin, dataSourceId, body(env('staging')), other.branch.id).expect(404);
+      await saveAll(admin, other.dataSourceId, body(env('staging'))).expect(404);
+
+      expect(await urlIn(dataSourceId, org, env('staging'))).toBe('https://initial.example.com');
+      expect(await urlIn(other.dataSourceId, other.org, other.env('staging'))).toBe('https://initial.example.com');
+    });
+
+    it('should put null for an encrypted option value in the audit entry', async () => {
+      const { admin, dataSourceId, env } = await setup('ds-save-all-audit-secret@tooljet.io');
+      const spy = jest.spyOn(nestApp.get(EventEmitter2), 'emit');
+
+      await saveAll(admin, dataSourceId, {
+        environments: [
+          {
+            environment_id: env('staging').id,
+            options: [urlOption('https://x.example.com'), { key: 'password', value: 'hunter2', encrypted: true }],
+          },
+        ],
+      }).expect(204);
+
+      const audits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry').map(([, payload]) => payload);
+      expect(audits).toEqual([
+        expect.objectContaining({
+          metadata: {
+            options: [urlOption('https://x.example.com'), { key: 'password', value: null, encrypted: true }],
+          },
+        }),
+      ]);
+    });
+  });
 });

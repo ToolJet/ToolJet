@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { DataSourcesRepository } from './repository';
-import { DataSourcesUtilService } from './util.service';
+import { DataSourcesUtilService, redactEncryptedOptions } from './util.service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 import { User } from '@entities/user.entity';
 import { decode } from 'js-base64';
@@ -250,7 +250,7 @@ export class DataSourcesService implements IDataSourcesService {
         environmentId: environmentId,
         updatedFields: Object.keys(updateDataSourceDto),
       },
-      metadata: updateDataSourceDto,
+      metadata: options ? { ...updateDataSourceDto, options: redactEncryptedOptions(options) } : updateDataSourceDto,
     });
     return;
   }
@@ -279,6 +279,9 @@ export class DataSourcesService implements IDataSourcesService {
     if (dataSource.type === DataSourceTypes.SAMPLE) {
       throw new BadRequestException('Cannot delete sample data source');
     }
+    if (dataSource.type === DataSourceTypes.STATIC) {
+      throw new BadRequestException('Cannot delete static data source');
+    }
 
     const result = await this.findQueriesLinkedToDatasource(dataSourceId, user.organizationId, branchId);
     if (result.dependent_queries) {
@@ -293,6 +296,11 @@ export class DataSourcesService implements IDataSourcesService {
 
     if (effectiveBranchId) {
       await dbTransactionWrap(async (manager: EntityManager) => {
+        const branch = await manager.findOne(WorkspaceBranch, {
+          where: { id: effectiveBranchId, organizationId: user.organizationId },
+          select: ['id'],
+        });
+        if (!branch) throw new NotFoundException('Branch not found');
         const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, user.organizationId);
         if (effectiveBranchId === defaultBranchId) {
           // Default branch: hard-delete the DSV row (no soft-delete).
@@ -303,7 +311,7 @@ export class DataSourcesService implements IDataSourcesService {
           // has nothing to touch — only a full deserialize re-creates it.
           await manager.update(
             WorkspaceBranch,
-            { id: effectiveBranchId },
+            { id: effectiveBranchId, organizationId: user.organizationId },
             { lastSyncedCommit: null, dataSourcesGitTreeSha: null }
           );
         } else {
@@ -313,7 +321,11 @@ export class DataSourcesService implements IDataSourcesService {
             { dataSourceId, branchId: effectiveBranchId },
             { isActive: false, gitTreeSha: null, updatedAt: new Date() }
           );
-          await manager.update(WorkspaceBranch, { id: effectiveBranchId }, { lastSyncedCommit: null });
+          await manager.update(
+            WorkspaceBranch,
+            { id: effectiveBranchId, organizationId: user.organizationId },
+            { lastSyncedCommit: null }
+          );
         }
 
         // Drop this data source's folder mapping on the branch it was removed from. Both arms above
