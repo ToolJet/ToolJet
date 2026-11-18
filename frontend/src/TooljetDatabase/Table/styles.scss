@@ -188,22 +188,6 @@
       font-weight: 500 !important;
     }
 
-    .unique-helper-text {
-      color: var(--slate11) !important;
-      font-weight: 400 !important;
-    }
-
-  }
-}
-
-.table-list-items {
-  button {
-    border: none;
-    background: none;
-  }
-
-  .disabled-btn {
-    cursor: not-allowed !important;
   }
 }
 
@@ -213,20 +197,5 @@
   .tooltip-inner {
     max-width: max-content !important;
     width: max-content !important;
-
-    .foreignKey-relation-tooltip {
-      span {
-        text-align: left;
-      }
-    }
-
-  }
-}
-
-.tooltip-table-dashboard {
-  max-width: 500px !important;
-
-  .tooltip-inner {
-    max-width: 100% !important;
   }
 }

@@ -7552,20 +7552,12 @@ tbody {
 }
 
 .tooljet-database {
-  .tj-db-headerText {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 78%;
-  }
-
-  .table-header,
-  .table-name,
   .table-cell {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
+    max-width: 230px !important;
 
     input.form-control {
       border: none;
@@ -7573,212 +7565,15 @@ tbody {
     }
   }
 
-  .table-cell-dark {
-    color: #ffffff;
-  }
-
-  .table-cell-hover-background {
-    background-color: #f8f9fa;
-    padding: 0rem;
-    max-width: 230px;
-
-    input.form-control {
-      border: none !important;
-      margin: 0px !important;
-      padding: 0px !important;
-      background-color: #f8f9fa;
-    }
-  }
-
-  .table-cell-hover-background-dark {
-    background-color: #242f3c;
-    padding: 0rem;
-    max-width: 230px;
-    color: #ffffff;
-
-    input.form-control {
-      border: none !important;
-      margin: 0px !important;
-      padding: 0px !important;
-      background-color: #242f3c !important;
-    }
-  }
-
-  .table-editable-parent-cell {
-    max-width: 230px;
-    background-color: var(--indigo2) !important;
-    cursor: pointer;
-    padding: 0rem;
-
-    .form-control {
-      background-color: var(--indigo2) !important;
-      border: none !important;
-      padding: 0;
-      margin: 0px !important;
-      border-radius: 0px;
-    }
-
-    .popover-body {
-      margin-top: 10px;
-    }
-  }
-
-  .tjdb-cell-error {
-    padding: 0rem;
-    border-top: 1.5px solid var(--Tomato-09, #e54d2e) !important;
-    border-bottom: 1.5px solid var(--Tomato-09, #e54d2e) !important;
-    border-right: 1.5px solid var(--Tomato-09, #e54d2e) !important;
-    border-left: 1.5px solid var(--Tomato-09, #e54d2e) !important;
-  }
-
-  .tjdb-column-select-border {
-    border-left: 1.5px solid transparent;
-    border-right: 1.5px solid transparent;
-    border-top: 1.5px solid transparent;
-    border-bottom: 1.5px solid transparent;
-  }
-
-  .table-columnHeader-click {
-    background-color: #f8f9fa;
-    padding: 0;
-    max-width: 230px;
-
-    .tjdb-column-select-border {
-      border-left-color: #3e63dd !important;
-      border-right-color: #3e63dd !important;
-    }
-
-    input.form-control {
-      border: none !important;
-      padding: 0px !important;
-      margin: 0px !important;
-      background-color: #f8f9fa;
-    }
-  }
-
-  .table-columnHeader-click-dark {
-    background-color: #242f3c;
-    padding: 0;
-    max-width: 230px;
-    color: #ffffff;
-
-    .tjdb-column-select-border {
-      border-left-color: white !important;
-      border-right-color: white !important;
-    }
-
-    input.form-control {
-      border: none !important;
-      margin: 0px !important;
-      padding: 0px !important;
-      background-color: #242f3c;
-    }
-  }
-
-  .row-tj:first-child {
-    .tjdb-column-select-border {
-      border-top: 1.5px solid transparent;
-    }
-
-    .table-columnHeader-click {
-      .tjdb-column-select-border {
-        border-top-color: #3e63dd !important;
-      }
-    }
-
-    .table-columnHeader-click-dark {
-      .tjdb-column-select-border {
-        border-top-color: white !important;
-      }
-    }
-  }
-
-  .row-tj:last-of-type {
-    .tjdb-column-select-border {
-      border-bottom: 1.5px solid transparent;
-    }
-
-    .table-columnHeader-click {
-      .tjdb-column-select-border {
-        border-bottom-color: #3e63dd !important;
-      }
-    }
-
-    .table-columnHeader-click-dark {
-      .tjdb-column-select-border {
-        border-bottom-color: white !important;
-      }
-    }
-  }
-
-  .add-table-btn {
-    height: 32px;
-  }
-
-  .table-header-click {
-    background: #dfe3e6;
-
-    .tjdb-menu-icon-parent {
-      background: #e6e8eb !important;
-      border-radius: 10px !important;
-
-      .tjdb-menu-icon {
-        display: block;
-        cursor: pointer;
-      }
-    }
-  }
-
-  .table-header {
-    background: #eceef0;
-  }
-
-  .table-header:hover {
-    background: #e6e8eb;
-
-    .tjdb-menu-icon {
-      display: block;
-      cursor: pointer;
-    }
-  }
-
-  .table-header-dark:hover {
-    .tjdb-menu-icon {
-      display: block;
-      cursor: pointer;
-    }
-  }
-
-  .table-header,
-  .table-cell {
-    max-width: 230px !important;
-  }
-
-  .add-more-columns-btn {
-    background: var(--indigo3);
-    font-weight: 500;
-    color: var(--indigo9);
-    font-size: 12px;
-    border-radius: 600;
-  }
-
-  .delete-row-btn {
-    max-width: 140px;
-  }
-
   .tjdb-table-row {
     height: 36px;
 
-    &:not(.table-row-selected):hover {
+    &:hover {
       background: var(--slate2);
 
       td:nth-child(1),
       td:nth-child(2) {
         background: var(--slate2);
-      }
-
-      .tjdb-checkbox-cell {
-        display: block !important;
       }
     }
   }
@@ -10277,41 +10072,6 @@ tbody {
 
     ::placeholder {
       color: var(--slate9);
-    }
-  }
-}
-
-.tj-db-dataype {
-  color: var(--slate11);
-}
-
-.tj-database-column-header {
-  color: var(--slate12);
-  padding: 4px 4px 4px 8px !important;
-  text-transform: none !important;
-  line-height: 0px !important;
-  font-weight: 500 !important;
-  font-size: 12px !important;
-  line-height: 20px !important;
-  color: var(--slate12) !important;
-
-  &:first-child {
-    padding-left: 1rem !important;
-  }
-}
-
-.tj-database-column-row {
-  margin: 0;
-  width: 300px;
-
-  th:first-child>div {
-    height: 16px;
-    width: 16px;
-    display: flex;
-    align-items: center;
-
-    input {
-      border-radius: 4px;
     }
   }
 }
@@ -13526,11 +13286,6 @@ tbody {
 .tjdb-mainCellEdit-scrollbar {
   width: 300px !important;
 
-  .tjdb-cellmenu-error,
-  .tjdb-cellmenu-loader {
-    height: 177px;
-  }
-
   .action-description {
     color: var(--slate9);
     font-size: 12px;
@@ -15580,12 +15335,6 @@ textarea.tj-text-input-widget {
   .tooltip-inner {
     max-width: max-content !important;
     width: max-content !important;
-
-    .foreignKey-relation-tooltip {
-      span {
-        text-align: left;
-      }
-    }
   }
 }
 

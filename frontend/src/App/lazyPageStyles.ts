@@ -6,7 +6,6 @@
 // workspaceSettingsStyles.ts.
 import '@/TooljetDatabase/styles/styles.scss';
 import '@/TooljetDatabase/Forms/styles.scss';
-import '@/TooljetDatabase/Filter/styles.scss';
 import '@/TooljetDatabase/Table/styles.scss';
 import '@/TooljetDatabase/Table/ActionsPopover/styles.scss';
 import '@/TooljetDatabase/Table/Grid/tableGrid.scss';
