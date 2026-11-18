@@ -1,8 +1,27 @@
-import React from 'react';
-import { Form } from 'antd';
+import React, { useRef, useState } from 'react';
+import { Form, Tooltip } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 
 type Check = { error: string; required: boolean };
+
+/** A field's label on one line that ends in an ellipsis; when it is cut, hovering shows the whole text in Ant's tooltip
+ *  (the one the info icon uses), as a ToolJet field's label does. A long label was cut mid-text and could not be read
+ *  (PF-089). */
+const FieldLabel = ({ text }: { text: string }) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [cut, setCut] = useState(false);
+  const measure = () => {
+    const el = ref.current;
+    setCut(!!el && el.scrollWidth > el.clientWidth);
+  };
+  return (
+    <Tooltip title={cut ? text : undefined}>
+      <span ref={ref} className="tj-ant-label-text" onMouseEnter={measure}>
+        {text}
+      </span>
+    </Tooltip>
+  );
+};
 
 // Ant's own field layout, Form.Item, for every form control: label (with the required mark), the control, `extra`
 // help text, and the host's validation message as `help` with validateStatus. No Form state: the control is
@@ -26,7 +45,7 @@ export const FormField = ({
 }) => (
   <Form component={false} layout={layout} colon={false}>
     <Form.Item
-      label={label || undefined}
+      label={label ? <FieldLabel text={label} /> : undefined}
       tooltip={tooltip || undefined}
       htmlFor={htmlFor}
       required={check.required}
