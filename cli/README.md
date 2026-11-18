@@ -11,7 +11,7 @@ $ npm install -g @tooljet/cli
 $ tooljet COMMAND
 running command...
 $ tooljet (--version)
-@tooljet/cli/0.0.15-beta.3 darwin-arm64 node-v22.15.1
+@tooljet/cli/1.0.0 darwin-arm64 node-v22.23.4
 $ tooljet --help [COMMAND]
 USAGE
   $ tooljet COMMAND
@@ -83,7 +83,7 @@ EXAMPLES
   $ tooljet app check --sarif scan.sarif --json
 ```
 
-_See code: [src/commands/app/check.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/app/check.ts)_
+_See code: [src/commands/app/check.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/app/check.ts)_
 
 ## `tooljet app checkout [VERSION]`
 
@@ -116,7 +116,7 @@ EXAMPLES
   $ tooljet app checkout --editing
 ```
 
-_See code: [src/commands/app/checkout.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/app/checkout.ts)_
+_See code: [src/commands/app/checkout.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/app/checkout.ts)_
 
 ## `tooljet app clone APPID [DIR]`
 
@@ -143,7 +143,7 @@ EXAMPLES
   $ tooljet app clone 55414690-beaa-4fa6-b41b-b8102bd7d1d8 orders
 ```
 
-_See code: [src/commands/app/clone.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/app/clone.ts)_
+_See code: [src/commands/app/clone.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/app/clone.ts)_
 
 ## `tooljet app dev`
 
@@ -188,7 +188,7 @@ EXAMPLES
   $ tooljet app dev --once   # build, upload and link once, then exit (agents, CI)
 ```
 
-_See code: [src/commands/app/dev.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/app/dev.ts)_
+_See code: [src/commands/app/dev.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/app/dev.ts)_
 
 ## `tooljet app init DIR`
 
@@ -220,7 +220,7 @@ EXAMPLES
   $ tooljet app init orders --name "Orders" --create   # also create the app in ToolJet
 ```
 
-_See code: [src/commands/app/init.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/app/init.ts)_
+_See code: [src/commands/app/init.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/app/init.ts)_
 
 ## `tooljet app install`
 
@@ -242,7 +242,7 @@ EXAMPLES
   $ tooljet app install --frozen   # exactly the lockfile, as publish does
 ```
 
-_See code: [src/commands/app/install.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/app/install.ts)_
+_See code: [src/commands/app/install.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/app/install.ts)_
 
 ## `tooljet app publish`
 
@@ -280,7 +280,7 @@ EXAMPLES
   $ tooljet app publish --name v3
 ```
 
-_See code: [src/commands/app/publish.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/app/publish.ts)_
+_See code: [src/commands/app/publish.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/app/publish.ts)_
 
 ## `tooljet app pull`
 
@@ -304,7 +304,7 @@ EXAMPLES
   $ tooljet app pull
 ```
 
-_See code: [src/commands/app/pull.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/app/pull.ts)_
+_See code: [src/commands/app/pull.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/app/pull.ts)_
 
 ## `tooljet app source-pull`
 
@@ -335,7 +335,7 @@ EXAMPLES
   $ tooljet app source-pull --trust-remote-config
 ```
 
-_See code: [src/commands/app/source-pull.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/app/source-pull.ts)_
+_See code: [src/commands/app/source-pull.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/app/source-pull.ts)_
 
 ## `tooljet app vet PACKAGES`
 
@@ -363,7 +363,7 @@ EXAMPLES
   $ tooljet app vet left-pad --json
 ```
 
-_See code: [src/commands/app/vet.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/app/vet.ts)_
+_See code: [src/commands/app/vet.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/app/vet.ts)_
 
 ## `tooljet auth login`
 
@@ -389,7 +389,7 @@ EXAMPLES
   $ tooljet auth login --url https://tooljet.example.com --default   # also make it the default login
 ```
 
-_See code: [src/commands/auth/login.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/auth/login.ts)_
+_See code: [src/commands/auth/login.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/auth/login.ts)_
 
 ## `tooljet info`
 
@@ -403,7 +403,7 @@ DESCRIPTION
   This command returns the information about where tooljet is being run
 ```
 
-_See code: [src/commands/info.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/info.ts)_
+_See code: [src/commands/info.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/info.ts)_
 
 ## `tooljet library build`
 
@@ -429,7 +429,7 @@ EXAMPLES
   $ tooljet lib build
 ```
 
-_See code: [src/commands/library/build.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/library/build.ts)_
+_See code: [src/commands/library/build.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/library/build.ts)_
 
 ## `tooljet library dev`
 
@@ -462,7 +462,7 @@ EXAMPLES
   $ tooljet lib dev --debounce 500
 ```
 
-_See code: [src/commands/library/dev.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/library/dev.ts)_
+_See code: [src/commands/library/dev.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/library/dev.ts)_
 
 ## `tooljet library init LIBRARY_DIRECTORY_NAME`
 
@@ -499,7 +499,7 @@ EXAMPLES
   $ tooljet lib init <library_directory_name>
 ```
 
-_See code: [src/commands/library/init.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/library/init.ts)_
+_See code: [src/commands/library/init.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/library/init.ts)_
 
 ## `tooljet library publish`
 
@@ -537,7 +537,7 @@ EXAMPLES
   $ tooljet lib publish --version 1.0.0 --message "Add dark mode support"
 ```
 
-_See code: [src/commands/library/publish.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/library/publish.ts)_
+_See code: [src/commands/library/publish.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/library/publish.ts)_
 
 ## `tooljet library typecheck`
 
@@ -562,7 +562,7 @@ EXAMPLES
   $ tooljet library typecheck --json
 ```
 
-_See code: [src/commands/library/typecheck.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/library/typecheck.ts)_
+_See code: [src/commands/library/typecheck.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/library/typecheck.ts)_
 
 ## `tooljet login`
 
@@ -579,7 +579,7 @@ EXAMPLES
   $ tooljet login
 ```
 
-_See code: [src/commands/login.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/login.ts)_
+_See code: [src/commands/login.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/login.ts)_
 
 ## `tooljet plugin create PLUGIN_NAME`
 
@@ -603,7 +603,7 @@ EXAMPLES
   $ tooljet plugin create <name> --type=<database | api | cloud-storage> [--build]
 ```
 
-_See code: [src/commands/plugin/create.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/plugin/create.ts)_
+_See code: [src/commands/plugin/create.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/plugin/create.ts)_
 
 ## `tooljet plugin delete PLUGIN_NAME`
 
@@ -627,7 +627,7 @@ EXAMPLES
   $ tooljet plugin delete <name> [--build]
 ```
 
-_See code: [src/commands/plugin/delete.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/plugin/delete.ts)_
+_See code: [src/commands/plugin/delete.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/plugin/delete.ts)_
 
 ## `tooljet plugin install NPM_MODULE`
 
@@ -650,7 +650,7 @@ EXAMPLES
   $ tooljet plugin install <npm_module> --plugin <plugin_name>
 ```
 
-_See code: [src/commands/plugin/install.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/plugin/install.ts)_
+_See code: [src/commands/plugin/install.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/plugin/install.ts)_
 
 ## `tooljet skill install`
 
@@ -668,5 +668,5 @@ EXAMPLES
   $ tooljet skill install
 ```
 
-_See code: [src/commands/skill/install.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.3/cli/src/commands/skill/install.ts)_
+_See code: [src/commands/skill/install.ts](https://github.com/tooljet/tooljet/blob/v1.0.0/cli/src/commands/skill/install.ts)_
 <!-- commandsstop -->
