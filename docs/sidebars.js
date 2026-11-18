@@ -19,7 +19,7 @@ const sidebars = {
       "items": [
         "doc-home-page",
         "getting-started/platform-overview",
-        "getting-started/quickstart-guide",
+        // "getting-started/quickstart-guide",
         {
           "type": "category",
           "label": "Deployment",
@@ -222,6 +222,19 @@ const sidebars = {
             },
             "build-with-ai/mcp/supported-tools",
             "build-with-ai/mcp/security"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "React Builder",
+          "link": {
+            "type": "doc",
+            "id": "build-with-ai/react-builder/overview"
+          },
+          "items": [
+            "build-with-ai/react-builder/overview",
+            "build-with-ai/react-builder/create-app",
+            "build-with-ai/react-builder/editor"
           ]
         },
         "build-with-ai/privacy"
