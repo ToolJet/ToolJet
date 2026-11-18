@@ -84,6 +84,14 @@ A removal spans releases, so the image you would roll back to still runs:
 | Rename or type change | schema adds the new column; code writes both, reads old; data copies | code reads and writes new only | cleanup drops the old |
 | NOT NULL or a new rule | code always writes it; data fills old rows | cleanup: `setNotNull` | |
 
+**Branch-local changes: fix the original migration, don't add one.** A migration that backfills, converts, retunes, re-validates or drops something exists only for databases that already hold the old state. Before writing one, check whether that state ever left the feature branch: the migration that introduced it (`git log --format='%h %cs' origin/main -- <file>`) and the feature itself on `origin/main` and the LTS lines (`git grep -l '<table or property>' origin/lts-3.21 -- server`). Then tell the developer which case applies:
+
+- **Released** (on main, an `lts-*` line or a release tag): write the migration, following the rules above.
+- **Only on this branch**, including a decision reversed mid-development or a table another developer on the branch created: edit the original migration so LTS upgrades and fresh installs get the final shape, and write no backfill for data that cannot exist yet. An edited migration never reruns where its class name is already recorded, so teammates' local databases keep the old shape. For them, ask the developer whether to add a dev-only migration or have them rebuild their database. A dev-only migration starts with `// dev-only-migration: <what it corrects> (introduced by <MigrationName>). Delete before merging into main.`
+- **A shared environment** (staging, preview) ran the branch's migrations: ask the developer whether it must keep working or will be rebuilt. Only a "keep working" answer makes the correction more than dev-only.
+
+A dev-only migration never reaches main or a release line: `create-pr` stops on the marker, and `git grep -n 'dev-only-migration:' -- server/migrations` lists them. Delete each one, and its spec, before merging.
+
 Other rules:
 
 - **`down()`** is never empty. A comment that says why it cannot be reversed is enough. It is for development and support-led recovery and never runs automatically. Rollback is: deploy the previous image; last resort, restore the pre-upgrade backup.

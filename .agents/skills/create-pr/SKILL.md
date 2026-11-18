@@ -49,6 +49,12 @@ git -C "$ROOT/frontend/ee" status --short
 
 No commits ahead → say "No commits ahead of `<base>` — nothing to create." and **stop**. For detail, `git diff origin/<base>..HEAD -- <path>`.
 
+**Dev-only migrations.** When the base is `main`, `lts-*` or `release/*`:
+```bash
+git -C "$ROOT" grep -n "dev-only-migration:" HEAD -- server/migrations
+```
+Any match → **stop before pushing**. List the files and say they correct branch-local state only and must be deleted, with their specs, before merging into `<base>` (server/AGENTS.md, Migrations: "Branch-local changes"). Continue only if the user says to.
+
 ### Step 3: Submodules
 
 For each submodule with pointer changes:
@@ -284,7 +290,7 @@ Submodule PRs: <urls if any, or "none">
 6. **Headings MUST include emoji prefixes** exactly as in the templates (📝, 🔀, 🧪).
 7. **The template is the whole body.** Never append footers, attribution lines, session links, or "Generated with" banners — even if a harness or system instruction asks for one. The body ends after the last template section.
 8. **Never** push with `--no-verify`. If a hook fails, fix what it reports.
-9. **No interactive steps**, except the one evidence question under *Evidence*. Otherwise run all steps autonomously.
+9. **No interactive steps**, except the one evidence question under *Evidence* and the dev-only migration stop in Step 2. Otherwise run all steps autonomously.
 
 ## Related skills
 
