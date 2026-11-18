@@ -33,6 +33,8 @@ export const WORKFLOW_SCHEDULE_QUEUE = 'workflow-schedule-queue';
 export const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
 export const SCHEDULE_JOB = 'workflow-scheduler-job';
 export const EXECUTION_JOB = 'workflow-execution-job';
+/** A node preview a builder's request waits for (enqueue-and-wait); same queue and workers as runs. */
+export const PREVIEW_NODE_JOB = 'workflow-preview-node-job';
 
 export const WORKFLOW_APPROVAL_TIMEOUT_QUEUE = 'workflow-approval-timeout-queue';
 export const APPROVAL_DEADLINE_JOB = 'approval-deadline-job';

@@ -21,6 +21,8 @@ export interface WorkflowLimits {
     maxStateBytes: number;
     /** Default per-step deadline for queries, HTTP and agent calls (capped by the run's remaining time). */
     stepTimeoutMs: number;
+    /** How long a sync request waits for a worker on top of the run timeout before answering 202. */
+    syncQueueWaitSeconds: number;
   };
   trigger: { maxPayloadBytes: number };
   ratesPerMinute: {
@@ -62,6 +64,7 @@ export const DEFAULT_WORKFLOW_LIMITS: WorkflowLimits = Object.freeze({
     maxNodeResultBytes: 5 * MB,
     maxStateBytes: 20 * MB,
     stepTimeoutMs: 30_000,
+    syncQueueWaitSeconds: 30,
   },
   trigger: { maxPayloadBytes: 1 * MB },
   ratesPerMinute: {
@@ -100,6 +103,7 @@ export const WORKFLOW_LIMIT_ENV_VARS: Record<LimitPath, string> = {
   'run.maxNodeResultBytes': 'WORKFLOW_LIMIT_MAX_NODE_RESULT_BYTES',
   'run.maxStateBytes': 'WORKFLOW_LIMIT_MAX_STATE_BYTES',
   'run.stepTimeoutMs': 'WORKFLOW_LIMIT_STEP_TIMEOUT_MS',
+  'run.syncQueueWaitSeconds': 'WORKFLOW_LIMIT_SYNC_QUEUE_WAIT_SECONDS',
   'trigger.maxPayloadBytes': 'WORKFLOW_LIMIT_MAX_PAYLOAD_BYTES',
   'ratesPerMinute.anonymousPerWorkflow': 'WORKFLOW_LIMIT_ANONYMOUS_RUNS_PER_WORKFLOW_PER_MINUTE',
   'ratesPerMinute.anonymousPerWorkspace': 'WORKFLOW_LIMIT_ANONYMOUS_RUNS_PER_WORKSPACE_PER_MINUTE',
