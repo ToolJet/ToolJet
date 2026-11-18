@@ -89,7 +89,7 @@ export const Button = () => {
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
 
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-center">
+    <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-button">
       <AntButton
         ref={ref}
         className="tj-ant-fill"

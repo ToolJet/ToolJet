@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Radio, Rate as AntRate, Segmented as AntSegmented, Slider as AntSlider } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { AntProvider, tokenLooks, useTokenStyles } from '../lib/AntProvider';
 import { SpinOver } from '../lib/Loading';
 import { FormField, useFieldProps } from '../lib/FormField';
 import { keyForValue, str, toOptions, valueForKey, type Option } from '../lib/data';
@@ -414,7 +414,8 @@ export const Slider = (props: Record<string, unknown>) => {
     usage: "Ant's Slider: value, min, max, step; onChange while dragging, onChangeComplete on release.",
     roleActions: { setValue: 'setFieldValue' },
     defaultWidth: 14,
-    defaultHeight: 4,
+    // The label above and the track need 6 rows: at 4 the track and handle were cut off (QA PKB-41 repro).
+    defaultHeight: 6,
   });
   const lo = toNumber(min) ?? 0;
   const hi = Math.max(lo, toNumber(max) ?? 100);
@@ -450,6 +451,15 @@ export const Slider = (props: Record<string, unknown>) => {
       ? String(clamp(toNumber((value as unknown as unknown[])[0]) ?? lo))
       : '';
   const valueKey = isPair ? (value as unknown as unknown[]).join(',') : String(value ?? '');
+  // A Value that is empty or not a number (abc) is drawn at Min, so it is exposed as Min too: it exposed null (QA
+  // PF-275). Only when the Value property changes, so a cleared Form, which empties the value itself, stays empty.
+  const given = props.value;
+  const givenKey = JSON.stringify(given) ?? '';
+  useEffect(() => {
+    if (given === undefined || isRange || Array.isArray(given) || toNumber(given) !== null) return;
+    if (!Object.is(value, lo)) setValue(lo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [givenKey, isRange]);
   useEffect(() => {
     if (!fittedKey || fittedKey === valueKey) return;
     setValue((isRange ? pair : clamp(toNumber((value as unknown as unknown[])[0]) ?? lo)) as unknown as number);
@@ -457,7 +467,7 @@ export const Slider = (props: Record<string, unknown>) => {
   }, [fittedKey, valueKey, isRange]);
 
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} className={`tj-ant-slider ${tokenLooks(tokens)}`.trim()}>
       <FormField {...field} check={check}>
         <SpinOver loading={loading} as="block">
           <div data-tj-no-drag="">

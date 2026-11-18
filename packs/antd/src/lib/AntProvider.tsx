@@ -33,12 +33,19 @@ const alpha = (c: string, p: number) => `color-mix(in srgb, ${c} ${p}%, transpar
  * theme). A value overrides that token and the ones antd derives from it (hover, active, tints), as --tj-ant-*
  * variables the static antd.css reads first.
  */
-export const useTokenStyles = () => {
-  const colorPrimary = useThemeColor('colorPrimary', 'Primary color', THEME_COLOR.brand);
-  const colorText = useThemeColor('colorText', 'Text color', THEME_COLOR.text);
-  const colorBgContainer = useThemeColor('colorBgContainer', 'Container background', THEME_COLOR.surface);
-  const colorBorder = useThemeColor('colorBorder', 'Border color', THEME_COLOR.border);
-  const borderRadius = useThemeNumber('borderRadius', 'Border radius', RADIUS_HINT);
+export type TokenStyle = 'colorPrimary' | 'colorText' | 'colorBgContainer' | 'colorBorder' | 'borderRadius';
+
+/** `omit`: styles a component has no part for, left out of its Inspector (QA PKB-41). A constant per component, so the
+ *  hooks run in the same order on every render. */
+export const useTokenStyles = ({ omit = [] }: { omit?: TokenStyle[] } = {}) => {
+  const offered = (name: TokenStyle) => !omit.includes(name);
+  const colorPrimary = offered('colorPrimary') ? useThemeColor('colorPrimary', 'Primary color', THEME_COLOR.brand) : '';
+  const colorText = offered('colorText') ? useThemeColor('colorText', 'Text color', THEME_COLOR.text) : '';
+  const colorBgContainer = offered('colorBgContainer')
+    ? useThemeColor('colorBgContainer', 'Container background', THEME_COLOR.surface)
+    : '';
+  const colorBorder = offered('colorBorder') ? useThemeColor('colorBorder', 'Border color', THEME_COLOR.border) : '';
+  const borderRadius = offered('borderRadius') ? useThemeNumber('borderRadius', 'Border radius', RADIUS_HINT) : '';
   return useMemo(() => {
     const vars: Record<string, string> = {};
     if (isSet(colorPrimary)) {
@@ -90,6 +97,21 @@ export const useTokenStyles = () => {
     }
     return vars as CSSProperties;
   }, [colorPrimary, colorText, colorBgContainer, colorBorder, borderRadius]);
+};
+
+/** One class per token style that is set (has-primary, has-text, has-bg, has-border, has-radius), for pack rules that
+ *  draw a style on a part Ant leaves alone; a component without them keeps the stock look. */
+export const tokenLooks = (tokens: CSSProperties): string => {
+  const set = tokens as Record<string, string>;
+  return [
+    set['--tj-ant-color-primary'] ? 'has-primary' : '',
+    set['--tj-ant-color-text'] ? 'has-text' : '',
+    set['--tj-ant-color-bg-container'] ? 'has-bg' : '',
+    set['--tj-ant-color-border'] ? 'has-border' : '',
+    set['--tj-ant-border-radius'] ? 'has-radius' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 };
 
 // Dark app, dark Ant: whether the app is dark (its surface colour: the theme's --tj-surface when one is applied, else

@@ -1752,3 +1752,74 @@
   height: 100%;
   box-sizing: border-box;
 }
+/* QA PF-001: a Button fills its box height, so Small only narrowed the side padding and looked like Middle. Small
+   draws Ant's small text size; Middle and Large are unchanged. */
+.tj-ant-root.tj-ant-button .ant-btn.ant-btn-sm {
+  font-size: var(--ant-font-size-sm, 12px);
+}
+/* QA PKB-41: styles Ant leaves undrawn on these components. Each rule needs the class its style sets (lib/AntProvider
+   tokenLooks), so a component without the style keeps the stock look. */
+.tj-ant-alert.has-bg:not(.tj-ant-alert--custom) .ant-alert {
+  background: var(--tj-ant-color-bg-container);
+}
+.tj-ant-alert.has-border:not(.tj-ant-alert--custom) .ant-alert {
+  border-color: var(--tj-ant-color-border);
+}
+/* Every dot, and the active dot's top layer (Ant draws it white over the button). */
+.tj-ant-carousel.has-primary .slick-dots li button,
+.tj-ant-carousel.has-primary .slick-dots li.slick-active::after {
+  background: var(--tj-ant-color-primary);
+}
+.tj-ant-carousel.has-primary .slick-arrow {
+  color: var(--tj-ant-color-primary);
+}
+.tj-ant-carousel.has-primary .slick-arrow:hover,
+.tj-ant-carousel.has-primary .slick-arrow:focus {
+  color: var(--tj-ant-color-primary);
+}
+.tj-ant-carousel.has-text .tj-ant-slide-caption {
+  color: var(--tj-ant-color-text);
+}
+.tj-ant-carousel.has-border .tj-ant-slide {
+  box-sizing: border-box;
+  border: 1px solid var(--tj-ant-color-border);
+}
+.tj-ant-slider.has-border .ant-slider-rail {
+  background: var(--tj-ant-color-border);
+}
+.tj-ant-skeleton.has-text .ant-skeleton-title,
+.tj-ant-skeleton.has-text .ant-skeleton-paragraph > li,
+.tj-ant-skeleton.has-text .ant-skeleton-avatar {
+  background: color-mix(in srgb, var(--tj-ant-color-text) 16%, transparent);
+}
+.tj-ant-skeleton.has-text .ant-skeleton.ant-skeleton-active .ant-skeleton-title,
+.tj-ant-skeleton.has-text .ant-skeleton.ant-skeleton-active .ant-skeleton-paragraph > li,
+.tj-ant-skeleton.has-text .ant-skeleton.ant-skeleton-active .ant-skeleton-avatar {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--tj-ant-color-text) 16%, transparent) 25%,
+    color-mix(in srgb, var(--tj-ant-color-text) 32%, transparent) 37%,
+    color-mix(in srgb, var(--tj-ant-color-text) 16%, transparent) 63%
+  );
+  background-size: 400% 100%;
+}
+/* A filled box: the whole widget (Skeleton, Empty) or the text block (Text, Title). */
+.tj-ant-root.tj-ant-boxed.has-bg {
+  background: var(--tj-ant-color-bg-container);
+}
+.tj-ant-root .tj-ant-boxed.has-bg {
+  background: var(--tj-ant-color-bg-container);
+}
+.tj-ant-root .tj-ant-boxed.has-bg,
+.tj-ant-root .tj-ant-boxed.has-border {
+  padding: 0 8px;
+}
+.tj-ant-root .tj-ant-boxed.has-border {
+  border: 1px solid var(--tj-ant-color-border);
+}
+.tj-ant-root .tj-ant-boxed.has-radius {
+  border-radius: var(--tj-ant-border-radius);
+}
+.tj-ant-root.tj-ant-boxed.has-radius {
+  border-radius: var(--tj-ant-border-radius);
+}

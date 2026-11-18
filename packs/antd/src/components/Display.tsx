@@ -18,7 +18,7 @@ import {
 } from 'antd';
 import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined } from '@ant-design/icons';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { AntProvider, tokenLooks, useTokenStyles } from '../lib/AntProvider';
 import { RADIUS_HINT, THEME_COLOR, useThemeColor, useThemeNumber } from '../lib/themeStyles';
 import { SkeletonSwap, SpinOver, TextBone } from '../lib/Loading';
 import { oneOf, str, toArray, type Row } from '../lib/data';
@@ -280,7 +280,7 @@ export const Alert = () => {
     <AntProvider
       tokens={tokens}
       fill
-      className={custom ? 'tj-ant-alert tj-ant-alert--custom' : 'tj-ant-alert'}
+      className={`tj-ant-alert ${custom ? 'tj-ant-alert--custom' : ''} ${tokenLooks(tokens)}`.replace(/\s+/g, ' ').trim()}
       style={
         custom
           ? ({
@@ -314,6 +314,11 @@ export const Alert = () => {
 };
 
 const TYPES = ['default', 'secondary', 'success', 'warning', 'danger'];
+// Text and Title sit in a box only when Container background or Border color is set (QA PKB-41), as the Link does.
+const boxLooks = (tokens: React.CSSProperties) => {
+  const looks = tokenLooks(tokens);
+  return /has-(bg|border)/.test(looks) ? `tj-ant-boxed ${looks}` : looks || undefined;
+};
 const typeOf = (t: string) => (t && t !== 'default' ? (t as 'secondary') : undefined);
 
 // Ant's Typography.Title: children, level (1 to 5), type, copyable, ellipsis (one line), mark, underline.
@@ -363,6 +368,7 @@ export const Title = () => {
     <AntProvider tokens={tokens}>
       <SkeletonSwap loading={loading} look={<Skeleton active paragraph={false} />}>
         <Typography.Title
+          className={boxLooks(tokens)}
           level={lv}
           type={typeOf(type)}
           copyable={copyable && !!children}
@@ -432,6 +438,7 @@ export const Text = () => {
         look={<Skeleton active title={false} paragraph={{ rows: Math.max(1, Math.min(4, rows || 2)) }} />}
       >
         <Typography.Paragraph
+          className={boxLooks(tokens)}
           type={typeOf(type)}
           strong={strong}
           italic={italic}
@@ -792,7 +799,8 @@ export const Empty = () => {
     initialValue: 'simple',
   });
   const { loading } = ToolJet.useControlState();
-  const tokens = useTokenStyles();
+  // The picture keeps Ant's own greys and there is no frame, so only the text and background styles draw (QA PKB-41).
+  const tokens = useTokenStyles({ omit: ['colorPrimary', 'colorBorder', 'borderRadius'] });
   ToolJet.useComponentSettings({
     role: 'empty',
     fit: false,
@@ -802,7 +810,7 @@ export const Empty = () => {
     defaultHeight: 14,
   });
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-center">
+    <AntProvider tokens={tokens} fill className={`tj-ant-center tj-ant-boxed ${tokenLooks(tokens)}`.trim()}>
       <SpinOver loading={loading} as="fill">
         <AntEmpty
           description={description || false}
