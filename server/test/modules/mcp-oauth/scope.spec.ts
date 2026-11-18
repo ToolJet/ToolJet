@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { of } from 'rxjs';
@@ -7,6 +8,7 @@ jest.mock('@modules/app/guards/ability.guard', () => ({ AbilityGuard: class {} }
 import { AbilityGuard } from '@modules/app/guards/ability.guard';
 import { McpOAuthScopeInterceptor } from '@modules/mcp-oauth/scope.interceptor';
 import { MODULES } from '@modules/app/constants/modules';
+import { FEATURE_KEY as LIBRARY_FEATURE } from '@modules/custom-component-libraries/constants';
 import { sanitizeTraceObject, sanitizeOAuthRequest, sanitizeOAuthUrl } from '@otel/sanitize';
 
 class CheckedPermissionGuard extends AbilityGuard {}
@@ -60,6 +62,20 @@ describe('OAuth delegated scope enforcement', () => {
       interceptor.intercept(context({ user: {}, oauthDelegatedUser: user }, MODULES.GLOBAL_DATA_SOURCE), next)
     ).toThrow();
   });
+  test('apps consent permits branch discovery but not branch administration or viewer discovery', () => {
+    const request: any = { user: { ...user }, method: 'GET' };
+    const ctx = context(request, MODULES.WORKSPACE_BRANCHES);
+    Reflect.defineMetadata('tjFeatureId', 'LIST_BRANCHES', action);
+    interceptor.intercept(ctx, next);
+    expect(next.handle).toHaveBeenCalledTimes(1);
+    request.user.oauthScopes = ['data'];
+    expect(() => interceptor.intercept(ctx, next)).toThrow();
+    request.user = { ...user, oauthAppId: 'clay-app' };
+    expect(() => interceptor.intercept(ctx, next)).toThrow();
+    request.user = { ...user };
+    Reflect.defineMetadata('tjFeatureId', 'CREATE_BRANCH', action);
+    expect(() => interceptor.intercept(ctx, next)).toThrow();
+  });
   test('data scope permits GET_SPEC only and cannot administer plugins', () => {
     const request = { user: { ...user, oauthScopes: ['data'] }, method: 'GET' };
     const ctx = context(request, MODULES.PLUGINS);
@@ -73,6 +89,37 @@ describe('OAuth delegated scope enforcement', () => {
     Reflect.defineMetadata('tjFeatureId', 'get_spec', action);
     request.method = 'POST';
     expect(() => interceptor.intercept(ctx, next)).toThrow();
+  });
+  test('apps consent permits the two library routes a Code mode build uses, and no others', () => {
+    const request = { user: { ...user }, method: 'POST' };
+    const ctx = context(request, MODULES.CUSTOM_COMPONENT_LIBRARIES);
+    const permitted = [LIBRARY_FEATURE.UPLOAD_DEV_BUNDLE, LIBRARY_FEATURE.LIST_LIBRARIES];
+    for (const feature of permitted) {
+      Reflect.defineMetadata('tjFeatureId', feature, action);
+      interceptor.intercept(ctx, next);
+    }
+    expect(next.handle).toHaveBeenCalledTimes(permitted.length);
+    // A token's other library routes, deleting a library, its live stream and a route with no feature stay out.
+    const refused = [
+      LIBRARY_FEATURE.CREATE_LIBRARY,
+      LIBRARY_FEATURE.FIND_OR_CREATE_LIBRARY,
+      LIBRARY_FEATURE.GET_LIBRARY,
+      LIBRARY_FEATURE.PUBLISH_REVISION,
+      LIBRARY_FEATURE.DELETE_LIBRARY,
+      LIBRARY_FEATURE.STREAM_DEV_BUNDLE,
+      undefined,
+    ];
+    for (const feature of refused) {
+      Reflect.defineMetadata('tjFeatureId', feature, action);
+      expect(() => interceptor.intercept(ctx, next)).toThrow(ForbiddenException);
+    }
+    // Without apps consent, neither of the two.
+    request.user.oauthScopes = ['data', 'workflows'];
+    for (const feature of permitted) {
+      Reflect.defineMetadata('tjFeatureId', feature, action);
+      expect(() => interceptor.intercept(ctx, next)).toThrow(ForbiddenException);
+    }
+    expect(next.handle).toHaveBeenCalledTimes(permitted.length);
   });
   test('workflows are available only when consented and administration remains excluded', () => {
     interceptor.intercept(context({ user: { ...user, oauthScopes: ['workflows'] } }, MODULES.WORKFLOWS), next);

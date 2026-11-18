@@ -1,0 +1,142 @@
+/* Charts */
+.ui-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ui-chart-plot {
+  flex: 1;
+  min-height: 0;
+}
+.ui-chart .recharts-surface {
+  overflow: visible;
+}
+.ui-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 14px;
+  font-size: 12px;
+  color: var(--ui-muted-fg);
+}
+.ui-chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ui-chart-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.ui-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--ui-border);
+  border-radius: 8px;
+}
+.ui-sparkline {
+  width: 100%;
+  height: 100%;
+}
+
+/* Funnel */
+.ui-funnel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+.ui-funnel-row {
+  display: grid;
+  grid-template-columns: minmax(70px, 22%) 1fr 56px;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.ui-funnel-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ui-muted-fg);
+}
+.ui-funnel-track {
+  display: flex;
+}
+.ui-funnel-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 30px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    width 0.5s ease,
+    filter 0.15s;
+}
+.ui-funnel-row:hover .ui-funnel-bar {
+  filter: brightness(1.08);
+}
+.ui-funnel-conv {
+  color: var(--ui-muted-fg);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Heatmap */
+.ui-heatmap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
+}
+.ui-heatmap-grid {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  grid-auto-rows: minmax(0, 1fr);
+}
+.ui-heatmap-axis {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.ui-heatmap-axis.is-x {
+  justify-content: center;
+}
+.ui-heatmap-axis.is-y {
+  padding-right: 6px;
+}
+.ui-heatmap-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 14px;
+  border-radius: 4px;
+  color: var(--cc-primary-text, #1b1f24);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.1s,
+    box-shadow 0.15s;
+}
+.ui-heatmap-cell:hover {
+  box-shadow: 0 0 0 2px var(--cc-primary-text, #1b1f24);
+}
+.ui-heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.ui-heatmap-scale {
+  width: 120px;
+  height: 8px;
+  border-radius: 999px;
+}

@@ -178,18 +178,23 @@ describe("App creation", () => {
 
         cy.get(commonSelectors.appCreateButton, { timeout: 20000 }).click();
         cy.clearAndType(commonSelectors.appNameInput, data.rename);
-        cy.get(commonSelectors.createAppButton).click();
-
-        // TODO: Re-enable this when the Issue is fixed
-        // cy.get(commonSelectors.appNameErrorLabel).verifyVisibleElement(
-        //     "have.text",
-        //     "App name already exists"
-        // );
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "This app name is already taken."
-        );
-        // cy.get(commonSelectors.createAppButton).should("be.disabled");
+        cy.get("body").then(($body) => {
+            // With the build mode choice (EE), a taken name shows under App name instead of a toast.
+            const showsInline = $body.find(commonSelectors.createAppBuildMode).length > 0;
+            cy.get(commonSelectors.createAppButton).click();
+            if (showsInline) {
+                cy.get(commonSelectors.appNameErrorLabel).verifyVisibleElement(
+                    "have.text",
+                    "App name already exists"
+                );
+                cy.get(commonSelectors.createAppButton).should("be.disabled");
+            } else {
+                cy.verifyToastMessage(
+                    commonSelectors.toastMessage,
+                    "This app name is already taken."
+                );
+            }
+        });
         cy.get(commonSelectors.cancelButton).click();
     });
     it("Should verify the import app flow", () => {

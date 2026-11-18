@@ -1,22 +1,18 @@
 import React from 'react';
 import { isEmpty } from 'lodash';
-import { useLocation } from 'react-router-dom';
 import Header from './Header';
 import PreviewSettings from './PreviewSettings';
 import useStore from '@/AppBuilder/_stores/store';
+import { useIsAppPreview } from '@/AppBuilder/_hooks/useIsAppPreview';
 
 const PreviewHeader = ({ showHeader, currentLayout, darkMode, setAppDefinitionFromVersion }) => {
-  const location = useLocation();
-  // Check if we're in preview mode (has env or version query params)
-  const searchParams = new URLSearchParams(location.search);
-  const isPreviewMode = searchParams.has('env') || searchParams.has('version');
+  const isAppPreview = useIsAppPreview();
 
   const editingVersion = useStore((state) => state.editingVersion);
-  const isPublicAccess = useStore((state) => state.isPublicAccess);
   const isMobileDevice = currentLayout === 'mobile';
 
   // Don't render header at all if not in preview mode or if accessing as public (not logged in)
-  if (!isPreviewMode || isPublicAccess) {
+  if (!isAppPreview) {
     return null;
   }
 
