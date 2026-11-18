@@ -8,8 +8,79 @@ const firstRow = (d: unknown): Row | null => {
   return row && typeof row === 'object' ? (row as Row) : null;
 };
 
-type ClickEvent = { data?: { data?: Row } };
+type Node = {
+  className?: string;
+  markType?: string;
+  parentNode?: Node;
+  ownerDocument?: { getElementsByClassName?: (name: string) => Node[] };
+  __data__?: {
+    points?: number[][];
+    seriesIndex?: number[];
+    markKey?: string;
+    markState?: Map<{ key?: string; data?: Row[] }, unknown>;
+  };
+  getWorldTransform?: () => number[];
+};
+type ClickEvent = { data?: { data?: Row | Row[] }; target?: Node; canvas?: { x: number; y: number } };
 type Emitter = { on?: (name: string, handler: (event: ClickEvent) => void) => void };
+
+/**
+ * The clicked row. A line or area click carries all the series' rows: take the one whose vertex is nearest the click.
+ * The element's points are plot-local, in row order (an area has the top edge first, then the bottom).
+ */
+// An element's points are in its plot layer's space. A cartesian element sits at the layer's origin, but a polar one
+// (Radar) is anchored at the centre, so its own offset put every point far off (PF-234): use the layer's.
+const offsetOf = (el: Node) => (el.parentNode?.getWorldTransform ? el.parentNode : el).getWorldTransform?.();
+
+export const pickRow = (event: ClickEvent): Row | Row[] => {
+  const d = event?.data?.data ?? {};
+  if (!Array.isArray(d)) return d;
+  let el = event.target;
+  while (el && el.className !== 'element') el = el.parentNode;
+  const pts = el?.__data__?.points;
+  const m = el && offsetOf(el);
+  const at = event.canvas;
+  if (!pts || !m || !at) return d[0] ?? {};
+  // Cartesian (the first points run left to right): nearest by x alone, so a click deep in a tall area picks its column.
+  const cartesian = pts.slice(0, d.length).every((p, i, a) => i === 0 || p[0] >= a[i - 1][0]);
+  let best = 0;
+  let min = Infinity;
+  d.forEach((_, i) => {
+    if (!pts[i]) return;
+    const dx = pts[i][0] + m[12] - at.x;
+    const dist = cartesian ? Math.abs(dx) : Math.hypot(dx, pts[i][1] + m[13] - at.y);
+    if (dist < min) [min, best] = [dist, i];
+  });
+  return d[best];
+};
+
+const REACH = 12;
+
+/**
+ * The row of a line or area vertex near a click that missed the shape. G2 draws a hover circle on each point, half of
+ * it outside the shape, so a click there is a plot click, not an element click. `elements` are the chart's elements.
+ */
+export const nearRow = (event: ClickEvent, elements: Node[]): Row | null => {
+  const at = event?.canvas;
+  for (let n = event?.target; n; n = n.parentNode) if (n.className === 'element') return null;
+  if (!at) return null;
+  let best: Row | null = null;
+  let min = REACH;
+  for (const el of elements) {
+    const si = el.__data__?.seriesIndex;
+    const m = offsetOf(el);
+    if (!si || !m || (el.markType !== 'line' && el.markType !== 'area')) continue;
+    let view = el.parentNode;
+    while (view && view.className !== 'view') view = view.parentNode;
+    const mark = [...(view?.__data__?.markState?.keys() ?? [])].find((k) => k.key === el.__data__?.markKey);
+    el.__data__?.points?.slice(0, si.length).forEach((p, i) => {
+      const dist = Math.hypot(p[0] + m[12] - at.x, p[1] + m[13] - at.y);
+      const row = mark?.data?.[si[i]];
+      if (row && dist < min) [min, best] = [dist, row];
+    });
+  }
+  return best;
+};
 
 /**
  * A chart's onReady that reports each clicked element's row. G2 emits a click on a bar, slice or point as
@@ -23,7 +94,12 @@ export const useElementClick = (onClick: (datum: Row) => void) => {
   latest.current = onClick;
   return useCallback((plot: unknown) => {
     const chart = (plot as { chart?: Emitter } | null)?.chart;
-    chart?.on?.('element:click', (event) => latest.current(event?.data?.data ?? {}));
+    chart?.on?.('element:click', (event) => latest.current(pickRow(event) as Row));
+    chart?.on?.('plot:click', (event) => {
+      const els = event.target?.ownerDocument?.getElementsByClassName?.('element');
+      const row = els && nearRow(event, Array.from(els));
+      if (row) latest.current(row);
+    });
   }, []);
 };
 

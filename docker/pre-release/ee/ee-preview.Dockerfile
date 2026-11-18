@@ -91,13 +91,16 @@ WORKDIR /app
 # fetch private repos and passed to git via env, so it never lands in a layer, the image config
 # or the build provenance like a build arg does.
 ARG BRANCH_NAME
+ARG BRANCH_SHA
 ARG REPO_URL=https://github.com/ToolJet/ToolJet.git
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
 # The branch head, fetched on every build: the clone below is otherwise a cached layer (its command never changes),
 # and a push that only moves the branch rebuilt nothing (2026-11-08, frontend/ee bump 0140d8cf served the old app).
-ADD https://api.github.com/repos/ToolJet/ToolJet/git/refs/heads/${BRANCH_NAME} /tmp/branch-head.json
+# BRANCH_SHA (the PR head commit, passed by the workflow) changes on every push, which busts the cache here.
+# This replaces an unauthenticated GitHub API call that failed with 403 once the runner IP hit the API rate limit.
+RUN echo "${BRANCH_NAME}@${BRANCH_SHA}" > /tmp/branch-head.txt
 RUN git clone ${REPO_URL} .
 
 # The branch name needs to be changed the branch with modularisation in CE repo

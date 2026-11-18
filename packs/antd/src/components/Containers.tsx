@@ -134,6 +134,8 @@ export const Tabs = () => {
             key: t.key,
             label: t.label,
             disabled: t.disabled,
+            // PKB-43: mount every pane at load (as a native Tabs), so a component in tab 2 exposes its values before it is opened.
+            forceRender: true,
             children: <ToolJet.Slot name={slots.get(t.key)!} style={{ height: '100%' }} />,
           }))}
         />

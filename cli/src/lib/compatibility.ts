@@ -66,9 +66,16 @@ export function compareVersions(a: string, b: string): number {
 
 const serverCli = (url: string) => `npm i -g ${url}/api/code-mode/cli/tooljet-cli.tgz`;
 
+/**
+ * The npm dist-tag that has a CLI meeting `needs`. A prerelease floor is published under `beta` only: `latest` stays
+ * on the last stable release, which is older, so sending the user there would downgrade them and block them again.
+ */
+export const upgradeTag = (needs: string): 'beta' | 'latest' => (SEMVER.exec(needs.trim())?.[4] ? 'beta' : 'latest');
+
 const upgradeCli = (url: string, needs: string) =>
   `This ToolJet CLI (${CLI_VERSION}) is too old for ${url}, which needs ${needs} or later. ` +
-  `Upgrade it with: npm i -g ${CLI_PACKAGE}@latest`;
+  `Upgrade it with: npm i -g ${CLI_PACKAGE}@${upgradeTag(needs)}, ` +
+  `or install the CLI your ToolJet was built with, if it serves one: ${serverCli(url)}`;
 
 const upgradeServer = (url: string, serverVersion?: string) =>
   `ToolJet at ${url}${serverVersion ? ` (${serverVersion})` : ''} is too old for this ToolJet CLI (${CLI_VERSION}). ` +

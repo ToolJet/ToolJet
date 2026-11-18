@@ -24,6 +24,7 @@ import { str, toArray, toOptions, type Row } from '../lib/data';
 import { closesOnEscape, useOwnedPopup } from '../lib/useOwnerGuard';
 import { useFormValue } from '../lib/formValue';
 import { boundedTree } from '../lib/tree';
+import { UNIT } from './DatePicker';
 import { useValueSetter } from '../lib/sameValue';
 import { useOfferedValue } from '../lib/offeredValue';
 import { isBlankDate, parseDate as strictDate, parseTime } from '../lib/dates';
@@ -473,12 +474,25 @@ export const RangePicker = (props: Record<string, unknown>) => {
   const pair = React.useMemo(() => toArray(value).map((v) => parseDate(v)), [JSON.stringify(value)]); // eslint-disable-line react-hooks/exhaustive-deps
   // A range whose start is after its end (a default or setFieldValue; a pick is always in order) is not valid.
   const reversed = !!pair[0] && !!pair[1] && pair[0].isAfter(pair[1]);
+  // A range outside Min date or Max date is invalid, as the DatePicker's value is (PKB-70); compared at the picker's
+  // unit, a quarter picker is left to Ant's greying.
+  const unit = UNIT[String(picker)];
+  const lo = parseDate(minDate);
+  const hi = parseDate(maxDate);
+  const outside =
+    !unit || !pair[0] || !pair[1]
+      ? ''
+      : lo && pair[0].isBefore(lo, unit)
+        ? `Minimum date is ${str(minDate).trim()}`
+        : hi && pair[1].isAfter(hi, unit)
+          ? `Maximum date is ${str(maxDate).trim()}`
+          : '';
   // A range is filled only with both dates: a required one with no end date is invalid, as ToolJet's own Date range
   // picker (AD-27). The field still shows the start date it exposes as startDate.
   const check = ToolJet.useValidation({
     kind: 'date',
     value: pair[0] && pair[1] ? str(toArray(value)[0]) : '',
-    rule: reversed ? 'The start date is after the end date' : '',
+    rule: reversed ? 'The start date is after the end date' : outside,
   });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
