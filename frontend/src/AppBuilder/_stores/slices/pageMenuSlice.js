@@ -82,6 +82,7 @@ export const createPageMenuSlice = (set, get) => {
   const updatePageIcon = createPageUpdateCommand(['icon']);
   const updatePageURL = createPageUpdateCommand(['url']);
   const updatePageTarget = createPageUpdateCommand(['openIn']);
+  const updatePageGroupByFolder = createPageUpdateCommand(['groupByFolder']);
   const updatePageTargetApp = createPageUpdateCommand(['targetCorelationId']);
 
   const updatePageGroupName = createPageUpdateCommand(['name'], (state) => {});
@@ -249,6 +250,7 @@ export const createPageMenuSlice = (set, get) => {
     },
     updatePageURL: (pageId, value) => updatePageURL(pageId, [value])(set, get),
     updatePageTarget: (pageId, value) => updatePageTarget(pageId, [value])(set, get),
+    updatePageGroupByFolder: (pageId, value) => updatePageGroupByFolder(pageId, [value])(set, get),
     updatePageIcon: (pageId, value) => updatePageIcon(pageId, [value])(set, get),
     updatePageHandle: (pageId, value) => {
       const pageWithSameHandle = get().modules.canvas.pages.some((page) => page.handle === value);
@@ -611,6 +613,21 @@ export const createPageMenuSlice = (set, get) => {
         } else {
           toast.error('No URL provided');
           return false;
+        }
+        return true;
+      }
+
+      // An "All apps" item is a placeholder for the links it generates; it is not a page.
+      if (page?.type === 'all_apps') return false;
+
+      // Links generated from an "All apps" item carry their target's slug directly; the
+      // server already limited them to released apps this viewer can open.
+      if (page?.isGeneratedAppLink && page?.targetSlug) {
+        const appUrl = `${getHostURL()}/applications/${page.targetSlug}`;
+        if (page.openIn === 'same_tab') {
+          window.location.href = appUrl;
+        } else {
+          window.open(appUrl, '_blank');
         }
         return true;
       }

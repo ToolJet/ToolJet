@@ -35,6 +35,7 @@ import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import useWorkflowStore from '@/_stores/workflowStore';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
+import { ScopedVariablesContext, scopedVariableHints } from './ScopedVariablesContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
 import { completionLabelTooltip } from './completionLabelTooltip';
 import { CHOICE_FIELDS, holdsExpression } from './heldExpression';
@@ -85,15 +86,18 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
     return state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[tableColumnContext.tableId]?.currentData;
   }, shallow);
 
+  const scopedVariables = useContext(ScopedVariablesContext);
+
   const customVariables = useMemo(() => {
-    if (!Array.isArray(tableCurrentData) || tableCurrentData.length === 0) return baseCustomVariables;
+    const withScoped = scopedVariables ? { ...baseCustomVariables, ...scopedVariables } : baseCustomVariables;
+    if (!Array.isArray(tableCurrentData) || tableCurrentData.length === 0) return withScoped;
     const firstRow = tableCurrentData[0];
     return {
-      ...baseCustomVariables,
+      ...withScoped,
       rowData: firstRow,
       cellValue: tableColumnContext?.columnKey != null ? firstRow?.[tableColumnContext.columnKey] : undefined,
     };
-  }, [baseCustomVariables, tableCurrentData, tableColumnContext?.columnKey]);
+  }, [baseCustomVariables, scopedVariables, tableCurrentData, tableColumnContext?.columnKey]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -309,6 +313,7 @@ const EditorInput = ({
   // Set once at ColumnPopover level, consumed automatically by all nested CodeHinters.
   const tableColumnContext = useContext(TableColumnContext);
   const tableColumnComponentId = tableColumnContext?.tableId;
+  const scopedHints = scopedVariableHints(useContext(ScopedVariablesContext));
   const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
 
@@ -346,6 +351,7 @@ const EditorInput = ({
     const hints = {
       ...hintsWithoutParamHints,
       appHints: [
+        ...scopedHints,
         ...tableContextHints,
         ...contextHints,
         ...hintsWithoutParamHints.appHints,

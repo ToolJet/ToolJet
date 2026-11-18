@@ -23,6 +23,7 @@ export enum PageType {
   URL = 'url',
   APP = 'app',
   CUSTOM = 'custom',
+  ALL_APPS = 'all_apps',
 }
 
 @Entity({ name: 'pages' })
@@ -104,6 +105,10 @@ export class Page {
 
   @Column({ name: 'co_relation_id', nullable: true })
   co_relation_id: string;
+
+  // Only read for type 'all_apps': group the generated app links under their folders.
+  @Column({ name: 'group_by_folder', type: 'boolean', default: false })
+  groupByFolder: boolean;
 
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.pages)
   @JoinColumn({ name: 'app_version_id' })

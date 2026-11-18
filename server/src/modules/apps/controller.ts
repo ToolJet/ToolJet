@@ -4,6 +4,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -15,11 +16,14 @@ import {
   Query,
   Res,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { AppCountGuard } from '@modules/licensing/guards/app.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
 import { AppCreateDto, AppListDto, AppUpdateDto, VersionReleaseDto } from './dto';
+import { MenuAppsResponseDto } from './dto/menu-apps';
 import { FeatureAbilityGuard } from './ability/guard';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
@@ -176,6 +180,15 @@ export class AppsController implements IAppsController {
       },
       true
     );
+  }
+
+  // Declared before `:id` so the literal path is matched first.
+  @InitFeature(FEATURE_KEY.GET)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Get('/menu-apps')
+  async indexMenuApps(@User() user: UserEntity): Promise<MenuAppsResponseDto> {
+    return plainToInstance(MenuAppsResponseDto, await this.appsService.getMenuApps(user));
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_ICON)

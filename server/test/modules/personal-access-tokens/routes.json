@@ -8,6 +8,7 @@
   "apps | APP | get | GET | /apps | version=(default) | src/modules/apps/controller.ts | AppsController.index",
   "apps | APP | get | GET | /apps/:id/workflows | version=(default) | src/modules/apps/controllers/workflow.controller.ts | WorkflowController.fetchWorkflows",
   "apps | APP | get | GET | /apps/addable | version=(default) | src/modules/apps/controller.ts | AppsController.indexAddable",
+  "apps | APP | get | GET | /apps/menu-apps | version=(default) | src/modules/apps/controller.ts | AppsController.indexMenuApps",
   "apps | APP | get_app_authentication_config | GET | /apps/app-authentication-config/:slug | version=(default) | src/modules/apps/controller.ts | AppsController.getAppAuthenticationConfig",
   "apps | APP | get_one | GET | /apps/:id | version=(default) | src/modules/apps/controller.ts | AppsController.show",
   "apps | APP | get_restricted_access_info | GET | /apps/restricted-access-info/:slug | version=(default) | src/modules/apps/controller.ts | AppsController.getRestrictedAccessInfo",

@@ -5,6 +5,8 @@ import cx from 'classnames';
 import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarRightCollapse } from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
 import useStore from '@/AppBuilder/_stores/store';
+import { useMenuPages } from './useMenuPages';
+import { buildMenuTree } from './allAppsNavItems';
 import AppLogo from '@/_components/AppLogo';
 import { DarkModeToggle } from '@/_components';
 import { RenderPageAndPageGroup } from '@/AppBuilder/AppCanvas/PageMenu/PageGroup';
@@ -44,7 +46,7 @@ export const PagesSidebarNavigation = ({
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
-  const pages = useStore((state) => state.modules.canvas.pages, shallow);
+  const pages = useMenuPages(moduleId);
   const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
 
@@ -97,7 +99,11 @@ export const PagesSidebarNavigation = ({
   );
 
   const pagesTree = useMemo(
-    () => (hasAppPagesAddNavGroupEnabled ? buildTree(pages, PAGE_PROPERTY_NAMES) : pages),
+    () =>
+      buildMenuTree(pages, {
+        navGroupsEnabled: hasAppPagesAddNavGroupEnabled,
+        buildTree: (items) => buildTree(items, PAGE_PROPERTY_NAMES),
+      }),
     [hasAppPagesAddNavGroupEnabled, pages]
   );
 

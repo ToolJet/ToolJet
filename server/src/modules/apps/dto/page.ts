@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -22,6 +23,7 @@ export enum PageType {
   URL = 'url',
   APP = 'app',
   CUSTOM = 'custom',
+  ALL_APPS = 'all_apps',
 }
 
 export class CreatePageDto {
@@ -85,6 +87,11 @@ export class CreatePageDto {
   @IsUUID()
   @IsOptional()
   targetCorelationId?: string;
+
+  // Only read for type 'all_apps'
+  @IsBoolean()
+  @IsOptional()
+  groupByFolder?: boolean;
 }
 
 export class DeletePageDto {

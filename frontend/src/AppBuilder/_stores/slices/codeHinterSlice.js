@@ -1,14 +1,7 @@
 import { createJavaScriptSuggestions } from '@/AppBuilder/CodeEditor/utils';
 import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
+import { ARRAY_HINT_TEMPLATE_THRESHOLD, traverseObjectToHints } from '@/AppBuilder/CodeEditor/hintTraversal';
 import { ROW_SCOPED_RESOLVABLE_KEY_MAP, isRowScopedParent } from '@/AppBuilder/AppCanvas/appCanvasConstants';
-
-/**
- * Arrays at or above this length get one hint describing the array, templated off element 0;
- * shorter ones get a hint per element (`data.0.name`, `data.1.name`, ...). Inherited from the
- * legacy reference builder in _stores/utils.js. traverseObjectToHints and computeShapeHash must
- * share it, or the shape hash stops matching what the hints actually contain.
- */
-const ARRAY_HINT_TEMPLATE_THRESHOLD = 10;
 
 /**
  * Module-level single-entry caches for context hints.
@@ -28,39 +21,6 @@ const ARRAY_HINT_TEMPLATE_THRESHOLD = 10;
  */
 let _contextHintsCache = null; // { id: componentId, version: number, hints: Array }
 let _tableContextHintsCache = null; // { id: tableId, version: number, hints: Array }
-
-/**
- * Recursively traverses an object to produce flat hint entries for autocomplete.
- * Each entry is { hint: 'dotted.path', type: 'Object'|'Array'|'String'|etc }.
- *
- * Mirrors the old createReferencesLookup / buildMap logic from _stores/utils.js.
- * Long arrays use row 0 as a structural template (see ARRAY_HINT_TEMPLATE_THRESHOLD) — avoids
- * traversing thousands of rows.
- */
-function traverseObjectToHints(data, prefix, maxDepth = 3, _depth = 0) {
-  const hints = [];
-  if (_depth >= maxDepth || data == null || typeof data !== 'object') return hints;
-
-  const keys = Object.keys(data);
-  keys.forEach((key) => {
-    const value = data[key];
-    const _type = Object.prototype.toString.call(value).slice(8, -1);
-    const newPath = prefix ? `${prefix}.${key}` : key;
-
-    hints.push({ hint: newPath, type: _type });
-
-    if (_type === 'Object') {
-      hints.push(...traverseObjectToHints(value, newPath, maxDepth, _depth + 1));
-    } else if (_type === 'Array') {
-      const template = value.length >= ARRAY_HINT_TEMPLATE_THRESHOLD ? value[0] : value;
-      if (template && typeof template === 'object') {
-        hints.push(...traverseObjectToHints(template, newPath, maxDepth, _depth + 1));
-      }
-    }
-  });
-
-  return hints;
-}
 
 /** Build hints for all components in the given module. Handles per-row arrays (ListView/Kanban children). */
 function buildComponentHints(storeState, moduleId) {
