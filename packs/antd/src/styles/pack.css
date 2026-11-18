@@ -33,6 +33,31 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+/* Rate in a fixed box (Dynamic height off): its box fills the widget, the label and stars centred down it (taller than
+   the box, they start at the top and scroll). With Dynamic height on, the box is the content's height. The stars' row
+   is their own height: Ant's 32px field row and the gap under an inline list left 8px under the stars, so they sat
+   above the middle. */
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-rate {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  justify-content: safe center;
+  overflow: auto;
+}
+/* Rate: the stars fill in the primary colour, which they ignored (Ant's fixed yellow, QA PKB-41): the Primary color style,
+   else the app theme's brand, else Ant's blue. Ant sets the colour on the Rate itself (.tj.ant-rate), so this targets it
+   more closely. */
+.tj-ant-rate .tj.ant-rate {
+  --ant-rate-star-color: var(--ant-color-primary);
+  display: flex;
+}
+.tj-ant-rate .ant-form-item-control-input {
+  min-height: 0;
+}
+.tj-ant-rate .ant-form-item-control-input-content {
+  display: flex;
+}
 /* A clickable step's focus: a ring around the whole step, as Tabs and Pagination draw (QA PF-007). Ant rings only the
    step's icon in a pale tint, which a progress dot or the navigation type all but hide. Drawn inside the step, so the
    box's scroll does not clip it at the edges. */
@@ -1249,8 +1274,9 @@
 .tj-ant-chart-frame > div {
   height: 100%;
 }
-/* RadialChart's, Sparkline's, Steps', Result's and Progress' box takes Background, Border color and Border radius as
-   the charts' (.tj-ant-chart) does: they have no frame of their own, so the styles changed nothing on them (QA PKB-41). */
+/* RadialChart's, Sparkline's, Steps', Result's, Progress' and Rate's box takes Background, Border color and Border
+   radius as the charts' (.tj-ant-chart) does: they have no frame of their own, so the styles changed nothing on them
+   (QA PKB-41). */
 .tj-ant-chart-box {
   box-sizing: border-box;
   background-color: var(--tj-ant-color-bg-container, transparent);

@@ -322,7 +322,8 @@ export const Rate = (props: Record<string, unknown>) => {
   };
   useValueActions(change, props.value);
   const tips = Array.isArray(tooltips) ? tooltips.map(str) : [];
-  const stars = Math.max(1, Math.min(20, Number(count) || 5));
+  // Whole stars: 3.5 reached rc-rate, which threw building that many (QA PKB-79).
+  const stars = Math.max(1, Math.min(20, Math.trunc(Number(count)) || 5));
   // Ant draws a literal 9 of 5 stars as 5, and 2.3 as 2 (2.5 with halves).
   const drawn = useFittedValue(
     value,
@@ -331,7 +332,8 @@ export const Rate = (props: Record<string, unknown>) => {
   );
 
   return (
-    <AntProvider tokens={tokens}>
+    // Container background, Border color and Border radius style the box; Primary color fills the stars (QA PKB-41).
+    <AntProvider tokens={tokens} className="tj-ant-rate tj-ant-chart-box">
       <FormField {...field} check={check}>
         <SpinOver loading={loading} as="inline">
           <AntRate
