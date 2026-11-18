@@ -266,6 +266,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
     createWorkflowAsyncHandler: ({
       executionId,
+      streamToken,
       queryId,
       processQueryResults,
       handleFailure,
@@ -275,7 +276,7 @@ export const createQueryPanelSlice = (set, get) => ({
     }) => {
       const asyncHandler = new AsyncQueryHandler({
         streamSSE: (jobId) => {
-          return workflowExecutionsService.streamSSE(jobId);
+          return workflowExecutionsService.streamSSE(jobId, streamToken);
         },
         extractJobId: () => executionId,
         classifyEventStatus: classifyWorkflowEvent,
@@ -1854,6 +1855,7 @@ export const createQueryPanelSlice = (set, get) => ({
       try {
         const asyncHandler = get().queryPanel.createWorkflowAsyncHandler({
           executionId: data.data.executionId,
+          streamToken: data.data.streamToken,
           queryId,
           processQueryResults,
           handleFailure,

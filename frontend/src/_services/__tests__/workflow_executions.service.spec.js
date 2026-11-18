@@ -69,3 +69,30 @@ describe('workflowExecutionsService.getWorkspaceExecutionStates', () => {
     expect(fetch.mock.calls[0][1].signal).toBe(controller.signal);
   });
 });
+
+describe('workflowExecutionsService.streamSSE', () => {
+  beforeEach(() => {
+    global.EventSource = jest.fn();
+  });
+
+  afterEach(() => {
+    delete global.EventSource;
+  });
+
+  it('opens the run stream with the token the trigger returned, URL-encoded', () => {
+    workflowExecutionsService.streamSSE('exec-1', '1800000000.ab+c/d');
+
+    expect(EventSource).toHaveBeenCalledWith(
+      'http://localhost:3000/workflow_executions/exec-1/stream?token=1800000000.ab%2Bc%2Fd',
+      { withCredentials: true }
+    );
+  });
+
+  it('opens the stream without a token query when none was returned', () => {
+    workflowExecutionsService.streamSSE('exec-1');
+
+    expect(EventSource).toHaveBeenCalledWith('http://localhost:3000/workflow_executions/exec-1/stream', {
+      withCredentials: true,
+    });
+  });
+});
