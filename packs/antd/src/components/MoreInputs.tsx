@@ -27,7 +27,7 @@ import { boundedTree } from '../lib/tree';
 import { UNIT } from './DatePicker';
 import { useValueSetter } from '../lib/sameValue';
 import { useOfferedValue } from '../lib/offeredValue';
-import { isBlankDate, parseDate as strictDate, parseTime } from '../lib/dates';
+import { isBlankDate, parseDate as strictDate, parseTime, PERIOD_FORMAT, startOfPeriod } from '../lib/dates';
 import '../styles/controls.css';
 
 const useFieldActions = (change: (v: unknown) => void, initial: unknown) => {
@@ -41,6 +41,30 @@ const useFieldActions = (change: (v: unknown) => void, initial: unknown) => {
 // Strict: text that names no real date or time (2026-13-45, 25:99) is no value, not a rolled-over one (lib/dates).
 const COLOR_TEXT =
   /^(#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|(rgba?|hsla?|hsba?|hsva?)\(\s*[-+\d.%]+(\s*[,\s/]\s*[-+\d.%]+){2,3}\s*\))$/i;
+// A CSS colour name (red, rebeccapurple) as hex, as the browser reads it, or null: Ant's own parser read every name as
+// black, and the native Color picker takes names. A canvas keeps its last valid colour when given one it cannot
+// read, so a name that leaves two different starting colours where they were is no colour.
+// Any CSS colour text as hex, as the browser reads it, or null (unreadable, or with transparency hex would drop).
+const cssHex = (text: string): string | null => {
+  if (!text || typeof document === 'undefined') return null;
+  const ctx = document.createElement('canvas').getContext?.('2d');
+  if (!ctx) return null;
+  const read = (start: string) => {
+    ctx.fillStyle = start;
+    ctx.fillStyle = text;
+    return String(ctx.fillStyle);
+  };
+  const a = read('#000000');
+  return a === read('#ffffff') && /^#[0-9a-f]{6}$/i.test(a) ? a.toLowerCase() : null;
+};
+const colorName = (v: unknown): string | null => {
+  const text = str(v).trim();
+  return /^[a-z]+$/i.test(text) ? cssHex(text) : null;
+};
+const hexToRgb = (hex: string) => {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
+};
 const parseDate = (v: unknown, format?: string): Dayjs | null =>
   format ? parseTime(v, [format, format.replace(/^HH/, 'H')]) : strictDate(v);
 
@@ -514,8 +538,16 @@ export const RangePicker = (props: Record<string, unknown>) => {
   }, [JSON.stringify(value)]);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  // A week, month, quarter or year picker shows that period and saves its first day, as the Date Picker does: it showed
+  // and saved full dates (PKB-71). The Format it was dropped with (YYYY-MM-DD) counts as no Format for a period picker.
+  const period = str(picker) || 'date';
+  const ownFormat = str(format).trim();
+  const shownFormat =
+    ownFormat && !(period !== 'date' && ownFormat === 'YYYY-MM-DD') ? ownFormat : period === 'date' ? 'YYYY-MM-DD' : PERIOD_FORMAT[period];
   const change = (next: unknown) => {
-    const arr = toArray(next).map((v) => (dayjs.isDayjs(v) ? v : parseDate(v)));
+    const arr = toArray(next)
+      .map((v) => (dayjs.isDayjs(v) ? v : parseDate(v)))
+      .map((d) => (d ? startOfPeriod(d as Dayjs, period) : d));
     if (valueSetter.set(arr.length === 2 && arr[0] && arr[1] ? arr.map((d) => (d as Dayjs).format('YYYY-MM-DD')) : []))
       onChange();
   };
@@ -548,7 +580,7 @@ export const RangePicker = (props: Record<string, unknown>) => {
                 id={fieldId as never}
                 style={{ width: '100%' }}
                 value={pair[0] || pair[1] ? [pair[0] ?? null, pair[1] ?? null] : null}
-                format={str(format).trim() || 'YYYY-MM-DD'}
+                format={shownFormat}
                 picker={picker as 'date'}
                 minDate={parseDate(minDate) ?? undefined}
                 maxDate={parseDate(maxDate) ?? undefined}
@@ -1071,16 +1103,35 @@ export const ColorPicker = (props: Record<string, unknown>) => {
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   // A colour the picker can read (hex, rgb(), hsl(), hsb()): anything else showed as #000000 while value kept the text.
   // A value it cannot read is not kept; setFieldValue refuses it.
+  // A colour name is taken as its colour, in the field's format (AD-10: red showed Transparent).
   const readable = (v: unknown) => str(v).trim() === '' || COLOR_TEXT.test(str(v).trim());
+  const fromName = (v: unknown) => {
+    const hex = colorName(v);
+    return hex && format === 'rgb' ? hexToRgb(hex) : hex;
+  };
+  // setFieldValue gives the colour in the field's format, as a pick does (PF-088: rgb(1, 2, 3) on a hex field showed
+  // #010203 but exposed the rgb text). Text already in that format is kept as given; a colour with transparency, or
+  // hsb() (no CSS colour), stays as given.
+  const inFormat = (v: unknown): string | null => {
+    const text = str(v).trim();
+    const named = fromName(text);
+    if (named) return named;
+    if (!readable(text)) return null;
+    const already = format === 'rgb' ? /^rgb\(/i.test(text) : text.startsWith('#');
+    const hex = already ? null : cssHex(text);
+    if (!hex) return str(v);
+    return format === 'rgb' ? hexToRgb(hex) : hex;
+  };
   useFieldActions((v) => {
-    if (!readable(v)) return;
-    if (valueSetter.set(str(v))) onChange();
+    const next = inFormat(v);
+    if (next !== null && valueSetter.set(next)) onChange();
   }, props.value);
   const valueReadable = readable(value);
   useEffect(() => {
-    if (!valueReadable) setValue('');
+    if (valueReadable) return;
+    setValue(fromName(value) ?? '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [valueReadable]);
+  }, [valueReadable, value]);
   const presetList = toArray(presets)
     .map((p) =>
       p && typeof p === 'object' ? { label: str((p as Row).label), colors: toArray((p as Row).colors).map(str) } : null

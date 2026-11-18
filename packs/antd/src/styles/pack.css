@@ -1503,13 +1503,20 @@
   padding-bottom: 4px;
   line-height: 20px;
 }
-/* One line with an ellipsis, as the ToolJet Text Input: a wrapped label pushed the field out of its box (QA PF-078). */
+/* One line that ends in an ellipsis, as a ToolJet field's label: Ant wraps a vertical label, so a long one was cut off
+   mid-text by the fixed line (PF-089) or pushed the field out of its box (QA PF-078). A cut label shows its whole text
+   in Ant's tooltip on hover (FormField). The label keeps Ant's inline-flex, so the required mark stays beside it. */
 .tj-ant-root .ant-form-item-vertical > .ant-form-item-row > .ant-form-item-label > label {
-  display: block;
   height: 20px;
   line-height: 20px;
-  white-space: nowrap;
+  max-width: 100%;
+  min-width: 0;
+}
+.tj-ant-root .ant-form-item-label > label > .tj-ant-label-text {
+  display: block;
+  min-width: 0;
   overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
 }
 .tj-ant-root.tj-ant-compact .ant-form-item-control-input,
