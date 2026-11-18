@@ -5,6 +5,7 @@ import {
   SendPasswordResetEmailPayload,
   SendPasswordExpiredResetEmailPayload,
   SendAppBuildCompletedEmailPayload,
+  SendVersionReviewEmailPayload,
   SendWorkflowApprovalEmailPayload,
 } from '../dto';
 
@@ -17,6 +18,7 @@ export interface IEmailService {
   sendPasswordExpiredResetEmail(payload: SendPasswordExpiredResetEmailPayload): Promise<any>;
   sendCommentMentionEmail(payload: SendCommentMentionEmailPayload): Promise<any>;
   sendAppBuildCompletedEmail(payload: SendAppBuildCompletedEmailPayload): Promise<any>;
+  sendVersionReviewEmail(payload: SendVersionReviewEmailPayload): Promise<any>;
   sendWorkflowApprovalEmail(payload: SendWorkflowApprovalEmailPayload): Promise<any>;
   init(): Promise<void>;
 }

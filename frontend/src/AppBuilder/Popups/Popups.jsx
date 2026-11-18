@@ -7,6 +7,8 @@ export const Popups = ({ darkMode }) => {
   const queryConfirmationList = useStore((state) => state.dataQuery.queryConfirmationList, shallow);
   const onQueryConfirmOrCancel = useStore((state) => state.queryPanel.onQueryConfirmOrCancel);
 
+  const overlayOpen = useStore((state) => state.isEditorOverlayOpen);
+
   const first = queryConfirmationList?.[0];
 
   return (
@@ -18,6 +20,7 @@ export const Popups = ({ darkMode }) => {
         onCancel={() => onQueryConfirmOrCancel(first)}
         darkMode={darkMode}
         dialogKey={first?.queryName}
+        overlayOpen={!!overlayOpen}
       />
     </div>
   );
