@@ -1,5 +1,7 @@
+import fs from 'fs';
+import path from 'path';
 import { installBrowserStubs } from './fuzz/packTestEnv';
-import { mountPack } from './packMount';
+import { mountPack, settle } from './packMount';
 import { ANT_PACK_CSS, removeCopies } from './antPackCss';
 
 installBrowserStubs();
@@ -62,5 +64,41 @@ describe('Ant Design Switch: Styles', () => {
     expect(root(v).style.border).toBe('');
     expect(root(v).style.borderRadius).toBe('');
     expect(root(v).style.paddingInline).toBe('');
+  });
+});
+
+describe('Ant Design Transfer', () => {
+  // PF-087: Set field value with one key as text ('invoices') was ignored: targetKeys became [] and nothing moved.
+  test('[PackComponent-TRANSFER-010] Set field value takes one key as text', async () => {
+    const v = await mountPack('antd', 'Transfer', {});
+
+    await v.run('setFieldValue', 'invoices');
+    await settle();
+    expect(v.exposed.targetKeys).toEqual(['invoices']);
+
+    // A list, and a list as JSON text, are still lists; empty text moves everything back.
+    await v.run('setFieldValue', '["orders","invoices"]');
+    await settle();
+    expect(v.exposed.targetKeys).toEqual(['orders', 'invoices']);
+    await v.run('setFieldValue', '');
+    await settle();
+    expect(v.exposed.targetKeys).toEqual([]);
+  });
+
+  // PF-086, PKB-76: the lists kept Ant's width (about 350px in all), so a narrower box cut off the right list and its move
+  // buttons. The lists share the box's width, and in a box too narrow for two side by side they stack, the move buttons
+  // between them pointing down and up. Read from the file as text: jsdom matches no container query, and ANT_PACK_CSS
+  // has them taken out.
+  test('[PackComponent-TRANSFER-011] the lists shrink to the box, and stack in a narrow one', () => {
+    const css = fs.readFileSync(path.resolve(__dirname, '../../../../../../packs/antd/src/styles/pack.css'), 'utf8');
+    const block = (selector) => {
+      const at = css.indexOf(selector);
+      return at < 0 ? '' : css.slice(at, css.indexOf('}', at));
+    };
+    expect(block('.tj-ant-transfer {')).toContain('container: tj-ant-transfer / inline-size;');
+    expect(block('.tj-ant-transfer .ant-transfer-list {')).toContain('min-width: 0;');
+    const narrow = css.slice(css.indexOf('@container tj-ant-transfer'));
+    expect(narrow).toMatch(/^@container tj-ant-transfer \(max-width: \d+px\)/);
+    expect(block('@container tj-ant-transfer')).toContain('flex-direction: column;');
   });
 });

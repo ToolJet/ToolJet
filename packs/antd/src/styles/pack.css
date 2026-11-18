@@ -650,9 +650,34 @@
   line-height: var(--ant-line-height);
   margin-top: 2px;
 }
+/* The lists share the box's width: they kept Ant's (about 350px with the buttons), so a narrower box cut off the right
+   list and its move buttons (QA PF-086). A box too narrow for two lists side by side stacks them, the move buttons
+   between them pointing down and up. */
+.tj-ant-transfer {
+  container: tj-ant-transfer / inline-size;
+}
 .tj-ant-transfer .ant-transfer-list {
   flex: 1;
   height: 100%;
+  min-width: 0;
+}
+@container tj-ant-transfer (max-width: 279px) {
+  .tj-ant-transfer .ant-transfer {
+    flex-direction: column;
+  }
+  .tj-ant-transfer .ant-transfer-list {
+    width: auto;
+    height: auto;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  .tj-ant-transfer .ant-transfer-operation {
+    flex-direction: row;
+    margin: var(--ant-margin-xs) 0;
+  }
+  .tj-ant-transfer .ant-transfer-operation .anticon {
+    transform: rotate(90deg);
+  }
 }
 
 /* Kanban: the shadcn pack's board (UI 2.0's) in Ant tokens. Each Kanban style (a --kb-* variable) replaces its

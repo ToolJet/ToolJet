@@ -1217,7 +1217,10 @@ export const Transfer = (props: Record<string, unknown>) => {
     check.touch();
     onChange();
   };
-  useFieldActions((v) => change(toArray(v).map(asGiven)), props.targetKeys);
+  // One key as text ('invoices') is that key, as a list or JSON text is a list: it was read as no keys (QA PF-087).
+  const keysOf = (v: unknown) =>
+    typeof v === 'string' && !v.trim().startsWith('[') ? (v.trim() ? [v.trim()] : []) : toArray(v);
+  useFieldActions((v) => change(keysOf(v).map(asGiven)), props.targetKeys);
   // Ant gives the moved keys first: the chosen keys are kept in the data's order, then any no item has, as they were.
   const move = (next: React.Key[]) => {
     const picked = new Set(next.map(str));
