@@ -17,6 +17,8 @@ export abstract class LicenseTermsService {
   abstract getLicenseTermsInstance(type: any): Promise<any>;
   abstract getLicenseTerms(type: any, organizationId: string): Promise<any>;
   abstract getOrganizationLicense(organizationId: string): Promise<any>;
+  // Whether the workspace (Cloud) or instance (self-hosted) is on the Free limits introduced at the plan limits cutoff.
+  abstract usesNewFreeLimits(organizationId: string): Promise<boolean>;
 }
 
 export interface ILicenseOrganizationService {
