@@ -236,6 +236,6 @@ export const sectionCards = {
     gettingStarted: {
         title: "Getting Started",
         description: "Discover how to create and publish apps within minutes",
-        link: "/docs/getting-started/quickstart-guide/",
+        link: "/docs/build-with-ai/overview/",
     }
 };

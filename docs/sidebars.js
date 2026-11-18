@@ -19,7 +19,6 @@ const sidebars = {
       "items": [
         "doc-home-page",
         "getting-started/platform-overview",
-        "getting-started/quickstart-guide",
         {
           "type": "category",
           "label": "Deployment",
@@ -196,7 +195,6 @@ const sidebars = {
             "build-with-ai/use-ai-in-tooljet",
             "build-with-ai/generate-applications",
             "build-with-ai/referencing-app-resources",
-            "build-with-ai/ai-docs-assistant",
             "build-with-ai/ai-credits",
             "build-with-ai/model-selection",
             "build-with-ai/ai-model-performance"

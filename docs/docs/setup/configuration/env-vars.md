@@ -333,11 +333,17 @@ Require an approved [version review](../../development-lifecycle/release/compare
 | **Variable** | **Description** | **Default** |
 |:--- |:--- |:--- |
 | `TOOLJET_VERSION_REVIEW_REQUIRED` | `release` requires an approved review to release a version. `promote` requires one to promote into production. `release,promote` or `all` requires both. With `off`, no review is required, but a version with an open, unapproved review still can't move on. | `off` |
-| `TOOLJET_VERSION_REVIEW_APPROVALS` | The number of approvals a review needs. | `1` |
+
+Good to know:
+
+- Reviews gate apps only, not workflows or modules.
+- Reviews are bypassed while Git branching is on.
+- Below the Pro plan, nothing waits for a review.
+- A review needs exactly one approval.
 
 ### React Builder
 
-These variables configure apps built in [React Builder](../../app-builder/react-builder/overview.md).
+These variables configure apps built in [React Builder](../../app-builder/react-builder/overview.md). Parts of the editor still call React Builder **Code mode**, and some of these variables use the `CODE_MODE_` prefix.
 
 #### React Builder App Isolation
 
@@ -368,8 +374,8 @@ ToolJet checks every React Builder app version before release. See [App Security
 | `TOOLJET_APP_SCAN_REGISTRY_URL` | A mirror of the npm registry. Lockfiles that resolve from it are also allowed. | `https://registry.npmjs.org` |
 | `TOOLJET_APP_SCAN_RETIRE_URL` | A mirror of the retire.js vulnerability repository. | The retire.js repository on GitHub |
 | `TOOLJET_APP_SCAN_SOCKET_TOKEN` | A Socket.dev API token. Turns on the **Supply-chain alerts (Socket)** check. | Unset |
-| `TOOLJET_APP_SCAN_NETWORK_TIMEOUT_MS` | Timeout for each network request the scanner makes, in milliseconds. | `20000` |
-| `TOOLJET_APP_SCAN_AUTO_DELAY_MS` | How long to wait after a code change before checking it automatically, in milliseconds. | `3000` |
+| `TOOLJET_APP_SCAN_NETWORK_TIMEOUT_MS` | Timeout for each network request the scanner makes, in milliseconds. The scanner retries twice after a timeout, so a request can take up to about three times this value. | `20000` |
+| `TOOLJET_APP_SCAN_AUTO_DELAY_MS` | How long to wait after a code change before checking it automatically, in milliseconds. `0` falls back to `3000`, so the delay can't be turned off. | `3000` |
 | `TOOLJET_APP_SCAN_MAX_CONCURRENT` | Automatic checks that run at once on each server instance. | `4` |
 | `TOOLJET_APP_SCAN_MAX_CONCURRENT_PER_WORKSPACE` | Automatic checks that run at once for each workspace. | `2` |
 | `TOOLJET_APP_SCAN_RECHECK_MINUTES` | Re-check released versions' packages for new advisories every this many minutes (minimum 5). | Off |
@@ -380,15 +386,15 @@ ToolJet checks every React Builder app version before release. See [App Security
 |:--- |:--- |:--- |
 | `TOOLJET_CODE_SOURCE_REVISIONS_KEEP` | Code revisions kept for each app version. Older revisions leave App history and can't be restored. `0` keeps all. | `500` |
 | `TOOLJET_CODE_BUILDS_KEEP` | Saved builds kept for each React Builder app, in addition to every build a version uses. `0` keeps all. | `50` |
-| `TOOLJET_CODE_NPM_REGISTRIES` | Extra npm registries, comma-separated, that a React Builder project's lockfile may resolve packages from. The npm registry is always allowed. | Unset |
+| `TOOLJET_CODE_NPM_REGISTRIES` | Extra npm registries, comma-separated, that a React Builder project's lockfile may resolve packages from. These are always allowed: `registry.npmjs.org`, `registry.yarnpkg.com`, the registry set in `npm_config_registry`, and `TOOLJET_APP_SCAN_REGISTRY_URL`. On an air-gapped instance, list your internal registries here. | Unset |
 
 #### ToolJet CLI
 
 | **Variable** | **Description** | **Default** |
 |:--- |:--- |:--- |
-| `TOOLJET_CLI_TOKEN_DAYS` | How long a personal access token created by `tooljet auth login` lasts, in days (1–90). | `30` |
+| `TOOLJET_CLI_TOKEN_DAYS` | How long a personal access token created by `tooljet auth login` lasts, in days. Values above `90` are capped at `90`, and an invalid value falls back to `30`. | `30` |
 | `TOOLJET_CLI_TARBALL` | Path to the CLI package the server offers at `/api/code-mode/cli/tooljet-cli.tgz`. | The package built into the image |
-| `TOOLJET_SDK_TARBALL` | Path to the component SDK package the server offers at `/api/code-mode/cli/custom-component-sdk.tgz`. | The package built into the image, if any |
+| `TOOLJET_SDK_TARBALL` | Path to the component SDK package the server offers at `/api/code-mode/cli/custom-component-sdk.tgz`. Production images don't include the SDK, so set this to offer it. | Unset |
 
 Browser sign-in for the CLI (`tooljet auth login`) needs [Redis](#redis-configuration).
 
