@@ -25,7 +25,9 @@ export function ConditionRow({ children, className, ...props }: React.HTMLAttrib
   return (
     <div
       className={cn(
-        'tw-flex tw-w-full tw-items-stretch tw-overflow-hidden tw-rounded-default',
+        // shrink-0: overflow-hidden lets a flex item shrink to nothing, so in the scrolling list the rows would squash
+        // instead of the list scrolling.
+        'tw-flex tw-w-full tw-shrink-0 tw-items-stretch tw-overflow-hidden tw-rounded-default',
         // Not tw-divide-x: with preflight off its solid style gives every cell a 3px top and bottom border.
         '[&>*+*]:tw-border-0 [&>*+*]:tw-border-l [&>*+*]:tw-border-solid [&>*+*]:tw-border-border-default',
         'tw-border tw-border-solid tw-border-border-default tw-bg-background-surface-layer-01',
