@@ -16,9 +16,10 @@
   overflow: auto;
   box-sizing: border-box;
 }
-/* A Radio Group in a fixed box (Dynamic height off): options past the box scroll inside it, as the ToolJet Radio's,
-   instead of being cut off by the host (QA PKB-76). With Dynamic height on, the box grows with them. */
-.tj-cc-root:not(.tj-cc-fit) > .tj-ant-radio-root {
+/* A component sized to its content (Radio Group, Steps) in a fixed box (Dynamic height off): what is past the box scrolls
+   inside it, as the ToolJet Radio's does, instead of being cut off by the host (QA PKB-76). With Dynamic height on, the
+   box grows with it. */
+.tj-cc-root:not(.tj-cc-fit) > .tj-ant-fit-scroll {
   height: 100%;
   overflow: auto;
   box-sizing: border-box;
@@ -31,6 +32,14 @@
 .tj-ant-radio-root .ant-radio-label {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+/* A clickable step's focus: a ring around the whole step, as Tabs and Pagination draw (QA PF-007). Ant rings only the
+   step's icon in a pale tint, which a progress dot or the navigation type all but hide. Drawn inside the step, so the
+   box's scroll does not clip it at the edges. */
+.tj-ant-steps .ant-steps-item-container:focus-visible {
+  outline: var(--ant-line-width-focus) solid var(--ant-color-primary-border);
+  outline-offset: calc(-1 * var(--ant-line-width-focus));
+  border-radius: var(--ant-border-radius-sm);
 }
 /* Lists and tables fill the box: a bordered list's border, and a table's surface with its pagination at the foot,
    reach its bottom instead of ending in a blank band. */
@@ -1221,8 +1230,8 @@
 .tj-ant-chart-frame > div {
   height: 100%;
 }
-/* RadialChart's and Sparkline's box takes Background, Border color and Border radius as the other charts' (.tj-ant-chart)
-   does: they are not drawn in that frame, so the styles changed nothing on them (QA PKB-41). */
+/* RadialChart's, Sparkline's and Steps' box takes Background, Border color and Border radius as the charts'
+   (.tj-ant-chart) does: they have no frame of their own, so the styles changed nothing on them (QA PKB-41). */
 .tj-ant-chart-box {
   box-sizing: border-box;
   background-color: var(--tj-ant-color-bg-container, transparent);

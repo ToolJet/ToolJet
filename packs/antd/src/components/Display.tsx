@@ -1070,7 +1070,7 @@ export const Steps = () => {
     (n) => go(Number(n) || 0)
   );
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} className="tj-ant-steps tj-ant-fit-scroll tj-ant-chart-box">
       <SpinOver loading={loading} as="block">
         <AntSteps
           items={items}

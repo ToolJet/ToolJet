@@ -137,7 +137,7 @@ export const RadioGroup = (props: Record<string, unknown>) => {
   }, [offered, options.length, loading]);
 
   return (
-    <AntProvider tokens={tokens} className="tj-ant-radio-root">
+    <AntProvider tokens={tokens} className="tj-ant-radio-root tj-ant-fit-scroll">
       <FormField {...field} check={check} htmlFor={fieldId}>
         <SpinOver loading={loading} as="inline">
           {/* Read as one group named by its label (the label's htmlFor names no group; Ant's group has no role). */}
