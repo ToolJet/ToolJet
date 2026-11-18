@@ -10,6 +10,8 @@ export const UNSAVED_SOURCES = {
   editRow: 'the row edit',
   createColumn: 'the new column',
   editColumn: 'the column edit',
+  createTable: 'the new table',
+  editTable: 'the table edit',
 } as const;
 
 export type UnsavedSourceId = keyof typeof UNSAVED_SOURCES;

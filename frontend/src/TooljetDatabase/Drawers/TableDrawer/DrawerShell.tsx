@@ -1,0 +1,79 @@
+import React, { type ReactNode } from 'react';
+import { CornerDownLeft, X } from 'lucide-react';
+import { Button } from '@/components/ui/Rocket/Button/Button';
+
+type DrawerShellProps = {
+  title: string;
+  /** Sits right of the title (a Tag, for example). */
+  titleAdornment?: ReactNode;
+  onClose: () => void;
+  children: ReactNode;
+  /** Left side of the footer: a short warning, for example. */
+  footerStart?: ReactNode;
+  submitLabel: string;
+  submitDisabled?: boolean;
+  isSubmitting?: boolean;
+  onSubmit: () => void;
+  /** data-cy of the title. */
+  'data-cy'?: string;
+  /** data-cy of the submit button. */
+  submitDataCy?: string;
+};
+
+// Header, scrolling body and sticky footer shared by the table and column drawers. The width comes from the Drawer
+// around it. Measurements follow the Figma Drawer: 48px header (0 12 0 16), 16px body padding, footer 12 16.
+export function DrawerShell({
+  title,
+  titleAdornment,
+  onClose,
+  children,
+  footerStart,
+  submitLabel,
+  submitDisabled,
+  isSubmitting,
+  onSubmit,
+  'data-cy': dataCy,
+  submitDataCy = 'create-button',
+}: DrawerShellProps) {
+  return (
+    <div className="tw-flex tw-h-full tw-flex-col tw-bg-background-surface-layer-01">
+      <header className="tw-flex tw-h-12 tw-shrink-0 tw-items-center tw-justify-between tw-gap-3 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-py-0 tw-pl-4 tw-pr-3">
+        <div className="tw-flex tw-min-w-0 tw-flex-1 tw-items-center tw-gap-2">
+          <h2 className="tw-m-0 tw-whitespace-nowrap tw-font-title-x-large tw-text-text-default" data-cy={dataCy}>
+            {title}
+          </h2>
+          {titleAdornment}
+        </div>
+        <Button
+          variant="ghost"
+          iconOnly
+          size="medium"
+          aria-label="Close"
+          onClick={onClose}
+          data-cy="drawer-close-button"
+        >
+          <X />
+        </Button>
+      </header>
+      <div className="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-3 tw-overflow-y-auto tw-p-4">{children}</div>
+      <footer className="tw-flex tw-shrink-0 tw-items-center tw-justify-between tw-gap-3 tw-border-0 tw-border-t tw-border-solid tw-border-border-weak tw-px-4 tw-py-3">
+        <div className="tw-flex tw-min-w-0 tw-items-center tw-gap-1.5">{footerStart}</div>
+        <div className="tw-flex tw-shrink-0 tw-items-center tw-gap-2">
+          <Button variant="outline" onClick={onClose} data-cy="cancel-button">
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            trailingVisual={<CornerDownLeft />}
+            disabled={submitDisabled || isSubmitting}
+            loading={isSubmitting}
+            onClick={onSubmit}
+            data-cy={submitDataCy}
+          >
+            {submitLabel}
+          </Button>
+        </div>
+      </footer>
+    </div>
+  );
+}
