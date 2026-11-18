@@ -13,6 +13,7 @@ export const appsService = {
   getAll,
   getWorkflowConsumers,
   getAllAddableApps,
+  getMenuApps,
   createApp,
   cloneApp,
   exportApp,
@@ -96,6 +97,12 @@ function getAllAddableApps() {
   const branchId = getActiveBranchId();
   const branchParam = branchId ? `?branch_id=${branchId}` : '';
   return fetch(`${config.apiUrl}/apps/addable${branchParam}`, requestOptions).then(handleResponse);
+}
+
+// Released apps the current user can open, each with its folder. Feeds the "All apps" nav item.
+function getMenuApps() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/menu-apps`, requestOptions).then(handleResponse);
 }
 
 function createApp(body = {}) {

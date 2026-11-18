@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import cx from 'classnames';
 import { AlertTriangle } from 'lucide-react';
 import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
@@ -20,6 +20,9 @@ import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import { resolveReferences, validateKebabCase } from '@/_helpers/utils';
 import { ToolTip as InspectorTooltip } from '../../Inspector/Elements/Components/ToolTip';
 import { shallow } from 'zustand/shallow';
+import { ScopedVariablesContext } from '@/AppBuilder/CodeEditor/ScopedVariablesContext';
+import { fetchMenuApps } from '@/AppBuilder/AppCanvas/PageMenu/menuAppsRequest';
+import { toAppContext } from '@/AppBuilder/AppCanvas/PageMenu/allAppsNavItems';
 import { Button } from '@/components/ui/Button/Button';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
@@ -29,6 +32,7 @@ const POPOVER_TITLES = {
     app: 'New nav item with app',
     url: 'New nav item with URL',
     custom: 'New custom nav item',
+    all_apps: 'All Apps',
     group: 'New nav group',
   },
   edit: {
@@ -36,6 +40,7 @@ const POPOVER_TITLES = {
     app: 'Edit nav item',
     url: 'Edit nav item',
     custom: 'Edit nav item',
+    all_apps: 'All Apps',
     group: 'Edit nav group',
   },
 };
@@ -69,6 +74,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   const togglePageHeader = useStore((state) => state.togglePageHeader);
   const togglePageFooter = useStore((state) => state.togglePageFooter);
   const updatePageTargetApp = useStore((state) => state.updatePageTargetApp);
+  const updatePageGroupByFolder = useStore((state) => state.updatePageGroupByFolder);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const openPageEditPopover = useStore((state) => state.openPageEditPopover);
@@ -271,6 +277,23 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
     }
   }, [mode, pages, editingPage, addNewPage, isPageGroup, type, appId]);
 
+  //All apps nav item
+  useEffect(() => {
+    if (mode === 'add' && type === 'all_apps' && !hasAutoSavedRef.current) {
+      hasAutoSavedRef.current = true;
+      // Not renamable: the builder sees "All Apps", the menu shows the apps it generates.
+      const newName = 'All Apps';
+      const pageObj = { type: 'all_apps', openIn: 'new_tab', groupByFolder: false, icon: 'IconApps' };
+      addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
+        setPage(data);
+        setPageName(newName);
+      });
+    } else if (editingPage) {
+      setPage(editingPage);
+      setPageName(editingPage.name);
+    }
+  }, [mode, pages, editingPage, addNewPage, isPageGroup, type]);
+
   const handlePageSwitch = useCallback(() => {
     if (currentPageId === page.id) {
       return;
@@ -318,7 +341,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
         <div className="d-flex justify-content-between align-items-center">
           <div className="tj-text-xsm font-weight-500 text-default">{POPOVER_TITLES?.[mode]?.[type]}</div>
           <div className="actions-container">
-            {!['group', 'custom'].includes(type) && (
+            {!['group', 'custom', 'all_apps'].includes(type) && (
               <>
                 <ToolTip message={'Go to page'} placement="bottom">
                   <Button
@@ -334,19 +357,24 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
               </>
             )}
 
-            <ToolTip message={`Duplicate ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
-              <Button
-                key="duplicate-page-btn"
-                fill="var(--icon-strong)"
-                leadingIcon="duplicatepage"
-                iconOnly
-                variant="ghost"
-                size="medium"
-                onClick={() => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id))}
-              />
-            </ToolTip>
+            {type !== 'all_apps' && (
+              <ToolTip message={`Duplicate ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
+                <Button
+                  key="duplicate-page-btn"
+                  fill="var(--icon-strong)"
+                  leadingIcon="duplicatepage"
+                  iconOnly
+                  variant="ghost"
+                  size="medium"
+                  onClick={() => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id))}
+                />
+              </ToolTip>
+            )}
 
-            <ToolTip message={`Delete ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
+            <ToolTip
+              message={`Delete ${type === 'group' ? 'group' : type === 'all_apps' ? 'item' : 'page'}`}
+              placement="bottom"
+            >
               <Button
                 key="delete-page-btn"
                 fill="var(--icon-strong)"
@@ -364,23 +392,25 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
         </div>
       </Popover.Header>
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
-        <div className="pb-2">
-          <div className="col">
-            <label className="form-label">{type === 'default' ? 'Page name' : 'Label'}</label>
-            <input
-              type="text"
-              className="form-control"
-              value={pageName}
-              autoFocus={true}
-              onChange={(e) => setPageName(e.target.value)}
-              onBlur={() => {
-                pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
-              }}
-              minLength="1"
-              maxLength="32"
-            />
+        {type !== 'all_apps' && (
+          <div className="pb-2">
+            <div className="col">
+              <label className="form-label">{type === 'default' ? 'Page name' : 'Label'}</label>
+              <input
+                type="text"
+                className="form-control"
+                value={pageName}
+                autoFocus={true}
+                onChange={(e) => setPageName(e.target.value)}
+                onBlur={() => {
+                  pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
+                }}
+                minLength="1"
+                maxLength="32"
+              />
+            </div>
           </div>
-        </div>
+        )}
         {type === 'default' && (
           <div className="pb-2">
             <div className="col">
@@ -457,7 +487,13 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
             )}
           </div>
         )}
-        {['url', 'app'].includes(type) && (
+        {type === 'all_apps' && (
+          <AllAppsSettings
+            page={page}
+            onGroupByFolderChange={(checked) => updatePageGroupByFolder(page?.id, checked)}
+          />
+        )}
+        {['url', 'app', 'all_apps'].includes(type) && (
           <div className="d-flex justify-content-between align-items-center pb-2">
             <label className="form-label">Open {type === 'url' ? 'URL' : 'app'} in</label>
             <div className="ms-auto position-relative app-mode-switch">
@@ -476,16 +512,18 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
             </div>
           </div>
         )}
-        <div className="pb-3">
-          <div className="d-flex justify-content-between align-items-center">
-            <label className="form-label font-weight-400 mb-0">Icon</label>
-            <Icon
-              isVisibilityEnabled={false}
-              onChange={(value) => updatePageIcon(page?.id, value)}
-              value={page?.icon || 'IconFile'}
-            />
+        {type !== 'all_apps' && (
+          <div className="pb-3">
+            <div className="d-flex justify-content-between align-items-center">
+              <label className="form-label font-weight-400 mb-0">Icon</label>
+              <Icon
+                isVisibilityEnabled={false}
+                onChange={(value) => updatePageIcon(page?.id, value)}
+                value={page?.icon || 'IconFile'}
+              />
+            </div>
           </div>
-        </div>
+        )}
         <div className={`${['default', 'custom'].includes(type) ? 'pb-3' : ''}`}>
           {type === 'default' && (
             <div className=" d-flex justify-content-between align-items-center pb-2">
@@ -524,116 +562,120 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
             </div>
           )}
         </div>
-        <div className="pb-3">
-          <div className="section-header pb-2">Page header</div>
-          <div className=" d-flex justify-content-between align-items-center pb-2">
-            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-              Show on desktop
-              <LicenseTooltip
-                message={"You don't have access to page headers. Upgrade your plan to access this feature."}
-                placement="bottom"
-                show={!hasCanvasPageHeaderEnabled}
-              >
-                <div className="d-flex align-items-center">
-                  {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
-                </div>
-              </LicenseTooltip>
-            </label>
-            <label className={`form-switch`}>
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={showPageHeaderOnDesktop ?? false}
-                disabled={!hasCanvasPageHeaderEnabled}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  togglePageHeader(page?.id, checked, 'desktop');
-                }}
-              />
-            </label>
-          </div>
-          <div className=" d-flex justify-content-between align-items-center pb-2">
-            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-              Show on mobile
-              <LicenseTooltip
-                message={"You don't have access to page headers. Upgrade your plan to access this feature."}
-                placement="bottom"
-                show={!hasCanvasPageHeaderEnabled}
-              >
-                <div className="d-flex align-items-center">
-                  {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
-                </div>
-              </LicenseTooltip>
-            </label>
-            <label className={`form-switch`}>
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={showPageHeaderOnMobile ?? false}
-                disabled={!hasCanvasPageHeaderEnabled}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  togglePageHeader(page?.id, checked, 'mobile');
-                }}
-              />
-            </label>
-          </div>
-        </div>
-        <div className="pb-3">
-          <div className="section-header pb-2">Page footer</div>
-          <div className=" d-flex justify-content-between align-items-center pb-2">
-            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-              Show on desktop
-              <LicenseTooltip
-                message={"You don't have access to page footers. Upgrade your plan to access this feature."}
-                placement="bottom"
-                show={!hasCanvasPageFooterEnabled}
-              >
-                <div className="d-flex align-items-center">
-                  {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
-                </div>
-              </LicenseTooltip>
-            </label>
-            <label className={`form-switch`}>
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={showPageFooterOnDesktop ?? false}
-                disabled={!hasCanvasPageFooterEnabled}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  togglePageFooter(page?.id, checked, 'desktop');
-                }}
-              />
-            </label>
-          </div>
-          <div className=" d-flex justify-content-between align-items-center pb-2">
-            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-              Show on mobile
-              <LicenseTooltip
-                message={"You don't have access to page footers. Upgrade your plan to access this feature."}
-                placement="bottom"
-                show={!hasCanvasPageFooterEnabled}
-              >
-                <div className="d-flex align-items-center">
-                  {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
-                </div>
-              </LicenseTooltip>
-            </label>
-            <label className={`form-switch`}>
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={showPageFooterOnMobile ?? false}
-                disabled={!hasCanvasPageFooterEnabled}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  togglePageFooter(page?.id, checked, 'mobile');
-                }}
-              />
-            </label>
-          </div>
-        </div>
+        {type !== 'all_apps' && (
+          <>
+            <div className="pb-3">
+              <div className="section-header pb-2">Page header</div>
+              <div className=" d-flex justify-content-between align-items-center pb-2">
+                <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+                  Show on desktop
+                  <LicenseTooltip
+                    message={"You don't have access to page headers. Upgrade your plan to access this feature."}
+                    placement="bottom"
+                    show={!hasCanvasPageHeaderEnabled}
+                  >
+                    <div className="d-flex align-items-center">
+                      {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                    </div>
+                  </LicenseTooltip>
+                </label>
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={showPageHeaderOnDesktop ?? false}
+                    disabled={!hasCanvasPageHeaderEnabled}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      togglePageHeader(page?.id, checked, 'desktop');
+                    }}
+                  />
+                </label>
+              </div>
+              <div className=" d-flex justify-content-between align-items-center pb-2">
+                <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+                  Show on mobile
+                  <LicenseTooltip
+                    message={"You don't have access to page headers. Upgrade your plan to access this feature."}
+                    placement="bottom"
+                    show={!hasCanvasPageHeaderEnabled}
+                  >
+                    <div className="d-flex align-items-center">
+                      {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                    </div>
+                  </LicenseTooltip>
+                </label>
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={showPageHeaderOnMobile ?? false}
+                    disabled={!hasCanvasPageHeaderEnabled}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      togglePageHeader(page?.id, checked, 'mobile');
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+            <div className="pb-3">
+              <div className="section-header pb-2">Page footer</div>
+              <div className=" d-flex justify-content-between align-items-center pb-2">
+                <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+                  Show on desktop
+                  <LicenseTooltip
+                    message={"You don't have access to page footers. Upgrade your plan to access this feature."}
+                    placement="bottom"
+                    show={!hasCanvasPageFooterEnabled}
+                  >
+                    <div className="d-flex align-items-center">
+                      {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                    </div>
+                  </LicenseTooltip>
+                </label>
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={showPageFooterOnDesktop ?? false}
+                    disabled={!hasCanvasPageFooterEnabled}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      togglePageFooter(page?.id, checked, 'desktop');
+                    }}
+                  />
+                </label>
+              </div>
+              <div className=" d-flex justify-content-between align-items-center pb-2">
+                <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+                  Show on mobile
+                  <LicenseTooltip
+                    message={"You don't have access to page footers. Upgrade your plan to access this feature."}
+                    placement="bottom"
+                    show={!hasCanvasPageFooterEnabled}
+                  >
+                    <div className="d-flex align-items-center">
+                      {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                    </div>
+                  </LicenseTooltip>
+                </label>
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={showPageFooterOnMobile ?? false}
+                    disabled={!hasCanvasPageFooterEnabled}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      togglePageFooter(page?.id, checked, 'mobile');
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+          </>
+        )}
         {['default', 'custom'].includes(type) && (
           <PageEvents type={type} page={page} allPages={pages} onNestedPopoverOpenChange={onNestedPopoverOpenChange} />
         )}
@@ -670,16 +712,85 @@ const PageEvents = ({ type, page, allPages, onNestedPopoverOpenChange }) => {
   );
 };
 
+// Shape of `app` before the app list loads, so autocomplete can still offer its fields.
+const SAMPLE_APP_CONTEXT = { id: '', name: '', folder_id: '', folder_name: '' };
+
+// `app` for the hide expression's autocomplete and preview: the first app the menu would list.
+const useSampleAppContext = (enabled) => {
+  const [sample, setSample] = useState(SAMPLE_APP_CONTEXT);
+  const appId = useStore((state) => state.appStore.modules.canvas?.app?.appId);
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    fetchMenuApps(appId).then((apps) => {
+      // Same choice as the menu: the current app is never listed, so never the sample either.
+      const first = apps?.find((menuApp) => menuApp.id !== appId);
+      if (!cancelled && first) setSample(toAppContext(first));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, appId]);
+  return useMemo(() => ({ app: sample }), [sample]);
+};
+
+// Fields the "Hide these items on navigation" expression can read, once per generated app link.
+const ALL_APPS_EXPRESSION_HINT = 'Evaluated for each app. Use app.id, app.name, app.folder_id or app.folder_name.';
+
+// Nav groups do not nest, so inside one the apps are listed flat whatever the setting says.
+// The switch shows that (off, disabled) and keeps the saved choice for when the item moves out.
+export const AllAppsSettings = ({ page, onGroupByFolderChange }) => {
+  const isInsideNavGroup = !!page?.pageGroupId;
+  return (
+    <>
+      <div className="d-flex justify-content-between align-items-center pb-2">
+        <label className="form-label mb-0">Apps</label>
+        <span className="tj-text-xsm tw-text-[var(--text-placeholder)]" data-cy="all-apps-scope">
+          All released apps
+        </span>
+      </div>
+      <div className="d-flex justify-content-between align-items-center pb-2">
+        <label className="form-label font-weight-400 mb-0">Group by folder</label>
+        <label className="form-switch">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            data-cy="all-apps-group-by-folder"
+            checked={!!page?.groupByFolder && !isInsideNavGroup}
+            disabled={isInsideNavGroup}
+            onChange={(e) => onGroupByFolderChange(e.target.checked)}
+          />
+        </label>
+      </div>
+      {isInsideNavGroup && (
+        <div className="tj-text-xxsm tw-pb-2 tw-text-[var(--text-placeholder)]" data-cy="all-apps-group-by-folder-hint">
+          Folders can&apos;t be grouped inside a nav group, so apps are listed flat here.
+        </div>
+      )}
+    </>
+  );
+};
+
 const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, isHomePage, disabled }) => {
   const resolvePageHiddenValue = useStore((state) => state.resolvePageHiddenValue);
   const [forceCodeBox, setForceCodeBox] = useState(hidden?.fxActive);
+  // An "All apps" item's expression needs `app`, which only exists per generated link,
+  // so it is evaluated when the menu is built, not resolved here for the item itself.
+  const isAllApps = page?.type === 'all_apps';
+  const scopedVariables = useSampleAppContext(isAllApps);
 
   return (
     <div className={cx({ 'codeShow-active': forceCodeBox, disabled: disabled }, 'wrapper-div-code-editor pb-2')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
         <div className={`field`}>
           <InspectorTooltip
-            label={`${page?.type === 'default' ? 'Hide this page on navigation' : 'Hide this item on navigation'}`}
+            label={
+              page?.type === 'default'
+                ? 'Hide this page on navigation'
+                : page?.type === 'all_apps'
+                  ? 'Hide these items on navigation'
+                  : 'Hide this item on navigation'
+            }
             labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
               darkMode && 'color-whitish-darkmode'
             }`}
@@ -718,7 +829,7 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
                       fxActive: forceCodeBox,
                     });
 
-                    resolvePageHiddenValue('canvas', true, page?.id, `{{${e.target.checked}}}`);
+                    if (!isAllApps) resolvePageHiddenValue('canvas', true, page?.id, `{{${e.target.checked}}}`);
                   }}
                 />
               </div>
@@ -727,18 +838,25 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
         </div>
       </div>
       {forceCodeBox && (
-        <CodeHinter
-          initialValue={hidden?.value}
-          lang="javascript"
-          lineNumbers={false}
-          onChange={(value) => {
-            updatePageVisibility(page?.id, {
-              value: value,
-              fxActive: forceCodeBox,
-            });
-            resolvePageHiddenValue('canvas', true, page?.id, value);
-          }}
-        />
+        <ScopedVariablesContext.Provider value={isAllApps ? scopedVariables : null}>
+          <CodeHinter
+            initialValue={hidden?.value}
+            lang="javascript"
+            lineNumbers={false}
+            onChange={(value) => {
+              updatePageVisibility(page?.id, {
+                value: value,
+                fxActive: forceCodeBox,
+              });
+              if (!isAllApps) resolvePageHiddenValue('canvas', true, page?.id, value);
+            }}
+          />
+        </ScopedVariablesContext.Provider>
+      )}
+      {forceCodeBox && isAllApps && (
+        <div className="tj-text-xxsm tw-mt-1 tw-text-[var(--text-placeholder)]" data-cy="all-apps-expression-hint">
+          {ALL_APPS_EXPRESSION_HINT}
+        </div>
       )}
     </div>
   );

@@ -29,6 +29,7 @@ import { CodeHinterBtns } from './CodehinterOverlayTriggers';
 import useWorkflowStore from '@/_stores/workflowStore';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
+import { ScopedVariablesContext, scopedVariableHints } from './ScopedVariablesContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
 import { completionLabelTooltip } from './completionLabelTooltip';
 
@@ -94,6 +95,10 @@ const MultiLineCodeEditor = (props) => {
   const getContextHints = useStore((state) => state.getContextHints, shallow);
   const getTableColumnContextHints = useStore((state) => state.getTableColumnContextHints, shallow);
   const tableColumnComponentId = useContext(TableColumnContext)?.tableId; // Set at ColumnPopover level
+  // Scoped variables (e.g. `app` in the All apps hide expression) feed both autocomplete and
+  // the preview, so a suggested variable never previews as undefined.
+  const scopedVariables = useContext(ScopedVariablesContext);
+  const scopedHints = scopedVariableHints(scopedVariables);
   const getServerSideGlobalResolveSuggestions = useStore(
     (state) => state.getServerSideGlobalResolveSuggestions,
     shallow
@@ -200,7 +205,7 @@ const MultiLineCodeEditor = (props) => {
       : [];
     const allHints = {
       ...hints,
-      appHints: [...tableContextHints, ...contextHints, ...hints.appHints, ...serverHints],
+      appHints: [...scopedHints, ...tableContextHints, ...contextHints, ...hints.appHints, ...serverHints],
     };
 
     return getSuggestionsForMultiLine(context, allHints, hints, lang, paramList);
@@ -397,6 +402,7 @@ const MultiLineCodeEditor = (props) => {
               <div className="multiline-previewbox-wrapper">
                 <PreviewBox
                   currentValue={currentValueRef.current}
+                  customVariables={scopedVariables ?? undefined}
                   validationSchema={null}
                   setErrorStateActive={() => null}
                   componentId={null}

@@ -42,6 +42,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **App-Builder** | The visual IDE/editor where apps are constructed | Editor (frontend code term; ambiguous with the Builder role) |
 | **Page** | A view/screen within an app; one page is designated the Home Page | — |
 | **Page Handle** | The unique URL slug for a page within an app | — |
+| **All Apps nav item** | A page menu entry (page `type` `all_apps`) that the released app expands, on each load, into links to every released app the viewer can open, listed flat or grouped by folder (`group_by_folder`), each filtered by the item's per-app hide expression | All released apps |
 | **Component** | A pre-designed, drag-and-drop building block on the canvas (45+ built-in types) | Widget (legacy; docs folder is `widgets/` but content says "Components") |
 | **Custom Component** | A user-created component built with React for functionality beyond built-in components | — |
 | **Layout** | Positioning metadata (top, left, width, height) for a component on the canvas grid | — |

@@ -2585,6 +2585,7 @@ export class AppImportExportService {
           url: page.url || null,
           appId: page.appId || '',
           targetCorelationId: resolvePageTargetCorelationId(page, slugToCoRelationId),
+          groupByFolder: !!page.groupByFolder,
         });
 
         const pageCreated = await manager.save(newPage);

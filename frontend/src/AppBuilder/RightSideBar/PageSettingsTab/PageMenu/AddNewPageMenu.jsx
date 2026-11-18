@@ -15,6 +15,10 @@ export function AddNewPageMenu({ darkMode }) {
   const setEditingPage = useStore((state) => state.setEditingPage);
   const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
   const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
+  // An app holds at most one "All apps" item; it already lists every app.
+  const hasAllAppsItem = useStore((state) =>
+    (state.modules?.canvas?.pages ?? []).some((page) => page?.type === 'all_apps')
+  );
 
   const handleOpenPopup = (type) => {
     setShowMenuPopover(false);
@@ -110,6 +114,16 @@ export function AddNewPageMenu({ darkMode }) {
               className="tw-w-full tw-justify-start"
             >
               Add custom nav item
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => handleOpenPopup('all_apps')}
+              leadingIcon="grid-2x2"
+              isLucid
+              className={`tw-w-full tw-justify-start ${hasAllAppsItem ? 'tw-opacity-[0.5]' : ''}`}
+              disabled={hasAllAppsItem}
+            >
+              Add all ToolJet apps
             </Button>
             <div className={`${!hasAppPagesAddNavGroupEnabled && 'd-flex'}`}>
               <Button

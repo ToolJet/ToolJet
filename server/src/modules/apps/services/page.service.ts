@@ -248,6 +248,7 @@ export class PageService implements IPageService {
       newPage.openIn = pageToClone.openIn;
       newPage.appId = pageToClone.appId;
       newPage.targetCorelationId = pageToClone.targetCorelationId;
+      newPage.groupByFolder = pageToClone.groupByFolder;
       newPage.url = pageToClone.url;
       newPage.disabled = pageToClone.disabled;
       newPage.hidden = pageToClone.hidden;

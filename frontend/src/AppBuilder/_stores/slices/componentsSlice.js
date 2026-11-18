@@ -1334,7 +1334,9 @@ export const createComponentsSlice = (set, get) => ({
       canvasBackgroundColor: get().globalSettings.backgroundFxQuery,
       isPagesSidebarHidden: get().pageSettings?.definition?.properties?.disableMenu?.value,
       pages: get().modules[moduleId].pages.reduce((accumulator, currentObject) => {
-        if (currentObject && currentObject.id) {
+        // An "All apps" item's hide expression reads `app`, which exists only per generated
+        // link; the menu evaluates it there (see allAppsNavItems.js), never for the item itself.
+        if (currentObject && currentObject.id && currentObject.type !== 'all_apps') {
           accumulator[currentObject.id] = { hidden: currentObject.hidden };
         }
         return accumulator;

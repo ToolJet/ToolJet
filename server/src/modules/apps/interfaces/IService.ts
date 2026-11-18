@@ -2,6 +2,7 @@ import { User } from '@entities/user.entity';
 import { App } from '@entities/app.entity';
 import { AppCreateDto, AppUpdateDto, AppListDto } from '../dto';
 import { ValidateAppAccessDto, ValidateAppAccessResponseDto } from '../dto';
+import { MenuAppsResponseDto } from '../dto/menu-apps';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
 
 export interface IAppsService {
@@ -20,6 +21,8 @@ export interface IAppsService {
   update(app: App, appUpdateDto: AppUpdateDto, user: User): Promise<any>;
   delete(app: App, user: User): Promise<void>;
   getAllApps(user: User, appListDto: AppListDto, isGetAll: boolean): Promise<any>;
+
+  getMenuApps(user: User): Promise<MenuAppsResponseDto>;
   findTooljetDbTables(appId: string): Promise<{ table_id: string }[]>;
   getOne(app: App, user: User, branchId?: string): Promise<any>;
   getBySlug(app: App, user: User): Promise<any>;

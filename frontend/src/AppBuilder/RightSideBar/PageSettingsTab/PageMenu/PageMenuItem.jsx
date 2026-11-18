@@ -1,7 +1,7 @@
 import React, { memo, useRef, useState, useCallback } from 'react';
 import cx from 'classnames';
 import * as Icons from '@tabler/icons-react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Grid2x2 } from 'lucide-react';
 import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
@@ -35,6 +35,8 @@ export const PageMenuItem = withRouter(
     const isSelected = page.id === currentPageId;
     const isHidden = useStore((state) => state.getPagesVisibility('canvas', page?.id));
     const isDisabled = page?.disabled ?? false;
+    // One "All apps" item per app: it is not a page you can open, duplicate or restrict on its own.
+    const isAllApps = page?.type === 'all_apps';
     const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
     const linkedAppValidation = page?.type === 'app' ? isLinkedAppValid(page?.targetCorelationId, linkedAppsMap) : null;
     const linkedAppErrorMessage =
@@ -70,6 +72,14 @@ export const PageMenuItem = withRouter(
     const isEditingPage = editingPage?.id === page?.id;
 
     const icon = (props) => {
+      if (isAllApps) {
+        return (
+          <Grid2x2
+            {...props}
+            className="tw-h-[16px] tw-w-[16px] tw-mr-[6px] tw-shrink-0 tw-text-[var(--icon-accent)]"
+          />
+        );
+      }
       const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
       // eslint-disable-next-line import/namespace
       const Icon = Icons?.[iconName] ?? Icons?.['IconFile'];
@@ -194,7 +204,7 @@ export const PageMenuItem = withRouter(
         <div
           className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
             (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
-          }`}
+          } ${isAllApps ? '!tw-bg-background-accent-weak tw-rounded-[6px]' : ''}`}
           data-page-id={page?.id}
           style={{
             position: 'relative',
@@ -266,13 +276,15 @@ export const PageMenuItem = withRouter(
                   'options-opened': showPageOptions && editingPage?.id == page?.id,
                 })}
               >
-                <div onClick={handlePageSwitch} className="icon-btn">
-                  <ToolTip message="Go to page" placement="bottom">
-                    <div className=" d-flex align-items-center justify-content-center">
-                      <SolidIcon name="arrowright01" fill="var(--icons-strong)" />
-                    </div>
-                  </ToolTip>
-                </div>
+                {!isAllApps && (
+                  <div onClick={handlePageSwitch} className="icon-btn">
+                    <ToolTip message="Go to page" placement="bottom">
+                      <div className=" d-flex align-items-center justify-content-center">
+                        <SolidIcon name="arrowright01" fill="var(--icons-strong)" />
+                      </div>
+                    </ToolTip>
+                  </div>
+                )}
                 <div
                   ref={moreBtnRef}
                   onClick={(e) => {
@@ -334,18 +346,20 @@ export const PageMenuItem = withRouter(
                           }}
                         />
                       )}
-                      <PageOptions
-                        text="Duplicate page"
-                        icon="copy"
-                        darkMode={darkMode}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          toggleShowPageOptions(false);
+                      {!isAllApps && (
+                        <PageOptions
+                          text="Duplicate page"
+                          icon="copy"
+                          darkMode={darkMode}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            toggleShowPageOptions(false);
 
-                          clonePage(page?.id);
-                        }}
-                      />
+                            clonePage(page?.id);
+                          }}
+                        />
+                      )}
                       <PageOptions
                         text={
                           <ToolTip
@@ -368,32 +382,34 @@ export const PageMenuItem = withRouter(
                           toggleDeleteConfirmationModal(true);
                         }}
                       />
-                      <PageOptions
-                        text={
-                          <ToolTip
-                            message={
-                              "You don't have access to page permissions. Upgrade your plan to access this feature."
-                            }
-                            placement="auto"
-                            show={!hasAppPermissionPages}
-                            tooltipClassName="!tw-z-[100000]"
-                          >
-                            <div className="d-flex align-items-center enterprise-feature">
-                              <div>Page permission</div>
-                              {!hasAppPermissionPages && <SolidIcon name="enterprisecrown" />}
-                            </div>
-                          </ToolTip>
-                        }
-                        icon="lock"
-                        darkMode={darkMode}
-                        disabled={!hasAppPermissionPages}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          toggleShowPageOptions(false);
-                          togglePagePermissionModal(true);
-                        }}
-                      />
+                      {!isAllApps && (
+                        <PageOptions
+                          text={
+                            <ToolTip
+                              message={
+                                "You don't have access to page permissions. Upgrade your plan to access this feature."
+                              }
+                              placement="auto"
+                              show={!hasAppPermissionPages}
+                              tooltipClassName="!tw-z-[100000]"
+                            >
+                              <div className="d-flex align-items-center enterprise-feature">
+                                <div>Page permission</div>
+                                {!hasAppPermissionPages && <SolidIcon name="enterprisecrown" />}
+                              </div>
+                            </ToolTip>
+                          }
+                          icon="lock"
+                          darkMode={darkMode}
+                          disabled={!hasAppPermissionPages}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            toggleShowPageOptions(false);
+                            togglePagePermissionModal(true);
+                          }}
+                        />
+                      )}
                     </div>
                   </Popover>
                 </Overlay>

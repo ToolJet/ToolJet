@@ -72,6 +72,9 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Component } from '@entities/component.entity';
 import { Page } from '@entities/page.entity';
 import { FolderApp } from '@entities/folder_app.entity';
+import { UserAllPermissions } from '@modules/app/types';
+import { MenuAppsResponseDto } from './dto/menu-apps';
+import { AppFolderRow, canOpenReleasedApp, ListedApp, toMenuApps } from './menu-apps.helper';
 
 // App type → the UserPermissions bucket holding its folder's resolved access.
 // Add an entry here (not another ternary arm) when a new folder-owning app type is introduced.
@@ -679,6 +682,64 @@ export class AppsService implements IAppsService {
         apps,
       });
     });
+  }
+
+  /**
+   * Released front-end apps in the user's workspace that the user can open, with their
+   * folders. Feeds the page menu's "All apps" nav item, which builds its links from this
+   * list on every load so releases, renames, folder moves and access changes show up
+   * without re-adding anything. Starts from the dashboard listing (default branch, where
+   * releases live) and keeps the apps that pass the released-app access rule.
+   */
+  async getMenuApps(user: User): Promise<MenuAppsResponseDto> {
+    const listing: { apps: { id: string; name: string; slug: string; current_version_id: string | null }[] } =
+      await this.getAllApps(
+        user,
+        { page: '1', folderId: null, searchKey: '', type: APP_TYPES.FRONT_END, branchId: undefined },
+        true
+      );
+
+    const permissions: UserAllPermissions = await this.menuAppsPermissions(user);
+    const openable: ListedApp[] = listing.apps
+      .filter((app) => canOpenReleasedApp(permissions, app.id))
+      .map((app) => ({ id: app.id, name: app.name, slug: app.slug, currentVersionId: app.current_version_id }));
+
+    const appIds = openable.map((app) => app.id);
+    const folderRows: AppFolderRow[] = appIds.length ? await this.findMenuAppFolders(user, appIds) : [];
+
+    return { apps: toMenuApps(openable, folderRows) };
+  }
+
+  // Folder membership is branch-scoped; releases live on the default branch, so read its rows.
+  private async findMenuAppFolders(user: User, appIds: string[]): Promise<AppFolderRow[]> {
+    const branchId = await this.resolveDashboardBranchId(user);
+    const query = this.appRepository.manager
+      .createQueryBuilder(FolderApp, 'folderApp')
+      .innerJoin('folderApp.folder', 'folder')
+      .select('folderApp.appId', 'appId')
+      .addSelect('folder.id', 'folderId')
+      .addSelect('folder.name', 'folderName')
+      .where('folderApp.appId IN (:...appIds)', { appIds })
+      .andWhere('folder.organizationId = :organizationId', { organizationId: user.organizationId });
+    if (branchId) query.andWhere('folderApp.branchId = :branchId', { branchId });
+    return query.getRawMany();
+  }
+
+  private async menuAppsPermissions(user: User): Promise<UserAllPermissions> {
+    const resource = [{ resourceType: MODULES.APP }];
+    const userPermission = await this.abilityService.resourceActionsPermission(user, {
+      organizationId: user.organizationId,
+      resources: [{ resource: MODULES.APP }],
+    });
+    return {
+      userPermission,
+      superAdmin: !!userPermission?.isSuperAdmin,
+      isAdmin: !!userPermission?.isAdmin,
+      isBuilder: !!userPermission?.isBuilder,
+      isEndUser: !!userPermission?.isEndUser,
+      user,
+      resource,
+    };
   }
 
   // End users with no branchId would otherwise see apps across every branch; default to the org's default branch.

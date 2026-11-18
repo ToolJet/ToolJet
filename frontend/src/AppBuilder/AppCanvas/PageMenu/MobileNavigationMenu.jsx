@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import useStore from '@/AppBuilder/_stores/store';
+import { useMenuPages } from './useMenuPages';
+import { buildMenuTree } from './allAppsNavItems';
 import { buildTree } from '@/_ui/SortableTree';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 
@@ -30,7 +32,7 @@ const MobileNavigationMenu = ({
   const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile' && currentMode === 'view';
   const isPreviewInEditor = useStore((state) => state.isPreviewInEditor && currentMode === 'view', shallow);
   const showDarkModeToggle = useStore((state) => state.globalSettings.appMode === 'auto');
-  const pages = useStore((state) => state.modules.canvas.pages, shallow);
+  const pages = useMenuPages(moduleId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
   const switchToHomePage = useStore((state) => state.switchToHomePage);
   const switchPage = useStore((state) => state.switchPageWrapper);
@@ -50,7 +52,11 @@ const MobileNavigationMenu = ({
   const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
 
   const pagesTree = useMemo(
-    () => (hasAppPagesAddNavGroupEnabled ? buildTree(pages, PAGE_PROPERTY_NAMES) : pages),
+    () =>
+      buildMenuTree(pages, {
+        navGroupsEnabled: hasAppPagesAddNavGroupEnabled,
+        buildTree: (items) => buildTree(items, PAGE_PROPERTY_NAMES),
+      }),
     [hasAppPagesAddNavGroupEnabled, pages]
   );
 

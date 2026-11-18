@@ -97,6 +97,7 @@ export class PageHelperService implements IPageHelperService {
     page.url = dto.url;
     page.type = dto.type;
     page.openIn = dto.openIn;
+    page.groupByFolder = dto.groupByFolder ?? false;
     page.disabled = false;
     page.hidden = false;
     page.pageHeader = {
