@@ -52,7 +52,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 
 ## Dashboard v2 schema
 
-- `data_sources.created_by` (nullable uuid, FK `users(id)` `ON DELETE SET NULL`) — set in `DataSourcesUtilService.create` only; git-sync import, sample and static sources leave it `NULL`.
+- `data_sources.created_by` (nullable uuid, FK `users(id)` `ON DELETE SET NULL`) — set to the acting user by `DataSourcesUtilService.create`, by `app-import-export.service.ts` when an app/template import creates a new global or legacy local data source (not when it reuses/maps to an existing one), and by `DataSourcesRepository.convertToGlobalSource` (local → global) when the row is still unowned. Left `NULL` for sample, static, and any data source materialized by a git-sync pull (no acting user).
 - `user_data_source_activity` (`user_id`, `data_source_id`, `branch_id` composite PK) mirrors apps' `user_app_activity`. Writer: `dashboard/activity.interceptor.ts` (global `APP_INTERCEPTOR`, registered only when `isMainImport`) upserts `last_viewed_at` after a successful `GET :id/environment/:environment_id` and `last_edited_at` after a successful v1 `PUT :id` (version-agnostic route match, so the v2 save-all `PUT` is picked up too), keyed off `request.tj_data_source` set by `ValidateDataSourceGuard`. Same 5-minute / "still latest editor" throttle as apps' `DashboardActivityService`; best-effort (a failed upsert is logged, never fails the request).
 - `pinned_items.data_source_id` extends the apps pin table (`chk_pinned_items_one_resource` now allows exactly one of `app_id`/`folder_id`/`data_source_id`; `uq_pinned_items_user_branch_data_source` enforces one pin per user+branch+data source).
 

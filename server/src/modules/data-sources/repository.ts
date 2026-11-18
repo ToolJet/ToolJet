@@ -333,7 +333,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
     }
   }
 
-  async convertToGlobalSource(dataSourceId: string, organizationId: string, manager?: EntityManager) {
+  async convertToGlobalSource(dataSourceId: string, organizationId: string, userId: string, manager?: EntityManager) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.save(DataSource, {
         id: dataSourceId,
@@ -342,6 +342,16 @@ export class DataSourcesRepository extends Repository<DataSource> {
         organizationId,
         scope: DataSourceScopes.GLOBAL,
       });
+      // A data source that already has an owner (e.g. one created via DataSourcesUtilService.create
+      // and later downgraded/upgraded in scope) keeps it; only a never-owned row is attributed to the
+      // converting user.
+      await manager
+        .createQueryBuilder()
+        .update(DataSource)
+        .set({ createdBy: () => 'COALESCE(created_by, :userId)' })
+        .where('id = :dataSourceId', { dataSourceId })
+        .setParameter('userId', userId)
+        .execute();
     }, manager || this.manager);
   }
 

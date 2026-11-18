@@ -361,7 +361,7 @@ export class DataSourcesService implements IDataSourcesService {
   }
 
   async changeScope(dataSourceId: string, user: User) {
-    await this.dataSourcesRepository.convertToGlobalSource(dataSourceId, user.organizationId);
+    await this.dataSourcesRepository.convertToGlobalSource(dataSourceId, user.organizationId, user.id);
   }
 
   async findOneByEnvironment(

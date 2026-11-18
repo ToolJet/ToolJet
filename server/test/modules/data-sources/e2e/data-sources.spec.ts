@@ -295,6 +295,66 @@ describe('DataSourcesController', () => {
     });
   });
 
+  describe('POST /api/data-sources/:id/scope | Change scope', () => {
+    it('should set the owner to the converting user when converting an unowned local data source to global', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const { dataSource } = await createAppWithDependencies(nestApp, adminUserData.user, {
+        isQueryNeeded: false,
+      });
+      await updateEntity(DataSource, dataSource.id, {
+        organizationId: adminUserData.organization.id,
+      });
+
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/data-sources/${dataSource.id}/scope`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(response.statusCode).toBe(201);
+      expect(await findEntity(DataSource, { id: dataSource.id })).toMatchObject({
+        scope: 'global',
+        createdBy: adminUserData.user.id,
+      });
+    });
+
+    it('should keep the existing owner when converting a data source that already has one', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const otherUserData = await createUser(
+        nestApp,
+        { email: 'other@tooljet.io', groups: ['all_users', 'admin'], organization: adminUserData.organization },
+        undefined
+      );
+      const { dataSource } = await createAppWithDependencies(nestApp, adminUserData.user, {
+        isQueryNeeded: false,
+      });
+      await updateEntity(DataSource, dataSource.id, {
+        organizationId: adminUserData.organization.id,
+        createdBy: otherUserData.user.id,
+      });
+
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/data-sources/${dataSource.id}/scope`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(response.statusCode).toBe(201);
+      expect(await findEntity(DataSource, { id: dataSource.id })).toMatchObject({
+        scope: 'global',
+        createdBy: otherUserData.user.id,
+      });
+    });
+  });
+
   describe('GET /api/data-sources/dependent-queries/:id | Dependent query count', () => {
     it('should return the dependent query count for a data source in the same workspace', async () => {
       const adminUserData = await createUser(nestApp, {
