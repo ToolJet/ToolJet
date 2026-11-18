@@ -503,7 +503,15 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  border-radius: var(--ant-border-radius);
+  box-sizing: border-box;
+  /* Border color and Border radius (QA PKB-41), set on the root by the Image; unset, no border and the theme radius. */
+  border: var(--tj-image-border, none);
+  border-radius: var(--tj-image-radius, var(--ant-border-radius));
+}
+/* A Tab stop with Preview on (QA PF-225): the ring drawn just inside the picture's box, over the picture. */
+.tj-ant-image .ant-image:focus-visible {
+  outline: var(--ant-line-width-focus) solid var(--ant-color-primary-border);
+  outline-offset: calc(-1 * var(--ant-line-width-focus));
 }
 .tj-ant-image .ant-image-img {
   height: 100%;
