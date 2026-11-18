@@ -7,6 +7,9 @@ export interface ApprovalListFilters {
   appId?: string;
   /** Folder membership only; folder_apps.branch_id ignored (workflows are not git-synced). */
   folderId?: string;
+  /** Matches `apps.co_relation_id`; the caller's workspace scoping still applies. */
+  workflowRef?: string;
+  executionId?: string;
   environmentId?: string;
   /** Free-text match against approver ids and emails, and the user or group names the list shows. */
   approver?: string;
