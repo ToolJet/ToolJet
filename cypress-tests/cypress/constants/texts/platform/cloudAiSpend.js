@@ -30,6 +30,14 @@ export const aiSpendText = {
 
   filterOptions: ["All builders", "Default limit", "Custom limit"],
   sortOptions: ["Closest to limit", "Most used", "Name"],
+  turnOnTitle: "Turn on per-builder limits?",
+  turnOnWarning: "already over this limit and will be blocked until the cycle resets",
+  turnOnLimits: "Turn on limits",
+  cancel: "Cancel",
+  resetToDefault: "Reset to default",
+  customFilterSummary: "with custom limits",
+  nearingLimit: "Nearing limit",
+  atLimit: "At limit",
   builderNotFound: "Builder not found",
   notABooleanBody: "enabled must be a boolean value",
 };

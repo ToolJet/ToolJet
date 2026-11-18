@@ -22,22 +22,21 @@ describe("Cloud AI Spend — Usage Page", { retries: 0 }, () => {
   let viewer;
 
   // Spend: admin 100, Priya 2,500 + 50 add-on, Omar 0, an end user 40, an unknown user 15, 20 unattributed.
-  const seedWallet = () =>
-    cy.setAiGatewayWallet(
-      {
-        pool: POOL,
-        monthlySpent: {
-          [admin.userId]: 100,
-          [priya.userId]: 2500,
-          [omar.userId]: 0,
-          [viewer.userId]: 40,
-          [GHOST_USER_ID]: 15,
-        },
-        addonSpent: { [priya.userId]: 50 },
-        unattributed: { monthly: 20, addon: 0 },
-      },
-      workspaceId
-    );
+  const walletWith = ({ pool = POOL, extraSpent = {} } = {}) => ({
+    pool,
+    monthlySpent: {
+      [admin.userId]: 100,
+      [priya.userId]: 2500,
+      [omar.userId]: 0,
+      [viewer.userId]: 40,
+      [GHOST_USER_ID]: 15,
+      ...extraSpent,
+    },
+    addonSpent: { [priya.userId]: 50 },
+    unattributed: { monthly: 20, addon: 0 },
+  });
+
+  const seedWallet = (options) => cy.setAiGatewayWallet(walletWith(options), workspaceId);
 
   before(() => {
     cy.apiCloudSignup({ email: adminEmail, name: fake.firstName }).then((signup) => {
@@ -173,5 +172,63 @@ describe("Cloud AI Spend — Usage Page", { retries: 0 }, () => {
       .should("contain.text", aiSpendText.customLimitTag)
       .and("contain.text", "2,550 / 3,000");
     cy.get(aiSpendSelectors.card(aiSpendText.defaultCard)).should("contain.text", "2,000");
+  });
+
+  it("should ask for confirmation before turning limits on while builders are over their limit", () => {
+    seedWallet({ extraSpent: { [omar.userId]: 2100 } });
+    openAiCreditsUsage(adminEmail, workspaceId);
+
+    cy.get(aiSpendSelectors.limitSwitch).click().should("have.attr", "aria-checked", "false");
+    cy.get(aiSpendSelectors.limitSwitch).click();
+    cy.get(aiSpendSelectors.confirmDialog)
+      .should("contain.text", aiSpendText.turnOnTitle)
+      .and("contain.text", aiSpendText.turnOnWarning);
+
+    cy.get(aiSpendSelectors.confirmDialog).contains("button", aiSpendText.cancel).click();
+    cy.get(aiSpendSelectors.confirmDialog).should("not.exist");
+    cy.get(aiSpendSelectors.limitSwitch).should("have.attr", "aria-checked", "false");
+
+    cy.get(aiSpendSelectors.limitSwitch).click();
+    cy.get(aiSpendSelectors.confirmDialog).contains("button", aiSpendText.turnOnLimits).click();
+    cy.get(aiSpendSelectors.confirmDialog).should("not.exist");
+    cy.get(aiSpendSelectors.limitSwitch).should("have.attr", "aria-checked", "true");
+  });
+
+  it("should filter the builders that have a custom limit", () => {
+    openAiCreditsUsage(adminEmail, workspaceId);
+
+    cy.get(aiSpendSelectors.builderTypeButton).click();
+    cy.contains('[role="menuitem"], [role="option"], [role="menuitemradio"]', aiSpendText.filterOptions[2]).click();
+    cy.get(aiSpendSelectors.tableRows).should("have.length", 1).and("contain.text", priya.name);
+    cy.contains(aiSpendText.customFilterSummary).should("be.visible");
+  });
+
+  it("should reset a builder to the default limit", () => {
+    openAiCreditsUsage(adminEmail, workspaceId);
+    cy.get(aiSpendSelectors.editBuilderLimit(priya.name)).click();
+
+    dialog().contains("button", aiSpendText.resetToDefault).click();
+    dialog().contains("button", aiSpendText.saveLimit).should("be.enabled").click();
+
+    cy.get(aiSpendSelectors.dialog).should("not.exist");
+    builderRow(priya.name).should("not.contain.text", aiSpendText.customLimitTag).and("contain.text", "/ 2,000");
+    cy.get(aiSpendSelectors.card(aiSpendText.defaultCard)).should(
+      "contain.text",
+      `${aiSpendText.usersOnCustomLimit}0`
+    );
+  });
+
+  it("should flag the monthly pool as nearing its limit and then at its limit", () => {
+    seedWallet({ pool: { monthly: 3000, addon: 1000 } });
+    openAiCreditsUsage(adminEmail, workspaceId);
+    cy.get(aiSpendSelectors.card(aiSpendText.monthlyCard))
+      .should("contain.text", aiSpendText.nearingLimit)
+      .and("contain.text", "89% used");
+
+    seedWallet({ pool: { monthly: 2675, addon: 1000 } });
+    openAiCreditsUsage(adminEmail, workspaceId);
+    cy.get(aiSpendSelectors.card(aiSpendText.monthlyCard))
+      .should("contain.text", aiSpendText.atLimit)
+      .and("contain.text", "100% used");
   });
 });

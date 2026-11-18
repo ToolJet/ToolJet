@@ -8,5 +8,6 @@ export const aiSpendSelectors = {
   sortButton: 'button[aria-label="Sort"]',
   tableRows: "tbody tr",
   dialog: '[role="dialog"]',
+  confirmDialog: '[role="alertdialog"]',
   dialogInput: '[role="dialog"] input',
 };
