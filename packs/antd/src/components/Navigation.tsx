@@ -731,7 +731,9 @@ export const Skeleton = () => {
     defaultWidth: 16,
     defaultHeight: 16,
   });
-  const asked = Math.max(0, Math.floor(Number(rows)) || 0);
+  // Within the declared 0 to 20: max only limits the inspector field, and a bound 12345678901234 reached Ant, which drew
+  // nothing building that many rows (QA PF-223).
+  const asked = Math.min(20, Math.max(0, Math.floor(Number(rows)) || 0));
   const shown = loading || host.loading;
   const fit = useFittedRows(asked, [shown, title, avatar]);
   return (

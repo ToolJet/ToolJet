@@ -360,7 +360,8 @@ export const Title = () => {
   });
   const lv = Math.max(1, Math.min(5, Math.round(toNumber(String(level).replace(/^h/i, '')) ?? 3))) as 1;
   return (
-    <AntProvider tokens={tokens}>
+    // A long title in a short box scrolls inside it (Dynamic height off), as a ToolJet Text does (QA PF-211).
+    <AntProvider tokens={tokens} className="tj-ant-fit-scroll">
       <SkeletonSwap loading={loading} look={<Skeleton active paragraph={false} />}>
         <Typography.Title
           level={lv}
@@ -426,7 +427,8 @@ export const Text = () => {
   });
   const rows = Math.max(0, Number(ellipsis) || 0);
   return (
-    <AntProvider tokens={tokens}>
+    // A long text in a short box scrolls inside it (Dynamic height off), as a ToolJet Text does (QA PF-212).
+    <AntProvider tokens={tokens} className="tj-ant-fit-scroll">
       <SkeletonSwap
         loading={loading}
         look={<Skeleton active title={false} paragraph={{ rows: Math.max(1, Math.min(4, rows || 2)) }} />}
@@ -802,7 +804,7 @@ export const Empty = () => {
     defaultHeight: 14,
   });
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-center">
+    <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-empty">
       <SpinOver loading={loading} as="fill">
         <AntEmpty
           description={description || false}

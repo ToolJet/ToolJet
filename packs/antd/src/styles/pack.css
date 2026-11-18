@@ -16,7 +16,7 @@
   overflow: auto;
   box-sizing: border-box;
 }
-/* A component sized to its content (Radio Group, Steps) in a fixed box (Dynamic height off): what is past the box scrolls
+/* A component sized to its content (Radio Group, Steps, Result, Title, Text) in a fixed box (Dynamic height off): what is past the box scrolls
    inside it, as the ToolJet Radio's does, instead of being cut off by the host (QA PKB-76). With Dynamic height on, the
    box grows with it. */
 .tj-cc-root:not(.tj-cc-fit) > .tj-ant-fit-scroll {
@@ -57,6 +57,22 @@
 }
 .tj-ant-rate .ant-form-item-control-input-content {
   display: flex;
+}
+/* Empty in a box shorter than it: the picture shrinks to the room the text leaves, instead of its fixed 100px (40px
+   simple) running out of the box's bottom (QA PF-194). */
+.tj-ant-empty .ant-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-height: 100%;
+}
+.tj-ant-empty .ant-empty-image {
+  flex: 0 1 auto;
+  min-height: 0;
+}
+.tj-ant-empty .ant-empty-image svg {
+  height: 100%;
 }
 /* A clickable step's focus: a ring around the whole step, as Tabs and Pagination draw (QA PF-007). Ant rings only the
    step's icon in a pale tint, which a progress dot or the navigation type all but hide. Drawn inside the step, so the
@@ -481,11 +497,13 @@
   height: 100%;
   min-height: 0;
 }
-/* The dropzone takes what the box leaves (its border always drawn); its centred content clips inside it. */
+/* The dropzone takes what the box leaves (its border always drawn); its centred content clips inside it. Container
+   background fills it (Ant fills it with its own light grey, so only the Button type took the style: QA PF-276). */
 .tj-ant-upload .ant-upload-drag {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  background-color: var(--tj-ant-color-bg-container, var(--ant-color-fill-alter));
 }
 .tj-ant-upload .ant-upload-list {
   overflow: auto;
