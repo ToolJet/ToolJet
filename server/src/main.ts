@@ -22,6 +22,7 @@ import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { migrateSchemaBeforeBoot } from './migration-helpers/migrate-before-boot';
 import { MigrationRunsService } from '@modules/app/migration-runs/service';
+import { parseTrustProxy } from '@helpers/trust-proxy.helper';
 
 // Import helper functions
 import {
@@ -61,6 +62,13 @@ async function bootstrap() {
     const configService = app.get<ConfigService>(ConfigService);
     const appLogger = app.get<Logger>(Logger);
     appLogger.log('✅ NestJS application created successfully');
+
+    // Real client IPs behind load balancers (rate limits key on req.ip); unset = Express default
+    const trustProxy = parseTrustProxy(process.env.TRUST_PROXY);
+    if (trustProxy !== undefined) {
+      app.set('trust proxy', trustProxy);
+      appLogger.log(`trust proxy: ${JSON.stringify(trustProxy)}`);
+    }
 
     // Validate edition
     appLogger.log('Validating ToolJet edition...');
