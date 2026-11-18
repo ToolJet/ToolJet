@@ -19,7 +19,7 @@ import {
 import { DownOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AntProvider, usePopupTheme, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
+import { AntProvider, ownBoxStyle, usePopupTheme, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { RADIUS_HINT, THEME_COLOR, useThemeColor, useThemeNumber } from '../lib/themeStyles';
 import { SkeletonSwap, SpinOver } from '../lib/Loading';
 import { oneOf, str, toArray, toKeyedItems, type Row } from '../lib/data';
@@ -31,6 +31,7 @@ import { ownerAvailable, useOwnedPopup, useOwnerShown } from '../lib/useOwnerGua
 import { useValueSetter } from '../lib/sameValue';
 import { useMenuLookup } from '../lib/menuLookup';
 import { useProjectedEscape } from '../lib/useProjectedEscape';
+import { useFitSquare } from '../lib/fitText';
 
 type MenuItem = {
   key: string;
@@ -53,10 +54,13 @@ const toMenuItems = (raw: unknown): MenuItem[] =>
     if (r.type === 'divider') return { key: `divider-${i}`, label: '', type: 'divider' };
     const key = str(r.key ?? r.value ?? r.id ?? r.label);
     if (!key) return null;
+    // A blank label is no item either: { key, label: '' } drew an empty row (QA PF-286). No label at all shows the key.
+    const label = str(r.label ?? r.title ?? key);
+    if (!label.trim()) return null;
     const children = kids();
     return {
       key,
-      label: str(r.label ?? r.title ?? key),
+      label,
       danger: Boolean(r.danger) || undefined,
       disabled: Boolean(r.disabled) || undefined,
       ...(children.length ? { children } : {}),
@@ -383,8 +387,15 @@ export const Menu = () => {
   const anchor = useRef<HTMLElement | null>(null);
   // rc-menu's own keys (the arrows, Enter) find the items through the document (lib/menuLookup).
   const menuId = useMenuLookup(anchor);
+  // Border color set: the menu's edge line in it (pack.css .tj-ant-menu--border); it did nothing (QA PKB-41).
+  const ownBorder = Boolean((tokens as Record<string, unknown>)['--tj-ant-color-border']);
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-menu" ownerRef={anchor}>
+    <AntProvider
+      tokens={tokens}
+      fill
+      className={ownBorder ? 'tj-ant-menu tj-ant-menu--border' : 'tj-ant-menu'}
+      ownerRef={anchor}
+    >
       <SpinOver loading={loading} as="fill">
         <WithPopupTheme>
           {(popup) => (
@@ -475,8 +486,10 @@ export const Breadcrumb = () => {
       ),
     };
   });
+  // Primary color colours the crumb links (pack.css .tj-ant-breadcrumb); Container background, Border color and Border
+  // radius draw the box (QA PKB-41). Crumbs that wrap past a narrow box scroll, not cut off (QA PKB-76).
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} fill className="tj-ant-breadcrumb tj-ant-scroll" style={ownBoxStyle(tokens)}>
       <SpinOver loading={loading}>
         <AntBreadcrumb items={list} separator={separator || '/'} />
       </SpinOver>
@@ -809,8 +822,10 @@ export const Spin = () => {
     defaultWidth: 4,
     defaultHeight: 6,
   });
+  // Box Styles draw the widget box (ownBoxStyle, QA PKB-41); a tip taller than the box scrolls from the top
+  // (pack.css .tj-ant-spin-root): it ran below a short box, which cut it off (QA PF-224).
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-center">
+    <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-scroll tj-ant-spin-root" style={ownBoxStyle(tokens)}>
       {spinning || loading ? (
         <div className="tj-ant-spin">
           <AntSpin size={size as 'default'} />
@@ -1310,54 +1325,69 @@ export const QRCode = () => {
     defaultWidth: 6,
     defaultHeight: 18,
   });
-  const px = Math.max(48, Math.min(600, toNumber(size) ?? 160));
+  const wantedPx = Math.max(48, Math.min(600, toNumber(size) ?? 160));
+  // The code shrinks to fit the widget's box: a Size larger than the box spilled out of it (QA PF-227).
+  const [fitRef, px] = useFitSquare<HTMLDivElement>(wantedPx);
   const fits = useMemo(() => !value || fitsQrCode(value, String(errorLevel)), [value, errorLevel]);
   // Ant fills the modules from its JS token (light mode's black) as an SVG attribute, which the pack's dark mode and
   // theme colours (CSS variables) never reach (AD-25). currentColor follows the box's CSS colour instead, and the box
   // takes the container background (it was transparent, so Container background did nothing). A set Color or
   // Background still wins; with only a Background set, the modules keep Ant's dark default (light on a white Background
   // would vanish).
+  // Primary color draws the modules when Text color is not set, and Border color the bordered frame: both did nothing
+  // (QA PKB-41).
+  const own = tokens as Record<string, string | undefined>;
+  const moduleColor = own['--tj-ant-color-text'] ? undefined : own['--tj-ant-color-primary'];
   const colors = {
     color: color || (bgColor ? undefined : 'currentColor'),
     bgColor: bgColor || undefined,
-    style: { color: 'var(--ant-color-text)', backgroundColor: bgColor || 'var(--ant-color-bg-container)' },
+    style: {
+      color: moduleColor || 'var(--ant-color-text)',
+      backgroundColor: bgColor || 'var(--ant-color-bg-container)',
+      ...(bordered && own['--tj-ant-color-border'] ? { borderColor: own['--tj-ant-color-border'] } : {}),
+    },
   };
+  // Ant raises the error level as far as the code's size allows (boostLevel), so L, M and Q drew the same code for a
+  // short value (QA PF-226): the level picked is the one used.
+  const level = { errorLevel: oneOf(errorLevel, ['L', 'M', 'Q', 'H'] as const, 'M'), boostLevel: false };
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center">
-      {value && !fits ? (
-        <AntQRCode
-          {...colors}
-          value="-"
-          size={px}
-          status="expired"
-          bordered={bordered}
-          statusRender={() => <span>Too long for a QR code</span>}
-          type="svg"
-        />
-      ) : value ? (
-        <AntQRCode
-          {...colors}
-          value={value}
-          size={px}
-          errorLevel={oneOf(errorLevel, ['L', 'M', 'Q', 'H'] as const, 'M')}
-          icon={icon || undefined}
-          bordered={bordered}
-          status={loading ? 'loading' : 'active'}
-          type="svg"
-        />
-      ) : loading ? (
-        <AntQRCode {...colors} value="-" size={px} status="loading" bordered={bordered} type="svg" />
-      ) : (
-        <AntQRCode
-          {...colors}
-          value="-"
-          size={px}
-          status="expired"
-          bordered={bordered}
-          statusRender={() => <span>No value</span>}
-          type="svg"
-        />
-      )}
+      <div ref={fitRef} className="tj-ant-fit-box">
+        {value && !fits ? (
+          <AntQRCode
+            {...colors}
+            value="-"
+            size={px}
+            status="expired"
+            bordered={bordered}
+            statusRender={() => <span>Too long for a QR code</span>}
+            type="svg"
+          />
+        ) : value ? (
+          <AntQRCode
+            {...colors}
+            value={value}
+            size={px}
+            {...level}
+            icon={icon || undefined}
+            bordered={bordered}
+            status={loading ? 'loading' : 'active'}
+            type="svg"
+          />
+        ) : loading ? (
+          <AntQRCode {...colors} value="-" size={px} status="loading" bordered={bordered} type="svg" />
+        ) : (
+          <AntQRCode
+            {...colors}
+            value="-"
+            size={px}
+            status="expired"
+            bordered={bordered}
+            statusRender={() => <span>No value</span>}
+            type="svg"
+          />
+        )}
+      </div>
     </AntProvider>
   );
 };

@@ -248,7 +248,12 @@ export const Chat = () => {
     avatar ? (
       <Avatar src={avatar} size={32} />
     ) : (
-      <Avatar size={32} style={mine ? { background: 'var(--ant-color-primary)' } : undefined}>
+      // The other side's initials are readable (pack.css .tj-ant-initials): white on Ant's grey was 1.83:1 (QA PF-022).
+      <Avatar
+        size={32}
+        className={mine ? undefined : 'tj-ant-initials'}
+        style={mine ? { background: 'var(--ant-color-primary)' } : undefined}
+      >
         {initials(name)}
       </Avatar>
     );
@@ -343,6 +348,8 @@ export const Chat = () => {
             <Input.TextArea
               value={draft}
               placeholder={placeholder}
+              // A name for screen readers: a placeholder is not one (QA PF-023).
+              aria-label="Message"
               autoSize={{ minRows: 1, maxRows: 5 }}
               disabled={locked}
               onChange={(e) => setDraft(e.target.value)}

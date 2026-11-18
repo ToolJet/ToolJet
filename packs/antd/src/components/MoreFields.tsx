@@ -235,7 +235,18 @@ export const OTP = (props: Record<string, unknown>) => {
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onComplete = ToolJet.useEventCallback({ name: 'onComplete' });
   const { disabled, loading } = ToolJet.useControlState();
-  const check = ToolJet.useValidation({ kind: 'text', value });
+  const n = Math.max(2, Math.min(12, Number(length) || 6));
+  // The characters a code may hold, as typing them gives them (letters in upper case), up to Length.
+  const clean = (s: string) =>
+    (characters === 'numeric' ? s.replace(/\D/g, '') : s.replace(/[^\da-z]/gi, '').toUpperCase()).slice(0, n);
+  // A value set from outside (a binding, a default) is cleaned as typing is: the boxes showed the first six of
+  // 12345678 while value stayed 12345678 and isComplete false, and ab12 stayed lower case (QA AD-48). No event fires:
+  // nothing was typed.
+  const code = clean(value);
+  // A code shorter than its Length is not valid, required or not, as the Rocket 2.0 OTP: Required only asked for a
+  // value, so a half-filled code was valid and a Form submitted it (QA AD-21).
+  const partial = code.length > 0 && code.length < n;
+  const check = ToolJet.useValidation({ kind: 'text', value, rule: partial ? `Enter all ${n} characters` : '' });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'otpinput',
@@ -248,16 +259,8 @@ export const OTP = (props: Record<string, unknown>) => {
     defaultWidth: 12,
     defaultHeight: 6,
   });
-  const n = Math.max(2, Math.min(12, Number(length) || 6));
   const takes = (key: string) => (characters === 'numeric' ? /\d/ : /[\da-z]/i).test(key);
   const ref = useRef<InputRef>(null);
-  // The characters a code may hold, as typing them gives them (letters in upper case), up to Length.
-  const clean = (s: string) =>
-    (characters === 'numeric' ? s.replace(/\D/g, '') : s.replace(/[^\da-z]/gi, '').toUpperCase()).slice(0, n);
-  // A value set from outside (a binding, a default) is cleaned as typing is: the boxes showed the first six of
-  // 12345678 while value stayed 12345678 and isComplete false, and ab12 stayed lower case (QA AD-48). No event fires:
-  // nothing was typed.
-  const code = clean(value);
   useEffect(() => {
     if (code !== value) setValue(code);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -659,6 +662,15 @@ export const PhoneInput = (props: Record<string, unknown>) => {
     if (c && c !== picked) setPicked(c);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+  // A bound Default country that changes moves an empty field to it, as a bound Only countries does: it stayed on the
+  // first country (QA PF-067). A number already entered keeps its own country.
+  const firstDefault = useRef(defaultCountry);
+  useEffect(() => {
+    if (firstDefault.current === defaultCountry) return;
+    firstDefault.current = defaultCountry;
+    if (!value && fallback !== picked) setPicked(fallback);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultCountry]);
   const national = nationalOf(value, picked);
   const info = phoneInfo(national, picked);
   const check = ToolJet.useValidation({ kind: 'text', value: info.value, present: !!info.value });
@@ -714,6 +726,8 @@ export const PhoneInput = (props: Record<string, unknown>) => {
                   disabled={disabled || !allowCountryChange}
                   // One Tab stop, the number, as a ToolJet Phone input has: the country is picked with the pointer.
                   tabIndex={-1}
+                  // Named for screen readers: the field's label names only the number (QA PF-068).
+                  aria-label="Country"
                   showSearch
                   popupMatchSelectWidth={false}
                   optionFilterProp="search"

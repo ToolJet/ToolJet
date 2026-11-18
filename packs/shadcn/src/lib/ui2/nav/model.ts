@@ -28,7 +28,11 @@ export const text = (v: unknown): string => {
   return isScalar(raw) ? String(raw) : '';
 };
 export const clampInt = (v: unknown, min: number, max: number, fallback: number): number => {
-  const n = Math.floor(Number(unwrap(v)));
+  const raw = unwrap(v);
+  // No value (null, as the host gives a number property set to text, or empty) is the fallback, not 0: a Link's Font
+  // size abc drew at the 8px minimum instead of its 14px default (QA PF-270).
+  if (raw === null || raw === undefined || (typeof raw === 'string' && !raw.trim())) return fallback;
+  const n = Math.floor(Number(raw));
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 };
 /** An own key only: a value named constructor or __proto__ must not find Object.prototype's members. */

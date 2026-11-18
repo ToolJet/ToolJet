@@ -28,6 +28,7 @@ import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
 import { safeUrl } from '../lib/ui2/display/chat/values';
 import { useFitLayout, useFitSquare, useFitText } from '../lib/fitText';
 import { useValueSetter } from '../lib/sameValue';
+import { readsAsColor } from '../lib/color';
 
 const TONE_TAG_STATUS: Record<string, string | undefined> = {
   success: 'success',
@@ -147,12 +148,14 @@ export const Tag = () => {
   );
 };
 
+const BADGE_STATUS = ['default', 'processing', 'success', 'warning', 'error'] as const;
+
 // Ant's Badge as a status label: status (success, processing, default, error, warning) and text, or count / dot.
 export const Badge = () => {
   const [status] = ToolJet.useStateEnumeration({
     name: 'status',
     label: 'Status',
-    enumDefinition: ['default', 'processing', 'success', 'warning', 'error'],
+    enumDefinition: [...BADGE_STATUS],
     initialValue: 'default',
   });
   const [text] = ToolJet.useStateString({ name: 'text', label: 'Text', initialValue: 'Pending' });
@@ -192,16 +195,35 @@ export const Badge = () => {
     defaultHeight: 3,
   });
   const n = toNumber(count);
+  // The count bubble is Ant's colorError with a ring in colorBorderBg, rounded to half its height, so Container
+  // background, Border color and Border radius did nothing on it (QA PKB-41). Set, the ring takes Border color (else
+  // Container background, which Ant derives colorBorderBg from) and the corners take Border radius; unset, Ant's look.
+  const own = tokens as Record<string, string | undefined>;
+  const ring = own['--tj-ant-color-border'] ?? own['--tj-ant-color-bg-container'];
+  const radius = own['--tj-ant-border-radius'];
+  const indicator: React.CSSProperties = {
+    ...(ring ? { boxShadow: `0 0 0 1px ${ring}` } : {}),
+    ...(radius ? { borderRadius: radius } : {}),
+  };
+  // Fills the box and scrolls a long text, as the ToolJet Text does: it drew past the bottom of a short box, which cut
+  // it off (QA PF-210). With Dynamic height the box grows with it instead.
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} fill className="tj-ant-scroll">
       <SpinOver loading={loading}>
         {n !== null ? (
           <span className="tj-ant-badge-count">
-            <AntBadge count={n} overflowCount={Number(overflowCount) || 99} showZero color={color || undefined} />
+            <AntBadge
+              count={n}
+              overflowCount={Number(overflowCount) || 99}
+              showZero
+              color={color || undefined}
+              styles={{ indicator }}
+            />
             {text ? <span>{text}</span> : null}
           </span>
         ) : (
-          <AntBadge status={status as 'default'} text={text} color={color || undefined} />
+          // A status it does not list (SUCCESS, a typo) drew a dot with no colour: the default dot instead (QA PF-056).
+          <AntBadge status={oneOf(status, BADGE_STATUS, 'default')} text={text} color={color || undefined} />
         )}
       </SpinOver>
     </AntProvider>
@@ -726,11 +748,23 @@ export const Avatar = () => {
   });
   const text = str(children).trim();
   const [box, px] = useFitSquare<HTMLDivElement>(Math.max(16, Math.min(240, Number(size) || 40)));
+  // Ant fills the avatar with colorTextPlaceholder, draws a transparent border and rounds it by its Shape, so Primary
+  // color, Container background, Border color and Border radius did nothing (QA PKB-41). Set, Container background
+  // (else Primary color) fills it, Border color draws its border and Border radius rounds it whatever the Shape.
+  const own = tokens as Record<string, string | undefined>;
+  const fill = own['--tj-ant-color-bg-container'] ?? own['--tj-ant-color-primary'];
+  const look: React.CSSProperties = {
+    ...(fill ? { backgroundColor: fill } : {}),
+    ...(own['--tj-ant-color-border'] ? { borderColor: own['--tj-ant-color-border'] } : {}),
+    ...(own['--tj-ant-border-radius'] ? { borderRadius: own['--tj-ant-border-radius'] } : {}),
+  };
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-start">
       <div ref={box} className="tj-ant-avatar-box">
         <SkeletonSwap loading={loading} look={<Skeleton.Avatar active shape={shape as 'circle'} size={px} />}>
-          <AntAvatar src={src || undefined} alt={alt || text || undefined} shape={shape as 'circle'} size={px}>
+          {/* An image with neither Alt nor Text is decorative: alt="", not none, which a screen reader read out as the
+              file name (QA PF-192). */}
+          <AntAvatar src={src || undefined} alt={alt || text || ''} shape={shape as 'circle'} size={px} style={look}>
             {text.includes(' ') ? initialsOf(text) : text}
           </AntAvatar>
         </SkeletonSwap>
@@ -751,14 +785,23 @@ export const Divider = () => {
   });
   const [dashed] = ToolJet.useStateBoolean({ name: 'dashed', label: 'Dashed', initialValue: false });
   const [plain] = ToolJet.useStateBoolean({ name: 'plain', label: 'Plain', initialValue: true });
+  // Labelled Direction: the editor leaves the fx toggle off a field labelled exactly "Type", so it could not be bound
+  // (QA PF-244). The saved property is still type.
   const [type] = ToolJet.useStateEnumeration({
     name: 'type',
-    label: 'Type',
+    label: 'Direction',
     enumDefinition: ['horizontal', 'vertical'],
     initialValue: 'horizontal',
   });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
+  // Container background and Border radius draw the widget box; Border color (else Primary color) is the line
+  // (pack.css .tj-ant-divider). Only Text color did anything (QA PKB-41).
+  const own = tokens as Record<string, string | undefined>;
+  const box: React.CSSProperties = {
+    ...(own['--tj-ant-color-bg-container'] ? { backgroundColor: own['--tj-ant-color-bg-container'] } : {}),
+    ...(own['--tj-ant-border-radius'] ? { borderRadius: own['--tj-ant-border-radius'] } : {}),
+  };
   ToolJet.useComponentSettings({
     role: 'separator',
     fit: false,
@@ -768,7 +811,7 @@ export const Divider = () => {
     defaultHeight: 3,
   });
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-center">
+    <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-divider" style={box}>
       <SpinOver loading={loading} as="fill">
         <AntDivider
           type={type as 'horizontal'}
@@ -777,7 +820,9 @@ export const Divider = () => {
           plain={plain}
           style={type === 'vertical' ? { height: '100%' } : { margin: 0 }}
         >
-          {type === 'horizontal' && children ? children : null}
+          {/* A long text ends in an ellipsis inside the box, the full text as its title: Ant keeps it on one line,
+              past the box's right edge (QA PKB-68). */}
+          {type === 'horizontal' && children ? <span title={children}>{children}</span> : null}
         </AntDivider>
       </SpinOver>
     </AntProvider>
@@ -914,6 +959,13 @@ export const Descriptions = () => {
     defaultHeight: 23,
   });
   const raw: unknown = rawItems;
+  // Container background fills the box, Border color draws the bordered lines (Ant's split colour) and Primary color
+  // the labels (pack.css .tj-ant-desc): all three did nothing (QA PKB-41).
+  const own = tokens as Record<string, string | undefined>;
+  const boxStyle = {
+    ...(own['--tj-ant-color-bg-container'] ? { backgroundColor: own['--tj-ant-color-bg-container'] } : {}),
+    ...(own['--tj-ant-color-border'] ? { '--tj-ant-color-split': own['--tj-ant-color-border'] } : {}),
+  } as React.CSSProperties;
   const entries: Row[] = Array.isArray(raw)
     ? raw
         .map((r): Row | null =>
@@ -948,7 +1000,7 @@ export const Descriptions = () => {
     };
   });
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-scroll">
+    <AntProvider tokens={tokens} fill className="tj-ant-desc tj-ant-scroll" style={boxStyle}>
       <SkeletonSwap
         loading={loading}
         look={<Skeleton active title={!!title} paragraph={{ rows: Math.max(2, Math.min(6, items.length || 3)) }} />}
@@ -1089,6 +1141,14 @@ export const Steps = () => {
   );
 };
 
+// An item's dot colour: Ant's own (blue, red, green, gray) or a colour the browser reads; anything else is the default
+// blue. Ant drew notacolor as a custom colour the browser dropped, a dot with a transparent border (QA PKB-66).
+const TIMELINE_COLORS = ['blue', 'red', 'green', 'gray'];
+const timelineColor = (text: string): string | undefined => {
+  const c = text.trim();
+  return c && (TIMELINE_COLORS.includes(c) || readsAsColor(c)) ? c : undefined;
+};
+
 // Ant's Timeline: items [{ children, label, color }], mode (left, alternate, right), pending, reverse.
 export const Timeline = () => {
   const [rawItems] = ToolJet.useStateArray({
@@ -1116,7 +1176,8 @@ export const Timeline = () => {
   });
   const [reverse] = ToolJet.useStateBoolean({ name: 'reverse', label: 'Reverse', initialValue: false });
   const { loading } = ToolJet.useControlState();
-  const tokens = useTokenStyles();
+  // Container background fills only the dots' centres here (Ant's dotBg), so it is labelled for them.
+  const tokens = useTokenStyles({}, { colorBgContainer: 'Handle color' });
   ToolJet.useComponentSettings({
     role: 'timeline',
     fit: true,
@@ -1131,11 +1192,13 @@ export const Timeline = () => {
     return {
       children: str(r.children ?? r.title ?? r.description),
       label: str(r.label ?? r.time) || undefined,
-      color: str(r.color) || undefined,
+      color: timelineColor(str(r.color)),
     };
   });
+  // Fills the box and scrolls entries that do not fit: they ran below a short box, out of reach (QA PKB-76). Border
+  // color and Border radius reach the line and the dots (pack.css .tj-ant-timeline, QA PKB-41).
   return (
-    <AntProvider tokens={tokens} className="tj-ant-timeline">
+    <AntProvider tokens={tokens} fill className="tj-ant-timeline tj-ant-scroll">
       <SpinOver loading={loading} as="block">
         <AntTimeline items={items} mode={mode as 'left'} pending={pending || undefined} reverse={reverse} />
       </SpinOver>

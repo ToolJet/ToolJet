@@ -207,9 +207,9 @@ export const useBoxSize = () => {
   return { ref, ...size };
 };
 
-/** A chart's name for assistive tech. */
+/** A chart's name for assistive tech, and a Tab stop: Tab skipped every chart (QA PF-138, as the Ant charts are). */
 const ChartArea = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div role="img" aria-label={label} className="ui2-chart-area">
+  <div role="img" aria-label={label} className="ui2-chart-area" tabIndex={0}>
     <div aria-hidden="true" className="ui2-chart-area">
       {children}
     </div>

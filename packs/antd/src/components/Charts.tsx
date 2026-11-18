@@ -1189,13 +1189,17 @@ export const Scatter = () => {
   const ref = useRef<HTMLDivElement>(null);
   const theme = useChartTheme(ref);
   const tips = useTooltipLayer(ref, theme.dark);
-  const y = yFields(p.yField)[0] ?? 'y';
-  const rows = toRows(p.rawData).map((r) => ({
-    ...r,
-    [p.xField]: toNumber(r[p.xField]) ?? r[p.xField],
-    [y]: toNumber(r[y]) ?? r[y],
-  }));
-  const common = useCommon(p, theme, { color: p.colorField || undefined, y, labelAt: 'above' }, tips);
+  // Several Y fields (and no Color field) are a series each, as on Column and Line: only the first was drawn (QA
+  // PF-237). Each point keeps its row's other fields (the size field, what a click exposes).
+  const ys = yFields(p.yField);
+  const multi = !p.colorField && ys.length > 1;
+  const y = multi ? 'value' : (ys[0] ?? 'y');
+  const colorField = multi ? 'series' : p.colorField || undefined;
+  const base = toRows(p.rawData).map((r) => ({ ...r, [p.xField]: toNumber(r[p.xField]) ?? r[p.xField] }));
+  const rows = multi
+    ? base.flatMap((r) => ys.map((f) => ({ ...r, series: f, value: toNumber(r[f]) ?? r[f] })))
+    : base.map((r) => ({ ...r, [y]: toNumber(r[y]) ?? r[y] }));
+  const common = useCommon(p, theme, { color: colorField, y, labelAt: 'above' }, tips);
   return (
     <AntProvider tokens={tokens} fill>
       <Frame
@@ -1212,7 +1216,7 @@ export const Scatter = () => {
           data={rows}
           xField={p.xField}
           yField={y}
-          colorField={p.colorField || undefined}
+          colorField={colorField}
           sizeField={sizeField || undefined}
           shapeField="point"
           axis={{
@@ -1220,9 +1224,9 @@ export const Scatter = () => {
             x: { ...(common as { axis: Record<string, object> }).axis.x, grid: true },
           }}
           style={{
-            fillOpacity: p.highlight ? p.highlight.opacity({ keys: [p.xField, y, p.colorField] }, 0.7) : 0.7,
+            fillOpacity: p.highlight ? p.highlight.opacity({ keys: [p.xField, y, colorField ?? ''] }, 0.7) : 0.7,
             lineWidth: 0,
-            fill: p.colorField ? undefined : theme.brand,
+            fill: colorField ? undefined : theme.brand,
           }}
         />
       </Frame>

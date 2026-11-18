@@ -406,7 +406,9 @@ export const TimePicker = (props: Record<string, unknown>) => {
     const d = parseDate(v, 'HH:mm:ss') ?? parseDate(v, 'HH:mm');
     if (d || isBlankDate(v)) change(d);
   }, props.value);
-  const current = parseDate(value, valueFormat) ?? parseDate(value, 'HH:mm');
+  // Read with or without seconds whatever the Format: 09:30:45 on an HH:mm field, read as HH:mm only, showed an empty
+  // field though the value was kept (QA PF-070).
+  const current = parseDate(value, valueFormat) ?? parseDate(value, 'HH:mm:ss') ?? parseDate(value, 'HH:mm');
   const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
   return (
     <AntProvider tokens={tokens} ownerRef={panel.anchor}>
@@ -1222,7 +1224,10 @@ export const Transfer = (props: Record<string, unknown>) => {
     check.touch();
     onChange();
   };
-  useFieldActions((v) => change(toArray(v).map(asGiven)), props.targetKeys);
+  // One key as text ('invoices') is that key, as a list or JSON text is a list: it was read as no keys (QA PF-087).
+  const keysOf = (v: unknown) =>
+    typeof v === 'string' && !v.trim().startsWith('[') ? (v.trim() ? [v.trim()] : []) : toArray(v);
+  useFieldActions((v) => change(keysOf(v).map(asGiven)), props.targetKeys);
   // Ant gives the moved keys first: the chosen keys are kept in the data's order, then any no item has, as they were.
   const move = (next: React.Key[]) => {
     const picked = new Set(next.map(str));

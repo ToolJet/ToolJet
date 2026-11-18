@@ -200,8 +200,10 @@
   box-sizing: border-box;
   min-width: 0;
 }
-/* One line, shrunk to fit by useFitText, cut only past that. */
+/* One line, shrunk to fit by useFitText, cut only past that. Primary color colours the figure (it did nothing on a
+   Statistic, QA PKB-41); unset, it keeps Ant's heading colour, which Text color sets. */
 .tj-ant-stat .ant-statistic-content {
+  color: var(--tj-ant-color-primary, var(--ant-color-text-heading));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -227,11 +229,13 @@
   font-weight: 500;
   color: var(--ant-color-text-secondary);
 }
+/* Ant's text shades of green and red, derived for contrast with the surface: the status colours themselves read 2.27:1
+   on white (QA PF-012). */
 .tj-ant-stat-change.is-up {
-  color: var(--ant-color-success);
+  color: var(--ant-color-success-text);
 }
 .tj-ant-stat-change.is-down {
-  color: var(--ant-color-error);
+  color: var(--ant-color-error-text);
 }
 .tj-ant-stat-extra {
   color: var(--ant-color-text-description);
@@ -310,9 +314,10 @@
   width: 64px;
 }
 
+/* The count on the text's first line: centred on a long text, it sat halfway down it, scrolled out of a short box. */
 .tj-ant-badge-count {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
 }
 
@@ -547,12 +552,28 @@
   min-height: 100%;
   border-inline-end: 0 !important;
 }
+/* Border color set: the menu's own edge line in it, the line Ant draws at an inline or vertical menu's edge (taken
+   away above) and under a horizontal one (Ant's colorSplit). It did nothing (QA PKB-41). The root menu only: a
+   sub-menu's list inside it draws no line of its own. */
+.tj-ant-menu.tj-ant-menu--border .ant-menu-root.ant-menu-inline,
+.tj-ant-menu.tj-ant-menu--border .ant-menu-root.ant-menu-vertical {
+  border-inline-end: 1px solid var(--tj-ant-color-border) !important;
+}
+.tj-ant-menu.tj-ant-menu--border .ant-menu-root.ant-menu-horizontal {
+  border-bottom: 1px solid var(--tj-ant-color-border);
+}
 .tj-ant-spin {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   margin-inline: auto;
+}
+/* The Spin widget scrolls a tip taller than its box (QA PF-224). Auto margins centre the spinner and tip, and give way
+   when they are taller than the box: centred by align-items, the top of the tip went out of reach above it. */
+.tj-ant-spin-root > .tj-ant-spin {
+  margin-top: auto;
+  margin-bottom: auto;
 }
 .tj-ant-spin-tip {
   color: var(--ant-color-text-secondary);
@@ -720,9 +741,34 @@
   line-height: var(--ant-line-height);
   margin-top: 2px;
 }
+/* The lists share the box's width: they kept Ant's (about 350px with the buttons), so a narrower box cut off the right
+   list and its move buttons (QA PF-086). A box too narrow for two lists side by side stacks them, the move buttons
+   between them pointing down and up. */
+.tj-ant-transfer {
+  container: tj-ant-transfer / inline-size;
+}
 .tj-ant-transfer .ant-transfer-list {
   flex: 1;
   height: 100%;
+  min-width: 0;
+}
+@container tj-ant-transfer (max-width: 279px) {
+  .tj-ant-transfer .ant-transfer {
+    flex-direction: column;
+  }
+  .tj-ant-transfer .ant-transfer-list {
+    width: auto;
+    height: auto;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  .tj-ant-transfer .ant-transfer-operation {
+    flex-direction: row;
+    margin: var(--ant-margin-xs) 0;
+  }
+  .tj-ant-transfer .ant-transfer-operation .anticon {
+    transform: rotate(90deg);
+  }
 }
 
 /* Kanban: the shadcn pack's board (UI 2.0's) in Ant tokens. Each Kanban style (a --kb-* variable) replaces its
@@ -1090,7 +1136,12 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--ant-color-primary);
+  color: var(--ant-color-primary-text);
+}
+/* On the dark theme's tint the primary read 2.47:1 (QA PF-009): its lighter shade reads 3.6:1, as the light theme's
+   primary does on its tint. */
+.tj-ant-dark .tj-ant-hero-eyebrow {
+  color: var(--ant-color-primary-text-hover);
 }
 .tj-ant-hero-sub {
   margin: 0 !important;
@@ -1213,6 +1264,45 @@
 }
 .tj-ant-progress-caption {
   font-size: 12px;
+}
+
+/* Timeline. With labels (or alternate / right), Ant puts an entry from the middle at half the width less 12px and keeps
+   its start margin (margin + the 10px dot), so a long entry ran past the box's right edge (QA PF-039): the width leaves
+   the margin out. Border color is the line between entries and Border radius the dots' corners; unset, Ant's split
+   colour and round dots (QA PKB-41). Ant lifts every entry's text by the gap between its line height and font size to
+   line it up with its dot, so the first entry sat half above the box: the Timeline leaves that much room at its top. */
+.tj-ant-timeline .ant-timeline.ant-timeline-label .ant-timeline-item-left .ant-timeline-item-content,
+.tj-ant-timeline .ant-timeline.ant-timeline-alternate .ant-timeline-item-left .ant-timeline-item-content,
+.tj-ant-timeline .ant-timeline.ant-timeline-right .ant-timeline-item-left .ant-timeline-item-content {
+  width: calc(50% - var(--ant-margin-sm) - var(--ant-margin) - 10px);
+}
+.tj-ant-timeline .ant-timeline {
+  --ant-timeline-tail-color: var(--tj-ant-color-border, var(--ant-color-split));
+  padding-top: calc(var(--ant-font-size) * var(--ant-line-height) - var(--ant-font-size));
+}
+.tj-ant-timeline .ant-timeline .ant-timeline-item-head {
+  border-radius: var(--tj-ant-border-radius, 50%);
+}
+
+/* Divider. Border color (else Primary color) is the line, Ant's split colour when unset; the text's line takes it
+   through Ant's inherited border colour (QA PKB-41). A long text ends in an ellipsis inside the box: Ant keeps it on
+   one line, past the right edge (QA PKB-68). Ant's two lines are 50% wide each, so the lines give way first and the
+   text is cut past 85% of the box: some line always shows, so it still reads as a divider, not a text. */
+.tj-ant-divider .ant-divider {
+  border-color: var(--tj-ant-color-border, var(--tj-ant-color-primary, var(--ant-color-split)));
+}
+.tj-ant-divider .ant-divider-inner-text {
+  flex-shrink: 0;
+  max-width: 85%;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Breadcrumb: Primary color colours the crumb links, Ant's description grey when unset (QA PKB-41). */
+.tj-ant-breadcrumb .ant-breadcrumb {
+  --ant-breadcrumb-link-color: var(--tj-ant-color-primary, var(--ant-color-text-description));
 }
 
 /* Tags, Link, Icon, ButtonGroup, rings */
@@ -1455,6 +1545,12 @@
   flex-direction: column;
   gap: 10px;
   outline: none;
+}
+/* The questionnaire takes focus for its shortcut keys: a keyboard focus ring shows where (QA PF-024). */
+.tj-ant-quiz:focus-visible {
+  outline: 2px solid var(--ant-color-primary-border);
+  outline-offset: 4px;
+  border-radius: var(--ant-border-radius);
 }
 .tj-ant-quiz-choices {
   display: flex;
@@ -1735,6 +1831,15 @@
   min-height: 0;
 }
 
+/* The full calendar's day lines. Border color draws the line over each day (Ant's split colour) and Primary color the
+   picked day's (only its tint changed); today keeps its Primary line. Both did nothing (QA PKB-26, PKB-41). */
+.tj-ant-calendar .ant-picker-calendar.ant-picker-calendar-full .ant-picker-calendar-date:not(.ant-picker-calendar-date-today) {
+  border-top-color: var(--tj-ant-color-border, var(--ant-color-split));
+}
+.tj-ant-calendar:not(.is-unpicked) .ant-picker-calendar.ant-picker-calendar-full .ant-picker-cell-selected .ant-picker-calendar-date:not(.ant-picker-calendar-date-today) {
+  border-top-color: var(--tj-ant-color-primary, var(--tj-ant-color-border, var(--ant-color-split)));
+}
+
 /* A calendar with no value, or showing another day than its value, draws no day as picked (Ant marks its own panel
    date, today by default). */
 .tj-ant-calendar.is-unpicked .ant-picker-calendar .ant-picker-cell-in-view.ant-picker-cell-selected:not(.ant-picker-cell-disabled) .ant-picker-cell-inner {
@@ -1863,4 +1968,36 @@
 .tj-ant-tag-box {
   height: 100%;
   box-sizing: border-box;
+}
+
+/* A box a component fits its drawing to (useFitSquare): the widget's whole box, the drawing centred in it. The QR Code
+   drew a Size larger than the box past it (QA PF-227). */
+.tj-ant-fit-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+/* A List row is a Tab stop (QA PF-121): a keyboard focus ring, as Ant's menu items. */
+.tj-ant-item:focus-visible {
+  outline: 2px solid var(--ant-color-primary-border);
+  outline-offset: -2px;
+}
+
+/* Initials on an avatar: dark text on the primary tint, readable in light and dark; white on Ant's grey was 1.83:1
+   (QA PF-008, PF-022). */
+.ant-avatar.tj-ant-initials {
+  background: var(--ant-color-primary-bg);
+  color: var(--ant-color-text);
+}
+/* Descriptions: Primary color, when set, colours the labels (Ant's tertiary text otherwise) (QA PKB-41). */
+.tj-ant-desc .tj.ant-descriptions {
+  --ant-descriptions-label-color: var(--tj-ant-color-primary, var(--ant-color-text-tertiary));
+}
+/* A bordered Descriptions colours its labels with Ant's secondary text, not the label colour. */
+.tj-ant-desc .ant-descriptions.ant-descriptions-bordered > .ant-descriptions-view .ant-descriptions-row > .ant-descriptions-item-label {
+  color: var(--tj-ant-color-primary, var(--ant-color-text-secondary));
 }

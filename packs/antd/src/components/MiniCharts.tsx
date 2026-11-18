@@ -38,7 +38,8 @@ export const Sparkline = () => {
   const [valueField] = ToolJet.useStateString({ name: 'valueField', label: 'Value field', initialValue: 'value' });
   const [type] = ToolJet.useStateEnumeration({
     name: 'type',
-    label: 'Type',
+    // Not 'Type': the Inspector gives a property labelled Type no fx toggle (QA PF-282). The key stays type.
+    label: 'Chart style',
     enumDefinition: ['line', 'area', 'column'],
     initialValue: 'line',
   });
@@ -194,7 +195,8 @@ export const RadialChart = () => {
   const [centerLabel] = ToolJet.useStateString({ name: 'centerLabel', label: 'Center label', initialValue: '' });
   const [type] = ToolJet.useStateEnumeration({
     name: 'type',
-    label: 'Type',
+    // Not 'Type': the Inspector gives a property labelled Type no fx toggle (QA PF-282). The key stays type.
+    label: 'Shape',
     enumDefinition: ['circle', 'dashboard'],
     initialValue: 'dashboard',
   });

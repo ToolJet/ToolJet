@@ -12,12 +12,15 @@ const FALLBACKS: Record<string, string> = {
   '--cc-success-systemStatus': '#1e823b',
 };
 
-const withFallback = (value: string) =>
-  value.replace(/var\((--cc-[\w-]+)\)/g, (match, name: string) =>
+const withFallback = (value: string | number) =>
+  String(value).replace(/var\((--cc-[\w-]+)\)/g, (match, name: string) =>
     FALLBACKS[name] ? `var(${name}, ${FALLBACKS[name]})` : match
   );
 
-const isSet = (value: unknown): value is string | number => value !== undefined && value !== null && value !== '';
+// Only text or a number draws: a colour bound to an object (or a number, whose .replace threw) is not set, so the
+// part keeps its own look instead of the widget crashing (QA PF-259).
+const isSet = (value: unknown): value is string | number =>
+  (typeof value === 'string' && value !== '') || (typeof value === 'number' && Number.isFinite(value));
 
 export interface ThemeStyles {
   primary?: string; // filled controls, focus ring, default button/badge

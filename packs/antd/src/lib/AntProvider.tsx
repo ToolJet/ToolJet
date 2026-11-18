@@ -34,10 +34,20 @@ const alpha = (c: string, p: number) => `color-mix(in srgb, ${c} ${p}%, transpar
  * variables the static antd.css reads first.
  */
 // `radius`: options for the Border radius style, e.g. shown only for the look that draws it (a Radio Group's buttons).
-export const useTokenStyles = (radius: Parameters<typeof useThemeNumber>[3] = {}) => {
+// `labels`: a style's label where the component draws it as something else (Timeline: Handle color).
+export const useTokenStyles = (
+  radius: Parameters<typeof useThemeNumber>[3] = {},
+  labels: { colorBgContainer?: string } = {}
+) => {
   const colorPrimary = useThemeColor('colorPrimary', 'Primary color', THEME_COLOR.brand);
   const colorText = useThemeColor('colorText', 'Text color', THEME_COLOR.text);
-  const colorBgContainer = useThemeColor('colorBgContainer', 'Container background', THEME_COLOR.surface);
+  // A component that draws colorBgContainer as something other than its box names it for that (Timeline: Handle
+  // color). Only the label changes; the saved style is still colorBgContainer.
+  const colorBgContainer = useThemeColor(
+    'colorBgContainer',
+    labels.colorBgContainer ?? 'Container background',
+    THEME_COLOR.surface
+  );
   const colorBorder = useThemeColor('colorBorder', 'Border color', THEME_COLOR.border);
   const borderRadius = useThemeNumber('borderRadius', 'Border radius', RADIUS_HINT, radius);
   return useMemo(() => {
@@ -91,6 +101,24 @@ export const useTokenStyles = (radius: Parameters<typeof useThemeNumber>[3] = {}
     }
     return vars as CSSProperties;
   }, [colorPrimary, colorText, colorBgContainer, colorBorder, borderRadius]);
+};
+
+/**
+ * The widget box drawn by the component's own Container background, Border color and Border radius (useTokenStyles),
+ * for a component with no surface of its own that Ant would draw them on (Spin, Circular Progress): they did nothing
+ * there (QA PKB-41). Unset, the box stays bare. Passed to AntProvider's style, the root that fills the box.
+ */
+export const ownBoxStyle = (tokens: CSSProperties): CSSProperties => {
+  const own = tokens as Record<string, string | undefined>;
+  const bg = own['--tj-ant-color-bg-container'];
+  const border = own['--tj-ant-color-border'];
+  const radius = own['--tj-ant-border-radius'];
+  return {
+    ...(bg ? { backgroundColor: bg } : {}),
+    ...(border ? { border: `1px solid ${border}` } : {}),
+    ...(radius ? { borderRadius: radius } : {}),
+    ...(bg || border || radius ? { boxSizing: 'border-box' } : {}),
+  };
 };
 
 // Dark app, dark Ant: whether the app is dark (its surface colour: the theme's --tj-surface when one is applied, else

@@ -12,6 +12,7 @@ const TONE_TAG: Record<string, string | undefined> = {
 };
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, usePopupTheme, useTokenStyles } from '../lib/AntProvider';
+import { keyboardPick } from '../lib/keyboardPick';
 import { SpinOver } from '../lib/Loading';
 import {
   followSelection,
@@ -608,9 +609,30 @@ export const List = () => {
   // A long list of field items draws only the items in view (rc-virtual-list, lib/virtualRows), as ToolJet 1.0's
   // Table does. Rows of ToolJet components draw every row: the host mounts every component row anyway.
   const rootRef = useRef<HTMLElement | null>(null);
+  const listBg = (tokens as Record<string, string | undefined>)['--tj-ant-color-bg-container'];
   const vlist = useRef<ListRef>(null);
   const body = useVirtualBody(rootRef, LIST_CHROME, !asRows && visible.length > VIRTUAL_MIN_ROWS);
   const keyByRow = new Map(visible.map((r, i) => [r, keys[i + offset] ?? String(i)]));
+  // A components row's content is the host's ToolJet components, projected into it through a <slot>. React finds a
+  // click's handler by walking the clicked node's parents, and a slotted node's are the host's, never the row's, so a
+  // click on a row selected nothing (QA PKB-55). One native listener reads the row off the event's composed path.
+  const pickRow = useRef<(index: number) => void>(() => {});
+  pickRow.current = (index) => {
+    const row = visible[index];
+    if (row) select(row, index + offset);
+  };
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || !asRows) return undefined;
+    const onClick = (e: Event) => {
+      const item = e
+        .composedPath()
+        .find((n): n is HTMLElement => (n as HTMLElement).dataset?.tjRow !== undefined && root.contains(n as Node));
+      if (item) pickRow.current(Number(item.dataset.tjRow));
+    };
+    root.addEventListener('click', onClick, true);
+    return () => root.removeEventListener('click', onClick, true);
+  }, [asRows]);
   const metaItem = (row: Row, i: number) => {
     const key = keys[i + offset];
     const selected = key === selectedKey;
@@ -638,6 +660,8 @@ export const List = () => {
         key={key}
         className={selected ? 'tj-ant-item is-selected' : 'tj-ant-item'}
         onClick={() => select(row, i + offset)}
+        // A Tab stop that Enter or Space selects, as a click does: no row took focus (QA PF-121).
+        {...keyboardPick(() => select(row, i + offset))}
         extra={extra || undefined}
       >
         <AntList.Item.Meta
@@ -658,7 +682,14 @@ export const List = () => {
   };
 
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-list tj-ant-scroll" ownerRef={rootRef}>
+    <AntProvider
+      tokens={tokens}
+      fill
+      className="tj-ant-list tj-ant-scroll"
+      ownerRef={rootRef}
+      // Container background fills the list: it stayed transparent (QA PKB-41).
+      style={listBg ? { backgroundColor: listBg } : undefined}
+    >
       <AntList<Row>
         dataSource={body.on ? [] : visible}
         header={header || undefined}
@@ -681,7 +712,7 @@ export const List = () => {
             return (
               <AntList.Item
                 className={selected ? 'tj-ant-item tj-ant-item--rows is-selected' : 'tj-ant-item tj-ant-item--rows'}
-                onClickCapture={() => select(row, i + offset)}
+                data-tj-row={i}
               >
                 <div style={{ width: '100%', minHeight: height }}>
                   <ToolJet.RowSlot name="row" index={i} item={row} />
