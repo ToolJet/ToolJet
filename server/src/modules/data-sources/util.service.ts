@@ -42,11 +42,20 @@ import { DatasourceUserTokenData } from '@entities/data_source_user_token.entity
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { CustomDomainCacheService } from '@modules/custom-domains/cache.service';
 
-// Audit metadata copy of data source options: encrypted values are replaced with null.
+// Option keys holding OAuth token data, stored per user by upsertUserTokenData, never in data_source_options.
+export const OAUTH_TOKEN_OPTION_KEYS = ['access_token', 'refresh_token', 'tokenData', 'token_data'];
+
+const AUDIT_REDACTED_OPTION_KEYS = new Set([...OAUTH_TOKEN_OPTION_KEYS, 'code']);
+
+// Audit metadata copy of data source options: encrypted and OAuth token values are replaced with null.
 export function redactEncryptedOptions<T>(options: T): T {
   if (!Array.isArray(options)) return options;
   return options.map((option) =>
-    option?.['encrypted'] === true || option?.['encrypted'] === 'true' ? { ...option, value: null } : option
+    option?.['encrypted'] === true ||
+    option?.['encrypted'] === 'true' ||
+    AUDIT_REDACTED_OPTION_KEYS.has(option?.['key'])
+      ? { ...option, value: null }
+      : option
   ) as T;
 }
 
@@ -110,6 +119,18 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return raw;
   }
 
+  async findWorkspaceBranchOrFail(
+    branchId: string,
+    organizationId: string,
+    manager?: EntityManager
+  ): Promise<WorkspaceBranch> {
+    const branch = await dbTransactionWrap(async (manager: EntityManager) => {
+      return manager.findOne(WorkspaceBranch, { where: { id: branchId, organizationId } });
+    }, manager);
+    if (!branch) throw new NotFoundException('Branch not found');
+    return branch;
+  }
+
   /**
    * Validates that workspace constants are not being added directly on the default (master) branch.
    * PRD requires that workspace constants in encrypted fields must go through a PR workflow.
@@ -133,10 +154,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     if (!hasConstantReference) return;
 
-    const branch = await dbTransactionWrap(async (manager: EntityManager) => {
-      return manager.findOne(WorkspaceBranch, { where: { id: branchId, organizationId } });
-    });
-    if (!branch) throw new NotFoundException('Branch not found');
+    const branch = await this.findWorkspaceBranchOrFail(branchId, organizationId);
 
     if (!branch.isDefault) return;
 
@@ -654,11 +672,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     // Skip for feature branches — their edits shouldn't alter the main fallback.
     let shouldUpdateDefault = true;
     if (branchId) {
-      const branch = await manager.findOne(WorkspaceBranch, {
-        where: { id: branchId, organizationId },
-        select: ['id', 'isDefault'],
-      });
-      if (!branch) throw new NotFoundException('Branch not found');
+      const branch = await this.findWorkspaceBranchOrFail(branchId, organizationId, manager);
       shouldUpdateDefault = branch.isDefault;
     }
 
@@ -958,11 +972,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     // Exception: intercom's `access_token` is a manually-typed personal access token, not an
     // OAuth-managed field (intercom has no OAuth flow at all) — it must go through the normal
     // credential-save path below, or a saved value would be silently discarded on every update.
-    const TOKEN_KEYS = new Set(
-      dataSource?.kind === 'intercom'
-        ? ['tokenData', 'token_data']
-        : ['access_token', 'refresh_token', 'tokenData', 'token_data']
-    );
+    const TOKEN_KEYS = new Set(dataSource?.kind === 'intercom' ? ['tokenData', 'token_data'] : OAUTH_TOKEN_OPTION_KEYS);
 
     const resolvedOptions = [];
     for (const option of options) {

@@ -53,6 +53,7 @@ export class DataSourcesService implements IDataSourcesService {
     userPermissions: UserPermissions
   ): Promise<{ data_sources: object[]; data_source_folders: object[] }> {
     const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
+    await this.checkBranchInWorkspace(query?.branchId, user.organizationId);
 
     // Removed: appVersionId-based branchId derivation (app_version_id dropped from data_source_versions).
     // Released versions now use is_default DSV; branch editors pass branchId directly.
@@ -119,6 +120,7 @@ export class DataSourcesService implements IDataSourcesService {
     user: User,
     userPermissions: UserPermissions
   ): Promise<{ data_sources: object[] }> {
+    await this.checkBranchInWorkspace(query.branchId, user.organizationId);
     const selectedEnvironmentId =
       query.environmentId || (await this.appEnvironmentsUtilService.get(user.organizationId, null, true))?.id;
 
@@ -176,6 +178,7 @@ export class DataSourcesService implements IDataSourcesService {
 
   async create(createDataSourceDto: CreateDataSourceDto, user: User, branchId?: string): Promise<DataSource> {
     const { kind, name, options, plugin_id: pluginId, environment_id } = createDataSourceDto;
+    await this.checkBranchInWorkspace(branchId, user.organizationId);
 
     if (kind === 'grpc') {
       const rootDir = process.cwd().split('/').slice(0, -1).join('/');
@@ -454,6 +457,10 @@ export class DataSourcesService implements IDataSourcesService {
 
     await this.dataSourcesUtilService.authorizeOauth2(dataSource, code, user.id, environmentId, user.organizationId);
     return;
+  }
+
+  async checkBranchInWorkspace(branchId: string | undefined, organizationId: string): Promise<void> {
+    if (branchId) await this.dataSourcesUtilService.findWorkspaceBranchOrFail(branchId, organizationId);
   }
 
   async findQueriesLinkedToDatasource(datasourceId: string, organizationId: string, branchId?: string) {

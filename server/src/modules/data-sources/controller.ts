@@ -203,6 +203,7 @@ export class DataSourcesController implements IDataSourcesController {
     @Param('id') datasourceId: string,
     @Query('branch_id') branchId?: string
   ) {
+    await this.dataSourcesService.checkBranchInWorkspace(branchId, user.organizationId);
     return await this.dataSourcesService.findQueriesLinkedToDatasource(datasourceId, user.organizationId, branchId);
   }
 

@@ -14,6 +14,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { DataSourceActivityService } from '@modules/data-sources/dashboard/activity.service';
 import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { CredentialsService } from '@modules/encryption/services/credentials.service';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import {
@@ -383,6 +384,53 @@ describe('DataSourcesDashboardController save all environments', () => {
           },
         }),
       ]);
+    });
+  });
+
+  describe('PUT /api/data-sources/:id | v1 update audit entry', () => {
+    it('should put null for encrypted and OAuth token values in the audit entry and store the real values', async () => {
+      const admin = await createAdmin(nestApp, 'ds-v1-audit-token@tooljet.io');
+      const org = admin.workspace.id;
+      await ensureAppEnvironments(nestApp, org);
+      await resolveOrSeedDefaultBranch(org);
+      const created = await request(nestApp.getHttpServer())
+        .post('/api/data-sources')
+        .set('tj-workspace-id', org)
+        .set('Cookie', admin.cookie)
+        .send({ name: 'Support Desk', kind: 'intercom', options: [] })
+        .expect(201);
+      const dataSourceId = created.body.id;
+      const environment = (await getAllEnvironments(nestApp, org)).find((env) => env.isDefault);
+      const options = [
+        { key: 'access_token', value: 'token-123', encrypted: false },
+        { key: 'password', value: 'hunter2', encrypted: true },
+      ];
+      const spy = jest.spyOn(nestApp.get(EventEmitter2), 'emit');
+
+      await request(nestApp.getHttpServer())
+        .put(`/api/data-sources/${dataSourceId}?environment_id=${environment.id}`)
+        .set('tj-workspace-id', org)
+        .set('Cookie', admin.cookie)
+        .send({ name: 'Support Desk', options })
+        .expect(200);
+
+      const audits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry').map(([, payload]) => payload);
+      expect(audits).toEqual([
+        expect.objectContaining({
+          actionType: 'DATA_SOURCE_UPDATE',
+          resourceId: dataSourceId,
+          metadata: expect.objectContaining({
+            options: [
+              { key: 'access_token', value: null, encrypted: false },
+              { key: 'password', value: null, encrypted: true },
+            ],
+          }),
+        }),
+      ]);
+      const stored = (await nestApp.get(AppEnvironmentUtilService).getOptions(dataSourceId, org, environment.id))
+        .options;
+      expect(stored.access_token).toMatchObject({ value: 'token-123' });
+      expect(await nestApp.get(CredentialsService).getValue(stored.password.credential_id)).toBe('hunter2');
     });
   });
 
