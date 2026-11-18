@@ -44,9 +44,9 @@ const COLOR_TEXT =
 // A CSS colour name (red, rebeccapurple) as hex, as the browser reads it, or null: Ant's own parser read every name as
 // black, and the native Color picker takes names. A canvas keeps its last valid colour when given one it cannot
 // read, so a name that leaves two different starting colours where they were is no colour.
-const colorName = (v: unknown): string | null => {
-  const text = str(v).trim();
-  if (!/^[a-z]+$/i.test(text) || typeof document === 'undefined') return null;
+// Any CSS colour text as hex, as the browser reads it, or null (unreadable, or with transparency hex would drop).
+const cssHex = (text: string): string | null => {
+  if (!text || typeof document === 'undefined') return null;
   const ctx = document.createElement('canvas').getContext?.('2d');
   if (!ctx) return null;
   const read = (start: string) => {
@@ -56,6 +56,10 @@ const colorName = (v: unknown): string | null => {
   };
   const a = read('#000000');
   return a === read('#ffffff') && /^#[0-9a-f]{6}$/i.test(a) ? a.toLowerCase() : null;
+};
+const colorName = (v: unknown): string | null => {
+  const text = str(v).trim();
+  return /^[a-z]+$/i.test(text) ? cssHex(text) : null;
 };
 const hexToRgb = (hex: string) => {
   const n = parseInt(hex.slice(1), 16);
@@ -1098,8 +1102,21 @@ export const ColorPicker = (props: Record<string, unknown>) => {
     const hex = colorName(v);
     return hex && format === 'rgb' ? hexToRgb(hex) : hex;
   };
+  // setFieldValue gives the colour in the field's format, as a pick does (PF-088: rgb(1, 2, 3) on a hex field showed
+  // #010203 but exposed the rgb text). Text already in that format is kept as given; a colour with transparency, or
+  // hsb() (no CSS colour), stays as given.
+  const inFormat = (v: unknown): string | null => {
+    const text = str(v).trim();
+    const named = fromName(text);
+    if (named) return named;
+    if (!readable(text)) return null;
+    const already = format === 'rgb' ? /^rgb\(/i.test(text) : text.startsWith('#');
+    const hex = already ? null : cssHex(text);
+    if (!hex) return str(v);
+    return format === 'rgb' ? hexToRgb(hex) : hex;
+  };
   useFieldActions((v) => {
-    const next = fromName(v) ?? (readable(v) ? str(v) : null);
+    const next = inFormat(v);
     if (next !== null && valueSetter.set(next)) onChange();
   }, props.value);
   const valueReadable = readable(value);
