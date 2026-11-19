@@ -1,10 +1,9 @@
 # tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827). Same as ee-production,
-# but follows BRANCH_NAME like the submodules do, falling back to the pinned TOOLJET_MCP_REF (never a moving branch).
-# A release bumps TOOLJET_MCP_REF deliberately, to the tooljet-mcp commit it ships.
+# but follows BRANCH_NAME like the submodules do, falling back to TOOLJET_MCP_REF (main by default).
 FROM node:22.23.4 AS mcp-builder
 WORKDIR /mcp
 ARG BRANCH_NAME
-ARG TOOLJET_MCP_REF=c0d48324b8212f697ef728f07ec2d3869214f74e
+ARG TOOLJET_MCP_REF=main
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \

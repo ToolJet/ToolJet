@@ -1244,12 +1244,13 @@ Cypress.Commands.add(
   },
 );
 
-Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig) => {
+Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig, organizationId = Cypress.env("workspaceId")) => {
+  const scope = Cypress.env("environment") === "Cloud" ? `/${organizationId}` : "";
   return cy.getAuthHeaders().then((headers) => {
     return cy
       .request({
         method: "PUT",
-        url: `${Cypress.env("server_host")}/api/white-labelling`,
+        url: `${Cypress.env("server_host")}/api/white-labelling${scope}`,
         headers: headers,
         body: whiteLabelConfig,
         log: false,
@@ -1290,21 +1291,30 @@ Cypress.Commands.add("apiGetDefaultWorkspace", () => {
 
 Cypress.Commands.add(
   "apiUpdateLLMKey",
-  (apikey = "", licenseType = "selfhostai", useEnvironmentConfig = false) => {
+  (
+    apikey = "",
+    licenseType = "selfhostai",
+    useEnvironmentConfig = false,
+    { workspaceId, provider, expectedStatus = 200 } = {},
+  ) => {
     return cy.getAuthHeaders().then((headers) => {
       return cy
         .request({
           method: "PATCH",
           url: `${Cypress.env("server_host")}/api/ai/update-key`,
-          headers: headers,
+          headers: workspaceId
+            ? { ...headers, "Tj-Workspace-Id": workspaceId }
+            : headers,
           body: {
             apikey: apikey,
             licenseType: licenseType,
             useEnvironmentConfig: useEnvironmentConfig,
+            ...(provider && { provider }),
           },
+          failOnStatusCode: expectedStatus === 200,
         })
         .then((response) => {
-          expect(response.status).to.equal(200);
+          expect(response.status).to.equal(expectedStatus);
           Cypress.log({
             name: "apiUpdateKey",
             displayName: `AI KEY UPDATED : ${licenseType}`,
