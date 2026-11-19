@@ -33,33 +33,46 @@ try {
 const AppWithProfiler = Sentry.withProfiler(RootRouter);
 
 // The website (a different site) cannot set cookies for this app, so it passes the template id
-// in the URL: ?tj_template_id=... on a direct redirect, or inside the OAuth state on SSO.
-// Set it as a first-party cookie before any route mounts, so the session payload carries it
-// through login and HomePage deploys the template.
-const TEMPLATE_ID_PARAM = 'tj_template_id';
+// or build prompt in the URL: ?tj_template_id=... / ?tj_ai_prompt=... on a direct redirect, or
+// inside the OAuth state on SSO. Set them as first-party cookies before any route mounts, so the
+// session payload carries them through login and HomePage deploys the template / builds the app.
+// Cookies are capped at ~4KB and the server URL-encodes the value, so cap the encoded length.
+const MAX_ENCODED_PROMPT_LENGTH = 3500;
+const AI_COOKIE_VALIDATORS = {
+  tj_template_id: (value) => /^[a-z0-9-]{1,100}$/.test(value),
+  tj_ai_prompt: (value) => value.trim() !== '' && encodeURIComponent(value).length <= MAX_ENCODED_PROMPT_LENGTH,
+};
 
-const readTemplateIdFromUrl = () => {
+const readAiCookiesFromUrl = () => {
   const query = new URLSearchParams(window.location.search);
   const hash = new URLSearchParams(window.location.hash.substring(1));
   const state = hash.get('state') || query.get('state');
-  return query.get(TEMPLATE_ID_PARAM) || (state && new URLSearchParams(state).get(TEMPLATE_ID_PARAM));
+  const stateParams = state ? new URLSearchParams(state) : null;
+
+  const found = {};
+  Object.entries(AI_COOKIE_VALIDATORS).forEach(([key, isValid]) => {
+    const value = query.get(key) || hash.get(key) || stateParams?.get(key);
+    if (value && isValid(value)) found[key] = value;
+  });
+  return found;
 };
 
-const persistTemplateIdFromUrl = async () => {
-  const templateId = readTemplateIdFromUrl();
-  if (!templateId || !/^[a-z0-9-]{1,100}$/.test(templateId)) return;
+const persistAiCookiesFromUrl = async () => {
+  const cookies = readAiCookiesFromUrl();
+  if (Object.keys(cookies).length === 0) return;
 
-  // Drop the param so a reload does not deploy the template a second time
+  // Drop the params so a reload does not deploy / build a second time
   const url = new URL(window.location.href);
-  if (url.searchParams.has(TEMPLATE_ID_PARAM)) {
-    url.searchParams.delete(TEMPLATE_ID_PARAM);
+  const strippedKeys = Object.keys(AI_COOKIE_VALIDATORS).filter((key) => url.searchParams.has(key));
+  if (strippedKeys.length > 0) {
+    strippedKeys.forEach((key) => url.searchParams.delete(key));
     window.history.replaceState(window.history.state, '', url);
   }
 
   try {
-    await aiOnboardingService.setAiCookie({ [TEMPLATE_ID_PARAM]: templateId });
+    await aiOnboardingService.setAiCookie(cookies);
   } catch (error) {
-    console.error('Failed to set template cookie:', error);
+    console.error('Failed to set AI onboarding cookie:', error);
   }
 };
 
@@ -116,7 +129,7 @@ appService
       });
     }
   })
-  .then(persistTemplateIdFromUrl)
+  .then(persistAiCookiesFromUrl)
   .then(() => {
     createRoot(document.getElementById('app')).render(<AppWithProfiler />);
 
