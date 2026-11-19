@@ -1,4 +1,5 @@
 import React from 'react';
+import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 import useStore from '@/AppBuilder/_stores/store';
 import { ComponentConfigurationTab } from './ComponentConfigurationTab';
 import ComponentsManagerTab from './ComponentManagerTab';
@@ -16,8 +17,9 @@ export const RightSideBar = ({ darkMode }) => {
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
   const pinned = useCodeModePin();
   const codeMode = useCodeMode();
+  const isBlockedByBranch = useIsAiBlockedOnDefaultBranch();
 
-  if (!isRightSidebarOpen) return null;
+  if (!isRightSidebarOpen || (codeMode && isBlockedByBranch)) return null;
 
   return (
     <div className="sub-section">
