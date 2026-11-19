@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import { rehypeDomPurify } from './rehypeDomPurify';
 import './text.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -222,7 +223,11 @@ export const Text = function Text({
           )}
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
-              <Markdown className={'reactMarkdown'} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+              <Markdown
+                className={'reactMarkdown'}
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw, rehypeDomPurify]}
+              >
                 {/* react-markdown accepts only a string. The property path coerces through
                     `text`'s string schema, but setText() bypasses it, so a number or boolean
                     from a CSA reaches here raw and the widget dies in its error boundary. */}
