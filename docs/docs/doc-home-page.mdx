@@ -11,7 +11,9 @@ import { ArrowRight } from 'lucide-react';
 import gettingStartedImage from '../src/pages/getting-started.png';
 import {
     textLabels,
-    featureCards,
+    builderCards,
+    aiCard,
+    platformCards,
     setupCards,
     deployOptions,
     dataCards,
@@ -21,9 +23,12 @@ import {
     sectionCards
 } from './homePageData';
 import Link from '@docusaurus/Link';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+import { useVersionedHref } from '@site/src/components/DocBlocks';
 
 {/* // Reusable components */}
 export const Card = ({ className = '', href, children }) => {
+    const to = useVersionedHref(href);
     const cardContent = (
         <div className={`relative rounded-lg bg-white dark:bg-gray-800 group pt-[0.5px] pb-[3px] shadow-[inset_0_0_0_1.2px_rgba(243,244,246,1)] dark:shadow-[inset_0_0_0_1.2px_rgba(55,65,81,1)] pb-2.25 ${className}`}>
             <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50"
@@ -35,18 +40,24 @@ export const Card = ({ className = '', href, children }) => {
                     pointerEvents: 'none'
                 }}>
             </div>
-            <div className="m-0.5 relative z-10 h-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <div className="m-0.5 relative z-10 h-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
                 {children}
             </div>
         </div>
     );
 
     return href ? (
-        <Link to={href} className="no-underline hover:no-underline block h-full">
+        <Link to={to} className="no-underline hover:no-underline block h-full">
             {cardContent}
         </Link>
     ) : cardContent;
 };
+
+export const VersionedLink = ({ to, children, ...props }) => (
+    <Link to={useVersionedHref(to)} {...props}>
+        {children}
+    </Link>
+);
 
 export const CardHeader = ({ className = '', children }) => (
     <div className={`flex flex-col space-y-1.5 ${className}`}>
@@ -92,21 +103,50 @@ export const Button = ({
     );
 };
 
-export const IconCard = ({ icon: Icon, title, content, color, href }) => (
-    <Card href={href} className="h-[280px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+export const NewPill = ({ className = '' }) => (
+    <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold leading-none bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 ${className}`}>
+        New
+    </span>
+);
+
+export const IconCard = ({ icon: Icon, title, content, color, href, badge, compact }) => (
+    <Card href={href} className={`${compact ? 'md:h-[220px]' : 'h-[280px]'} transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative`}>
         <div className="p-8 h-full flex flex-col">
             <CardHeader>
-                <div className="w-12 h-12 mb-5 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg bg-gray-100 dark:bg-gray-700">
-                    <Icon className={`w-6 h-6 ${color}`} />
+                <div className="flex items-start justify-between">
+                    <div className="w-12 h-12 mb-5 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg bg-gray-100 dark:bg-gray-700">
+                        <Icon className={`w-6 h-6 ${color}`} />
+                    </div>
+                    {badge && <NewPill />}
                 </div>
                 <CardTitle>{title}</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow">
-                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-5">{content}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 md:line-clamp-5">{content}</p>
             </CardContent>
         </div>
     </Card>
 );
+
+export const WideCard = ({ icon: Icon, title, content, color, href, image, alt = '' }) => {
+    const src = useBaseUrl(image);
+    return (
+        <Card href={href} className="md:h-[220px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+            <div className="h-full grid grid-cols-1 md:grid-cols-2">
+                <div className="p-8 flex flex-col min-w-0">
+                    <div className="w-12 h-12 mb-5 shrink-0 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg bg-gray-100 dark:bg-gray-700">
+                        <Icon className={`w-6 h-6 ${color}`} />
+                    </div>
+                    <CardTitle>{title}</CardTitle>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 m-0 mt-2">{content}</p>
+                </div>
+                <div className="flex items-center justify-center p-5 md:p-6 bg-slate-50 dark:bg-gray-800">
+                    <img src={src} alt={alt} loading="lazy" className="block max-h-[172px] w-auto max-w-full rounded-lg border border-solid border-gray-200 dark:border-gray-700 shadow-sm transition-transform duration-300 ease-in-out group-hover:scale-[1.02]" />
+                </div>
+            </div>
+        </Card>
+    );
+};
 
 export const SmallCard = ({ icon: Icon, title, href }) => (
     <Card href={href} className="h-[72px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
@@ -207,14 +247,22 @@ style={{
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {featureCards.map((card, index) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {builderCards.map((card, index) => (
+                            <IconCard key={index} {...card} compact />
+                        ))}
+                    </div>
+                    <div className="mt-6">
+                        <WideCard {...aiCard} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                        {platformCards.map((card, index) => (
                             <IconCard key={index} {...card} />
                         ))}
                     </div>
 
                     {/* Getting Started Section */}
-<Link
+<VersionedLink
   to={sectionCards.gettingStarted.link}
   className="no-underline hover:no-underline block"
 >
@@ -248,7 +296,7 @@ style={{
       </p>
     </div>
   </div>
-</Link>
+</VersionedLink>
 
 
                     </div>
@@ -278,14 +326,14 @@ style={{
 
                 {/* Explore more details link */}
                 <div className="text-center">
-                    <Link 
-                        className="no-underline" 
+                    <VersionedLink
+                        className="no-underline"
                         to="/docs/setup/"
     >
                     <Button variant="link">
                         {textLabels.exploreMore}
                     </Button>
-                    </Link>
+                    </VersionedLink>
                 </div>
 
                 {/* Bring your data to ToolJet section */}

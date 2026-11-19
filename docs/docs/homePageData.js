@@ -3,30 +3,44 @@ import {
     Layers, FileSpreadsheet, Folder, Wand2, LayoutDashboard, Users, UserCheck,
     Lock, UserPlus, ScrollText, Megaphone, Gem, Mail, GitBranch,
     Box, GitMerge, ShoppingBag, Wand, Flag, ShieldCheck, Cloud, Container, Boxes, Server, Telescope, Globe,
-    Terminal
+    Code2, Blocks
 } from 'lucide-react';
 
-export const featureCards = [
-    {
-        icon: BrainCircuit,
-        title: "Build with AI",
-        color: "text-blue-500",
-        content: "Build applications effortlessly using natural language to generate and customize apps.",
-        href: "/docs/build-with-ai/overview/"
-    },
-    {
-        icon: Terminal,
-        title: "Build with Your Coding Agent",
-        color: "text-blue-500",
-        content: "Connect Claude Code, Codex, or any MCP-compatible agent to your workspace and build ToolJet apps without leaving your editor.",
-        href: "/docs/build-with-ai/mcp/overview/"
-    },
+export const builderCards = [
     {
         icon: Grid3x3,
-        title: "App Builder",
+        title: "Visual Builder",
         color: "text-blue-500",
-        content: "Design and create applications with ToolJet's intuitive app builder, featuring a drag-and-drop interface and powerful pre-built components to streamline development.",
-        href: "/docs/app-builder/overview/"
+        content: "Drag components onto a canvas, connect them to data and add logic with events and RunJS. Suited to most internal tools.",
+        href: "/docs/app-builder/visual-builder/overview/"
+    },
+    {
+        icon: Code2,
+        title: "React Builder",
+        color: "text-blue-500",
+        badge: "New",
+        content: "Build applications in React and TypeScript. Generate them with ToolJet AI, edit the code in the browser, or work in a local code editor. ToolJet provides sign-in, permissions, data and releases.",
+        href: "/docs/app-builder/react-builder/overview/"
+    }
+];
+
+export const aiCard = {
+    icon: BrainCircuit,
+    title: "Build With ToolJet AI or a Coding Agent",
+    color: "text-blue-500",
+    content: "Describe the app and ToolJet AI builds it, or connect Claude Code, Codex or any MCP-compatible agent and build from a code editor.",
+    href: "/docs/build-with-ai/overview/",
+    image: "/img/home/build-with-ai.png",
+    alt: "The AI chat asking What would you like to build today?, with the Build from your own agent bar and its Connect button at the top"
+};
+
+export const platformCards = [
+    {
+        icon: Blocks,
+        title: "Components",
+        color: "text-blue-500",
+        content: "Choose from three component libraries, ToolJet UI 1.0, Rocket 2.0 and Ant Design, or build custom components.",
+        href: "/docs/app-builder/building-ui/component-library/"
     },
     {
         icon: Database,
@@ -187,7 +201,7 @@ export const textLabels = {
         prefix: "ToolJet",
         highlight: "Documentation"
     },
-    subtitle: "Learn how to get up and running with ToolJet",
+    subtitle: "Build internal tools visually, with AI, from a coding agent, or in code.",
     gettingStarted: {
         title: "Getting Started",
         description: "Discover how to create and publish apps within minutes"
@@ -222,6 +236,6 @@ export const sectionCards = {
     gettingStarted: {
         title: "Getting Started",
         description: "Discover how to create and publish apps within minutes",
-        link: "/docs/getting-started/quickstart-guide/",
+        link: "/docs/build-with-ai/overview/",
     }
 };

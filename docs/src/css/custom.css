@@ -319,7 +319,7 @@ img {
 }
 
 .img-s {
-  max-width: 360px !important;
+  max-width: min(360px, 100%) !important;
   box-shadow: none !important;
   border-radius: 6px !important;
   border: 1px solid #E4E7EB !important;
@@ -327,7 +327,7 @@ img {
 }
 
 .img-m {
-  max-width: 480px !important;
+  max-width: min(480px, 100%) !important;
   box-shadow: none !important;
   border-radius: 6px !important;
   border: 1px solid #E4E7EB !important;
@@ -335,7 +335,7 @@ img {
 }
 
 .img-l {
-  max-width: 640px !important;
+  max-width: min(640px, 100%) !important;
   box-shadow: none !important;
   border-radius: 6px !important;
   border: 1px solid #E4E7EB !important;
@@ -1090,6 +1090,52 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   color: #f97316;
   background: #2a1500;
   border-color: #7c2d12;
+}
+
+/* ─── Sidebar new badge ──────────────────────────────────────────── */
+/* Set className: 'sidebar-badge-new' on a sidebar category or doc item.
+   The child combinators keep the badge on that item's own link, so a badged
+   category does not badge the pages inside it.
+   A collapsible category without a page of its own draws its caret in
+   ::after, so there the badge goes in ::before and is ordered behind the
+   label. That selector is long on purpose: it has to out-rank the section
+   icon rules above, which reach the ::before of every nested category. */
+.sidebar-badge-new > .menu__link::after,
+.sidebar-badge-new > .menu__list-item-collapsible > .menu__link:not(.menu__link--sublist-caret)::after,
+.menu__list-item.sidebar-badge-new > .menu__list-item-collapsible > .menu__link.menu__link--sublist-caret::before {
+  content: 'New';
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #1a6b2f;
+  background: #e6f4ea;
+  border: 1px solid #b7dfbf;
+  border-radius: 3px;
+  padding: 0px 4px;
+  margin-left: 6px;
+  line-height: 1.6;
+  white-space: nowrap;
+  transform: none;
+  filter: none;
+}
+
+.menu__list-item.sidebar-badge-new > .menu__list-item-collapsible > .menu__link.menu__link--sublist-caret::before {
+  order: 1;
+}
+
+.sidebar-badge-new > .menu__list-item-collapsible > .menu__link--sublist-caret::after {
+  order: 2;
+}
+
+[data-theme='dark'] .sidebar-badge-new > .menu__link::after,
+[data-theme='dark'] .sidebar-badge-new > .menu__list-item-collapsible > .menu__link:not(.menu__link--sublist-caret)::after,
+[data-theme='dark'] .menu__list-item.sidebar-badge-new > .menu__list-item-collapsible > .menu__link.menu__link--sublist-caret::before {
+  color: #6fcf97;
+  background: #1a3d26;
+  border-color: #2e6b42;
 }
 
 /* ─── API sidebar — "Back to Docs" pinned button ─────────────────── */

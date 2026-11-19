@@ -326,6 +326,78 @@ The license key can be configured via an environment variable to avoid re-enteri
 
 <img className="screenshot-full img-m" src="/img/env-vars/prefilled-license-key.png" alt="Prefilled License Key" />
 
+#### Version Reviews
+
+Require an approved [version review](../../development-lifecycle/release/compare-versions.md#request-a-review) before a version is released or promoted.
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `TOOLJET_VERSION_REVIEW_REQUIRED` | `release` requires an approved review to release a version. `promote` requires one to promote into production. `release,promote` or `all` requires both. With `off`, no review is required, but a version with an open, unapproved review still can't move on. | `off` |
+
+Good to know:
+
+- Reviews gate apps only, not workflows or modules.
+- Reviews are bypassed while Git branching is on.
+- Below the Pro plan, nothing waits for a review.
+- A review needs exactly one approval.
+
+### React Builder
+
+These variables configure apps built in [React Builder](../../app-builder/react-builder/overview.md).
+
+#### React Builder App Isolation
+
+A React Builder app's code runs in a frame that the browser treats as a separate origin. It reaches ToolJet only through a message channel that the page checks, so it can't read the viewer's session, cookies or the ToolJet page, and it runs queries with the viewer's permissions. Isolation is on by default.
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `CODE_MODE_ISOLATION` | `on`: released apps, Preview, the editor canvas and version comparisons all run isolated. `viewer`: only released apps and Preview run isolated; the editor and comparisons, where admins and builders open other people's code, run on the ToolJet origin. `off`: no isolation. `viewer` and `off` are for self-hosted instances where every app builder is trusted, and log a warning at startup. Any other value means `on`, with a warning. ToolJet Cloud always runs `on`. The in-browser build always runs in its own sandboxed frame. | `on` |
+| `CODE_MODE_SANDBOX_URL` | An optional second domain for the app frame. It must use `https`, must not share a site with `TOOLJET_HOST`, and must route to this server. `https://sandbox.example.com` serves the frame from that domain, and every app still runs on the browser's `null` origin. `https://*.example-usercontent.com` gives each app an origin of its own, `a<app id without dashes>.example-usercontent.com`, which needs wildcard DNS and a wildcard certificate. When unset, the frame comes from this server on the `null` origin. An invalid value is ignored with a warning in the server log. Has no effect while isolation is `off`. | Unset |
+| `CODE_MODE_STRICT_BINDINGS` | Strict mode for isolated React Builder apps. Set `false` to turn it off, only for a self-hosted pilot with trusted authors. ToolJet Cloud ignores it. Visual apps are never affected. See [Isolation](../../app-builder/react-builder/runtime-api.md#isolation) for what strict mode blocks. | On whenever the app is isolated |
+| `CODE_MODE_CDN_URL` | The package CDN the in-browser build fetches packages from. Point it at an address that answers directly: the build follows no redirects. | `https://esm.sh` |
+
+The second domain serves only the frame document. Every other path on it returns 404, and it sets and reads no cookies. With a per-app domain and `ENABLE_CUSTOM_DOMAINS=true`, an app's frame accepts code only from `TOOLJET_HOST` and the custom domain of the workspace that owns the app.
+
+:::caution
+Isolation protects the viewer's session, not the data the app is given. App code still sees what its queries return, and it can send that out by opening a popup or by navigating its own frame. It isn't data-loss prevention. What an app may read and write is controlled by query permissions on the server. Popups an app opens stay sandboxed; web links in an app open in a normal new tab, with no opener and no referrer.
+:::
+
+#### React Builder Security Checks
+
+ToolJet checks every React Builder app version before release. See [App Security](../../app-builder/react-builder/security.md) and, for the rules an admin sets, [Security Policy](../../app-builder/react-builder/security-policy.md).
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `TOOLJET_APP_SCANNER_BIN` | Path to the security scanner's `tj-app-scan.js`. Set it when the scanner isn't installed next to the server. Without a scanner, server-side checks fail and React Builder versions can't pass the release gate. | Found next to the server |
+| `TOOLJET_APP_SCAN_OFFLINE` | `true` makes the scanner contact no network. Checks that need the network report as not run. | `false` |
+| `TOOLJET_APP_SCAN_OSV_URL` | A mirror of the OSV vulnerability database. | `https://api.osv.dev` |
+| `TOOLJET_APP_SCAN_REGISTRY_URL` | A mirror of the npm registry. Lockfiles that resolve from it are also allowed. | `https://registry.npmjs.org` |
+| `TOOLJET_APP_SCAN_RETIRE_URL` | A mirror of the retire.js vulnerability repository. | The retire.js repository on GitHub |
+| `TOOLJET_APP_SCAN_SOCKET_TOKEN` | A Socket.dev API token. Turns on the **Supply-chain alerts (Socket)** check. | Unset |
+| `TOOLJET_APP_SCAN_NETWORK_TIMEOUT_MS` | Timeout for each network request the scanner makes, in milliseconds. The scanner retries twice after a timeout, so a request can take up to about three times this value. | `20000` |
+| `TOOLJET_APP_SCAN_AUTO_DELAY_MS` | How long to wait after a code change before checking it automatically, in milliseconds. `0` falls back to `3000`, so the delay can't be turned off. | `3000` |
+| `TOOLJET_APP_SCAN_MAX_CONCURRENT` | Automatic checks that run at once on each server instance. | `4` |
+| `TOOLJET_APP_SCAN_MAX_CONCURRENT_PER_WORKSPACE` | Automatic checks that run at once for each workspace. | `2` |
+| `TOOLJET_APP_SCAN_RECHECK_MINUTES` | Re-check released versions' packages for new advisories every this many minutes (minimum 5). | Off |
+
+#### React Builder Code Storage and Packages
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `TOOLJET_CODE_SOURCE_REVISIONS_KEEP` | Code revisions kept for each app version. Older revisions leave App history and can't be restored. `0` keeps all. | `500` |
+| `TOOLJET_CODE_BUILDS_KEEP` | Saved builds kept for each React Builder app, in addition to every build a version uses. `0` keeps all. | `50` |
+| `TOOLJET_CODE_NPM_REGISTRIES` | Extra npm registries, comma-separated, that a React Builder project's lockfile may resolve packages from. These are always allowed: `registry.npmjs.org`, `registry.yarnpkg.com`, the registry set in `npm_config_registry`, and `TOOLJET_APP_SCAN_REGISTRY_URL`. On an air-gapped instance, list your internal registries here. | Unset |
+
+#### ToolJet CLI
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `TOOLJET_CLI_TOKEN_DAYS` | How long a personal access token created by `tooljet auth login` lasts, in days. Values above `90` are capped at `90`, and an invalid value falls back to `30`. | `30` |
+| `TOOLJET_CLI_TARBALL` | Path to the CLI package the server offers at `/api/code-mode/cli/tooljet-cli.tgz`. | The package built into the image |
+| `TOOLJET_SDK_TARBALL` | Path to the component SDK package the server offers at `/api/code-mode/cli/custom-component-sdk.tgz`. Production images don't include the SDK, so set this to offer it. | Unset |
+
+Browser sign-in for the CLI (`tooljet auth login`) needs [Redis](#redis-configuration).
+
 ### Third-Party Integrations
 
 #### Slack
@@ -344,7 +416,7 @@ To connect ToolJet with Google services like Google Sheets, create OAuth credent
 
 #### Google Maps API
 
-To use the Maps widget in ToolJet, create a Google Maps API key and set:
+To use the Map component in ToolJet, create a Google Maps API key and set:
 
 - `GOOGLE_MAPS_API_KEY`: Google Maps API key
 

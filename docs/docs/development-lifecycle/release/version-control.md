@@ -11,6 +11,8 @@ For example, to experiment a new feature, you can create a new draft version of 
 
 Each version is isolated from the others and can have different environments, such as development, staging, or production. Check out the **[Multi-Environment](/docs/development-lifecycle/environment/self-hosted/multi-environment)** guide for more information. Versions can also be used to rollback to a saved version if needed, checkout **[release and rollback](/docs/development-lifecycle/release/release-rollback)** guide for more information.
 
+To see what changed between two versions, or to have a teammate approve a version before it's released, see **[Compare and Review Versions](./compare-versions.md)**.
+
 ## How Draft and Saved Versions Work
 
 A draft version represents the working copy of your application. Whenever you begin making changes, ToolJet ensures that the edits take place inside a draft. Drafts allow you to experiment safely without affecting the active version in an environment.
@@ -18,6 +20,8 @@ A draft version represents the working copy of your application. Whenever you be
 Saved versions are finalized checkpoints created from drafts. Saved versions are fixed, cannot be edited, and can be promoted to staging or production, released to users, or used for rollback.
 
 A draft can be saved as a version when you are ready to promote or release your changes. Only saved versions can be promoted to staging or production, while draft versions remain editable. This helps maintain a clear separation between in-progress work and versions that are ready for deployment or testing.
+
+A React Builder app's code is saved with the version too. See **[Versions and History](../../app-builder/react-builder/versions-and-history.md#save-a-version)**.
 
 ### Color Schema
 The following color schema represents the status of ToolJet apps across different stages of the development lifecycle.
