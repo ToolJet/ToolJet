@@ -154,10 +154,10 @@ const Table = () => {
         setIsSeedDataDrawerOpen={setIsSeedDataDrawerOpen}
         setFilterEnable={setFilterEnable}
       />
-      {/* 48px navbar + 48px toolbar + the 52px page footer, plus whatever the page puts above the table (the tab strip). */}
+      {/* 48px navbar + 48px toolbar + the 48px page footer, plus whatever the page puts above the table (the tab strip). */}
       <div
         className="tw-flex tw-flex-col"
-        style={{ height: 'calc(100vh - 148px - var(--tjdb-above-table, 0px))' }}
+        style={{ height: 'calc(100vh - 144px - var(--tjdb-above-table, 0px))' }}
         data-cy="tjdb-table-area"
       >
         <div className={isEmptyTable ? 'tw-shrink-0' : 'tw-min-h-0 tw-flex-1'}>
@@ -199,11 +199,7 @@ const Table = () => {
           </div>
         )}
       </div>
-      <TableFooter
-        darkMode={localStorage.getItem('darkMode') === 'true'}
-        dataLoading={rowsLoading}
-        tableDataLength={gridRows.length}
-      />
+      <TableFooter dataLoading={rowsLoading || rowsRefetching} />
     </div>
   );
 };

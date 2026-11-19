@@ -1,15 +1,6 @@
 .tooljet-database {
-  // The footer is fixed to the bottom of the page content, whatever the tables panel's width or state: the content wrap
-  // is its containing block (`contain: layout`), so `left: 0; width: 100%` mean the wrap, not the viewport.
-  .toojet-db-table-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    height: 52px;
-    background: var(--page-weak) !important;
-    width: 100%;
-  }
-
+  // `contain: layout` makes this wrap the containing block of the fixed table footer, so the footer spans the wrap
+  // (`left: 0; width: 100%`), whatever the tables panel's width or state, not the viewport.
   .database-page-content-wrap {
     contain: layout;
     background-color: var(--page-weak);

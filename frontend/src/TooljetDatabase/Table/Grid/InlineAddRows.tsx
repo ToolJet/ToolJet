@@ -177,15 +177,17 @@ export function InlineAddRows({ table, showTrailingCell }: InlineAddRowsProps) {
     return (
       <div className={footerClass}>
         <div className="tw-sticky tw-left-0 tw-flex tw-h-full tw-w-fit tw-items-center tw-pl-3">
-          <Button
+          {/* Figma Add row: a custom button, not the Rocket Button (14px regular, text/medium, 8px inset). */}
+          <button
             ref={addButtonRef}
-            variant="ghost"
-            leadingVisual={<Plus />}
+            type="button"
             onClick={() => dispatch({ type: 'start' })}
             data-cy="add-row-button"
+            className="tw-inline-flex tw-h-8 tw-cursor-pointer tw-items-center tw-gap-1.5 tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-font-body-large tw-text-text-medium hover:tw-bg-interactive-hover focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline"
           >
+            <Plus aria-hidden className="tw-size-4 tw-shrink-0 tw-text-icon-default" />
             Add row
-          </Button>
+          </button>
         </div>
       </div>
     );
