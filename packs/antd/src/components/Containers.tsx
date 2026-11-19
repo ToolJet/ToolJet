@@ -169,7 +169,8 @@ export const Card = () => {
   const [hoverable] = ToolJet.useStateBoolean({ name: 'hoverable', label: 'Hoverable', initialValue: false });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const { loading } = ToolJet.useControlState();
-  const tokens = useTokenStyles();
+  // A plain Card has no primary-coloured part (QA PKB-41).
+  const tokens = useTokenStyles({ omit: ['colorPrimary'] });
   ToolJet.useComponentSettings({
     role: 'card',
     fit: false,
