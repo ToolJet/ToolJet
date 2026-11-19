@@ -60,6 +60,7 @@ modules/{feature}/
 - `@Injectable()`, constructor DI of repositories/services/`ConfigService`/`EntityManager`.
 - Naming: `{Feature}Service` or `{Feature}UtilService`.
 - Errors: throw `BadRequestException`, `UnauthorizedException`, etc. from `@nestjs/common`.
+- Audit: new write routes declare an `audit` spec on their feature and write to `audit_events` (`src/modules/audit-logs/AGENTS.md`, "Which to use").
 
 ### Authorization (CASL)
 

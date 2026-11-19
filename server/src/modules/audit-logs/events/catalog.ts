@@ -1,14 +1,10 @@
-// Every audit action, keyed by its spec name (`<resource>.<verb>`). A route spec may only name an
-// action listed here, so this file is the single list of what the audit log can record.
-export const AUDIT_TARGET_TYPES = ['workspace'] as const;
-export type AuditTargetType = (typeof AUDIT_TARGET_TYPES)[number];
+import { WORKSPACE_AUDIT_ACTIONS } from '@modules/organizations/constants/audit-actions';
 
+// Every audit action, keyed by its spec name (`<resource>.<verb>`). Each module owns its actions in
+// `constants/audit-actions.ts`; this file only merges them. A route spec may only name an action listed here.
 export const AUDIT_CATALOG = {
-  'workspace.created': { target: 'workspace' },
-  'workspace.updated': { target: 'workspace' },
-  'workspace.archived': { target: 'workspace' },
-  'workspace.unarchived': { target: 'workspace' },
-  'workspace.default_set': { target: 'workspace' },
-} as const satisfies Record<string, { target: AuditTargetType }>;
+  ...WORKSPACE_AUDIT_ACTIONS,
+} as const satisfies Record<string, { target: string }>;
 
 export type AuditAction = keyof typeof AUDIT_CATALOG;
+export type AuditTargetType = (typeof AUDIT_CATALOG)[AuditAction]['target'];

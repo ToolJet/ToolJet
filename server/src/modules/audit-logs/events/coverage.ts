@@ -19,6 +19,9 @@ export function findAuditSpecProblems(
       continue;
     }
     if ('skip' in spec) continue;
+    if (!features[key].skipAuditLogs) {
+      problems.push(`${key}: audit spec without skipAuditLogs writes both tables`);
+    }
 
     const entry = AUDIT_CATALOG[spec.action as AuditAction];
     if (!entry) {

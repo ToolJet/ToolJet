@@ -1,4 +1,4 @@
-import { DynamicModule, ExecutionContext, Injectable, Provider } from '@nestjs/common';
+import { ExecutionContext, Injectable, Provider } from '@nestjs/common';
 import { IAuditEngine, PendingAudit } from './interfaces';
 
 // Audit events are an Enterprise feature; Community builds pay nothing.
@@ -24,5 +24,3 @@ export class AuditEngineService extends IAuditEngine {
 }
 
 export const AUDIT_ENGINE_PROVIDERS: Provider[] = [];
-export const auditEngineImports = (): DynamicModule[] => [];
-export const AUDIT_WORKER_PROVIDERS: Provider[] = [];

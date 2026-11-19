@@ -107,6 +107,9 @@ Authority: the closest `AGENTS.md` to the changed file, then `server/AGENTS.md` 
   config"): a widget config change without the server-side sync.
 - Maps (`.agents/context/product-map.md`, `.agents/context/architecture-map.md`): a new public
   capability, role, integration, or data store with no map update.
+- Audit (`server/src/modules/audit-logs/AGENTS.md` "Which to use"): a new or changed write route
+  with no `audit` spec (or `{ skip: reason }`) on its feature, or new code that records through
+  `AUDIT_LOGS_REQUEST_CONTEXT_KEY` / `auditLogEntry` instead.
 
 ## API contract
 
