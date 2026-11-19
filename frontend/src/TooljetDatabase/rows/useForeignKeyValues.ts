@@ -10,11 +10,13 @@ type Args = {
   /** Text columns match by substring, the rest by equality. */
   isTextColumn: boolean;
   search: string;
+  /** Off until the referenced table is known. */
+  enabled?: boolean;
 };
 
 // The first page of the values a foreign key column can take, from the referenced table in the selected environment.
 // A search narrows it on the server, so a value past the first page is still reachable by typing it.
-export const useForeignKeyValues = ({ tableId, column, isTextColumn, search }: Args) => {
+export const useForeignKeyValues = ({ tableId, column, isTextColumn, search, enabled = true }: Args) => {
   const environmentId = useTjdbStore(
     (state: { selectedEnvironment: { id: string } | null }) => state.selectedEnvironment?.id ?? null
   );
@@ -36,6 +38,7 @@ export const useForeignKeyValues = ({ tableId, column, isTextColumn, search }: A
       return Array.isArray(data) ? data.map((row: Record<string, unknown>) => String(row[column])) : [];
     },
     placeholderData: keepPreviousData,
+    enabled,
   });
 
   return { values: result.data ?? [], isLoading: result.isLoading, isError: result.isError };

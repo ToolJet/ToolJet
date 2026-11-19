@@ -2,14 +2,13 @@ import React, { memo } from 'react';
 import { Input } from '@/components/ui/Rocket/Input/Input';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
-import DateTimePicker from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import { TimestampField } from './TimestampField';
 import { getLocalTimeZone } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import { RelationDefaultPicker } from './RelationDefaultPicker';
 import type { DraftColumn, DraftRelation } from './types';
 
 // The legacy JS components infer their props from usage; these are the ones used here.
 const Hinter = CodeHinter as unknown as React.ComponentType<Record<string, unknown>>;
-const Picker = DateTimePicker as unknown as React.ComponentType<Record<string, unknown>>;
 
 type DefaultValueCellProps = {
   column: DraftColumn;
@@ -104,12 +103,12 @@ export function DefaultValueCell({
   if (type === 'timestamp with time zone') {
     return (
       <div data-cy="column-default-input-field" className="tw-w-full">
-        <Picker
-          timestamp={value}
+        <TimestampField
+          value={value}
           timezone={(column.configurations?.timezone as string | undefined) || getLocalTimeZone()}
-          setTimestamp={(next: string | null) => onChange(next)}
-          isClearable
-          isPlaceholderEnabled
+          onChange={onChange}
+          size={field ? 'default' : 'small'}
+          disabled={disabled}
         />
       </div>
     );

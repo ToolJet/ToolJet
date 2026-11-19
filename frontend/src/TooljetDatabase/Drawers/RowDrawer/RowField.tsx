@@ -10,7 +10,7 @@ import {
 import { cn } from '@/lib/utils';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
-import DateTimePicker from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import { TimestampField } from '../TableDrawer/TimestampField';
 import { getUTCOffset } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import { dataTypes } from '../../constants';
 import { RowForeignKeyPicker } from './RowForeignKeyPicker';
@@ -25,7 +25,6 @@ import '../../Forms/styles.scss';
 const ToggleGroup = RocketToggleGroup as unknown as React.ComponentType<Record<string, unknown>>;
 const ToggleGroupItem = RocketToggleGroupItem as unknown as React.ComponentType<Record<string, unknown>>;
 const Hinter = CodeHinter as unknown as React.ComponentType<Record<string, unknown>>;
-const Picker = DateTimePicker as unknown as React.ComponentType<Record<string, unknown>>;
 
 const FOREIGN_KEY_TYPES = ['character varying', 'integer', 'bigint', 'serial', 'double precision'];
 
@@ -33,6 +32,7 @@ export type RowForeignKey = {
   column_names: string[];
   referenced_table_name: string;
   referenced_column_names: string[];
+  referenced_table_id?: string;
 };
 
 type RowFieldProps = {
@@ -174,21 +174,12 @@ export function RowField({
     }
     if (dataType === 'timestamp with time zone') {
       return (
-        // The legacy picker sizes its input by its own CSS (content-box, taller, larger text): held to the Rocket Input's size.
-        <div
-          className="tw-w-full [&_.react-datepicker-wrapper]:tw-w-full [&_.react-datepicker__input-container]:tw-w-full [&_input]:!tw-box-border [&_input]:!tw-h-8 [&_input]:!tw-w-full [&_input]:!tw-text-base"
+        <TimestampField
+          value={state.value as string | null}
+          onChange={(value) => onChange({ mode: 'custom', value: value ?? '' })}
+          timezone={timezone}
           data-cy={dataCy}
-        >
-          <Picker
-            timestamp={state.value}
-            setTimestamp={(value: string | null) => onChange({ mode: 'custom', value: value ?? '' })}
-            isOpenOnStart={false}
-            timezone={timezone}
-            isClearable
-            isPlaceholderEnabled
-            autoFocus={false}
-          />
-        </div>
+        />
       );
     }
     if (dataType === 'jsonb') {
@@ -205,14 +196,9 @@ export function RowField({
       return (
         <RowForeignKeyPicker
           column={column}
-          kind={kind}
           value={String(state.value ?? '')}
           foreignKey={foreignKey}
-          onChange={(value) => {
-            // The picker lists a NULL in the referenced column as "Null": that is NULL, not the text.
-            if (value !== 'Null') onChange({ mode: 'custom', value });
-            else if (canBeNull(column)) onChange({ mode: 'null', value: null });
-          }}
+          onChange={(value) => onChange({ mode: 'custom', value })}
         />
       );
     }

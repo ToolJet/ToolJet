@@ -1,13 +1,11 @@
 import React, { useContext, useState } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
-import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { DrawerShell } from '../TableDrawer/DrawerShell';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 import { useTjdbStore } from '../../_stores/tjdbStore';
 import SqlEditor from '../../_components/SqlEditor';
-import './styles.scss';
 
 const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
   const { organizationId, selectedTable, handleRefetchQuery } = useContext(TooljetDatabaseContext);
@@ -66,43 +64,39 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
   };
 
   return (
-    <Drawer isOpen={isSeedDataDrawerOpen} onClose={handleClose} position="right" className="tj-db-drawer">
-      <div className="drawer-card-wrapper">
-        <div className="drawer-card-title d-flex align-items-center justify-content-between">
-          <h3 data-cy="seed-data-sql-header">Seed data with SQL</h3>
-          <span className="cursor-pointer" data-cy="seed-data-sql-close-button" onClick={handleClose}>
-            <SolidIcon name="remove" width="16" fill="#889096" />
-          </span>
-        </div>
-        <div
-          className="card-body tjdb-seed-data-drawer"
-          style={{ padding: '0.5rem 1rem 1rem 1rem', display: 'flex', flexDirection: 'column' }}
-        >
-          {/* Table reference must go through {{self}} - the backend rejects anything else,
-              including this table's own literal name, to keep seed-data SQL provably scoped to
-              the table this drawer was opened for. No quotes needed: {{self}} substitutes to the
-              table's logical name, which flows through the same AST-based table resolution
-              Query Manager's SQL mode uses (unlike the migration DDL step, which substitutes
-              directly to a physical uuid and does need quoting). */}
-          <div className="tw-text-muted-foreground tw-mb-1" style={{ fontSize: '12px' }}>
-            Reference this table as <code>{'{{self}}'}</code> - not by name.
-          </div>
-          <SqlEditor
-            value={sql}
-            onChange={setSql}
-            height="100%"
-            placeholder={'-- e.g. INSERT INTO {{self}} (column) VALUES (value);'}
-            dataCy="seed-data-sql-textarea"
-          />
-        </div>
-      </div>
-      <DrawerFooter
+    <Drawer
+      isOpen={isSeedDataDrawerOpen}
+      onClose={handleClose}
+      position="right"
+      drawerStyle={{ width: '480px' }}
+      className="tj-db-drawer"
+    >
+      <DrawerShell
+        title="Seed data with SQL"
+        data-cy="seed-data-sql-header"
         onClose={handleClose}
-        onCreate={handleRunSql}
-        initiator="SeedDataForm"
-        shouldDisableCreateBtn={!sql.trim()}
-        fetching={isRunningSql}
-      />
+        submitLabel="Seed"
+        submitDisabled={!sql.trim()}
+        isSubmitting={isRunningSql}
+        onSubmit={handleRunSql}
+      >
+        {/* Table reference must go through {{self}} - the backend rejects anything else,
+            including this table's own literal name, to keep seed-data SQL provably scoped to
+            the table this drawer was opened for. No quotes needed: {{self}} substitutes to the
+            table's logical name, which flows through the same AST-based table resolution
+            Query Manager's SQL mode uses (unlike the migration DDL step, which substitutes
+            directly to a physical uuid and does need quoting). */}
+        <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">
+          Reference this table as <code className="tw-font-code-regular">{'{{self}}'}</code> - not by name.
+        </p>
+        <SqlEditor
+          value={sql}
+          onChange={setSql}
+          height="100%"
+          placeholder={'-- e.g. INSERT INTO {{self}} (column) VALUES (value);'}
+          dataCy="seed-data-sql-textarea"
+        />
+      </DrawerShell>
     </Drawer>
   );
 };

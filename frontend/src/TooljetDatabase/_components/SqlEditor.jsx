@@ -6,7 +6,7 @@ import { sql as sqlLang } from '@codemirror/lang-sql';
 import { EditorView } from '@codemirror/view';
 import { search, openSearchPanel } from '@codemirror/search';
 import { completionStatus } from '@codemirror/autocomplete';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Search } from 'lucide-react';
 import { createPlaceholderCompletion } from './sqlPlaceholderCompletion';
 import './SqlEditor.scss';
 
@@ -84,20 +84,25 @@ const SqlEditor = ({
 
   return (
     <div
-      className={`tj-db-sql-editor tw-overflow-hidden tw-rounded${compact ? ' tj-db-sql-editor--compact' : ''}`}
-      style={compact ? undefined : { border: '1px solid var(--slate5)' }}
+      className={`tj-db-sql-editor tw-overflow-hidden tw-rounded${
+        compact
+          ? ' tj-db-sql-editor--compact'
+          : ' tw-border tw-border-solid tw-border-border-weak tw-bg-background-surface-layer-01'
+      }`}
       data-cy={dataCy}
       onKeyDownCapture={handleKeyDownCapture}
       onKeyDown={handleKeyDown}
     >
       {editable && !compact && editorView && (
-        <span
-          className="tj-db-seed-data-search-btn"
+        <button
+          type="button"
+          aria-label="Search"
+          className="tj-db-seed-data-search-btn tw-m-0 tw-flex tw-border-0 tw-bg-transparent tw-p-0 tw-text-icon-weak hover:tw-text-icon-default"
           data-cy={`${dataCy}-search-button`}
           onClick={() => openSearchPanel(editorView)}
         >
-          <SolidIcon name="search" width="14" fill="#889096" />
-        </span>
+          <Search aria-hidden className="tw-size-3.5" />
+        </button>
       )}
       <CodeMirror
         value={value || (editable ? '' : '-- No SQL available for this migration')}

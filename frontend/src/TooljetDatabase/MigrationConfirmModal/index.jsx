@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/Rocket/Button/Button';
 import { Input } from '@/components/ui/Rocket/Input/Input';
 import SqlEditor from '../_components/SqlEditor';
 import MigrationDependents from '../_components/MigrationDependents';
-import './styles.scss';
 
 // A change row's kind - drives both the icon and the chip color. Exported so call sites building a `changes` entry
 // use this instead of hand-typing 'add'/'remove'/'edit'.

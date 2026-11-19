@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
-import { ConfirmDialog } from '@/_components/ConfirmDialog';
+import { Pencil, Trash, Trash2 } from 'lucide-react';
+import ActionDialog from '@/components/ui/Rocket/Dialog/ActionDialog';
+import { DialogDescription, DialogTitle } from '@/components/ui/Rocket/Dialog/Dialog';
 import { Button } from '@/components/ui/Rocket/Button/Button';
 import { LinkButton } from '@/components/ui/Rocket/LinkButton/LinkButton';
 import { Separator } from '@/components/ui/Rocket/Separator/Separator';
@@ -92,18 +93,35 @@ export function SelectionBar({
           </Button>
         </span>
       </div>
-      <ConfirmDialog
-        title="Delete rows"
-        show={isConfirmOpen}
-        message="Are you sure you want to delete the selected rows?"
-        onConfirm={confirmDelete}
-        onCancel={() => setIsConfirmOpen(false)}
-        onCloseIconClick={() => setIsConfirmOpen(false)}
-        confirmButtonType="dangerPrimary"
-        cancelButtonType="tertiary"
-        confirmButtonText="Delete"
-        cancelButtonText="Cancel"
-      />
+      {/* Same dialog as Delete constants in workspace settings. */}
+      <ActionDialog
+        open={isConfirmOpen}
+        handleOpenChange={setIsConfirmOpen}
+        classes={{ dialogContent: 'tw-max-w-[459px] tw-border-0', dialogBody: 'tw-pb-0' }}
+        cancelBtnProps={{ onClick: () => setIsConfirmOpen(false), 'data-cy': 'cancel-button' }}
+        submitActions={[
+          {
+            label: rows.length === 1 ? 'Delete row' : 'Delete rows',
+            variant: 'dangerPrimary',
+            onClick: confirmDelete,
+            'data-cy': 'delete-rows-confirm-button',
+          },
+        ]}
+      >
+        <div className="tw-flex tw-flex-col tw-gap-2">
+          <Trash size={40} className="tw-text-icon-danger" />
+          <div className="tw-flex tw-flex-col tw-gap-0.5">
+            <DialogTitle className="tw-font-title-x-large tw-text-text-default">
+              {rows.length === 1 ? 'Delete row?' : `Delete ${rows.length} rows?`}
+            </DialogTitle>
+            <DialogDescription className="tw-mb-0 tw-font-body-default tw-text-text-default">
+              {rows.length === 1
+                ? 'The selected row will be permanently deleted, do you want to continue?'
+                : `The ${rows.length} selected rows will be permanently deleted, do you want to continue?`}
+            </DialogDescription>
+          </div>
+        </div>
+      </ActionDialog>
     </>
   );
 }

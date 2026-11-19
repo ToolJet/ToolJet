@@ -179,7 +179,6 @@ export function useTableActions({ refetchTables }: { refetchTables: () => void }
       {deleting.table && (
         <DeleteTableModal
           show={deleting.isOpen}
-          darkMode={darkMode}
           tableName={deleting.table.table_name}
           loading={deleting.loading}
           blocked={deletion.blocked}

@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import Modal from 'react-bootstrap/Modal';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
-import Skeleton from 'react-loading-skeleton';
-import { Download } from 'lucide-react';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { ToolTip } from '@/_components/ToolTip';
+import { Download, TriangleAlert, X } from 'lucide-react';
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/Rocket/Dialog/Dialog';
+import { Button } from '@/components/ui/Rocket/Button/Button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/Rocket/RadioGroup/RadioGroup';
+import { Skeleton } from '@/components/ui/Rocket/Skeleton/Skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Rocket/Tooltip/Tooltip';
 import { tooljetDatabaseService } from '@/_services';
 import { envHasRelation, headMigrationLabel, TABLE_ABSENT_TOOLTIP } from '../constants';
 import generateFile from '@/_lib/generate-file';
 import { useTjdbStore } from '../_stores/tjdbStore';
-import '../MigrationConfirmModal/styles.scss';
 
 /**
  * Environment picker for a data export. Row counts and the head-migration label are read once per
@@ -63,9 +62,8 @@ export default function ExportCsvModal({
     // relationsByEnvironment only changes via a promote (useTableMigrations.refetchTables, called
     // from PromotePreviewView after promoteTable succeeds), and a promote is only reachable from
     // inside MigrationHistoryDrawer. That drawer and this modal cannot both be open: both are
-    // full-viewport, focus-trapped overlays (react-bootstrap Modal backdrop z-index ~1040+;
-    // Drawer's own backdrop, frontend/src/_styles/drawer.scss, z-index 999, pointer-events: auto)
-    // that swallow every click/keystroke meant for whatever triggers the other. If that stacking
+    // full-viewport, focus-trapped overlays (Rocket Dialog and the drawer's own backdrop) that swallow
+    // every click/keystroke meant for whatever triggers the other. If that stacking
     // ever changes (e.g. this modal or the drawer stops blocking the rest of the page), this effect
     // needs relationsByEnvironment back in its deps - a stale row would otherwise sit on its
     // skeleton (or a stale head-migration label) until the next open.
@@ -91,96 +89,115 @@ export default function ExportCsvModal({
   };
 
   return (
-    <Modal
-      show={show}
-      onHide={onCancel}
-      size="sm"
-      animation={false}
-      centered
-      contentClassName={cx('migration-confirm-modal', { 'dark-theme': darkMode })}
-      data-cy="export-csv-modal"
-    >
-      <Modal.Header closeButton={false}>
-        <Modal.Title>Select an environment to export data</Modal.Title>
-        <span className="cursor-pointer" onClick={onCancel} data-cy="export-csv-modal-close">
-          <SolidIcon name="remove" width="16" fill="var(--slate11)" />
-        </span>
-      </Modal.Header>
-      <Modal.Body className="migration-confirm-modal-body">
-        <div className="tw-flex tw-flex-col tw-gap-2">
-          {environments.map((environment) => {
-            const disabled = !envHasRelation(relationsByEnvironment, environment.id);
-            const count = rowCounts[environment.id];
-            const label = migrationsData
-              ? headMigrationLabel(
-                  migrationsData.migrations ?? [],
-                  migrationsData.environments?.find((e) => e.environment_id === environment.id)
-                    ?.applied_migration_ids ?? []
-                )
-              : null;
-            const row = (
-              <label
-                key={environment.id}
-                className={cx(
-                  'tw-flex tw-items-center tw-gap-2 tw-rounded tw-p-2',
-                  disabled ? 'tw-opacity-50 tw-cursor-not-allowed' : 'tw-cursor-pointer'
-                )}
-                data-cy={`export-csv-${environment.name}-option`}
-              >
-                <input
-                  type="radio"
-                  name="export-csv-environment"
-                  disabled={disabled}
-                  checked={selectedEnvironmentId === environment.id}
-                  onChange={() => setSelectedEnvironmentId(environment.id)}
-                />
-                <div className="tw-flex tw-flex-col">
-                  <span className="tw-font-medium">{environment.name}</span>
-                  <span className="tw-text-placeholder tw-text-xs">
-                    {label ?? '—'} |{' '}
-                    {disabled ? (
-                      '—'
-                    ) : count === undefined ? (
-                      <Skeleton width={30} height={12} inline />
-                    ) : (
-                      `${count ?? '—'} rows`
-                    )}
-                  </span>
-                </div>
-              </label>
-            );
-            if (!disabled) return row;
-            return (
-              <ToolTip key={environment.id} message={TABLE_ABSENT_TOOLTIP} placement="top" show>
-                <div>{row}</div>
-              </ToolTip>
-            );
-          })}
-        </div>
-        {selectedEnvironmentId && rowCounts[selectedEnvironmentId] > 50000 && (
-          <div
-            className="migration-deps-warning mt-3 mb-0 tw-text-orange-500 tw-bg-orange-50 tw-border-orange-200"
-            data-cy="export-csv-warning"
+    <Dialog open={show} onOpenChange={(open) => !open && onCancel()}>
+      <DialogContent
+        size="small"
+        showCloseButton={false}
+        className={cx({ 'dark-theme theme-dark': darkMode })}
+        data-cy="export-csv-modal"
+      >
+        <div className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-px-4 tw-py-3">
+          <DialogTitle className="tw-min-w-0 tw-flex-1 tw-font-title-heavy-large">
+            Select an environment to export data
+          </DialogTitle>
+          <Button
+            variant="ghost"
+            iconOnly
+            size="default"
+            aria-label="Close"
+            onClick={onCancel}
+            data-cy="export-csv-modal-close"
           >
-            This table contains a large number of rows ({rowCounts[selectedEnvironmentId]}). Exporting may take some
-            time and consume significant memory.
-          </div>
-        )}
-      </Modal.Body>
-      <Modal.Footer>
-        <ButtonSolid variant="tertiary" onClick={onCancel} disabled={exporting} data-cy="export-csv-modal-cancel">
-          Cancel
-        </ButtonSolid>
-        <ButtonSolid
-          variant="primary"
-          onClick={handleExport}
-          isLoading={exporting}
-          disabled={!selectedEnvironmentId}
-          data-cy="export-csv-modal-confirm"
-        >
-          <Download size={16} /> Export as CSV
-        </ButtonSolid>
-      </Modal.Footer>
-    </Modal>
+            <X />
+          </Button>
+        </div>
+
+        <DialogBody scrollable noPadding className="tw-flex tw-flex-col tw-gap-3 tw-p-4">
+          <RadioGroup
+            value={selectedEnvironmentId ?? ''}
+            onValueChange={setSelectedEnvironmentId}
+            aria-label="Environment"
+            className="tw-gap-1"
+          >
+            {environments.map((environment) => {
+              const disabled = !envHasRelation(relationsByEnvironment, environment.id);
+              const count = rowCounts[environment.id];
+              const label = migrationsData
+                ? headMigrationLabel(
+                    migrationsData.migrations ?? [],
+                    migrationsData.environments?.find((e) => e.environment_id === environment.id)
+                      ?.applied_migration_ids ?? []
+                  )
+                : null;
+              const inputId = `export-csv-${environment.id}`;
+              const row = (
+                <label
+                  htmlFor={inputId}
+                  className={cx(
+                    'tw-m-0 tw-flex tw-items-center tw-gap-2 tw-rounded-md tw-px-2 tw-py-2',
+                    disabled ? 'tw-cursor-not-allowed tw-opacity-50' : 'tw-cursor-pointer hover:tw-bg-interactive-hover'
+                  )}
+                  data-cy={`export-csv-${environment.name}-option`}
+                >
+                  <RadioGroupItem id={inputId} value={environment.id} disabled={disabled} />
+                  <span className="tw-flex tw-flex-col">
+                    <span className="tw-font-title-default tw-text-text-default">{environment.name}</span>
+                    <span className="tw-flex tw-items-center tw-gap-1 tw-font-body-small tw-text-text-placeholder">
+                      {label ?? '—'} |{' '}
+                      {disabled ? (
+                        '—'
+                      ) : count === undefined ? (
+                        <Skeleton className="tw-inline-block tw-h-3 tw-w-8" />
+                      ) : (
+                        `${count ?? '—'} rows`
+                      )}
+                    </span>
+                  </span>
+                </label>
+              );
+              if (!disabled) return <React.Fragment key={environment.id}>{row}</React.Fragment>;
+              return (
+                <TooltipProvider key={environment.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div>{row}</div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">{TABLE_ABSENT_TOOLTIP}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              );
+            })}
+          </RadioGroup>
+
+          {selectedEnvironmentId && rowCounts[selectedEnvironmentId] > 50000 && (
+            <div
+              className="tw-flex tw-items-start tw-gap-1.5 tw-rounded-md tw-bg-background-warning-weak tw-px-3 tw-py-2"
+              data-cy="export-csv-warning"
+            >
+              <TriangleAlert aria-hidden className="tw-mt-px tw-size-4 tw-shrink-0 tw-text-icon-warning" />
+              <p className="tw-m-0 tw-font-body-default tw-text-text-default">
+                This table contains a large number of rows ({rowCounts[selectedEnvironmentId]}). Exporting may take some
+                time and consume significant memory.
+              </p>
+            </div>
+          )}
+        </DialogBody>
+
+        <DialogFooter className="tw-border-border-weak tw-px-4 tw-py-3">
+          <Button variant="outline" onClick={onCancel} disabled={exporting} data-cy="export-csv-modal-cancel">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleExport}
+            loading={exporting}
+            disabled={!selectedEnvironmentId}
+            leadingVisual={<Download />}
+            data-cy="export-csv-modal-confirm"
+          >
+            Export as CSV
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

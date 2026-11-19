@@ -1,75 +1,46 @@
-import React, { useState } from 'react';
-import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
+import React from 'react';
+import { useTooljetDatabaseContext, type TjdbTable } from '../../TooljetDatabaseContext';
+import { ForeignKeyValueCombobox } from './ForeignKeyValueCombobox';
 import type { DraftColumn, DraftRelation } from './types';
-
-// The legacy picker infers its props from usage; these are the ones used here.
-const Picker = DropDownSelect as unknown as React.ComponentType<Record<string, unknown>>;
 
 type RelationDefaultPickerProps = {
   column: DraftColumn;
   relations: DraftRelation[];
   onChange: (value: string | null) => void;
-  /** Edit table loads the referenced values differently from create. */
-  isEditTable?: boolean;
   disabled?: boolean;
-  /** A drawer field (full width, Rocket field look) instead of a table cell. */
+  /** A drawer field (32px) instead of a schema table cell (28px). */
   field?: boolean;
 };
 
-// The legacy picker is built for a table cell: fixed 35px buttons and a bootstrap border. As a drawer field it is
-// restyled from outside (its own `tjdb-default-field` class carries no CSS) to match the Rocket Input (32px, border/default, 6px radius).
-export const FIELD_LOOK = [
-  'tw-h-8 tw-w-full',
-  '[&_.tjdb-default-field]:!tw-m-0 [&_.tjdb-default-field]:!tw-h-8 [&_.tjdb-default-field]:!tw-w-full [&_.tjdb-default-field]:!tw-max-w-none',
-  '[&_button]:!tw-h-8 [&_button]:!tw-w-full [&_button]:!tw-rounded-md [&_button]:!tw-border [&_button]:!tw-border-solid [&_button]:!tw-border-border-default [&_button]:!tw-bg-background-surface-layer-01 [&_button]:!tw-px-2',
-  '[&_button:hover]:!tw-border-border-strong [&_button:disabled]:!tw-border-border-disabled [&_button:disabled]:!tw-bg-background-surface-layer-02',
-  '[&_.text-truncate]:!tw-w-full [&_.text-truncate]:!tw-text-left [&_.text-truncate]:!tw-text-base [&_.text-truncate>span]:!tw-text-base [&_.text-truncate>span]:!tw-text-text-placeholder',
-  '[&_.dd-select-control-chevron]:!tw-mr-0',
-].join(' ');
-
-// The default of a column that has a relation is one of the values already in the referenced column. The picker loads
-// those values itself and hands them back through `setReferencedColumnDetails`.
+// The default of a column that has a relation is NULL or one of the values already in the referenced column.
 export function RelationDefaultPicker({
   column,
   relations,
   onChange,
-  isEditTable = false,
   disabled = false,
   field = false,
 }: RelationDefaultPickerProps) {
-  const [referenced, setReferenced] = useState<Record<string, unknown>[]>([]);
+  const { tables } = useTooljetDatabaseContext();
+  const relation = relations.find((item) => item.column_names.includes(column.column_name));
+  if (!relation) return null;
 
-  const options = referenced.map((item) => {
-    const first = Object.values(item)[0];
-    const label = first === null ? 'Null' : String(first);
-    return { label, value: label };
-  });
-  const current = column.column_default ?? '';
+  const referencedColumn = relation.referenced_column_names[relation.column_names.indexOf(column.column_name)];
+  const tableId =
+    relation.referenced_table_id ??
+    (tables as TjdbTable[]).find((table) => table.table_name === relation.referenced_table_name)?.id;
 
-  const picker = (
-    <Picker
-      // The legacy drawer class (`foreignKeyAcces-container-drawer`) hard-codes the cell look with !important; a field avoids it.
-      buttonClasses={field ? 'tjdb-default-field' : 'border border-end-1 foreignKeyAcces-container'}
-      foreignKeyAccessInRowForm={field}
-      showPlaceHolder
-      options={options}
-      darkMode={localStorage.getItem('darkMode') === 'true'}
-      emptyError={<div className="m-2">No data found</div>}
-      isLoading
-      value={{ value: current, label: current }}
+  return (
+    <ForeignKeyValueCombobox
+      tableId={tableId}
+      tableName={relation.referenced_table_name}
+      column={referencedColumn}
+      isTextColumn={column.data_type === 'character varying'}
+      value={column.column_default ?? null}
+      onChange={onChange}
+      allowNull
+      placeholder={field ? 'Enter value' : 'NULL'}
       disabled={disabled}
-      topPlaceHolder={field ? 'Enter value' : 'Null'}
-      onChange={(next: { value: string }) => onChange(next.value === 'Null' ? null : next.value)}
-      onAdd
-      addBtnLabel="Open referenced table"
-      foreignKeys={relations}
-      setReferencedColumnDetails={setReferenced}
-      scrollEventForColumnValues
-      cellColumnName={column.column_name}
-      columnDataType={column.data_type}
-      isEditTable={isEditTable}
-      isCreateTable={!isEditTable}
+      size={field ? 'default' : 'small'}
     />
   );
-  return field ? <div className={FIELD_LOOK}>{picker}</div> : picker;
 }

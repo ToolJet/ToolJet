@@ -258,7 +258,7 @@ describe('TableGrid | row selection', () => {
     const confirmDelete = async () => {
       await userEvent.click(within(getBar()).getByRole('button', { name: 'Delete' }));
       const dialog = await screen.findByRole('dialog');
-      await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+      await userEvent.click(within(dialog).getByRole('button', { name: /^Delete rows?$/ }));
     };
 
     it('asks first and sends nothing until confirmed', async () => {
@@ -267,7 +267,9 @@ describe('TableGrid | row selection', () => {
 
       await userEvent.click(within(getBar()).getByRole('button', { name: 'Delete' }));
 
-      expect(await screen.findByText('Are you sure you want to delete the selected rows?')).toBeInTheDocument();
+      expect(
+        await screen.findByText('The selected row will be permanently deleted, do you want to continue?')
+      ).toBeInTheDocument();
       expect(deleteRequests).toEqual([]);
     });
 

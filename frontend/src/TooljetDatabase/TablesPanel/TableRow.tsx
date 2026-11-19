@@ -13,7 +13,6 @@ export type TableRowAction = 'edit' | 'addColumn' | 'exportSchema' | 'exportCsv'
 
 export interface TableRowProps {
   table: TjdbTable;
-  selected: boolean;
   onSelect: (table: TjdbTable) => void;
   onAction: (action: TableRowAction, table: TjdbTable) => void;
   canEditTjdb: boolean;
@@ -23,7 +22,7 @@ export interface TableRowProps {
 // Figma menu: 8px of padding round 32px rows, 180px wide. The group's 4px plus the content's 4px make the 8px.
 const MENU_CLASSES = { content: 'tw-w-[196px] tw-py-1', group: 'tw-px-2 tw-py-1' };
 
-export function TableRow({ table, selected, onSelect, onAction, canEditTjdb, canEditSchema }: TableRowProps) {
+export function TableRow({ table, onSelect, onAction, canEditTjdb, canEditSchema }: TableRowProps) {
   const slug = String(table.table_name).toLowerCase().replace(/\s+/g, '-');
   // A schema action is blocked either for lack of the TJDB permission (no tooltip) or because the user is not on
   // Development (tooltip). Only the environment block explains itself.
@@ -100,14 +99,11 @@ export function TableRow({ table, selected, onSelect, onAction, canEditTjdb, can
       className={cn(
         'tw-group tw-flex tw-h-8 tw-shrink-0 tw-cursor-pointer tw-items-center tw-gap-2 tw-rounded-md tw-py-[7px] tw-pl-2',
         // The "…" takes 2px from the row's edge while it shows, and the label gives up that room (Figma list item).
-        selected
-          ? 'tw-bg-interactive-selected tw-pr-0.5'
-          : 'tw-pr-2 hover:tw-bg-interactive-hover hover:tw-pr-0.5 focus-within:tw-pr-0.5 has-[[data-state=open]]:tw-pr-0.5'
+        'tw-pr-2 hover:tw-bg-interactive-hover hover:tw-pr-0.5 focus-within:tw-pr-0.5 has-[[data-state=open]]:tw-pr-0.5'
       )}
     >
       <button
         type="button"
-        aria-current={selected ? 'true' : undefined}
         className={cn(
           'tw-flex tw-min-w-0 tw-flex-1 tw-cursor-pointer tw-items-center tw-gap-1.5 tw-rounded-sm tw-border-0',
           'tw-bg-transparent tw-p-0 tw-text-left tw-font-body-default tw-text-text-default',
@@ -135,8 +131,7 @@ export function TableRow({ table, selected, onSelect, onAction, canEditTjdb, can
             className={cn(
               'tw-shrink-0',
               // Not rendered (so no room reserved) until the row is hovered, focused or its menu is open.
-              !selected &&
-                'tw-hidden group-hover:tw-inline-flex group-focus-within:tw-inline-flex data-[state=open]:tw-inline-flex'
+              'tw-hidden group-hover:tw-inline-flex group-focus-within:tw-inline-flex data-[state=open]:tw-inline-flex'
             )}
           >
             <EllipsisVertical />

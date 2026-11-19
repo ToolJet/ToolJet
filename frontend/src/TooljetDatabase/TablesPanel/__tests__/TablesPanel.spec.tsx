@@ -164,8 +164,6 @@ describe('TablesPanel | list', () => {
     expect(row('Invoices')).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
     await waitFor(() => expect(openTable()).toHaveTextContent('orders'));
-    expect(row('orders')).toHaveAttribute('aria-current', 'true');
-    expect(row('users')).not.toHaveAttribute('aria-current');
   });
 
   it('opens no table on a first visit', async () => {
@@ -175,7 +173,6 @@ describe('TablesPanel | list', () => {
     await screen.findByRole('button', { name: 'orders' });
 
     expect(openTable()).toHaveTextContent('');
-    expect(row('orders')).not.toHaveAttribute('aria-current');
   });
 
   it('opens the table the link names, on top of the saved tabs', async () => {
@@ -210,7 +207,6 @@ describe('TablesPanel | list', () => {
     await userEvent.click(row('users'));
 
     expect(openTable()).toHaveTextContent('users');
-    expect(row('users')).toHaveAttribute('aria-current', 'true');
   });
 
   it('filters by name ignoring case and surrounding spaces, and updates the count', async () => {

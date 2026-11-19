@@ -8,7 +8,6 @@ const renderRow = (table: Partial<TjdbTable> = {}) =>
   render(
     <TableRow
       table={{ id: 't1', table_name: 'orders', ...table }}
-      selected={false}
       onSelect={() => {}}
       onAction={() => {}}
       canEditTjdb

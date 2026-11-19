@@ -27,7 +27,7 @@ export interface TablesPanelProps {
 // The left panel of the database page: lists the workspace's tables, searches them, creates one, and carries each
 // table's row menu.
 export function TablesPanel({ onCollapse }: TablesPanelProps) {
-  const { selectedTable, openTable, canEditTjdb, canEditSchema, tablesLimitReached } = useTooljetDatabaseContext();
+  const { openTable, canEditTjdb, canEditSchema, tablesLimitReached } = useTooljetDatabaseContext();
   const { tables, loading, refetch } = useTables();
   // After a delete the open tabs drop the deleted table on their own.
   const { run, host } = useTableActions({ refetchTables: refetch });
@@ -104,7 +104,6 @@ export function TablesPanel({ onCollapse }: TablesPanelProps) {
           <TableRow
             key={table.id}
             table={table}
-            selected={table.id === selectedTable.id}
             onSelect={openTable}
             onAction={run}
             canEditTjdb={canEditTjdb}

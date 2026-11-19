@@ -7,7 +7,7 @@ const TYPE_ICON = { 'front-end': AppWindow, module: Blocks, workflow: Workflow }
 
 // "N resources depend on this table" as a collapsed card that opens into the list (Figma Dependencies). A floor, never
 // "will break": the backend only sees query references, not a table id hardcoded in a RunJS query.
-// The migration dialog's version of DependentsWarning, which Delete table still uses.
+// Shared by the migration dialog and Delete table.
 export default function MigrationDependents({ loading, dependents }) {
   const [open, setOpen] = useState(false);
 
@@ -41,6 +41,11 @@ export default function MigrationDependents({ loading, dependents }) {
                 <span className="tw-truncate tw-font-body-default tw-text-text-default">
                   {dependent.name || 'Untitled'}
                 </span>
+                {dependent.queries?.length > 0 && (
+                  <span className="tw-truncate tw-font-body-default tw-text-text-placeholder">
+                    {dependent.queries.map((query) => query.name).join(', ')}
+                  </span>
+                )}
               </div>
             );
           })}
