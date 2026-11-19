@@ -450,7 +450,9 @@ class HomePageComponent extends React.Component {
       });
       // Never a silent downgrade: an app asked for in Code mode that the server stored as visual says so.
       if (buildMode === 'code' && (data?.buildMode ?? data?.build_mode) !== 'code') {
-        toast.error('This server created the app in Visual mode. Ask an admin to update ToolJet to use Code mode.');
+        toast.error(
+          'This server created the app in Visual builder. Ask an admin to update ToolJet to use React builder.'
+        );
       }
       /* Posthog Event */
       posthogHelper.captureEvent('click_new_app', {

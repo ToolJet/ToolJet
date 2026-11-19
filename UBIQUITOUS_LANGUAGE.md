@@ -40,6 +40,9 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 |------|-----------|-----------------|
 | **App** | A ToolJet application; types: `FRONT_END` (visual app), `WORKFLOW` (automation), `MODULE` (reusable building block) | — |
 | **App-Builder** | The visual IDE/editor where apps are constructed | Editor (frontend code term; ambiguous with the Builder role) |
+| **Build Mode** | How an app is built, chosen once when it is created and stored on the app (`apps.build_mode`): React builder or Visual builder | — |
+| **React Builder** | Build mode where the AI writes a React app that can be edited in ToolJet or locally (EE feature). User-facing name in the UI, errors and messages | Code mode, `build_mode: 'code'`, `CodeMode/`, `code-mode-source` (code and comments) |
+| **Visual Builder** | Build mode where the app is assembled from components on the canvas; every app gets it where React builder is unavailable (CE, or a workspace without it) | Visual mode, `build_mode: 'visual'` (code and comments) |
 | **Page** | A view/screen within an app; one page is designated the Home Page | — |
 | **Page Handle** | The unique URL slug for a page within an app | — |
 | **Component** | A pre-designed, drag-and-drop building block on the canvas (45+ built-in types) | Widget (legacy; docs folder is `widgets/` but content says "Components") |
