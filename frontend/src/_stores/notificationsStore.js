@@ -4,6 +4,7 @@ import { notificationsService } from '@/_services/notifications.service';
 import { detailAction } from '@/_components/NotificationCenter/detailAction';
 import { showNotificationToast } from '@/_components/NotificationCenter/NotificationToast';
 import { authenticationService } from '@/_services/authentication.service';
+import { getSubpath } from '@/_helpers/routes';
 
 const PAGE_SIZE = 20;
 
@@ -119,6 +120,8 @@ export const useNotificationsStore = create(
           const action = detailAction(n);
           if (!action) return;
           if (action.kind === 'modal') set({ detailNotification: n });
+          // An app path (a review) opens in place, under the sub path; anything else in a new tab.
+          else if (action.href.startsWith('/')) window.location.assign(`${getSubpath() ?? ''}${action.href}`);
           else window.open(action.href, '_blank', 'noopener');
         },
         closeDetail() {

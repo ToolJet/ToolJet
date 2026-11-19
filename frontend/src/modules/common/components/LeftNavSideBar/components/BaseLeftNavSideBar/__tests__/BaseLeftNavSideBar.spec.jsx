@@ -5,7 +5,6 @@ import { MemoryRouter } from 'react-router-dom';
 jest.mock('@/_components/NotificationCenter', () => ({
   NotificationCenter: () => <div data-testid="notifications" />,
 }));
-jest.mock('../../../ReviewInbox', () => () => <div data-testid="reviews" />);
 jest.mock('@/_components/ToolTip', () => ({ ToolTip: ({ children }) => children }));
 jest.mock('@/_ui/Icon/SolidIcons', () => () => null);
 jest.mock('@/_helpers/routes', () => ({ getPrivateRoute: (name) => `/ws/${name}` }));
@@ -16,8 +15,9 @@ jest.mock('@/modules/dashboard/components', () => ({ SettingsMenu: () => null })
 const BaseLeftNavSideBar = require('../BaseLeftNavSideBar').default;
 
 describe('BaseLeftNavSideBar', () => {
-  // The review inbox once took the bell's place on enterprise, and git-sync notifications had nowhere to show.
-  it('should show the notifications bell next to the review inbox', () => {
+  // A review inbox once took the bell's place on enterprise, and git-sync notifications had nowhere to
+  // show. Reviews now post to the same bell.
+  it('should show the notifications bell', () => {
     render(
       <MemoryRouter>
         <BaseLeftNavSideBar
@@ -30,6 +30,5 @@ describe('BaseLeftNavSideBar', () => {
     );
 
     expect(screen.getByTestId('notifications')).toBeInTheDocument();
-    expect(screen.getByTestId('reviews')).toBeInTheDocument();
   });
 });
