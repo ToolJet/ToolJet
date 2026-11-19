@@ -26,11 +26,11 @@ RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools 
 
 
 # tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827).
-# Pinned to a reviewed commit, never a branch: a release bumps TOOLJET_MCP_REF deliberately, to the tooljet-mcp commit
-# it ships. The GitHub token is a BuildKit secret (github_token), so it stays out of the layers and the build cache.
+# Use tooljet-mcp main by default; TOOLJET_MCP_REF can override the ref.
+# The GitHub token is a BuildKit secret (github_token), so it stays out of the layers and the build cache.
 FROM node:22.23.4 AS mcp-builder
 WORKDIR /mcp
-ARG TOOLJET_MCP_REF=c0d48324b8212f697ef728f07ec2d3869214f74e
+ARG TOOLJET_MCP_REF=main
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \

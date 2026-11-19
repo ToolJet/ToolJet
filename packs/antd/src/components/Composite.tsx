@@ -3,6 +3,7 @@ import { Avatar, Badge, Button, Card, Empty, List, Progress, Space, Statistic, T
 import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { RADIUS_HINT, THEME_COLOR, useThemeColor, useThemeNumber } from '../lib/themeStyles';
 import { safeUrl } from '../lib/ui2/display/chat/values';
 import { PackTag } from '../lib/PackTag';
 import { SpinOver, TextBone } from '../lib/Loading';
@@ -16,6 +17,7 @@ import { progressEntries, progressItem, progressMax } from '../lib/ui2/charts/pr
 import { useValueSetter } from '../lib/sameValue';
 import { LOCALE_HINT } from '../lib/locale';
 import { onPointerIn } from '../lib/pointerEnter';
+import { useOfferedValue } from '../lib/offeredValue';
 
 // The tone a status word reads as (lists/model chipTone) -> Ant's Tag status colour.
 const TONE_TAG: Record<string, string> = {
@@ -31,6 +33,29 @@ const TONE_STATUS: Record<string, 'success' | 'exception' | 'normal' | 'active'>
   success: 'success',
   danger: 'exception',
 };
+// Ant's own status words keep their bar: the tone alone turned "exception" blue and "active" plain green (QA PF-020).
+const ANT_PROGRESS_STATUS = ['success', 'exception', 'active', 'normal'] as const;
+const progressStatus = (status: string, tone: string) => {
+  const own = status.trim().toLowerCase();
+  return (ANT_PROGRESS_STATUS as readonly string[]).includes(own)
+    ? (own as (typeof ANT_PROGRESS_STATUS)[number])
+    : (TONE_STATUS[tone] ?? 'normal');
+};
+
+// Ant's List draws no background, so Container background changed nothing; set only when the style is (QA PKB-41).
+const listBackground = (tokens: unknown) =>
+  (tokens as Record<string, string>)['--tj-ant-color-bg-container'] ? 'tj-ant-list-bg' : undefined;
+
+// A row picked from the keyboard as from the pointer: a Tab stop that Enter and Space pick (QA PKB-31).
+const rowKeys = (pick: () => void) => ({
+  tabIndex: 0,
+  onKeyDown: (e: React.KeyboardEvent) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    pick();
+  },
+});
+
 const plainRow = (row: Row) => {
   const { __key: _k, ...rest } = row as Row & { __key?: string };
   return rest;
@@ -485,45 +510,50 @@ export const RecordList = () => {
         loading={loading}
         locale={{ emptyText }}
         rowKey="key"
-        renderItem={(it) => (
-          <List.Item
-            className={it.key === selectedItemId ? 'tj-ant-item is-selected' : 'tj-ant-item'}
-            onClick={() => {
-              // Clicking the selected record again unselects it, with no click event, as in the Rocket Record list
-              // (team testing, 2026-10-29: a selection could not be undone).
-              if (it.key === selectedItemId) return select(null);
-              select(it as unknown as Selectable);
-              onItemClicked();
-            }}
-            extra={
-              it.status || it.value ? (
-                <Space size={8}>
-                  {it.status ? (
-                    <PackTag color={toneTag(it.status, statusColors)}>{chipLabel(it.status)}</PackTag>
-                  ) : null}
-                  {it.value ? <Typography.Text strong>{it.value}</Typography.Text> : null}
-                </Space>
-              ) : undefined
-            }
-          >
-            <List.Item.Meta
-              avatar={
-                showAvatar && avatarField ? (
-                  <RowAvatar image={it.image} name={it.avatarName} shape={avatarShape as 'circle'} />
+        className={listBackground(tokens)}
+        renderItem={(it) => {
+          const pick = () => {
+            // Clicking the selected record again unselects it, with no click event, as in the Rocket Record list
+            // (team testing, 2026-10-29: a selection could not be undone).
+            if (it.key === selectedItemId) return select(null);
+            select(it as unknown as Selectable);
+            onItemClicked();
+          };
+          return (
+            <List.Item
+              className={it.key === selectedItemId ? 'tj-ant-item is-selected' : 'tj-ant-item'}
+              onClick={pick}
+              {...rowKeys(pick)}
+              extra={
+                it.status || it.value ? (
+                  <Space size={8}>
+                    {it.status ? (
+                      <PackTag color={toneTag(it.status, statusColors)}>{chipLabel(it.status)}</PackTag>
+                    ) : null}
+                    {it.value ? <Typography.Text strong>{it.value}</Typography.Text> : null}
+                  </Space>
                 ) : undefined
               }
-              title={it.title}
-              description={
-                it.meta || it.progress !== null ? (
-                  <>
-                    {it.meta ? <div>{it.meta}</div> : null}
-                    {it.progress !== null ? <Progress percent={it.progress} size="small" /> : null}
-                  </>
-                ) : undefined
-              }
-            />
-          </List.Item>
-        )}
+            >
+              <List.Item.Meta
+                avatar={
+                  showAvatar && avatarField ? (
+                    <RowAvatar image={it.image} name={it.avatarName} shape={avatarShape as 'circle'} />
+                  ) : undefined
+                }
+                title={it.title}
+                description={
+                  it.meta || it.progress !== null ? (
+                    <>
+                      {it.meta ? <div>{it.meta}</div> : null}
+                      {it.progress !== null ? <Progress percent={it.progress} size="small" /> : null}
+                    </>
+                  ) : undefined
+                }
+              />
+            </List.Item>
+          );
+        }}
       />
     </AntProvider>
   );
@@ -798,45 +828,50 @@ export const ProgressList = () => {
           split={false}
           locale={{ emptyText }}
           rowKey="key"
-          renderItem={(it) => (
-            <List.Item
-              className={
-                it.key === selectedItemId
-                  ? 'tj-ant-item tj-ant-progress-row is-selected'
-                  : 'tj-ant-item tj-ant-progress-row'
-              }
-              onClick={() => {
-                // Clicking the selected item again unselects it, with no click event, as in the Record list (team testing, 2026-10-29).
-                if (it.key === selectedItemId) return select(null);
-                select(it as unknown as Selectable);
-                onItemClicked();
-              }}
-            >
-              <div className="tj-ant-progress-head">
-                <Typography.Text>{it.label}</Typography.Text>
-                <Typography.Text type="secondary">
-                  {[
-                    showValues && it.value ? (it.target ? `${it.value} / ${it.target}` : it.value) : '',
-                    showPercent && it.pct !== null && !it.relative ? `${Math.round(it.pct)}%` : '',
-                  ]
-                    .filter(Boolean)
-                    .join('  ')}
-                </Typography.Text>
-              </div>
-              <Progress
-                percent={it.pct ?? 0}
-                showInfo={false}
-                size={{ height: stroke }}
-                status={TONE_STATUS[it.tone] ?? 'normal'}
-                strokeColor={it.tone === 'warning' ? 'var(--ant-color-warning)' : undefined}
-              />
-              {it.caption ? (
-                <Typography.Text type="secondary" className="tj-ant-progress-caption">
-                  {it.caption}
-                </Typography.Text>
-              ) : null}
-            </List.Item>
-          )}
+          className={listBackground(tokens)}
+          renderItem={(it) => {
+            const pick = () => {
+              // Clicking the selected item again unselects it, with no click event, as in the Record list (team testing, 2026-10-29).
+              if (it.key === selectedItemId) return select(null);
+              select(it as unknown as Selectable);
+              onItemClicked();
+            };
+            return (
+              <List.Item
+                className={
+                  it.key === selectedItemId
+                    ? 'tj-ant-item tj-ant-progress-row is-selected'
+                    : 'tj-ant-item tj-ant-progress-row'
+                }
+                onClick={pick}
+                {...rowKeys(pick)}
+              >
+                <div className="tj-ant-progress-head">
+                  <Typography.Text>{it.label}</Typography.Text>
+                  <Typography.Text type="secondary">
+                    {[
+                      showValues && it.value ? (it.target ? `${it.value} / ${it.target}` : it.value) : '',
+                      showPercent && it.pct !== null && !it.relative ? `${Math.round(it.pct)}%` : '',
+                    ]
+                      .filter(Boolean)
+                      .join('  ')}
+                  </Typography.Text>
+                </div>
+                <Progress
+                  percent={it.pct ?? 0}
+                  showInfo={false}
+                  size={{ height: stroke }}
+                  status={progressStatus(it.status, it.tone)}
+                  strokeColor={it.tone === 'warning' ? 'var(--ant-color-warning)' : undefined}
+                />
+                {it.caption ? (
+                  <Typography.Text type="secondary" className="tj-ant-progress-caption">
+                    {it.caption}
+                  </Typography.Text>
+                ) : null}
+              </List.Item>
+            );
+          }}
         />
       </SpinOver>
     </AntProvider>
@@ -870,7 +905,11 @@ export const Tags = () => {
   });
   const onTagClicked = ToolJet.useEventCallback({ name: 'onTagClicked' });
   const { loading } = ToolJet.useControlState();
-  const tokens = useTokenStyles();
+  // Only the box's styles (no Primary or Text colour): the tags' colours come from tags and Tag colors. Same style
+  // names as before, so saved values still apply.
+  const background = useThemeColor('colorBgContainer', 'Container background', THEME_COLOR.surface);
+  const borderColor = useThemeColor('colorBorder', 'Border color', THEME_COLOR.border);
+  const borderRadius = useThemeNumber('borderRadius', 'Border radius', RADIUS_HINT);
   ToolJet.useComponentSettings({
     role: 'tags',
     fit: true,
@@ -889,39 +928,50 @@ export const Tags = () => {
         : { label: str(t), color: '' }
     )
     .filter((t) => t.label);
+  const radius = borderRadius === '' || borderRadius == null ? NaN : Number(borderRadius);
+  const box = {
+    ...(background ? { background } : {}),
+    ...(borderColor ? { border: `1px solid ${borderColor}` } : {}),
+    ...(Number.isFinite(radius) ? { borderRadius: radius, padding: radius * 0.3 } : {}),
+  };
   return (
-    <AntProvider tokens={tokens}>
-      <SpinOver loading={loading}>
-        <div className={`tj-ant-tags is-${overflow}`}>
-          {list.map((t) => {
-            const color = t.color || colorFor(t.label, tagColors) || TONE_TAG[chipTone(t.label)];
-            return (
-              <PackTag
-                key={t.label}
-                color={color}
-                solid={variant === 'solid'}
-                bordered={variant === 'outlined'}
-                style={{ marginInlineEnd: 0, cursor: 'pointer', borderRadius: round ? 999 : undefined }}
-                // A button to the keyboard and a screen reader, as it is to the pointer.
-                role="button"
-                tabIndex={0}
-                onClick={() => {
-                  setLastClickedTag(t.label);
-                  onTagClicked();
-                }}
-                onKeyDown={(e) => {
-                  if (e.key !== 'Enter' && e.key !== ' ') return;
-                  e.preventDefault();
-                  setLastClickedTag(t.label);
-                  onTagClicked();
-                }}
-              >
-                {t.label}
-              </PackTag>
-            );
-          })}
-        </div>
-      </SpinOver>
+    <AntProvider fill>
+      <div className="tj-ant-tag-box" style={box}>
+        <SpinOver loading={loading}>
+          <div className={`tj-ant-tags is-${overflow}`}>
+            {list.map((t) => {
+              const color = t.color || colorFor(t.label, tagColors) || TONE_TAG[chipTone(t.label)];
+              return (
+                <PackTag
+                  key={t.label}
+                  // Cut to the row's width with an ellipsis (pack.css .tj-ant-tag), the full text on hover.
+                  className="tj-ant-tag"
+                  title={t.label}
+                  color={color}
+                  solid={variant === 'solid'}
+                  bordered={variant === 'outlined'}
+                  style={{ marginInlineEnd: 0, cursor: 'pointer', borderRadius: round ? 999 : undefined }}
+                  // A button to the keyboard and a screen reader, as it is to the pointer.
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    setLastClickedTag(t.label);
+                    onTagClicked();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key !== 'Enter' && e.key !== ' ') return;
+                    e.preventDefault();
+                    setLastClickedTag(t.label);
+                    onTagClicked();
+                  }}
+                >
+                  <span className="tj-ant-tag-text">{t.label}</span>
+                </PackTag>
+              );
+            })}
+          </div>
+        </SpinOver>
+      </div>
     </AntProvider>
   );
 };
@@ -948,7 +998,7 @@ export const Link = () => {
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onHover = ToolJet.useEventCallback({ name: 'onHover' });
   const ref = useRef<HTMLAnchorElement>(null);
-  const { loading } = ToolJet.useControlState();
+  const { loading, disabled } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'link',
@@ -977,6 +1027,16 @@ export const Link = () => {
   const Ext = antIcon('ExportOutlined');
   // A javascript: or data: href would run script on click; only web, mail and phone links are kept.
   const link = safeUrl(href);
+  // Each style the Link draws only when it is set, so a Link without them keeps its look (QA PF-032).
+  const set = tokens as Record<string, string>;
+  const looks = [
+    set['--tj-ant-color-text'] ? 'has-text' : '',
+    set['--tj-ant-color-bg-container'] ? 'has-bg' : '',
+    set['--tj-ant-color-border'] ? 'has-border' : '',
+    set['--tj-ant-border-radius'] ? 'has-radius' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-start">
       <SpinOver loading={loading}>
@@ -985,7 +1045,10 @@ export const Link = () => {
           href={link || undefined}
           target={link ? target : undefined}
           strong={strong}
-          className={`tj-ant-link is-${underline}`}
+          // The Link never read its disabled state: it stayed blue with a hand cursor (QA PF-033).
+          disabled={disabled}
+          aria-disabled={disabled || undefined}
+          className={`tj-ant-link is-${underline} ${looks}`.trim()}
           // Without an href an <a> takes no Tab, and Tab skipped the Link (a ToolJet Link takes it): it takes it, and
           // Enter clicks it, as Enter on a link does.
           tabIndex={link ? undefined : 0}
@@ -1206,23 +1269,31 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
       : [str(current)];
   // Exposed as the buttons give their values: 1 stays 1, not '1'. A value no button has stays as it was given.
   const rawOf = (v: string) => list.find((b) => b.value === v)?.raw ?? v;
+  // The value takes the mode's shape and holds only values a button has: single to multiple kept text, multiple to
+  // single kept an array, and actions or none kept the old selection. Not while there are no buttons yet (a query not
+  // yet run). Fires no event. A value dropped in actions mode comes back when the mode selects again (QA PF-005).
+  const choosing = mode === 'single' || mode === 'multiple';
+  const shape = (v: unknown): unknown => {
+    if (!choosing) return '';
+    const sel = Array.isArray(v) ? v.map(str) : v === '' || v === undefined || v === null ? [] : [str(v)];
+    const kept = list.length ? sel.filter((x) => list.some((b) => b.value === x)) : sel;
+    return mode === 'multiple' ? kept.map(rawOf) : kept.length ? rawOf(kept[0]) : '';
+  };
+  // The buttons' own values (1 and '1' differ), so a type change shapes the value again.
+  const release = useOfferedValue<unknown>(
+    value,
+    (next) => setValue(next as string),
+    shape,
+    `${mode}|${JSON.stringify(list.map((b) => b.raw))}`,
+    props.value
+  );
   // A selection it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as string));
   const set = (next: string[]) => {
+    release();
     const values = next.map(rawOf);
     if (valueSetter.set(mode === 'multiple' ? values : (values[0] ?? ''))) onChange();
   };
-  // The value takes the mode's shape and holds only values a button has: single to multiple kept text, multiple to
-  // single kept an array, and actions or none kept the old selection. Not while there are no buttons yet (a query not
-  // yet run). Fires no event.
-  const choosing = mode === 'single' || mode === 'multiple';
-  const kept = list.length ? selected.filter((v) => list.some((b) => b.value === v)) : selected;
-  const shaped: unknown = !choosing ? '' : mode === 'multiple' ? kept.map(rawOf) : kept.length ? rawOf(kept[0]) : '';
-  const shapedKey = JSON.stringify(shaped);
-  useEffect(() => {
-    if (JSON.stringify(value) !== shapedKey) setValue(shaped as string);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shapedKey, JSON.stringify(value)]);
   ToolJet.useAction(
     { name: 'setSelected', displayName: 'Set selected', params: [{ handle: 'value', displayName: 'Value' }] },
     (v) => {
@@ -1253,7 +1324,8 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
   };
   return (
     <AntProvider tokens={tokens}>
-      <SpinOver loading={loading}>
+      {/* An inline wrapper shrinks to the buttons, so Block could not stretch them (QA PKB-77). */}
+      <SpinOver loading={loading} as={block ? 'block' : 'inline'}>
         {label ? <div className="tj-ant-field-label">{label}</div> : null}
         <Space.Compact
           direction={direction as 'horizontal'}
