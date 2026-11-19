@@ -12,6 +12,9 @@ import TreeSelectOptionsList from '../../components/TreeSelectOptionsList';
 import { useTreeSelectItemsManager } from '../../hooks/useTreeSelectItemsManager';
 import useStore from '@/AppBuilder/_stores/store';
 
+// Typing into CodeMirror takes ~1.3s locally and passed 5s on a loaded CI runner.
+jest.setTimeout(20000);
+
 const scenario = defineAppBuilderScenario({
   id: 'treeselect-options-editor',
   name: 'TreeSelect static options editor',
