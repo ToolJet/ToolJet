@@ -1,13 +1,17 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
-import { appendBranchParam } from '@/_helpers/active-branch';
+import { getAuthRequestOptions } from '@/_helpers/authRequestOptions';
+import { appendBranchParam, getActiveBranchId } from '@/_helpers/active-branch';
 
 export const folderService = {
   create,
   deleteFolder,
+  bulkDeleteFolders,
   getAll,
   addToFolder,
   bulkAddToFolder,
+  bulkMoveAppsToFolder,
+  bulkRemoveAppsFromFolder,
   removeAppFromFolder,
   updateFolder,
 };
@@ -54,6 +58,27 @@ function deleteFolder(id) {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/folders/${id}`, requestOptions).then(handleResponse);
+}
+
+// All or nothing: responds 200 `{ blocked_ids }`; a non-empty list means nothing was deleted.
+// `mode`: 'folder_only' moves the folders' apps to root; 'folder_and_apps' also deletes the ones the user can delete.
+function bulkDeleteFolders({ folderIds, mode, appType }) {
+  const body = { folder_ids: folderIds, mode, type: appType, branch_id: getActiveBranchId() };
+  return fetch(`${config.apiUrl}/v2/folders/bulk-delete`, getAuthRequestOptions('POST', body)).then(handleResponse);
+}
+
+// All or nothing: responds 200 `{ blocked_ids }`; a non-empty list means nothing was moved.
+// The backend takes each app out of its current folder, so the source folder isn't sent.
+function bulkMoveAppsToFolder({ appIds, folderId }) {
+  const body = { app_ids: appIds, folder_id: folderId, branch_id: getActiveBranchId() };
+  return fetch(`${config.apiUrl}/v2/folder-apps/bulk-move`, getAuthRequestOptions('POST', body)).then(handleResponse);
+}
+
+// All or nothing: responds 200 `{ blocked_ids }`; a non-empty list means nothing was removed.
+// The backend finds each app's folder, so none is sent; apps already at root are skipped, not blocked.
+function bulkRemoveAppsFromFolder({ appIds, appType }) {
+  const body = { app_ids: appIds, type: appType, branch_id: getActiveBranchId() };
+  return fetch(`${config.apiUrl}/v2/folder-apps/bulk-remove`, getAuthRequestOptions('POST', body)).then(handleResponse);
 }
 
 function bulkAddToFolder(appIds, folderId) {

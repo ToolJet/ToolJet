@@ -10,6 +10,7 @@ import {
 import config from 'config';
 import { getRedirectTo } from '@/_helpers/routes';
 
+/** @type {BehaviorSubject<import('./types/authentication.types').CurrentSession>} */
 const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,
   current_organization_name: null,
@@ -50,6 +51,7 @@ export const authenticationService = {
   get currentSessionValue() {
     return currentSessionSubject.value;
   },
+  /** @param {import('./types/authentication.types').CurrentSession} data */
   updateCurrentSession(data) {
     currentSessionSubject.next(data);
   },
@@ -321,7 +323,12 @@ function signInViaOAuth(configId, ssoType, ssoResponse, mcpContext) {
   const redirectTo = mcpContext ? mcpContext.redirectTo : getCookie('redirectPath');
   const requestOptions = {
     method: 'POST',
-    headers: mcpContext ? authHeader(false, organizationId) : authHeader(),
+    headers:
+      mcpContext?.organizationId === null
+        ? { 'Content-Type': 'application/json' }
+        : mcpContext
+          ? authHeader(false, organizationId)
+          : authHeader(),
     credentials: 'include',
     body: JSON.stringify({ ...ssoResponse, organizationId, signupOrganizationId, invitationToken, redirectTo }),
   };

@@ -12,23 +12,38 @@ const logger = new Logger('GitSyncConfigsUtilService');
 // private/protected class member not shared between the two classes would break that
 // structural assignability. The CE class therefore exposes only the public getDetails.
 
-// Every org has a default branch (seeded on creation / backfilled by the
-// EnsureDefaultBranchForAllOrganizations migration) and branch_id is now mandatory on
-// version rows. Resolve it; if it's somehow missing, create one named 'main' as a safety
-// net. Mirrors the EE util's resolveDefaultBranch (CE has no provider to derive a name
-// from, so it always uses 'main' — the migration's default).
-async function resolveDefaultBranch(
+// legacy-3.21.58: drop this check (always return null) once 3.21.58 upgrades run blocking-only.
+const DEFAULT_BRANCH_MIGRATION = 'EnsureDefaultBranchForAllOrganizations1781740800000';
+
+// Null = caller creates it. While the 3.21.58 data phase holds its uncommitted insert, return a
+// virtual `main` (no id; onBranch reads branchless rows as default) instead of waiting on that row.
+export async function findDefaultBranch(
   manager: EntityManager,
   organizationId: string
-): Promise<{ id: string; name: string }> {
+): Promise<{ id: string | null; name: string } | null> {
   const existing = await manager.findOne(WorkspaceBranch, {
     where: { organizationId, isDefault: true },
     select: ['id', 'name'],
   });
   if (existing) return { id: existing.id, name: existing.name };
+  const [applied] = await manager.query('SELECT 1 FROM migrations WHERE name = $1', [DEFAULT_BRANCH_MIGRATION]);
+  return applied ? null : { id: null, name: 'main' };
+}
+
+// Missing only mid-upgrade from 3.21.58 (see findDefaultBranch); otherwise create one
+// named 'main' as a safety net. Mirrors the EE util's resolveDefaultBranch (CE has no provider to derive a name
+// from, so it always uses 'main' — the migration's default).
+async function resolveDefaultBranch(
+  manager: EntityManager,
+  organizationId: string
+): Promise<{ id: string | null; name: string }> {
+  const existing = await findDefaultBranch(manager, organizationId);
+  if (existing) return existing;
 
   logger.error(`No default branch found for org ${organizationId}; creating one as a fallback`);
-  return ensureDefaultBranch(manager, organizationId, 'main');
+  // Own transaction: the caller's manager may be a borrowed connection shared by parallel
+  // readers (AppsSubscriber.afterLoad), and a unique-violation here would abort its transaction.
+  return dbTransactionWrap((txManager: EntityManager) => ensureDefaultBranch(txManager, organizationId, 'main'));
 }
 
 // Look up a branch with the given name; promote it (clearing stale defaults on siblings)
@@ -94,7 +109,7 @@ export class GitSyncConfigsUtilService implements IGitSyncConfigsUtilService {
     _orgGitObj?: OrganizationGitSync,
     options: GetDetailsOptions = {}
   ): Promise<GitSyncDetails> {
-    const { isGitMandatory = false, isMultiBranchingMandatory = false } = options;
+    const { isGitMandatory = false, isMultiBranchingMandatory = false, manager: callerManager } = options;
     // Mandatory-git (or mandatory multi-branch, which requires git) callers expect git to be
     // enabled; on CE it never is, so surface the same 451 the EE license gate would. Non-mandatory
     // callers get the disabled shape, still carrying the org's default branch.
@@ -113,7 +128,7 @@ export class GitSyncConfigsUtilService implements IGitSyncConfigsUtilService {
         },
         orgGit: null,
       };
-    });
+    }, callerManager);
   }
 
   // Git sync is EE-only, so the community edition is never in a git-locked state.

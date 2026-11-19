@@ -72,7 +72,8 @@ const DialogContent = forwardRef(function DialogContent(
   );
 
   const handleInteractOutside = (e) => {
-    if (preventClose) e.preventDefault();
+    // Combobox popups portal to the body, so Radix sees clicks on them as outside and would close the dialog.
+    if (preventClose || e.target?.closest?.('[data-slot="combobox-content"]')) e.preventDefault();
     props.onInteractOutside?.(e);
   };
 

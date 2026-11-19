@@ -23,6 +23,8 @@ export interface UserPermissions {
   moduleDelete?: boolean;
   appPromote: boolean;
   appRelease: boolean;
+  patCreate: boolean;
+  patRevoke: boolean;
   dataSourceCreate: boolean;
   dataSourceDelete: boolean;
 

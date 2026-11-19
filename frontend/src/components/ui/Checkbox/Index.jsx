@@ -19,6 +19,11 @@ CheckboxComponent.propTypes = {
   align: PropTypes.oneOf(['left', 'right']),
   required: PropTypes.bool,
   className: PropTypes.string,
+  classes: PropTypes.shape({
+    checkboxLabel: PropTypes.string,
+    helperText: PropTypes.string,
+  }),
+  onCheckedChange: PropTypes.func,
 };
 
 CheckboxComponent.defaultProps = {
@@ -29,6 +34,11 @@ CheckboxComponent.defaultProps = {
   type: 'checkbox',
   size: 'default',
   align: 'left',
+  onCheckedChange: () => {},
   required: false,
   className: '',
+  classes: {
+    checkboxLabel: '',
+    helperText: '',
+  },
 };

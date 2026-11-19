@@ -91,6 +91,12 @@ export class GroupPermissions extends BaseEntity {
   @Column({ name: 'app_release', default: false })
   appRelease: boolean;
 
+  @Column({ name: 'pat_create', default: false })
+  patCreate: boolean;
+
+  @Column({ name: 'pat_revoke', default: false })
+  patRevoke: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

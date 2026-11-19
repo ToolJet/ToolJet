@@ -1,5 +1,7 @@
 import config from 'config';
+import { buildSearchParams } from '@/_helpers/searchParams';
 import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
+import { getAuthRequestOptions } from '@/_helpers/authRequestOptions';
 import { getActiveBranchId, appendBranchParam } from '@/_helpers/active-branch';
 import queryString from 'query-string';
 
@@ -11,6 +13,7 @@ export const appsService = {
   setMaintenance,
   setSlug,
   getAll,
+  getWorkflowConsumers,
   getAllAddableApps,
   createApp,
   cloneApp,
@@ -24,6 +27,8 @@ export const appsService = {
   getApp,
   getAppByVersion,
   saveApp,
+  fetchAppsV2,
+  renameApp,
   getAppUsers,
   getVersions,
   getTables,
@@ -31,6 +36,10 @@ export const appsService = {
   getAppsLimit,
   getWorkflowLimit,
   releaseVersion,
+  pinResources,
+  unpinResource,
+  reorderPins,
+  bulkDeleteApps,
 };
 
 function getAppAuthenticationConfig(slug) {
@@ -89,6 +98,54 @@ function getAll(page, folder, searchKey, type = 'front-end', context = undefined
     ).then(handleResponse);
 }
 
+function fetchAppsV2({ appType, folderId, searchQuery, branchId, pageNo, pageSize }, { signal } = {}) {
+  return fetch(
+    `${config.apiUrl}/v2/apps?${buildSearchParams({
+      page: pageNo,
+      type: appType,
+      branch_id: branchId,
+      search: searchQuery,
+      folder_id: folderId,
+      page_size: pageSize,
+    })}`,
+    { ...getAuthRequestOptions(), signal }
+  ).then(handleResponse);
+}
+
+// Pins folders or apps for this user on the active branch; one kind per call. Responds 204 with no body.
+function pinResources({ resourceType, resourceIds }) {
+  const body = { resource_type: resourceType, resource_ids: resourceIds, branch_id: getActiveBranchId() };
+  return fetch(`${config.apiUrl}/v2/pins`, getAuthRequestOptions('POST', body)).then(handleResponse);
+}
+
+// Unpins one item, and also succeeds (204) when it wasn't pinned.
+function unpinResource({ resourceType, resourceId }) {
+  const query = buildSearchParams({ branch_id: getActiveBranchId() });
+  return fetch(
+    `${config.apiUrl}/v2/pins/${encodeURIComponent(resourceType)}/${encodeURIComponent(resourceId)}${query ? `?${query}` : ''}`,
+    getAuthRequestOptions('DELETE')
+  ).then(handleResponse);
+}
+
+// `pins` must be every pin of `appType`, in the new order; any other set is a 400. Responds 204 with no body.
+function reorderPins({ appType, pins }) {
+  const body = { type: appType, items: pins, branch_id: getActiveBranchId() };
+  return fetch(`${config.apiUrl}/v2/pins/order`, getAuthRequestOptions('PUT', body)).then(handleResponse);
+}
+
+// All or nothing: responds 200 `{ blocked_ids }`; a non-empty list means nothing was deleted.
+function bulkDeleteApps({ appIds, appType }) {
+  const body = { app_ids: appIds, type: appType, branch_id: getActiveBranchId() };
+  return fetch(`${config.apiUrl}/v2/apps/bulk-delete`, getAuthRequestOptions('POST', body)).then(handleResponse);
+}
+
+// TODO: the backend should resolve the editing version itself so the client needn't look it up before saving.
+async function renameApp(id, name, appType) {
+  const { versions } = await getVersions(id);
+  const editingVersionId = versions?.find((version) => version?.isCurrentEditingVersion)?.id;
+  return saveApp(id, { name, ...(editingVersionId && { editingVersionId }) }, appType);
+}
+
 // get all addable apps
 function getAllAddableApps() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
@@ -114,6 +171,13 @@ function createApp(body = {}) {
     default:
       return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
   }
+}
+
+function getWorkflowConsumers(workflowId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(appendBranchParam(`${config.apiUrl}/workflows/${workflowId}/consumers`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function createWorkflow(requestOptions) {
@@ -305,11 +369,13 @@ function getWorkflowLimit(type) {
   return fetch(`${config.apiUrl}/license/workflows/limits/${type}`, requestOptions).then(handleResponse);
 }
 
-function releaseVersion(appId, versionToBeReleased) {
+// expectedReleasedVersionId: the released version the confirmation showed ('' for none). The server refuses the
+// release if another version went live since, instead of silently replacing it.
+function releaseVersion(appId, versionToBeReleased, expectedReleasedVersionId) {
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
-    body: JSON.stringify({ versionToBeReleased }),
+    body: JSON.stringify({ versionToBeReleased, expectedReleasedVersionId }),
     credentials: 'include',
   };
 

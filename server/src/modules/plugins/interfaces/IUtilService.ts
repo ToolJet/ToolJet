@@ -19,8 +19,6 @@ export interface IPluginsUtilService {
     repo: string
   ): Promise<[ArrayBuffer, ArrayBuffer, ArrayBuffer, ArrayBuffer, string] | unknown>;
 
-  fetchPluginFilesFromRepo(repo: string): Promise<any[]>;
-
   upgrade(
     id: string,
     updatePluginDto: UpdatePluginDto,

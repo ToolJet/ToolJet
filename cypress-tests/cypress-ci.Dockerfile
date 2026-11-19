@@ -5,7 +5,10 @@
 # the build. That lets BuildKit reuse layers between runs: dependency installs
 # rerun only when a lockfile changes, the plugins build only when plugins/
 # changes, and only the frontend/server builds rerun for an ordinary PR.
+ARG TOOLJET_EDITION=ee
+
 FROM node:22.23.4 AS builder
+ARG TOOLJET_EDITION
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -27,7 +30,7 @@ COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
-ENV TOOLJET_EDITION=ee
+ENV TOOLJET_EDITION=${TOOLJET_EDITION}
 
 # Dependency installs before the sources, so they stay cached across PRs
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
@@ -59,6 +62,7 @@ RUN curl -Lo postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/do
     chmod +x /postgrest
 
 FROM debian:12-slim
+ARG TOOLJET_EDITION
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -90,7 +94,7 @@ RUN curl -O https://nodejs.org/dist/v22.23.4/node-v22.23.4-linux-x64.tar.xz \
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
-ENV TOOLJET_EDITION=ee
+ENV TOOLJET_EDITION=${TOOLJET_EDITION}
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 # Install Instantclient Basic Light Oracle and Dependencies

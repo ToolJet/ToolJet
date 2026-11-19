@@ -44,6 +44,73 @@ export const tableText = {
   name: "name",
   optionEquals: "equals",
 
+  // ---- event trigger display names (WidgetManager/widgets/table.js:348-363) ----
+  // These are the LABELS the add-event-handler popover lists; selectEvent matches them
+  // case-insensitively against `event-trigger-option-*`.
+  eventRowClicked: "Row clicked",
+  eventRowHovered: "Row hovered",
+  eventPageChanged: "Page changed",
+  eventSearch: "Search",
+  eventSortApplied: "Sort applied",
+  eventFilterChanged: "Filter changed",
+  eventCellValueChanged: "Cell value changed",
+  eventAddNewRows: "Add new rows",
+  eventSaveChanges: "Save changes",
+  eventCancelChanges: "Cancel changes",
+
+  // ---- per-event toast messages used by the interactions chunk ----
+  // IMPORTANT: alphanumerics, spaces, `.`, `_` and `-` ONLY. These strings are typed
+  // into the Show Alert message CodeHinter through `clearAndTypeOnCodeMirror`
+  // (commands/commands.js), which tokenizes the value with
+  //   /(\{|\}|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._-]+|\s+)/g
+  // and KEEPS ONLY MATCHED SUBSTRINGS — any character absent from every alternative is
+  // silently dropped before it is ever typed. A trailing `!` therefore never reaches
+  // the field, the alert fires with the punctuation-stripped text, and the toast
+  // assertion fails on a message that looks correct in the spec. Do not add `!`, `?`
+  // or other punctuation to these constants.
+  toastRowClicked: "row clicked",
+  toastPageChanged: "page changed",
+  toastSearch: "search fired",
+  toastSortApplied: "sort applied",
+  toastFilterChanged: "filter changed",
+  toastCellValueChanged: "cell value changed",
+  toastNewRowsAdded: "new rows added",
+
+  // ---- CSA display names (WidgetManager/widgets/table.js:545-660) ----
+  // Passed to selectCSA(); param labels are passed to wireTableCSA as { label }.
+  csaSetPage: "Set page",
+  csaSelectRow: "Select row",
+  csaDeselectRow: "Deselect row",
+  csaSelectRows: "Select rows",
+  csaDeselectRows: "Deselect rows",
+  csaSelectAllRows: "Select all rows",
+  csaDeselectAllRows: "Deselect all rows",
+  csaSetSort: "Set sort",
+  csaSetFilters: "Set filters",
+  csaClearFilters: "Clear filters",
+  csaDiscardChanges: "Discard Changes",
+  csaDiscardNewlyAddedRows: "Discard newly added rows",
+  csaDownloadTableData: "Download table data",
+  csaSetDisable: "Set disable",
+  csaSetLoading: "Set loading",
+  csaSetVisibility: "Set visibility",
+
+  // CSA param displayNames -> field data-cy is `event-<label>-input-field` (raw case).
+  csaParamPage: "Page",
+  csaParamKey: "Key",
+  csaParamValue: "Value",
+  csaParamValues: "Values",
+  csaParamParameters: "Parameters",
+  csaParamColumnKey: "Column key",
+
+  // ---- property toggle display names (table.js:82,117,222,230,238) ----
+  // tableSelector.toggleButton(<displayName>) -> `<slug>-toggle-button`.
+  toggleAllowSelection: "Allow selection",
+  toggleBulkSelection: "Bulk selection",
+  toggleHighlightSelectedRow: "Highlight selected row",
+  toggleEnablePagination: "Enable pagination",
+  toggleEnableColumnSorting: "Enable column sorting",
+
   labelDynamicColumn: "Use dynamic column",
   makeEditable: "Make editable",
   lableDisableActionButton: "Disable action button",

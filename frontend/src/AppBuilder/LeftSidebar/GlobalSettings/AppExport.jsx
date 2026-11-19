@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button/Button';
-import ExportAppModal from '@/HomePage/ExportAppModal';
 import useStore from '@/AppBuilder/_stores/store';
+import ExportAppDialog from '@/pages/components/ExportAppDialog';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import cx from 'classnames';
@@ -15,22 +15,18 @@ const AppExport = ({ darkMode, isModuleEditor = false }) => {
     shallow
   );
 
-  const [isExportingApp, setIsExportingApp] = React.useState(false);
+  const [isExportAppDialogOpen, setIsExportAppDialogOpen] = useState(false);
 
   return (
     <>
-      {isExportingApp && app.hasOwnProperty('appId') && (
-        <ExportAppModal
-          show={isExportingApp}
-          closeModal={() => {
-            setIsExportingApp(false);
-          }}
-          customClassName="modal-version-lists"
-          title={'Select a version to export'}
-          app={app}
-          darkMode={darkMode}
+      {isExportAppDialogOpen && app.hasOwnProperty('appId') && (
+        <ExportAppDialog
+          appDetails={app}
+          open={isExportAppDialogOpen}
+          onClose={() => setIsExportAppDialogOpen(false)}
         />
       )}
+
       <div className={cx({ 'dark-theme': darkMode })}>
         <Button
           fill="rgb(172, 178, 185)"
@@ -38,7 +34,7 @@ const AppExport = ({ darkMode, isModuleEditor = false }) => {
           variant="tertiary"
           className={cx('app-export-btn')}
           onClick={() => {
-            setIsExportingApp(true);
+            setIsExportAppDialogOpen(true);
             document.getElementById('maintenance-app-modal').click();
           }}
           data-cy="export-app-button"
@@ -46,7 +42,6 @@ const AppExport = ({ darkMode, isModuleEditor = false }) => {
           {isModuleEditor ? 'Export module' : 'Export app'}
         </Button>
       </div>
-      {/* {isExportingApp && <ExportAppModal app={app} setIsExportingApp={toggleExportingApp} darkMode={darkMode} />} */}
     </>
   );
 };

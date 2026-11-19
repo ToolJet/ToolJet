@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import useKeyHooks from '../useKeyHooks';
 
 function Harness({ onKey }) {
-  useKeyHooks(['esc', 'backspace'], onKey);
+  useKeyHooks(['esc', 'backspace', 'up, down'], onKey);
   return <div data-testid="h" />;
 }
 
@@ -35,5 +35,43 @@ describe('useKeyHooks', () => {
     const backspace = pressOnDocument('Backspace', 'Backspace');
     expect(onKey).toHaveBeenCalledWith('Backspace');
     expect(backspace.defaultPrevented).toBe(true);
+  });
+
+  test('arrow keys typed inside a shadow root do not reach the callback', () => {
+    // Break this catches: the editor nudging a widget while the user arrows through a pack
+    // Select's list; retargeting makes event.target the shadow host, so the tag check passes.
+    const onKey = jest.fn();
+    render(<Harness onKey={onKey} />);
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const option = document.createElement('div');
+    option.setAttribute('role', 'option');
+    host.attachShadow({ mode: 'open' }).appendChild(option);
+
+    const event = new KeyboardEvent('keydown', {
+      key: 'ArrowDown',
+      code: 'ArrowDown',
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+    });
+    option.dispatchEvent(event);
+    expect(event.target).toBe(host);
+    expect(onKey).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+    host.remove();
+  });
+
+  test('arrow keys with focus on the body still reach the callback', () => {
+    const onKey = jest.fn();
+    render(<Harness onKey={onKey} />);
+    const event = new KeyboardEvent('keydown', {
+      key: 'ArrowDown',
+      code: 'ArrowDown',
+      bubbles: true,
+      cancelable: true,
+    });
+    document.body.dispatchEvent(event);
+    expect(onKey).toHaveBeenCalledWith('ArrowDown');
   });
 });

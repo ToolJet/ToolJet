@@ -1,9 +1,10 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
-import { normalizePin } from '@/AppBuilder/Widgets/libraryComponentRevision';
+import { dashlessId, normalizePin } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
+import { hasCustomComponentAccess } from '@/AppBuilder/_helpers/customComponentAccess';
 
 // CCL endpoints are unimplemented on CE (server/src/.../controller.ts is a stub).
 const isCclSupportedEdition = () => ['ee', 'cloud'].includes(fetchEdition());
@@ -13,9 +14,7 @@ export default function useCustomComponentDevPreviewSync(appId: string | number 
   const pins: Record<string, string> | undefined = useStore(
     (state: any) => state.globalSettings?.customComponentLibraries
   );
-  const hasCustomComponentLibrariesAccess = useStore(
-    (state: any) => state.license?.featureAccess?.customComponentLibraries === true
-  );
+  const hasCustomComponentLibrariesAccess = useStore((state: any) => hasCustomComponentAccess(state));
   const libraries = useCustomComponentLibrariesStore((state: any) => state.libraries);
 
   const devPinKeys = useMemo(() => {
@@ -39,6 +38,25 @@ export default function useCustomComponentDevPreviewSync(appId: string | number 
 
     useCustomComponentLibrariesStore.getState().syncDevPinStreams(devPinKeys);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasCustomComponentLibrariesAccess, libraries, JSON.stringify(devPinKeys)]);
+
+  const refetchedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isCclSupportedEdition() || !libraries || !hasCustomComponentLibrariesAccess) return;
+    const known = new Set(
+      (libraries as Array<{ correlationId?: string }>).flatMap((lib) => [
+        lib.correlationId,
+        dashlessId(lib.correlationId),
+      ])
+    );
+    const unknown = Object.keys(devPinKeys)
+      .filter((key) => !known.has(key))
+      .sort();
+    if (!unknown.length) return;
+    const signature = unknown.join(',');
+    if (refetchedFor.current === signature) return;
+    refetchedFor.current = signature;
+    useCustomComponentLibrariesStore.getState().fetchLibraries({ force: true });
   }, [hasCustomComponentLibrariesAccess, libraries, JSON.stringify(devPinKeys)]);
 
   // Editor isn't remounted on same-tab app switches, so reset previews and the cached
