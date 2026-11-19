@@ -54,9 +54,15 @@ describe('Workflow limits policy', () => {
           webhookPerWorkflow: 100,
           editorPerUser: 60,
         },
-        concurrency: { activeRunsPerWorkspace: 10, queuedRunsPerWorkspace: 200, waitingSyncRequestsPerPod: 100 },
+        concurrency: {
+          activeRunsPerWorkspace: 10,
+          queuedRunsPerWorkspace: 200,
+          waitingSyncRequestsPerPod: 100,
+          pythonProcessesPerPod: 4,
+          bundleBuildsPerPod: 2,
+        },
         waiting: { maxWaitingRunsPerWorkspace: 500 },
-        schedules: { maxPerWorkflow: 20, maxPerWorkspace: 200 },
+        schedules: { maxPerWorkflow: 20, maxPerWorkspace: 200, jitterMaxSeconds: 30 },
         quotaDefaults: {
           workspaceDailyExecutions: 500,
           workspaceMonthlyExecutions: 10000,
