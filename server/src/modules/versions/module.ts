@@ -18,6 +18,7 @@ import { AppHistoryModule } from '@modules/app-history/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
 import { EncryptionModule } from '@modules/encryption/module';
+import { NotificationsModule } from '@modules/notifications/module';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -70,6 +71,8 @@ export class VersionModule extends SubModule {
         await GitSyncConfigsModule.register(configs),
         await TooljetDbModule.register(configs),
         await CodeModeSourceModule.register(configs),
+        // Version reviews post their notices to the notifications bell.
+        await NotificationsModule.register(configs),
       ],
       controllers: isMainImport
         ? [
