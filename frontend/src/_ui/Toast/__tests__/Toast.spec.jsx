@@ -536,6 +536,18 @@ describe('editor error notifications', () => {
     expect(screen.queryByText('Second error')).not.toBeInTheDocument();
   });
 
+  // Break this catches: a long dashboard error (e.g. a git push rejection) grows past the viewport with no scroll.
+  it('makes long ungrouped messages scrollable while keeping the close button outside them', () => {
+    const longError = 'remote: GH013: Repository rule violations found. '.repeat(40).trim();
+    render(<Toast />);
+    act(() => toast.error(longError));
+    const message = screen.getByText(longError);
+    expect(message).toHaveClass('standard-toast__message');
+    expect(message).toHaveAttribute('tabindex', '0');
+    expect(within(message).queryByRole('button')).not.toBeInTheDocument();
+    expect(within(message.parentElement).getByRole('button', { name: 'Dismiss notification' })).toBeVisible();
+  });
+
   // Break this catches: the shared viewer/published-app component inherits editor aggregation.
   it('retains independent dismissal, options, and expiry on the viewer path', () => {
     render(<Toast toastOptions={{ style: { color: 'red' } }} />);
