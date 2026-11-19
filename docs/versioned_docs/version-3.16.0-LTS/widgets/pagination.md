@@ -69,12 +69,12 @@ Any property having **fx** button next to its field can be **programmatically co
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
 | Alignment | Sets the horizontal alignment of the pagination controls. | By default, it's set to `Left`. |
 | Box shadow | Sets the box shadow of the component. You can also set it programmatically using **fx**. | By default, no box shadow is applied. |
 
 :::info
-The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** feature enabled.
 :::
 
 :::info

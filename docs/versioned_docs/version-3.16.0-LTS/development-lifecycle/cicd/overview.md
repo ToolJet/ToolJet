@@ -27,4 +27,4 @@ With git sync CI/CD, you can:
 
 ## Next Steps
 - Refer to [Using Git Sync CI/CD APIs](/api/gitsync-api/) for detailed API usage.
-- Check out [Git Sync CI/CD with Jenkins Example](/docs/development-lifecycle/cicd/example/) for a practical implementation guide.
+- Check out [Git Sync CI/CD with Jenkins Example](/docs/3.16.0-LTS/development-lifecycle/cicd/example/) for a practical implementation guide.

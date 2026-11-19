@@ -5,6 +5,9 @@ module.exports = {
     "./versioned_docs/version-3.0.0-LTS/doc-home-page.mdx",
     "./docs/doc-home-page.mdx",
     "./versioned_docs/version-3.16.0-LTS/actions/overview.mdx",
+    "./versioned_docs/version-4.0.0-LTS/doc-home-page.mdx",
+    "./versioned_docs/version-4.0.0-LTS/actions/overview.mdx",
+    "./docs/actions/overview.mdx",
   ],
   darkMode: ['class', '[data-theme="dark"]'],
   theme: {

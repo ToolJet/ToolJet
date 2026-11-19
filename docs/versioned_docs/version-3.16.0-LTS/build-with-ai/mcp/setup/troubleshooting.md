@@ -3,7 +3,7 @@ id: troubleshooting
 title: Troubleshooting
 ---
 
-Fixes for common problems when connecting ToolJet MCP to [Claude Code](/docs/build-with-ai/mcp/setup/claude-code), [Codex](/docs/build-with-ai/mcp/setup/codex), or [other MCP clients](/docs/build-with-ai/mcp/setup/other-clients).
+Fixes for common problems when connecting ToolJet MCP to [Claude Code](/docs/3.16.0-LTS/build-with-ai/mcp/setup/claude-code), [Codex](/docs/3.16.0-LTS/build-with-ai/mcp/setup/codex), or [other MCP clients](/docs/3.16.0-LTS/build-with-ai/mcp/setup/other-clients).
 
 | Symptom | Cause and fix |
 | ------- | ------------- |
@@ -20,9 +20,9 @@ Fixes for common problems when connecting ToolJet MCP to [Claude Code](/docs/bui
 
 ## Related
 
-- [Setup](/docs/build-with-ai/mcp/setup)
-- [Supported Tools](/docs/build-with-ai/mcp/supported-tools)
-- [Security](/docs/build-with-ai/mcp/security)
+- [Setup](/docs/3.16.0-LTS/build-with-ai/mcp/setup)
+- [Supported Tools](/docs/3.16.0-LTS/build-with-ai/mcp/supported-tools)
+- [Security](/docs/3.16.0-LTS/build-with-ai/mcp/security)
 
 <br/>
 ---

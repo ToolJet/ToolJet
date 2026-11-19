@@ -130,7 +130,7 @@ ToolJet Workflows allows you to design and execute complex, data-centric automat
 **External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment).
 :::
 
-For detailed workflow configuration and deployment examples, refer to the [Workflow Migration Guide](/docs/setup/workflow-temporal-to-bullmq-migration/).
+For detailed workflow configuration and deployment examples, refer to the [Workflow Migration Guide](/docs/3.16.0-LTS/setup/workflow-temporal-to-bullmq-migration/).
 
 ### Optional Configurations
 
@@ -140,10 +140,10 @@ For detailed workflow configuration and deployment examples, refer to the [Workf
 
 #### AI Builder on Closed Networks
 
-- `ENABLE_MCP_SOCKET_RELAY`: Set to `true` if your instance can't be reached from the internet (for example, on a private network or behind a firewall that blocks inbound traffic) and you use ToolJet Managed AI Server. ToolJet then runs the MCP server the AI builder uses inside its own container and relays its requests over the outbound connection to the AI server, so the AI builder can create and update apps without inbound access. Default: `false`. To learn more, refer to [Closed or Private Networks](/docs/setup/tooljet-ai/managed-with-self-hosted#closed-or-private-networks).
+- `ENABLE_MCP_SOCKET_RELAY`: Set to `true` if your instance can't be reached from the internet (for example, on a private network or behind a firewall that blocks inbound traffic) and you use ToolJet Managed AI Server. ToolJet then runs the MCP server the AI builder uses inside its own container and relays its requests over the outbound connection to the AI server, so the AI builder can create and update apps without inbound access. Default: `false`. To learn more, refer to [Closed or Private Networks](/docs/3.16.0-LTS/setup/tooljet-ai/managed-with-self-hosted#closed-or-private-networks).
 
 :::note
-If AI builder saves fail with `fetch failed` because your `TOOLJET_HOST` URL can't be reached from inside the container, set `TOOLJET_MCP_API_URL=http://127.0.0.1:<PORT>`, where `<PORT>` is the port the ToolJet server listens on inside the container (`3000` by default, `80` with the standard Docker Compose setup). To learn more, refer to [Point the MCP Server at ToolJet Inside the Container](/docs/setup/tooljet-ai/managed-with-self-hosted#point-the-mcp-server-at-tooljet-inside-the-container).
+If AI builder saves fail with `fetch failed` because your `TOOLJET_HOST` URL can't be reached from inside the container, set `TOOLJET_MCP_API_URL=http://127.0.0.1:<PORT>`, where `<PORT>` is the port the ToolJet server listens on inside the container (`3000` by default, `80` with the standard Docker Compose setup). To learn more, refer to [Point the MCP Server at ToolJet Inside the Container](/docs/3.16.0-LTS/setup/tooljet-ai/managed-with-self-hosted#point-the-mcp-server-at-tooljet-inside-the-container).
 :::
 
 #### User Session Expiry
@@ -171,13 +171,13 @@ By default, an account is locked after 5 failed login attempts. You can control 
 
 <PlanBadge type="enterprise" />
 
-- `MFA_MASTER_SECRET`: Secret used to derive each user's two-factor authentication (2FA) key. Required to use [two-factor authentication](/docs/user-management/authentication/2fa). No default.
+- `MFA_MASTER_SECRET`: Secret used to derive each user's two-factor authentication (2FA) key. Required to use [two-factor authentication](/docs/3.16.0-LTS/user-management/authentication/2fa). No default.
   - Use a long random value, for example one generated with `openssl rand -hex 32`.
 
 If `MFA_MASTER_SECRET` isn't set, every 2FA request (setting up an authenticator app, entering a code at sign-in, or turning 2FA off) fails with the error `MFA_MASTER_SECRET is not configured. Set it in the environment before enabling two-factor authentication.`
 
 :::warning
-Set `MFA_MASTER_SECRET` once and keep it unchanged. Each user's 2FA key is derived from this secret, so changing it invalidates every authenticator app that's already set up. Users who had 2FA turned on then need a super admin to [reset 2FA](/docs/user-management/authentication/2fa#reset-two-factor-authentication) before they can set it up again.
+Set `MFA_MASTER_SECRET` once and keep it unchanged. Each user's 2FA key is derived from this secret, so changing it invalidates every authenticator app that's already set up. Users who had 2FA turned on then need a super admin to [reset 2FA](/docs/3.16.0-LTS/user-management/authentication/2fa#reset-two-factor-authentication) before they can set it up again.
 :::
 
 #### Hide Account Setup Link
@@ -188,7 +188,7 @@ Set `MFA_MASTER_SECRET` once and keep it unchanged. Each user's 2FA key is deriv
 
 <PlanBadge type="enterprise" />
 
-Limits for [bulk uploading users](/docs/user-management/onboard-users/bulk-invite-users) from a CSV file:
+Limits for [bulk uploading users](/docs/3.16.0-LTS/user-management/onboard-users/bulk-invite-users) from a CSV file:
 
 - `ORG_USERS_BULK_UPLOAD_MAX_FILE_SIZE_MB`: Maximum size of the CSV file, in MB. Default: **1**.
 - `ORG_USERS_BULK_UPLOAD_MAX_ROWS`: Maximum number of user rows per file. Default: **250**.
@@ -266,7 +266,7 @@ You can setup OIDC using non email identifier for authenticating users to ToolJe
 | `SSO_UNIQUE_ID_FIELD`     | Unique identifier field name sent back by the IdP.         |
 | `SSO_CUSTOM_EMAIL_DOMAIN` | Domain name that will be used to construct dummy email id. |
 
-To learn more, refer to [this section](/docs/user-management/sso/oidc/setup#configuring-tooljet-oidc-with-non-email-identifier).
+To learn more, refer to [this section](/docs/3.16.0-LTS/user-management/sso/oidc/setup#configuring-tooljet-oidc-with-non-email-identifier).
 
 #### Configure Stronger Password Validation Rules
 
@@ -291,7 +291,7 @@ These validations apply to both the instance and workspace levels.
 
 :::warning BETA
 This feature is currently in beta and is not recommended for production use.
-For full setup instructions, provider-specific keys, and Docker Compose examples, see [Configure GitSync via Environment Variables](/docs/beta/gitsync-env-vars).
+For full setup instructions, provider-specific keys, and Docker Compose examples, see [Configure GitSync via Environment Variables](/docs/3.16.0-LTS/beta/gitsync-env-vars).
 :::
 
 GitSync can be configured using environment variables instead of the ToolJet UI, useful for self-hosted setups where you want to automate or version-control your GitSync configuration.
@@ -471,7 +471,7 @@ ToolJet supports OpenTelemetry (OTEL) for comprehensive observability and monito
 Only enable `OTEL_INCLUDE_QUERY_TEXT=true` for debugging. This creates high cardinality metrics that can impact Prometheus performance. Use an OTEL Collector to filter this label in production.
 :::
 
-For comprehensive setup instructions, metrics details, and Grafana dashboard integration, see the [OpenTelemetry Observability](/docs/tj-setup/observability/observability-otel) documentation.
+For comprehensive setup instructions, metrics details, and Grafana dashboard integration, see the [OpenTelemetry Observability](/docs/3.16.0-LTS/tj-setup/observability/observability-otel) documentation.
 
 ## <br/>
 

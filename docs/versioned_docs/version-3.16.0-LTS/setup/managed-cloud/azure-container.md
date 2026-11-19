@@ -76,7 +76,7 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
    ```
 
    **Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet container.** <br/> <br/>
-   **Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars).
+   **Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/3.16.0-LTS/setup/env-vars).
    <img className="screenshot-full img-full" src="/img/setup/azure-container/step4-v2.png" alt="Deploying ToolJet on Azure container apps" />
 
 8. In the Ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
@@ -119,14 +119,14 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 
 ## ToolJet Database
 
-Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/3.16.0-LTS/tooljet-db/tooljet-database).
 
 ## Workflows
 
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
 :::info
-For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](/docs/setup/workflow-temporal-to-bullmq-migration/).
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](/docs/3.16.0-LTS/setup/workflow-temporal-to-bullmq-migration/).
 :::
 
 ### Enabling Workflow Scheduling
@@ -182,7 +182,7 @@ Ensure both databases are included in your backup before proceeding with the upg
 :::
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
-- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](/docs/setup/upgrade-to-v3/).
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](/docs/3.16.0-LTS/setup/upgrade-to-v3/).
 
 ## <br/>
 

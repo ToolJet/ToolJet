@@ -28,12 +28,12 @@ p1 = Person(tj_globals.currentUser.firstName, 36)
 components.text1.setText(p1.myfunc())
 ```
 
-4. The above code has a function `myfunc` which returns a string and we are using a **[Component Specific Action](/docs/app-builder/events/use-case/csa)** to set the Text Component's value from the Python query.
+4. The above code has a function `myfunc` which returns a string and we are using a **[Component Specific Action](/docs/3.16.0-LTS/app-builder/events/use-case/csa)** to set the Text Component's value from the Python query.
 
 :::tip
 
 - As of now, Run Python code only supports the [Python standard library](https://docs.python.org/3/library/).
-- Check **[RunPy Limitations](/docs/contributing-guide/troubleshooting/runpy-limitations)** to go through the limitations with using Python code
+- Check **[RunPy Limitations](/docs/3.16.0-LTS/contributing-guide/troubleshooting/runpy-limitations)** to go through the limitations with using Python code
   :::
 
 ## Trigger Queries Using Run Python Code

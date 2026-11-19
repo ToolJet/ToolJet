@@ -7,7 +7,7 @@ ToolJet can connect to MySQL databases to read and write data.
 
 ## Connection
 
-To establish a connection with the MySQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard. ToolJet supports both **Static** and **Dynamic** MySQL connections. Along with configuring fixed connection details at the datasource level, you can also define certain connection parameters dynamically from the query builder at runtime.
+To establish a connection with the MySQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/3.16.0-LTS/data-sources/overview)** page through the ToolJet dashboard. ToolJet supports both **Static** and **Dynamic** MySQL connections. Along with configuring fixed connection details at the datasource level, you can also define certain connection parameters dynamically from the query builder at runtime.
 
 ### Static Connection
 
@@ -123,7 +123,7 @@ SQL Parameters:
 
 ### Row Level Security
 
-In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](/docs/app-builder/dynamic-access-rule/row-level-security) guide for more information.
+In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](/docs/3.16.0-LTS/app-builder/dynamic-access-rule/row-level-security) guide for more information.
 
 ### Query Timeout
 
@@ -274,5 +274,5 @@ In this operation, if a row with the matching primary key exists, it is updated;
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/bulk-upsert-pk-gui.png" alt="Mysql Bulk Upsert key GUI"/>
 
 :::tip
-Query results can be transformed using transformations. Learn more about transformations [here](/docs/app-builder/custom-code/transform-data).
+Query results can be transformed using transformations. Learn more about transformations [here](/docs/3.16.0-LTS/app-builder/custom-code/transform-data).
 :::

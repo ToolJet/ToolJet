@@ -22,7 +22,7 @@ Before starting the upgrade process, perform a **comprehensive backup of your Po
 Ensure both databases are included in your backup before proceeding with the upgrade.
 :::
 
-- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](/docs/setup/upgrade-to-v3/).
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](/docs/3.16.0-LTS/setup/upgrade-to-v3/).
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
@@ -30,17 +30,17 @@ Ensure both databases are included in your backup before proceeding with the upg
 
 The upgrade process depends on your deployment method. You can follow the upgrade process under the respective setup guides:
 
-- [Upgrade ToolJet on DigitalOcean](/docs/setup/digitalocean#upgrading-to-the-latest-lts-version)
-- [Upgrade ToolJet on Docker](/docs/setup/docker#upgrading-to-the-latest-lts-version)
-- [Upgrade ToolJet on AWS AMI](/docs/setup/ami#upgrading-to-the-latest-lts-version)
-- [Upgrade ToolJet on AWS ECS](/docs/setup/ecs#upgrading-to-the-latest-lts-version)
-- [Upgrade ToolJet on OpenShift](/docs/setup/openshift#upgrading-to-the-latest-lts-version)
-- [Upgrade ToolJet on Helm](/docs/setup/helm#upgrading-to-the-latest-lts-version)
-- [Upgrade ToolJet on Kubernetes](/docs/setup/kubernetes#upgrading-to-the-latest-lts-version)
-- [Upgrade ToolJet on Kubernetes(GKE)](/docs/setup/kubernetes-gke#upgrading-to-the-latest-lts-version)
-- [Upgrade ToolJet on Kubernetes(AKS)](/docs/setup/kubernetes-aks#upgrading-to-the-latest-lts-version)
-- [Upgrade ToolJet on Azure Container Apps](/docs/setup/azure-container#upgrading-to-the-latest-lts-version)
-- [Upgrade ToolJet on Google Cloud Run](/docs/setup/google-cloud-run#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on DigitalOcean](/docs/3.16.0-LTS/setup/digitalocean#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on Docker](/docs/3.16.0-LTS/setup/docker#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on AWS AMI](/docs/3.16.0-LTS/setup/ami#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on AWS ECS](/docs/3.16.0-LTS/setup/ecs#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on OpenShift](/docs/3.16.0-LTS/setup/openshift#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on Helm](/docs/3.16.0-LTS/setup/helm#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on Kubernetes](/docs/3.16.0-LTS/setup/kubernetes#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on Kubernetes(GKE)](/docs/3.16.0-LTS/setup/kubernetes-gke#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on Kubernetes(AKS)](/docs/3.16.0-LTS/setup/kubernetes-aks#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on Azure Container Apps](/docs/3.16.0-LTS/setup/azure-container#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on Google Cloud Run](/docs/3.16.0-LTS/setup/google-cloud-run#upgrading-to-the-latest-lts-version)
 
 ## <br/>
 

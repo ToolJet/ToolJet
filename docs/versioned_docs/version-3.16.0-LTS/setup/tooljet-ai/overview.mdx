@@ -76,7 +76,7 @@ This is the default setup for any workspace on ToolJet Cloud. AI requests are ro
     ['Setup requirement', 'None'],
 ]} />
 
-<GuideLink href="/docs/setup/tooljet-ai/managed-with-cloud">Read the full setup guide</GuideLink>
+<GuideLink href="/docs/3.16.0-LTS/setup/tooljet-ai/managed-with-cloud">Read the full setup guide</GuideLink>
 
 #### Use Your Own LLM API Key (BYOK)
 
@@ -91,7 +91,7 @@ On Enterprise plans, Bring Your Own Key (BYOK) lets you configure your own LLM p
     ['Setup requirement', 'Configure your API key'],
 ]} />
 
-<GuideLink href="/docs/setup/tooljet-ai/bring-your-own-key">Read the full setup guide</GuideLink>
+<GuideLink href="/docs/3.16.0-LTS/setup/tooljet-ai/bring-your-own-key">Read the full setup guide</GuideLink>
 
 ### Self Hosted Deployments
 
@@ -108,7 +108,7 @@ Self-hosted instances can use the same ToolJet Managed AI Server that powers Too
     ['Setup requirement', 'Whitelisting of outbound domains'],
 ]} />
 
-<GuideLink href="/docs/setup/tooljet-ai/managed-with-self-hosted">Read the full setup guide</GuideLink>
+<GuideLink href="/docs/3.16.0-LTS/setup/tooljet-ai/managed-with-self-hosted">Read the full setup guide</GuideLink>
 
 #### Use Your Own LLM API Key (BYOK)
 
@@ -123,7 +123,7 @@ On Enterprise plans, Bring Your Own Key (BYOK) lets you configure your own LLM p
     ['Setup requirement', 'Configure your API key'],
 ]} />
 
-<GuideLink href="/docs/setup/tooljet-ai/bring-your-own-key">Read the full setup guide</GuideLink>
+<GuideLink href="/docs/3.16.0-LTS/setup/tooljet-ai/bring-your-own-key">Read the full setup guide</GuideLink>
 
 #### ToolJet Enterprise AI
 
@@ -138,7 +138,7 @@ For organizations that cannot let any AI request leave their infrastructure, Too
     ['Setup requirement', 'Deploy a separate server image'],
 ]} />
 
-<GuideLink href="/docs/setup/tooljet-ai/tj-ai-enterprise">Read the full setup guide</GuideLink>
+<GuideLink href="/docs/3.16.0-LTS/setup/tooljet-ai/tj-ai-enterprise">Read the full setup guide</GuideLink>
 
 ## Which Setup Should I Use?
 
@@ -161,16 +161,16 @@ flowchart TD
     Self --> SelfBYOK["Bring Your Own Key (BYOK)"]
     Self --> SelfOwn["Your Own AI Server"]
 
-    click CloudKey "/docs/setup/tooljet-ai/cloud-with-cloud" "Read the full setup guide"
-    click CloudBYOK "/docs/setup/tooljet-ai/bring-your-own-key" "Read the full setup guide"
-    click SelfKey "/docs/setup/tooljet-ai/cloud-with-self-hosted" "Read the full setup guide"
-    click SelfBYOK "/docs/setup/tooljet-ai/bring-your-own-key" "Read the full setup guide"
-    click SelfOwn "/docs/setup/tooljet-ai/tj-ai-enterprise" "Read the full setup guide"
+    click CloudKey "/docs/3.16.0-LTS/setup/tooljet-ai/cloud-with-cloud" "Read the full setup guide"
+    click CloudBYOK "/docs/3.16.0-LTS/setup/tooljet-ai/bring-your-own-key" "Read the full setup guide"
+    click SelfKey "/docs/3.16.0-LTS/setup/tooljet-ai/cloud-with-self-hosted" "Read the full setup guide"
+    click SelfBYOK "/docs/3.16.0-LTS/setup/tooljet-ai/bring-your-own-key" "Read the full setup guide"
+    click SelfOwn "/docs/3.16.0-LTS/setup/tooljet-ai/tj-ai-enterprise" "Read the full setup guide"
 
     classDef leaf fill:#f0fdf4,stroke:#86efac,color:#14532d,font-weight:600;
     class CloudKey,CloudBYOK,SelfKey,SelfBYOK,SelfOwn leaf;
 ```
 
 :::info
-For a full breakdown of what data is shared with AI and how it's protected, see the [Privacy Policy](/docs/build-with-ai/privacy).
+For a full breakdown of what data is shared with AI and how it's protected, see the [Privacy Policy](/docs/3.16.0-LTS/build-with-ai/privacy).
 :::

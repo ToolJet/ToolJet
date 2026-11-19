@@ -18,7 +18,7 @@ By embedding applications, you reduce context switching, accelerate user adoptio
 
 ## Example
 
-For example, we have embedded a **Documentation Feedback** application directly in this document. Users can submit feedback without switching tabs, making the process faster and more efficient. On the backend, you can create a separate admin app on ToolJet to analyze the results or set up a [ToolJet workflow](/docs/workflows/overview/) to perform automated actions based on the feedback.
+For example, we have embedded a **Documentation Feedback** application directly in this document. Users can submit feedback without switching tabs, making the process faster and more efficient. On the backend, you can create a separate admin app on ToolJet to analyze the results or set up a [ToolJet workflow](/docs/3.16.0-LTS/workflows/overview/) to perform automated actions based on the feedback.
 
 <iframe width="100%" height="650" src="https://app.tooljet.ai/applications/docs-embed-app-example" title="ToolJet app - docs-embed-app-example" frameborder="0" allowfullscreen></iframe>
 
@@ -41,4 +41,4 @@ ToolJet allows you to embed applications as either public or private, depending 
 | **Authentication** | Not required                                                 | Required (Embed Application will follow the SSO of host application) |
 | **Granularity**    | Not applicable                                               | Tokens can be scoped to individual user and application              |
 | **Use Cases**      | Marketing dashboards, open forms, customer-facing widgets    | Internal dashboards, partner portals, sensitive data applications    |
-| **How to Embed**   | [Public Application](/docs/app-builder/embed-app/public-app) | [Private Application](/docs/app-builder/embed-app/private-app)       |
+| **How to Embed**   | [Public Application](/docs/3.16.0-LTS/app-builder/embed-app/public-app) | [Private Application](/docs/3.16.0-LTS/app-builder/embed-app/private-app)       |

@@ -5,7 +5,7 @@ title: Using RunPy
 
 In this guide, we will learn to import Python libraries in your applications.
 
-If you are new to using RunPy queries, check out our [guide](/docs/data-sources/run-py/) on how to get started with RunPy. ToolJet supports installing libraries using **micropip**. Check out [this](https://pyodide.org/en/stable/usage/packages-in-pyodide.html) documentation for a list of supported libraries.
+If you are new to using RunPy queries, check out our [guide](/docs/3.16.0-LTS/data-sources/run-py/) on how to get started with RunPy. ToolJet supports installing libraries using **micropip**. Check out [this](https://pyodide.org/en/stable/usage/packages-in-pyodide.html) documentation for a list of supported libraries.
 
 ## Installing Python Packages
 

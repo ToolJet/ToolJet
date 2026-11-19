@@ -24,6 +24,6 @@ ToolJet database allows you to:
 
 Once you log-in to your ToolJet account, from the left sidebar of the dashboard you can navigate to **ToolJet Database**.
 
-The ToolJet Database is available on both **[ToolJet Cloud](https://tooljet.com)** and **[Self Hosted](/docs/setup/)** deployment. You can manage your database and its data using the **Database editor UI**.
+The ToolJet Database is available on both **[ToolJet Cloud](https://tooljet.com)** and **[Self Hosted](/docs/3.16.0-LTS/setup/)** deployment. You can manage your database and its data using the **Database editor UI**.
 
 <img className="screenshot-full img-m" src="/img/tjdb/tjdb-panel.png" alt="ToolJet database" />

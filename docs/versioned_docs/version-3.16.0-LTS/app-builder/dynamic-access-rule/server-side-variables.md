@@ -7,7 +7,7 @@ title: Server-Side Variables
 
 Server-side variables let you reference the logged-in user's identity inside your queries and datasource configurations, with the values resolved securely **on the server** at the moment a query runs. These variables live under `globals.server.currentUser` and are substituted into your query on the backend, so their values never reach the browser.
 
-Because resolution happens server-side, these variables are safe to use for [row-level security](/docs/app-builder/dynamic-access-rule/row-level-security), authentication headers, and datasource connection options, where exposing values to the client would be a security risk.
+Because resolution happens server-side, these variables are safe to use for [row-level security](/docs/3.16.0-LTS/app-builder/dynamic-access-rule/row-level-security), authentication headers, and datasource connection options, where exposing values to the client would be a security risk.
 
 ## Common Use Cases
 
@@ -18,7 +18,7 @@ Because resolution happens server-side, these variables are safe to use for [row
 ## Prerequisites
 
 - Server-side variables are available on **Enterprise** plans only.
-- They can be used **only inside the [Query Manager](/docs/app-builder/connecting-with-data-sources/creating-managing-queries)**, in query bodies and datasource connection options.
+- They can be used **only inside the [Query Manager](/docs/3.16.0-LTS/app-builder/connecting-with-data-sources/creating-managing-queries)**, in query bodies and datasource connection options.
 
 ## How It Works
 
@@ -40,8 +40,8 @@ All server-side variables are available under `globals.server.currentUser`:
 | `globals.server.currentUser.firstName` | string | The user's first name. |
 | `globals.server.currentUser.lastName` | string | The user's last name. |
 | `globals.server.currentUser.role` | string | The user's role name, such as `admin`, `builder`, or `end-user`. |
-| `globals.server.currentUser.metadata` | object | Custom [user metadata](/docs/user-management/onboard-users/user-metadata) stored as key/value attributes. |
-| `globals.server.currentUser.ssoUserInfo` | object | [SSO provider user info](/docs/user-management/sso/oidc/ssouserinfo), populated for users who signed in through SSO. |
+| `globals.server.currentUser.metadata` | object | Custom [user metadata](/docs/3.16.0-LTS/user-management/onboard-users/user-metadata) stored as key/value attributes. |
+| `globals.server.currentUser.ssoUserInfo` | object | [SSO provider user info](/docs/3.16.0-LTS/user-management/sso/oidc/ssouserinfo), populated for users who signed in through SSO. |
 | `globals.server.currentUser.groups` | string[] | The names of the groups the user belongs to. The array always begins with `all_users`, followed by each assigned group. |
 
 ## Using Server-Side Variables
@@ -68,7 +68,7 @@ SELECT * FROM orders
 WHERE owner_email = '{{globals.server.currentUser.email}}';
 ```
 
-This is the foundation for [Row Level Security](/docs/app-builder/dynamic-access-rule/row-level-security), where you restrict which records a user can see based on their identity or group membership.
+This is the foundation for [Row Level Security](/docs/3.16.0-LTS/app-builder/dynamic-access-rule/row-level-security), where you restrict which records a user can see based on their identity or group membership.
 
 ### Setting Authentication Headers and Connection Options
 
@@ -85,10 +85,10 @@ ToolJet exposes the same user fields through two different variables. The differ
 | Where usable | Anywhere in the app | Query Manager only |
 | Client exposure | Value is available client-side | Value is never sent to the client |
 
-Use [`globals.currentUser`](/docs/app-builder/custom-code/access-currentuser) when you need user details for UI logic, such as showing or hiding a component. Use `globals.server.currentUser` when the value must remain secure, such as filtering data or authenticating a request.
+Use [`globals.currentUser`](/docs/3.16.0-LTS/app-builder/custom-code/access-currentuser) when you need user details for UI logic, such as showing or hiding a component. Use `globals.server.currentUser` when the value must remain secure, such as filtering data or authenticating a request.
 
 :::info
-Because `globals.currentUser` is resolved in the browser, a user can modify its value before it reaches the server. Never rely on it for security decisions such as [row-level security](/docs/app-builder/dynamic-access-rule/row-level-security). Use `globals.server.currentUser` for anything that must be enforced.
+Because `globals.currentUser` is resolved in the browser, a user can modify its value before it reaches the server. Never rely on it for security decisions such as [row-level security](/docs/3.16.0-LTS/app-builder/dynamic-access-rule/row-level-security). Use `globals.server.currentUser` for anything that must be enforced.
 :::
 
 ## Limitations
@@ -98,10 +98,10 @@ Because `globals.currentUser` is resolved in the browser, a user can modify its 
 
 ## Related
 
-- [Setup Row Level Security](/docs/app-builder/dynamic-access-rule/row-level-security)
-- [Workspace Constants](/docs/security/constants)
-- [User Metadata](/docs/user-management/onboard-users/user-metadata)
-- [Accessing Current User's Properties](/docs/app-builder/custom-code/access-currentuser)
+- [Setup Row Level Security](/docs/3.16.0-LTS/app-builder/dynamic-access-rule/row-level-security)
+- [Workspace Constants](/docs/3.16.0-LTS/security/constants)
+- [User Metadata](/docs/3.16.0-LTS/user-management/onboard-users/user-metadata)
+- [Accessing Current User's Properties](/docs/3.16.0-LTS/app-builder/custom-code/access-currentuser)
 
 <br/>
 ---

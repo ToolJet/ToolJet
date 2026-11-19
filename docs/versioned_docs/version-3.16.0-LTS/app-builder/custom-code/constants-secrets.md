@@ -3,7 +3,7 @@ id: constants-secrets
 title: Referencing Constants and Secrets 
 ---
 
-When building applications in ToolJet, you often need to reuse fixed values (such as URLs or environment flags) or securely handle sensitive information (such as API keys or database credentials). [Workspace Constants and Secrets](/docs/security/constants/) make this process easy, safe, and maintainable, especially when working across multiple apps or with larger teams. 
+When building applications in ToolJet, you often need to reuse fixed values (such as URLs or environment flags) or securely handle sensitive information (such as API keys or database credentials). [Workspace Constants and Secrets](/docs/3.16.0-LTS/security/constants/) make this process easy, safe, and maintainable, especially when working across multiple apps or with larger teams. 
 
 In this guide, you'll learn how to use Workspace Constants and Secrets within your ToolJet apps. 
 

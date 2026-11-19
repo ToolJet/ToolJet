@@ -17,7 +17,7 @@ Two identifiers are available inside these expressions:
 | `rowData`  | An object containing all column values for the current row. Use this when the formatting condition depends on data from other columns. |
 
 :::info
-To learn more about writing dynamic expressions, see [Using fx for Dynamic Behaviour](/docs/app-builder/custom-code/fx-dynamic-behaviour).
+To learn more about writing dynamic expressions, see [Using fx for Dynamic Behaviour](/docs/3.16.0-LTS/app-builder/custom-code/fx-dynamic-behaviour).
 :::
 
 ## Configuring Conditional Formatting
@@ -125,7 +125,7 @@ You can use hex color codes, named CSS colors (`red`, `lightgreen`), or `rgb()`/
 
 #### Dynamic Columns
 
-When using **[Dynamic Columns](/docs/widgets/table/dynamic-column)**, you can set conditional formatting directly in the column JSON definition using the `textColor` and `cellBackgroundColor` keys:
+When using **[Dynamic Columns](/docs/3.16.0-LTS/widgets/table/dynamic-column)**, you can set conditional formatting directly in the column JSON definition using the `textColor` and `cellBackgroundColor` keys:
 
 ```json
 {
@@ -186,4 +186,4 @@ Disable the button while a related query is in progress to prevent duplicate sub
 
 ## Related
 
-- [Using fx for Dynamic Behaviour](/docs/app-builder/custom-code/fx-dynamic-behaviour) — Writing dynamic expressions across ToolJet components.
+- [Using fx for Dynamic Behaviour](/docs/3.16.0-LTS/app-builder/custom-code/fx-dynamic-behaviour) — Writing dynamic expressions across ToolJet components.

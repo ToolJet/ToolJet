@@ -1,0 +1,138 @@
+---
+id: graphql
+title: GraphQL
+---
+
+ToolJet can establish connections with GraphQL endpoints, enabling the execution of queries and mutations.
+
+## Connection
+
+To establish a connection with the GraphQL global datasource, you can either click on the **+ Add new datasource** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+
+ToolJet requires the following to connect to a GraphQL datasource.
+
+### Credentials
+
+- **Base URL**: The URL of the GraphQL API endpoint where requests are sent.
+- **Headers**: Key-value pairs sent with the request to provide metadata such as authentication tokens or content type.
+- **URL parameters**: Additional key-value pairs appended to the request URL as query string parameters.
+- **Body**: The request payload containing the GraphQL query, variables, or mutation data.
+- **Cookies**: Cookie values included with the request for session management or authentication.
+
+<img className="screenshot-full img-l" src="/img/datasource-reference/graphql/connection-v4.png" alt="Data source GraphQL"/>
+
+### Authentication Types
+
+The method of authentication to use with GraphQL requests.
+
+  - **None**: No credentials or tokens are required.
+
+  - **Basic**: Requires Username and Password.
+  <img className="screenshot-full img-full" src= "/img/datasource-reference/graphql/basic-conenction.png" alt="basic GraphQL Connection" style={{marginBottom:'15px'}} />
+
+  - **Bearer**: Requires a token, typically a JSON Web Token (JWT), to grant access.
+  <img className="screenshot-full img-full" src="/img/datasource-reference/graphql/bearer-connection.png" alt="bearer-GraphQL-Connection" style={{marginBottom:'15px'}}/>
+
+  - **OAuth 2.0**: Select a **Grant type**, either **Authorization code** or **Client credentials**. Both grant types use **Access token URL**, **Access token URL custom headers**, **Client ID**, **Client secret**, **Scope(s)**, and **Client authentication**. **Scope(s)** is pre-filled with `read, write`; replace it with the scopes your provider expects. **Client authentication** can be **Send as basic auth header** (default) or **Send client credentials in body**.
+
+    - **Authorization code** also uses **Add access token to** (only **Request header** is available), **Header prefix** (default `Bearer `), **Authorization URL**, **Custom authentication parameters**, and **Custom query parameters**. Turn on **Authentication required for all users** to have each user authorize with their own account the first time they run a query from this data source. When it's off, all users share one token.
+    - **Client credentials** also uses **Audience**, which is sent with the token request when set. The access token is always sent in the `Authorization` header with the `Bearer ` prefix.
+
+    :::caution
+    The **Grant type** dropdown also lists **Authorization code with PKCE**, but ToolJet doesn't send a code challenge or code verifier for it, so the flow doesn't work with providers that require PKCE. Use **Authorization code** or **Client credentials**.
+    :::
+
+    <img className="screenshot-full img-l" src="/img/datasource-reference/graphql/oauth-connection.png" alt="oauth 2.0-GraphQL-Connection"/>
+
+### Secure Sockets Layer (SSL)
+
+- **SSL certificate**: The certificate to use with GraphQL requests. Supported types:
+  - **None** (default): No custom certificate. The server's certificate isn't verified.
+  - **CA certificate**: Requires a CA certificate in **CA cert** to verify the server certificate.
+  - **Client certificate**: Requires **Client key**, **Client cert**, and **CA cert** to authenticate with the server.
+
+## Querying GraphQL
+
+1. Click on **+** button of the query manager at the bottom panel of the editor.
+2. Select the **GraphQL** datasource added in previous step.
+3. Add the Query.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
+
+**Required Parameters**
+- Query
+
+**Optional Parameters**
+- Variables
+- Headers
+- Params
+- Cookies
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/graphql/query-v4.png" alt="GraphQl querying" style={{marginBottom:'15px'}}/>
+
+#### Example
+
+```yaml
+{
+  todos {
+    id
+    description
+  }
+}
+```
+
+:::tip
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
+:::
+
+## Metadata
+
+Metadata is additional information about the data returned by the GraphQL query. It includes details such as the request URL, method, headers, and response status code. You can access this information using the `metadata` object. REST API. The metadata can be accessed within queries and components using the `{{queries.<queryname>.metadata}}` syntax.
+
+:::info
+While accessing the properties of the metadata object, which contains a hyphen, you can use the bracket notation. For example, to access the `content-length` property, you can use `{{queries.graphql1.metadata.request.headers["content-length"]}}` or `{{queries.graphql1.metadata.request.headers."content-length"}}`.
+:::
+
+<details id="tj-dropdown">
+<summary>**Example Metadata**</summary>
+
+```json
+{
+  "request": {
+    "url": "https://swapi-graphql.netlify.app/.netlify/functions/index?testParam=valueParam",
+    "method": "POST",
+    "headers": {
+      "user-agent": "got (https://github.com/sindresorhus/got)",
+      "header1key": "Header1value",
+      "content-type": "application/json",
+      "content-length": "275",
+      "accept-encoding": "gzip, deflate, br"
+    },
+    "params": {
+      "testParam": "valueParam"
+    }
+  },
+  "response": {
+    "statusCode": 200,
+    "headers": {
+      "access-control-allow-origin": "*",
+      "age": "0",
+      "cache-control": "no-cache",
+      "cache-status": ""Netlify Durable"; fwd=method, "Netlify Edge"; fwd=method",
+      "content-encoding": "br",
+      "content-length": "840",
+      "content-type": "application/json; charset=utf-8",
+      "date": "Fri, 13 Sep 2024 06:38:27 GMT",
+      "etag": "W/"18ad-ZANyCoLSJjHWg3k1SaMp6gH/gdQ"",
+      "netlify-vary": "query",
+      "server": "[REDACTED]",
+      "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+      "vary": "Accept-Encoding",
+      "x-nf-request-id": "01J7N1NG25V8Q9GY51RH11ACTN",
+      "x-powered-by": "Express",
+      "connection": "close"
+    }
+  }
+}
+```
+
+</details>

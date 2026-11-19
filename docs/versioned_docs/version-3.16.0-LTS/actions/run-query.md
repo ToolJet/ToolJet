@@ -25,9 +25,9 @@ await actions.runQuery('<queryName>');
 ```
 
 :::info
-When triggering a query using `queries.<queryName>.run()`, you can optionally pass **callback function handlers** to handle success and failure states programmatically. See [Callback Functions](/docs/data-sources/run-js#callback-functions) for details.
+When triggering a query using `queries.<queryName>.run()`, you can optionally pass **callback function handlers** to handle success and failure states programmatically. See [Callback Functions](/docs/3.16.0-LTS/data-sources/run-js#callback-functions) for details.
 :::
 
 :::info
-For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/3.16.0-LTS/actions/run-actions-from-runjs/).
 :::

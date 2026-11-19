@@ -28,7 +28,7 @@ Simultaneous Development using git sync is planned to release in upcoming versio
 
 ## Application Migration
 
-ToolJet supports the use of multiple instances as multiple environments — Development, Staging, and Production. Applications can be migrated between these environments using git sync. For more details, refer to the [Instance as Environment](/docs/development-lifecycle/environment/self-hosted/multi-instance/instance-as-environment) guide.
+ToolJet supports the use of multiple instances as multiple environments — Development, Staging, and Production. Applications can be migrated between these environments using git sync. For more details, refer to the [Instance as Environment](/docs/3.16.0-LTS/development-lifecycle/environment/self-hosted/multi-instance/instance-as-environment) guide.
 
 To migrate an application to the staging or production environment, follow the steps to [Import Application](#import-application). Ensure that the **Make application editable** checkbox is **disabled** during import to prevent unintended commits from these environments.
 

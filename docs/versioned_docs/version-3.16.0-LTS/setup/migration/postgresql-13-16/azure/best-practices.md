@@ -34,11 +34,11 @@ slug: /setup/postgresql-13-16/azure/best-practices/
 - [Azure Database for PostgreSQL Documentation](https://docs.microsoft.com/en-us/azure/postgresql/)
 - [Azure PostgreSQL Flexible Server Major Version Upgrade](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/how-to-perform-major-version-upgrade)
 - [Azure PostgreSQL SSL Configuration](https://docs.microsoft.com/en-us/azure/postgresql/concepts-ssl-connection-security)
-- [ToolJet Environment Variables Documentation](https://docs.tooljet.com/docs/setup/env-vars/)
+- [ToolJet Environment Variables Documentation](https://docs.tooljet.com/docs/3.16.0-LTS/setup/env-vars/)
 - [Azure Kubernetes Service Documentation](https://docs.microsoft.com/en-us/azure/aks/)
 - [Azure Container Instances Documentation](https://docs.microsoft.com/en-us/azure/container-instances/)
-- [ToolJet Kubernetes AKS Setup](https://docs.tooljet.com/docs/setup/kubernetes-aks)
-- [ToolJet Azure Container Setup](https://docs.tooljet.com/docs/setup/azure-container)
+- [ToolJet Kubernetes AKS Setup](https://docs.tooljet.com/docs/3.16.0-LTS/setup/kubernetes-aks)
+- [ToolJet Azure Container Setup](https://docs.tooljet.com/docs/3.16.0-LTS/setup/azure-container)
 
 :::note
 **Important Note**: The `PGSSLMODE=require` environment variable is mandatory for connecting to Azure Database for PostgreSQL Flexible Server. This ensures secure SSL/TLS encrypted connections are established and is a requirement for all Azure PostgreSQL databases.

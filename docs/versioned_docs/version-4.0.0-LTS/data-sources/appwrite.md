@@ -1,0 +1,110 @@
+---
+id: appwrite
+title: Appwrite
+---
+
+ToolJet can connect to appwrite database to read/write data.
+
+## Connection
+
+To establish a connection with the Appwrite data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard.
+
+ToolJet requires the following to connect to your Appwrite:
+
+- **Host (API endpoint)**
+- **Project ID**
+- **Database ID**
+- **Secret Key**
+
+You'll find the Secret Key and other credentials on your Appwrite's project settings page. You may need to create a new key if you don't have one already.
+
+:::info
+You should also set the scope for access to a particular resource. Learn more about the **API keys and scopes** [here](https://appwrite.io/docs/keys).
+:::
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/appwrite/appwrite-connection.png" alt="Appwrite intro"/>
+
+## Querying Appwrite
+
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **Appwrite** datasource added in previous step.
+3. Select the operation you want to perform.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-querying.png" alt="Appwrite intro"/>
+
+:::tip
+Query results can be transformed using Transformations. Read our **Transformation Documentation** [here](/docs/app-builder/custom-code/transform-data).
+:::
+
+## Supported Operations
+
+- **[List Documents](#list-documents)**
+- **[Get Document](#get-document)**
+- **[Add Document to Collection](#add-document-to-collection)**
+- **[Update Document](#update-document)**
+- **[Delete Document](#delete-document)**
+
+### List Documents
+
+This operation is used to get a list of all the user documents.
+
+#### Required Parameters
+
+- **Collection ID**
+
+#### Optional Parameters
+
+- **Limit**
+- **Order fields**
+- **Order types**
+- **Field**
+- **Operator**
+- **Value**
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-listdoc.png" alt="Appwrite List" />
+
+### Get Document
+
+Use this operation to get a document from a collection by its unique ID.
+
+#### Required Parameters
+
+- **Collection ID**
+- **Document ID**
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-getdoc.png" alt="Appwrite get" />
+
+### Add Document to Collection
+
+Use this operation to create a new document in a collection.
+
+#### Required Parameters
+
+- **Collection ID**
+- **Body**
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-adddoc.png" alt="Appwrite add" />
+
+### Update Document
+
+Use this operation to update a document.
+
+#### Required Parameters
+
+- **Collection ID**
+- **Document ID**
+- **Body**
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-updatedoc.png" alt="Appwrite update" />
+
+### Delete Document
+
+Use this operation for deleting a document in the collection.
+
+#### Required Parameters
+
+- **Collection ID**
+- **Document ID**
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-deldoc.png" alt="Appwrite delete"/>

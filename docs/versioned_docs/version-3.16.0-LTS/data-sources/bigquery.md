@@ -7,7 +7,7 @@ ToolJet can connect to **BigQuery** databases to run BigQuery queries.
 
 ## Connection
 
-To establish a connection with the **BigQuery** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose BigQuery as the data source.
+To establish a connection with the **BigQuery** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/3.16.0-LTS/data-sources/overview)** page from the ToolJet dashboard and choose BigQuery as the data source.
 
 ### OAuth 2.0 
 
@@ -109,7 +109,7 @@ BigQuery supports query parameters only when using GoogleSQL. Query parameters c
 <img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/bigquery/sql-mode.png" alt="Bigquery sql mode" />
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/3.16.0-LTS/app-builder/custom-code/transform-data)
 :::
 
 ## Querying BigQuery in GUI Mode

@@ -6,7 +6,7 @@ title: AWS Bedrock
 Use the AWS Bedrock plugin in ToolJet to list available foundation models and generate content using them, right from your ToolJet application. This makes it easy to build AI-powered features like text generation, summarization, and classification with minimal setup.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection

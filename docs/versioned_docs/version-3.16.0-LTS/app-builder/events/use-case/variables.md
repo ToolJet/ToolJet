@@ -65,5 +65,5 @@ In your **Form** app, you might want to clear the page-level `contact` variable 
 - Key: `contact` *(Variable name you want to unset.)*
 
 :::info
-You can also manage variables using code. Refer to the [Manage Variables](/docs/app-builder/custom-code/managing-variables) guide for more information.
+You can also manage variables using code. Refer to the [Manage Variables](/docs/3.16.0-LTS/app-builder/custom-code/managing-variables) guide for more information.
 :::

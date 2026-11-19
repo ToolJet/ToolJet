@@ -1,0 +1,95 @@
+---
+id: athena
+title: Athena
+---
+
+ToolJet can connect to **Amazon Athena** which is an interactive query service that makes it easy to analyze data in Amazon S3 using standard SQL.
+
+## Connection
+
+To establish a connection with the **Amazon Athena** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose **Amazon Athena** as the data source.
+
+ToolJet requires the following to connect to your Athena.
+
+- **Database**
+- **S3 output location**
+- **Access key**
+- **Secret key**
+- **Region**
+
+:::info
+Amazon Athena authenticates with an IAM access key and secret key only. Other AWS authentication methods, such as instance credentials or a role ARN, aren't available for this data source.
+:::
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-connection-v3.png" alt="Athena connection" />
+
+## Querying Amazon Athena
+
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **Amazon Athena** datasource added in previous step.
+3. Select the SQL Query from the dropdown and enter the query.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
+
+:::tip
+Refer [Amazon Athena documentation](https://docs.aws.amazon.com/athena/latest/ug/what-is.html) for more information.
+:::
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-query-v3.png" alt="Athena Query" />
+
+### Pagination
+
+Use these optional fields below the query editor to page through large results:
+
+| Field | Description |
+|-------|-------------|
+| **Pagination** | Maximum number of rows to return per request. Leave it empty to let Athena decide the page size. |
+| **Next token** | The `NextToken` value from a previous response. Fetches the next page of results. |
+| **Query execution id** | The `QueryExecutionId` value from a previous response. When set, ToolJet doesn't run the SQL query again; it fetches the results of that execution. |
+
+Each response returns the rows in `Items`, along with `Count`, `QueryExecutionId`, `DataScannedInMB`, `QueryCostInUSD`, `EngineExecutionTimeInMillis`, and `S3Location`. When more rows remain, the response also includes `NextToken`. To fetch the next page, set both **Query execution id** and **Next token** from the previous response, so ToolJet reads the next page of the same execution instead of running the query again.
+
+## SQL Query Examples
+
+### Creating Table 
+
+This query is used to create an external table within the database. The data for this table is stored in an S3 bucket at the provided URL (`s3://athena-express-akiatfa53s-2026/` in this example).
+
+```sql
+CREATE EXTERNAL TABLE student (
+    name STRING,
+    age INT
+)  LOCATION 's3://athena-express-akiatfa53s-2026/';
+```
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-create.png" alt="Athena connection" />
+
+### Inserting to Table
+
+This query is attempting to insert a new record into the *student* table in a database. 
+
+```sql
+INSERT INTO student
+VALUES ('Lansing',1)
+```
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-insert.png" alt="Athena connection" />
+
+### Select Operation
+
+This query retrieves all records from the *student* table where the age of the student is exactly 1 year.
+
+```sql
+SELECT * from student WHERE AGE=1
+```
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-select.png" alt="Athena connection" />
+
+### List Tables
+
+This query is used to display a list of all tables in the current database.
+
+```sql
+SHOW TABLES
+```
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-list.png" alt="Athena connection" />

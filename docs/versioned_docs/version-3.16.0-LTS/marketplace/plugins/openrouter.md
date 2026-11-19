@@ -6,7 +6,7 @@ title: OpenRouter
 OpenRouter gives you one API key for hundreds of models across providers, so you can switch between them without adding a datasource and a key for each. Its API is OpenAI-compatible, which means this datasource also works against any other OpenAI-compatible endpoint, including one running inside your own network.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection

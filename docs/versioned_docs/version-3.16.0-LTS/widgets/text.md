@@ -21,7 +21,7 @@ The **Text** component can be used to create headers, sub-headers, add labels ne
 | On hover                                    | Triggers whenever the user hovers over the component. |
 
 :::info
-Check [Action Reference](/docs/actions/run-query) docs to get detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.16.0-LTS/actions/run-query) docs to get detailed information about all the **Actions**.
 :::
 
 ## Component Specific Actions (CSA)
@@ -37,7 +37,7 @@ Following actions of the **Text** component can be controlled using Component-Sp
 | setDisable()                                 | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.text1.setDisable(true)`) or trigger it using an event.              |
 
 :::info
-Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
+Check the **component specific actions** available for this component **[here](/docs/3.16.0-LTS/actions/control-component)**.
 :::
 
 ## Exposed Variables
@@ -103,8 +103,8 @@ Check the **component specific actions** available for this component **[here](/
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
 
 :::info
-The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** feature enabled.
 :::

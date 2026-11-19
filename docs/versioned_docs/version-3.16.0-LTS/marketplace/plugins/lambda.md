@@ -6,7 +6,7 @@ title: AWS Lambda
 ToolJet can connect to AWS Lambda to run serverless functions.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>

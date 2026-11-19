@@ -65,7 +65,7 @@ conditions:
 - [Google Cloud SQL PostgreSQL Documentation](https://cloud.google.com/sql/docs/postgres)
 - [Cloud SQL SSL/TLS Documentation](https://cloud.google.com/sql/docs/postgres/configure-ssl-instance)
 - [Google Cloud SQL Proxy Documentation](https://cloud.google.com/sql/docs/postgres/sql-proxy)
-- [ToolJet Environment Variables Documentation](https://docs.tooljet.com/docs/setup/env-vars/)
+- [ToolJet Environment Variables Documentation](https://docs.tooljet.com/docs/3.16.0-LTS/setup/env-vars/)
 - [GKE Workload Identity Documentation](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
 - [Cloud Run Security Documentation](https://cloud.google.com/run/docs/securing/service-identity)
 

@@ -29,7 +29,7 @@ The page shows the number of libraries at the top (for example, "3 libraries") a
 | **Name** | The library's display name, set when the library was created with `tooljet library init`. |
 | **Latest version** | The newest published version. Shows `dev` if the library has only dev uploads and no published version, and `—` if it has neither. |
 
-You can't create a library from this page. Libraries are only created with the [ToolJet CLI](/docs/app-builder/custom-component-library/setup#create-a-library). If the workspace has no libraries, the page shows "No custom component library yet — publish one to this workspace with the ToolJet CLI."
+You can't create a library from this page. Libraries are only created with the [ToolJet CLI](/docs/3.16.0-LTS/app-builder/custom-component-library/setup#create-a-library). If the workspace has no libraries, the page shows "No custom component library yet — publish one to this workspace with the ToolJet CLI."
 
 ## Delete a Library
 

@@ -17,7 +17,7 @@ Use this action to scroll a specific component into the visible area of the app.
 <img className="screenshot-full img-s" src="/img/actions/scroll-component-into-view/scroll-component-into-view.png" alt="ToolJet - Action reference - Scroll Component into View" />
 
 :::info
-You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/actions/run-actions-from-runjs/).
+You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/3.16.0-LTS/actions/run-actions-from-runjs/).
 :::
 
 ## Triggering via RunJS
@@ -28,7 +28,7 @@ actions.scrollComponentInToView("<componentName>");
 ```
 
 :::info
-For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](/docs/actions/run-actions-from-runjs/).
+For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](/docs/3.16.0-LTS/actions/run-actions-from-runjs/).
 :::
 
 :::note

@@ -14,7 +14,7 @@ title: Configure GitSync
 
 In this guide, we will explore how to configure GitSync using GitHub as the repository manager. By default GitSync is configured for the **master** branch, but this can be configured to a different branch as well, refer to **[Configuring GitSync on a Different Branch](#configuring-gitsync-on-a-different-branch)** section for more information.
 
-For more information on using other repository managers, such as GitLab or Gitea, refer to the **[SSH Configuration for Git Repo Manager](/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config)** guide.
+For more information on using other repository managers, such as GitLab or Gitea, refer to the **[SSH Configuration for Git Repo Manager](/docs/3.5.0-LTS/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config)** guide.
 
 ## Setting up GitSync in ToolJet
 
@@ -33,7 +33,7 @@ Role Required: **Admin**
     If you are using an existing repository, then you can obtain the URL by clicking on the **Code** button.
     <img className="screenshot-full img-l" src="/img/development-lifecycle/gitsync/config/ssh-code.png" alt="GitSync" />
 
-    To generate the SSH URL for other git repository manager, such as GitLab and Gitea, follow the **[SSH Configuration](/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config#generating-ssh-url)** guide.
+    To generate the SSH URL for other git repository manager, such as GitLab and Gitea, follow the **[SSH Configuration](/docs/3.5.0-LTS/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config#generating-ssh-url)** guide.
 
 3. Go to the **Workspace settings**, and click on the **Configure git sync** tab. Select Git SSH Protocol as your Repository Connection. <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/configure-git`)
@@ -60,12 +60,12 @@ Role Required: **Admin**
         
 8. Paste the SSH key generated from the ToolJet. 
 
-9. Make sure that the **Allow write access** checkbox is checked, especially when configuring the GitSync feature to [push changes to Git](/docs/development-lifecycle/gitsync/push). However, it is not mandatory to check this option when setting up the GitSync feature for [pulling changes from Git](/docs/development-lifecycle/gitsync/pull).
+9. Make sure that the **Allow write access** checkbox is checked, especially when configuring the GitSync feature to [push changes to Git](/docs/3.5.0-LTS/development-lifecycle/gitsync/push). However, it is not mandatory to check this option when setting up the GitSync feature for [pulling changes from Git](/docs/3.5.0-LTS/development-lifecycle/gitsync/pull).
         
 10. Finally, click on the **Add key** button.
     <img className="screenshot-full img-l" src="/img/development-lifecycle/gitsync/config/add-key.png" alt="GitSync" />
 
-    To deploy the SSH key for other git repository manager, such as GitLab and Gitea, follow the **[SSH Configuration](/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config#deploy-the-ssh-key)** guide.
+    To deploy the SSH key for other git repository manager, such as GitLab and Gitea, follow the **[SSH Configuration](/docs/3.5.0-LTS/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config#deploy-the-ssh-key)** guide.
 
 11. After deploying the SSH Key, go to the **Configure git** tab on ToolJet, and click on the **Finalize setup** button. If the SSH key is configured correctly, you will see a success message.
     <img className="screenshot-full img-l" src="/img/gitsync/ssh/config-success.png" alt="GitSync" />

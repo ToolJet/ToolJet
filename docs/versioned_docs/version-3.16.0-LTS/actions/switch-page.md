@@ -3,7 +3,7 @@ id: switch-page
 title: Switch Page
 ---
 
-The **Switch Page** action navigates to a different page within a [Multipage App](/docs/app-builder/events/use-case/page-nav). Use it with any event handler to build in-app navigation.
+The **Switch Page** action navigates to a different page within a [Multipage App](/docs/3.16.0-LTS/app-builder/events/use-case/page-nav). Use it with any event handler to build in-app navigation.
 
 ## Configuration
 
@@ -49,5 +49,5 @@ actions.switchPage('<pageHandle>', [
 ```
 
 :::info
-For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/3.16.0-LTS/actions/run-actions-from-runjs/).
 :::

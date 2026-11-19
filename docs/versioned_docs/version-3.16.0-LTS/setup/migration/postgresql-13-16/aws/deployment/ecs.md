@@ -191,4 +191,4 @@ aws ecs execute-command \
   --command "ls -la /certs/"
 ```
 
-**Reference**: [ToolJet ECS Setup Documentation](https://docs.tooljet.com/docs/setup/ecs)
+**Reference**: [ToolJet ECS Setup Documentation](https://docs.tooljet.com/docs/3.16.0-LTS/setup/ecs)

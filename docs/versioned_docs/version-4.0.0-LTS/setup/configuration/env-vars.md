@@ -1,0 +1,554 @@
+---
+id: env-vars
+title: Environment Variables
+slug: /setup/env-vars/
+---
+
+ToolJet requires several environment variables to function properly. Below is a simplified guide to setting them up.
+
+## ToolJet Server
+
+### Required Variables
+
+#### ToolJet Host
+
+- `TOOLJET_HOST`: Public URL of ToolJet (e.g., `https://app.tooljet.com`)
+
+#### Lockbox Configuration
+
+- `LOCKBOX_MASTER_KEY`: 32-byte hex string for encrypting datasource credentials
+  - Generate using: `openssl rand -hex 32`
+
+#### Application Secret
+
+- `SECRET_KEY_BASE`: 64-byte hex string for encrypting session cookies
+  - Generate using: `openssl rand -hex 64`
+
+#### Database Configuration
+
+- `PG_HOST`: PostgreSQL database host
+- `PG_DB`: Database name
+- `PG_USER`: Username
+- `PG_PASS`: Password
+- `PG_PORT`: Port
+
+**Docker Compose Setup:** If you are using a Docker Compose setup with an in-built PostgreSQL instance, set `PG_HOST` to `postgres`. This ensures that Docker's internal DNS resolves the hostname correctly, allowing the ToolJet server to connect to the database seamlessly.
+
+**Database Connection URL:** If you intend to use the database connection URL and your database does not support SSL, use the following format when setting the `DATABASE_URL` variable:
+
+```
+DATABASE_URL=postgres://PG_USER:PG_PASS@PG_HOST:5432/PG_DB?sslmode=disable
+```
+
+Replace `username`, `password`, `hostname`, `port`, and `database_name` with your actual database details.
+
+#### Disabling Automatic Database & Extension Creation (Optional)
+
+- `PG_DB_OWNER=false`: ToolJet by default tries to create database based on `PG_DB` variable set and additionally my try to create postgres extensions. This requires the postgres user to have `CREATEDB` permission. If this cannot be granted you can disable this behaviour by setting `PG_DB_OWNER` as `false` and will have to manually run them.
+
+#### ToolJet Database
+
+- `TOOLJET_DB`: Default database name (`tooljet_db`)
+- `TOOLJET_DB_HOST`: Database host
+- `TOOLJET_DB_USER`: Database username
+- `TOOLJET_DB_PASS`: Database password
+- `TOOLJET_DB_PORT`: Database port
+- `TOOLJET_DB_BULK_UPLOAD_MAX_ROWS`: Maximum number of rows allowed in bulk upload (default: 5000)
+- `TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB`: Maximum file size of CSV for bulk upload. Default value is 5 MB
+
+#### Why ToolJet Requires Two Databases
+
+ToolJet requires two separate databases for optimal functionality. **TOOLJET_DB** is used to store the platform's internal metadata, including tables created within ToolJet. On the other hand, **PG_DB** acts as the primary database for application data, handling end-user data managed by the apps built on ToolJet.
+
+**Automatic Database Creation:** The database name specified in `TOOLJET_DB` will be automatically created during the server boot process in all production deployment setups.
+
+#### PostgREST
+
+ToolJet uses **PostgREST (v12.2.0)** for API access. The following environment variables are required for PostgREST:
+
+- `PGRST_JWT_SECRET`: JWT secret (Generate using `openssl rand -hex 32`). If this parameter is not specified, PostgREST will refuse authentication requests.
+- `PGRST_DB_URI`: Database connection string
+- `PGRST_LOG_LEVEL=info`
+- `PGRST_DB_PRE_CONFIG=postgrest.pre_config`
+
+If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
+
+#### Configuring PGRST_DB_URI
+
+`PGRST_DB_URI` is required for PostgREST, which is responsible for exposing the database as a REST API. It must be explicitly set to ensure proper functionality.
+
+This follows the format:
+
+```
+PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
+```
+
+Ensure that:
+
+- `username` and `password` match the credentials for the PostgREST database user.
+- `hostname` is correctly set (`postgres` if using Docker Compose setup with an in-built PostgreSQL).
+- `port` is the PostgreSQL port (default: `5432`).
+- `database_name` is the database used for PostgREST (`tooljet_db` in this example).
+
+#### Redis Configuration
+
+Include the following Redis environment variables within the ToolJet deployment only if you are connecting to an external **Redis instance (v7.x recommended)** for a multi-service or multi-pod setup, or when running workflows with separate worker containers.
+
+**Required Variables:**
+
+```
+REDIS_HOST=
+REDIS_PORT=
+```
+
+**Optional Variables:**
+
+```
+REDIS_USER=
+REDIS_PASSWORD=
+REDIS_DB=0                   # Redis database number (default: 0)
+REDIS_TLS=false              # Enable TLS/SSL connection (set to 'true')
+```
+
+:::info
+**For Workflows:** When running separate worker containers or multiple instances for workflow scheduling, an external Redis instance is **required** for job queue coordination. The built-in Redis only works for single instance deployments.
+:::
+
+#### Workflow Scheduling
+
+ToolJet Workflows allows you to design and execute complex, data-centric automations using a visual, node-based interface. Configure the following environment variables to enable workflow scheduling:
+
+**Required Variables:**
+
+- `WORKER`: Set to `true` to enable job processing for workflow scheduling. Set to `false` or leave unset for HTTP-only mode (default: `false`)
+
+**Optional Variables:**
+
+- `TOOLJET_WORKFLOW_CONCURRENCY`: Number of workflow jobs processed concurrently per worker instance (default: `5`)
+
+:::warning
+**External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment).
+:::
+
+For detailed workflow configuration and deployment examples, refer to the [Workflow Migration Guide](/docs/setup/workflow-temporal-to-bullmq-migration/).
+
+### Optional Configurations
+
+#### Multiplayer Editing
+
+- `ENABLE_MULTIPLAYER_EDITING`: Sets the initial value of the **Multiplayer editing** instance setting, which lets several builders edit an app at the same time. Set to `true` or `false`. Default: `true`. ToolJet reads this variable when it first sets up the instance. After that, change the setting from **Settings > Manage instance settings**. Multiplayer editing also needs a paid license.
+
+#### AI Builder on Closed Networks
+
+- `ENABLE_MCP_SOCKET_RELAY`: Set to `true` if your instance can't be reached from the internet (for example, on a private network or behind a firewall that blocks inbound traffic) and you use ToolJet Managed AI Server. ToolJet then runs the MCP server the AI builder uses inside its own container and relays its requests over the outbound connection to the AI server, so the AI builder can create and update apps without inbound access. Default: `false`. To learn more, refer to [Closed or Private Networks](/docs/setup/tooljet-ai/managed-with-self-hosted#closed-or-private-networks).
+
+:::note
+If AI builder saves fail with `fetch failed` because your `TOOLJET_HOST` URL can't be reached from inside the container, set `TOOLJET_MCP_API_URL=http://127.0.0.1:<PORT>`, where `<PORT>` is the port the ToolJet server listens on inside the container (`3000` by default, `80` with the standard Docker Compose setup). To learn more, refer to [Point the MCP Server at ToolJet Inside the Container](/docs/setup/tooljet-ai/managed-with-self-hosted#point-the-mcp-server-at-tooljet-inside-the-container).
+:::
+
+#### User Session Expiry
+
+- `USER_SESSION_EXPIRY`: Controls session expiry time (in minutes). Default: **10 days**.
+
+Note: The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours
+
+#### Password Retry Limit
+
+By default, an account is locked after 5 failed login attempts. You can control this with:
+
+- `DISABLE_PASSWORD_RETRY_LIMIT=true`: Disables the retry limit.
+- `PASSWORD_RETRY_LIMIT=<number>`: Sets a custom retry limit (default is 5).
+
+#### Invite Link Expiry
+
+- `LINK_EXPIRY_MINUTES`: Controls how long workspace invite, forgot password, and email verification links remain valid (in minutes). Default: **1440 minutes (24 hours)**.
+
+#### Password Expiry
+
+- `PASSWORD_EXPIRY_DAYS`: Controls how long a password remains valid before the user is required to reset it (in days). Default: **30 days**. Set to `0` to disable password expiry.
+
+#### Two-Factor Authentication
+
+<PlanBadge type="enterprise" />
+
+- `MFA_MASTER_SECRET`: Secret used to derive each user's two-factor authentication (2FA) key. Required to use [two-factor authentication](/docs/user-management/authentication/2fa). No default.
+  - Use a long random value, for example one generated with `openssl rand -hex 32`.
+
+If `MFA_MASTER_SECRET` isn't set, every 2FA request (setting up an authenticator app, entering a code at sign-in, or turning 2FA off) fails with the error `MFA_MASTER_SECRET is not configured. Set it in the environment before enabling two-factor authentication.`
+
+:::warning
+Set `MFA_MASTER_SECRET` once and keep it unchanged. Each user's 2FA key is derived from this secret, so changing it invalidates every authenticator app that's already set up. Users who had 2FA turned on then need a super admin to [reset 2FA](/docs/user-management/authentication/2fa#reset-two-factor-authentication) before they can set it up again.
+:::
+
+#### Hide Account Setup Link
+
+- `HIDE_ACCOUNT_SETUP_LINK`: Set to `true` to hide the account setup link from the admin in the manage user page. Ensure SMTP is configured to send welcome emails.
+
+#### Bulk User Upload
+
+<PlanBadge type="enterprise" />
+
+Limits for [bulk uploading users](/docs/user-management/onboard-users/bulk-invite-users) from a CSV file:
+
+- `ORG_USERS_BULK_UPLOAD_MAX_FILE_SIZE_MB`: Maximum size of the CSV file, in MB. Default: **1**.
+- `ORG_USERS_BULK_UPLOAD_MAX_ROWS`: Maximum number of user rows per file. Default: **250**.
+
+Both values must be positive numbers. Any other value falls back to the default.
+
+#### Restrict Signups
+
+Set `DISABLE_SIGNUPS=true` to allow only invited users to sign up. The signup page will still be visible but unusable.
+
+#### SMTP Configuration
+
+ToolJet sends emails via SMTP.
+
+:::info
+If you have upgraded from a version prior to v2.62.0, the SMTP variables in your .env file will automatically be mapped to the UI. For versions v2.62.0 and later, SMTP configuration will no longer be picked up from the .env file for Enterprise Edition. You must configure SMTP through the UI. You can safely remove these variables from your .env file after ensuring that the configuration is properly set up in the UI.
+:::
+
+For **Enterprise Edition**, configure SMTP in the ToolJet Settings UI.
+
+For **Community Edition**, use these environment variables:
+
+- `DEFAULT_FROM_EMAIL`: Sender email address
+- `SMTP_USERNAME`: SMTP username
+- `SMTP_PASSWORD`: SMTP password
+- `SMTP_DOMAIN`: SMTP host
+- `SMTP_PORT`: SMTP port
+
+#### Custom CA Certificate
+
+If ToolJet needs to connect to self-signed HTTPS endpoints, ensure the `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path of the CA certificate file.
+
+- `NODE_EXTRA_CA_CERTS=/path/to/cert.pem`: Absolute path to the PEM file (can contain multiple certificates).
+
+#### ToolJet API Import Application
+
+By default, server accepts maximum JSON size as 50 MB. To increase this limit, use the following environment variable:
+
+- `MAX_JSON_SIZE = "150mb"`
+
+#### Customizing Workflow Configuration
+
+You can control workflow execution behavior using the following environment variables:
+
+| Variable | Description | Default | Unit |
+|-----------|-------------|---------|-------|
+| `WORKFLOW_TIMEOUT_SECONDS` | Maximum duration a workflow execution can run before timing out. | 60 | seconds |
+| `WORKFLOW_JS_MEMORY_LIMIT_MB` | Maximum memory limit allocated to each `runjs` or `loop` node during execution. | 20 | MB |
+| `WORKFLOW_JS_TIMEOUT_MS` | Maximum time allowed for each `runjs` or `loop` node execution. | 100 | milliseconds |
+
+#### Rate Limiting Data Query Runs
+
+ToolJet rate-limits how often a data query can be run (from the query editor's Run/Preview, or a launched app) to protect against a runaway loop, for example a recursive `onChange` handler or scripted client, that could otherwise flood the connection pool and downstream data sources.
+
+The limit is applied per `(user, app)` — logged-in users are keyed by user ID, and anonymous viewers on public apps are keyed by IP. One limit is shared across both builder and viewer runs, so a runaway app can't starve other apps or other users on the same app. It's on by default.
+
+| Variable | Description | Default | Unit |
+|-----------|-------------|---------|-------|
+| `DISABLE_DATA_QUERY_RUN_THROTTLE` | Set to `true` to bypass the throttle entirely. When unset, the throttle is on. | unset | boolean |
+| `DATA_QUERY_RUN_TTL` | Duration of the rate-limit window. | 1000 | milliseconds |
+| `DATA_QUERY_RUN_LIMIT` | Maximum number of query runs allowed per window, per `(user, app)`. | 50 | runs |
+
+Requests over the limit receive an HTTP `429` response.
+
+:::info
+Rate-limit counters are tracked per pod. In a multi-pod deployment, the effective limit is `DATA_QUERY_RUN_LIMIT` multiplied by the number of pods, until shared (Redis-backed) counter storage is added.
+:::
+
+#### Configuring Non Email Identifier for ToolJet OIDC
+
+You can setup OIDC using non email identifier for authenticating users to ToolJet (for example, an employee ID) by setting the following environment variables.
+
+| Variable                  | Description                                                |
+| ------------------------- | ---------------------------------------------------------- |
+| `SSO_UNIQUE_ID_FIELD`     | Unique identifier field name sent back by the IdP.         |
+| `SSO_CUSTOM_EMAIL_DOMAIN` | Domain name that will be used to construct dummy email id. |
+
+To learn more, refer to [this section](/docs/user-management/sso/oidc/setup#configuring-tooljet-oidc-with-non-email-identifier).
+
+#### Configure Stronger Password Validation Rules
+
+ToolJet allows you to enforce a stronger password complexity rule. By default, the login password should be atleast 5 characters long and any character can be used. To enforce stronger password validation, use the following environment variable:
+
+- `ENABLE_PASSWORD_COMPLEXITY_RULES = true`
+
+When **false**, passwords will follow the default validations. When **true**, passwords must meet all the following rules:
+| Rule | Requirement |
+|-----------|-------------|
+| Password length | 12-24 characters |
+| Uppercase letters | A-Z |
+| Lowercase letters | a-z |
+| Numbers | 0-9 |
+| Special characters | ! @ # $ % ^ & \* ( ) \_ + - = \{ \} [ ] : ; ” ' , . ? / \ \| |
+
+:::info
+These validations apply to both the instance and workspace levels.
+:::
+
+#### Configure GitSync via Environment Variables
+
+:::warning BETA
+This feature is currently in beta and is not recommended for production use.
+For full setup instructions, provider-specific keys, and Docker Compose examples, see [Configure GitSync via Environment Variables](/docs/beta/gitsync-env-vars).
+:::
+
+GitSync can be configured using environment variables instead of the ToolJet UI, useful for self-hosted setups where you want to automate or version-control your GitSync configuration.
+
+ToolJet supports **GitHub (HTTPS)**, **GitLab**, and **Git (SSH)**. For example, to configure GitSync with GitHub (HTTPS), set the following variables:
+
+| **Key** | **Description** |
+| --- | --- |
+| `GITHUB_URL` | The HTTPS URL of your GitHub repository. (e.g. `https://github.com/your-org/your-repo`) |
+| `GITHUB_BRANCH` | The branch to sync with. |
+| `GITHUB_APP_ID` | Your GitHub App ID. |
+| `GITHUB_INSTALLATION_ID` | The installation ID for your GitHub App. |
+| `GITHUB_PRIVATE_KEY` | The private key generated when creating the GitHub App. Escape newlines as `\n`. |
+
+#### Configure License Key via Environment Variable
+
+:::warning BETA
+This feature is currently in beta and is not recommended for production use.
+:::
+
+The license key can be configured via an environment variable to avoid re-entering it through the UI on every new instance. Setting `TJ_LICENSE` ensures the license is applied automatically at startup without any manual configuration.
+
+| **Variable** | **Description** |
+|:--- |:--- |
+| `TJ_LICENSE` | Your ToolJet license key. When set, the license key field on the **Settings** page is populated automatically from this variable. |
+
+**How it works:**
+
+- When `TJ_LICENSE` variable is set, the **Settings** page shows the license key field pre-filled with the placeholder `{{TJ_LICENSE_KEY}}`, indicating the value is sourced from the environment.
+- The field will be disabled and the toggle will be switched to **Env variable** mode automatically.
+- To switch back to entering the key manually via the UI, use the toggle on the **Settings** page to switch to **UI** mode.
+
+<img className="screenshot-full img-m" src="/img/env-vars/prefilled-license-key.png" alt="Prefilled License Key" />
+
+#### Version Reviews
+
+Require an approved [version review](../../development-lifecycle/release/compare-versions.md#request-a-review) before a version is released or promoted.
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `TOOLJET_VERSION_REVIEW_REQUIRED` | `release` requires an approved review to release a version. `promote` requires one to promote into production. `release,promote` or `all` requires both. With `off`, no review is required, but a version with an open, unapproved review still can't move on. | `off` |
+
+Good to know:
+
+- Reviews gate apps only, not workflows or modules.
+- Reviews are bypassed while Git branching is on.
+- Below the Pro plan, nothing waits for a review.
+- A review needs exactly one approval.
+
+### React Builder
+
+These variables configure apps built in [React Builder](../../app-builder/react-builder/overview.md).
+
+#### React Builder App Isolation
+
+A React Builder app's code runs in a frame that the browser treats as a separate origin. It reaches ToolJet only through a message channel that the page checks, so it can't read the viewer's session, cookies or the ToolJet page, and it runs queries with the viewer's permissions. Isolation is on by default.
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `CODE_MODE_ISOLATION` | `on`: released apps, Preview, the editor canvas and version comparisons all run isolated. `viewer`: only released apps and Preview run isolated; the editor and comparisons, where admins and builders open other people's code, run on the ToolJet origin. `off`: no isolation. `viewer` and `off` are for self-hosted instances where every app builder is trusted, and log a warning at startup. Any other value means `on`, with a warning. ToolJet Cloud always runs `on`. The in-browser build always runs in its own sandboxed frame. | `on` |
+| `CODE_MODE_SANDBOX_URL` | An optional second domain for the app frame. It must use `https`, must not share a site with `TOOLJET_HOST`, and must route to this server. `https://sandbox.example.com` serves the frame from that domain, and every app still runs on the browser's `null` origin. `https://*.example-usercontent.com` gives each app an origin of its own, `a<app id without dashes>.example-usercontent.com`, which needs wildcard DNS and a wildcard certificate. When unset, the frame comes from this server on the `null` origin. An invalid value is ignored with a warning in the server log. Has no effect while isolation is `off`. | Unset |
+| `CODE_MODE_STRICT_BINDINGS` | Strict mode for isolated React Builder apps. Set `false` to turn it off, only for a self-hosted pilot with trusted authors. ToolJet Cloud ignores it. Visual apps are never affected. See [Isolation](../../app-builder/react-builder/runtime-api.md#isolation) for what strict mode blocks. | On whenever the app is isolated |
+| `CODE_MODE_CDN_URL` | The package CDN the in-browser build fetches packages from. Point it at an address that answers directly: the build follows no redirects. | `https://esm.sh` |
+
+The second domain serves only the frame document. Every other path on it returns 404, and it sets and reads no cookies. With a per-app domain and `ENABLE_CUSTOM_DOMAINS=true`, an app's frame accepts code only from `TOOLJET_HOST` and the custom domain of the workspace that owns the app.
+
+:::caution
+Isolation protects the viewer's session, not the data the app is given. App code still sees what its queries return, and it can send that out by opening a popup or by navigating its own frame. It isn't data-loss prevention. What an app may read and write is controlled by query permissions on the server. Popups an app opens stay sandboxed; web links in an app open in a normal new tab, with no opener and no referrer.
+:::
+
+#### React Builder Security Checks
+
+ToolJet checks every React Builder app version before release. See [App Security](../../app-builder/react-builder/security.md) and, for the rules an admin sets, [Security Policy](../../app-builder/react-builder/security-policy.md).
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `TOOLJET_APP_SCANNER_BIN` | Path to the security scanner's `tj-app-scan.js`. Set it when the scanner isn't installed next to the server. Without a scanner, server-side checks fail and React Builder versions can't pass the release gate. | Found next to the server |
+| `TOOLJET_APP_SCAN_OFFLINE` | `true` makes the scanner contact no network. Checks that need the network report as not run. | `false` |
+| `TOOLJET_APP_SCAN_OSV_URL` | A mirror of the OSV vulnerability database. | `https://api.osv.dev` |
+| `TOOLJET_APP_SCAN_REGISTRY_URL` | A mirror of the npm registry. Lockfiles that resolve from it are also allowed. | `https://registry.npmjs.org` |
+| `TOOLJET_APP_SCAN_RETIRE_URL` | A mirror of the retire.js vulnerability repository. | The retire.js repository on GitHub |
+| `TOOLJET_APP_SCAN_SOCKET_TOKEN` | A Socket.dev API token. Turns on the **Supply-chain alerts (Socket)** check. | Unset |
+| `TOOLJET_APP_SCAN_NETWORK_TIMEOUT_MS` | Timeout for each network request the scanner makes, in milliseconds. The scanner retries twice after a timeout, so a request can take up to about three times this value. | `20000` |
+| `TOOLJET_APP_SCAN_AUTO_DELAY_MS` | How long to wait after a code change before checking it automatically, in milliseconds. `0` falls back to `3000`, so the delay can't be turned off. | `3000` |
+| `TOOLJET_APP_SCAN_MAX_CONCURRENT` | Automatic checks that run at once on each server instance. | `4` |
+| `TOOLJET_APP_SCAN_MAX_CONCURRENT_PER_WORKSPACE` | Automatic checks that run at once for each workspace. | `2` |
+| `TOOLJET_APP_SCAN_RECHECK_MINUTES` | Re-check released versions' packages for new advisories every this many minutes (minimum 5). | Off |
+
+#### React Builder Code Storage and Packages
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `TOOLJET_CODE_SOURCE_REVISIONS_KEEP` | Code revisions kept for each app version. Older revisions leave App history and can't be restored. `0` keeps all. | `500` |
+| `TOOLJET_CODE_BUILDS_KEEP` | Saved builds kept for each React Builder app, in addition to every build a version uses. `0` keeps all. | `50` |
+| `TOOLJET_CODE_NPM_REGISTRIES` | Extra npm registries, comma-separated, that a React Builder project's lockfile may resolve packages from. These are always allowed: `registry.npmjs.org`, `registry.yarnpkg.com`, the registry set in `npm_config_registry`, and `TOOLJET_APP_SCAN_REGISTRY_URL`. On an air-gapped instance, list your internal registries here. | Unset |
+
+#### ToolJet CLI
+
+| **Variable** | **Description** | **Default** |
+|:--- |:--- |:--- |
+| `TOOLJET_CLI_TOKEN_DAYS` | How long a personal access token created by `tooljet auth login` lasts, in days. Values above `90` are capped at `90`, and an invalid value falls back to `30`. | `30` |
+| `TOOLJET_CLI_TARBALL` | Path to the CLI package the server offers at `/api/code-mode/cli/tooljet-cli.tgz`. | The package built into the image |
+| `TOOLJET_SDK_TARBALL` | Path to the component SDK package the server offers at `/api/code-mode/cli/custom-component-sdk.tgz`. Production images don't include the SDK, so set this to offer it. | Unset |
+
+Browser sign-in for the CLI (`tooljet auth login`) needs [Redis](#redis-configuration).
+
+### Third-Party Integrations
+
+#### Slack
+
+To use Slack as a data source in ToolJet, create a Slack app and set:
+
+- `SLACK_CLIENT_ID`: Slack app client ID
+- `SLACK_CLIENT_SECRET`: Slack app client secret
+
+#### Google OAuth
+
+To connect ToolJet with Google services like Google Sheets, create OAuth credentials in Google Cloud Console.
+
+- `GOOGLE_CLIENT_ID`: Google OAuth client ID
+- `GOOGLE_CLIENT_SECRET`: Google OAuth client secret
+
+#### Google Maps API
+
+To use the Map component in ToolJet, create a Google Maps API key and set:
+
+- `GOOGLE_MAPS_API_KEY`: Google Maps API key
+
+#### Application Monitoring (APM)
+
+- `APM_VENDOR=sentry`: Set APM vendor.
+- `SENTRY_DNS`: Sentry project DSN.
+- `SENTRY_DEBUG=true/false`: Enable/disable Sentry debugging.
+
+#### Security & Authentication
+
+By default, ToolJet sends user count updates every 24 hours. To disable this, use:
+
+- `DISABLE_TOOLJET_TELEMETRY=true`: Disables telemetry.(Enabled by default)
+
+#### Single Sign-On (SSO)
+
+Enable Google or GitHub SSO with these environment variables:
+
+**Google SSO:**
+
+- `SSO_GOOGLE_OAUTH2_CLIENT_ID`: Google OAuth client ID
+
+**GitHub SSO:**
+
+- `SSO_GIT_OAUTH2_CLIENT_ID`: GitHub OAuth client ID
+- `SSO_GIT_OAUTH2_CLIENT_SECRET`: GitHub OAuth client secret
+- `SSO_GIT_OAUTH2_HOST`: GitHub host if self-hosted
+
+**General SSO Settings:**
+
+- `SSO_ACCEPTED_DOMAINS`: Comma-separated list of allowed email domains
+- `SSO_DISABLE_SIGNUPS=true`: Restricts signups to existing users
+
+#### Group Synchronization
+
+If any of the following environment variables are set to true, group synchronization will be skipped during the login process for the respective SSO provider:
+
+- `DISABLE_LDAP_GROUP_SYNC=true` – Disables group sync for LDAP during login.
+- `DISABLE_SAML_GROUP_SYNC=true` – Disables group sync for SAML during login.
+
+#### REST API Cookie Forwarding
+
+By default, ToolJet does not forward cookies with REST API requests. To enable this (self-hosted only), set:
+
+- `FORWARD_RESTAPI_COOKIES=true`: Allows forwarding cookies with REST API requests.
+
+#### Asset Path
+
+This is required when the assets for the client are to be loaded from elsewhere (eg: CDN). This can be an absolute path, or relative to main HTML file.
+
+- `ASSET_PATH`: Path for loading frontend assets (e.g., `https://app.tooljet.com/`)
+
+## Additional Configurations
+
+#### Log File Path
+
+- `LOG_FILE_PATH`: Path to store audit logs (e.g., `tooljet/log/tooljet-audit.log`)
+
+#### Embedding Private Apps
+
+By default, only public apps can be embedded. To allow embedding of private ToolJet apps, set:
+
+- `ENABLE_PRIVATE_APP_EMBED=true/false`: Allows embedding of private ToolJet apps.
+
+**Note: Available in ToolJet Enterprise 2.8.0+ and Community/Cloud 2.10.0+.**
+
+#### Default Language
+
+Set the default language using the `LANGUAGE` variable. Supported options:
+
+<div style={{ display: 'flex' }} >
+
+<div style = {{ width:'40%' }} >
+
+| Language | Code | Native Name |
+| -------- | ---- | ----------- |
+| English  | en   | English     |
+| French   | fr   | Français    |
+| Spanish  | es   | Español     |
+| Italian  | it   | Italiano    |
+
+</div>
+
+<div style = {{ width:'5%' }} > </div>
+
+<div style = {{ width:'50%' }} >
+
+| Language   | Code | Native Name      |
+| ---------- | ---- | ---------------- |
+| Indonesian | id   | Bahasa Indonesia |
+| Ukrainian  | uk   | Українська       |
+| Russian    | ru   | Русский          |
+| German     | de   | Deutsch          |
+
+</div>
+
+</div>
+
+Example: `LANGUAGE=fr` (for French).
+
+**Note:** This setting is not available in ToolJet Cloud.
+
+#### Observability
+
+ToolJet supports OpenTelemetry (OTEL) for comprehensive observability and monitoring. Enable metrics collection to monitor application performance, query executions, and system health.
+
+**Basic Configuration:**
+
+- `ENABLE_OTEL`: Set to `true` to enable OpenTelemetry metrics collection (default: `false`)
+- `OTEL_EXPORTER_OTLP_TRACES`: OTLP traces endpoint URL (default: `http://localhost:4318/v1/traces`)
+- `OTEL_EXPORTER_OTLP_METRICS`: OTLP metrics endpoint URL (default: `http://localhost:4318/v1/metrics`)
+- `OTEL_SERVICE_NAME`: Service identifier for metrics (default: `tooljet`)
+- `OTEL_EXPORTER_OTLP_HEADERS`: Authentication headers for OTLP endpoint (optional, format: `key1=value1,key2=value2`)
+
+**Advanced Configuration:**
+
+- `OTEL_LOG_LEVEL`: Debug logging level for OTEL (use `debug` for detailed logs)
+- `OTEL_ACTIVE_USER_WINDOW_MINUTES`: Activity window for concurrent user tracking in minutes (default: `5`)
+- `OTEL_MAX_TRACKED_USERS`: Maximum number of tracked users/sessions (default: `10000`)
+- `OTEL_INCLUDE_QUERY_TEXT`: Include actual query text in metrics - **WARNING:** Creates high cardinality (default: `false`)
+
+:::warning High Cardinality
+Only enable `OTEL_INCLUDE_QUERY_TEXT=true` for debugging. This creates high cardinality metrics that can impact Prometheus performance. Use an OTEL Collector to filter this label in production.
+:::
+
+For comprehensive setup instructions, metrics details, and Grafana dashboard integration, see the [OpenTelemetry Observability](/docs/tj-setup/observability/observability-otel) documentation.
+
+## <br/>
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

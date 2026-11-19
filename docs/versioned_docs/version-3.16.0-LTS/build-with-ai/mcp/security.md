@@ -22,7 +22,7 @@ A personal access token's session is pinned to the workspace it was created in a
 
 ## Keep Development and Production Separate
 
-By default, both ToolJet MCP and ToolJet AI operate only in the **development** [environment](/docs/development-lifecycle/environment/self-hosted/multi-environment), so an agent reads the data sources configured for development and not the ones behind staging or production.
+By default, both ToolJet MCP and ToolJet AI operate only in the **development** [environment](/docs/3.16.0-LTS/development-lifecycle/environment/self-hosted/multi-environment), so an agent reads the data sources configured for development and not the ones behind staging or production.
 
 We recommend connecting MCP only to instances whose development environment points at development data. If your development environment is wired to a production database, that separation gives you nothing.
 
@@ -38,7 +38,7 @@ The token is a credential with the same reach as the account that created it. Tr
 
 ## Review OAuth Connections
 
-On ToolJet Cloud, you can [connect with OAuth](/docs/build-with-ai/mcp/setup#choose-an-authentication-method) instead of a token. There's no token to store in your shell profile or configuration file, but the same care applies to what you approve.
+On ToolJet Cloud, you can [connect with OAuth](/docs/3.16.0-LTS/build-with-ai/mcp/setup#choose-an-authentication-method) instead of a token. There's no token to store in your shell profile or configuration file, but the same care applies to what you approve.
 
 - **Approve one workspace at a time.** A connection is bound to the workspace you approved it in. Connect separately for each workspace.
 - **Read the consent screen.** It lists the permissions the client is requesting. The client can never act beyond your own permissions in that workspace.
@@ -61,5 +61,5 @@ The number of tokens consumed by an operation depends on the model you select, i
 
 ## Related
 
-- [Setup](/docs/build-with-ai/mcp/setup) — create a token and configure your client
-- [Supported Tools](/docs/build-with-ai/mcp/supported-tools) — everything an agent can do once connected
+- [Setup](/docs/3.16.0-LTS/build-with-ai/mcp/setup) — create a token and configure your client
+- [Supported Tools](/docs/3.16.0-LTS/build-with-ai/mcp/supported-tools) — everything an agent can do once connected

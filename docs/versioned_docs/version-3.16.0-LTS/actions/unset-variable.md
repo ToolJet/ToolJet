@@ -3,7 +3,7 @@ id: unset-variable
 title: Unset variable
 ---
 
-The **Unset variable** action removes an app-level variable that was created using the [Set variable](/docs/actions/set-variable) action.
+The **Unset variable** action removes an app-level variable that was created using the [Set variable](/docs/3.16.0-LTS/actions/set-variable) action.
 
 ## Configuration
 
@@ -21,5 +21,5 @@ actions.unSetVariable('<variableName>');
 ```
 
 :::info
-For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/3.16.0-LTS/actions/run-actions-from-runjs/).
 :::

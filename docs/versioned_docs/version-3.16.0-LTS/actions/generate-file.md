@@ -73,5 +73,5 @@ actions.generateFile('pdffile1', 'pdf', '{{components.table1.currentPageData}}')
 ```
 
 :::info
-For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/3.16.0-LTS/actions/run-actions-from-runjs/).
 :::

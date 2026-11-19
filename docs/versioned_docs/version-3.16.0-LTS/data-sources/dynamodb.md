@@ -7,7 +7,7 @@ title: DynamoDB
 
 ## Connection
 
-To establish a connection with the **DynamoDB** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the **DynamoDB** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/3.16.0-LTS/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet supports connecting to DynamoDB using three methods, which you select in the **Authentication** dropdown: **IAM Access Keys**, **AWS Instance Credentials**, or **AWS ARN Role**.
 
@@ -39,7 +39,7 @@ To perform queries on **DynamoDB**, click on the **+ Add** button in the query m
 <img style={{marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/list-ops-v4.png" alt="list query operations" />
 
 :::tip
-You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/app-builder/custom-code/transform-data)
+You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/3.16.0-LTS/app-builder/custom-code/transform-data)
 :::
 
 #### Supported Operations

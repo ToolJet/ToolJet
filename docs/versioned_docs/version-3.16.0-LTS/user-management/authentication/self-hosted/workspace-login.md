@@ -22,7 +22,7 @@ To configure the workspace-level authentication configuration
     
 - SSO makes it easier for organizations to manage user access. Users can use one login for different tools, and admins can quickly add or remove access when needed. Thus, it improves an organization's onboarding and offboarding experience.
         
-- At the workspace level, you can enable the **Instance SSO** toggle to inherit instance-level configured SSO, or you can also configure the workspace-level SSO with Google, GitHub, OpenID Connect, LDAP, and SAML. Please check the [SSO docs](/docs/user-management/sso/overview) for a detailed guide on SSO configuration.
+- At the workspace level, you can enable the **Instance SSO** toggle to inherit instance-level configured SSO, or you can also configure the workspace-level SSO with Google, GitHub, OpenID Connect, LDAP, and SAML. Please check the [SSO docs](/docs/3.16.0-LTS/user-management/sso/overview) for a detailed guide on SSO configuration.
         
 ##   Sign-Up Without Invitations
     
@@ -30,7 +30,7 @@ To configure the workspace-level authentication configuration
         
 - The **Enable Signup** feature lets users create accounts without being invited.
         
-- When users sign up with this feature enabled, they are assigned to the end user of that workspace. Workspace admin can later change the [role](/docs/user-management/role-based-access/user-roles) of the user once the user is on-boarded to the workspace. Refer to [Sign-Up Documentation](/docs/user-management/onboard-users/self-signup-user#enable-sign-up-at-workspace-level) to learn more.
+- When users sign up with this feature enabled, they are assigned to the end user of that workspace. Workspace admin can later change the [role](/docs/3.16.0-LTS/user-management/role-based-access/user-roles) of the user once the user is on-boarded to the workspace. Refer to [Sign-Up Documentation](/docs/3.16.0-LTS/user-management/onboard-users/self-signup-user#enable-sign-up-at-workspace-level) to learn more.
         
         
 ##   Password Login
@@ -47,7 +47,7 @@ To configure the workspace-level authentication configuration
         | `PASSWORD_RETRY_LIMIT` | Specifies the maximum number of allowed retries before disabling authentication. | `5` |
 
     :::info
-    You can enforce stronger password validation by setting the environment variable `ENABLE_PASSWORD_COMPLEXITY_RULES = true`. Refer to [this guide](/docs/setup/env-vars#configure-stronger-password-validation-rules) to learn more.
+    You can enforce stronger password validation by setting the environment variable `ENABLE_PASSWORD_COMPLEXITY_RULES = true`. Refer to [this guide](/docs/3.16.0-LTS/setup/env-vars#configure-stronger-password-validation-rules) to learn more.
     :::
 
 ## Domain Constraints

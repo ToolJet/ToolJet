@@ -37,7 +37,7 @@ Sub-branches don't have versions. They are working copies of a specific version.
 
 ## Setting Up Branching
 
-To enable branching, you need to configure Git Sync first. Follow the [Git Sync Guide](/docs/development-lifecycle/gitsync/overview) to set it up. Once Git Sync is configured, branching is enabled by default (only during beta). Specify your default branch name (typically "master" or "main") This becomes your master branch where live applications reside.
+To enable branching, you need to configure Git Sync first. Follow the [Git Sync Guide](/docs/3.16.0-LTS/development-lifecycle/gitsync/overview) to set it up. Once Git Sync is configured, branching is enabled by default (only during beta). Specify your default branch name (typically "master" or "main") This becomes your master branch where live applications reside.
 
 :::warning
 ToolJet supports branching **only over Git HTTPS**. SSH is not supported yet.
@@ -54,7 +54,7 @@ For example:
 This lets you enforce environment separation at the infrastructure level while keeping all instances in sync through a single Git repository.
 
 :::info
-To decide whether a single or multi-instance setup is right for your organization, refer to [Choosing Your Instance Setup](/docs/tj-setup/instances#choosing-your-instance-setup).
+To decide whether a single or multi-instance setup is right for your organization, refer to [Choosing Your Instance Setup](/docs/3.16.0-LTS/tj-setup/instances#choosing-your-instance-setup).
 :::
 
 ## Creating and Managing Branches

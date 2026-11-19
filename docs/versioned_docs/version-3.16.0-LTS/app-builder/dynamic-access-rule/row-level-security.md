@@ -5,9 +5,9 @@ title: Row Level Security
 
 <PlanBadge type="enterprise" />
 
-Row-level security in ToolJet lets you control which records a user can see or interact with, even when multiple users access the same table. This is useful when you want to restrict access to specific rows based on [custom groups](/docs/user-management/role-based-access/custom-groups/) or [default user roles](/docs/user-management/role-based-access/user-roles#default-user-roles). Row-level security is applied on the server side, ensuring the logic is secure and hidden from the client.
+Row-level security in ToolJet lets you control which records a user can see or interact with, even when multiple users access the same table. This is useful when you want to restrict access to specific rows based on [custom groups](/docs/3.16.0-LTS/user-management/role-based-access/custom-groups/) or [default user roles](/docs/3.16.0-LTS/user-management/role-based-access/user-roles#default-user-roles). Row-level security is applied on the server side, ensuring the logic is secure and hidden from the client.
 
-Row-level security is built on [Server-Side Variables](/docs/app-builder/dynamic-access-rule/server-side-variables). You reference the current user's identity through `globals.server.currentUser`, and ToolJet resolves those values on the server before the query runs, so users cannot tamper with the filter from the browser.
+Row-level security is built on [Server-Side Variables](/docs/3.16.0-LTS/app-builder/dynamic-access-rule/server-side-variables). You reference the current user's identity through `globals.server.currentUser`, and ToolJet resolves those values on the server before the query runs, so users cannot tamper with the filter from the browser.
 
 :::caution
 A filter written with the client-side `{{globals.currentUser.*}}` variable is resolved in the browser, so a user can modify its value (for example, through browser dev tools) to return another user's rows. Client-side filtering is a presentation convenience, not a security control.
@@ -20,7 +20,7 @@ Server-side variables (`{{globals.server.currentUser.*}}`) are resolved on the s
 ## Prerequisites
 
 - Row-level security relies on server-side variables, which are available on **Enterprise** plans only.
-- Filtering is written inside the [Query Manager](/docs/app-builder/connecting-with-data-sources/creating-managing-queries), so it works with all data sources except RunJS and RunPy.
+- Filtering is written inside the [Query Manager](/docs/3.16.0-LTS/app-builder/connecting-with-data-sources/creating-managing-queries), so it works with all data sources except RunJS and RunPy.
 
 ## Common Use Cases
 
@@ -51,7 +51,7 @@ To filter by a specific user attribute instead, reference it directly:
 {{globals.server.currentUser.id}}
 ```
 
-For the full list of available attributes, see [Server-Side Variables](/docs/app-builder/dynamic-access-rule/server-side-variables).
+For the full list of available attributes, see [Server-Side Variables](/docs/3.16.0-LTS/app-builder/dynamic-access-rule/server-side-variables).
 
 :::info
 The above syntax will work with all data sources except RunJS and RunPy.

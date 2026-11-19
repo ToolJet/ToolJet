@@ -18,7 +18,7 @@ SUB_PATH=/apps/tooljet/
 - **TOOLJET_HOST**: The public URL of your domain (e.g., `https://www.yourcompany.com`)
 - **SUB_PATH**: The subpath where ToolJet will be accessible. Must include trailing `/` and is applicable only when the server is serving the frontend client (e.g., `/apps/tooljet/`)
 
-For additional environment variables, refer to our [Environment Variables documentation](/docs/setup/env-vars).
+For additional environment variables, refer to our [Environment Variables documentation](/docs/3.16.0-LTS/setup/env-vars).
 
 ## Upgrading to the Latest LTS Version
 

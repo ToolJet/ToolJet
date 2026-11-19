@@ -1,0 +1,88 @@
+---
+id: redis
+title: Redis
+---
+
+ToolJet enables you to execute Redis commands on your Redis instances.
+
+## Connecting to Redis
+
+To establish a connection with the Redis data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Redis as the data source.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/redis/connect-v2.png" alt="Redis data source Connection" />
+
+To connect ToolJet with Redis, you need to provide the following connection details:
+
+- **Host**: The address or hostname of the Redis server.
+- **Port**: The port number used by the Redis server (default is 6379).
+- **Username**: The username used for authentication.
+- **Password**: The password used for authentication.
+- **Database**: The numeric index of the Redis logical database to use, for example `0` or `2`. If left empty, Redis uses database `0`.
+- **TLS**: Toggle to enable/disable TLS connection.
+- **TLS certificate**: Choose the type of TLS certificate (None, CA certificate, or Client certificate). With **None**, ToolJet connects over TLS without verifying the server certificate.
+
+Depending on the TLS certificate option selected, you may need to provide additional information:
+- For **CA certificate**:
+  - **CA cert**: The CA certificate for TLS connection.
+- For **Client certificate**:
+  - **CA cert**: The CA certificate for TLS connection.
+  - **Client key**: The client key for TLS connection.
+  - **Client cert**: The client certificate for TLS connection.
+
+## Querying Redis
+
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **Redis** datasource added in previous step.
+3. Enter the query.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
+
+Here are some examples of Redis commands and their usage. You can refer to the [Redis Official Documentation](https://redis.io/commands) for a complete list of supported commands.
+
+### PING Command
+
+The `PING` command is used to test the connection to Redis. If the connection is successful, the Redis server will respond with **PONG**.
+
+```shell
+PING
+```
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/redis/ping-query.png" alt="Redis querying" />
+
+### SET Command
+
+The `SET` command is used in Redis to assign a value to a specific key.
+
+```shell
+SET key value
+```
+
+#### Example
+When the input value contains spaces, you should encode the value before providing it as an input:
+
+```shell
+SET products {{encodeURI('John Doe')}}
+```
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/redis/setprod-query.png" alt="Redis Example querying" />
+
+### GET Command
+
+The `GET` command is used in Redis to retrieve the value associated with a specific key.
+
+```shell
+GET key
+```
+
+#### Example
+To retrieve a value that was previously encoded while setting, you can use transformations.
+
+1. Enter the GET command in the editor:
+  ```shell
+  GET products
+  ```
+
+2. Enable Transformations (JS) and use `decodeURI`:
+  ```js
+  return JSON.parse(decodeURI(data));
+  ```
+  <img className="screenshot-full img-full" src="/img/datasource-reference/redis/get-query.png" alt="Redis Example querying" />

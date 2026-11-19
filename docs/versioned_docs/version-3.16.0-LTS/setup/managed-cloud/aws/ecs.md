@@ -6,7 +6,7 @@ sidebar_label: ECS
 ---
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/setup/system-requirements#postgresql).
+You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/3.16.0-LTS/setup/system-requirements#postgresql).
 
 ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
 
@@ -187,7 +187,7 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
    - Since migrations are run as a part of container boot, please specify health check grace period for 900 seconds. Select the application loadbalancer option and set the target group name to the one we had created earlier. This will auto populate the health check endpoints.
 
 :::info Note on ToolJet Database
-ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [_here_](/docs/tooljet-db/tooljet-database).
+ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [_here_](/docs/3.16.0-LTS/tooljet-db/tooljet-database).
 :::
 
 ## Workflows
@@ -195,7 +195,7 @@ ToolJet Database is a built-in feature that allows you to build apps faster and 
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
 :::info
-For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](/docs/setup/workflow-temporal-to-bullmq-migration/).
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](/docs/3.16.0-LTS/setup/workflow-temporal-to-bullmq-migration/).
 :::
 
 ### Enabling Workflow Scheduling
@@ -253,7 +253,7 @@ For production deployments, ensure your ElastiCache Redis cluster is in the same
 - `REDIS_DB=0` - Redis database number (default: 0)
 - `REDIS_TLS=true` - Enable TLS/SSL for secure connections
 
-**For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).**
+**For additional environment variables, refer to our [environment variables documentation](/docs/3.16.0-LTS/setup/env-vars).**
 
 ## Upgrading to the Latest LTS Version
 
@@ -276,7 +276,7 @@ Ensure both databases are included in your backup before proceeding with the upg
 :::
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
-- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [_ToolJet 3.0 Migration Guide_](/docs/setup/upgrade-to-v3/).
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [_ToolJet 3.0 Migration Guide_](/docs/3.16.0-LTS/setup/upgrade-to-v3/).
 
 ## <br/>
 

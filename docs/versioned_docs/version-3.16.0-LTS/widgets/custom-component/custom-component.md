@@ -10,7 +10,7 @@ ToolJet allows you to create your own React component using the **Custom Compone
 2. **[Code](#code)**: Used to write the React code for the **Custom Component**. ToolJet offers two built-in functions to interact with the component: [Update Data](#update-data-function) function and [Run Query](#run-query-function) function.
 
 :::info
-To build components locally, version them, and share them across every app in a workspace, use [Custom Component Libraries](/docs/app-builder/custom-component-library/overview).
+To build components locally, version them, and share them across every app in a workspace, use [Custom Component Libraries](/docs/3.16.0-LTS/app-builder/custom-component-library/overview).
 :::
 
 
@@ -115,7 +115,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);
 
 **Custom Component** in ToolJet can be used to trigger queries. You can specify the query name in the [data](#data) field. Use the in-built `runQuery` function to execute the query dynamically from within the **Custom Component**.
 
-`runQuery(queryName, parameters)` returns a Promise that resolves with the query result, the same as `queries.<queryName>.run()`: `{ status: 'ok', data }` on success or `{ status: 'failed', ... }` on failure. The optional `parameters` object is available in the query as `{{parameters.<key>}}`. See [Pass Query Parameters](/docs/widgets/custom-component/pass-query-params-in-custom-components). The Promise doesn't reject; if no query with that name exists, it resolves with `undefined`.
+`runQuery(queryName, parameters)` returns a Promise that resolves with the query result, the same as `queries.<queryName>.run()`: `{ status: 'ok', data }` on success or `{ status: 'failed', ... }` on failure. The optional `parameters` object is available in the query as `{{parameters.<key>}}`. See [Pass Query Parameters](/docs/3.16.0-LTS/widgets/custom-component/pass-query-params-in-custom-components). The Promise doesn't reject; if no query with that name exists, it resolves with `undefined`.
 
 #### Example
 
@@ -168,10 +168,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
 
 :::info
-The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** feature enabled.
 :::
 
 :::info

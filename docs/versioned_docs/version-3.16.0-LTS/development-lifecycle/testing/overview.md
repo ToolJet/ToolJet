@@ -65,4 +65,4 @@ Open DevTools on your deployed application and search for `data-cy` to see all a
 
 ## Next Steps
 
-- Follow the [Cypress Guide](/docs/development-lifecycle/testing/cypress-guide) to write your first test and automate a complete user workflow.
+- Follow the [Cypress Guide](/docs/3.16.0-LTS/development-lifecycle/testing/cypress-guide) to write your first test and automate a complete user workflow.

@@ -9,7 +9,7 @@ ToolJet can establish connections with SOAP APIs using its REST API integration.
 
 To establish a connection with a SOAP API data source, you will need to add a REST API data source, as ToolJet handles SOAP APIs using REST API configurations.
 
-You can refer to [REST API Configuration Documentation](/docs/data-sources/restapi/) for more information.
+You can refer to [REST API Configuration Documentation](/docs/3.16.0-LTS/data-sources/restapi/) for more information.
 
 ## Querying SOAP API
 
@@ -25,7 +25,7 @@ Once you have connected to the REST API data source, you can easily write querie
 6. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
-You can also transform the query results using the **[Transformations](/docs/app-builder/custom-code/transform-data)** feature.
+You can also transform the query results using the **[Transformations](/docs/3.16.0-LTS/app-builder/custom-code/transform-data)** feature.
 :::
 
 **API Endpoint URL Example:** `http://www.dneonline.com/calculator.asmx`

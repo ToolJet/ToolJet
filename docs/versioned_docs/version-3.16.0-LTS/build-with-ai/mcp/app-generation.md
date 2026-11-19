@@ -30,7 +30,7 @@ Agents with browser access can then open the app and verify the change actually 
 :::note Data Access
 An agent connected over MCP acts with the permissions of your access token and can run read queries against the data sources in that workspace. Because an agent's exploration is not deterministic and depends on the model you use, assume that any data reachable from that workspace may be read while it works. Scope the token to a workspace you are comfortable exposing.
 
-By default, both ToolJet MCP and ToolJet AI operate only in the **development** [environment](/docs/development-lifecycle/environment/self-hosted/multi-environment), so an agent reads the data sources configured for development and not the ones behind staging or production. We recommend connecting MCP only to instances whose development environment points at development data.
+By default, both ToolJet MCP and ToolJet AI operate only in the **development** [environment](/docs/3.16.0-LTS/development-lifecycle/environment/self-hosted/multi-environment), so an agent reads the data sources configured for development and not the ones behind staging or production. We recommend connecting MCP only to instances whose development environment points at development data.
 :::
 
 :::note Token Usage

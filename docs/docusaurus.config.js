@@ -321,12 +321,12 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: true, 
-          lastVersion: '3.16.0-LTS',
+          lastVersion: '4.0.0-LTS',
           // Render PR deploys set build_lts: 'true' (preview label) builds LTS only,
           // 'false' (prod label) builds beta + LTS. Unset (Netlify, local) builds every version.
           onlyIncludeVersions:
-            process.env.build_lts === 'true' ? ['3.16.0-LTS']
-            : process.env.build_lts === 'false' ? ['current', '3.16.0-LTS']
+            process.env.build_lts === 'true' ? ['4.0.0-LTS']
+            : process.env.build_lts === 'false' ? ['current', '4.0.0-LTS', '3.16.0-LTS']
             : undefined,
           versions: {
             current: {
@@ -334,6 +334,8 @@ module.exports = {
               path: 'beta',
               banner: 'none',
               badge: false,
+              // Same content as the latest LTS until next-version work lands; keep /docs/ the only indexed copy.
+              noIndex: true,
             },
             "2.50.0-LTS": {
               // Keep legacy docs readable, but prefer current docs in search.
@@ -356,6 +358,10 @@ module.exports = {
             },
             "3.16.0-LTS": {
               label: '3.16 - 3.20 LTS',
+              banner: 'none',
+              badge: false
+            },
+            "4.0.0-LTS": {
               banner: 'none',
               badge: false
             }
@@ -584,6 +590,31 @@ module.exports = {
           {
             from: "/docs/build-with-ai/tooljet-mcp/",
             to: "/docs/build-with-ai/mcp/overview/",
+          },
+          // Pages that exist in 3.16.0-LTS but were removed in 4.0.0-LTS
+          {
+            from: '/docs/development-lifecycle/gitsync/push/',
+            to: '/docs/development-lifecycle/gitsync/single-branch/push-and-pull/#push-a-commit',
+          },
+          {
+            from: '/docs/development-lifecycle/gitsync/pull/',
+            to: '/docs/development-lifecycle/gitsync/single-branch/push-and-pull/#pull-a-commit',
+          },
+          {
+            from: '/docs/development-lifecycle/gitsync/connect-to-git-repo/connection-method/',
+            to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/github-config/',
+          },
+          {
+            from: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config/',
+            to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/github-config/',
+          },
+          {
+            from: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config/',
+            to: '/docs/development-lifecycle/gitsync/overview/',
+          },
+          {
+            from: '/docs/development-lifecycle/gitsync/delete-gitsync/',
+            to: '/docs/development-lifecycle/gitsync/overview/',
           },
         ],
       },

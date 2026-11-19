@@ -21,7 +21,7 @@ While we are using the ToolJet Database for this guide; feel free to use other d
 
 - Create a new application and name it **Upload PDFs Example**. 
 
-- Drag and drop a **[Filepicker](/docs/widgets/file-picker)** component on the canvas from the components library on the right. 
+- Drag and drop a **[Filepicker](/docs/3.16.0-LTS/widgets/file-picker)** component on the canvas from the components library on the right. 
 
 - Rename the filepicker component to **pdf_picker**.
 
@@ -45,7 +45,7 @@ In the above query, we are using the **exposed variables** of the filepicker com
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/load-base64/upload-pdf-query.png" alt="Add Files Query"  />
 
-- Add a **[Button](/docs/widgets/button)** component below the filepicker and rename it to **upload**.
+- Add a **[Button](/docs/3.16.0-LTS/widgets/button)** component below the filepicker and rename it to **upload**.
 
 - Set the Button's text to **Upload** and create a **New event handler** with the following settings: 
 Event - `On click`, Action - `Run Query` and Query - `upload_files`.
@@ -64,7 +64,7 @@ The upload process is now complete. Whenever a file is selected in the Filepicke
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/load-base64/get-query.png" alt="Fetch Files Query"  />
 
-- Drag a **[PDF](/docs/widgets/pdf)** component onto the canvas from the components library. Rename the **PDF** component to **display_pdf**.
+- Drag a **[PDF](/docs/3.16.0-LTS/widgets/pdf)** component onto the canvas from the components library. Rename the **PDF** component to **display_pdf**.
 
 - In the **URL** property of the **display_pdf** component, enter the following:
 ```js

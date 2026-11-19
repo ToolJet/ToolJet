@@ -19,7 +19,7 @@ If the license expires or downgrades to a plan without group sync, both SSO and 
 
 ## Prerequisites
 
-Please make sure to add the *group attribute* while setting up SAML to your ToolJet workspace. Refer to [SAML setup](/docs/user-management/sso/saml/setup) and [Okta configuration](/docs/user-management/sso/saml/okta) documentation for detailed instructions.
+Please make sure to add the *group attribute* while setting up SAML to your ToolJet workspace. Refer to [SAML setup](/docs/3.16.0-LTS/user-management/sso/saml/setup) and [Okta configuration](/docs/3.16.0-LTS/user-management/sso/saml/okta) documentation for detailed instructions.
 
 ## Group Mapping
 
@@ -40,7 +40,7 @@ Make sure SAML is properly configured between your IdP and ToolJet.
 ### 2.	Identify groups in your IdP
 Determine the groups in your identity provider (e.g., Okta) that you want to sync with ToolJet.
 ### 3.	Create custom groups in ToolJet
-- Create custom groups in ToolJet using exactly the same names as the ones in your IdP. Refer to the [custom group](/docs/user-management/role-based-access/custom-groups/) documentation to learn more about creating custom groups.
+- Create custom groups in ToolJet using exactly the same names as the ones in your IdP. Refer to the [custom group](/docs/3.16.0-LTS/user-management/role-based-access/custom-groups/) documentation to learn more about creating custom groups.
 <div>
   :::note
   Group names are case-sensitive, so make sure group names in ToolJet and your identity provider (e.g., Okta) match exactly. 

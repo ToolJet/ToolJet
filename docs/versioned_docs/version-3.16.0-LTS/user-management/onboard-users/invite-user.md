@@ -3,7 +3,7 @@ id: invite-user
 title: Invite
 ---
 
-Admins can invite users to a workspace using their email addresses and assign them specific **[roles](/docs/user-management/role-based-access/user-roles)** and **[groups](/docs/user-management/role-based-access/custom-groups)** to manage permissions. The invited users receive an email with instructions to join the workspace, ensuring a seamless onboarding process.
+Admins can invite users to a workspace using their email addresses and assign them specific **[roles](/docs/3.16.0-LTS/user-management/role-based-access/user-roles)** and **[groups](/docs/3.16.0-LTS/user-management/role-based-access/custom-groups)** to manage permissions. The invited users receive an email with instructions to join the workspace, ensuring a seamless onboarding process.
 
 ## Steps to Invite a User
 
@@ -24,7 +24,7 @@ Role Required: **Admin** <br/>
     | Email address | Required | john@corp.com |
     | Select groups | Required | USER ROLE: **Admin** |
     | | Optional | CUSTOM GROUPS: **Manager** |
-    | [User metadata](/docs/user-management/onboard-users/user-metadata) | Optional | `{"apiKey": "abc123"}` |
+    | [User metadata](/docs/3.16.0-LTS/user-management/onboard-users/user-metadata) | Optional | `{"apiKey": "abc123"}` |
 
     <img className="screenshot-full img-m" src="/img/user-management/onboard-user/invite-user/user-details.png" alt="Invite User" />
 
@@ -33,7 +33,7 @@ Role Required: **Admin** <br/>
 
 ## Email Invitation
 
-Pre-Requisite: **[Setup SMTP Server](/docs/tj-setup/smtp-setup/configuration)**
+Pre-Requisite: **[Setup SMTP Server](/docs/3.16.0-LTS/tj-setup/smtp-setup/configuration)**
 
 Once a user is invited to the workspace, they will receive an email containing a unique workspace invite link. By clicking the link, the user will be redirected to the workspace login or signup page to complete the onboarding process. 
 

@@ -3,7 +3,7 @@ id: auth0
 title: Auth0
 ---
 
-Auth0 can be configured as the Identity Provider for OIDC, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Auth0 Developer Console. Refer to the **[OIDC Setup](/docs/user-management/sso/oidc/setup)** guide to configure OIDC in your application.
+Auth0 can be configured as the Identity Provider for OIDC, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Auth0 Developer Console. Refer to the **[OIDC Setup](/docs/3.16.0-LTS/user-management/sso/oidc/setup)** guide to configure OIDC in your application.
 
 ## Setting up OIDC using Auth0
 To setup OIDC using Auth0, you can follow these steps:

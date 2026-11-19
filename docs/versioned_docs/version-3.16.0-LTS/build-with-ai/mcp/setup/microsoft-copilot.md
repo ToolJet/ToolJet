@@ -55,7 +55,7 @@ Then add the ToolJet MCP server as a tool:
    <img className="screenshot-full img-full" src="/img/tooljet-ai/mcp/microsoft-copilot/copilot-add-mcp-server.png" alt="Add MCP server dialog with the ToolJet MCP values" />
 
 2. When asked for a connection, create a new one and paste the same token into the `x-tooljet-pat` field.
-3. Open the **ToolJet MCP** tool. It should list the ToolJet tools, such as **List workspaces**, **List workspace apps**, and **Create app**. See [Supported Tools](/docs/build-with-ai/mcp/supported-tools) for the full list.
+3. Open the **ToolJet MCP** tool. It should list the ToolJet tools, such as **List workspaces**, **List workspace apps**, and **Create app**. See [Supported Tools](/docs/3.16.0-LTS/build-with-ai/mcp/supported-tools) for the full list.
 4. Set **Authentication** to **End user account**.
 
    <img className="screenshot-full img-full" src="/img/tooljet-ai/mcp/microsoft-copilot/copilot-tools-loaded.png" alt="ToolJet MCP tool with the ToolJet tools loaded" />
@@ -88,10 +88,10 @@ Users then select the ToolJet agent in Microsoft 365 Copilot.
 
 ## Related
 
-- [ToolJet MCP Overview](/docs/build-with-ai/mcp/overview)
-- [App Generation](/docs/build-with-ai/mcp/app-generation)
-- [Supported Tools](/docs/build-with-ai/mcp/supported-tools)
-- [Security](/docs/build-with-ai/mcp/security)
+- [ToolJet MCP Overview](/docs/3.16.0-LTS/build-with-ai/mcp/overview)
+- [App Generation](/docs/3.16.0-LTS/build-with-ai/mcp/app-generation)
+- [Supported Tools](/docs/3.16.0-LTS/build-with-ai/mcp/supported-tools)
+- [Security](/docs/3.16.0-LTS/build-with-ai/mcp/security)
 
 <br/>
 ---

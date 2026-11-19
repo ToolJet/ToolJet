@@ -10,7 +10,7 @@ Starting from ToolJet CLI version 0.0.14, the creation of datasource plugins has
 :::
 
 :::info
-You can also use the ToolJet CLI to build and publish React components to your workspace. See [Custom Component Libraries](/docs/app-builder/custom-component-library/overview).
+You can also use the ToolJet CLI to build and publish React components to your workspace. See [Custom Component Libraries](/docs/3.16.0-LTS/app-builder/custom-component-library/overview).
 :::
 
 ## Installation
@@ -63,7 +63,7 @@ This command creates a new plugin.
 tooljet plugin create PLUGIN_NAME
 ```
 :::tip
-Read the detailed guide on creating a marketplace plugin [here](/docs/contributing-guide/marketplace/creating-a-plugin).
+Read the detailed guide on creating a marketplace plugin [here](/docs/3.16.0-LTS/contributing-guide/marketplace/creating-a-plugin).
 :::
 
 <div style={{textAlign: 'center'}}>

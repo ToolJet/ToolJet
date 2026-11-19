@@ -109,4 +109,4 @@ The project also includes npm scripts as shortcuts: `npm run lib:dev`, `npm run 
 
 ## Next Steps
 
-Start writing your components. See [Build Components with the SDK](/docs/app-builder/custom-component-library/build-components).
+Start writing your components. See [Build Components with the SDK](/docs/3.16.0-LTS/app-builder/custom-component-library/build-components).

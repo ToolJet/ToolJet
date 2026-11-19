@@ -7,7 +7,8 @@ title: ToolJet Documentation Versions
 
 | Version    | Documentation                                              |
 | ---------- | ---------------------------------------------------------- |
-| 3.16.0-LTS | [Documentation](https://docs.tooljet.com/docs/)            |
+| 4.0.0-LTS  | [Documentation](https://docs.tooljet.com/docs/)            |
+| 3.16.0-LTS | [Documentation](https://docs.tooljet.com/docs/3.16.0-LTS/) |
 | 3.5.0-LTS  | [Documentation](https://docs.tooljet.com/docs/3.5.0-LTS/)  |
 | 3.0.0-LTS  | [Documentation](https://docs.tooljet.com/docs/3.0.0-LTS/)  |
 | 2.50.0-LTS | [Documentation](https://docs.tooljet.com/docs/2.50.0-LTS/) |

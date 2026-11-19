@@ -4,7 +4,7 @@ title: Setup ToolJet Managed AI Server with ToolJet Cloud
 sidebar_label: ToolJet AI Server on Cloud
 ---
 
-This is the default AI setup for any workspace on **ToolJet Cloud**. AI requests are routed through ToolJet Managed AI Server and authenticated using ToolJet-managed LLM credentials, billed against your workspace's [AI credits](/docs/build-with-ai/ai-credits).
+This is the default AI setup for any workspace on **ToolJet Cloud**. AI requests are routed through ToolJet Managed AI Server and authenticated using ToolJet-managed LLM credentials, billed against your workspace's [AI credits](/docs/3.16.0-LTS/build-with-ai/ai-credits).
 
 ```mermaid
 flowchart LR
@@ -14,7 +14,7 @@ flowchart LR
 ```
 
 :::info
-See [Setup ToolJet AI &rarr; Overview](/docs/setup/tooljet-ai/overview) for how this fits alongside the other AI setups and how the request is processed end-to-end.
+See [Setup ToolJet AI &rarr; Overview](/docs/3.16.0-LTS/setup/tooljet-ai/overview) for how this fits alongside the other AI setups and how the request is processed end-to-end.
 :::
 
 ## Prerequisites
@@ -26,17 +26,17 @@ None. Every ToolJet Cloud workspace has AI features enabled by default.
 There is no setup required:
 
 1. Sign in to your ToolJet Cloud workspace.
-2. Start using any [AI capability](/docs/build-with-ai/use-ai-in-tooljet#ai-capabilities), for example, generating an application or fixing a component with AI.
+2. Start using any [AI capability](/docs/3.16.0-LTS/build-with-ai/use-ai-in-tooljet#ai-capabilities), for example, generating an application or fixing a component with AI.
 3. Usage is metered against your workspace's monthly and add-on AI credits. You can check consumption anytime under **Settings &rarr; Subscription**.
 
 ## Billing
 
-Credits are pooled at the **workspace level**. See [Understanding AI Credits](/docs/build-with-ai/ai-credits) for how consumption is calculated and how to purchase add-on credits.
+Credits are pooled at the **workspace level**. See [Understanding AI Credits](/docs/3.16.0-LTS/build-with-ai/ai-credits) for how consumption is calculated and how to purchase add-on credits.
 
 ## Switching the AI Provider
 
-With this setup, each user can pick the LLM provider and model for their own AI chats. See [Selecting an AI Model](/docs/build-with-ai/model-selection) for details.
+With this setup, each user can pick the LLM provider and model for their own AI chats. See [Selecting an AI Model](/docs/3.16.0-LTS/build-with-ai/model-selection) for details.
 
 ## Switching to a Different Setup
 
-On ToolJet Cloud Enterprise, you can use your own LLM API key so usage is billed directly by your provider instead of consuming ToolJet AI credits. See [Bring Your Own Key (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key).
+On ToolJet Cloud Enterprise, you can use your own LLM API key so usage is billed directly by your provider instead of consuming ToolJet AI credits. See [Bring Your Own Key (BYOK)](/docs/3.16.0-LTS/setup/tooljet-ai/bring-your-own-key).

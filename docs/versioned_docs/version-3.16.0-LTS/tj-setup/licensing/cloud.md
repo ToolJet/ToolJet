@@ -23,7 +23,7 @@ ToolJet offers various plans for paid subscription. Visit the **[ToolJet Pricing
 
 ## AI Credit System
 
-Checkout [Understanding AI Credits](/docs/build-with-ai/ai-credits#credit-allocation) guide for more information.
+Checkout [Understanding AI Credits](/docs/3.16.0-LTS/build-with-ai/ai-credits#credit-allocation) guide for more information.
 
 ## Upgrading Your Subscription
 
@@ -67,7 +67,7 @@ Starting from version `v3.5.34-cloud-lts`, which was released on May 27th, 2025,
 
 ### Unarchiving Desired Users Affected Due to New Pricing Plan
 
-If a user is automatically archived due to the new pricing plan, the Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) an active Builder or End User to free up a slot and then [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired user.
+If a user is automatically archived due to the new pricing plan, the Admin can [archive](/docs/3.16.0-LTS/user-management/onboard-users/archive-user#instance-level) an active Builder or End User to free up a slot and then [unarchive](/docs/3.16.0-LTS/user-management/onboard-users/archive-user#instance-level-1) the desired user.
 
 If you have any questions, feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at [support@tooljet.com](mailto:support@tooljet.com).
 

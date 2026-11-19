@@ -90,7 +90,7 @@ This operation can be used to upsert multiple rows using the primary key. Primar
 
 ## SQL Editor
 
-The ToolJet **SQL editor** allows you to query the ToolJet Database by writing SQL queries, specifically supporting standard SQL syntax for **Data Manipulation Language (DML)** commands. This feature is only available on the [Self-Hosted](/docs/tj-setup/tj-deployment#self-hosted-tooljet) version of ToolJet.
+The ToolJet **SQL editor** allows you to query the ToolJet Database by writing SQL queries, specifically supporting standard SQL syntax for **Data Manipulation Language (DML)** commands. This feature is only available on the [Self-Hosted](/docs/3.16.0-LTS/tj-setup/tj-deployment#self-hosted-tooljet) version of ToolJet.
 
 ### Supported SQL Commands
 
@@ -149,7 +149,7 @@ You can join two or more tables in the ToolJet database by using the **Join** op
 
   <img className="screenshot-full" src="/img/v2-beta/database/newui/join1.png" alt="ToolJet Database editor" />
 
-- **Filter**: Add a condition by choosing a column, an operation, and the value for filtering the records. The operations supported are same as the [filter operations](/docs/tooljet-db/database-editor#available-operations-are) for the **List rows** operation.
+- **Filter**: Add a condition by choosing a column, an operation, and the value for filtering the records. The operations supported are same as the [filter operations](/docs/3.16.0-LTS/tooljet-db/database-editor#available-operations-are) for the **List rows** operation.
 - **Sort**: Sort the query response by choosing a column and the order (ascending or descending).
 - **Limit**: Limit the number of records to be returned by entering a number.
 - **Offset**: Offset the number of records to be returned by entering a number. This parameter is used for pagination.

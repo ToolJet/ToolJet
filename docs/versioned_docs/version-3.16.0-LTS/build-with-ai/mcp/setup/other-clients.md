@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 Connect ToolJet MCP to another MCP client, such as Cursor or Cline, so your agent can build and modify applications in your ToolJet workspace, whether that's ToolJet Cloud or your own self-hosted domain.
 
-You can connect with OAuth on ToolJet Cloud, or with a personal access token on ToolJet Cloud or a self-hosted instance. To compare the two, see [Choose an Authentication Method](/docs/build-with-ai/mcp/setup#choose-an-authentication-method).
+You can connect with OAuth on ToolJet Cloud, or with a personal access token on ToolJet Cloud or a self-hosted instance. To compare the two, see [Choose an Authentication Method](/docs/3.16.0-LTS/build-with-ai/mcp/setup#choose-an-authentication-method).
 
 ## Prerequisites
 
@@ -65,7 +65,7 @@ Add the URL from Step 1 as a remote Streamable HTTP MCP server, following your c
 
 1. Start authentication from your client. In Cursor, open the MCP settings and connect **tooljet-oauth**. Your client opens ToolJet in your browser.
 2. Sign in to the workspace with any method it allows, such as password or SSO. If you're already signed in, ToolJet skips this step.
-3. Review the permissions the client is requesting, and check the callback address shown under the buttons. For what each permission allows, see [What You Approve](/docs/build-with-ai/mcp/setup#what-you-approve).
+3. Review the permissions the client is requesting, and check the callback address shown under the buttons. For what each permission allows, see [What You Approve](/docs/3.16.0-LTS/build-with-ai/mcp/setup#what-you-approve).
 4. Click **Allow access**. Your browser returns you to your client.
 
 If your client supports skills, also load the `tooljet-app-builder` skill from `plugins/tooljet-app-builder-skills/skills/tooljet-app-builder` in the [ToolJet MCP repository](https://github.com/ToolJet/tooljet-mcp). It teaches the agent ToolJet's app model and build recipe.
@@ -158,14 +158,14 @@ The agent should inspect your datasources, create an app, add a query, bind a ta
 
 ## Troubleshooting
 
-If something doesn't work, see [Troubleshooting](/docs/build-with-ai/mcp/setup/troubleshooting).
+If something doesn't work, see [Troubleshooting](/docs/3.16.0-LTS/build-with-ai/mcp/setup/troubleshooting).
 
 ## Related
 
-- [ToolJet MCP Overview](/docs/build-with-ai/mcp/overview)
-- [App Generation](/docs/build-with-ai/mcp/app-generation)
-- [Supported Tools](/docs/build-with-ai/mcp/supported-tools)
-- [Security](/docs/build-with-ai/mcp/security)
+- [ToolJet MCP Overview](/docs/3.16.0-LTS/build-with-ai/mcp/overview)
+- [App Generation](/docs/3.16.0-LTS/build-with-ai/mcp/app-generation)
+- [Supported Tools](/docs/3.16.0-LTS/build-with-ai/mcp/supported-tools)
+- [Security](/docs/3.16.0-LTS/build-with-ai/mcp/security)
 
 <br/>
 ---

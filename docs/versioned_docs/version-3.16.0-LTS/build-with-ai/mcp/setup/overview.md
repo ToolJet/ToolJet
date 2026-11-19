@@ -34,10 +34,10 @@ Each guide walks you through both methods your client supports.
 
 | Client | OAuth (Cloud) | Personal access token | Guide |
 |:-------|:-------------:|:---------------------:|:------|
-| Claude Code | Yes | Yes | [Set up ToolJet MCP in Claude Code](/docs/build-with-ai/mcp/setup/claude-code) |
-| Codex | Yes | Yes | [Set up ToolJet MCP in Codex](/docs/build-with-ai/mcp/setup/codex) |
-| Cursor, Cline, and other MCP clients | Yes, if the client supports remote MCP servers with OAuth | Yes | [Set up ToolJet MCP in other MCP clients](/docs/build-with-ai/mcp/setup/other-clients) |
-| Microsoft 365 Copilot | No | Yes | [Set up ToolJet MCP in Microsoft 365 Copilot](/docs/build-with-ai/mcp/setup/microsoft-copilot) |
+| Claude Code | Yes | Yes | [Set up ToolJet MCP in Claude Code](/docs/3.16.0-LTS/build-with-ai/mcp/setup/claude-code) |
+| Codex | Yes | Yes | [Set up ToolJet MCP in Codex](/docs/3.16.0-LTS/build-with-ai/mcp/setup/codex) |
+| Cursor, Cline, and other MCP clients | Yes, if the client supports remote MCP servers with OAuth | Yes | [Set up ToolJet MCP in other MCP clients](/docs/3.16.0-LTS/build-with-ai/mcp/setup/other-clients) |
+| Microsoft 365 Copilot | No | Yes | [Set up ToolJet MCP in Microsoft 365 Copilot](/docs/3.16.0-LTS/build-with-ai/mcp/setup/microsoft-copilot) |
 
 ## OAuth Connections
 

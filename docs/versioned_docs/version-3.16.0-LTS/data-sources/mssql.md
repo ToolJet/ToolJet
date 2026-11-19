@@ -7,7 +7,7 @@ ToolJet can connect to MS SQL Server & Azure SQL databases to read and write dat
 
 ## Connection
 
-To establish a connection with the MS SQL Server data source, click on the **+ Add new Data source** button located on the query panel or navigate to the [Data Sources](/docs/data-sources/overview) page from the ToolJet dashboard.
+To establish a connection with the MS SQL Server data source, click on the **+ Add new Data source** button located on the query panel or navigate to the [Data Sources](/docs/3.16.0-LTS/data-sources/overview) page from the ToolJet dashboard.
 
 :::info
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
@@ -184,7 +184,7 @@ SQL Parameters:
 
 ### Row Level Security
 
-In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](/docs/app-builder/dynamic-access-rule/row-level-security) guide for more information.
+In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](/docs/3.16.0-LTS/app-builder/dynamic-access-rule/row-level-security) guide for more information.
 
 ### Query Timeout
 
@@ -352,5 +352,5 @@ In this operation, if a row with the matching primary key exists, it is updated;
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/mssql/bulk-upsert-gui.png" alt="MSsql bulk upsert gui mode"/>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/3.16.0-LTS/app-builder/custom-code/transform-data)
 :::

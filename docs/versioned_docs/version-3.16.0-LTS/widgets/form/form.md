@@ -10,9 +10,9 @@ Components like **Kanban**, **Calendar**, **Container**, **ListView**, **Tabs**,
 :::
 
 This guide covers the different ways to generate a form in ToolJet. For detailed information on properties, CSAs, and schema customization, refer to the following guides:
-- [Form Component Properties](/docs/widgets/form/properties)
-- [Component Specific Actions (CSAs) and Exposed Variables](/docs/widgets/form/csa)
-- [Custom Schema](/docs/widgets/form/schema)
+- [Form Component Properties](/docs/3.16.0-LTS/widgets/form/properties)
+- [Component Specific Actions (CSAs) and Exposed Variables](/docs/3.16.0-LTS/widgets/form/csa)
+- [Custom Schema](/docs/3.16.0-LTS/widgets/form/schema)
 
 ## Generating Form
 
@@ -52,7 +52,7 @@ To use JSON Schema, select **JSON Schema** from the **Generate form from** dropd
 | **properties** | 	Defines the schema of the form fields (components to be rendered in the form).  | 
 | **submitButton** | Defines the schema and behavior of the form’s submit button. | 
 
-Refer to the [Custom Schema](/docs/widgets/form/schema) guide for schema examples of commonly used components.
+Refer to the [Custom Schema](/docs/3.16.0-LTS/widgets/form/schema) guide for schema examples of commonly used components.
 
 <img className="screenshot-full img-full" src="/img/widgets/form/json-schema-dropdown.png" alt="Component Event Handler" />
 

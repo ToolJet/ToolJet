@@ -10,7 +10,7 @@ Once the application is released, it can be shared with the end users in multipl
 Once the application is released, it can be accessed via a URL, and the URL slug can be customized. ToolJet also provides an option to make the application public or private.
 
 - **Public Application**: Allows anyone on the internet to access the application without signing up for ToolJet. 
-- **Private Application**: Private applications are restricted to workspace users with the necessary **[access permissions](/docs/user-management/role-based-access/access-control)**.
+- **Private Application**: Private applications are restricted to workspace users with the necessary **[access permissions](/docs/3.16.0-LTS/user-management/role-based-access/access-control)**.
 
 The latest released version of the application is always accessible through the same URL, ensuring a consistent access point across updates.
 
@@ -31,12 +31,12 @@ All backend configurations such as SSO settings are inherited from the workspace
 When a user signs out or their session expires, they are redirected back to the same app's login page instead of workspace login page or the workspace dashboard. This ensures that users remain within the app's context at all times.
 
 :::info
-To trigger logout from within your app, use the [Logout action](/docs/actions/logout).
+To trigger logout from within your app, use the [Logout action](/docs/3.16.0-LTS/actions/logout).
 :::
 
 ## Access Application via Dashboard
 
-Users can launch the released version of the application from the dashboard. The application can also be hidden from the dashboard for end users. Refer to the **[Access Control](/docs/user-management/role-based-access/access-control)** guide for more details.
+Users can launch the released version of the application from the dashboard. The application can also be hidden from the dashboard for end users. Refer to the **[Access Control](/docs/3.16.0-LTS/user-management/role-based-access/access-control)** guide for more details.
 
 <img className="screenshot-full" src="/img/development-lifecycle/release/share/dashboard.png" alt="Access Application via Dashboard"/>
 

@@ -30,7 +30,7 @@ Enhance your workflows with logic nodes to handle different scenarios:
 - **Loop Node** – Iterate over lists or datasets to perform repeated actions.
 
 :::note
-You can configure workflow timeout and memory limits using environment variables. Refer to this [guide](/docs/setup/env-vars#customizing-workflow-configuration) for more details.
+You can configure workflow timeout and memory limits using environment variables. Refer to this [guide](/docs/3.16.0-LTS/setup/env-vars#customizing-workflow-configuration) for more details.
 :::
 
 ### Create Your First Workflow

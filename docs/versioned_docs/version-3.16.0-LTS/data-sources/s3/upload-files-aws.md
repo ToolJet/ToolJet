@@ -5,7 +5,7 @@ title: Upload and Download Files on AWS S3 Bucket
 
 This guide demonstrates how to configure file upload and download operations using the Amazon S3 data source in ToolJet. Learn how to use Upload Object, generate signed URLs, and manage S3 buckets directly from your applications.
 
-Before building the UI, check out the **[docs for AWS S3 data source](/docs/data-sources/s3)** to learn about setting up AWS S3 and adding the data source. 
+Before building the UI, check out the **[docs for AWS S3 data source](/docs/3.16.0-LTS/data-sources/s3)** to learn about setting up AWS S3 and adding the data source. 
 
 ## UI Components
 

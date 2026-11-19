@@ -1,0 +1,140 @@
+---
+id: minio
+title: MinIO
+---
+
+ToolJet can connect to MinIo and perform various operation on them.
+
+## Connection
+
+To establish a connection with the MinIo data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](/docs/data-sources/overview) page from the ToolJet dashboard.
+
+ToolJet requires the following to connect to your MinIO server:
+
+- **Host**: The hostname of your MinIO server, without `http://` or `https://`. Pre-filled with `play.min.io`.
+- **Port**: Pre-filled with `9000`.
+- **SSL**: Turn on to connect over HTTPS. It's on by default; turn it off if your server only accepts HTTP.
+- **Access key**
+- **Secret key**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/minio-connect.png" alt="miniIo data source connection" />
+
+## Querying MinIo
+
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the data source added in the previous step as the data source.
+3. Select the operation that you want to perform.
+4. Click on the **Run** button to run the query
+
+:::tip
+Query results can be transformed using transformations. Read our transformation documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
+:::
+
+## Supported Operations
+
+- **[Read object](#read-object)**
+- **[Put object](#put-object)**
+- **[Remove object](#remove-object)**
+- **[List buckets](#list-buckets)**
+- **[List objects in a bucket](#list-objects-in-a-bucket)**
+- **[Presigned url for download](#pre-signed-url-for-download)**
+- **[Presigned url for upload](#pre-signed-url-for-upload)**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/listops-v3.png" alt="minIo Operations"/>
+
+### Read Object
+
+Retrieve an object from a bucket.
+
+#### Required Parameter:
+
+- **Bucket**
+- **Object Name**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/read-query.png" alt="minIo read object"/>
+
+**Response Structure**
+
+The **Read Object** operation returns an object that includes a UTF-8 encoded string representation of the object along with its raw binary data.
+
+| Field     | Type     | Description |
+|----------|----------|-------------|
+| `Body`    | `string` | UTF-8 encoded string representation of the object data. Suitable for text-based formats such as JSON, CSV, and plain text. |
+| `rawData` | `Buffer` | Raw binary data of the object. Suitable for non-text content such as images, PDFs, and other binary files. |
+
+### Put Object
+
+Upload or update an object in a bucket.
+
+#### Required Parameter:
+
+- **Bucket**
+- **Object Name**
+- **Upload data**
+
+#### Optional Parameter:
+
+- **Content Type**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/put-query.png" alt="minIo put object"/>
+
+### List Buckets
+
+Retrieve a list of all buckets.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/list-buck-query.png" alt="minIo list bucket"/>
+
+### List Objects in a Bucket
+
+List objects within a specified bucket.
+
+#### Required Parameters
+
+- **Bucket**
+
+#### Optional Parameters
+
+- **Prefix**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/list-obj-query.png" alt="minIo list objects in a bucket"/>
+
+### Pre-signed URL for Download
+
+Generate a pre-signed URL for downloading an object.
+
+#### Required Parameter:
+
+- **Bucket**
+- **Object Name**
+
+#### Optional Parameter:
+
+- **Expires in**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/url-download-query.png" alt="minIo presigned url for download"/>
+
+### Pre-signed URL for Upload
+
+Generate a pre-signed URL for uploading an object.
+
+#### Required Parameter:
+
+- **Bucket**
+- **Object Name**
+
+#### Optional Parameter:
+
+- **Expires in**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/url-upload-query.png" alt="minIo presigned url for upload"/>
+
+### Remove Object
+
+Delete an object from a bucket.
+
+#### Required Parameter:
+
+- **Bucket**
+- **Object Name**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/remove-query.png" alt="minIo remove object"/>

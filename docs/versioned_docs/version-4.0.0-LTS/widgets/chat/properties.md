@@ -1,0 +1,99 @@
+---
+id: properties
+title: Properties
+---
+
+The **Chat Component** can be customized by configuring various properties or adding events to perform specific actions. To learn how to build a chatbot, refer to the [Chat Component Overview](/docs/widgets/chat/) guide. For more information on CSAs and Exposed Variables, check out the [Component Specific Actions](/docs/widgets/chat/csa) guide.
+
+## Properties
+
+| Property | Description | Expected Value |
+|----------|-------------|--------------- |
+| Chat Title | Title of the chat component. | String (e.g. `ToolJet Support Chatbot`) |
+| Initial Chat | Initial messages to be loaded when the chat starts. | Array of Objects ( e.g. `{{[ { message: 'Hey! Welcome to ToolJet. How may I help you?' } ]}}` ) |
+| Placeholder for input field | Placeholder text shown in the message input field. | String (default: `Ask me anything!`) |
+| User Name | Defines the user's name. | String (e.g. `John Doe`) |
+| User Avatar | Defines the user's avatar. | Image URL |
+| Respondent Name | Defines the respondent's name. | String (e.g. `ToolJet Bot`) |
+| Respondent Avatar | Defines the respondent's avatar. | Image URL |
+
+## Message Object Properties
+
+| Property | Description | Required | Expected Value |
+|----------|-------------|----------|----------------|
+| Message | The content of the message. | Required | String (e.g. `"Hey! How can I help you?"`) |
+| Message ID | ID of the message. | Auto-generated | String (e.g. `"e3dd6f60-d5e8-46c5-b73b-006f2f4a34f2"`) |
+| Timestamp | Date and Time of the message. | Auto-generated | DateTime in ISO 8601 format (e.g. `"2025-02-05T09:33:32.468Z"`) |
+| Name | Message sender's name. | Optional | String (e.g. `"John Doe"`) |
+| Avatar | Message sender's avatar. | Optional | Image URL |
+| Type | Type of the message. | Required | Accepted Values: `"response"`, `"message"` or `"error"`. |
+
+## Events
+
+| Event | Description |
+|-------|-------------|
+| On history cleared | Triggers whenever the history is cleared. |
+| On message sent | Triggers whenever a message is sent. |
+
+## Additional Actions
+
+All the following actions can be enabled or disabled either by using the toggle switch or by dynamically configuring the value by clicking on **fx** and entering a logical expression.
+
+| Action | Description |
+|--------|-------------|
+| Visibility | Controls the component's visibility. |
+| Disable input state | Enables or disables the input state. |
+| History loading state | Enables the history loading state, often used with `isHistoryLoading` to indicate progress. |
+| Response loading state | Enables the response loading state, often used with `isResponseLoading` to indicate progress. |
+| Enable clear history icon | Enables or disables the clear chat history icon in the header. Clearing resets the history to **Initial chat** and triggers **On history cleared**. |
+| Enable download history icon | Enables or disables the download chat history icon in the header. It downloads the history as a JSON file. |
+
+## Devices
+
+|<div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
+|:---------- |:----------- |:----------|
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+## Styles
+
+### Message
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Name | Sets the color for the sender's name. | Select a color from the color picker or set it programmatically using **fx**. |
+| Message | Sets the color for the message text. | Select a color from the color picker or set it programmatically using **fx**. |
+| Timestamp | Sets the color for the timestamp. | Select a color from the color picker or set it programmatically using **fx**. |
+
+### Field
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Background | Sets the background color of the input field. | Select a color from the color picker or set it programmatically using **fx**. |
+| Border | Sets the border color of the input field. | Select a color from the color picker or set it programmatically using **fx**. |
+| Accent | Sets the accent color of the input field. | Select a color from the color picker or set it programmatically using **fx**. |
+| Text | Sets the text color of the input field. | Select a color from the color picker or set it programmatically using **fx**. |
+| Send icon | Sets the color of the send icon. | Select a color from the color picker or set it programmatically using **fx**. |
+
+### Container
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Background | Sets the background color of the chat container. | Select a color from the color picker or set it programmatically using **fx**. |
+| Border | Sets the border color of the chat container. | Select a color from the color picker or set it programmatically using **fx**. |
+| Box shadow | Sets the box shadow color of the chat container. | Select a color from the color picker or set it programmatically using **fx**. |
+| Border radius | Sets the corner radius of the chat container. | Enter a numeric value (default: `6`) or set it programmatically using **fx**. |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::
+
+:::info
+Any property having **fx** button next to its field can be **programmatically configured**.
+:::

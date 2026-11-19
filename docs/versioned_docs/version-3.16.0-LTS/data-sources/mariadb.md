@@ -7,7 +7,7 @@ ToolJet can connect to both self-hosted and cloud-based MariaDB servers to read 
 
 ## Connection
 
-To establish a connection with the MariaDB global datasource, you can either click on the **+ Add new global datasource** button located on the query panel or navigate to the **[Global Datasources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the MariaDB global datasource, you can either click on the **+ Add new global datasource** button located on the query panel or navigate to the **[Global Datasources](/docs/3.16.0-LTS/data-sources/overview)** page through the ToolJet dashboard.
 
 **ToolJet requires the following connection details to connect to MariaDB:**
 
@@ -79,7 +79,7 @@ Once you have connected to the MariaDB datasource, follow these steps to write q
 4. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
-Query results can be transformed using Transformation. For more information on transformations, please refer to our documentation at **[link](/docs/app-builder/custom-code/transform-data)**.
+Query results can be transformed using Transformation. For more information on transformations, please refer to our documentation at **[link](/docs/3.16.0-LTS/app-builder/custom-code/transform-data)**.
 :::
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/query-v3.png" alt="MariaDB query" />

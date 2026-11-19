@@ -6,12 +6,12 @@ title: Engagespot
 ToolJet connects to your Engagespot account, allowing you to send notifications, create or update users from within your ToolJet application.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
 
-- Establish a connection to Engagespot by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
+- Establish a connection to Engagespot by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/3.16.0-LTS/data-sources/overview/) page from the ToolJet dashboard.
 - Enter your Engagespot API key and API secret into their designated fields. To generate user tokens directly from ToolJet, you can optionally provide a signing key.
 - Click **Test Connection** to validate your credentials. Click **Save** to store the data source.
 
@@ -23,12 +23,12 @@ You can change your Engagespot BaseURL by enable custom endpoint.
 
 ## Querying Engagespot
 
-Click on **+ Add** button of the [query manager](/docs/app-builder/connecting-with-data-sources/creating-managing-queries) and select the data source added in the previous step as the data source. Select the operation that you want to perform, fill in the required parameters and click on **Run** button to run the query.
+Click on **+ Add** button of the [query manager](/docs/3.16.0-LTS/app-builder/connecting-with-data-sources/creating-managing-queries) and select the data source added in the previous step as the data source. Select the operation that you want to perform, fill in the required parameters and click on **Run** button to run the query.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/listops.png" alt="engagespot supported operations" />
 
 :::info
-Query results can be transformed using transformations. Read our [transformations documentation](/docs/app-builder/custom-code/transform-data).
+Query results can be transformed using transformations. Read our [transformations documentation](/docs/3.16.0-LTS/app-builder/custom-code/transform-data).
 :::
 
 ## Supported Operations

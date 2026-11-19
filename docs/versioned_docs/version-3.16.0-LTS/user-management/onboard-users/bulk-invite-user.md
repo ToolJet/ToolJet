@@ -3,7 +3,7 @@ id: bulk-invite-users
 title: Bulk Upload Users
 ---
 
-Admins can add users to a workspace, or update existing users, in bulk by uploading a CSV file. Each row holds a user's email address, **[role](/docs/user-management/role-based-access/user-roles)**, **[custom groups](/docs/user-management/role-based-access/custom-groups)**, **[metadata](/docs/user-management/onboard-users/user-metadata)** and status. New users receive an email with instructions to join the workspace.
+Admins can add users to a workspace, or update existing users, in bulk by uploading a CSV file. Each row holds a user's email address, **[role](/docs/3.16.0-LTS/user-management/role-based-access/user-roles)**, **[custom groups](/docs/3.16.0-LTS/user-management/role-based-access/custom-groups)**, **[metadata](/docs/3.16.0-LTS/user-management/onboard-users/user-metadata)** and status. New users receive an email with instructions to join the workspace.
 
 :::info
 This page describes the **Bulk upload users** flow available on the Enterprise Edition. On the Community Edition, you can only add new users from a CSV file. See [Community Edition](#community-edition).
@@ -83,7 +83,7 @@ ToolJet applies the whole file at once. If any row has an error, no users are ad
 ### Limits and Validation
 
 - **File size**: Up to 1 MB by default. Self-hosted instances can change this with `ORG_USERS_BULK_UPLOAD_MAX_FILE_SIZE_MB`.
-- **Rows**: Up to 250 users per file by default. Self-hosted instances can change this with `ORG_USERS_BULK_UPLOAD_MAX_ROWS`. See [Environment Variables](/docs/setup/env-vars#bulk-user-upload).
+- **Rows**: Up to 250 users per file by default. Self-hosted instances can change this with `ORG_USERS_BULK_UPLOAD_MAX_ROWS`. See [Environment Variables](/docs/3.16.0-LTS/setup/env-vars#bulk-user-upload).
 - **Duplicate emails**: Each email can appear in only one row.
 - **Groups**: Every group in the **Group** column must already exist in the workspace. End users can't be added to custom groups that grant builder permissions, and groups can't be added to a user who stays archived.
 - **Admins**: The workspace must keep at least one active admin, and you can't archive yourself.
@@ -110,7 +110,7 @@ On the Community Edition, you can add new users from a CSV file. Existing users 
 
 ## Email Invitation
 
-Pre-Requisite: **[Setup SMTP Server](/docs/tj-setup/smtp-setup/configuration)**
+Pre-Requisite: **[Setup SMTP Server](/docs/3.16.0-LTS/tj-setup/smtp-setup/configuration)**
 
 Once a user is invited to the workspace, they will receive an email containing a unique workspace invite link. By clicking the link, the user will be redirected to the workspace login or signup page to complete the onboarding process.
 

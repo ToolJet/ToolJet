@@ -7,7 +7,7 @@ ToolJet lets you connect with NocoDB to perform actions and retrieve data.
 
 ## Connection
 
-To connect to the NocoDB data source in ToolJet, you can either click on the **+ Add new data source** button on the query panel or navigate to the [Data Source](/docs/data-sources/overview/) page on the ToolJet Dashboard.
+To connect to the NocoDB data source in ToolJet, you can either click on the **+ Add new data source** button on the query panel or navigate to the [Data Source](/docs/3.16.0-LTS/data-sources/overview/) page on the ToolJet Dashboard.
 
 ToolJet allows you to connect to your NocoDB by two methods.They are **NocoDB Cloud** and **Self Hosted**.
 

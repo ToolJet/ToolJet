@@ -3,7 +3,7 @@ id: ai-credits
 title: Understanding AI Credits
 ---
 
-A credit is a standardized unit of AI processing power consumed on every AI operation performed in ToolJet. Each operation, from [generating complete applications](/docs/build-with-ai/generate-applications) to modifying layouts or writing custom code, consumes a variable number of credits based on the complexity of the task.
+A credit is a standardized unit of AI processing power consumed on every AI operation performed in ToolJet. Each operation, from [generating complete applications](/docs/3.16.0-LTS/build-with-ai/generate-applications) to modifying layouts or writing custom code, consumes a variable number of credits based on the complexity of the task.
 
 In this guide you will learn how credit consumption works, types of credits, credit usage, getting more credits, and more.
 
@@ -13,7 +13,7 @@ Credits are consumed based on the complexity of each operation and the context o
 
 Credit consumption is variable by design: a simple layout tweak costs far fewer credits than generating a full application with complex logic. This means you have a lot of control over how efficiently you build, focused sessions with clear, specific prompts get more done per credit.
 
-To get the most out of each credit, keep sessions focused: start a fresh chat for an unrelated task, and write prompts that name the exact component, query, or data source you want changed, using [@mention in AI Chat](/docs/build-with-ai/referencing-app-resources) where possible.
+To get the most out of each credit, keep sessions focused: start a fresh chat for an unrelated task, and write prompts that name the exact component, query, or data source you want changed, using [@mention in AI Chat](/docs/3.16.0-LTS/build-with-ai/referencing-app-resources) where possible.
 
 ## Credit Usage
 
@@ -60,8 +60,8 @@ Follow these steps to buy add-on credits on ToolJet Cloud:
 
 ToolJet AI credits are allocated on a per builder per month basis according to the purchased license. The total credits from all builders, along with any add-on credits purchased, are pooled together and made available collectively.
 
-- At **Instance Level** for [Self-Hosted](/docs/tj-setup/tj-deployment#self-hosted-tooljet) deployments.
-- At **Workspace Level** for [Cloud](/docs/tj-setup/tj-deployment#tooljet-cloud) deployments.
+- At **Instance Level** for [Self-Hosted](/docs/3.16.0-LTS/tj-setup/tj-deployment#self-hosted-tooljet) deployments.
+- At **Workspace Level** for [Cloud](/docs/3.16.0-LTS/tj-setup/tj-deployment#tooljet-cloud) deployments.
 
 ## Check Available Credits
 

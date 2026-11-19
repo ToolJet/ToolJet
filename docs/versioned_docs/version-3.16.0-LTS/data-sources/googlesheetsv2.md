@@ -7,7 +7,7 @@ ToolJet has the capability to establish a connection with Google Sheets for both
 
 ## Connection
 
-To establish a connection with the Google Sheets data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the Google Sheets data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/3.16.0-LTS/data-sources/overview)** page through the ToolJet dashboard.
 
 ## Authentication Types
 

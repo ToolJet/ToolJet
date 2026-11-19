@@ -100,4 +100,4 @@ extraVolumeMounts:
     readOnly: true
 ```
 
-**Reference**: [ToolJet Kubernetes EKS Setup Documentation](https://docs.tooljet.com/docs/setup/kubernetes-eks)
+**Reference**: [ToolJet Kubernetes EKS Setup Documentation](https://docs.tooljet.com/docs/3.16.0-LTS/setup/kubernetes-eks)

@@ -6,7 +6,7 @@ title: Button Group
 The **Button Group** component is used to group a series of buttons together in a single line. It is used to group related buttons.
 
 :::info
-This is a legacy component. You'll find it in the **Legacy** section of the components panel. Check out the new version of the button group component [here](/docs/widgets/button-group-v2).
+This is a legacy component. You'll find it in the **Legacy** section of the components panel. Check out the new version of the button group component [here](/docs/3.16.0-LTS/widgets/button-group-v2).
 :::
 
 <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/widgets/button-group/buttongroup1.png" alt="Button group" />
@@ -28,7 +28,7 @@ This is a legacy component. You'll find it in the **Legacy** section of the comp
 | On click                                     | Triggers whenever the user clicks on the button in the Button Group. |
 
 :::info
-Check [Action Reference](/docs/actions/run-query) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.16.0-LTS/actions/run-query) docs to get the detailed information about all the **Actions**.
 :::
 
 ## Component Specific Actions (CSA)
@@ -79,8 +79,8 @@ A Tooltip is often used to display additional information when the user hovers t
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
 
 :::info
-The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** feature enabled.
 :::

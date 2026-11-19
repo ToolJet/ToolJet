@@ -6,7 +6,7 @@ title: Authorize.net
 ToolJet supports the Authorize.net plugin to help you securely accept payments, manage customer profiles, and run end-to-end payment lifecycles directly from your applications. You can charge cards, save payment methods, handle refunds and voids, and manage tokenized customer profiles without writing backend code.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Configuration

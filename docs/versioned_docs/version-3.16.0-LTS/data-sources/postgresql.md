@@ -7,7 +7,7 @@ ToolJet has the capability to connect to PostgreSQL databases for data retrieval
 
 ## Establishing a Connection
 
-To establish a connection with the PostgreSQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose PostgreSQL as the data source.
+To establish a connection with the PostgreSQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/3.16.0-LTS/data-sources/overview)** page from the ToolJet dashboard and choose PostgreSQL as the data source.
 
 ToolJet offers following connection types to connect to your PostgreSQL database:
 
@@ -121,7 +121,7 @@ SQL Parameters: <br/>
 
 ### Row Level Security
 
-In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](/docs/app-builder/dynamic-access-rule/row-level-security) guide for more information.
+In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](/docs/3.16.0-LTS/app-builder/dynamic-access-rule/row-level-security) guide for more information.
 
 ### Query Timeout
 
@@ -329,6 +329,6 @@ This basically means If the row exists then update, if not do insert.
 
 :::tip
 
-- You can apply transformations to the query results. Refer to our transformations documentation for more details: **[Transformation Tutorial](/docs/app-builder/custom-code/transform-data)**
-- Check out this how-to guide on **[bulk updating multiple rows](/docs/widgets/table/bulk-row-operations#bulk-update-rows)** from a table component.
+- You can apply transformations to the query results. Refer to our transformations documentation for more details: **[Transformation Tutorial](/docs/3.16.0-LTS/app-builder/custom-code/transform-data)**
+- Check out this how-to guide on **[bulk updating multiple rows](/docs/3.16.0-LTS/widgets/table/bulk-row-operations#bulk-update-rows)** from a table component.
   :::

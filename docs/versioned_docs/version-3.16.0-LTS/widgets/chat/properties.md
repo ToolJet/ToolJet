@@ -3,7 +3,7 @@ id: properties
 title: Properties
 ---
 
-The **Chat Component** can be customized by configuring various properties or adding events to perform specific actions. To learn how to build a chatbot, refer to the [Chat Component Overview](/docs/widgets/chat/) guide. For more information on CSAs and Exposed Variables, check out the [Component Specific Actions](/docs/widgets/chat/csa) guide.
+The **Chat Component** can be customized by configuring various properties or adding events to perform specific actions. To learn how to build a chatbot, refer to the [Chat Component Overview](/docs/3.16.0-LTS/widgets/chat/) guide. For more information on CSAs and Exposed Variables, check out the [Component Specific Actions](/docs/3.16.0-LTS/widgets/chat/csa) guide.
 
 ## Properties
 
@@ -88,10 +88,10 @@ All the following actions can be enabled or disabled either by using the toggle 
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
 
 :::info
-The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/3.16.0-LTS/app-builder/customstyles)** feature enabled.
 :::
 
 :::info

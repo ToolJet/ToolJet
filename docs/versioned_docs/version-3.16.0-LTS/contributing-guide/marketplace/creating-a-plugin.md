@@ -16,7 +16,7 @@ GitHub and Twelve Data are only examples. Your plugin can connect to any API or 
 
 ## Prerequisites
 
-- Complete the **[Marketplace setup](/docs/contributing-guide/marketplace/marketplace-setup)** guide. You need ToolJet running locally with `ENABLE_MARKETPLACE_DEV_MODE=true`, the marketplace packages built, and the `tooljet` CLI installed.
+- Complete the **[Marketplace setup](/docs/3.16.0-LTS/contributing-guide/marketplace/marketplace-setup)** guide. You need ToolJet running locally with `ENABLE_MARKETPLACE_DEV_MODE=true`, the marketplace packages built, and the `tooljet` CLI installed.
 - Run every `tooljet` command from the **root of the ToolJet repository**. The CLI exits with an error if it can't find the `marketplace/` and `docs/` directories.
 
 ## How a Plugin Works

@@ -48,7 +48,7 @@ Role Required: **Admin** <br/>
 ## Granular Access Control
 
 In ToolJet, you can set granular level access control for apps, data sources, and modules, by configuring permissions like view access or edit access, to manage who can interact with the resources in your workspace. You can apply permissions either to all resources (e.g., all apps or all data sources) or to specific, selected resources, offering flexibility and precision in managing access. <br/>
-To configure Granular Access Control, you need to create custom groups. Refer to **[custom groups](/docs/user-management/role-based-access/custom-groups)** guide for more information.
+To configure Granular Access Control, you need to create custom groups. Refer to **[custom groups](/docs/3.16.0-LTS/user-management/role-based-access/custom-groups)** guide for more information.
 
 ### Apps
 
@@ -64,7 +64,7 @@ To configure Granular Access Control, you need to create custom groups. Refer to
 - **Hide from dashboard**: Hides the selected apps from the dashboard, making them accessible only via URL. This permission applies to both **View** and **Edit** access, so if it is enabled for a group, users with Edit access (builders) will also not see the app on the dashboard, in addition to users with View access. The app remains accessible via its URL for both.
 
 - **Environment**: Using environment-level permissions, access to each environment can be restricted based on user groups or roles. For example, members of a custom group *Developer* may be granted access only to the *Development* environment. You can apply these permissions to specific apps or across all apps.  
-    Refer [this documentation](/docs/development-lifecycle/environment/cloud/multi-environment#environment-access-permission) to learn more about Environment Access Permissions.
+    Refer [this documentation](/docs/3.16.0-LTS/development-lifecycle/environment/cloud/multi-environment#environment-access-permission) to learn more about Environment Access Permissions.
 
 - **All apps**: Provides the selected access (Edit or View) to all the apps in the workspace, including any newly created apps.
 

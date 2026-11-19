@@ -25,9 +25,9 @@ Server side operations refer to tasks executed on the server, such as data fetch
 
 The following server side operations can be performed on a Table in ToolJet:
 
-- [Search](/docs/widgets/table/serverside-operations/search/)
-- [Sort](/docs/widgets/table/serverside-operations/sort/)
-- [Filter](/docs/widgets/table/serverside-operations/filter/)
-- [Pagination](/docs/widgets/table/serverside-operations/pagination/)
+- [Search](/docs/3.16.0-LTS/widgets/table/serverside-operations/search/)
+- [Sort](/docs/3.16.0-LTS/widgets/table/serverside-operations/sort/)
+- [Filter](/docs/3.16.0-LTS/widgets/table/serverside-operations/filter/)
+- [Pagination](/docs/3.16.0-LTS/widgets/table/serverside-operations/pagination/)
 
 <img className="screenshot-full img-full" src="/img/widgets/table/serverside-operations/serverside-operations.png" alt="Serverside Operations Present for Table Component in ToolJet" />

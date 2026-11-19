@@ -6,7 +6,7 @@ title: HubSpot
 Integrating HubSpot with ToolJet allows you to access, manage, and automate your HubSpot CRM data within the ToolJet application.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection

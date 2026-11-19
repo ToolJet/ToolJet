@@ -75,10 +75,10 @@ A personal access token belongs to one workspace. To publish the same library to
 
 ## Next Steps
 
-1. [Set up the CLI and create a library](/docs/app-builder/custom-component-library/setup)
-2. [Build components with the SDK](/docs/app-builder/custom-component-library/build-components)
-3. [Preview and publish your library](/docs/app-builder/custom-component-library/preview-and-publish)
-4. [Use custom components in the App Builder](/docs/app-builder/custom-component-library/use-in-app-builder)
-5. [Manage libraries in your workspace](/docs/app-builder/custom-component-library/manage-libraries)
+1. [Set up the CLI and create a library](/docs/3.16.0-LTS/app-builder/custom-component-library/setup)
+2. [Build components with the SDK](/docs/3.16.0-LTS/app-builder/custom-component-library/build-components)
+3. [Preview and publish your library](/docs/3.16.0-LTS/app-builder/custom-component-library/preview-and-publish)
+4. [Use custom components in the App Builder](/docs/3.16.0-LTS/app-builder/custom-component-library/use-in-app-builder)
+5. [Manage libraries in your workspace](/docs/3.16.0-LTS/app-builder/custom-component-library/manage-libraries)
 
-For every command, flag and limit in one place, see the [CLI Reference](/docs/app-builder/custom-component-library/cli-reference).
+For every command, flag and limit in one place, see the [CLI Reference](/docs/3.16.0-LTS/app-builder/custom-component-library/cli-reference).

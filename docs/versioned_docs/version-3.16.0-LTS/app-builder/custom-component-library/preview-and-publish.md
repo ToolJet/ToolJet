@@ -75,7 +75,7 @@ The command builds the library, generates the manifest, type-checks the code, an
 ### Publishing Rules
 
 - **Versions can't be changed.** Once a version is published, its code never changes. Publishing a version number that already exists fails with "Version already exists for this library — choose a different version."
-- **Publishing never changes running apps.** Each app pins a version. A new version is only offered as an upgrade. See [Versions and Pinning](/docs/app-builder/custom-component-library/use-in-app-builder#versions-and-pinning).
+- **Publishing never changes running apps.** Each app pins a version. A new version is only offered as an upgrade. See [Versions and Pinning](/docs/3.16.0-LTS/app-builder/custom-component-library/use-in-app-builder#versions-and-pinning).
 - **TypeScript errors block the publish.** Use `--skip-type-check` to publish anyway.
 - **A library needs at least one component.** If nothing exported from `src/index.ts` is a React component, the publish stops.
 
@@ -89,4 +89,4 @@ tooljet library publish --version 1.2.0 --url https://app.tooljet.ai --token <yo
 
 ## Next Steps
 
-Your library is now available in the **Custom** tab. See [Use Custom Components in the App Builder](/docs/app-builder/custom-component-library/use-in-app-builder).
+Your library is now available in the **Custom** tab. See [Use Custom Components in the App Builder](/docs/3.16.0-LTS/app-builder/custom-component-library/use-in-app-builder).

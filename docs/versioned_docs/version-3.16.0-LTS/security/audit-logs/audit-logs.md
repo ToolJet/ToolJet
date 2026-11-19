@@ -145,9 +145,9 @@ The dropdown will display all the apps associated with your account. Select an a
 
 ### Log File
 
-The file will contain all the data from audit logs. The log file can be created by specifying the path in the [environment variables](/docs/setup/env-vars). The log file is rotated on a daily basis and is updated dynamically every time a new audit log is generated.
+The file will contain all the data from audit logs. The log file can be created by specifying the path in the [environment variables](/docs/3.16.0-LTS/setup/env-vars). The log file is rotated on a daily basis and is updated dynamically every time a new audit log is generated.
 
-Learn more about **setting up the log file generation** [here](/docs/security/audit-logs/setup-rsyslog).
+Learn more about **setting up the log file generation** [here](/docs/3.16.0-LTS/security/audit-logs/setup-rsyslog).
 
 ### Log Rotation
 

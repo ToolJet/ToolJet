@@ -1,0 +1,82 @@
+---
+id: container
+title: Container
+---
+
+Containers are used to group components together. You can move a group of related components inside a container for better organization of your UI elements.
+
+:::caution Restricted components
+Certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the Container component.
+:::
+
+## Show header
+
+The show header toggle can be used to display or hide a header for the component. If you keep the toggle on, the container will display a header on which you can place other components. The styling of the header can be controlled separately under the Styles tab. 
+
+## Component Specific Actions (CSA)
+
+The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
+
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| setVisibility()| Sets the visibility of the component.     | `components.container1.setVisibility(false)` |
+| setLoading()   | Sets the loading state of the component.  | `components.container1.setLoading(true)` |
+| setDisable()   | Disables the component.                   | `components.container1.setDisable(true)` |
+
+## Exposed Variables
+
+| Variable | Description | How To Access |
+|:--------|:-----------|:------------|
+| isLoading | Indicates if the component is loading. | `{{components.container1.isLoading}}` |
+| isVisible | Indicates if the component is visible. | `{{components.container1.isVisible}}` |
+| isDisabled | Indicates if the component is disabled. | `{{components.container1.isDisabled}}` |
+
+## Additional Actions
+
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:------------------|:------------|:------------------------------|
+| Loading state      | Enables a loading spinner, often used with the isLoading property to indicate progress.  | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Dynamic height | Automatically adjusts the container's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String |
+
+## Devices
+
+|<div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
+|:---------- |:----------- |:----------|
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+## Styles
+
+### Header
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background | Sets the background color of the header. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Divider | Sets the color of the divider between header and body. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+
+### Container
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background | Sets the background color of the container. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Border color | Sets the border color of the container. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Border radius | Sets the corner radius of the container. | Enter a number (default: `6`) or click on **fx** and input a number programmatically. |
+| Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::
+
+:::info
+Any property having **fx** button next to its field can be **programmatically configured**.
+:::

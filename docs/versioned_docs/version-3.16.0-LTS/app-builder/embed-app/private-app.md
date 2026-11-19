@@ -43,7 +43,7 @@ See the diagram below for a detailed view of the authentication and embedding fl
 
 ## Steps to Embed a Private Application
 
-1. [Create](/docs/getting-started/quickstart-guide) and [release](/docs/development-lifecycle/release/release-rollback/) your ToolJet application.
+1. [Create](/docs/3.16.0-LTS/getting-started/quickstart-guide) and [release](/docs/3.16.0-LTS/development-lifecycle/release/release-rollback/) your ToolJet application.
 
 2. **Configure Your Frontend**: Your frontend needs to request an embedded app URL from your backend immediately after the user logs in. The same email used for login will be used to generate the ToolJet embed URL.
 
@@ -306,7 +306,7 @@ See the diagram below for a detailed view of the authentication and embedding fl
 
     </Tabs>
 
-3. **Configure Your Backend**: Your backend is responsible for securely calling the ToolJet API to generate a Personal Access Token and return the embed URL. Both `sessionExpiry` and `patExpiry` are in minutes. For all request parameters, see [Personal Access Token](/docs/user-management/authentication/self-hosted/pat).
+3. **Configure Your Backend**: Your backend is responsible for securely calling the ToolJet API to generate a Personal Access Token and return the embed URL. Both `sessionExpiry` and `patExpiry` are in minutes. For all request parameters, see [Personal Access Token](/docs/3.16.0-LTS/user-management/authentication/self-hosted/pat).
 
     <Tabs>
 

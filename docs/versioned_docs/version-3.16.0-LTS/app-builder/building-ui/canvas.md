@@ -40,7 +40,7 @@ Turn off **Maintenance mode** to let users launch the released version again.
 
 ### Export App
 
-Click **Export app** to download the app as a JSON file. In the **Select a version to export** dialog, choose a version, select whether to **Export ToolJet table schema**, and click **Export selected version** or **Export All**. For details, see [Import and Export Applications](/docs/development-lifecycle/import-export/importing-exporting-applications).
+Click **Export app** to download the app as a JSON file. In the **Select a version to export** dialog, choose a version, select whether to **Export ToolJet table schema**, and click **Export selected version** or **Export All**. For details, see [Import and Export Applications](/docs/3.16.0-LTS/development-lifecycle/import-export/importing-exporting-applications).
 
 ### Canvas Styles
 
@@ -52,7 +52,7 @@ The **Canvas Styles** section has the following settings:
     - **Auto**: Follows the light or dark mode preference set in ToolJet.
     - **Light**: Keeps the app in light mode, users cannot switch to dark mode.
     - **Dark**: Keeps the app in dark mode, users cannot switch to light mode.
-- **Theme**: Selects the [App Theme](/docs/app-builder/custom-theme) used by the app. Custom themes need a paid plan. Without one, the dropdown is disabled and the default **ToolJet** theme is used.
+- **Theme**: Selects the [App Theme](/docs/3.16.0-LTS/app-builder/custom-theme) used by the app. Custom themes need a paid plan. Without one, the dropdown is disabled and the default **ToolJet** theme is used.
 
 :::info
 **Maintenance mode** and **Canvas Styles** can't be changed while the app builder is locked for editing, for example when the released version is open.
@@ -60,7 +60,7 @@ The **Canvas Styles** section has the following settings:
 
 ### Global Settings in the Module Editor
 
-When you edit a [module](/docs/app-builder/modules/overview), **Global settings** shows a reduced set of options:
+When you edit a [module](/docs/3.16.0-LTS/app-builder/modules/overview), **Global settings** shows a reduced set of options:
 
 - **Unique app slug** and **Maintenance mode** aren't available, because modules aren't launched on their own.
 - The export button is **Export module**. It downloads the module as a JSON file immediately, without a version selection dialog.
@@ -68,7 +68,7 @@ When you edit a [module](/docs/app-builder/modules/overview), **Global settings*
 
 ## Building the User Interface
 
-To build the user interface, components can be dragged from the [Components Library](/docs/app-builder/building-ui/component-library/) on the right. Use the Component Handle to reposition a component. A component can be resized from any of its edges or corners.
+To build the user interface, components can be dragged from the [Components Library](/docs/3.16.0-LTS/app-builder/building-ui/component-library/) on the right. Use the Component Handle to reposition a component. A component can be resized from any of its edges or corners.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/drag.gif" alt="App Builder: Canvas"/>
 
@@ -102,7 +102,7 @@ Click **Preview** in the app builder header to open the current page in a new ta
 
 ## Creating Layout
 
-In ToolJet, components can be grouped using a Layout component such as a **[Container](/docs/widgets/container/)** or a **[Form](/docs/widgets/form/)**. You can drag and drop the relevant components into the layout components on the canvas to create a section.
+In ToolJet, components can be grouped using a Layout component such as a **[Container](/docs/3.16.0-LTS/widgets/container/)** or a **[Form](/docs/3.16.0-LTS/widgets/form/)**. You can drag and drop the relevant components into the layout components on the canvas to create a section.
 
 <img className="screenshot-full img-m" src="/img/app-builder/canvas/form.png" alt="App Builder: Canvas"/>
 
@@ -133,7 +133,7 @@ Components on the canvas can be cloned using **Cmd/Ctrl + D**. Unlike copy and p
 <br/><br/>
 
 :::note
-For additional shortcuts, refer to the [Keyboard Shortcuts Guide](/docs/tutorial/keyboard-shortcuts/).
+For additional shortcuts, refer to the [Keyboard Shortcuts Guide](/docs/3.16.0-LTS/tutorial/keyboard-shortcuts/).
 :::
 
 ## Multiplayer Editing
@@ -156,4 +156,4 @@ ToolJet doesn't lock components while someone is editing them. Avoid editing the
 
 <PlanBadge type="self-hosted" />
 
-On self-hosted instances, a super admin turns multiplayer editing on or off from **Settings > Manage instance settings** using the **Multiplayer editing** toggle. Its initial value comes from the `ENABLE_MULTIPLAYER_EDITING` [environment variable](/docs/setup/env-vars#multiplayer-editing).
+On self-hosted instances, a super admin turns multiplayer editing on or off from **Settings > Manage instance settings** using the **Multiplayer editing** toggle. Its initial value comes from the `ENABLE_MULTIPLAYER_EDITING` [environment variable](/docs/3.16.0-LTS/setup/env-vars#multiplayer-editing).

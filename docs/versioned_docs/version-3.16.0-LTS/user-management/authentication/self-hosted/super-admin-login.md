@@ -28,7 +28,7 @@ If SMTP is set up on your instance, use the standard **Forgot Password** flow:
 2. Enter the Super Admin's registered email address and click **Send a reset link**.
 3. Check the inbox for that email address and click the reset link to set a new password.
 
-See [Forgot Password](/docs/user-management/profile-management/reset-password#forgot-password) for the detailed steps. This works even if you're the only Super Admin on the instance, since it doesn't depend on another admin account.
+See [Forgot Password](/docs/3.16.0-LTS/user-management/profile-management/reset-password#forgot-password) for the detailed steps. This works even if you're the only Super Admin on the instance, since it doesn't depend on another admin account.
 
 ### SMTP Was Not Configured
 

@@ -1,0 +1,90 @@
+---
+id: map
+title: Map
+---
+
+The **Map** component enables users to display a map on the app. It can be used to display or choose a single location or multiple locations on the map. The Map component can be used to display the location of a business, a store, or a restaurant. It can also be used to display the location of a user on the map. It allows users to interact with the map interface and pick specific points of interest.
+
+:::tip Using Self-hosted
+If you are utilizing the self-hosted version of ToolJet, it is necessary to configure the Google Maps API key as an environment variable. Please refer to the [environment variable setup documentation](/docs/setup/env-vars#google-maps-api).
+:::
+
+<img className="screenshot-full" src="/img/widgets/map/map2.png" alt="ToolJet - Component Reference - Map" />
+
+## Properties
+
+| <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| :----------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| Initial location | default location when the app is loaded initially. | An object containing the **latitude** and **longitude** as key value pairs. ex: `{{ {"lat": 40.7128, "lng": -73.935242} }}`. |
+| Default markers | The markers shown on the map when the app loads. | An array of objects with `lat`, `lng` and an optional `label`. ex: `{{ [{"lat": 40.7128, "lng": -73.935242, "label": "A"}] }}`. |
+| Polygon points | Create a polygon on the map using the given coordinates. Needs at least two points. | An array of objects containing the coordinates. ex: `{{ [{"lat": 40.7128, "lng": -73.935242}, {"lat": 40.7128, "lng": -73.835242}, {"lat": 40.7528, "lng": -73.885242}] }}`. |
+| Add new markers | On clicking the map, a new marker will be added to the map. | By default, it's set to `On`. Toggle `off` to disable adding new markers on the map. Click **fx** to set `{{true}}` or `{{false}}` programmatically. |
+| Search for places | Enable to show the search box on the map. | By default, it's set to `On`. Toggle `off` to disable the search box on the map. Click **fx** to set `{{true}}` or `{{false}}` programmatically. |
+
+## Events
+
+| <div style={{ width:"135px"}}> Event Name </div> | <div style={{ width:"100px"}}> Description </div>                                                   |
+| :----------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| On bounds change                                 | Triggers after the user finishes dragging the map, or selects a place from the search box. It doesn't trigger on zoom or `setLocation`. |
+| On create marker                                 | Triggers when a new marker is added to the map.                                                     |
+| On marker click                                  | Triggers when the user clicks on any of the markers on the map.                                     |
+| On polygon click                                 | Triggers when the user clicks on the polygon on the map.                                            |
+
+:::info
+For detailed information about all the available **Actions**, please refer to the [Action Reference](/docs/actions/run-query) documentation.
+:::
+
+## Component Specific Actions (CSA)
+
+Following actions of Map component can be controlled using the component specific actions(CSA):
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+| :-------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
+| setLocation                                   | Centers the map on the given latitude and longitude. It doesn't add or move a marker, and doesn't update the `center` or `bounds` variables. | Employ a RunJS query to execute component-specific actions such as: `components.map1.setLocation(40.7128, -73.935242)`. |
+
+## Exposed Variables
+
+Exposed variables can be used to get data from the component.
+
+| <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+| :---------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
+| center | Holds the latitude, longitude and Google Maps URL of the map's current center. | Access the value dynamically using JS: `{{components.map1.center}}`. |
+| center.`lat` | Holds the latitude of the map's current center. | Access the value dynamically using JS: `{{components.map1.center.lat}}`. |
+| center.`lng` | Holds the longitude of the map's current center. | Access the value dynamically using JS: `{{components.map1.center.lng}}`. |
+| center.`googleMapUrl` | This variable holds the URL of the location where the center marker is placed on the Map component. | Access the value dynamically using JS: `{{components.map1.center.googleMapUrl}}`. |
+| markers | Holds the markers on the map, starting with **Default markers**. When **Add new markers** is on, markers the user adds by clicking the map are appended. Each marker is an object with `lat` and `lng` keys, and `label` if set. | Access the values dynamically using `{{components.map1.markers[0].lat}}`. |
+| selectedMarker | The marker the user last clicked, as an object with `lat` and `lng` keys, and `label` if set. | Access the value dynamically using JS: `{{components.map1.selectedMarker.lat}}`. |
+| bounds | The visible area of the map, as an object with `northEast` and `southWest` corners. It is set after the user drags the map or selects a place from the search box. | Access the value dynamically using JS: `{{components.map1.bounds}}`. |
+| bounds.northEast | It holds the latitude and longitude of the north-east corner of the rectangle. | Access the value dynamically using JS: `{{components.map1.bounds.northEast.lat}}` or `{{components.map1.bounds.northEast.lng}}`. |
+| bounds.southWest | It holds the latitude and longitude of the south-west corner of the rectangle. | Access the value dynamically using JS: `{{components.map1.bounds.southWest.lat}}` or `{{components.map1.bounds.southWest.lng}}`. |
+
+## General
+
+### Tooltip
+
+A Tooltip is often used to specify the extra information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text. You can enter the content as **Plain text**, **Markdown**, or **HTML** by selecting the desired format from the toggle above the field.
+
+## Devices
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| Show on desktop                                | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile                                 | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+## Styles
+
+| <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| :----------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| Visibility | Toggle on or off to control the visibility of the component. | You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not be visible after the app is released. By default, it's set to `{{true}}`. |
+| Disable | This is `off` by default, toggle `on` the switch to lock the component and make it non-functional. | You can also programmatically set the value by clicking on the **fx** button next to it. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| Box shadow | Add a shadow effect to the component by providing values to X, Y, Blur, Spread and Color. | You can also programmatically set the value by clicking on the **fx** button next to it. Ex: `0px 0px 0px 0px #00000040`. |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::

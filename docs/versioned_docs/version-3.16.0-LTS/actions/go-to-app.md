@@ -25,5 +25,5 @@ actions.goToApp('<slug>', queryParams);
 - `queryParams` is an array of key-value pairs in the format `[['key1', 'value1'], ['key2', 'value2']]`.
 
 :::info
-For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/3.16.0-LTS/actions/run-actions-from-runjs/).
 :::

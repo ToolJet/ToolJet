@@ -6,7 +6,7 @@ title: Anthropic
 Integrating Anthropic with ToolJet enables the creation of interactive chatbots that analyze past messages to generate context-aware responses. These bots can also be customized with defined roles, making them suitable for tasks such as customer support, serving as virtual assistants, or enabling personalized conversations.
 
 :::info NOTE
-Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/3.16.0-LTS/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection

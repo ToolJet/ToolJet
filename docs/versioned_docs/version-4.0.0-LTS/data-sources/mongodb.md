@@ -1,0 +1,652 @@
+---
+id: mongodb
+title: MongoDB
+---
+
+The MongoDB data source in ToolJet allows you to connect your applications directly to MongoDB databases and perform operations on collections using queries. It supports database actions such as reading, inserting, updating, and deleting documents, enabling you to work with structured and semi-structured data efficiently. This data source is ideal for building applications that require flexible schemas and fast iteration over evolving data models.
+
+## Manual Connection
+
+To establish a manual connection with the **MongoDB** data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](/docs/data-sources/overview) page from the ToolJet dashboard.
+
+:::info
+Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
+:::
+
+### Connection Format
+**Standard (mongodb)**
+
+  Use this option when connecting to a specific MongoDB host and port.
+It requires manually entering server details and is suitable for standalone MongoDB deployments or custom network setups.
+
+ **DNS Seed list (mongodb+srv)**
+
+Use this option for MongoDB Atlas or replica set clusters.
+It automatically discovers hosts using DNS, reduces configuration effort, and is the recommended approach for scalable and managed MongoDB deployments.
+
+
+ToolJet requires the following to connect to your MongoDB.
+
+- **Host**
+- **Port**: Shown only for the **Standard (mongodb)** format. Defaults to `27017`.
+
+You can also set the following optional fields:
+
+- **Database**: The database that queries run against.
+- **Username** and **Password**: ToolJet adds the credentials to the connection only when both are filled in.
+- **Connection options**: Key-value pairs passed to the MongoDB driver as client options, for example `authSource` with the value `admin`.
+
+**Note:** It is recommended to create a new MongoDB user so that you can control the access levels of ToolJet.
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mongoDB-ds.png" alt="ToolJet - Mongo connection" />
+
+### Secure Sockets Layer (SSL)
+
+- **SSL/TLS**: Turn on to connect to MongoDB over SSL/TLS. Off by default.
+- **SSL/TLS certificate**: Shown when **SSL/TLS** is on. Supported types:
+  - **CA certificate**: Verifies the server certificate against the certificate you enter in **CA cert**.
+  - **Client certificate**: Authenticates with the server using **Client key**, **Client cert**, and **CA cert**.
+  - **None**: Connects over SSL/TLS without a custom certificate.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/ssl.png" alt="MongoDB - SSL Certificate" />
+
+## Connect Using Connecting String
+
+You can also use a **Connection String** by switching the method from the dropdown. You will be prompted to enter the details of your MongoDB connection.
+
+ToolJet requires the following to connect to your MongoDB using Connecting String:
+
+- **Connection String**
+
+:::info
+The connection string typically looks like this: `mongodb+srv://${username}:${password}@${cluster}/{database}`.
+
+For example: `mongodb+srv://tooljettest:dummypassword@cluster0.urul7.mongodb.net/hrms`
+:::
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mongodb-connectionString.png" alt="ToolJet - Mongo connection"/>
+
+**Note:** Make sure to replace username, password, cluster, and database with your actual MongoDB details. If your MongoDB instance requires additional connection options, you can usually append these options to the connection string.
+
+The connection string form also shows **Connection format**, **Host**, **Port**, **Database**, **Username**, **Password**, **Connection options**, **SSL/TLS**, and **SSH tunnel**. These fields are optional. When you fill them in, they override the matching part of the connection string:
+
+- **Host** replaces the first host in the string. **Port** is applied only when **Host** is also set.
+- **Database**, **Username**, and **Password** replace the values in the string.
+- The protocol (`mongodb://` or `mongodb+srv://`) comes from the string. **Connection format** is used only when the string has no protocol.
+
+In connection string mode, ToolJet applies the **SSL/TLS** toggle but not the CA or client certificate fields. To connect with a CA or client certificate, use **Manual connection**.
+
+### SSH Tunnelling 
+
+ToolJet now supports SSH tunnelling for the MongoDB data source, allowing secure connections to databases hosted inside private networks. This can be used to :
+
+- Access private databases
+- Improve security
+- Enable encrytped communication
+- Avoid firewall rule changes
+
+#### SSH Configuration
+
+To securely connect to a private MongoDB database using SSH tunnelling:
+
+1. Enable the **SSH tunnel** toggle in the MongoDB data source configuration.
+2. Provide the following details:
+   - **SSH host** – Server hostname or IP address.
+   - **SSH port** – Port number (default: `22`).
+   - **SSH username** – Username for the SSH server.
+   - **SSH dst host** – The MongoDB host, as reached from the SSH server, that the tunnel forwards traffic to. If left empty, ToolJet uses **Host** (or the first host in the connection string). The tunnel forwards to the MongoDB port (**Port**, or the port in the connection string; default `27017`).
+   - **Authentication type** – Choose either:
+     - **Private Key**: Enter the **SSH private key**, and the **SSH passphrase** if the key has one.
+     - **Password**: Enter the **SSH password**.
+
+Once configured, ToolJet establishes a secure SSH connection. All MongoDB queries are routed through this encrypted tunnel.
+
+:::note
+SSH tunnelling isn't supported with the **DNS Seed list (mongodb+srv)** format or a `mongodb+srv://` connection string. The connection fails with `SSH tunnel is not supported with mongodb+srv format`.
+:::
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/ssh-tunnel.png" alt="SSH tunnelling mongodb connection"/>
+
+## Querying MongoDB
+
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source.
+2. Select the operation that you want to perform and click **Save** to save the query.
+3. Click on the **Run** button to run the query.
+
+<img className="screenshot-full img-l" src="/img/datasource-reference/mongo-db/mongoDB-operations.png" alt="ToolJet - Mongo query"/>
+
+:::tip
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
+:::
+
+## Supported Operations
+
+- **[List Collections](#list-collections)**
+- **[Create a Collection](#create-a-collection)**
+- **[Find One](#find-one)**
+- **[Find Many](#find-many)**
+- **[Total Count](#total-count)**
+- **[Count](#count)**
+- **[Distinct](#distinct)**
+- **[Insert One](#insert-one)**
+- **[Insert Many](#insert-many)**
+- **[Update One](#update-one)**
+- **[Update Many](#update-many)**
+- **[Replace One](#replace-one)**
+- **[Find One and Update](#find-one-and-update)**
+- **[Find One and Replace](#find-one-and-replace)**
+- **[Find One and Delete](#find-one-and-delete)**
+- **[Aggregate](#aggregate)**
+- **[Delete One](#delete-one)**
+- **[Delete Many](#delete-many)**
+- **[Bulk Operations](#bulk-operations)**
+
+### List Collections
+
+Returns list of collections
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-listcollections.png" alt="ToolJet - Mongo DB List Collection"/>
+
+### Create a Collection
+
+Creates a new collection in the connected database. The query returns the new collection's `collectionName` and `namespace`.
+
+#### Required Parameters:
+
+- **Name**: Name of the collection to create.
+
+#### Optional Parameters:
+
+- **Options**: Collection options as a JSON object, for example `capped`, `size`, `max`, `timeseries`, or `validator`.
+
+
+
+#### Example:
+
+```json
+{
+  "capped": true,
+  "size": 10485760,
+  "max": 1000
+}
+```
+
+### Find One
+
+Return a document which satisfy the given filter and options. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/findOne)
+
+#### Required Parameters:
+
+- **Collection**
+
+#### Optional Parameters:
+
+- **Filter**
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findone.png" alt="ToolJet - Mongo DB Find One"/>
+
+### Find Many
+
+Return list of documents which satisfy the given filter and options. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/find/)
+
+#### Required Parameters:
+
+- **Collection**
+
+#### Optional Parameters:
+
+- **Filter**
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findmany.png" alt="ToolJet - Mongo DB Find Many"/>
+
+### Total Count
+
+Returns an estimation of the number of documents in the collection based on collection metadata. [Reference](https://mongodb.github.io/node-mongodb-native/4.0/classes/collection.html#estimateddocumentcount)
+
+#### Required Parameters:
+
+- **Collection**
+
+#### Optional Parameters:
+
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-totalcount.png" alt="ToolJet - Mongo DB Total Count"/>
+
+### Count
+
+Returns the number of documents based on the filter. [Reference](https://mongodb.github.io/node-mongodb-native/4.0/classes/collection.html#countdocuments)
+
+#### Required Parameters:
+
+- **Collection**
+
+#### Optional Parameters:
+
+- **Filter**
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-count.png" alt="ToolJet - Mongo DB Count"/>
+
+### Distinct
+
+Retrieve a list of distinct values for a field based on the filter. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/distinct/)
+
+#### Required Parameters:
+
+- **Collection**
+- **Field**
+
+#### Optional Parameters:
+
+- **Filter**
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-distinct.png" alt="ToolJet - Mongo DB Find One"/>
+
+### Insert One
+
+Insert a document. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/insertOne/)
+
+#### Required Parameters:
+
+- **Collection**
+- **Document**
+
+#### Optional Parameters:
+
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-insertone.png" alt="ToolJet - Mongo DB Insert One"/>
+
+#### Example:
+
+```json
+{
+  "name": "John Doe",
+  "age": 30
+}
+```
+
+### Insert Many
+
+Insert list of documents. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/insertMany/)
+
+#### Required Parameters:
+
+- **Collection**
+- **Document**
+
+#### Optional Parameters:
+
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-insertmany.png" alt="ToolJet - Mongo DB Insert Many"/>
+
+#### Example
+
+```json
+[
+  {
+    "name": "Product1",
+    "price": 100
+  },
+  {
+    "name": "Product2",
+    "price": 150
+  }
+]
+```
+
+### Update One
+
+Update a document based on the filter. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/updateOne/)
+
+#### Required Parameters:
+
+- **Collection**
+- **Filter**
+- **Update**
+
+#### Optional Parameters:
+
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-updateone.png" alt="ToolJet - Mongo DB Update One"/>
+
+#### Example
+
+##### Filter
+
+```json
+{
+  "name": "John Doe"
+}
+```
+
+##### Update
+
+```json
+{
+  "$set": {
+    "age": 31
+  }
+}
+```
+
+### Update Many
+
+Update many documents based on the filter. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/updateMany/)
+
+#### Required Parameters:
+
+- **Collection**
+- **Filter**
+- **Update**
+
+#### Optional Parameters:
+
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-updatemany.png" alt="ToolJet - Mongo DB Update Many"/>
+
+#### Example
+
+##### Filter
+
+```json
+{
+  "status": "pending"
+}
+```
+
+##### Update
+
+```json
+{
+  "$set": {
+    "status": "completed"
+  }
+}
+```
+
+### Replace One
+
+Replace a document based on filter. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/replaceOne/)
+
+#### Required Parameters:
+
+- **Collection**
+- **Filter**
+- **Replacement**
+
+#### Optional Parameters:
+
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-replaceone.png" alt="ToolJet - Mongo DB Find One"/>
+
+#### Example
+
+##### Filter
+
+```json
+{
+  "product_id": 123
+}
+```
+
+##### Replacement
+
+```json
+{
+  "product_id": 123,
+  "name": "New Product",
+  "price": 200
+}
+```
+
+### Find One and Update
+
+If your application requires the document after updating, use this instead of **Update One**. [Reference](https://mongodb.github.io/node-mongodb-native/4.0/classes/collection.html#findoneandupdate)
+
+#### Required Parameters:
+
+- **Collection**
+- **Filter**
+- **Update**
+
+#### Optional Parameters:
+
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findonenupdate.png" alt="ToolJet - Mongo DB Find One and Update"/>
+
+#### Example
+
+##### Filter
+
+```json
+{
+  "employee_id": 456
+}
+```
+
+##### Update
+
+```json
+{
+  "$inc": {
+    "salary": 5000
+  }
+}
+```
+
+### Find One and Replace
+
+If your application requires the document after updating, use this instead of **Replace One**. [Reference](https://mongodb.github.io/node-mongodb-native/4.0/classes/collection.html#findoneandreplace)
+
+#### Required Parameters:
+
+- **Collection**
+- **Filter**
+- **Replacement**
+
+#### Optional Parameters:
+
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findonenreplace.png" alt="ToolJet - Mongo DB Find One and Replace"/>
+
+#### Example
+
+##### Filter
+
+```json
+{
+  "product_id": 789
+}
+```
+
+##### Replacement
+
+```json
+{
+  "product_id": 789,
+  "name": "Updated Product",
+  "price": 300
+}
+```
+
+### Find One and Delete
+
+If your application requires the document after deleting, use this instead of **Delete One**. [Reference](https://mongodb.github.io/node-mongodb-native/4.0/classes/collection.html#findoneanddelete)
+
+#### Required Parameters:
+
+- **Collection**
+- **Filter**
+
+#### Optional Parameters:
+
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findonendelete.png" alt="ToolJet - Mongo DB Find One and Delete"/>
+
+#### Example
+
+```json
+{
+  "order_id": 101
+}
+```
+
+### Aggregate
+
+Aggregation operations are expressions you can use to produce reduced and summarized results. [Reference](https://docs.mongodb.com/drivers/node/v4.0/fundamentals/aggregation/)
+
+#### Required Parameters:
+
+- **Collection**
+- **Pipeline**
+
+#### Optional Parameters:
+
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-aggregate.png" alt="ToolJet - Mongo DB Aggregate"/>
+
+#### Example
+
+```json
+[
+  {
+    "$match": {
+      "status": "completed"
+    }
+  },
+  {
+    "$group": {
+      "_id": "$product_id",
+      "totalSales": {
+        "$sum": "$amount"
+      }
+    }
+  }
+]
+```
+
+### Delete One
+
+Delete a record based on the filter. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/deleteOne/)
+
+#### Required Parameters:
+
+- **Collection**
+- **Filter**
+
+#### Optional Parameters:
+
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-deleteone.png" alt="ToolJet - Mongo DB Find One"/>
+
+#### Example
+
+```json
+{
+  "user_id": 123
+}
+```
+
+### Delete Many
+
+Delete many records based on the filter. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/deleteMany/)
+
+#### Required Parameters:
+
+- **Collection**
+- **Filter**
+
+#### Optional Parameters:
+
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-deletemany.png" alt="ToolJet - Mongo DB Find One"/>
+
+#### Example
+
+```json
+{
+  "status": "cancelled"
+}
+```
+
+### Bulk Operations
+
+Perform bulk operations. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/bulkWrite/)
+
+#### Required Parameters:
+
+- **Collection**
+- **Operations**
+
+#### Optional Parameters:
+
+- **Option**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-bulkops.png" alt="ToolJet - Mongo DB Bulk Operations"/>
+
+#### Example
+
+```json
+[
+  {
+    "insertOne": {
+      "document": {
+        "item": "apple",
+        "quantity": 50
+      }
+    }
+  },
+  {
+    "updateOne": {
+      "filter": {
+        "item": "orange"
+      },
+      "update": {
+        "$set": {
+          "quantity": 100
+        }
+      }
+    }
+  },
+  {
+    "deleteOne": {
+      "filter": {
+        "item": "banana"
+      }
+    }
+  }
+]
+```
+
+## Dynamic Queries
+
+Dynamic queries in MongoDB can be used to create flexible and parameterized queries.
+
+#### Example
+
+```javascript
+{ amount: { $lt: '{{ components.textinput1.value }}' }}
+
+// Dates
+// supported: Extended JSON syntax
+{ createdAt: { $date: '{{ new Date('01/10/2020') }}'} }
+// not supported: MongoDB classic syntax
+{ createdAt: new Date('01/10/2020') }
+```
+
+Reference on [mongodb extended JSON](https://docs.mongodb.com/manual/reference/mongodb-extended-json/) supported data types.
