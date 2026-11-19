@@ -62,10 +62,7 @@ export interface SendAppBuildCompletedEmailPayload {
   to: string;
   name: string;
   appName: string;
-  /**
-   * The app's URL slug, not its name. Defaults to the app's UUID on creation and only changes if
-   * someone deliberately edits it, so the link survives the rename the AI performs mid-build.
-   */
+  /** The editor URL segment for the app. It accepts the app ID or a slug. */
   appSlug: string;
   /** Organization slug, falling back to the organization id — both resolve as the workspace segment. */
   workspaceSlug: string;
