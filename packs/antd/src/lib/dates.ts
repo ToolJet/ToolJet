@@ -37,3 +37,19 @@ export const parseTime = (v: unknown, formats: string[]): Dayjs | null => {
 
 /** Whether a value names nothing (empty), as opposed to text that names an impossible date. */
 export const isBlankDate = (v: unknown): boolean => str(v).trim() === '';
+
+// The week, month, quarter or year a picked date stands for, as its first day: a month picked over a value of the 25th
+// kept the 25th.
+export const startOfPeriod = (d: Dayjs, picker: string): Dayjs => {
+  if (picker === 'week') return d.startOf('week');
+  if (picker === 'month') return d.startOf('month');
+  if (picker === 'quarter') return d.month(Math.floor(d.month() / 3) * 3).startOf('month');
+  if (picker === 'year') return d.startOf('year');
+  return d;
+};
+// Ant's own display format for a period picker (2026-10, 2026-Q4, 2026), not the full date.
+export const PERIOD_FORMAT: Record<string, string | undefined> = {
+  month: 'YYYY-MM',
+  quarter: 'YYYY-[Q]Q',
+  year: 'YYYY',
+};

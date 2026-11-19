@@ -20,6 +20,7 @@ import { DownOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, usePopupTheme, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
+import { RADIUS_HINT, THEME_COLOR, useThemeColor, useThemeNumber } from '../lib/themeStyles';
 import { SkeletonSwap, SpinOver } from '../lib/Loading';
 import { oneOf, str, toArray, toKeyedItems, type Row } from '../lib/data';
 import { toNumber } from '../lib/format';
@@ -180,6 +181,8 @@ export const Collapse = () => {
 // Ant's Dropdown on a Button: children (the button text), menu items [{ key, label, danger, disabled }], type
 // (primary, default), trigger (click, hover), placement, arrow. Event onClick for a menu item, with its key exposed
 // as selectedKey (Ant passes { key }); onButtonClick for the button half when split.
+const PLACEMENTS = ['bottomLeft', 'bottom', 'bottomRight', 'topLeft', 'top', 'topRight'] as const;
+
 export const Dropdown = () => {
   const [children] = ToolJet.useStateString({ name: 'children', label: 'Text', initialValue: 'Actions' });
   const [items] = ToolJet.useStateArray({
@@ -214,7 +217,7 @@ export const Dropdown = () => {
   const [placement] = ToolJet.useStateEnumeration({
     name: 'placement',
     label: 'Placement',
-    enumDefinition: ['bottomLeft', 'bottom', 'bottomRight', 'topLeft', 'top', 'topRight'],
+    enumDefinition: [...PLACEMENTS],
     initialValue: 'bottomLeft',
   });
   const [arrow] = ToolJet.useStateBoolean({ name: 'arrow', label: 'Arrow', initialValue: false });
@@ -269,7 +272,8 @@ export const Dropdown = () => {
     open: list.open,
     onOpenChange: (next: boolean) => list.onOpenChange(next),
     trigger: [trigger as 'click'],
-    placement: placement as 'bottomLeft',
+    // Ant calls placement.includes, so an object bound to it crashed the widget (QA PF-090).
+    placement: oneOf(placement, PLACEMENTS, 'bottomLeft'),
     arrow,
     disabled,
     autoFocus: focusList,
@@ -730,7 +734,9 @@ export const Skeleton = () => {
     defaultWidth: 16,
     defaultHeight: 16,
   });
-  const asked = Math.max(0, Math.floor(Number(rows)) || 0);
+  // Within the declared 0 to 20: max only limits the inspector field, and a bound 12345678901234 reached Ant, which drew
+  // nothing building that many rows (QA PF-223).
+  const asked = Math.min(20, Math.max(0, Math.floor(Number(rows)) || 0));
   const shown = loading || host.loading;
   const fit = useFittedRows(asked, [shown, title, avatar]);
   return (
@@ -844,7 +850,15 @@ export const Image = () => {
   });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const { loading } = ToolJet.useControlState();
-  const tokens = useTokenStyles();
+  // Only Border color and Border radius, drawn on the image's box: Primary, Text and Container colour drew nothing on a
+  // picture (QA PKB-41). Same style names as before, so saved values still apply.
+  const borderColor = useThemeColor('colorBorder', 'Border color', THEME_COLOR.border);
+  const borderRadius = useThemeNumber('borderRadius', 'Border radius', RADIUS_HINT);
+  const radius = borderRadius === '' || borderRadius == null ? NaN : Number(borderRadius);
+  const box = {
+    ...(borderColor ? { '--tj-image-border': `1px solid ${borderColor}` } : {}),
+    ...(Number.isFinite(radius) ? { '--tj-image-radius': `${radius}px` } : {}),
+  } as React.CSSProperties;
   ToolJet.useComponentSettings({
     role: 'image',
     fit: false,
@@ -862,7 +876,7 @@ export const Image = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preview, src]);
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-image" ownerRef={viewer.anchor}>
+    <AntProvider fill className="tj-ant-image" style={box} ownerRef={viewer.anchor}>
       <SkeletonSwap loading={loading} look={<AntSkeleton.Image active style={{ width: '100%', height: '100%' }} />}>
         {src ? (
           <ImageView
@@ -896,9 +910,23 @@ const ImageView = ({
   onOpenChange: (open: boolean) => void;
 }) => {
   const popup = usePopupTheme();
+  // With Preview on, the picture is a Tab stop and Enter or Space works as a click: opens the preview (and onClick),
+  // which only the mouse could do (QA PF-225). Ant puts these on the picture's box (div.ant-image), whose click opens it.
+  const keyboard = withPreview
+    ? {
+        tabIndex: 0,
+        role: 'button',
+        onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          e.preventDefault();
+          e.currentTarget.click();
+        },
+      }
+    : {};
   return (
     <AntImage
       {...props}
+      {...keyboard}
       width="100%"
       height="100%"
       preview={
