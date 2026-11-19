@@ -7,6 +7,7 @@ import Tooltip from '@/components/ui/Rocket/Tooltip';
 import { TruncatingText } from '@/components/ui/Rocket/TruncatingText/TruncatingText';
 import { SCHEMA_ENV_TOOLTIP } from '../constants';
 import type { TjdbTable } from '../TooljetDatabaseContext';
+import { MigrationSyncDot } from './MigrationSyncDot';
 
 export type TableRowAction = 'edit' | 'addColumn' | 'exportSchema' | 'exportCsv' | 'delete';
 
@@ -116,6 +117,7 @@ export function TableRow({ table, selected, onSelect, onAction, canEditTjdb, can
         <Table2 aria-hidden className="tw-size-4 tw-shrink-0 tw-text-icon-default" />
         <TruncatingText text={table.table_name} data-cy={`${slug}-table-name`} />
       </button>
+      <MigrationSyncDot sync={table.migration_sync} />
       <DropdownMenu
         side="bottom"
         align="start"

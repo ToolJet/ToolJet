@@ -6,8 +6,13 @@ import React, { useContext, ReactNode, Dispatch, SetStateAction } from 'react';
 import { TooljetDatabaseContext } from './context';
 import type { OpenTabs } from './TablesPanel/useOpenTabs';
 
-/** A table as the page holds it. The open table is `{}` while none is open. */
-export type TjdbTable = { id: string; table_name: string };
+import type { MigrationSync } from './TablesPanel/MigrationSyncDot';
+
+/**
+ * A table as the page holds it. The open table is `{}` while none is open. `migration_sync` comes only from the table
+ * list endpoint, so a rename's thin `{ id, table_name }` leaves it unset.
+ */
+export type TjdbTable = { id: string; table_name: string; migration_sync?: MigrationSync };
 
 export type TooljetDatabaseContextValue = {
   canEditTjdb: boolean;
