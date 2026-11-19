@@ -21,7 +21,7 @@ export const TabsContainer = () => {
     name: 'tabs',
     label: 'Tabs',
     description:
-      'Array of { id, label, icon, badge, disable, visible, loading }. Keep ids stable: dropped components stay with their tab id.',
+      'Array of { id, label, icon, badge, disable, visible, loading }. Keep ids stable: dropped components stay with their tab id. Up to 50 tabs are shown.',
     initialValue: [
       { id: 'details', label: 'Details' },
       { id: 'activity', label: 'Activity' },

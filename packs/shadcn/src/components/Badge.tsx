@@ -55,7 +55,14 @@ export const Badge = () => {
         <span
           className={cn('ui-badge', 'ui2-badge', `ui-badge--${badgeVariant(variant)}`, 'ui-badge--clickable')}
           title={String(text ?? '')}
+          role="button"
+          tabIndex={0}
           onClick={onClick}
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            e.preventDefault();
+            onClick();
+          }}
         >
           <span className="ui2-truncate">{String(text ?? '')}</span>
         </span>

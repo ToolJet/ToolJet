@@ -48,7 +48,9 @@ export const typeStyle = (
   if (family) out.fontFamily = family;
   const weight = fontWeight(s.fontWeight);
   if (weight) out.fontWeight = weight as CSSProperties['fontWeight'];
-  if (isSet(s.letterSpacing) && signedPx(s.letterSpacing) && signedPx(s.letterSpacing) !== '0px') out.letterSpacing = signedPx(s.letterSpacing);
+  // An explicit 0 is applied too: it turns off a level's own tracking (a Heading's -0.025em). Empty leaves it.
+  const tracking = isSet(s.letterSpacing) ? signedPx(s.letterSpacing) : '';
+  if (tracking) out.letterSpacing = tracking;
   const casing = textCase(s.textTransform);
   if (casing) out.textTransform = casing as CSSProperties['textTransform'];
   const size = fontSizePx(s.fontSize);

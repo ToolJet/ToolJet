@@ -108,7 +108,8 @@ export const MonthGrid = ({
   }, [ymd(shown), numberOfMonths]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!autoFocus && !moved.current) return;
-    rootRef.current?.querySelector<HTMLElement>(`[data-day="${focusIso}"]`)?.focus();
+    // Without scrolling: the calendar opens before its popup is placed, and a scroll then would leave it off the field.
+    rootRef.current?.querySelector<HTMLElement>(`[data-day="${focusIso}"]`)?.focus({ preventScroll: true });
   }, [focusIso, autoFocus]);
 
   const moveFocus = (to: Date) => {

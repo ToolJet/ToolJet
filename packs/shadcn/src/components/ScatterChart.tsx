@@ -305,11 +305,17 @@ export const ScatterChart = () => {
 
   // The chart element is kept while only the click changes: Recharts Scatter redrew every point on any new child (its
   // points carry the axis scales), so the second click of a double click hit another node and no double click fired.
+  // A compact chart hides its axes, so a bubble on the edge of the data sat half outside the box (QA RK-35): its
+  // margins leave room for the biggest bubble (the ZAxis range below is its area).
+  const radius = Math.ceil(Math.sqrt((bubbles ? size * 120 : size * size * 3) / Math.PI)) + 1;
+  const margin = compact
+    ? { left: Math.max(4, radius), right: Math.max(16, radius), top: Math.max(12, radius), bottom: radius }
+    : { left: 4, right: 16, top: 12, bottom: 0 };
   const pick = useRef(click.pick);
   pick.current = click.pick;
   const plot = useMemo(
     () => (
-      <RScatterChart margin={{ left: 4, right: 16, top: 12, bottom: 0 }}>
+      <RScatterChart margin={margin}>
         {showGrid !== false && !compact ? <CartesianGrid stroke={GRID} /> : null}
         <XAxis
           type="number"

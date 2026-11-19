@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { styleVars } from '../lib/ui2/display/lists/model';
@@ -50,10 +50,25 @@ export const Spinner = () => {
   });
   ToolJet.useComponentSettings({ role: 'spinner', fit: false, loading: 'own', defaultWidth: 6, defaultHeight: 4 });
 
-  const px = spinnerSize(size);
+  // The size set, or the room its box has (less the label's line below it): a 200px spinner was cut in an 80px box.
+  // An unlaid box (0 by 0, jsdom, a hidden tab) keeps the size set, as Circular Progress does.
+  const wrap = useRef<HTMLDivElement>(null);
+  const [room, setRoom] = useState({ width: 0, height: 0 });
+  useLayoutEffect(() => {
+    const el = wrap.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const measure = () => setRoom({ width: el.clientWidth, height: el.clientHeight });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  const text = label === undefined || label === null ? '' : String(label).trim() ? String(label) : '';
+  const labelLine = text && labelPosition === 'bottom' ? 26 : 0;
+  const fits = room.width > 0 && room.height > 0 ? Math.floor(Math.min(room.width, room.height - labelLine)) : 0;
+  const px = fits > 0 ? Math.max(8, Math.min(spinnerSize(size), fits)) : spinnerSize(size);
   const stroke = Math.max(2, Math.round(px / 10));
   const r = (px - stroke) / 2;
-  const text = label === undefined || label === null ? '' : String(label).trim() ? String(label) : '';
   const indicator =
     variant === 'ring' || (variant !== 'dots' && variant !== 'bars') ? (
       <svg width={px} height={px} viewBox={`0 0 ${px} ${px}`} className="ui2-spinner-ring" aria-hidden="true">
@@ -84,6 +99,7 @@ export const Spinner = () => {
     );
   return (
     <div
+      ref={wrap}
       className="ui ui2-spinner-wrap"
       style={{
         justifyContent: alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start',

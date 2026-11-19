@@ -75,14 +75,33 @@ export const Rating = () => {
   // On mount an untouched Default value leaves a rating the app set (`value`, the pack's earlier name) alone.
   const keptOnMount = defaultValue === 4 && Number.isFinite(Number(rawValue));
   useReseed(defaultValue, () => setValue(M.normalizeRating(defaultValue, max, half)), { onMount: !keptOnMount });
+  // A Default value that is empty or not a number (the host hands such text over as null) seeds nothing, which left the
+  // rating null; none is 0, as the native Star rating exposes. Not the user's change, so no onChange.
+  useEffect(() => {
+    const unset = (v: unknown) => v === null || v === undefined || v === '' || !Number.isFinite(Number(v));
+    if (unset(defaultValue) && unset(rawValue)) setValue(0);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // A Default value changed in the same render already fits the new maximum; refitting the old rating would undo it.
   const lastDefault = useRef(defaultValue);
   const defaultChanged = lastDefault.current !== defaultValue;
   useEffect(() => {
     lastDefault.current = defaultValue;
   });
-  // A smaller maximum (or whole icons only) fits the rating, so what is exposed is what is drawn.
-  useReseed([max, half], () => !defaultChanged && setValue(value), { onMount: false });
+  // A smaller maximum (or whole icons only) fits the rating, so what is exposed is what is drawn. A rating still at the
+  // Default value is read from it again: Default 2.5 showed 3 with whole icons and kept 3 when half icons were turned on
+  // while the app ran (PF-177), where the native Rating shows 2.5.
+  const lastFit = useRef({ max, half });
+  useReseed(
+    [max, half],
+    () => {
+      const was = lastFit.current;
+      lastFit.current = { max, half };
+      if (defaultChanged) return;
+      const untouched = Number(rawValue) === M.normalizeRating(defaultValue, was.max, was.half);
+      setValue(untouched ? M.normalizeRating(defaultValue, max, half) : value);
+    },
+    { onMount: false }
+  );
   // The same for a rating kept on mount, whose maximum was already known (a literal 3 icons under the untouched default
   // 4): exposed 4 while 3 icons are checked. An empty or fitting rating is left as the app set it, and fitting it is not
   // the user's change, so no onChange.

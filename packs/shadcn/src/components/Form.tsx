@@ -81,6 +81,8 @@ export const Form = () => {
   const [disabled] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false });
 
   const title = displayText(rawTitle);
+  // The title names the form, so a screen reader lists it as a form region (a form with no name is not one).
+  const titleId = `${ToolJet.useFieldId()}-title`;
   const submitLabel = displayText(rawSubmitLabel);
   const fields = toFields(rawFields);
   // A static initialValue: the builder stamps manifest defaults at drop time, and a computed one can't be
@@ -256,13 +258,18 @@ export const Form = () => {
     <form
       className={cn('ui ui-form ui-scroll', labelPosition === 'side' && 'ui-form--side')}
       style={{ ['--ui-primary' as string]: accent, gap: fieldGap }}
+      aria-labelledby={title ? titleId : undefined}
       noValidate
       onSubmit={(e) => {
         e.preventDefault();
         submit();
       }}
     >
-      {title ? <div className="ui-card-title">{title}</div> : null}
+      {title ? (
+        <div id={titleId} className="ui-card-title">
+          {title}
+        </div>
+      ) : null}
       {fields.map((field) => {
         const error = (touched[field.name] || submitted) && visibleErrors?.[field.name];
         return (

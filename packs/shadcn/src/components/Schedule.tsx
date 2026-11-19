@@ -314,13 +314,13 @@ export const Schedule = () => {
   const [dayStart] = ToolJet.useStateNumber({
     name: 'dayStart',
     label: 'Day starts at',
-    description: 'An hour from 0 to 23, for the Hours view.',
+    description: 'An hour from 0 to 23, or a time such as 09:00, for the Hours view.',
     initialValue: 8,
   });
   const [dayEnd] = ToolJet.useStateNumber({
     name: 'dayEnd',
     label: 'Day ends at',
-    description: 'An hour from 1 to 24, for the Hours view.',
+    description: 'An hour from 1 to 24, or a time such as 18:00, for the Hours view.',
     initialValue: 18,
   });
   const [slotMinutes] = ToolJet.useStateNumber({
