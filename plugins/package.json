@@ -99,7 +99,8 @@
     },
     "fast-xml-parser": "^5.5.7",
     "minio": {
-      "fast-xml-parser": "^5.5.7"
+      "fast-xml-parser": "^5.5.7",
+      "decode-uri-component": "^0.5.1"
     },
     "protobufjs": "^7.6.5",
     "ws": "^8.21.0",
