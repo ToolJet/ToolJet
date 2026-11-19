@@ -43,56 +43,59 @@ export function resolveCode(codeContext: any): any {
     );
     const isolate =
       providedIsolate || new ivm.Isolate({ memoryLimit: parseInt(process.env?.WORKFLOW_JS_MEMORY_LIMIT_MB) || 20 });
-    const context = providedContext || isolate.createContextSync();
-    Object.entries(globalState).forEach(([key, value]) => {
-      if (typeof value === 'function' && key === 'require') {
-        // Special handling for require function - inject as callback
-        context.global.setSync(key, new ivm.Callback(value as (...args: any[]) => any));
-      } else {
-        try {
-          context.global.setSync(key, new ivm.ExternalCopy(value).copyInto({ release: true }));
-        } catch (error) {
-          // If copying fails (e.g., for complex libraries like lodash), skip it
-          // The library should be available through the bundle code execution
-          if (error.message.includes('could not be cloned')) {
-            console.log(
-              `[UTILS DEBUG] Skipping ${key} due to cloning issue, should be available via bundle:`,
-              error.message
-            );
-          } else {
-            throw error; // Re-throw if it's a different error
+    // An isolate made here for one evaluation is freed with it; a caller's isolate is the caller's
+    const ownsIsolate = !providedIsolate;
+    try {
+      const context = providedContext || isolate.createContextSync();
+      Object.entries(globalState).forEach(([key, value]) => {
+        if (typeof value === 'function' && key === 'require') {
+          // Special handling for require function - inject as callback
+          context.global.setSync(key, new ivm.Callback(value as (...args: any[]) => any));
+        } else {
+          try {
+            context.global.setSync(key, new ivm.ExternalCopy(value).copyInto({ release: true }));
+          } catch (error) {
+            // If copying fails (e.g., for complex libraries like lodash), skip it
+            // The library should be available through the bundle code execution
+            if (error.message.includes('could not be cloned')) {
+              console.log(
+                `[UTILS DEBUG] Skipping ${key} due to cloning issue, should be available via bundle:`,
+                error.message
+              );
+            } else {
+              throw error; // Re-throw if it's a different error
+            }
           }
         }
+      });
+
+      context.global.setSync('global', context.global.derefInto());
+      if (addLog) {
+        context.global.setSync(
+          '__reserved_keyword_log',
+          new ivm.Callback((msg: any, status: any) => {
+            try {
+              (addLog as any)(String(msg), undefined, String(status || 'normal'));
+            } catch {
+              // ignore logging failures to avoid breaking sandbox
+            }
+          })
+        );
       }
-    });
 
-    context.global.setSync('global', context.global.derefInto());
-    if (addLog) {
-      context.global.setSync(
-        '__reserved_keyword_log',
-        new ivm.Callback((msg: any, status: any) => {
-          try {
-            (addLog as any)(String(msg), undefined, String(status || 'normal'));
-          } catch {
-            // ignore logging failures to avoid breaking sandbox
-          }
-        })
-      );
-    }
+      // Inject NPM package bundle if available
+      if (bundleContent) {
+        try {
+          // Only initialize once per context
+          const checkScript = isolate.compileScriptSync('typeof WorkflowPackages !== "undefined"');
+          const alreadyInitialized = !!checkScript.runSync(context, { copy: true });
+          if (!alreadyInitialized) {
+            // Run the bundle as-is (avoid embedding in template literal)
+            const bundle = isolate.compileScriptSync(bundleContent);
+            bundle.runSync(context, { timeout: 5000 });
 
-    // Inject NPM package bundle if available
-    if (bundleContent) {
-      try {
-        // Only initialize once per context
-        const checkScript = isolate.compileScriptSync('typeof WorkflowPackages !== "undefined"');
-        const alreadyInitialized = !!checkScript.runSync(context, { copy: true });
-        if (!alreadyInitialized) {
-          // Run the bundle as-is (avoid embedding in template literal)
-          const bundle = isolate.compileScriptSync(bundleContent);
-          bundle.runSync(context, { timeout: 5000 });
-
-          // Install secure require and expose packages globally
-          const shim = isolate.compileScriptSync(`
+            // Install secure require and expose packages globally
+            const shim = isolate.compileScriptSync(`
             if (typeof global.require === 'undefined') {
               global.require = function(packageName) {
                 if (typeof packageName !== 'string') {
@@ -110,40 +113,44 @@ export function resolveCode(codeContext: any): any {
               }
             }
           `);
-          shim.runSync(context, { timeout: 5000 });
+            shim.runSync(context, { timeout: 5000 });
+          }
+        } catch (bundleError) {
+          if (addLog) (addLog as any)(`Failed to load NPM packages: ${bundleError.message}`, undefined, 'failure');
+          // Continue execution without packages - don't fail the entire code execution
         }
-      } catch (bundleError) {
-        if (addLog) (addLog as any)(`Failed to load NPM packages: ${bundleError.message}`, undefined, 'failure');
-        // Continue execution without packages - don't fail the entire code execution
       }
+
+      const script: ivm.Script = isolate.compileScriptSync(codeToExecute);
+
+      // const interval = setInterval(() => {
+      //   const stats = isolate.getHeapStatisticsSync();
+      //   addLog(`Used heap size: ${stats.used_heap_size} / ${stats.heap_size_limit}`);
+      //   if (stats.used_heap_size > stats.heap_size_limit * 0.9) {
+      //     addLog('Memory limit nearing, terminating isolate');
+      //     clearInterval(interval);
+      //     isolate.dispose(); // Dispose isolate to free up memory
+      //   }
+      // }, 1); // Monitor every 100ms
+
+      // try {
+      result = script.runSync(context, {
+        release: true,
+        timeout: parseInt(process.env?.WORKFLOW_JS_TIMEOUT_MS) || 100,
+        copy: true,
+      });
+      //   const stats = isolate.getHeapStatisticsSync();
+      //   addLog("Used heap size: " + stats.used_heap_size);
+      //   addLog("heap size limit: " + stats.heap_size_limit);
+      // } catch(exception) {
+      //   addLog(exception.message);
+      // }
+
+      // clearInterval(interval);
+    } finally {
+      // The result was copied out of the isolate (copy: true), so it outlives it
+      if (ownsIsolate && !isolate.isDisposed) isolate.dispose();
     }
-
-    const script: ivm.Script = isolate.compileScriptSync(codeToExecute);
-
-    // const interval = setInterval(() => {
-    //   const stats = isolate.getHeapStatisticsSync();
-    //   addLog(`Used heap size: ${stats.used_heap_size} / ${stats.heap_size_limit}`);
-    //   if (stats.used_heap_size > stats.heap_size_limit * 0.9) {
-    //     addLog('Memory limit nearing, terminating isolate');
-    //     clearInterval(interval);
-    //     isolate.dispose(); // Dispose isolate to free up memory
-    //   }
-    // }, 1); // Monitor every 100ms
-
-    // try {
-    result = script.runSync(context, {
-      release: true,
-      timeout: parseInt(process.env?.WORKFLOW_JS_TIMEOUT_MS) || 100,
-      copy: true,
-    });
-    //   const stats = isolate.getHeapStatisticsSync();
-    //   addLog("Used heap size: " + stats.used_heap_size);
-    //   addLog("heap size limit: " + stats.heap_size_limit);
-    // } catch(exception) {
-    //   addLog(exception.message);
-    // }
-
-    // clearInterval(interval);
   }
 
   if (withError) return [result, error];

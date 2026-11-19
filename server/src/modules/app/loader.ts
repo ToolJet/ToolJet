@@ -91,7 +91,11 @@ export class AppModuleLoader {
           // preventing open handles when unit tests don't use BullMQ queues.
           ...(isTest && {
             maxRetriesPerRequest: null,
-            retryStrategy: () => null,
+            // A few quick reconnects, then give up. BullMQ's worker guards its blocking BZPOPMIN with
+            // a watchdog that disconnects the connection and expects it to reconnect; with none
+            // allowed, a busy event loop in a test silently killed the in-process worker. A
+            // connection closed on purpose (app shutdown) never reconnects, so nothing lingers.
+            retryStrategy: (attempt: number) => (attempt > 5 ? null : 100),
             lazyConnect: true,
           }),
         },
