@@ -19,7 +19,7 @@ describe("License - App & Workflow Limits", () => {
     const app1Name = `${fake.companyName}-Limit-1`;
     const app2Name = `${fake.companyName}-Limit-2`;
 
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 2; i++) {
       cy.apiCreateApp(`${app1Name}-${i}`);
     }
     cy.visit("/my-workspace");
@@ -30,8 +30,8 @@ describe("License - App & Workflow Limits", () => {
     verifyResourceLimit("apps", "basic");
 
     getCurrentCountFromBanner("apps").then((counts) => {
-      expect(counts.current).to.be.gte(9);
-      expect(counts.total).to.equal(10);
+      expect(counts.current).to.be.gte(2);
+      expect(counts.total).to.equal(3);
     });
 
     cy.apiCreateApp(app2Name);
@@ -49,7 +49,7 @@ describe("License - App & Workflow Limits", () => {
     // });
     // cy.get('[data-cy="app-card-clone-option"]').should("be.disabled");
 
-    cy.apiGetAppIdByName(`${app1Name}-5`).then((id) => {
+    cy.apiGetAppIdByName(`${app1Name}-0`).then((id) => {
       cy.apiDeleteApp(id);
     });
     cy.get(commonSelectors.homePageIcon).click();
@@ -57,8 +57,8 @@ describe("License - App & Workflow Limits", () => {
 
     cy.get(commonSelectors.appCreateButton).should("be.enabled");
     getCurrentCountFromBanner("apps").then((counts) => {
-      expect(counts.current).to.equal(9);
-      expect(counts.total).to.equal(10);
+      expect(counts.current).to.equal(2);
+      expect(counts.total).to.equal(3);
     });
     cy.apiGetAppIdByName(app2Name).then((id) => {
       cy.apiDeleteApp(id);

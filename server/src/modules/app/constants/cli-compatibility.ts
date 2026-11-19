@@ -10,7 +10,7 @@
     brings it along.
 */
 export const CLI_API_VERSION = 1;
-export const MIN_CLI_VERSION = '0.0.15-beta.3';
+export const MIN_CLI_VERSION = '1.0.0';
 
 export interface CliCompatibility {
   serverVersion: string;
