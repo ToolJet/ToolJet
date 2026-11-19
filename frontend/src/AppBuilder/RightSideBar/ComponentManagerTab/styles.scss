@@ -2,6 +2,7 @@
 // truth for anything that needs to sit flush beneath the sticky header.
 :root {
   --panel-header-height: 52px;
+  --panel-tabs-height: 37px;
 }
 
 // Panel Header - shared across all right sidebar panels
@@ -50,6 +51,13 @@
 }
 
 .components-container {
+  // Elements scrolled into view (focus, scrollIntoView) must land below the sticky header, not under it
+  scroll-padding-top: var(--panel-header-height);
+
+  &:has(.nav-tabs) {
+    scroll-padding-top: calc(var(--panel-header-height) + var(--panel-tabs-height));
+  }
+
   // Tab content styling only - tab header styles come from base tabs.scss
   .tab-content {
     border-top: none;
