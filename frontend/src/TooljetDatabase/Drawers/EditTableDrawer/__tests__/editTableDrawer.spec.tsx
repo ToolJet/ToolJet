@@ -135,7 +135,7 @@ describe('EditTableDrawer', () => {
 
     expect(mockRunMigration).toHaveBeenCalledTimes(1);
     const options = mockRunMigration.mock.calls[0][0];
-    expect(options.titlePlaceholder).toBe('Edit table "orders"');
+    expect(options.defaultTitle).toBe('Edit table "orders"');
     expect(options.tableId).toBe('orders-id');
     expect(options.changes).toEqual([{ type: 'edit', oldName: 'orders', name: 'orders_2' }]);
 
@@ -194,7 +194,7 @@ describe('EditTableDrawer', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Delete relation on title' }));
     expect(renameTable).not.toHaveBeenCalled();
     const options = mockRunMigration.mock.calls[0][0];
-    expect(options.titlePlaceholder).toBe('Remove foreign key on "orders"');
+    expect(options.defaultTitle).toBe('Remove foreign key on "orders"');
     await options.run('m');
     expect(tooljetDatabaseService.deleteForeignKey).toHaveBeenCalledWith('org-1', 'orders', 'fk_1', 'm');
   });

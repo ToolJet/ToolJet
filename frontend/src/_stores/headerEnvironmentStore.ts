@@ -13,6 +13,8 @@ export interface HeaderEnvironmentSelectConfig {
   /** The environment in force; undefined while the environments load. */
   environmentId: string | undefined;
   onChange: (environmentId: string) => void;
+  /** A row under the environments, for example "View migration history". */
+  footerAction?: { label: string; onSelect: () => void };
   /** Shown when the select is hovered or focused. */
   tooltip?: string;
 }

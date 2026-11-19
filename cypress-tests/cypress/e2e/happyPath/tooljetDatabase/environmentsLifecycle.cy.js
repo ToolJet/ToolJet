@@ -91,7 +91,7 @@ describe('ToolJet Database environments - UI lifecycle', () => {
         .and('contain.text', `Create table "${name}"`);
 
       // production has no copy of the table yet, so its tab is not usable
-      cy.contains(tooljetDatabaseSelectors.drawerTab, 'Production').should('have.class', 'disabled');
+      cy.contains(tooljetDatabaseSelectors.drawerTab, 'Production').should('be.disabled');
 
       cy.contains(tooljetDatabaseSelectors.drawerTab, 'Staging').click();
       cy.get(tooljetDatabaseSelectors.drawerStatus).should(

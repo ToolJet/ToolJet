@@ -64,17 +64,18 @@ export const useTjdbStore = create(
       ...initialState,
       actions: {
         // Org-scoped (no app_id) - CE gets back a single-entry list (its one licensed environment),
-        // EE/licensed orgs get dev/staging/production ordered by priority. Default selection is
-        // the tab's last selection when it is still licensed (after a lapse the list keeps the locked
-        // environments, flagged `enabled: false`), else the lowest-priority entry (development).
-        loadEnvironments: async () => {
+        // EE/licensed orgs get dev/staging/production ordered by priority. Default selection is the
+        // environment in the URL (`preferredEnvironmentId`), else the tab's last selection, each only while
+        // it is still licensed (after a lapse the list keeps the locked environments, flagged
+        // `enabled: false`), else the lowest-priority entry (development).
+        loadEnvironments: async (preferredEnvironmentId) => {
           const { environments: fetchedEnvironments = [] } = await appEnvironmentService.getAllEnvironments();
           const sorted = [...fetchedEnvironments].sort((a, b) => a.priority - b.priority);
-          const restoredId = readSelectedEnvironmentId();
+          const usable = (id) => id && sorted.find((env) => env.id === id && !isEnvironmentLocked(env));
           set((state) => {
             state.environments = sorted;
             state.selectedEnvironment =
-              sorted.find((env) => env.id === restoredId && !isEnvironmentLocked(env)) ?? sorted[0] ?? null;
+              usable(preferredEnvironmentId) || usable(readSelectedEnvironmentId()) || sorted[0] || null;
           });
           return sorted;
         },

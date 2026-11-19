@@ -100,6 +100,7 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   The resolver's raw joins add `deleted_at IS NULL` by hand since raw SQL skips TypeORM's automatic
   filter. The `(organization_id, table_name)` unique index is partial, so a dropped name is
   immediately reusable.
+- `viewTables` (the table list, `GET .../tables`) returns `migrationSync` per table, for the dots in the frontend list: `pending_in_development` when development holds migrations the next environment lacks, `pending_in_staging` when it does not but production lacks what development or staging hold, else `null` (also `null` with fewer than two licensed environments). The rule is `computeMigrationSync` (`helpers/migration-sync.ts`, pure, unit-tested): sets of confirmed migration ids per environment in priority order, never counts, and an environment with no relation counts as having applied nothing, so a table never promoted is `pending_in_development`. The ids come from one query over `internal_table_migration_applications` for every relation (not `computeMissingMigrations` per table and environment), counted only for the table the migration belongs to.
 - `findDependents` (the drop blocker and `/dependents` warning) scans every non-stub version of every app
   type, drafts included - `apps.current_version_id` is the *released* version and `released_at` is never
   written, so filtering on either hid drafts. Matches `options.table_id`, join tables (incl.

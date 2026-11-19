@@ -33,7 +33,7 @@ export interface EditTableDrawerProps {
 }
 
 type RunMigration = (options: {
-  titlePlaceholder: string;
+  defaultTitle: string;
   changes: { type: 'add' | 'edit' | 'remove'; name: string; oldName?: string }[];
   tableId: string;
   showSqlEditor: boolean;
@@ -130,7 +130,7 @@ function EditTableForm({ table, onRenamed, onClose, onCancel }: EditTableFormPro
     const entries = draft.toEditPayload();
     const { primaryKeyChange } = draft;
     runMigration({
-      titlePlaceholder: `Edit table "${table.table_name}"`,
+      defaultTitle: `Edit table "${table.table_name}"`,
       changes: [
         ...(draft.tableName !== table.table_name
           ? [{ type: 'edit' as const, oldName: table.table_name, name: draft.tableName }]

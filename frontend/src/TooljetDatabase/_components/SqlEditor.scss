@@ -29,3 +29,32 @@
     cursor: pointer;
   }
 }
+
+// Looks like a form field (Figma textArea): token border and radius, 12px text, a placeholder that keeps its line breaks.
+.tj-db-sql-editor--compact {
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  background: var(--background-surface-layer-01);
+
+  &:focus-within {
+    border-color: var(--border-accent-strong);
+  }
+
+  .cm-editor {
+    font-size: 12px;
+    background: transparent;
+  }
+
+  .cm-editor.cm-focused {
+    outline: none;
+  }
+
+  .cm-content {
+    padding: 7px 8px !important;
+  }
+
+  .cm-placeholder {
+    white-space: pre-wrap;
+    color: var(--text-placeholder);
+  }
+}

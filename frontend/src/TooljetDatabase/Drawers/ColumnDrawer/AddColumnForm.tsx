@@ -12,7 +12,7 @@ import { ColumnFields } from './ColumnFields';
 import { relationBlockedReason, useColumnDraft } from './useColumnDraft';
 
 type RunMigration = (options: {
-  titlePlaceholder: string;
+  defaultTitle: string;
   changes: { type: string; name: string; detail?: string }[];
   tableId: string;
   showSqlEditor: boolean;
@@ -52,7 +52,7 @@ export function AddColumnForm({ onCreate, onCancel }: AddColumnFormProps) {
   const submit = () => {
     const payload = draft.toPayload();
     runMigration({
-      titlePlaceholder: `Add column "${payload.columnName}"`,
+      defaultTitle: `Add column "${payload.columnName}"`,
       changes: [
         {
           type: CHANGE_TYPE.ADD,

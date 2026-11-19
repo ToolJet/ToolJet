@@ -6,7 +6,7 @@
 
 Compact outline button that shows the current environment and opens a menu to switch it. Controlled and presentational: it knows nothing about stores or routes. Pages feed it options and handle the change (see `_ui/Header/HeaderEnvironmentSelect.tsx`, which binds it to the header).
 
-Trigger: `● 0005 | Development` (status dot, optional meta, 1px divider, label). Menu: one single-select row per option (accent tick on the current one, status dot, label).
+Trigger: `● 0005 | Development` (status dot, optional meta, 1px divider, label). Menu: one single-select row per option (accent tick on the current one, status dot, label, `meta` at the end), then an optional footer row after a divider (label, arrow).
 
 Built from Rocket `Button` (outline, medium), `DropdownMenu`, `Tooltip` and `StatusDot`.
 
@@ -17,11 +17,12 @@ Built from Rocket `Button` (outline, medium), `DropdownMenu`, `Tooltip` and `Sta
 | options | `EnvironmentSwitcherOption[]` | required |
 | value | `string \| undefined` (option id; undefined while options load) | required |
 | onValueChange | `(id: string) => void` | required |
+| footerAction | `{ label, onSelect }` — a row under the options, e.g. "View migration history"; not an environment | — |
 | disabled | boolean | false |
 | tooltip | `ReactNode` — shown on trigger hover and focus | — |
 | className | string (trigger) | — |
 
-`EnvironmentSwitcherOption`: `id`, `label`, `tone` (StatusDot tone, default neutral), `meta` (node: the number shown in the trigger while this option is current; menu rows do not show it), `disabled`, `disabledReason` (tooltip on the disabled row).
+`EnvironmentSwitcherOption`: `id`, `label`, `tone` (StatusDot tone, default neutral), `meta` (node: the number shown in the trigger while this option is current, and at the end of its menu row), `disabled`, `disabledReason` (tooltip on the disabled row).
 
 ## States (Figma 🖱️ state)
 

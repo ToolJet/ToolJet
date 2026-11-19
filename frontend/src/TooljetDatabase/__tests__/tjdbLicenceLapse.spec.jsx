@@ -28,9 +28,6 @@ const LAPSED_STAGING = { id: 'env-staging', name: 'staging', priority: 2, enable
 const LAPSED_ENVIRONMENTS = [DEVELOPMENT, LAPSED_STAGING];
 const BOTH_HAVE_RELATION = LAPSED_ENVIRONMENTS.map((env) => ({ environment_id: env.id, has_relation: true }));
 
-// The sparkle the migration history drawer puts on a plan-locked environment tab.
-const UPGRADE_ICON = '[data-cy="enterprise-gradient-sm-icon"]';
-
 const serveLapsedLicence = () =>
   server.use(
     http.get('*/license/access', () => HttpResponse.json({ multiEnvironment: false })),
@@ -148,12 +145,8 @@ describe('TJDB after a multi-environment licence lapse', () => {
 
       // The licence verdict arrives after open; wait for it before judging either tab.
       await waitFor(() => expect(useLicenseStore.getState().featuresLoaded).toBe(true));
-      const staging = screen.getByRole('button', { name: 'Staging' });
-      const development = screen.getByRole('button', { name: 'Development' });
-      expect(staging).toBeDisabled();
-      expect(development).toBeEnabled();
-      expect(staging.querySelector(UPGRADE_ICON)).toBeInTheDocument();
-      expect(development.querySelector(UPGRADE_ICON)).not.toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Staging' })).toBeDisabled();
+      expect(screen.getByRole('radio', { name: 'Development' })).toBeEnabled();
     });
   });
 });

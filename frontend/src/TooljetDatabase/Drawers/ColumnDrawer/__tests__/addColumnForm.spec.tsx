@@ -171,7 +171,7 @@ describe('AddColumnForm', () => {
 
     expect(mockRunMigration).toHaveBeenCalledTimes(1);
     const options = mockRunMigration.mock.calls[0][0];
-    expect(options.titlePlaceholder).toBe('Add column "age"');
+    expect(options.defaultTitle).toBe('Add column "age"');
     expect(options.tableId).toBe('orders-id');
     expect(options.changes).toEqual([{ type: 'add', name: 'age', detail: 'character varying' }]);
 

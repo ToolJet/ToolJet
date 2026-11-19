@@ -21,7 +21,7 @@ const TjdbHeaderEnvironment = () => {
   const environments = useTjdbStore((state) => state.environments);
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
   const isHistoryOpen = useTjdbStore((state) => state.isMigrationHistoryOpen);
-  const { switchEnvironment, closeMigrationHistory } = useTjdbActions();
+  const { switchEnvironment, openMigrationHistory, closeMigrationHistory } = useTjdbActions();
   const featureAccess = useLicenseStore((state) => state.featureAccess);
   const { tableMigrations, refetchTableMigrations, refetchTables } = useTableMigrations();
 
@@ -56,6 +56,8 @@ const TjdbHeaderEnvironment = () => {
       // The switch drops the grid's add row and any open editor, so unsaved input is asked about first.
       onChange: (environmentId) =>
         runUnlessDirty(() => switchEnvironment(environments.find((environment) => environment.id === environmentId))),
+      // The history is a table's: with no table open (an empty workspace) there is nothing to show.
+      footerAction: tableId ? { label: 'View migration history', onSelect: openMigrationHistory } : undefined,
     };
   }, [
     showSelect,
@@ -66,6 +68,7 @@ const TjdbHeaderEnvironment = () => {
     tableMigrations,
     featureAccess,
     switchEnvironment,
+    openMigrationHistory,
   ]);
 
   useHeaderEnvironmentSelect(headerSelect);

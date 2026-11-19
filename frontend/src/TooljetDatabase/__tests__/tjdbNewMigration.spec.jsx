@@ -71,10 +71,7 @@ describe('New migration from the history drawer', () => {
     await userEvent.click(await byDataCy('new-migration-button'));
 
     await byDataCy('migration-confirm-sql-editor');
-    const sqlLabel = [...document.querySelectorAll('.migration-confirm-modal .form-label')].find((label) =>
-      label.textContent.startsWith('SQL')
-    );
-    expect(sqlLabel).toHaveTextContent(/^SQL$/);
+    expect(await byDataCy('migration-confirm-sql-label')).toHaveTextContent(/^SQL$/);
   });
 
   test('should not report success or record a migration when the SQL is empty', async () => {

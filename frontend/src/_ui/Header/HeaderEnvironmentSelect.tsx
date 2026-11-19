@@ -9,7 +9,7 @@ export default function HeaderEnvironmentSelect() {
   const select = useHeaderEnvironmentStore((state) => state.select);
   if (!select) return null;
 
-  const { environments, environmentId, onChange, tooltip } = select;
+  const { environments, environmentId, onChange, footerAction, tooltip } = select;
 
   return (
     <EnvironmentSwitcher
@@ -20,6 +20,7 @@ export default function HeaderEnvironmentSelect() {
       }))}
       value={environmentId}
       onValueChange={onChange}
+      footerAction={footerAction}
       tooltip={tooltip}
     />
   );

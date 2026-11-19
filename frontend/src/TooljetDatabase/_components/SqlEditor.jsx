@@ -24,6 +24,9 @@ const EDITABLE_BASIC_SETUP = {
   searchKeymap: true,
 };
 
+// A field-sized editor (the migration dialog): same editing and autocomplete, no gutters.
+const COMPACT_BASIC_SETUP = { ...EDITABLE_BASIC_SETUP, lineNumbers: false, foldGutter: false };
+
 const READ_ONLY_BASIC_SETUP = {
   lineNumbers: true,
   foldGutter: false,
@@ -43,10 +46,13 @@ const SqlEditor = ({
   value,
   onChange,
   height,
+  minHeight,
+  maxHeight,
   placeholder,
   dataCy = 'sql-editor',
   allowTableRef = false,
   tableNames = [],
+  compact = false,
 }) => {
   const [editorView, setEditorView] = useState(null);
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -78,13 +84,13 @@ const SqlEditor = ({
 
   return (
     <div
-      className="tj-db-sql-editor tw-overflow-hidden tw-rounded"
-      style={{ border: '1px solid var(--slate5)' }}
+      className={`tj-db-sql-editor tw-overflow-hidden tw-rounded${compact ? ' tj-db-sql-editor--compact' : ''}`}
+      style={compact ? undefined : { border: '1px solid var(--slate5)' }}
       data-cy={dataCy}
       onKeyDownCapture={handleKeyDownCapture}
       onKeyDown={handleKeyDown}
     >
-      {editable && editorView && (
+      {editable && !compact && editorView && (
         <span
           className="tj-db-seed-data-search-btn"
           data-cy={`${dataCy}-search-button`}
@@ -96,11 +102,13 @@ const SqlEditor = ({
       <CodeMirror
         value={value || (editable ? '' : '-- No SQL available for this migration')}
         height={height}
+        minHeight={minHeight}
+        maxHeight={maxHeight}
         theme={darkMode ? okaidia : githubLight}
         extensions={extensions}
         editable={editable}
         onChange={editable ? onChange : undefined}
-        basicSetup={editable ? EDITABLE_BASIC_SETUP : READ_ONLY_BASIC_SETUP}
+        basicSetup={editable ? (compact ? COMPACT_BASIC_SETUP : EDITABLE_BASIC_SETUP) : READ_ONLY_BASIC_SETUP}
         placeholder={placeholder}
         indentWithTab={editable}
         onCreateEditor={editable ? (view) => setEditorView(view) : undefined}

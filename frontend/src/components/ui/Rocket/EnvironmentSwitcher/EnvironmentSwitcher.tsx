@@ -1,4 +1,5 @@
 import React, { forwardRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '../Button/Button';
 import DropdownMenu, { type DropdownMenuSection } from '../DropdownMenu';
@@ -9,7 +10,7 @@ export interface EnvironmentSwitcherOption {
   id: string;
   label: string;
   tone?: StatusDotTone;
-  /** Shown in the trigger, before the label, while this option is the current one. Menu rows do not show it. */
+  /** Shown in the trigger, before the label, while this option is the current one, and at the end of its menu row. */
   meta?: ReactNode;
   disabled?: boolean;
   /** Shown in a tooltip on the option's row when it is disabled. */
@@ -21,6 +22,8 @@ export interface EnvironmentSwitcherProps {
   /** The id of the current option; undefined while the options load. */
   value: string | undefined;
   onValueChange: (id: string) => void;
+  /** A row under the options, after a divider: it runs `onSelect` and is not an environment. */
+  footerAction?: { label: ReactNode; onSelect: () => void };
   disabled?: boolean;
   /** Shown when the trigger is hovered or focused. */
   tooltip?: ReactNode;
@@ -45,7 +48,8 @@ function OptionRow({ option }: { option: EnvironmentSwitcherOption }) {
   return (
     <span className="tw-flex tw-min-w-0 tw-flex-1 tw-items-center tw-gap-1.5">
       <DotSlot tone={option.tone} />
-      <span className="tw-truncate">{option.label}</span>
+      <span className="tw-flex-1 tw-truncate">{option.label}</span>
+      {option.meta && <span className="tw-shrink-0 tw-text-text-placeholder">{option.meta}</span>}
     </span>
   );
 }
@@ -96,6 +100,7 @@ export function EnvironmentSwitcher({
   options,
   value,
   onValueChange,
+  footerAction,
   disabled = false,
   tooltip,
   className,
@@ -130,6 +135,25 @@ export function EnvironmentSwitcher({
             : undefined,
       })),
     },
+    ...(footerAction
+      ? [
+          {
+            id: 'footer',
+            items: [
+              {
+                id: 'footer-action',
+                label: (
+                  <span className="tw-flex tw-min-w-0 tw-flex-1 tw-items-center tw-gap-1.5">
+                    <span className="tw-flex-1 tw-truncate tw-text-text-medium">{footerAction.label}</span>
+                    <ArrowRight aria-hidden className="tw-size-4 tw-shrink-0 tw-text-icon-weak" />
+                  </span>
+                ),
+                onSelect: footerAction.onSelect,
+              },
+            ],
+          },
+        ]
+      : []),
   ];
 
   return (

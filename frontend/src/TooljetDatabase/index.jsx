@@ -12,6 +12,7 @@ import TjdbHeaderEnvironment from './HeaderEnvironment';
 import { UnsavedChangesGuard } from './_components/UnsavedChangesGuard';
 import { useOpenTabs } from './TablesPanel/useOpenTabs';
 import { useTablesLimit } from './TablesPanel/useTablesLimit';
+import { useEnvironmentUrl } from './HeaderEnvironment/useEnvironmentUrl';
 import { useHeaderSearchConfig } from '@/_hooks/useHeaderSearchConfig';
 import { useTjdbStore, useTjdbActions, useIsDevelopmentEnvironment } from './_stores/tjdbStore';
 import './styles/styles.scss';
@@ -40,6 +41,7 @@ const TooljetDatabase = () => {
   const [configurations, setConfigurations] = useState({});
   const [foreignKeys, setForeignKeys] = useState([]);
   const { loadEnvironments, resetStore } = useTjdbActions();
+  const urlEnvironmentId = useEnvironmentUrl();
 
   const navigate = useNavigate();
   // The design has no global search in the header: tables are searched in the tables panel.
@@ -131,7 +133,7 @@ const TooljetDatabase = () => {
   );
 
   useEffect(() => {
-    loadEnvironments();
+    loadEnvironments(urlEnvironmentId);
     // Store is a module-level singleton, not scoped to this route - reset it on unmount so the
     // selected environment doesn't leak into App Builder's TJDB query editor after navigating away.
     return () => resetStore();

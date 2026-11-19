@@ -33,7 +33,7 @@ export function useColumnActions(rows: GridRow[]) {
   const deleteColumn = (column: GridColumn) => {
     const columnName = column.Header;
     runMigration({
-      titlePlaceholder: `Drop column "${columnName}"`,
+      defaultTitle: `Drop column "${columnName}"`,
       changes: [{ type: CHANGE_TYPE.REMOVE, name: columnName }],
       tableId: selectedTable.id,
       showSqlEditor: false,

@@ -60,11 +60,55 @@ describe('EnvironmentSwitcher menu', () => {
     expect(screen.getByRole('menuitemcheckbox', { name: /Production/ })).toHaveAttribute('aria-checked', 'false');
   });
 
-  it('keeps the meta out of the menu rows', async () => {
+  it('shows each option’s meta at the end of its row', async () => {
     setup();
     await openMenu();
     const rows = await screen.findAllByRole('menuitemcheckbox');
-    expect(rows.map((row) => row.textContent)).toEqual(['Development', 'Staging', 'Production']);
+    expect(rows.map((row) => row.textContent)).toEqual(['Development0005', 'Staging0002', 'Production0001']);
+  });
+
+  it('shows no meta for an option without one', async () => {
+    setup({ options: [{ id: 'env-dev', label: 'Development', tone: 'info' }], value: 'env-dev' });
+    await openMenu();
+    expect((await screen.findByRole('menuitemcheckbox')).textContent).toBe('Development');
+  });
+
+  describe('with a footer action', () => {
+    const footerSetup = () => {
+      const onSelect = jest.fn();
+      const view = setup({ footerAction: { label: 'View migration history', onSelect } });
+      return { onSelect, ...view };
+    };
+
+    it('shows it below the options and runs it on select', async () => {
+      const { onSelect, onValueChange } = footerSetup();
+      await openMenu();
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'View migration history' }));
+
+      expect(onSelect).toHaveBeenCalledTimes(1);
+      expect(onValueChange).not.toHaveBeenCalled();
+    });
+
+    it('closes the menu after it runs', async () => {
+      footerSetup();
+      await openMenu();
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'View migration history' }));
+
+      await waitFor(() => expect(screen.queryByRole('menuitem')).not.toBeInTheDocument());
+    });
+
+    it('is not an environment option', async () => {
+      footerSetup();
+      await openMenu();
+      expect(await screen.findAllByRole('menuitemcheckbox')).toHaveLength(3);
+    });
+  });
+
+  it('has no footer unless one is given', async () => {
+    setup();
+    await openMenu();
+    await screen.findAllByRole('menuitemcheckbox');
+    expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
   });
 
   it('reports the chosen option id', async () => {

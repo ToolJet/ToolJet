@@ -79,8 +79,8 @@ export const tooljetDatabaseSelectors = {
   migrationTitleInput: '[data-cy="migration-confirm-title-input"]',
   migrationSqlEditor: '[data-cy="migration-confirm-sql-editor"] .cm-content',
   environmentOption: (name) => `[data-cy="${name}-environment-option"]`,
-  drawer: '.migration-history-drawer', // no data-cy on the drawer
-  drawerStatus: '.migration-history-drawer__status',
-  drawerRow: '.migration-history-drawer__row',
-  drawerTab: '.migration-history-drawer__tab',
+  drawer: '[data-cy="migration-history-drawer"]',
+  drawerStatus: '[data-cy="migration-history-status"]',
+  drawerRow: '[data-cy="migration-history-row"]',
+  drawerTab: '[data-cy^="migration-history-tab-"]',
 };

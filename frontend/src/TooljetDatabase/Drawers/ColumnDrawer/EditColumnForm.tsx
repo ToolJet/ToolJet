@@ -25,7 +25,7 @@ import { useCastReport } from './useCastReport';
 import { relationBlockedReason, useColumnDraft } from './useColumnDraft';
 
 type RunMigration = (options: {
-  titlePlaceholder: string;
+  defaultTitle: string;
   changes: { type: string; name: string; oldName?: string; detail?: React.ReactNode }[];
   tableId: string;
   showSqlEditor: boolean;
@@ -222,7 +222,7 @@ export function EditColumnForm({ column, rows, onClose, onCancel }: EditColumnFo
   const submit = () => {
     const plan = planColumnEdit(saved, edited);
     runMigration({
-      titlePlaceholder: plan.title,
+      defaultTitle: plan.title,
       changes: plan.changes.map(({ detail, ...change }) => ({
         ...change,
         ...(detail && { detail: typeof detail === 'string' ? detail : typeChangeDetail(detail.from, detail.to) }),

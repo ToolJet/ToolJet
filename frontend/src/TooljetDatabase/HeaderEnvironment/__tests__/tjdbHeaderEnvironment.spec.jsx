@@ -100,6 +100,25 @@ describe('TJDB environment select in the page Header', () => {
     await waitFor(() => expect(trigger()).toHaveTextContent('0001'));
   });
 
+  test('should open the migration history from the menu', async () => {
+    renderHeaderAndPage(contextValue());
+
+    await userEvent.click(trigger());
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View migration history' }));
+
+    expect(useTjdbStore.getState().isMigrationHistoryOpen).toBe(true);
+  });
+
+  test('should not offer the migration history while no table is open', async () => {
+    renderHeaderAndPage(contextValue({ tables: [], selectedTable: {} }));
+    act(() => useTjdbStore.setState({ selectedEnvironment: STAGING }));
+
+    await userEvent.click(await screen.findByRole('button', { name: /environment$/i }));
+
+    await screen.findAllByRole('menuitemcheckbox');
+    expect(screen.queryByRole('menuitem', { name: 'View migration history' })).not.toBeInTheDocument();
+  });
+
   test('should switch the environment from the menu', async () => {
     renderHeaderAndPage(contextValue());
 
@@ -153,9 +172,27 @@ describe('TJDB environment select in the page Header', () => {
     act(() => useTjdbStore.getState().actions.openMigrationHistory());
 
     await waitFor(() =>
-      expect(document.querySelector('.migration-history-drawer__row-name')).toHaveTextContent('Create table "orders"')
+      expect(document.querySelector('[data-cy="migration-history-row"]')).toHaveTextContent('Create table "orders"')
     );
     expect(migrationRequests).toEqual([ORDERS.id]);
+  });
+
+  test('should re-read the table list when a migration is recorded, so the sync dots follow', async () => {
+    const tableRequests = [];
+    server.use(
+      http.get('*/tooljet-db/organizations/:organizationId/tables', () => {
+        tableRequests.push(1);
+        return HttpResponse.json({ result: [ORDERS] });
+      })
+    );
+    renderHeaderAndPage(contextValue());
+    await waitFor(() => expect(migrationRequests).toHaveLength(1));
+    // Opening the page does not read the list again: the page already did.
+    expect(tableRequests).toHaveLength(0);
+
+    act(() => useTjdbStore.getState().actions.bumpMigrations());
+
+    await waitFor(() => expect(tableRequests).toHaveLength(1));
   });
 
   test('should not open the drawer when no table is open', () => {
@@ -163,13 +200,13 @@ describe('TJDB environment select in the page Header', () => {
 
     act(() => useTjdbStore.getState().actions.openMigrationHistory());
 
-    expect(document.querySelector('.migration-history-drawer__row-name')).not.toBeInTheDocument();
+    expect(document.querySelector('[data-cy="migration-history-row"]')).not.toBeInTheDocument();
   });
 
   test('should close the drawer again', async () => {
     renderHeaderAndPage(contextValue());
     act(() => useTjdbStore.getState().actions.openMigrationHistory());
-    await waitFor(() => expect(document.querySelector('.migration-history-drawer__row-name')).toBeInTheDocument());
+    await waitFor(() => expect(document.querySelector('[data-cy="migration-history-row"]')).toBeInTheDocument());
 
     act(() => useTjdbStore.getState().actions.closeMigrationHistory());
 

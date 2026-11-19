@@ -50,5 +50,14 @@ export function useTableMigrations() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchTableMigrations, migrationsVersion]);
 
+  // A recorded migration changes where the table is pending, which the table list's sync dots show. The page read the
+  // list when it opened, so only a later bump reads it again.
+  const seenMigrationsVersionRef = useRef(migrationsVersion);
+  useEffect(() => {
+    if (seenMigrationsVersionRef.current === migrationsVersion) return;
+    seenMigrationsVersionRef.current = migrationsVersion;
+    refetchTables();
+  }, [migrationsVersion, refetchTables]);
+
   return { tableMigrations, refetchTableMigrations: fetchTableMigrations, refetchTables };
 }

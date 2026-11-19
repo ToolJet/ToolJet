@@ -11,7 +11,7 @@ import type { DraftRelation, RelationPayload } from '../TableDrawer/types';
 
 type Change = { type: 'add' | 'edit' | 'remove'; name: string; detail?: string };
 type RunMigration = (options: {
-  titlePlaceholder: string;
+  defaultTitle: string;
   changes: Change[];
   tableId: string;
   showSqlEditor: boolean;
@@ -74,7 +74,7 @@ export function useLiveRelations(
   const actions: RelationActions = {
     add: (relation, done) =>
       runMigration({
-        titlePlaceholder: `Add foreign key on "${tableName}"`,
+        defaultTitle: `Add foreign key on "${tableName}"`,
         changes: [{ type: 'add', name: tableName, detail: describe(relation) }],
         tableId: table.id,
         showSqlEditor: true,
@@ -97,7 +97,7 @@ export function useLiveRelations(
         relation.referenced_table_name !== next.referenced_table_name ||
         relation.referenced_column_names[0] !== next.referenced_column_names[0];
       runMigration({
-        titlePlaceholder: `Edit foreign key on "${tableName}"`,
+        defaultTitle: `Edit foreign key on "${tableName}"`,
         changes: [{ type: 'edit', name: tableName, detail: describe(next) }],
         tableId: table.id,
         showSqlEditor: true,
@@ -135,7 +135,7 @@ export function useLiveRelations(
 
     remove: (relation: DraftRelation) =>
       runMigration({
-        titlePlaceholder: `Remove foreign key on "${tableName}"`,
+        defaultTitle: `Remove foreign key on "${tableName}"`,
         changes: [{ type: 'remove', name: tableName, detail: describe(relation) }],
         tableId: table.id,
         showSqlEditor: false,
