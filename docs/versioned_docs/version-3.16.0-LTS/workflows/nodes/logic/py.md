@@ -17,14 +17,14 @@ This node executes securely inside a sandboxed environment on the server, so it 
 
 ## Accessing Workflow State
 
-All previous node outputs, parameters, and workflow variables are injected into the Python execution context as global variables. You can reference them directly in your code.
+The outputs of previous nodes are injected into the Python execution context as global variables, each named after its node. The parameters the workflow was triggered with are available under `startTrigger['params']`; there is no separate `params` variable.
 
 ```python
 # Access results from a previous node named 'getSalesData'
 sales = getSalesData['data']
 
 # Access workflow parameters
-user_id = params['userId']
+user_id = startTrigger['params']['userId']
 ```
 
 ## Example: Fine-Tuning Your Response Using Python
@@ -41,7 +41,7 @@ result = {
 
 ## Example: Using External Packages
 
-You can install external Python packages for your workflow through the package manager. Packages are defined in `requirements.txt` format and installed once per workflow version.
+You can install external Python packages for your workflow from the **Libraries** panel. Packages are defined in `requirements.txt` format and installed once per workflow version. See [Python libraries](/docs/workflows/external-libraries/py).
 
 ```python
 import pydash

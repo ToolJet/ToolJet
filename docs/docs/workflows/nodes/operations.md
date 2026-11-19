@@ -7,6 +7,10 @@ title: Node Operations
 
 You can perform the following operation on the nodes:
 
+### Run From This Node
+
+Click the play icon on a node to run the workflow from that node onwards. The icon appears when you hover over the node. See [Running From a Node](/docs/workflows/overview#running-from-a-node).
+
 ### Error Handling
 
 The **Error Handling** node operation in ToolJet workflows lets you define different execution paths based on whether a node succeeds or fails. If a node runs successfully, the workflow continues along the success path, if it fails, the error path is triggered, allowing you to perform custom actions like logging, notifications, or retries.

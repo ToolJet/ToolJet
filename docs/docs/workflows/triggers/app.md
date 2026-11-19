@@ -39,6 +39,16 @@ To create a workflow follow the following steps:
 ### Configure Workflow Query
 
 1. Within your ToolJet application, create a new query and select **Run Workflow**.
-2. Select your workflow from the dropdown and configure the parameters (if required).
+2. Select your workflow from the **Workflow** dropdown and configure the parameters (if required).
     <img style={{ marginTop: '15px' }} className="screenshot-full img-full" src="/img/workflows/trigger-from-app/wf-query.png" alt="Configure the Query" />
-3. Now, you can trigger this workflow by clicking on the **Run** button or using events.
+3. Optionally, configure the **Version** and **Run workflows synchronously** settings. See [Query Settings](#query-settings).
+4. Now, you can trigger this workflow by clicking on the **Run** button or using events.
+
+### Query Settings
+
+| Setting | Description |
+|---------|-------------|
+| **Workflow** | The workflow to run. |
+| **Version** | The workflow version to run. It appears after you select a workflow and lists the workflow's saved versions. If you don't select a version, the released version runs. If the workflow has never been released, the version currently being edited runs. Learn more about [workflow versions](/docs/workflows/versions-env/version-control). |
+| **Run workflows synchronously** | On by default. When on, the workflow runs as part of the query request. When off, the run is queued and processed in the background by a workflow worker. In both cases, the query finishes when the workflow finishes and returns the workflow's response. |
+| **Params** | Key-value pairs passed to the workflow as parameters. See [Passing Parameters](#passing-parameters). |
