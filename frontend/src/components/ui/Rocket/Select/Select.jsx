@@ -81,7 +81,9 @@ const SelectContent = forwardRef(function SelectContent({ className, ...props },
     <ShadcnSelectContent
       ref={ref}
       className={cn(
-        'tw-bg-background-surface-layer-01 tw-border-border-weak tw-rounded-lg tw-shadow-elevation-300',
+        'tw-bg-background-surface-layer-01 tw-border-solid tw-border-border-weak tw-rounded-lg tw-shadow-elevation-300',
+        // The shadcn viewport inside pads 4px; this makes the 8px of the design.
+        'tw-p-1',
         className
       )}
       {...props}

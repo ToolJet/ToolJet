@@ -2,6 +2,7 @@
 import React, { useEffect, useLayoutEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
+import { EditorView } from '@codemirror/view';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 
@@ -182,7 +183,7 @@ const TJDBCodeEditor = (props) => {
                 maxHeight={'350px'}
                 width="100%"
                 theme={theme}
-                extensions={[langExtention]}
+                extensions={[langExtention, EditorView.lineWrapping]}
                 onChange={handleOnChange}
                 basicSetup={setupConfig}
                 style={{

@@ -69,24 +69,6 @@
   font-weight: 500;
 }
 
-.edit-row-dropdown {
-  height: 36px !important;
-
-  .css-zz6spl-container {
-    width: 100% !important;
-    margin-top: 16px;
-    height: 36px !important;
-
-    .react-select__control {
-      height: 36px !important;
-    }
-
-    .react-select__value-container {
-      height: 36px !important;
-    }
-  }
-}
-
 .tj-db-type-omitted-footer {
   position: relative;
   display: flex;
@@ -342,10 +324,6 @@
   position: absolute;
   top: 6px;
   left: 10px;
-}
-
-.createRow-idContainer {
-  margin-bottom: 20px !important;
 }
 
 .form-error-message {
@@ -792,14 +770,6 @@
   }
 }
 
-.add-relation-text-dark {
-  color: #545B64;
-}
-
-.add-relation-text-enabled {
-  color: #3E63DD !important;
-}
-
 .input-error-border {
   border-color: #E54D2E !important;
 }
@@ -814,25 +784,77 @@
   max-width: 100%;
 }
 
-.tjdb-codehinter-wrapper-drawer{
-  .cm-editor{
-    max-height: 36px !important;
-    height: 36px !important;
-    &.cm-focused{
-      outline: none !important;
-      background: var(--indigo2) !important;
-      border: 1px solid var(--indigo9) !important;
+.tjdb-codehinter-wrapper-drawer {
+  // Figma Codehinter: a multi-line input that grows to 130px, 12/16 IBM Plex Mono, with the Rocket scrollbar.
+  .cm-theme {
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .cm-editor {
+    height: auto !important;
+    min-height: 32px;
+    max-height: 130px !important;
+    box-sizing: border-box;
+    overflow: hidden;
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    background: var(--background-surface-layer-01) !important;
+
+    &:hover {
+      border-color: var(--border-strong);
     }
-    .cm-content{
-      display: flex;
-      align-items: center;
-      font-size: 12px;
+
+    &.cm-focused {
+      outline: none !important;
+      border-color: var(--border-accent-strong);
     }
   }
-  .tjdb-hinter-error{
-    .cm-editor{
+
+  .cm-scroller {
+    max-height: 130px;
+    overflow: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 16px;
+
+    &::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    // The app greys the thumb of whatever is hovered; these win over it and keep the 7px thumb in its 10px gutter.
+    &::-webkit-scrollbar-thumb,
+    &:hover::-webkit-scrollbar-thumb {
+      border: 1.5px solid transparent;
+      border-radius: 999px;
+      background-color: var(--interactive-hover);
+      background-clip: padding-box;
+    }
+
+    &:hover::-webkit-scrollbar-thumb:hover {
+      background-color: var(--interactive-selected);
+      background-clip: padding-box;
+    }
+  }
+
+  .cm-content {
+    padding: 8px 10px;
+    font-size: 12px;
+    color: var(--text-medium);
+  }
+
+  .cm-line {
+    padding: 0;
+  }
+
+  .tjdb-hinter-error {
+    .cm-editor {
       outline: none !important;
-      border:1px solid red !important;
+      border-color: var(--border-danger-strong);
     }
   }
 }
@@ -862,94 +884,6 @@
     .cm-editor{
       outline: none !important;
       border:1px solid red !important;
-    }
-  }
-}
-.width-lg{
-  width: 181.5px;
-}
-
-.width-sm{
-  width: 120px;
-}
-
-.input-element{
-  width: 100% !important;
-  background-color: transparent !important;
-  color: var(--text-default) !important;
-  border-radius: 0px !important;
-  border: 1px solid var(--border-default) !important;
-  font-size: inherit !important;
-}
-
-.delete-icon-wrapper{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 32px;
-  width: 32px !important;
-  border: 1px solid var(--border-default);
-  border-radius: 0px 8px 8px 0px;
-  cursor: pointer;
-  border-left: none;
-}
-
-.select-operation-field{
-  .react-select__control{
-    .react-select__value-container{
-      position: relative;
-      .react-select__input-container{
-        position: absolute;
-        right: 0;
-      }
-    }
-  }
-}
-
-.select-operation-field,
-.select-column-field{
-    position: static;
-    .react-select__control {
-      position: relative;
-      z-index: 2;
-      border-right: none !important;
-    }
-    .react-select__menu {
-      position: fixed;
-      z-index: 9999;
-      left: var(--select-left);
-      top: var(--select-top);
-    }
-}
-
-.select-column-field .react-select__menu {
-  width: 181.5px;
-}
-
-.select-operation-field .react-select__menu {
-  width: 120px;
-}
-
-body.react-select-open .filter-body {
-  pointer-events: none;
-}
-
-body.react-select-open .select-operation-field {
-  pointer-events: auto;
-}
-body.react-select-open .select-column-field {
-  pointer-events: auto;
-}
-
-.select-operation-field,
-.select-column-field{
-  .react-select__menu{
-    .react-select__menu-list{
-      overflow-y: hidden;
-
-      &:hover {
-        overflow-y: auto;
-      }
     }
   }
 }

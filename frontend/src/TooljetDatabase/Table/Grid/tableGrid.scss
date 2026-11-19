@@ -1,0 +1,20 @@
+// A bar that slides across the track while a refetch runs behind the rows on screen.
+@keyframes tjdb-grid-refetch {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(250%);
+  }
+}
+
+.tjdb-grid-refetch-bar {
+  animation: tjdb-grid-refetch 1.1s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    transform: none;
+    opacity: 0.6;
+  }
+}

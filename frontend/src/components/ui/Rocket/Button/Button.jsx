@@ -89,6 +89,12 @@ const buttonVariants = cva(
           'disabled:tw-bg-button-danger-secondary-disabled',
         ],
       },
+      // Ghost icon-only buttons draw their icon in icon/strong, and icon/disabled at full strength when disabled.
+      {
+        variant: 'ghost',
+        iconOnly: true,
+        class: 'tw-text-icon-strong disabled:tw-text-icon-disabled disabled:tw-opacity-100',
+      },
       // iconOnly — square dimensions per size
       { iconOnly: true, size: 'large', class: 'tw-w-10' },
       { iconOnly: true, size: 'default', class: 'tw-w-8' },

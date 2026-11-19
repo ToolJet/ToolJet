@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, Suspense, useRef } from 'react';
+import React, { useContext, useEffect, Suspense, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 
 import { BreadCrumbContext } from '@/App/BreadCrumbContext';
@@ -13,8 +13,9 @@ type LayoutRouteWrapperProps = {
   guard: Guard;
 };
 
-// Pages (matched on the end of the URL path) that render the redesigned header.
-const NEW_HEADER_PATHS = ['/workspace-constants'];
+// Pages (matched on the end of the URL path) that render the redesigned header. A page that keeps its state in the
+// path after these segments would silently fall back to the old header, so such state belongs in the query string.
+const NEW_HEADER_PATHS = ['/workspace-constants', '/database'];
 
 const LayoutRouteWrapper = ({ darkMode, switchDarkMode, guard: Guard }: LayoutRouteWrapperProps) => {
   const location = useLocation();
@@ -23,8 +24,6 @@ const LayoutRouteWrapper = ({ darkMode, switchDarkMode, guard: Guard }: LayoutRo
   const { updateSidebarNAV } = useContext(BreadCrumbContext) as { updateSidebarNAV: (value: string) => void };
 
   const initialMountRef = useRef(true);
-  const [collapseSidebar, setCollapseSidebar] = useState(false);
-  const [enableCollapsibleSidebar, setEnableCollapsibleSidebar] = useState(false);
 
   // Two places reset the breadcrumb:
   // 1. First mount (e.g. arriving here from a route outside this group, like HomePage): reset
@@ -51,16 +50,9 @@ const LayoutRouteWrapper = ({ darkMode, switchDarkMode, guard: Guard }: LayoutRo
 
   return (
     <Guard darkMode={darkMode}>
-      <Layout
-        switchDarkMode={switchDarkMode}
-        darkMode={darkMode}
-        enableCollapsibleSidebar={enableCollapsibleSidebar}
-        collapseSidebar={collapseSidebar}
-        toggleCollapsibleSidebar={() => setCollapseSidebar((prev) => !prev)}
-        showNewHeader={showNewHeader}
-      >
+      <Layout switchDarkMode={switchDarkMode} darkMode={darkMode} showNewHeader={showNewHeader}>
         <Suspense fallback={<TJLoader />}>
-          <Outlet context={{ collapseSidebar, setCollapseSidebar, setEnableCollapsibleSidebar }} />
+          <Outlet />
         </Suspense>
       </Layout>
     </Guard>

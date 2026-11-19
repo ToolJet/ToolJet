@@ -8,7 +8,8 @@ import { server } from '@/test/msw/server';
 import { render, screen, waitFor, act } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { TooljetDatabaseContext } from '@/TooljetDatabase';
-import EnvironmentSwitcher from '@/TooljetDatabase/EnvironmentSwitcher';
+import TjdbHeaderEnvironment from '@/TooljetDatabase/HeaderEnvironment';
+import HeaderEnvironmentSelect from '@/_ui/Header/HeaderEnvironmentSelect';
 import MigrationHistoryDrawer from '@/TooljetDatabase/Drawers/MigrationHistoryDrawer';
 import ExportCsvModal from '@/TooljetDatabase/ExportCsvModal';
 import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
@@ -26,9 +27,6 @@ const DEVELOPMENT = { id: 'env-development', name: 'development', priority: 1, e
 const LAPSED_STAGING = { id: 'env-staging', name: 'staging', priority: 2, enabled: false };
 const LAPSED_ENVIRONMENTS = [DEVELOPMENT, LAPSED_STAGING];
 const BOTH_HAVE_RELATION = LAPSED_ENVIRONMENTS.map((env) => ({ environment_id: env.id, has_relation: true }));
-
-// The sparkle the App Builder's environment toggle puts on a plan-locked environment.
-const UPGRADE_ICON = '[data-cy="enterprise-gradient-sm-icon"]';
 
 const serveLapsedLicence = () =>
   server.use(
@@ -61,20 +59,26 @@ describe('TJDB after a multi-environment licence lapse', () => {
     act(() => useTjdbStore.setState({ environments: LAPSED_ENVIRONMENTS, selectedEnvironment: DEVELOPMENT }));
 
     render(
-      <TooljetDatabaseContext.Provider
-        value={{ organizationId: 'org-1', tables: [], setTables: () => {}, selectedTable: {} }}
-      >
-        <EnvironmentSwitcher />
-      </TooljetDatabaseContext.Provider>
+      <>
+        <HeaderEnvironmentSelect />
+        <TooljetDatabaseContext.Provider
+          value={{
+            organizationId: 'org-1',
+            tables: [{ id: 'table-1', table_name: 'orders', environments: BOTH_HAVE_RELATION }],
+            setTables: () => {},
+            selectedTable: { id: 'table-1', table_name: 'orders' },
+          }}
+        >
+          <TjdbHeaderEnvironment />
+        </TooljetDatabaseContext.Provider>
+      </>
     );
-    await userEvent.click(screen.getByRole('button', { name: /development/i }));
+    await userEvent.click(screen.getByRole('button', { name: /development environment/i }));
 
-    const staging = await screen.findByRole('button', { name: /staging/i });
-    const development = document.querySelector('[data-cy="development-environment-option"]');
-    expect(staging).toBeDisabled();
-    expect(development).toBeEnabled();
-    expect(staging.querySelector(UPGRADE_ICON)).toBeInTheDocument();
-    expect(development.querySelector(UPGRADE_ICON)).not.toBeInTheDocument();
+    const staging = await screen.findByRole('menuitemcheckbox', { name: /staging/i });
+    const development = screen.getByRole('menuitemcheckbox', { name: /development/i });
+    expect(staging).toHaveAttribute('aria-disabled', 'true');
+    expect(development).not.toHaveAttribute('aria-disabled', 'true');
   });
 
   // Export is the one thing a lapse does not take away: a workspace leaving multi-environment can
@@ -141,12 +145,8 @@ describe('TJDB after a multi-environment licence lapse', () => {
 
       // The licence verdict arrives after open; wait for it before judging either tab.
       await waitFor(() => expect(useLicenseStore.getState().featuresLoaded).toBe(true));
-      const staging = screen.getByRole('button', { name: 'Staging' });
-      const development = screen.getByRole('button', { name: 'Development' });
-      expect(staging).toBeDisabled();
-      expect(development).toBeEnabled();
-      expect(staging.querySelector(UPGRADE_ICON)).toBeInTheDocument();
-      expect(development.querySelector(UPGRADE_ICON)).not.toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Staging' })).toBeDisabled();
+      expect(screen.getByRole('radio', { name: 'Development' })).toBeEnabled();
     });
   });
 });

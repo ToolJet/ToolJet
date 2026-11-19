@@ -32,6 +32,8 @@ export const routes = (pathEnd: string, path: string) => {
     case 'audit-logs':
       return 'Audit logs';
     case 'workflows':
+    case 'approvals':
+    case 'executions':
       return 'Workflows';
     case 'workspace-constants':
       return 'Workspace constants';

@@ -10,15 +10,25 @@ describe('searchStore search config', () => {
     useSearchStore.getState().setSearchConfig({ placeholder: 'Search for modules', debounceMs: undefined });
 
     expect(useSearchStore.getState().searchConfig).toEqual({
+      ...DEFAULT_SEARCH_CONFIG,
       placeholder: 'Search for modules',
-      debounceMs: DEFAULT_SEARCH_CONFIG.debounceMs,
     });
+  });
+
+  it('shows the search unless a page hides it', () => {
+    expect(useSearchStore.getState().searchConfig.hidden).toBe(false);
+
+    useSearchStore.getState().setSearchConfig({ hidden: true });
+    expect(useSearchStore.getState().searchConfig.hidden).toBe(true);
+
+    useSearchStore.getState().resetSearchConfig();
+    expect(useSearchStore.getState().searchConfig.hidden).toBe(false);
   });
 
   it('applies a custom debounce', () => {
     useSearchStore.getState().setSearchConfig({ debounceMs: 500 });
 
-    expect(useSearchStore.getState().searchConfig).toEqual({ placeholder: 'Search', debounceMs: 500 });
+    expect(useSearchStore.getState().searchConfig).toEqual({ ...DEFAULT_SEARCH_CONFIG, debounceMs: 500 });
   });
 
   it('restores the defaults on reset', () => {

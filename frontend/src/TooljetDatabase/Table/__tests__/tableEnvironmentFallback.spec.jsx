@@ -56,21 +56,19 @@ function renderTable(table) {
         columns: COLUMNS,
         selectedTable: { id: table.id, table_name: table.table_name },
         selectedTableData: [],
-        setSelectedTableData: () => {},
         setColumns: () => {},
         setConfigurations: () => {},
         setForeignKeys: () => {},
         foreignKeys: [],
         configurations: {},
         getConfigurationProperty: (_header, _property, fallback) => fallback,
-        resetAll: () => {},
         handleRefetchQuery: () => {},
-        loadingState: false,
+        rowsLoading: false,
         canEditTjdb: true,
         canEditSchema: false,
       }}
     >
-      <Table collapseSidebar={false} />
+      <Table />
     </TooljetDatabaseContext.Provider>
   );
   return { metadataEnvironments };

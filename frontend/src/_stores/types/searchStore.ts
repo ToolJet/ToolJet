@@ -3,6 +3,8 @@ import type { StateCreator } from 'zustand';
 export interface ISearchConfig {
   placeholder: string;
   debounceMs: number;
+  /** For pages whose design has no global search: the header leaves it out. */
+  hidden: boolean;
 }
 
 export interface ISearchStore {

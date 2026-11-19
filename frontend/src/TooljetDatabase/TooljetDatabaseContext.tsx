@@ -4,36 +4,51 @@ import React, { useContext, ReactNode, Dispatch, SetStateAction } from 'react';
 // `useContext(TooljetDatabaseContext)` and `useTooljetDatabaseContext()` therefore resolve against
 // the same provider.
 import { TooljetDatabaseContext } from './context';
+import type { OpenTabs } from './TablesPanel/useOpenTabs';
+
+import type { MigrationSync } from './TablesPanel/MigrationSyncDot';
+
+/**
+ * A table as the page holds it. The open table is `{}` while none is open. `migration_sync` comes only from the table
+ * list endpoint, so a rename's thin `{ id, table_name }` leaves it unset.
+ */
+export type TjdbTable = { id: string; table_name: string; migration_sync?: MigrationSync };
 
 export type TooljetDatabaseContextValue = {
   canEditTjdb: boolean;
   canEditSchema: boolean;
   organizationId: string | null;
   setOrganizationId: Dispatch<SetStateAction<string | null>>;
-  selectedTable: string;
-  setSelectedTable: Dispatch<SetStateAction<string>>;
-  searchParam: string;
-  setSearchParam: Dispatch<SetStateAction<string>>;
+  selectedTable: Partial<TjdbTable>;
+  setSelectedTable: Dispatch<SetStateAction<Partial<TjdbTable>>>;
+  /** Tables open in tabs, in tab order. The active one is `selectedTable`. */
+  openTabIds: string[];
+  openTable: OpenTabs['openTable'];
+  closeTab: OpenTabs['closeTab'];
+  closeOtherTabs: OpenTabs['closeOtherTabs'];
+  closeAllTabs: OpenTabs['closeAllTabs'];
+  applyTables: OpenTabs['applyTables'];
+  /** The open page of the open table's rows, from useTableRows. */
   selectedTableData: unknown[];
-  setSelectedTableData: Dispatch<SetStateAction<unknown[]>>;
   tables: unknown[];
   setTables: Dispatch<SetStateAction<unknown[]>>;
   tablesLoaded: boolean;
   setTablesLoaded: Dispatch<SetStateAction<boolean>>;
+  /** The workspace has used all the tables its plan allows. Read once per page, in `index.jsx`. */
+  tablesLimitReached: boolean;
   columns: unknown[];
   setColumns: Dispatch<SetStateAction<unknown[]>>;
   totalRecords: number;
-  setTotalRecords: Dispatch<SetStateAction<number>>;
+  /** No rows to show yet for the open view. A refetch behind rows already on screen does not count. */
+  rowsLoading: boolean;
+  /** A refetch behind rows already on screen: the opposite of rowsLoading, never both. */
+  rowsRefetching: boolean;
+  /** The tables list fetch, owned by the tables panel. */
   loadingState: boolean;
   setLoadingState: Dispatch<SetStateAction<boolean>>;
-  handleBuildFilterQuery: (...args: unknown[]) => unknown;
-  handleBuildSortQuery: (...args: unknown[]) => unknown;
-  buildPaginationQuery: (...args: unknown[]) => unknown;
-  resetSortQuery: (...args: unknown[]) => unknown;
-  resetFilterQuery: (...args: unknown[]) => unknown;
-  resetAll: (...args: unknown[]) => unknown;
   selectRows: unknown[];
   setSelectRows: Dispatch<SetStateAction<unknown[]>>;
+  /** Refetches the open view after a write. Arguments are ignored. */
   handleRefetchQuery: (...args: unknown[]) => unknown;
   foreignKeys: unknown[];
   configurations: Record<string, unknown>;

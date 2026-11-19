@@ -2,29 +2,19 @@ import React from 'react';
 import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { ToolTip } from '@/_components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
-import { TJDB_HEADER_SLOT_ID } from '@/TooljetDatabase/HeaderSlotPortal';
 
 import NewLayoutHeader from './NewLayoutHeader';
 import BranchingActionButtons from './BranchingActionButtons';
 
 import { routes, routesWithTags } from './helper';
 
-function Header({
-  featureAccess,
-  enableCollapsibleSidebar = false,
-  collapseSidebar = false,
-  toggleCollapsibleSidebar = () => {},
-  showNewHeader = false,
-}) {
+function Header({ featureAccess, collapseSidebar = false, showNewHeader = false }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const location = useLocation();
   const pathname = routes(location?.pathname.split('/').pop(), location?.pathname);
-  const isDatabasePage = location.pathname.split('/').filter(Boolean).includes('database');
 
   if (showNewHeader) {
     return <NewLayoutHeader featureAccess={featureAccess} />;
@@ -51,63 +41,11 @@ function Header({
                   />
                 )}
               </div>
-              {enableCollapsibleSidebar && !collapseSidebar && (
-                <ToolTip message="Collapse sidebar" placement="bottom" delay={{ show: 0, hide: 100 }}>
-                  <div className="col-3 px-3">
-                    <ButtonSolid
-                      variant="primary"
-                      className="tj-text-xsm"
-                      style={{
-                        minWidth: '28px',
-                        width: '28px',
-                        height: '23px',
-                        borderRadius: '6px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        background: `${darkMode ? '#273E89' : 'var(--indigo3)'}`,
-                        borderColor: `${darkMode ? 'rgba(62, 99, 221, 0.2)' : '#AEC0F5'} `,
-                      }}
-                      leftIcon="cheveronleftdouble"
-                      fill="#3E63DD"
-                      iconWidth="14"
-                      size="md"
-                      onClick={toggleCollapsibleSidebar}
-                    />
-                  </div>
-                </ToolTip>
-              )}
             </div>
           </div>
         )}
         <div className="col tj-dashboard-header-wrap">
           <div className="d-flex justify-content-sm-between tw-w-full">
-            {enableCollapsibleSidebar && collapseSidebar && (
-              <ToolTip message="Open sidebar" placement="bottom" delay={{ show: 0, hide: 100 }}>
-                <div className="pe-3">
-                  <ButtonSolid
-                    variant="primary"
-                    className="tj-text-xsm"
-                    style={{
-                      minWidth: '28px',
-                      width: '28px',
-                      height: '23px',
-                      borderRadius: '6px',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      background: `${darkMode ? '#273E89' : 'var(--indigo3)'}`,
-                      borderColor: `${darkMode ? 'rgba(62, 99, 221, 0.2)' : '#AEC0F5'} `,
-                    }}
-                    leftIcon="cheveronrightdouble"
-                    fill="#3E63DD"
-                    iconWidth="14"
-                    size="md"
-                    onClick={toggleCollapsibleSidebar}
-                  />
-                </div>
-              </ToolTip>
-            )}
             <div
               className="app-header-label tw-flex tw-items-center "
               data-cy={generateCypressDataCy(`breadcrumb-header-${pathname}`)}
@@ -125,8 +63,6 @@ function Header({
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}
-              {/* The TJDB page portals its environment switcher in here: it needs the page's context, which this Header sits above. */}
-              {isDatabasePage && <div id={TJDB_HEADER_SLOT_ID} className="tw-contents" />}
             </div>
           </div>
         </div>

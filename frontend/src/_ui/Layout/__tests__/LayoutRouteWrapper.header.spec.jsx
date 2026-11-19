@@ -18,6 +18,7 @@ function renderAt(path) {
           <Route element={<LayoutRouteWrapper darkMode={false} switchDarkMode={() => {}} guard={Guard} />}>
             <Route path="/:workspaceId/workspace-constants" element={<div>constants</div>} />
             <Route path="/:workspaceId/workspace-constants/extra" element={<div>extra</div>} />
+            <Route path="/:workspaceId/database" element={<div>database</div>} />
             <Route path="/:workspaceId/workspace-settings/users" element={<div>users</div>} />
           </Route>
         </Routes>
@@ -33,6 +34,11 @@ describe('LayoutRouteWrapper header', () => {
 
   it('shows the redesigned header on the workspace constants page', () => {
     renderAt('/ws-1/workspace-constants');
+    expect(lastShowNewHeader()).toBe(true);
+  });
+
+  it('shows the redesigned header on the database page', () => {
+    renderAt('/ws-1/database');
     expect(lastShowNewHeader()).toBe(true);
   });
 

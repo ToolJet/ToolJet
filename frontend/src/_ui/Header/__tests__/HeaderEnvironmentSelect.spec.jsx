@@ -10,8 +10,13 @@ const ENVIRONMENTS = [
   { id: 'env-prod', name: 'Production' },
 ];
 
+const TOOLTIP = 'Choose which environment’s values the list shows.';
+
 function Page({ onChange, environmentId = 'env-prod' }) {
-  const select = useMemo(() => ({ environments: ENVIRONMENTS, environmentId, onChange }), [environmentId, onChange]);
+  const select = useMemo(
+    () => ({ environments: ENVIRONMENTS, environmentId, onChange, tooltip: TOOLTIP }),
+    [environmentId, onChange]
+  );
   useHeaderEnvironmentSelect(select);
   return null;
 }
@@ -91,7 +96,7 @@ describe('HeaderEnvironmentSelect', () => {
   it('still shows the tooltip when the pill is hovered', async () => {
     setup();
     await userEvent.hover(screen.getByRole('button', { name: /environment$/i }));
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('Choose which environment’s values the list shows.');
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(TOOLTIP);
   });
 
   it('follows the page: a new environment updates the label, and unmounting removes the select', () => {

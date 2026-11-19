@@ -1,6 +1,9 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+// Loads the shared component barrel before Header. Header pulls in a circular import chain (LicenseBanner -> ... ->
+// _utils) that only resolves when the barrel is evaluated first, as it is in the running app.
+import '@/_components';
 import Header from '../index';
 
 jest.mock('../NewLayoutHeader', () => () => <div data-testid="new-header" />);

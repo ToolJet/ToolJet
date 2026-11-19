@@ -4,7 +4,7 @@ import type { Combobox as ComboboxPrimitive } from '@base-ui/react';
 
 // Styled wrappers keep the Base UI props of the part they wrap.
 type Part<Primitive extends React.ElementType, Extra = object> = ForwardRefExoticComponent<
-  Omit<ComponentProps<Primitive>, 'ref'> & Extra & RefAttributes<HTMLElement>
+  Omit<ComponentProps<Primitive>, 'ref' | keyof Extra> & Extra & RefAttributes<HTMLElement>
 >;
 
 export function Combobox<Value, Multiple extends boolean | undefined = false>(

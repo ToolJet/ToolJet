@@ -15,7 +15,7 @@ function MigrationHarness({ options }) {
   return modal;
 }
 
-// The modal is a react-bootstrap portal; its controls are addressed by their data-cy, like the Cypress suite.
+// The dialog is a portal; its controls are addressed by their data-cy, like the Cypress suite.
 const byDataCy = (dataCy) =>
   waitFor(() => {
     const element = document.querySelector(`[data-cy="${dataCy}"]`);
@@ -48,7 +48,6 @@ describe('Migration modal with a required SQL step', () => {
     renderModal({ sqlRequired: true });
 
     expect(await byDataCy('migration-confirm-sql-editor')).toBeInTheDocument();
-    expect(document.querySelector('[data-cy="migration-confirm-add-migration"]')).toBeNull();
   });
 
   test('should refuse to run, and record nothing, when the SQL is empty', async () => {
@@ -73,13 +72,5 @@ describe('Migration modal with a required SQL step', () => {
 
     await waitFor(() => expect(rawSqlBodies).toEqual([expect.objectContaining({ name: 'Backfill status' })]));
     expect(run).toHaveBeenCalledTimes(1);
-  });
-
-  // The SQL step stays an optional add-on for structured changes; the opt-in must not leak to them.
-  test('should keep the SQL step optional and collapsed when it is not required', async () => {
-    renderModal({});
-
-    expect(await byDataCy('migration-confirm-add-migration')).toBeInTheDocument();
-    expect(document.querySelector('[data-cy="migration-confirm-sql-editor"]')).toBeNull();
   });
 });

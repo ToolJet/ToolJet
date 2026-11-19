@@ -67,6 +67,12 @@ On top of the above:
 - Tabler Icons (`@tabler/icons-react`) or Lucide React (`lucide-react`) only — do not add new icon packages
 - Static assets live in `frontend/assets/images/`
 
+### Design to code (Figma MCP)
+
+- Call `create_session` first. The Skill tool does not carry the Figma guidance; read it with `ReadMcpResourceTool` (`skill://figma/figma-design-to-code/SKILL.md`) before `get_design_context`
+- One `get_design_context` per node returns code, screenshot and variable defs. Never `get_metadata` on a page or canvas frame: it returns megabytes
+- Build from the node the user linked. A page-level mock that adds elements the component frame lacks is not the spec: follow the component frame and ask
+
 ## App Builder architecture
 
 ### Backward compatibility (CRITICAL)
@@ -154,6 +160,15 @@ A user-authored className (or space-separated classNames) applied to a single wi
 
 - No API keys or secrets in client-side code
 - `resolveCode` uses `new Function()` — be careful with what reaches evaluated expressions
+
+## Module context files
+
+Feature-specific invariants live in the closest `AGENTS.md`; read it before editing that subtree. Enterprise modules may carry their guide inside the `frontend/ee` submodule.
+
+- Workflow dashboard, editor, stores, schedules, webhooks, inputs, approvals, and executions: `ee/modules/Workflows/AGENTS.md`
+- Workflow graph and node authoring: `ee/modules/Workflows/pages/WorkflowEditorPage/components/FlowBuilder/AGENTS.md`
+
+Update the closest guide in the same PR when a feature gains a new invariant, compatibility rule, state owner, or cross-layer coupling.
 
 ## Review gotchas
 

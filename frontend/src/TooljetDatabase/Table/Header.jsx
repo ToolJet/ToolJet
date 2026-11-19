@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
-import EditRowDrawer from '../Drawers/EditRowDrawer';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import CreateRowDrawer from '../Drawers/CreateRowDrawer';
 import BulkUploadDrawer from '../Drawers/BulkUploadDrawer';
@@ -8,17 +7,16 @@ import SeedDataDrawer from '../Drawers/SeedDataDrawer';
 import { isSqlModeDisabled } from '@/TooljetDatabase/constants';
 import Filter from '../Filter';
 import Sort from '../Sort';
-import Plus from '@/_ui/Icon/solidIcons/Plus';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { AddNewDataPopOver } from './ActionsPopover/AddNewDataPopOver';
+import { DataToolbar } from './DataToolbar';
+import { AddDataMenu } from './AddDataMenu';
+import { toToolbarFilters } from './dataToolbarFilters';
 import { pluralize } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
-import { isEmpty } from 'lodash';
-import DeleteIcon from '../Icons/DeleteIcon.svg';
+import { isEmpty, omit } from 'lodash';
 import config from 'config';
 import { shallow } from 'zustand/shallow';
-import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
+import { useTjdbStore, useTjdbActions, selectView } from '../_stores/tjdbStore';
 
 const Header = ({
   isCreateColumnDrawerOpen,
@@ -29,39 +27,19 @@ const Header = ({
   isBulkUploadDrawerOpen,
   isSeedDataDrawerOpen,
   setIsSeedDataDrawerOpen,
-  selectedRowIds,
-  handleDeleteRow,
-  rows,
-  isEditRowDrawerOpen,
-  setIsEditRowDrawerOpen,
   setFilterEnable,
-  filterEnable,
-  isDirectRowExpand,
-  referencedColumnDetails,
-  setReferencedColumnDetails,
 }) => {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-  const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
   const [bulkUploadFile, setBulkUploadFile] = useState(null);
-  const [activeFilters, setActiveFilters] = useState(0);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
   const [errors, setErrors] = useState({ client: [], server: [] });
   const [uploadResult, setUploadResult] = useState(null);
-  const {
-    totalRecords,
-    handleBuildSortQuery,
-    resetFilterQuery,
-    resetSortQuery,
-    handleBuildFilterQuery,
-    selectedTable,
-    organizationId,
-    handleRefetchQuery,
-  } = useTooljetDatabaseContext();
-  const { queryFilters, sortFilters, pageSize } = useTjdbStore(
-    (state) => ({ queryFilters: state.queryFilters, sortFilters: state.sortFilters, pageSize: state.pageSize }),
+  const { selectedTable, organizationId, handleRefetchQuery } = useTooljetDatabaseContext();
+  const { queryFilters, sortFilters } = useTjdbStore(
+    (state) => ({ queryFilters: selectView(state).queryFilters, sortFilters: selectView(state).sortFilters }),
     shallow
   );
-  const { setQueryFilters, setSortFilters } = useTjdbActions();
+  const { setQueryFilters, setSortFilters, openMigrationHistory } = useTjdbActions();
+  const toolbarFilters = useMemo(() => toToolbarFilters(queryFilters), [queryFilters]);
 
   useEffect(() => {
     setErrors({ client: [], server: [] });
@@ -84,7 +62,8 @@ const Header = ({
     setIsBulkUploadDrawerOpen(false);
     setQueryFilters({});
     setSortFilters({});
-    handleRefetchQuery({}, {}, 1, pageSize);
+    // Clearing an already-empty view leaves the query unchanged, so the uploaded rows need an explicit refetch.
+    handleRefetchQuery();
     setIsBulkUploading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uploadResult]);
@@ -139,153 +118,32 @@ const Header = ({
     setErrors({ server: [], client: fileValidationErrors });
   };
 
-  const toggleAddNewDataMenu = (isShow) => {
-    setIsAddNewDataMenuOpen(isShow);
-  };
-
-  const handleOnClickCreateNewRow = (isOpenCreateNewRowDrawer) => {
-    setIsCreateRowDrawerOpen(isOpenCreateNewRowDrawer);
-  };
-
-  const handleOnClickBulkUpdateData = (isOpenBulkUploadDrawer) => {
-    setIsBulkUploadDrawerOpen(isOpenBulkUploadDrawer);
-  };
-
-  const handleOnClickSeedData = (isOpenSeedDataDrawer) => {
-    setIsSeedDataDrawerOpen(isOpenSeedDataDrawer);
-  };
-
   return (
     <>
-      <div className="database-table-header-wrapper">
-        <div className="border-0">
-          <div className="tj-db-operations-header">
-            <div className="row align-items-center">
-              <div className="col-8 align-items-center  gap-1" style={{ padding: '0 16px' }}>
-                <>
-                  {(isDirectRowExpand || Object.keys(selectedRowIds).length === 0) && (
-                    <>
-                      <AddNewDataPopOver
-                        disabled={false}
-                        show={isAddNewDataMenuOpen}
-                        darkMode={darkMode}
-                        toggleAddNewDataMenu={toggleAddNewDataMenu}
-                        handleOnClickCreateNewRow={handleOnClickCreateNewRow}
-                        handleOnClickBulkUpdateData={handleOnClickBulkUpdateData}
-                        handleOnClickSeedData={handleOnClickSeedData}
-                        hideSeedDataOption={isSqlModeDisabled()}
-                      >
-                        <span className="col-auto">
-                          <ButtonSolid
-                            variant="tertiary"
-                            disabled={false}
-                            onClick={() => toggleAddNewDataMenu(true)}
-                            size="sm"
-                            className="px-1 pe-3 ps-2 gap-1"
-                          >
-                            <Plus fill="#697177" style={{ height: '16px' }} />
-                            Add new data
-                          </ButtonSolid>
-                        </span>
-                      </AddNewDataPopOver>
-                      <div style={{ width: '83px', marginRight: activeFilters > 0 ? '20px' : '0px' }}>
-                        <Filter
-                          filters={queryFilters}
-                          setFilters={setQueryFilters}
-                          handleBuildFilterQuery={handleBuildFilterQuery}
-                          resetFilterQuery={resetFilterQuery}
-                          setFilterEnable={setFilterEnable}
-                          filterEnable={filterEnable}
-                          setActiveFilters={setActiveFilters}
-                        />
-                      </div>
-                      <div style={{ width: '70px' }}>
-                        <Sort
-                          filters={sortFilters}
-                          setFilters={setSortFilters}
-                          handleBuildSortQuery={handleBuildSortQuery}
-                          resetSortQuery={resetSortQuery}
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  {Object.keys(selectedRowIds).length === 1 ? (
-                    <EditRowDrawer
-                      isEditRowDrawerOpen={isEditRowDrawerOpen}
-                      setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
-                      selectedRowIds={selectedRowIds}
-                      rows={rows}
-                      isDirectRowExpand={isDirectRowExpand}
-                      referencedColumnDetails={referencedColumnDetails}
-                      setReferencedColumnDetails={setReferencedColumnDetails}
-                    />
-                  ) : null}
-                  {!isDirectRowExpand && Object.keys(selectedRowIds).length > 0 && (
-                    <div>
-                      <ButtonSolid
-                        variant="dangerTertiary"
-                        onClick={handleDeleteRow}
-                        size="sm"
-                        className="gap-0"
-                        data-cy="delete-row-records-button"
-                        style={{
-                          padding: '4px 8px 4px 8px',
-                        }}
-                      >
-                        <DeleteIcon />
-                        &nbsp; {Object.keys(selectedRowIds).length === 1 ? 'Delete row' : 'Delete rows'}
-                      </ButtonSolid>
-                    </div>
-                  )}
-                </>
-              </div>
-              <div className="col-4">
-                <div className="d-flex align-items-center justify-content-end">
-                  {Object.keys(selectedRowIds).length === 0 && (
-                    <div
-                      className="p-1"
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 500,
-                      }}
-                    >
-                      <span data-cy="total-records">{totalRecords} records</span>
-                    </div>
-                  )}
-
-                  {Object.keys(selectedRowIds).length > 0 && (
-                    <div
-                      className="p-1"
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 500,
-                      }}
-                    >
-                      <span data-cy="total-records-selected">
-                        {Object.keys(selectedRowIds).length}{' '}
-                        {Object.keys(selectedRowIds).length > 1 ? 'records' : 'record'} selected
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DataToolbar
+        title={selectedTable.table_name}
+        filters={toolbarFilters}
+        onRemoveFilter={(id) => setQueryFilters((previous) => omit(previous, id))}
+        onClearFilters={() => setQueryFilters({})}
+        filterControl={<Filter filters={queryFilters} setFilters={setQueryFilters} setFilterEnable={setFilterEnable} />}
+        sortControl={<Sort filters={sortFilters} setFilters={setSortFilters} />}
+        onOpenHistory={openMigrationHistory}
+        addData={
+          <AddDataMenu
+            onAddRow={() => setIsCreateRowDrawerOpen(true)}
+            onBulkUpload={() => setIsBulkUploadDrawerOpen(true)}
+            onSeedData={() => setIsSeedDataDrawerOpen(true)}
+            hideSeedDataOption={isSqlModeDisabled()}
+          />
+        }
+      />
       <CreateColumnDrawer
         isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
-        rows={rows}
-        referencedColumnDetails={referencedColumnDetails}
-        setReferencedColumnDetails={setReferencedColumnDetails}
       />
       <CreateRowDrawer
         isCreateRowDrawerOpen={isCreateRowDrawerOpen}
         setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
-        referencedColumnDetails={referencedColumnDetails}
-        setReferencedColumnDetails={setReferencedColumnDetails}
       />
       <BulkUploadDrawer
         isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}

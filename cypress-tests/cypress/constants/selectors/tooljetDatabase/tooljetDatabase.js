@@ -1,0 +1,86 @@
+// elements without a data-cy are addressed by class or text and noted inline
+
+export const tooljetDatabaseSelectors = {
+  // table list
+  addTableButton: '[data-cy="add-table-button"]',
+  tableItem: (name) => `[data-cy="${name}-table"]`,
+  tableName: (name) => `[data-cy="${name}-table-name"]`,
+  tableKebabIcon: '[data-cy="table-kebab-icon"]',
+  renameTableOption: '[data-cy="rename-table-option"]',
+  exportSchemaOption: '[data-cy="export-schema-option"]',
+  exportCsvOption: '[data-cy="export-csv-option"]',
+  deleteTableOption: '[data-cy="delete-table-option"]',
+  deleteTableModal: '[data-cy="delete-table-modal"]',
+  deleteTableConfirm: '[data-cy="delete-table-modal-confirm"]',
+
+  // create / edit table drawer
+  tableNameInput: '[data-cy="table-name-input-field"]',
+  createButton: '[data-cy="create-button"]',
+  saveChangesButton: '[data-cy="save-changes-button"]',
+
+  // table grid
+  columnHeader: (name) => `[data-cy="${name}-column-header"]`,
+  totalRecords: '[data-cy="total-records"]',
+  noRecordsText: '[data-cy="do-not-have-records-text"]',
+  addNewDataButton: "button:contains('Add new data')", // no data-cy on the button
+  addNewRowOption: '[data-cy="add-new-row-option"]',
+  bulkUploadOption: '[data-cy="bulk-upload-data-option"]',
+  seedDataOption: '[data-cy="seed-data-sql-option"]',
+  // the row checkbox has no data-cy, so it is found through the row that holds the id cell
+  rowOf: (rowId) => `[data-cy="id-${rowId}-column-id-table-cell"]`,
+  editRowButton: '[data-cy="edit-row-button"]',
+  deleteRowsButton: '[data-cy="delete-row-records-button"]',
+  rowInput: (column) => `[data-cy="${column}-input-field"]`,
+  cell: (rowId, column) => `[data-cy="id-${rowId}-column-${column}-table-cell"]`,
+
+  // filter and sort
+  filterButton: '[data-cy="filter-button"]',
+  filterFooter: '[data-cy="filter-card-footer"]',
+  filterColumn: '[data-cy="select-column-field"]',
+  filterOperation: '[data-cy="select-operation-field"]',
+  filterValue: '[data-cy="value-input-field"]',
+  sortButton: '[data-cy="sort-button"]',
+  sortColumn: '[data-cy="select-column-field"]',
+  sortOrder: '[data-cy="select-order-field"]',
+  columnCells: (column) => `[data-cy$="-column-${column}-table-cell"]`,
+
+  // bulk upload, export and seed SQL
+  bulkUploadFileInput: '[data-cy="input-field-bulk-upload"]',
+  uploadDataButton: '[data-cy="upload-data-button"]',
+  exportCsvModal: '[data-cy="export-csv-modal"]',
+  exportCsvEnvironment: (name) => `[data-cy="export-csv-${name}-option"]`,
+  exportCsvConfirm: '[data-cy="export-csv-modal-confirm"]',
+  seedSqlEditor: '[data-cy="seed-data-sql-textarea"] .cm-content',
+
+  // table list search
+  // The tables panel search is always visible; there is no search icon to click first.
+  searchInput: '[data-cy="tables-search-bar"]',
+
+  // columns
+  addColumnPlus: '[data-cy="add-column-button"]',
+  columnMenuIcon: '[data-cy="column-menu-icon"]',
+  columnNameInput: '[data-cy="column-name-input-field"]',
+  dataTypeDropdown: '[data-cy="data-type-dropdown-section"]',
+  dropdownOption: '[class*="option"]',
+  editColumnOption: '[data-cy="edit-column-option"]',
+  deleteColumnOption: '[data-cy="delete-column-option"]',
+  defaultValueInput: '[data-cy="default-value-input-field"]',
+  omittedTypesFooter: '[data-cy="data-type-omitted-footer"]',
+
+  // schema migration confirmation
+  migrationModal: '[data-cy="migration-confirm-modal"]',
+  migrationChanges: '[data-cy="migration-changes-list"]',
+  migrationRun: '[data-cy="migration-confirm-run"]',
+
+  // environments and migration history
+  switcherButton: '[data-cy="tjdb-environment-switcher-button"]',
+  historyButton: '[data-cy="tjdb-migration-history-button"]',
+  newMigrationButton: '[data-cy="new-migration-button"]',
+  migrationTitleInput: '[data-cy="migration-confirm-title-input"]',
+  migrationSqlEditor: '[data-cy="migration-confirm-sql-editor"] .cm-content',
+  environmentOption: (name) => `[data-cy="${name}-environment-option"]`,
+  drawer: '[data-cy="migration-history-drawer"]',
+  drawerStatus: '[data-cy="migration-history-status"]',
+  drawerRow: '[data-cy="migration-history-row"]',
+  drawerTab: '[data-cy^="migration-history-tab-"]',
+};

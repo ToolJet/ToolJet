@@ -63,6 +63,8 @@ import { assertStructuredTypeChangeAllowed, normalizeRequestedType } from '../he
 import { TooljetDbMigrationRecorderService, StructuredMigrationPayload } from './tooljet-db-migration-recorder.service';
 import { reconcileColumns } from '../helpers/reconcile-columns';
 import { InternalTableMigration } from 'src/entities/internal_table_migration.entity';
+import { InternalTableMigrationApplication } from 'src/entities/internal_table_migration_application.entity';
+import { computeMigrationSync } from '../helpers/migration-sync';
 import { InternalTableRepository } from '../repository';
 
 enum AggregateFunctions {
@@ -492,9 +494,39 @@ export class TooljetDbTableOperationsService {
       )
     );
 
+    // One read for every table: the ids of the migrations confirmed applied (`applied_at` set, as everywhere) per
+    // relation. A per-table `computeMissingMigrations` would be a query per table and environment.
+    const appliedByRelationId = new Map<string, Set<string>>();
+    if (relations.length) {
+      const applications: { relationId: string; migrationId: string; internalTableId: string }[] = await this.manager
+        .createQueryBuilder(InternalTableMigrationApplication, 'application')
+        .innerJoin(InternalTableMigration, 'migration', 'migration.id = application.migration_id')
+        .select('application.relation_id', 'relationId')
+        .addSelect('application.migration_id', 'migrationId')
+        .addSelect('migration.internal_table_id', 'internalTableId')
+        .where('application.relation_id IN (:...relationIds)', { relationIds: relations.map((r) => r.id) })
+        .andWhere('application.applied_at IS NOT NULL')
+        .getRawMany();
+      const tableIdByRelationId = new Map(relations.map((relation) => [relation.id, relation.internalTableId]));
+      for (const { relationId, migrationId, internalTableId } of applications) {
+        // A migration counts only for the table it belongs to.
+        if (tableIdByRelationId.get(relationId) !== internalTableId) continue;
+        const applied = appliedByRelationId.get(relationId);
+        if (applied) applied.add(migrationId);
+        else appliedByRelationId.set(relationId, new Set([migrationId]));
+      }
+    }
+
     return tables.map((table) => ({
       id: table.id,
       tableName: table.tableName,
+      // Environments are in priority order; one without a relation has applied nothing.
+      migrationSync: computeMigrationSync(
+        environments.map((environment) => {
+          const relation = relationsByTable.get(table.id)?.find((r) => r.environmentId === environment.id);
+          return (relation && appliedByRelationId.get(relation.id)) || new Set<string>();
+        })
+      ),
       environments: environments.map((environment) => {
         const relation = relationsByTable.get(table.id)?.find((r) => r.environmentId === environment.id);
         return {

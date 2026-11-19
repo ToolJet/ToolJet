@@ -1,18 +1,14 @@
 import React, { useCallback, useContext, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
+import { TooljetDatabaseContext } from '../context';
 import { useTjdbActions } from '../_stores/tjdbStore';
 import MigrationConfirmModal from './index';
 
 const emptyState = {
   isOpen: false,
   title: '',
-  description: '',
   sql: '',
-  // Collapsed behind an "Add migration" button until opened - or already open when `initialSql`
-  // prefills it (the column type-change cast case), so there's nothing to click through.
-  sqlOpen: false,
   // Set only by call sites where the SQL step isn't an optional add-on but the mechanism for part
   // of the change (e.g. a type-change cast the structured request deliberately doesn't apply) -
   // see EditColumnForm's `needsGeneratedSql`. Blocks confirm instead of silently skipping the step.
@@ -46,7 +42,7 @@ const emptyState = {
  * own JSX; `runMigration(options)` opens it.
  */
 export default function useMigrationModal() {
-  const { organizationId, tables } = useContext(TooljetDatabaseContext);
+  const { organizationId, tables = [] } = useContext(TooljetDatabaseContext);
   const { bumpMigrations } = useTjdbActions();
   const [state, setState] = useState(emptyState);
   const optionsRef = useRef(null);
@@ -67,11 +63,13 @@ export default function useMigrationModal() {
       lastRunDataRef.current = null;
       // `initialSql` pre-fills the SQL step - used by a column type change, where the cast has to be
       // spelled out as `ALTER ... USING ...` and the user reviews it before it is recorded.
+      // `defaultTitle` is the change's own name (`Add column "age"`): the title is required, so a change that has one
+      // can run straight away and the user edits it only to say more.
       setState({
         ...emptyState,
         isOpen: true,
+        title: options.defaultTitle || '',
         sql: options.initialSql || '',
-        sqlOpen: !!options.initialSql || !!options.sqlRequired,
         sqlRequired: !!options.sqlRequired,
         depsLoading: !!options.tableId,
       });
@@ -92,6 +90,8 @@ export default function useMigrationModal() {
   const handleConfirm = useCallback(async () => {
     const options = optionsRef.current;
     if (!options) return;
+
+    if (!state.title.trim()) return;
 
     if (state.sqlRequired && !state.sql.trim()) {
       setState((prev) => ({
@@ -128,8 +128,7 @@ export default function useMigrationModal() {
           tableIdForSql,
           state.sql,
           {},
-          state.title,
-          state.description
+          state.title
         );
         if (sqlError) {
           setState((prev) => ({
@@ -149,18 +148,7 @@ export default function useMigrationModal() {
     } catch (err) {
       setState((prev) => ({ ...prev, submitting: false, error: err?.message ?? 'Failed to run migration' }));
     }
-  }, [
-    state.title,
-    state.description,
-    state.sql,
-    state.sqlRequired,
-    state.structuredApplied,
-    organizationId,
-    close,
-    bumpMigrations,
-  ]);
-
-  const onOpenSql = useCallback(() => setState((prev) => ({ ...prev, sqlOpen: true })), []);
+  }, [state.title, state.sql, state.sqlRequired, state.structuredApplied, organizationId, close, bumpMigrations]);
 
   const modal = (
     <MigrationConfirmModal
@@ -170,14 +158,10 @@ export default function useMigrationModal() {
       titlePlaceholder={optionsRef.current?.titlePlaceholder}
       title={state.title}
       onTitleChange={(title) => setState((prev) => ({ ...prev, title }))}
-      description={state.description}
-      onDescriptionChange={(description) => setState((prev) => ({ ...prev, description }))}
       changes={optionsRef.current?.changes || []}
       banner={optionsRef.current?.banner}
       showSqlEditor={!!optionsRef.current?.showSqlEditor}
       sqlRequired={state.sqlRequired}
-      sqlOpen={state.sqlOpen}
-      onOpenSql={onOpenSql}
       sql={state.sql}
       onSqlChange={(sql) => setState((prev) => ({ ...prev, sql }))}
       tableNames={tables.map((table) => table.table_name)}
@@ -185,6 +169,7 @@ export default function useMigrationModal() {
       dependents={state.dependents}
       error={state.error}
       submitting={state.submitting}
+      canConfirm={!!state.title.trim()}
       onConfirm={handleConfirm}
       onCancel={close}
     />

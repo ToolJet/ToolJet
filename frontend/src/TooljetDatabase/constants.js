@@ -222,6 +222,14 @@ export const headMigrationLabel = (migrations = [], appliedMigrationIds = []) =>
 export const envHasRelation = (relationsByEnvironment = [], environmentId) =>
   relationsByEnvironment.find((r) => r.environment_id === environmentId)?.has_relation ?? false;
 
+// Development holds every table. Elsewhere, unknown (tables not loaded yet) counts as present: only a table
+// the list says is missing counts as missing.
+export const isTableMissingFromEnvironment = (tables, tableId, environment) => {
+  if (!environment || environment.priority === 1) return false;
+  const relations = tables?.find((table) => table.id === tableId)?.environments;
+  return !!relations && !envHasRelation(relations, environment.id);
+};
+
 // After a multi-environment licence lapse the server still lists every environment but flags the
 // unlicensed ones `enabled: false`. `multiEnvLocked` is the live licence verdict, for a list loaded
 // before the lapse.

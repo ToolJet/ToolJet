@@ -26,6 +26,9 @@ const BaseLeftNavSideBar = ({
   featureAccess,
 }) => {
   const hasModuleAccess = useLicenseStore((state) => state.hasModuleAccess);
+  // Prefix match: dashboard tabs keep the icon active.
+  const workflowsRoute = getPrivateRoute('workflows');
+  const isWorkflowsRoute = router.pathname === workflowsRoute || router.pathname.startsWith(`${workflowsRoute}/`);
 
   return (
     <div>
@@ -83,7 +86,7 @@ const BaseLeftNavSideBar = ({
               <Link
                 to={appendBranchName(getPrivateRoute('workflows'))}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workflows'), event)}
-                className={routeLinkClassName(router.pathname === getPrivateRoute('workflows'))}
+                className={routeLinkClassName(isWorkflowsRoute)}
                 aria-label="Workflows"
               >
                 <Workflow size={16} />
