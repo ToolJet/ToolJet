@@ -29,4 +29,7 @@ export class LicenseTermsService extends ILicenseTermsService {
   async getOrganizationLicense(organizationId: string): Promise<any> {
     return null;
   }
+  async usesNewFreeLimits(organizationId: string): Promise<boolean> {
+    return false;
+  }
 }

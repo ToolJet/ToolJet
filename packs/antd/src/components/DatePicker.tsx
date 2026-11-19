@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { DatePicker as AntDatePicker } from 'antd';
+import { DatePicker as AntDatePicker, Grid } from 'antd';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { ToolJet } from '@tooljet/custom-component-sdk';
@@ -9,27 +9,12 @@ import { str } from '../lib/data';
 import { ControlSkeleton } from '../lib/Loading';
 import { closesOnEscape, useOwnedPopup } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
-import { isBlankDate, parseDate } from '../lib/dates';
+import { isBlankDate, parseDate, PERIOD_FORMAT, startOfPeriod } from '../lib/dates';
 
 const VALUE_FORMAT = 'YYYY-MM-DD';
 const VALUE_FORMAT_TIME = 'YYYY-MM-DDTHH:mm:ss';
 const parse = parseDate;
 
-// The week, month, quarter or year a picked date stands for, as its first day: a month picked over a value of the 25th
-// kept the 25th.
-const startOfPeriod = (d: Dayjs, picker: string): Dayjs => {
-  if (picker === 'week') return d.startOf('week');
-  if (picker === 'month') return d.startOf('month');
-  if (picker === 'quarter') return d.month(Math.floor(d.month() / 3) * 3).startOf('month');
-  if (picker === 'year') return d.startOf('year');
-  return d;
-};
-// Ant's own display format for a period picker (2026-10, 2026-Q4, 2026), not the full date.
-const PERIOD_FORMAT: Record<string, string | undefined> = {
-  month: 'YYYY-MM',
-  quarter: 'YYYY-[Q]Q',
-  year: 'YYYY',
-};
 
 /** A date-time bound: a date alone is the start of that day as a minimum and its end as a maximum, so maxDate
  *  2026-10-25 still allows that afternoon. */
@@ -40,7 +25,12 @@ const bound = (v: unknown, edge: 'start' | 'end'): Dayjs | undefined => {
 };
 
 // The unit a picker's value is compared at: a month picker's value is that month, whatever day it holds.
-const UNIT: Record<string, 'day' | 'week' | 'month' | 'year'> = { date: 'day', week: 'week', month: 'month', year: 'year' };
+export const UNIT: Record<string, 'day' | 'week' | 'month' | 'year'> = {
+  date: 'day',
+  week: 'week',
+  month: 'month',
+  year: 'year',
+};
 const range = (from: number, to: number) => Array.from({ length: Math.max(0, to - from) }, (_, i) => from + i);
 
 /**
@@ -203,6 +193,9 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
     if (!open) check.touch();
     onOpenChange();
   });
+  // QA PF-069: date panel + time panel is 401px (457 with 12h), wider than a phone. On Ant's xs screens the time panel
+  // stacks under the dates (controls.css).
+  const stack = Grid.useBreakpoint().xs === true && showTime;
   const timeFormat = use12Hours ? 'hh:mm A' : 'HH:mm';
   const step = Math.max(1, Number(minuteStep) || 1) as 1;
 
@@ -236,7 +229,7 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
                 variant={look.variant}
                 size={look.size}
                 status={check.error ? 'error' : undefined}
-                popupClassName={popup.className}
+                popupClassName={stack ? `${popup.className ?? ''} tj-ant-datetime--stack`.trim() : popup.className}
                 popupStyle={popup.style}
                 open={panel.open}
                 onOpenChange={panel.onOpenChange}
