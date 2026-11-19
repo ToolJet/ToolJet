@@ -305,6 +305,10 @@
       "contract": "ee/test/app-builder/widgets/LibraryComponent/TESTING.md"
     },
     {
+      "componentType": "PackComponent",
+      "status": "not-started"
+    },
+    {
       "componentType": "Html",
       "status": "verified",
       "contract": "ee/test/app-builder/widgets/Html/TESTING.md"

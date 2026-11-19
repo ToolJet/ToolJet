@@ -160,6 +160,7 @@ describe('Ant Design Select: the open list when the page scrolls', () => {
 describe('Ant Design fields: a long label above the field', () => {
   // jsdom lays nothing out, so this reads the pack's rule. Break this catches: a label on top wraps over many lines and
   // pushes the field out of its box; the ToolJet Text Input keeps the label on one line ended with an ellipsis.
+  // The label is held to the field's width, and the text span inside it (FormField's FieldLabel) does the cut.
   test('[PackComponent-ANTSELECT-007] a label above the field stays on one line, cut off with an ellipsis', () => {
     const css = fs.readFileSync(path.resolve(__dirname, '../../../../../../packs/antd/src/styles/pack.css'), 'utf8');
     const rule = (selector) => {
@@ -167,9 +168,11 @@ describe('Ant Design fields: a long label above the field', () => {
       return at < 0 ? '' : css.slice(at, css.indexOf('}', at));
     };
     const label = rule('.tj-ant-root .ant-form-item-vertical > .ant-form-item-row > .ant-form-item-label > label');
+    const labelText = rule('.tj-ant-root .ant-form-item-label > label > .tj-ant-label-text');
 
-    expect(label).toMatch(/white-space:\s*nowrap/);
-    expect(label).toMatch(/overflow:\s*hidden/);
-    expect(label).toMatch(/text-overflow:\s*ellipsis/);
+    expect(label).toMatch(/max-width:\s*100%/);
+    expect(labelText).toMatch(/white-space:\s*nowrap/);
+    expect(labelText).toMatch(/overflow:\s*hidden/);
+    expect(labelText).toMatch(/text-overflow:\s*ellipsis/);
   });
 });
