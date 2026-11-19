@@ -1,4 +1,4 @@
-import { canShowPreviewButton } from '../appCardActions';
+import { canShowBuildModeTag, canShowPreviewButton } from '../appCardActions';
 
 describe('canShowPreviewButton', () => {
   const viewer = { canUpdate: false, canView: true, hasNonReleasedPreviewAccess: true };
@@ -17,5 +17,15 @@ describe('canShowPreviewButton', () => {
     ['has no pre-release environment access', { hasNonReleasedPreviewAccess: false }],
   ])('does not offer Preview on an app card to someone who %s', (_case, override) => {
     expect(canShowPreviewButton({ ...viewer, appType: 'front-end', ...override })).toBe(false);
+  });
+});
+
+describe('canShowBuildModeTag', () => {
+  it.each(['admin', 'builder'])('shows the build mode tag on an app card to a workspace %s', (role) => {
+    expect(canShowBuildModeTag({ role: { name: role } })).toBe(true);
+  });
+
+  it('hides the build mode tag from an end user, who only opens released apps', () => {
+    expect(canShowBuildModeTag({ role: { name: 'end-user' } })).toBe(false);
   });
 });
