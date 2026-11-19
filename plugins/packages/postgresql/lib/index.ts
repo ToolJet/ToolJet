@@ -8,6 +8,8 @@ import {
   QueryError,
   getTooljetEdition,
   createQueryBuilder,
+  cancelKnexQueryOnAbort,
+  cancelOnSignal,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import knex, { Knex } from 'knex';
@@ -119,7 +121,9 @@ export default class PostgresqlQueryService implements QueryService {
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
     dataSourceId: string,
-    dataSourceUpdatedAt: string
+    dataSourceUpdatedAt: string,
+    // signal: a workflow step's deadline; the running SQL query is cancelled on the server when it fires
+    context?: { signal?: AbortSignal }
   ): Promise<QueryResult> {
     let pgPool, pgConnection, checkCache, knexInstance;
 
@@ -143,14 +147,22 @@ export default class PostgresqlQueryService implements QueryService {
       switch (queryOptions.mode) {
         case 'sql': {
           if (this.isSqlParametersUsed(queryOptions)) {
-            return await this.handleRawQuery(knexInstance, queryOptions);
+            return await this.handleRawQuery(knexInstance, queryOptions, context?.signal);
           } else {
             pgPool = knexInstance.client.pool;
             pgConnection = await pgPool.acquire().promise;
             const query = queryOptions.query;
             let result = { rows: [] };
 
-            result = await pgConnection.query(query);
+            // This query's own connection: cancel exactly it if the step's deadline fires
+            const onAbort = () => void cancelOnSignal(knexInstance, pgConnection);
+            context?.signal?.addEventListener('abort', onAbort, { once: true });
+            if (context?.signal?.aborted) onAbort();
+            try {
+              result = await pgConnection.query(query);
+            } finally {
+              context?.signal?.removeEventListener('abort', onAbort);
+            }
             return {
               status: 'ok',
               data: result.rows,
@@ -765,18 +777,27 @@ export default class PostgresqlQueryService implements QueryService {
     return !!sanitizedQueryParams.length;
   }
 
-  private async handleRawQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
+  private async handleRawQuery(
+    knexInstance: Knex,
+    queryOptions: QueryOptions,
+    signal?: AbortSignal
+  ): Promise<QueryResult> {
     const { query, query_params } = queryOptions;
     const queryParams = query_params || [];
     const sanitizedQueryParams: Record<string, any> = Object.fromEntries(queryParams.filter(([key]) => !isEmpty(key)));
-    const result = await this.executeQuery(knexInstance, query, sanitizedQueryParams);
+    const result = await this.executeQuery(knexInstance, query, sanitizedQueryParams, signal);
 
     return { status: 'ok', data: result };
   }
 
-  private async executeQuery(knexInstance: Knex, query: string, sanitizedQueryParams: Record<string, any> = {}) {
+  private async executeQuery(
+    knexInstance: Knex,
+    query: string,
+    sanitizedQueryParams: Record<string, any> = {},
+    signal?: AbortSignal
+  ) {
     if (isEmpty(query)) throw new Error('Query is empty');
-    const { rows } = await knexInstance.raw(query, sanitizedQueryParams);
+    const { rows } = await cancelKnexQueryOnAbort(knexInstance, knexInstance.raw(query, sanitizedQueryParams), signal);
     return rows;
   }
 

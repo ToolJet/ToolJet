@@ -1,7 +1,7 @@
 import * as http from 'http';
 import { AddressInfo } from 'net';
 import got from 'got';
-import { cancelOnAbort } from '../lib/cancel-on-abort';
+import { cancelOnAbort, limitResponseSize } from '../lib/cancel-on-abort';
 
 /** A server that accepts requests and never answers; resolves `closed` when the client goes away. */
 const hangingServer = () => {
@@ -52,5 +52,38 @@ describe('cancelOnAbort', () => {
 
     expect(cancelOnAbort(plain)).toBe(plain);
     await expect(plain).resolves.toBe('done');
+  });
+});
+
+describe('limitResponseSize', () => {
+  it('stops reading a response past the cap and says why', async () => {
+    const server = http.createServer((_req, res) => {
+      res.writeHead(200, { 'content-type': 'text/plain' });
+      const chunk = 'x'.repeat(64 * 1024);
+      let sent = 0;
+      const write = () => {
+        while (sent < 4 * 1024 * 1024) {
+          sent += chunk.length;
+          if (!res.write(chunk)) return res.once('drain', write);
+        }
+        res.end();
+      };
+      write();
+    });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const url = `http://127.0.0.1:${(server.address() as AddressInfo).port}/`;
+    try {
+      await expect(limitResponseSize(got(url, { retry: 0 }), 256 * 1024)).rejects.toMatchObject({
+        name: 'ResponseTooLargeError',
+        message: expect.stringContaining('262144 bytes'),
+      });
+      // Under the cap, the response comes through
+      await expect(limitResponseSize(got(url, { retry: 0 }), 8 * 1024 * 1024)).resolves.toMatchObject({
+        statusCode: 200,
+      });
+    } finally {
+      server.closeAllConnections?.();
+      server.close();
+    }
   });
 });

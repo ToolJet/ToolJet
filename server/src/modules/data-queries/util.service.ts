@@ -212,6 +212,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             user: { id: user?.id },
             // Lets the plugin cancel its request at the query's timeout or the workflow step's deadline
             signal: abortCtrl.signal ?? undefined,
+            ...(opts?.maxResponseBytes ? { maxResponseBytes: opts.maxResponseBytes } : {}),
             app: {
               id: appToUse?.id,
               isPublic: effectiveIsPublic,
@@ -335,6 +336,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               {
                 user: { id: user?.id },
                 signal: abortCtrl.signal ?? undefined,
+                ...(opts?.maxResponseBytes ? { maxResponseBytes: opts.maxResponseBytes } : {}),
                 app: {
                   id: appToUse?.id,
                   isPublic: effectiveIsPublic,
