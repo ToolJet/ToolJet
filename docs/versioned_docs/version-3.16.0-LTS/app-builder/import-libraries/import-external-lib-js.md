@@ -16,12 +16,12 @@ The **Libraries** section on the left sidebar lets you register external librari
     <img className="screenshot-full img-s" src="/img/app-builder/import-lib/left-nav.png" alt="Libraries Tab on the Left Navigation Bar" />
 2. Click on **Add new library** button. <br/>
     <img className="screenshot-full img-s" src="/img/app-builder/import-lib/add-lib.png" alt="Click on Add Library Button" />
-3. Enter a **Variable name** — the name you will use to call the library in your code (e.g., `Papa`).
-4. Enter the **CDN URL** of a UMD or IIFE build of the library (e.g., from [jsDelivr](https://www.jsdelivr.com/) or [cdnjs](https://cdnjs.com/)). <br/>
+3. In the **Add JavaScript library** dialog, enter a **Variable name** — the name you will use to call the library in your code (e.g., `Papa`). It must be a valid JavaScript identifier and can't be a reserved name such as `components`, `queries`, `actions`, `moment` or `_`.
+4. Enter the **Library URL** of a UMD or IIFE build of the library (e.g., from [jsDelivr](https://www.jsdelivr.com/) or [cdnjs](https://cdnjs.com/)). Only `https://` URLs are allowed. <br/>
     <img className="screenshot-full img-s" src="/img/app-builder/import-lib/add-var-name.png" alt="Add Variable Details" />
-5. Click **+ Add library**.
+5. Click **Add library**.
 
-ToolJet fetches and validates the library. If successful, the library is saved to the app definition and is immediately available in your queries.
+ToolJet fetches and validates the library. If successful, the library is saved to the app definition and is immediately available in your queries, and you'll see *Library "&lt;name&gt;" added*. If the library can't be loaded, you'll see *Failed to load library: &lt;error&gt;*. A library that loads but exports nothing shows *Library loaded but exported nothing. Ensure it is a UMD/IIFE build.*
 
 :::info
 Only minified UMD or IIFE builds are supported. ESM and CommonJS modules are not compatible. Use the `.min.js` build from jsDelivr or cdnjs.
@@ -38,13 +38,29 @@ return result;
 
 ### Remove a Library
 
-Click the trash icon next to the library name in the **Libraries** list to remove it. The library is unregistered from the app immediately.
+Click the trash icon next to the library name in the **Libraries** list to remove it. The library is unregistered from the app immediately, without a confirmation.
 
 ## Preloaded JavaScript
 
 The **Preloaded JavaScript** section (within Libraries) lets you write JavaScript that runs once after all registered libraries have loaded, before any queries execute. Use it for library initialization that must happen before your app runs — for example, extending a plugin or configuring a library's defaults.
 
 To open the Preloaded JavaScript editor, click on **{ }** inside the Libraries section.
+
+### Exporting Functions and Values
+
+If the script returns an object, each key becomes a variable you can use directly in RunJS queries and JavaScript transformations:
+
+```js
+const formatCurrency = (amount) => `$${Number(amount).toFixed(2)}`;
+return { formatCurrency };
+```
+
+```js
+// In a RunJS query or transformation
+return formatCurrency(1250); // "$1250.00"
+```
+
+Reserved names such as `components`, `queries`, `actions`, `moment` and `_` are skipped. The script itself can't read `components`, `queries` or `globals`, because it runs before the app loads.
 
 **Example — extending Day.js with the UTC plugin:**
 
@@ -58,7 +74,7 @@ dayjs.extend(dayjs_utc);
 Papa.LocalChunkSize = 20480;
 ```
 
-Click **Save script** to save it. The script runs automatically at app startup after libraries load.
+Click **Save script** to save it. You'll see *Script saved — N export(s) available*, or *Script saved (no exports available)* if it doesn't return an object. If the script throws an error, you'll see *Preloaded JavaScript failed: &lt;error&gt;*. The script runs automatically at app startup after libraries load, before queries that run on load.
 
 :::info
 The Preloaded JavaScript has access to all registered library variables and the same built-in libraries available in RunJS (Moment.js, Lodash, Axios).

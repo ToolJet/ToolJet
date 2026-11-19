@@ -22,7 +22,7 @@ Parameters allow for dynamic control over the JavaScript code execution without 
 Each parameter requires:
 
 - **Name**: Name for the parameter
-- **Default value**: The value can be constant strings, numbers and object.
+- **Value**: The default value. It can be a constant string, number or object.
 
 ### Steps to Add a Parameter
 
@@ -78,6 +78,21 @@ Parameters can also be used to trigger other queries and pass custom values. Bel
    <img className="screenshot-full img-full" src="/img/datasource-reference/custom-javascript/callmultiply-v3.png" alt="Run JavaScript code" />
 
 With this setup, the _multiply_ query can be called from other queries, such as _callMultiply_, by providing custom parameter values. This allows you to reuse the _multiply_ query with different inputs and display the results accordingly.
+
+### Query Helpers
+
+You can use these functions on `queries.<queryName>` in RunJS:
+
+| Function | Description |
+| --- | --- |
+| `run(params, callbacks)` | Runs the query. Only keys that match the query's parameters are passed; other keys are ignored. Returns a promise with the query result. |
+| `reset()` | Resets the query's data. |
+| `abort()` | Stops waiting for the query's response. RunJS, RunPy and Run Workflow queries can't be aborted. |
+| `getData()` | Returns the query's current data. |
+| `getRawData()` | Returns the query's current raw data. |
+| `getloadingState()` | Returns `true` while the query is running. |
+
+A query can't run itself: you'll see the error *Cannot run query from itself*.
 
 ### Callback Functions
 
@@ -170,6 +185,19 @@ This ID will be longer than the one generated earlier, and it could look like "2
 - [Intentionally Fail](/docs/data-sources/runjs/intentionally-fail-js-query) a RunJS query.
 - [Trigger query at specified intervals](/docs/app-builder/connecting-with-data-sources/run-query-at-specified-intervals) using RunJS.
   :::
+
+## Available Variables
+
+| Variable | Description |
+| --- | --- |
+| `components`, `queries`, `globals`, `variables`, `page`, `constants` | The app's current state. `queries` also has the [query helpers](#query-helpers). |
+| `actions` | [Actions](/docs/actions/run-actions-from-runjs) such as `actions.setVariable()` and `actions.showAlert()`. |
+| `parameters` | The query's parameters. It's only defined when the query has at least one parameter. |
+| `input` | The module's inputs, in a [module](/docs/app-builder/modules/overview). |
+| `moment`, `_`, `axios` | See [Libraries](#libraries). |
+| Imported libraries | Libraries and preloaded exports added in the [Libraries](/docs/app-builder/import-libraries/import-external-lib-js#importing-libraries-globally) panel, by their variable name. |
+
+`secrets` isn't available in RunJS. Use secrets in data source query fields instead. The code runs as an async function, so you can use `await`.
 
 ## Libraries
 

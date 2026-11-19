@@ -41,6 +41,27 @@ This setup ensures that the _fetchData_ query is triggered automatically when th
 
 Whether it's submitting a form, running a query, or updating your UI, events and actions let you define dynamic, logic-driven behavior without writing backend code.
 
+## Run Only If
+
+Every event handler has a **Run Only If** field, below **Action**. Enter a condition, and the handler runs only when the condition resolves to a truthy value. Leave it empty to always run the handler.
+
+For example, to run a query only when a checkbox is selected, set **Run Only If** to `{{components.checkbox1.value}}`.
+
+Wrap the condition in `{{ }}`. Text without `{{ }}`, such as `false`, is treated as a non-empty string, so the handler still runs.
+
+## Event Sources
+
+Besides components, you can add event handlers in these places:
+
+| Source | Where to find it | Events |
+|--------|------------------|--------|
+| Query | **Events** section of the query in the query panel | **Query Success**, **Query Failure** |
+| Page | Page settings (**Edit page**), **Page events** section | **On page load**. It runs when the page loads and each time users switch to the page. |
+| Custom nav item | The nav item's settings (**Edit nav item**), **Events** section | **On click** |
+| Table Toggle column | Column settings, **Properties** tab | **On change** |
+| Table Button column | Select a button in the column, then open **Events** | **On click** |
+| Navigation component item | The item's settings | **On click** |
+
 ## Managing Event Handlers
 
 Each event handler has two additional controls accessible by expanding it in the Events panel:
@@ -50,3 +71,11 @@ Each event handler has two additional controls accessible by expanding it in the
 **Event name**: A free-text field for assigning a custom label to the handler. Use this to distinguish between multiple handlers on the same event — for example, naming one `"log to console"` and another `"trigger refresh"` when both fire on **On click**.
 
 <img className="screenshot-full img-l" src="/img/app-builder/events/event-handler/manage.png" alt="Event handler enable toggle and name field"/>
+
+### Duplicating an Event Handler
+
+Open the event handler and click the **Duplicate** icon next to the delete icon. The copy is added at the end of the list, with the same event, action, settings and **Run Only If** condition. Its name ends with *copy*, for example *Event #1 copy*.
+
+### Reordering Event Handlers
+
+Handlers for the same event run one after another, from top to bottom. To change the order, drag a handler card to a new position in the list.

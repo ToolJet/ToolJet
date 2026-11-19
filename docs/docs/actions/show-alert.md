@@ -9,8 +9,9 @@ The **Show alert** action displays an alert message on the app's canvas. Use it 
 
 | Parameter | Description | Default |
 | --- | --- | --- |
-| Alert type | The style of the alert: **Info**, **Success**, **Warning**, or **Error** | Info |
-| Message | The text to display in the alert | Empty |
+| Message | The text to display in the alert | `Hello world!` |
+| Alert Type | The style of the alert: **Info**, **Success**, **Warning**, or **Error** | Info |
+| Run Only If | Optional condition. The action runs only when it resolves to a truthy value, for example `{{components.checkbox1.value}}`. Wrap the condition in `{{ }}`. See [Run Only If](/docs/app-builder/events/event-triggers#run-only-if). | Empty |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 <img className="screenshot-full img-s" src="/img/actions/show-alert/show-alert-v2.png" alt="ToolJet - Action reference -  Show Alert"/>
@@ -21,7 +22,7 @@ The **Show alert** action displays an alert message on the app's canvas. Use it 
 actions.showAlert('<alertType>', '<message>');
 ```
 
-`alertType` is one of `info`, `success`, `warning`, or `danger` (`danger` maps to the **Error** type in the Events panel).
+`alertType` is one of `info`, `success`, `warning`, or `error`, in lowercase. Any other value, such as `danger` or `Info`, shows no alert.
 
 **Example:**
 

@@ -36,6 +36,19 @@ components.text1.setText(p1.myfunc())
 - Check **[RunPy Limitations](/docs/contributing-guide/troubleshooting/runpy-limitations)** to go through the limitations with using Python code
   :::
 
+## Available Variables
+
+| Variable | Description |
+|----------|-------------|
+| `components`, `queries`, `variables`, `page`, `constants` | The app's current state. |
+| `tj_globals` | The app's `globals`, for example `tj_globals.currentUser.email`. |
+| `parameters` | The query's [parameters](/docs/app-builder/connecting-with-data-sources/use-custom-parameters). To add one, click **+ Add** next to **Parameters** in the query editor. |
+| `actions` | The same [actions](/docs/actions/run-actions-from-runjs) as in RunJS. |
+
+`queries.<queryName>` has `run()`, `reset()`, `abort()`, `getData()`, `getRawData()` and `getloadingState()`. In RunPy, `run()` doesn't take parameters: the query runs with its default parameter values.
+
+`secrets` and JavaScript libraries aren't available in RunPy.
+
 ## Trigger Queries Using Run Python Code
 
 To trigger queries in Python, you can use the below functions:
@@ -152,7 +165,7 @@ products_data = {
 
 ### Filter the Titles From the Response
 
-To extract a list of product titles from the given data structure, we iterate through the _products_ list and collect each product's _title_ using the below code. Enable **Transformations** in the Query Editor and use the below code:
+To extract a list of product titles from the given data structure, we iterate through the _products_ list and collect each product's _title_ using the below code. Enable the transformation in the query's **Transformation** tab and use the below code:
 
 ```python
 return [product["title"] for product in data["products"]]
@@ -160,7 +173,7 @@ return [product["title"] for product in data["products"]]
 
 ### Filter Products by Category
 
-To filter products by a specific category, such as _smartphones_, and extract their titles. Enable **Transformations** in the Query Editor and use the below code:
+To filter products by a specific category, such as _smartphones_, and extract their titles. Enable the transformation in the query's **Transformation** tab and use the below code:
 
 ```python
 return [product["title"] for product in data["products"] if product["category"] == "smartphones"]
@@ -168,7 +181,7 @@ return [product["title"] for product in data["products"] if product["category"] 
 
 ### Calculate Average Price of a Category
 
-To calculate the average price of products within the _laptops_ category. Enable **Transformations** in the Query Editor and use the below code:
+To calculate the average price of products within the _laptops_ category. Enable the transformation in the query's **Transformation** tab and use the below code:
 
 ```python
 return sum(product["price"] for product in data["products"] if product["category"] == "laptops") / len([product for product in data["products"] if product["category"] == "laptops"]) if len([product for product in data["products"] if product["category"] == "laptops"]) > 0 else 0

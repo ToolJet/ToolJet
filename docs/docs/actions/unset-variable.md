@@ -10,6 +10,7 @@ The **Unset variable** action removes an app-level variable that was created usi
 | Parameter | Description | Default |
 | --- | --- | --- |
 | Key | Name (string) of the variable to remove | — |
+| Run Only If | Optional condition. The action runs only when it resolves to a truthy value, for example `{{components.checkbox1.value}}`. Wrap the condition in `{{ }}`. See [Run Only If](/docs/app-builder/events/event-triggers#run-only-if). | Empty |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 <img className="screenshot-full img-s" src="/img/actions/unsetvar/unsetvar-v2.png" alt="ToolJet - Action reference -Unset variable"/>
