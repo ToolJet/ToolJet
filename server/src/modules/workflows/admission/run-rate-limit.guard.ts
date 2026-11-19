@@ -12,7 +12,14 @@ import { Reflector } from '@nestjs/core';
 import { RedisThrottlerStorage } from '@modules/rate-limit/redis-throttler-storage';
 import { RedisRateLimiter } from '@modules/rate-limit/redis-rate-limiter';
 import { resolveWorkflowLimits, WorkflowLimits } from '@modules/workflows/limits/workflow-limits';
-import { RateBucket, RUN_RATE_WINDOW_MS, RunCaller, RunEntry, runRateBuckets } from './run-rate-limits';
+import {
+  RateBucket,
+  RUN_RATE_WINDOW_MS,
+  RUN_STARTING_ENTRIES,
+  RunCaller,
+  RunEntry,
+  runRateBuckets,
+} from './run-rate-limits';
 import { QueueDepthTracker } from './queue-depth';
 import { workflowMetrics } from '@modules/workflows/governance-metrics';
 
@@ -56,7 +63,7 @@ export class RunRateLimitGuard implements CanActivate {
 
     const http = context.switchToHttp();
     const request = http.getRequest<RunRequest>();
-    if (entry !== 'preview' && payloadBytes(request.body) > this.limits.trigger.maxPayloadBytes) {
+    if (RUN_STARTING_ENTRIES.has(entry) && payloadBytes(request.body) > this.limits.trigger.maxPayloadBytes) {
       workflowMetrics.admissionRefused('payload_too_large');
       throw new PayloadTooLargeException(
         `The workflow input is larger than the ${this.limits.trigger.maxPayloadBytes} bytes allowed`
@@ -71,13 +78,18 @@ export class RunRateLimitGuard implements CanActivate {
       retryAfterSeconds = Math.max(retryAfterSeconds, blockedForSeconds);
     }
     if (!retryAfterSeconds) {
-      if (
-        entry !== 'preview' &&
-        (await this.queueDepth.isFull(caller.organizationId, this.limits.concurrency.queuedRunsPerWorkspace))
-      ) {
+      const full = !RUN_STARTING_ENTRIES.has(entry)
+        ? null
+        : await this.queueDepth.fullBacklog(caller.organizationId, {
+            workspace: this.limits.concurrency.queuedRunsPerWorkspace,
+            instance: this.limits.concurrency.queuedRunsPerInstance,
+          });
+      if (full) {
         workflowMetrics.admissionRefused('queue_full');
         throw new HttpException(
-          'Too many workflow runs are queued for this workspace. Try again shortly.',
+          full === 'workspace'
+            ? 'Too many workflow runs are queued for this workspace. Try again shortly.'
+            : 'Too many workflow runs are queued on this server. Try again shortly.',
           HttpStatus.TOO_MANY_REQUESTS
         );
       }

@@ -10,6 +10,7 @@ import {
   createQueryBuilder,
   User,
   App,
+  cancelKnexQueryOnAbort,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { isEmpty } from '@tooljet-plugins/common';
@@ -116,7 +117,9 @@ export default class MssqlQueryService implements QueryService {
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
     dataSourceId: string,
-    dataSourceUpdatedAt: string
+    dataSourceUpdatedAt: string,
+    // signal: a workflow step's deadline; the running SQL query is cancelled on the server when it fires
+    context?: { signal?: AbortSignal }
   ): Promise<QueryResult> {
     let knexInstance: Knex | undefined;
     let checkCache: boolean;
@@ -137,7 +140,7 @@ export default class MssqlQueryService implements QueryService {
       knexInstance = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
       switch (queryOptions.mode) {
         case 'sql':
-          return await this.handleRawQuery(knexInstance, queryOptions);
+          return await this.handleRawQuery(knexInstance, queryOptions, context?.signal);
         case 'gui':
           return await this.handleGuiQuery(knexInstance, queryOptions);
         default:
@@ -456,19 +459,32 @@ export default class MssqlQueryService implements QueryService {
     return batches;
   }
 
-  private async handleRawQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
+  private async handleRawQuery(
+    knexInstance: Knex,
+    queryOptions: QueryOptions,
+    signal?: AbortSignal
+  ): Promise<QueryResult> {
     const { query, query_params } = queryOptions;
     const queryParams = query_params || [];
     const sanitizedQueryParams: Record<string, any> = Object.fromEntries(queryParams.filter(([key]) => !isEmpty(key)));
-    const result = await this.executeQuery(knexInstance, query, sanitizedQueryParams);
+    const result = await this.executeQuery(knexInstance, query, sanitizedQueryParams, signal);
 
     return { status: 'ok', data: result };
   }
 
-  private async executeQuery(knexInstance: Knex, query: string, sanitizedQueryParams: Record<string, any> = {}) {
+  private async executeQuery(
+    knexInstance: Knex,
+    query: string,
+    sanitizedQueryParams: Record<string, any> = {},
+    signal?: AbortSignal
+  ) {
     if (isEmpty(query)) throw new Error('Query is empty');
 
-    const result = await knexInstance.raw(query, sanitizedQueryParams).timeout(this.STATEMENT_TIMEOUT);
+    const result = await cancelKnexQueryOnAbort(
+      knexInstance,
+      knexInstance.raw(query, sanitizedQueryParams).timeout(this.STATEMENT_TIMEOUT),
+      signal
+    );
     return result;
   }
 
