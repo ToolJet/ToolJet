@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BadgeCheck, Grid2x2, History, ListTodo } from 'lucide-react';
+import { BadgeCheck, Grid2x2, History, ListTodo, Workflow } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button/Button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Rocket/Tabs/Tabs';
@@ -34,7 +34,7 @@ export default function ViewTabs({ appType }: { appType: TAppType }) {
         <TabsList aria-label="View" className="tw-border-b-0 tw-pl-0">
           {appType === 'workflow' ? (
             <>
-              <TabsTrigger value="list" leadingVisual={<ListTodo />}>
+              <TabsTrigger value="list" leadingVisual={<Workflow />}>
                 Workflows
               </TabsTrigger>
               <TabsTrigger value="approvals" leadingVisual={<BadgeCheck />}>
