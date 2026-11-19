@@ -1,4 +1,5 @@
 import { aiService, attachmentStreamFetch } from '../ai.service';
+import { setActiveBranch } from '@/_helpers/active-branch';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 jest.mock('config', () => ({ apiUrl: 'https://app.example.test/api' }), { virtual: true });
@@ -18,6 +19,7 @@ afterAll(() => {
 });
 
 beforeEach(() => {
+  setActiveBranch(null);
   fetchEventSource.mockImplementation(async (_url, options) => {
     await options.onopen({ ok: true });
     options.onclose();
@@ -38,6 +40,14 @@ test('sends original files and the AI message together with a browser-generated 
   expect(options.body.get('files').name).toBe(original.name);
   expect(options.body.get('files').size).toBe(original.size);
   expect(await options.body.get('files').text()).toBe('rack,count\nBirch,6');
+});
+
+test('carries the selected workspace branch on the AI request', async () => {
+  setActiveBranch({ id: 'kiln-branch', name: 'kiln-layout' });
+  await aiService.sendMessage({ conversationId: 'clay-chat', content: 'Add a kiln schedule.' }, jest.fn());
+  expect(fetchEventSource.mock.calls[0][0]).toBe(
+    'https://app.example.test/api/ai/conversation/message?branch_id=kiln-branch'
+  );
 });
 
 test('keeps text-only requests as JSON and preserves earlier attachment references', async () => {
