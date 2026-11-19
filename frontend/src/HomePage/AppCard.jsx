@@ -14,7 +14,7 @@ import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getPrivateRoute, getSubpath, getHostURL } from '@/_helpers/routes';
 import { validateName, decodeEntities, hasBuilderRole } from '@/_helpers/utils';
 import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
-import { canShowPreviewButton } from './appCardActions';
+import { canShowPreviewButton, canShowBuildModeTag } from './appCardActions';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService, gitSyncService } from '@/_services';
 import { toast } from 'react-hot-toast';
@@ -472,7 +472,9 @@ export default function AppCard({
                   </ToolTip>
                 </div>
               )}
-              <BuildModeBadge buildMode={app?.build_mode ?? app?.buildMode} variant="card" />
+              {canShowBuildModeTag({ role: session?.role }) && (
+                <BuildModeBadge buildMode={app?.build_mode ?? app?.buildMode} variant="card" />
+              )}
             </div>
             <div className="appcard-buttons-wrap">
               {canUpdate && (
