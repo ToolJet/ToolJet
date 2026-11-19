@@ -282,6 +282,7 @@ export const commonSelectors = {
   cloneAppTitle: '[data-cy="clone-app-title"]',
   cloneAppButton: '[data-cy="clone-app"]',
   appNameErrorLabel: '[data-cy="app-name-error-label"]',
+  createAppBuildMode: '[data-cy="create-app-build-mode"]',
   importAppTitle: '[data-cy="import-an-app"]',
   importAppButton: '[data-cy="import-app"]',
   chooseFromTemplateButton: '[data-cy="choose-from-template-button"]',

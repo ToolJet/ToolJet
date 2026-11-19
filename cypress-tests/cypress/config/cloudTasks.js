@@ -44,6 +44,7 @@ const totp = (secretHex, period = 30, digits = 6, at = Date.now()) => {
 };
 
 const aiGatewayBalances = new Map();
+const aiGatewayWallets = new Map();
 const aiGatewayHits = new Map();
 const STUB_ID = `cypress-ai-gateway-${process.pid}-${Date.now()}`;
 let aiGatewayServer;
@@ -53,6 +54,44 @@ const balanceBody = (balance) => ({
   remaining: { topup: 0, recurring: balance, total: balance },
   plan: { topup: 0, recurring: balance, total: balance },
 });
+
+const totals = (recurring, topup) => ({ recurring, topup, total: recurring + topup });
+const sumOf = (values) => values.reduce((total, value) => total + value, 0);
+
+// A wallet describes one workspace's pool and per-user spend; the gateway answers /balance and /usage from it.
+const walletBody = (wallet, kind) => {
+  const monthlySpent = wallet.monthlySpent || {};
+  const addonSpent = wallet.addonSpent || {};
+  const userIds = [...new Set([...Object.keys(monthlySpent), ...Object.keys(addonSpent)])];
+  const users = userIds.map((userId) => ({
+    userId,
+    ...totals(monthlySpent[userId] || 0, addonSpent[userId] || 0),
+  }));
+  const unattributed = totals(wallet.unattributed?.monthly || 0, wallet.unattributed?.addon || 0);
+  const spent = totals(
+    sumOf(users.map((u) => u.recurring)) + unattributed.recurring,
+    sumOf(users.map((u) => u.topup)) + unattributed.topup
+  );
+  const cycleStart =
+    wallet.cycleStart || new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString();
+  if (kind === "balance") {
+    const remaining = totals(wallet.pool.monthly - spent.recurring, wallet.pool.addon - spent.topup);
+    return {
+      balance: remaining.total,
+      ...(wallet.plan && { plan: totals(wallet.plan.monthly, wallet.plan.addon) }),
+      remaining,
+      expiry: {
+        recurringExpiryDate: new Date(Date.now() + 20 * 864e5).toISOString(),
+        topupExpiryDate: wallet.addonEndsAt || null,
+      },
+      cycleStart,
+    };
+  }
+  return { cycleStart, trackingSince: null, users, unattributed, pool: spent };
+};
+
+// Without a wallet the usage read is empty, so balance-only tests keep working when limits read it.
+const emptyUsage = () => ({ cycleStart: null, trackingSince: null, users: [], unattributed: totals(0, 0), pool: totals(0, 0) });
 
 // A taken port must fail the run, or another process would answer the AI credit tests.
 const startAiGatewayStub = (port) =>
@@ -64,11 +103,14 @@ const startAiGatewayStub = (port) =>
         res.end(JSON.stringify(body));
       };
       if (req.url === "/__stub/health") return send(200, { id: STUB_ID });
-      const match = req.url.match(/\/api\/ai\/organizations\/([^/]+)\/balance/);
+      const match = req.url.match(/\/api\/ai\/organizations\/([^/]+)\/(balance|usage)/);
       if (req.method === "GET" && match) {
-        const workspaceId = match[1];
-        aiGatewayHits.set(workspaceId, (aiGatewayHits.get(workspaceId) || 0) + 1);
-        return send(200, balanceBody(aiGatewayBalances.get(workspaceId) ?? 0));
+        const [, workspaceId, kind] = match;
+        const wallet = aiGatewayWallets.get(workspaceId);
+        if (wallet?.fail) return send(502, { message: "stub gateway failure" });
+        if (kind === "balance") aiGatewayHits.set(workspaceId, (aiGatewayHits.get(workspaceId) || 0) + 1);
+        if (wallet) return send(200, walletBody(wallet, kind));
+        return send(200, kind === "balance" ? balanceBody(aiGatewayBalances.get(workspaceId) ?? 0) : emptyUsage());
       }
       return send(200, {});
     });
@@ -102,6 +144,12 @@ module.exports = async (on, config) => {
 
     setAiGatewayBalance({ workspaceId, balance }) {
       aiGatewayBalances.set(workspaceId, balance);
+      return null;
+    },
+
+    setAiGatewayWallet({ workspaceId, wallet }) {
+      if (wallet) aiGatewayWallets.set(workspaceId, wallet);
+      else aiGatewayWallets.delete(workspaceId);
       return null;
     },
 

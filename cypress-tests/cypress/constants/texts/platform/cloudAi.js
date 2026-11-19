@@ -11,14 +11,12 @@ export const cloudAiText = {
   defaultTopUpCredits: "2,000",
   defaultAmountDue: "Amount due: $20",
 
-  noCreditsLeft:
-    "You have no credits left. Please recharge your credits to continue using the AI features.",
-  insufficientCredits:
-    "You don't have enough credits to perform this operation. Please recharge your credits to continue using the AI features.",
+  poolEmpty: "Your workspace is out of AI credits. Ask your admin to add more.",
+  creditLimitReached:
+    "You've reached your AI credit limit for this billing cycle. Ask your admin to raise it.",
+  balanceUnavailable: "Couldn't check your AI credits. Try again.",
   envConfigUnavailable: "Environment configuration is not available for cloud instances",
 
   addAiCreditsAction: "add-ai-credits",
   getMoreCredits: "Get more credits",
-  contactAdminTitle: "Contact admin for credits",
-  contactAdminBody: "Contact admin to get more credits",
 };

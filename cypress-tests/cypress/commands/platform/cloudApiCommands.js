@@ -197,6 +197,14 @@ Cypress.Commands.add(
   }
 );
 
+// wallet: { pool: { monthly, addon }, monthlySpent: { userId: n }, addonSpent, plan, unattributed: { monthly, addon }, fail }
+Cypress.Commands.add(
+  "setAiGatewayWallet",
+  (wallet, workspaceId = Cypress.env("workspaceId")) => {
+    return cy.task("setAiGatewayWallet", { workspaceId, wallet }, { log: false });
+  }
+);
+
 Cypress.Commands.add(
   "apiSeedCustomDomain",
   ({ workspaceId = Cypress.env("workspaceId"), domain, status = "pending_verification" }) => {

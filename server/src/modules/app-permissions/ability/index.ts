@@ -33,6 +33,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         [
           FEATURE_KEY.FETCH_USERS,
           FEATURE_KEY.FETCH_USER_GROUPS,
+          FEATURE_KEY.FETCH_APP_MEMBERS,
           FEATURE_KEY.FETCH_PAGE_PERMISSIONS,
           FEATURE_KEY.CREATE_PAGE_PERMISSIONS,
           FEATURE_KEY.UPDATE_PAGE_PERMISSIONS,
@@ -59,6 +60,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         [
           FEATURE_KEY.FETCH_USERS,
           FEATURE_KEY.FETCH_USER_GROUPS,
+          FEATURE_KEY.FETCH_APP_MEMBERS,
           FEATURE_KEY.FETCH_PAGE_PERMISSIONS,
           FEATURE_KEY.CREATE_PAGE_PERMISSIONS,
           FEATURE_KEY.UPDATE_PAGE_PERMISSIONS,
@@ -76,5 +78,10 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       );
       return;
     }
+
+    // Whoever can open the app lists the people who can open it (a Code mode app's people picker), nothing else.
+    const canViewApp =
+      !!userAppPermissions?.isAllViewable || (!!appId && !!userAppPermissions?.viewableAppsId?.includes(appId));
+    if (canViewApp) can(FEATURE_KEY.FETCH_APP_MEMBERS, App);
   }
 }

@@ -1,0 +1,71 @@
+/*
+  Theme tokens for the app, as CSS variables. Loaded first (the build puts this file before everything else).
+  By default every token follows the ToolJet theme picked in the app's settings: ToolJet sets the --tj-* variables on
+  the code page (brand, surfaces, text, borders, status colours, radius, font) and updates them live when the theme or
+  dark mode changes. The second value in each var() is used only where no ToolJet theme reaches the app.
+
+  For a brand of the app's own, replace a var(--tj-...) with a colour (--primary: #0f766e). Values are any CSS colour;
+  components read them through Tailwind (bg-primary, bg-primary/10, rounded-lg) and any UI library can read them too
+  (var(--primary)). In code, useToolJetTheme() returns the same theme as resolved values (for Ant Design or MUI).
+  :root covers the app's own document and anything a library portals to its body; .app-root covers a component
+  drawn inside a visual page.
+*/
+:root,
+.app-root {
+  --font-sans: var(--tj-font, 'Inter', ui-sans-serif, system-ui, sans-serif);
+  --page: var(--tj-page, #f8f9fa);
+  --background: var(--tj-surface, #ffffff);
+  --foreground: var(--tj-text, #030712);
+  --card: var(--tj-surface, #ffffff);
+  --card-foreground: var(--tj-text, #030712);
+  --popover: var(--tj-surface, #ffffff);
+  --popover-foreground: var(--tj-text, #030712);
+  --primary: var(--tj-brand, #4368e3);
+  --primary-foreground: var(--tj-on-brand, #ffffff);
+  --secondary: var(--tj-surface-alt, #f3f4f6);
+  --secondary-foreground: var(--tj-text, #111827);
+  --muted: var(--tj-surface-alt, #f3f4f6);
+  --muted-foreground: var(--tj-text-muted, #6b7280);
+  --accent: var(--tj-surface-alt, #f3f4f6);
+  --accent-foreground: var(--tj-text, #111827);
+  --destructive: var(--tj-danger, #dc2626);
+  --destructive-foreground: #ffffff;
+  --success: var(--tj-success, #15803d);
+  --success-foreground: #ffffff;
+  --warning: var(--tj-warning, #d97706);
+  --warning-foreground: #ffffff;
+  --border: var(--tj-border-weak, #e5e7eb);
+  --input: var(--tj-border, #e5e7eb);
+  --ring: var(--tj-brand, #4368e3);
+  --chart-1: var(--tj-brand, #2563eb);
+  --chart-2: var(--tj-warning, #d97706);
+  --chart-3: var(--tj-success, #15803d);
+  --chart-4: var(--tj-danger, #dc2626);
+  --chart-5: #7c3aed;
+  --radius: var(--tj-radius, 0.5rem);
+}
+
+/* Dark mode: only the fallbacks differ; the --tj-* values already switch with ToolJet's dark mode. */
+:root.dark,
+.dark .app-root,
+.app-root.dark {
+  --page: var(--tj-page, #020617);
+  --background: var(--tj-surface, #030712);
+  --foreground: var(--tj-text, #f9fafb);
+  --card: var(--tj-surface, #030712);
+  --card-foreground: var(--tj-text, #f9fafb);
+  --popover: var(--tj-surface, #030712);
+  --popover-foreground: var(--tj-text, #f9fafb);
+  --primary: var(--tj-brand, #4368e3);
+  --primary-foreground: var(--tj-on-brand, #ffffff);
+  --secondary: var(--tj-surface-alt, #1f2937);
+  --secondary-foreground: var(--tj-text, #f9fafb);
+  --muted: var(--tj-surface-alt, #1f2937);
+  --muted-foreground: var(--tj-text-muted, #9ca3af);
+  --accent: var(--tj-surface-alt, #1f2937);
+  --accent-foreground: var(--tj-text, #f9fafb);
+  --destructive: var(--tj-danger, #7f1d1d);
+  --border: var(--tj-border-weak, #1f2937);
+  --input: var(--tj-border, #1f2937);
+  --ring: var(--tj-brand, #4368e3);
+}

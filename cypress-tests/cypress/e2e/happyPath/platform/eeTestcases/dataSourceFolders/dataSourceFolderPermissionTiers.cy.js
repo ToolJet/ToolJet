@@ -6,6 +6,7 @@ import {
   uiEnsureFolderExpanded,
 } from 'Support/utils/platform/dataSourceFolders';
 import { getGroupPermissionInput } from 'Support/utils/userPermissions';
+import { expandFoldedQueryPanel } from 'Support/utils/appBuilder/querymanager/queryPanel';
 
 describe('Data Source Folders — Permission Tiers', () => {
   let workspaceId, wsName, wsSlug;
@@ -175,7 +176,8 @@ describe('Data Source Folders — Permission Tiers', () => {
         cy.apiCreateApp(`ds-tier-app-${Date.now()}`);
 
         // On a NEW app the landing picker renders folders as COLLAPSED headers — the contents are not in the DOM at all until the header is clicked.
-        cy.openApp('', Cypress.env('workspaceId'), Cypress.env('appId'), dsFolder.pickerFolderHeader(folderName));
+        cy.openApp();
+        expandFoldedQueryPanel();
 
         cy.get(dsFolder.pickerFolderHeader(folderName)).should('be.visible');
         cy.get(dsFolder.pickerDataSourceCard(insideName)).should('not.exist');
