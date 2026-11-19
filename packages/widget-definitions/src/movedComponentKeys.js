@@ -16,4 +16,11 @@
  *     { from: ['generalStyles', 'boxShadow'], to: ['styles', 'boxShadow'] },
  *   ],
  */
-export const MOVED_COMPONENT_KEYS = {};
+export const MOVED_COMPONENT_KEYS = {
+  // CopyTimerAdditionalActions1795097903385
+  Timer: [
+    { from: ['styles', 'visibility'], to: ['properties', 'visibility'] },
+    { from: ['styles', 'disabledState'], to: ['properties', 'disabledState'] },
+    { from: ['general', 'tooltip'], to: ['properties', 'tooltip'] },
+  ],
+};

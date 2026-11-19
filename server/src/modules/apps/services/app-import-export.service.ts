@@ -4701,9 +4701,9 @@ export function migrateProperties(
     properties.maxLimit = { value: '' };
   }
 
-  // Timer: these keys moved into properties (server/data-migrations/
-  // 1792200000000-MoveTimerVisibilityDisabledTooltipToProperties.ts). Older exports carry them in the
-  // old place, with or without a version, so relocate before the unversioned early return.
+  // Timer: these keys moved into properties (migrations/data/1795097903385-CopyTimerAdditionalActions.ts).
+  // Older exports carry them in the old place, with or without a version, so relocate before the
+  // unversioned early return.
   if (['Timer'].includes(componentType)) {
     for (const key of ['visibility', 'disabledState']) {
       if (styles[key] !== undefined) {

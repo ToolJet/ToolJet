@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { deleteAppHistoryForStructuralMigration } from '@helpers/migration.helper';
 
-const MIGRATION_NAME = 'BackfillCheckboxDynamicHeightOff1790400000000';
+const MIGRATION_NAME = 'BackfillCheckboxDynamicHeightOff1795097903384';
 const BATCH_SIZE = 2000;
 const COMPONENT_TYPE = 'Checkbox';
 
@@ -12,7 +12,7 @@ const DYNAMIC_HEIGHT_PATCH = JSON.stringify({
   dynamicHeight: { value: '{{false}}' },
 });
 
-export class BackfillCheckboxDynamicHeightOff1790400000000 implements MigrationInterface {
+export class BackfillCheckboxDynamicHeightOff1795097903384 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const [{ count }] = await queryRunner.query(
       `SELECT COUNT(*) FROM components
