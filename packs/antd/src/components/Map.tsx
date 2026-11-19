@@ -688,6 +688,10 @@ export const Map = () => {
           : `c${item.cluster.count}@${item.lat},${item.lng}`;
       const existing = drawn.current.get(item.key);
       if (existing && existing.sig === sig) return;
+      // A redraw (the marker just selected or unselected) replaces its element: the new one takes the focus the old
+      // one had, or a keyboard user lost their place and Escape no longer reached the marker (QA PF-242).
+      const old = existing?.marker.getElement();
+      const hadFocus = !!old && (old.getRootNode() as Document | ShadowRoot).activeElement === old;
       if (existing) layer.removeLayer(existing.marker);
       let marker: L.Marker;
       if ('point' in item) {
@@ -720,6 +724,7 @@ export const Map = () => {
         marker.on('click', () => m.fitBounds(L.latLngBounds(members), { padding: [48, 48], maxZoom: 18 }));
       }
       layer.addLayer(marker);
+      if (hadFocus) marker.getElement()?.focus({ preventScroll: true });
       drawn.current.set(item.key, { marker, sig });
     });
     drawn.current.forEach((entry, key) => {
