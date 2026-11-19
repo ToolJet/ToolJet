@@ -65,13 +65,17 @@ function wrapUp(dataSource: DataSource, wrap: (name: string, up: Up, migration: 
   }
 }
 
-interface BeforeCommitSteps {
+export interface BeforeCommitSteps {
   run(queryRunner: QueryRunner): Promise<void>;
   clear(): void;
 }
 
-/** Collects the beforeCommit() step of each data whose up() ran in this attempt. */
-function collectBeforeCommitSteps(dataDS: DataSource): BeforeCommitSteps {
+/**
+ * Collects the beforeCommit() step of each data whose up() ran in this attempt, to run in migration order. The legacy
+ * branch key swap runs last whatever its order: it ends holding ACCESS EXCLUSIVE on app_versions until commit, and a
+ * later step would run under that lock.
+ */
+export function collectBeforeCommitSteps(dataDS: DataSource): BeforeCommitSteps {
   const beforeCommitSteps: { name: string; beforeCommit: (queryRunner: QueryRunner) => Promise<void> }[] = [];
   wrapUp(dataDS, (name, up, migration) => {
     if (!migration.beforeCommit) return up;
