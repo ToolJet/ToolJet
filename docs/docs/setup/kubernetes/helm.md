@@ -75,7 +75,7 @@ redis:
   ```yaml
   REDIS_HOST=<external_redis_host>
   REDIS_PORT=<external_redis_port>
-  REDIS_USER=<external_redis_user>
+  REDIS_USERNAME=<external_redis_user>
   REDIS_PASSWORD=<external_redis_password>
   ```
 
@@ -140,6 +140,10 @@ redis_pod:
   REDIS_PORT: "6379"
   REDIS_USER: "default"
 ```
+
+:::note
+The chart passes `redis_pod.REDIS_USER` to ToolJet as `REDIS_USER`, which only the multiplayer editing connection reads. Workflow queues and other Redis clients read `REDIS_USERNAME`. If your Redis needs an ACL username, also set `REDIS_USERNAME` in the `env:` section. See [Redis Environment Variables](#redis-environment-variables-optional).
+:::
 
 **Step 3: Add Workflow Environment Variables**
 

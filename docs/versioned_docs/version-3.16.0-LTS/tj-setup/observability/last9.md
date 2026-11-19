@@ -21,11 +21,12 @@ Set the following environment variables in your ToolJet instance to enable OpenT
 Replace `<YOUR-LAST9-ENDPOINT>` and `<YOUR-LAST9-AUTH-HEADER>` with the endpoint URL and authentication header obtained in Step 1.
 ```js
 ENABLE_OTEL=true
-OTEL_SERVICE_NAME=tooljet
+SERVICE_NAME=tooljet
 
 # Last9 Agent endpoints (container-to-container)
 OTEL_EXPORTER_OTLP_TRACES=https://<YOUR-LAST9-ENDPOINT>/v1/traces
 OTEL_EXPORTER_OTLP_METRICS=https://<YOUR-LAST9-ENDPOINT>/v1/metrics
+# Only the Authorization header value from Last9, for example: Basic <token>
 OTEL_HEADER=<YOUR-LAST9-AUTH-HEADER>
 
 # Optional but useful while debugging

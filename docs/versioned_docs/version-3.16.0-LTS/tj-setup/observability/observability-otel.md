@@ -40,15 +40,25 @@ ENABLE_OTEL=true
 OTEL_EXPORTER_OTLP_TRACES=http://localhost:4318/v1/traces
 OTEL_EXPORTER_OTLP_METRICS=http://localhost:4318/v1/metrics
 
-# Service Identification
-OTEL_SERVICE_NAME=tooljet
+# Service Identification (traces, metrics, and logs)
+SERVICE_NAME=tooljet
 ```
 
 #### Optional Variables
 
 ```js
 # Authentication (if required by your OTEL collector)
-OTEL_HEADER=<your-api-key>
+# Sent as the Authorization header value on trace and metric exports
+OTEL_HEADER=Bearer <your-api-key>
+# Other headers, such as api-key or dd-api-key (also sent on log exports)
+OTEL_EXPORTER_OTLP_HEADERS=api-key=<your-api-key>
+
+# Log export: server logs, plus browser error logs when ENABLE_OTEL_FRONTEND=true
+OTEL_EXPORTER_OTLP_LOGS=http://localhost:4318/v1/logs
+
+# Browser telemetry: JavaScript errors, Core Web Vitals, app load times
+ENABLE_OTEL_FRONTEND=true
+OTEL_FRONTEND_FLUSH_INTERVAL_SECONDS=30        # Default: 30, range 5-600
 
 # Advanced Configuration
 OTEL_LOG_LEVEL=debug                          # Enable debug logging for OTEL
@@ -88,8 +98,8 @@ Configure ToolJet to send metrics directly to Grafana Cloud:
 ENABLE_OTEL=true
 OTEL_EXPORTER_OTLP_TRACES=https://otlp-gateway-prod-us-central-0.grafana.net/otlp/v1/traces
 OTEL_EXPORTER_OTLP_METRICS=https://otlp-gateway-prod-us-central-0.grafana.net/otlp/v1/metrics
-OTEL_HEADER=Authorization=Basic <base64-encoded-credentials>
-OTEL_SERVICE_NAME=tooljet-production
+OTEL_HEADER=Basic <base64-encoded-credentials>
+SERVICE_NAME=tooljet-production
 ```
 
 ### Datadog
@@ -100,8 +110,8 @@ Send metrics to Datadog using the OTLP endpoint:
 ENABLE_OTEL=true
 OTEL_EXPORTER_OTLP_TRACES=https://api.datadoghq.com/v1/traces
 OTEL_EXPORTER_OTLP_METRICS=https://api.datadoghq.com/v1/metrics
-OTEL_HEADER=dd-api-key=<your-datadog-api-key>
-OTEL_SERVICE_NAME=tooljet
+OTEL_EXPORTER_OTLP_HEADERS=dd-api-key=<your-datadog-api-key>
+SERVICE_NAME=tooljet
 ```
 
 ### New Relic
@@ -112,8 +122,8 @@ Configure for New Relic OTLP endpoint:
 ENABLE_OTEL=true
 OTEL_EXPORTER_OTLP_TRACES=https://otlp.nr-data.net:4318/v1/traces
 OTEL_EXPORTER_OTLP_METRICS=https://otlp.nr-data.net:4318/v1/metrics
-OTEL_HEADER=api-key=<your-newrelic-license-key>
-OTEL_SERVICE_NAME=tooljet
+OTEL_EXPORTER_OTLP_HEADERS=api-key=<your-newrelic-license-key>
+SERVICE_NAME=tooljet
 ``` -->
 
 <!-- ## Grafana Dashboards

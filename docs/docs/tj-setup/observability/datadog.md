@@ -59,7 +59,7 @@ Set up the following environment variables in the **.env** file while running To
 ENABLE_OTEL=true
 
 # Service name as it appears in Datadog APM
-OTEL_SERVICE_NAME=tooljet
+SERVICE_NAME=tooljet
 
 # Datadog Agent OTLP endpoints
 # Use the Datadog Agent hostname reachable from ToolJet

@@ -164,7 +164,7 @@ scrape_configs:
 Set the following environment variables in the .env file used by ToolJet:
 ```js
 ENABLE_OTEL=true
-OTEL_SERVICE_NAME=tooljet
+SERVICE_NAME=tooljet
 OTEL_EXPORTER_OTLP_TRACES=http://otel-collector:4318/v1/traces
 OTEL_EXPORTER_OTLP_METRICS=http://otel-collector:4318/v1/metrics
 
