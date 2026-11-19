@@ -5,8 +5,9 @@ export const routes = (pathEnd: string, path: string) => {
     if (['workspace-settings', 'settings'].includes(parentPath)) {
       return parentPath === 'workspace-settings' ? 'Workspace settings' : 'Settings';
     }
+    // A selected data source's page ends in its id (/:workspaceId/data-sources/:selectedId).
+    if (parentPath === 'data-sources') return 'Data sources';
   }
-
   switch (pathEnd) {
     case 'workspaceId':
       return 'Applications';
@@ -30,6 +31,8 @@ export const routes = (pathEnd: string, path: string) => {
     case 'audit-logs':
       return 'Audit logs';
     case 'workflows':
+    case 'approvals':
+    case 'executions':
       return 'Workflows';
     case 'workspace-constants':
       return 'Workspace constants';

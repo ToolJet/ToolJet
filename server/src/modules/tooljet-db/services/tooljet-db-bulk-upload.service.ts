@@ -6,7 +6,13 @@ import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.s
 import { TooljetDbUtilService } from './tooljet-db-util.service';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { isEmpty } from 'lodash';
+import { escapeIdentifier } from 'pg';
 import { findTenantSchema } from 'src/helpers/tooljet_db.helper';
+
+function columnsMissingFromTable(keys: string[], tableColumns: { column_name: string }[]): string[] {
+  const known = new Set(tableColumns.map((col) => col.column_name));
+  return [...new Set(keys)].filter((key) => !known.has(key));
+}
 
 @Injectable()
 export class TooljetDbBulkUploadService {
@@ -94,6 +100,20 @@ export class TooljetDbBulkUploadService {
     const updatedRowsData = [];
 
     try {
+      const { columns } = await this.tableOperationsService.perform(
+        organizationId,
+        'view_table',
+        { id: tableId },
+        environmentId
+      );
+      const unknownColumns = columnsMissingFromTable(
+        [...primaryKeys, ...payload.flatMap((row) => Object.keys(row))],
+        columns || []
+      );
+      if (unknownColumns.length > 0) {
+        throw new Error(`Columns not found in table: ${unknownColumns.join(', ')}`);
+      }
+
       for (const row of payload) {
         // Validate primary keys
         const primaryKeyConditions = primaryKeys.map((key) => {
@@ -108,10 +128,12 @@ export class TooljetDbBulkUploadService {
 
         if (columnsToUpdate.length === 0) continue; // No updateable fields
 
-        const setClause = columnsToUpdate.map(([column, _], index) => `"${column}" = $${index + 1}`).join(', ');
+        const setClause = columnsToUpdate
+          .map(([column], index) => `${escapeIdentifier(column)} = $${index + 1}`)
+          .join(', ');
 
         const whereClause = primaryKeyConditions
-          .map(({ key }, index) => `"${key}" = $${columnsToUpdate.length + index + 1}`)
+          .map(({ key }, index) => `${escapeIdentifier(key)} = $${columnsToUpdate.length + index + 1}`)
           .join(' AND ');
 
         const query = `
@@ -261,6 +283,20 @@ export class TooljetDbBulkUploadService {
       };
     }
 
+    const unknownColumns = columnsMissingFromTable(
+      rowsToUpsert.flatMap((row) => Object.keys(row)),
+      tableColumns
+    );
+    if (unknownColumns.length > 0) {
+      return {
+        status: 'failed',
+        error: `Columns not found in table: ${unknownColumns.join(', ')}`,
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+
     const serialTypeColumns = tableColumns
       .filter((col) => col.data_type === 'integer' && /^nextval\(/.test(col.column_default))
       .map((col) => col.column_name);
@@ -304,7 +340,7 @@ export class TooljetDbBulkUploadService {
       for (const [groupKey, groupRows] of rowGroups.entries()) {
         // The provided columns for this group are exactly the keys in the group.
         const providedColumns = groupKey.split(','); // sorted keys
-        const columnsQuoted = providedColumns.map((col) => `"${col}"`);
+        const columnsQuoted = providedColumns.map((col) => escapeIdentifier(col));
 
         // Build the VALUES clause for this group
         let parameterIndex = 1;
@@ -341,10 +377,12 @@ export class TooljetDbBulkUploadService {
           `;
         } else {
           // For groups with all primary keys provided, use UPSERT
-          const conflictTarget = primaryKeyColumns.map((col) => `"${col}"`).join(', ');
+          const conflictTarget = primaryKeyColumns.map((col) => escapeIdentifier(col)).join(', ');
           // Update only non-PK columns
           const updateColumns = providedColumns.filter((col) => !primaryKeyColumns.includes(col));
-          const onConflictUpdates = updateColumns.map((col) => `"${col}" = EXCLUDED."${col}"`).join(',\n        ');
+          const onConflictUpdates = updateColumns
+            .map((col) => `${escapeIdentifier(col)} = EXCLUDED.${escapeIdentifier(col)}`)
+            .join(',\n        ');
           queryText = `
             INSERT INTO "${tenantSchema}"."${relation.id}" (${columnsQuoted.join(', ')})
             VALUES ${allValueSets.join(', ')}

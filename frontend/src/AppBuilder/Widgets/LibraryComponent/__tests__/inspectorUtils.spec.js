@@ -1,8 +1,18 @@
 import {
   fieldMeta,
   additionalActionProps,
+  buildEventMetaDefinition,
+  DISABLED_STATE_META,
+  eventDisplayName,
+  isFieldVisible,
+  validationFields,
+  withValidationMeta,
   groupPropsBySection,
+  groupStylesBySection,
+  styleFieldMeta,
+  withManifestDefaults,
 } from '@/AppBuilder/RightSideBar/Inspector/Components/LibraryComponent/utils';
+import { offersDynamicHeight } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 describe('fieldMeta', () => {
   it('[LibraryComponent-FIELDMETA-001] gives a boolean prop a boolean schema', () => {
@@ -101,6 +111,61 @@ describe('additionalActionProps', () => {
     };
     expect(additionalActionProps(componentMeta)).toEqual(['visibility', 'loadingState']);
   });
+
+  it('[LibraryComponent-ADDITIONALACTIONS-005] hides Dynamic height for a component that cannot size to its content', () => {
+    // Break this catches: a Dynamic height toggle on a fit: false component (e.g. Button), which changes nothing.
+    const componentMeta = {
+      properties: {
+        visibility: { section: 'additionalActions' },
+        dynamicHeight: { section: 'additionalActions' },
+      },
+    };
+    expect(additionalActionProps(componentMeta)).toEqual(['visibility']);
+    expect(additionalActionProps(componentMeta, false, false)).toEqual(['visibility']);
+  });
+
+  it('[LibraryComponent-ADDITIONALACTIONS-006] keeps Dynamic height, in declaration order, for a component that fits its content', () => {
+    // Break this catches: hiding Dynamic height on fit: true components (e.g. Button Group, Accordion) that honour it.
+    const componentMeta = {
+      properties: {
+        visibility: { section: 'additionalActions' },
+        dynamicHeight: { section: 'additionalActions' },
+        loadingState: { section: 'additionalActions' },
+      },
+    };
+    expect(additionalActionProps(componentMeta, false, true)).toEqual(['visibility', 'dynamicHeight', 'loadingState']);
+  });
+
+  const hostMeta = {
+    properties: {
+      visibility: { section: 'additionalActions' },
+      dynamicHeight: { section: 'additionalActions' },
+    },
+  };
+
+  it('[LibraryComponent-ADDITIONALACTIONS-007] offers Dynamic height to a container whose drop areas sit in it (a Card, Tabs), whatever its fit', () => {
+    // Break this catches: a pack Card (fit: false) without the Dynamic height toggle, so it could never grow with the
+    // components dropped into it (QA: Dynamic height does nothing on pack containers).
+    const card = { fit: false, slots: [{ name: 'body', kind: 'slot' }] };
+    expect(additionalActionProps(hostMeta, false, offersDynamicHeight(card))).toEqual(['visibility', 'dynamicHeight']);
+  });
+
+  it("[LibraryComponent-ADDITIONALACTIONS-008] offers Dynamic height to a dialog, whose body grows with its components as a native Modal's", () => {
+    // Break this catches: a pack Dialog, Modal or Drawer without the toggle, its body held at its Body height and
+    // scrolling whatever its components need (QA: Dynamic height missing on pack sub containers).
+    const dialog = { fit: false, slots: [{ name: 'body', kind: 'popup' }] };
+    expect(additionalActionProps(hostMeta, false, offersDynamicHeight(dialog))).toEqual([
+      'visibility',
+      'dynamicHeight',
+    ]);
+  });
+
+  it('[LibraryComponent-ADDITIONALACTIONS-009] keeps Dynamic height off a board whose cards its code draws and that cannot fit (a Kanban)', () => {
+    // Break this catches: the toggle on a Kanban, which keeps its box and scrolls its columns as UI 2.0's (no Dynamic
+    // height there), while its cards already grow with their components.
+    const board = { fit: false, slots: [{ name: 'card', kind: 'rows' }] };
+    expect(additionalActionProps(hostMeta, false, offersDynamicHeight(board))).toEqual(['visibility']);
+  });
 });
 
 describe('groupPropsBySection', () => {
@@ -131,5 +196,248 @@ describe('groupPropsBySection', () => {
   it('[LibraryComponent-SECTION-003] returns [] for an empty prop list', () => {
     // Break this catches: emitting an empty "Properties" accordion for a component with no props.
     expect(groupPropsBySection([])).toEqual([]);
+  });
+});
+
+describe('styleFieldMeta', () => {
+  it('[LibraryComponent-STYLES-001] gives a color style the theme-aware swatch picker', () => {
+    // Break this catches: rendering style colors with the plain prop color input, which can't pick theme tokens.
+    expect(styleFieldMeta({ name: 'accent', type: 'string', inspector: 'color' })).toMatchObject({
+      type: 'colorSwatches',
+      validation: { schema: { type: 'string' } },
+    });
+  });
+
+  it('[LibraryComponent-STYLES-002] maps every other style like a prop', () => {
+    // Break this catches: style fields diverging from prop fields for the same declared type.
+    const style = { name: 'radius', type: 'number', default: 4 };
+    expect(styleFieldMeta(style)).toEqual(fieldMeta(style));
+  });
+});
+
+describe('groupStylesBySection', () => {
+  it('[LibraryComponent-STYLES-003] groups styles with no section under "Styles"', () => {
+    // Break this catches: unsectioned styles landing under "Properties" in the Styles tab.
+    const styles = [
+      { name: 'a', type: 'string' },
+      { name: 'b', type: 'string', section: 'Header' },
+    ];
+    expect(groupStylesBySection(styles).map((section) => section.title)).toEqual(['Styles', 'Header']);
+  });
+});
+
+describe('withManifestDefaults', () => {
+  const instance = (styles) => ({ id: 'c1', component: { definition: { properties: {}, styles } } });
+
+  it('[LibraryComponent-DEFAULTS-001] shows the manifest default for a style the instance never stored', () => {
+    // Break this catches: a style added in a newer revision rendering as an empty (and invalid) field
+    // while the component itself draws its initialValue.
+    const component = instance({ backgroundColor: { value: '#ff0000' } });
+    const styles = [
+      { name: 'backgroundColor', type: 'string', default: 'var(--cc-surface1-surface)' },
+      { name: 'borderRadius', type: 'number', default: 6 },
+    ];
+
+    const shown = withManifestDefaults(component, 'styles', styles).component.definition.styles;
+
+    expect(shown.backgroundColor.value).toBe('#ff0000');
+    expect(shown.borderRadius.value).toBe('{{6}}');
+    expect(component.component.definition.styles.borderRadius).toBeUndefined();
+  });
+
+  it('[LibraryComponent-DEFAULTS-002] returns the same object when every field is stored', () => {
+    // Break this catches: a fresh object on every render, which re-renders every Inspector field.
+    const component = instance({ borderRadius: { value: '{{4}}' } });
+    expect(withManifestDefaults(component, 'styles', [{ name: 'borderRadius', type: 'number', default: 6 }])).toBe(
+      component
+    );
+  });
+});
+
+describe('fieldMeta v2 manifest fields', () => {
+  it('[LibraryComponent-FIELDMETA-008] puts min/max on the meta and spells them out in the tooltip', () => {
+    // Break this catches: declared limits reaching neither the slider (meta.min/max) nor any other field's label.
+    expect(fieldMeta({ name: 'value', type: 'number', inspector: 'slider', min: 0, max: 100 })).toMatchObject({
+      type: 'slider',
+      min: 0,
+      max: 100,
+      tip: 'Between 0 and 100.',
+    });
+    expect(fieldMeta({ name: 'rows', type: 'number', min: 1 }).tip).toBe('At least 1.');
+    expect(fieldMeta({ name: 'rows', type: 'number', max: 0 })).toMatchObject({ max: 0, tip: 'At most 0.' });
+  });
+
+  it('[LibraryComponent-FIELDMETA-009] turns description into the label tooltip, before the limits', () => {
+    // Break this catches: the author's description never showing, or the limits note replacing it.
+    expect(fieldMeta({ name: 'label', type: 'string', description: 'Shown above the field.' }).tip).toBe(
+      'Shown above the field.'
+    );
+    expect(fieldMeta({ name: 'step', type: 'number', description: 'Step size.', min: 1, max: 10 }).tip).toBe(
+      'Step size. Between 1 and 10.'
+    );
+  });
+
+  it('[LibraryComponent-FIELDMETA-010] passes placeholder through and omits absent v2 keys', () => {
+    // Break this catches: undefined tip/min/max keys on every field, or the placeholder being dropped.
+    expect(fieldMeta({ name: 'label', type: 'string', placeholder: 'Enter a label' }).placeholder).toBe(
+      'Enter a label'
+    );
+    const plain = fieldMeta({ name: 'label', type: 'string' });
+    expect(plain).not.toHaveProperty('tip');
+    expect(plain).not.toHaveProperty('min');
+    expect(plain).not.toHaveProperty('placeholder');
+  });
+
+  it('[LibraryComponent-FIELDMETA-011] renders an options array prop as the code field', () => {
+    // Break this catches: type 'options' reaching DynamicFxTypeRenderer, which has no such element and crashes.
+    expect(fieldMeta({ name: 'options', type: 'array', inspector: 'options' })).toMatchObject({
+      type: 'code',
+      validation: { schema: { type: 'array' } },
+    });
+  });
+});
+
+describe('isFieldVisible', () => {
+  const instance = (properties, styles = {}) => ({ component: { definition: { properties, styles } } });
+  const resolve = (value) => (value === '{{true}}' ? true : value === '{{false}}' ? false : value);
+
+  it('[LibraryComponent-VISIBLEWHEN-001] always shows a field without visibleWhen', () => {
+    expect(isFieldVisible({ name: 'a', type: 'string' }, instance({}), 'properties', resolve)).toBe(true);
+  });
+
+  it('[LibraryComponent-VISIBLEWHEN-002] shows the field only while the resolved driver equals the value', () => {
+    // Break this catches: comparing the raw stored '{{true}}' instead of its resolved value, hiding the field forever.
+    const prop = { name: 'clearLabel', type: 'string', visibleWhen: { key: 'clearable', value: true } };
+    expect(isFieldVisible(prop, instance({ clearable: { value: '{{true}}' } }), 'properties', resolve)).toBe(true);
+    expect(isFieldVisible(prop, instance({ clearable: { value: '{{false}}' } }), 'properties', resolve)).toBe(false);
+  });
+
+  it('[LibraryComponent-VISIBLEWHEN-003] matches an enum driver and accepts a list of values', () => {
+    const prop = { name: 'href', type: 'string', visibleWhen: { key: 'variant', value: 'link' } };
+    expect(isFieldVisible(prop, instance({ variant: { value: 'link' } }), 'properties', resolve)).toBe(true);
+    expect(isFieldVisible(prop, instance({ variant: { value: 'default' } }), 'properties', resolve)).toBe(false);
+    const anyOf = { ...prop, visibleWhen: { key: 'variant', value: ['link', 'ghost'] } };
+    expect(isFieldVisible(anyOf, instance({ variant: { value: 'ghost' } }), 'properties', resolve)).toBe(true);
+  });
+
+  it('[LibraryComponent-VISIBLEWHEN-004] lets a style depend on a property', () => {
+    // Break this catches: a style field looking for its driver only among styles, so it never shows.
+    const style = { name: 'iconColor', type: 'string', visibleWhen: { key: 'showIcon', value: true } };
+    expect(isFieldVisible(style, instance({ showIcon: { value: '{{true}}' } }), 'styles', resolve)).toBe(true);
+  });
+});
+
+describe('eventDisplayName', () => {
+  it('[LibraryComponent-EVENTS-001] uses the manifest display name when there is one', () => {
+    expect(eventDisplayName({ name: 'onClick', displayName: 'On press' })).toBe('On press');
+  });
+
+  it.each([
+    ['onClick', 'On click'],
+    ['onValueChange', 'On value change'],
+    ['onOpenURL', 'On open url'],
+    ['submit', 'Submit'],
+  ])('[LibraryComponent-EVENTS-002] turns handler name %s into "%s"', (name, expected) => {
+    // Break this catches: the event picker listing raw handler names (onClick) instead of native wording.
+    expect(eventDisplayName({ name })).toBe(expected);
+  });
+
+  it('[LibraryComponent-EVENTS-003] feeds the display names into the event meta definition', () => {
+    expect(buildEventMetaDefinition({}, [{ name: 'onClick' }]).events).toEqual({
+      onClick: { displayName: 'On click' },
+    });
+  });
+});
+
+describe('validationFields', () => {
+  const names = (kind) => validationFields(kind).map(({ name }) => name);
+
+  it('[LibraryComponent-VALIDATION-001] gives a text component every native text-input validation field', () => {
+    // Break this catches: a text component missing regex or length limits that native TextInput offers.
+    expect(names('text')).toEqual(['mandatory', 'regex', 'minLength', 'maxLength', 'customRule']);
+    expect(validationFields('text')[0].meta).toMatchObject({
+      type: 'toggle',
+      displayName: 'Make this field mandatory',
+    });
+  });
+
+  it('[LibraryComponent-VALIDATION-002] gives choice and date components only mandatory and custom rule', () => {
+    // Break this catches: offering a regex or length limit on a select or date picker, where it can never apply.
+    expect(names('choice')).toEqual(['mandatory', 'customRule']);
+    expect(names('date')).toEqual(['mandatory', 'customRule']);
+  });
+
+  it('[LibraryComponent-VALIDATION-003] gives no section when the manifest declares no validation', () => {
+    expect(validationFields(undefined)).toEqual([]);
+    expect(validationFields('something-else')).toEqual([]);
+  });
+
+  it('[LibraryComponent-VALIDATION-004] adds the validation meta renderElement reads, keeping the host meta', () => {
+    // Break this catches: renderElement throwing on componentMeta.validation[param] for a host config that has none.
+    const meta = withValidationMeta({ properties: { visibility: {} } }, validationFields('choice'));
+    expect(Object.keys(meta.validation)).toEqual(['mandatory', 'customRule']);
+    expect(meta.properties).toEqual({ visibility: {} });
+  });
+});
+
+describe('additionalActionProps with controlState', () => {
+  const hostMeta = {
+    properties: {
+      visibility: { section: 'additionalActions' },
+      disabledState: { section: 'additionalActions' },
+      dynamicHeight: { section: 'additionalActions' },
+    },
+  };
+
+  it('[LibraryComponent-CONTROLSTATE-001] hides disabledState from a component that does not declare controlState', () => {
+    // Break this catches: a Disable toggle on a component that never reads it, so it silently does nothing.
+    expect(additionalActionProps(hostMeta, false, true)).toEqual(['visibility', 'dynamicHeight']);
+  });
+
+  it('[LibraryComponent-CONTROLSTATE-002] shows disabledState in its declared place for a controlState component', () => {
+    expect(additionalActionProps(hostMeta, true, true)).toEqual(['visibility', 'disabledState', 'dynamicHeight']);
+  });
+
+  it('[LibraryComponent-CONTROLSTATE-003] still lists disabledState when the host config lacks it', () => {
+    // Break this catches: controlState components losing the toggle until the host widget config gains the key.
+    expect(additionalActionProps({ properties: { visibility: { section: 'additionalActions' } } }, true)).toEqual([
+      'visibility',
+      'disabledState',
+    ]);
+    expect(DISABLED_STATE_META).toMatchObject({ type: 'toggle', displayName: 'Disable' });
+  });
+});
+
+describe('inspector hints the panel does not know, and the icon set', () => {
+  const { fieldMeta: meta, editorHint: hint } = jest.requireActual(
+    '@/AppBuilder/RightSideBar/Inspector/Components/LibraryComponent/utils'
+  );
+
+  it.each([
+    ['a typo', { name: 'x', type: 'string', inspector: 'colour' }],
+    ['a hint for another type', { name: 'n', type: 'number', inspector: 'boxShadow' }],
+    ['a list hint on an object', { name: 'o', type: 'object', inspector: 'options' }],
+  ])('draws the code field for %s instead of a field type that cannot render', (_label, prop) => {
+    // Break this catches: an unknown hint passed through as the field type, which DynamicFxTypeRenderer cannot draw.
+    expect(meta(prop).type).toBe('code');
+  });
+
+  it('keeps the native field types each value type supports', () => {
+    // Break this catches: the fallback swallowing hints the packs rely on.
+    expect(meta({ name: 'c', type: 'string', inspector: 'color' }).type).toBe('colorSwatches');
+    expect(meta({ name: 's', type: 'string', inspector: 'boxShadow' }).type).toBe('boxShadow');
+    expect(meta({ name: 'r', type: 'number', inspector: 'numberInput' }).type).toBe('numberInput');
+  });
+
+  it("gives a Tabler icon prop ToolJet's own icon field, without the show/hide eye", () => {
+    // Break this catches: a Tabler component handed lucide names, or the eye writing an unused iconVisibility style.
+    const prop = { name: 'icon', type: 'string', inspector: 'icon' };
+    expect(hint(prop)).toBeUndefined();
+    expect(meta(prop)).toMatchObject({ type: 'icon', visibility: false });
+  });
+
+  it('gives a lucide icon prop the lucide picker', () => {
+    // Break this catches: a lucide component (the shadcn pack) handed Tabler names it cannot draw.
+    expect(hint({ name: 'icon', type: 'string', inspector: 'icon', iconSet: 'lucide' })).toBe('icon');
   });
 });

@@ -13,3 +13,20 @@
     display: block;
     cursor: pointer;
 }
+
+// Matches the workflow webhook's legacy badge.
+.workflow-params-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .legacy-banner {
+        position: static;
+        z-index: auto;
+        padding: 1px 6px;
+        border-radius: 4px;
+        background-color: var(--background-warning-weak);
+        color: var(--text-warning);
+        line-height: 16px;
+    }
+}

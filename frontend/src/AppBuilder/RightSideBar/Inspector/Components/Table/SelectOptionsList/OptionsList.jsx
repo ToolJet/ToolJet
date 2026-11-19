@@ -1,4 +1,6 @@
 import React from 'react';
+import moment from 'moment';
+import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import List from '@/ToolJetUI/List/List';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -54,6 +56,28 @@ export const OptionsList = ({
       userSelect: 'none',
       position: 'static',
     };
+  };
+
+  const getOtherOptionLabelsWithSameValue = (options, optionIndex) =>
+    options
+      .filter((o, i) => i !== optionIndex && String(o.value) === String(options[optionIndex].value))
+      .map((o) => o.label);
+
+  const logDuplicateOptionValue = (value, options, optionIndex) => {
+    const labels = [options[optionIndex].label, ...getOtherOptionLabelsWithSameValue(options, optionIndex)];
+    useStore.getState().debugger.log({
+      type: 'component',
+      kind: 'component',
+      key: `${component?.component?.name} - Option value`,
+      componentId: component?.id,
+      strace: 'page_level',
+      message: `Duplicate option value "${value}" is used by options: ${labels.map((l) => `"${l}"`).join(', ')}. Option values must be unique.`,
+      status: true,
+      error: { resolvedProperty: { value }, componentId: component?.id },
+      errorTarget: 'Component Property',
+      logLevel: 'error',
+      timestamp: moment().toISOString(),
+    });
   };
 
   const createNewOption = () => {
@@ -115,6 +139,9 @@ export const OptionsList = ({
       const newColumns = columns.value;
       newColumns[index] = column;
       props.paramUpdated({ name: paramToUpdate }, 'value', newColumns, 'properties', true);
+      if (optionItemChanged === 'value' && getOtherOptionLabelsWithSameValue(options, optionIndex).length > 0) {
+        logDuplicateOptionValue(value, options, optionIndex);
+      }
     };
 
     const handleDefaultOptionSelection = (optionIndex, property, value) => {
@@ -165,6 +192,8 @@ export const OptionsList = ({
       handleSelectOption(option, optionIndex, value, index, property);
     };
 
+    const duplicateLabels = getOtherOptionLabelsWithSameValue(column.options, optionIndex);
+
     return (
       <Popover
         id="popover-basic"
@@ -214,6 +243,12 @@ export const OptionsList = ({
                 setColumnPopoverRootCloseBlocker('options::value', showing);
               }}
             />
+            {duplicateLabels.length > 0 && (
+              <div className="tw-text-text-danger tw-mt-1" data-cy="option-value-unique-error">
+                Option value must be unique. <br />
+                Also used by: {duplicateLabels.map((l) => `"${l}"`).join(', ')}
+              </div>
+            )}
           </div>
           <div className="field table-select-colorpicker" style={{ marginBottom: '8px', marginTop: '8px' }}>
             <ProgramaticallyHandleProperties
@@ -384,7 +419,7 @@ export const OptionsList = ({
                       {column?.options?.map((option, optionIndex) => {
                         const resolvedItemName = option.label;
                         return (
-                          <Draggable key={option.label} draggableId={option.label} index={optionIndex}>
+                          <Draggable key={optionIndex} draggableId={String(optionIndex)} index={optionIndex}>
                             {(provided, snapshot) => {
                               return (
                                 <div
@@ -400,7 +435,7 @@ export const OptionsList = ({
                                     rootClose={true}
                                     overlay={selectPopover(option, optionIndex)}
                                   >
-                                    <div key={resolvedItemName}>
+                                    <div>
                                       <List.Item
                                         isDraggable={true}
                                         primaryText={resolvedItemName}

@@ -9,8 +9,10 @@ import { LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService';
 import { getTooljetEdition } from '@helpers/utils.helper';
+import { resolveCodeModeIsolation } from '@helpers/code-mode-isolation.helper';
 import * as Sentry from '@sentry/nestjs';
 import { DataSource } from 'typeorm';
+import { LoggerService } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 
 /**
@@ -77,6 +79,34 @@ export async function handleLicensingInit(app: NestExpressApplication, logger: a
   } catch (error) {
     logger.error('❌ Failed to initialize licensing:', error);
     throw error;
+  }
+}
+
+/**
+ * Re-points sample data sources when their connection settings changed since the last start.
+ * Non-fatal. If the restricted role can't be set up, sample SQL is disabled; `npm run db:sample:reset` forces a sync.
+ */
+export async function handleSampleDataSourceSync(app: NestExpressApplication, logger: LoggerService) {
+  try {
+    const importPath = await getImportPath(false, getTooljetEdition() as TOOLJET_EDITIONS);
+    const { SampleDataSourceService } = await import(`${importPath}/data-sources/services/sample-ds.service`);
+    const updated = await app.get(SampleDataSourceService).syncSampleDataSources();
+    logger.log(updated ? '✅ Sample data sources updated' : '✅ Sample data sources up to date');
+  } catch (error) {
+    logger.error('Failed to sync sample data source credentials:', error);
+  }
+}
+
+export async function warnIfDatabaseSuperuser(app: NestExpressApplication, logger: LoggerService) {
+  try {
+    const [{ is_superuser }] = await app
+      .get(DataSource)
+      .query("SELECT current_setting('is_superuser') AS is_superuser");
+    if (is_superuser === 'on') {
+      logger.warn('Application database user has superuser rights; a least-privilege user is recommended');
+    }
+  } catch (error) {
+    logger.error('Could not check application database user privileges:', error);
   }
 }
 
@@ -288,6 +318,75 @@ async function fetchCustomDomainOrigins(
     logger.error('Failed to fetch custom domains for CORS — all custom domain origins will be rejected:', error);
     return new Set<string>();
   }
+}
+
+/**
+ * What the enterprise edition serves ahead of every other middleware, on hosts and paths of its own. It has to come before
+ * session handling and helmet, whose headers don't apply there. Nothing happens on an edition without it.
+ */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/**
+ * The active custom domain of the workspace that owns one app, as origins. Read only; an unknown app has none. Never
+ * another workspace's domain: a per-app frame trusts only its own workspace's pages.
+ */
+export async function fetchAppWorkspaceDomainOrigins(
+  dataSource: DataSource,
+  appId: string,
+  logger: any
+): Promise<string[]> {
+  if (!UUID.test(appId ?? '')) return [];
+  try {
+    const rows: { domain: string }[] = await dataSource.query(
+      `SELECT cd.domain FROM custom_domains cd JOIN apps a ON a.organization_id = cd.organization_id
+       WHERE a.id = $1 AND cd.status = 'active'`,
+      [appId]
+    );
+    return rows.map((row) => `https://${String(row.domain).toLowerCase()}`);
+  } catch (error) {
+    logger.error?.("Failed to read the app's workspace domain for its frame; only TOOLJET_HOST is trusted:", error);
+    return [];
+  }
+}
+
+/**
+ * What the enterprise edition serves ahead of every other middleware, on hosts and paths of its own. It has to come before
+ * session handling and helmet, whose headers don't apply there. Nothing happens on an edition without it.
+ */
+export async function setupEditionEarlyRoutes(app: NestExpressApplication, configService: ConfigService, logger: any) {
+  let middleware;
+  try {
+    const importPath = await getImportPath();
+    const { codeFrameMiddleware } = await import(`${importPath}/code-page-security/frame-route`);
+    const isolation = resolveCodeModeIsolation(process.env);
+    for (const { level, text } of isolation.messages) {
+      if (level === 'error') logger.error?.(text);
+      else logger.warn?.(text);
+    }
+    middleware = codeFrameMiddleware({
+      isolation: isolation.mode,
+      sandboxUrl: configService.get<string>('CODE_MODE_SANDBOX_URL'),
+      tooljetHost: configService.get<string>('TOOLJET_HOST'),
+      subPath: configService.get<string>('SUB_PATH'),
+      allowedParents: async (appId: string) => {
+        const tooljetHost = configService.get<string>('TOOLJET_HOST')?.replace(/\/+$/, '').toLowerCase();
+        const custom =
+          configService.get<string>('ENABLE_CUSTOM_DOMAINS') === 'true'
+            ? await fetchAppWorkspaceDomainOrigins(app.get<DataSource>(DataSource), appId, logger)
+            : [];
+        return [tooljetHost, ...custom].filter(Boolean);
+      },
+      logger,
+    });
+  } catch (error) {
+    // The community edition has no frame route: nothing to serve. Anything else (a stale server/ee, a bad setting) is
+    // a failure to report: the frame then doesn't load, which keeps app code off the page, but nobody would know why.
+    const missing = error?.code === 'MODULE_NOT_FOUND' && String(error?.message ?? '').includes('code-page-security');
+    if (!missing)
+      logger.error?.("Code mode: the isolated frame's route failed to start; apps won't load isolated:", error);
+    return;
+  }
+  app.use(middleware);
 }
 
 /**

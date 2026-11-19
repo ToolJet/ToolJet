@@ -31,6 +31,11 @@ export class LicenseInitService extends ILicenseInitService {
     return this.getPlanForMigration(manager);
   }
 
+  async getLicenseInstanceForMigrationCloud(manager: EntityManager, _organizationId: string): Promise<LicenseBase> {
+    await this.initForMigration(manager);
+    return License.Instance();
+  }
+
   async init(): Promise<void> {
     console.log('Skip license initialization');
     License.Reload('', new Date());

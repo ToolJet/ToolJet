@@ -7,6 +7,9 @@ import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute, SuperAdminRoute } from '@/Routes';
 import { DesktopOnlyPrivateRoute, DesktopOnlyAdminRoute } from '@/Routes/ComposedGuards';
 import { HomePage } from '@/HomePage';
+import ApprovalsPage from '@ee/modules/Workflows/pages/ApprovalsPage';
+import ExecutionsPage from '@ee/modules/Workflows/pages/ExecutionsPage';
+import WorkflowsPageGuard from '@ee/modules/Workflows/components/WorkflowsPageGuard';
 import './lazyPageStyles';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
@@ -16,6 +19,11 @@ import { Authorize as Oauth } from '@/Oauth';
 const TooljetDatabase = React.lazy(() => import('@/TooljetDatabase'));
 
 const ProfileSettingsPage = React.lazy(() => import('@/SettingsPage'));
+const CliActivate = React.lazy(() =>
+  import('@ee/modules/CodeMode/CliActivate').then((m) =>
+    typeof m.default === 'function' ? m : { default: () => null }
+  )
+);
 
 const MarketplacePage = React.lazy(() => import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage'));
 const InstalledPlugins = React.lazy(
@@ -46,6 +54,7 @@ import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import cx from 'classnames';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import useDarkModeAcrossTabs from '@/_hooks/useDarkModeAcrossTabs';
 import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 import {
   onboarding,
@@ -64,7 +73,6 @@ import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
 import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 import { MigrationBanner } from '@/_components/MigrationBanner';
-import { UpgradeInProgress } from '@/_components/UpgradeInProgress';
 import { MigrationsPage } from '@/MigrationsPage';
 // EmbedApp import removed - now handled by ViewerApp.jsx
 // import EmbedApp from '@/AppBuilder/EmbedApp';
@@ -86,6 +94,8 @@ const AppWrapper = (props) => {
     }),
     shallow
   );
+  // Dark mode toggled in another tab applies to this whole tab, not only the parts that re-read it.
+  useDarkModeAcrossTabs(updateIsTJDarkMode);
   // NOTE: BrowserRouter removed - now handled by RootRouter.jsx
   // App.jsx is now wrapped by RootRouter which provides the router context
   return (
@@ -401,6 +411,15 @@ class AppComponent extends React.Component {
                 {/* - /applications/:slug/versions/:versionId/environments/:environmentId/:pageHandle? */}
                 <Route
                   exact
+                  path="/cli/activate"
+                  element={
+                    <PrivateRoute darkMode={darkMode}>
+                      <CliActivate />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  exact
                   path="/oauth2/authorize"
                   element={
                     <PrivateRoute darkMode={darkMode}>
@@ -452,11 +471,7 @@ class AppComponent extends React.Component {
                 <Route
                   exact
                   path="/error/:errorType"
-                  element={
-                    <UpgradeInProgress>
-                      <ErrorPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </UpgradeInProgress>
-                  }
+                  element={<ErrorPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
                 />
                 <Route
                   exact
@@ -495,7 +510,41 @@ class AppComponent extends React.Component {
                   <Route exact path="/:workspaceId/modules" element={<AppsDashboard appType="module" />} />
 
                   {isWorkflowsFeatureEnabled() && (
-                    <Route exact path="/:workspaceId/workflows" element={<AppsDashboard appType="workflow" />} />
+                    <Route exact path="/:workspaceId/workflows/*">
+                      <Route exact path="/" element={<AppsDashboard appType="workflow" />} />
+                      <Route
+                        exact
+                        path="/approvals"
+                        element={
+                          <HomePage
+                            switchDarkMode={this.switchDarkMode}
+                            darkMode={darkMode}
+                            appType="workflow"
+                            contentOverride={
+                              <WorkflowsPageGuard page="approvals">
+                                <ApprovalsPage darkMode={darkMode} />
+                              </WorkflowsPageGuard>
+                            }
+                          />
+                        }
+                      />
+                      <Route
+                        exact
+                        path="/executions"
+                        element={
+                          <HomePage
+                            switchDarkMode={this.switchDarkMode}
+                            darkMode={darkMode}
+                            appType="workflow"
+                            contentOverride={
+                              <WorkflowsPageGuard page="executions">
+                                <ExecutionsPage darkMode={darkMode} />
+                              </WorkflowsPageGuard>
+                            }
+                          />
+                        }
+                      />
+                    </Route>
                   )}
                 </Route>
 
