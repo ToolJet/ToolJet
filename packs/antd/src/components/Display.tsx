@@ -360,7 +360,8 @@ export const Title = () => {
   });
   const lv = Math.max(1, Math.min(5, Math.round(toNumber(String(level).replace(/^h/i, '')) ?? 3))) as 1;
   return (
-    <AntProvider tokens={tokens}>
+    // A long title in a short box scrolls inside it (Dynamic height off), as a ToolJet Text does (QA PF-211).
+    <AntProvider tokens={tokens} className="tj-ant-fit-scroll">
       <SkeletonSwap loading={loading} look={<Skeleton active paragraph={false} />}>
         <Typography.Title
           level={lv}
@@ -426,7 +427,8 @@ export const Text = () => {
   });
   const rows = Math.max(0, Number(ellipsis) || 0);
   return (
-    <AntProvider tokens={tokens}>
+    // A long text in a short box scrolls inside it (Dynamic height off), as a ToolJet Text does (QA PF-212).
+    <AntProvider tokens={tokens} className="tj-ant-fit-scroll">
       <SkeletonSwap
         loading={loading}
         look={<Skeleton active title={false} paragraph={{ rows: Math.max(1, Math.min(4, rows || 2)) }} />}
@@ -630,12 +632,7 @@ export const Progress = () => {
     min: 0,
     max: 50,
   });
-  const [strokeColor] = ToolJet.useStateString({
-    name: 'strokeColor',
-    label: 'Stroke color',
-    inspector: 'color',
-    initialValue: '',
-  });
+  // No Stroke color: the bar, ring and steps take the Primary color style (Ant's default progress colour).
   const [title] = ToolJet.useStateString({
     name: 'title',
     label: 'Title',
@@ -666,12 +663,17 @@ export const Progress = () => {
       size={isLine ? undefined : ringPx}
       status={status === 'normal' ? undefined : (status as 'active')}
       showInfo={showInfo}
-      steps={isLine && Number(steps) > 0 ? Number(steps) : undefined}
-      strokeColor={strokeColor || undefined}
+      // Within the declared 1 to 50: max only limits the inspector field, and a bound 1e9 reached Ant, which threw
+      // building that many segments (QA PF-213).
+      steps={isLine && Number(steps) >= 1 ? Math.min(50, Math.trunc(Number(steps))) : undefined}
     />
   );
   return (
-    <AntProvider tokens={tokens} fill className={isLine ? 'tj-ant-progress-line' : 'tj-ant-center'}>
+    <AntProvider
+      tokens={tokens}
+      fill
+      className={`${isLine ? 'tj-ant-progress-line' : 'tj-ant-center'} tj-ant-chart-box`}
+    >
       <SpinOver loading={loading} as="fill">
         {title && isLine ? <div className="tj-ant-progress-title">{title}</div> : null}
         {isLine ? (
@@ -802,7 +804,7 @@ export const Empty = () => {
     defaultHeight: 14,
   });
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-center">
+    <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-empty">
       <SpinOver loading={loading} as="fill">
         <AntEmpty
           description={description || false}
@@ -839,7 +841,7 @@ export const Result = () => {
     defaultHeight: 30,
   });
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} className="tj-ant-fit-scroll tj-ant-chart-box">
       <SpinOver loading={loading} as="block">
         <AntResult
           status={oneOf(status, RESULT_STATUSES, 'info')}
@@ -1070,7 +1072,7 @@ export const Steps = () => {
     (n) => go(Number(n) || 0)
   );
   return (
-    <AntProvider tokens={tokens}>
+    <AntProvider tokens={tokens} className="tj-ant-steps tj-ant-fit-scroll tj-ant-chart-box">
       <SpinOver loading={loading} as="block">
         <AntSteps
           items={items}
