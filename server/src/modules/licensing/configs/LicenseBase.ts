@@ -4,7 +4,6 @@ import {
   ENTERPRISE_DEFAULT_PAGES_LIMIT,
   LICENSE_LIMIT,
   LICENSE_TYPE,
-  NON_ENTERPRISE_PLANS,
   PLANS_BELOW_PRO,
 } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
@@ -273,7 +272,7 @@ export default class LicenseBase {
   }
 
   private get isEnterprisePlan(): boolean {
-    return !NON_ENTERPRISE_PLANS.includes(this._plan?.toLowerCase());
+    return this.licenseType === LICENSE_TYPE.ENTERPRISE;
   }
 
   private get defaultPagesLimit(): number {
