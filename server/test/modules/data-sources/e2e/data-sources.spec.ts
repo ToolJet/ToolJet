@@ -9,8 +9,14 @@ import {
   createAppWithDependencies,
   login,
   updateEntity,
+  findEntity,
+  resolveOrSeedDefaultBranch,
+  saveEntity,
+  getEntityRepository,
 } from 'test-helper';
 import { DataSource } from 'src/entities/data_source.entity';
+import { DataSourceVersion } from 'src/entities/data_source_version.entity';
+import { WorkspaceBranch } from 'src/entities/workspace_branch.entity';
 
 /** @group platform */
 describe('DataSourcesController', () => {
@@ -50,6 +56,67 @@ describe('DataSourcesController', () => {
         kind: 'restapi',
         organizationId: adminUserData.organization.id,
       });
+    });
+
+    it("should 404 for another workspace's branch id and create nothing", async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const anotherOrgAdminUserData = await createUser(nestApp, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await ensureAppEnvironments(nestApp, adminUserData.organization.id);
+      await resolveOrSeedDefaultBranch(adminUserData.organization.id);
+      const foreignBranch = await resolveOrSeedDefaultBranch(anotherOrgAdminUserData.organization.id);
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+      const versionsOnForeignBranch = () =>
+        getEntityRepository(DataSourceVersion).count({ where: { branchId: foreignBranch.id } });
+      const versionsBefore = await versionsOnForeignBranch();
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/data-sources?branch_id=${foreignBranch.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'foreign_branch_data_source', kind: 'restapi', options: [] });
+
+      expect(response.statusCode).toBe(404);
+      expect(await findEntity(DataSource, { name: 'foreign_branch_data_source' })).toBeNull();
+      expect(await versionsOnForeignBranch()).toBe(versionsBefore);
+    });
+
+    it("should create on the caller's own feature branch and without a branch id", async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await ensureAppEnvironments(nestApp, adminUserData.organization.id);
+      await resolveOrSeedDefaultBranch(adminUserData.organization.id);
+      const feature = await saveEntity(WorkspaceBranch, {
+        organizationId: adminUserData.organization.id,
+        name: 'feature',
+        isDefault: false,
+      } as WorkspaceBranch);
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+
+      const onFeature = await request(nestApp.getHttpServer())
+        .post(`/api/data-sources?branch_id=${feature.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'feature_branch_data_source', kind: 'restapi', options: [] });
+      const withoutBranch = await request(nestApp.getHttpServer())
+        .post('/api/data-sources')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'no_branch_data_source', kind: 'restapi', options: [] });
+
+      expect(onFeature.statusCode).toBe(201);
+      expect(
+        await findEntity(DataSourceVersion, { dataSourceId: onFeature.body.id, branchId: feature.id })
+      ).toMatchObject({ name: 'feature_branch_data_source', isActive: true });
+      expect(withoutBranch.statusCode).toBe(201);
+      expect(withoutBranch.body).toMatchObject({ name: 'no_branch_data_source' });
     });
 
     it('should not allow unauthenticated users to create data sources', async () => {
@@ -111,6 +178,71 @@ describe('DataSourcesController', () => {
 
       // OrganizationValidateGuard rejects cross-org access
       expect(response.statusCode).toBe(403);
+    });
+
+    it("should 404 for another workspace's branch id and list on the caller's own branch", async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const anotherOrgAdminUserData = await createUser(nestApp, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await ensureAppEnvironments(nestApp, adminUserData.organization.id);
+      const ownBranch = await resolveOrSeedDefaultBranch(adminUserData.organization.id);
+      const foreignBranch = await resolveOrSeedDefaultBranch(anotherOrgAdminUserData.organization.id);
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+
+      const onForeign = await request(nestApp.getHttpServer())
+        .get(`/api/data-sources/${adminUserData.organization.id}?branch_id=${foreignBranch.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+      const onOwn = await request(nestApp.getHttpServer())
+        .get(`/api/data-sources/${adminUserData.organization.id}?branch_id=${ownBranch.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(onForeign.statusCode).toBe(404);
+      expect(onForeign.body).not.toHaveProperty('data_sources');
+      expect(onOwn.statusCode).toBe(200);
+      expect(onOwn.body).toMatchObject({ data_sources: expect.any(Array) });
+    });
+  });
+
+  describe('GET /api/data-sources/:organizationId/environments/:environmentId/versions/:versionId | List for an app', () => {
+    it("should 404 for another workspace's branch id and list on the caller's own branch", async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const anotherOrgAdminUserData = await createUser(nestApp, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const { appVersion, appEnvironments } = await createAppWithDependencies(nestApp, adminUserData.user, {
+        isQueryNeeded: false,
+        isDataSourceNeeded: false,
+      });
+      const ownBranch = await resolveOrSeedDefaultBranch(adminUserData.organization.id);
+      const foreignBranch = await resolveOrSeedDefaultBranch(anotherOrgAdminUserData.organization.id);
+      const environment = appEnvironments.find((env) => env.isDefault) || appEnvironments[0];
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+      const path = `/api/data-sources/${adminUserData.organization.id}/environments/${environment.id}/versions/${appVersion.id}`;
+
+      const onForeign = await request(nestApp.getHttpServer())
+        .get(`${path}?branch_id=${foreignBranch.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+      const onOwn = await request(nestApp.getHttpServer())
+        .get(`${path}?branch_id=${ownBranch.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(onForeign.statusCode).toBe(404);
+      expect(onForeign.body).not.toHaveProperty('data_sources');
+      expect(onOwn.statusCode).toBe(200);
+      expect(onOwn.body).toMatchObject({ data_sources: expect.any(Array) });
     });
   });
 
@@ -177,6 +309,38 @@ describe('DataSourcesController', () => {
       // this org) — previously an uncaught EntityNotFoundError crashed with a 500.
       expect(response.statusCode).toBe(404);
     });
+
+    it("should 404 for another workspace's branch id and leave the data source unchanged", async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const anotherOrgAdminUserData = await createUser(nestApp, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await ensureAppEnvironments(nestApp, adminUserData.organization.id);
+      await resolveOrSeedDefaultBranch(adminUserData.organization.id);
+      const foreignBranch = await resolveOrSeedDefaultBranch(anotherOrgAdminUserData.organization.id);
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/data-sources')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'branch_scoped_data_source', kind: 'restapi', options: [] });
+      const dataSourceId = createResponse.body.id;
+      const environments = await getAllEnvironments(nestApp, adminUserData.organization.id);
+      const defaultEnv = environments.find((e: any) => e.isDefault) || environments[0];
+
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/data-sources/${dataSourceId}?environment_id=${defaultEnv.id}&branch_id=${foreignBranch.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'renamed_data_source', options: [] });
+
+      expect(response.statusCode).toBe(404);
+      expect(await findEntity(DataSource, { id: dataSourceId })).toMatchObject({ name: 'branch_scoped_data_source' });
+    });
   });
 
   describe('DELETE /api/data-sources/:id | Delete data source', () => {
@@ -204,6 +368,63 @@ describe('DataSourcesController', () => {
         .set('Cookie', loggedUser.tokenCookie);
 
       expect(response.statusCode).toBe(200);
+    });
+
+    it('should refuse to delete a static data source', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await ensureAppEnvironments(nestApp, adminUserData.organization.id);
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/data-sources')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'static_data_source', kind: 'restapi', options: [] });
+      const dataSourceId = createResponse.body.id;
+      await updateEntity(DataSource, dataSourceId, { type: 'static' } as never);
+
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/data-sources/${dataSourceId}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(response.statusCode).toBe(400);
+      expect(await findEntity(DataSource, { id: dataSourceId })).not.toBeNull();
+    });
+
+    it("should 404 for another workspace's branch id and leave both workspaces unchanged", async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const anotherOrgAdminUserData = await createUser(nestApp, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      await ensureAppEnvironments(nestApp, adminUserData.organization.id);
+      await resolveOrSeedDefaultBranch(adminUserData.organization.id);
+      const foreignBranch = await resolveOrSeedDefaultBranch(anotherOrgAdminUserData.organization.id);
+      await updateEntity(WorkspaceBranch, foreignBranch.id, { lastSyncedCommit: 'foreign-commit' });
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/data-sources')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'kept_data_source', kind: 'restapi', options: [] });
+      const dataSourceId = createResponse.body.id;
+
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/data-sources/${dataSourceId}?branch_id=${foreignBranch.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(response.statusCode).toBe(404);
+      expect(await findEntity(DataSource, { id: dataSourceId })).not.toBeNull();
+      expect(await findEntity(WorkspaceBranch, { id: foreignBranch.id })).toMatchObject({
+        lastSyncedCommit: 'foreign-commit',
+      });
     });
 
     it('should not allow user from another org to delete', async () => {
@@ -234,6 +455,66 @@ describe('DataSourcesController', () => {
       // Cross-org access is rejected with a clean 404 (data source not found for
       // this org) — previously an uncaught EntityNotFoundError crashed with a 500.
       expect(response.statusCode).toBe(404);
+    });
+  });
+
+  describe('POST /api/data-sources/:id/scope | Change scope', () => {
+    it('should set the owner to the converting user when converting an unowned local data source to global', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const { dataSource } = await createAppWithDependencies(nestApp, adminUserData.user, {
+        isQueryNeeded: false,
+      });
+      await updateEntity(DataSource, dataSource.id, {
+        organizationId: adminUserData.organization.id,
+      });
+
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/data-sources/${dataSource.id}/scope`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(response.statusCode).toBe(201);
+      expect(await findEntity(DataSource, { id: dataSource.id })).toMatchObject({
+        scope: 'global',
+        createdBy: adminUserData.user.id,
+      });
+    });
+
+    it('should keep the existing owner when converting a data source that already has one', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const otherUserData = await createUser(
+        nestApp,
+        { email: 'other@tooljet.io', groups: ['all_users', 'admin'], organization: adminUserData.organization },
+        undefined
+      );
+      const { dataSource } = await createAppWithDependencies(nestApp, adminUserData.user, {
+        isQueryNeeded: false,
+      });
+      await updateEntity(DataSource, dataSource.id, {
+        organizationId: adminUserData.organization.id,
+        createdBy: otherUserData.user.id,
+      });
+
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/data-sources/${dataSource.id}/scope`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(response.statusCode).toBe(201);
+      expect(await findEntity(DataSource, { id: dataSource.id })).toMatchObject({
+        scope: 'global',
+        createdBy: otherUserData.user.id,
+      });
     });
   });
 
@@ -290,6 +571,40 @@ describe('DataSourcesController', () => {
 
       expect(response.statusCode).toBe(404);
       expect(response.body).not.toHaveProperty('dependent_queries');
+    });
+
+    it("should 404 for another workspace's branch id and count on the caller's own branch", async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const anotherOrgAdminUserData = await createUser(nestApp, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const { dataSource } = await createAppWithDependencies(nestApp, adminUserData.user, {
+        isQueryNeeded: true,
+      });
+      await updateEntity(DataSource, dataSource.id, {
+        organizationId: adminUserData.organization.id,
+      });
+      const ownBranch = await resolveOrSeedDefaultBranch(adminUserData.organization.id);
+      const foreignBranch = await resolveOrSeedDefaultBranch(anotherOrgAdminUserData.organization.id);
+      const loggedUser = await login(nestApp, adminUserData.user.email);
+
+      const onForeign = await request(nestApp.getHttpServer())
+        .get(`/api/data-sources/dependent-queries/${dataSource.id}?branch_id=${foreignBranch.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+      const onOwn = await request(nestApp.getHttpServer())
+        .get(`/api/data-sources/dependent-queries/${dataSource.id}?branch_id=${ownBranch.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
+
+      expect(onForeign.statusCode).toBe(404);
+      expect(onForeign.body).not.toHaveProperty('dependent_queries');
+      expect(onOwn.statusCode).toBe(200);
+      expect(onOwn.body).toMatchObject({ datasources: 1, dependent_queries: expect.any(Number) });
     });
   });
 

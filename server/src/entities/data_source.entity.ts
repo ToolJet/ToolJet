@@ -60,6 +60,9 @@ export class DataSource extends BaseEntity {
   @Column({ name: 'is_dummy', type: 'boolean', default: false })
   is_dummy: boolean;
 
+  @Column({ name: 'created_by', type: 'uuid', nullable: true })
+  createdBy: string | null;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

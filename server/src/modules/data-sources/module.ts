@@ -1,4 +1,5 @@
 import { DynamicModule } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { DataSourcesRepository } from './repository';
@@ -17,6 +18,19 @@ import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { FolderDataSourcesModule } from '@modules/folder-data-sources/module';
 import { CustomDomainsModule } from '@modules/custom-domains/module';
+import { DataSourceActivityService } from './dashboard/activity.service';
+import { DataSourceActivityInterceptor } from './dashboard/activity.interceptor';
+import { DataSourcesDashboardController } from './dashboard/dashboard.controller';
+import { DataSourcesDashboardService } from './dashboard/dashboard.service';
+import { DataSourcesPinsController } from './dashboard/pins.controller';
+import { DataSourcesPinsService } from './dashboard/pins.service';
+import { DataSourcesBulkService } from './dashboard/bulk.service';
+import { DataSourcesBulkFolderDeleteService } from './dashboard/bulk-folder-delete.service';
+import { FoldersModule } from '@modules/folders/module';
+import { DataSource } from 'typeorm';
+import { AbilityService } from '@modules/ability/interfaces/IService';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 
 export class DataSourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -41,7 +55,11 @@ export class DataSourcesModule extends SubModule {
       'guards/git-sync-datasource.guard',
     ]);
 
+    const { AppEnvironmentUtilService } = await this.getProviders(configs, 'app-environments', ['util.service']);
     const { DataQueriesUtilService } = await this.getProviders(configs, 'data-queries', ['util.service']);
+    const { GitSyncConfigsUtilService } = await this.getProviders(configs, 'git-sync-configs', ['util.service']);
+    const { FolderDataSourcesUtilService } = await this.getProviders(configs, 'folder-data-sources', ['util.service']);
+    const { FoldersService } = await this.getProviders(configs, 'folders', ['service']);
 
     return this.cacheModule(cacheKey, {
       module: DataSourcesModule,
@@ -56,6 +74,7 @@ export class DataSourcesModule extends SubModule {
         await GitSyncConfigsModule.register(configs),
         await AppPermissionsModule.register(configs!),
         await FolderDataSourcesModule.register(configs),
+        await FoldersModule.register(configs),
         await CustomDomainsModule.register(configs!),
       ],
       providers: [
@@ -72,8 +91,76 @@ export class DataSourcesModule extends SubModule {
         OrganizationRepository,
         GitSyncDataSourceCreateGuard,
         GitSyncDataSourceEditGuard,
+        DataSourceActivityService,
+        {
+          provide: DataSourcesDashboardService,
+          useFactory: (
+            dataSource,
+            abilityService,
+            gitSyncConfigsUtilService,
+            dataSourcesUtilService,
+            appEnvironmentUtilService,
+            licenseTermsService,
+            eventEmitter
+          ) =>
+            new DataSourcesDashboardService(
+              dataSource,
+              abilityService,
+              gitSyncConfigsUtilService,
+              dataSourcesUtilService,
+              appEnvironmentUtilService,
+              licenseTermsService,
+              eventEmitter
+            ),
+          inject: [
+            DataSource,
+            AbilityService,
+            GitSyncConfigsUtilService,
+            DataSourcesUtilService,
+            AppEnvironmentUtilService,
+            LicenseTermsService,
+            EventEmitter2,
+          ],
+        },
+        DataSourcesPinsService,
+        {
+          provide: DataSourcesBulkService,
+          useFactory: (
+            dataSource,
+            dashboardService,
+            dataSourcesService,
+            folderDataSourcesUtilService,
+            gitSyncConfigsUtilService,
+            eventEmitter
+          ) =>
+            new DataSourcesBulkService(
+              dataSource,
+              dashboardService,
+              dataSourcesService,
+              folderDataSourcesUtilService,
+              gitSyncConfigsUtilService,
+              eventEmitter
+            ),
+          inject: [
+            DataSource,
+            DataSourcesDashboardService,
+            DataSourcesService,
+            FolderDataSourcesUtilService,
+            GitSyncConfigsUtilService,
+            EventEmitter2,
+          ],
+        },
+        {
+          provide: DataSourcesBulkFolderDeleteService,
+          useFactory: (dataSource, dashboardService, foldersService, bulkService) =>
+            new DataSourcesBulkFolderDeleteService(dataSource, dashboardService, foldersService, bulkService),
+          inject: [DataSource, DataSourcesDashboardService, FoldersService, DataSourcesBulkService],
+        },
+        ...(isMainImport ? [{ provide: APP_INTERCEPTOR, useClass: DataSourceActivityInterceptor }] : []),
       ],
-      controllers: isMainImport ? [DataSourcesController] : [],
+      controllers: isMainImport
+        ? [DataSourcesController, DataSourcesDashboardController, DataSourcesPinsController]
+        : [],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
     });
   }
