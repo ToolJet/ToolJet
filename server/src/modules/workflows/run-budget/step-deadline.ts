@@ -1,3 +1,5 @@
+import { workflowMetrics } from '@modules/workflows/governance-metrics';
+
 /** Why a step's deadline fired: its run's time is up (or its own cap), or the run was terminated. */
 export class StepStoppedError extends Error {
   constructor(
@@ -40,7 +42,10 @@ export function startStepDeadline(options: StepDeadlineOptions): StepDeadline {
   const remainingMs = Math.max(0, capped ? stepTimeoutMs : runRemainingMs);
   const controller = new AbortController();
   const stop = (error: StepStoppedError) => {
-    if (!controller.signal.aborted) controller.abort(error);
+    if (!controller.signal.aborted) {
+      workflowMetrics.stepStopped(error.reason);
+      controller.abort(error);
+    }
     dispose();
   };
 
