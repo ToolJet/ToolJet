@@ -106,15 +106,75 @@ describe('RelationList', () => {
       await userEvent.click(screen.getByLabelText(label));
       await userEvent.click(await screen.findByRole('option', { name: option }));
     };
+    // The source column opens up once the target table is chosen.
+    expect(screen.getByLabelText('Source column')).toBeDisabled();
+    await choose('Target table', 'users');
     await waitFor(() => expect(screen.getByLabelText('Source column')).toBeEnabled());
     await choose('Source column', 'owner');
-    await choose('Target table', 'users');
     await waitFor(() => expect(screen.getByLabelText('Target column')).toBeEnabled());
     await choose('Target column', 'id');
 
     await userEvent.click(screen.getByRole('button', { name: 'Add relation' }));
     expect(screen.getByTestId('relation-count')).toHaveTextContent('1');
     expect(screen.queryByText('New relation')).not.toBeInTheDocument();
+  });
+
+  describe('when there is nothing to pick', () => {
+    // A list with no options is never opened: its field is off.
+    const choose = async (label: string, option: string) => {
+      await userEvent.click(screen.getByLabelText(label));
+      await userEvent.click(await screen.findByRole('option', { name: option }));
+    };
+
+    beforeEach(() => {
+      jest.spyOn(tooljetDatabaseService, 'viewTable').mockResolvedValue({
+        data: { result: { columns: [{ column_name: 'id', data_type: 'integer', column_default: null }] } },
+      });
+    });
+
+    function OnlyId({ tables }: { tables: { id: string; table_name: string }[] }) {
+      const draft = useTableDraft();
+      return (
+        <TooljetDatabaseProvider value={{ ...page, tables } as unknown as TooljetDatabaseContextValue}>
+          <RelationList tableName="orders" draft={draft} />
+        </TooljetDatabaseProvider>
+      );
+    }
+
+    it('turns the source column off when no column of this table can have a relation', async () => {
+      render(<OnlyId tables={page.tables} />);
+      await userEvent.click(screen.getByRole('button', { name: 'Add relation' }));
+      await choose('Target table', 'users');
+      await waitFor(() => expect(screen.getByLabelText('Source column')).toBeDisabled());
+    });
+
+    it('turns the target table off when this is the only table', async () => {
+      render(<OnlyId tables={[{ id: 'orders-id', table_name: 'orders' }]} />);
+      await userEvent.click(screen.getByRole('button', { name: 'Add relation' }));
+      expect(screen.getByLabelText('Target table')).toBeDisabled();
+    });
+
+    it('turns the target column off when the chosen table has no matching column', async () => {
+      renderList();
+      jest.spyOn(tooljetDatabaseService, 'viewTable').mockResolvedValue({
+        data: { result: { columns: [{ column_name: 'name', data_type: 'character varying', column_default: null }] } },
+      });
+      await userEvent.click(screen.getByRole('button', { name: 'Add relation' }));
+      await choose('Target table', 'users');
+      await waitFor(() => expect(screen.getByLabelText('Source column')).toBeEnabled());
+      await choose('Source column', 'owner');
+      await waitFor(() => expect(screen.getByLabelText('Target column')).toBeDisabled());
+    });
+
+    it('keeps the target column off while the table’s columns are still loading', async () => {
+      renderList();
+      jest.spyOn(tooljetDatabaseService, 'viewTable').mockReturnValue(new Promise(() => {}));
+      await userEvent.click(screen.getByRole('button', { name: 'Add relation' }));
+      await choose('Target table', 'users');
+      await waitFor(() => expect(screen.getByLabelText('Source column')).toBeEnabled());
+      await choose('Source column', 'owner');
+      expect(screen.getByLabelText('Target column')).toBeDisabled();
+    });
   });
 
   describe('with a saved relation', () => {

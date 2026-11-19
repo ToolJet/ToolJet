@@ -76,5 +76,9 @@ export const isPrimaryKeyLocked = (column: DraftColumn, columns: DraftColumn[]):
 
 // An empty default is left out rather than sent as null: the server sanitises a present null into '' and then rejects it
 // as not matching the column type.
-export const toColumnPayload = ({ id: _id, column_default: columnDefault, ...column }: DraftColumn): ColumnPayload =>
-  columnDefault ? { ...column, column_default: columnDefault } : column;
+export const toColumnPayload = ({
+  id: _id,
+  existing: _existing,
+  column_default: columnDefault,
+  ...column
+}: DraftColumn): ColumnPayload => (columnDefault ? { ...column, column_default: columnDefault } : column);

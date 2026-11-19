@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { useTableDraft } from '../useTableDraft';
+import { buildEditColumns, buildEditRelations } from '../editTableRules';
 import type { DraftRelation } from '../types';
 
 const relation = (overrides: Partial<DraftRelation> = {}): Omit<DraftRelation, 'id'> => ({
@@ -232,6 +233,107 @@ describe('useTableDraft', () => {
         expect(hook.result.current.relations).toEqual([]);
       }
     );
+  });
+
+  describe('editing a stored table', () => {
+    const PK = { is_primary_key: true, is_not_null: true, is_unique: true };
+    const PLAIN = { is_primary_key: false, is_not_null: false, is_unique: false };
+    const initialFor = () => ({
+      tableName: 'orders',
+      columns: buildEditColumns(
+        [
+          { Header: 'id', dataType: 'serial', constraints_type: PK, column_default: null },
+          { Header: 'title', dataType: 'character varying', constraints_type: PLAIN, column_default: null },
+        ],
+        {}
+      ),
+      relations: buildEditRelations([
+        {
+          constraint_name: 'fk_1',
+          column_names: ['title'],
+          referenced_table_name: 'users',
+          referenced_table_id: 'users-id',
+          referenced_column_names: ['name'],
+          on_delete: 'RESTRICT',
+          on_update: 'RESTRICT',
+        },
+      ]),
+    });
+    const setupEdit = () => {
+      const initial = initialFor();
+      return { initial, hook: renderHook(() => useTableDraft([], initial)) };
+    };
+
+    it('starts as the stored table: not dirty, and ready to save', () => {
+      const { hook } = setupEdit();
+      expect(hook.result.current.tableName).toBe('orders');
+      expect(hook.result.current.columns.map((c) => c.column_name)).toEqual(['id', 'title']);
+      expect(hook.result.current.isDirty).toBe(false);
+      expect(hook.result.current.canSubmit).toBe(true);
+    });
+
+    it('is dirty after a rename, a column edit or a removed column, and clean again when undone', () => {
+      const { hook } = setupEdit();
+      act(() => hook.result.current.setTableName('orders_2'));
+      expect(hook.result.current.isDirty).toBe(true);
+      act(() => hook.result.current.setTableName('orders'));
+      expect(hook.result.current.isDirty).toBe(false);
+
+      const title = hook.result.current.columns[1].id;
+      act(() => hook.result.current.updateColumn(title, { column_default: 'x' }));
+      expect(hook.result.current.isDirty).toBe(true);
+      act(() => hook.result.current.updateColumn(title, { column_default: null }));
+      expect(hook.result.current.isDirty).toBe(false);
+
+      act(() => hook.result.current.removeColumn(title));
+      expect(hook.result.current.isDirty).toBe(true);
+    });
+
+    it('keeps the type of a stored column, and lets a new column pick one', () => {
+      const { hook } = setupEdit();
+      act(() => hook.result.current.changeType(hook.result.current.columns[1].id, 'integer'));
+      expect(hook.result.current.columns[1].data_type).toBe('character varying');
+
+      const added = addNamed(hook, 'notes', 'bigint');
+      expect(hook.result.current.columns.find((c) => c.id === added)?.data_type).toBe('bigint');
+    });
+
+    it('does not count its relations as unsaved, because they are saved as they are changed', () => {
+      const { hook } = setupEdit();
+      act(() => hook.result.current.replaceRelations([]));
+      expect(hook.result.current.relations).toEqual([]);
+      expect(hook.result.current.isDirty).toBe(false);
+    });
+
+    // A stored relation is saved as it is changed, so it names the column as the server knows it until the edit is saved.
+    it('keeps a stored relation on the column name the server has when the column is renamed or removed', () => {
+      const { hook } = setupEdit();
+      const title = hook.result.current.columns[1].id;
+      act(() => hook.result.current.updateColumn(title, { column_name: 'heading' }));
+      expect(hook.result.current.relations[0].column_names).toEqual(['title']);
+      act(() => hook.result.current.removeColumn(title));
+      expect(hook.result.current.relations).toHaveLength(1);
+    });
+
+    it('builds the edit_table columns from the changes', () => {
+      const { hook } = setupEdit();
+      act(() => hook.result.current.updateColumn(hook.result.current.columns[1].id, { column_name: 'heading' }));
+      addNamed(hook, 'notes');
+      const entries = hook.result.current.toEditPayload();
+      expect(entries.map((e) => [e.old_column?.column_name, e.new_column?.column_name])).toEqual([
+        ['id', 'id'],
+        ['title', 'heading'],
+        [undefined, 'notes'],
+      ]);
+    });
+
+    it('reports a changed primary key', () => {
+      const { hook } = setupEdit();
+      expect(hook.result.current.primaryKeyChange).toBeNull();
+      const title = hook.result.current.columns[1].id;
+      act(() => hook.result.current.togglePrimaryKey(title, true));
+      expect(hook.result.current.primaryKeyChange?.next.map((c) => c.columnName)).toEqual(['id', 'title']);
+    });
   });
 
   describe('toPayload', () => {

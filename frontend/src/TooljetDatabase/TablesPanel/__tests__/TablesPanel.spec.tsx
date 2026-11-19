@@ -23,13 +23,16 @@ jest.mock(
       children
 );
 
-// The real form is a long flow of its own; what matters here is what the host does once an edit has saved.
-jest.mock('@/TooljetDatabase/Forms/TableForm', () => ({
+// The confirmation modal has its own specs: here it confirms at once, so an edit runs through to what the drawer does
+// once the table is saved.
+jest.mock('@/TooljetDatabase/MigrationConfirmModal/useMigrationModal', () => ({
   __esModule: true,
-  default: ({ onEdit, selectedTable }: { onEdit: (name: string) => void; selectedTable: { table_name: string } }) =>
-    jest
-      .requireActual('react')
-      .createElement('button', { onClick: () => onEdit(selectedTable.table_name) }, 'Save table edit'),
+  default: () => ({
+    modal: null,
+    runMigration: (options: { run: (name: string) => Promise<unknown>; onSuccess: () => void }) => {
+      Promise.resolve(options.run('migration')).then(() => options.onSuccess());
+    },
+  }),
 }));
 
 const ORDERS: TjdbTable = { id: 'orders-id', table_name: 'orders' };
@@ -80,6 +83,7 @@ function serve({ tablesLimit = { current: 1, total: 10 } } = {}) {
         },
       });
     }),
+    http.patch('*/tooljet-db/organizations/:organizationId/table/:tableName', () => HttpResponse.json({ result: {} })),
     http.get('*/tooljet-db/proxy/:tableId', () => HttpResponse.json([], { headers: { 'content-range': '0-0/0' } })),
     http.post('*/v2/resources/export', async ({ request }) => {
       requests.exported.push((await request.json()) as object);
@@ -348,6 +352,11 @@ describe('TablesPanel | row menu', () => {
 });
 
 describe('TablesPanel | edit table', () => {
+  // Renames the table in the open drawer and saves it.
+  const saveEdit = async () => {
+    await userEvent.type(await screen.findByPlaceholderText('Enter table name'), '_2');
+    await userEvent.click(screen.getByRole('button', { name: /Save changes/ }));
+  };
   const FILTER = { 0: { column: 'status', operator: 'eq', value: 'open' } };
 
   it('forgets the saved view of the edited table, open or not, because the edit may drop the column it filters on', async () => {
@@ -365,7 +374,7 @@ describe('TablesPanel | edit table', () => {
 
     await openMenuOf('users');
     await userEvent.click(screen.getByRole('menuitem', { name: 'Edit table' }));
-    await userEvent.click(await screen.findByRole('button', { name: 'Save table edit' }));
+    await saveEdit();
 
     await waitFor(() => expect(useTjdbStore.getState().views[USERS.id]).toBeUndefined());
     expect(useTjdbStore.getState().views[ORDERS.id]).toBeDefined();
@@ -383,7 +392,7 @@ describe('TablesPanel | edit table', () => {
 
     await openMenuOf('orders');
     await userEvent.click(screen.getByRole('menuitem', { name: 'Edit table' }));
-    await userEvent.click(await screen.findByRole('button', { name: 'Save table edit' }));
+    await saveEdit();
 
     await waitFor(() => expect(useTjdbStore.getState().views[ORDERS.id]).toBeUndefined());
   });

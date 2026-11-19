@@ -15,6 +15,8 @@ import type { useTableDraft } from './useTableDraft';
 
 type SchemaTableProps = {
   draft: ReturnType<typeof useTableDraft>;
+  /** Rows can be dragged to reorder. Off for a stored table. */
+  reorderable?: boolean;
 };
 
 // Rows move up and down only.
@@ -22,8 +24,8 @@ const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 
 
 const HEADINGS = ['', 'Column name', 'Type', 'Default value', 'Primary', 'Not null', 'Unique', ''];
 
-// The columns of the table being created: one row each, reorderable by the grip.
-export function SchemaTable({ draft }: SchemaTableProps) {
+// The table's columns: one row each, reorderable by the grip for a new table.
+export function SchemaTable({ draft, reorderable = true }: SchemaTableProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -57,7 +59,13 @@ export function SchemaTable({ draft }: SchemaTableProps) {
       >
         <SortableContext items={draft.columns.map((column) => column.id)} strategy={verticalListSortingStrategy}>
           {draft.columns.map((column) => (
-            <SchemaColumnRow key={column.id} column={column} columns={draft.columns} draft={draft} />
+            <SchemaColumnRow
+              key={column.id}
+              column={column}
+              columns={draft.columns}
+              draft={draft}
+              reorderable={reorderable}
+            />
           ))}
         </SortableContext>
       </DndContext>

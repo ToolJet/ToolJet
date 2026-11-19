@@ -4,22 +4,49 @@ import { Button } from '@/components/ui/Rocket/Button/Button';
 import { RelationFormCard } from './RelationFormCard';
 import { RelationSummaryCard } from './RelationSummaryCard';
 import { SectionHeader } from './SectionHeader';
+import type { DraftColumn, DraftRelation, RelationPayload } from './types';
 import type { useTableDraft } from './useTableDraft';
 
 const DOCS = 'https://docs.tooljet.com/docs/tooljet-db/constraints/foreign-key';
 
+/**
+ * How a relation is saved. A new table keeps its relations in the draft until it is created; a stored table saves each
+ * one as it changes, so its actions run the change and call `done` once it has gone through.
+ */
+export type RelationActions = {
+  add: (relation: RelationPayload, done: () => void) => void;
+  update: (relation: DraftRelation, next: RelationPayload, done: () => void) => void;
+  remove: (relation: DraftRelation) => void;
+};
+
 type RelationListProps = {
   tableName: string;
   draft: ReturnType<typeof useTableDraft>;
+  /** Defaults to changing the draft. */
+  actions?: RelationActions;
+  /** Columns a relation can start from. Defaults to every column of the draft. */
+  sourceColumns?: DraftColumn[];
 };
 
 // 'new' = adding; an id = editing that relation; null = nothing open.
 type Open = 'new' | string | null;
 
 // The table's foreign key relations. One form is open at a time, and the "Add relation" button hides while it is.
-export function RelationList({ tableName, draft }: RelationListProps) {
+export function RelationList({ tableName, draft, actions, sourceColumns }: RelationListProps) {
   const [open, setOpen] = useState<Open>(null);
   const close = () => setOpen(null);
+  const { add, update, remove }: RelationActions = actions ?? {
+    add: (relation, done) => {
+      draft.addRelation(relation);
+      done();
+    },
+    update: (relation, next, done) => {
+      draft.updateRelation(relation.id, next);
+      done();
+    },
+    remove: (relation) => draft.removeRelation(relation.id),
+  };
+  const columns = sourceColumns ?? draft.columns;
 
   return (
     <section className="tw-flex tw-flex-col tw-gap-4" data-cy="relations-section">
@@ -46,13 +73,10 @@ export function RelationList({ tableName, draft }: RelationListProps) {
           <RelationFormCard
             key={relation.id}
             tableName={tableName}
-            columns={draft.columns}
+            columns={columns}
             relation={relation}
             onCancel={close}
-            onSave={(next) => {
-              draft.updateRelation(relation.id, next);
-              close();
-            }}
+            onSave={(next) => update(relation, next, close)}
           />
         ) : (
           <RelationSummaryCard
@@ -60,19 +84,16 @@ export function RelationList({ tableName, draft }: RelationListProps) {
             relation={relation}
             sourceTableName={tableName}
             onEdit={() => setOpen(relation.id)}
-            onDelete={() => draft.removeRelation(relation.id)}
+            onDelete={() => remove(relation)}
           />
         )
       )}
       {open === 'new' && (
         <RelationFormCard
           tableName={tableName}
-          columns={draft.columns}
+          columns={columns}
           onCancel={close}
-          onSave={(next) => {
-            draft.addRelation(next);
-            close();
-          }}
+          onSave={(next) => add(next, close)}
         />
       )}
       {draft.relations.length === 0 && open === null && (

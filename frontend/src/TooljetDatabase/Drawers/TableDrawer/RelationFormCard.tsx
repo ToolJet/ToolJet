@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { ArrowRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/Rocket/Button/Button';
 import { Field, FieldLabel } from '@/components/ui/Rocket/Field/Field';
-import { Input } from '@/components/ui/Rocket/Input/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Rocket/Select/Select';
 import { Separator } from '@/components/ui/Rocket/Separator/Separator';
 import { Tag } from '@/components/ui/Rocket/Tag/Tag';
@@ -59,7 +58,19 @@ const initialForm = (
 
 type TableOption = { id?: string; table_name: string };
 
-const Labelled = ({ label, disabled, children }: { label: string; disabled?: boolean; children: React.ReactNode }) => (
+// A list is as wide as the field that opens it, however long its values are.
+// The list's own viewport has a minimum width of the trigger's, wider than the list inside its padding, which clips the
+// right edge of the highlighted row: it is reset so the padding is the same on both sides.
+const LIST =
+  'tw-z-[1100] tw-w-[--radix-select-trigger-width] tw-max-w-[--radix-select-trigger-width] [&_[data-radix-select-viewport]]:tw-min-w-0';
+
+type LabelledProps = {
+  label: string;
+  disabled?: boolean;
+  children: React.ReactNode;
+};
+
+const Labelled = ({ label, disabled, children }: LabelledProps) => (
   <Field className="tw-gap-0.5">
     <FieldLabel className={`tw-pl-0.5 tw-font-title-default ${disabled ? 'tw-text-text-disabled' : ''}`}>
       {label}
@@ -75,7 +86,7 @@ const Heading = ({ title, hint }: { title: string; hint?: string }) => (
   </div>
 );
 
-const Arrow = () => <ArrowRight className="tw-mx-auto tw-mb-2 tw-size-4 tw-text-icon-default" aria-hidden />;
+const Arrow = () => <ArrowRight className="tw-mx-auto tw-mt-7 tw-size-4 tw-text-icon-default" aria-hidden />;
 
 // Where a foreign key is added or changed, inline in the drawer instead of a drawer on top of it (Figma: Relation form).
 export function RelationFormCard({ tableName, columns, relation, onSave, onCancel }: RelationFormCardProps) {
@@ -83,6 +94,8 @@ export function RelationFormCard({ tableName, columns, relation, onSave, onCance
   const { fetchTableMetadata } = useTjdbActions();
   const [form, setForm] = useState<RelationForm>(() => initialForm(relation, columns, tables));
   const [targetColumns, setTargetColumns] = useState<TargetColumn[]>([]);
+  // The table whose columns are in `targetColumns`, so an empty list can be told from one still loading.
+  const [loadedTable, setLoadedTable] = useState<string | null>(null);
   const isEditing = !!relation;
 
   const targetTableName = form.targetTable?.name;
@@ -93,6 +106,7 @@ export function RelationFormCard({ tableName, columns, relation, onSave, onCance
       (metadata: { columns: { accessor: string; dataType: string }[] } | null) => {
         if (current && metadata) {
           setTargetColumns(metadata.columns.map((column) => ({ name: column.accessor, type: column.dataType })));
+          setLoadedTable(targetTableName);
         }
       }
     );
@@ -105,8 +119,13 @@ export function RelationFormCard({ tableName, columns, relation, onSave, onCance
   const sourceOptions = columns.filter(
     (column) => column.column_name.trim() !== '' && canHaveRelation(column.data_type)
   );
+  const targetTables = tables.filter((table) => table.table_name !== tableName);
   const set = (change: Partial<RelationForm>) => setForm((current) => ({ ...current, ...change }));
-  const targetColumnDisabled = !form.targetTable || !form.sourceColumn;
+  // A list with nothing to pick is never opened: its field is off. The source column is chosen once the target table
+  // is, and cannot change when editing a relation; the target column waits for the table's columns to load.
+  const sourceColumnDisabled = isEditing || !form.targetTable || sourceOptions.length === 0;
+  const targetColumnDisabled =
+    !form.targetTable || !form.sourceColumn || loadedTable !== targetTableName || compatible.length === 0;
 
   return (
     <div
@@ -125,7 +144,7 @@ export function RelationFormCard({ tableName, columns, relation, onSave, onCance
         </Button>
       </div>
 
-      <div className="tw-grid tw-grid-cols-[1fr_32px_1fr] tw-items-end tw-gap-y-3">
+      <div className="tw-grid tw-grid-cols-[1fr_32px_1fr] tw-items-start tw-gap-x-3 tw-gap-y-4">
         <Heading title="Source" hint="This table" />
         <div />
         <Heading title="Target" hint="The table being referenced" />
@@ -139,9 +158,10 @@ export function RelationFormCard({ tableName, columns, relation, onSave, onCance
           </Select>
         </Labelled>
         <Arrow />
-        <Labelled label="Table">
+        <Labelled label="Table" disabled={targetTables.length === 0}>
           <Select
             value={form.targetTable?.name}
+            disabled={targetTables.length === 0}
             onValueChange={(name) => {
               const table = tables.find((item) => item.table_name === name);
               set({ targetTable: { name, id: table?.id }, targetColumn: '' });
@@ -150,22 +170,20 @@ export function RelationFormCard({ tableName, columns, relation, onSave, onCance
             <SelectTrigger className="!tw-shadow-none" aria-label="Target table">
               <SelectValue placeholder="Select table" />
             </SelectTrigger>
-            <SelectContent className="tw-z-[1100]">
-              {tables
-                .filter((table) => table.table_name !== tableName)
-                .map((table) => (
-                  <SelectItem key={table.table_name} value={table.table_name}>
-                    {table.table_name}
-                  </SelectItem>
-                ))}
+            <SelectContent className={LIST}>
+              {targetTables.map((table) => (
+                <SelectItem key={table.table_name} value={table.table_name}>
+                  {table.table_name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </Labelled>
 
-        <Labelled label="Column" disabled={isEditing}>
+        <Labelled label="Column" disabled={sourceColumnDisabled}>
           <Select
             value={form.sourceColumn || undefined}
-            disabled={isEditing}
+            disabled={sourceColumnDisabled}
             onValueChange={(name) => {
               const source = columns.find((column) => column.column_name === name);
               set({ sourceColumn: name, sourceType: source?.data_type ?? null, targetColumn: '' });
@@ -174,7 +192,7 @@ export function RelationFormCard({ tableName, columns, relation, onSave, onCance
             <SelectTrigger className="!tw-shadow-none" aria-label="Source column">
               <SelectValue placeholder="Select column" />
             </SelectTrigger>
-            <SelectContent className="tw-z-[1100]">
+            <SelectContent className={LIST}>
               {sourceOptions.map((column) => (
                 <SelectItem key={column.id} value={column.column_name}>
                   {column.column_name}
@@ -193,7 +211,7 @@ export function RelationFormCard({ tableName, columns, relation, onSave, onCance
             <SelectTrigger className="!tw-shadow-none" aria-label="Target column">
               <SelectValue placeholder="Select column" />
             </SelectTrigger>
-            <SelectContent className="tw-z-[1100]">
+            <SelectContent className={LIST}>
               {compatible.map((column) => (
                 <SelectItem key={column.name} value={column.name}>
                   {column.name}
@@ -214,7 +232,7 @@ export function RelationFormCard({ tableName, columns, relation, onSave, onCance
               <SelectTrigger className="!tw-shadow-none" aria-label="On update">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="tw-z-[1100]">
+              <SelectContent className={LIST}>
                 {RELATION_ACTIONS.map((action) => (
                   <SelectItem key={action} value={action}>
                     {action}
@@ -228,7 +246,7 @@ export function RelationFormCard({ tableName, columns, relation, onSave, onCance
               <SelectTrigger className="!tw-shadow-none" aria-label="On remove">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="tw-z-[1100]">
+              <SelectContent className={LIST}>
                 {RELATION_ACTIONS.map((action) => (
                   <SelectItem key={action} value={action}>
                     {action}

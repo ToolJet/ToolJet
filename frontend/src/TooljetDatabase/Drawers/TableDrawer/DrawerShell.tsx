@@ -1,6 +1,8 @@
 import React, { type ReactNode } from 'react';
 import { CornerDownLeft, X } from 'lucide-react';
 import { Button } from '@/components/ui/Rocket/Button/Button';
+import { ROCKET_SCROLLBAR } from '@/components/ui/Rocket/scrollbar';
+import { cn } from '@/lib/utils';
 
 type DrawerShellProps = {
   title: string;
@@ -55,7 +57,11 @@ export function DrawerShell({
           <X />
         </Button>
       </header>
-      <div className="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-3 tw-overflow-y-auto tw-p-4">{children}</div>
+      <div
+        className={cn('tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-3 tw-overflow-y-auto tw-p-4', ROCKET_SCROLLBAR)}
+      >
+        {children}
+      </div>
       <footer className="tw-flex tw-shrink-0 tw-items-center tw-justify-between tw-gap-3 tw-border-0 tw-border-t tw-border-solid tw-border-border-weak tw-px-4 tw-py-3">
         <div className="tw-flex tw-min-w-0 tw-items-center tw-gap-1.5">{footerStart}</div>
         <div className="tw-flex tw-shrink-0 tw-items-center tw-gap-2">

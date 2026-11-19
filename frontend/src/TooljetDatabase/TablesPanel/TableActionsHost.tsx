@@ -1,15 +1,12 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import Drawer from '@/_ui/Drawer';
-import { Skeleton } from '@/components/ui/Rocket/Skeleton/Skeleton';
 import { appsService } from '@/_services/apps.service';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import generateFile from '@/_lib/generate-file';
-import EditTableForm from '../Forms/TableForm';
+import EditTableDrawer from '../Drawers/EditTableDrawer';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import DeleteTableModal from '../DeleteTableModal';
 import ExportCsvModal from '../ExportCsvModal';
-import { buildEditTableFormData, type TableColumn } from '../TableActions/editTableFormData';
 import { TableSchemaScope } from '../TableActions/TableSchemaScope';
 import { useTjdbActions, useTjdbStore } from '../_stores/tjdbStore';
 import { useTooljetDatabaseContext, type TjdbTable } from '../TooljetDatabaseContext';
@@ -93,60 +90,6 @@ function useDeleteTable(organizationId: string | null, onDeleted: () => void) {
   return { state, blocked, open, close, confirm };
 }
 
-const DrawerLoading = () => (
-  <div className="tw-flex tw-flex-col tw-gap-3 tw-p-6">
-    <Skeleton className="tw-h-6 tw-w-1/3" />
-    <Skeleton className="tw-h-10 tw-w-full" />
-    <Skeleton className="tw-h-10 tw-w-full" />
-  </div>
-);
-
-interface EditTableBodyProps {
-  table: TjdbTable;
-  onRenamed: (table: TjdbTable) => void;
-  onClose: () => void;
-}
-
-// Runs inside TableSchemaScope, so `context` describes `table` whichever table the grid has open.
-function EditTableBody({ table, onRenamed, onClose }: EditTableBodyProps) {
-  const context = useTooljetDatabaseContext();
-  const { fetchTableMetadata, resetView } = useTjdbActions();
-  const { selectedColumns, selectedTableData } = useMemo(
-    () => buildEditTableFormData(context.columns as TableColumn[]),
-    [context.columns]
-  );
-
-  const handleEdited = (tableName: string) => {
-    fetchTableMetadata(context.organizationId, tableName).then(
-      (
-        metadata: { configurations: Record<string, unknown>; columns: TableColumn[]; foreignKeys: unknown[] } | null
-      ) => {
-        if (!metadata) return;
-        context.setConfigurations(metadata.configurations);
-        if (metadata.columns.length > 0) context.setColumns(metadata.columns);
-        context.setForeignKeys([...metadata.foreignKeys]);
-      }
-    );
-    // The edit can rename or drop columns, so the saved filters and sort of this table (open or not) may name a
-    // column that is gone. The scope refetches the grid only when `table` is the open table.
-    resetView(table.id);
-    context.handleRefetchQuery();
-    onClose();
-  };
-
-  return (
-    <EditTableForm
-      selectedColumns={selectedColumns}
-      selectedTable={table}
-      selectedTableData={selectedTableData}
-      updateSelectedTable={onRenamed}
-      onEdit={handleEdited}
-      onClose={onClose}
-      initiator="EditTableForm"
-    />
-  );
-}
-
 function AddColumnBody({
   open,
   isOpenTable,
@@ -228,18 +171,7 @@ export function useTableActions({ refetchTables }: { refetchTables: () => void }
   const host = (
     <>
       {active?.kind === 'edit' && (
-        <Drawer
-          disableFocus
-          isOpen={open}
-          onClose={close}
-          position="right"
-          drawerStyle={{ width: '640px' }}
-          className="tj-db-drawer"
-        >
-          <TableSchemaScope table={active.table} fallback={<DrawerLoading />} onError={close}>
-            <EditTableBody table={active.table} onRenamed={handleRenamed} onClose={close} />
-          </TableSchemaScope>
-        </Drawer>
+        <EditTableDrawer table={active.table} isOpen={open} onClose={close} onRenamed={handleRenamed} />
       )}
       {active?.kind === 'addColumn' && (
         <TableSchemaScope key={active.runId} table={active.table} onError={close}>

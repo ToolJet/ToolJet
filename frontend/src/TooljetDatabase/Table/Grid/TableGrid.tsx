@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { cn } from '@/lib/utils';
 import { Table } from '@/components/ui/Rocket/Table/Table';
+import { ROCKET_SCROLLBAR } from '@/components/ui/Rocket/scrollbar';
 import { TableSkeleton } from '@/components/ui/blocks/TableSkeleton';
 import { selectView, useTjdbStore } from '../../_stores/tjdbStore';
 import { listAllPrimaryKeyColumns } from '../../constants';
@@ -346,6 +347,9 @@ export function TableGrid({
         onScroll={handleScroll}
         className={cn(
           'tw-h-full tw-min-h-0 tw-w-full tw-overflow-auto tw-bg-page-weak',
+          ROCKET_SCROLLBAR,
+          // The grid also scrolls sideways: the same bar along the bottom, with a clear corner.
+          '[&::-webkit-scrollbar]:tw-h-[10px] [&::-webkit-scrollbar-corner]:tw-bg-transparent',
           // The focus ring is on the cell once there is one.
           cell && 'tw-outline-none'
         )}

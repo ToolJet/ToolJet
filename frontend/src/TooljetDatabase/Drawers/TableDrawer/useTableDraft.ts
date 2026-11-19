@@ -13,6 +13,7 @@ import {
   isPrimaryKeyLocked,
   toColumnPayload,
 } from './columnRules';
+import { primaryKeyChange as diffPrimaryKey, toEditPayload as buildEditPayload } from './editTableRules';
 import { isTableNameValid } from './tableNameRules';
 import type { ColumnPayload, DraftColumn, DraftRelation, RelationPayload } from './types';
 
@@ -33,19 +34,35 @@ type Draft = {
   invalidDefaults: Record<string, true>;
 };
 
-const toRelationPayload = ({ id: _id, ...relation }: DraftRelation): RelationPayload => relation;
+const toRelationPayload = ({ id: _id, constraint_name: _name, ...relation }: DraftRelation): RelationPayload =>
+  relation;
 
-/** Everything a create-table drawer edits, with the rules that tie it together. Nothing here talks to the server. */
-export function useTableDraft(existingTableNames: string[] = []) {
+/** The stored table to edit. Its relations are saved as they are changed, so they never make the draft dirty. */
+export type TableDraftInitial = { tableName: string; columns: DraftColumn[]; relations: DraftRelation[] };
+
+const snapshot = (tableName: string, columns: DraftColumn[]) =>
+  JSON.stringify({ tableName, columns: columns.map(toColumnPayload) });
+
+/**
+ * Everything a table drawer edits, with the rules that tie it together. Nothing here talks to the server.
+ * Without `initial` it drafts a new table; with it, an edit of that stored table.
+ */
+export function useTableDraft(existingTableNames: string[] = [], initial?: TableDraftInitial) {
   const [draft, setDraft] = useState<Draft>(() => ({
-    tableName: '',
-    columns: createDefaultColumns(),
-    relations: [],
+    tableName: initial?.tableName ?? '',
+    columns: initial?.columns ?? createDefaultColumns(),
+    relations: initial?.relations ?? [],
     invalidDefaults: {},
   }));
   const { tableName, columns, relations, invalidDefaults } = draft;
+  // A stored table's relations are saved as they change, so they keep the column names the server has until the edit
+  // is saved: a rename or a removal in the draft does not touch them.
+  const isEdit = !!initial;
 
-  const initialColumns = useRef(JSON.stringify(createDefaultColumns().map(toColumnPayload))).current;
+  const start = useRef({
+    columns: initial?.columns ?? [],
+    snapshot: initial ? snapshot(initial.tableName, initial.columns) : snapshot('', createDefaultColumns()),
+  }).current;
 
   const update = useCallback((change: (current: Draft) => Draft) => setDraft(change), []);
 
@@ -74,11 +91,13 @@ export function useTableDraft(existingTableNames: string[] = []) {
         return {
           ...current,
           columns: current.columns.filter((item) => item.id !== id),
-          relations: current.relations.filter((relation) => relation.column_names[0] !== column.column_name),
+          relations: isEdit
+            ? current.relations
+            : current.relations.filter((relation) => relation.column_names[0] !== column.column_name),
           invalidDefaults: invalid,
         };
       }),
-    [update]
+    [update, isEdit]
   );
 
   const updateColumn = useCallback(
@@ -86,7 +105,7 @@ export function useTableDraft(existingTableNames: string[] = []) {
       update((current) => {
         const column = current.columns.find((item) => item.id === id);
         if (!column) return current;
-        const renamed = patch.column_name !== undefined && patch.column_name !== column.column_name;
+        const renamed = !isEdit && patch.column_name !== undefined && patch.column_name !== column.column_name;
         return {
           ...current,
           columns: current.columns.map((item) => (item.id === id ? { ...item, ...patch } : item)),
@@ -99,14 +118,15 @@ export function useTableDraft(existingTableNames: string[] = []) {
             : current.relations,
         };
       }),
-    [update]
+    [update, isEdit]
   );
 
   const changeType = useCallback(
     (id: string, type: string) =>
       update((current) => {
         const column = current.columns.find((item) => item.id === id);
-        if (!column) return current;
+        // A stored column's type changes from its own edit drawer: a cast depends on the rows.
+        if (!column || column.existing) return current;
         const { [id]: _cleared, ...invalid } = current.invalidDefaults;
         return {
           ...current,
@@ -202,6 +222,11 @@ export function useTableDraft(existingTableNames: string[] = []) {
     [update]
   );
 
+  const replaceRelations = useCallback(
+    (next: DraftRelation[]) => update((current) => ({ ...current, relations: next })),
+    [update]
+  );
+
   const canSubmit = useMemo(
     () =>
       isTableNameValid(tableName, existingTableNames) &&
@@ -212,9 +237,12 @@ export function useTableDraft(existingTableNames: string[] = []) {
   );
 
   const isDirty = useMemo(
-    () => tableName !== '' || relations.length > 0 || JSON.stringify(columns.map(toColumnPayload)) !== initialColumns,
-    [tableName, columns, relations, initialColumns]
+    () => snapshot(tableName, columns) !== start.snapshot || (!initial && relations.length > 0),
+    [tableName, columns, relations, start, initial]
   );
+
+  const toEditPayload = useCallback(() => buildEditPayload(columns, start.columns), [columns, start]);
+  const primaryKeyChange = useMemo(() => diffPrimaryKey(columns, start.columns), [columns, start]);
 
   const toPayload = useCallback(
     (): TablePayload => ({
@@ -245,6 +273,9 @@ export function useTableDraft(existingTableNames: string[] = []) {
     addRelation,
     updateRelation,
     removeRelation,
+    replaceRelations,
     toPayload,
+    toEditPayload,
+    primaryKeyChange,
   };
 }

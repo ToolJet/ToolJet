@@ -29,11 +29,22 @@ const fieldClass = (editing: boolean) =>
 const READ_ONLY =
   'disabled:tw-opacity-100 disabled:tw-border-transparent disabled:tw-bg-transparent disabled:tw-text-text-placeholder';
 
+// A type that cannot change reads as text: no field border on hover, no chevron.
+const LOCKED_TYPE =
+  'disabled:tw-opacity-100 disabled:tw-border-transparent disabled:tw-bg-transparent disabled:tw-text-text-medium [&>svg:last-child]:tw-hidden';
+
 type SchemaColumnRowProps = {
   column: DraftColumn;
   columns: DraftColumn[];
   draft: ReturnType<typeof useTableDraft>;
+  /** Rows can be dragged to reorder (a new table). A stored table's column order cannot change. */
+  reorderable?: boolean;
 };
+
+const typeLockedReason = (column: DraftColumn): string =>
+  column.constraints_type.is_primary_key
+    ? 'Primary key data type cannot be modified'
+    : 'Data type can be changed only from the column’s edit option';
 
 const primaryKeyReason = (column: DraftColumn, pinned: boolean): string | undefined => {
   if (pinned) return 'There must be at least one primary key';
@@ -47,15 +58,16 @@ const uniqueReason = (column: DraftColumn): string | undefined => {
   return undefined;
 };
 
-export function SchemaColumnRow({ column, columns, draft }: SchemaColumnRowProps) {
+export function SchemaColumnRow({ column, columns, draft, reorderable = true }: SchemaColumnRowProps) {
   // Editing starts when focus enters the row (a click on any field) and ends when it leaves, the open menus included.
   const [editing, setEditing] = useState(false);
   const pinned = isPinnedPrimaryKey(column, columns);
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: column.id,
-    disabled: pinned,
+    disabled: pinned || !reorderable,
   });
   const { is_primary_key: isPrimaryKey, is_not_null: isNotNull, is_unique: isUnique } = column.constraints_type;
+  const typeLocked = !!column.existing;
   const notNullFixed = isPrimaryKey || column.data_type === 'serial';
   const uniqueFixed = isPrimaryKey || !canBeUnique(column.data_type);
   const primaryKeyCount = columns.filter((item) => item.constraints_type.is_primary_key).length;
@@ -81,17 +93,21 @@ export function SchemaColumnRow({ column, columns, draft }: SchemaColumnRowProps
             : ''
       }`}
     >
-      <button
-        ref={setActivatorNodeRef}
-        type="button"
-        aria-label={`Reorder ${column.column_name || 'column'}`}
-        disabled={pinned}
-        className={`tw-flex tw-size-6 tw-cursor-grab tw-items-center tw-justify-center tw-border-0 tw-bg-transparent tw-p-0 tw-text-icon-default disabled:tw-invisible ${showOnHover}`}
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="tw-size-4" />
-      </button>
+      {reorderable ? (
+        <button
+          ref={setActivatorNodeRef}
+          type="button"
+          aria-label={`Reorder ${column.column_name || 'column'}`}
+          disabled={pinned}
+          className={`tw-flex tw-size-6 tw-cursor-grab tw-items-center tw-justify-center tw-border-0 tw-bg-transparent tw-p-0 tw-text-icon-default disabled:tw-invisible ${showOnHover}`}
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="tw-size-4" />
+        </button>
+      ) : (
+        <div />
+      )}
       <div className="tw-pr-2">
         <Input
           value={column.column_name}
@@ -102,15 +118,18 @@ export function SchemaColumnRow({ column, columns, draft }: SchemaColumnRowProps
           data-cy="column-name-input-field"
         />
       </div>
-      <div className="tw-pr-2">
+      <div className="tw-pr-2" title={typeLocked ? typeLockedReason(column) : undefined}>
         <TypeSelect
           value={column.data_type}
           onChange={(type) => draft.changeType(column.id, type)}
-          icon={isPrimaryKey ? <KeyRound className="tw-size-4 tw-shrink-0" /> : undefined}
+          disabled={typeLocked}
+          icon={isPrimaryKey ? <KeyRound className="tw-size-4 tw-shrink-0 tw-text-icon-strong" /> : undefined}
           className={`${field} tw-gap-1.5 ${
-            editing
-              ? '[&>svg:last-child]:tw-opacity-100'
-              : '[&>svg:last-child]:tw-opacity-0 group-hover:[&>svg:last-child]:tw-opacity-100'
+            typeLocked
+              ? LOCKED_TYPE
+              : editing
+                ? '[&>svg:last-child]:tw-opacity-100'
+                : '[&>svg:last-child]:tw-opacity-0 group-hover:[&>svg:last-child]:tw-opacity-100'
           }`}
         />
       </div>

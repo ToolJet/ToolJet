@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Field, FieldError, FieldLabel } from '@/components/ui/Rocket/Field/Field';
 import { Input } from '@/components/ui/Rocket/Input/Input';
 import { getTableNameError, NAME_EMPTY_ERROR, TABLE_NAME_HINT } from './tableNameRules';
+import { TriangleAlert } from 'lucide-react';
 
 type TableNameFieldProps = {
   value: string;
@@ -38,9 +39,14 @@ export function TableNameField({ value, onChange, autoFocus, existingNames }: Ta
         />
       </div>
       {error ? (
-        <FieldError className="tw-font-body-small">{error}</FieldError>
+        <div className="tw-flex tw-items-center tw-gap-0.5">
+          <TriangleAlert className="tw-size-3 tw-text-icon-danger" />
+          <FieldError className="tw-font-body-small">{error}</FieldError>
+        </div>
       ) : (
-        <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">{TABLE_NAME_HINT}</p>
+        <>
+          <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">{TABLE_NAME_HINT}</p>
+        </>
       )}
     </Field>
   );

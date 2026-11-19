@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState, type ComponentProps } from 'react';
 import { Input } from '@/components/ui/Rocket/Input/Input';
+import { ROCKET_SCROLLBAR } from '@/components/ui/Rocket/scrollbar';
 import { cn } from '@/lib/utils';
 import { useForeignKeyValues } from '../../../rows/useForeignKeyValues';
 import type { ForeignKeyTarget, GridColumn } from '../useTableGrid';
@@ -89,7 +90,7 @@ export function ForeignKeyEditor({ draft, column, foreignKey, shell }: ForeignKe
         <div
           role="listbox"
           aria-label={`${foreignKey.column} values`}
-          className="tw-flex tw-max-h-48 tw-flex-col tw-overflow-auto"
+          className={cn('tw-flex tw-max-h-48 tw-flex-col tw-overflow-auto', ROCKET_SCROLLBAR)}
         >
           {values.map((value) => (
             <button
