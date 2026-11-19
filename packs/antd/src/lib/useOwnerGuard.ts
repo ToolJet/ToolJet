@@ -61,6 +61,43 @@ const useWatch = (active: boolean, check: () => boolean, onBlocked: () => void) 
   }, [active, check]);
 };
 
+/** The node above `node` as drawn: a slotted element's slot, a shadow root's host. */
+const drawnParent = (node: Node): Node | null =>
+  (node instanceof Element && node.assignedSlot) || node.parentNode || (node instanceof ShadowRoot ? node.host : null);
+
+/** Whether `scroller` holds `el` as drawn, across shadow roots and the slots `el` is projected into. */
+const holds = (scroller: Node, el: Element | null): boolean => {
+  for (let node: Node | null = el; node; node = drawnParent(node)) if (node === scroller) return true;
+  return false;
+};
+
+/** The shadow roots around `el` as drawn: a scroll event stays inside the root it happens in. */
+const shadowRootsAround = (el: Element | null): ShadowRoot[] => {
+  const roots: ShadowRoot[] = [];
+  for (let node: Node | null = el; node; node = drawnParent(node)) if (node instanceof ShadowRoot) roots.push(node);
+  return roots;
+};
+
+/** The scroll events AntProvider sends to each pack root so Ant realigns its popups: no scroll of their own. */
+export const forwardedScrolls = new WeakSet<Event>();
+
+/** The popup sits in the shared layer, so a scroll around the anchor left it behind its field (QA PKB-73). */
+const useCloseOnScroll = (active: boolean, anchorRef: RefObject<Element | null>, onScroll: () => void) => {
+  const latest = useRef(onScroll);
+  latest.current = onScroll;
+  useEffect(() => {
+    if (!active || typeof window === 'undefined') return undefined;
+    const listener = (e: Event) => {
+      // The real scroller, not the shadow host the event was retargeted to.
+      const target = e.composedPath?.()[0] ?? e.target;
+      if (!forwardedScrolls.has(e) && target instanceof Node && holds(target, anchorRef.current)) latest.current();
+    };
+    const targets: EventTarget[] = [window, ...shadowRootsAround(anchorRef.current)];
+    targets.forEach((t) => t.addEventListener('scroll', listener, true));
+    return () => targets.forEach((t) => t.removeEventListener('scroll', listener, true));
+  }, [active, anchorRef]);
+};
+
 /**
  * The open state of an Ant popup, controlled here so it can be closed when its owner stops taking input. Pass
  * `open` to the Ant component and `onOpenChange` as its handler; `available()` guards the popup's own handlers.
@@ -89,6 +126,7 @@ export const usePopupOwner = (
     [available]
   );
   useWatch(open, available, () => change(false));
+  useCloseOnScroll(open, anchorRef, () => change(false));
   return { open, onOpenChange: change, available };
 };
 

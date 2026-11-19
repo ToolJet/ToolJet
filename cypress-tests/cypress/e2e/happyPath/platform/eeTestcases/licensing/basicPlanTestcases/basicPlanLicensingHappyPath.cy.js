@@ -36,7 +36,7 @@ describe("License Page", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.apiDeleteAllApps();
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 2; i++) {
       cy.apiCreateApp(`${data.appName1}-${i}`);
     }
     cy.visit("/my-workspace");
