@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Grid2x2, ListTodo } from 'lucide-react';
+import { BadgeCheck, Grid2x2, History, ListTodo } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button/Button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Rocket/Tabs/Tabs';
@@ -32,12 +32,28 @@ export default function ViewTabs({ appType }: { appType: TAppType }) {
       <div className="tw-mx-[4.375rem] tw-flex tw-items-center tw-justify-between tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
         {/* The row owns the full-width border; the active indicator overlaps it. */}
         <TabsList aria-label="View" className="tw-border-b-0 tw-pl-0">
-          <TabsTrigger value="list" leadingVisual={<ListTodo />}>
-            List view
-          </TabsTrigger>
-          <TabsTrigger value="grid" leadingVisual={<Grid2x2 />}>
-            Grid view
-          </TabsTrigger>
+          {appType === 'workflow' ? (
+            <>
+              <TabsTrigger value="list" leadingVisual={<ListTodo />}>
+                Workflows
+              </TabsTrigger>
+              <TabsTrigger value="approvals" leadingVisual={<BadgeCheck />}>
+                Approvals
+              </TabsTrigger>
+              <TabsTrigger value="executions" leadingVisual={<History />}>
+                Executions
+              </TabsTrigger>
+            </>
+          ) : (
+            <>
+              <TabsTrigger value="list" leadingVisual={<ListTodo />}>
+                List view
+              </TabsTrigger>
+              <TabsTrigger value="grid" leadingVisual={<Grid2x2 />}>
+                Grid view
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
 
         <div role="group" aria-label="View options" className="tw-flex tw-items-center tw-gap-1">
@@ -70,6 +86,10 @@ export default function ViewTabs({ appType }: { appType: TAppType }) {
       <TabsContent value="grid" className="tw-min-h-0 tw-flex-col data-[state=active]:tw-flex">
         <GridView appType={appType} />
       </TabsContent>
+
+      <TabsContent value="approvals" className="tw-min-h-0 tw-flex-col data-[state=active]:tw-flex"></TabsContent>
+
+      <TabsContent value="executions" className="tw-min-h-0 tw-flex-col data-[state=active]:tw-flex"></TabsContent>
     </Tabs>
   );
 }
