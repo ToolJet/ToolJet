@@ -1,5 +1,4 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { Request, Response } from 'express';
 import { RequestContext } from './service';
 
@@ -17,11 +16,6 @@ export class RequestContextMiddleware implements NestMiddleware<Request, Respons
       RequestContext.setLocals('tj_transactionId', transactionId);
       RequestContext.setLocals('tj_route', route);
       RequestContext.setLocals('tj_start_time', Date.now());
-
-      // Correlates every audit event written by this request; also returned to the client.
-      const requestId = randomUUID();
-      RequestContext.setLocals('tj_request_id', requestId);
-      res.setHeader('X-Request-Id', requestId);
 
       next();
     });

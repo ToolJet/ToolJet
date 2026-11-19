@@ -1,5 +1,3 @@
-import { AuditChanges } from '@modules/audit-logs/events/types';
-
 // Shapes from the Git Sync audit spec. One entry per git operation, written when it finishes.
 
 export type GitSyncAuditAction =
@@ -137,8 +135,7 @@ export interface GitSyncAuditContext<A extends GitSyncAuditAction = GitSyncAudit
   // Resource events: the resource. Workspace events: omit, the workspace is the target.
   resource?: GitSyncResourceRef | null;
   startedAt?: Date;
-  // Defaults: the current request's id, IP and user agent. A queued job passes what the request that queued it saw.
-  requestId?: string;
+  // Defaults: the current request's IP and user agent. A queued job passes what the request that queued it saw.
   ipAddress?: string | null;
   userAgent?: string | null;
 }
@@ -157,7 +154,6 @@ export interface GitSyncAuditOutcome<A extends GitSyncAuditAction = GitSyncAudit
   // When the branch or the resource is only known once the operation ran (an import creates the app).
   branch?: string | null;
   resource?: GitSyncResourceRef;
-  changes?: AuditChanges | null;
   completedAt?: Date;
 }
 
