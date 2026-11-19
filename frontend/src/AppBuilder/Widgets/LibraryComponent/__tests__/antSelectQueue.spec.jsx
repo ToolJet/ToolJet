@@ -166,7 +166,7 @@ describe('Ant Design fields: a long label above the field', () => {
       const at = css.indexOf(`${selector} {`);
       return at < 0 ? '' : css.slice(at, css.indexOf('}', at));
     };
-    const label = rule('.tj-ant-root .ant-form-item-vertical > .ant-form-item-row > .ant-form-item-label > label');
+    const label = rule('.tj-ant-root .ant-form-item-label > label > .tj-ant-label-text');
 
     expect(label).toMatch(/white-space:\s*nowrap/);
     expect(label).toMatch(/overflow:\s*hidden/);
