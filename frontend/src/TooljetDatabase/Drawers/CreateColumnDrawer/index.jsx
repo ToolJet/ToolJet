@@ -1,6 +1,6 @@
 import React from 'react';
 import Drawer from '@/_ui/Drawer';
-import CreateColumnForm from '../../Forms/ColumnForm';
+import { AddColumnForm } from '../ColumnDrawer/AddColumnForm';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
 import { useTjdbActions } from '../../_stores/tjdbStore';
 import { useGuardedClose } from '../../_stores/unsavedChanges';
@@ -8,9 +8,6 @@ import { useGuardedClose } from '../../_stores/unsavedChanges';
 const CreateColumnDrawer = ({
   setIsCreateColumnDrawerOpen,
   isCreateColumnDrawerOpen,
-  rows,
-  referencedColumnDetails,
-  setReferencedColumnDetails,
   // The grid goes back to page 1 because the open table's shape changed. Pass false when the column is added to a
   // table that is not the open one (Tables panel), so the open grid keeps its page.
   resetPage = true,
@@ -23,8 +20,16 @@ const CreateColumnDrawer = ({
 
   return (
     <>
-      <Drawer isOpen={isCreateColumnDrawerOpen} onClose={requestClose} position="right" className="tj-db-drawer">
-        <CreateColumnForm
+      <Drawer
+        // The migration confirmation opens above this drawer; a focus trap here would keep it from taking focus.
+        disableFocus
+        isOpen={isCreateColumnDrawerOpen}
+        onClose={requestClose}
+        position="right"
+        drawerStyle={{ width: '560px' }}
+        className="tj-db-drawer"
+      >
+        <AddColumnForm
           onCreate={() => {
             fetchTableMetadata(organizationId, selectedTable.table_name).then((metadata) => {
               if (!metadata) return;
@@ -36,11 +41,7 @@ const CreateColumnDrawer = ({
             if (resetPage) setPageCount(1);
             setIsCreateColumnDrawerOpen(false);
           }}
-          onClose={requestClose}
-          rows={rows}
-          referencedColumnDetails={referencedColumnDetails}
-          setReferencedColumnDetails={setReferencedColumnDetails}
-          initiator="CreateColumnForm"
+          onCancel={requestClose}
         />
       </Drawer>
     </>

@@ -35,13 +35,7 @@ describe('CreateColumnDrawer | closing', () => {
     act(() => useTjdbStore.getState().actions.resetStore());
     render(
       <TooljetDatabaseProvider value={page as unknown as TooljetDatabaseContextValue}>
-        <CreateColumnDrawer
-          isCreateColumnDrawerOpen
-          setIsCreateColumnDrawerOpen={close}
-          rows={[]}
-          referencedColumnDetails={[]}
-          setReferencedColumnDetails={() => {}}
-        />
+        <CreateColumnDrawer isCreateColumnDrawerOpen setIsCreateColumnDrawerOpen={close} />
         <UnsavedChangesGuard />
       </TooljetDatabaseProvider>
     );

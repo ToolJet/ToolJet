@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
-import { Field, FieldError, FieldLabel } from '@/components/ui/Rocket/Field/Field';
-import { Input } from '@/components/ui/Rocket/Input/Input';
+import React from 'react';
+import { NameField } from './NameField';
 import { getTableNameError, NAME_EMPTY_ERROR, TABLE_NAME_HINT } from './tableNameRules';
-import { TriangleAlert } from 'lucide-react';
 
 type TableNameFieldProps = {
   value: string;
@@ -12,42 +10,22 @@ type TableNameFieldProps = {
   existingNames?: string[];
 };
 
-// 400px wide, as in the design: label 12px medium, field 32px, helper 11px under it.
+// 400px wide, as in the design.
 export function TableNameField({ value, onChange, autoFocus, existingNames }: TableNameFieldProps) {
-  // An empty name is only an error once the field was typed in or left.
-  const [touched, setTouched] = useState(false);
-  const error = getTableNameError(value, existingNames) ?? (touched && value === '' ? NAME_EMPTY_ERROR : null);
   return (
-    <Field className="tw-w-[400px] tw-max-w-full tw-gap-1">
-      <div className="tw-flex tw-flex-col tw-gap-0.5">
-        <FieldLabel htmlFor="table-name" className="tw-pl-0.5 tw-font-title-default" data-cy="table-name-label">
-          Table name
-        </FieldLabel>
-        <Input
-          id="table-name"
-          value={value}
-          autoFocus={autoFocus}
-          placeholder="Enter table name"
-          aria-invalid={!!error}
-          className="tw-px-2 md:tw-text-base"
-          onChange={(event) => {
-            setTouched(true);
-            onChange(event.target.value);
-          }}
-          onBlur={() => setTouched(true)}
-          data-cy="table-name-input-field"
-        />
-      </div>
-      {error ? (
-        <div className="tw-flex tw-items-center tw-gap-0.5">
-          <TriangleAlert className="tw-size-3 tw-text-icon-danger" />
-          <FieldError className="tw-font-body-small">{error}</FieldError>
-        </div>
-      ) : (
-        <>
-          <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">{TABLE_NAME_HINT}</p>
-        </>
-      )}
-    </Field>
+    <NameField
+      id="table-name"
+      label="Table name"
+      placeholder="Enter table name"
+      value={value}
+      onChange={onChange}
+      autoFocus={autoFocus}
+      getError={(name) => getTableNameError(name, existingNames)}
+      emptyError={NAME_EMPTY_ERROR}
+      hint={TABLE_NAME_HINT}
+      className="tw-w-[400px] tw-max-w-full"
+      data-cy="table-name-input-field"
+      labelDataCy="table-name-label"
+    />
   );
 }

@@ -21,6 +21,12 @@ type DefaultValueCellProps = {
   className?: string;
   /** Shown while the row is being edited; otherwise an empty default reads as a dash. */
   editing?: boolean;
+  /** data-cy of the plain text and serial inputs; a drawer field keeps the one the column forms always had. */
+  'data-cy'?: string;
+  /** Shows the value without letting it change (a primary key's default, in its edit drawer). */
+  disabled?: boolean;
+  /** Rendered as a drawer field: the relation picker takes the field look. */
+  field?: boolean;
 };
 
 type JsonDefaultProps = {
@@ -64,11 +70,22 @@ export function DefaultValueCell({
   onInvalid,
   className,
   editing,
+  'data-cy': dataCy = 'default-input-field',
+  disabled,
+  field,
 }: DefaultValueCellProps) {
   const { data_type: type, column_default: value } = column;
 
   if (relations.some((relation) => relation.column_names.includes(column.column_name))) {
-    return <RelationDefaultPicker column={column} relations={relations} onChange={onChange} />;
+    return (
+      <RelationDefaultPicker
+        column={column}
+        relations={relations}
+        onChange={onChange}
+        disabled={disabled}
+        field={field}
+      />
+    );
   }
 
   if (type === 'serial') {
@@ -79,7 +96,7 @@ export function DefaultValueCell({
         readOnly
         className={className}
         aria-label="Default value"
-        data-cy="default-input-field"
+        data-cy={dataCy}
       />
     );
   }
@@ -114,10 +131,11 @@ export function DefaultValueCell({
     <Input
       value={value ?? ''}
       placeholder={editing ? 'Enter value' : '—'}
+      disabled={disabled}
       className={className}
       aria-label="Default value"
       onChange={(event) => onChange(event.target.value === '' ? null : event.target.value)}
-      data-cy="default-input-field"
+      data-cy={dataCy}
     />
   );
 }

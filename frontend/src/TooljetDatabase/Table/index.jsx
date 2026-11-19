@@ -154,7 +154,6 @@ const Table = () => {
         isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}
         isSeedDataDrawerOpen={isSeedDataDrawerOpen}
         setIsSeedDataDrawerOpen={setIsSeedDataDrawerOpen}
-        rows={gridRows}
         setFilterEnable={setFilterEnable}
         referencedColumnDetails={referencedColumnDetails}
         setReferencedColumnDetails={setReferencedColumnDetails}

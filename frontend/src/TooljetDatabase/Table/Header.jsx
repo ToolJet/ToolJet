@@ -27,7 +27,6 @@ const Header = ({
   isBulkUploadDrawerOpen,
   isSeedDataDrawerOpen,
   setIsSeedDataDrawerOpen,
-  rows,
   setFilterEnable,
   referencedColumnDetails,
   setReferencedColumnDetails,
@@ -143,9 +142,6 @@ const Header = ({
       <CreateColumnDrawer
         isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
-        rows={rows}
-        referencedColumnDetails={referencedColumnDetails}
-        setReferencedColumnDetails={setReferencedColumnDetails}
       />
       <CreateRowDrawer
         isCreateRowDrawerOpen={isCreateRowDrawerOpen}

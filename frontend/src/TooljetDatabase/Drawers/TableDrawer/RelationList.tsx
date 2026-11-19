@@ -5,7 +5,6 @@ import { RelationFormCard } from './RelationFormCard';
 import { RelationSummaryCard } from './RelationSummaryCard';
 import { SectionHeader } from './SectionHeader';
 import type { DraftColumn, DraftRelation, RelationPayload } from './types';
-import type { useTableDraft } from './useTableDraft';
 
 const DOCS = 'https://docs.tooljet.com/docs/tooljet-db/constraints/foreign-key';
 
@@ -19,20 +18,47 @@ export type RelationActions = {
   remove: (relation: DraftRelation) => void;
 };
 
+/** What the list reads of a draft: both the table drafts and the column draft have it. */
+export type RelationsDraft = {
+  columns: DraftColumn[];
+  relations: DraftRelation[];
+  addRelation: (relation: RelationPayload) => void;
+  updateRelation: (id: string, relation: RelationPayload) => void;
+  removeRelation: (id: string) => void;
+};
+
 type RelationListProps = {
   tableName: string;
-  draft: ReturnType<typeof useTableDraft>;
+  draft: RelationsDraft;
   /** Defaults to changing the draft. */
   actions?: RelationActions;
   /** Columns a relation can start from. Defaults to every column of the draft. */
   sourceColumns?: DraftColumn[];
+  /**
+   * A column drawer: the section is about one column, so it holds one relation, starting from that column (named
+   * here), and uses singular copy. While `addDisabledReason` is set, "Add relation" is off and says why.
+   */
+  forColumn?: { name: string; addDisabledReason: string | null };
+};
+
+const COPY = {
+  table: {
+    title: 'Foreign key relations',
+    description: 'Link a column in this table to a column in an existing table.',
+    empty: 'No relations added yet',
+  },
+  column: {
+    title: 'Foreign key relation',
+    description: 'Link this column to a column in an existing table.',
+    empty: 'No relation added yet',
+  },
 };
 
 // 'new' = adding; an id = editing that relation; null = nothing open.
 type Open = 'new' | string | null;
 
 // The table's foreign key relations. One form is open at a time, and the "Add relation" button hides while it is.
-export function RelationList({ tableName, draft, actions, sourceColumns }: RelationListProps) {
+export function RelationList({ tableName, draft, actions, sourceColumns, forColumn }: RelationListProps) {
   const [open, setOpen] = useState<Open>(null);
   const close = () => setOpen(null);
   const { add, update, remove }: RelationActions = actions ?? {
@@ -47,24 +73,32 @@ export function RelationList({ tableName, draft, actions, sourceColumns }: Relat
     remove: (relation) => draft.removeRelation(relation.id),
   };
   const columns = sourceColumns ?? draft.columns;
+  const copy = forColumn ? COPY.column : COPY.table;
+  // A column has at most one relation.
+  const canAdd = forColumn ? draft.relations.length === 0 : true;
 
   return (
     <section className="tw-flex tw-flex-col tw-gap-4" data-cy="relations-section">
       <SectionHeader
-        title="Foreign key relations"
-        description="Link a column in this table to a column in an existing table."
+        title={copy.title}
+        description={copy.description}
         docsHref={DOCS}
         action={
-          open === null && (
-            <Button
-              variant="ghostBrand"
-              size="medium"
-              leadingVisual={<Plus />}
-              onClick={() => setOpen('new')}
-              data-cy="add-relation-button"
-            >
-              Add relation
-            </Button>
+          open === null &&
+          canAdd && (
+            // A disabled button takes no pointer events, so the reason is a hover hint on its wrapper.
+            <span title={forColumn?.addDisabledReason ?? undefined}>
+              <Button
+                variant="ghostBrand"
+                size="medium"
+                leadingVisual={<Plus />}
+                disabled={!!forColumn?.addDisabledReason}
+                onClick={() => setOpen('new')}
+                data-cy="add-relation-button"
+              >
+                Add relation
+              </Button>
+            </span>
           )
         }
       />
@@ -75,6 +109,7 @@ export function RelationList({ tableName, draft, actions, sourceColumns }: Relat
             tableName={tableName}
             columns={columns}
             relation={relation}
+            lockedSourceColumn={forColumn?.name}
             onCancel={close}
             onSave={(next) => update(relation, next, close)}
           />
@@ -83,6 +118,7 @@ export function RelationList({ tableName, draft, actions, sourceColumns }: Relat
             key={relation.id}
             relation={relation}
             sourceTableName={tableName}
+            layout={forColumn ? 'narrow' : 'wide'}
             onEdit={() => setOpen(relation.id)}
             onDelete={() => remove(relation)}
           />
@@ -92,6 +128,7 @@ export function RelationList({ tableName, draft, actions, sourceColumns }: Relat
         <RelationFormCard
           tableName={tableName}
           columns={columns}
+          lockedSourceColumn={forColumn?.name}
           onCancel={close}
           onSave={(next) => add(next, close)}
         />
@@ -99,7 +136,7 @@ export function RelationList({ tableName, draft, actions, sourceColumns }: Relat
       {draft.relations.length === 0 && open === null && (
         <div className="tw-flex tw-h-[62px] tw-items-center tw-justify-center tw-gap-2 tw-rounded-default tw-border tw-border-dashed tw-border-border-default tw-px-4 tw-py-3 tw-font-body-default tw-text-text-placeholder">
           <Link className="tw-size-4 tw-text-icon-default" aria-hidden />
-          No relations added yet
+          {copy.empty}
         </div>
       )}
     </section>

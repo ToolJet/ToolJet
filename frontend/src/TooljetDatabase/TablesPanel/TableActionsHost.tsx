@@ -90,27 +90,11 @@ function useDeleteTable(organizationId: string | null, onDeleted: () => void) {
   return { state, blocked, open, close, confirm };
 }
 
-function AddColumnBody({
-  open,
-  isOpenTable,
-  onClose,
-  referenced,
-  setReferenced,
-}: {
-  open: boolean;
-  isOpenTable: boolean;
-  onClose: () => void;
-  referenced: unknown[];
-  setReferenced: (value: unknown[]) => void;
-}) {
-  const { selectedTableData } = useTooljetDatabaseContext();
+function AddColumnBody({ open, isOpenTable, onClose }: { open: boolean; isOpenTable: boolean; onClose: () => void }) {
   return (
     <CreateColumnDrawer
       isCreateColumnDrawerOpen={open}
       setIsCreateColumnDrawerOpen={(isOpen: boolean) => !isOpen && onClose()}
-      rows={selectedTableData}
-      referencedColumnDetails={referenced}
-      setReferencedColumnDetails={setReferenced}
       resetPage={isOpenTable}
     />
   );
@@ -133,7 +117,6 @@ export function useTableActions({ refetchTables }: { refetchTables: () => void }
 
   const [active, setActive] = useState<Active | null>(null);
   const [open, setOpen] = useState(false);
-  const [referenced, setReferenced] = useState<unknown[]>([]);
   const close = useCallback(() => setOpen(false), []);
   const deletion = useDeleteTable(organizationId, refetchTables);
 
@@ -175,13 +158,7 @@ export function useTableActions({ refetchTables }: { refetchTables: () => void }
       )}
       {active?.kind === 'addColumn' && (
         <TableSchemaScope key={active.runId} table={active.table} onError={close}>
-          <AddColumnBody
-            open={open}
-            isOpenTable={selectedTable.id === active.table.id}
-            onClose={close}
-            referenced={referenced}
-            setReferenced={setReferenced}
-          />
+          <AddColumnBody open={open} isOpenTable={selectedTable.id === active.table.id} onClose={close} />
         </TableSchemaScope>
       )}
       {active?.kind === 'exportCsv' && (

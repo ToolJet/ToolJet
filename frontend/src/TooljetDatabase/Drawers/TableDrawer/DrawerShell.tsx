@@ -24,6 +24,10 @@ type DrawerShellProps = {
 
 // Header, scrolling body and sticky footer shared by the table and column drawers. The width comes from the Drawer
 // around it. Measurements follow the Figma Drawer: 48px header (0 12 0 16), 16px body padding, footer 12 16.
+//
+// Enter in a text field submits, when the primary button is enabled (the button's icon says so). Only a text input
+// inside the shell counts: a button already acts on Enter, a code editor and a textarea need it for new lines, and
+// Radix lists render in a portal, outside the shell's DOM though React bubbles their events up to it.
 export function DrawerShell({
   title,
   titleAdornment,
@@ -37,8 +41,18 @@ export function DrawerShell({
   'data-cy': dataCy,
   submitDataCy = 'create-button',
 }: DrawerShellProps) {
+  const submitOnEnter = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+    if (event.key !== 'Enter' || event.defaultPrevented || event.nativeEvent.isComposing) return;
+    if (!(target instanceof HTMLInputElement) || !event.currentTarget.contains(target)) return;
+    if (submitDisabled || isSubmitting) return;
+
+    event.preventDefault();
+    onSubmit();
+  };
+
   return (
-    <div className="tw-flex tw-h-full tw-flex-col tw-bg-background-surface-layer-01">
+    <div className="tw-flex tw-h-full tw-flex-col tw-bg-background-surface-layer-01" onKeyDown={submitOnEnter}>
       <header className="tw-flex tw-h-12 tw-shrink-0 tw-items-center tw-justify-between tw-gap-3 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-py-0 tw-pl-4 tw-pr-3">
         <div className="tw-flex tw-min-w-0 tw-flex-1 tw-items-center tw-gap-2">
           <h2 className="tw-m-0 tw-whitespace-nowrap tw-font-title-x-large tw-text-text-default" data-cy={dataCy}>

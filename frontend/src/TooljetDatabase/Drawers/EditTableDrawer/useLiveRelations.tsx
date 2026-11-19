@@ -8,7 +8,6 @@ import { useTjdbActions } from '../../_stores/tjdbStore';
 import { buildEditRelations } from '../TableDrawer/editTableRules';
 import type { RelationActions } from '../TableDrawer/RelationList';
 import type { DraftRelation, RelationPayload } from '../TableDrawer/types';
-import type { useTableDraft } from '../TableDrawer/useTableDraft';
 
 type Change = { type: 'add' | 'edit' | 'remove'; name: string; detail?: string };
 type RunMigration = (options: {
@@ -45,7 +44,12 @@ const describe = (relation: RelationPayload) =>
  * A stored table saves its foreign keys one at a time, each through the migration confirmation, not with the rest of
  * the edit. Returns the actions for the relation list and the modal to render once.
  */
-export function useLiveRelations(table: TjdbTable, draft: ReturnType<typeof useTableDraft>) {
+export function useLiveRelations(
+  table: TjdbTable,
+  draft: { replaceRelations: (relations: DraftRelation[]) => void },
+  /** Which of the table's relations the draft shows; all of them by default (a column drawer shows its own). */
+  keep: (relation: DraftRelation) => boolean = () => true
+) {
   const { organizationId, setForeignKeys, handleRefetchQuery } = useTooljetDatabaseContext() as {
     organizationId: string;
     setForeignKeys: (relations: unknown[]) => void;
@@ -63,7 +67,7 @@ export function useLiveRelations(table: TjdbTable, draft: ReturnType<typeof useT
     const metadata = (await fetchTableMetadata(organizationId, tableName)) as { foreignKeys: StoredRelation[] } | null;
     if (!metadata) return;
     setForeignKeys([...metadata.foreignKeys]);
-    draft.replaceRelations(buildEditRelations(metadata.foreignKeys));
+    draft.replaceRelations(buildEditRelations(metadata.foreignKeys).filter(keep));
     handleRefetchQuery();
   };
 

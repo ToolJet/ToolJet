@@ -25,6 +25,8 @@ type RelationFormCardProps = {
   relation?: DraftRelation;
   onSave: (relation: RelationPayload) => void;
   onCancel: () => void;
+  /** A column drawer relates its one column: the source is that column, whatever else the form holds. */
+  lockedSourceColumn?: string;
 };
 
 type TargetColumn = { name: string; type: string | null };
@@ -89,10 +91,25 @@ const Heading = ({ title, hint }: { title: string; hint?: string }) => (
 const Arrow = () => <ArrowRight className="tw-mx-auto tw-mt-7 tw-size-4 tw-text-icon-default" aria-hidden />;
 
 // Where a foreign key is added or changed, inline in the drawer instead of a drawer on top of it (Figma: Relation form).
-export function RelationFormCard({ tableName, columns, relation, onSave, onCancel }: RelationFormCardProps) {
+export function RelationFormCard({
+  tableName,
+  columns,
+  relation,
+  onSave,
+  onCancel,
+  lockedSourceColumn,
+}: RelationFormCardProps) {
   const { tables, organizationId } = useTooljetDatabaseContext() as { tables: TableOption[]; organizationId: string };
   const { fetchTableMetadata } = useTjdbActions();
-  const [form, setForm] = useState<RelationForm>(() => initialForm(relation, columns, tables));
+  const [chosen, setForm] = useState<RelationForm>(() => initialForm(relation, columns, tables));
+  // The locked column is read from `columns` each time: the drawer's name field can change while this form is open.
+  const form: RelationForm = lockedSourceColumn
+    ? {
+        ...chosen,
+        sourceColumn: lockedSourceColumn,
+        sourceType: columns.find((column) => column.column_name === lockedSourceColumn)?.data_type ?? null,
+      }
+    : chosen;
   const [targetColumns, setTargetColumns] = useState<TargetColumn[]>([]);
   // The table whose columns are in `targetColumns`, so an empty list can be told from one still loading.
   const [loadedTable, setLoadedTable] = useState<string | null>(null);
@@ -123,7 +140,7 @@ export function RelationFormCard({ tableName, columns, relation, onSave, onCance
   const set = (change: Partial<RelationForm>) => setForm((current) => ({ ...current, ...change }));
   // A list with nothing to pick is never opened: its field is off. The source column is chosen once the target table
   // is, and cannot change when editing a relation; the target column waits for the table's columns to load.
-  const sourceColumnDisabled = isEditing || !form.targetTable || sourceOptions.length === 0;
+  const sourceColumnDisabled = isEditing || !!lockedSourceColumn || !form.targetTable || sourceOptions.length === 0;
   const targetColumnDisabled =
     !form.targetTable || !form.sourceColumn || loadedTable !== targetTableName || compatible.length === 0;
 

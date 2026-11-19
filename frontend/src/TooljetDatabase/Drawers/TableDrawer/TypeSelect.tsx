@@ -9,12 +9,16 @@ type TypeSelectProps = {
   className?: string;
   /** Replaces the type's own icon (a key, for a primary key). */
   icon?: ReactNode;
+  /** The types offered; every type by default. The selected one is always shown in the trigger. */
+  types?: typeof dataTypes;
+  /** Under the list, outside the options (a note about types that are not offered). */
+  footer?: ReactNode;
 };
 
 const findType = (value: string | null) => dataTypes.find((type) => type.value === value);
 
 // The data type picker: the type's icon and label in the trigger, label and description in the list.
-export function TypeSelect({ value, onChange, disabled, className, icon }: TypeSelectProps) {
+export function TypeSelect({ value, onChange, disabled, className, icon, types = dataTypes, footer }: TypeSelectProps) {
   const selected = findType(value);
   return (
     <Select value={value ?? undefined} onValueChange={onChange} disabled={disabled}>
@@ -29,7 +33,7 @@ export function TypeSelect({ value, onChange, disabled, className, icon }: TypeS
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {dataTypes.map((type) => (
+        {types.map((type) => (
           <SelectItem key={type.value} value={type.value}>
             <span className="tw-flex tw-items-center tw-gap-2">
               {type.icon}
@@ -38,6 +42,7 @@ export function TypeSelect({ value, onChange, disabled, className, icon }: TypeS
             </span>
           </SelectItem>
         ))}
+        {footer}
       </SelectContent>
     </Select>
   );

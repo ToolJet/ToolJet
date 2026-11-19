@@ -10,9 +10,9 @@ import { DEFAULT_VIEW, selectView, useTjdbStore } from '@/TooljetDatabase/_store
 import CreateColumnDrawer from '..';
 
 // The drawer's only job here is what it does once the form reports success.
-jest.mock('../../../Forms/ColumnForm', () => ({
+jest.mock('../../ColumnDrawer/AddColumnForm', () => ({
   __esModule: true,
-  default: ({ onCreate }: { onCreate: () => void }) => (
+  AddColumnForm: ({ onCreate }: { onCreate: () => void }) => (
     <button type="button" onClick={onCreate}>
       submit column
     </button>
@@ -39,14 +39,7 @@ const page = {
 const renderDrawer = (props: { resetPage?: boolean } = {}) =>
   render(
     <TooljetDatabaseProvider value={page as unknown as TooljetDatabaseContextValue}>
-      <CreateColumnDrawer
-        isCreateColumnDrawerOpen
-        setIsCreateColumnDrawerOpen={() => {}}
-        rows={[]}
-        referencedColumnDetails={[]}
-        setReferencedColumnDetails={() => {}}
-        {...props}
-      />
+      <CreateColumnDrawer isCreateColumnDrawerOpen setIsCreateColumnDrawerOpen={() => {}} {...props} />
     </TooljetDatabaseProvider>
   );
 

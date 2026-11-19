@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import Drawer from '@/_ui/Drawer';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
-import EditColumnForm from '../../Forms/EditColumnForm';
+import { EditColumnForm } from '../../Drawers/ColumnDrawer/EditColumnForm';
 import { CHANGE_TYPE } from '../../MigrationConfirmModal';
 import useMigrationModal from '../../MigrationConfirmModal/useMigrationModal';
 import { useTjdbActions } from '../../_stores/tjdbStore';
@@ -21,7 +21,6 @@ export function useColumnActions(rows: GridRow[]) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   // Kept while the drawer slides out.
   const editedColumn = useRef<GridColumn | null>(null);
-  const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
   const closeEdit = () => setIsEditOpen(false);
   // Backdrop, Cancel and Escape ask about unsaved input; the form's own `onClose` (after a save) does not.
   const requestCloseEdit = useGuardedClose('editColumn', closeEdit);
@@ -58,24 +57,21 @@ export function useColumnActions(rows: GridRow[]) {
   const overlays = (
     <>
       <Drawer
+        // The migration confirmation opens above this drawer; a focus trap here would keep it from taking focus.
+        disableFocus
         isOpen={isEditOpen}
         onClose={requestCloseEdit}
         position="right"
-        drawerStyle={undefined}
+        drawerStyle={{ width: '560px' }}
         className="tj-db-drawer"
       >
         {editedColumn.current && (
           <EditColumnForm
             key={editedColumn.current.accessor}
-            selectedColumn={editedColumn.current}
-            setColumns={setColumns}
+            column={editedColumn.current}
+            rows={rows}
             onClose={closeEdit}
             onCancel={requestCloseEdit}
-            rows={rows}
-            isEditColumn={true}
-            referencedColumnDetails={referencedColumnDetails}
-            setReferencedColumnDetails={setReferencedColumnDetails}
-            initiator="EditColumnForm"
           />
         )}
       </Drawer>
