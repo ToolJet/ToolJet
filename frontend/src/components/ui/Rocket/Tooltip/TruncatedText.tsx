@@ -13,6 +13,8 @@ export interface TruncatedTextProps extends Omit<HTMLAttributes<HTMLElement>, 'c
   /** What the tooltip shows when the text is cut off. */
   content?: ReactNode;
   arrow?: boolean;
+  /** Opens the tooltip without a hover (the cell holds the keyboard focus). Still only when the text is cut off. */
+  forceOpen?: boolean;
 }
 
 export default function TruncatedText({
@@ -21,6 +23,7 @@ export default function TruncatedText({
   children,
   content,
   arrow,
+  forceOpen = false,
   ...props
 }: TruncatedTextProps) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -39,7 +42,7 @@ export default function TruncatedText({
   };
 
   return (
-    <TooltipComp content={content} open={isOverflowing && open} arrow={arrow}>
+    <TooltipComp content={content} open={isOverflowing && (open || forceOpen)} arrow={arrow}>
       <Tag
         {...props}
         ref={ref}

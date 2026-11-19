@@ -182,6 +182,16 @@ export function TableGrid({
   latest.current = { tableRows, columnsByName, primaryKeys, canEdit, cell, editingRowId };
   const savingRef = useRef(false);
 
+  // The id cell's expand button: the row opens in the edit drawer, under the same rules as the bar's Edit.
+  const openRow = useCallback((rowId: string) => {
+    const row = latest.current.tableRows.find((tableRow) => tableRow.id === rowId);
+    if (row) setEditingRow(row.original);
+  }, []);
+  const getOpenBlockedReason = useCallback(
+    (row: GridRow) => getEditBlockedReason(primaryKeys, columns, row),
+    [primaryKeys, columns]
+  );
+
   const focusGrid = useCallback(() => scrollRef.current?.focus({ preventScroll: true }), []);
 
   const focusCell = useCallback(
@@ -397,6 +407,8 @@ export function TableGrid({
               onEditCell={editCell}
               onSaveCell={saveCell}
               onStopEditing={stopEditing}
+              onOpenRow={openRow}
+              getOpenBlockedReason={getOpenBlockedReason}
             />
           )}
           {canAddRows && <InlineAddRows table={table} showTrailingCell={canEditSchema} />}

@@ -148,6 +148,37 @@ describe('TableGrid | edit row drawer', () => {
     expect(editButton().closest('span')).toHaveAttribute('title', 'Select one row to edit');
   });
 
+  describe("the id cell's expand button", () => {
+    const expandIn = (rowId: string) =>
+      within(screen.getByTestId(`grid-row-${rowId}`)).queryByRole('button', { name: 'Open row' });
+
+    it('opens that row in the drawer without selecting it, and only the id cell has one', async () => {
+      setup();
+      expect(screen.getAllByRole('button', { name: 'Open row' })).toHaveLength(ROWS.length);
+
+      await userEvent.click(expandIn('2') as HTMLElement);
+
+      expect(await byDataCy('title-input-field')).toHaveValue('two');
+      expect(screen.getByTestId('grid-row-2')).toHaveAttribute('aria-selected', 'false');
+    });
+
+    it.each([
+      ['a bigint primary key', [column('id', 'bigint', true)], [{ id: 1 }], /bigint/],
+      ['a key past 2^53', COLUMNS, [{ id: 2 ** 53 + 2, title: 'x' }], /too large/],
+    ] as const)('is off, with the reason, for %s', async (_name, columns, rows, reason) => {
+      setup({ columns: columns as unknown as GridColumn[], rows: rows as unknown as Record<string, unknown>[] });
+      const button = screen.getByRole('button', { name: 'Open row' });
+
+      expect(button).toBeDisabled();
+      expect(button.getAttribute('title')).toMatch(reason);
+    });
+
+    it('is not there without permission to select rows', () => {
+      setup({ canSelectRows: false });
+      expect(screen.queryByRole('button', { name: 'Open row' })).toBeNull();
+    });
+  });
+
   it.each([
     ['a table without a primary key', [column('title', 'text')], [{ title: 'x' }], /primary key/],
     ['a bigint primary key', [column('id', 'bigint', true)], [{ id: 1 }], /bigint/],

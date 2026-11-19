@@ -20,6 +20,9 @@ type GridBodyProps = {
   onEditCell: (rowIndex: number, columnId: string) => void;
   onSaveCell: (rowId: string, columnId: string, value: string | null) => Promise<boolean>;
   onStopEditing: () => void;
+  onOpenRow: (rowId: string) => void;
+  /** Why a row cannot be opened in the edit drawer, or undefined. */
+  getOpenBlockedReason: (row: GridRowData) => string | undefined;
 };
 
 export function GridBody({
@@ -33,6 +36,8 @@ export function GridBody({
   onEditCell,
   onSaveCell,
   onStopEditing,
+  onOpenRow,
+  getOpenBlockedReason,
 }: GridBodyProps) {
   const { rows } = table.getRowModel();
   const { columnSizing } = table.getState();
@@ -63,6 +68,8 @@ export function GridBody({
             onEditCell={onEditCell}
             onSaveCell={onSaveCell}
             onStopEditing={onStopEditing}
+            onOpenRow={onOpenRow}
+            openBlockedReason={getOpenBlockedReason(row.original)}
           />
         ) : null;
       })}
