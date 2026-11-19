@@ -8,7 +8,9 @@ export interface QueryService {
     queryOptions: object,
     dataSourceId?: string,
     dataSourceUpdatedAt?: string,
-    context?: { user?: User; app?: App }
+    // signal: fires when the caller gives up on the query (its timeout, a workflow step's deadline);
+    // a plugin that honours it cancels its request
+    context?: { user?: User; app?: App; signal?: AbortSignal }
   ): Promise<QueryResult>;
   getConnection?(queryOptions: object, options: any, checkCache: boolean, dataSourceId: string): Promise<object>;
   testConnection?(sourceOptions: object): Promise<ConnectionTestResult>;
