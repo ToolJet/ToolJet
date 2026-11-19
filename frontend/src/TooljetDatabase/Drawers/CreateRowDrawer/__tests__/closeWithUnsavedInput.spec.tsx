@@ -40,12 +40,7 @@ describe('CreateRowDrawer | closing', () => {
     close.mockClear();
     render(
       <TooljetDatabaseProvider value={page as unknown as TooljetDatabaseContextValue}>
-        <CreateRowDrawer
-          isCreateRowDrawerOpen
-          setIsCreateRowDrawerOpen={close}
-          referencedColumnDetails={[]}
-          setReferencedColumnDetails={() => {}}
-        />
+        <CreateRowDrawer isCreateRowDrawerOpen setIsCreateRowDrawerOpen={close} />
         <UnsavedChangesGuard />
       </TooljetDatabaseProvider>
     );

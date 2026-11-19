@@ -63,7 +63,6 @@ const Table = () => {
   const [isSeedDataDrawerOpen, setIsSeedDataDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [filterEnable, setFilterEnable] = useState(false);
-  const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
 
   const prevSelectedTableRef = useRef({});
 
@@ -98,7 +97,6 @@ const Table = () => {
     setColumns([]);
     setConfigurations({});
     setForeignKeys([]);
-    setReferencedColumnDetails([]);
     await fetchTableMetadata();
   };
 
@@ -155,8 +153,6 @@ const Table = () => {
         isSeedDataDrawerOpen={isSeedDataDrawerOpen}
         setIsSeedDataDrawerOpen={setIsSeedDataDrawerOpen}
         setFilterEnable={setFilterEnable}
-        referencedColumnDetails={referencedColumnDetails}
-        setReferencedColumnDetails={setReferencedColumnDetails}
       />
       {/* 48px navbar + 48px toolbar + the 52px page footer, plus whatever the page puts above the table (the tab strip). */}
       <div

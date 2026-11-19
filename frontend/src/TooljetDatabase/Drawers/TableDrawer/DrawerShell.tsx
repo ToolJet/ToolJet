@@ -16,6 +16,8 @@ type DrawerShellProps = {
   submitDisabled?: boolean;
   isSubmitting?: boolean;
   onSubmit: () => void;
+  /** Shift + Enter in a text field, when the drawer can submit and stay open. Without it Shift + Enter submits as Enter. */
+  onSubmitAndStay?: () => void;
   /** data-cy of the title. */
   'data-cy'?: string;
   /** data-cy of the submit button. */
@@ -38,6 +40,7 @@ export function DrawerShell({
   submitDisabled,
   isSubmitting,
   onSubmit,
+  onSubmitAndStay,
   'data-cy': dataCy,
   submitDataCy = 'create-button',
 }: DrawerShellProps) {
@@ -48,7 +51,8 @@ export function DrawerShell({
     if (submitDisabled || isSubmitting) return;
 
     event.preventDefault();
-    onSubmit();
+    if (event.shiftKey && onSubmitAndStay) onSubmitAndStay();
+    else onSubmit();
   };
 
   return (

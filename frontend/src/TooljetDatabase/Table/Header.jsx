@@ -28,8 +28,6 @@ const Header = ({
   isSeedDataDrawerOpen,
   setIsSeedDataDrawerOpen,
   setFilterEnable,
-  referencedColumnDetails,
-  setReferencedColumnDetails,
 }) => {
   const [bulkUploadFile, setBulkUploadFile] = useState(null);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
@@ -146,8 +144,6 @@ const Header = ({
       <CreateRowDrawer
         isCreateRowDrawerOpen={isCreateRowDrawerOpen}
         setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
-        referencedColumnDetails={referencedColumnDetails}
-        setReferencedColumnDetails={setReferencedColumnDetails}
       />
       <BulkUploadDrawer
         isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}

@@ -23,6 +23,8 @@ export const DateTimePicker = ({
   isPlaceholderEnabled = false,
   isDisabled = false,
   errorMessage,
+  // The picker takes the focus when it mounts (the table cell editor relies on it); a form with other fields turns it off.
+  autoFocus = true,
 }) => {
   const startValue = useRef(timestamp);
   const timestampRef = useRef(timestamp);
@@ -356,7 +358,7 @@ export const DateTimePicker = ({
           }
           event?.stopPropagation();
         }}
-        autoFocus={true}
+        autoFocus={autoFocus}
         open={isOpen}
         showTimeInput={enableTime ? true : false}
         showTimeSelectOnly={enableDate ? false : true}

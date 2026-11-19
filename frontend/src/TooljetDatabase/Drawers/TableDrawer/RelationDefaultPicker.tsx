@@ -18,7 +18,7 @@ type RelationDefaultPickerProps = {
 
 // The legacy picker is built for a table cell: fixed 35px buttons and a bootstrap border. As a drawer field it is
 // restyled from outside (its own `tjdb-default-field` class carries no CSS) to match the Rocket Input (32px, border/default, 6px radius).
-const FIELD_LOOK = [
+export const FIELD_LOOK = [
   'tw-h-8 tw-w-full',
   '[&_.tjdb-default-field]:!tw-m-0 [&_.tjdb-default-field]:!tw-h-8 [&_.tjdb-default-field]:!tw-w-full [&_.tjdb-default-field]:!tw-max-w-none',
   '[&_button]:!tw-h-8 [&_button]:!tw-w-full [&_button]:!tw-rounded-md [&_button]:!tw-border [&_button]:!tw-border-solid [&_button]:!tw-border-border-default [&_button]:!tw-bg-background-surface-layer-01 [&_button]:!tw-px-2',
