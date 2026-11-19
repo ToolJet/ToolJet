@@ -53,6 +53,7 @@ Per checkout, in `.tj/` (gitignored): `state.json` (ports, DB names, dependency 
   - DB names are `tooljet_<slug>_<hash>[_test]`. They are unique per branch and stay under Postgres' 63-char limit, even with the e2e runner's shard suffix.
 - **Submodules:** a worktree clones them from the main checkout's local module repos, so unpushed EE branches are visible.
 - **Dependencies:** before running `npm ci`, setup looks for another checkout whose installed `node_modules` matches this lockfile (npm's `node_modules/.package-lock.json`) and copies it copy-on-write (APFS clonefile, or reflink on Linux). A plugins build is copied the same way from a checkout that recorded one for the same `plugins` tree. `--force` always reinstalls.
+- **Component packs:** with `--app`, on branches that have `packs/builtin.json`, setup builds the packs into `server/builtin-packs/` (`packs/build-builtin.mjs`, as the Dockerfiles do), or copies a build recorded for the same committed `packs` and `cli` trees. Without them the Components panel offers no packs. An uncommitted pack edit needs `--force` or `node packs/build-builtin.mjs`, then a server restart.
 - **Env files:** a worktree gets its own `.env.test` and, with `--app`, its own `.env`. Test-DB commands move `.env` aside while they run, because the server's config loader merges `.env` over the environment.
 
 ## Adding a command
