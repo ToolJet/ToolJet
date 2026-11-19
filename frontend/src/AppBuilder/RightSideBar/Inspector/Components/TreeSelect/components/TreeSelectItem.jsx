@@ -4,12 +4,14 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import TreeSelectItemPopover from './TreeSelectItemPopover';
 import { ToolTip } from '@/_components/ToolTip';
 import { EllipsisVertical, Plus, Trash2, Pencil } from 'lucide-react';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 
 export const TreeSelectItem = ({
   darkMode,
   item,
   onDeleteItem,
   onItemChange,
+  validateItemField,
   onAddNestedItem,
   getResolvedValue,
   parentValue = null,
@@ -42,7 +44,7 @@ export const TreeSelectItem = ({
 
   // Resolve dynamic ({{...}}) label/value for display in the list row.
   const resolve = (val) => (getResolvedValue ? getResolvedValue(val) : val);
-  const displayLabel = resolve(item?.label) || resolve(item?.value);
+  const displayLabel = getSafeRenderableValue(resolve(item?.label) || resolve(item?.value));
 
   return (
     <div style={{ width: '100%' }}>
@@ -139,6 +141,7 @@ export const TreeSelectItem = ({
                 item={item}
                 darkMode={darkMode}
                 onItemChange={onItemChange}
+                validateItemField={validateItemField}
                 onDeleteItem={onDeleteItem}
                 getResolvedValue={getResolvedValue}
                 parentValue={parentValue}

@@ -1,3 +1,16 @@
+// Top level, not under the container: the dragged card is portaled to document.body.
+.reorderable-list-item {
+  cursor: grab;
+  font-size: 14px;
+  color: var(--cc-primary-text);
+
+  &.is-dragging {
+    opacity: 0.8;
+    cursor: grabbing;
+    background: var(--interactive-overlays-fill-hover);
+  }
+}
+
 .reorderable-list-container {
   border-radius: 8px;
 
@@ -6,21 +19,9 @@
     flex-direction: column;
   }
 
-  .reorderable-list-item {
-    cursor: grab;
-    font-size: 14px;
-    color: var(--cc-primary-text);
-
-    &.is-dragging {
-      opacity: 0.8;
-      cursor: grabbing;
-      background: var(--interactive-overlays-fill-hover);
-    }
-  }
-
+  // The RenderWidget wrapper already fades a disabled widget once.
   &.is-disabled .reorderable-list-item {
     cursor: not-allowed;
-    opacity: 0.5;
   }
 
   .reorderable-list-loading,
@@ -33,4 +34,3 @@
     color: var(--cc-placeholder-text);
   }
 }
-

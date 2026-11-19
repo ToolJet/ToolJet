@@ -11,9 +11,7 @@ export const spinnerConfig = {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
-  properties: {},
-  events: {},
-  styles: {
+  properties: {
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
@@ -21,7 +19,34 @@ export const spinnerConfig = {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
+      section: 'additionalActions',
     },
+    // The switch's displayName labels the pair; the code field below hides its own label.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
+  },
+  events: {},
+  styles: {
     colour: {
       type: 'colorSwatches',
       displayName: 'Colour',
@@ -38,7 +63,8 @@ export const spinnerConfig = {
         { name: 'large', value: 'lg' },
       ],
       validation: {
-        schema: { type: 'string' },
+        // Only the registered options; anything else is a validation error and falls back to sm.
+        schema: { type: 'string', pattern: '^(sm|lg)$' },
         defaultValue: 'sm',
       },
     },
@@ -49,10 +75,13 @@ export const spinnerConfig = {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
-    properties: {},
+    properties: {
+      visibility: { value: '{{true}}' },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
+    },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
       size: { value: 'sm' },
       colour: { value: 'var(--cc-primary-brand)' },
     },
