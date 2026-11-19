@@ -25,7 +25,7 @@ Sets a specific version as the live released version for an app. Target a versio
 <ApiRight>
 
 <RequestExample code={`curl -X POST "https://{your-domain}/api/ext/apps/{appIdOrSlug}/git-sync/release" \\
-    -H "Authorization: Bearer <access_token>" \\
+    -H "Authorization: Basic <access_token>" \\
     -H "Content-Type: application/json" \\
     -d '{"versionName": "v1.2.0"}'`} />
 
