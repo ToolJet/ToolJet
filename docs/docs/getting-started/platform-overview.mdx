@@ -106,7 +106,7 @@ export const NextStepCard = ({ title, description, href }) => (
         ToolJet is an AI-native platform for building applications, agents, and automated workflows. Applications can be built visually, with ToolJet AI, from a coding agent through ToolJet MCP, or in React with React Builder, and connect to more than 80 datasources.
     </p>
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-        {['AI App Generation', 'AI Agents', '70+ UI Components', '80+ Data Sources', 'Version Control', 'Role Based Access Control', 'SSO'].map(label => (
+        {['AI App Generation', 'AI Agents', '70+ UI Components', '100+ Data Sources', 'Version Control', 'Role Based Access Control', 'SSO'].map(label => (
             <span key={label} style={{
                 display: 'inline-block', padding: '4px 12px',
                 borderRadius: '20px', fontSize: '12px', fontWeight: 600,
@@ -162,7 +162,7 @@ export const NextStepCard = ({ title, description, href }) => (
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '48px' }}>
     <FlowStep number="1" title="Generate with AI" description="Describe what you need. ToolJet builds the layout, components, and queries automatically." />
     <FlowStep number="2" title="Build Visually or in Code" description="Build with drag-and-drop components and themes, or write the application in React with React Builder." />
-    <FlowStep number="3" title="Connect Data" description="Integrate 80+ databases, APIs, and SaaS services. All connections are proxied for security." />
+    <FlowStep number="3" title="Connect Data" description="Integrate 100+ databases, APIs, and SaaS services. All connections are proxied for security." />
     <FlowStep number="4" title="Automate with Agents" description="Deploy AI agents that query data, trigger workflows, and handle multi-step processes." />
     <FlowStep number="5" title="Secure and Deploy" description="RBAC, multi-environment management, GitSync, version reviews, and audit logs." />
 </div>
@@ -234,7 +234,7 @@ export const NextStepCard = ({ title, description, href }) => (
     <CapabilityCard
         icon="plug"
         title="Integrations"
-        description="Connect to 80+ databases, REST APIs, SaaS tools, and cloud services out of the box."
+        description="Connect to 100+ databases, REST APIs, SaaS tools, and cloud services out of the box."
         features={[
             'PostgreSQL, MySQL, MongoDB, Snowflake, and more',
             'REST, GraphQL, and SOAP API support',
