@@ -30,7 +30,7 @@ import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, decodePromptCookie } from '@/_helpers/utils';
 import { getQueryParams } from '@/_helpers/routes';
 import { withRouter } from '@/_hoc/withRouter';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
@@ -195,7 +195,7 @@ class HomePageComponent extends React.Component {
         // });
         // Optional: Clear the cookie after showing toast
         this.setState({ showAIOnboardingLoadingScreen: true });
-        this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(latestPrompt)}`);
+        this.createApp(`Untitled App: ${uuidv4()}`, undefined, decodePromptCookie(latestPrompt));
         break;
       case !!templateId: {
         this.setState({ showAIOnboardingLoadingScreen: true });
