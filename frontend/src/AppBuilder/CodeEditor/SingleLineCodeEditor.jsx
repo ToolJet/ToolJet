@@ -227,6 +227,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
         setIsFocused={setIsFocused}
         setCursorInsidePreview={setCursorInsidePreview}
         componentName={componentName}
+        portalTitle={paramLabel || componentName}
         validationSchema={validation}
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
@@ -258,6 +259,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
               cyLabel={restProps.cyLabel}
               portalProps={portalProps}
               componentName={componentName}
+              portalTitle={paramLabel || componentName}
               setShowPreview={setShowPreview}
               showPreview={showPreview}
               wrapperRef={wrapperRef}
@@ -592,6 +594,7 @@ const EditorInput = ({
         isOpen={isOpen}
         callback={setIsOpen}
         componentName={componentName}
+        portalTitle={paramLabel || componentName}
         key={componentName}
         customComponent={renderPreview}
         forceUpdate={forceUpdate}
