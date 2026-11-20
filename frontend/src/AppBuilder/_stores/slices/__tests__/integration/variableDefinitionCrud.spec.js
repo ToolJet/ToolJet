@@ -172,6 +172,90 @@ describe('delete', () => {
   });
 });
 
+describe('declared variable boundaries', () => {
+  test('invalid JSON leaves an existing value and its saved definition unchanged', async () => {
+    const { definition } = await state().saveVariableDefinition({ scope: 'app', name: 'threshold', value: '5' });
+    saved = [];
+
+    const result = await state().saveVariableDefinition({ id: definition.id, value: '{broken' });
+
+    expect(result).toEqual({ ok: false, field: 'value', error: expect.stringContaining('Not valid JSON') });
+    expect(appVars().threshold).toBe(5);
+    expect(state().getAppVariableDefinitions()[0].value).toBe('5');
+    expect(saved).toEqual([]);
+  });
+
+  test('changing an expression to a static value stops following the former source', async () => {
+    await state().saveVariableDefinition({ scope: 'app', name: 'source', value: '2' });
+    const { definition } = await state().saveVariableDefinition({
+      scope: 'app',
+      name: 'threshold',
+      value: '{{variables.source * 2}}',
+      fxActive: true,
+    });
+    expect(appVars().threshold).toBe(4);
+
+    await state().saveVariableDefinition({ id: definition.id, value: '7', fxActive: false });
+    state().setVariable('source', 9);
+    await flush();
+
+    expect(appVars().threshold).toBe(7);
+    expect(state().getResolvedComponent('c1').properties.text).toBe('7');
+  });
+
+  test('a deleted expression is not recreated when its former source changes', async () => {
+    await state().saveVariableDefinition({ scope: 'app', name: 'source', value: '2' });
+    const { definition } = await state().saveVariableDefinition({
+      scope: 'app',
+      name: 'threshold',
+      value: '{{variables.source * 2}}',
+    });
+    expect(appVars().threshold).toBe(4);
+    await state().deleteVariableDefinition(definition.id);
+    saved = [];
+
+    state().setVariable('source', 9);
+    await flush();
+
+    expect(appVars()).not.toHaveProperty('threshold');
+    expect(
+      state()
+        .getAppVariableDefinitions()
+        .map((d) => d.name)
+    ).toEqual(['source']);
+    expect(saved).toEqual([]);
+  });
+
+  test('same-name app and page variables stay isolated when the page variable is edited and deleted', async () => {
+    await state().saveVariableDefinition({ scope: 'app', name: 'threshold', value: '5' });
+    const { definition } = await state().saveVariableDefinition({ scope: 'page', name: 'threshold', value: '10' });
+    await state().saveVariableDefinition({ id: definition.id, value: '12' });
+
+    expect(pageVars().threshold).toBe(12);
+    expect(appVars().threshold).toBe(5);
+    await state().deleteVariableDefinition(definition.id);
+
+    expect(pageVars()).not.toHaveProperty('threshold');
+    expect(appVars().threshold).toBe(5);
+    expect(state().getResolvedComponent('c1').properties.text).toBe('5');
+  });
+
+  test('a page script override survives unrelated writes and yields when its source changes', async () => {
+    await state().saveVariableDefinition({ scope: 'app', name: 'source', value: '2' });
+    await state().saveVariableDefinition({ scope: 'page', name: 'double', value: '{{variables.source * 2}}' });
+    expect(pageVars().double).toBe(4);
+
+    state().setPageVariable('double', 99);
+    state().setVariable('unrelated', 8);
+    await flush();
+    expect(pageVars().double).toBe(99);
+
+    state().setVariable('source', 3);
+    await flush();
+    expect(pageVars().double).toBe(6);
+  });
+});
+
 describe('undo and redo', () => {
   test('undo removes a created variable; redo brings it back with its value', async () => {
     await state().saveVariableDefinition({ scope: 'app', name: 'threshold', value: '5' });

@@ -128,7 +128,11 @@ const ValueField = ({
         <CodeHinterComponent
           type="basic"
           initialValue={value}
-          onChange={(next: unknown) => onChange(next === undefined || next === null ? '' : String(next))}
+          // The basic editor's onChange is a blur commit. Keep this form's
+          // draft current while typing; a second commit on blur would duplicate
+          // edit saves and undo entries.
+          onInputChange={(next: unknown) => onChange(next === undefined || next === null ? '' : String(next))}
+          onChange={() => {}}
           usePortalEditor={false}
           delayOnChange={false}
           placeholder={fxActive ? '{{queries.getProducts.data[0]}}' : 'e.g. 5, open, [] or {}'}
