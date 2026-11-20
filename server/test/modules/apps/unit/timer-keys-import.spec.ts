@@ -1,6 +1,6 @@
 /**
  * Timer moved `visibility`/`disabledState` from styles and `tooltip` from general into properties
- * (MoveTimerVisibilityDisabledTooltipToProperties migration). An app exported before that change
+ * (CopyTimerAdditionalActions migration). An app exported before that change
  * and imported afterwards never passes through the migration, so the import path must make the
  * same move or the imported Timer loses its saved values.
  */
