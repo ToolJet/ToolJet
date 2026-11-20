@@ -113,10 +113,10 @@ describe('POST/PUT /api/folder-data-sources | organization scoping (IDOR regress
       .expect(404);
   });
 
-  it('should 404 when branch_id belongs to a different organization', async () => {
+  it('should 400 when branch_id belongs to a different organization', async () => {
     await as(admin1Cookie)(agent().post(`/api/folder-data-sources?branch_id=${branch2Id}`))
       .send({ folder_id: folder1Id, data_source_id: dataSource1Id })
-      .expect(404);
+      .expect(400);
   });
 
   it('should 400 when folder_id is missing', async () => {

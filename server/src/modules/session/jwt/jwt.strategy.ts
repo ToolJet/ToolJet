@@ -265,15 +265,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     };
 
     const rawQuery = req.query?.['branch_id'];
+    if (rawQuery !== undefined && typeof rawQuery !== 'string') throw new BadRequestException('Invalid branch_id');
     const queryBranchId = normalize(typeof rawQuery === 'string' ? rawQuery : undefined);
-    if (queryBranchId) return queryBranchId;
+    if (queryBranchId) return this.checkWorkspaceBranch(queryBranchId, organizationId);
 
     const rawHeader = req.headers['x-branch-id'];
     const headerBranchId = normalize(Array.isArray(rawHeader) ? rawHeader[0] : rawHeader);
-    if (headerBranchId) return headerBranchId;
+    if (headerBranchId) return this.checkWorkspaceBranch(headerBranchId, organizationId);
 
     if (!organizationId) return null;
     return this.sessionUtilService.getDefaultBranchId(organizationId);
+  }
+
+  private async checkWorkspaceBranch(branchId: string, organizationId?: string): Promise<string | null> {
+    if (!organizationId) return null;
+    if (!(await this.sessionUtilService.isWorkspaceBranch(branchId, organizationId))) {
+      throw new BadRequestException('Branch not found in this workspace');
+    }
+    return branchId;
   }
 
   /**

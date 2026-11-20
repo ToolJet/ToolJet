@@ -23,6 +23,7 @@ import {
   saveEntity,
   updateEntity,
   markVersionAsReleased,
+  resolveOrSeedDefaultBranch,
 } from 'test-helper';
 import { App } from 'src/entities/app.entity';
 import { AppVersion, AppVersionStatus } from 'src/entities/app_version.entity';
@@ -217,6 +218,54 @@ describe('AppsController', () => {
       expect(application.id).toBe(appVersion.slug);
 
       // await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
+    });
+
+    describe('with a branch id', () => {
+      let workspaceId: string;
+      let cookie: string;
+      let ownBranchId: string;
+      let foreignBranchId: string;
+
+      beforeAll(async () => {
+        const attacker = await createUser(app, { email: 'branch-owner@tooljet.io', groups: ['all_users', 'admin'] });
+        const victim = await createUser(app, { email: 'branch-victim@tooljet.io', groups: ['all_users', 'admin'] });
+        workspaceId = attacker.user.defaultOrganizationId;
+        await ensureAppEnvironments(app, workspaceId);
+        cookie = (await login(app, 'branch-owner@tooljet.io')).tokenCookie;
+        ownBranchId = (await resolveOrSeedDefaultBranch(workspaceId)).id;
+        foreignBranchId = (await resolveOrSeedDefaultBranch(victim.user.defaultOrganizationId)).id;
+      });
+
+      const createApp = (name: string, branchId: string, query: Record<string, string> = {}) =>
+        request(app.getHttpServer())
+          .post('/api/apps')
+          .query(query)
+          .set('tj-workspace-id', workspaceId)
+          .set('Cookie', cookie)
+          .send({ name, type: 'front-end', branchId });
+
+      it('should create the app on a branch of the same workspace', async () => {
+        const response = await createApp('Own branch app', ownBranchId);
+
+        expect(response.statusCode).toBe(201);
+        expect(await AppVersion.findOneOrFail({ where: { appId: response.body.id } })).toMatchObject({
+          branchId: ownBranchId,
+        });
+      });
+
+      it('should return 400 for a body branchId from another workspace', async () => {
+        const response = await createApp('Foreign body branch app', foreignBranchId);
+
+        expect(response.statusCode).toBe(400);
+        expect(await AppVersion.count({ where: { branchId: foreignBranchId } })).toBe(0);
+      });
+
+      it('should return 400 for a branch_id param from another workspace', async () => {
+        const response = await createApp('Foreign param branch app', ownBranchId, { branch_id: foreignBranchId });
+
+        expect(response.statusCode).toBe(400);
+        expect(await AppVersion.count({ where: { branchId: foreignBranchId } })).toBe(0);
+      });
     });
   });
 
