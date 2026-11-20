@@ -52,4 +52,13 @@ describe('resolveCode | sandbox isolates', () => {
     expect(resolveCode({ code: 'return 2', state: {}, isolate, context })).toBe(2);
     isolate.dispose();
   });
+
+  it('should refuse a result over maxResultBytes inside the sandbox, and allow one under it (R11)', () => {
+    const code = 'return "x".repeat(size)';
+
+    expect(() => resolveCode({ code, state: { size: 2000 }, maxResultBytes: 1000 })).toThrow(
+      'The result is larger than the 1000 bytes allowed'
+    );
+    expect(resolveCode({ code, state: { size: 500 }, maxResultBytes: 1000 })).toHaveLength(500);
+  });
 });

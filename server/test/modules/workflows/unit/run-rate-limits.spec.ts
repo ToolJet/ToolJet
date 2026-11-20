@@ -30,6 +30,7 @@ describe('runRateBuckets', () => {
         { key: 'anon:wf:wf1', limit: 30 },
         { key: 'anon:ws:ws1', limit: 120 },
         { key: 'anon:ip:1.2.3.4', limit: 20 },
+        { key: 'anon:instance', limit: 600 },
       ]);
     });
 
@@ -38,6 +39,7 @@ describe('runRateBuckets', () => {
         'anon:wf:unknown',
         'anon:ws:unknown',
         'anon:ip:unknown',
+        'anon:instance',
       ]);
     });
   });
@@ -53,5 +55,10 @@ describe('runRateBuckets', () => {
   it('should take the numbers from the env overrides', () => {
     const tight = resolveWorkflowLimits({ WORKFLOW_LIMIT_ANONYMOUS_RUNS_PER_IP_PER_MINUTE: '5' });
     expect(runRateBuckets('app', { ip: '1.2.3.4' }, tight)[2]).toEqual({ key: 'anon:ip:1.2.3.4', limit: 5 });
+  });
+
+  it('should limit the public approval link per IP and package builds per user (R17)', () => {
+    expect(runRateBuckets('approval', { ip: '1.2.3.4' }, limits)).toEqual([{ key: 'approval:ip:1.2.3.4', limit: 20 }]);
+    expect(runRateBuckets('build', { userId: 'u1' }, limits)).toEqual([{ key: 'build:user:u1', limit: 10 }]);
   });
 });

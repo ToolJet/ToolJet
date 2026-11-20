@@ -25,7 +25,10 @@ export type AdmissionRefusal =
   | 'redis_unavailable'
   | 'quota'
   | 'no_worker'
-  | 'pod_waiting_full';
+  | 'pod_waiting_full'
+  | 'queue_timeout'
+  | 'notification_budget'
+  | 'outbound_rate';
 
 const DESCRIPTIONS: Record<(typeof WORKFLOW_METRIC)[keyof typeof WORKFLOW_METRIC], string> = {
   [WORKFLOW_METRIC.ADMISSION_REFUSED]: 'Workflow runs refused before starting, by reason',
