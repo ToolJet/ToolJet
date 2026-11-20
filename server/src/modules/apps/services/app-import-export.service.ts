@@ -4697,7 +4697,8 @@ export function migrateProperties(
     properties.maxLimit = { value: '' };
   }
 
-  // Old exports, versioned or not, still carry these keys where the Move*KeysToProperties data migrations found them.
+  // Old exports, versioned or not, still carry these keys in their old places (CopySpinnerAdditionalActions and
+  // CopyBoundedBoxAdditionalActions in migrations/data).
   const MOVED_STYLE_KEYS: Record<string, string[]> = {
     Spinner: ['visibility'],
     BoundedBox: ['visibility', 'disabledState'],
