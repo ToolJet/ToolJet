@@ -3,8 +3,12 @@ import { aiSelectors } from "Selectors/platform/ai";
 import { aiText } from "Texts/platform/ai";
 
 
-export const navigateToLlmKeyPage = () => {
-  cy.visit("/settings/llm-key");
+export const navigateToLlmKeyPage = (workspaceId = Cypress.env("workspaceId")) => {
+  cy.visit(
+    Cypress.env("environment") === "Cloud"
+      ? `/${workspaceId}/settings/llm-key`
+      : "/settings/llm-key"
+  );
   cy.get('[data-cy="card-title"]').should("be.visible").and('contain.text', aiText.llmKeyCardTitle);
 };
 
@@ -199,4 +203,24 @@ export const verifyFixWithAiInStyles = (appName, options = {}) => {
     cy.get('.tw-text-text-default.tw-mb-2').should("contain.text", "backgroundColor");
   }
   cy.apiDeleteApp();
+};
+
+
+// The auth cookie is tied to one workspace, so switch the session before calling or opening another one.
+export const loginToWorkspace = (adminEmail, workspaceId, password = "password") => {
+  cy.clearCookies();
+  cy.apiLogin(adminEmail, password, workspaceId);
+};
+
+// A fresh workspace per test lets its plan be set before the server caches its licence.
+export const createFreshCloudWorkspace = (adminEmail, loginWorkspaceId, password = "password") => {
+  const name = `cloud-ai-${Date.now()}-${Cypress._.random(1e6)}`;
+  // A second login on top of an existing session sends two auth cookies.
+  cy.clearCookies();
+  cy.apiLogin(adminEmail, password, loginWorkspaceId);
+  return cy.apiCreateWorkspace(name, name).then(({ body }) => {
+    const workspaceId = body.organization_id || body.id;
+    Cypress.env("workspaceId", workspaceId);
+    return workspaceId;
+  });
 };

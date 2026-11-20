@@ -199,7 +199,7 @@ describe("Manage Groups", () => {
                 );
                 cy.apiDeleteGranularPermission("builder", []);
 
-                cy.intercept("GET", "/api/apps/*").as("getApp");
+                cy.intercept({ method: "GET", pathname: /^\/api\/apps\/[0-9a-f-]{36}$/ }).as("getApp");
 
                 cy.get(importSelectors.dropDownMenu).should("be.visible").click();
                 cy.get(importSelectors.importOptionInput)

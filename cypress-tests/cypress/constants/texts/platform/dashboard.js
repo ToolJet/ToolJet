@@ -92,7 +92,7 @@ export const dashboardText = {
   buildFromEditorModalTitle: "Build ToolJet apps from your coding agent",
   buildFromEditorModalDescription:
     "ToolJet ships an MCP server and a skill, so your coding agent can build and edit ToolJet apps straight from your editor.",
-  byoaCreateTokenLinkText: "create a personal access token",
+  byoaCreateTokenLinkText: "Profile settings",
   byoaDocsLinkText: "Read setup guide",
   byoaNotNowButtonText: "Not now",
 };

@@ -62,14 +62,37 @@ export interface SendAppBuildCompletedEmailPayload {
   to: string;
   name: string;
   appName: string;
-  /**
-   * The app's URL slug, not its name. Defaults to the app's UUID on creation and only changes if
-   * someone deliberately edits it, so the link survives the rename the AI performs mid-build.
-   */
+  /** The editor URL segment for the app. It accepts the app ID or a slug. */
   appSlug: string;
   /** Organization slug, falling back to the organization id — both resolve as the workspace segment. */
   workspaceSlug: string;
   organizationId: string;
+}
+
+// A step on a version review that someone should hear about: they were asked to review,
+// mentioned, or their review was decided on or released.
+export interface SendVersionReviewEmailPayload {
+  to: string;
+  name: string;
+  actorName: string;
+  reason:
+    | 'review_requested'
+    | 'mentioned'
+    | 'approved'
+    | 'changes_requested'
+    | 'released'
+    | 'overridden'
+    | 'rereview_requested'
+    | 'approvals_reset';
+  /** The comment, note or reason with mentions written as @Name; null when there is none. */
+  note: string | null;
+  appName: string;
+  appSlug: string;
+  workspaceSlug: string;
+  organizationId: string;
+  reviewId: string;
+  reviewTitle: string;
+  versionName: string;
 }
 
 export interface SendUserBannedEmailPayload {
@@ -81,4 +104,13 @@ export interface SendWorkspaceBannedEmailPayload {
   to: string;
   adminName: string;
   workspaceName: string;
+}
+
+export interface SendWorkflowApprovalEmailPayload {
+  to: string[];
+  organizationId: string;
+  workflowName: string;
+  nodeName: string;
+  description: string;
+  reminder: boolean;
 }

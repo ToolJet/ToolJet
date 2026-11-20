@@ -30,7 +30,7 @@ import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId, decodePromptCookie } from '@/_helpers/utils';
 import { getQueryParams } from '@/_helpers/routes';
 import { withRouter } from '@/_hoc/withRouter';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
@@ -195,7 +195,7 @@ class HomePageComponent extends React.Component {
         // });
         // Optional: Clear the cookie after showing toast
         this.setState({ showAIOnboardingLoadingScreen: true });
-        this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(latestPrompt)}`);
+        this.createApp(`Untitled App: ${uuidv4()}`, undefined, decodePromptCookie(latestPrompt));
         break;
       case !!templateId: {
         this.setState({ showAIOnboardingLoadingScreen: true });
@@ -420,7 +420,8 @@ class HomePageComponent extends React.Component {
     return 'app';
   };
 
-  createApp = async (appName, type, prompt, taggedResources) => {
+  // buildMode comes from the enterprise "Create app" dialog (Visual or Code mode); without it the server builds visually.
+  createApp = async (appName, type, prompt, taggedResources, buildMode) => {
     const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
     if (currentBranch && this.props.appType !== 'workflow') {
       try {
@@ -445,7 +446,14 @@ class HomePageComponent extends React.Component {
         name: appName,
         type: this.props.appType,
         prompt,
+        ...(buildMode && { buildMode }),
       });
+      // Never a silent downgrade: an app asked for in Code mode that the server stored as visual says so.
+      if (buildMode === 'code' && (data?.buildMode ?? data?.build_mode) !== 'code') {
+        toast.error(
+          'This server created the app in Visual builder. Ask an admin to update ToolJet to use React builder.'
+        );
+      }
       /* Posthog Event */
       posthogHelper.captureEvent('click_new_app', {
         workspace_id:
@@ -720,6 +728,12 @@ class HomePageComponent extends React.Component {
 
       const data = await appsService.importResource(requestBody, this.props.appType);
       toast.success(`${this.getAppType()} imported successfully.`);
+      if (data.imports.app?.[0]?.codeMissing) {
+        toast.error(
+          "This file doesn't include the app's code: it was exported before exports carried it. Export the app again from the original and import the new file.",
+          { duration: 10000, style: { maxWidth: '425px' } }
+        );
+      }
       this.setState({ isImportingApp: false });
 
       if (!isEmpty(data.imports.app)) {
@@ -1747,6 +1761,7 @@ class HomePageComponent extends React.Component {
   };
 
   render() {
+    const { contentOverride } = this.props;
     const {
       apps,
       isLoading,
@@ -1839,7 +1854,7 @@ class HomePageComponent extends React.Component {
       create: {
         modalType: 'create',
         closeModal: this.closeCreateAppModal,
-        processApp: (name) => this.createApp(name),
+        processApp: (name, buildMode) => this.createApp(name, undefined, undefined, undefined, buildMode),
         show: this.openCreateAppModal,
         title: `Create ${this.getAppType().toLocaleLowerCase()}`,
         actionButton: `+ Create ${this.getAppType().toLocaleLowerCase()}`,
@@ -2607,147 +2622,158 @@ class HomePageComponent extends React.Component {
 
                 {this.props.appType === 'module' && this.canCreateApp() && <CreateModuleWithPrompt />}
 
-                {(meta?.total_count > 0 || appSearchKey) && (
+                {contentOverride ? (
+                  React.cloneElement(contentOverride, { currentFolder })
+                ) : (
                   <>
-                    {!(isLoading && !appSearchKey) && (
-                      <HomeHeader
-                        onSearchSubmit={this.onSearchSubmit}
+                    {(meta?.total_count > 0 || appSearchKey) && (
+                      <>
+                        {!(isLoading && !appSearchKey) && (
+                          <HomeHeader
+                            onSearchSubmit={this.onSearchSubmit}
+                            darkMode={this.props.darkMode}
+                            appType={this.props.appType}
+                            disabled={this.props.appType === 'module' && invalidLicense}
+                          />
+                        )}
+                        <div className="filter-container">
+                          <span>{currentFolder?.count ?? meta?.total_count} APPS</span>
+                          <div className="d-flex align-items-center">
+                            <div className="mx-2">Filter by</div>
+                            <FolderFilter
+                              disabled={!!appOperations?.isAdding}
+                              options={this.state.folders.map((folder) => {
+                                return {
+                                  name: folder.name,
+                                  label: folder.name,
+                                  value: folder.id,
+                                  id: folder.id,
+                                  ...folder,
+                                };
+                              })}
+                              onChange={this.folderChanged}
+                              value={currentFolder}
+                              closeMenuOnSelect={true}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    {showEmptyState &&
+                      (this.props.appType === 'front-end' ? (
+                        /*
+                          Replaces the old "Welcome to your new workspace" page. Illustration and copy
+                          only — no action button: every route into creating an app (blank, import,
+                          template, git) already sits in the sidebar's split button a few pixels away,
+                          so repeating one of them here would just pick a winner among equals.
+                        */
+                        <AppsEmptyState data-cy="apps-empty-state" />
+                      ) : this.props.appType === 'workflow' ? (
+                        <WorkflowsEmptyState
+                          onCreateWorkflow={
+                            this.canCreateApp() && !getDisabledState() ? this.openCreateAppModal : undefined
+                          }
+                          data-cy="workflows-empty-state"
+                        />
+                      ) : (
+                        <div className="empty-module-container">
+                          <EmptyModuleSvg />
+                          <div className="empty-title mt-3" style={{ display: 'block' }}>
+                            <div>Create reusable groups of components and queries via modules.</div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <a
+                                href="https://docs.tooljet.com/docs/app-builder/modules/overview"
+                                target="_blank"
+                                className="docs-link"
+                                rel="noreferrer"
+                              >
+                                Check out our guide
+                              </a>
+                              &nbsp;on creating modules.
+                            </div>
+                          </div>
+
+                          <ButtonSolid
+                            disabled={!moduleEnabled || !this.canCreateApp() || this.isGitSyncLicenseLocked()}
+                            leftIcon="folderdownload"
+                            isLoading={false}
+                            onClick={() => {
+                              if (this.isWorkspaceBranchLocked()) {
+                                this.setState({ showSwitchBranchForCreate: true });
+                                return;
+                              }
+                              this.openCreateAppModal();
+                            }}
+                            data-cy="button-import-an-app"
+                            className="col"
+                            variant="tertiary"
+                          >
+                            <ToolTip
+                              show={!moduleEnabled || !this.canCreateApp() || this.isGitSyncLicenseLocked()}
+                              message={
+                                !moduleEnabled
+                                  ? 'Modules are not available on your current plan.'
+                                  : this.isGitSyncLicenseLocked()
+                                    ? 'Git sync is not enabled as per your current plan. Disable git sync to continue.'
+                                    : "You don't have permission to create a module."
+                              }
+                              placement="bottom"
+                            >
+                              <label
+                                style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}
+                                data-cy="create-module"
+                              >
+                                {'Create new module'}
+                              </label>
+                            </ToolTip>
+                          </ButtonSolid>
+                        </div>
+                      ))}
+                    {!isLoading && apps?.length === 0 && appSearchKey && (
+                      <div>
+                        <span
+                          className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}
+                        >
+                          {this.props.appType === 'workflow'
+                            ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
+                            : this.props.appType === 'module'
+                              ? this.props.t('homePage.noModuleFound', 'No Modules found')
+                              : this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                        </span>
+                      </div>
+                    )}
+                    {(isLoading || meta.total_count > 0 || !_.isEmpty(currentFolder)) && (
+                      <AppList
+                        apps={apps}
+                        canCreateApp={this.canCreateApp}
+                        canDeleteApp={this.canDeleteApp}
+                        canUpdateApp={this.canUpdateApp}
+                        canViewApp={this.canViewApp}
+                        deleteApp={this.deleteApp}
+                        cloneApp={this.cloneApp}
+                        exportApp={this.exportApp}
+                        meta={meta}
+                        currentFolder={currentFolder}
+                        isLoading={isLoading || !featuresLoaded}
                         darkMode={this.props.darkMode}
+                        appActionModal={this.appActionModal}
+                        removeAppFromFolder={this.removeAppFromFolder}
+                        refreshApps={() => this.fetchApps(this.state.currentPage, this.state.currentFolder.id)}
                         appType={this.props.appType}
-                        disabled={this.props.appType === 'module' && invalidLicense}
+                        basicPlan={shouldExcludeEnvParam}
+                        moduleEnabled={moduleEnabled}
+                        appSearchKey={this.state.appSearchKey}
+                        deletingAppIds={this.state.deletingAppIds}
+                        ownedFolders={this.state.folders.filter(
+                          (folder) => folder.created_by === authenticationService.currentSessionValue?.current_user?.id
+                        )}
                       />
                     )}
-                    <div className="filter-container">
-                      <span>{currentFolder?.count ?? meta?.total_count} APPS</span>
-                      <div className="d-flex align-items-center">
-                        <div className="mx-2">Filter by</div>
-                        <FolderFilter
-                          disabled={!!appOperations?.isAdding}
-                          options={this.state.folders.map((folder) => {
-                            return {
-                              name: folder.name,
-                              label: folder.name,
-                              value: folder.id,
-                              id: folder.id,
-                              ...folder,
-                            };
-                          })}
-                          onChange={this.folderChanged}
-                          value={currentFolder}
-                          closeMenuOnSelect={true}
-                        />
-                      </div>
-                    </div>
                   </>
-                )}
-                {showEmptyState &&
-                  (this.props.appType === 'front-end' ? (
-                    /*
-                      Replaces the old "Welcome to your new workspace" page. Illustration and copy
-                      only — no action button: every route into creating an app (blank, import,
-                      template, git) already sits in the sidebar's split button a few pixels away,
-                      so repeating one of them here would just pick a winner among equals.
-                    */
-                    <AppsEmptyState data-cy="apps-empty-state" />
-                  ) : this.props.appType === 'workflow' ? (
-                    <WorkflowsEmptyState
-                      onCreateWorkflow={
-                        this.canCreateApp() && !getDisabledState() ? this.openCreateAppModal : undefined
-                      }
-                      data-cy="workflows-empty-state"
-                    />
-                  ) : (
-                    <div className="empty-module-container">
-                      <EmptyModuleSvg />
-                      <div className="empty-title mt-3" style={{ display: 'block' }}>
-                        <div>Create reusable groups of components and queries via modules.</div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <a
-                            href="https://docs.tooljet.com/docs/app-builder/modules/overview"
-                            target="_blank"
-                            className="docs-link"
-                            rel="noreferrer"
-                          >
-                            Check out our guide
-                          </a>
-                          &nbsp;on creating modules.
-                        </div>
-                      </div>
-
-                      <ButtonSolid
-                        disabled={!moduleEnabled || !this.canCreateApp() || this.isGitSyncLicenseLocked()}
-                        leftIcon="folderdownload"
-                        isLoading={false}
-                        onClick={() => {
-                          if (this.isWorkspaceBranchLocked()) {
-                            this.setState({ showSwitchBranchForCreate: true });
-                            return;
-                          }
-                          this.openCreateAppModal();
-                        }}
-                        data-cy="button-import-an-app"
-                        className="col"
-                        variant="tertiary"
-                      >
-                        <ToolTip
-                          show={!moduleEnabled || !this.canCreateApp() || this.isGitSyncLicenseLocked()}
-                          message={
-                            !moduleEnabled
-                              ? 'Modules are not available on your current plan.'
-                              : this.isGitSyncLicenseLocked()
-                                ? 'Git sync is not enabled as per your current plan. Disable git sync to continue.'
-                                : "You don't have permission to create a module."
-                          }
-                          placement="bottom"
-                        >
-                          <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="create-module">
-                            {'Create new module'}
-                          </label>
-                        </ToolTip>
-                      </ButtonSolid>
-                    </div>
-                  ))}
-                {!isLoading && apps?.length === 0 && appSearchKey && (
-                  <div>
-                    <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
-                      {this.props.appType === 'workflow'
-                        ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
-                        : this.props.appType === 'module'
-                          ? this.props.t('homePage.noModuleFound', 'No Modules found')
-                          : this.props.t('homePage.noApplicationFound', 'No Applications found')}
-                    </span>
-                  </div>
-                )}
-                {(isLoading || meta.total_count > 0 || !_.isEmpty(currentFolder)) && (
-                  <AppList
-                    apps={apps}
-                    canCreateApp={this.canCreateApp}
-                    canDeleteApp={this.canDeleteApp}
-                    canUpdateApp={this.canUpdateApp}
-                    canViewApp={this.canViewApp}
-                    deleteApp={this.deleteApp}
-                    cloneApp={this.cloneApp}
-                    exportApp={this.exportApp}
-                    meta={meta}
-                    currentFolder={currentFolder}
-                    isLoading={isLoading || !featuresLoaded}
-                    darkMode={this.props.darkMode}
-                    appActionModal={this.appActionModal}
-                    removeAppFromFolder={this.removeAppFromFolder}
-                    refreshApps={() => this.fetchApps(this.state.currentPage, this.state.currentFolder.id)}
-                    appType={this.props.appType}
-                    basicPlan={shouldExcludeEnvParam}
-                    moduleEnabled={moduleEnabled}
-                    appSearchKey={this.state.appSearchKey}
-                    deletingAppIds={this.state.deletingAppIds}
-                    ownedFolders={this.state.folders.filter(
-                      (folder) => folder.created_by === authenticationService.currentSessionValue?.current_user?.id
-                    )}
-                  />
                 )}
               </div>
               <div className="footer-container">
-                {this.pageCount() > MAX_APPS_PER_PAGE && (
+                {!contentOverride && this.pageCount() > MAX_APPS_PER_PAGE && (
                   <Footer
                     currentPage={meta.current_page}
                     count={this.pageCount()}

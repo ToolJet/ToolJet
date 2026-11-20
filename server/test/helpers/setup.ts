@@ -309,11 +309,14 @@ export async function rollbackTestTransaction() {
  * Currently used by: tooljet-db-import-export.service.spec.ts (bulk import rollback test).
  */
 export async function withRealTransactions(fn: () => Promise<void>) {
+  const inTest = !!_testSavepoint;
   await rollbackSuiteTransaction();
   try {
     await fn();
   } finally {
     await beginSuiteTransaction();
+    // afterEach rolls back to the test savepoint; without a fresh one it aborts the new suite transaction.
+    if (inTest) await beginTestTransaction();
   }
 }
 
@@ -420,6 +423,11 @@ export interface InitTestAppOptions {
   freshApp?: boolean;
   /** Modules registered alongside AppModule. Called only when a new app is built, after TOOLJET_EDITION is set. */
   extraModules?: () => Promise<DynamicModule[]>;
+  /**
+   * @deprecated No-op. WorkflowsModule is now always mounted in the test app; kept so
+   * existing workflow specs that pass it keep compiling.
+   */
+  withWorkflows?: boolean;
 }
 
 export interface InitTestAppResult {

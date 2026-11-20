@@ -15,3 +15,5 @@ dist
 *.tabl.json
 *.swp
 *.snk
+# written for npm pack from package-lock.json (prepack, server/scripts/pack-cli.sh)
+/npm-shrinkwrap.json
