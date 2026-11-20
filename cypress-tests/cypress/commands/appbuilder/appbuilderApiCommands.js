@@ -91,12 +91,11 @@ Cypress.Commands.add(
     slug = "",
     workspaceId = Cypress.env("workspaceId"),
     appId = Cypress.env("appId"),
-    componentSelector = "[data-cy='drag-and-drop-a-component-label']"
+    componentSelector = "[data-cy='drag-and-drop-a-component-label'], [data-cy='empty-canvas-ways-in'], [data-cy='empty-canvas-ai-chat-open']"
   ) => {
-    // Match only the bare app-by-id payload (optional query string for branch_id).
-    // `/api/apps/*` also matches `/api/apps/addable` (PageMenu on editor mount)
-    // and `/api/apps/:id/versions`, neither of which has `editing_version`.
-    cy.intercept("GET", new RegExp(`/api/apps/${appId}(\\?|$)`)).as("getAppData");
+    // Match only the bare app-by-id payload. A glob `/api/apps/*` also matches
+    // `/api/apps/addable` and `/api/apps/:id/versions`, neither of which has `editing_version`.
+    cy.intercept({ method: "GET", pathname: `/api/apps/${appId}` }).as("getAppData");
 
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");

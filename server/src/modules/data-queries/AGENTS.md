@@ -53,9 +53,15 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 ## Edition split
 
 - `server/ee/data-queries/` — `service.ts`, `util.service.ts`, `controller.ts` all extend CE bases and `super()`.
-- EE service: `before/afterQuery*` hooks (App History), query folder mappings, permission-aware `getAll` (`getAllWithPermissions` in edit mode).
-- EE util `runQuery`: query-level access check (`checkQueryAccess`) in `view` mode, gated by `LICENSE_FIELD.APP_PERMISSIONS_QUERY`; public app + any query permission = denied.
-- EE controller adds `POST /workflow-node` and re-guards run/update (and `add-to-library`) endpoints.
+- EE service: implements `before/afterQuery*` hooks (App History via `AppHistoryUtilService`), query
+  folder mappings (`DataQueryFolderMappingRepository`), permission-aware `getAll` (`getAllWithPermissions` in edit mode).
+- EE util `runQuery` override: query-level access check (`AppPermissionsUtilService.checkQueryAccess`)
+  in `view` mode, gated by `LICENSE_FIELD.APP_PERMISSIONS_QUERY`; public app + any query permission = denied.
+  Some apps check it whatever the mode and let their editors through: `ee/app-permissions/code-app-limits.ts`.
+- A refused query is HTTP 201 with `status: 'failed'` and `data.type: 'tj-401'`, on purpose: the frontend's
+  `handleResponse` treats any HTTP 401 as an expired session (reload or log out), and the query panel reads `tj-401`
+  from the body to show the refusal.
+- EE controller adds `POST /workflow-node` (create workflow-node query) and re-guards run/update (and `add-to-library`) endpoints.
 
 ## Invariants & gotchas
 

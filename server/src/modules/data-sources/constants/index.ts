@@ -36,3 +36,7 @@ export const DefaultDataSourceKinds: DefaultDataSourceKind[] = [
   'workflows',
   'library',
 ];
+
+// Set on sample data source options when no restricted role could be provisioned.
+export const SAMPLE_SQL_DISABLED_KEY = 'sample_sql_disabled';
+export const SAMPLE_FINGERPRINT_KEY = 'sample_fingerprint';

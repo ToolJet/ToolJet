@@ -7,6 +7,7 @@ export const licenseService = {
   updateEnvSetting,
   getFeatureAccess,
   generateCloudTrial,
+  canStartCloudTrial,
   getDomainsList,
   upgradePlan,
   getUpcomingInvoice,
@@ -62,6 +63,13 @@ function generateCloudTrial(createCloudTrialLicenseDto) {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/license/organization/${organizationId}/trial`, requestOptions).then(handleResponse);
+}
+
+function canStartCloudTrial(organizationId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/license/organization/${organizationId}/can-start-trial`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function upgradePlan(planDetails) {

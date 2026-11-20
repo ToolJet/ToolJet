@@ -44,6 +44,13 @@ export class DataQueryRepository extends Repository<DataQuery> {
     return queryLibraryConsumers(manager, organizationId, libraryQueryId, libraryVersionId);
   }
 
+  // True only when the query belongs to the given app version (used by QueryAuthGuard's
+  // released-version check to keep anonymous public-app runs off draft queries).
+  async isQueryInVersion(dataQueryId: string, appVersionId: string): Promise<boolean> {
+    const count = await this.count({ where: { id: dataQueryId, appVersionId } });
+    return count > 0;
+  }
+
   async findPublicParentAppForModuleQuery(moduleAppId: string, dataQueryId: string): Promise<App | null> {
     return (
       this.manager

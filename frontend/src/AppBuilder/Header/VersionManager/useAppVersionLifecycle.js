@@ -250,7 +250,7 @@ export function useAppVersionLifecycle({
   const promote = (id) =>
     callbackPromise((resolve, reject) => state.promoteAppVersionAction(id, resolve, reject, moduleId));
   const release = async (id) => {
-    await appsService.releaseVersion(appId, id);
+    await appsService.releaseVersion(appId, id, state.releasedVersionId ?? '');
     state.updateReleasedVersionId(id);
   };
   const deleteVersion = (id) => callbackPromise((resolve, reject) => deleteVersionAction(appId, id, resolve, reject));

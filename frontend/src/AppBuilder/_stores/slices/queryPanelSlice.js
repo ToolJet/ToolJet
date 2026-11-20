@@ -24,6 +24,13 @@ import {
   viewedLibraryVersionId,
 } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import { QUERY_PANEL_RESIZE, parseStoredQueryPanelWidth } from '@/AppBuilder/panelLayout';
+import { emptyPreviewParameters } from '@/AppBuilder/QueryManager/Components/previewParameters';
+import * as compareGuard from '@ee/modules/CodeMode/AppBuilder/CodeDiff/compareGuard';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
+import { classifyWorkflowEvent, syncWorkflowOutcome } from './workflowQueryResults';
+
+const BLOCKED_WRITE_MESSAGE = compareGuard.BLOCKED_WRITE_MESSAGE ?? '';
+const writeBlockedInCompare = compareGuard.writeBlockedInCompare ?? (() => false);
 
 const runtimePanelPreferences = JSON.parse(localStorage.getItem('runtimePanelPreferences')) ?? {};
 
@@ -74,6 +81,8 @@ const initialState = {
   queryToBeRun: null,
   previewLoading: false,
   queryPreviewData: '',
+  // The parameters the last Preview ran with no value, which Preview names under its result.
+  previewEmptyParameters: [],
   showCreateQuery: false,
   nameInputFocused: false,
   previewPanelExpanded: false,
@@ -395,20 +404,7 @@ export const createQueryPanelSlice = (set, get) => ({
           return workflowExecutionsService.streamSSE(jobId);
         },
         extractJobId: () => executionId,
-        classifyEventStatus: (eventData) => {
-          // hardcoded for workflows
-          if (eventData.type === 'workflow_connection_close') {
-            return { status: 'CLOSE', data: eventData };
-          } else if (eventData.type === 'workflow_execution_completed') {
-            return { status: 'COMPLETE', result: eventData.result, data: eventData };
-          } else if (eventData.type === 'workflow_execution_error') {
-            return { status: 'ERROR', data: eventData };
-          } else if (eventData.type === 'workflow_execution_cancelled') {
-            return { status: 'CANCELLED', data: eventData };
-          } else {
-            return { status: 'PROGRESS', data: eventData };
-          }
-        },
+        classifyEventStatus: classifyWorkflowEvent,
         callbacks: {
           onProgress: (progressData) => {
             // Update UI with progress information
@@ -588,6 +584,27 @@ export const createQueryPanelSlice = (set, get) => ({
         throw new Error('No query selected');
       }
 
+      if (writeBlockedInCompare(dataQuery)) {
+        setResolvedQuery(queryId, { isLoading: false }, moduleId);
+        return Promise.resolve({ status: 'failed', message: BLOCKED_WRITE_MESSAGE });
+      }
+
+      const refusal = strictMode.strictRefusal?.(dataQuery);
+      if (refusal) {
+        setResolvedQuery(queryId, { isLoading: false, error: { status: 'failed', message: refusal } }, moduleId);
+        get().debugger.log({
+          logLevel: 'error',
+          type: 'query',
+          kind: query.kind,
+          key: query.name,
+          message: refusal,
+          errorTarget: 'Queries',
+          error: { message: refusal },
+          isQuerySuccessLog: false,
+        });
+        return Promise.resolve({ status: 'failed', message: refusal });
+      }
+
       if (_.isEmpty(parameters)) {
         parameters = dataQuery.options?.parameters?.reduce(
           (parameters, parameter) => ({
@@ -646,15 +663,17 @@ export const createQueryPanelSlice = (set, get) => ({
           confirmationMessage,
         };
 
-        if (!queryConfirmationList.some((query) => queryId === query.queryId) && confirmed === undefined) {
+        if (confirmed === undefined) {
           setPreviewLoading(false);
-          set(
-            (state) => {
-              state.dataQuery.queryConfirmationList = [...queryConfirmationList, queryConfirmation];
-            },
-            false,
-            'setQueryConfirmationList'
-          );
+          if (!queryConfirmationList.some((query) => queryId === query.queryId)) {
+            set(
+              (state) => {
+                state.dataQuery.queryConfirmationList = [...queryConfirmationList, queryConfirmation];
+              },
+              false,
+              'setQueryConfirmationList'
+            );
+          }
           return;
         }
       }
@@ -900,7 +919,13 @@ export const createQueryPanelSlice = (set, get) => ({
           queryExecutionPromise = dataqueryService.run(
             queryId,
             options,
-            query?.options,
+            // The server saves the options a run sends. In an app built in code, where an AI turn or the CLI changes
+            // queries under an open editor, only a run from the query panel (Run, or its shortcut) sends them:
+            // page-load, event and code runs send none, so this editor's copy, which can be older than the stored
+            // query, never overwrites it. Visual apps keep sending them, as before.
+            shouldSetPreviewData || get().appStore.modules[moduleId]?.app?.buildMode !== 'code'
+              ? query?.options
+              : undefined,
             versionId,
             (() => {
               // send undefined if Public/Private released app
@@ -943,14 +968,9 @@ export const createQueryPanelSlice = (set, get) => ({
               // Handle sync execution response — no SSE needed
               if (data?.data?.syncExecution) {
                 const executionStatus = data.data.executionStatus;
-                if (executionStatus === 'completed') {
-                  // Reshape to match the structure processQueryResults expects:
-                  // processQueryResults reads data?.data as the final result and data?.metadata
-                  const syncResult = {
-                    data: data.data.data,
-                    metadata: data.data.metadata,
-                  };
-                  const result = await processQueryResults(syncResult);
+                const outcome = syncWorkflowOutcome(data.data);
+                if (outcome.ok) {
+                  const result = await processQueryResults(outcome.result);
                   resolve(result);
                 } else {
                   const result = handleFailure({
@@ -1171,6 +1191,13 @@ export const createQueryPanelSlice = (set, get) => ({
         );
       }
 
+      if (!calledFromQuery) {
+        const emptyParameters = emptyPreviewParameters(query.options?.parameters, parameters);
+        set((state) => {
+          state.queryPanel.previewEmptyParameters = emptyParameters;
+        });
+      }
+
       const exposedValues = get().getAllExposedValues(moduleId);
       const queryState = isQueryLibraryMode(get())
         ? libraryTemplateState(exposedValues, libraryEditorInput(query, parameters))
@@ -1287,6 +1314,12 @@ export const createQueryPanelSlice = (set, get) => ({
                   setIsPreviewQueryLoading(false);
                   if (!calledFromQuery) setPreviewData(finalData);
                   resolve({ status: 'ok', data: finalData });
+                } else if (executionStatus === 'waiting') {
+                  const waitingData = syncWorkflowOutcome(data.data).result.data;
+                  setPreviewLoading(false);
+                  setIsPreviewQueryLoading(false);
+                  if (!calledFromQuery) setPreviewData(waitingData);
+                  resolve({ status: 'ok', data: waitingData });
                 } else {
                   const errorData = {
                     status: executionStatus,
@@ -1638,6 +1671,7 @@ export const createQueryPanelSlice = (set, get) => ({
         getResolvedState,
         getAppType,
       } = get();
+      if (strictMode.isStrict?.()) return { status: 'failed', message: strictMode.STRICT_REFUSAL };
       let result = {};
       const currentState = getResolvedState(moduleId);
       const appType = getAppType(moduleId);
@@ -1908,6 +1942,7 @@ export const createQueryPanelSlice = (set, get) => ({
     },
 
     executeMultilineJS: async (code, queryId, isPreview, mode = '', parameters = {}, moduleId = 'canvas') => {
+      if (strictMode.isStrict?.()) return { status: 'failed', message: strictMode.STRICT_REFUSAL };
       const { queryPanel, dataQuery, getAllExposedValues, eventsSlice } = get();
       const { runQuery } = queryPanel;
       const { generateAppActions } = eventsSlice;
@@ -2212,14 +2247,18 @@ export const createQueryPanelSlice = (set, get) => ({
         queryPanelHeight: 100,
       };
 
-      // If query pane is not expanded, expand it
-      if (!queryManagerPreferences.isExpanded) {
-        const newPreferences = {
-          ...queryManagerPreferences,
-          isExpanded: true,
-          queryPanelHeight: 70, // Default expanded height
-        };
-        localStorage.setItem('queryManagerPreferences', JSON.stringify(newPreferences));
+      // If query pane is not expanded, expand it. The store can be folded while the remembered preference is open
+      // (a blank app folds an empty panel for one visit), so either being closed means it needs expanding.
+      if (!queryManagerPreferences.isExpanded || !get().queryPanel.isQueryPaneExpanded) {
+        // Only a remembered-closed panel takes the default height; a remembered-open one keeps its own.
+        if (!queryManagerPreferences.isExpanded) {
+          const newPreferences = {
+            ...queryManagerPreferences,
+            isExpanded: true,
+            queryPanelHeight: 70, // Default expanded height
+          };
+          localStorage.setItem('queryManagerPreferences', JSON.stringify(newPreferences));
+        }
 
         // Update the store state
         set((state) => {

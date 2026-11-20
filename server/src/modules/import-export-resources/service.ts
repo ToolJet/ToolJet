@@ -132,8 +132,9 @@ export class ImportExportResourcesService {
     user: User,
     exportResourcesDto: ExportResourcesDto,
     branchId?: string,
-    // Git push/pull never carries library queries: the library is not synced to git.
-    { forGit = false }: { forGit?: boolean } = {}
+    // Fourth arg is either a code-export mode ('file' | 'clone') or `{ forGit: true }` from git sync.
+    // Git push/pull never carries library queries. Code export is for a file a person takes elsewhere, or a clone.
+    codeOrGit?: 'file' | 'clone' | { forGit?: boolean }
   ): Promise<{
     tooljet_database?: Array<ImportTooljetDatabaseDto>;
     app?: Array<Record<string, any>>; // TODO: Define the type for app
@@ -143,13 +144,17 @@ export class ImportExportResourcesService {
       app?: Array<Record<string, unknown>>;
     } = {};
 
+    if (exportResourcesDto.organization_id && exportResourcesDto.organization_id !== user.organizationId) {
+      throw new ForbiddenException();
+    }
+
     const coRelationIdByTableId: Record<string, string> = {};
     if (exportResourcesDto.tooljet_database?.length) {
       // export() appends the tables foreign keys reference, so this loop visits those too.
       // The library pass below owns resourcesExport.tooljet_database; this pass only builds the id map.
       for (const tjdb of exportResourcesDto.tooljet_database) {
         const exportedDb = await this.tooljetDbImportExportService.export(
-          exportResourcesDto.organization_id,
+          user.organizationId,
           tjdb,
           exportResourcesDto.tooljet_database
         );
@@ -160,10 +165,13 @@ export class ImportExportResourcesService {
 
     if (exportResourcesDto.app?.length) {
       const exportedApps: Record<string, unknown>[] = [];
+      const code = typeof codeOrGit === 'string' ? codeOrGit : undefined;
+      const forGit = typeof codeOrGit === 'object' && !!codeOrGit?.forGit;
       for (const app of exportResourcesDto.app) {
         const definition = await this.appImportExportService.export(user, app.id, app.search_params, branchId, {
           withLibraryQueries: !forGit,
         });
+        if (code) await this.appImportExportService.addCodeToExport(user, definition, code === 'file');
         if (!isEmpty(coRelationIdByTableId)) {
           this.appImportExportService.pointTooljetDbQueriesAtCoRelationIds(definition, coRelationIdByTableId);
         }
@@ -326,7 +334,11 @@ export class ImportExportResourcesService {
             isTemplateApp
           );
 
-          imports.app.push({ id: createdApp.newApp.id, name: createdApp.newApp.name });
+          imports.app.push({
+            id: createdApp.newApp.id,
+            name: createdApp.newApp.name,
+            ...(createdApp.codeMissing && { codeMissing: true }),
+          });
 
           RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
             userId: user.id,
@@ -411,7 +423,7 @@ export class ImportExportResourcesService {
       tooljet_database: tablesForApp,
     };
 
-    const resourceExport = await this.export(user, exportResourcesDto);
+    const resourceExport = await this.export(user, exportResourcesDto, undefined, 'clone');
 
     // Prevent cloning a stub app (pulled from git but not yet hydrated — has no pages).
     // AppVersion.isStub is a real DB column (is_stub, default false) — reliable to check here.

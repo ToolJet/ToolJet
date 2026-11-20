@@ -836,15 +836,19 @@ button {
         margin-top: 4px;
         max-width: 100%;
         text-align: center;
-        word-wrap: break-word;
+        overflow-wrap: anywhere;
         color: var(--slate12);
-        text-align: center;
         font-size: 10px;
         font-style: normal;
         font-weight: 400;
         line-height: 13px;
         height: 26px;
         width: 72px;
+        // Two lines at most: a longer name ends in an ellipsis (full name in the tile's tooltip).
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
       }
 
       .component-description {
@@ -2878,7 +2882,9 @@ hr {
   .place-search-input {
     box-sizing: border-box;
     border: 1px solid transparent;
-    width: 240px;
+    // Never wider than the map: the fixed 240px box overflowed small maps and the
+    // fixed -120px centering offset pushed its left edge outside the widget.
+    width: min(240px, calc(100% - 16px));
     height: 32px;
     padding: 0 12px;
     border-radius: 3px;
@@ -2888,7 +2894,7 @@ hr {
     text-overflow: ellipses;
     position: absolute;
     left: 50%;
-    margin-left: -120px;
+    transform: translateX(-50%);
   }
 
   .map-center {
@@ -6044,7 +6050,9 @@ div#driver-page-overlay {
 
 //download button in pdf widget
 .download-icon-outer-wrapper:hover {
-  background-color: #e6e6e6 !important;
+  // Theme token, not a hardcoded light gray: #e6e6e6 under the dark theme's
+  // light text made the hovered button unreadable in dark mode.
+  background-color: var(--cc-surface3-surface) !important;
 }
 
 .pdf-document {

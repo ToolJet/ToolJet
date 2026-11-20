@@ -10,15 +10,30 @@ import '@/_styles/versions.scss';
 import { Globe } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import { ToolTip } from '@/_components/ToolTip';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
+import { appsService } from '@/_services';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useVersionActionRequest } from '@/AppBuilder/_utils/versionActions';
+import { NESTED_WORKFLOW_PINS_BLOCKED } from '@/AppBuilder/Header/NestedWorkflowPinsBlockedDialog';
+import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 
 const ReleaseVersionButton = function DeployVersionButton({ version = null, variant = 'default', darkMode = false }) {
   const { versions, selectedVersionId, releasedVersionId, capabilities = {}, actions } = useVersionLifecycle();
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const { moduleId } = useModuleContext();
   const isReleaseVersionEnabled = capabilities.canRelease;
   const versionToBeReleased = version?.id || selectedVersionId;
   const name = version?.name || versions.find((v) => v.id === versionToBeReleased)?.name;
   const isVersionReleased = releasedVersionId === versionToBeReleased;
+  const { appId, updateReleasedVersionId } = useStore(
+    (state) => ({
+      updateReleasedVersionId: state.updateReleasedVersionId,
+      appId: state.appStore.modules[moduleId]?.app?.appId ?? state.appId,
+    }),
+    shallow
+  );
   const { t } = useTranslation();
 
   const releaseVersion = () => {
@@ -34,13 +49,28 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
         setShowConfirmation(false);
       })
       .catch((error) => {
+        // Someone released another version while this confirmation was open: show it what it would replace now,
+        // rather than replacing that release unseen.
+        if (error?.statusCode === 409) {
+          setIsReleasing(false);
+          toast.error(error.error);
+          appsService
+            .getApp(appId)
+            .then((app) => updateReleasedVersionId(app?.current_version_id ?? null))
+            .catch(() => {});
+          return;
+        }
         const rawError = error?.error || error?.message;
         const errorMessage =
           typeof rawError === 'object'
             ? rawError.error
             : rawError || `${name} could not be released. Please try again!`;
         const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
-        toast.error(errorMessage);
+        if (rawError?.code === NESTED_WORKFLOW_PINS_BLOCKED) {
+          useVersionManagerStore.getState().setPinsBlocked(rawError);
+        } else {
+          toast.error(errorMessage);
+        }
         setIsReleasing(false);
         setShowConfirmation(false);
         actions.reportError?.('Release Failed', errorMessage, errorDetails || errorMessage);
@@ -52,6 +82,12 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
     setShowConfirmation(true);
   };
 
+  useVersionActionRequest(
+    'release',
+    versionToBeReleased,
+    () => !isVersionReleased && isReleaseVersionEnabled && setShowConfirmation(true)
+  );
+
   const onReleaseConfirm = () => {
     releaseVersion();
   };
@@ -60,13 +96,17 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
   if (variant === 'inline') {
     return (
       <>
-        <ReleaseConfirmation
-          show={showConfirmation}
-          darkMode={darkMode}
-          versionId={versionToBeReleased}
-          onClose={() => setShowConfirmation(false)}
-          onConfirm={onReleaseConfirm}
-        />
+        {/* Rendered inside the version row: keep the dialog's clicks from reselecting the row and
+            closing the menu (and with it this dialog). */}
+        <span onClick={(event) => event.stopPropagation()}>
+          <ReleaseConfirmation
+            show={showConfirmation}
+            darkMode={darkMode}
+            versionId={versionToBeReleased}
+            onClose={() => setShowConfirmation(false)}
+            onConfirm={onReleaseConfirm}
+          />
+        </span>
         <ToolTip
           message={
             !isReleaseVersionEnabled

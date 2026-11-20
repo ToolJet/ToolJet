@@ -20,7 +20,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "ee/**/*.ts", "ee/**/*.tsx"],
   "exclude": ["node_modules", "build"],
   "no-unused-vars": "off", // disable base rule — @typescript-eslint/no-unused-vars handles it
 }

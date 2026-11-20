@@ -648,6 +648,24 @@
     padding: 4px 7px;
     border-radius: 7px;
     color: var(--slate10);
+    font-size: 10px;
+  }
+
+  .error-target {
+    color: var(--text-placeholder);
+  }
+
+  .debugger-error-title {
+    margin: 4px 0;
+  }
+
+  .debugger-log-message {
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  .debugger-log-message--custom {
+    color: var(--text-placeholder);
   }
 
   .error-target-custom-log {

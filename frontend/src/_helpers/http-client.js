@@ -4,6 +4,7 @@ import urlJoin from 'url-join';
 import { isEmpty } from 'lodash';
 import { handleUnSubscription } from '@/_helpers/utils';
 import { refreshSsoInfo } from '@/_helpers/refreshSsoInfo';
+import { notifyMigrationGate } from '@/_helpers/migrationGate';
 
 const HttpVerb = {
   Get: 'GET',
@@ -81,6 +82,7 @@ class HttpClient {
     try {
       payload.data = isEmpty(text) ? text : JSON.parse(text);
       if (!response.ok) {
+        notifyMigrationGate(response.status, payload.data);
         // TODO: add 403 to the below [401] array?
         if ([401].indexOf(response.status) !== -1) {
           // Skip redirect on app-scoped auth pages — they handle their own auth

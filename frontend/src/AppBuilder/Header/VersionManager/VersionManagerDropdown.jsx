@@ -8,6 +8,7 @@ import EditVersionModal from './EditVersionModal';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import DependencyWarningDialog from '@/_components/DependencyWarningDialog/DependencyWarningDialog';
 import { Overlay, Popover } from 'react-bootstrap';
+import { openPanelHeaderRects, panelHeaderClearance } from './panelHeaderClearance';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { toast } from 'react-hot-toast';
 import cx from 'classnames';
@@ -16,6 +17,9 @@ import VersionSearchField from './VersionSearchField';
 import VersionDropdownItem from './VersionDropdownItem';
 import CreateDraftButton from './CreateDraftButton';
 import VersionItemSkeleton from './VersionItemSkeleton';
+import NestedWorkflowPinsBlockedDialog from '../NestedWorkflowPinsBlockedDialog';
+import { useVersionManagerStore } from '@/_stores/versionManagerStore';
+import useStore from '@/AppBuilder/_stores/store';
 import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
@@ -43,6 +47,9 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
     actions,
   } = useVersionLifecycle();
   const currentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const isAiBuildingApp = useStore((state) => state.ai?.isLoading ?? false);
+  const pinsBlocked = useVersionManagerStore((state) => state.pinsBlocked);
+  const setPinsBlocked = useVersionManagerStore((state) => state.setPinsBlocked);
   const developmentVersions = capabilities.developmentVersionIds
     ? versions.filter((v) => capabilities.developmentVersionIds.includes(v.id))
     : versions;
@@ -287,6 +294,22 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
     setDeleteVersion({ versionId: '', versionName: '', isSynced: true, showModal: false });
   };
 
+  // An AI build writes to the version it started on. The pill is disabled while it runs, but a menu (or a
+  // dialog opened from it) that was already open would still let the user create, rename, promote or delete
+  // versions under the agent, so close them when a build starts.
+  useEffect(() => {
+    if (!isAiBuildingApp) return;
+    if (useVersionManagerStore.getState().isDropdownOpen) closeDropdown();
+    setOpenMenuVersionId(null);
+    setShowCreateDraftModal(false);
+    setShowPromoteModal(false);
+    setVersionToPromote(null);
+    setShowEditVersionModal(false);
+    setVersionToEdit(null);
+    resetDeleteModal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAiBuildingApp]);
+
   const confirmDeleteVersion = () => {
     if (!deleteVersion.versionId) return;
     const deletingToast = toast.loading('Deleting version...');
@@ -512,7 +535,11 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
         target={buttonRef.current}
         placement="bottom-end"
         rootClose
-        onHide={() => {
+        onHide={(event) => {
+          // Promote and Release open their dialogs from inside this menu, and those dialogs (and any
+          // full-screen view opened from them) render outside it. A click in them is not a click
+          // away from the menu; closing here would take the open dialog with it.
+          if (event?.target?.closest?.('.modal, [data-editor-overlay]')) return;
           if (!isPullingVersion) closeDropdown();
         }}
         popperConfig={{
@@ -533,7 +560,11 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
             {
               name: 'offset',
               options: {
-                offset: [0, 4],
+                // Below any open panel's header it would cover (the Inspector's close button), else just under the button.
+                offset: ({ popper }) => [
+                  0,
+                  4 + panelHeaderClearance(buttonRef.current?.getBoundingClientRect(), popper, openPanelHeaderRects()),
+                ],
               },
             },
           ],
@@ -614,6 +645,7 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
         darkMode={darkMode}
         onClose={() => setInUseWarning({ show: false, versionName: '' })}
       />
+      <NestedWorkflowPinsBlockedDialog blocked={pinsBlocked} onClose={() => setPinsBlocked(null)} />
     </>
   );
 };

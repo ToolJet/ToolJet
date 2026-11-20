@@ -5,6 +5,9 @@ import Modal from 'react-bootstrap/Modal';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '@/_styles/versions.scss';
+import useStore from '@/AppBuilder/_stores/store';
+import ReleaseConfirmationExtras from './ReleaseConfirmationExtras';
+import { ReleaseScanGate, ReleaseCodeChanges } from '@/AppBuilder/_helpers/codeModeHooks';
 
 function ReleaseConfirmation(props) {
   const { onClose, onConfirm, show, appId, versionId } = props;
@@ -39,11 +42,18 @@ function ReleaseConfirmation(props) {
     : Array.isArray(suppliedNotices)
       ? suppliedNotices
       : suppliedNotices.release || [];
+  // A full-screen view opened from this dialog needs the focus and the Escape key.
+  const overlayOpen = useStore((state) => state.isEditorOverlayOpen);
+  const [releaseLocked, setReleaseLocked] = useState(false);
+  const [scanLocked, setScanLocked] = useState(false);
+  const targetVersionId = versionId || selectedVersionId;
 
   return (
     <Modal
       show={show}
       onHide={onClose}
+      enforceFocus={!overlayOpen}
+      keyboard={!overlayOpen}
       size="sm"
       animation={false}
       centered={true}
@@ -86,12 +96,22 @@ function ReleaseConfirmation(props) {
             ))}
           </ul>
         )}
+        <ReleaseConfirmationExtras
+          show={show}
+          appId={appId}
+          versionId={targetVersionId}
+          releasedVersionId={releasedVersionId}
+          releasedVersionName={releasedVersionName}
+          onLockedChange={setReleaseLocked}
+        />
+        <ReleaseCodeChanges show={show} appId={appId} versionId={targetVersionId} />
+        {show && <ReleaseScanGate appId={appId} versionId={targetVersionId} onLockedChange={setScanLocked} />}
       </Modal.Body>
       <Modal.Footer className="env-modal-footer">
         <ButtonSolid variant="tertiary" onClick={onClose} data-cy="cancel-button">
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>
-        <ButtonSolid variant="primary" onClick={onConfirm} data-cy="yes-button">
+        <ButtonSolid variant="primary" onClick={onConfirm} data-cy="yes-button" disabled={releaseLocked || scanLocked}>
           Yes
         </ButtonSolid>
       </Modal.Footer>

@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
+import { saveErrorMessage } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion, fetchingOrgGit }) => {
   const { versions, selectedVersionId, capabilities = {}, actions } = useVersionLifecycle();
@@ -23,6 +24,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
   const isEditorReadOnly = capabilities.readOnly;
   const { enabled: isGitSyncEnabled = false, defaultBranch, isMultiBranchingEnabled = false } = capabilities.git || {};
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
+  const [createError, setCreateError] = useState(null);
   fetchingOrgGit = fetchingOrgGit ?? capabilities.git?.fetchingOrgGit;
 
   // Filter out draft versions - show all saved versions (PUBLISHED + any released)
@@ -112,6 +114,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
     }
 
     setIsCreatingVersion(true);
+    setCreateError(null);
 
     actions
       .createDraft({ name: versionName.trim(), fromVersionId: selectedVersionForCreation.id })
@@ -121,8 +124,9 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
         setShowCreateAppVersion(false);
       })
       .catch((error) => {
-        if (error?.data?.code === '23505') toast.error('Version name already exists.');
-        else toast.error(error?.message || error?.error || 'Error while creating version. Please try again.');
+        const message = error?.data?.code === '23505' ? 'Version name already exists.' : saveErrorMessage(error);
+        toast.error(message);
+        setCreateError(message);
         setIsCreatingVersion(false);
       });
   };
@@ -220,6 +224,13 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
             </Alert>
           </div>
 
+          {createError && (
+            <div className="mt-3" role="alert" data-cy="create-draft-version-error">
+              <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
+                <div className="create-version-helper-text">{createError}</div>
+              </Alert>
+            </div>
+          )}
           <div className="create-draft-version-footer">
             <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
             <div className="col d-flex justify-content-end">

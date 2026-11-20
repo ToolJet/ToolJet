@@ -36,7 +36,11 @@ export interface IDataQueriesController {
     libraryVersionId: string;
   }>;
 
-  bulkUpdate(user: UserEntity, updatingReferencesOptions: UpdatingReferencesOptionsDto): Promise<object>;
+  bulkUpdate(
+    user: UserEntity,
+    versionId: string,
+    updatingReferencesOptions: UpdatingReferencesOptionsDto
+  ): Promise<object>;
 
   delete(dataQueryId: string, versionId: string): Promise<void>;
 

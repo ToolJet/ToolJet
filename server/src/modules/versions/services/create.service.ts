@@ -1,5 +1,5 @@
 import { lockCarriedLibraryPins } from '@modules/query-library/locking';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
@@ -15,6 +15,7 @@ import { Page } from '@entities/page.entity';
 import { Component } from '@entities/component.entity';
 import { Layout } from '@entities/layout.entity';
 import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
+import { assignMissingComponentCoRelationIds } from 'src/helpers/co_relation_id.helper';
 import { isEmpty, set } from 'lodash';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { AppResourceMappings } from '@modules/apps/types';
@@ -30,8 +31,10 @@ import { APP_TYPES } from '@modules/apps/constants';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
 import { DatasourceUserTokenData } from '@entities/data_source_user_token.entity';
 import { EncryptionService } from '@modules/encryption/service';
+import { CodeModeSourceService } from '@modules/code-mode-source/service';
 import {
   parseParentIdAndSuffix,
+  SLOTTED_PARENT_TYPES,
   remapFlexContainerChildOrder,
   remapParentIdForVersionCopy,
   shouldSkipComponentOnVersionCopy,
@@ -39,6 +42,9 @@ import {
 
 @Injectable()
 export class VersionsCreateService implements IVersionsCreateService {
+  // Property injection, so the edition subclass keeps its constructor.
+  @Optional() @Inject(CodeModeSourceService) protected readonly codeModeSourceService?: CodeModeSourceService;
+
   constructor(
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly dataSourceUtilService: DataSourcesUtilService,
@@ -100,6 +106,12 @@ export class VersionsCreateService implements IVersionsCreateService {
       if (app?.type === APP_TYPES.WORKFLOW) {
         await this.copyWorkflowBundlesForVersion(manager, appVersion.id, versionFrom.id);
       }
+      await this.codeModeSourceService?.afterVersionCopied(
+        manager,
+        versionFrom.id,
+        appVersion.id,
+        oldPageToNewPageMapping ?? {}
+      );
     }, manager);
   }
 
@@ -141,11 +153,13 @@ export class VersionsCreateService implements IVersionsCreateService {
       if (dataSources?.length > 0) {
         for (const dataSource of dataSources) {
           const dataSourceParams: Partial<DataSource> = {
-            name: dataSource.name,
+            // The copy's default DSV takes this name, and (name, branch_id) is unique per workspace.
+            name: await this.dataSourceUtilService.generateUniqueName(dataSource.name, organizationId, manager),
             kind: dataSource.kind,
             type: dataSource.type,
             co_relation_id: dataSource?.co_relation_id,
             appVersionId: appVersion.id,
+            organizationId,
           };
           const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
           dataSourceMapping[dataSource.id] = newDataSource.id;
@@ -452,7 +466,7 @@ export class VersionsCreateService implements IVersionsCreateService {
         const parentComponent = allComponents.find((comp) => comp.id === baseId);
 
         if (parentComponent) {
-          return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+          return SLOTTED_PARENT_TYPES.includes(parentComponent.type);
         }
       }
       return false;
@@ -525,6 +539,8 @@ export class VersionsCreateService implements IVersionsCreateService {
         (component) => !shouldSkipComponentOnVersionCopy(component)
       );
       const validComponentIds = new Set(page.components.map((component) => component.id));
+
+      await assignMissingComponentCoRelationIds(originalPageComponents, manager);
 
       const tempNewComponents: Component[] = [];
       for (const component of originalPageComponents) {
@@ -615,6 +631,8 @@ export class VersionsCreateService implements IVersionsCreateService {
           newLayout.height = layout.height;
           if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
           if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
+          if (layout.grow != null) newLayout.grow = layout.grow;
+          if (layout.minWidthPx != null) newLayout.minWidthPx = layout.minWidthPx;
           newLayout.componentId = newComponent.id;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 

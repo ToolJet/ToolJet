@@ -96,6 +96,7 @@ const Cascader = lazy(() => import('@/AppBuilder/Widgets/Cascader/Cascader'));
 const TagsInput = lazy(() => import('@/AppBuilder/Widgets/TagsInput/TagsInput'));
 const KeyValuePair = lazy(() => import('@/AppBuilder/Widgets/KeyValuePair/KeyValuePair'));
 const LibraryComponent = lazy(() => import('@/AppBuilder/Widgets/LibraryComponent'));
+const PackComponent = lazy(() => import('@/AppBuilder/Widgets/PackComponent'));
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -156,6 +157,7 @@ export const AllComponents = {
   Tags,
   Spinner,
   LibraryComponent,
+  PackComponent,
   CircularProgressBar,
   RangeSlider,
   RangeSliderV2,

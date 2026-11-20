@@ -22,3 +22,6 @@ export * from './helpers/workflows';
 export * from './helpers/custom-component-libraries';
 
 export * from './helpers/query-library.helper';
+
+// --- Ability: CASL ability builder scaffolding + guard ExecutionContext builder ---
+export * from './helpers/ability';

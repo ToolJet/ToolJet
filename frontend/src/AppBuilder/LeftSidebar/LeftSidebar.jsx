@@ -13,13 +13,14 @@ import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { Blocks, DatabaseZap, Files, Network, Search, Settings } from 'lucide-react';
+import { Blocks, DatabaseZap, Files, History, LockKeyhole, Network, ScanSearch, Search, Settings } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { EditorView } from '@codemirror/view';
 import CodeSearch from './CodeSearch/CodeSearch';
 import Beta from '@/_ui/Beta';
 import SupportButton from './SupportButton';
 import AvatarGroup from '@/_ui/AvatarGroup';
+import { onePerPerson } from './presenceAvatars';
 // eslint-disable-next-line import/no-unresolved
 import { useOthers, useSelf } from '@y-presence/react';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
@@ -37,6 +38,9 @@ import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
 import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
 import AppLibraries from './AppLibraries';
+import { SecurityPanel, AccessPanel, CodeHistoryPanel, useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
+import { railClick } from './railClick';
+import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 
 // Human names for the error-boundary label/location of each sidebar panel.
 const LEFT_SIDEBAR_PANEL_LABELS = {
@@ -48,6 +52,9 @@ const LEFT_SIDEBAR_PANEL_LABELS = {
   dependencies: 'Dependencies',
   apphistory: 'App history',
   tooljetai: 'AI chat',
+  debugger: 'Debugger',
+  security: 'Security',
+  access: 'Access',
   settings: 'App settings',
 };
 
@@ -63,6 +70,10 @@ export const BaseLeftSidebar = ({
   renderAIChat = () => null,
 }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
+  const codeMode = useCodeMode(moduleId);
+  const isAiBlockedByBranch = useIsAiBlockedOnDefaultBranch();
+  const buildMode = useStore((state) => state.appStore?.modules?.[moduleId]?.app?.buildMode);
+  const resetUnreadErrorCount = useStore((state) => state.debugger.resetUnreadErrorCount);
   const [
     pinned,
     selectedSidebarItem,
@@ -88,6 +99,12 @@ export const BaseLeftSidebar = ({
     shallow
   );
 
+  useEffect(() => {
+    if (isAiBlockedByBranch && selectedSidebarItem === 'tooljetai' && isSidebarOpen) {
+      toggleLeftSidebar(false);
+    }
+  }, [isAiBlockedByBranch, selectedSidebarItem, isSidebarOpen, toggleLeftSidebar]);
+
   const [popoverContentHeight, setPopoverContentHeight] = useState(
     getLeftPanelHeight(isQueryPaneExpanded, queryPanelHeight)
   );
@@ -106,11 +123,33 @@ export const BaseLeftSidebar = ({
   const panelItem = selectedSidebarItem ?? (isPanelContentMounted ? lastPanelItemRef.current : null);
   const { isLeftPanelOpen, shouldMountLeftPanel } = getLeftPanelState(panelItem, isSidebarOpen);
 
+  // Whether the open panel was opened over the chat, so its icon closes it back to the chat.
+  const overChat = useRef(false);
+  useEffect(() => {
+    if (!isSidebarOpen) overChat.current = false;
+  }, [isSidebarOpen]);
+
   const handleSelectedSidebarItem = (item) => {
+    if (isAiBlockedByBranch && item === 'tooljetai') return;
+    if (item === 'debugger') resetUnreadErrorCount();
     // Only a search result opens Settings with a way back to the search panel.
     setCodeSearchReturnToSearch(false);
     // Left-rail clicks never close the right panel; it closes only from its own ×.
     setAnimatePanelSwitch(!isSidebarOpen || item !== selectedSidebarItem);
+    const click = railClick({
+      item,
+      selected: selectedSidebarItem,
+      open: isSidebarOpen,
+      pinned,
+      codeMode,
+      overChat: overChat.current,
+    });
+    overChat.current = click.overChat;
+    if (!isAiBlockedByBranch && click.show === 'tooljetai' && item !== 'tooljetai') {
+      setSelectedSidebarItem('tooljetai');
+      localStorage.setItem('selectedSidebarItem', 'tooljetai');
+      return;
+    }
     setSelectedSidebarItem(item);
     localStorage.setItem('selectedSidebarItem', item);
     // Only treat a repeat click as "close" when the panel is actually OPEN. Panels that close
@@ -198,7 +237,7 @@ export const BaseLeftSidebar = ({
   const renderSelectedPanel = () => {
     switch (panelItem) {
       case 'tooljetai':
-        return renderAIChat({ darkMode });
+        return isAiBlockedByBranch ? null : renderAIChat({ darkMode });
       case 'pages':
         return <PageSettings surface="navigation" onClose={() => toggleLeftSidebar(false)} />;
       case 'components':
@@ -220,10 +259,18 @@ export const BaseLeftSidebar = ({
         return <CodeSearch darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'libraries':
         return <AppLibraries darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
+      case 'security':
+        return <SecurityPanel onClose={() => toggleLeftSidebar(false)} />;
+      case 'access':
+        return <AccessPanel onClose={() => toggleLeftSidebar(false)} />;
       case 'dependencies':
         return <DependencyViewer darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'apphistory':
-        return <AppHistory darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
+        return codeMode ? (
+          <CodeHistoryPanel darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />
+        ) : (
+          <AppHistory darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />
+        );
       case 'settings':
         return (
           <GlobalSettings
@@ -242,6 +289,7 @@ export const BaseLeftSidebar = ({
   }
 
   // TODO: Move icons as slots
+
   const renderCommonItems = () => {
     return (
       <>
@@ -291,6 +339,32 @@ export const BaseLeftSidebar = ({
             setSideBarBtnRefs={setSideBarBtnRefs}
           />
         )}
+        {(codeMode || buildMode === 'code') && !isModuleEditor && (
+          <SidebarItem
+            icon="security"
+            selectedSidebarItem={selectedSidebarItem}
+            darkMode={darkMode}
+            onClick={() => handleSelectedSidebarItem('security')}
+            className="left-sidebar-item left-sidebar-layout"
+            tip="Security"
+            ref={setSideBarBtnRefs('security')}
+          >
+            <ScanSearch width="16" height="16" className="tw-text-icon-strong" />
+          </SidebarItem>
+        )}
+        {(codeMode || buildMode === 'code') && !isModuleEditor && (
+          <SidebarItem
+            icon="access"
+            selectedSidebarItem={selectedSidebarItem}
+            darkMode={darkMode}
+            onClick={() => handleSelectedSidebarItem('access')}
+            className="left-sidebar-item left-sidebar-layout"
+            tip="Access"
+            ref={setSideBarBtnRefs('access')}
+          >
+            <LockKeyhole width="16" height="16" className="tw-text-icon-strong" />
+          </SidebarItem>
+        )}
       </>
     );
   };
@@ -323,7 +397,20 @@ export const BaseLeftSidebar = ({
       >
         <Network size={16} strokeWidth={1.8} />
       </SidebarItem>
-      {!isModuleEditor && featureAccess?.appHistory && (
+      {codeMode && !isModuleEditor && (
+        <SidebarItem
+          selectedSidebarItem={selectedSidebarItem}
+          onClick={() => handleSelectedSidebarItem('apphistory')}
+          darkMode={darkMode}
+          className="left-sidebar-item left-sidebar-layout"
+          tip="App history"
+          ref={setSideBarBtnRefs('apphistory')}
+          icon="apphistory"
+        >
+          <History width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
+      )}
+      {!codeMode && !isModuleEditor && featureAccess?.appHistory && (
         <AppHistoryIcon
           darkMode={darkMode}
           selectedSidebarItem={selectedSidebarItem}
@@ -416,10 +503,10 @@ const AvatarGroupWrapper = ({ darkMode, maxDisplay }) => {
   const mergedAvatars = [self, ...othersOnSameVersionAndPage];
 
   const transformedAvatars = useMemo(() => {
-    return mergedAvatars.map((other) => ({
-      ...other.presence,
-      text: getAvatarText(other.presence),
-      title: getAvatarTitle(other.presence),
+    return onePerPerson(mergedAvatars.map((other) => other.presence)).map((presence) => ({
+      ...presence,
+      text: getAvatarText(presence),
+      title: getAvatarTitle(presence),
     }));
   }, [JSON.stringify(mergedAvatars)]);
 

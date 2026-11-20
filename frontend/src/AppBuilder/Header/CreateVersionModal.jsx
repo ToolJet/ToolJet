@@ -12,7 +12,20 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
+import NestedWorkflowPinsBlockedDialog, { NESTED_WORKFLOW_PINS_BLOCKED } from './NestedWorkflowPinsBlockedDialog';
 import '../../_styles/version-modal.scss';
+import { suggestVersionName } from '@/AppBuilder/_helpers/versionNames';
+import {
+  BUILDING_CODE_LABEL,
+  blocksSave,
+  CodeBuildError,
+  codeSaveRefusal,
+  saveErrorMessage,
+  saveVersionWithBuild,
+  SaveVersionError,
+  useSaveVersionCodeCheck,
+} from '@/AppBuilder/_helpers/codeModeHooks';
+import useStore from '@/AppBuilder/_stores/store';
 
 const CreateVersionModal = ({
   showCreateAppVersion,
@@ -34,12 +47,16 @@ const CreateVersionModal = ({
   const isEditorReadOnly = capabilities.readOnly;
   const isGitSyncEnabled = capabilities.git?.enabled;
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
+  const [buildingCode, setBuildingCode] = useState(false);
+  const [codeBuildError, setCodeBuildError] = useState(null);
+  const [pinsBlocked, setPinsBlocked] = useState(null);
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
   fetchingOrgGit = fetchingOrgGit ?? capabilities.git?.fetchingOrgGit;
 
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
   const textareaRef = React.useRef(null);
+  const appId = useStore((state) => state.appStore.modules.canvas?.app?.appId ?? state.appId);
 
   const handleDescriptionInput = () => {
     const textarea = textareaRef.current;
@@ -51,6 +68,17 @@ const CreateVersionModal = ({
     textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + 'px';
     textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
   };
+  // Code mode: whether the latest code builds is checked as the dialog opens, so a broken build shows before the first
+  // click. A refusal from an earlier opening is not shown again: the code may have been fixed since.
+  const codeCheck = useSaveVersionCodeCheck({
+    open: showCreateAppVersion,
+    appId,
+    versionId: selectedVersionForCreation?.id,
+  });
+  useEffect(() => {
+    if (showCreateAppVersion) setCodeBuildError(null);
+  }, [showCreateAppVersion]);
+  const saveError = codeBuildError ?? codeCheck.error;
 
   const initializedVersionId = React.useRef(null);
   // A background refresh may replace every row object while the user types. Initialize
@@ -77,7 +105,7 @@ const CreateVersionModal = ({
     const isUuidPlaceholderName = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       version.name || ''
     );
-    setVersionName(isUuidPlaceholderName ? '' : version.name);
+    setVersionName(isUuidPlaceholderName ? '' : suggestVersionName(version.name, developmentVersions));
     setVersionDescription(isUuidPlaceholderName ? '' : version.description || '');
   };
 
@@ -108,9 +136,13 @@ const CreateVersionModal = ({
     }
 
     setIsCreatingVersion(true);
+    setCodeBuildError(null);
 
     try {
-      await actions.saveDraft(selectedVersionForCreation.id, { name: versionName, description: versionDescription });
+      await saveVersionWithBuild(
+        () => actions.saveDraft(selectedVersionForCreation.id, { name: versionName, description: versionDescription }),
+        { appId, versionId: selectedVersionForCreation.id, onBuilding: setBuildingCode }
+      );
 
       toast.success(getSuccessMessage ? getSuccessMessage(versionName.trim()) : 'Version Created successfully');
       setVersionName('');
@@ -124,20 +156,33 @@ const CreateVersionModal = ({
         onVersionCreated();
       }
     } catch (error) {
-      if (error?.data?.code === '23505') {
+      if (error instanceof CodeBuildError) {
+        setCodeBuildError(error);
+      } else if (codeSaveRefusal(error)) {
+        setCodeBuildError({ message: codeSaveRefusal(error), first: null, inline: true });
+      } else if (error?.data?.code === '23505') {
         toast.error('Version name already exists.');
+        setCodeBuildError({ message: 'Version name already exists.', first: null, inline: true });
       } else {
         const rawError = error?.error || error?.message;
-        const errorMessage =
-          typeof rawError === 'object' ? rawError.error : rawError || 'Error while creating version. Please try again.';
+        const errorMessage = saveErrorMessage(error);
         const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
-        toast.error(errorMessage);
+        if (rawError?.code === NESTED_WORKFLOW_PINS_BLOCKED) {
+          setPinsBlocked(rawError);
+          setShowCreateAppVersion(false);
+        } else {
+          toast.error(errorMessage);
+          setCodeBuildError({ message: errorMessage, first: null, inline: true });
+        }
         actions.reportError?.('Save Failed', errorMessage, errorDetails);
       }
     } finally {
       setIsCreatingVersion(false);
     }
   };
+
+  if (pinsBlocked)
+    return <NestedWorkflowPinsBlockedDialog blocked={pinsBlocked} onClose={() => setPinsBlocked(null)} />;
 
   return (
     <AlertDialog
@@ -216,8 +261,8 @@ const CreateVersionModal = ({
               <textarea
                 type="text"
                 ref={textareaRef}
-                onInput={handleDescriptionInput}
                 onChange={(e) => setVersionDescription(e.target.value)}
+                onInput={handleDescriptionInput}
                 className="form-control app-version-description"
                 data-cy="version-description-input-field"
                 placeholder={t('editor.appVersionManager.enterVersionDescription', 'Enter version description')}
@@ -226,7 +271,7 @@ const CreateVersionModal = ({
                 autoFocus={!isGitSyncEnabled}
                 minLength="0"
                 maxLength="500"
-                rows={1}
+                rows={3}
               />
               <small className="version-description-helper-text" data-cy="version-description-helper-text">
                 {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
@@ -294,6 +339,8 @@ const CreateVersionModal = ({
             </div>
           </div>
 
+          <SaveVersionError error={saveError} onOpenCode={() => setShowCreateAppVersion(false)} />
+
           <div className="create-version-footer">
             <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
             <div className="col d-flex justify-content-end">
@@ -315,10 +362,10 @@ const CreateVersionModal = ({
                 variant="primary"
                 className=""
                 type="submit"
-                disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
+                disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly || blocksSave(saveError)}
                 data-cy="create-version-save-button"
               >
-                {t('editor.appVersionManager.saveVersion', 'Save version')}
+                {buildingCode ? BUILDING_CODE_LABEL : t('editor.appVersionManager.saveVersion', 'Save version')}
               </ButtonSolid>
             </div>
           </div>
