@@ -4,6 +4,7 @@ import cx from 'classnames';
 import { PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
 import PagesSidebarNavigation from './PageMenu/PagesSidebarNavigation';
 import { CanvasContentTail } from './CanvasContentTail';
+import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const PageCanvasHeader = lazy(() => import('./PageCanvasHeader'));
 const PageCanvasFooter = lazy(() => import('./PageCanvasFooter'));
@@ -32,62 +33,72 @@ export const DesktopLayout = ({
   gridContent,
   canvasHeaderHeight = PAGE_CANVAS_HEADER_HEIGHT,
   pageLoader = false,
-}) => (
-  <div
-    key={pageKey}
-    className={cx('tj-canvas-area', { 'h-100': isModuleMode })}
-    style={{
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
-      transform: 'translateZ(0)',
-    }}
-  >
-    <Suspense fallback={null}>
-      <PageCanvasHeader showCanvasHeader={showCanvasHeader} isMobileLayout={isMobileLayout} currentMode={currentMode} />
-    </Suspense>
+}) => {
+  const codeMode = useCodeMode();
+  return (
     <div
-      className={cx('canvas-wrapper  tw-w-full tw-h-full d-flex', {
-        'tw-flex-col': position === 'top' || isPagesSidebarHidden,
-      })}
+      key={pageKey}
+      className={cx('tj-canvas-area', { 'h-100': isModuleMode })}
+      style={{
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        transform: 'translateZ(0)',
+      }}
     >
-      {appType !== 'module' && !isModuleMode && (
-        <>
-          {/* === SIDEBAR STICKY WRAPPER === */}
-          <div
-            style={{
-              position: 'sticky',
-              top: showCanvasHeader && appType !== 'module' ? canvasHeaderHeight : 0,
-              flexShrink: 0,
-              zIndex: 15,
-              height: sideBarVisibleHeight,
-            }}
-          >
-            <PagesSidebarNavigation
-              isMobileDevice={isMobileLayout}
-              currentPageId={currentPageId ?? homePageId}
-              switchDarkMode={switchDarkMode}
-              isSidebarPinned={isViewerSidebarPinned}
-              setIsSidebarPinned={setIsSidebarPinned}
-              darkMode={darkMode}
-              canvasMaxWidth={canvasMaxWidth}
-              canvasContentRef={canvasContentRef}
-            />
-          </div>
-        </>
-      )}
-      <CanvasContentTail
-        currentMode={currentMode}
-        appType={appType}
-        isAppDarkMode={isAppDarkMode}
-        pageLoader={pageLoader}
+      <Suspense fallback={null}>
+        <PageCanvasHeader
+          showCanvasHeader={showCanvasHeader}
+          isMobileLayout={isMobileLayout}
+          currentMode={currentMode}
+        />
+      </Suspense>
+      <div
+        className={cx('canvas-wrapper  tw-w-full tw-h-full d-flex', {
+          'tw-flex-col': position === 'top' || isPagesSidebarHidden,
+        })}
       >
-        {mainCanvasContainer}
-      </CanvasContentTail>
+        {appType !== 'module' && !isModuleMode && !codeMode && (
+          <>
+            <div
+              style={{
+                position: 'sticky',
+                top: showCanvasHeader && appType !== 'module' ? canvasHeaderHeight : 0,
+                flexShrink: 0,
+                zIndex: 15,
+                height: sideBarVisibleHeight,
+              }}
+            >
+              <PagesSidebarNavigation
+                isMobileDevice={isMobileLayout}
+                currentPageId={currentPageId ?? homePageId}
+                switchDarkMode={switchDarkMode}
+                isSidebarPinned={isViewerSidebarPinned}
+                setIsSidebarPinned={setIsSidebarPinned}
+                darkMode={darkMode}
+                canvasMaxWidth={canvasMaxWidth}
+                canvasContentRef={canvasContentRef}
+              />
+            </div>
+          </>
+        )}
+        <CanvasContentTail
+          currentMode={currentMode}
+          appType={appType}
+          isAppDarkMode={isAppDarkMode}
+          pageLoader={pageLoader}
+        >
+          {mainCanvasContainer}
+        </CanvasContentTail>
+      </div>
+      <Suspense fallback={null}>
+        <PageCanvasFooter
+          showCanvasFooter={showCanvasFooter}
+          isMobileLayout={isMobileLayout}
+          currentMode={currentMode}
+        />
+      </Suspense>
+      {gridContent}
     </div>
-    <Suspense fallback={null}>
-      <PageCanvasFooter showCanvasFooter={showCanvasFooter} isMobileLayout={isMobileLayout} currentMode={currentMode} />
-    </Suspense>
-    {gridContent}
-  </div>
-);
+  );
+};

@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import cx from 'classnames';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { OverlayTrigger, Popover, Tooltip } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import {
   PromoteVersionButton,
@@ -15,6 +15,8 @@ import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
 import { IconArrowBarToDown } from '@tabler/icons-react';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
+import { useVersionActionRequest } from '@/AppBuilder/_utils/versionActions';
 
 const VersionDropdownItem = ({
   version,
@@ -149,7 +151,14 @@ const VersionDropdownItem = ({
     }).length;
   }, [customComponentLibraries]);
 
-  const isSaveVersionBlockedByDevPin = canCreateVersion && devPinnedLibrariesCount > 0;
+  const isCodeApp = useCodeMode();
+  const isSaveVersionBlockedByDevPin = canCreateVersion && devPinnedLibrariesCount > 0 && !isCodeApp;
+  // The review panel's next step after an approval of a draft: the same Save version this row's button does.
+  useVersionActionRequest(
+    'save',
+    version.id,
+    () => canCreateVersion && !isEditorReadOnly && !isSaveVersionBlockedByDevPin && onCreateVersion?.(version)
+  );
 
   const renderMenu = (
     <Popover
@@ -520,18 +529,19 @@ const VersionDropdownItem = ({
     </div>
   );
 
-  // Wrap with tooltip if there's overflow metadata and not hovering action buttons or menu open
-  if (showMetadataTooltip && tooltipContent && !isHoveringActionButtons && !isMoreMenuOpen && !isPulling) {
+  if (showMetadataTooltip && tooltipContent) {
     return (
-      <ToolTip
-        message={tooltipContent}
+      <OverlayTrigger
         placement="left-start"
-        show={true}
-        tooltipClassName="version-tooltip"
-        width="300px"
+        show={isHoveringItem && !isHoveringActionButtons && !isMoreMenuOpen && !isPulling}
+        overlay={
+          <Tooltip className="version-tooltip" style={{ width: '300px' }}>
+            {tooltipContent}
+          </Tooltip>
+        }
       >
         {versionItem}
-      </ToolTip>
+      </OverlayTrigger>
     );
   }
 

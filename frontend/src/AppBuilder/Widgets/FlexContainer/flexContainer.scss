@@ -1,0 +1,7 @@
+// A child container of a row whose Align is Stretch (useFlexWidgetLayout): the line sets its height. The dynamic
+// height reflow writes `style.height` onto flex child wrappers directly, which would pin the child at its own
+// height and stop the stretch, so the wrapper's height is released here; its own height stays as min-height.
+.flex-child-wrapper.flex-stretch-child {
+  height: auto !important;
+  align-self: stretch;
+}

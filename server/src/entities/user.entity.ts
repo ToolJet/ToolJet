@@ -136,6 +136,10 @@ export class User extends BaseEntity {
   @Column({ name: 'workspace_limit', type: 'integer', nullable: true, default: null })
   workspaceLimit: number | null;
 
+  // Cloud only: when the account used its one trial. Null = never claimed.
+  @Column({ name: 'trial_claimed_at', type: 'timestamptz', nullable: true, default: null })
+  trialClaimedAt: Date | null;
+
   @Column({ name: 'auto_activated', default: false })
   autoActivated: boolean;
 
@@ -243,6 +247,8 @@ export class User extends BaseEntity {
   oauthScopes?: string[];
   oauthAppId?: string;
   tjApiSource?: string;
+  // The app an AI builder session was minted for (its aiAppId claim).
+  aiAppId?: string;
   // Session provenance, mirrored from the JWT. Session kinds: personal-access-tokens/AGENTS.md.
   isPATLogin?: boolean;
   patScope?: PersonalAccessTokenScope;

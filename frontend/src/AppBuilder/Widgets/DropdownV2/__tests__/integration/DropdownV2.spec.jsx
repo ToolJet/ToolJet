@@ -68,6 +68,7 @@ import {
   store,
   MODULE_ID,
 } from '../../../__tests__/integration/widgetHarness';
+import { isolateInteractiveEvents } from '@/AppBuilder/Widgets/LibraryComponent/InlineLibraryComponent';
 
 const ID = 'dd1';
 const NAME = 'dropdown1';
@@ -688,6 +689,25 @@ describe('DropdownV2 selection, events and actions', () => {
             await widget.session.user.click(outside);
           } finally {
             outside.remove();
+          }
+        },
+      ],
+      [
+        // A pack widget's text field is in its shadow root, and the pack host stops a press there from reaching the
+        // canvas drag (InlineLibraryComponent's isolateInteractiveEvents), so it never bubbled to the document: the
+        // menu stayed open when a pack field was clicked in the editor (QA item 39).
+        'a pointer in a pack widget field',
+        async () => {
+          const host = document.createElement('div');
+          const field = document.createElement('input');
+          host.attachShadow({ mode: 'open' }).appendChild(field);
+          document.body.appendChild(host);
+          const release = isolateInteractiveEvents(host);
+          try {
+            await widget.session.user.click(field);
+          } finally {
+            release();
+            host.remove();
           }
         },
       ],

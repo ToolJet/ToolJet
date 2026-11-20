@@ -89,7 +89,7 @@ jobs:
               - '!**/*.md'
             # one brace pattern: with 'every', two positive patterns could never both match
             migrations:
-              - 'server/{migrations,data-migrations}/**'
+              - 'server/migrations/**'
               - '!**/*.md'
             # version bump = release cut: runs only the vulnerability gate (no job reads this output)
             version:
@@ -307,8 +307,28 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
+          cache-dependency-path: |
+            frontend/package-lock.json
+            cli/package-lock.json
+            packs/*/package-lock.json
       - run: npm ci
+      # Pack specs render a component pack's own source (packs/*), which resolves its
+      # dependencies (antd, @mui/material, @radix-ui/*, dayjs, ...) from that pack's
+      # node_modules, and read the built packs/*/dist/manifest.json. Same steps as the
+      # Docker builds: build the custom component CLI, then install and build each pack.
+      - name: Build component packs
+        working-directory: .
+        run: |
+          npm --prefix cli ci --include=dev --no-audit --no-fund
+          npm --prefix cli run build
+          node packs/build-builtin.mjs --install
+      # MUI is disabled for release, but frontend specs need its source and built manifest.
+      # Remove this step when MUI is re-enabled in packs/builtin.json; the pack build prepares it then.
+      - name: Prepare MUI pack for tests
+        working-directory: .
+        run: |
+          npm --prefix packs/mui ci --include=dev --no-audit --no-fund
+          (cd packs/mui && node ../../cli/bin/run library build)
       # Layout first: a misfiled or *.test.* spec silently never runs, so this
       # must fail the build before the suite reports a misleading green.
       - name: Validate test layout
@@ -548,6 +568,8 @@ jobs:
           apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Install app scanner dependencies
+        run: npm ci --prefix server/ee/packages/app-scanner
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: E2E tests
@@ -1006,7 +1028,10 @@ jobs:
       - name: Fail if a new or edited migration imports an entity
         shell: bash
         run: |
-          mapfile -t files < <(git diff --name-only --diff-filter=AMR HEAD^1 HEAD -- server/migrations server/data-migrations)
+          # The old folder stays in the pathspec so moved files pair up as renames; a move with small
+          # edits (90%+ similar) keeps its old imports, a heavier rewrite is checked
+          mapfile -t files < <(git diff -M --name-status --diff-filter=AMR HEAD^1 HEAD -- server/migrations server/data-migrations \
+            | awk '$1 ~ /^[AM]$/ || ($1 ~ /^R/ && substr($1, 2) + 0 < 90) {print $NF}')
           [ ${#files[@]} -eq 0 ] && exit 0
           node scripts/check-migration-imports.mjs "${files[@]}"
 
@@ -1045,8 +1070,9 @@ jobs:
           --health-timeout 3s
           --health-retries 5
     env:
-      # key the snapshot's stored credentials were encrypted with; data migrations decrypt them
-      LOCKBOX_MASTER_KEY: ${{ secrets.MIGRATION_SNAPSHOT_LOCKBOX_MASTER_KEY || 'lockbox-master-key' }}
+      # key the snapshot's stored credentials were encrypted with; data migrations decrypt them.
+      # lts.sql and main.sql come from different databases, so each has its own key.
+      LOCKBOX_MASTER_KEY: ${{ (startsWith(github.base_ref, 'lts') && secrets.MIGRATION_SNAPSHOT_LTS_LOCKBOX_MASTER_KEY) || secrets.MIGRATION_SNAPSHOT_LOCKBOX_MASTER_KEY || 'lockbox-master-key' }}
       SECRET_KEY_BASE: secret-key-base
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -1113,13 +1139,22 @@ jobs:
           aws s3 cp "$uri" /tmp/snapshot.sql || { echo "::error::No snapshot at $uri"; exit 1; }
           createdb "$PG_DB" && createdb "$TOOLJET_DB"
           psql -q -v ON_ERROR_STOP=1 -d "$PG_DB" -f /tmp/snapshot.sql
+      - name: Fail if this PR's migrations take locks that stall the release still serving
+        shell: bash
+        run: |
+          # The old folder stays in the pathspec so moved files pair up as renames and are not probed
+          mapfile -t files < <(git diff -M --name-only --diff-filter=A HEAD^1 HEAD -- server/migrations server/data-migrations)
+          [ ${#files[@]} -eq 0 ] && exit 0
+          # The probe commits, so it runs on a copy
+          createdb -T "$PG_DB" "${PG_DB}_lock_probe"
+          PG_DB="${PG_DB}_lock_probe" NODE_ENV='' npm run --prefix server db:probe-locks -- "${files[@]}"
       - name: Run pending migrations with timing
         shell: bash
         run: |
           set -o pipefail
           # TypeORM records the class name's timestamp, which differs from the filename's in
           # some older files, so read it from the class declaration of each added file
-          JUDGE=$(git diff --name-only --diff-filter=A HEAD^1 HEAD -- server/migrations server/data-migrations \
+          JUDGE=$(git diff -M --name-only --diff-filter=A HEAD^1 HEAD -- server/migrations server/data-migrations \
             | xargs -r grep -ohE 'class [A-Za-z0-9_]+[0-9]{13}' | grep -oE '[0-9]{13}$' | paste -sd, - || true)
           export JUDGE
           echo "This PR's migrations: ${JUDGE:-none}"
