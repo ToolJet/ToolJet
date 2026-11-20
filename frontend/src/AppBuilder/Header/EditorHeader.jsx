@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import EditAppName from './EditAppName';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
@@ -11,6 +11,8 @@ import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { BranchDropdown } from './BranchDropdown';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { GitCommitStatusTag } from '@/_ui/GitCommitStatusTag';
+import { commitFromVersion } from '@/_helpers/gitCommitInfo';
 import './styles/style.scss';
 
 import SaveIndicator from './SaveIndicator';
@@ -47,6 +49,21 @@ export const EditorHeader = ({ darkMode, appType }) => {
     }),
     shallow
   );
+  const fetchDevelopmentVersions = useStore((state) => state.fetchDevelopmentVersions);
+
+  // Refetch after a save completes so the "Uncommitted changes" tag updates without a hard
+  // refresh. Debounced so a burst of quick saves triggers one refetch, not one per save.
+  const wasSavingRef = useRef(isSaving);
+  const refreshTimeoutRef = useRef(null);
+  useEffect(() => {
+    if (wasSavingRef.current && !isSaving && appId) {
+      clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = setTimeout(() => fetchDevelopmentVersions(appId), 400);
+    }
+    wasSavingRef.current = isSaving;
+    return () => clearTimeout(refreshTimeoutRef.current);
+  }, [isSaving, appId, fetchDevelopmentVersions]);
+
   // Git configured but unlicensed → freeze every header action (undo/redo, preview/share,
   // branch, version, release/commit). The logo/app-name nav stays clickable so the user can
   // still navigate to workspace settings and turn git off.
@@ -77,6 +94,20 @@ export const EditorHeader = ({ darkMode, appType }) => {
       ));
   const showSyncButton =
     featureAccess?.gitSync && isGitSyncConfigured && workspaceActiveBranch && isOnDefaultBranch && !isAppSyncedToGit;
+
+  // Shown when the current branch's draft has been edited since its last push. Unlike
+  // isAppSyncedToGit above (default-branch only), this must also resolve on feature branches,
+  // where versionType is 'branch' not 'version' — and since developmentVersions isn't
+  // branch-scoped, narrow to the active branch by id too.
+  const draftVersion = developmentVersions?.find((v) => {
+    if (!(v.status === 'DRAFT' || v.status === 'draft')) return false;
+    if (isOnDefaultBranch) return v.versionType === 'version' || v.version_type === 'version';
+    const versionBranchId = v.branchId || v.branch_id;
+    return (v.versionType === 'branch' || v.version_type === 'branch') && versionBranchId === workspaceActiveBranch?.id;
+  });
+  // The tag itself decides what to render: the warning state when the draft is dirty, the synced
+  // commit's SHA when it is clean, and nothing at all when neither is known.
+  const showGitStatusTag = !!(featureAccess?.gitSync && isGitSyncConfigured);
 
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
@@ -137,6 +168,13 @@ export const EditorHeader = ({ darkMode, appType }) => {
                   aria-disabled={isGitSyncLicenseLocked || undefined}
                 >
                   {!isModuleEditor && <PreviewAndShareIcons />}
+                  {showGitStatusTag && (
+                    <GitCommitStatusTag
+                      hasUncommittedChanges={draftVersion?.hasUncommittedChanges === true}
+                      commit={commitFromVersion(draftVersion)}
+                      darkMode={darkMode}
+                    />
+                  )}
                   {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}
                   <VersionManagerErrorBoundary>
                     <VersionManagerDropdown darkMode={darkMode} />

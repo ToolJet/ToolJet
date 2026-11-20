@@ -9,8 +9,22 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { AlertCircle } from 'lucide-react';
 import NestedWorkflowPinsBlockedDialog, { NESTED_WORKFLOW_PINS_BLOCKED } from './NestedWorkflowPinsBlockedDialog';
 import '../../_styles/version-modal.scss';
+
+// AppGitVersionService.saveVersion (server/ee/app-git/services/versions.service.ts) throws a 409
+// with JSON.stringify({ code: 'UNCOMMITTED_CHANGES' }) as the message when the draft has been
+// edited since its last push — same convention as the conflict-groups 409s elsewhere in git sync.
+function detectUncommittedChangesConflict(error) {
+  try {
+    const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
+    return parsed?.code === 'UNCOMMITTED_CHANGES';
+  } catch {
+    return false;
+  }
+}
 
 const CreateVersionModal = ({
   showCreateAppVersion,
@@ -31,8 +45,11 @@ const CreateVersionModal = ({
   const [pinsBlocked, setPinsBlocked] = useState(null);
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
+  const [showUncommittedChangesModal, setShowUncommittedChangesModal] = useState(false);
+  const [isAutoCommitting, setIsAutoCommitting] = useState(false);
   const isGitSyncEnabled = orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const { current_organization_id } = authenticationService.currentSessionValue;
+  const wsCurrentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
 
   const {
     changeEditorVersionAction,
@@ -46,6 +63,7 @@ const CreateVersionModal = ({
     environments,
     branchingEnabled,
     isEditorReadOnly,
+    appName,
   } = useStore(
     (state) => ({
       changeEditorVersionAction: state.changeEditorVersionAction,
@@ -63,6 +81,7 @@ const CreateVersionModal = ({
       environments: state.environments,
       branchingEnabled: state.branchingEnabled,
       isEditorReadOnly: state.isEditorReadOnly,
+      appName: state.appStore.modules[moduleId]?.app?.appName,
     }),
     shallow
   );
@@ -70,6 +89,10 @@ const CreateVersionModal = ({
   // isBranchingEnabled may not be passed as a prop when rendered from VersionManagerDropdown;
   // fall back to the store value set by fetchAppGit.
   const effectiveIsBranchingEnabled = isBranchingEnabled ?? branchingEnabled;
+  // Same branch-targeting shape as GitSyncManager/GitSyncModal's appGitPush, needed to auto-commit
+  // the right branch when the save is blocked on uncommitted changes.
+  const effectiveBranchName = effectiveIsBranchingEnabled ? wsCurrentBranch?.name : null;
+  const configuredGitBranch = orgGit?.git_https?.github_branch || orgGit?.git_lab?.github_branch || 'main';
 
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
   const textareaRef = React.useRef(null);
@@ -275,6 +298,11 @@ const CreateVersionModal = ({
         toast.error('Version created but failed to switch to it');
       }
     } catch (error) {
+      if (error?.statusCode === 409 && detectUncommittedChangesConflict(error)) {
+        setShowUncommittedChangesModal(true);
+        setIsCreatingVersion(false);
+        return;
+      }
       if (error?.data?.code === '23505') {
         toast.error('Version name already exists.');
       } else {
@@ -304,104 +332,135 @@ const CreateVersionModal = ({
     }
   };
 
+  // Commits the draft's outstanding changes, then retries createVersion — which will now
+  // succeed since hasUncommittedChanges is cleared by the push. Mirrors the branch-targeting
+  // shape GitSyncManager/GitSyncModal's appGitPush uses for the same "Commit" action.
+  const handleAutoCommitAndSave = async () => {
+    if (!selectedVersionForCreation) return;
+    setIsAutoCommitting(true);
+    try {
+      const onFeatureBranch = effectiveIsBranchingEnabled && effectiveBranchName;
+      const body = {
+        // The workflow editor has no app name in this store; fall back to the version's, then the id.
+        gitAppName: appName || selectedVersionForCreation.appName || selectedVersionForCreation.app_name || appId,
+        versionId: selectedVersionForCreation.id,
+        lastCommitMessage: `Auto-commit before saving version "${versionName.trim()}"`,
+        gitVersionName: onFeatureBranch ? effectiveBranchName : configuredGitBranch,
+        ...(onFeatureBranch ? { sourceBranch: effectiveBranchName } : { allowMasterPush: true }),
+      };
+      await gitSyncService.gitPush(body, appId, selectedVersionForCreation.id);
+      toast.success('Changes were committed successfully!');
+      setShowUncommittedChangesModal(false);
+      await createVersion();
+    } catch (error) {
+      console.error('Auto-commit before save failed:', error);
+      toast.error('Failed to commit changes. Please try again.');
+    } finally {
+      setIsAutoCommitting(false);
+    }
+  };
+
   if (pinsBlocked)
     return <NestedWorkflowPinsBlockedDialog blocked={pinsBlocked} onClose={() => setPinsBlocked(null)} />;
 
   return (
-    <AlertDialog
-      show={showCreateAppVersion}
-      closeModal={() => {
-        setVersionName('');
-        setVersionDescription('');
-        setSelectedVersionForCreation(null);
-        setShowCreateAppVersion(false);
-      }}
-      title={'Save version'}
-      customClassName="create-version-modal"
-    >
-      {fetchingOrgGit ? (
-        <div className="loader-container">
-          <div className="primary-spin-loader"></div>
-        </div>
-      ) : (
-        <form
-          className="create-version-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            createVersion();
-          }}
-        >
-          <div className="create-version-body mb-3">
-            {isGitSyncEnabled && (
-              <div
-                className="mb-3 d-flex align-items-start"
-                style={{
-                  backgroundColor: 'var(--background-warning-weak)',
-                  borderRadius: '6px',
-                  padding: '12px',
-                  gap: '6px',
-                }}
-                data-cy="version-immutability-info"
-              >
-                <span style={{ flexShrink: 0, display: 'inline-flex', marginTop: '1px' }}>
-                  <Warning fill="var(--text-warning)" width="18" />
-                </span>
-                <span
-                  className="tj-text-xsm"
-                  style={{ color: 'var(--text-medium)', lineHeight: '18px', fontSize: '12px' }}
+    <>
+      <AlertDialog
+        // Hidden (not unmounted — this component still owns the conflict state) while the
+        // uncommitted-changes conflict modal is up, so this dialog doesn't linger visible behind it.
+        show={showCreateAppVersion && !showUncommittedChangesModal}
+        closeModal={() => {
+          setVersionName('');
+          setVersionDescription('');
+          setSelectedVersionForCreation(null);
+          setShowCreateAppVersion(false);
+        }}
+        title={'Save version'}
+        customClassName="create-version-modal"
+      >
+        {fetchingOrgGit ? (
+          <div className="loader-container">
+            <div className="primary-spin-loader"></div>
+          </div>
+        ) : (
+          <form
+            className="create-version-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              createVersion();
+            }}
+          >
+            <div className="create-version-body mb-3">
+              {isGitSyncEnabled && (
+                <div
+                  className="mb-3 d-flex align-items-start"
+                  style={{
+                    backgroundColor: 'var(--background-warning-weak)',
+                    borderRadius: '6px',
+                    padding: '12px',
+                    gap: '6px',
+                  }}
+                  data-cy="version-immutability-info"
                 >
-                  Name and description cannot be edited after saving
-                </span>
+                  <span style={{ flexShrink: 0, display: 'inline-flex', marginTop: '1px' }}>
+                    <Warning fill="var(--text-warning)" width="18" />
+                  </span>
+                  <span
+                    className="tj-text-xsm"
+                    style={{ color: 'var(--text-medium)', lineHeight: '18px', fontSize: '12px' }}
+                  >
+                    Name and description cannot be edited after saving
+                  </span>
+                </div>
+              )}
+              <div className="col">
+                <label className="form-label mb-1 ms-1" data-cy="version-name-label">
+                  {t('editor.appVersionManager.versionName', 'Version Name')}
+                </label>
+                <input
+                  type="text"
+                  onChange={(e) => setVersionName(e.target.value)}
+                  className="form-control"
+                  data-cy="version-name-input-field"
+                  placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
+                  disabled={isCreatingVersion}
+                  value={versionName}
+                  autoFocus={true}
+                  minLength="1"
+                  maxLength="25"
+                />
+                <small className="version-name-helper-text" data-cy="version-name-helper-text">
+                  {t(
+                    'editor.appVersionManager.versionNameHelper',
+                    'Version name cannot contain spaces, special characters or exceed 25 characters'
+                  )}
+                </small>
               </div>
-            )}
-            <div className="col">
-              <label className="form-label mb-1 ms-1" data-cy="version-name-label">
-                {t('editor.appVersionManager.versionName', 'Version Name')}
-              </label>
-              <input
-                type="text"
-                onChange={(e) => setVersionName(e.target.value)}
-                className="form-control"
-                data-cy="version-name-input-field"
-                placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
-                disabled={isCreatingVersion}
-                value={versionName}
-                autoFocus={true}
-                minLength="1"
-                maxLength="25"
-              />
-              <small className="version-name-helper-text" data-cy="version-name-helper-text">
-                {t(
-                  'editor.appVersionManager.versionNameHelper',
-                  'Version name cannot contain spaces, special characters or exceed 25 characters'
-                )}
-              </small>
-            </div>
-            <div className="col mt-2">
-              <label className="form-label mb-1 ms-1" data-cy="version-description-label">
-                {t('editor.appVersionManager.versionDescription', 'Version description')}
-              </label>
-              <textarea
-                type="text"
-                ref={textareaRef}
-                onInput={handleDescriptionInput}
-                onChange={(e) => setVersionDescription(e.target.value)}
-                className="form-control app-version-description"
-                data-cy="version-description-input-field"
-                placeholder={t('editor.appVersionManager.enterVersionDescription', 'Enter version description')}
-                disabled={isCreatingVersion}
-                value={versionDescription}
-                autoFocus={!isGitSyncEnabled}
-                minLength="0"
-                maxLength="500"
-                rows={1}
-              />
-              <small className="version-description-helper-text" data-cy="version-description-helper-text">
-                {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
-              </small>
-            </div>
+              <div className="col mt-2">
+                <label className="form-label mb-1 ms-1" data-cy="version-description-label">
+                  {t('editor.appVersionManager.versionDescription', 'Version description')}
+                </label>
+                <textarea
+                  type="text"
+                  ref={textareaRef}
+                  onInput={handleDescriptionInput}
+                  onChange={(e) => setVersionDescription(e.target.value)}
+                  className="form-control app-version-description"
+                  data-cy="version-description-input-field"
+                  placeholder={t('editor.appVersionManager.enterVersionDescription', 'Enter version description')}
+                  disabled={isCreatingVersion}
+                  value={versionDescription}
+                  autoFocus={!isGitSyncEnabled}
+                  minLength="0"
+                  maxLength="500"
+                  rows={1}
+                />
+                <small className="version-description-helper-text" data-cy="version-description-helper-text">
+                  {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
+                </small>
+              </div>
 
-            {/* <div className="mb-4 pb-2 version-select">
+              {/* <div className="mb-4 pb-2 version-select">
             <label className="form-label" data-cy="create-version-from-label">
               {t('editor.appVersionManager.createVersionFrom', 'Create version from')}
             </label>
@@ -419,8 +478,8 @@ const CreateVersionModal = ({
             </div>
           </div> */}
 
-            {/* Disabling autoCommit */}
-            {/* {isGitSyncEnabled && (
+              {/* Disabling autoCommit */}
+              {/* {isGitSyncEnabled && (
               <div className="commit-changes mt-3">
                 <div>
                   <input
@@ -443,56 +502,102 @@ const CreateVersionModal = ({
               </div>
             )} */}
 
-            <div className="mt-3">
-              <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
-                <div
-                  className="d-flex align-items-center"
-                  style={{
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    width: '100%',
-                  }}
-                >
-                  <div className="create-version-helper-text" data-cy="create-version-helper-text">
-                    Saving the version will lock it. To make any edits afterwards, you&apos;ll need to create a draft
-                    version.
+              <div className="mt-3">
+                <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
+                  <div
+                    className="d-flex align-items-center"
+                    style={{
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      width: '100%',
+                    }}
+                  >
+                    <div className="create-version-helper-text" data-cy="create-version-helper-text">
+                      Saving the version will lock it. To make any edits afterwards, you&apos;ll need to create a draft
+                      version.
+                    </div>
                   </div>
-                </div>
-              </Alert>
+                </Alert>
+              </div>
             </div>
-          </div>
 
-          <div className="create-version-footer">
-            <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
-            <div className="col d-flex justify-content-end">
-              <ButtonSolid
-                size="lg"
-                onClick={() => {
-                  setVersionName('');
-                  setVersionDescription('');
-                  setShowCreateAppVersion(false);
-                }}
-                variant="tertiary"
-                className="mx-2"
-                data-cy="create-version-cancel-button"
-              >
-                {t('globals.cancel', 'Cancel')}
-              </ButtonSolid>
-              <ButtonSolid
-                size="lg"
-                variant="primary"
-                className=""
-                type="submit"
-                disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
-                data-cy="create-version-save-button"
-              >
-                {t('editor.appVersionManager.saveVersion', 'Save version')}
-              </ButtonSolid>
+            <div className="create-version-footer">
+              <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
+              <div className="col d-flex justify-content-end">
+                <ButtonSolid
+                  size="lg"
+                  onClick={() => {
+                    setVersionName('');
+                    setVersionDescription('');
+                    setShowCreateAppVersion(false);
+                  }}
+                  variant="tertiary"
+                  className="mx-2"
+                  data-cy="create-version-cancel-button"
+                >
+                  {t('globals.cancel', 'Cancel')}
+                </ButtonSolid>
+                <ButtonSolid
+                  size="lg"
+                  variant="primary"
+                  className=""
+                  type="submit"
+                  disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
+                  data-cy="create-version-save-button"
+                >
+                  {t('editor.appVersionManager.saveVersion', 'Save version')}
+                </ButtonSolid>
+              </div>
             </div>
+          </form>
+        )}
+      </AlertDialog>
+      <AlertDialog
+        show={showUncommittedChangesModal}
+        closeModal={() => setShowUncommittedChangesModal(false)}
+        size={null}
+        dialogClassName="tw-max-w-[420px]"
+        customClassName="uncommitted-changes-conflict-modal"
+      >
+        <div className="d-flex flex-column" style={{ padding: '20px', gap: '8px', position: 'relative' }}>
+          <button
+            className="btn-close"
+            aria-label="Close"
+            onClick={() => setShowUncommittedChangesModal(false)}
+            style={{ position: 'absolute', top: '16px', right: '16px' }}
+            data-cy="uncommitted-changes-modal-close-button"
+          />
+          <AlertCircle size={40} className="tw-text-icon-accent" style={{ flexShrink: 0 }} />
+          <div className="tj-text-md" style={{ fontWeight: 600 }}>
+            Uncommitted changes detected
           </div>
-        </form>
-      )}
-    </AlertDialog>
+          <div className="tj-text-sm" style={{ color: 'var(--text-placeholder)' }}>
+            You cannot save a version of this resource without committing all the changes in it. Do you want to
+            auto-commit the changes and then save the version?
+          </div>
+          <div className="d-flex justify-content-end mt-2" style={{ gap: '8px' }}>
+            <ButtonSolid
+              size="lg"
+              variant="tertiary"
+              onClick={() => setShowUncommittedChangesModal(false)}
+              disabled={isAutoCommitting}
+              data-cy="uncommitted-changes-cancel-button"
+            >
+              {t('globals.cancel', 'Cancel')}
+            </ButtonSolid>
+            <ButtonSolid
+              size="lg"
+              variant="primary"
+              onClick={handleAutoCommitAndSave}
+              disabled={isAutoCommitting}
+              data-cy="auto-commit-and-save-button"
+            >
+              {isAutoCommitting ? 'Committing...' : 'Auto-commit & save'}
+            </ButtonSolid>
+          </div>
+        </div>
+      </AlertDialog>
+    </>
   );
 };
 
