@@ -265,7 +265,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     };
 
     const rawQuery = req.query?.['branch_id'];
-    if (rawQuery !== undefined && typeof rawQuery !== 'string') throw new BadRequestException('Invalid branch_id');
     const queryBranchId = normalize(typeof rawQuery === 'string' ? rawQuery : undefined);
     if (queryBranchId) return this.checkWorkspaceBranch(queryBranchId, organizationId);
 

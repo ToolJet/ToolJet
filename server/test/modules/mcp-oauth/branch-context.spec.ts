@@ -68,6 +68,7 @@ describe.each(['delegation', 'viewer'] as const)('OAuth %s branch context', (kin
       { query: { branch_id: 'null' }, headers: {}, expected: 'default-branch' },
       { query: { branch_id: 'undefined' }, headers: {}, expected: 'default-branch' },
       { query: { branch_id: ' ' }, headers: {}, expected: 'default-branch' },
+      { query: { branch_id: ['first', 'second'] }, headers: {}, expected: 'default-branch' },
     ])('resolves $expected for query=$query and headers=$headers', async ({ query, headers, expected }) => {
       const { user, session, identity, strategy, request, payload } = setup(query, headers);
       expect(await strategy.validate(request, payload)).toBe(user);
@@ -85,7 +86,6 @@ describe.each(['delegation', 'viewer'] as const)('OAuth %s branch context', (kin
     test.each([
       { query: { branch_id: 'foreign-branch' }, headers: {} },
       { query: {}, headers: { 'x-branch-id': 'foreign-branch' } },
-      { query: { branch_id: ['first', 'second'] }, headers: {} },
     ])('rejects a branch outside the workspace for query=$query and headers=$headers', async ({ query, headers }) => {
       const { session, strategy, request, payload } = setup(query, headers);
       session.isWorkspaceBranch.mockResolvedValue(false);
