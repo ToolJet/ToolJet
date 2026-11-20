@@ -346,6 +346,19 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
 
 const isOperator = (li) => li.hasAttribute('aria-label');
 
+// How many page numbers fit beside the four operators.
+export const getMaxPageNumbers = (containerWidth, totalPages, items) => {
+  // Measure the rendered items. jsdom measures 0, so fall back to the CSS minimums:
+  // operator = 1.25rem icon + .25rem padding each side; page = min-width 1.75rem, ~8px per extra digit.
+  const longestPageWidth = 8 + 8 * String(totalPages).length;
+  const widthOf = (li) => li.offsetWidth || (isOperator(li) ? 28 : longestPageWidth);
+  const operators = items.filter(isOperator);
+  const operatorsWidth = operators.length ? operators.reduce((sum, li) => sum + widthOf(li), 0) : 4 * 28;
+  // Items on screen at measure time may all be short ("1", "…"); every slot must still fit the longest number.
+  const itemWidth = Math.max(28, longestPageWidth, ...items.filter((li) => !isOperator(li)).map(widthOf));
+  return Math.floor((containerWidth - operatorsWidth) / itemWidth);
+};
+
 const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth, listRef }) => {
   const [maxPageNumbers, setMaxPageNumbers] = useState(0); // page numbers that fit beside the four operators
 
@@ -354,14 +367,7 @@ const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth
       return;
     }
 
-    // Measure the rendered items. jsdom measures 0, so fall back to the CSS minimums:
-    // operator = 1.25rem icon + .25rem padding each side; page = min-width 1.75rem, ~8px per extra digit.
-    const items = Array.from(listRef.current?.children ?? []);
-    const widthOf = (li) => li.offsetWidth || (isOperator(li) ? 28 : 8 + 8 * String(totalPages).length);
-    const operators = items.filter(isOperator);
-    const operatorsWidth = operators.length ? operators.reduce((sum, li) => sum + widthOf(li), 0) : 4 * 28;
-    const itemWidth = Math.max(28, ...items.filter((li) => !isOperator(li)).map(widthOf));
-    setMaxPageNumbers(Math.floor((containerWidth - operatorsWidth) / itemWidth));
+    setMaxPageNumbers(getMaxPageNumbers(containerWidth, totalPages, Array.from(listRef.current?.children ?? [])));
   }, [containerWidth, totalPages, listRef]);
 
   const renderPageNumbers = () => {

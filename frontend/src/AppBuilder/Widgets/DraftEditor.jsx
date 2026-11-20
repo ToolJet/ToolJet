@@ -154,6 +154,8 @@ class DraftEditor extends React.Component {
     super(props);
     this.state = {
       editorState: EditorState.createWithContent(stateFromHTML(DOMPurify.sanitize(this.props.defaultValue))),
+      // Until measured, assume the one-row toolbar the old fixed "height - 60" allowed for (60 = 46 + 14).
+      controlsHeight: 14,
     };
 
     this.editorContainerRef = React.createRef();
@@ -194,13 +196,9 @@ class DraftEditor extends React.Component {
   componentDidMount() {
     //For resizing the editor container based on the height of rich text editor controls
     this.resizeObserver = new ResizeObserver(() => {
-      if (this.controlsRef.current && this.editorContainerRef.current) {
+      if (this.controlsRef.current) {
         const controlsHeight = this.controlsRef.current.offsetHeight;
-        const editorHeight = this.props.height - 46 - controlsHeight;
-        this.editorContainerRef.current.style.height = `${editorHeight}px`;
-        if (this.props.isDynamicHeightEnabled) {
-          this.editorContainerRef.current.style.height = `auto`;
-        }
+        if (controlsHeight !== this.state.controlsHeight) this.setState({ controlsHeight });
       }
     });
 
@@ -304,8 +302,14 @@ class DraftEditor extends React.Component {
           className={className}
           ref={this.editorContainerRef}
           style={{
-            height: this.props.isDynamicHeightEnabled ? 'auto' : `${this.props.height - 60}px`,
-            ...(this.props.isDynamicHeightEnabled && { minHeight: `${this.props.height - 60}px` }),
+            // The editor area gets what the widget height leaves after the measured toolbar (and 46px of chrome),
+            // as its height or, with dynamic height, as its minimum.
+            height: this.props.isDynamicHeightEnabled
+              ? 'auto'
+              : `${this.props.height - 46 - this.state.controlsHeight}px`,
+            ...(this.props.isDynamicHeightEnabled && {
+              minHeight: `${this.props.height - 46 - this.state.controlsHeight}px`,
+            }),
           }}
           onClick={this.focus}
         >

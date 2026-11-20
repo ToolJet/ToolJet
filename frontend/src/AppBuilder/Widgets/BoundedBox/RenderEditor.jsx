@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import Select from '@/_ui/Select';
 import { v4 as uuid } from 'uuid';
+import { getLabelControlPosition } from './labelControlPosition';
 
 export const RenderEditor = ({
   annotation,
@@ -12,6 +13,7 @@ export const RenderEditor = ({
   darkMode,
   selectElementStyles,
   getExposedAnnotations,
+  onLabelCommitted,
 }) => {
   useEffect(() => {
     if (geometry) {
@@ -22,27 +24,19 @@ export const RenderEditor = ({
   const { geometry } = annotation;
   if (!geometry) return null;
   return (
-    <div
-      style={{
-        position: 'absolute',
-        left: `${annotation.geometry.x}%`,
-        top: `${annotation.geometry.y + annotation.geometry.height}%`,
-        right: `${annotation.geometry.x + annotation.geometry.width}%`,
-        width: `${annotation.geometry.width}%`,
-        minWidth: '125px',
-      }}
-      className="col"
-    >
+    <div style={getLabelControlPosition(annotation.geometry)} className="col">
       <Select
         options={labels}
         onChange={(value) => {
+          const id = uuid();
           setAnnotation({});
+          onLabelCommitted?.(id);
           setAnnotations((prevState) => {
             const annotations = prevState.concat({
               geometry,
               data: {
                 text: value,
-                id: uuid(),
+                id,
               },
             });
 
@@ -52,6 +46,7 @@ export const RenderEditor = ({
           });
         }}
         className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+        aria-label="Label for new annotation"
         useCustomStyles={true}
         // useMenuPortal={false}
         useMenuPortal

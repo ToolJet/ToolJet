@@ -40,11 +40,10 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     },
   });
 
+  // This menu's own search box: a document-wide lookup found another still-open menu's box first.
+  const searchInputRef = useRef(null);
   useEffect(() => {
-    const searchInput = document.querySelector('.dropdown-multiselect-widget-search-box');
-    if (searchInput) {
-      searchInput.focus();
-    }
+    searchInputRef.current?.focus();
   }, []);
 
   const firstSelectedIndex = props?.options?.findIndex(
@@ -90,6 +89,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
             <SolidIcon name="search01" width="14" fill={searchIconColor} />
           </span>
           <input
+            ref={searchInputRef}
             autoCorrect="off"
             autoComplete="off"
             spellCheck="false"

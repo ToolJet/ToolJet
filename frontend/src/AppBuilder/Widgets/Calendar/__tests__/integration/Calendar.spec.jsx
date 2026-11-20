@@ -52,6 +52,8 @@ const widget = createWidgetHarness({
   id: ID,
   defaultProperties,
   defaultStyles,
+  // The event popover renders a subcontainer, which needs the canvas drag-and-drop context.
+  capabilities: { dnd: true },
 });
 
 const exposed = () => store().getExposedValueOfComponent(ID, MODULE_ID);
@@ -93,6 +95,50 @@ describe('Calendar widget', () => {
     widget.render({ properties: { defaultView: binding("{{'day'}}") } });
     await waitCal();
     await waitFor(() => expect(exposed().currentView).toBe('day'));
+  });
+
+  test('[Calendar-VIEW-005] an unsupported defaultView falls back to the month view without crashing', async () => {
+    // Break this catches: passing the raw defaultView to react-big-calendar on the first render, before the
+    // normalising effect runs, so an unknown view throws and the error boundary replaces the widget.
+    widget.render({ properties: { defaultView: binding("{{'year'}}") } });
+
+    await waitFor(() => expect(document.querySelector('.rbc-month-view')).toBeTruthy());
+    expect(exposed().currentView).toBe('month');
+  });
+
+  test('[Calendar-POP-002] the event popover starts at the clicked event box edge, not its inner text edge', async () => {
+    // Break this catches: taking the popover offset from e.target, which for a real click is the inset event
+    // text, so the popover covers the right edge of the event.
+    const rect = (x, width) => ({ x, y: 100, left: x, top: 100, width, height: 40, right: x + width, bottom: 140 });
+    const spy = jest.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function () {
+      if (this.classList.contains('rbc-event-content')) return rect(306, 130);
+      if (this.classList.contains('rbc-event')) return rect(300, 142);
+      return rect(0, 0);
+    });
+    // The popover positions itself against the app canvas, which the widget harness does not render.
+    const canvas = document.createElement('div');
+    canvas.className = 'canvas-container';
+    const realCanvas = document.createElement('div');
+    realCanvas.id = 'real-canvas';
+    Object.defineProperty(realCanvas, 'clientWidth', { value: 1400 });
+    document.body.append(canvas, realCanvas);
+    try {
+      widget.render({ properties: { showPopOverOnEventClick: binding('{{true}}') } });
+      await waitCal();
+      const content = await waitFor(() => {
+        const el = document.querySelector('.rbc-event-content');
+        expect(el).toBeTruthy();
+        return el;
+      });
+
+      fireEvent.click(content);
+
+      await waitFor(() => expect(document.querySelector('.popover.bs-popover-left')).toHaveStyle({ left: '442px' }));
+    } finally {
+      spy.mockRestore();
+      canvas.remove();
+      realCanvas.remove();
+    }
   });
 
   test('[Calendar-VIEW-002] clicking the view switcher updates currentView and fires onCalendarViewChange', async () => {

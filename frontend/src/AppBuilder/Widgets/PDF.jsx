@@ -70,12 +70,14 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (!hasScrollRef.current) return;
+        // Always record visibility: the first entries (before any scroll) carry page 1's height; dropping them let
+        // a few pixels of the next page win the first scroll. Only the counter waits for the user to scroll.
         entries.forEach((entry) => {
           const page = parseInt(entry.target.getAttribute('data-page-number'), 10);
           if (Number.isNaN(page)) return;
           visibleHeights.set(page, entry.isIntersecting ? entry.intersectionRect.height : 0);
         });
+        if (!hasScrollRef.current) return;
         let bestPage = null;
         let bestHeight = 0;
         visibleHeights.forEach((visibleHeight, page) => {

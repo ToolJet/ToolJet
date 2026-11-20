@@ -26,6 +26,8 @@ const parseDate = (date, dateFormat) => {
 };
 
 const allowedCalendarViews = ['month', 'week', 'day'];
+// react-big-calendar throws on a view it does not know, so an unsupported value falls back to month.
+const toAllowedView = (view) => (allowedCalendarViews.includes(view) ? view : allowedCalendarViews[0]);
 
 export default function Calendar({
   id,
@@ -46,7 +48,7 @@ export default function Calendar({
     ? properties?.events?.map((event) => prepareEvent(event, properties.dateFormat))
     : [];
 
-  const [currentView, setCurrentView] = useState(properties.defaultView || 'month');
+  const [currentView, setCurrentView] = useState(toAllowedView(properties.defaultView));
   const defaultDate = parseDate(properties.defaultDate, properties.dateFormat);
   const todayStartTime = moment().startOf('day').toDate();
   const todayEndTime = moment().endOf('day').toDate();
@@ -98,9 +100,7 @@ export default function Calendar({
   }, []);
 
   useEffect(() => {
-    const view = allowedCalendarViews.includes(properties.defaultView)
-      ? properties.defaultView
-      : allowedCalendarViews[0];
+    const view = toAllowedView(properties.defaultView);
     if (currentView !== view || isInitialRender.current) {
       setExposedVariable('currentView', view);
       setCurrentView(view);
@@ -152,7 +152,7 @@ export default function Calendar({
         endAccessor="end"
         style={style}
         views={allowedCalendarViews}
-        defaultView={properties.defaultView || allowedCalendarViews[0]}
+        defaultView={toAllowedView(properties.defaultView)}
         view={currentView}
         onView={(view) => {
           setExposedVariable('currentView', view);
@@ -166,17 +166,20 @@ export default function Calendar({
         max={endTime}
         onSelectEvent={(calendarEvent, e) => {
           fireEvent('onCalendarEventSelect', { id, calendarEvent });
-          if (properties.showPopOverOnEventClick)
+          if (properties.showPopOverOnEventClick) {
+            // A click usually lands on the event's inset text; place the popover against the whole event box.
+            const eventRect = (e.target.closest?.('.rbc-event') ?? e.target).getBoundingClientRect();
             setEventPopoverOptions({
               ...eventPopoverOptions,
               show: true,
               offset: {
-                left: e.target.getBoundingClientRect().x,
-                top: e.target.getBoundingClientRect().y,
-                width: e.target.getBoundingClientRect().width,
-                height: e.target.getBoundingClientRect().height,
+                left: eventRect.x,
+                top: eventRect.y,
+                width: eventRect.width,
+                height: eventRect.height,
               },
             });
+          }
         }}
         onNavigate={(date) => {
           const formattedDate = moment(date).format(properties.dateFormat);

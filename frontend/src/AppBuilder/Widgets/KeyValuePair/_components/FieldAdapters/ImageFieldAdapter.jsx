@@ -8,7 +8,8 @@ export const ImageField = ({ value, field }) => {
   return (
     <ImageRenderer
       value={value}
-      width={field?.width || '100%'}
+      // The renderer appends px; a '100%' default became the invalid '100%px', which the browser ignored as auto.
+      width={field?.width || undefined}
       height={field?.height || '100%'}
       borderRadius={field?.borderRadius}
       objectFit={field?.objectFit}

@@ -446,6 +446,29 @@ describe('Cascader widget', () => {
     expect(optionRow('africa')).not.toBeNull();
   });
 
+  test('[Cascader-KEY-008] a keyboard move scrolls the highlighted row into view', async () => {
+    // Break this catches: moving the highlight with the arrow keys without scrolling, so in a long list the
+    // highlighted row ends below the visible part of the menu.
+    const scrolled = [];
+    const original = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = function () {
+      scrolled.push(this.getAttribute('data-cy'));
+    };
+    try {
+      widget.render();
+      const control = await mounted();
+      await openMenu(control);
+      scrolled.length = 0;
+
+      fireEvent.keyDown(control, { key: 'ArrowDown' });
+
+      await waitFor(() => expect(scrolled.length).toBeGreaterThan(0));
+      expect(scrolled[scrolled.length - 1]).toMatch(/^cascader-option-/);
+    } finally {
+      Element.prototype.scrollIntoView = original;
+    }
+  });
+
   test('[Cascader-OPT-007] Menu highlight resets when the current level nodes or the selection change', async () => {
     // Break this catches: leaving a stale highlightedIndex after the level's nodes change, or after
     // the selection changes, by dropping either dependency of the highlight-reset effect.

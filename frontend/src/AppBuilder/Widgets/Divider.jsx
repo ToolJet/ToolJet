@@ -41,7 +41,8 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
     fontWeight: '500',
     lineHeight: '16px',
     ...(shouldWrap
-      ? {}
+      ? // A flex item cannot shrink below its longest word unless words may break.
+        { overflowWrap: 'anywhere', minWidth: 0 }
       : {
           whiteSpace: 'nowrap',
           overflow: 'hidden',

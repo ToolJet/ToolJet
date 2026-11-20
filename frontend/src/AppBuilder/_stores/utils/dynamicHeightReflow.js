@@ -930,10 +930,10 @@ export const resolveWidgetMeasuredHeight = ({
   // this value too: a stale temp written before the bump (or under a previous
   // alignment) must not pin the widget below its rendered visible height,
   // because temp.height becomes finalHeight on the next visibility flip.
+  // A grown temp is not kept: hidden without collapsing, the widget holds only its authored slot, and showing it again
+  // re-measures its content. Keeping the grown height left the widgets below where it had pushed them.
   if (!visibility) {
-    const bumped = fallbackHeight();
-    if (existingHeight != null) return Math.max(existingHeight, bumped);
-    return bumped;
+    return fallbackHeight();
   }
 
   // Hidden ancestor subtree (inactive tab pane, collapsed accordion, closed

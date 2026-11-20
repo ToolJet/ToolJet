@@ -15,11 +15,12 @@ import { isEditedDataValid } from './_utils/fieldValidity';
 // From this width the Cancel/Save bar floats with text labels; below it, it docks as an icon-only footer.
 const CTA_TEXT_MIN_WIDTH = 200;
 
-// Hosts the tooltip trigger on a wrapper so a disabled button still shows its tooltip.
-const ChangeSetButtonAnchor = ({ label, tooltipId, children }) =>
+// Hosts the tooltip trigger on a wrapper so a disabled button still shows its tooltip; the button also anchors it,
+// because focus does not reach the wrapper and keyboard users would otherwise get no tooltip.
+export const ChangeSetButtonAnchor = ({ label, tooltipId, children }) =>
   tooltipId ? (
     <span className="kv-btn-anchor" data-tooltip-id={tooltipId} data-tooltip-content={label}>
-      {children}
+      {React.cloneElement(children, { 'data-tooltip-id': tooltipId, 'data-tooltip-content': label })}
     </span>
   ) : (
     children

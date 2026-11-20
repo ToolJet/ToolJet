@@ -315,7 +315,13 @@ export const RadioButtonV2 = ({
               const inputId = `${reactId}-option-${index}`;
 
               return (
-                <label key={index} className="radio-button-container" htmlFor={inputId}>
+                <label
+                  key={index}
+                  className="radio-button-container"
+                  htmlFor={inputId}
+                  // Row layout scrolls sideways; a shrinking option would wrap and be cut by the hidden y-overflow.
+                  style={layout === 'row' ? { whiteSpace: 'nowrap', flexShrink: 0 } : undefined}
+                >
                   <span
                     data-cy={`${dataCy}-option-label-${index}`}
                     style={{

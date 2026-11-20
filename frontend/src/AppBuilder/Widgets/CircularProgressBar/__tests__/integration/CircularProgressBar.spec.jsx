@@ -132,7 +132,7 @@ describe('CircularProgressBar widget', () => {
     expect(label(container)).toHaveTextContent('50%');
     expect(dashOffset(path(container))).toBeCloseTo(circumference() / 2, 4);
     expect(root(container)).toHaveStyle({ display: 'flex' });
-    expect(inner(container)).not.toHaveClass('rotate-forever');
+    expect(svg(container)).not.toHaveClass('rotate-forever');
   });
 
   test('[CircularProgressBar-LBL-001] Auto and Custom labels follow their own sources', async () => {
@@ -216,7 +216,20 @@ describe('CircularProgressBar widget', () => {
       isLoading: true,
     });
     expect(root(container)).toHaveStyle({ display: 'flex' });
-    expect(inner(container)).toHaveClass('rotate-forever');
+    expect(svg(container)).toHaveClass('rotate-forever');
+  });
+
+  test('[CircularProgressBar-LOAD-002] the loading spin turns the ring in place, not its full-width row', async () => {
+    // Break this catches: rotating the full-width alignment row, so a left- or right-aligned ring orbits the
+    // row's centre and spins outside the widget box.
+    const { container } = widget.render({
+      properties: { loadingState: binding('{{true}}') },
+      styles: { alignment: binding('flex-start') },
+    });
+    await waitFor(() => expect(svg(container)).toBeTruthy());
+
+    expect(svg(container)).toHaveClass('rotate-forever');
+    expect(inner(container)).not.toHaveClass('rotate-forever');
   });
 
   test('[CircularProgressBar-PREC-001] actions survive no-op resolution and yield to changed matching properties', async () => {
@@ -237,7 +250,7 @@ describe('CircularProgressBar widget', () => {
       isLoading: true,
     });
     expect(root(container)).toHaveStyle({ display: 'none' });
-    expect(inner(container)).toHaveClass('rotate-forever');
+    expect(svg(container)).toHaveClass('rotate-forever');
 
     await setProperty('progress', '{{80}}');
     await setProperty('visibility', '{{false}}');
@@ -254,7 +267,7 @@ describe('CircularProgressBar widget', () => {
     );
     expect(label(container)).toHaveTextContent('80%');
     expect(root(container)).toHaveStyle({ display: 'flex' });
-    expect(inner(container)).not.toHaveClass('rotate-forever');
+    expect(svg(container)).not.toHaveClass('rotate-forever');
   });
 
   test('[CircularProgressBar-LOAD-001] loading overrides and restores the latest progress presentation', async () => {
@@ -269,7 +282,7 @@ describe('CircularProgressBar widget', () => {
     });
 
     await setProperty('loadingState', '{{true}}');
-    await waitFor(() => expect(inner(container)).toHaveClass('rotate-forever'));
+    await waitFor(() => expect(svg(container)).toHaveClass('rotate-forever'));
     expect(root(container)).not.toHaveClass('rotate-forever');
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
     expect(label(container)).toHaveTextContent(/^\s*$/);
@@ -280,7 +293,7 @@ describe('CircularProgressBar widget', () => {
     await setStyle('circleRatio', '{{0.6}}');
     await setProperty('loadingState', '{{false}}');
 
-    await waitFor(() => expect(inner(container)).not.toHaveClass('rotate-forever'));
+    await waitFor(() => expect(svg(container)).not.toHaveClass('rotate-forever'));
     expect(label(container)).toHaveTextContent('Ready');
     expect(widget.exposed()).toMatchObject({ value: 72, isLoading: false });
     expect(dashOffset(trail(container))).toBeCloseTo(circumference() * 0.4, 4);
@@ -347,7 +360,7 @@ describe('CircularProgressBar widget', () => {
     expect(canvasNode(container)).toHaveStyle({ padding: '0px' });
 
     await setProperty('loadingState', '{{true}}');
-    await waitFor(() => expect(inner(container)).toHaveClass('rotate-forever'));
+    await waitFor(() => expect(svg(container)).toHaveClass('rotate-forever'));
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
 
     await setProperty('visibility', '{{false}}');
@@ -491,8 +504,8 @@ describe('CircularProgressBar widget', () => {
     await widget.act('setLoading', true);
     expect(widget.exposed(ID)).toMatchObject({ value: 40, isLoading: true });
     expect(widget.exposed(ID2)).toMatchObject({ value: 80, isLoading: false });
-    expect(inner(container)).toHaveClass('rotate-forever');
-    expect(inner(container, HANDLE2)).not.toHaveClass('rotate-forever');
+    expect(svg(container)).toHaveClass('rotate-forever');
+    expect(svg(container, HANDLE2)).not.toHaveClass('rotate-forever');
     expect(label(container, HANDLE2)).toHaveTextContent('Second');
 
     await widget.session.store.act(async () => widget.exposed(ID2).setVisibility(false));

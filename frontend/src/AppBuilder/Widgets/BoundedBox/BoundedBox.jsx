@@ -16,6 +16,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   const [outerDivWidth, setOuterDivWidth] = useState();
   const [naturalSize, setNaturalSize] = useState(null);
   const [fittedSize, setFittedSize] = useState(null);
+  const [focusAnnotationId, setFocusAnnotationId] = useState(null);
 
   const [typeState, setType] = useState(properties.selector);
   const labels = _.isArray(properties.labels)
@@ -203,12 +204,16 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
     >
       <Annotation
         src={`${properties.imageUrl}`}
+        // D-04: a static accessible name for the image being annotated.
+        alt="Image to annotate"
         annotations={annotationsState}
         type={typeState}
         ref={annotateRef}
         value={annotationState}
         style={fittedSize ? { width: fittedSize.width, height: fittedSize.height, margin: '0 auto' } : undefined}
         onChange={(annotation) => onChange(annotation)}
+        // Without it the library ignores touch, so a finger drag only scrolls the page.
+        allowTouch
         renderSelector={({ annotation, active }) => (
           <RenderSelector annotation={annotation} active={active} fireEvent={fireEvent} />
         )}
@@ -224,6 +229,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
               darkMode={darkMode}
               selectElementStyles={selectElementStyles}
               getExposedAnnotations={getExposedAnnotations}
+              onLabelCommitted={setFocusAnnotationId}
             />
           );
         }}
@@ -237,6 +243,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
             selectElementStyles={selectElementStyles}
             labels={labels}
             getExposedAnnotations={getExposedAnnotations}
+            autoFocusLabel={annotation.data.id === focusAnnotationId}
           />
         )}
         renderContent={() => null}

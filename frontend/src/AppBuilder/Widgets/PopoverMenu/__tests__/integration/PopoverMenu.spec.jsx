@@ -252,6 +252,20 @@ describe('PopoverMenu', () => {
       await waitFor(() => expect(popup()).not.toBeInTheDocument());
     });
 
+    test('[PopoverMenu-KEY-007] Escape after a keyboard open returns focus to the trigger button', async () => {
+      // Break this catches: Radix returning focus to the trigger wrapper div (not focusable), so focus drops
+      // to the page body and the next Tab restarts from the top.
+      widget.render();
+      trigger().focus();
+      await widget.session.user.keyboard('{Enter}');
+      await waitFor(() => expect(popup()).toBeInTheDocument());
+
+      await widget.session.user.keyboard('{Escape}');
+
+      await waitFor(() => expect(popup()).not.toBeInTheDocument());
+      expect(document.activeElement).toBe(trigger());
+    });
+
     test('[PopoverMenu-TRG-007] outside interaction closes the popover regardless of the hovered flag', async () => {
       // Break this catches: never closing on outside click at all (the baseline guarantee this
       // scenario would still need even if the `hovered` guard were ever wired up correctly).

@@ -81,4 +81,33 @@ describe('BoundedBox widget', () => {
     // The box is 200x100 (mocked layout), so a 200x400 image fits at 50x100.
     await waitFor(() => expect(image()).toHaveStyle({ width: '50px', height: '100px' }));
   });
+
+  test('[BoundedBox-ACC-001] each annotation has a named delete button and a named label control', async () => {
+    // Break this catches: a clickable <span> for delete (not focusable, no name) and unnamed label selects, so a
+    // keyboard or screen-reader user cannot delete or tell annotations apart (D-04).
+    widget.render({});
+    await waitFor(() => expect(image()).toBeInTheDocument());
+    fireEvent.load(image());
+    expect(screen.getByRole('img', { name: 'Image to annotate' })).toBe(image());
+    const deleteCar = await screen.findByRole('button', { name: 'Delete annotation Car' });
+    expect(screen.getByRole('combobox', { name: 'Label for annotation Car' })).toBeInTheDocument();
+
+    deleteCar.focus();
+    await widget.session.user.keyboard('{Enter}');
+
+    await waitFor(() => expect(exposed().annotations.map((a) => a.text)).toEqual(['Tree']));
+  });
+
+  test('[BoundedBox-TOUCH-001] the annotation area listens for touch so a finger drag can draw', async () => {
+    // Break this catches: never passing allowTouch to react-image-annotation, so touch never draws and a finger
+    // drag only scrolls the page.
+    widget.render({});
+    await waitFor(() => expect(image()).toBeInTheDocument());
+
+    // The library sets its touch handlers (as ontouch* properties) on its drawing target inside the image frame.
+    const frame = image().parentElement;
+    await waitFor(() =>
+      expect([...frame.querySelectorAll('*')].some((el) => typeof el.ontouchstart === 'function')).toBe(true)
+    );
+  });
 });

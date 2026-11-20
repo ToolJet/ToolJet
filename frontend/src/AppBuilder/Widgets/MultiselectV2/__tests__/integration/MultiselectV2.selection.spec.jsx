@@ -12,8 +12,9 @@
  */
 import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { binding, drain, option } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { componentDefinition } from '@/test/app-builder';
+import { DEFAULT_PROPERTIES, DEFAULT_STYLES, createMultiselectHarness } from './multiselectV2Harness';
 import useStore from '@/AppBuilder/_stores/store';
-import { createMultiselectHarness } from './multiselectV2Harness';
 
 const harness = createMultiselectHarness();
 
@@ -526,5 +527,45 @@ describe('select-all row in a long list', () => {
 
     expect(screen.getByText('290 Alice')).toBeInTheDocument();
     expect(screen.getByText('Select all')).toBeInTheDocument();
+  });
+});
+
+describe('two Multi Selects on one page', () => {
+  beforeEach(() => harness.setup());
+  afterEach(() => harness.teardown());
+
+  test("[MultiselectV2-SEL-015] opening a menu focuses its own search box, not another open menu's", async () => {
+    // Break this catches: focusing the first search box in the document, so with another Multi Select still open
+    // the caret and typed text land in the other widget's search box.
+    harness.render({
+      properties: { label: binding('Multi A') },
+      extraComponents: {
+        ms2: componentDefinition(
+          'ms2',
+          'multiselect2',
+          'MultiselectV2',
+          { ...DEFAULT_PROPERTIES, label: binding('Multi B') },
+          { styles: DEFAULT_STYLES }
+        ),
+      },
+      also: [{ id: 'ms2', componentType: 'MultiselectV2' }],
+    });
+    await drain();
+    const [comboA, comboB] = screen.getAllByRole('combobox');
+
+    await harness.session.user.click(comboB);
+    await drain();
+    const searchB = document.activeElement;
+    expect(searchB).toHaveClass('dropdown-multiselect-widget-search-box');
+
+    // As in the bug: reach Multi A with the keyboard (no outside mousedown), so Multi B stays open.
+    comboA.focus();
+    await harness.session.user.keyboard('{Enter}');
+    await drain();
+
+    const searchBoxes = [...document.querySelectorAll('.dropdown-multiselect-widget-search-box')];
+    expect(searchBoxes.length).toBeGreaterThan(1);
+    expect(document.activeElement).toHaveClass('dropdown-multiselect-widget-search-box');
+    expect(document.activeElement).not.toBe(searchB);
   });
 });

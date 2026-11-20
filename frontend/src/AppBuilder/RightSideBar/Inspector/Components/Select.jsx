@@ -15,6 +15,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
+import isEqual from 'lodash/isEqual';
 import { sortArray } from '@/AppBuilder/Widgets/DropdownV2/utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 
@@ -60,7 +61,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
       Object.keys(option).forEach((key) => {
         if (typeof option[key]?.value === 'boolean') {
-          newOption[key]['value'] = `{{${option[key]?.value}}}`;
+          // A new object: writing into option[key] changed the saved definition in place.
+          newOption[key] = { ...option[key], value: `{{${option[key]?.value}}}` };
         }
       });
 
@@ -298,7 +300,11 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   useEffect(() => {
     const sortedOptions = sortArray(constructOptions(), sort);
-    updateOptions(sortedOptions);
+    setOptions(sortedOptions);
+    // Save only a real change: an unchanged write after an undo records a new edit and clears the redo history.
+    if (!isEqual(sortedOptions, component?.component?.definition?.properties?.options?.value)) {
+      updateAllOptionsParams(sortedOptions);
+    }
     isInitialRender.current = false;
   }, [isMultiSelect, component?.id]);
 

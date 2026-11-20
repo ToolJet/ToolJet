@@ -450,6 +450,30 @@ describe('DatetimePickerV2 widget', () => {
     expect(input().getAttribute('aria-invalid')).not.toBe('true');
   });
 
+  test('[DatetimePickerV2-NAV-001] picking a year returns to the selected month with the day marked', async () => {
+    // Break this catches: leaving react-datepicker's view on January of the picked year, so the calendar
+    // shows a month without the selected day.
+    widget.render({ properties: { defaultValue: binding('15/06/2026 10:30'), dateFormat: binding('DD/MM/YYYY') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    fireEvent.click(input());
+    const yearSelector = await waitFor(() => {
+      const el = document.querySelector('.tj-datepicker-widget-year-selector');
+      expect(el).toBeTruthy();
+      return el;
+    });
+
+    fireEvent.click(yearSelector);
+    const year2028 = await waitFor(() => {
+      const el = [...document.querySelectorAll('.react-datepicker__year-text')].find((y) => y.textContent === '2028');
+      expect(el).toBeTruthy();
+      return el;
+    });
+    fireEvent.click(year2028);
+
+    await waitFor(() => expect(document.querySelector('.react-datepicker__day--selected')?.textContent).toBe('15'));
+    expect(document.querySelector('.tj-datepicker-widget-month-selector')?.textContent).toMatch(/June/);
+  });
+
   test('[DatetimePickerV2-KEY-001] Escape in the focused input closes the open popup', async () => {
     // Break this catches: the custom input dropping react-datepicker's onKeyDown, so Escape never reaches the picker.
     widget.render({});

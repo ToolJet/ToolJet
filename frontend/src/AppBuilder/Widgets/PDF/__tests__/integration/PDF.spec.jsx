@@ -220,6 +220,25 @@ describe('PDF widget', () => {
     await waitFor(() => expect(counterText()).toBe('2 of 5'));
   });
 
+  test('[PDF-SCROLL-003] a small scroll that shows a strip of page 2 keeps the counter on page 1', async () => {
+    // Break this catches: dropping the observer's first entries (sent before any scroll), so page 1's visible
+    // height is never recorded and the first entry for page 2 wins with only a few pixels showing.
+    widget.render({ properties: { url: binding('https://example.com/doc.pdf#numPages=3') } });
+    await waitFor(() => expect(counterText()).toBe('1 of 3'));
+
+    // The observer reports the initial geometry before the user scrolls.
+    await act(async () => {
+      deliverScroll(wrapper(), new Map([[1, { ratio: 1, height: 537 }]]));
+    });
+    fireEvent.scroll(wrapper());
+    // A 300px wheel step: page 1 stays above every threshold it already crossed; only page 2 enters.
+    await act(async () => {
+      deliverScroll(wrapper(), new Map([[2, { ratio: 0.03, height: 12 }]]));
+    });
+
+    await waitFor(() => expect(counterText()).toBe('1 of 3'));
+  });
+
   test('[PDF-SCROLL-002] each instance tracks only its own scrolling — no cross-talk between two PDFs', async () => {
     // Break this catches: the observer root falling back to
     // document.querySelector('#pdf-wrapper') (the FIRST instance's wrapper) and

@@ -396,6 +396,12 @@ export const SelectRenderer = ({
               setIsFocused((prev) => !prev);
             }
           }}
+          // The menu's open state follows editing, so Escape (also from the portaled menu's search box) ends it.
+          onKeyDown={(e) => {
+            if (e.key !== 'Escape' || !menuIsOpen) return;
+            e.stopPropagation();
+            setIsFocused(false);
+          }}
         >
           <Select
             options={options}

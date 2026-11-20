@@ -11,6 +11,8 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -159,6 +161,26 @@ export const Text = function Text({
     fireEvent('onClick');
   };
 
+  const { moduleId } = useModuleContext();
+  // Only a Text the builder wired an On click to becomes a keyboard button (same rule as Icon's pointer cursor).
+  const hasClickEvent = useStore((state) =>
+    (state.eventsSlice.getEventsByComponentsId(id, moduleId) ?? []).some(
+      (event) => event?.event?.eventId === 'onClick' && !event?.event?.disabled
+    )
+  );
+  const keyboardButtonProps =
+    hasClickEvent && !isDisabled
+      ? {
+          role: 'button',
+          tabIndex: 0,
+          onKeyDown: (event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            handleClick();
+          },
+        }
+      : {};
+
   const computedStyles = {
     ...(isDynamicHeightEnabled && { minHeight: `${boxHeight}px` }),
     height: isDynamicHeightEnabled ? 'auto' : `${boxHeight}px`,
@@ -215,6 +237,7 @@ export const Text = function Text({
         fireEvent('onHover');
       }}
       onClick={handleClick}
+      {...keyboardButtonProps}
     >
       {!isLoading && (
         <div style={commonStyles} className="text-widget-section">
