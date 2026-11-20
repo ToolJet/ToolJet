@@ -23,25 +23,6 @@ const getDefaultIconFillColor = (variant, customFill = '', iconOnly = false) => 
   }
 };
 
-// Function to determine Lucide icon className
-const getLucideIconClassName = (variant, iconOnly = false) => {
-  switch (variant) {
-    case 'primary':
-    case 'dangerPrimary':
-      return 'tw-text-icon-on-solid';
-    case 'secondary':
-    case 'ghostBrand':
-      return 'tw-text-icon-brand';
-    case 'outline':
-    case 'ghost':
-      return iconOnly ? 'tw-text-icon-strong' : 'tw-text-icon-default';
-    case 'dangerSecondary':
-      return 'tw-text-icon-danger';
-    default:
-      return '';
-  }
-};
-
 // Storybook configuration
 export default {
   title: 'Components/Button',
@@ -377,6 +358,41 @@ LucideIconShowcase.parameters = {
     description: {
       story:
         'Comprehensive showcase of Lucide icons with mixed variants and sizes. Demonstrates the flexibility of the Button component with different visual styles and dimensions.',
+    },
+  },
+};
+
+// Compare disabled icon colors, custom fills, and the loading spinner in either Storybook theme.
+export const DisabledButtons = () => (
+  <div className="tw-flex tw-flex-wrap tw-gap-3">
+    <Button disabled leadingIcon="smilerectangle">
+      Rocket button
+    </Button>
+    <Button disabled trailingIcon="smilerectangle" fill="var(--icon-brand)">
+      Rocket button
+    </Button>
+    <Button disabled isLucid leadingIcon="rocket">
+      Lucide button
+    </Button>
+    <Button disabled isLucid trailingIcon="rocket" fill="var(--icon-brand)">
+      Lucide button
+    </Button>
+    <Button disabled variant="dangerPrimary" leadingIcon="smilerectangle">
+      Danger primary
+    </Button>
+    <Button disabled variant="outline" leadingIcon="smilerectangle">
+      Outline
+    </Button>
+    <Button disabled isLoading fill="var(--icon-danger)">
+      Loading
+    </Button>
+  </div>
+);
+DisabledButtons.parameters = {
+  docs: {
+    description: {
+      story:
+        'Disabled primary and danger primary buttons fade their leading or trailing icons to 50% of icon/on-solid when no custom fill is provided. Custom fills and loading spinner colors remain unchanged; outline icons keep their default color.',
     },
   },
 };
