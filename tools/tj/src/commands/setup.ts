@@ -37,6 +37,8 @@ async function syncSubmodules(repo: Repo) {
   }
 }
 
+const APP_SCANNER = 'server/ee/packages/app-scanner';
+
 const lockHash = (dir: string) => createHash('sha1').update(readFileSync(join(dir, 'package-lock.json'))).digest('hex');
 
 type Lock = { packages?: Record<string, { version?: string; optional?: boolean; peer?: boolean }> };
@@ -187,7 +189,10 @@ export async function setup(repo: Repo, o: SetupOpts) {
   }
 
   // root: husky, lint-staged and typescript, so pre-commit hooks work in the worktree
-  await installDeps(repo, state, ['root', 'server', 'plugins', ...(o.frontend || o.app ? ['frontend'] : [])], o.force);
+  const dirs = ['root', 'server', 'plugins', ...(o.frontend || o.app ? ['frontend'] : [])];
+  // EE: the app security scanner is its own package; without its deps every server-side scan fails.
+  if (existsSync(join(repo.root, APP_SCANNER, 'package-lock.json'))) dirs.push(APP_SCANNER);
+  await installDeps(repo, state, dirs, o.force);
   saveState(repo.root, { ...state, branch: repo.branch });
   if (existsSync(envTest)) await dbSetup(repo, 'test');
   else ui.warn('no .env.test — skipping test DB');
