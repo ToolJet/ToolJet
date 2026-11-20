@@ -6,6 +6,7 @@ import { LICENSE_FIELD, LICENSE_LIMIT } from '../constants';
 import { AppsRepository } from '@modules/apps/repository';
 import { APP_TYPES } from '@modules/apps/constants';
 import { isUUID } from 'class-validator';
+import { secretsMatch } from '@helpers/secret-compare.helper';
 import { AppVersion } from '@entities/app_version.entity';
 
 @Injectable()
@@ -159,7 +160,7 @@ export class WebhookGuard implements CanActivate {
     if (scheme !== 'Bearer' || !token) return false;
 
     // Method 1: Workflow-specific API token (existing behavior)
-    if (token === workflowApp.workflowApiToken) {
+    if (secretsMatch(token, workflowApp.workflowApiToken)) {
       return true;
     }
 
@@ -186,6 +187,6 @@ export class WebhookGuard implements CanActivate {
 
     // STEP 3: Validate the token
     const externalApiAccessToken = this.configService.get<string>('EXTERNAL_API_ACCESS_TOKEN');
-    return token === externalApiAccessToken;
+    return secretsMatch(token, externalApiAccessToken);
   }
 }
