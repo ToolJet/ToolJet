@@ -103,6 +103,7 @@
       "js-yaml": "^4.3.2",
       "serialize-javascript": "^7.1.4"
     },
-    "tmp": "^0.2.7"
+    "tmp": "^0.2.7",
+    "minimatch@^9.0.0": "^9.0.7"
   }
 }
