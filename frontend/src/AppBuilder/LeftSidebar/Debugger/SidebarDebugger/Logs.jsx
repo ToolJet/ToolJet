@@ -132,9 +132,11 @@ function Logs({ logProps, idx }) {
                   <HighlightSecondWord text={title} />
                 </span>
               </div>
-              {logProps?.type == 'Custom Log' && <div className="font-weight-500">{message}</div>}
+              {logProps?.type == 'Custom Log' && (
+                <div className="debugger-log-message debugger-log-message--custom">{message}</div>
+              )}
               <span
-                className={cx('font-weight-500', {
+                className={cx('debugger-log-message', {
                   'text-tomato-9': !logProps?.isQuerySuccessLog,
                   'color-light-green': logProps?.isQuerySuccessLog,
                 })}
