@@ -254,3 +254,10 @@
   outline: none !important;
   visibility: hidden !important;
 }
+
+/* A pack popup's drop area (a Rocket Dialog body) sits in the popup layer, outside .canvas-container. */
+.tj-cc-popup-host .show-grid {
+  outline: 1px dotted var(--border-accent-strong);
+  background-image: linear-gradient(to right, var(--border-weak) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border-weak) 1px, transparent 1px);
+}

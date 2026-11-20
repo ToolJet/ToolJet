@@ -1,31 +1,25 @@
 ---
-applyTo: "server/data-migrations/**/*"
+applyTo: "server/migrations/data/**/*"
 ---
 
-# Data Migration — Logging Guidelines
+# Data Migration — Review Rules
 
-New migrations MUST include progress logging to help monitor deployments.
+Full writing rules: the Migrations section of `server/AGENTS.md`.
 
-## Required Logging Pattern
+## Phase rules
 
-1. **Baseline** — Before processing, query and log total records:
-   `[START] {Action} | Total: {Total}`
+The data phase runs while old and new code serve. Flag:
 
-2. **Progress** — During execution, log using current/total format:
-   `[PROGRESS] {Current}/{Total} ({Percentage}%)`
+- Index builds, triggers, foreign keys `NOT VALID` or `VALIDATE` in `up()`. They go in `beforeCommit()`.
+- `DROP`, `RENAME`, `SET NOT NULL`, `ADD CHECK` or `LOCK TABLE`. They go in a cleanup migration.
+- Schema changes (new tables or columns). They go in a schema migration.
 
-3. **Confirmation** — Log final success:
-   `[SUCCESS] {Action} finished.`
+## Progress logging
 
-## Reviewer Checklist
+New data migrations log progress, so operators and the super-admin Migrations page can follow a deploy:
 
-- [ ] Count query establishes a **total** before processing
-- [ ] Log statements use the **`x/total`** ratio pattern
-- [ ] Clear **success** log at the end
-- [ ] No silent bulk updates without console feedback
+1. `{MIGRATION_NAME}: [START] {action}: {total}` — after a count query sets the total.
+2. `{MIGRATION_NAME}: [PROGRESS] {current}/{total} ({percent}%)` — inside the batch loop. The run tracker parses the `current/total` ratio.
+3. `{MIGRATION_NAME}: [SUCCESS] {action} finished.`
 
-## When Generating Migration Code
-
-- Include a count query for the denominator before processing.
-- Wrap iterative logic in a batch/loop that logs `current/total` progress.
-- Avoid silent bulk updates that provide no console feedback.
+Flag silent bulk updates. Example: `server/migrations/data/1783372800000-MoveNavigationLayoutStylesToStyles.ts`.

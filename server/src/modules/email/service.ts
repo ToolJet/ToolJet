@@ -17,10 +17,13 @@ import {
   SendUserBannedEmailPayload,
   SendWorkspaceBannedEmailPayload,
   SendAppBuildCompletedEmailPayload,
+  SendVersionReviewEmailPayload,
+  SendWorkflowApprovalEmailPayload,
 } from '@modules/email/dto';
 import { EmailUtilService } from './util.service';
 import { IEmailService } from './interfaces/IService';
 import { WhiteLabellingUtilService } from '@modules/white-labelling/util.service';
+import { Organization } from '@entities/organization.entity';
 
 handlebars.registerHelper('capitalize', function (value) {
   return value.charAt(0);
@@ -67,7 +70,7 @@ export class EmailService implements IEmailService {
     this.emailUtilService.mailTransport(smtp);
   }
 
-  async sendEmail(to: string, subject: string, templateData: any) {
+  async sendEmail(to: string | string[], subject: string, templateData: any) {
     await this.emailUtilService.sendEmail(to, subject, templateData);
   }
 
@@ -85,6 +88,57 @@ export class EmailService implements IEmailService {
 
   protected stripTrailingSlash(hostname: string) {
     return hostname?.endsWith('/') ? hostname.slice(0, -1) : hostname;
+  }
+
+  protected async getOrganization(organizationId: string): Promise<Pick<Organization, 'slug'>> {
+    return Organization.findOneOrFail({ where: { id: organizationId }, select: ['slug'] });
+  }
+
+  protected async getOrganizationHost(organizationId: string): Promise<string> {
+    return getHostForOrganization(organizationId, this.customDomainCacheService);
+  }
+
+  async sendWorkflowApprovalEmail(payload: SendWorkflowApprovalEmailPayload) {
+    const { to, organizationId, workflowName, nodeName, description, reminder } = payload;
+    if (!to.length) return;
+
+    const [whiteLabelSettings, smtp, organization, host] = await Promise.all([
+      this.emailUtilService.retrieveWhiteLabelSettings(organizationId),
+      this.emailUtilService.retrieveSmtpSettings(),
+      this.getOrganization(organizationId),
+      this.getOrganizationHost(organizationId),
+    ]);
+    const whiteLabelText = whiteLabelSettings?.white_label_text;
+    const whiteLabelLogo = whiteLabelSettings?.white_label_logo;
+    const effectiveHost = this.stripTrailingSlash(host);
+    const basePath = this.SUB_PATH ? `/${this.SUB_PATH.replace(/^\/+|\/+$/g, '')}/` : '/';
+    const approvalDashboardUrl = `${effectiveHost}${basePath}${organization.slug}/workflows/approvals`;
+    const subject = reminder
+      ? `Reminder: approval requested for ${workflowName}`
+      : `Approval requested: ${workflowName}`;
+    const htmlEmailContent = this.compileTemplate('workflow_approval.hbs', {
+      workflowName,
+      nodeName,
+      description,
+      reminder,
+      approvalDashboardUrl,
+      whiteLabelText,
+      whiteLabelLogo,
+      tooljetEdition: this.tooljetEdition,
+    });
+
+    const emailData = {
+      bodyHeader: subject,
+      bodyContent: htmlEmailContent,
+      footerText: 'You have received this email because an approval request requires your attention',
+      whiteLabelText,
+      whiteLabelLogo,
+    };
+    await Promise.all(
+      to.map((recipient) =>
+        this.emailUtilService.sendEmailWithSettings(recipient, subject, emailData, smtp, whiteLabelText)
+      )
+    );
   }
   async sendWelcomeEmail(payload: SendWelcomeEmailPayload) {
     const {
@@ -366,6 +420,52 @@ export class EmailService implements IEmailService {
     return await this.sendEmail(to, subject, {
       bodyContent: htmlEmailContent,
       footerText: 'You have received this email because you asked ToolJet to build an app',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
+  }
+
+  /**
+   * Version reviews: someone was asked to review, mentioned, or the review they opened or review
+   * was decided on or released. The button opens the review in the editor (?review=<id>).
+   */
+  async sendVersionReviewEmail(payload: SendVersionReviewEmailPayload) {
+    const { to, name, actorName, reason, note, appName, appSlug, workspaceSlug, organizationId } = payload;
+    const { reviewId, reviewTitle, versionName } = payload;
+    await this.init(organizationId);
+    const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
+    const basePath = this.SUB_PATH ? this.SUB_PATH : '/';
+    const reviewUrl = `${this.stripTrailingSlash(host)}${basePath}${workspaceSlug}/apps/${appSlug}?review=${reviewId}`;
+    const copy = {
+      review_requested: [`${actorName} asked you to review ${versionName} of ${appName}`, 'Review changes'],
+      mentioned: [`${actorName} mentioned you in a review of ${appName}`, 'Open the review'],
+      approved: [`${actorName} approved ${versionName} of ${appName}`, 'Open the review'],
+      changes_requested: [`${actorName} asked for changes to ${versionName} of ${appName}`, 'See what to change'],
+      released: [`${actorName} released ${versionName} of ${appName}`, 'Open the review'],
+      overridden: [`${actorName} allowed ${versionName} of ${appName} to go out without approval`, 'Open the review'],
+      rereview_requested: [
+        `${actorName} made the changes and asked you to review ${versionName} of ${appName} again`,
+        'Review changes',
+      ],
+      approvals_reset: [
+        `${versionName} of ${appName} was changed after it was approved, so its approval was reset`,
+        'Open the review',
+      ],
+    }[reason];
+    if (!copy) return;
+    const [headline, buttonText] = copy;
+    const htmlEmailContent = this.compileTemplate('version_review.hbs', {
+      name: name || '',
+      headline,
+      buttonText,
+      reviewTitle,
+      note,
+      reviewUrl,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+    });
+    return await this.sendEmail(to, headline, {
+      bodyContent: htmlEmailContent,
+      footerText: `You have received this email because you take part in reviews of ${appName}`,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });

@@ -9,6 +9,9 @@ on:
         description: "Branch to scan"
         default: "main"
 
+permissions:
+  contents: read
+
 jobs:
   analyze:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'

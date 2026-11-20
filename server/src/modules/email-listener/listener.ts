@@ -48,6 +48,10 @@ export class EmailListener {
           await this.emailService.sendAppBuildCompletedEmail(payload);
           break;
 
+        case EMAIL_EVENTS.SEND_VERSION_REVIEW_EMAIL:
+          await this.emailService.sendVersionReviewEmail(payload);
+          break;
+
         default:
           this.logger.warn(`Unhandled email event type: ${type}`);
       }
