@@ -1,6 +1,9 @@
 import { DynamicModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { RateLimitModule } from '@modules/rate-limit/module';
+import { RedisThrottlerStorage } from '@modules/rate-limit/redis-throttler-storage';
+import { webhookThrottlerOptions } from '@modules/rate-limit/webhook-throttler.options';
 import { BullModule } from '@nestjs/bullmq';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
@@ -153,15 +156,11 @@ export class WorkflowsModule extends SubModule {
           WorkflowExecutionNode,
           WorkflowBundle,
         ]),
+        // Counted in Redis so the webhook limit holds across all server pods
         ThrottlerModule.forRootAsync({
-          imports: [ConfigModule],
-          inject: [ConfigService],
-          useFactory: (config: ConfigService) => [
-            {
-              ttl: config.get('WEBHOOK_THROTTLE_TTL') || 60000,
-              limit: config.get('WEBHOOK_THROTTLE_LIMIT') || 100,
-            },
-          ],
+          imports: [ConfigModule, RateLimitModule],
+          inject: [ConfigService, RedisThrottlerStorage],
+          useFactory: webhookThrottlerOptions,
         }),
         // Register BullMQ queues for workflow scheduling and execution
         BullModule.registerQueue({
