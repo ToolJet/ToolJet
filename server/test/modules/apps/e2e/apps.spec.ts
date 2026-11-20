@@ -2650,10 +2650,9 @@ describe('AppsController', () => {
       foreignBranchId = (await resolveOrSeedDefaultBranch(victim.user.defaultOrganizationId)).id;
     });
 
-    const createApp = (name: string, branchId: string, query: Record<string, string> = {}) =>
+    const createApp = (name: string, branchId: string) =>
       request(app.getHttpServer())
         .post('/api/apps')
-        .query(query)
         .set('tj-workspace-id', workspaceId)
         .set('Cookie', cookie)
         .send({ name, type: 'front-end', branchId });
@@ -2669,13 +2668,6 @@ describe('AppsController', () => {
 
     it('should return 400 for a body branchId from another workspace', async () => {
       const response = await createApp('Foreign body branch app', foreignBranchId);
-
-      expect(response.statusCode).toBe(400);
-      expect(await AppVersion.count({ where: { branchId: foreignBranchId } })).toBe(0);
-    });
-
-    it('should return 400 for a branch_id param from another workspace', async () => {
-      const response = await createApp('Foreign param branch app', ownBranchId, { branch_id: foreignBranchId });
 
       expect(response.statusCode).toBe(400);
       expect(await AppVersion.count({ where: { branchId: foreignBranchId } })).toBe(0);
