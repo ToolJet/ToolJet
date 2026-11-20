@@ -11,7 +11,7 @@ const renderSidebar = () =>
   render(
     <BaseLeftSidebar
       renderAISideBarTrigger={({ handleSelectedSidebarItem }) => (
-        <button type="button" aria-label="AI agent" onClick={() => handleSelectedSidebarItem('tooljetai')} />
+        <button type="button" aria-label="AI chat" onClick={() => handleSelectedSidebarItem('tooljetai')} />
       )}
       renderAIChat={() => <div>AI chat body</div>}
     />
@@ -30,7 +30,7 @@ test('puts the AI rail item first, above Pages', () => {
   const rail = container.querySelector('.left-sidebar');
   const buttons = within(rail).getAllByRole('button');
 
-  expect(buttons[0]).toHaveAccessibleName('AI agent');
+  expect(buttons[0]).toHaveAccessibleName('AI chat');
   expect(buttons[1]).toHaveAccessibleName('Pages');
 });
 
@@ -38,18 +38,18 @@ test('renders no floating chat button', () => {
   const { container } = renderSidebar();
 
   expect(container.querySelector('.ai-builder-fab')).toBeNull();
-  expect(screen.getAllByRole('button', { name: 'AI agent' })).toHaveLength(1);
+  expect(screen.getAllByRole('button', { name: 'AI chat' })).toHaveLength(1);
 });
 
 test('opens the chat in the left panel and closes it from its rail icon', async () => {
   renderSidebar();
 
-  await userEvent.click(screen.getByRole('button', { name: 'AI agent' }));
+  await userEvent.click(screen.getByRole('button', { name: 'AI chat' }));
 
   expect(screen.getByText('AI chat body').closest('.sidebar-h-100-popover')).not.toBeNull();
   expect(useStore.getState()).toMatchObject({ selectedSidebarItem: 'tooljetai', isSidebarOpen: true });
 
-  await userEvent.click(screen.getByRole('button', { name: 'AI agent' }));
+  await userEvent.click(screen.getByRole('button', { name: 'AI chat' }));
 
   expect(useStore.getState().isSidebarOpen).toBe(false);
 });

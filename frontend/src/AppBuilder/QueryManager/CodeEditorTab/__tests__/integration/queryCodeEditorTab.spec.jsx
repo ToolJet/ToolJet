@@ -74,11 +74,11 @@ const typeInTab = (text) =>
     view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text } });
   });
 
-const openTab = (queryId) => {
+const openTab = (queryId, { darkMode = false } = {}) => {
   // The editor is routed in the app (its keybindings read the location).
   render(
     <MemoryRouter>
-      <QueryCodeEditorTabs />
+      <QueryCodeEditorTabs darkMode={darkMode} />
     </MemoryRouter>
   );
   act(() => {
@@ -140,6 +140,13 @@ describe('opening the code editor in a new tab', () => {
     expect(tab.document.title).toContain('jsQuery');
     expect(tabEditor().state.doc.toString()).toBe('return 1;');
     expect(tab.document.head.textContent).toContain('.tj-app-style');
+  });
+
+  // UA-19 / UC-17: the editor marks dark mode on its own root, not on <body>, so the tab must be told.
+  test("follows the editor's dark mode in the tab", () => {
+    openTab('q-js', { darkMode: true });
+
+    expect([...tab.document.body.classList]).toEqual(expect.arrayContaining(['theme-dark', 'dark-theme']));
   });
 
   test("lays the editor out for the tab, not for the app's query panel", () => {

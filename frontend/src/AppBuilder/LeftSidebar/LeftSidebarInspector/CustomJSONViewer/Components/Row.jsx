@@ -10,7 +10,7 @@ import ObjectNode from './ObjectNode';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { ToolTip } from '@/_components/ToolTip';
-import { copyToClipboard, extractComponentName, formatPathForCopy } from '../../utils';
+import { appendPathSegment, copyToClipboard, formatPathForCopy } from '../../utils';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
@@ -103,6 +103,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList = [], darkMode, 
                     copyToClipboard(formatPathForCopy(absolutePath), false);
                   }}
                   className="copy-to-clipboard json-viewer-action-icon"
+                  data-cy="copy-path-to-clipboard"
                 >
                   <Link2 size={12} />
                 </button>
@@ -132,7 +133,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList = [], darkMode, 
               label={key}
               value={val}
               level={level + 1}
-              absolutePath={`${absolutePath}.${key}`}
+              absolutePath={appendPathSegment(absolutePath, key)}
               iconsList={iconsList}
               darkMode={darkMode}
               showPathCopy={showPathCopy}
@@ -149,7 +150,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList = [], darkMode, 
                 label={`${index}`}
                 value={item}
                 level={level + 1}
-                absolutePath={`${absolutePath}.${index}`}
+                absolutePath={appendPathSegment(absolutePath, index)}
                 iconsList={iconsList}
                 darkMode={darkMode}
                 showPathCopy={showPathCopy}

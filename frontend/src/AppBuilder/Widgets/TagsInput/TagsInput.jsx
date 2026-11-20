@@ -901,6 +901,7 @@ const TagsInput = ({
             onKeyDown={handleKeyDown}
             menuPlacement="auto"
             menuPortalTarget={document.body}
+            classNames={{ menuPortal: () => 'tj-widget-overlay' }}
             minMenuHeight={300}
             // Custom props
             allowNewTags={allowNewTags}

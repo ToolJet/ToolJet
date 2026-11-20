@@ -10,8 +10,7 @@ import { sql } from '@codemirror/lang-sql';
 import _ from 'lodash';
 import cx from 'classnames';
 import { sass, sassCompletionSource } from '@codemirror/lang-sass';
-import { okaidia } from '@uiw/codemirror-theme-okaidia';
-import { githubLight } from '@uiw/codemirror-theme-github';
+import { getCodeTheme } from './codeTheme';
 import { getSuggestionsForMultiLine } from './autocompleteExtensionConfig';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import CodeHinter from './CodeHinter';
@@ -168,7 +167,7 @@ const MultiLineCodeEditor = (props) => {
 
   const heightInPx = typeof height === 'string' && height?.includes('px') ? height : `${height}px`;
 
-  const theme = darkMode ? okaidia : githubLight;
+  const theme = getCodeTheme(darkMode);
   const langExtention = langSupport[lang] ?? null;
 
   const setupConfig = useMemo(

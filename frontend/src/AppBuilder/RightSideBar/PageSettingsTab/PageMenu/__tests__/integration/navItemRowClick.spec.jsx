@@ -51,3 +51,26 @@ test('clicking a URL nav item opens its configuration without opening the URL', 
   unmount();
   open.mockRestore();
 });
+
+// Break this catches: with "Edit page" open for a page, no row in the Pages list is highlighted,
+// so nothing says which page the right panel belongs to.
+test('the page being edited in the right panel is the highlighted row', () => {
+  const { container, unmount } = render(
+    <ModuleProvider moduleId="canvas" isModuleMode={false}>
+      <PageMenuItem page={HOME} darkMode={false} />
+      <PageMenuItem page={DOCS} darkMode={false} />
+    </ModuleProvider>
+  );
+  const [homeRow, docsRow] = container.querySelectorAll('.page-menu-item');
+
+  fireEvent.click(docsRow);
+
+  expect(docsRow.classList.contains('is-selected')).toBe(true);
+  expect(homeRow.classList.contains('is-selected')).toBe(false);
+
+  act(() => useStore.getState().setRightSidebarOpen(false));
+
+  expect(docsRow.classList.contains('is-selected')).toBe(false);
+  // Before the store resets: a mounted row cannot render without page settings.
+  unmount();
+});

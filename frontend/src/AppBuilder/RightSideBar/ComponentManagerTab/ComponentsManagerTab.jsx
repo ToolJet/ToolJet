@@ -10,7 +10,8 @@ import { CustomComponentsTab } from './CustomComponentsTab';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
-import { Button } from '@/components/ui/Button/Button';
+import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
+import { NoMatchesEmptyState } from '@/AppBuilder/Shared/Panel/PanelEmptyState';
 import { ModuleManager } from '@/modules/Modules/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { useLicenseStore } from '@/_stores/licenseStore';
@@ -19,7 +20,7 @@ import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
 import Beta from '@/_ui/Beta';
 import './styles.scss';
-import { getComponentPickerClassName } from '@/AppBuilder/panelLayout';
+import { getComponentPickerClassName, getPanelCloseLabel, SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 
 // Simple error boundary component for module errors
 class ModuleErrorBoundary extends React.Component {
@@ -174,24 +175,15 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surfac
   function segregateSections() {
     if (filteredComponents.length === 0) {
       return (
-        <div className="empty">
-          <p className="empty-title">{t('widgetManager.noResults', 'No results found')}</p>
-          <p className={`empty-subtitle ${darkMode ? 'text-white-50' : 'text-secondary'}`}>
-            {t(
-              'widgetManager.tryAdjustingFilterMessage',
-              "Try adjusting your search or filter to find what you're looking for."
-            )}
-          </p>
-          <button
-            className=" btn-sm tj-tertiary-btn mt-3"
-            onClick={() => {
-              setSearchQuery('');
-              filterComponents('');
-            }}
-          >
-            {t('widgetManager.clearQuery', 'clear query')}
-          </button>
-        </div>
+        <NoMatchesEmptyState
+          term={searchQuery}
+          description="Search matches component names."
+          onClearSearch={() => {
+            setSearchQuery('');
+            filterComponents('');
+          }}
+          dataCy="components-no-matches"
+        />
       );
     }
 
@@ -227,6 +219,12 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surfac
   // Remove renderSection, replace with Tabs/Tab logic below
 
   const searchBox = () => {
+    const searchName =
+      activeTab === 'components'
+        ? t('globals.searchComponents', 'Search widgets')
+        : activeTab === 'custom'
+          ? t('globals.searchCustomComponents', 'Search components')
+          : t('globals.searchModules', 'Search modules');
     return (
       <div className={`input-icon tj-app-input ${isModuleEditor ? '' : 'mt-3'}`}>
         <SearchBox
@@ -237,13 +235,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surfac
             setSearchQuery('');
             filterComponents('');
           }}
-          placeholder={
-            activeTab === 'components'
-              ? t('globals.searchComponents', 'Search widgets')
-              : activeTab === 'custom'
-                ? t('globals.searchCustomComponents', 'Search components')
-                : t('globals.searchModules', 'Search modules')
-          }
+          placeholder={searchName}
+          ariaLabel={searchName}
           customClass={`tj-widgets-search-input tj-text-xsm`}
           showClearButton={false}
           width={266}
@@ -256,39 +249,25 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surfac
     <div className={`${getComponentPickerClassName(surface)} ${shouldFreeze ? 'disabled' : ''}`}>
       {isModuleEditor || edition === 'ce' ? (
         <>
-          <div className="panel-header">
-            <span className="panel-header-title">Components</span>
-            <div className="panel-header-actions">
-              <Button
-                iconOnly
-                leadingIcon="x"
-                onClick={handleToggle}
-                variant="ghost"
-                size="medium"
-                isLucid={true}
-                data-cy="components-close-button"
-              />
-            </div>
-          </div>
+          <PanelHeader
+            title={SIDEBAR_ITEMS.components.name}
+            onClose={handleToggle}
+            closeLabel={getPanelCloseLabel('components')}
+            closeDataCy="components-close-button"
+            divider={false}
+          />
           {searchBox()}
           <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
         </>
       ) : (
         <>
-          <div className="panel-header">
-            <span className="panel-header-title">Add new component</span>
-            <div className="panel-header-actions">
-              <Button
-                iconOnly
-                leadingIcon="x"
-                onClick={handleToggle}
-                variant="ghost"
-                size="medium"
-                isLucid={true}
-                data-cy="components-close-button"
-              />
-            </div>
-          </div>
+          <PanelHeader
+            title={SIDEBAR_ITEMS.components.name}
+            onClose={handleToggle}
+            closeLabel={getPanelCloseLabel('components')}
+            closeDataCy="components-close-button"
+            divider={false}
+          />
           <Tabs
             activeKey={activeTab}
             onSelect={(key) => {

@@ -21,7 +21,7 @@ import * as Sentry from '@sentry/react';
 import { getErrorContext } from '@/_ui/ErrorBoundary/errorReport';
 import useCustomComponentDevPreviewSync from '@/AppBuilder/_hooks/useCustomComponentDevPreviewSync';
 import { AppBuilderTooltipProvider } from '@/AppBuilder/_contexts/AppBuilderTooltipContext';
-import { getAppBuilderTypographyStyle } from '@/AppBuilder/panelLayout';
+import useAppBuilderChrome from '@/AppBuilder/_hooks/useAppBuilderChrome';
 
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
@@ -85,6 +85,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   }, [isEditorLoading, appId, currentVersionId]);
 
   useCustomComponentDevPreviewSync(appId);
+  useAppBuilderChrome(currentMode === 'edit', darkMode);
 
   //TODO: This can be added to the mode slice and set based on the mode
   if (isEditorLoading) {
@@ -95,10 +96,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     );
   }
   return (
-    <div
-      className={cx('wrapper', { editor: currentMode === 'edit' })}
-      style={currentMode === 'edit' ? getAppBuilderTypographyStyle() : undefined}
-    >
+    <div className={cx('wrapper', { editor: currentMode === 'edit' })}>
       {/* Last-resort boundary — catches anything the panel-level boundaries miss. */}
       <FallbackBoundary label="App builder" location="Editor" darkMode={darkMode}>
         <AppBuilderTooltipProvider>
@@ -116,7 +114,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
               </Suspense>
               <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
               <QueryPanel darkMode={darkMode} />
-              <QueryCodeEditorTabs />
+              <QueryCodeEditorTabs darkMode={darkMode} />
               <RightSideBar darkMode={darkMode} />
             </DndProvider>
             <Popups darkMode={darkMode} />

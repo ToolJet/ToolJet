@@ -615,6 +615,7 @@ export const DropdownV2 = ({
             inputValue={searchInputValue}
             placeholder={placeholder}
             menuPortalTarget={document.body}
+            classNames={{ menuPortal: () => 'tj-widget-overlay' }}
             menuWidthStyle={menuWidthStyle}
             components={{
               MenuList: CustomMenuList,

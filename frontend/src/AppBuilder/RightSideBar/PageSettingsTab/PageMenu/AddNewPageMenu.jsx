@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { Overlay, Popover } from 'react-bootstrap';
 import { Button } from '@/components/ui/Button/Button';
+import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import useStore from '@/AppBuilder/_stores/store';
-import { AddEditPagePopup } from './AddNewPagePopup';
+import { AddEditPagePopup, getPagePopupPopperConfig } from './AddNewPagePopup';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
@@ -41,9 +42,9 @@ export function AddNewPageMenu({ darkMode }) {
         New page
       </Button>
 
-      <Button
+      <PanelIconButton
         ref={addPageBtnRef}
-        iconOnly
+        label="Add nav item"
         leadingIcon="ellipsis-vertical"
         isLucid
         fill="var(--icon-strong)"
@@ -140,6 +141,7 @@ export function AddNewPageMenu({ darkMode }) {
         target={newPageBtnRef.current}
         show={newPagePopupConfig.show && newPagePopupConfig?.mode == 'add'}
         placement="right-start"
+        popperConfig={getPagePopupPopperConfig(newPageBtnRef.current)}
         rootClose
         onHide={() => {
           setNewPagePopupConfig({ show: false, mode: null, type: null });

@@ -1,13 +1,10 @@
 @import "./colors.scss";
 @import "./designtheme.scss";
+@import "../AppBuilder/Shared/Panel/mixins";
 
 $border-radius: 4px;
 
 .query-manager {
-  .row.header {
-    border-top: 3px solid var(--slate5);
-  }
-
   .react-select__value-container {
     margin-bottom: 0px !important;
   }
@@ -101,7 +98,7 @@ $border-radius: 4px;
   color: var(--runtime-panel-muted);
   background: var(--runtime-panel-background);
   border-top: 1px solid var(--runtime-panel-border);
-  font: 400 13px/1.35 Inter, ui-sans-serif, system-ui, sans-serif;
+  font: 500 12px/18px 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
   z-index: 12;
   transition: width 180ms ease;
 }
@@ -122,6 +119,10 @@ $border-radius: 4px;
   &:hover {
     color: var(--runtime-panel-text);
     background: transparent;
+  }
+
+  &:focus-visible {
+    border-radius: 4px;
   }
 }
 
@@ -189,9 +190,9 @@ $border-radius: 4px;
   height: 16px;
   padding: 0 4px;
   border-radius: 8px;
-  color: white;
-  background: var(--background-danger-strong);
-  font-size: 10px;
+  color: var(--text-on-solid);
+  background: var(--background-error-strong);
+  font-size: var(--app-builder-small-font-size, 10px);
   line-height: 16px;
 }
 
@@ -237,22 +238,9 @@ $border-radius: 4px;
   }
 }
 
-.right-sidebar-query-close {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  z-index: 5;
-}
-
 .query-header-control {
   height: 28px !important;
   min-height: 28px;
-}
-
-.query-header-control--close > div,
-.query-header-control--close svg {
-  width: var(--query-header-close-icon-size) !important;
-  height: var(--query-header-close-icon-size) !important;
 }
 
 .query-documentation-link {
@@ -278,34 +266,28 @@ $border-radius: 4px;
   z-index: 10050 !important;
 }
 
+.tooljetdb-query-details {
+  --tdb-select-placeholder: var(--text-placeholder);
+}
+
 .query-manager--right {
   display: flex;
   flex-direction: column;
   min-height: 0;
   background: var(--background-surface-layer-01);
 
-  .query-manager-header--right {
-    position: relative;
-    display: grid;
-    grid-template-rows: 32px 32px;
-    grid-template-columns: minmax(0, 1fr) auto;
-    row-gap: 6px;
-    flex: 0 0 80px;
-    min-height: 80px;
-    padding: 10px 52px 0 16px !important;
-    border-top: 0;
-    border-bottom: 1px solid var(--border-weak);
+  // The 48px panel header (Shared/Panel/PanelHeader) and the 36px tab strip below it.
+  .query-manager-header {
+    flex: 0 0 auto;
     background: var(--background-surface-layer-01);
-    z-index: 2;
 
-    > .col {
-      display: contents;
+    // The name editor's error note hangs below the title, so the title does not clip.
+    .query-manager-header__title {
+      display: flex;
+      overflow: visible;
     }
 
     .query-name-breadcrum {
-      grid-row: 1;
-      grid-column: 1;
-      align-self: center;
       min-width: 0;
       margin-left: 0 !important;
 
@@ -322,7 +304,8 @@ $border-radius: 4px;
         min-width: 0;
         padding: 0 !important;
         color: var(--text-default);
-        font-size: 13px;
+        font-size: 14px;
+        font-weight: 500;
         line-height: 20px;
       }
 
@@ -337,7 +320,8 @@ $border-radius: 4px;
       .query-inline-name-input {
         overflow-x: auto;
         color: var(--text-default);
-        font-size: 13px;
+        font-size: 14px;
+        font-weight: 500;
         line-height: 20px;
       }
 
@@ -357,8 +341,8 @@ $border-radius: 4px;
         border-radius: 4px;
         background: var(--background-surface-layer-01);
         box-shadow: var(--elevation-100-box-shadow);
-        color: var(--text-danger);
-        font-size: 10px;
+        color: var(--editor-text-danger, var(--text-danger));
+        font-size: var(--app-builder-small-font-size, 10px);
         line-height: 14px;
         white-space: nowrap;
       }
@@ -373,7 +357,8 @@ $border-radius: 4px;
           background: transparent !important;
           box-shadow: none;
           color: var(--text-default);
-          font-size: 13px;
+          font-size: 14px;
+          font-weight: 500;
           line-height: 20px;
 
           &:hover {
@@ -382,53 +367,39 @@ $border-radius: 4px;
         }
       }
     }
+  }
 
-    .query-manager-tabs {
-      grid-row: 2;
-      grid-column: 1 / -1;
-      align-self: end;
-      min-width: 0;
-      height: 32px;
-      gap: 4px !important;
+  // Same spec as the panel tabs (tj-tabs): 12px/500, placeholder text, default text and an accent
+  // underline when active.
+  .query-manager-tabs {
+    display: flex;
+    gap: 4px;
+    height: 36px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border-weak);
+  }
+
+  .query-manager-tab {
+    height: 36px;
+    padding: 0 8px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--text-placeholder);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    cursor: pointer;
+    transition: color 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      color: var(--text-default);
     }
 
-    .query-header-buttons {
-      display: flex;
-      grid-row: 1;
-      grid-column: 2;
-      align-items: center;
-      align-self: center;
-      gap: 4px;
-      width: auto;
-      height: 32px;
-      margin: 0;
-    }
-
-    .query-manager-tab--right {
-      position: relative;
-      height: 32px !important;
-      padding: 0 10px;
-      border: 0;
-      border-bottom: 2px solid transparent;
-      background: transparent;
-      color: var(--text-placeholder);
-      font-size: var(--query-tab-font-size, 13px);
-      font-weight: var(--query-tab-font-weight, 400);
-      line-height: var(--query-tab-line-height, 20px);
-      cursor: pointer;
-      transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease;
-
-      &:hover {
-        border-radius: 6px 6px 0 0;
-        background: var(--interactive-overlays-fill-hover);
-        color: var(--text-default);
-      }
-
-      &.is-active {
-        border-bottom-color: var(--border-accent-strong);
-        background: transparent;
-        color: var(--text-default);
-      }
+    &.is-active {
+      border-bottom-color: var(--border-accent-strong);
+      color: var(--text-default);
     }
   }
 
@@ -440,7 +411,6 @@ $border-radius: 4px;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
-    scrollbar-gutter: stable;
     scrollbar-width: thin;
     scrollbar-color: var(--slate7) transparent;
     background: var(--query-panel-background);
@@ -715,13 +685,18 @@ $border-radius: 4px;
 
       &:hover,
       &:focus,
-      &:focus-visible,
-      &:focus-within,
-      &.cm-focused {
+      &:focus-within {
         border-color: var(--query-control-border) !important;
         outline: none !important;
         background: var(--query-control-background) !important;
         box-shadow: none !important;
+      }
+
+      // Keyboard focus and a focused code field show the editor's one ring (Shared/Panel/panel.scss).
+      &:focus-visible,
+      &.cm-focused,
+      &:has(input[id^='react-select-']:focus-visible) {
+        @include focus-ring;
       }
     }
 
@@ -846,17 +821,15 @@ $border-radius: 4px;
   }
 }
 
-[class*='query-select-motion__option--is-focused']:not([class*='query-select-motion__option--is-selected']) {
-  background: var(--background-surface-layer-01) !important;
-}
-
+// Selected, keyboard-focused and hovered options each need a visible state (QE-51).
 [class*='query-select-motion__option--is-selected'] {
-  background: var(--background-surface-layer-01) !important;
+  background: var(--interactive-default) !important;
   color: var(--text-default) !important;
 }
 
+[class*='query-select-motion__option--is-focused'],
 [class*='query-select-motion__option']:hover {
-  background: var(--background-surface-layer-01) !important;
+  background: var(--interactive-hover) !important;
 }
 
 @keyframes runtime-panel-content-enter {
@@ -899,7 +872,7 @@ $border-radius: 4px;
 
 
   &#query-manager {
-    border-top-width: 2px;
+    border-top-width: 1px;
     transition: border-color 0.3s;
   }
 
@@ -1136,12 +1109,6 @@ $border-radius: 4px;
         gap: 10px;
         padding: 0.25rem 1rem;
       }
-
-      .query-header-buttons {
-        gap: 4px;
-        flex: 0 0 auto;
-        width: auto;
-      }
     }
   }
 
@@ -1232,7 +1199,6 @@ $border-radius: 4px;
                   height: 28px;
                   border: 1px solid var(--indigo9) !important;
                   background-color: var(--indigo2);
-                  box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
                   overflow: hidden;
                   text-overflow: clip;
                 }
@@ -1291,7 +1257,6 @@ $border-radius: 4px;
                 height: 28px;
                 border: 1px solid var(--indigo9);
                 background-color: inherit;
-                box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
               }
 
             }
@@ -1985,7 +1950,7 @@ $border-radius: 4px;
 
       &.active {
         box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
-        color: var(--indigo9) !important;
+        color: var(--editor-text-accent, var(--indigo9)) !important;
       }
     }
   }
@@ -2032,7 +1997,6 @@ $border-radius: 4px;
       border-radius: 6px !important;
 
       &:focus-within {
-        box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
         border: 1px solid var(--indigo9) !important;
         background-color: #F8FAFF;
         position: relative;
@@ -2096,7 +2060,6 @@ $border-radius: 4px;
 
     .codehinter-default-input:focus-within,
     .query-manager-input-elem>input:focus {
-      box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
       border: 1px solid var(--indigo9) !important;
       background-color: #F8FAFF;
 
@@ -2257,7 +2220,6 @@ $border-radius: 4px;
     }
 
     .code-hinter.codehinter-plugins:focus-within {
-      box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
       border: 1px solid var(--indigo9) !important;
       border-radius: 6px;
       background-color: #F8FAFF;
@@ -2546,7 +2508,7 @@ $border-radius: 4px;
   border: 1px solid var(--tomato-05, #FDD8D3);
   background: var(--tomato-02, #FFF8F7);
   padding: 8px;
-  font-size: 10px;
+  font-size: var(--app-builder-small-font-size, 10px);
   font-weight: 400;
   color: var(--tomato-09, #E54D2E);
 
@@ -3022,29 +2984,6 @@ $border-radius: 4px;
     background-color: var(--background-surface-layer-01);
   }
 
-  .queries-panel-header {
-    display: flex;
-    flex: 0 0 48px;
-    align-items: center;
-    justify-content: space-between;
-    height: 48px;
-    padding: 8px 10px 8px 16px;
-    border-bottom: 1px solid var(--border-weak);
-  }
-
-  .queries-panel-title {
-    color: var(--text-primary);
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 20px;
-  }
-
-  .queries-panel-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
   .queries-header {
     display: flex;
     flex: 0 0 44px;
@@ -3075,13 +3014,13 @@ $border-radius: 4px;
 
   .query-search--left {
     width: 100%;
-    height: 28px !important;
+    height: 32px !important;
 
     .query-manager-search-box-wrapper {
       min-width: 0;
 
       .input-icon {
-        height: 28px;
+        height: 32px;
         margin-bottom: 0 !important;
 
         .input-icon-addon {
@@ -3090,37 +3029,37 @@ $border-radius: 4px;
           width: 16px;
           min-width: 16px;
           height: 16px;
-          margin: 6px 0 6px 8px;
+          margin: 8px 0 8px 8px;
           padding: 1.33px 0 1.33px 1.33px;
 
           .icon {
             width: 13.33px;
             height: 13.33px;
-            stroke: var(--slate8);
+            stroke: var(--icon-default);
           }
         }
 
         .form-control {
-          height: 28px;
+          height: 32px;
           padding-top: 4px !important;
           padding-right: 8px;
           padding-bottom: 4px !important;
           padding-left: 12px !important;
-          border: 1px solid var(--slate7) !important;
-          color: var(--slate12);
+          border: 1px solid var(--border-default) !important;
+          border-radius: 8px !important;
+          color: var(--text-default);
           font-size: 12px;
           font-weight: 400;
           line-height: 20px;
 
           &::placeholder {
-            color: var(--slate9);
+            color: var(--text-placeholder);
           }
 
           &:focus {
             border-color: var(--query-search-focus-border) !important;
             outline: none;
             background-color: var(--query-search-focus-background);
-            box-shadow: var(--query-search-focus-shadow) !important;
           }
         }
 
@@ -3187,17 +3126,22 @@ $border-radius: 4px;
     flex-direction: row;
     align-items: center;
     width: 100%;
-    height: 40px;
-    padding: 8px 10px !important;
+    height: 32px;
+    padding: 4px 10px !important;
     border: 1px solid transparent;
-    border-radius: 7px;
+    border-radius: 6px;
     color: var(--slate12);
     font-weight: 500;
     cursor: pointer;
     --tblr-gutter-x: 0rem;
 
     &:hover {
-      background: var(--background-surface-layer-02) !important;
+      background: var(--interactive-hover) !important;
+    }
+
+    // The ⋮ menu is hidden (d-none) on rows that aren't selected; hovering any row reveals it (QL-49).
+    &:hover .query-rename-delete-btn {
+      display: flex !important;
     }
 
     .query-name {
@@ -3205,7 +3149,7 @@ $border-radius: 4px;
       flex: 1;
       overflow: hidden;
       font-weight: 400;
-      font-size: 13px;
+      font-size: 12px;
       line-height: 20px;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -3306,14 +3250,19 @@ $border-radius: 4px;
       &:hover,
       &:active,
       &:focus,
-      &:focus-visible,
       &:focus-within,
-      &.cm-focused,
       &.is-open {
         border: var(--query-control-border-width) solid var(--query-control-border) !important;
         outline: none !important;
         background: var(--query-control-background) !important;
         box-shadow: none !important;
+      }
+
+      // Keyboard focus and a focused code field show the editor's one ring (Shared/Panel/panel.scss).
+      &:focus-visible,
+      &.cm-focused,
+      &:has(input[id^='react-select-']:focus-visible) {
+        @include focus-ring;
       }
     }
 
@@ -3395,7 +3344,7 @@ $border-radius: 4px;
 // mode), the same token as the left panel. The legacy `.query-manager .header` / `.preview-section`
 // rules paint these with --base and --slate3; this block comes last and is scoped deeper, so it wins.
 .right-sidebar-query-configuration .query-manager--right {
-  .query-manager-header--right,
+  .query-manager-header,
   .preview-section .preview-toggle,
   .preview-section .preview-content,
   .preview-data-container {

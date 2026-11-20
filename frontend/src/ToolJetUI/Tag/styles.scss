@@ -15,7 +15,7 @@
     border: 1px solid var(--base);
     background: var(--base);
 
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     line-height: 20px;
     text-align: center;
     font-weight: 500;

@@ -62,6 +62,7 @@ const renderPostgres = (options) =>
         optionsChanged={() => {}}
         optionchanged={() => {}}
         queryName="pgQuery"
+        surface="right"
         isEditMode
       />
     </ModuleProvider>
@@ -131,7 +132,7 @@ describe.each(SQL_CODE_FIELDS)('%s', (kind, key, editorType, ownLabel) => {
   const dataSource = { id: `ds-${kind}`, kind, name: kind, options: {} };
   const schema = { properties: { [key]: { key, type: 'codehinter', editorType, label: ownLabel } } };
 
-  const renderForm = () => {
+  const renderForm = ({ surface = 'right' } = {}) => {
     act(() => {
       useStore.setState((state) => {
         state.dataQuery.queries.modules.canvas = [
@@ -150,6 +151,7 @@ describe.each(SQL_CODE_FIELDS)('%s', (kind, key, editorType, ownLabel) => {
           optionsChanged={() => {}}
           optionchanged={() => {}}
           queryName="sqlQuery"
+          surface={surface}
           isEditMode
         />
       </ModuleProvider>
@@ -165,6 +167,16 @@ describe.each(SQL_CODE_FIELDS)('%s', (kind, key, editorType, ownLabel) => {
     expect(container.querySelector('.codehinter-popup-icon')).toBeNull();
     // "Code" replaces the field's own label.
     if (ownLabel) expect(screen.queryByText(ownLabel)).toBeNull();
+  });
+
+  // Workflow query nodes reuse this form without a surface: they keep the field's own label and the
+  // popup editor, as on main.
+  test('outside the App Builder (no surface) keeps its own label and the popup editor', () => {
+    const { container } = renderForm({ surface: null });
+
+    expect(screen.queryByText('Code')).toBeNull();
+    expect(container.querySelector('.codehinter-popup-icon')).toBeInTheDocument();
+    if (ownLabel) expect(screen.getByText(ownLabel)).toBeInTheDocument();
   });
 });
 

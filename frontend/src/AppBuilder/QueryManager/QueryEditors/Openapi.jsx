@@ -2,7 +2,7 @@ import React from 'react';
 import Select from '@/_ui/Select';
 import DOMPurify from 'dompurify';
 import { withTranslation } from 'react-i18next';
-import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import { querySelectStyle } from '@/_ui/Select/styles';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
 const operationColorMapping = {
@@ -285,7 +285,7 @@ class OpenapiComponent extends React.Component {
                     width="100%"
                     customOption={this.renderHostOptions}
                     placeholder={this.props.t('openApi.selectHost', 'Select a host')}
-                    styles={queryManagerSelectComponentStyle(this.props.darkMode, '100%')}
+                    styles={querySelectStyle(this.props.surface, this.props.darkMode, '100%')}
                     useCustomStyles={true}
                     isDisabled={!!this.props.selectedDataSource.options?.host?.value}
                   />
@@ -305,7 +305,7 @@ class OpenapiComponent extends React.Component {
                   width="100%"
                   customOption={this.renderOperationOption}
                   placeholder={this.props.t('openApi.selectOperation', 'Select an operation')}
-                  styles={queryManagerSelectComponentStyle(this.props.darkMode, '100%')}
+                  styles={querySelectStyle(this.props.surface, this.props.darkMode, '100%')}
                   useCustomStyles={true}
                 />
 

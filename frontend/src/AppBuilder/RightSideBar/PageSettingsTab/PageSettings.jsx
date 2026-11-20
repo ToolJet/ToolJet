@@ -21,13 +21,13 @@ import Select from '@/_ui/Select';
 import { DeletePageConfirmationModal } from './PageMenu/DeletePageConfirmationModal';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { Button } from '@/components/ui/Button/Button';
+import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { ToolTip as InspectorTooltip } from '../Inspector/Elements/Components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
-import { getPageSettingsSections } from '@/AppBuilder/panelLayout';
+import { getPageSettingsSections, getPanelCloseLabel, SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 import './PageMenu/style.scss';
 import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
@@ -125,7 +125,6 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
             classNames="page-handler"
           />
         ),
-        <AddNewPageMenu key="new-page" darkMode={darkMode} />,
       ],
     },
   ];
@@ -166,30 +165,24 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
   ];
 
   return (
-    <div className="inspector pages-settings">
+    <div className={cx('inspector pages-settings', { 'pages-settings--navigation': isNavigationSurface })}>
       <div>
-        <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
-          <span className="panel-header-title">{isNavigationSurface ? 'Pages' : 'Page configuration'}</span>
-          <div className="panel-header-actions">
-            <Button
-              iconOnly
-              leadingIcon="x"
-              onClick={handleToggle}
-              variant="ghost"
-              size="medium"
-              isLucid={true}
-              data-cy="pages-close-button"
-            />
-          </div>
-        </div>
-        <div className={cx({ disabled: shouldFreeze })}>
+        <PanelHeader
+          title={isNavigationSurface ? SIDEBAR_ITEMS.pages.name : 'Page configuration'}
+          onClose={handleToggle}
+          closeLabel={getPanelCloseLabel(isNavigationSurface ? 'pages' : 'page')}
+          closeDataCy="pages-close-button"
+          divider={false}
+          className={cx({ disabled: shouldFreeze })}
+        />
+        <div className={cx('pages-settings__tabs', { disabled: shouldFreeze })}>
           <Tabs activeKey={activeTab} onSelect={setActiveTab} id={`page-settings-${surface}`}>
             <Tab className="page-selector-panel-body" eventKey="properties" title="Properties">
               <div className="tj-text-xsm color-slate12 ">
                 {propertySections.includes('page-list') && (
-                  <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
+                  <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} isTitleCase={false} />
                 )}
-                <Accordion items={appHeaderMenuItems} />
+                <Accordion items={appHeaderMenuItems} isTitleCase={false} />
                 {/* <Accordion items={devices} /> */}
               </div>
             </Tab>
@@ -200,6 +193,11 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
             </Tab>
           </Tabs>
         </div>
+        {isNavigationSurface && (
+          <div className={cx('pages-settings__footer', { disabled: shouldFreeze })}>
+            <AddNewPageMenu darkMode={darkMode} />
+          </div>
+        )}
         <DeletePageConfirmationModal darkMode={darkMode} />
         {appPagePermissionEnabled && (
           <AppPermissionsModal
@@ -246,7 +244,7 @@ const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
         }),
       },
     ];
-    return <Accordion key={style} items={items} />;
+    return <Accordion key={style} items={items} isTitleCase={false} />;
   });
 });
 
@@ -319,6 +317,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
         </label>
         <label className={`form-switch`}>
           <input
+            aria-label="Show app title"
             className="form-check-input"
             type="checkbox"
             checked={hasAppPagesHeaderAndLogoEnabled ? !hideHeader : true}
@@ -344,6 +343,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
         </label>
         <label className={`form-switch`}>
           <input
+            aria-label="Show logo"
             className="form-check-input"
             type="checkbox"
             checked={hasAppPagesHeaderAndLogoEnabled ? !hideLogo : true}
@@ -452,7 +452,7 @@ const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }
           </div>
           {position == 'side' && style !== 'text' && style !== 'icon' && (
             <div data-param="collapsable" className="d-flex justify-content-between align-items-center pb-2">
-              <label className="form-label font-weight-400 mb-0">Collapsable</label>
+              <label className="form-label font-weight-400 mb-0">Collapsible</label>
               <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
                 <ToggleGroup
                   onValueChange={(value) => {
@@ -488,6 +488,7 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
         <label className="form-label font-weight-400 mb-0">Show on desktop</label>
         <label className={`form-switch`}>
           <input
+            aria-label="Show on desktop"
             className="form-check-input"
             type="checkbox"
             checked={showOnDesktop}
@@ -502,6 +503,7 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
         <label className="form-label font-weight-400 mb-0">Show on mobile</label>
         <label className={`form-switch`}>
           <input
+            aria-label="Show on mobile"
             className="form-check-input"
             type="checkbox"
             checked={showOnMobile}
@@ -560,6 +562,7 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
             {!forceCodeBox && (
               <div className="form-switch m-0">
                 <input
+                  aria-label="Hide navigation menu"
                   className="form-check-input"
                   type="checkbox"
                   checked={isPagesSidebarHidden}

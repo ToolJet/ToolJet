@@ -158,7 +158,11 @@ const RatingIcon = ({
 
   if (tooltip) {
     return (
-      <OverlayTrigger placement="bottom" delay={{ show: 250, hide: 400 }} overlay={<Tooltip>{tooltip}</Tooltip>}>
+      <OverlayTrigger
+        placement="bottom"
+        delay={{ show: 250, hide: 400 }}
+        overlay={<Tooltip className="tj-widget-overlay">{tooltip}</Tooltip>}
+      >
         {getAnimatedStar()}
       </OverlayTrigger>
     );

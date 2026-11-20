@@ -19,7 +19,6 @@ describe('Toggle Switch — csa facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-ToggleSwitch-CSA-App-${Date.now().toString().slice(-6)}`);
         cy.openApp();
         cy.dragAndDropWidget('Toggle Switch', 500, 100); // source: toggleswitchv2.js:3
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the CSA from toggleswitch1 (On click)', () => {

@@ -37,21 +37,24 @@ const GlobalSettings = ({ darkMode, onClose, onBackToSearch, isModuleEditor = fa
         {/* Header */}
         <GlobalSettingsHeader darkMode={darkMode} onClose={onClose} onBackToSearch={onBackToSearch} />
 
-        {/* Main Content Section */}
-        <div className="global-settings-main-content">
-          {/* Slug and maintenance mode are app-launch concepts that do not apply to modules */}
-          {!isModuleEditor && (
-            <>
-              <SlugInput />
-              <MaintenanceMode darkMode={darkMode} />
-            </>
-          )}
-          <AppExport darkMode={darkMode} isModuleEditor={isModuleEditor} />
-        </div>
+        {/* The body scrolls, so its scrollbar never moves the pinned header's close button. */}
+        <div className="global-settings-body">
+          {/* Main Content Section */}
+          <div className="global-settings-main-content">
+            {/* Slug and maintenance mode are app-launch concepts that do not apply to modules */}
+            {!isModuleEditor && (
+              <>
+                <SlugInput />
+                <MaintenanceMode darkMode={darkMode} />
+              </>
+            )}
+            <AppExport darkMode={darkMode} isModuleEditor={isModuleEditor} />
+          </div>
 
-        {/* Canvas Styles Accordion */}
-        <div className={cx('global-settings-accordion', { disabled: shouldFreeze })}>
-          <Accordion items={accordionItems} />
+          {/* Canvas Styles Accordion */}
+          <div className={cx('global-settings-accordion', { disabled: shouldFreeze })}>
+            <Accordion items={accordionItems} />
+          </div>
         </div>
       </div>
     </ModuleProvider>

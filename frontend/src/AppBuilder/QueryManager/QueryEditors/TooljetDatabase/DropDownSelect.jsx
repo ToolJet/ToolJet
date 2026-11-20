@@ -70,7 +70,10 @@ const DropDownSelect = ({
   placeholder = '',
   dataCy = 'show-ds-popover-button',
 }) => {
-  const dropdownMotion = getQueryPopoverMotion('dropdown');
+  // Workflow TJDB nodes reuse this select; only the App Builder (body.app-builder-chrome) animates it.
+  const dropdownMotion = document.body.classList.contains('app-builder-chrome')
+    ? getQueryPopoverMotion('dropdown')
+    : { className: '', transition: false };
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
   const [showMenu, setShowMenu] = useShowPopover(
@@ -371,7 +374,14 @@ const DropDownSelect = ({
                       selected?.label
                     )
                   ) : showPlaceHolder ? (
-                    <span style={{ color: '#9e9e9e', fontSize: '12px', fontWeight: '400', lineHeight: '20px' }}>
+                    <span
+                      style={{
+                        color: 'var(--tdb-select-placeholder, #9e9e9e)',
+                        fontSize: '12px',
+                        fontWeight: '400',
+                        lineHeight: '20px',
+                      }}
+                    >
                       {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer
                         ? topPlaceHolder
                         : placeholder

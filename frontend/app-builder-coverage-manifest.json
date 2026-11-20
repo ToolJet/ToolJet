@@ -33,7 +33,8 @@
     "src/AppBuilder/_stores/slices/inspectorSlice.js": "inspector-configuration",
     "src/AppBuilder/_stores/slices/rightSideBarSlice.js": "inspector-configuration",
     "src/AppBuilder/_stores/slices/undoRedoSlice.js": "collaboration-history",
-    "src/AppBuilder/_stores/slices/multiplayerSlice.js": "collaboration-history"
+    "src/AppBuilder/_stores/slices/multiplayerSlice.js": "collaboration-history",
+    "src/AppBuilder/_hooks/useAppBuilderChrome.js": "builder-shell"
   },
   "exceptions": []
 }

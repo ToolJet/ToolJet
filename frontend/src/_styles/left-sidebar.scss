@@ -5,6 +5,267 @@
 // Left Sidebar Main Styles
 // =========================
 .left-sidebar {
+  height: 100%;
+  width: 48px;
+  position: fixed;
+  z-index: 2;
+  left: 0;
+  overflow-x: hidden;
+  flex: 1 1 auto;
+  background-clip: border-box;
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid var(--border-weak);
+  background-color: var(--background-surface-layer-01);
+
+  .accordion-item {
+    border: solid var(--slate5);
+    border-width: 1px 0px 1px 0px;
+    overflow: visible;
+  }
+
+  .sidebar-svg-icon {
+    height: 18px;
+    width: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.tooljetai-icon {
+      &:hover {
+        border-radius: 6px;
+        background: linear-gradient(315deg,
+            rgba(252, 95, 112, 0.12) 0%,
+            rgba(142, 78, 198, 0.12) 100%);
+      }
+    }
+  }
+
+  .left-sidebar-item {
+    transition: all 0.2s ease-in-out;
+    height: 32px;
+    width: 32px;
+    gap: 0;
+
+    &:hover {
+      .debugger-badge {
+        display: none;
+      }
+    }
+
+    &.sidebar-item--active {
+      background: var(--background-accent-weak);
+
+      svg {
+        color: var(--icon-accent);
+      }
+    }
+  }
+
+  .sidebar-item {
+    height: 32px;
+    width: 32px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--indigo4);
+
+    &.tooljetai-icon {
+      border-radius: 6px;
+      background: linear-gradient(315deg,
+          rgba(252, 95, 112, 0.12) 0%,
+          rgba(142, 78, 198, 0.12) 100%);
+    }
+  }
+
+  .left-sidebar-stack-bottom {
+    width: 48px;
+    position: fixed;
+    bottom: 5px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+  }
+
+  .popover {
+    position: fixed;
+    left: 48px;
+    top: 55px;
+    overflow: auto;
+    max-height: 60%;
+  }
+
+  .datasources-popover {
+    top: 160px;
+    width: 200px;
+
+    .add-btn {
+      border: none;
+      margin-top: -4px;
+    }
+  }
+
+  .debugger-popover {
+    top: 220px;
+    cursor: pointer;
+  }
+
+  #global-settings-popover {
+    .card-body {
+      background-color: var(--base) !important;
+    }
+  }
+
+  .global-settings-popover {
+    top: 260px;
+    max-width: 350px;
+  }
+
+  .zoom-popover {
+    top: 500px;
+  }
+
+  .sidebar-zoom {
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .show {
+    display: block;
+  }
+
+  .hide {
+    display: none;
+  }
+
+  .dark-mode {
+    transform: scale(0.7);
+  }
+
+  .no-border {
+    border: 0;
+  }
+
+  .comment-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    transform: translate(50%, -50%);
+    transform-origin: 100% 0%;
+  }
+
+  // Same Beta pill as the components panel, scaled onto the 16px search glyph.
+  .search-icon .code-search-beta-tag {
+    position: absolute;
+    top: -7px;
+    right: -2px;
+    z-index: 1;
+    pointer-events: none;
+    transform: scale(0.75);
+    transform-origin: top right;
+  }
+
+  .left-sidebar-inspector {
+    .card-body {
+      padding: 1rem 0rem 1rem 1rem;
+    }
+  }
+
+  .left-sidebar-page-selector {
+    .add-new-page-button-container {
+      width: 100%;
+      margin-top: 10px;
+    }
+  }
+
+  .debugger-badge {
+    position: fixed;
+    margin-top: -0.5rem;
+    margin-left: 1.5rem;
+    height: 20px;
+    width: 20px;
+    font-weight: 400;
+  }
+
+  .queryData {
+    &.close {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s cubic-bezier(0.5, 0, 0.1, 1);
+    }
+
+    &.open {
+      transition: max-height 0.25s cubic-bezier(0.5, 0, 0.1, 1);
+      overflow: hidden;
+    }
+
+    .react-json-view {
+      .object-key-val {
+        margin-top: 0;
+      }
+
+      .icon-container+span {
+        margin-top: -0.14rem;
+
+        +span {
+          transform: translateY(-0.2rem);
+        }
+      }
+
+      .brace-row>span {
+        transform: translateY(-0.2rem);
+      }
+    }
+  }
+
+  .iopen {
+    transform: rotate(90deg);
+    transition: 0.12s;
+  }
+
+  .datasources-container,
+  .variables-container {
+    height: 50%;
+    overflow-y: scroll;
+    scrollbar-width: none;
+  }
+
+  .datasources-container {
+    bottom: 0;
+    height: 500px;
+    border: solid rgba(101, 109, 119, 0.16);
+    border-width: 1px 0px 1px 0px;
+
+    .datasources-header {
+      border: solid rgba(0, 0, 0, 0.125);
+      border-width: 0px 0px 1px 0px;
+    }
+
+    tr {
+      border-color: #f1f1f1;
+    }
+  }
+
+  .variables-container::-webkit-scrollbar-thumb,
+  .datasources-container::-webkit-scrollbar-thumb {
+    background: transparent;
+    height: 0;
+    width: 0;
+  }
+
+  .variables-container::-webkit-scrollbar,
+  .datasources-container::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
+    height: 0;
+  }
+}
+
+// The App Builder rail. Dashboard, settings and data-source pages keep the shared rail above.
+.editor .left-sidebar {
   --left-rail-panel-hover: #f8f9fc;
   --left-rail-text: #222631;
   --left-rail-muted: #747d8f;
@@ -123,16 +384,19 @@
     }
   }
 
+  // 12px labels outgrow the 42px item ("Libraries" is 48px), so the label spans the 52px rail. No inherited
+  // 0.2px tracking: it pushed "Libraries" and "Settings" to within 2-4px of the rail edges.
   .left-sidebar-item-label {
     position: absolute;
-    right: 1px;
-    bottom: 3px;
-    left: 1px;
+    right: -5px;
+    bottom: 1px;
+    left: -5px;
     overflow: hidden;
     color: var(--left-rail-muted);
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 400;
-    line-height: 1;
+    letter-spacing: 0;
+    line-height: 14px;
     text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -245,9 +509,9 @@
   // Same Beta pill as the components panel, scaled onto the 16px search glyph.
   .search-icon .code-search-beta-tag {
     position: absolute;
-    // Off the glyph's top-right corner, badge-style, so the pill never covers the magnifier.
-    top: -10px;
-    right: -14px;
+    // Off the glyph's top-right corner, badge-style, 2px clear of the magnifier (UC-18).
+    top: -14px;
+    right: -16px;
     z-index: 1;
     pointer-events: none;
     transform: scale(0.75);
@@ -350,7 +614,7 @@
   }
 }
 
-.left-sidebar.theme-dark {
+.editor .left-sidebar.theme-dark {
   --left-rail-panel-hover: #252b36;
   --left-rail-text: #f3f5f9;
   --left-rail-muted: #a8b0bf;
@@ -1255,10 +1519,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-sizing: border-box;
-  padding: 7px 5px;
-  gap: 3px;
-  width: 54px;
+  padding-top: 8px;
+  width: 48px;
   border-right: 1px solid var(--border-weak);
 }
 

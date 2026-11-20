@@ -171,7 +171,8 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
                   autoFocus
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search"
+                  placeholder="Search components"
+                  aria-label="Search components"
                   data-cy="manage-mobile-visibility-search"
                 />
                 <InputGroupAddon align="inline-end">

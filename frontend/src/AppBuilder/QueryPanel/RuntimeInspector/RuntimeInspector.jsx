@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 
 import useStore from '@/AppBuilder/_stores/store';
+import { NoMatchesEmptyState } from '@/AppBuilder/Shared/Panel/PanelEmptyState';
+import PanelSectionHeader from '@/AppBuilder/Shared/Panel/PanelSectionHeader';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
@@ -34,6 +36,7 @@ import {
   copyToClipboard,
   extractComponentName,
   formatPathForCopy,
+  splitPath,
 } from '@/AppBuilder/LeftSidebar/LeftSidebarInspector/utils';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import {
@@ -44,8 +47,10 @@ import {
   getPathCategory,
   isEntityPath,
   isPathWithin,
+  containsSelectedPath,
 } from './runtimeInspectorUtils';
 import RuntimePanelCloseButton from '@/AppBuilder/QueryPanel/RuntimePanelCloseButton';
+import { getRuntimeSearchName } from '@/AppBuilder/panelLayout';
 import RuntimeFilterSelect from '@/AppBuilder/QueryPanel/RuntimeFilterSelect';
 import './styles.scss';
 
@@ -97,7 +102,7 @@ const useInspectedValue = (path) => {
 
   if (!path) return undefined;
   if (path.startsWith('components.')) {
-    const componentId = getComponentIdFromName(path.split('.')[1]);
+    const componentId = getComponentIdFromName(splitPath(path)[1]);
     // Deleted, or on another page: nothing to show (and no component for Go to / Delete to act on).
     if (!componentId) return undefined;
     const parentId = getComponentDefinition(componentId)?.component?.parent;
@@ -113,7 +118,12 @@ const EntryList = ({ entries, depth, selectedPath, onSelect, expanded, onToggle,
   entries.map((entry) => {
     const path = getEntryPath(entry);
     const hasChildren = entry.children?.length > 0;
-    const isOpen = hasChildren && (forceExpand || expanded.has(path) || isPathWithin(selectedPath, path));
+    const isOpen =
+      hasChildren &&
+      (forceExpand ||
+        expanded.has(path) ||
+        isPathWithin(selectedPath, path) ||
+        containsSelectedPath(entry, selectedPath));
     return (
       <React.Fragment key={entry.id}>
         <div
@@ -133,6 +143,7 @@ const EntryList = ({ entries, depth, selectedPath, onSelect, expanded, onToggle,
             type="button"
             className="runtime-inspector__entry-label"
             onClick={() => onSelect(path)}
+            title={entry.name}
             data-cy={`inspector-${generateCypressDataCy(entry.name)}-subnode-label`}
           >
             <span className="runtime-inspector__entry-icon">
@@ -198,7 +209,7 @@ const CopyButton = ({ label, icon: Icon, onCopy, dataCy }) => {
 const DetailHeader = ({ path }) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const callbackActions = useCallbackActions() || [];
-  const segments = path.split('.');
+  const segments = splitPath(path);
   const category = getPathCategory(path);
   const entityActions = isEntityPath(path)
     ? (callbackActions.find((group) => group.for === category)?.actions ?? []).filter((action) => action.icon)
@@ -285,8 +296,8 @@ const RuntimeInspector = ({ darkMode, moduleId, appType, onClose }) => {
           <input
             value={searchValue}
             onChange={(event) => setSearchValue(event.target.value)}
-            placeholder="Search"
-            aria-label="Search inspector"
+            placeholder={getRuntimeSearchName('inspect')}
+            aria-label={getRuntimeSearchName('inspect')}
             data-cy="inspector-search-input"
           />
           {searchValue && (
@@ -321,8 +332,9 @@ const RuntimeInspector = ({ darkMode, moduleId, appType, onClose }) => {
         />
         {onClose && (
           <RuntimePanelCloseButton
+            tab="inspect"
             onClose={onClose}
-            dataCy="inspector-close-button"
+            dataCy="runtime-inspector-close-button"
             className="runtime-inspector__close--end"
           />
         )}
@@ -330,24 +342,26 @@ const RuntimeInspector = ({ darkMode, moduleId, appType, onClose }) => {
 
       <div className="runtime-inspector__body">
         <nav className="runtime-inspector__list" aria-label="Inspector entries">
-          {categories.length === 0 && <div className="runtime-inspector__muted">No matches</div>}
+          {categories.length === 0 &&
+            (searchValue ? (
+              <NoMatchesEmptyState term={searchValue} onClearSearch={() => setSearchValue('')} />
+            ) : (
+              <div className="runtime-inspector__muted">No matches</div>
+            ))}
           {categories.map((item) => {
             const Icon = CATEGORY_ICONS[item.id] ?? Blocks;
             const isCollapsed = !isSearching && category === ALL_CATEGORIES && collapsedCategories.has(item.id);
             return (
               <section key={item.id} className="runtime-inspector__group">
-                <button
-                  type="button"
+                <PanelSectionHeader
                   className="runtime-inspector__group-header"
-                  onClick={() => toggleIn(setCollapsedCategories)(item.id)}
-                  aria-expanded={!isCollapsed}
-                  data-cy={`inspector-${item.id}-expand-button`}
-                >
-                  <ChevronRight size={12} className={cx('runtime-inspector__chevron', { 'is-open': !isCollapsed })} />
-                  <Icon size={13} />
-                  <span>{getCategoryLabel(item)}</span>
-                  <span className="runtime-inspector__count">{item.children.length}</span>
-                </button>
+                  icon={<Icon size={13} />}
+                  title={getCategoryLabel(item)}
+                  count={item.children.length}
+                  open={!isCollapsed}
+                  onToggle={() => toggleIn(setCollapsedCategories)(item.id)}
+                  dataCy={`inspector-${item.id}-expand-button`}
+                />
                 {!isCollapsed &&
                   (item.children.length ? (
                     <EntryList

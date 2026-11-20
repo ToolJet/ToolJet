@@ -1,5 +1,5 @@
 /**
- * The Inspector lives in the runtime drawer, not the left panel. "State inspector" on a component, the
+ * The Inspector lives in the runtime drawer, not the left panel. "Open inspector" on a component, the
  * Inspector's Inspect menu and the Entity usage links open the drawer on its Inspector tab with that node
  * selected, and leave the left slot alone (the old 'inspect' left panel no longer exists).
  */
@@ -42,7 +42,7 @@ beforeEach(() => {
 
 afterEach(() => controls.restore());
 
-test('State inspector on a component opens the drawer on the Inspector, even from the Debugger tab', () => {
+test('Open inspector on a component opens the drawer on the Inspector, even from the Debugger tab', () => {
   fireEvent.click(tab('debugger'));
   fireEvent.click(document.querySelector('[data-cy="query-manager-toggle-button"]'));
   expect(useStore.getState().queryPanel.isQueryPaneExpanded).toBe(false);
@@ -63,4 +63,11 @@ test.each([
   });
 
   expectDrawerOnInspector(path);
+});
+
+// RT-50: every way of opening the drawer is remembered across a reload, not only the tab and toggle.
+test('a drawer opened by Open inspector stays open after a reload', () => {
+  act(() => useStore.getState().setComponentToInspect('button1'));
+
+  expect(JSON.parse(localStorage.getItem('runtimePanelPreferences'))).toMatchObject({ isExpanded: true });
 });

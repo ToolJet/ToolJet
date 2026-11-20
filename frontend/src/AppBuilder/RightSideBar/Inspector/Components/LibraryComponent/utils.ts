@@ -34,7 +34,7 @@ export const formatRevisionLabel = (revision: string | undefined): string | unde
   revision?.startsWith?.('dev:') ? 'Dev preview' : revision;
 
 // Static widget-config properties (e.g. visibility) — same section every other widget's
-// DefaultComponent.jsx panel groups into "Additional Actions". Kept separate from the
+// DefaultComponent.jsx panel groups into "Additional actions". Kept separate from the
 // manifest-driven Properties list so dynamic CCL props never crowd these out.
 export const additionalActionProps = (componentMeta: { properties?: Record<string, { section?: string }> }): string[] =>
   Object.entries(componentMeta.properties ?? {})

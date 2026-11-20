@@ -1,7 +1,6 @@
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
-import { useTranslation } from 'react-i18next';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import EntityDeleteDialog from '@/AppBuilder/Shared/EntityDelete/EntityDeleteDialog';
 import useStore from '@/AppBuilder/_stores/store';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 
@@ -13,7 +12,6 @@ export function DeletePageConfirmationModal({ darkMode }) {
 
   const deletePageGroup = useStore((state) => state.deletePageGroup);
   const deletePage = useStore((state) => state.deletePage);
-  const { t } = useTranslation();
 
   const handleClose = () => {
     toggleDeleteConfirmationModal(false);
@@ -23,10 +21,6 @@ export function DeletePageConfirmationModal({ darkMode }) {
   const handleConfirm = () => {
     deletePage(editingPage?.id);
   };
-  const message = `Are you sure you want to delete ${editingPage?.name} page?`;
-
-  const cancelButtonText = 'Cancel';
-  const confirmButtonText = 'Yes';
   if (editingPage?.isPageGroup)
     return (
       <Modal
@@ -77,32 +71,16 @@ export function DeletePageConfirmationModal({ darkMode }) {
     );
 
   return (
-    <Modal
+    <EntityDeleteDialog
       show={show}
-      animation={false}
-      onHide={handleClose}
-      size="sm"
-      centered={true}
-      contentClassName={darkMode ? 'dark-theme' : ''}
-      className="delete-page-modal"
-      backdropClassName={'delete-page-backdrop'}
-    >
-      <Modal.Header>
-        <Modal.Title>{'Delete Page'}</Modal.Title>
-        <span onClick={handleClose}>
-          <SolidIcon width="16" fill={'var(--slate12)'} name="remove" className="cursor-pointer" />
-        </span>
-      </Modal.Header>
-
-      <Modal.Body data-cy={'modal-message'}>{message}</Modal.Body>
-      <Modal.Footer className="mt-3">
-        <button className="btn" onClick={handleClose} data-cy={'modal-cancel-button'}>
-          {cancelButtonText === '' ? t('globals.cancel', 'Cancel') : cancelButtonText}
-        </button>
-        <button className="btn btn-danger" onClick={handleConfirm} data-cy={'modal-confirm-button'}>
-          {confirmButtonText === '' ? t('globals.yes', 'Yes') : confirmButtonText}
-        </button>
-      </Modal.Footer>
-    </Modal>
+      entityLabel="page"
+      subjects={[{ name: editingPage?.name }]}
+      subtitle="The page and everything on it are deleted."
+      darkMode={darkMode}
+      onCancel={handleClose}
+      onConfirm={handleConfirm}
+      cancelDataCy="modal-cancel-button"
+      confirmDataCy="modal-confirm-button"
+    />
   );
 }

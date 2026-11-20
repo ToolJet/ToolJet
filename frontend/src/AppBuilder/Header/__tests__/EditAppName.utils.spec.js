@@ -44,6 +44,14 @@ describe('inline app rename helpers', () => {
     expect(validateInlineAppName('Revenue dashboard')).toEqual({ errorMsg: '', isAtLimit: false });
   });
 
+  // appName is null in the store until the app loads (e.g. reloading a Git Sync app without ?branch=)
+  test('treats a null app name as empty instead of crashing', () => {
+    expect(normalizeAppName(null)).toBe('');
+    expect(validateInlineAppName(null)).toEqual({ errorMsg: 'App name cannot be empty', isAtLimit: false });
+    expect(getInlineNameCursorPosition(null)).toBe(0);
+    expect(getInlineNameWidth(null)).toBe('8ch');
+  });
+
   test('normalizes whitespace before save', () => {
     expect(normalizeAppName('  Revenue   dashboard  ')).toBe('Revenue dashboard');
   });

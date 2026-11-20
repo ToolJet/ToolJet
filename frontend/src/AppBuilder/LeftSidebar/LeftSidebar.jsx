@@ -32,24 +32,12 @@ import {
   getLeftPanelState,
   PANEL_MOTION,
   shouldShowLibraries,
+  SIDEBAR_ITEMS,
 } from '@/AppBuilder/panelLayout';
 import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
 import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
 import AppLibraries from './AppLibraries';
-
-// Human names for the error-boundary label/location of each sidebar panel.
-const LEFT_SIDEBAR_PANEL_LABELS = {
-  pages: 'Pages',
-  components: 'Components',
-  queries: 'Queries',
-  search: 'Code search',
-  libraries: 'Libraries',
-  dependencies: 'Dependencies',
-  apphistory: 'App history',
-  tooljetai: 'AI chat',
-  settings: 'App settings',
-};
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -174,7 +162,7 @@ export const BaseLeftSidebar = ({
 
   const renderPopoverContent = () => {
     if (panelItem === null) return null;
-    const panelLabel = LEFT_SIDEBAR_PANEL_LABELS[panelItem] || 'Left sidebar';
+    const panelLabel = SIDEBAR_ITEMS[panelItem]?.name || 'Left sidebar';
     return (
       // Every sidebar panel gets its own labelled boundary; switching panels auto-recovers.
       <FallbackBoundary
@@ -187,6 +175,9 @@ export const BaseLeftSidebar = ({
           key={panelItem}
           className={cx('left-sidebar-panel-content', {
             'left-sidebar-panel-content--switching': animatePanelSwitch,
+            // The panel renders in a portal, outside the editor's .theme-dark ancestor that dark-mode
+            // rules (tabs, Bootstrap inputs) key on.
+            'theme-dark': darkMode,
           })}
         >
           {renderSelectedPanel()}
@@ -251,34 +242,28 @@ export const BaseLeftSidebar = ({
           selectedSidebarItem={selectedSidebarItem}
           onClick={() => handleSelectedSidebarItem('pages')}
           darkMode={darkMode}
-          icon="pages"
+          panel="pages"
           className="left-sidebar-item left-sidebar-layout"
-          tip="Pages"
-          railLabel="Pages"
           ref={setSideBarBtnRefs('pages')}
         >
           <Files size={16} strokeWidth={1.8} />
         </SidebarItem>
         <SidebarItem
-          icon="components"
+          panel="components"
           selectedSidebarItem={selectedSidebarItem}
           darkMode={darkMode}
           onClick={() => handleSelectedSidebarItem('components')}
           className="left-sidebar-item left-sidebar-layout"
-          tip="Components"
-          railLabel="Add"
           ref={setSideBarBtnRefs('components')}
         >
           <Blocks size={16} strokeWidth={1.8} />
         </SidebarItem>
         <SidebarItem
-          icon="queries"
+          panel="queries"
           selectedSidebarItem={selectedSidebarItem}
           darkMode={darkMode}
           onClick={() => handleSelectedSidebarItem('queries')}
           className="left-sidebar-item left-sidebar-layout"
-          tip="Queries"
-          railLabel="Queries"
           ref={setSideBarBtnRefs('queries')}
         >
           <DatabaseZap size={16} strokeWidth={1.8} />
@@ -297,28 +282,24 @@ export const BaseLeftSidebar = ({
 
   const renderManageItems = () => (
     <>
-      <div className="left-sidebar-section-divider" role="separator" aria-label="Manage tools" />
+      <div className="left-sidebar-section-divider" role="separator" />
       <SidebarItem
-        icon="search"
+        panel="search"
         selectedSidebarItem={selectedSidebarItem}
         darkMode={darkMode}
         onClick={() => handleSelectedSidebarItem('search')}
         className="left-sidebar-item left-sidebar-layout tw-overflow-visible"
-        tip="Code search"
-        railLabel="Search"
         ref={setSideBarBtnRefs('search')}
       >
         <Search size={16} strokeWidth={1.8} />
         <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
       </SidebarItem>
       <SidebarItem
-        icon="dependencies"
+        panel="dependencies"
         selectedSidebarItem={selectedSidebarItem}
         darkMode={darkMode}
         onClick={() => handleSelectedSidebarItem('dependencies')}
         className="left-sidebar-item left-sidebar-layout"
-        tip="Dependencies"
-        railLabel="Deps"
         ref={setSideBarBtnRefs('dependencies')}
       >
         <Network size={16} strokeWidth={1.8} />
@@ -337,18 +318,15 @@ export const BaseLeftSidebar = ({
 
   const renderSettingsItem = (isModuleEditor) => (
     <SidebarItem
-      icon="settings"
+      panel="settings"
       selectedSidebarItem={selectedSidebarItem}
       darkMode={darkMode}
       // eslint-disable-next-line no-unused-vars
       onClick={(e) => handleSelectedSidebarItem('settings')}
       className={`left-sidebar-item  left-sidebar-layout`}
       badge={true}
-      tip="Settings"
-      railLabel="Settings"
       ref={setSideBarBtnRefs('settings')}
       isModuleEditor={isModuleEditor}
-      data-cy="left-sidebar-settings-button"
     >
       <Settings size={16} strokeWidth={1.8} />
     </SidebarItem>
@@ -376,7 +354,7 @@ export const BaseLeftSidebar = ({
             // outside click (canvas, right panel, bottom panel, AI chat).
             onInteractOutside={(e) => e.preventDefault()}
             open={isLeftPanelOpen}
-            popoverContentClassName={`p-0 left-sidebar-scrollbar sidebar-h-100-popover ${panelItem} left-sidebar-overflow-${getLeftPanelOverflow(
+            popoverContentClassName={`tj-panel p-0 left-sidebar-scrollbar sidebar-h-100-popover ${panelItem} left-sidebar-overflow-${getLeftPanelOverflow(
               panelItem
             )}`}
             side="right"

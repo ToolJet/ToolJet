@@ -10,7 +10,6 @@ import {
 } from "Support/utils/appBuilder/components/table";
 import { openEditorSidebar } from "Support/utils/commonWidget";
 import { deleteDownloadsFolder } from "Support/utils/common";
-import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // ---------------------------------------------------------------------------
 // NewTable rewrite (was Table). The widget migrated Table -> NewTable and the
@@ -45,12 +44,11 @@ describe("Table", { testIsolation: false }, () => {
     // visible size. The shared `cy.resizeWidget` `[class="bottom-right"]` handle
     // matched 2 els (commands.js:375 — forbidden to edit) -> spec-local
     // resizeTableWidget (moveable EAST handle).
-    cy.dragAndDropWidget("Table", 250, 100);
+    cy.dragAndDropWidget("Table", 350, 100);
     cy.hideTooltip();
     cy.modifyCanvasSize(900, 800);
     cy.get("[data-cy='left-sidebar-settings-button']").click();
     resizeTableWidget(tableText.defaultWidgetName, 750, 600);
-    resizeQueryPanel("1");
     // Right inspector is not auto-open after drag — open it before toggling
     // "Allow selection".
     openEditorSidebar(tableText.defaultWidgetName);

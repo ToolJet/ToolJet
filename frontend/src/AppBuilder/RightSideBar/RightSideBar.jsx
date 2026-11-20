@@ -8,21 +8,13 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { RIGHT_SIDE_BAR_TAB } from './rightSidebarConstants';
 import QueryManager from '@/AppBuilder/QueryManager/QueryManager';
 import QueryKeyHooks from '@/AppBuilder/QueryPanel/QueryKeyHooks';
-import {
-  getQueryHeaderControlPresentation,
-  getLeftPanelState,
-  getRightPanelClassName,
-  getRightPanelStyle,
-  PANEL_MOTION,
-} from '@/AppBuilder/panelLayout';
+import { getLeftPanelState, getRightPanelClassName, getRightPanelStyle, PANEL_MOTION } from '@/AppBuilder/panelLayout';
 import { AddEditPagePopup } from './PageSettingsTab/PageMenu/AddNewPagePopup';
 import { QueryPanelResizeHandle } from './QueryPanelResizeHandle';
 import { LEFT_SIDEBAR_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './rightSidebar.scss';
-import { Button } from '@/components/ui/Button/Button';
 
 export const RightSideBar = ({ darkMode }) => {
-  const closeControl = getQueryHeaderControlPresentation('close');
   const { isModuleEditor } = useModuleContext();
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const activeTab = useStore((state) => state.activeRightSideBarTab);
@@ -115,20 +107,6 @@ export const RightSideBar = ({ darkMode }) => {
             {displayedTab === RIGHT_SIDE_BAR_TAB.QUERY && (
               <FallbackBoundary label="Query configuration" location="Right SideBar Query" darkMode={darkMode}>
                 <div className="right-sidebar-query-configuration">
-                  <Button
-                    isLucid
-                    iconOnly
-                    size={closeControl.size}
-                    variant="ghost"
-                    leadingIcon="x"
-                    className={cx('right-sidebar-query-close', closeControl.className)}
-                    style={{ '--query-header-close-icon-size': `${closeControl.iconSizePx}px` }}
-                    aria-label="Close query configuration"
-                    onClick={() => {
-                      setActiveRightSideBarTab(null);
-                      setRightSidebarOpen(false);
-                    }}
-                  />
                   {/* Run, preview and stop shortcuts, live while the query is on screen. */}
                   <QueryKeyHooks isExpanded={isRightSidebarOpen}>
                     <QueryManager darkMode={darkMode} surface="right" />

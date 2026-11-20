@@ -1,12 +1,19 @@
 import {
-  LEFT_PANEL_SECTIONS,
+  SIDEBAR_ITEMS,
+  getPanelCloseLabel,
+  PREVIEW_PANEL,
+  QUERY_HEADER_PX,
+  QUERY_TABS_PX,
+  getRuntimeSearchName,
+  getRuntimeToggleLabel,
   PANEL_MOTION,
   EDITOR_CANVAS_WIDTH,
   RUNTIME_PANEL_COLLAPSED_HEIGHT,
   RUNTIME_PANEL_ITEMS,
   getRuntimePanelContentStyle,
   getCanvasReservedBottom,
-  getRuntimePanelMeasuredHeight,
+  getRuntimePanelCommittedHeight,
+  getPastPanelOffset,
   getRuntimePanelTheme,
   getRightPanelForSelection,
   getPageSettingsSections,
@@ -32,18 +39,14 @@ import {
   getRightPanelReservedWidth,
   getCanvasMinWidth,
   getRuntimeTabClickAction,
-  getQueryHeaderClassName,
-  getQueryHeaderControlPresentation,
   getQueryDetailsClassName,
   isCodeQueryLayout,
   getQueryDetailsStyle,
-  getAppBuilderTypographyStyle,
+  getAppBuilderTypographyVariables,
   getQueryDetailsOverflowStyle,
   QUERY_FIELD_LABEL_CLASS_NAME,
   QUERY_FIELD_HELPER_CLASS_NAME,
   getQueryTypographyClassName,
-  getQueryTabClassName,
-  getQueryTabsStyle,
   getLeftPanelReservedBottom,
   getLeftPanelHeight,
   shouldShowLibraries,
@@ -104,25 +107,6 @@ const tooljetDbJoinSortSource = fs.readFileSync(
 describe('AB-PANEL-001 app builder panel composition', () => {
   // Break this catches: a migrated surface is accidentally restored to the old right or bottom navigation.
   it('keeps build navigation on the left and runtime diagnostics in the bottom drawer', () => {
-    expect(LEFT_PANEL_SECTIONS).toEqual([
-      {
-        id: 'build',
-        items: [
-          { id: 'pages', label: 'Pages', icon: 'files' },
-          { id: 'components', label: 'Components', icon: 'blocks' },
-          { id: 'queries', label: 'Queries', icon: 'database-zap' },
-          { id: 'libraries', label: 'Libraries', icon: 'box' },
-        ],
-      },
-      {
-        id: 'manage',
-        items: [
-          { id: 'dependencies', label: 'Dependencies', icon: 'network' },
-          { id: 'apphistory', label: 'App history', icon: 'history' },
-          { id: 'settings', label: 'Settings', icon: 'settings' },
-        ],
-      },
-    ]);
     expect(RUNTIME_PANEL_ITEMS.map(({ id }) => id)).toEqual(['inspect', 'debugger']);
     expect(RUNTIME_PANEL_COLLAPSED_HEIGHT).toBe(38);
     expect(EDITOR_CANVAS_WIDTH).toBe('calc(100% - 54px)');
@@ -142,7 +126,7 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getRuntimePanelContentStyle(true, 70)).toEqual({
       bottom: 38,
       height: 'calc(100% - 70% - 38px)',
-      borderTopWidth: 2,
+      borderTopWidth: 1,
     });
   });
 
@@ -150,14 +134,36 @@ describe('AB-PANEL-001 app builder panel composition', () => {
   it('reserves canvas height only for open drawer content', () => {
     expect(getCanvasReservedBottom(0, false)).toBe(0);
     expect(getCanvasReservedBottom(240, false)).toBe(240);
-    expect(getCanvasReservedBottom(240, true)).toBe(0);
   });
 
-  // Break this catches: closing the drawer stores an in-flight expanded height and restores the blank canvas gap.
-  it('never measures transitional content height for a collapsed drawer', () => {
-    expect(getRuntimePanelMeasuredHeight(false, 222)).toBe(0);
-    // Open content sits on the tab bar, so the reserved height includes the bar.
-    expect(getRuntimePanelMeasuredHeight(true, 222)).toBe(260);
+  // Break this catches (PL-80): the mobile toolbar sits at the canvas bottom, under the runtime bar.
+  it('on mobile reserves the runtime bar so the canvas toolbar stays above it', () => {
+    expect(getCanvasReservedBottom(0, true)).toBe(38);
+    expect(getCanvasReservedBottom(240, true)).toBe(38);
+  });
+
+  // Break this catches (PL-35): a closed drawer keeps a reserve, or an open one reserves less than the
+  // content plus the tab bar under it, leaving a dead strip between the canvas and the drawer.
+  it('reserves the drawer from its top edge to the viewport bottom, and nothing when closed', () => {
+    expect(getRuntimePanelCommittedHeight(false, 70, 900)).toBe(0);
+    expect(getRuntimePanelCommittedHeight(true, 70, 900)).toBe(270);
+    expect(getRuntimePanelCommittedHeight(true, 45, 900)).toBe(495);
+    expect(getRuntimePanelCommittedHeight(true, 92, 900)).toBe(72);
+  });
+
+  // Break this catches (LR-23): a page popup measured from its row or button, which ends inside the Pages
+  // panel, opens over the panel instead of past it.
+  it('starts a page popup 8px past the Pages panel edge, whatever it opens from', () => {
+    expect(getPastPanelOffset(404)({ reference: { x: 64, width: 279 } })).toEqual([0, 69]);
+    expect(getPastPanelOffset(404)({ reference: { x: 54, width: 342 } })).toEqual([0, 16]);
+  });
+
+  // Break this catches: at 683px (1024px at 150% zoom) a 304px popup can't fit past a 403px panel and
+  // runs 33px off screen; it clamps 8px inside the viewport, over the panel's edge, instead.
+  it('clamps a page popup 8px inside the viewport when it cannot fit past the Pages panel', () => {
+    const rects = { reference: { x: 64, width: 279 }, popper: { width: 304 } };
+    expect(getPastPanelOffset(403, 683)(rects)).toEqual([0, 683 - 8 - 304 - 64 - 279]);
+    expect(getPastPanelOffset(404, 1440)(rects)).toEqual([0, 69]);
   });
 
   // Break this catches: either side panel snaps shut or the bottom drawer uses a different motion curve.
@@ -178,38 +184,18 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     });
   });
 
-  // Break this catches: global theme tokens make the bottom bar's tabs drift from the approved prototype
-  // palette, or the bar itself stops matching the left panel's surface (white, or dark in dark mode).
-  it('uses the exact prototype colors for selected and unselected runtime tabs', () => {
-    expect(getRuntimePanelTheme(false)).toEqual({
+  // Break this catches (RT-40): hard-coded colors that drift from the rest of the editor, fail contrast
+  // (the old muted #747d8f was 4.14:1) or ignore dark mode. Theme tokens switch with the theme.
+  it('colors the runtime bar with theme tokens, the same in light and dark mode', () => {
+    const tokens = {
       panel: 'var(--background-surface-layer-01)',
-      text: '#222631',
-      muted: '#747d8f',
-      border: '#e1e5ed',
-      accent: '#4368e8',
-    });
-    expect(getRuntimePanelTheme(true)).toEqual({
-      panel: 'var(--background-surface-layer-01)',
-      text: '#f3f5f9',
-      muted: '#a8b0bf',
-      border: '#353c49',
-      accent: '#7895ff',
-    });
-  });
-
-  // Break this catches: generic or mismatched glyphs replace the approved Lucide rail icons.
-  it('uses the selected-anchor prototype icon set for every implemented rail destination', () => {
-    const railIcons = LEFT_PANEL_SECTIONS.flatMap(({ items }) => items).map(({ id, icon }) => [id, icon]);
-
-    expect(railIcons).toEqual([
-      ['pages', 'files'],
-      ['components', 'blocks'],
-      ['queries', 'database-zap'],
-      ['libraries', 'box'],
-      ['dependencies', 'network'],
-      ['apphistory', 'history'],
-      ['settings', 'settings'],
-    ]);
+      text: 'var(--text-default)',
+      muted: 'var(--text-placeholder)',
+      border: 'var(--border-weak)',
+      accent: 'var(--border-accent-strong)',
+    };
+    expect(getRuntimePanelTheme(false)).toEqual(tokens);
+    expect(getRuntimePanelTheme(true)).toEqual(tokens);
   });
 
   it('shows Libraries only for licensed apps outside the module editor', () => {
@@ -286,7 +272,7 @@ describe('AB-PANEL-001 app builder panel composition', () => {
   it('matches the left New query CTA to the top-header Preview button', () => {
     expect(getQueryAddButtonPresentation('left')).toEqual({
       size: 'default',
-      style: { fontWeight: 400, padding: '7px 12px' },
+      style: { fontWeight: 500, padding: '7px 12px' },
       variant: 'outline',
     });
     expect(getQueryAddButtonPresentation('bottom')).toEqual({ size: 'medium', variant: 'outline' });
@@ -324,12 +310,12 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getQuerySearchClassName('bottom', false)).toBe('queries-search d-flex');
   });
 
-  // Break this catches: focusing the compact left search adds a strong blue fill or halo.
-  it('uses a quiet border-only focus treatment for left query search', () => {
+  // Break this catches: focusing the compact left search adds a strong blue fill. Its ring is the
+  // editor's one focus ring (Shared/Panel/panel.scss), not a halo of its own.
+  it('uses a quiet border focus treatment for left query search', () => {
     expect(getQuerySearchFocusStyle('left')).toEqual({
       '--query-search-focus-background': 'var(--background-surface-layer-01)',
-      '--query-search-focus-border': 'var(--slate8)',
-      '--query-search-focus-shadow': 'none',
+      '--query-search-focus-border': 'var(--border-accent-strong)',
     });
     expect(getQuerySearchFocusStyle('bottom')).toBeUndefined();
   });
@@ -590,19 +576,18 @@ describe('AB-PANEL-001 app builder panel composition', () => {
 
   // Break this catches: CodeHinter text outside queries falls back to a platform-dependent generic monospace face.
   it('uses Source Code Pro for code-like inputs throughout App Builder', () => {
-    expect(getAppBuilderTypographyStyle()).toEqual({
-      '--app-builder-font-family': "'Inter', sans-serif",
+    expect(getAppBuilderTypographyVariables()).toEqual({
+      '--app-builder-font-family': "'IBM Plex Sans', sans-serif",
       '--app-builder-code-font-family': "'Source Code Pro', monospace",
-      '--app-builder-canvas-font-family': "'IBM Plex Sans', sans-serif",
+      '--app-builder-canvas-font-family': "'IBM Plex Sans'",
+      '--app-builder-small-font-size': '12px',
     });
   });
 
   // Break this catches: the last PostgreSQL fields slide underneath Preview before the body can scroll.
   it('reserves the preview height inside the right query scroll surface', () => {
-    expect(getQueryDetailsOverflowStyle('right', true, 40)).toEqual({
-      height: 'calc(100% - 80px)',
-      paddingBottom: '56px',
-    });
+    // UC-05: the right panel's scroll area must end where the docked preview starts, not run under it.
+    expect(getQueryDetailsOverflowStyle('right', true, 40)).toEqual({ marginBottom: '40px' });
     expect(getQueryDetailsOverflowStyle('bottom', true, 40)).toEqual({
       height: 'calc(100% - 80px)',
     });
@@ -624,45 +609,17 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     });
   });
 
-  // Break this catches: Run and Preview fall back into normal flow and float between the query tabs and form.
-  it('anchors right-side query actions in the compact header grid', () => {
-    expect(getQueryHeaderClassName('right')).toBe(
-      'row header query-manager-header--right query-manager-header--polished'
-    );
-    expect(getQueryHeaderClassName('bottom')).toBe('row header');
-    expect(getQueryTabsStyle('right')).toEqual({
-      gap: '3px',
-      '--query-tab-font-size': '13px',
-      '--query-tab-font-weight': 400,
-      '--query-tab-line-height': '20px',
-    });
-    expect(getQueryTabsStyle('bottom')).toEqual({ gap: '3px', marginBottom: '-15px' });
-    expect(getQueryTabClassName('right', true)).toBe('query-manager-tab query-manager-tab--right is-active');
-    expect(getQueryTabClassName('right', false)).toBe('query-manager-tab query-manager-tab--right');
-    expect(getQueryTabClassName('bottom', true)).toBe('query-manager-tab is-active');
+  // Break this catches: the preview opens over the query fields under the 48px header and 36px tabs.
+  it('reserves the query header, its tab strip and one row of fields above the preview', () => {
+    expect(PREVIEW_PANEL.reservedAbovePx).toBe(QUERY_HEADER_PX + QUERY_TABS_PX + 40);
+    expect([QUERY_HEADER_PX, QUERY_TABS_PX]).toEqual([48, 36]);
   });
 
-  // Break this catches: Run, Preview, and Close drift to different control heights in the query header.
-  it('uses one coherent size contract for every query header action', () => {
-    const controls = ['run', 'preview', 'close'].map(getQueryHeaderControlPresentation);
-
-    expect(controls.map(({ size }) => size)).toEqual(['medium', 'medium', 'medium']);
-    expect(controls.every(({ className }) => className.includes('query-header-control'))).toBe(true);
-  });
-
-  // Break this catches: the right-panel Preview label inherits the shared 500-weight button text.
-  it('uses regular weight only for Preview in the right query panel', () => {
-    expect(getQueryHeaderControlPresentation('preview', 'right').style).toEqual({ fontWeight: 400 });
-    expect(getQueryHeaderControlPresentation('preview', 'bottom').style).toBeUndefined();
-  });
-
-  // Break this catches: the compact Close glyph inherits the 14px medium icon and looks undersized beside text actions.
-  it('gives the query Close action a legible icon without increasing its control height', () => {
-    expect(getQueryHeaderControlPresentation('close')).toEqual({
-      className: 'query-header-control query-header-control--close',
-      iconSizePx: 16,
-      size: 'medium',
-    });
+  // Break this catches: the query close button names itself apart from the registry.
+  it('names right panel close buttons from the registry', () => {
+    expect(getPanelCloseLabel('query')).toBe('Close query configuration');
+    expect(getPanelCloseLabel('component')).toBe('Close component configuration');
+    expect(getPanelCloseLabel('page')).toBe('Close page configuration');
   });
 
   // Break this catches: a stale expanded drawer measurement leaves a dead strip below the left panel.
@@ -675,5 +632,35 @@ describe('AB-PANEL-001 app builder panel composition', () => {
   it('uses an exact viewport calculation instead of a fractional vh conversion', () => {
     expect(getLeftPanelHeight(false, 224)).toBe('calc(100vh - 86px)');
     expect(getLeftPanelHeight(true, 224)).toBe('calc(100vh - 272px)');
+  });
+});
+
+describe('AB-PANEL-NAMES panel and drawer names', () => {
+  // Break this catches: renaming a panel moves the data-cy hook that Cypress specs click.
+  it('keeps every rail data-cy hook frozen', () => {
+    expect(Object.fromEntries(Object.entries(SIDEBAR_ITEMS).map(([panel, { cy }]) => [panel, cy]))).toEqual({
+      tooljetai: 'ai-agent',
+      pages: 'pages',
+      components: 'components',
+      queries: 'queries',
+      libraries: 'libraries',
+      search: 'code-search',
+      dependencies: 'dependencies',
+      apphistory: 'app-history',
+      settings: 'settings',
+    });
+  });
+
+  it('closes a panel by its name, keeping acronyms', () => {
+    expect(getPanelCloseLabel('settings')).toBe('Close app settings');
+    expect(getPanelCloseLabel('tooljetai')).toBe('Close AI chat');
+  });
+
+  // UC-23: the drawer is called Inspector or Debugger at every entry point.
+  it('names the drawer after its tab, and each search box after what it searches', () => {
+    expect(getRuntimeToggleLabel(true, 'inspect')).toBe('Close inspector');
+    expect(getRuntimeToggleLabel(false, 'debugger')).toBe('Open debugger');
+    expect(getRuntimeSearchName('inspect')).toBe('Search inspector');
+    expect(getRuntimeSearchName('debugger')).toBe('Search logs');
   });
 });

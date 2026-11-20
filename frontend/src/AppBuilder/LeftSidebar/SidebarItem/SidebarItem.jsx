@@ -1,53 +1,26 @@
 import React, { forwardRef } from 'react';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button/Button';
-import { generateCypressDataCy } from '../../../modules/common/helpers/cypressHelpers';
+import { ToolTip } from '@/_components/ToolTip';
+import { SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 
-// TODO: remove refs and related dependancies
+// A left rail item. `panel` keys its entry in SIDEBAR_ITEMS: the accessible name is the panel's name,
+// the short label sits under the icon, and when the label is shorter than the name a tooltip shows
+// the name.
 export const SidebarItem = forwardRef(
-  (
-    {
-      tip = '',
-      selectedSidebarItem,
-      className,
-      icon,
-      IconComponent: _IconComponent,
-      iconFill: _iconFill = 'var(--icon-strong)',
-      commentBadge,
-      text,
-      railLabel,
-      accessibleLabel,
-      onClick,
-      badge = false,
-      count,
-      children,
-      keepTooltipOpen: _keepTooltipOpen,
-      classes,
-      trigger = ['click', 'hover', 'focus'],
-      show = undefined,
-      ...rest
-    },
-    ref
-  ) => {
-    const { t } = useTranslation();
-    const content = (
+  ({ panel, selectedSidebarItem, className, commentBadge, onClick, badge = false, count, children, ...rest }, ref) => {
+    const { name, label, cy } = SIDEBAR_ITEMS[panel];
+    const button = (
       <Button
         {...rest}
-        className={`${className} ${
-          selectedSidebarItem === icon && selectedSidebarItem !== 'comments' && 'sidebar-item--active'
-        } ${icon}-icon`}
-        onClick={onClick && onClick}
+        className={`${className} ${selectedSidebarItem === panel && 'sidebar-item--active'} ${panel}-icon`}
+        onClick={onClick}
         ref={ref}
         type="button"
-        aria-label={accessibleLabel || tip}
+        aria-label={name}
         variant="ghost"
         size="default"
         iconOnly
-        data-cy={`left-sidebar-${
-          generateCypressDataCy(typeof tip === 'object' ? icon : tip || accessibleLabel) || 'unknown'
-        }-button`}
+        data-cy={`left-sidebar-${cy}-button`}
       >
         {children && (
           <div className={'sidebar-svg-icon  position-relative'}>
@@ -56,26 +29,15 @@ export const SidebarItem = forwardRef(
           </div>
         )}
         {badge && <SidebarItem.Badge count={count} />}
-        {text && <p>{t(`leftSidebar.${text}.text`, text)}</p>}
-        {railLabel && <span className="left-sidebar-item-label">{t(railLabel)}</span>}
+        <span className="left-sidebar-item-label">{label}</span>
       </Button>
     );
 
-    if (!tip || railLabel) return content;
+    if (label === name) return button;
     return (
-      <OverlayTrigger
-        trigger={trigger}
-        placement="right"
-        delay={{ show: 250, hide: 200 }}
-        overlay={
-          <Tooltip id="button-tooltip" className={classes?.tooltip}>
-            {typeof tip === 'string' ? t(`leftSidebar.${tip}.tip`, tip) : tip}
-          </Tooltip>
-        }
-        show={show}
-      >
-        {content}
-      </OverlayTrigger>
+      <ToolTip message={name} placement="right">
+        {button}
+      </ToolTip>
     );
   }
 );

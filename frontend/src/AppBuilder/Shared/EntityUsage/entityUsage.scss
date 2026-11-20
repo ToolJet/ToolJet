@@ -16,7 +16,7 @@
 
 .entity-usage-group {
   .entity-usage-group-title {
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.4px;
@@ -46,7 +46,7 @@
 
   .entity-usage-kind {
     flex-shrink: 0;
-    font-size: 10px;
+    font-size: var(--app-builder-small-font-size, 10px);
     line-height: 16px;
     padding: 0 6px;
     border-radius: 4px;
@@ -65,7 +65,7 @@
   }
 
   .entity-usage-details {
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     color: var(--text-placeholder);
     margin-top: 1px;
     padding-left: 2px;

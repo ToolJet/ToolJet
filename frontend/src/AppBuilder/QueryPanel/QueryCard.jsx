@@ -8,7 +8,7 @@ import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { QueryRenameInput } from './QueryRenameInput';
 import { EllipsisVerticalIcon } from 'lucide-react';
@@ -182,8 +182,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <ButtonComponent
-              iconOnly
+            <PanelIconButton
+              label="Query options"
               onClick={() => {
                 if (!isQuerySelected) {
                   openQueryConfiguration();
@@ -197,7 +197,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
               data-cy={`query-handler-menu-${dataQuery.name.toLowerCase()}`}
             >
               <EllipsisVerticalIcon color="var(--icon-strong)" size={12} />
-            </ButtonComponent>
+            </PanelIconButton>
           </div>
         )}
       </div>

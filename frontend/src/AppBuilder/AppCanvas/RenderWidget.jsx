@@ -1,3 +1,4 @@
+import { WidgetTooltipScope } from '@/AppBuilder/_contexts/AppBuilderTooltipContext';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { TrackedSuspense } from './SuspenseTracker';
 import useStore from '@/AppBuilder/_stores/store';
@@ -391,18 +392,20 @@ const RenderWidget = ({
         resetKeys={[id]}
         widgetType={componentType}
       >
-        {selfScopesTooltip ? (
-          innerWidget
-        ) : (
-          <WidgetTooltip
-            content={userTooltipContent}
-            format={userTooltipFormat}
-            show={hasUserTooltip}
-            darkMode={darkMode}
-          >
-            {innerWidget}
-          </WidgetTooltip>
-        )}
+        <WidgetTooltipScope>
+          {selfScopesTooltip ? (
+            innerWidget
+          ) : (
+            <WidgetTooltip
+              content={userTooltipContent}
+              format={userTooltipFormat}
+              show={hasUserTooltip}
+              darkMode={darkMode}
+            >
+              {innerWidget}
+            </WidgetTooltip>
+          )}
+        </WidgetTooltipScope>
       </FallbackBoundary>
     );
   }

@@ -50,7 +50,7 @@
         display: flex;
         align-items: center;
         font-family: 'IBM Plex Sans';
-        font-size: 11px;
+        font-size: var(--app-builder-small-font-size, 11px);
         line-height: 16px;
         font-weight: 400;
         color: var(--text-placeholder);

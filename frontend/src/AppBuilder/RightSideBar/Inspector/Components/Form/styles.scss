@@ -32,11 +32,11 @@
             color: var(--text-default, #1B1F24);
 
             &.new {
-                color: var(--text-success, #1E823B);
+                color: var(--editor-text-success, var(--text-success, #1E823B));
             }
 
             &.removed {
-                color: var(--text-danger, #D92D2A);
+                color: var(--editor-text-danger, var(--text-danger, #D92D2A));
             }
         }
 
@@ -111,7 +111,7 @@
             .data-type {
                 color: var(--text-placeholder, #6A727C);
                 font-family: monospace;
-                font-size: 11px;
+                font-size: var(--app-builder-small-font-size, 11px);
                 font-style: normal;
                 font-weight: 400;
                 line-height: 16px;

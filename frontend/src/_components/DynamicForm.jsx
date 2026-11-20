@@ -56,6 +56,8 @@ const DynamicForm = ({
   disableMenuPortal = false,
   onBlur,
   animateSelectMenus = false,
+  // Set by the App Builder query editors only; workflow nodes reuse these forms without it.
+  surface,
   layout = 'vertical',
   renderCopilot,
   elementsProps = null,
@@ -601,7 +603,7 @@ const DynamicForm = ({
           renderCopilot,
           ...(helpText && { helpText }),
           // The query's code box opens in a new tab from its "Code" label instead of the popup editor.
-          ...(isQueryCodeField(selectedDataSource?.kind, key) && { usePortalEditor: false }),
+          ...(!!surface && isQueryCodeField(selectedDataSource?.kind, key) && { usePortalEditor: false }),
         };
       }
       case 'react-component-openapi-validator':
@@ -686,6 +688,8 @@ const DynamicForm = ({
           computeSelectStyles,
           disableMenuPortal,
           queryName,
+          // Editor query panel only (workflow nodes also pass a queryName).
+          animateMenu: animateSelectMenus,
           propertyKey: key,
           value: options?.[key]?.value || options?.[key],
           optionsChanged,
@@ -853,7 +857,11 @@ const DynamicForm = ({
                   >
                     {/* A query's code box is labelled "Code" by QueryCodeLabel below instead. */}
                     {label &&
-                      !(type === 'codehinter' && isQueryCodeField(selectedDataSource?.kind, propertyKey)) &&
+                      !(
+                        type === 'codehinter' &&
+                        !!surface &&
+                        isQueryCodeField(selectedDataSource?.kind, propertyKey)
+                      ) &&
                       renderLabel(label, obj[key].tooltip, type)}
 
                     {(type === 'password' || encrypted) && selectedDataSource?.id && (
@@ -904,7 +912,7 @@ const DynamicForm = ({
                       : `${generateCypressDataCy(label ?? key)}-${generateCypressDataCy(type ?? key)}-element`
                   }
                 >
-                  {type === 'codehinter' && isQueryCodeField(selectedDataSource?.kind, propertyKey) && (
+                  {type === 'codehinter' && !!surface && isQueryCodeField(selectedDataSource?.kind, propertyKey) && (
                     <QueryCodeLabel />
                   )}
                   <Element

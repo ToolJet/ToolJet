@@ -36,12 +36,17 @@
 .app-name-inline-trigger,
 .app-name-inline-trigger:hover,
 .app-name-inline-trigger:focus,
-.app-name-inline-trigger:focus-visible,
 .app-name-inline-trigger:active {
   border: 0 !important;
   outline: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+}
+
+// Keyboard focus shows the editor's one ring (Shared/Panel/panel.scss) on the app name.
+.app-name-inline-trigger:focus-visible {
+  border: 0 !important;
+  border-radius: 4px;
 }
 
 .app-name-inline-input {
@@ -95,6 +100,8 @@
   align-items: center;
   justify-content: space-between;
   max-width: min(520px, 100%);
+  // Lets the app name shrink (and truncate) on narrow screens instead of pushing Share off screen.
+  min-width: 0;
   margin-right: 10px;
 }
 
@@ -117,7 +124,7 @@
   --editor-header-text: var(--text-default);
   --editor-header-muted: var(--text-placeholder);
   --editor-header-icon: var(--icon-default);
-  --editor-header-accent: var(--indigo9);
+  --editor-header-accent: var(--editor-text-accent, var(--indigo9));
   --editor-header-accent-soft: var(--indigo3);
   --editor-header-accent-border: var(--indigo5);
 
@@ -131,7 +138,7 @@
 
   .autosave-indicator {
     color: var(--editor-header-muted);
-    font-size: 10px;
+    font-size: var(--app-builder-small-font-size, 10px);
     font-weight: 400;
     line-height: 14px;
   }
@@ -414,61 +421,6 @@
 
 .canvas-background-picker {
   position: fixed;
-}
-
-.preview-link-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  height: 32px;
-  background: var(--surfaces-surface-01);
-  border: 1px solid var(--border-default);
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 12px;
-  line-height: 18px;
-  color: var(--text-default);
-  box-shadow: var(--elevation-100-box-shadow);
-  cursor: pointer;
-  text-decoration: none;
-  transition:
-    background 0.15s,
-    border 0.15s,
-    box-shadow 0.15s,
-    color 0.15s;
-
-  svg {
-    flex-shrink: 0;
-  }
-
-  &:hover {
-    background: var(--button-secondary-hover);
-    color: var(--text-default);
-    text-decoration: none;
-  }
-
-  &:active {
-    background: var(--button-secondary-pressed);
-    color: var(--text-default);
-    text-decoration: none;
-  }
-
-  &:focus {
-    outline: 2px solid #3e63dd;
-    outline-offset: 2px;
-  }
-
-  &:disabled,
-  &.disabled {
-    background: var(--button-secondary-disabled);
-    color: var(--text-disabled);
-    cursor: not-allowed;
-
-    svg {
-      color: var(--icon-default);
-    }
-  }
 }
 
 .release-buttons {

@@ -458,6 +458,7 @@ export const PagesSidebarNavigation = ({
             variant="ghost"
             size="large"
             iconOnly
+            aria-label={isSidebarPinned ? 'Collapse navigation' : 'Expand navigation'}
           >
             {isSidebarPinned ? (
               <IconLayoutSidebarLeftCollapse size={16} className="tw-text-icon-strong" />

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 import useStore from '@/AppBuilder/_stores/store';
+import { NoMatchesEmptyState } from '@/AppBuilder/Shared/Panel/PanelEmptyState';
 import { ToolTip } from '@/_components/ToolTip';
 import CustomJSONViewer from '@/AppBuilder/LeftSidebar/LeftSidebarInspector/CustomJSONViewer/CustomJSONViewer';
 import { copyToClipboard } from '@/AppBuilder/LeftSidebar/LeftSidebarInspector/utils';
@@ -40,6 +41,7 @@ import {
 // Toolbar, search, filter chips, detail header, and value styles are shared with the Inspector.
 import '@/AppBuilder/QueryPanel/RuntimeInspector/styles.scss';
 import RuntimePanelCloseButton from '@/AppBuilder/QueryPanel/RuntimePanelCloseButton';
+import { getRuntimeSearchName } from '@/AppBuilder/panelLayout';
 import RuntimeFilterSelect from '@/AppBuilder/QueryPanel/RuntimeFilterSelect';
 import './styles.scss';
 
@@ -63,10 +65,8 @@ const useRelativeTimeTick = () => {
 const useLogAction = (log) => {
   const getQueryIdFromName = useStore((state) => state.getQueryIdFromName, shallow);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery, shallow);
-  const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded, shallow);
+  const revealQueryEditor = useStore((state) => state.queryPanel.revealQueryEditor, shallow);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
-  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
-  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
   const currentPageComponents = useStore((state) => state.getCurrentPageComponents(), shallow);
 
   const action = getLogAction(log);
@@ -81,10 +81,7 @@ const useLogAction = (log) => {
       label: action.label,
       run: () => {
         setSelectedQuery(queryId);
-        expandQueryPaneIfNeeded();
-        // Re-selecting the already-selected query doesn't retrigger the panel's open effect, so open it here.
-        setActiveRightSideBarTab('query');
-        setRightSidebarOpen(true);
+        revealQueryEditor();
       },
     };
   }
@@ -100,7 +97,7 @@ const LogDetail = ({ log, pageName }) => {
 
   return (
     <>
-      <div className="runtime-inspector__detail-header">
+      <div className="runtime-inspector__detail-header runtime-debugger__detail-header">
         <span className={cx('runtime-debugger__badge', `is-${level}`)}>{LEVEL_LABELS[level]}</span>
         <span className="runtime-debugger__detail-title" title={getLogTitle(log)}>
           {getLogTitle(log)}
@@ -200,8 +197,8 @@ const RuntimeDebugger = ({ darkMode, onClose }) => {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Filter logs"
-            aria-label="Filter logs"
+            placeholder={getRuntimeSearchName('debugger')}
+            aria-label={getRuntimeSearchName('debugger')}
             data-cy="debugger-search-input"
           />
           {query && (
@@ -269,13 +266,15 @@ const RuntimeDebugger = ({ darkMode, onClose }) => {
             <Trash2 size={14} />
           </button>
         </ToolTip>
-        {onClose && <RuntimePanelCloseButton onClose={onClose} dataCy="debugger-close-button" />}
+        {onClose && <RuntimePanelCloseButton tab="debugger" onClose={onClose} dataCy="debugger-close-button" />}
       </div>
 
       <div className="runtime-inspector__body">
         <ul className="runtime-debugger__list" aria-label="Logs">
           {visibleLogs.map((log, index) => {
             const logLevel = getLogLevel(log);
+            const pageName = scope === SCOPE_ALL && pageNames[log.page];
+            const sourceLine = `${getLogSource(log) ?? ''}${log.key ? ` · ${log.key}` : ''}${pageName ? ` · ${pageName}` : ''}`;
             return (
               <li key={`${log.timestamp}-${index}`}>
                 <button
@@ -286,8 +285,10 @@ const RuntimeDebugger = ({ darkMode, onClose }) => {
                 >
                   <LevelIcon level={logLevel} />
                   <span className="runtime-debugger__row-text">
-                    <span className="runtime-debugger__row-message">{getLogMessage(log) || getLogTitle(log)}</span>
-                    <span className="runtime-debugger__row-source">
+                    <span className="runtime-debugger__row-message" title={getLogMessage(log) || getLogTitle(log)}>
+                      {getLogMessage(log) || getLogTitle(log)}
+                    </span>
+                    <span className="runtime-debugger__row-source" title={sourceLine}>
                       {getLogSource(log)}
                       {log.key && (
                         <>
@@ -295,7 +296,7 @@ const RuntimeDebugger = ({ darkMode, onClose }) => {
                           <span>{log.key}</span>
                         </>
                       )}
-                      {scope === SCOPE_ALL && pageNames[log.page] && ` · ${pageNames[log.page]}`}
+                      {pageName && ` · ${pageName}`}
                     </span>
                   </span>
                   {log.timestamp && <span className="runtime-debugger__row-time">{formatLogAge(log.timestamp)}</span>}
@@ -303,9 +304,14 @@ const RuntimeDebugger = ({ darkMode, onClose }) => {
               </li>
             );
           })}
-          {visibleLogs.length === 0 && (
-            <li className="runtime-inspector__muted">{logs.length ? 'No logs match' : 'No logs yet'}</li>
-          )}
+          {visibleLogs.length === 0 &&
+            (query ? (
+              <li>
+                <NoMatchesEmptyState term={query} onClearSearch={() => setQuery('')} />
+              </li>
+            ) : (
+              <li className="runtime-inspector__muted">{logs.length ? 'No logs match' : 'No logs yet'}</li>
+            ))}
         </ul>
 
         <section className="runtime-inspector__detail" aria-label="Selected log">

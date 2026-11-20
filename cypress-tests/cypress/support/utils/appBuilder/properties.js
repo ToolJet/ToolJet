@@ -34,6 +34,10 @@
 import { commonWidgetSelector } from "Selectors/common";
 import { commonWidgetText } from "Texts/common";
 
+// Accordion titles are sentence case ("Additional actions"); specs may still pass Title Case.
+const expectAccordionTitle = ($accordion, accordionName) =>
+  expect($accordion.text().toLowerCase()).to.equal(accordionName.toLowerCase());
+
 /**
  * @tjBlock  common
  * @tjUsage  closeAccordions(['General', 'Properties'], '0')
@@ -46,7 +50,7 @@ export const closeAccordions = (accordionNames = [], index = "0") => {
         .click()
         .scrollIntoView()
         .should("be.visible")
-        .and("have.text", accordionName)
+        .and(($accordion) => expectAccordionTitle($accordion, accordionName))
         .then(($accordion) => {
           if (!$accordion.hasClass("collapsed")) {
             cy.get(
@@ -72,7 +76,7 @@ export const openAccordion = (
   cy.get(commonWidgetSelector.accordion(accordionName, index))
     .scrollIntoView()
     .should("be.visible")
-    .and("have.text", accordionName)
+    .and(($accordion) => expectAccordionTitle($accordion, accordionName))
     .then(($accordion) => {
       if ($accordion.hasClass("collapsed")) {
         cy.get(commonWidgetSelector.accordion(accordionName, index)).click();

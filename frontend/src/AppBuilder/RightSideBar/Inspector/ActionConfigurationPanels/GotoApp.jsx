@@ -67,7 +67,7 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, compone
           {!isLinkValid && (
             <div className="tw-flex tw-items-center tw-gap-1">
               <AlertTriangle className="tw-h-[12px] tw-w-[12px] tw-shrink-0 tw-text-[var(--icon-danger)]" />
-              <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-[var(--text-danger)]">
+              <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-editor-text-danger">
                 {linkedAppErrorMessage}
               </span>
             </div>

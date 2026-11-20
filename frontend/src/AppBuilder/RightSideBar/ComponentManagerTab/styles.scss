@@ -3,9 +3,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 16px 8px 16px; // top right bottom left - 8px bottom for gap before tabs
-  min-height: 40px;
+  // Same numbers as the shared PanelHeader (Shared/Panel/panel.scss); pinned while the panel scrolls.
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  flex: 0 0 48px;
+  height: 48px;
+  padding: 0 16px;
   gap: 8px;
+  background-color: var(--background-surface-layer-01);
 
   .panel-header-title {
     font-family: 'IBM Plex Sans', sans-serif;
@@ -181,7 +187,7 @@
     }
 
     .custom-component-card-description {
-      font-size: 11px;
+      font-size: var(--app-builder-small-font-size, 11px);
       line-height: 20px;
       color: var(--text-placeholder);
     }
@@ -204,7 +210,7 @@
 
   .custom-components-empty-subtitle {
     margin: 0;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     line-height: 18px;
     color: var(--text-placeholder);
   }
@@ -291,7 +297,7 @@
     gap: 6px;
     padding: 1px 6px;
     border-radius: 100px;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     font-weight: 500;
     color: var(--primary-accent-strong);
     background: var(--background-accent-weak, #ecf0fe);
@@ -310,5 +316,37 @@
 #components-manager-tabs{
   .nav-link{
     min-width: 84px !important;
+  }
+}
+
+// Component search: same field as the other panels (32px, 8px radius, panel surface, shared
+// border / placeholder / focus tokens). The legacy .tj-app-input rules need !important to lose.
+.components-container .tj-widgets-search-input {
+  height: 32px;
+  border-radius: 8px;
+  background-color: var(--background-surface-layer-01) !important;
+
+  .form-control {
+    height: 32px;
+    margin-bottom: 0 !important;
+    border: 1px solid var(--border-default) !important;
+    border-radius: 8px !important;
+    background: var(--background-surface-layer-01) !important;
+    color: var(--text-default) !important;
+
+    &::placeholder {
+      color: var(--text-placeholder) !important;
+    }
+
+    &:hover {
+      background: var(--background-surface-layer-01) !important;
+      border-color: var(--border-default) !important;
+    }
+
+    &:focus,
+    &:focus-visible {
+      background: var(--background-surface-layer-01) !important;
+      border-color: var(--border-accent-strong) !important;
+    }
   }
 }

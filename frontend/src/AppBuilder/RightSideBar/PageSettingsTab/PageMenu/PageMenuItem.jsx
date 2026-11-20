@@ -14,7 +14,6 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Overlay, Popover } from 'react-bootstrap';
 import PageOptions from './PageOptions';
-import { AddEditPagePopup } from './AddNewPagePopup';
 import { ToolTip } from '@/_components';
 import Skip from '@/_ui/Icon/solidIcons/Skip';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
@@ -45,7 +44,6 @@ export const PageMenuItem = withRouter(
     const hasAppPermissionPages = useStore((state) => state.license?.featureAccess?.appPermissionPages);
     const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
     const setEditingPage = useStore((state) => state.setEditingPage);
-    const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
     const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
     const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
     const clonePage = useStore((state) => state.clonePage);
@@ -61,16 +59,17 @@ export const PageMenuItem = withRouter(
     const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
     const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
     const [showPageOptions, toggleShowPageOptions] = useState(false);
-    const [showEditPopover, setShowEditPopover] = useState(false);
-    const [nestedPopoverOpen, setNestedPopoverOpen] = useState(false);
 
     const openPageEditPopover = useStore((state) => state.openPageEditPopover);
     const toggleEditPageNameInput = useStore((state) => state.toggleEditPageNameInput);
 
-    const optionBtnRef = useRef(null);
     const moreBtnRef = useRef(null);
 
     const isEditingPage = editingPage?.id === page?.id;
+    // The row whose "Edit page" panel is open on the right stays highlighted, like the open query does.
+    const isPageConfigurationOpen = useStore(
+      (state) => state.isRightSidebarOpen && state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION
+    );
 
     const icon = (props) => {
       const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
@@ -172,11 +171,13 @@ export const PageMenuItem = withRouter(
       ]
     );
 
-    const handleOpenPopup = (type, page) => {
+    // "Edit page details" opens the docked Edit page panel, the same one a row click opens.
+    const handleOpenPopup = (page) => {
       setEditingPage(page);
       toggleShowPageOptions(false);
-      setShowEditPopover(true);
-      setNewPagePopupConfig({ type, mode: 'edit' });
+      setNewPagePopupConfig({ show: true, mode: 'edit', type: page?.type || 'default' });
+      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION);
+      setRightSidebarOpen(true);
     };
 
     function getTooltip() {
@@ -211,7 +212,6 @@ export const PageMenuItem = withRouter(
 
     return (
       <div
-        ref={optionBtnRef}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
@@ -220,7 +220,7 @@ export const PageMenuItem = withRouter(
       >
         <div
           className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
-            (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
+            isEditingPage && (showPageOptions || isPageConfigurationOpen) ? 'is-selected' : ''
           }`}
           data-page-id={page?.id}
           style={{
@@ -305,7 +305,6 @@ export const PageMenuItem = withRouter(
                     setEditingPage(page);
                     toggleShowPageOptions(true);
                     setNewPagePopupConfig({ show: false, mode: null, type: null });
-                    setShowEditPopover(false);
                   }}
                   className="icon-btn"
                 >
@@ -336,18 +335,16 @@ export const PageMenuItem = withRouter(
                     id="edit-page-popover"
                     className={`${darkMode && 'dark-theme theme-dark'}`}
                   >
-                    <div className="menu-options mb-0">
+                    <div className="list-item-popover-body">
                       <PageOptions
                         text="Edit page details"
                         icon="editable"
                         darkMode={darkMode}
-                        onClick={(e) => {
-                          handleOpenPopup(page?.type || 'page', page);
-                        }}
+                        onClick={() => handleOpenPopup(page)}
                       />
                       {page?.type === 'default' && (
                         <PageOptions
-                          text="Mark home"
+                          text="Mark as home"
                           icon="home"
                           darkMode={darkMode}
                           disabled={isHomePage}
@@ -382,6 +379,7 @@ export const PageMenuItem = withRouter(
                           </ToolTip>
                         }
                         icon="trash"
+                        danger
                         darkMode={darkMode}
                         disabled={isHomePage}
                         onClick={(e) => {
@@ -420,21 +418,6 @@ export const PageMenuItem = withRouter(
                       />
                     </div>
                   </Popover>
-                </Overlay>
-
-                <Overlay
-                  target={optionBtnRef.current}
-                  show={showEditPopover && newPagePopupConfig?.mode == 'edit' && isEditingPage}
-                  placement="right-start"
-                  rootClose={!nestedPopoverOpen}
-                  onHide={() => {
-                    setEditingPage(null);
-                    setNewPagePopupConfig({ show: false, mode: null, type: null });
-                    toggleShowPageOptions(false);
-                    setShowEditPopover(false);
-                  }}
-                >
-                  <AddEditPagePopup darkMode={darkMode} onNestedPopoverOpenChange={setNestedPopoverOpen} />
                 </Overlay>
               </div>
             )}

@@ -18,7 +18,6 @@ describe('Text Input — csa facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-TICsa-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget("Text Input", 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the CSA from the text input (On click)', () => {

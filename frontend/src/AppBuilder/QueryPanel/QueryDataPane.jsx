@@ -10,6 +10,8 @@ import cx from 'classnames';
 import FilterandSortPopup from './FilterandSortPopup';
 import { ToolTip } from '@/_components';
 import { Button } from '@/components/ui/Button/Button';
+import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
+import { NoMatchesEmptyState } from '@/AppBuilder/Shared/Panel/PanelEmptyState';
 import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
 import { Fade, OverlayTrigger, Popover } from 'react-bootstrap';
@@ -33,6 +35,8 @@ import {
   getQuerySearchFocusStyle,
   getQueryToolbarClassName,
   isQuerySearchPersistent,
+  getPanelCloseLabel,
+  SIDEBAR_ITEMS,
 } from '@/AppBuilder/panelLayout';
 
 const QueryFolderTree = withEditionSpecificComponent(QueryFolderTreeBase, 'Appbuilder');
@@ -133,7 +137,8 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
         setSearchTermForFilters(val.target.value);
       }}
       onClearCallback={() => setSearchTermForFilters('')}
-      placeholder={t('globals.search', 'Search')}
+      placeholder={t('globals.searchQueries', 'Search queries')}
+      ariaLabel={t('globals.searchQueries', 'Search queries')}
       customClass="query-manager-search-box-wrapper flex-grow-1"
       showClearButton
       clearTextOnBlur={false}
@@ -143,24 +148,15 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
   return (
     <div className={getQueryListClassName(surface)} style={getQuerySearchFocusStyle(surface)}>
       <div className={`queries-container ${darkMode && 'theme-dark'} d-flex flex-column h-100`}>
-        <div className={getQueryPanelHeaderClassName(surface)}>
-          <span className="queries-panel-title">Queries</span>
-          <div className="queries-panel-header-actions">
-            {headerPlacement.add === 'title' && <AddDataSourceButton darkMode={darkMode} surface={surface} />}
-            <ToolTip message="Close queries" placement="bottom">
-              <Button
-                isLucid
-                iconOnly
-                size="medium"
-                variant="ghost"
-                leadingIcon="x"
-                aria-label="Close queries"
-                onClick={onClose}
-                data-cy="close-query-panel"
-              />
-            </ToolTip>
-          </div>
-        </div>
+        <PanelHeader
+          title={SIDEBAR_ITEMS.queries.name}
+          onClose={onClose}
+          closeLabel={getPanelCloseLabel('queries')}
+          closeDataCy="close-query-panel"
+          className={getQueryPanelHeaderClassName(surface)}
+        >
+          {headerPlacement.add === 'title' && <AddDataSourceButton darkMode={darkMode} surface={surface} />}
+        </PanelHeader>
         <div className={getQueryToolbarClassName(surface, showSearchBox)}>
           {headerPlacement.add === 'toolbar' && <AddDataSourceButton darkMode={darkMode} surface={surface} />}
           {headerPlacement.search === 'toolbar' && (
@@ -182,6 +178,7 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
                   size="medium"
                   variant="ghost"
                   leadingIcon="search"
+                  aria-label="Open quick search"
                   onClick={() => {
                     showSearchBox && setSearchTermForFilters('');
                     setShowSearchBox((showSearchBox) => !showSearchBox);
@@ -273,7 +270,19 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
             {filteredQueries.length === 0 &&
               (folders.length === 0 || dataSourcesForFilters.length > 0 || !!searchTermForFilters) && (
                 <div className="query-empty-state-wrapper">
-                  <EmptyDataSource />
+                  {searchTermForFilters || dataSourcesForFilters.length > 0 ? (
+                    <NoMatchesEmptyState
+                      term={searchTermForFilters}
+                      description="Search matches query names."
+                      onClearSearch={() => {
+                        setSearchTermForFilters('');
+                        setDataSourcesForFilters([]);
+                      }}
+                      dataCy="queries-no-matches"
+                    />
+                  ) : (
+                    <EmptyDataSource />
+                  )}
                 </div>
               )}
           </div>
@@ -329,6 +338,7 @@ const AutoSortButton = ({ darkMode: _darkMode }) => {
           size="medium"
           variant="ghost"
           disabled={disabled}
+          aria-label={tooltipMsg}
           onClick={() => !disabled && autoSort?.()}
           data-cy="query-autosort-button"
           style={!disabled ? { color: '#F3A53C' } : undefined}
@@ -397,6 +407,7 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled, surface = 'bottom'
         <Button
           isLucid
           iconOnly={surface !== 'left'}
+          aria-label="New query"
           size={buttonPresentation.size}
           variant={buttonPresentation.variant}
           style={buttonPresentation.style}

@@ -1,36 +1,47 @@
-export const LEFT_PANEL_SECTIONS = [
-  {
-    id: 'build',
-    items: [
-      { id: 'pages', label: 'Pages', icon: 'files' },
-      { id: 'components', label: 'Components', icon: 'blocks' },
-      { id: 'queries', label: 'Queries', icon: 'database-zap' },
-      { id: 'libraries', label: 'Libraries', icon: 'box' },
-    ],
-  },
-  {
-    id: 'manage',
-    items: [
-      { id: 'dependencies', label: 'Dependencies', icon: 'network' },
-      { id: 'apphistory', label: 'App history', icon: 'history' },
-      { id: 'settings', label: 'Settings', icon: 'settings' },
-    ],
-  },
-];
+// One entry per left rail item, keyed by the panel it opens. `name` is that panel's title, the rail
+// item's accessible name and tooltip, and the close button's "Close <name>"; `label` is the short text
+// under the icon; `cy` is frozen to the data-cy hook Cypress specs click (`left-sidebar-<cy>-button`).
+export const SIDEBAR_ITEMS = {
+  tooljetai: { name: 'AI chat', label: 'AI', cy: 'ai-agent' },
+  pages: { name: 'Pages', label: 'Pages', cy: 'pages' },
+  components: { name: 'Components', label: 'Add', cy: 'components' },
+  queries: { name: 'Queries', label: 'Queries', cy: 'queries' },
+  libraries: { name: 'Libraries', label: 'Libraries', cy: 'libraries' },
+  search: { name: 'Code search', label: 'Search', cy: 'code-search' },
+  dependencies: { name: 'Dependencies', label: 'Deps', cy: 'dependencies' },
+  apphistory: { name: 'App history', label: 'History', cy: 'app-history' },
+  settings: { name: 'App settings', label: 'Settings', cy: 'settings' },
+};
 
-export const LEFT_PANEL_ITEMS = LEFT_PANEL_SECTIONS.flatMap(({ items }) => items);
+// Right panels, keyed by what they configure. `name` reads in the close button's "Close <name>".
+export const RIGHT_PANEL_ITEMS = {
+  query: { name: 'Query configuration' },
+  component: { name: 'Component configuration' },
+  page: { name: 'Page configuration' },
+};
+
+// "Close app settings", "Close AI chat": the name's first word drops its capital unless it is an acronym.
+export const getPanelCloseLabel = (panel) =>
+  `Close ${(SIDEBAR_ITEMS[panel] ?? RIGHT_PANEL_ITEMS[panel]).name.replace(/^[A-Z](?=[a-z])/, (letter) =>
+    letter.toLowerCase()
+  )}`;
 
 export const RUNTIME_PANEL_COLLAPSED_HEIGHT = 38;
 
+// The query editor's 48px panel header, and the 36px Setup / Transformation / Settings strip below it.
+export const QUERY_HEADER_PX = 48;
+export const QUERY_TABS_PX = 36;
+
 // Query preview docks at the bottom of the right-side query panel (containerClassName). It opens at
 // defaultRatio of that panel, resizes from its top edge, collapses below minPx, and always leaves
-// reservedAbovePx for the query fields above it. Closed, it matches the closed runtime panel bar.
+// reservedAbovePx: the header, the tab strip and one 40px row of query fields above it. Closed, it
+// matches the closed runtime panel bar.
 export const PREVIEW_PANEL = {
   containerClassName: 'right-sidebar-query-configuration',
   collapsedPx: RUNTIME_PANEL_COLLAPSED_HEIGHT,
   defaultRatio: 0.4,
   minPx: 50,
-  reservedAbovePx: 120,
+  reservedAbovePx: QUERY_HEADER_PX + QUERY_TABS_PX + 40,
 };
 
 export const PANEL_MOTION = {
@@ -49,26 +60,17 @@ export const PANEL_MOTION = {
   rightShellEnterAnimation: false,
 };
 
-// The bar shares the left panel's surface token (white, or the dark surface in dark mode); its tab
-// colors stay on the prototype palette.
-const RUNTIME_PANEL_THEMES = {
-  light: {
-    panel: 'var(--background-surface-layer-01)',
-    text: '#222631',
-    muted: '#747d8f',
-    border: '#e1e5ed',
-    accent: '#4368e8',
-  },
-  dark: {
-    panel: 'var(--background-surface-layer-01)',
-    text: '#f3f5f9',
-    muted: '#a8b0bf',
-    border: '#353c49',
-    accent: '#7895ff',
-  },
+// Theme tokens, so the runtime bar matches the left panel and switches with dark mode by itself.
+const RUNTIME_PANEL_THEME = {
+  panel: 'var(--background-surface-layer-01)',
+  text: 'var(--text-default)',
+  muted: 'var(--text-placeholder)',
+  border: 'var(--border-weak)',
+  accent: 'var(--border-accent-strong)',
 };
 
-export const getRuntimePanelTheme = (darkMode) => RUNTIME_PANEL_THEMES[darkMode ? 'dark' : 'light'];
+// Kept as a function of darkMode for callers; the tokens already resolve per theme.
+export const getRuntimePanelTheme = () => RUNTIME_PANEL_THEME;
 
 // Content sits on top of the tab bar (never over it) so Inspector/Debugger stay switchable while open.
 // panelTop is the content's top edge as a percent of the viewport.
@@ -77,14 +79,31 @@ export const getRuntimePanelContentStyle = (isExpanded, panelTop) =>
     ? {
         bottom: RUNTIME_PANEL_COLLAPSED_HEIGHT,
         height: `calc(100% - ${panelTop}% - ${RUNTIME_PANEL_COLLAPSED_HEIGHT}px)`,
-        borderTopWidth: 2,
+        borderTopWidth: 1,
       }
     : { bottom: RUNTIME_PANEL_COLLAPSED_HEIGHT, height: 0, borderTopWidth: 0 };
 
-export const getCanvasReservedBottom = (runtimeContentHeight, isDragging) => (isDragging ? 0 : runtimeContentHeight);
+// The height is the drawer's committed height, so a drag keeps the last value until mouseup instead of
+// letting the canvas jump to full height. On mobile the drawer overlays the canvas, but the canvas's own
+// bottom toolbar must stay above the runtime bar.
+export const getCanvasReservedBottom = (runtimeContentHeight, isMobile) =>
+  isMobile ? RUNTIME_PANEL_COLLAPSED_HEIGHT : runtimeContentHeight;
 
-export const getRuntimePanelMeasuredHeight = (isExpanded, measuredHeight) =>
-  isExpanded ? measuredHeight + RUNTIME_PANEL_COLLAPSED_HEIGHT : 0;
+// The drawer animates its height, so reading the DOM when a drag or an expand ends gets a mid-transition
+// value (PL-35). Its content starts at topPercent of the viewport and sits on the tab bar, so the two span
+// the rest of the viewport.
+export const getRuntimePanelCommittedHeight = (isExpanded, topPercent, viewportPx) =>
+  isExpanded ? (viewportPx * (100 - topPercent)) / 100 : 0;
+
+// Page popups open from rows and buttons that end inside the Pages panel. Popper measures the offset from
+// that reference, so the distance reaches 8px past the panel's right edge instead (LR-23). Where the
+// popup can't fit past the panel (683px, 1024px at 150% zoom), it clamps 8px inside the viewport.
+export const getPastPanelOffset =
+  (panelRightPx, viewportPx = Infinity) =>
+  ({ reference, popper }) => [
+    0,
+    Math.min(panelRightPx + 8, viewportPx - 8 - (popper?.width ?? 0)) - reference.x - reference.width,
+  ];
 
 export const getLeftPanelReservedBottom = (isExpanded, measuredHeight) =>
   isExpanded ? Math.max(measuredHeight, RUNTIME_PANEL_COLLAPSED_HEIGHT) : RUNTIME_PANEL_COLLAPSED_HEIGHT;
@@ -103,10 +122,19 @@ export const getRuntimeTabClickAction = (tab, activeTab, isExpanded) => {
   return tab === activeTab ? 'close' : 'switch';
 };
 
+// The bottom drawer's two tabs. Every entry point (tab, canvas handle, component menu, toggle, close)
+// calls them by `label`, and each search box's placeholder is also its accessible name.
 export const RUNTIME_PANEL_ITEMS = [
-  { id: 'inspect', label: 'Inspector' },
-  { id: 'debugger', label: 'Debugger' },
+  { id: 'inspect', label: 'Inspector', search: 'Search inspector' },
+  { id: 'debugger', label: 'Debugger', search: 'Search logs' },
 ];
+
+const runtimeItem = (id) => RUNTIME_PANEL_ITEMS.find((item) => item.id === id) ?? RUNTIME_PANEL_ITEMS[0];
+
+export const getRuntimeSearchName = (id) => runtimeItem(id).search;
+
+export const getRuntimeToggleLabel = (isExpanded, activeTab) =>
+  `${isExpanded ? 'Close' : 'Open'} ${runtimeItem(activeTab).label.toLowerCase()}`;
 
 export const getRightPanelForSelection = (selectionType) => {
   if (selectionType === 'component') return 'configuration';
@@ -150,7 +178,7 @@ export const getQueryHeaderPlacement = (surface) =>
 
 export const getQueryAddButtonPresentation = (surface) =>
   surface === 'left'
-    ? { size: 'default', style: { fontWeight: 400, padding: '7px 12px' }, variant: 'outline' }
+    ? { size: 'default', style: { fontWeight: 500, padding: '7px 12px' }, variant: 'outline' }
     : { size: 'medium', variant: 'outline' };
 
 export const QUERY_POPOVER_MOTION_TARGETS = ['new-query', 'filter', 'query-actions', 'dropdown', 'parameter'];
@@ -170,21 +198,23 @@ export const getQuerySearchFocusStyle = (surface) =>
   surface === 'left'
     ? {
         '--query-search-focus-background': 'var(--background-surface-layer-01)',
-        '--query-search-focus-border': 'var(--slate8)',
-        '--query-search-focus-shadow': 'none',
+        '--query-search-focus-border': 'var(--border-accent-strong)',
       }
     : undefined;
 
 // An open left panel stacks above the right panel, so a widened query panel slides under it.
 export const getRightPanelClassName = (activeTab, isLeftPanelOpen = false) =>
-  `editor-sidebar right-panel-shell${activeTab === 'query' ? ' right-panel-shell--query' : ''}${
+  `editor-sidebar tj-panel right-panel-shell${activeTab === 'query' ? ' right-panel-shell--query' : ''}${
     isLeftPanelOpen ? ' right-panel-shell--below-left-panel' : ''
   }`;
 
-export const getAppBuilderTypographyStyle = () => ({
-  '--app-builder-font-family': "'Inter', sans-serif",
+export const getAppBuilderTypographyVariables = () => ({
+  '--app-builder-font-family': "'IBM Plex Sans', sans-serif",
   '--app-builder-code-font-family': "'Source Code Pro', monospace",
-  '--app-builder-canvas-font-family': "'IBM Plex Sans', sans-serif",
+  // The canvas shows a customer's app, so it takes the Viewer's own font: the <body> declaration in
+  // theme.scss, without the chrome's fallback stack (canvas = Viewer).
+  '--app-builder-canvas-font-family': "'IBM Plex Sans'",
+  '--app-builder-small-font-size': '12px',
 });
 
 // The query panel opens at defaultPx and widens from a handle on its left edge, as far as the left
@@ -297,10 +327,13 @@ export const getQueryDetailsStyle = (surface) =>
       }
     : undefined;
 
-export const getQueryDetailsOverflowStyle = (surface, hasSelectedQuery, previewHeight) => ({
-  height: `calc(100% - ${hasSelectedQuery ? previewHeight + 40 : 0}px)`,
-  ...(surface === 'right' && hasSelectedQuery ? { paddingBottom: `${previewHeight + 16}px` } : {}),
-});
+// In the right panel the details area is a flex child that fills the panel below its header, and the
+// preview is docked over the panel's bottom edge. A bottom margin of the preview's height makes the scroll
+// area end where the preview starts, whatever the header's height.
+export const getQueryDetailsOverflowStyle = (surface, hasSelectedQuery, previewHeight) =>
+  surface === 'right' && hasSelectedQuery
+    ? { marginBottom: `${previewHeight}px` }
+    : { height: `calc(100% - ${hasSelectedQuery ? previewHeight + 40 : 0}px)` };
 
 export const TOOLJET_DB_MODE_OPTIONS = [
   { label: 'GUI mode', value: 'GUI mode' },
@@ -313,26 +346,3 @@ export const getTooljetDbModeControlPresentation = () => ({
   type: 'dropdown',
   useMenuPortal: false,
 });
-
-export const getQueryHeaderClassName = (surface) =>
-  `row header${surface === 'right' ? ' query-manager-header--right query-manager-header--polished' : ''}`;
-
-export const getQueryHeaderControlPresentation = (control, surface = 'bottom') => ({
-  className: `query-header-control${control === 'close' ? ' query-header-control--close' : ''}`,
-  ...(control === 'close' && { iconSizePx: 16 }),
-  ...(control === 'preview' && surface === 'right' && { style: { fontWeight: 400 } }),
-  size: 'medium',
-});
-
-export const getQueryTabClassName = (surface, isActive) =>
-  `query-manager-tab${surface === 'right' ? ' query-manager-tab--right' : ''}${isActive ? ' is-active' : ''}`;
-
-export const getQueryTabsStyle = (surface) =>
-  surface === 'right'
-    ? {
-        gap: '3px',
-        '--query-tab-font-size': '13px',
-        '--query-tab-font-weight': 400,
-        '--query-tab-line-height': '20px',
-      }
-    : { gap: '3px', marginBottom: '-15px' };

@@ -1,7 +1,7 @@
 import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-const VersionSearchField = ({ value, onChange, placeholder = 'Search versions by name...' }) => {
+const VersionSearchField = ({ value, onChange, placeholder = 'Search versions' }) => {
   return (
     <div className="version-search-field" style={{ padding: '4px 8px' }}>
       <div

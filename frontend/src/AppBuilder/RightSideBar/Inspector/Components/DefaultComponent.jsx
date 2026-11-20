@@ -172,7 +172,7 @@ export const baseComponentProperties = (
     Properties: [],
     Events: [],
     Validation: [],
-    'Additional Actions': Object.keys(AllComponents).filter(
+    'Additional actions': Object.keys(AllComponents).filter(
       (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component)
     ),
     General: [
@@ -312,7 +312,7 @@ export const baseComponentProperties = (
 
   items.push({
     id: ADDITIONAL_ACTIONS_ACCORDION_ID,
-    title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+    title: `${i18next.t('widget.common.additionalActions', 'Additional actions')}`,
     isOpen: true,
     children: additionalActions?.map((property) => {
       const paramType = property === 'Tooltip' ? 'general' : 'properties';

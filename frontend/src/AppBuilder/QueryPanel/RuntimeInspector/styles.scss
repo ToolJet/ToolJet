@@ -1,3 +1,5 @@
+@import '../../Shared/Panel/mixins';
+
 // Split-view Inspector for the bottom runtime panel. Type and selection colors follow the
 // editor header (13px / 400, indigo soft fill for the active item).
 .runtime-inspector {
@@ -27,7 +29,7 @@
     gap: 12px;
     flex-shrink: 0;
     height: 40px;
-    padding: 0 12px;
+    padding: 0 16px 0 12px;
     border-bottom: 1px solid var(--border-weak);
   }
 
@@ -37,29 +39,29 @@
     gap: 6px;
     flex-shrink: 0;
     width: 220px;
-    height: 28px;
+    height: 32px;
     margin: 0;
     padding: 0 8px;
     border: 1px solid var(--border-default);
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--icon-default);
     transition: border-color 0.12s ease;
 
     &:focus-within {
-      border-color: var(--indigo7);
+      border-color: var(--border-accent-strong);
     }
 
     input {
       flex: 1;
       min-width: 0;
-      height: 26px;
+      height: 30px;
       padding: 0;
       border: 0;
       outline: 0;
       background: transparent;
       box-shadow: none;
       color: var(--text-default);
-      font-size: 13px;
+      font-size: 12px;
 
       &::placeholder {
         color: var(--text-placeholder);
@@ -99,7 +101,7 @@
     }
 
     &.is-active {
-      color: var(--indigo9) !important;
+      color: var(--editor-text-accent, var(--indigo9)) !important;
       background: var(--indigo3) !important;
       border-color: var(--indigo5) !important;
     }
@@ -122,8 +124,10 @@
       outline: none;
       background: var(--surfaces-surface-01);
       color: var(--text-default);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 400;
+      // Older WebKit ignores the unprefixed one and draws its own arrow next to the chevron.
+      -webkit-appearance: none;
       appearance: none;
       cursor: pointer;
 
@@ -170,28 +174,14 @@
     height: 28px;
     padding: 0 6px !important;
     border-radius: 4px;
-    color: var(--text-placeholder) !important;
+    color: var(--text-default) !important;
     font-size: 12px !important;
+    font-weight: 500 !important;
 
     &:hover {
       color: var(--text-default) !important;
       background: var(--interactive-hover) !important;
     }
-  }
-
-  &__chevron {
-    flex-shrink: 0;
-    transition: transform 0.15s ease;
-
-    &.is-open {
-      transform: rotate(90deg);
-    }
-  }
-
-  &__count {
-    margin-left: auto;
-    font-size: 11px;
-    color: var(--text-placeholder);
   }
 
   &__entry {
@@ -200,18 +190,18 @@
     gap: 2px;
     height: 26px;
     padding-right: 6px;
-    border-radius: 4px;
+    @include panel-row;
 
     &:hover {
       background: var(--interactive-hover);
     }
 
     &.is-selected {
-      background: var(--indigo3);
-      color: var(--indigo9);
+      background: var(--background-accent-weak);
+      color: var(--editor-text-accent, var(--indigo9));
 
       .runtime-inspector__twisty {
-        color: var(--indigo9);
+        color: var(--editor-text-accent, var(--indigo9));
       }
     }
   }
@@ -329,12 +319,13 @@
 
   &__icon-btn {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    color: var(--icon-default) !important;
+    color: var(--icon-strong) !important;
     transition:
       background-color 0.12s ease,
       color 0.12s ease;
@@ -342,11 +333,6 @@
     &:hover {
       color: var(--icon-strong) !important;
       background: var(--interactive-hover) !important;
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--indigo7);
-      outline-offset: -2px;
     }
 
     &.is-done {

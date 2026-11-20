@@ -1,6 +1,6 @@
 export const buttonGroupV2Config = {
   name: 'ButtonGroup',
-  displayName: 'Button Group',
+  displayName: 'Button group',
   description: 'Group of buttons',
   component: 'ButtonGroupV2',
   properties: {

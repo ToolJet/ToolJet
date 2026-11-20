@@ -27,3 +27,10 @@ export const AppBuilderTooltipProvider = ({ children }) => {
 };
 
 export const useAppBuilderTooltip = () => useContext(AppBuilderTooltipContext);
+
+// Widgets and the app's own navigation render a customer's app, so inside them ToolTip shows the same
+// tooltip the Viewer does, marked so the editor chrome's variables stop at it.
+const WIDGET_SCOPE = { widget: true };
+export const WidgetTooltipScope = ({ children }) => (
+  <AppBuilderTooltipContext.Provider value={WIDGET_SCOPE}>{children}</AppBuilderTooltipContext.Provider>
+);

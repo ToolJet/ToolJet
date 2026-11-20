@@ -1593,6 +1593,9 @@ button {
     overflow-y: auto;
     // TAB HEADER HEIGHT + FOOTER HEIGHT + Extra padding = 120px
     height: calc(100vh - 8rem);
+    // The fixed "Read documentation" footer overlays the bottom of this area; pad it so the last row
+    // (e.g. "Show on mobile") scrolls clear of the footer.
+    padding-bottom: 64px;
     // Hide scrollbar
     -ms-overflow-style: none;
     /* IE and Edge */
@@ -3009,13 +3012,34 @@ input:focus-visible {
     margin-left: 10px;
     font-weight: 500;
     color: var(--slate12);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   &:hover {
     background: var(--indigo4);
   }
 
+  // Keep the footer one line: a long component name used to push the arrow onto a
+  // second line, and the taller fixed footer then covered the panel's last row.
   a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-width: 0;
+
+    > span:first-child {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+
+    > span:last-child {
+      flex-shrink: 0;
+    }
+
     &:hover {
       text-decoration: none;
     }
@@ -5203,7 +5227,6 @@ div#driver-page-overlay {
   &:focus, &:active {
     border: 1px solid var(--indigo9) !important;
     background-color: var(--indigo2) !important;
-    box-shadow: 0px 0px 0px 1px #c6d4f9 !important;
   }
 }
 
@@ -8537,7 +8560,7 @@ tbody {
 .layout-header {
   position: fixed;
   right: 0;
-  left: 54px;
+  left: 48px;
   z-index: 1;
   background: var(--page-weak);
   height: 48px;
@@ -9467,7 +9490,22 @@ tbody {
 }
 
 .react-tooltip {
-  font-size: 0.765625rem !important;
+  font-size: var(--app-builder-small-font-size, 0.765625rem) !important;
+}
+
+// A widget renders a customer's app, so ToolJet's chrome variables stop at it: unset, every shared rule
+// falls back to its own value and the canvas, widget modals and widget overlays match the Viewer.
+// Widget overlays (react-bootstrap Tooltip/Popover, react-tooltip) must carry .tj-widget-overlay.
+.main-editor-canvas,
+.tj-modal-widget-content,
+.tj-widget-overlay {
+  --app-builder-font-family: initial;
+  --app-builder-small-font-size: initial;
+  --editor-text-accent: initial;
+  --editor-text-success: initial;
+  --editor-text-danger: initial;
+  --editor-danger-fill: initial;
+  --editor-danger-fill-hover: initial;
 }
 
 .tooltip {
@@ -13787,6 +13825,10 @@ tbody {
 }
 
 .shareable-link-container {
+  .label-info {
+    color: var(--text-placeholder);
+  }
+
   .copy-container {
     width: 0px;
     margin-right: -12px;
@@ -17842,19 +17884,7 @@ section.ai-message-prompt-input-wrapper {
   color: #6a727c;
 }
 
-.app-export-btn {
-  background-color: #ffffff;
-  border: 1px solid var(--Border-default, #ccd1d5);
-  box-shadow: 0px 1px 0px 0px var(--Dropshadow000);
-}
-
 .dark-theme {
-  .app-export-btn {
-    background-color: #313b46;
-    color: #ffffff;
-    border: 1px solid transparent;
-  }
-
   .canvas-styles-header {
     background-color: #212325;
     color: #ffffff;

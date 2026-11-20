@@ -10,6 +10,7 @@ import useWindowResize from '@/_hooks/useWindowResize';
 import useStore from '@/AppBuilder/_stores/store';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
+import { ToolTip } from '@/_components/ToolTip';
 import RuntimeInspector from '@/AppBuilder/QueryPanel/RuntimeInspector/RuntimeInspector';
 import RuntimeDebugger from '@/AppBuilder/QueryPanel/RuntimeDebugger/RuntimeDebugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -17,13 +18,16 @@ import {
   RUNTIME_PANEL_ITEMS,
   PANEL_MOTION,
   getRuntimePanelContentStyle,
-  getRuntimePanelMeasuredHeight,
+  getRuntimePanelCommittedHeight,
   getRuntimePanelRightOffset,
   getRuntimePanelTheme,
   getRuntimeTabClickAction,
+  getRuntimeToggleLabel,
 } from '@/AppBuilder/panelLayout';
 
 const RUNTIME_PANEL_ICONS = { inspect: ScanSearch, debugger: Bug };
+
+const getDragTop = (clientY) => Math.min(Math.max((clientY / window.innerHeight) * 100, 45), 92);
 
 export const QueryPanel = ({ darkMode }) => {
   const { moduleId, appType } = useModuleContext();
@@ -50,7 +54,7 @@ export const QueryPanel = ({ darkMode }) => {
   const panelRef = useRef(null);
   const [height, setHeight] = useState(panelPreferences.current.panelTop ?? 70);
   const [isResizeHandleActive, setResizeHandleActive] = useState(false);
-  const [windowSize, isWindowResizing] = useWindowResize();
+  const [windowSize] = useWindowResize();
 
   useEffect(() => {
     const unsubscribe = useStore.subscribe(({ queryPanel: { selectedQuery } }, prevState) => {
@@ -69,10 +73,11 @@ export const QueryPanel = ({ darkMode }) => {
     return unsubscribe;
   }, []);
 
+  // A drag commits once, on release, so the canvas does not re-layout on every move.
   useEffect(() => {
-    const measuredHeight = panelRef.current?.offsetHeight ?? 0;
-    setQueryPanelHeight(getRuntimePanelMeasuredHeight(isQueryPaneExpanded, measuredHeight));
-  }, [windowSize.height, isQueryPaneExpanded, isWindowResizing, setQueryPanelHeight]);
+    if (isDraggingQueryPane) return;
+    setQueryPanelHeight(getRuntimePanelCommittedHeight(isQueryPaneExpanded, height, windowSize.height));
+  }, [windowSize.height, isQueryPaneExpanded, isDraggingQueryPane, height, setQueryPanelHeight]);
 
   useEffect(() => {
     if (isQueryPaneExpanded) {
@@ -89,12 +94,16 @@ export const QueryPanel = ({ darkMode }) => {
     localStorage.setItem('runtimePanelPreferences', JSON.stringify(panelPreferences.current));
   }, []);
 
+  // Remembers the open state however the drawer was opened or closed (tabs, toggle, Inspect links).
+  useEffect(() => {
+    persistPanel(isQueryPaneExpanded);
+  }, [isQueryPaneExpanded, persistPanel]);
+
   const toggleRuntimePanel = useCallback(() => {
     const expanded = !isQueryPaneExpanded;
     setIsQueryPaneExpanded(expanded);
-    persistPanel(expanded, height);
     if (!expanded) setQueryPanelHeight(0);
-  }, [height, isQueryPaneExpanded, persistPanel, setIsQueryPaneExpanded, setQueryPanelHeight]);
+  }, [isQueryPaneExpanded, setIsQueryPaneExpanded, setQueryPanelHeight]);
 
   const selectTab = (tab) => {
     if (getRuntimeTabClickAction(tab, activeTab, isQueryPaneExpanded) === 'close') {
@@ -105,10 +114,7 @@ export const QueryPanel = ({ darkMode }) => {
     setTabDirection(Math.sign(tabIndex(tab) - tabIndex(activeTab)));
     setActiveTab(tab);
     if (tab === 'debugger') resetUnreadErrorCount();
-    if (!isQueryPaneExpanded) {
-      setIsQueryPaneExpanded(true);
-      persistPanel(true, height);
-    }
+    if (!isQueryPaneExpanded) setIsQueryPaneExpanded(true);
   };
 
   // Sliding underline: measured from the active tab so it glides between tabs of different widths.
@@ -123,7 +129,7 @@ export const QueryPanel = ({ darkMode }) => {
       const panelTop = Math.round(panelRef.current.getBoundingClientRect().top);
       const overHandle = event.clientY >= panelTop && event.clientY <= panelTop + 3;
       if (overHandle !== isResizeHandleActive) setResizeHandleActive(overHandle);
-      if (isDraggingQueryPane) setHeight(Math.min(Math.max((event.clientY / window.innerHeight) * 100, 45), 92));
+      if (isDraggingQueryPane) setHeight(getDragTop(event.clientY));
     },
     [isDraggingQueryPane, isResizeHandleActive]
   );
@@ -131,11 +137,14 @@ export const QueryPanel = ({ darkMode }) => {
   useEventListener('mousemove', onMouseMove);
   useEventListener(
     'mouseup',
-    () => {
+    (event) => {
       if (!isDraggingQueryPane) return;
+      // Taken from the release point, because `height` is a render behind when the last move and the
+      // release land in the same frame.
+      const panelTop = getDragTop(event.clientY);
       setIsDraggingQueryPane(false);
-      persistPanel(true, height);
-      setQueryPanelHeight(getRuntimePanelMeasuredHeight(true, panelRef.current?.offsetHeight ?? 0));
+      setHeight(panelTop);
+      persistPanel(true, panelTop);
     },
     document
   );
@@ -183,19 +192,21 @@ export const QueryPanel = ({ darkMode }) => {
             aria-hidden="true"
           />
         )}
-        <button
-          className="runtime-panel-toggle"
-          onClick={toggleRuntimePanel}
-          aria-label="Toggle runtime panel"
-          // Kept from the old Queries toggle: Cypress specs open and close the bottom panel through it.
-          data-cy="query-manager-toggle-button"
-        >
-          {isQueryPaneExpanded ? <PanelBottomClose size={14} /> : <PanelBottomOpen size={14} />}
-        </button>
+        <ToolTip message={getRuntimeToggleLabel(isQueryPaneExpanded, activeTab)} placement="top">
+          <button
+            className="runtime-panel-toggle"
+            onClick={toggleRuntimePanel}
+            aria-label={getRuntimeToggleLabel(isQueryPaneExpanded, activeTab)}
+            // Kept from the old Queries toggle: Cypress specs open and close the bottom panel through it.
+            data-cy="query-manager-toggle-button"
+          >
+            {isQueryPaneExpanded ? <PanelBottomClose size={14} /> : <PanelBottomOpen size={14} />}
+          </button>
+        </ToolTip>
       </div>
       <div
         ref={panelRef}
-        className={cx('query-pane runtime-panel-content', isQueryPaneExpanded ? 'expanded' : 'collapsed')}
+        className={cx('tj-panel query-pane runtime-panel-content', isQueryPaneExpanded ? 'expanded' : 'collapsed')}
         data-state={isQueryPaneExpanded ? 'open' : 'closed'}
         style={{
           ...getRuntimePanelContentStyle(isQueryPaneExpanded, height),

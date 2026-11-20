@@ -68,10 +68,10 @@ describe('Inspector Additional Actions accordion for PDF', () => {
       />
     );
 
-    expect(screen.getByText('Additional Actions')).toBeInTheDocument();
+    expect(screen.getByText('Additional actions')).toBeInTheDocument();
     // The collapseWhenHidden control must render INSIDE the Additional Actions
     // accordion item (not merely somewhere in the inspector).
-    const accordionItem = screen.getByText('Additional Actions').closest('.accordion-item');
+    const accordionItem = screen.getByText('Additional actions').closest('.accordion-item');
     expect(within(accordionItem).getByTestId('inspector-element-collapseWhenHidden')).toBeInTheDocument();
   });
 });

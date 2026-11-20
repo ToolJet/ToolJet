@@ -21,7 +21,9 @@ import { resolveReferences, validateKebabCase } from '@/_helpers/utils';
 import { ToolTip as InspectorTooltip } from '../../Inspector/Elements/Components/ToolTip';
 import { shallow } from 'zustand/shallow';
 import { Button } from '@/components/ui/Button/Button';
+import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { getPastPanelOffset } from '@/AppBuilder/panelLayout';
 
 const POPOVER_TITLES = {
   add: {
@@ -39,6 +41,22 @@ const POPOVER_TITLES = {
     group: 'Edit nav group',
   },
 };
+
+// Measures the panel's shell, not its content, because the content slides in with a transform.
+export const getPagePopupPopperConfig = (target) => ({
+  modifiers: [
+    {
+      name: 'offset',
+      options: {
+        offset: (rects) =>
+          getPastPanelOffset(
+            target?.closest('.sidebar-h-100-popover')?.getBoundingClientRect().right,
+            window.innerWidth
+          )(rects),
+      },
+    },
+  ],
+});
 
 const OPEN_APP_MODES = [
   { label: 'New tab', value: 'new_tab' },
@@ -76,6 +94,9 @@ export const AddEditPagePopup = forwardRef(
     const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
     const [page, setPage] = useState(editingPage || props?.page);
+    // The page as saved now. `page` is a snapshot that isn't refreshed after an update (the update clears
+    // editingPage), so "did this field change?" checks must compare against the store.
+    const savedPage = pages.find((p) => p.id === page?.id) ?? page;
 
     const showPageHeaderOnDesktop = useStore(
       (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageHeader?.showOnDesktop,
@@ -297,7 +318,7 @@ export const AddEditPagePopup = forwardRef(
     };
 
     const handleSave = () => {
-      if (handle === page.handle) {
+      if (handle === savedPage?.handle) {
         setError(null);
         return;
       }
@@ -320,7 +341,9 @@ export const AddEditPagePopup = forwardRef(
       >
         <Popover.Header>
           <div className="d-flex justify-content-between align-items-center">
-            <div className="tj-text-xsm font-weight-500 text-default">{POPOVER_TITLES?.[mode]?.[type]}</div>
+            <div className="add-new-page-popup__title tj-text-xsm font-weight-500 text-default">
+              {POPOVER_TITLES?.[mode]?.[type]}
+            </div>
             <div className="actions-container">
               {!['group', 'custom'].includes(type) && (
                 <>
@@ -329,6 +352,7 @@ export const AddEditPagePopup = forwardRef(
                       key="go-to-page-btn"
                       fill="var(--icon-strong)"
                       leadingIcon="arrowright01"
+                      aria-label="Go to page"
                       iconOnly
                       variant="ghost"
                       size="medium"
@@ -343,6 +367,7 @@ export const AddEditPagePopup = forwardRef(
                   key="duplicate-page-btn"
                   fill="var(--icon-strong)"
                   leadingIcon="duplicatepage"
+                  aria-label={`Duplicate ${type === 'group' ? 'group' : 'page'}`}
                   iconOnly
                   variant="ghost"
                   size="medium"
@@ -353,8 +378,10 @@ export const AddEditPagePopup = forwardRef(
               <ToolTip message={`Delete ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
                 <Button
                   key="delete-page-btn"
+                  data-cy="delete-page-button"
                   fill="var(--icon-strong)"
                   leadingIcon="delete01"
+                  aria-label={`Delete ${type === 'group' ? 'group' : 'page'}`}
                   iconOnly
                   variant="ghost"
                   size="medium"
@@ -365,15 +392,11 @@ export const AddEditPagePopup = forwardRef(
                 />
               </ToolTip>
               {embedded && (
-                <Button
+                <PanelCloseButton
                   key="close-page-configuration"
-                  leadingIcon="x"
-                  iconOnly
-                  variant="ghost"
-                  size="medium"
-                  isLucid
-                  aria-label="Close page configuration"
-                  onClick={onClose}
+                  label="Close page configuration"
+                  dataCy="close-page-configuration-button"
+                  onClose={onClose}
                 />
               )}
             </div>
@@ -390,7 +413,7 @@ export const AddEditPagePopup = forwardRef(
                 autoFocus={true}
                 onChange={(e) => setPageName(e.target.value)}
                 onBlur={() => {
-                  pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
+                  pageName && pageName !== savedPage?.name && updatePageName(page?.id, pageName);
                 }}
                 minLength="1"
                 maxLength="32"
@@ -424,7 +447,7 @@ export const AddEditPagePopup = forwardRef(
                   onChange={(e) => setPageURL(e.target.value)}
                   className="form-control"
                   value={pageURL}
-                  onBlur={(e) => page?.url !== e.target.value && updatePageURL(page?.id, pageURL)}
+                  onBlur={(e) => savedPage?.url !== e.target.value && updatePageURL(page?.id, pageURL)}
                   minLength="1"
                 />
               </div>
@@ -466,7 +489,7 @@ export const AddEditPagePopup = forwardRef(
               {isInvalid && (
                 <div className="tw-mt-1 tw-flex tw-items-center tw-gap-1">
                   <AlertTriangle className="tw-h-[12px] tw-w-[12px] tw-shrink-0 tw-text-[var(--icon-danger)]" />
-                  <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-[var(--text-danger)]">
+                  <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-editor-text-danger">
                     {linkedAppErrorMessage}
                   </span>
                 </div>
@@ -508,6 +531,7 @@ export const AddEditPagePopup = forwardRef(
                 <label className="form-label font-weight-400 mb-0">Mark as home</label>
                 <label className={`form-switch`}>
                   <input
+                    aria-label="Mark as home"
                     className="form-check-input"
                     type="checkbox"
                     checked={isHomePage}
@@ -530,6 +554,7 @@ export const AddEditPagePopup = forwardRef(
                 <label className="form-label font-weight-400 mb-0">Disable page</label>
                 <label className={`form-switch`}>
                   <input
+                    aria-label="Disable page"
                     className="form-check-input"
                     type="checkbox"
                     checked={page?.disabled}
@@ -557,6 +582,7 @@ export const AddEditPagePopup = forwardRef(
               </label>
               <label className={`form-switch`}>
                 <input
+                  aria-label="Show page header on desktop"
                   className="form-check-input"
                   type="checkbox"
                   checked={showPageHeaderOnDesktop ?? false}
@@ -583,6 +609,7 @@ export const AddEditPagePopup = forwardRef(
               </label>
               <label className={`form-switch`}>
                 <input
+                  aria-label="Show page header on mobile"
                   className="form-check-input"
                   type="checkbox"
                   checked={showPageHeaderOnMobile ?? false}
@@ -612,6 +639,7 @@ export const AddEditPagePopup = forwardRef(
               </label>
               <label className={`form-switch`}>
                 <input
+                  aria-label="Show page footer on desktop"
                   className="form-check-input"
                   type="checkbox"
                   checked={showPageFooterOnDesktop ?? false}
@@ -638,6 +666,7 @@ export const AddEditPagePopup = forwardRef(
               </label>
               <label className={`form-switch`}>
                 <input
+                  aria-label="Show page footer on mobile"
                   className="form-check-input"
                   type="checkbox"
                   checked={showPageFooterOnMobile ?? false}
@@ -702,9 +731,7 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
         <div className={`field`}>
           <InspectorTooltip
             label={`${page?.type === 'default' ? 'Hide this page on navigation' : 'Hide this item on navigation'}`}
-            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
-              darkMode && 'color-whitish-darkmode'
-            }`}
+            labelClass={`form-label font-weight-400 ${forceCodeBox ? 'mb-2' : 'mb-0'}`}
           />
         </div>
         <div className={`flex-grow-1`}>
@@ -730,6 +757,7 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
             {!forceCodeBox && (
               <div className="form-switch m-0">
                 <input
+                  aria-label={`Hide this ${page?.type === 'default' ? 'page' : 'item'} on navigation`}
                   className="form-check-input"
                   type="checkbox"
                   checked={resolveReferences(hidden?.value)}

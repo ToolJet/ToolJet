@@ -64,16 +64,22 @@ export const openPageEditor = (pageName) => {
 /**
  * @tjBlock  pages
  * @tjUsage  closePageEditor()
- * @tjDom    Escape + body click(5,5) → asserts addEditPagePopup not.exist
+ * @tjDom    Escape + close-page-configuration-button (or body click(5,5)) → asserts addEditPagePopup not.exist
  */
 // Close the AddEditPagePopup. Dismiss any nested Radix popover (e.g. the event
-// add-menu) first with Escape, then click far from any overlay to trigger the
-// react-bootstrap rootClose.
+// add-menu) first with Escape. The right-panel page configuration closes only via
+// its close button; the popover form closes on a click far from any overlay
+// (react-bootstrap rootClose).
 export const closePageEditor = () => {
   cy.get("body").type("{esc}");
   cy.wait(200);
-  cy.get("body").click(5, 5);
-  cy.wait(200);
+  cy.get("body").then(($body) => {
+    if ($body.find(multipageSelector.closePageConfigurationButton).length) {
+      cy.get(multipageSelector.closePageConfigurationButton).click();
+    } else {
+      cy.get("body").click(5, 5);
+    }
+  });
   cy.get(multipageSelector.addEditPagePopup).should("not.exist");
 };
 
@@ -181,14 +187,11 @@ export const modifyPageHandle = (pageName, handle) => {
 /**
  * @tjBlock  pages
  * @tjUsage  detetePage('Reports')
- * @tjDom    addEditPagePopup delete action → modalConfirmButton → asserts pageRow(handle) not visible
+ * @tjDom    addEditPagePopup delete-page-button → modalConfirmButton → asserts pageRow(handle) not visible
  */
 export const detetePage = (pageName) => {
   openPageEditor(pageName);
-  // Header action button with tooltip "Delete page" (AddNewPagePopup.jsx:334-347)
-  cy.get(`${multipageSelector.addEditPagePopup} .actions-container button`)
-    .last()
-    .click();
+  cy.get(`${multipageSelector.addEditPagePopup} ${multipageSelector.deletePageButton}`).click();
   cy.get(multipageSelector.modalConfirmButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,

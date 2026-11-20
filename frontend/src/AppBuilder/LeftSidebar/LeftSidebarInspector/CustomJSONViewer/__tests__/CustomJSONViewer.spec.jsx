@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { createAppBuilderControls } from '@/test/app-builder/controls';
 import CustomJSONViewer from '../CustomJSONViewer';
 
@@ -7,7 +7,14 @@ describe('CustomJSONViewer', () => {
   // OverflowTooltip measures labels with a ResizeObserver, which jsdom lacks.
   const controls = createAppBuilderControls();
   beforeEach(() => controls.observers.install());
-  afterEach(() => controls.restore());
+  afterEach(() => {
+    controls.restore();
+    delete navigator.clipboard;
+  });
+
+  const copied = () => navigator.clipboard.writeText.mock.calls.at(-1)[0];
+  const installClipboard = () =>
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: jest.fn() } });
 
   // Break this catches: the Debugger renders log payloads without an icon list and the panel crashes.
   it('should render values without an icon list', () => {
@@ -29,5 +36,38 @@ describe('CustomJSONViewer', () => {
     render(<CustomJSONViewer absolutePath="variables.vNull" data={null} />);
 
     expect(screen.getByText('null')).toBeInTheDocument();
+  });
+
+  // Break this catches: row Copy path on a primitive gives "variables.vString." (trailing dot).
+  it('should copy the path of a primitive value without a trailing dot', () => {
+    installClipboard();
+    render(<CustomJSONViewer absolutePath="variables.vString" data="hello" />);
+
+    fireEvent.click(screen.getByLabelText('Copy path of'));
+
+    expect(copied()).toBe('variables.vString');
+  });
+
+  // Break this catches: nested keys are joined with dots, so a key with a space or an array index
+  // gives a path that does not work inside {{ }}.
+  it('should copy a nested path the way it is written inside {{ }}', () => {
+    installClipboard();
+    render(<CustomJSONViewer absolutePath="queries.q1" data={{ rows: [{ 'full name': 'Ada' }] }} />);
+
+    fireEvent.click(screen.getByText('rows'));
+    fireEvent.click(screen.getByText('0'));
+    fireEvent.click(screen.getByLabelText('Copy path of full name'));
+
+    expect(copied()).toBe('queries.q1.rows[0]["full name"]');
+  });
+
+  // Break this catches: Copy value on a function row throws (JSON.stringify gives undefined).
+  it('should copy a function row without throwing', () => {
+    installClipboard();
+    render(<CustomJSONViewer absolutePath="components.text1" data={{ setText: () => {} }} />);
+
+    fireEvent.click(screen.getByLabelText('Copy value of setText'));
+
+    expect(copied()).toBe('function');
   });
 });

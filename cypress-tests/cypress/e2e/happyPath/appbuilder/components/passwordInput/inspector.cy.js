@@ -36,7 +36,6 @@ describe('Password Input — inspector facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-PasswordInput-App`);
         cy.openApp();
         cy.dragAndDropWidget("Password Input", 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify exposed values + functions on inspector', () => {

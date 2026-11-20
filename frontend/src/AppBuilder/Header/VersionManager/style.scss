@@ -215,7 +215,7 @@
 
     &.released {
       background-color: var(--background-success-weak);
-      color: var(--text-success);
+      color: var(--editor-text-success, var(--text-success));
     }
   }
 

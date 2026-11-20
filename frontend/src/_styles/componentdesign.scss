@@ -352,3 +352,20 @@
 input.tw-appearance-none[type="text"] {
   outline: none !important;
 }
+
+// Editor chrome colours. The shared dark --text-accent/-success/-danger fall below AA on the dark editor
+// panels, so chrome reads var(--editor-text-*, <shared token>). The class sits on <body> only while the
+// App Builder edits in dark mode (useAppBuilderChrome); widgets reset these in theme.scss.
+// The danger button's fill: #E54D2E under #FFFCFC text is 3.79:1, so the editor's is a darker red (AA).
+.app-builder-chrome {
+  --editor-danger-fill: var(--tomato11);
+  // Hover and pressed go darker than the resting fill, never lighter.
+  --editor-danger-fill-hover: color-mix(in srgb, var(--editor-danger-fill) 85%, black);
+}
+
+.app-builder-chrome--dark {
+  --editor-danger-fill: #D13415;
+  --editor-text-accent: #9EB1FF;
+  --editor-text-success: #63C174;
+  --editor-text-danger: #FF6369;
+}

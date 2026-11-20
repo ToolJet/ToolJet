@@ -32,7 +32,7 @@ export const OverlayTriggerComponent = ({
       }}
     >
       <span>
-        {tooltipId && <Tooltip id={tooltipId} className="tooltip" />}
+        {tooltipId && <Tooltip id={tooltipId} className="tooltip tj-widget-overlay" />}
         {modifiedChild}
       </span>
     </OverlayTrigger>

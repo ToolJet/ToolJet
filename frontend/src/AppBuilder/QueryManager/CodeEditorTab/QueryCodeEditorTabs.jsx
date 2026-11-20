@@ -19,7 +19,7 @@ const TAB_CHECK_INTERVAL_MS = 500;
  * opened, so the editor is this app's React tree portalled into it: it shares the store, and edits,
  * runs, environment and freeze state are the app tab's own. The tabs close with the app tab.
  */
-const QueryCodeEditorTabs = () => {
+const QueryCodeEditorTabs = ({ darkMode = false }) => {
   const queryIds = useStore((state) => state.queryPanel.codeEditorTabQueryIds, shallow);
 
   useEffect(() => {
@@ -31,12 +31,21 @@ const QueryCodeEditorTabs = () => {
     };
   }, []);
 
-  return queryIds.map((queryId) => <CodeEditorTabPortal key={queryId} queryId={queryId} />);
+  return queryIds.map((queryId) => <CodeEditorTabPortal key={queryId} queryId={queryId} darkMode={darkMode} />);
 };
 
-const CodeEditorTabPortal = ({ queryId }) => {
+const CodeEditorTabPortal = ({ queryId, darkMode }) => {
   const closeCodeEditorTab = useStore((state) => state.queryPanel.closeCodeEditorTab);
   const [container, setContainer] = useState(null);
+
+  // The editor marks dark mode on its own root, not on <body>, so copying the app tab's body classes
+  // leaves this tab light. Mark the tab's body directly.
+  useEffect(() => {
+    const body = container?.ownerDocument?.body;
+    if (!body) return;
+    body.classList.toggle('theme-dark', darkMode);
+    body.classList.toggle('dark-theme', darkMode);
+  }, [container, darkMode]);
   // The editor's pending edit, written before the tab goes away.
   const flushRef = useRef(() => {});
 
