@@ -123,6 +123,9 @@ describe('VersionUtilService.validateVersionCreate', () => {
         { provide: OrganizationGitSyncRepository, useValue: { findOrgGitByOrganizationId: jest.fn() } },
         { provide: AppHistoryUtilService, useValue: {} },
         { provide: GitSyncConfigsUtilService, useValue: gitSyncConfigsUtilService },
+        { provide: AppsUtilService, useValue: {} },
+        { provide: TooljetDbRelationResolverService, useValue: {} },
+        { provide: AppValidationService, useValue: {} },
       ],
     }).compile();
 
