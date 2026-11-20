@@ -45,6 +45,10 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   folder mappings (`DataQueryFolderMappingRepository`), permission-aware `getAll` (`getAllWithPermissions` in edit mode).
 - EE util `runQuery` override: query-level access check (`AppPermissionsUtilService.checkQueryAccess`)
   in `view` mode, gated by `LICENSE_FIELD.APP_PERMISSIONS_QUERY`; public app + any query permission = denied.
+  Some apps check it whatever the mode and let their editors through: `ee/app-permissions/code-app-limits.ts`.
+- A refused query is HTTP 201 with `status: 'failed'` and `data.type: 'tj-401'`, on purpose: the frontend's
+  `handleResponse` treats any HTTP 401 as an expired session (reload or log out), and the query panel reads `tj-401`
+  from the body to show the refusal.
 - EE controller adds `POST /workflow-node` (create workflow-node query) and re-guards run/update endpoints.
 
 ## Invariants & gotchas
@@ -56,6 +60,9 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   priority-1 (development) Environment version is editable.
 - Data source credentials are per-Environment **and per-branch**: always pass `branchId` through to
   `getOptions`; `null` branchId falls back to the default data source option row.
+- `runQueryOnBuilder` saves the sent `options` back (editor convenience) but skips the write when the
+  git-sync edit rule forbids it (e.g. synced draft on the default branch under branching) — the run itself
+  still executes. Update/create/delete enforce the same rule as a 403 via `GitSyncQueryEditGuard`.
 - Delete removes query events first (`deleteDataQueryEvents`) inside the same transaction.
 - `after*` history hooks are fire-and-forget — never await them in request flow.
 - Never abbreviate `data_source` as `ds`.

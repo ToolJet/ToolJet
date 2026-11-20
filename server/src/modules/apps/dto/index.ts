@@ -32,6 +32,11 @@ export class AppCreateDto {
   @IsOptional()
   @IsUUID()
   branchId?: string;
+
+  /** How the app is built; default 'visual'. 'code' only where the edition supports it. */
+  @IsOptional()
+  @IsIn(['visual', 'code'], { message: 'buildMode must be visual or code.' })
+  buildMode?: 'visual' | 'code';
 }
 
 export class AppUpdateDto {
@@ -50,6 +55,10 @@ export class AppUpdateDto {
   @IsBoolean()
   @IsOptional()
   is_maintenance_on: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  workflow_enabled?: boolean;
 
   @IsString()
   @IsOptional()
@@ -173,4 +182,10 @@ export class VersionReleaseDto {
   @IsUUID()
   @Transform(({ value }) => sanitizeInput(value))
   versionToBeReleased: string;
+
+  // The released version the Release dialog showed ('' for none): a release by someone else since is refused
+  // rather than silently replaced (release-baseline.ts). Absent, nothing is checked.
+  @IsOptional()
+  @IsString()
+  expectedReleasedVersionId?: string;
 }

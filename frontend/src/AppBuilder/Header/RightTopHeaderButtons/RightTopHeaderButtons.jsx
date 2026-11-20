@@ -26,7 +26,6 @@ const RightTopHeaderButtons = ({ isModuleEditor, isAppUnsyncedToGit = false }) =
     <div className="d-flex justify-content-end navbar-right-section">
       <div className=" release-buttons">
         <GitSyncManager />
-        <div className="tw-hidden navbar-seperator" />
         {/* <PreviewAndShareIcons /> */}
         {/* An unsynced app's "Sync" CTA must stay reachable on every environment/version —
             without this OR, this wrapper never even mounts LifecycleCTAButton outside dev,

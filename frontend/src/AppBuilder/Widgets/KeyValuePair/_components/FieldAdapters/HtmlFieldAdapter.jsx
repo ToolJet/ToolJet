@@ -1,5 +1,6 @@
 import React from 'react';
 import { HTMLRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/HTMLRenderer';
+import { getOverlayContainer } from '../../_utils/overlayContainer';
 
 /**
  * HtmlFieldAdapter - KeyValuePair adapter for HTML display
@@ -16,6 +17,7 @@ export const HtmlField = ({
   isEditing,
   id,
   field,
+  overlayContainer = getOverlayContainer,
 }) => {
   return (
     <HTMLRenderer
@@ -30,6 +32,7 @@ export const HtmlField = ({
       setIsEditing={setIsEditing}
       isEditing={isEditing}
       id={id}
+      overlayContainer={overlayContainer}
     />
   );
 };

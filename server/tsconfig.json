@@ -40,10 +40,17 @@
       "@otel/*": [
         "src/otel/*"
       ],
+      "@migrations/*": [
+        "migrations/*"
+      ],
+      "test-helper": [
+        "test/test.helper"
+      ]
     },
   },
   "exclude": [
     "node_modules",
     "dist",
+    "ee/packages",
   ]
 }

@@ -43,6 +43,7 @@ export const usersText = {
   activeStatus: "active",
   archivedStatus: "archived",
   invitedStatus: "invited",
+  reinviteButton: "Reinvite",
   archivedToast: "The user has been archived",
   unarchivedToast: "The user has been unarchived",
   inviteToast: "Added to the workspace successfully.",

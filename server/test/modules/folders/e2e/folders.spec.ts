@@ -20,6 +20,8 @@ import {
 } from 'test-helper';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { Folder } from 'src/entities/folder.entity';
+import { FolderApp } from 'src/entities/folder_app.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
@@ -198,6 +200,33 @@ describe('FoldersController', () => {
       });
     });
 
+    it('should not count a folder member that has no version on the requested branch', async () => {
+      const adminUserData = await createUser(nestApp, { email: 'admin@tooljet.io' });
+      const loggedUser = await login(nestApp);
+      const organizationId = adminUserData.organization.id;
+
+      const folder = await createFolder(nestApp, { name: 'Folder1', type: FOLDER_TYPE, organizationId });
+      const app = await createApplication(nestApp, { name: 'Main only app', user: adminUserData.user });
+      await createApplicationVersion(nestApp, app);
+      const mainMembership = await addAppToFolder(nestApp, app, folder);
+
+      // Branch creation copies folder memberships even for apps that never reach the new branch.
+      const feature = await saveEntity(WorkspaceBranch, { organizationId, name: 'feature', isDefault: false } as any);
+      await saveEntity(FolderApp, { folderId: folder.id, appId: app.id, branchId: feature.id } as any);
+
+      const countOn = async (branchId: string) => {
+        const response = await request(nestApp.getHttpServer())
+          .get(`/api/folder-apps?type=${FOLDER_TYPE}&branch_id=${branchId}`)
+          .set('tj-workspace-id', organizationId)
+          .set('Cookie', loggedUser.tokenCookie)
+          .expect(200);
+        return response.body.folders.find((f) => f.id === folder.id).count;
+      };
+
+      expect(await countOn(mainMembership.branchId)).toBe(1);
+      expect(await countOn(feature.id)).toBe(0);
+    });
+
     it('should scope folders and app for user based on permission', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
@@ -240,6 +269,7 @@ describe('FoldersController', () => {
         name: 'App in folder',
         user: adminUserData.user,
       });
+      await createApplicationVersion(nestApp, appInFolder);
       await addAppToFolder(nestApp, appInFolder, folder);
 
       const appInFolder2 = await createApplication(
@@ -251,6 +281,7 @@ describe('FoldersController', () => {
         false
       );
 
+      await createApplicationVersion(nestApp, appInFolder2);
       await addAppToFolder(nestApp, appInFolder2, folder2);
 
       await createApplication(
@@ -980,6 +1011,7 @@ describe('FoldersController', () => {
         name: 'App3',
         user: adminData.user,
       });
+      await createApplicationVersion(nestApp, app);
       await addAppToFolder(nestApp, app, folder);
 
       // grant app-level view via custom group — no folder grant
@@ -1041,7 +1073,9 @@ describe('FoldersController', () => {
         },
         false
       );
+      await createApplicationVersion(nestApp, app1);
       await addAppToFolder(nestApp, app1, folder1);
+      await createApplicationVersion(nestApp, app2);
       await addAppToFolder(nestApp, app2, folder2);
 
       await createGroupPermission(nestApp, {
@@ -1097,6 +1131,7 @@ describe('FoldersController', () => {
         name: 'App5',
         user: adminData.user,
       });
+      await createApplicationVersion(nestApp, app);
       await addAppToFolder(nestApp, app, folderWithApp);
 
       await createGroupPermission(nestApp, {

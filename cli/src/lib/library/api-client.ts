@@ -1,0 +1,124 @@
+import fetch = require('node-fetch');
+import FormData = require('form-data');
+
+import { buildUploadFormData } from './upload-form';
+import { parseApiErrorMessage } from '../api-error';
+import { ensureCompatible } from '../compatibility';
+import { type DirectIdentity, credentialFetchOptions, credentialHeaders } from '../direct-credential';
+
+export class ApiClient {
+  private readonly baseUrl: string;
+
+  /**
+   * `apiToken` is a personal access token, or with `direct` a credential ToolJet takes as it is (direct-credential.ts):
+   * the ToolJet session or MCP OAuth delegation of the user a build runs as (its MCP server has no personal token).
+   * Then requests carry that credential and the workspace instead.
+   */
+  constructor(
+    baseUrl: string,
+    private readonly apiToken: string,
+    private readonly direct?: DirectIdentity
+  ) {
+    this.baseUrl = baseUrl.replace(/\/+$/, '');
+  }
+
+  private authHeaders(): Record<string, string> {
+    return credentialHeaders(this.apiToken, this.direct);
+  }
+
+  private async handleResponse<T>(res: import('node-fetch').Response): Promise<T> {
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`${parseApiErrorMessage(res.status, text)} (on ${this.baseUrl})`);
+    }
+
+    return res.json() as Promise<T>;
+  }
+
+  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+    await ensureCompatible(this.baseUrl);
+    const res = await fetch(`${this.baseUrl}/api${path}`, {
+      method,
+      headers: {
+        ...this.authHeaders(),
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      ...credentialFetchOptions(this.direct?.kind),
+    });
+
+    return this.handleResponse<T>(res);
+  }
+
+  // Attaching the 'error' listener before starting the fetch is what matters here — a stream
+  // failure while reading a file (deleted mid-upload, permission error) surfaces as a rejected
+  // promise instead of an unhandled 'error' event that would crash the process.
+  private async sendForm<T>(method: string, path: string, form: FormData): Promise<T> {
+    await ensureCompatible(this.baseUrl);
+    return new Promise<T>((resolve, reject) => {
+      form.once('error', (err: unknown) => reject(err instanceof Error ? err : new Error(String(err))));
+
+      fetch(`${this.baseUrl}/api${path}`, {
+        method,
+        headers: { ...this.authHeaders(), ...form.getHeaders() },
+        body: form,
+        ...credentialFetchOptions(this.direct?.kind),
+      })
+        .then((res) => this.handleResponse<T>(res))
+        .then(resolve, reject);
+    });
+  }
+
+  // POST /api/custom-component-libraries
+  async createLibrary(name: string): Promise<{ id: string; name: string; correlationId: string }> {
+    return this.request('POST', '/custom-component-libraries', { name });
+  }
+
+  // GET /api/custom-component-libraries/:correlationId — reports whether the library exists,
+  // rather than throwing on a 404, so callers can decide whether to offer to create it.
+  async verifyLibrary(correlationId: string): Promise<{ exists: boolean }> {
+    await ensureCompatible(this.baseUrl);
+    const res = await fetch(`${this.baseUrl}/api/custom-component-libraries/${correlationId}`, {
+      method: 'GET',
+      headers: this.authHeaders(),
+      ...credentialFetchOptions(this.direct?.kind),
+    });
+
+    if (res.status === 404) return { exists: false };
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`${parseApiErrorMessage(res.status, text)} (on ${this.baseUrl})`);
+    }
+
+    return { exists: true };
+  }
+
+  // POST /api/custom-component-libraries/find-or-create
+  async findOrCreateLibrary(
+    correlationId: string,
+    name: string
+  ): Promise<{ id: string; name: string; correlationId: string; created: boolean; organizationId: string }> {
+    return this.request('POST', '/custom-component-libraries/find-or-create', { correlationId, name });
+  }
+
+  // POST /api/custom-component-libraries/:correlationId/dev (multipart)
+  async uploadDev(correlationId: string, distDir: string): Promise<{ devUploadedAt: string }> {
+    const form = buildUploadFormData(distDir);
+    return this.sendForm('POST', `/custom-component-libraries/${correlationId}/dev`, form);
+  }
+
+  // POST /api/custom-component-libraries/:correlationId/revisions (multipart)
+  async publishRevision(
+    correlationId: string,
+    distDir: string,
+    version: string,
+    message?: string
+  ): Promise<{ id: string; version: string; bundleUrl: string }> {
+    const form = buildUploadFormData(distDir, { version, ...(message ? { message } : {}) });
+    return this.sendForm('POST', `/custom-component-libraries/${correlationId}/revisions`, form);
+  }
+
+  async login(): Promise<{ email: string; organizationId: string }> {
+    return this.request('GET', '/personal-access-tokens/validate');
+  }
+}

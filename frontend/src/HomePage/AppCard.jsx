@@ -14,6 +14,7 @@ import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getPrivateRoute, getSubpath, getHostURL } from '@/_helpers/routes';
 import { validateName, decodeEntities, hasBuilderRole } from '@/_helpers/utils';
 import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
+import { canShowPreviewButton, canShowBuildModeTag } from './appCardActions';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService, gitSyncService } from '@/_services';
 import { toast } from 'react-hot-toast';
@@ -21,6 +22,7 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
 import { appendBranchName } from '@/_helpers/active-branch';
+import { BuildModeBadge } from '@/AppBuilder/_helpers/codeModeHooks';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
 const { defaultIcon } = configs;
@@ -65,7 +67,7 @@ export default function AppCard({
 
   const handlePushClick = async () => {
     try {
-      const rt = appType === 'module' ? 'module' : 'app';
+      const rt = appType === 'workflow' ? 'workflow' : appType === 'module' ? 'module' : 'app';
       const result = await gitSyncService.validatePush(app.id, rt);
       if (!result.valid) {
         setPushValidationError({
@@ -328,8 +330,7 @@ export default function AppCard({
   }
   const isStub = app?.app_versions?.[0]?.is_stub;
   const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
-  const isUnsynced =
-    isGitSyncConfigured && wsCurrentBranch && isOnDefaultBranch && !app?.is_app_synced && appType !== 'workflow';
+  const isUnsynced = isGitSyncConfigured && wsCurrentBranch && isOnDefaultBranch && !app?.is_app_synced;
 
   // Draft version id an unsynced app would push — same rule used for `app` below, applied to
   // every sibling so the "Select app" picker in PushAppsModal can push whichever one is chosen.
@@ -430,9 +431,11 @@ export default function AppCard({
                           canUpdateApp={canUpdateApp(app)}
                           deleteApp={() => deleteApp(app)}
                           exportApp={() => {
-                            if (isStub && appType !== 'workflow') {
+                            if (isStub) {
                               toast.error(
-                                'App contents are still syncing from Git. Open the app to finish loading, then try again.',
+                                appType === 'workflow'
+                                  ? 'Workflow contents are still syncing from Git. Open the app to finish loading, then try again.'
+                                  : 'App contents are still syncing from Git. Open the app to finish loading, then try again.',
                                 { position: 'top-center' }
                               );
                               return;
@@ -458,13 +461,19 @@ export default function AppCard({
             <div>
               <AppNameDisplay tooltipRef={tooltipRef} />
             </div>
-            <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
+            <div
+              className="app-creation-time-container tw-flex tw-items-center tw-gap-2"
+              style={{ marginBottom: '12px' }}
+            >
               {canUpdate && (
-                <div className="app-creation-time tj-text-xsm" data-cy="app-creation-details">
+                <div className="app-creation-time tj-text-xsm tw-min-w-0" data-cy="app-creation-details">
                   <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
                     <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
                   </ToolTip>
                 </div>
+              )}
+              {canShowBuildModeTag({ role: session?.role }) && (
+                <BuildModeBadge buildMode={app?.build_mode ?? app?.buildMode} variant="card" />
               )}
             </div>
             <div className="appcard-buttons-wrap">
@@ -519,7 +528,7 @@ export default function AppCard({
                   </ToolTip>
                 </div>
               )}
-              {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
+              {canShowPreviewButton({ appType, canUpdate, canView, hasNonReleasedPreviewAccess }) && ViewButton}
               {!isStub && appType !== 'module' && LaunchButton}
             </div>
           </div>
@@ -529,7 +538,7 @@ export default function AppCard({
         <PushAppsModal
           show={pushModalOpen}
           onClose={() => setPushModalOpen(false)}
-          resourceType={appType === 'module' ? 'module' : 'app'}
+          resourceType={appType === 'workflow' ? 'workflow' : appType === 'module' ? 'module' : 'app'}
           resourceName={app.name}
           appName={app.name}
           appGitId={app.id}

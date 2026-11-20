@@ -1,3 +1,4 @@
+import { withholdsUpstreamSso } from '@modules/session/sso-exposure';
 import { invalidateUserCredentials } from '@modules/mcp-oauth/revocation';
 import { McpOAuthService } from '@modules/mcp-oauth/service';
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
@@ -157,6 +158,8 @@ export class SessionUtilService {
         ...(isPatLogin && extraData?.token ? { token: extraData?.token } : {}),
         ...(isPatLogin && extraData?.appId ? { appId: extraData?.appId, scope: 'App' } : {}),
         ...(isPatLogin && extraData?.patScope ? { patScope: extraData.patScope } : {}),
+        ...(isPatLogin && extraData?.aiAppId ? { aiAppId: extraData.aiAppId } : {}),
+        ...(isPatLogin && extraData?.fixedExpiry ? { fixedExpiry: true } : {}),
         ...(extraData?.tj_api_source ? { tj_api_source: extraData.tj_api_source } : {}),
       };
 
@@ -199,6 +202,14 @@ export class SessionUtilService {
           ? { currentOrganizationId: organization.id, currentOrganizationSlug: organization.slug }
           : { noWorkspaceAttachedInTheSession: true }),
         ...permissionData,
+        // A workspace token or render login returns a machine credential without the owner's upstream
+        // SSO data; an embed login keeps the viewer's own (sso-exposure.ts).
+        ...((isPatLogin &&
+          withholdsUpstreamSso({ isPATLogin: true, patScope: extraData?.patScope, patAppId: extraData?.appId })) ||
+        withholdsUpstreamSso(user) ||
+        withholdsUpstreamSso(loggedInUser)
+          ? { ssoUserInfo: {} }
+          : {}),
         noActiveWorkspaces,
         ...publicExtraData,
         ...(isPatLogin ? { signedPat } : {}),
@@ -224,16 +235,25 @@ export class SessionUtilService {
     appGroupPermissions: UserAppsPermissions;
     dataSourceGroupPermissions: UserDataSourcePermissions;
     folderGroupPermissions?: UserFolderPermissions;
+    dataSourceFolderGroupPermissions?: UserFolderPermissions;
     role: GroupPermissions;
     groupPermissions: GroupPermissions[];
     userPermissions: UserPermissions;
+    hasOwnPats?: boolean;
   }> {
     const groupPermissions = await this.getAllGroupsOfUser(user, manager);
     const userPermissions = await this.abilityService.resourceActionsPermission(
       user,
       {
         organizationId: user.organizationId,
-        resources: [{ resource: MODULES.APP }, { resource: MODULES.GLOBAL_DATA_SOURCE }, { resource: MODULES.FOLDER }],
+        resources: [
+          { resource: MODULES.APP },
+          { resource: MODULES.GLOBAL_DATA_SOURCE },
+          { resource: MODULES.FOLDER },
+          // Renaming a data-source folder is authorized per folder by the granular "Edit folder"
+          // grant, so the client needs the resolved id lists to gate the affordance.
+          { resource: MODULES.DATA_SOURCE_FOLDER },
+        ],
       },
       manager
     );
@@ -244,6 +264,7 @@ export class SessionUtilService {
     const appGroupPermissions = userPermissions?.[MODULES.APP];
     const dataSourceGroupPermissions = userPermissions?.[MODULES.GLOBAL_DATA_SOURCE];
     const folderGroupPermissions = userPermissions?.[MODULES.FOLDER];
+    const dataSourceFolderGroupPermissions = userPermissions?.[MODULES.DATA_SOURCE_FOLDER];
     const userDetails = await this.userRepository.getUserDetails(user.id, user.organizationId, manager);
 
     if (superAdmin && !role) {
@@ -267,6 +288,7 @@ export class SessionUtilService {
       appGroupPermissions,
       dataSourceGroupPermissions,
       folderGroupPermissions,
+      dataSourceFolderGroupPermissions,
       ssoUserInfo,
       metadata: decryptedMetadata,
       role,
@@ -553,7 +575,12 @@ export class SessionUtilService {
     return this.userRepository.getUser({ email, status: USER_STATUS.ACTIVE });
   }
 
-  async validateUserSession(userId: string, sessionId: string, organizationId?: string): Promise<void> {
+  async validateUserSession(
+    userId: string,
+    sessionId: string,
+    organizationId?: string,
+    options?: { fixedExpiry?: boolean }
+  ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const session: UserSessions = await manager.findOne(UserSessions, {
         where: {
@@ -588,7 +615,9 @@ export class SessionUtilService {
         }
 
         // Extend PAT session expiry
-        session.expiry = new Date(Date.now() + session.pat.sessionExpiryMinutes * 60 * 1000);
+        if (!options?.fixedExpiry) {
+          session.expiry = new Date(Date.now() + session.pat.sessionExpiryMinutes * 60 * 1000);
+        }
       } else {
         // Regular session extension
         if (session.expiry < now) {

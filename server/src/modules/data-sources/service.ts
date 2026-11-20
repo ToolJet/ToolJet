@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
@@ -19,6 +25,7 @@ import { GetQueryVariables, UpdateOptions } from './types';
 import { DataSource } from '@entities/data_source.entity';
 import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { IDataSourcesService } from './interfaces/IService';
+import { FolderDataSourcesUtilService } from '@modules/folder-data-sources/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import * as fs from 'fs';
@@ -36,14 +43,15 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
     protected readonly dataQueriesUtilService: DataQueriesUtilService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
-    protected readonly pluginsServiceSelector: PluginsServiceSelector
+    protected readonly pluginsServiceSelector: PluginsServiceSelector,
+    protected readonly folderDataSourcesUtilService: FolderDataSourcesUtilService
   ) {}
 
   async getForApp(
     query: GetQueryVariables,
     user: User,
     userPermissions: UserPermissions
-  ): Promise<{ data_sources: object[] }> {
+  ): Promise<{ data_sources: object[]; data_source_folders: object[] }> {
     const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
 
     // Removed: appVersionId-based branchId derivation (app_version_id dropped from data_source_versions).
@@ -57,7 +65,53 @@ export class DataSourcesService implements IDataSourcesService {
       dataSources = dataSources.filter((dataSource) => dataSource.kind !== 'workflows');
     }
     const decamelizedDatasources = decamelizeKeys(dataSources);
-    return { data_sources: decamelizedDatasources };
+
+    // Group the (already permission-filtered) data sources by their data-source folder. Only ids
+    // that survived the permission filter above are kept, and empty folders are dropped — so no
+    // permission is resolved a second time here.
+    const dataSourceFolders = await this.getDataSourceFoldersForApp(
+      user.organizationId,
+      query?.branchId,
+      dataSources.map((dataSource) => dataSource.id)
+    );
+
+    return { data_sources: decamelizedDatasources, data_source_folders: dataSourceFolders };
+  }
+
+  // Assembles the `data_source_folders` payload for getForApp: each folder's metadata plus the ids
+  // of the permitted data sources it contains. `permittedDataSourceIds` is the id list of the
+  // already permission-filtered data sources, so this only intersects — it never re-resolves
+  // permissions. Folder membership is branch-scoped; the effective branch mirrors the data-source
+  // read (the passed branch, else the org's default branch).
+  private async getDataSourceFoldersForApp(
+    organizationId: string,
+    branchId: string | undefined,
+    permittedDataSourceIds: string[]
+  ): Promise<object[]> {
+    if (permittedDataSourceIds.length === 0) return [];
+
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const effectiveBranchId =
+        branchId ?? (await DataSourcesRepository.resolveDefaultBranchId(manager, organizationId));
+      if (!effectiveBranchId) return [];
+
+      const folders = await this.folderDataSourcesUtilService.getFoldersWithDataSourceIds(
+        organizationId,
+        effectiveBranchId,
+        permittedDataSourceIds,
+        manager
+      );
+
+      return folders.map((folder) => ({
+        id: folder.id,
+        name: folder.name,
+        type: folder.type,
+        organization_id: folder.organizationId,
+        created_at: folder.createdAt,
+        updated_at: folder.updatedAt,
+        data_sources: folder.dataSourceIds,
+      }));
+    });
   }
 
   async getAll(
@@ -261,8 +315,17 @@ export class DataSourcesService implements IDataSourcesService {
           );
           await manager.update(WorkspaceBranch, { id: effectiveBranchId }, { lastSyncedCommit: null });
         }
+
+        // Drop this data source's folder mapping on the branch it was removed from. Both arms above
+        // leave the data_sources row and the branch intact, so neither folder_data_sources FK
+        // cascade fires — the mapping would otherwise linger and (on the default branch, where the
+        // DSV is hard-deleted) survive a re-add. Scoped to effectiveBranchId; other branches keep
+        // their mapping. Runs in the same transaction so the removal is atomic with the DSV change.
+        await this.folderDataSourcesUtilService.removeDataSourceFromFolders(dataSourceId, effectiveBranchId, manager);
       });
     } else {
+      // Whole data source deleted (no branch context) — the data_sources row goes, so every
+      // branch's folder_data_sources row is removed by the FK cascade. No manual cleanup needed.
       await this.dataSourcesRepository.delete(dataSourceId);
     }
 
@@ -308,9 +371,16 @@ export class DataSourcesService implements IDataSourcesService {
     testDataSourceDto: TestDataSourceDto,
     organization_id: string,
     dataSourceId?: string,
-    branchId?: string
+    branchId?: string,
+    context?: { dataSource?: DataSource; canEditDataSource?: boolean }
   ): Promise<object> {
-    return await this.dataSourcesUtilService.testConnection(testDataSourceDto, organization_id, dataSourceId, branchId);
+    return await this.dataSourcesUtilService.testConnection(
+      testDataSourceDto,
+      organization_id,
+      dataSourceId,
+      branchId,
+      context
+    );
   }
 
   async testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User) {
@@ -321,18 +391,36 @@ export class DataSourcesService implements IDataSourcesService {
       user.defaultOrganizationId
     );
     testDataSourceDto.options = dataSource.options;
+    testDataSourceDto.kind = dataSource.kind;
+    testDataSourceDto.plugin_id = dataSource.pluginId;
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
   }
 
-  async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
-    return this.dataSourcesUtilService.getAuthUrl(getDataSourceOauthUrlDto);
+  async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto, user: User): Promise<{ url: string }> {
+    const organizationId = user.organizationId;
+    const { organization_id, environment_id } = getDataSourceOauthUrlDto;
+
+    if (organization_id && organization_id !== organizationId) {
+      throw new ForbiddenException();
+    }
+
+    if (environment_id) {
+      try {
+        await this.appEnvironmentsUtilService.get(organizationId, environment_id);
+      } catch {
+        throw new NotFoundException('Environment not found');
+      }
+    }
+
+    return this.dataSourcesUtilService.getAuthUrl({ ...getDataSourceOauthUrlDto, organization_id: organizationId });
   }
 
   async authorizeOauth2(
     dataSourceId: string,
     environmentId: string,
     authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto,
-    user: User
+    user: User,
+    canConfigureDataSource: boolean
   ) {
     const { code } = authorizeDataSourceOauthDto;
 
@@ -345,14 +433,23 @@ export class DataSourcesService implements IDataSourcesService {
     if (!dataSource) {
       throw new UnauthorizedException();
     }
-    // TODO: add privilege if user has data source privilege or user should have app read privilege of the apps using the data source
+
+    // Multi-auth off = shared token; rebinding it needs configure privilege. On = per-user, open to any app user.
+    const isMultiAuthEnabled = !!dataSource.options?.['multiple_auth_enabled']?.value;
+    if (!isMultiAuthEnabled && !canConfigureDataSource) {
+      throw new ForbiddenException('You do not have permission to configure this data source');
+    }
 
     await this.dataSourcesUtilService.authorizeOauth2(dataSource, code, user.id, environmentId, user.organizationId);
     return;
   }
 
-  async findQueriesLinkedToDatasource(datasourceId: string, organizationId?: string, branchId?: string) {
-    const dataSourceDetails = await this.dataSourcesRepository.getQueriesByDatasourceId(datasourceId, branchId || null);
+  async findQueriesLinkedToDatasource(datasourceId: string, organizationId: string, branchId?: string) {
+    const dataSourceDetails = await this.dataSourcesRepository.getQueriesByDatasourceId(
+      datasourceId,
+      organizationId,
+      branchId || null
+    );
     if (dataSourceDetails.length == 0) return { datasources: 0, dependent_queries: 0 };
 
     const queries = [];

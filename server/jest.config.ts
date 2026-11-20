@@ -18,6 +18,7 @@ const shared: Config.InitialProjectOptions = {
   moduleFileExtensions: ['js', 'json', 'ts', 'node'],
   testEnvironment: 'node',
   globalSetup: '<rootDir>/test/jest-global-setup.ts',
+  globalTeardown: '<rootDir>/test/jest-global-teardown.ts',
   setupFiles: ['<rootDir>/test/jest-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/test/jest-transaction-setup.ts'],
   testRegex: 'test/modules/.*/unit/.*spec\\.ts$',
@@ -32,6 +33,7 @@ const shared: Config.InitialProjectOptions = {
   },
   moduleNameMapper: {
     '^ormconfig$': '<rootDir>/ormconfig.ts',
+    '^data-migration-config$': '<rootDir>/data-migration-config.ts',
     '^src/(.*)': '<rootDir>/src/$1',
     '^scripts/(.*)': '<rootDir>/scripts/$1',
     '^lib/(.*)': '<rootDir>/lib/$1',
@@ -41,6 +43,7 @@ const shared: Config.InitialProjectOptions = {
     '@entities/(.*)': '<rootDir>/src/entities/$1',
     '@controllers/(.*)': '<rootDir>/src/controllers/$1',
     '@modules/(.*)': '<rootDir>/src/modules/$1',
+    '^@migrations/(.*)': '<rootDir>/migrations/$1',
     '@ee/(.*)': '<rootDir>/ee/$1',
     '@apps/(.*)': '<rootDir>/ee/apps/$1',
     '@helpers/(.*)': '<rootDir>/src/helpers/$1',
@@ -52,8 +55,9 @@ const shared: Config.InitialProjectOptions = {
   },
   runner: 'groups',
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
+  // sanitize-html >= 2.18 depends on ESM-only htmlparser2 v12 and its dom* / entities deps (nested under sanitize-html).
   transformIgnorePatterns: [
-    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)(?!(thrift/node_modules/)?uuid/dist-node/)',
+    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object|(sanitize-html/node_modules/)?(htmlparser2|domhandler|domutils|domelementtype|dom-serializer|entities))/)(?!(thrift/node_modules/)?uuid/dist-node/)',
   ],
 };
 
@@ -63,6 +67,9 @@ const config: Config.InitialOptions = {
   // Global-only options: Jest ignores these inside a project.
   verbose: true,
   testTimeout: 30000,
+  // CI: recycle a worker once it holds >25% of RAM between spec files, so a leak
+  // cannot grow until the OS SIGKILLs it. Not a CLI flag; global-only.
+  ...(process.env.CI ? { workerIdleMemoryLimit: 0.25 } : {}),
   ...coverageConfig(isCE),
   coverageDirectory: '<rootDir>/coverage-unit',
 };
