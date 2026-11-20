@@ -138,7 +138,7 @@ export const ListItemPopover = ({
   );
 
   return (
-    <OverlayTrigger trigger="click" placement="bottom" rootClose onToggle={onMenuToggle} overlay={popover}>
+    <OverlayTrigger trigger="click" placement="bottom" flip rootClose onToggle={onMenuToggle} overlay={popover}>
       <div className={cx(`float-right cursor-pointer table-list-item-popover`)} data-cy="table-kebab-icon">
         <Menu width="20" height="20" />
       </div>

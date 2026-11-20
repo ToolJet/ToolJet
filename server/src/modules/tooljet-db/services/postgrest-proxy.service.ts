@@ -353,7 +353,10 @@ export class PostgrestProxyService {
     throw new NotFoundException('Internal table not found: ' + tableNamesNotInOrg);
   }
 
-  // Parses JSONB values per row; a list body (bulk insert) stays a list.
+  /**
+   * The request body with its JSONB values parsed. A list of rows (a bulk insert) stays a list and each row is checked:
+   * spread into an object, it reached PostgREST as columns "0", "1", ... and every bulk insert through the proxy failed.
+   */
   protected async validateJSONBInputs(organizationId, tableName, body, environmentId: string | undefined) {
     const tableDetails = await this.tableOperationsService.perform(
       organizationId,
@@ -380,7 +383,7 @@ export class PostgrestProxyService {
           400
         );
       }
-      return updatedRequestBody;
+      return { ...row, ...updatedRequestBody };
     };
     return Array.isArray(body) ? body.map(validateRow) : validateRow(body);
   }
