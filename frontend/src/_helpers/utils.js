@@ -1487,3 +1487,13 @@ export function utilityFuncForNameSeed(componentDef) {
       return componentDef.component.component;
   }
 }
+
+// The AI prompt cookie arrives already decoded by cookie-parser; older website flows may still send
+// it URL-encoded. Decode when possible, otherwise keep the text as-is (a literal "%" would throw).
+export function decodePromptCookie(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
