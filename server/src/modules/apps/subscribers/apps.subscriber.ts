@@ -61,6 +61,10 @@ export class AppsSubscriber implements EntitySubscriberInterface {
 
     if (skipAppEditingVersionHydration.getStore()) return;
 
+    // Partial selects (e.g. select: ['id']) don't need editingVersion, and the git-sync license
+    // lookup below needs the workspace id — cloud licenses are per workspace and throw without it.
+    if (!app.organizationId) return;
+
     // TypeORM runs this hook while the loading query still holds its pooled connection, and runs
     // it for every loaded App in parallel. Read on that same connection (event.manager) — taking
     // fresh ones per App exhausts the pool when one query loads many Apps.

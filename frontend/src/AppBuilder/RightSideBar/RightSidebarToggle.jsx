@@ -84,7 +84,7 @@ const RightSidebarToggle = ({ darkMode = false }) => {
               ? 'Component properties'
               : 'No component selected'
         }
-        disabled={!codeMode && !isAnyComponentSelected && !isCanvasHeaderSelected}
+        disabled={styleInspector?.disabled || (!codeMode && !isAnyComponentSelected && !isCanvasHeaderSelected)}
         {...(styleInspector && {
           'aria-label': 'Style inspector',
           'aria-pressed': styleInspector.active,
@@ -102,7 +102,8 @@ const RightSidebarToggle = ({ darkMode = false }) => {
           }`}
           style={{
             opacity:
-              !codeMode && !isAnyComponentSelected && !isCanvasHeaderSelected && !isCanvasFooterSelected
+              styleInspector?.disabled ||
+              (!codeMode && !isAnyComponentSelected && !isCanvasHeaderSelected && !isCanvasFooterSelected)
                 ? '0.5'
                 : undefined,
           }}
