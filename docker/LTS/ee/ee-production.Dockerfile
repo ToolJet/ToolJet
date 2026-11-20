@@ -211,7 +211,9 @@ RUN useradd --create-home --home-dir /home/appuser appuser
 
 # Copy nsjail and Python runtime from builder
 COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
-RUN chmod 4755 /usr/local/bin/nsjail
+# Not setuid: a setuid nsjail lets the server user become container root. python-execution.cfg
+# maps the jail to the starting user, which an unprivileged nsjail can do.
+RUN chmod 755 /usr/local/bin/nsjail
 
 # Copy Python runtime with pre-installed packages
 COPY --from=python-builder /opt/python-runtime /opt/python-runtime
