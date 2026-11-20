@@ -16,6 +16,7 @@ const Portal = ({ children, ...restProps }) => {
     styles,
     className,
     componentName,
+    paramLabel,
     dragResizePortal,
     callgpt,
     isCopilotEnabled,
@@ -60,6 +61,7 @@ const Portal = ({ children, ...restProps }) => {
           darkMode={darkMode}
           styles={styles}
           componentName={name}
+          paramLabel={paramLabel}
           dragResizePortal={dragResizePortal}
           callgpt={callgpt}
           isCopilotEnabled={isCopilotEnabled}
@@ -83,6 +85,7 @@ const Modal = ({
   portalStyles,
   styles,
   componentName,
+  paramLabel,
   darkMode,
   dragResizePortal,
   callgpt,
@@ -119,7 +122,7 @@ const Modal = ({
             className="codehinder-popup-badge"
             data-cy="codehinder-popup-badge"
           >
-            {componentName ?? 'Editor'}
+            {paramLabel || componentName || 'Editor'}
           </span>
         </div>
 
