@@ -12,6 +12,8 @@ export interface WorkflowExecutionOptions {
 
 export interface DataQueryExecutionOptions {
   workflow?: WorkflowExecutionOptions;
+  /** Stops the query when it fires (a workflow step's deadline); also handed to the plugin. */
+  signal?: AbortSignal;
 }
 
 export interface IDataQueriesUtilService {

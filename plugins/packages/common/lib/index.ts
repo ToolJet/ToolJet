@@ -40,8 +40,10 @@ import {
   queryErrorMessage,
 } from './ssrf-protection';
 import { QueryBuilder, QueryBuilderError, createQueryBuilder } from './queryBuilder';
+import { cancelOnAbort } from './cancel-on-abort';
 
 export {
+  cancelOnAbort,
   QueryError,
   OAuthUnauthorizedClientError,
   QueryResult,

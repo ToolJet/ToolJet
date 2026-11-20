@@ -19,7 +19,10 @@ export interface WorkflowLimits {
     maxLogBytes: number;
     maxNodeResultBytes: number;
     maxStateBytes: number;
-    /** Default per-step deadline for queries, HTTP and agent calls (capped by the run's remaining time). */
+    /**
+     * An optional cap on each step (query, agent call, Python run) below the run's remaining time.
+     * 0 = none: a step may use whatever time its run has left (decision D40).
+     */
     stepTimeoutMs: number;
     /** How long a sync request waits for a worker on top of the run timeout before answering 202. */
     syncQueueWaitSeconds: number;
@@ -63,7 +66,7 @@ export const DEFAULT_WORKFLOW_LIMITS: WorkflowLimits = Object.freeze({
     maxLogBytes: 1 * MB,
     maxNodeResultBytes: 5 * MB,
     maxStateBytes: 20 * MB,
-    stepTimeoutMs: 30_000,
+    stepTimeoutMs: 0,
     syncQueueWaitSeconds: 30,
   },
   trigger: { maxPayloadBytes: 1 * MB },
