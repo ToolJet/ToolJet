@@ -29,7 +29,10 @@ const StandardToast = ({ notification }) => (
     {({ icon, message }) => (
       <>
         {icon}
-        {message}
+        {/* Cap long messages (e.g. git push rejections) to the viewport and scroll, like the grouped editor toast */}
+        {React.isValidElement(message)
+          ? React.cloneElement(message, { className: 'standard-toast__message', tabIndex: 0 })
+          : message}
         <button
           className="btn-close"
           aria-label="Dismiss notification"
