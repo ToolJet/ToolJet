@@ -40,9 +40,18 @@ export interface WorkflowLimits {
     activeRunsPerWorkspace: number;
     queuedRunsPerWorkspace: number;
     waitingSyncRequestsPerPod: number;
+    /** Python processes one pod runs at once (D43); more wait for a free slot. */
+    pythonProcessesPerPod: number;
+    /** Bundle builds (npm/pip installs) one pod runs at once (D43). */
+    bundleBuildsPerPod: number;
   };
   waiting: { maxWaitingRunsPerWorkspace: number };
-  schedules: { maxPerWorkflow: number; maxPerWorkspace: number };
+  schedules: {
+    maxPerWorkflow: number;
+    maxPerWorkspace: number;
+    /** Each schedule's runs start a fixed 0..N seconds after their time, spreading bursts (D44). */
+    jitterMaxSeconds: number;
+  };
   /** Daily/monthly execution caps used when the plan's value is '', null or missing (decision D17). */
   quotaDefaults: {
     workspaceDailyExecutions: number;
@@ -78,9 +87,15 @@ export const DEFAULT_WORKFLOW_LIMITS: WorkflowLimits = Object.freeze({
     webhookPerWorkflow: 100,
     editorPerUser: 60,
   },
-  concurrency: { activeRunsPerWorkspace: 10, queuedRunsPerWorkspace: 200, waitingSyncRequestsPerPod: 100 },
+  concurrency: {
+    activeRunsPerWorkspace: 10,
+    queuedRunsPerWorkspace: 200,
+    waitingSyncRequestsPerPod: 100,
+    pythonProcessesPerPod: 4,
+    bundleBuildsPerPod: 2,
+  },
   waiting: { maxWaitingRunsPerWorkspace: 500 },
-  schedules: { maxPerWorkflow: 20, maxPerWorkspace: 200 },
+  schedules: { maxPerWorkflow: 20, maxPerWorkspace: 200, jitterMaxSeconds: 30 },
   // The Basic plan's values
   quotaDefaults: {
     workspaceDailyExecutions: 500,
@@ -117,9 +132,12 @@ export const WORKFLOW_LIMIT_ENV_VARS: Record<LimitPath, string> = {
   'concurrency.activeRunsPerWorkspace': 'WORKFLOW_LIMIT_ACTIVE_RUNS_PER_WORKSPACE',
   'concurrency.queuedRunsPerWorkspace': 'WORKFLOW_LIMIT_QUEUED_RUNS_PER_WORKSPACE',
   'concurrency.waitingSyncRequestsPerPod': 'WORKFLOW_LIMIT_WAITING_SYNC_REQUESTS_PER_POD',
+  'concurrency.pythonProcessesPerPod': 'WORKFLOW_LIMIT_PYTHON_PROCESSES_PER_POD',
+  'concurrency.bundleBuildsPerPod': 'WORKFLOW_LIMIT_BUNDLE_BUILDS_PER_POD',
   'waiting.maxWaitingRunsPerWorkspace': 'WORKFLOW_LIMIT_MAX_WAITING_RUNS_PER_WORKSPACE',
   'schedules.maxPerWorkflow': 'WORKFLOW_LIMIT_MAX_SCHEDULES_PER_WORKFLOW',
   'schedules.maxPerWorkspace': 'WORKFLOW_LIMIT_MAX_SCHEDULES_PER_WORKSPACE',
+  'schedules.jitterMaxSeconds': 'WORKFLOW_LIMIT_SCHEDULE_JITTER_SECONDS',
   'quotaDefaults.workspaceDailyExecutions': 'WORKFLOW_LIMIT_DEFAULT_WORKSPACE_DAILY_EXECUTIONS',
   'quotaDefaults.workspaceMonthlyExecutions': 'WORKFLOW_LIMIT_DEFAULT_WORKSPACE_MONTHLY_EXECUTIONS',
   'quotaDefaults.instanceDailyExecutions': 'WORKFLOW_LIMIT_DEFAULT_INSTANCE_DAILY_EXECUTIONS',

@@ -14,6 +14,7 @@ import { RedisRateLimiter } from '@modules/rate-limit/redis-rate-limiter';
 import { resolveWorkflowLimits, WorkflowLimits } from '@modules/workflows/limits/workflow-limits';
 import { RateBucket, RUN_RATE_WINDOW_MS, RunCaller, RunEntry, runRateBuckets } from './run-rate-limits';
 import { QueueDepthTracker } from './queue-depth';
+import { workflowMetrics } from '@modules/workflows/governance-metrics';
 
 const RUN_ENTRY_KEY = 'tj:workflow-run-entry';
 
@@ -56,6 +57,7 @@ export class RunRateLimitGuard implements CanActivate {
     const http = context.switchToHttp();
     const request = http.getRequest<RunRequest>();
     if (entry !== 'preview' && payloadBytes(request.body) > this.limits.trigger.maxPayloadBytes) {
+      workflowMetrics.admissionRefused('payload_too_large');
       throw new PayloadTooLargeException(
         `The workflow input is larger than the ${this.limits.trigger.maxPayloadBytes} bytes allowed`
       );
@@ -73,6 +75,7 @@ export class RunRateLimitGuard implements CanActivate {
         entry !== 'preview' &&
         (await this.queueDepth.isFull(caller.organizationId, this.limits.concurrency.queuedRunsPerWorkspace))
       ) {
+        workflowMetrics.admissionRefused('queue_full');
         throw new HttpException(
           'Too many workflow runs are queued for this workspace. Try again shortly.',
           HttpStatus.TOO_MANY_REQUESTS
@@ -81,6 +84,7 @@ export class RunRateLimitGuard implements CanActivate {
       return true;
     }
 
+    workflowMetrics.admissionRefused('rate_limit');
     http.getResponse().setHeader('Retry-After', String(retryAfterSeconds));
     throw new HttpException(
       `Too many workflow runs. Try again in ${retryAfterSeconds} seconds.`,
@@ -111,6 +115,7 @@ export class RunRateLimitGuard implements CanActivate {
       });
       return hit.isBlocked ? Math.ceil(hit.timeToBlockExpireMs / 1000) : 0;
     } catch {
+      workflowMetrics.admissionRefused('redis_unavailable');
       throw new ServiceUnavailableException(
         'Workflow runs from public apps are unavailable right now. Try again later.'
       );

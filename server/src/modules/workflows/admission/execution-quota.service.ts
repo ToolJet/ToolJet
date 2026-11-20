@@ -5,6 +5,7 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { resolveWorkflowLimits } from '@modules/workflows/limits/workflow-limits';
 import { QuotaPeriod, WorkflowPlanQuota, quotaLimitsFromPlan, quotaPeriods } from './execution-quota.policy';
+import { workflowMetrics } from '@modules/workflows/governance-metrics';
 
 /** Stored in workflow_executions.refused_reason for a run that was recorded but never started. */
 export const RUN_REFUSED_REASON = {
@@ -173,7 +174,10 @@ export class ExecutionQuotaService {
         .eval(RESERVE_SCRIPT, keys.length, ...keys, ...args)) as number[];
 
       if (outcome === 0) return;
-      if (outcome === 1) throw new ExecutionQuotaExceededError(counters[indexes[0] - 1].refusal);
+      if (outcome === 1) {
+        workflowMetrics.admissionRefused('quota');
+        throw new ExecutionQuotaExceededError(counters[indexes[0] - 1].refusal);
+      }
       for (const i of indexes) seeds[i - 1] = await countRuns(counters[i - 1].period);
     }
     throw new Error('execution quota counters could not be seeded');
