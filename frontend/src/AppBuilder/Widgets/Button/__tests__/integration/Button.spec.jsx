@@ -7,7 +7,7 @@
  * Button uses the manual exposed-state pattern (no useExposeState): local disable/loading/visibility,
  * onClick fires only when !disable && !loading (Button.jsx:123,198), onHover fires on mouseOver.
  */
-import { waitFor, fireEvent as rtlFireEvent } from '@testing-library/react';
+import { screen, waitFor, fireEvent as rtlFireEvent } from '@testing-library/react';
 import {
   createWidgetHarness,
   binding,
@@ -323,5 +323,73 @@ describe('Button: state precedence, deprecated CSAs, type gating, icon, isolatio
     await widget.act('setLoading', true);
     await waitFor(() => expect(widget.exposed('btn1').isLoading).toBe(true));
     expect(widget.exposed('btn2').isLoading).toBe(false);
+  });
+});
+
+/**
+ * A Button nominated as a Form's submit button. The submit is announced on the button and bubbles,
+ * so it reaches the Form around it — the path a plain Form on the canvas takes, with no List View.
+ */
+const formWidget = createWidgetHarness({
+  componentType: 'Form',
+  handle: 'form1',
+  id: 'form1',
+  defaultProperties: {
+    visibility: binding('{{true}}'),
+    loadingState: binding('{{false}}'),
+    disabledState: binding('{{false}}'),
+    advanced: binding('{{false}}'),
+    showHeader: binding('{{true}}'),
+    showFooter: binding('{{true}}'),
+    buttonToSubmit: binding('sbtn'),
+  },
+  defaultStyles: {},
+  defaultExtraComponents: {
+    sbtn: (() => {
+      const definition = componentDefinition('sbtn', 'submitbutton', 'Button', { text: binding('Submit') });
+      definition.component.parent = 'form1-footer';
+      definition.component.definition.styles = {};
+      definition.component.definition.others = {
+        showOnDesktop: binding('{{true}}'),
+        showOnMobile: binding('{{false}}'),
+      };
+      return definition;
+    })(),
+  },
+  capabilities: { dnd: true },
+  widgetHeight: 450,
+  widgetWidth: 600,
+});
+
+describe('Button: submitting the Form it belongs to', () => {
+  beforeEach(formWidget.setup);
+  afterEach(formWidget.teardown);
+
+  test('[Button-ACT-001] a plain Form on the canvas still submits once when its button is clicked', async () => {
+    // Break this catches: narrowing the submit signal so far that an ordinary Form, outside any
+    // List View, never hears its own button.
+    formWidget.render({
+      currentMode: 'view',
+      events: [
+        {
+          id: 'evt-submit',
+          index: 0,
+          sourceId: 'form1',
+          name: 'evt-submit',
+          target: 'component',
+          event: {
+            eventId: 'onSubmit',
+            actionId: 'set-custom-variable',
+            key: 'submits',
+            value: `{{(variables.submits ?? 0) + 1}}`,
+          },
+        },
+      ],
+    });
+
+    await waitFor(() => expect(document.querySelectorAll('.widget-button button').length).toBeGreaterThan(0));
+    await formWidget.session.user.click(document.querySelector('.widget-button button'));
+
+    await waitFor(() => expect(store().getVariable('submits', MODULE_ID)).toBe(1));
   });
 });

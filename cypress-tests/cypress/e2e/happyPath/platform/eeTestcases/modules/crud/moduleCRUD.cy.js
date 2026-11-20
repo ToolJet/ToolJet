@@ -110,7 +110,11 @@ describe(
 
       // Builder — sidebar, canvas, query manager.
       cy.get(commonWidgetSelector.sidebarinspector).should("be.visible");
-      cy.get(commonSelectors.canvas).should("be.visible");
+      // The module's editable canvas is the ModuleContainer; the app canvas selector only matches the root wrapper.
+      cy.get(moduleSelectors.moduleContainerWidget)
+        .should("be.visible")
+        .find('[data-cy="sub-canvas"]')
+        .should("exist");
       cy.get(commonSelectors.rightSidebarPlusButton).should("be.visible");
       cy.get('[data-cy="query-manager-toggle-button"]').should("be.visible");
 

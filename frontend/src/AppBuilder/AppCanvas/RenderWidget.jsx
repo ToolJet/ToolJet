@@ -18,6 +18,7 @@ import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
+  'Timer',
   'Pagination',
   'TextInput',
   'TextArea',

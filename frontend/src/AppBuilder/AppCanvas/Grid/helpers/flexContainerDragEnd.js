@@ -1,7 +1,7 @@
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { NO_OF_GRIDS } from '../../appCanvasConstants';
-import { getDroppableSlotIdOnScreen, getParentFromSlotId } from './dragEnd';
+import { getDroppableSlotIdOnScreen, getParentFromSlotId, DragContext } from './dragEnd';
 import {
   computeFlexInsertIndex,
   getEffectiveFlexDirectionForFlexContainer,
@@ -132,6 +132,18 @@ export function handleFlexContainerDragEnd({
   }
 
   // ── Case 3: dragged out to grid canvas → synthesize absolute layout ─────────
+  // This path bypasses Grid's own drag-end, so it has to apply the same drop gate itself.
+  const dropContext = new DragContext({
+    widgets: boxList,
+    draggedWidgetId: widgetId,
+    sourceSlotId: sourceParentId,
+    targetSlotId,
+  });
+  if (!dropContext.isDroppable) {
+    e.target.style.transform = '';
+    return true;
+  }
+
   const canvasElId = targetSlotId === 'real-canvas' ? 'real-canvas' : `canvas-${targetSlotId}`;
   const canvasEl = document.getElementById(canvasElId);
   const canvasRect = canvasEl?.getBoundingClientRect() ?? { left: 0, top: 0 };

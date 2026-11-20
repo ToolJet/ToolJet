@@ -11,7 +11,19 @@
 }
 
 .listview-scroll-container {
-    scrollbar-color: var(--interactive-selected) transparent;
+    // Hidden until hover, matching .hide-scrollbar on the Form body.
+    scrollbar-width: none;
+
+    &:hover {
+        scrollbar-color: var(--interactive-selected) transparent;
+        scrollbar-width: auto;
+    }
+}
+
+// Inset so the scroll container's overflow does not clip the ring.
+.listview-scroll-container .list-item:focus-visible {
+    outline: 2px solid var(--interactive-focus-outline);
+    outline-offset: -2px;
 }
 
 .real-canvas.flex-container-canvas .listview-scroll-container {

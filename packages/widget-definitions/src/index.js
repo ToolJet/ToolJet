@@ -91,3 +91,4 @@ export {
   combineProperties,
   dropNewContainerDefaults,
 } from './utils.js';
+export { MOVED_COMPONENT_KEYS } from './movedComponentKeys.js';
