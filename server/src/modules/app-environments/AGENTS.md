@@ -30,6 +30,9 @@ Owns `AppEnvironment` (development → staging → production, priority-ordered,
 - Missing rows must surface as `NotFoundException`. `EntityNotFoundError` (from `findOneOrFail`) is not an `HttpException`, so `AllExceptionsFilter` turns it into a 500.
 - The frontend reads `response.editorVersion.app.id` from EE `init`; keep the `app` relation loaded.
 - `GET :id` / `GET default` are already workspace-scoped through `get(organizationId, …)`.
+- `getVersionsByEnvironment` selects an explicit column list. The builder header's git status tag
+  reads `hasUncommittedChanges` and `syncedCommitSha`/`_message`/`syncedAt` from it, so dropping one
+  of those columns silently empties the tag rather than failing.
 
 ## Related modules
 

@@ -269,6 +269,10 @@ export class AppEnvironmentService implements IAppEnvironmentService {
           'releasedAt',
           'isSynced',
           'hasUncommittedChanges',
+          // The commit this version's content matches — the header's git status tag reads it.
+          'syncedCommitSha',
+          'syncedCommitMessage',
+          'syncedAt',
         ],
       });
 

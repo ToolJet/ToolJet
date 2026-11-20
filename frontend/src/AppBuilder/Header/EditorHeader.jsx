@@ -11,7 +11,8 @@ import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { BranchDropdown } from './BranchDropdown';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
-import { AlertCircle } from 'lucide-react';
+import { GitCommitStatusTag } from '@/_ui/GitCommitStatusTag';
+import { commitFromVersion } from '@/_helpers/gitCommitInfo';
 import './styles/style.scss';
 
 import SaveIndicator from './SaveIndicator';
@@ -104,8 +105,9 @@ export const EditorHeader = ({ darkMode, appType }) => {
     const versionBranchId = v.branchId || v.branch_id;
     return (v.versionType === 'branch' || v.version_type === 'branch') && versionBranchId === workspaceActiveBranch?.id;
   });
-  const showUncommittedChangesTag =
-    featureAccess?.gitSync && isGitSyncConfigured && draftVersion?.hasUncommittedChanges === true;
+  // The tag itself decides what to render: the warning state when the draft is dirty, the synced
+  // commit's SHA when it is clean, and nothing at all when neither is known.
+  const showGitStatusTag = !!(featureAccess?.gitSync && isGitSyncConfigured);
 
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
@@ -165,16 +167,12 @@ export const EditorHeader = ({ darkMode, appType }) => {
                   className={cx('d-flex version-manager-container p-0  align-items-center gap-0', headerLockClass)}
                   aria-disabled={isGitSyncLicenseLocked || undefined}
                 >
-                  {showUncommittedChangesTag && (
-                    <div
-                      className="tw-flex tw-items-center tw-gap-1 tw-px-2 tw-shrink-0"
-                      data-cy="uncommitted-changes-tag"
-                    >
-                      <AlertCircle size={14} className="tw-text-icon-warning tw-shrink-0" />
-                      <span className="tw-text-text-warning tw-text-sm tw-font-medium tw-whitespace-nowrap">
-                        Uncommitted changes
-                      </span>
-                    </div>
+                  {showGitStatusTag && (
+                    <GitCommitStatusTag
+                      hasUncommittedChanges={draftVersion?.hasUncommittedChanges === true}
+                      commit={commitFromVersion(draftVersion)}
+                      darkMode={darkMode}
+                    />
                   )}
                   {!isModuleEditor && <PreviewAndShareIcons />}
                   {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}

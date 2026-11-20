@@ -11,7 +11,8 @@ import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
-import { AlertCircle } from 'lucide-react';
+import { GitCommitStatusTag } from '@/_ui/GitCommitStatusTag';
+import { commitFromBranch } from '@/_helpers/gitCommitInfo';
 import { TJDB_HEADER_SLOT_ID } from '@/TooljetDatabase/HeaderSlotPortal';
 
 function Header({
@@ -27,6 +28,7 @@ function Header({
   const hasUncommittedApps = useWorkspaceBranchesStore((s) => s.hasUncommittedApps);
   const hasUncommittedModules = useWorkspaceBranchesStore((s) => s.hasUncommittedModules);
   const hasUncommittedWorkflows = useWorkspaceBranchesStore((s) => s.hasUncommittedWorkflows);
+  const currentBranch = useWorkspaceBranchesStore((s) => s.currentBranch);
   // Git set up but the license is expired/invalid → keep the git-sync UI visible but frozen.
   const gitLicenseLocked = isGitSyncConfigured && isGitSyncLicenseInvalid(featureAccess);
   const currentSession = authenticationService.currentSessionValue;
@@ -202,21 +204,18 @@ function Header({
                     })}
                     aria-disabled={gitLicenseLocked || undefined}
                   >
-                    {/* Aggregate signal, one flag per page/resource type. */}
-                    {((isDataSourcesPage && hasUncommittedDatasources) ||
-                      (isApplicationsPage && hasUncommittedApps) ||
-                      (isModulesPage && hasUncommittedModules) ||
-                      (isWorkflowsPage && hasUncommittedWorkflows)) && (
-                      <div
-                        className="tw-flex tw-items-center tw-gap-1 tw-px-2 tw-shrink-0"
-                        data-cy="uncommitted-changes-tag"
-                      >
-                        <AlertCircle size={14} className="tw-text-icon-warning tw-shrink-0" />
-                        <span className="tw-text-text-warning tw-text-sm tw-font-medium tw-whitespace-nowrap">
-                          Uncommitted changes
-                        </span>
-                      </div>
-                    )}
+                    {/* Aggregate signal, one flag per page/resource type; over the workspace's
+                        last pull commit, which is branch-wide rather than per-resource. */}
+                    <GitCommitStatusTag
+                      hasUncommittedChanges={
+                        (isDataSourcesPage && hasUncommittedDatasources) ||
+                        (isApplicationsPage && hasUncommittedApps) ||
+                        (isModulesPage && hasUncommittedModules) ||
+                        (isWorkflowsPage && hasUncommittedWorkflows)
+                      }
+                      commit={commitFromBranch(currentBranch)}
+                      darkMode={darkMode}
+                    />
                     <WorkspaceBranchDropdown />
                     {/* Single "Pull commit" button. WorkspaceGitCTA decides whether the modal
                         offers push based on the page + branch state (push only on the data-sources

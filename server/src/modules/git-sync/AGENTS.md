@@ -124,6 +124,9 @@ logic is in `server/ee/git-sync/`.
   and mirror ancestry, never by time; drafts edited since the pull, or whose ancestry is unknown, are
   kept. Push, pull and hydration write `synced_commit_sha`/`_message`/`synced_at`; the export
   blacklist keeps them out of git. `last_synced_commit` is not X: a single-app push moves it too.
+  The builder header's git status tag shows that version's `synced_commit_*`; the dashboard's shows
+  the branch's `workspace_pull_commit_*` (`frontend/src/_ui/GitCommitStatusTag`). A null SHA has
+  nothing to show, so the tag's dropdown does not open.
 - Pull / create-branch clone the default `organization_git_sync_branches` row's `branch_name`, not the
   configured branch. Env config keeps it in sync via `reconcileDefaultBranchName` (`ee/git-sync/default-branch.util.ts`)
   on restart hydration and on toggle; renames must also invalidate `RemoteBranchCacheService`.
