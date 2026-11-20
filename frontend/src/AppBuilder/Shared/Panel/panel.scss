@@ -45,12 +45,14 @@ body.app-builder-chrome {
 
 // Every keyboard stop in the editor chrome shows the one ring. Widgets render a customer's app, so the
 // canvas and the modals and overlays widgets open keep their own focus styles, as in the Viewer.
-// Code fields and react-select ring their visible box, not the text node or the input inside it.
+// Code fields, react-select and the runtime search box ring their visible box, not the text node or the
+// input inside it (the input's own ring cut across the search icon and clear button).
 $widget-scopes: '.main-editor-canvas *, .tj-modal-widget-content *, .tj-widget-overlay *';
 
 body.app-builder-chrome {
-  :focus-visible:not(.cm-content, input[id^='react-select-'], #{$widget-scopes}),
+  :focus-visible:not(.cm-content, input[id^='react-select-'], .runtime-inspector__search input, #{$widget-scopes}),
   .cm-editor.cm-focused:not(#{$widget-scopes}),
+  .runtime-inspector__search:has(input:focus-visible),
   [class*='-control']:has(input[id^='react-select-']:focus-visible):not(#{$widget-scopes}) {
     @include focus-ring;
   }

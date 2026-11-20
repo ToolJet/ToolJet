@@ -9,6 +9,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import useCallbackActions from '@/AppBuilder/LeftSidebar/LeftSidebarInspector/useCallbackActions';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { seedApp, componentDefinition } from '@/test/app-builder';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 // Slot ids are "<36-char component id>-<slot>", so the ids here must be real-length.
 const TABS = '11111111-1111-4111-8111-111111111111';
@@ -94,4 +95,26 @@ test('Go to component selects the target even when it is not mounted on the canv
   act(() => goToComponent({ nodeName: 'text4' }));
 
   expect(state().selectedComponents).toEqual([TAB_CHILD]);
+});
+
+// Break this catches: with the right panel closed, Go to component selected the target but left its
+// configuration closed, unlike Code search's jump.
+test('Go to component opens the component configuration when the right panel is closed', () => {
+  act(() => state().setRightSidebarOpen(false));
+  const { result } = renderHook(() => useCallbackActions(), {
+    wrapper: ({ children }) => (
+      <ModuleProvider moduleId="canvas" isModuleMode={false}>
+        {children}
+      </ModuleProvider>
+    ),
+  });
+  const goToComponent = result.current
+    .find((group) => group.for === 'components')
+    .actions.find((action) => action.name === 'Go to component').dispatchAction;
+
+  act(() => goToComponent({ nodeName: 'button1' }));
+
+  expect(state().selectedComponents).toEqual([BUTTON]);
+  expect(state().isRightSidebarOpen).toBe(true);
+  expect(state().activeRightSideBarTab).toBe(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
 });

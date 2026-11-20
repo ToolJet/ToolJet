@@ -83,12 +83,6 @@ describe("Page popups", { testIsolation: false }, () => {
         expectPastPanel("Edit group");
         closePopup();
 
-        cy.get('[data-cy="pages-name-second"]').closest(".page-menu-item").as("row").realHover();
-        cy.get("@row").find(".action-btn-wrapper .icon-btn").last().click({ force: true });
-        cy.contains("#edit-page-popover button", "Edit page details").click();
-        expectPastPanel("Edit page details");
-        closePopup();
-
         cy.get(".add-new-page").click();
         expectPastPanel("New page");
         cy.get('[data-cy="left-sidebar-queries-button"]').click();

@@ -32,14 +32,16 @@ export const INLINE_RENAME_TRANSITION_MS = 180;
 export const INLINE_RENAME_TRIGGER_CLASS =
   'app-name-inline-trigger edit-app-name-button tw-group tw-relative tw-flex tw-h-8 tw-min-w-0 tw-max-w-full tw-appearance-none tw-items-center tw-justify-start tw-gap-1 tw-border-0 tw-bg-transparent tw-px-1 tw-font-medium tw-shadow-none tw-outline-none';
 
-export const normalizeAppName = (name = '') => name.trim().replace(/\s+/g, ' ');
+export const normalizeAppName = (name) => (name ?? '').trim().replace(/\s+/g, ' ');
 
-export const getInlineNameCursorPosition = (name = '') => name.length;
+export const getInlineNameCursorPosition = (name) => (name ?? '').length;
 
-export const getInlineNameWidth = (name = '') =>
-  `${Math.min(Math.max(name.length + 1, APP_NAME_MIN_WIDTH), APP_NAME_VISIBLE_LENGTH)}ch`;
+export const getInlineNameWidth = (name) =>
+  `${Math.min(Math.max((name ?? '').length + 1, APP_NAME_MIN_WIDTH), APP_NAME_VISIBLE_LENGTH)}ch`;
 
-export const validateInlineAppName = (name = '') => {
+// appName is null until the app loads, and a default parameter only covers undefined
+export const validateInlineAppName = (rawName) => {
+  const name = rawName ?? '';
   const trimmedName = name.trim();
   const validation = validateName(trimmedName, 'App', false, false, true, true, false, false, APP_NAME_MAX_LENGTH);
 

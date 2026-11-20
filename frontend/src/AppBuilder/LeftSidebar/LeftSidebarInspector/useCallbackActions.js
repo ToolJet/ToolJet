@@ -3,6 +3,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { copyToClipboard } from './utils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const useCallbackActions = () => {
   const { isModuleEditor } = useModuleContext();
@@ -16,6 +17,8 @@ const useCallbackActions = () => {
   const getComponentIdFromName = useStore((state) => state.getComponentIdFromName, shallow);
   const getQueryIdFromName = useStore((state) => state.getQueryIdFromName, shallow);
   const revealQueryEditor = useStore((state) => state.queryPanel.revealQueryEditor, shallow);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
 
   // Goes through the confirmation dialog rather than deleting outright, so the
   // reference check that guards every other delete path applies here too.
@@ -61,6 +64,9 @@ const useCallbackActions = () => {
       return;
     }
     setSelectedComponents([computedComponentId]);
+    // Open its configuration too, like Code search's jump does.
+    setRightSidebarOpen(true);
+    setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
     if (computedComponentId !== componentId) {
       const containerName = currentPageComponents?.[computedComponentId]?.component?.name;
       toast(`${data.nodeName} is inside ${containerName}, which is closed. Selected ${containerName} instead.`);

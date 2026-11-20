@@ -126,6 +126,8 @@
       color: var(--text-default);
       font-size: 12px;
       font-weight: 400;
+      // Older WebKit ignores the unprefixed one and draws its own arrow next to the chevron.
+      -webkit-appearance: none;
       appearance: none;
       cursor: pointer;
 

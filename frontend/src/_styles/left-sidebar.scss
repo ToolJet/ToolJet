@@ -384,7 +384,8 @@
     }
   }
 
-  // 12px labels outgrow the 42px item ("Libraries" is 48px), so the label spans the 52px rail.
+  // 12px labels outgrow the 42px item ("Libraries" is 48px), so the label spans the 52px rail. No inherited
+  // 0.2px tracking: it pushed "Libraries" and "Settings" to within 2-4px of the rail edges.
   .left-sidebar-item-label {
     position: absolute;
     right: -5px;
@@ -394,6 +395,7 @@
     color: var(--left-rail-muted);
     font-size: 12px;
     font-weight: 400;
+    letter-spacing: 0;
     line-height: 14px;
     text-align: center;
     text-overflow: ellipsis;

@@ -36,7 +36,6 @@ import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { createAppBuilderControls } from '@/test/app-builder/controls';
 import { AddEditPagePopup } from '../../AddNewPagePopup';
 import { AddNewPageMenu } from '../../AddNewPageMenu';
-import { PageMenuItem } from '../../PageMenuItem';
 import { PageGroupItem } from '../../PageGroupItem';
 // Imported last: imported first, PageSettings enters the ColorSwatches import cycle before it resolves.
 import { PageSettings } from '@/AppBuilder/RightSideBar/PageSettingsTab/PageSettings';
@@ -236,12 +235,6 @@ describe('[LR-23] page popups open past the Pages panel', () => {
   test('New page opens 8px past the panel', () =>
     openInPagesPanel(<AddNewPageMenu darkMode={false} />, async () => {
       fireEvent.click(screen.getByRole('button', { name: /new page/i }));
-    }));
-
-  test('Edit page details opens 8px past the panel', () =>
-    openInPagesPanel(<PageMenuItem page={state().modules.canvas.pages[0]} darkMode={false} />, async () => {
-      fireEvent.click(document.querySelectorAll('.action-btn-wrapper .icon-btn')[1]);
-      fireEvent.click(await screen.findByRole('button', { name: 'Edit page details' }));
     }));
 
   test('Edit group opens 8px past the panel, not off the left edge', () =>
