@@ -109,6 +109,15 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
     if (filters.environmentId) {
       query.andWhere('request.environment_id = :environmentId', { environmentId: filters.environmentId });
     }
+    if (filters.executionId) {
+      query.andWhere('request.workflow_execution_id = :executionId', { executionId: filters.executionId });
+    }
+    if (filters.workflowRef) {
+      // Subquery, not join: id query must stay join-free for LIMIT pushdown.
+      query.andWhere('request.app_id IN (SELECT apps.id FROM apps WHERE apps.co_relation_id = :workflowRef)', {
+        workflowRef: filters.workflowRef,
+      });
+    }
     if (filters.folderId) {
       // Subquery, not join: id query must stay join-free for LIMIT pushdown.
       query.andWhere(

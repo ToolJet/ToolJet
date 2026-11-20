@@ -15,6 +15,15 @@ export class ListApprovalsDto {
   @IsUUID()
   folder_id?: string;
 
+  /** Portable workflow reference (`apps.co_relation_id`) — what an app's Workflows query stores. */
+  @IsOptional()
+  @IsUUID()
+  workflow_id?: string;
+
+  @IsOptional()
+  @IsUUID()
+  execution_id?: string;
+
   @IsOptional()
   @IsUUID()
   environment_id?: string;

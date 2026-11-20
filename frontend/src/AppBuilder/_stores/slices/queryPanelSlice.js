@@ -3,7 +3,7 @@ import { AsyncQueryHandler } from '@/AppBuilder/_utils/async-query-handler';
 import _, { isEmpty } from 'lodash';
 import { resolveReferences, loadPyodide, hasCircularDependency } from '@/_helpers/utils';
 import { fetchOAuthToken, fetchOauthTokenForSlackAndGSheet } from '@/AppBuilder/_utils/auth';
-import { dataqueryService, workflowExecutionsService } from '@/_services';
+import { dataqueryService, workflowExecutionsService, workflowApprovalsService } from '@/_services';
 import moment from 'moment';
 import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
@@ -16,6 +16,7 @@ import { emptyPreviewParameters } from '@/AppBuilder/QueryManager/Components/pre
 import * as compareGuard from '@ee/modules/CodeMode/AppBuilder/CodeDiff/compareGuard';
 import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 import { classifyWorkflowEvent, syncWorkflowOutcome } from './workflowQueryResults';
+import { isExecuteOperation, pickApprovalOperationOptions, runApprovalOperation } from './workflowApprovalOperations';
 
 const BLOCKED_WRITE_MESSAGE = compareGuard.BLOCKED_WRITE_MESSAGE ?? '';
 const writeBlockedInCompare = compareGuard.writeBlockedInCompare ?? (() => false);
@@ -26,6 +27,18 @@ const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPre
 const toastIfQueryRunRestricted = (errorData) => {
   if (errorData?.data?.type === TJ_QUERY_ERROR_TYPE.FORBIDDEN) toast.error(errorData.data.responseObject.responseBody);
 };
+
+// Result for a workflows query the viewer may not run (`query.restricted`).
+const restrictedWorkflowQueryResult = () => ({
+  status: 'failed',
+  message: 'Query could not be completed',
+  description: 'Response code 401 (Unauthorized)',
+  data: {
+    type: TJ_QUERY_ERROR_TYPE.UNAUTHORIZED,
+    responseObject: { statusCode: 401, responseBody: 'Unauthorized Access' },
+  },
+  metadata: { response: { statusCode: 401, responseBody: 'Unauthorized Access' } },
+});
 
 const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
@@ -391,6 +404,7 @@ export const createQueryPanelSlice = (set, get) => ({
         executeRunPycode,
         runTransformation,
         triggerWorkflow,
+        runWorkflowApprovalOperation,
         executeMultilineJS,
       } = queryPanel;
       const queryUpdatePromise = dataQuerySlice.queryUpdates[queryId];
@@ -709,6 +723,12 @@ export const createQueryPanelSlice = (set, get) => ({
           queryExecutionPromise = executeMultilineJS(query.options?.code, query?.id, false, mode, parameters, moduleId);
         } else if (query.kind === 'runpy') {
           queryExecutionPromise = executeRunPycode(query.options?.code, query, false, mode, queryState, moduleId);
+        } else if (query.kind === 'workflows' && !isExecuteOperation(query.options)) {
+          queryExecutionPromise = runWorkflowApprovalOperation(
+            moduleId,
+            query,
+            selectedEnvironment?.id || (currentAppEnvironmentId ?? environmentId)
+          );
         } else if (query.kind === 'workflows') {
           queryExecutionPromise = triggerWorkflow(
             moduleId,
@@ -770,7 +790,12 @@ export const createQueryPanelSlice = (set, get) => ({
             // Currently async query resolution is applicable only to workflows
             // Change this conditional to async query type check for other
             // async queries in the future
-            if (query.kind === 'workflows' && data?.data?.type !== TJ_QUERY_ERROR_TYPE.UNAUTHORIZED) {
+            // Approval operations answer synchronously and take the generic path below.
+            if (
+              query.kind === 'workflows' &&
+              isExecuteOperation(query.options) &&
+              data?.data?.type !== TJ_QUERY_ERROR_TYPE.UNAUTHORIZED
+            ) {
               if (data.status === 'failed') {
                 const errorData = handleFailure({ status: 'failed', message: data.message });
                 resolve(errorData);
@@ -944,6 +969,7 @@ export const createQueryPanelSlice = (set, get) => ({
         executeRunPycode,
         runTransformation,
         triggerWorkflow,
+        runWorkflowApprovalOperation,
         executeMultilineJS,
         setIsPreviewQueryLoading,
       } = queryPanel;
@@ -1016,6 +1042,12 @@ export const createQueryPanelSlice = (set, get) => ({
           queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, true, '', parameters);
         } else if (query.kind === 'runpy') {
           queryExecutionPromise = executeRunPycode(query.options.code, query, true, 'edit', queryState);
+        } else if (query.kind === 'workflows' && !isExecuteOperation(query.options)) {
+          queryExecutionPromise = runWorkflowApprovalOperation(
+            moduleId,
+            query,
+            selectedEnvironment?.id || (currentAppEnvironmentId ?? environmentId)
+          );
         } else if (query.kind === 'workflows') {
           queryExecutionPromise = triggerWorkflow(
             moduleId,
@@ -1044,7 +1076,7 @@ export const createQueryPanelSlice = (set, get) => ({
             // Currently async query resolution is applicable only to workflows
             // Change this conditional to async query type check for other
             // async queries in the future
-            if (query.kind === 'workflows') {
+            if (query.kind === 'workflows' && isExecuteOperation(query.options)) {
               if (data.status === 'failed') {
                 setPreviewLoading(false);
                 setIsPreviewQueryLoading(false);
@@ -1600,26 +1632,7 @@ export const createQueryPanelSlice = (set, get) => ({
       const currentState = getAllExposedValues();
       const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
 
-      if (query.restricted) {
-        return {
-          status: 'failed',
-          message: 'Query could not be completed',
-          description: 'Response code 401 (Unauthorized)',
-          data: {
-            type: TJ_QUERY_ERROR_TYPE.UNAUTHORIZED,
-            responseObject: {
-              statusCode: 401,
-              responseBody: 'Unauthorized Access',
-            },
-          },
-          metadata: {
-            response: {
-              statusCode: 401,
-              responseBody: 'Unauthorized Access',
-            },
-          },
-        };
-      }
+      if (query.restricted) return restrictedWorkflowQueryResult();
 
       try {
         const executionResponse = await workflowExecutionsService.trigger(
@@ -1638,6 +1651,22 @@ export const createQueryPanelSlice = (set, get) => ({
           message: e?.error || e?.data?.message || e?.message || 'Workflow execution failed',
         };
       }
+    },
+
+    runWorkflowApprovalOperation: async (moduleId, query, environmentId) => {
+      if (query.restricted) return restrictedWorkflowQueryResult();
+      const resolvedOptions = get().resolveReferences(
+        moduleId,
+        pickApprovalOperationOptions(query.options),
+        get().getAllExposedValues(moduleId),
+        {},
+        {}
+      );
+      return runApprovalOperation(
+        query.options.operation,
+        { ...resolvedOptions, environmentId },
+        workflowApprovalsService
+      );
     },
 
     // Helper function to convert proxy objects to plain JavaScript objects
