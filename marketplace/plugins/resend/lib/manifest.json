@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Resend datasource",
+  "description": "Resend plugin for transactional and marketing email delivery",
+  "type": "api",
+  "source": {
+    "name": "Resend",
+    "kind": "resend",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": true
+  },
+  "defaults": {},
+  "properties": {
+    "apiKey": {
+      "label": "API Key",
+      "key": "apiKey",
+      "type": "password",
+      "description": "Enter your Resend API Key",
+      "helpText": "You can generate an API key from the <a href='https://resend.com/api-keys' target='_blank' rel='noreferrer'>Resend Dashboard</a>"
+    }
+  },
+  "required": [
+    "apiKey"
+  ]
+}
