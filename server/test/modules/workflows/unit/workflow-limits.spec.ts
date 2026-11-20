@@ -57,6 +57,12 @@ describe('Workflow limits policy', () => {
         concurrency: { activeRunsPerWorkspace: 10, queuedRunsPerWorkspace: 200, waitingSyncRequestsPerPod: 100 },
         waiting: { maxWaitingRunsPerWorkspace: 500 },
         schedules: { maxPerWorkflow: 20, maxPerWorkspace: 200 },
+        quotaDefaults: {
+          workspaceDailyExecutions: 500,
+          workspaceMonthlyExecutions: 10000,
+          instanceDailyExecutions: 25000,
+          instanceMonthlyExecutions: 50000,
+        },
       });
     });
 
