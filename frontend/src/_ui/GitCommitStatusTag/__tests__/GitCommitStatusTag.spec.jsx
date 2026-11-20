@@ -71,7 +71,9 @@ describe('GitCommitStatusTag', () => {
 
       expect(screen.getByText('No uncommitted changes')).toBeInTheDocument();
       expect(cy('git-commit-status-local-changes')).not.toBeInTheDocument();
+      expect(cy('git-commit-status-connector')).not.toBeInTheDocument();
       expect(cy('git-commit-status-commit')).toHaveTextContent('Add sales dashboard filters');
+      expect(cy('git-commit-status-commit').querySelector('.tw-bg-background-success-weak')).toBeTruthy();
     });
 
     it('should render nothing when no commit is recorded', () => {
@@ -90,6 +92,29 @@ describe('GitCommitStatusTag', () => {
     fireEvent.click(cy('git-commit-status-copy-sha'));
 
     expect(writeText).toHaveBeenCalledWith(commit.sha);
+  });
+
+  it('should mark each timeline entry with a haloed dot in its own tone', () => {
+    render(<GitCommitStatusTag hasUncommittedChanges commit={commit} />);
+    openTag();
+
+    // Dirty: the local change is the warning entry, the commit it sits above is muted.
+    expect(cy('git-commit-status-local-changes').querySelector('.tw-bg-background-warning-weak')).toBeTruthy();
+    expect(cy('git-commit-status-commit').querySelector('.tw-bg-icon-weak')).toBeTruthy();
+    // The two entries are joined by the painted 1px line, not a (far heavier) dashed border.
+    expect(cy('git-commit-status-connector')).toBeInTheDocument();
+    expect(cy('git-commit-status-connector')).not.toHaveClass('tw-border-dashed');
+  });
+
+  it('should stand as tall as the share button beside it, with no surface until it is open', () => {
+    render(<GitCommitStatusTag hasUncommittedChanges={false} commit={commit} />);
+
+    // The shared ghost Button's own height — what keeps the header row aligned.
+    expect(cy('uncommitted-changes-tag')).toHaveClass('tw-h-[32px]');
+    expect(cy('uncommitted-changes-tag')).not.toHaveClass('tw-bg-button-outline-hover');
+    openTag();
+
+    expect(cy('uncommitted-changes-tag')).toHaveClass('tw-bg-button-outline-hover');
   });
 
   it('should close the dropdown from its close button', () => {

@@ -116,7 +116,8 @@ logic is in `server/ee/git-sync/`.
   missing-default-branch fallback still writes in its own transaction, never on the caller's manager.
 - **The app-git import lane creates referenced workflow rows, and gates them.** `createGitApp` (and the two tag-import helpers) pre-create + hydrate embedded **workflows** as well as modules, via `pullAndHydrateWorkflowRefs` → `hydrateReferencedWorkflowStubs`. Creating them requires `workflowCreate` (`assertWorkflowCreatePermission`), asserted **before** hydration — after it, the check would always see zero missing. Workflows reached through a module are handled by `hydrateStubApp` step 6b during that module's hydration, so this lane must not walk into modules.
 - **Apps open at the workspace pull commit, not HEAD.** The workspace pull worker records the cloned
-  commit as `organization_git_sync_branches.workspace_pull_commit_sha` (X). `AppsService.getOne`
+  commit as `organization_git_sync_branches.workspace_pull_commit_sha` (X); `executeCreateBranch`
+  records it too, from its own clone, so a new branch knows X before it is ever pulled. `AppsService.getOne`
   runs its hydration inside `runPinnedToWorkspacePull`, an `AsyncLocalStorage` pin
   (`pinnedHydrationCommit`) that `hydrateStubApp` and every module/workflow cascade inherit; tag
   hydrations ignore it, and pull inside an app never sets it (it pulls HEAD). A real draft is pulled
