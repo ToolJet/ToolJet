@@ -334,6 +334,32 @@ describe('Text: events', () => {
     await widget.session.user.click(screen.getByText('click me'));
     await waitFor(() => expect(store().getVariable('calls', MODULE_ID)).toBe(2));
   });
+  test('[Text-KEY-001] a Text with an On click event is a keyboard button that Enter and Space click', async () => {
+    // Break this catches: a clickable Text with no tab stop or key handler, so keyboard users can never fire
+    // its On click.
+    widget.render({
+      properties: { textFormat: binding('plainText'), text: binding('Alice') },
+      events: countInvocationsOn(ID, 'onClick'),
+    });
+    await screen.findByText('Alice');
+    const button = await screen.findByRole('button', { name: 'Alice' });
+    expect(button).toHaveAttribute('tabindex', '0');
+
+    button.focus();
+    await widget.session.user.keyboard('{Enter}');
+    await waitFor(() => expect(store().getVariable('calls', MODULE_ID)).toBe(1));
+    await widget.session.user.keyboard(' ');
+    await waitFor(() => expect(store().getVariable('calls', MODULE_ID)).toBe(2));
+  });
+
+  test('[Text-KEY-001] a Text without an On click event adds no tab stop', async () => {
+    widget.render({ properties: { textFormat: binding('plainText'), text: binding('Plain') } });
+    await screen.findByText('Plain');
+
+    expect(screen.queryByRole('button', { name: 'Plain' })).toBeNull();
+    expect(document.querySelector('.text-widget')).not.toHaveAttribute('tabindex');
+  });
+
   test('[Text-EVT-004] onHover fires once per hover, not once per nested element', async () => {
     // Break this catches: listening for every pointer movement that bubbles up
     // from the rendered content instead of for entry into the component. An

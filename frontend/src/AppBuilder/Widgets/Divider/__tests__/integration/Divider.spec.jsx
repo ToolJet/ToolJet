@@ -139,6 +139,22 @@ describe('Horizontal Divider widget', () => {
     expect(label().style.flexShrink).toBe('');
   });
 
+  test('[Divider-WRP-002] in wrap mode an over-long word breaks so the label stays inside the widget', async () => {
+    // Break this catches: a wrap-mode label with no word breaking, so one word wider than the slot pushes the label
+    // and both lines past the widget edges.
+    const { container } = widget.render({
+      properties: { label: binding('Ut enim exercitationem ullam corporis') },
+      styles: { labelAlignment: binding('center'), textWrap: binding('wrap') },
+    });
+
+    const label = await waitFor(() => {
+      const el = root(container).querySelector('span');
+      expect(el).toBeTruthy();
+      return el;
+    });
+    expect(label).toHaveStyle({ overflowWrap: 'anywhere', minWidth: '0' });
+  });
+
   test('[Divider-LIN-001] solid and dashed styles select the correct observable line branch', async () => {
     // Break this catches: routing dashed styling through the solid branch, using the wrong repeat/size, or updating only one center line.
     const { container } = widget.render({

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useImperativeHandle, forwardRef, useEffect } from 'react';
+import React, { useState, useMemo, useImperativeHandle, forwardRef, useEffect, useRef } from 'react';
 import { ChevronRight, ChevronLeft, Check } from 'lucide-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import type { CascaderMenuRef, CascaderNode, CascaderPathMaps, CascaderValue } from './types';
@@ -82,12 +82,23 @@ const CascaderMenu = forwardRef<CascaderMenuRef, CascaderMenuProps>(
       else onSelectLeaf(node.value);
     };
 
+    const listRef = useRef<HTMLDivElement>(null);
+    // Only keyboard moves scroll; scrolling on hover would move the list under the pointer.
+    const scrollHighlightIntoViewRef = useRef(false);
+
+    useEffect(() => {
+      if (!scrollHighlightIntoViewRef.current) return;
+      scrollHighlightIntoViewRef.current = false;
+      listRef.current?.querySelector(`[data-row-index="${highlightedIndex}"]`)?.scrollIntoView?.({ block: 'nearest' });
+    }, [highlightedIndex]);
+
     const moveHighlight = (dir: number) => {
       if (currentNodes.length === 0) return;
       let i = highlightedIndex;
       for (let step = 0; step < currentNodes.length; step++) {
         i = (i + dir + currentNodes.length) % currentNodes.length;
         if (!currentNodes[i].disabled) {
+          scrollHighlightIntoViewRef.current = true;
           setHighlightedIndex(i);
           return;
         }
@@ -168,6 +179,7 @@ const CascaderMenu = forwardRef<CascaderMenuRef, CascaderMenuProps>(
         )}
 
         <div
+          ref={listRef}
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -208,6 +220,7 @@ const CascaderMenu = forwardRef<CascaderMenuRef, CascaderMenuProps>(
                   onMouseEnter={() => !node.disabled && setHighlightedIndex(index)}
                   onClick={() => activateRow(node)}
                   data-cy={`cascader-option-${String(node.value)}`}
+                  data-row-index={index}
                   style={{
                     ...ROW_STYLE,
                     color: node.disabled ? 'var(--text-disabled)' : menuTextColor || 'var(--cc-primary-text)',

@@ -16,6 +16,7 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
   const { visibility, boxShadow, borderColor, borderRadius } = styles;
   const { url, scale, pageControls, showDownloadOption } = properties;
   const [numPages, setNumPages] = useState(null);
+  const [scrollbarWidth, setScrollbarWidth] = useState(0);
   const [pageNumber, setPageNumber] = useState(null);
   const pageRef = useRef([]);
   const documentRef = useRef(null);
@@ -69,12 +70,14 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (!hasScrollRef.current) return;
+        // Always record visibility: the first entries (before any scroll) carry page 1's height; dropping them let
+        // a few pixels of the next page win the first scroll. Only the counter waits for the user to scroll.
         entries.forEach((entry) => {
           const page = parseInt(entry.target.getAttribute('data-page-number'), 10);
           if (Number.isNaN(page)) return;
           visibleHeights.set(page, entry.isIntersecting ? entry.intersectionRect.height : 0);
         });
+        if (!hasScrollRef.current) return;
         let bestPage = null;
         let bestHeight = 0;
         visibleHeights.forEach((visibleHeight, page) => {
@@ -149,6 +152,14 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
     }
   }
 
+  // A classic (always visible) scrollbar takes width from the wrapper; overlay scrollbars measure 0.
+  const measureScrollbar = () => {
+    const wrapperElement = documentRef.current;
+    if (wrapperElement) setScrollbarWidth(wrapperElement.offsetWidth - wrapperElement.clientWidth);
+  };
+
+  useEffect(measureScrollbar, [numPages, width, height]);
+
   const renderPDF = () => {
     if (isPasswordPromptClosed)
       return (
@@ -181,10 +192,11 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
         {Array.from(new Array(numPages), (el, index) => (
           <Page
             pageNumber={index + 1}
-            width={scale ? width - 12 : undefined}
+            width={scale ? width - 12 - scrollbarWidth : undefined}
             height={scale ? undefined : height}
             key={`page_${index + 1}`}
             inputRef={(el) => (pageRef.current[index] = el)}
+            onRenderSuccess={measureScrollbar}
           />
         ))}
       </Document>

@@ -79,3 +79,49 @@ describe('SortableTree flatten dedup (getItemKey)', () => {
     expect(screen.getByTestId('row-key-b')).toHaveTextContent('Item B');
   });
 });
+
+describe('SortableTree drag sensor', () => {
+  // Break this catches: a delay activation constraint without a tolerance, so a press with a few pixels of hand
+  // jitter inside the 250ms hold throws "Cannot use 'in' operator to search for 'x' in undefined".
+  it('[SortableTree-DND-001] a small move during the press hold does not throw', async () => {
+    const errors = [];
+    const onError = (event) => {
+      errors.push(event.error?.message ?? event.message);
+      event.preventDefault();
+    };
+    window.addEventListener('error', onError);
+    try {
+      render(
+        <SortableTree
+          items={[
+            { id: 'item1', label: 'Option 1' },
+            { id: 'item2', label: 'Option 2' },
+          ]}
+          propertyNames={PROPERTY_NAMES}
+          renderItem={(item) => (
+            <div data-draggable="true" data-testid={`drag-${item.id}`}>
+              {item.label}
+            </div>
+          )}
+        />
+      );
+      const handle = screen.getByTestId('drag-item2');
+      const point = {
+        bubbles: true,
+        cancelable: true,
+        isPrimary: true,
+        button: 0,
+        buttons: 1,
+        clientX: 20,
+        clientY: 20,
+      };
+      handle.dispatchEvent(new PointerEvent('pointerdown', point));
+      document.dispatchEvent(new PointerEvent('pointermove', { ...point, clientY: 24 }));
+      handle.dispatchEvent(new PointerEvent('pointerup', { ...point, buttons: 0 }));
+
+      expect(errors).toEqual([]);
+    } finally {
+      window.removeEventListener('error', onError);
+    }
+  });
+});

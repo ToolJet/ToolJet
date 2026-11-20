@@ -8,6 +8,7 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { linter, lintGutter } from '@codemirror/lint';
 import './jsonEditor.scss';
+import { usesThemeBackground } from '@/AppBuilder/Widgets/JSONExplorer/themeBackground';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
@@ -113,9 +114,11 @@ export const JSONEditor = function JSONEditor(props) {
     []
   );
 
+  // A dark theme keeps its own editor background; the container must not paint the light surface around it.
+  const keepThemeBackground = usesThemeBackground(theme, backgroundColor);
   const containerComputedStyles = {
     height: isDynamicHeightEnabled ? '100%' : height,
-    backgroundColor,
+    backgroundColor: keepThemeBackground ? 'transparent' : backgroundColor,
     border: `1px solid ${borderColor}`,
     borderRadius: `${borderRadius}px`,
     boxShadow,
@@ -133,7 +136,7 @@ export const JSONEditor = function JSONEditor(props) {
     const ThemeOverride = EditorView.theme(
       {
         '.cm-scroller': {
-          backgroundColor: backgroundColor,
+          ...(!keepThemeBackground && { backgroundColor }),
           flexGrow: 1,
         },
       },
@@ -192,7 +195,7 @@ export const JSONEditor = function JSONEditor(props) {
       foldingInitListener,
       foldListener,
     ];
-  }, [backgroundColor, darkMode, isDynamicHeightEnabled, shouldExpandEntireJSON]);
+  }, [backgroundColor, darkMode, isDynamicHeightEnabled, shouldExpandEntireJSON, keepThemeBackground]);
 
   // ===== EFFECTS =====
   useBatchedUpdateEffectArray([

@@ -342,6 +342,9 @@ export const DaterangePicker = ({
     maxDate: moment(maxDate).isValid() ? maxDate : null,
     onCalendarClose: () => {
       setIsCalendarOpen(false);
+      // react-datepicker remembers that the last click was in the right-hand month and reopens one month early;
+      // reset it so the calendar reopens on the start month.
+      datePickerRef.current?.setState?.({ monthSelectedIn: 0 });
     },
     onCalendarOpen: () => {
       setIsCalendarOpen(true);

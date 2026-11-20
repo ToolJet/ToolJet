@@ -59,6 +59,17 @@ describe('JSONEditor widget', () => {
   beforeEach(() => jsonEditor.setup());
   afterEach(() => jsonEditor.teardown());
 
+  test('[JSONEditor-THEME-002] a dark theme keeps its own background with the default Background', async () => {
+    // Break this catches: painting every theme on the widget's light surface, so dark palettes become unreadable.
+    const container = await mounted(jsonEditor.render({ properties: { theme: binding('monokai') } }).container);
+    expect(container$(container).style.backgroundColor).toBe('transparent');
+  });
+
+  test('[JSONEditor-THEME-002] solarized keeps the widget background', async () => {
+    const container = await mounted(jsonEditor.render({ properties: { theme: binding('solarized') } }).container);
+    expect(container$(container).style.backgroundColor).not.toBe('transparent');
+  });
+
   test('[JSONEditor-STATE-001] a disabled JSONEditor cannot be edited by keyboard', async () => {
     // Break this catches: the platform's `disabled` class stops the MOUSE with pointer-events, but
     // CodeMirror's contenteditable surface stays in the tab order, so without `editable` a user can

@@ -66,6 +66,7 @@ export const DatePickerV2 = ({
     selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : ''
   );
   const [datepickerMode, setDatePickerMode] = useState('date');
+  const previousDatepickerModeRef = useRef(datepickerMode);
 
   const setInputValue = (date, format, skipFireEvent = false) => {
     setTextParseError(false);
@@ -184,6 +185,17 @@ export const DatePickerV2 = ({
       isDateValid(selectedTimestamp, { minDate, maxDate, customRule, isMandatory, excludedDates, dateFormat })
     );
   }, [minDate, maxDate, customRule, isMandatory, selectedTimestamp, excludedDates, dateFormat, textParseError]);
+
+  // After a month or year pick, react-datepicker shows the picked period's first month (January for a year);
+  // move its view to the selected date so the day stays marked.
+  useEffect(() => {
+    const leftPeriodPicker = previousDatepickerModeRef.current !== 'date' && datepickerMode === 'date';
+    previousDatepickerModeRef.current = datepickerMode;
+    if (leftPeriodPicker && selectedTimestamp) {
+      datePickerRef.current?.setPreSelection?.(moment(selectedTimestamp).toDate());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datepickerMode]);
 
   useFormClear(() => setInputValue(null, null, true));
 

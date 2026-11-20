@@ -119,6 +119,37 @@ describe('DaterangePicker widget', () => {
     expect(exposed().isValid).toBe(true);
   });
 
+  test('[DaterangePicker-NAV-001] reopening after a cross-month pick shows the start month first', async () => {
+    // Break this catches: react-datepicker keeping the "picked in the right-hand month" offset, so the reopened
+    // calendar starts one month early and the picked end month is off screen.
+    widget.render({
+      properties: {
+        defaultStartDate: binding('10/06/2026'),
+        defaultEndDate: binding('14/06/2026'),
+        format: binding('DD/MM/YYYY'),
+      },
+    });
+    await waitFor(() => expect(input()).toBeTruthy());
+    const months = () =>
+      [...document.querySelectorAll('.react-datepicker__month')].map((m) => m.getAttribute('aria-label'));
+    const day = (month, d) =>
+      [...document.querySelectorAll('.react-datepicker__month')]
+        .find((m) => m.getAttribute('aria-label').includes(month))
+        .querySelector(
+          `.react-datepicker__day--0${String(d).padStart(2, '0')}:not(.react-datepicker__day--outside-month)`
+        );
+
+    fireEvent.click(input());
+    await waitFor(() => expect(months()).toEqual(['Month June, 2026', 'Month July, 2026']));
+    fireEvent.click(day('June', 20));
+    fireEvent.click(day('July', 3));
+    await waitFor(() => expect(document.querySelector('.react-datepicker')).toBeNull());
+
+    fireEvent.click(input());
+
+    await waitFor(() => expect(months()).toEqual(['Month June, 2026', 'Month July, 2026']));
+  });
+
   test('[DaterangePicker-VAR-001] mount publishes isVisible/isDisabled/isLoading/isMandatory/label', async () => {
     // Break this catches: the hooks not publishing the runtime-only state
     // variables on mount (useDatetimeInput.js:71-79); config declares only the range.

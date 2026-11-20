@@ -1,5 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 
+// The space a fullscreen modal's slot grid can use: the canvas box without its side padding (editor) or a classic
+// scrollbar (viewer). offsetWidth counted both, so a full-width child ran past the modal's edge. Borders stay in: the
+// editor reserves a right border on the canvas while a modal is open, and the modal body spans it.
+const getCanvasContentWidth = (canvasElement) => {
+  const { paddingLeft, paddingRight, borderLeftWidth, borderRightWidth } = window.getComputedStyle(canvasElement);
+  const px = (value) => parseFloat(value) || 0;
+  return canvasElement.clientWidth + px(borderLeftWidth) + px(borderRightWidth) - px(paddingLeft) - px(paddingRight);
+};
+
 export function useModalEventSideEffects({
   showModal,
   size,
@@ -27,8 +36,7 @@ export function useModalEventSideEffects({
 
         // When modal is in fullscreen and width of browser changes, update the modal width
         if (size === 'fullscreen') {
-          const width = entry.target.offsetWidth;
-          setModalWidth(width);
+          setModalWidth(getCanvasContentWidth(entry.target));
         }
       }
     });
@@ -50,8 +58,7 @@ export function useModalEventSideEffects({
         // This delay is to get the correct width of the modal
 
         const canvasElement = document.querySelector('.page-container.canvas-container');
-        const width = canvasElement.offsetWidth;
-        setModalWidth(width);
+        setModalWidth(getCanvasContentWidth(canvasElement));
       } else {
         setModalWidth(parentRef.current.offsetWidth);
       }

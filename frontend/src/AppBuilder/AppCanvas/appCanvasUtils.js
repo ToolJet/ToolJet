@@ -94,7 +94,10 @@ export const addNewWidgetToTheEditor = (
   const defaultWidth = componentData.defaultSize.width;
   const defaultHeight = componentData.defaultSize.height;
 
-  const { e, frozenTargetRect } = useGridStore.getState().getGhostDragPosition();
+  // A cancelled drag reaches here without a drop position; add nothing.
+  const ghostDragPosition = useGridStore.getState().getGhostDragPosition();
+  if (!ghostDragPosition) return null;
+  const { e, frozenTargetRect } = ghostDragPosition;
   const subContainerWidth = canvasBoundingRect?.width;
 
   const { left: _left, top: _top } = getMouseDistanceFromParentDiv(

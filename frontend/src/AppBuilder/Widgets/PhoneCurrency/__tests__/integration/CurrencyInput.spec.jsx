@@ -1732,7 +1732,7 @@ describe('accessibility, async and identity', () => {
       },
       also: [{ id: 'ci2', componentType: 'CurrencyInput' }],
     });
-    await waitFor(() => expect(document.querySelectorAll('input')).toHaveLength(2));
+    await waitFor(() => expect(document.querySelectorAll('input[id^="component-"]')).toHaveLength(2));
 
     expect(harness.exposed('ci1').value).toBe(100);
     expect(harness.exposed('ci2').value).toBe(250);

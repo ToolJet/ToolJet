@@ -1,6 +1,6 @@
 import { waitFor, fireEvent } from '@testing-library/react';
 // eslint-disable-next-line import/named
-import { __getRecorderOptions } from 'react-media-recorder';
+import { __getRecorderOptions, __getStopCalls } from 'react-media-recorder';
 import {
   createWidgetHarness,
   binding,
@@ -145,6 +145,35 @@ describe('AudioRecorder widget', () => {
 
     await waitFor(() => expect(exposed().dataURL).toMatch(/^data:.*;base64,/));
     expect(widget.variables().saveCount).toBe(1);
+  });
+
+  test('[AudioRecorder-REC-003] discarding a paused recording stops the recorder without saving', async () => {
+    // Break this catches: discard only resetting widget state and never calling stopRecording,
+    // so the recorder keeps the microphone open.
+    widget.render({ events: saveCounter() });
+    await waitMounted();
+    await waitFor(() => expect(document.querySelector('[aria-label="Start recording"]')).toBeTruthy());
+    await widget.session.store.act(async () => {
+      fireEvent.click(document.querySelector('[aria-label="Start recording"]'));
+    });
+    await waitFor(() => expect(document.querySelector('[aria-label="Pause recording"]')).toBeTruthy());
+    await widget.session.store.act(async () => {
+      fireEvent.click(document.querySelector('[aria-label="Pause recording"]'));
+    });
+    const discard = await waitFor(() => {
+      const button = document.querySelector('.audio-recorder-save-button')?.nextElementSibling;
+      expect(button).toBeTruthy();
+      return button;
+    });
+    const stopsBefore = __getStopCalls();
+
+    await widget.session.store.act(async () => {
+      fireEvent.click(discard);
+    });
+
+    await waitFor(() => expect(__getStopCalls()).toBe(stopsBefore + 1));
+    expect(widget.variables().saveCount).toBeUndefined();
+    expect(exposed().dataURL).toBeNull();
   });
 
   test('[AudioRecorder-CSA-001] resetAudio clears dataURL to null', async () => {

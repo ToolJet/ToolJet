@@ -9,11 +9,14 @@ import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { getSafeRenderableValue } from '../utils';
 
-export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, id }) => {
+export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, width, styles }) => {
   const [annotationState, setAnnotation] = useState({});
   const [annotationsState, setAnnotations] = useState([]);
   const [outerDivHeight, setOuterDivHeight] = useState();
   const [outerDivWidth, setOuterDivWidth] = useState();
+  const [naturalSize, setNaturalSize] = useState(null);
+  const [fittedSize, setFittedSize] = useState(null);
+  const [focusAnnotationId, setFocusAnnotationId] = useState(null);
 
   const [typeState, setType] = useState(properties.selector);
   const labels = _.isArray(properties.labels)
@@ -25,29 +28,41 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
     : [];
   const annotateRef = useRef(null);
 
+  const rootRef = useRef(null);
+
   useEffect(() => {
+    // react-image-annotation's generated class names change between builds, so locate the image structurally
+    const imageElement = rootRef.current?.querySelector('img');
+    if (!imageElement) return;
+
     const handleImageLoad = () => {
-      const wrapperElement = document.querySelector(`[widgetid="${id}"] .jcdOkx`);
-      if (wrapperElement) {
-        const { width, height } = wrapperElement.getBoundingClientRect();
-        // Use the width and height of bounding image for further calculations
-        setOuterDivWidth(width);
-        setOuterDivHeight(height);
+      // Measured frame until the fit below runs; an image without a natural size keeps this.
+      const wrapperRect = imageElement.parentElement?.getBoundingClientRect();
+      if (wrapperRect) {
+        setOuterDivWidth(wrapperRect.width);
+        setOuterDivHeight(wrapperRect.height);
       }
+      setNaturalSize({ width: imageElement.naturalWidth, height: imageElement.naturalHeight });
     };
 
-    const imageElement = document.querySelector(`[widgetid="${id}"] .hIIYQM`);
-    if (imageElement) {
-      imageElement.addEventListener('load', handleImageLoad);
-    }
+    imageElement.addEventListener('load', handleImageLoad);
+    // a cached image can finish loading before this effect attaches the listener
+    if (imageElement.complete && imageElement.naturalWidth > 0) handleImageLoad();
 
-    return () => {
-      if (imageElement) {
-        imageElement.removeEventListener('load', handleImageLoad);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => imageElement.removeEventListener('load', handleImageLoad);
   }, []);
+
+  // Fit the whole image inside the widget box, keeping its shape; the annotation frame takes the same size,
+  // so drawn boxes stay aligned with the image.
+  useEffect(() => {
+    const box = rootRef.current?.getBoundingClientRect();
+    if (!naturalSize?.width || !naturalSize?.height || !box?.width || !box?.height) return;
+    const scale = Math.min(box.width / naturalSize.width, box.height / naturalSize.height);
+    const fitted = { width: naturalSize.width * scale, height: naturalSize.height * scale };
+    setFittedSize(fitted);
+    setOuterDivWidth(fitted.width);
+    setOuterDivHeight(fitted.height);
+  }, [naturalSize, height, width]);
 
   useEffect(() => {
     let selector = undefined;
@@ -182,17 +197,23 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
 
   return (
     <div
+      ref={rootRef}
       onMouseDown={(e) => e.stopPropagation()}
       style={{ display: styles.visibility ? 'block' : 'none', height: height, boxShadow: styles.boxShadow }}
       className="bounded-box relative"
     >
       <Annotation
         src={`${properties.imageUrl}`}
+        // D-04: a static accessible name for the image being annotated.
+        alt="Image to annotate"
         annotations={annotationsState}
         type={typeState}
         ref={annotateRef}
         value={annotationState}
+        style={fittedSize ? { width: fittedSize.width, height: fittedSize.height, margin: '0 auto' } : undefined}
         onChange={(annotation) => onChange(annotation)}
+        // Without it the library ignores touch, so a finger drag only scrolls the page.
+        allowTouch
         renderSelector={({ annotation, active }) => (
           <RenderSelector annotation={annotation} active={active} fireEvent={fireEvent} />
         )}
@@ -208,6 +229,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
               darkMode={darkMode}
               selectElementStyles={selectElementStyles}
               getExposedAnnotations={getExposedAnnotations}
+              onLabelCommitted={setFocusAnnotationId}
             />
           );
         }}
@@ -221,6 +243,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
             selectElementStyles={selectElementStyles}
             labels={labels}
             getExposedAnnotations={getExposedAnnotations}
+            autoFocusLabel={annotation.data.id === focusAnnotationId}
           />
         )}
         renderContent={() => null}

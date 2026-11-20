@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { IconPhotoOff } from '@tabler/icons-react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 
 /**
@@ -22,6 +23,9 @@ export const ImageRenderer = ({
   objectFit = 'contain',
   horizontalAlignment = 'left',
 }) => {
+  const [hasLoadError, setHasLoadError] = useState(false);
+  useEffect(() => setHasLoadError(false), [value]);
+
   if (!value) {
     return null;
   }
@@ -32,17 +36,29 @@ export const ImageRenderer = ({
         horizontalAlignment
       )}`}
     >
-      <img
-        src={value}
-        alt=""
-        style={{
-          pointerEvents: 'auto',
-          width: width ? `${width}px` : 'auto',
-          height: height || '100%',
-          borderRadius: borderRadius ? `${borderRadius}px` : undefined,
-          objectFit: objectFit,
-        }}
-      />
+      {hasLoadError ? (
+        // A broken image renders 0×0; show a visible, labelled fallback instead.
+        <IconPhotoOff
+          role="img"
+          aria-label="Image failed to load"
+          width={20}
+          height={20}
+          color="var(--cc-default-icon, currentColor)"
+        />
+      ) : (
+        <img
+          onError={() => setHasLoadError(true)}
+          src={value}
+          alt=""
+          style={{
+            pointerEvents: 'auto',
+            width: width ? `${width}px` : 'auto',
+            height: height || '100%',
+            borderRadius: borderRadius ? `${borderRadius}px` : undefined,
+            objectFit: objectFit,
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React from 'react';
 import Select from '@/_ui/Select';
 import { Box } from './Box';
+import { getLabelControlPosition } from './labelControlPosition';
 
 export const RenderHighlight = ({
   annotation,
@@ -11,6 +12,7 @@ export const RenderHighlight = ({
   setAnnotations,
   fireEvent,
   getExposedAnnotations,
+  autoFocusLabel = false,
 }) => {
   let { geometry } = annotation;
   if (geometry.type === 'POINT') {
@@ -32,19 +34,13 @@ export const RenderHighlight = ({
       ></Box>
 
       <div
-        style={{
-          position: 'absolute',
-          left: `${geometry.x}%`,
-          top: `${geometry.y + geometry.height}%`,
-          right: `${geometry.x + geometry.width}%`,
-          width: `${geometry.width}%`,
-          minWidth: '125px',
-          zIndex: 999,
-        }}
+        style={{ ...getLabelControlPosition(geometry), zIndex: 999 }}
         key={`content-${annotation.data.id}`}
         className="row m-0"
       >
-        <span
+        <button
+          type="button"
+          aria-label={`Delete annotation ${data.text ?? ''}`.trim()}
           onClick={(event) => {
             event.persist();
             setAnnotations((prevState) => {
@@ -60,7 +56,8 @@ export const RenderHighlight = ({
           style={{
             background: darkMode ? '#2b3547' : '#fff',
             borderRadius: '6px',
-            border: darkMode ? '1px solid #fff' : 'inherit',
+            border: darkMode ? '1px solid #fff' : 'none',
+            padding: 0,
           }}
         >
           <svg width="15" height="15" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -71,7 +68,7 @@ export const RenderHighlight = ({
               fill="#DB4324"
             />
           </svg>
-        </span>
+        </button>
         <div className="col">
           <Select
             options={labels}
@@ -104,6 +101,9 @@ export const RenderHighlight = ({
             }}
             useCustomStyles={true}
             value={annotation.data.text}
+            aria-label={`Label for annotation ${data.text ?? ''}`.trim()}
+            // A label just picked for a new annotation keeps keyboard focus on that annotation.
+            autoFocus={autoFocusLabel}
             // useMenuPortal={false}
             useMenuPortal
             styles={selectElementStyles(darkMode, '100%')}

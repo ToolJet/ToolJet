@@ -86,7 +86,7 @@ const BlockStyleControls = (props) => {
   return (
     <>
       <div className="dropmenu">
-        <button className="dropdownbtn px-2" type="button">
+        <button className="dropdownbtn px-2" type="button" tabIndex={props.readOnly ? -1 : undefined}>
           Heading
         </button>
         <div className="dropdown-content" style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
@@ -154,6 +154,8 @@ class DraftEditor extends React.Component {
     super(props);
     this.state = {
       editorState: EditorState.createWithContent(stateFromHTML(DOMPurify.sanitize(this.props.defaultValue))),
+      // Until measured, assume the one-row toolbar the old fixed "height - 60" allowed for (60 = 46 + 14).
+      controlsHeight: 14,
     };
 
     this.editorContainerRef = React.createRef();
@@ -194,13 +196,9 @@ class DraftEditor extends React.Component {
   componentDidMount() {
     //For resizing the editor container based on the height of rich text editor controls
     this.resizeObserver = new ResizeObserver(() => {
-      if (this.controlsRef.current && this.editorContainerRef.current) {
+      if (this.controlsRef.current) {
         const controlsHeight = this.controlsRef.current.offsetHeight;
-        const editorHeight = this.props.height - 46 - controlsHeight;
-        this.editorContainerRef.current.style.height = `${editorHeight}px`;
-        if (this.props.isDynamicHeightEnabled) {
-          this.editorContainerRef.current.style.height = `auto`;
-        }
+        if (controlsHeight !== this.state.controlsHeight) this.setState({ controlsHeight });
       }
     });
 
@@ -293,15 +291,25 @@ class DraftEditor extends React.Component {
     ) : (
       <div className="RichEditor-root" style={{ overflowY: 'scroll', scrollbarWidth: 'none' }}>
         <div className="RichEditor-controls" ref={this.controlsRef}>
-          <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
+          <BlockStyleControls
+            editorState={editorState}
+            onToggle={this.toggleBlockType}
+            readOnly={this.props.readOnly}
+          />
           <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />
         </div>
         <div
           className={className}
           ref={this.editorContainerRef}
           style={{
-            height: this.props.isDynamicHeightEnabled ? 'auto' : `${this.props.height - 60}px`,
-            ...(this.props.isDynamicHeightEnabled && { minHeight: `${this.props.height - 60}px` }),
+            // The editor area gets what the widget height leaves after the measured toolbar (and 46px of chrome),
+            // as its height or, with dynamic height, as its minimum.
+            height: this.props.isDynamicHeightEnabled
+              ? 'auto'
+              : `${this.props.height - 46 - this.state.controlsHeight}px`,
+            ...(this.props.isDynamicHeightEnabled && {
+              minHeight: `${this.props.height - 46 - this.state.controlsHeight}px`,
+            }),
           }}
           onClick={this.focus}
         >
@@ -312,6 +320,7 @@ class DraftEditor extends React.Component {
             handleKeyCommand={this.handleKeyCommand}
             keyBindingFn={this.mapKeyToEditorCommand}
             onChange={this.onChange}
+            readOnly={this.props.readOnly}
             placeholder={
               <div
                 dangerouslySetInnerHTML={{

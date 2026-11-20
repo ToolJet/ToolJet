@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { cn } from '@/lib/utils';
 
 const Loader = ({ width, style, absolute = true, color = '#3E63DD', reverse = false, classes = null }) => {
   const viewBoxSize = 240; // Increase the viewBox size as needed
   const rotateFrom = reverse ? '360 120 120' : '0 120 120';
   const rotateTo = reverse ? '0 120 120' : '360 120 120';
+  // Gradient ids are document-wide; shared ids made every loader on a page paint the first one's colour.
+  const idPrefix = `spinner-${useId().replace(/:/g, '')}`;
+  const firstHalfId = `${idPrefix}-firstHalf`;
+  const secondHalfId = `${idPrefix}-secondHalf`;
 
   return (
     <div
@@ -20,22 +24,22 @@ const Loader = ({ width, style, absolute = true, color = '#3E63DD', reverse = fa
         color={color}
       >
         <defs>
-          <linearGradient id="spinner-secondHalf">
+          <linearGradient id={secondHalfId}>
             <stop offset="0%" stopOpacity="0" stopColor="currentColor" />
             <stop offset="100%" stopOpacity="0.5" stopColor="currentColor" />
           </linearGradient>
-          <linearGradient id="spinner-firstHalf">
+          <linearGradient id={firstHalfId}>
             <stop offset="0%" stopOpacity="1" stopColor="currentColor" />
             <stop offset="100%" stopOpacity="0.5" stopColor="currentColor" />
           </linearGradient>
         </defs>
         <g strokeWidth="24">
           <path
-            stroke="url(#spinner-secondHalf)"
+            stroke={`url(#${secondHalfId})`}
             d={`M 10 ${viewBoxSize / 2} A 96 96 0 0 1 ${viewBoxSize - 10} ${viewBoxSize / 2}`}
           />
           <path
-            stroke="url(#spinner-firstHalf)"
+            stroke={`url(#${firstHalfId})`}
             d={`M ${viewBoxSize - 10} ${viewBoxSize / 2} A 96 96 0 0 1 10 ${viewBoxSize / 2}`}
           />
 

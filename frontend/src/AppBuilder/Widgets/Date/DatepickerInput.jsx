@@ -5,40 +5,44 @@ import { IconX } from '@tabler/icons-react';
 import { parseDateInputText, parseDateRangeInput } from './utils';
 
 export const DatepickerInput = forwardRef(
-  ({
-    value,
-    onClick,
-    inputStyles,
-    dateInputRef,
-    iconStyles,
-    loaderStyles,
-    loading,
-    disable,
-    onInputChange,
-    datepickerSelectionType = 'single',
-    displayFormat,
-    setDisplayTimestamp,
-    setTextInputFocus,
-    onTextParse,
-    IconElement,
-    showValidationError,
-    setShowValidationError,
-    isValid,
-    validationError,
-    visibility,
-    errTextColor,
-    direction,
-    isMandatory,
-    inputId,
-    auto,
-    labelWidth,
-    label,
-    showClearBtn,
-    onClear,
-    inputPlaceholder = 'Select date',
-    clearButtonRightOffset = 0,
-    dataCy,
-  }) => {
+  (
+    {
+      value,
+      onClick,
+      onKeyDown,
+      inputStyles,
+      dateInputRef,
+      iconStyles,
+      loaderStyles,
+      loading,
+      disable,
+      onInputChange,
+      datepickerSelectionType = 'single',
+      displayFormat,
+      setDisplayTimestamp,
+      setTextInputFocus,
+      onTextParse,
+      IconElement,
+      showValidationError,
+      setShowValidationError,
+      isValid,
+      validationError,
+      visibility,
+      errTextColor,
+      direction,
+      isMandatory,
+      inputId,
+      auto,
+      labelWidth,
+      label,
+      showClearBtn,
+      onClear,
+      inputPlaceholder = 'Select date',
+      clearButtonRightOffset = 0,
+      dataCy,
+    },
+    forwardedRef
+  ) => {
     const isPlaceholderValue = value === null || value === undefined || value === '';
 
     const computedInputStyles = {
@@ -62,6 +66,7 @@ export const DatepickerInput = forwardRef(
           value={value}
           placeholder={inputPlaceholder}
           onClick={onClick}
+          onKeyDown={onKeyDown}
           onFocus={() => setTextInputFocus(true)}
           onBlur={() => {
             setTextInputFocus(false);
@@ -73,7 +78,12 @@ export const DatepickerInput = forwardRef(
           aria-required={isMandatory}
           aria-invalid={!isValid && showValidationError}
           aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
-          ref={dateInputRef}
+          ref={(element) => {
+            // react-datepicker uses the forwarded ref to return focus to the field; the widget keeps its own.
+            if (dateInputRef) dateInputRef.current = element;
+            if (typeof forwardedRef === 'function') forwardedRef(element);
+            else if (forwardedRef) forwardedRef.current = element;
+          }}
           id={`component-${inputId}`}
           style={computedInputStyles}
           onChange={(e) => {

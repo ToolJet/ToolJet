@@ -4,12 +4,15 @@ import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import { rehypeDomPurify } from './rehypeDomPurify';
 import './text.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -158,6 +161,26 @@ export const Text = function Text({
     fireEvent('onClick');
   };
 
+  const { moduleId } = useModuleContext();
+  // Only a Text the builder wired an On click to becomes a keyboard button (same rule as Icon's pointer cursor).
+  const hasClickEvent = useStore((state) =>
+    (state.eventsSlice.getEventsByComponentsId(id, moduleId) ?? []).some(
+      (event) => event?.event?.eventId === 'onClick' && !event?.event?.disabled
+    )
+  );
+  const keyboardButtonProps =
+    hasClickEvent && !isDisabled
+      ? {
+          role: 'button',
+          tabIndex: 0,
+          onKeyDown: (event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            handleClick();
+          },
+        }
+      : {};
+
   const computedStyles = {
     ...(isDynamicHeightEnabled && { minHeight: `${boxHeight}px` }),
     height: isDynamicHeightEnabled ? 'auto' : `${boxHeight}px`,
@@ -214,6 +237,7 @@ export const Text = function Text({
         fireEvent('onHover');
       }}
       onClick={handleClick}
+      {...keyboardButtonProps}
     >
       {!isLoading && (
         <div style={commonStyles} className="text-widget-section">
@@ -222,7 +246,11 @@ export const Text = function Text({
           )}
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
-              <Markdown className={'reactMarkdown'} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+              <Markdown
+                className={'reactMarkdown'}
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw, rehypeDomPurify]}
+              >
                 {/* react-markdown accepts only a string. The property path coerces through
                     `text`'s string schema, but setText() bypasses it, so a number or boolean
                     from a CSA reaches here raw and the widget dies in its error boundary. */}

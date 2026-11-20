@@ -123,6 +123,8 @@ export function SortableTree({
       activationConstraint: {
         delay: 250,
         distance: 10,
+        // dnd-kit reads tolerance on every move during the delay; without it a small move throws.
+        tolerance: 10,
       },
     })
   );
