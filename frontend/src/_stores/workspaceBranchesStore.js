@@ -179,14 +179,15 @@ export const useWorkspaceBranchesStore = create(
           }
         },
 
-        async createBranch(name, sourceBranchId, commitSha, appId, versionId, confirmImport) {
+        async createBranch(name, sourceBranchId, commitSha, appId, versionId, confirmImport, idempotencyKey) {
           const newBranch = await workspaceBranchesService.create(
             name,
             sourceBranchId,
             commitSha,
             appId,
             versionId,
-            confirmImport
+            confirmImport,
+            idempotencyKey
           );
           await get().actions.fetchBranches();
           return newBranch;
