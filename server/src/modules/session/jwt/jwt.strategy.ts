@@ -278,7 +278,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   private async checkWorkspaceBranch(branchId: string, organizationId?: string): Promise<string | null> {
     if (!organizationId) return null;
-    if (!(await this.sessionUtilService.isWorkspaceBranch(branchId, organizationId))) {
+    if (await this.sessionUtilService.isForeignBranch(branchId, organizationId)) {
       throw new BadRequestException('Branch not found in this workspace');
     }
     return branchId;

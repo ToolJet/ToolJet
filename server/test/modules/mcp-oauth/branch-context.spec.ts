@@ -28,7 +28,7 @@ describe.each(['delegation', 'viewer'] as const)('OAuth %s branch context', (kin
       });
       const session = {
         getDefaultBranchId: jest.fn().mockResolvedValue('default-branch'),
-        isWorkspaceBranch: jest.fn().mockResolvedValue(true),
+        isForeignBranch: jest.fn().mockResolvedValue(false),
       };
       const identity = {
         validateDelegation: jest.fn().mockResolvedValue(user),
@@ -76,7 +76,7 @@ describe.each(['delegation', 'viewer'] as const)('OAuth %s branch context', (kin
       if (expected === 'default-branch') expect(session.getDefaultBranchId).toHaveBeenCalledWith(workspaceId);
       else {
         expect(session.getDefaultBranchId).not.toHaveBeenCalled();
-        expect(session.isWorkspaceBranch).toHaveBeenCalledWith(expected, workspaceId);
+        expect(session.isForeignBranch).toHaveBeenCalledWith(expected, workspaceId);
       }
       expect(identity[kind === 'viewer' ? 'validateViewer' : 'validateDelegation']).toHaveBeenCalledTimes(
         cached ? 0 : 1
@@ -88,7 +88,7 @@ describe.each(['delegation', 'viewer'] as const)('OAuth %s branch context', (kin
       { query: {}, headers: { 'x-branch-id': 'foreign-branch' } },
     ])('rejects a branch outside the workspace for query=$query and headers=$headers', async ({ query, headers }) => {
       const { session, strategy, request, payload } = setup(query, headers);
-      session.isWorkspaceBranch.mockResolvedValue(false);
+      session.isForeignBranch.mockResolvedValue(true);
       await expect(strategy.validate(request, payload)).rejects.toBeInstanceOf(BadRequestException);
     });
 

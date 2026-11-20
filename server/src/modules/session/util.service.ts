@@ -337,11 +337,11 @@ export class SessionUtilService {
     }, manager);
   }
 
-  async isWorkspaceBranch(branchId: string, organizationId: string): Promise<boolean> {
-    if (!isUUID(branchId)) return false;
+  async isForeignBranch(branchId: string, organizationId: string): Promise<boolean> {
+    if (!isUUID(branchId)) return true;
     return dbTransactionWrap(
       async (manager: EntityManager) =>
-        (await manager.count(WorkspaceBranch, { where: { id: branchId, organizationId } })) > 0
+        (await manager.count(WorkspaceBranch, { where: { id: branchId, organizationId: Not(organizationId) } })) > 0
     );
   }
 
