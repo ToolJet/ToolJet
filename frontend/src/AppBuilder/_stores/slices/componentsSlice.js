@@ -45,6 +45,7 @@ import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 import { packSlotRestrictionType, restrictedTypeOf } from '@/AppBuilder/_helpers/packDropRestrictions';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
+import { VARIABLE_DEFINITION_NODE_SUFFIX } from './variablesSlice';
 import { isCompareFrame, withoutCompareNavigation } from '@/AppBuilder/_utils/compareFrame';
 import { utilityFuncForNameSeed } from '@/_helpers/utils';
 import * as pageRoots from '@ee/modules/CodeMode/AppBuilder/_hooks/codePageRoot';
@@ -1237,8 +1238,13 @@ export const createComponentsSlice = (set, get) => ({
       startDependencyBatch,
       flushDependencyBatch,
       registerQueryDependencies,
+      initVariableDefinitions,
+      refreshExpressionVariables,
     } = get();
     const components = getCurrentPageComponents(moduleId);
+
+    // Declared variables first, so components resolve against their values.
+    const seededVariableIds = initVariableDefinitions(moduleId);
 
     //TODO: Replace with object of component types
     const resolvedComponentValues = {};
@@ -1288,6 +1294,7 @@ export const createComponentsSlice = (set, get) => ({
     );
 
     resolveOthers(moduleId);
+    refreshExpressionVariables(seededVariableIds, moduleId);
 
     // Register query option dependencies for queries with runOnDependencyChange enabled.
     const queries = get().dataQuery?.queries?.modules?.[moduleId] || [];
@@ -2939,6 +2946,13 @@ export const createComponentsSlice = (set, get) => ({
         'updateDependencyValues'
       );
     };
+
+    // Declared variable sentinel - recompute the variable's value from its definition
+    if (dependency.endsWith(VARIABLE_DEFINITION_NODE_SUFFIX)) {
+      const nodeData = getNodeData(dependency, moduleId);
+      if (nodeData?.definitionId) get().recomputeVariableDefinition(nodeData.definitionId, moduleId);
+      return;
+    }
 
     // Handle query options sentinel - trigger re-run instead of resolution
     if (dependency.endsWith('.__options__')) {

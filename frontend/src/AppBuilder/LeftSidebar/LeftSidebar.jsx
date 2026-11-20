@@ -11,11 +11,22 @@ import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
 import DependencyViewer from './Dependencies/DependencyViewer';
+import VariablesPanel from './Variables/VariablesPanel';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { SquareDashedMousePointer, Bug, Bolt, History, Waypoints, Search, ScanSearch, LockKeyhole } from 'lucide-react';
+import {
+  SquareDashedMousePointer,
+  Bug,
+  Bolt,
+  History,
+  Waypoints,
+  Search,
+  ScanSearch,
+  LockKeyhole,
+  Variable,
+} from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { EditorView } from '@codemirror/view';
 import CodeSearch from './CodeSearch/CodeSearch';
@@ -47,6 +58,8 @@ const LEFT_SIDEBAR_PANEL_LABELS = {
   debugger: 'Debugger',
   security: 'Security',
   access: 'Access',
+  dependencies: 'Dependencies',
+  variables: 'Variables',
   settings: 'Global settings',
 };
 
@@ -235,6 +248,8 @@ export const BaseLeftSidebar = ({
         return <AccessPanel onClose={() => toggleLeftSidebar(false)} />;
       case 'dependencies':
         return <DependencyViewer darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
+      case 'variables':
+        return <VariablesPanel darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'settings':
         return (
           <GlobalSettings
@@ -267,6 +282,18 @@ export const BaseLeftSidebar = ({
           ref={setSideBarBtnRefs('inspect')}
         >
           <SquareDashedMousePointer width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
+
+        <SidebarItem
+          selectedSidebarItem={selectedSidebarItem}
+          onClick={() => handleSelectedSidebarItem('variables')}
+          darkMode={darkMode}
+          icon="variables"
+          className={`left-sidebar-item left-sidebar-layout`}
+          tip="Variables"
+          ref={setSideBarBtnRefs('variables')}
+        >
+          <Variable width="16" height="16" className="tw-text-icon-strong" />
         </SidebarItem>
 
         {!codeMode && (
@@ -443,6 +470,7 @@ export const BaseLeftSidebar = ({
               'settings',
               'libraries',
               'dependencies',
+              'variables',
             ].includes(selectedSidebarItem)
           )
             return;

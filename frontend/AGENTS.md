@@ -128,6 +128,8 @@ In a branching-enabled Git Sync workspace, the configured default branch disable
 
 ### App Builder store
 
+- The Variables panel's basic CodeHinter uses `onInputChange` to keep the initial-value draft current for previews, fx toggles and saving. The basic editor's `onChange` runs on blur; do not save the same variable through both callbacks, which duplicates saves and undo entries. Blank initial input deliberately means an empty string; preserve explicit `0`, `false`, `null` and expressions through the variable-definition parser.
+
 - AppBuilder store: `AppBuilder/_stores/store.js` (30+ slices), all namespaced by `moduleId` (default `'canvas'`)
 - Global stores (`appDataStore`, `currentStateStore`, `dataQueriesStore`, `resolverStore`) should not be used from AppBuilder code unless truly unavoidable — prefer the AppBuilder store
 

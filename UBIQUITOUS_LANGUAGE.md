@@ -74,6 +74,8 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 |------|-----------|-----------------|
 | **Variable** | An app-scoped runtime value set via `setVariable(key, value)` | Global variable (ambiguous with Workspace Constant) |
 | **Page Variable** | A page-scoped runtime value set via `setPageVariable(key, value)` | — |
+| **Declared Variable** | A Variable or Page Variable defined in the Variables panel with an initial value (static or `{{ }}`); saved in `globalSettings.variables` (app) or `pages.variables` (page) and recomputed whenever what its initial value reads changes. `setVariable` / `setPageVariable` overwrite it until the next recompute. Code: `variablesSlice`, `_utils/variableDefinitions.js` | Variable definition (code name) |
+| **Runtime-only Variable** | A Variable or Page Variable that only a script or event creates; it has no saved definition and is undefined until that code runs | — |
 | **Exposed Variable** | An auto-generated, read-only variable holding component state (e.g., `components.textinput1.value`) | — |
 | **Workspace Constant** | A reusable, non-secret value available across all apps in a workspace; resolved server-side; syntax: `{{constants.name}}` | Global Constant (acceptable), Workspace Variable / Environment Variable (deprecated docs terms) |
 | **Workspace Secret** | An encrypted workspace constant for sensitive data; masked in frontend; syntax: `{{secrets.name}}` | — |
