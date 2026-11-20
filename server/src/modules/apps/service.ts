@@ -377,6 +377,10 @@ export class AppsService implements IAppsService {
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
     const { name, editingVersionId } = appUpdateDto;
+    // Workflows are run, never viewed, so they are never public (see AbilityGuard)
+    if (app.type === APP_TYPES.WORKFLOW && appUpdateDto.is_public) {
+      throw new BadRequestException('Workflows cannot be made public');
+    }
     // Git configured but license expired/invalid → workspace is read-only; block metadata edits.
     await assertNotGitLicenseLocked(this.gitSyncConfigsUtilService, app.organizationId);
     const { isEnabled: isGitSyncEnabled, isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(
