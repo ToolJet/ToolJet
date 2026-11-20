@@ -71,7 +71,7 @@ export const Tags = ({
     const result = [...currentOptions];
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
-    paramUpdated({ property: 'options' }, 'properties', result);
+    updateOptions(result);
   };
 
   const generateNewTagOption = () => {

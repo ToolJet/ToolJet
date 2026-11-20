@@ -269,6 +269,39 @@ export const Tabs = function Tabs({
     return tabItems.findIndex((tab) => tab.id === tabId);
   };
 
+  const selectTab = (tab) => {
+    if (currentTab == tab.id) return;
+    if (tab?.disable) return;
+
+    if (transition !== 'none') {
+      setIsTransitioning(true);
+      setTimeout(() => setIsTransitioning(false), 300); // Match transition duration
+    }
+    if (!tab?.disabled) {
+      setCurrentTab(tab.id);
+      setExposedVariables({
+        currentTab: tab.id,
+        currentTabTitle: tab.title,
+      });
+    }
+    fireEvent('onTabSwitch');
+  };
+
+  const visibleTabs = tabItems?.filter((tab) => tab?.visible !== false) ?? [];
+  const enabledTabs = visibleTabs.filter((tab) => !tab?.disable);
+  // WAI-ARIA tabs: one Tab stop, on the active tab or, when it can't take focus, the first enabled tab.
+  const focusableTabId = (enabledTabs.find((tab) => tab.id == currentTab) ?? enabledTabs[0])?.id;
+
+  const handleTabKeyDown = (e, tab) => {
+    const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+    if (!step || enabledTabs.length === 0) return;
+    e.preventDefault();
+    const position = enabledTabs.findIndex((t) => t.id == tab.id);
+    const next = enabledTabs[(position + step + enabledTabs.length) % enabledTabs.length];
+    selectTab(next);
+    e.currentTarget.parentElement?.children[visibleTabs.indexOf(next)]?.focus();
+  };
+
   const handleMouseEnter = (id) => {
     setHoveredTabId(id);
     setIsHovered(true);
@@ -343,6 +376,7 @@ export const Tabs = function Tabs({
           {/* this started change */}
           <ul
             ref={tabsRef}
+            role="tablist"
             className="nav"
             data-bs-toggle="tabs"
             style={{
@@ -361,89 +395,76 @@ export const Tabs = function Tabs({
               height: `${TAB_HEADER_HEIGHT}px`,
             }}
           >
-            {tabItems
-              ?.filter((tab) => tab?.visible !== false)
-              ?.map((tab) => (
-                <li
-                  className={`nav-item ${currentTab == tab.id ? 'active' : ''}`}
+            {visibleTabs.map((tab) => (
+              <li
+                role="tab"
+                aria-selected={currentTab == tab.id}
+                aria-disabled={!!tab?.disable}
+                tabIndex={tab.id == focusableTabId ? 0 : -1}
+                onKeyDown={(e) => handleTabKeyDown(e, tab)}
+                className={`nav-item ${currentTab == tab.id ? 'active' : ''}`}
+                style={{
+                  opacity: tab?.disable && '0.5',
+                  width: tabWidth == 'split' && equalSplitWidth + '%',
+                  borderBottom: currentTab === tab.id && !tab?.disable ? `2px solid ${accent}` : ' #CCD1D5',
+                  backgroundColor: 'transparent',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontWeight: 'bold',
+                  paddingTop: '.5rem',
+                  paddingBottom: '.5rem',
+                  cursor: tab?.disable ? 'not-allowed' : 'pointer',
+                  ...(tabWidth == 'split' ? { minWidth: 'auto' } : {}), // Remove minWidth for tabWidth != 'split'
+                }}
+                onClick={() => selectTab(tab)}
+                onMouseEnter={() => handleMouseEnter(tab?.id)}
+                onMouseLeave={handleMouseLeave}
+                ref={(el) => {
+                  if (el && currentTab == tab.id) {
+                    el.style.setProperty('color', parsedHighlightColor, 'important');
+                  }
+                }}
+                key={tab.id}
+              >
+                <div
+                  data-disabled={tab?.disable}
                   style={{
-                    opacity: tab?.disable && '0.5',
-                    width: tabWidth == 'split' && equalSplitWidth + '%',
-                    borderBottom: currentTab === tab.id && !tab?.disable ? `2px solid ${accent}` : ' #CCD1D5',
-                    backgroundColor: 'transparent',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    fontWeight: 'bold',
-                    paddingTop: '.5rem',
-                    paddingBottom: '.5rem',
-                    cursor: tab?.disable ? 'not-allowed' : 'pointer',
-                    ...(tabWidth == 'split' ? { minWidth: 'auto' } : {}), // Remove minWidth for tabWidth != 'split'
+                    textAlign: 'center',
+                    fontWeight: '500',
+                    background:
+                      isHovered && hoveredTabId == tab.id
+                        ? tinycolor(resolvedHoverBackground).setAlpha(0.08).toString()
+                        : 'transparent',
+                    borderRadius: '6px',
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px',
+                    height: '28px',
+                    paddingTop: '4px',
+                    paddingBottom: '4px',
                   }}
-                  onClick={() => {
-                    if (currentTab == tab.id) return;
-                    if (tab?.disable) return;
-
-                    if (transition !== 'none') {
-                      setIsTransitioning(true);
-                      setTimeout(() => setIsTransitioning(false), 300); // Match transition duration
-                    }
-                    if (!tab?.disabled) {
-                      setCurrentTab(tab.id);
-                      setExposedVariables({
-                        currentTab: tab.id,
-                        currentTabTitle: tab.title,
-                      });
-                    }
-                    fireEvent('onTabSwitch');
-                  }}
-                  onMouseEnter={() => handleMouseEnter(tab?.id)}
-                  onMouseLeave={handleMouseLeave}
-                  ref={(el) => {
-                    if (el && currentTab == tab.id) {
-                      el.style.setProperty('color', parsedHighlightColor, 'important');
-                    }
-                  }}
-                  key={tab.id}
                 >
-                  <div
-                    data-disabled={tab?.disable}
-                    style={{
-                      textAlign: 'center',
-                      fontWeight: '500',
-                      background:
-                        isHovered && hoveredTabId == tab.id
-                          ? tinycolor(resolvedHoverBackground).setAlpha(0.08).toString()
-                          : 'transparent',
-                      borderRadius: '6px',
-                      paddingLeft: '1rem',
-                      paddingRight: '1rem',
-                      ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
-                      display: 'flex',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                      height: '28px',
-                      paddingTop: '4px',
-                      paddingBottom: '4px',
-                    }}
-                  >
-                    {tabWidth === 'split' ? (
-                      <>
-                        <a style={{ marginRight: '4px' }}>{getTabIcon(tab)}</a>
-                        <OverflowTooltip boxWidth={width}>
-                          <>{getSafeRenderableValue(tab.title)}</>
-                        </OverflowTooltip>
-                      </>
-                    ) : (
-                      <span>
-                        <a style={{ marginRight: '4px' }}>{getTabIcon(tab)}</a>
-                        {getSafeRenderableValue(tab.title)}
-                      </span>
-                    )}
-                  </div>
-                </li>
-              ))}
+                  {tabWidth === 'split' ? (
+                    <>
+                      <a style={{ marginRight: '4px' }}>{getTabIcon(tab)}</a>
+                      <OverflowTooltip boxWidth={width}>
+                        <>{getSafeRenderableValue(tab.title)}</>
+                      </OverflowTooltip>
+                    </>
+                  ) : (
+                    <span>
+                      <a style={{ marginRight: '4px' }}>{getTabIcon(tab)}</a>
+                      {getSafeRenderableValue(tab.title)}
+                    </span>
+                  )}
+                </div>
+              </li>
+            ))}
           </ul>
           {/* this ended change */}
           {canScroll && (

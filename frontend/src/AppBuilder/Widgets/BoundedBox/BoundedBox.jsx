@@ -9,11 +9,13 @@ import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { getSafeRenderableValue } from '../utils';
 
-export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles }) => {
+export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, width, styles }) => {
   const [annotationState, setAnnotation] = useState({});
   const [annotationsState, setAnnotations] = useState([]);
   const [outerDivHeight, setOuterDivHeight] = useState();
   const [outerDivWidth, setOuterDivWidth] = useState();
+  const [naturalSize, setNaturalSize] = useState(null);
+  const [fittedSize, setFittedSize] = useState(null);
 
   const [typeState, setType] = useState(properties.selector);
   const labels = _.isArray(properties.labels)
@@ -33,13 +35,13 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
     if (!imageElement) return;
 
     const handleImageLoad = () => {
-      const wrapperElement = imageElement.parentElement;
-      if (wrapperElement) {
-        const { width, height } = wrapperElement.getBoundingClientRect();
-        // Use the width and height of bounding image for further calculations
-        setOuterDivWidth(width);
-        setOuterDivHeight(height);
+      // Measured frame until the fit below runs; an image without a natural size keeps this.
+      const wrapperRect = imageElement.parentElement?.getBoundingClientRect();
+      if (wrapperRect) {
+        setOuterDivWidth(wrapperRect.width);
+        setOuterDivHeight(wrapperRect.height);
       }
+      setNaturalSize({ width: imageElement.naturalWidth, height: imageElement.naturalHeight });
     };
 
     imageElement.addEventListener('load', handleImageLoad);
@@ -48,6 +50,18 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
 
     return () => imageElement.removeEventListener('load', handleImageLoad);
   }, []);
+
+  // Fit the whole image inside the widget box, keeping its shape; the annotation frame takes the same size,
+  // so drawn boxes stay aligned with the image.
+  useEffect(() => {
+    const box = rootRef.current?.getBoundingClientRect();
+    if (!naturalSize?.width || !naturalSize?.height || !box?.width || !box?.height) return;
+    const scale = Math.min(box.width / naturalSize.width, box.height / naturalSize.height);
+    const fitted = { width: naturalSize.width * scale, height: naturalSize.height * scale };
+    setFittedSize(fitted);
+    setOuterDivWidth(fitted.width);
+    setOuterDivHeight(fitted.height);
+  }, [naturalSize, height, width]);
 
   useEffect(() => {
     let selector = undefined;
@@ -193,6 +207,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
         type={typeState}
         ref={annotateRef}
         value={annotationState}
+        style={fittedSize ? { width: fittedSize.width, height: fittedSize.height, margin: '0 auto' } : undefined}
         onChange={(annotation) => onChange(annotation)}
         renderSelector={({ annotation, active }) => (
           <RenderSelector annotation={annotation} active={active} fireEvent={fireEvent} />

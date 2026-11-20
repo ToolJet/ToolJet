@@ -11,7 +11,7 @@
  * By default (useDynamicOptions=false) the runtime reads `properties.tabItems`
  * (Tabs.jsx:88), NOT `properties.tabs` — so the harness seeds `tabItems`.
  */
-import { waitFor } from '@testing-library/react';
+import { fireEvent, waitFor } from '@testing-library/react';
 import {
   createWidgetHarness,
   binding,
@@ -480,5 +480,39 @@ describe('Tabs: state precedence (client action versus property re-resolve)', ()
     await waitFor(() => expect(exposed('currentTab')).toBe('2'));
 
     expect(headerByTitle('Profile')).toHaveStyle({ opacity: '0.5' });
+  });
+});
+
+describe('Tabs: keyboard', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const TABS_WITH_DISABLED =
+    '{{[' +
+    "{ id: '0', title: 'Home', visible: true, disable: false }," +
+    "{ id: '1', title: 'Profile', visible: true, disable: true }," +
+    "{ id: '2', title: 'Settings', visible: true, disable: false }" +
+    ']}}';
+
+  test('[Tabs-KEY-001] only the active header is a Tab stop and arrow keys move to the next enabled tab', async () => {
+    // Break this catches: headers rendered without tabIndex, role or key handler, so the keyboard
+    // can never reach or switch tabs.
+    widget.render({ properties: { tabItems: binding(TABS_WITH_DISABLED) }, events: onSwitch });
+    await waitFor(() => expect(headers()).toHaveLength(3));
+
+    expect(headers().map((li) => li.getAttribute('tabindex'))).toEqual(['0', '-1', '-1']);
+    expect(headerByTitle('Home')).toHaveAttribute('role', 'tab');
+    expect(headerByTitle('Home')).toHaveAttribute('aria-selected', 'true');
+
+    headerByTitle('Home').focus();
+    fireEvent.keyDown(headerByTitle('Home'), { key: 'ArrowRight' });
+
+    await waitFor(() => expect(exposed('currentTab')).toBe('2'));
+    expect(switchedTo()).toBe('2');
+    expect(document.activeElement).toBe(headerByTitle('Settings'));
+    expect(headers().map((li) => li.getAttribute('tabindex'))).toEqual(['-1', '-1', '0']);
+
+    fireEvent.keyDown(headerByTitle('Settings'), { key: 'ArrowLeft' });
+    await waitFor(() => expect(exposed('currentTab')).toBe('0'));
   });
 });

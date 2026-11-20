@@ -4,7 +4,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import './dropdownV2.scss';
 // eslint-disable-next-line import/no-unresolved
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual';
 import cx from 'classnames';
 
 const { MenuList } = components;
@@ -27,11 +27,17 @@ const CustomMenuList = ({ selectProps, ...props }) => {
 
   const parentRef = useRef(null);
   const hasScrolledOnOpenRef = useRef(null);
+  const hasSelectAllRow = props.options?.[0]?.value === 'multiselect-custom-menulist-select-all';
   const virtualizer = useVirtualizer({
     count: props?.children?.length || 0,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 40,
     overscan: 15,
+    // The sticky select-all row is item 0; keep it rendered however far the list scrolls.
+    rangeExtractor: (range) => {
+      const indexes = defaultRangeExtractor(range);
+      return hasSelectAllRow && !indexes.includes(0) ? [0, ...indexes] : indexes;
+    },
   });
 
   useEffect(() => {

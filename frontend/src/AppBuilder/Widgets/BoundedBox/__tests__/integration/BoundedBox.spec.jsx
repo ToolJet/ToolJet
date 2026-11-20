@@ -67,4 +67,18 @@ describe('BoundedBox widget', () => {
     expect(await screen.findByText('Tree')).toBeInTheDocument();
     expect(screen.getByText('Car')).toBeInTheDocument();
   });
+
+  test('[BoundedBox-FIT-001] a loaded image is scaled to fit inside the widget box, keeping its shape', async () => {
+    // Break this catches: fitting the image with CSS keyed on generated class hashes the build no longer
+    // emits, so a tall image is drawn taller than its box and covers the widgets below.
+    widget.render({});
+    await waitFor(() => expect(image()).toBeInTheDocument());
+    Object.defineProperty(image(), 'naturalWidth', { configurable: true, value: 200 });
+    Object.defineProperty(image(), 'naturalHeight', { configurable: true, value: 400 });
+
+    fireEvent.load(image());
+
+    // The box is 200x100 (mocked layout), so a 200x400 image fits at 50x100.
+    await waitFor(() => expect(image()).toHaveStyle({ width: '50px', height: '100px' }));
+  });
 });

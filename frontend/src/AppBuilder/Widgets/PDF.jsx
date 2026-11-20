@@ -16,6 +16,7 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
   const { visibility, boxShadow, borderColor, borderRadius } = styles;
   const { url, scale, pageControls, showDownloadOption } = properties;
   const [numPages, setNumPages] = useState(null);
+  const [scrollbarWidth, setScrollbarWidth] = useState(0);
   const [pageNumber, setPageNumber] = useState(null);
   const pageRef = useRef([]);
   const documentRef = useRef(null);
@@ -149,6 +150,14 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
     }
   }
 
+  // A classic (always visible) scrollbar takes width from the wrapper; overlay scrollbars measure 0.
+  const measureScrollbar = () => {
+    const wrapperElement = documentRef.current;
+    if (wrapperElement) setScrollbarWidth(wrapperElement.offsetWidth - wrapperElement.clientWidth);
+  };
+
+  useEffect(measureScrollbar, [numPages, width, height]);
+
   const renderPDF = () => {
     if (isPasswordPromptClosed)
       return (
@@ -181,10 +190,11 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
         {Array.from(new Array(numPages), (el, index) => (
           <Page
             pageNumber={index + 1}
-            width={scale ? width - 12 : undefined}
+            width={scale ? width - 12 - scrollbarWidth : undefined}
             height={scale ? undefined : height}
             key={`page_${index + 1}`}
             inputRef={(el) => (pageRef.current[index] = el)}
+            onRenderSuccess={measureScrollbar}
           />
         ))}
       </Document>

@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import {
   createWidgetHarness,
   binding,
@@ -242,6 +242,27 @@ describe('TimePicker widget', () => {
     });
 
     await waitFor(() => expect(store().getExposedValueOfComponent(ID, MODULE_ID).value).toBeNull());
+  });
+
+  test('[TimePicker-PARSE-001] picking an hour after unparseable typed text clears the error', async () => {
+    // Break this catches: the hour/minute pick never clearing the typed-text parse error, so isValid stays false.
+    widget.render({});
+    await waitFor(() => expect(input()).toBeTruthy());
+    fireEvent.focus(input());
+    fireEvent.change(input(), { target: { value: 'abc' } });
+    fireEvent.blur(input());
+    await waitFor(() => expect(exposed().isValid).toBe(false));
+
+    fireEvent.click(input());
+    const hour11 = await waitFor(() => {
+      const item = [...document.querySelectorAll('.time-item')].find((el) => el.textContent === '11');
+      expect(item).toBeTruthy();
+      return item;
+    });
+    fireEvent.click(hour11);
+
+    await waitFor(() => expect(exposed().isValid).toBe(true));
+    expect(input().getAttribute('aria-invalid')).not.toBe('true');
   });
 
   const styleTests = sharedDateStyleTests({ widget, wrapper, input, borderRadiusKey: 'fieldBorderRadius' });

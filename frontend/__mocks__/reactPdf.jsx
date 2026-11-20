@@ -55,8 +55,13 @@ const Document = ({ file, children, className, onLoadSuccess, onLoadError }) => 
   return React.createElement('div', { className, 'data-testid': 'react-pdf-document' }, children);
 };
 
-const Page = ({ pageNumber, inputRef }) =>
-  React.createElement('div', { className: 'react-pdf__Page', 'data-page-number': pageNumber, ref: inputRef });
+const Page = ({ pageNumber, inputRef, width }) =>
+  React.createElement('div', {
+    className: 'react-pdf__Page',
+    'data-page-number': pageNumber,
+    'data-width': width,
+    ref: inputRef,
+  });
 
 // PDF.jsx assigns `pdfjs.GlobalWorkerOptions.workerSrc` at module scope, so the
 // stub must expose that shape without loading the real worker.

@@ -265,6 +265,8 @@ const TreeSelect = ({
           style={{ width: '100%', cursor: processedItem.disabled ? 'not-allowed' : 'pointer' }}
           onClick={(e) => {
             e.stopPropagation();
+            // A keyboard Space clicks the input itself; its onChange handles that, so keep the native check.
+            if (e.target instanceof HTMLInputElement) return;
             e.preventDefault();
             if (processedItem.disabled || isDisabled) return;
             // Always pass actual checked state (not display state) so toggle logic is correct

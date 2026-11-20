@@ -49,12 +49,18 @@ export const AudioRecorder = ({
   const audioRef = useRef(null);
   const endedListenerRef = useRef(null);
   const mediaStreamRef = useRef(null);
+  const isDiscardingRef = useRef(false);
 
   // Media recorder setup
   const { status, startRecording, stopRecording, pauseRecording, resumeRecording, mediaBlobUrl, clearBlobUrl } =
     useReactMediaRecorder({
       audio: true,
       onStop: async (blobURL, blob) => {
+        if (isDiscardingRef.current) {
+          isDiscardingRef.current = false;
+          clearBlobUrl();
+          return;
+        }
         const dataURL = await blobToDataURL(blob);
         setExposedVariables({
           dataURL,
@@ -165,6 +171,11 @@ export const AudioRecorder = ({
   };
 
   const onReset = () => {
+    // Stopping the recorder is what releases its own microphone stream; the discard flag skips the save.
+    if (status === 'recording' || status === 'paused') {
+      isDiscardingRef.current = true;
+      stopRecording();
+    }
     clearBlobUrl();
     setExposedVariables({
       dataURL: null,

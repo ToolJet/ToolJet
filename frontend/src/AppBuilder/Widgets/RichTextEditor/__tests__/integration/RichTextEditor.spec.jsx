@@ -212,6 +212,16 @@ describe('RichTextEditor widget', () => {
     expect(outer()).toHaveAttribute('aria-disabled', 'true');
   });
 
+  test('[RichTextEditor-KEY-001] a disabled editor has no keyboard-focusable or editable element', async () => {
+    // Break this catches: disabling only through CSS pointer-events, so Tab still reaches the
+    // editor and typing changes its value.
+    widget.render({ properties: { defaultValue: binding('Seed') }, styles: { disabledState: binding('{{true}}') } });
+
+    await waitFor(() => expect(outer()).toBeInTheDocument());
+    expect(outer().querySelector('[contenteditable="true"]')).toBeNull();
+    expect(outer().querySelector('button:not([tabindex="-1"])')).toBeNull();
+  });
+
   test('[RichTextEditor-STYLE-003] boxShadow is applied to the outer wrapper', async () => {
     // Break this catches: not forwarding the universal `boxShadow` style to the
     // outer node (RichTextEditor.jsx:23,80), so shadow styling silently no-ops.

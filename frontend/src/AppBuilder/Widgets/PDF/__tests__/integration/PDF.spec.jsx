@@ -159,6 +159,30 @@ describe('PDF widget', () => {
     expect(wrapper()).toHaveStyle({ overflowX: 'auto' });
   });
 
+  test('[PDF-FIT-001] a fit-to-width page leaves room for a classic vertical scrollbar', async () => {
+    // Break this catches: sizing the page from the widget width alone, so beside an always-visible
+    // scrollbar the page is wider than the visible area and its right edge is cut off.
+    const SCROLLBAR = 15;
+    const offset = jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function () {
+      return this.id === 'pdf-wrapper' ? 381 : 0;
+    });
+    const client = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function () {
+      return this.id === 'pdf-wrapper' ? 381 - SCROLLBAR : 0;
+    });
+    try {
+      widget.render({ properties: { url: binding('https://example.com/doc.pdf#numPages=3') } });
+      await waitFor(() => expect(document.querySelector('.react-pdf__Page')).toBeTruthy());
+      const widgetWidth = parseFloat(outer().style.width) + 3;
+
+      await waitFor(() =>
+        expect(Number(document.querySelector('.react-pdf__Page').dataset.width)).toBe(widgetWidth - 12 - SCROLLBAR)
+      );
+    } finally {
+      offset.mockRestore();
+      client.mockRestore();
+    }
+  });
+
   test('[PDF-URL-001] an unparsable url renders the load-error message instead of crashing the widget', async () => {
     // Break this catches: mounting <Document> with a string pdfjs cannot parse
     // ("https:" mid-typing) — pdfjs getUrlProp throws synchronously out of

@@ -86,7 +86,7 @@ const BlockStyleControls = (props) => {
   return (
     <>
       <div className="dropmenu">
-        <button className="dropdownbtn px-2" type="button">
+        <button className="dropdownbtn px-2" type="button" tabIndex={props.readOnly ? -1 : undefined}>
           Heading
         </button>
         <div className="dropdown-content" style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
@@ -293,7 +293,11 @@ class DraftEditor extends React.Component {
     ) : (
       <div className="RichEditor-root" style={{ overflowY: 'scroll', scrollbarWidth: 'none' }}>
         <div className="RichEditor-controls" ref={this.controlsRef}>
-          <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
+          <BlockStyleControls
+            editorState={editorState}
+            onToggle={this.toggleBlockType}
+            readOnly={this.props.readOnly}
+          />
           <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />
         </div>
         <div
@@ -312,6 +316,7 @@ class DraftEditor extends React.Component {
             handleKeyCommand={this.handleKeyCommand}
             keyBindingFn={this.mapKeyToEditorCommand}
             onChange={this.onChange}
+            readOnly={this.props.readOnly}
             placeholder={
               <div
                 dangerouslySetInnerHTML={{

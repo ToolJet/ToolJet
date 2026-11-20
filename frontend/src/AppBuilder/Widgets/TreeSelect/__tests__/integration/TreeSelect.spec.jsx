@@ -172,6 +172,21 @@ describe('TreeSelect widget', () => {
     });
   });
 
+  test('[TreeSelect-KEY-001] Space on a focused node checkbox checks it once, like a click', async () => {
+    // Break this catches: the row's click handler also handling the keyboard-made click, cancelling
+    // the native check and running the check logic a second time.
+    tree.render({ events: [event('onCheck', 'checks'), event('onChange', 'changes')] });
+    await screen.findByText('Other');
+
+    checkbox('Other').focus();
+    await tree.session.user.keyboard(' ');
+    await drain();
+
+    await waitFor(() => expect(exposed().checked).toEqual(['other']));
+    expect(checkbox('Other')).toBeChecked();
+    expect(tree.variables()).toMatchObject({ checks: 1, changes: 1 });
+  });
+
   test('[TreeSelect-SEL-002] independent mode changes only the actual target', async () => {
     // Break this catches: using cascade updates in independent mode or treating a parent's descendant-driven display state as selected.
     tree.render({

@@ -1,3 +1,10 @@
+// Widget boxes must leave normal flow before the lazy Grid chunk loads, or they paint stacked and then jump.
+.target,
+.nested-target {
+  position: absolute;
+  box-sizing: border-box;
+}
+
 .canvas-container {
     &:focus-visible {
         outline: none;

@@ -6,18 +6,24 @@ import Planet from '@/_ui/Icon/bulkIcons/Planet';
 import { getCountryCallingCodeSafe } from './utils';
 import { CurrencyMap } from './constants';
 
+// react-select places its input in this grid cell; the flag shares it instead of taking a new row.
+const SHARED_GRID_CELL = '1 / 1 / 2 / 3';
+
 export const CustomValueContainer = ({ getValue, ...props }) => {
   const selectedValue = getValue()[0];
   const country = selectedValue?.value;
   const { isCurrencyInput, isCountryChangeEnabled, showFlag = true } = props?.selectProps || {};
   const FlagIcon = selectedValue ? flags[selectedValue.value] : null;
   const countryCode = getCountryCallingCodeSafe(selectedValue.value);
+  // react-select's input is the select's only focusable element; dropping it removes the Tab stop.
+  const selectInput = React.Children.toArray(props.children).slice(-1);
 
   return (
     <components.ValueContainer {...props}>
       {FlagIcon && showFlag ? (
         <div
           style={{
+            gridArea: SHARED_GRID_CELL,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -35,6 +41,7 @@ export const CustomValueContainer = ({ getValue, ...props }) => {
       ) : (
         <div
           style={{
+            gridArea: SHARED_GRID_CELL,
             display: 'flex',
             marginLeft: isCurrencyInput ? '6px' : '17px',
             justifyContent: 'center',
@@ -51,6 +58,7 @@ export const CustomValueContainer = ({ getValue, ...props }) => {
           )}
         </div>
       )}
+      {selectInput}
     </components.ValueContainer>
   );
 };

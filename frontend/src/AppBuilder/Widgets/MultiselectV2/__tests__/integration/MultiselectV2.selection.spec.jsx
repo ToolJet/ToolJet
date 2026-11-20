@@ -10,7 +10,7 @@
  * writes a constant would pass those on a double fire, so the recorded handler
  * increments a custom variable instead and the assertions read the count.
  */
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { binding, drain, option } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import useStore from '@/AppBuilder/_stores/store';
 import { createMultiselectHarness } from './multiselectV2Harness';
@@ -496,5 +496,35 @@ describe('MultiselectV2: selection, clearing, and the selection limit', () => {
 
     expect(harness.exposed().values).toEqual(['1', '2']);
     expect(selectCount()).toBe(0);
+  });
+});
+
+describe('select-all row in a long list', () => {
+  beforeEach(() => harness.setup());
+  afterEach(() => harness.teardown());
+
+  test('[MultiselectV2-SEL-014] the select-all row stays rendered after scrolling deep into a long list', async () => {
+    // Break this catches: the pinned select-all row being the virtual list's first item, so it is
+    // dropped once it scrolls past the overscan window.
+    harness.render({
+      properties: {
+        advanced: binding('{{true}}'),
+        schema: binding('{{Array.from({length: 300}, (_, i) => ({label: `${i} Alice`, value: `${i}`}))}}'),
+        value: binding('{{[]}}'),
+        showAllOption: binding('{{true}}'),
+      },
+    });
+    await drain();
+    await openMenu();
+    expect(screen.getByText('Select all')).toBeInTheDocument();
+
+    const body = document.querySelector('.dropdown-multiselect-widget-custom-menu-list-body');
+    // jsdom has no layout, so its scrollTop setter is a no-op; pin an offset at the end of the list.
+    Object.defineProperty(body, 'scrollTop', { configurable: true, value: 100000 });
+    fireEvent.scroll(body);
+    await drain();
+
+    expect(screen.getByText('290 Alice')).toBeInTheDocument();
+    expect(screen.getByText('Select all')).toBeInTheDocument();
   });
 });
