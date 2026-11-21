@@ -312,8 +312,124 @@
   gap: 12px;
   padding: 0 24px 24px;
 
-  button:last-child,
-  a:last-child {
-    margin-left: auto;
+  // Copy error left, rest right.
+  .conflict-copy-error-btn {
+    margin-right: auto;
   }
+}
+
+// Copied-report dialog.
+.conflict-report-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--overlay-default, rgba(0, 0, 0, 0.4));
+}
+
+.conflict-report-dialog {
+  width: 600px;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--slate1);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+  &.theme-dark {
+    background-color: var(--surfaces-surface-01);
+  }
+}
+
+.conflict-report-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--slate5);
+
+  .conflict-modal-close-btn {
+    position: static;
+  }
+}
+
+.conflict-report-title {
+  flex: 1;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--slate12);
+}
+
+.conflict-report-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.conflict-report-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.conflict-report-format-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background-color: var(--slate2);
+  border: 1px solid var(--slate5);
+  border-radius: 6px;
+}
+
+.conflict-report-format-btn {
+  height: 24px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+  color: var(--slate11);
+  cursor: pointer;
+
+  &.is-active {
+    background-color: var(--slate1);
+    color: var(--slate12);
+    box-shadow: 0 1px 1px rgba(48, 50, 51, 0.1);
+  }
+}
+
+.conflict-report-note {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--slate11);
+}
+
+.conflict-report-preview {
+  height: 300px;
+  margin: 0;
+  overflow: auto;
+  padding: 12px;
+  background-color: var(--slate2);
+  border: 1px solid var(--slate5);
+  border-radius: 6px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--slate12);
+  white-space: pre;
+}
+
+.conflict-report-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid var(--slate5);
 }

@@ -18,7 +18,39 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   const orgGitConfig = useWorkspaceBranchesStore((state) => state.orgGitConfig);
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
   const LATEST_MAIN_OPTION = { label: `Latest (${defaultGitBranch})`, commitSha: null, isDefault: true };
-  const [selectedOption, setSelectedOption] = useState(LATEST_MAIN_OPTION);
+  const {
+    allBranches,
+    isDraftVersionActive,
+    developmentVersions,
+    fetchDevelopmentVersions,
+    releasedVersionId,
+    selectedVersion,
+  } = useStore((state) => ({
+    allBranches: state.allBranches || [],
+    isDraftVersionActive: state.isDraftVersionActive,
+    developmentVersions: state.developmentVersions || [],
+    fetchDevelopmentVersions: state.fetchDevelopmentVersions,
+    releasedVersionId: state.releasedVersionId,
+    selectedVersion: state.selectedVersion,
+  }));
+
+  // Default "Create from" to the open saved version; otherwise Latest (main).
+  const currentVersionOption = (() => {
+    if (!selectedVersion?.id) return null;
+    const versionType = selectedVersion.versionType || selectedVersion.version_type;
+    if (versionType !== 'version' || selectedVersion.status === 'DRAFT') return null;
+    return {
+      label: selectedVersion.name,
+      commitSha: null,
+      versionId: selectedVersion.id,
+      isLocalVersion: true,
+      status: selectedVersion.status,
+      isReleased: selectedVersion.id === releasedVersionId,
+    };
+  })();
+
+  const [selectedOption, setSelectedOption] = useState(currentVersionOption || LATEST_MAIN_OPTION);
+  const hasUserPickedOptionRef = useRef(false);
   const [isCreating, setIsCreating] = useState(false);
   const [validationError, setValidationError] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -26,15 +58,6 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   const [isLoadingTags, setIsLoadingTags] = useState(true);
   const [isLoadingVersions, setIsLoadingVersions] = useState(true);
   const dropdownRef = useRef(null);
-
-  const { allBranches, isDraftVersionActive, developmentVersions, fetchDevelopmentVersions, releasedVersionId } =
-    useStore((state) => ({
-      allBranches: state.allBranches || [],
-      isDraftVersionActive: state.isDraftVersionActive,
-      developmentVersions: state.developmentVersions || [],
-      fetchDevelopmentVersions: state.fetchDevelopmentVersions,
-      releasedVersionId: state.releasedVersionId,
-    }));
 
   const workspaceActions = useWorkspaceBranchesStore((state) => state.actions);
   const workspaceBranches = useWorkspaceBranchesStore((state) => state.branches);
@@ -120,10 +143,23 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   // Git tags that share a label with a local released version are redundant — the local
   // version entry is richer (it carries a versionId for DB-level branching). Drop the
   // duplicate tag so each version name appears exactly once in the dropdown.
-  const localVersionLabels = new Set(localVersionOptions.map((v) => v.label));
-  const uniqueTags = tags.filter((t) => !localVersionLabels.has(t.label));
-  const dropdownOptions = [LATEST_MAIN_OPTION, ...localVersionOptions, ...uniqueTags];
   const isLoadingOptions = isLoadingTags || isLoadingVersions;
+  // Keep the preselected version listed while versions load.
+  const visibleLocalVersionOptions =
+    isLoadingVersions && currentVersionOption ? [currentVersionOption] : localVersionOptions;
+  const localVersionLabels = new Set(visibleLocalVersionOptions.map((v) => v.label));
+  const uniqueTags = tags.filter((t) => !localVersionLabels.has(t.label));
+  const dropdownOptions = [LATEST_MAIN_OPTION, ...visibleLocalVersionOptions, ...uniqueTags];
+
+  // After load, drop the preselection if it isn't a valid source, unless the user already picked one.
+  useEffect(() => {
+    if (isLoadingVersions || hasUserPickedOptionRef.current || !selectedOption.isLocalVersion) return;
+    const isListed = developmentVersions.some((version) => version.id === selectedOption.versionId);
+    if (!isListed) return;
+    const match = localVersionOptions.find((option) => option.versionId === selectedOption.versionId);
+    setSelectedOption(match || LATEST_MAIN_OPTION);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingVersions]);
 
   const validateBranchName = (name) => {
     if (!name || name.trim().length === 0) return 'Branch name is required';
@@ -224,14 +260,14 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
                 type="button"
                 className={cx('custom-dropdown-trigger', { 'is-open': isDropdownOpen })}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                disabled={isCreating || isLoadingOptions}
+                disabled={isCreating}
               >
                 <div className="custom-dropdown-value">
-                  <span className="version-name">{isLoadingOptions ? 'Loading...' : selectedOption.label}</span>
-                  {!isLoadingOptions && selectedOption.isDefault && (
+                  <span className="version-name">{selectedOption.label}</span>
+                  {selectedOption.isDefault && (
                     <span className={cx('status-badge', 'status-badge-draft')}>Default</span>
                   )}
-                  {!isLoadingOptions && selectedOption.isLocalVersion && selectedOption.isReleased && (
+                  {selectedOption.isLocalVersion && selectedOption.isReleased && (
                     <span className={cx('status-badge', 'status-badge-released')}>Released</span>
                   )}
                 </div>
@@ -246,6 +282,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
                         key={idx}
                         className={cx('dropdown-item', { 'is-selected': isSelected })}
                         onClick={() => {
+                          hasUserPickedOptionRef.current = true;
                           setSelectedOption(option);
                           setIsDropdownOpen(false);
                         }}
@@ -270,6 +307,16 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
                       </div>
                     );
                   })}
+                  {isLoadingOptions && (
+                    <div className="dropdown-item" aria-disabled="true">
+                      <div className="check-icon-placeholder" />
+                      <div className="item-content">
+                        <div className="item-header">
+                          <span className="item-name">Loading more versions...</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -322,7 +369,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
             <ButtonSolid
               variant="primary"
               onClick={handleCreateBranch}
-              disabled={isCreating || isDraftVersionActive || !branchName.trim() || isLoadingOptions}
+              disabled={isCreating || isDraftVersionActive || !branchName.trim()}
               isLoading={isCreating}
               size="md"
               data-cy="create-branch-button"
