@@ -5,6 +5,15 @@ on:
     types: [labeled]
 
   workflow_dispatch:
+    inputs:
+      full:
+        description: "Run every spec, not only the ones the branch's changes can affect"
+        type: boolean
+        default: false
+      base:
+        description: "Branch the changes are measured against"
+        type: string
+        default: main
 
 permissions:
   contents: read
@@ -17,13 +26,130 @@ env:
   TIMESTAMP: ${{ github.run_number }}-${{ github.run_attempt }}
 
 jobs:
-  # Builds and pushes the EE image once; every Cypress-AppBuilder machine pulls it.
-  Build-Image:
+  # Picks the specs the branch's changes can affect (cypress-tests/ci-select-specs.js) and
+  # how many machines they need. Nothing affected: no image, no machines.
+  Plan:
     runs-on: ubuntu-22.04
 
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-appbuilder-ee') ||
       github.event_name == 'workflow_dispatch'
+
+    outputs:
+      run: ${{ steps.select.outputs.run }}
+      # JSON array of specs; empty = every spec
+      specs: ${{ steps.select.outputs.specs }}
+      # JSON array of machine numbers for the Cypress-AppBuilder matrix
+      shards: ${{ steps.select.outputs.shards }}
+      # whether updateLicense.cy.js runs (it licenses the first machine)
+      license_spec: ${{ steps.select.outputs.license_spec }}
+
+    steps:
+      # Security: stop before anything else runs if this is a fork PR, or if the
+      # branch name has characters that could be used to inject shell commands.
+      - name: Check PR source and branch name
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ -n "$HEAD_REPO" ] && [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::Cypress runs are not allowed for pull requests from forks ($HEAD_REPO)."
+            exit 1
+          fi
+          if ! printf '%s' "$BRANCH_NAME" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+            echo "::error::Branch name may only contain letters, numbers, '.', '_', '/' and '-'."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: List changed files
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref || inputs.base || 'main' }}
+          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+        run: |
+          if ! printf '%s' "$BASE_REF" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+            echo "::error::Base branch name may only contain letters, numbers, '.', '_', '/' and '-'."
+            exit 1
+          fi
+          git fetch --no-tags --filter=blob:none origin "$BASE_REF"
+          BASE=$(git merge-base "origin/$BASE_REF" HEAD)
+          echo "Changes since $BASE (merge base with $BASE_REF)"
+          git diff --no-renames --name-only "$BASE" HEAD > changed.txt
+
+          # A submodule pointer change becomes the files changed inside it. If they can't be
+          # listed, the bare path stays and selects every spec.
+          AUTH="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$CUSTOM_GITHUB_TOKEN" | base64 -w0)"
+          for SUB in frontend/ee server/ee; do
+            grep -qx "$SUB" changed.txt || continue
+            OLD=$(git ls-tree "$BASE" "$SUB" | awk '{print $3}')
+            NEW=$(git ls-tree HEAD "$SUB" | awk '{print $3}')
+            URL=$(git config -f .gitmodules "submodule.$SUB.url")
+            DIR=$(mktemp -d)
+            git init -q --bare "$DIR"
+            if [ -n "$OLD" ] && [ -n "$NEW" ] \
+              && git -C "$DIR" -c http.extraheader="$AUTH" fetch -q --filter=blob:none "$URL" "$OLD" "$NEW" \
+              && git -C "$DIR" diff --no-renames --name-only "$OLD" "$NEW" | sed "s#^#$SUB/#" > sub.txt; then
+              grep -vx "$SUB" changed.txt > rest.txt || true
+              cat rest.txt sub.txt > changed.txt
+            else
+              echo "::warning::Could not list the changes in $SUB; every spec runs."
+            fi
+          done
+          cat changed.txt
+
+      - name: Select specs
+        id: select
+        env:
+          FULL: ${{ inputs.full }}
+          # specs per machine, about what each of the ten machines gets in a full run
+          SPECS_PER_MACHINE: 28
+          MAX_MACHINES: 10
+        run: |
+          if [ -f cypress-tests/ci-select-specs.js ]; then
+            node cypress-tests/ci-select-specs.js cypress-appbuilder.config.js changed.txt > selection.json
+          else
+            # a branch cut before spec selection existed: run everything (merge main to get it)
+            echo '{"mode":"all","specs":[],"reasons":["this branch has no cypress-tests/ci-select-specs.js; merge main to run only affected specs"]}' > selection.json
+          fi
+          node - <<'JS'
+          const fs = require("fs");
+          const sel = JSON.parse(fs.readFileSync("selection.json", "utf8"));
+          const all = process.env.FULL === "true" || sel.mode === "all";
+          const count = all ? sel.specs.length : sel.mode === "some" ? sel.specs.length : 0;
+          const max = Number(process.env.MAX_MACHINES);
+          const machines = all ? max : Math.min(max, Math.ceil(count / Number(process.env.SPECS_PER_MACHINE)));
+          const out = [
+            `run=${all || count > 0}`,
+            `specs=${all ? "" : JSON.stringify(sel.specs)}`,
+            `shards=${JSON.stringify(Array.from({ length: Math.max(machines, 1) }, (_, i) => i + 1))}`,
+            `license_spec=${all || sel.specs.some((s) => s.endsWith("/updateLicense.cy.js"))}`,
+          ];
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, out.join("\n") + "\n");
+          const why = process.env.FULL === "true" ? ["full run requested"] : sel.reasons;
+          fs.appendFileSync(
+            process.env.GITHUB_STEP_SUMMARY,
+            [
+              `### App Builder specs: ${all ? "all" : count} on ${count ? machines : 0} machine(s)`,
+              "",
+              ...why.map((r) => `- ${r}`),
+              "",
+              ...(all ? [] : sel.specs.map((s) => `- \`${s}\``)),
+            ].join("\n") + "\n"
+          );
+          console.log(out.join("\n"));
+          JS
+
+  # Builds and pushes the EE image once; every Cypress-AppBuilder machine pulls it.
+  Build-Image:
+    runs-on: ubuntu-22.04
+    needs: Plan
+
+    if: needs.Plan.outputs.run == 'true'
 
     outputs:
       # only the digest: GitHub drops a job output that contains a secret's value,
@@ -117,15 +243,16 @@ jobs:
 
   Cypress-AppBuilder:
     runs-on: ubuntu-22.04
-    needs: Build-Image
+    needs: [Plan, Build-Image]
 
     strategy:
       fail-fast: false
       matrix:
         edition:
           - ee
-        # one entry per machine; specs are split by cypress-tests/ci-shard.js
-        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        # one entry per machine (Plan sizes it to the selected specs, up to 10); the
+        # specs are split by cypress-tests/ci-shard.js
+        shard: ${{ fromJSON(needs.Plan.outputs.shards) }}
 
     steps:
       - name: Debug labels and matrix edition
@@ -476,9 +603,10 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS_MARKETPLACE }}
           dir: "./cypress-tests"
 
-      # updateLicense.cy.js licenses the first machine; the others get the same call here.
+      # updateLicense.cy.js licenses the first machine; the others get the same call here,
+      # and so does the first one when that spec is not selected.
       - name: Seeding (Update License)
-        if: strategy.job-index != 0
+        if: strategy.job-index != 0 || needs.Plan.outputs.license_spec != 'true'
         run: |
           # The key is part of a larger secret, so GitHub doesn't mask it on its own.
           LICENSE_KEY=$(jq -r '.license_keys.valid' cypress-tests/cypress.env.json)
@@ -504,6 +632,8 @@ jobs:
           CELL: "App Builder / ${{ matrix.edition }} (${{ matrix.shard }}/${{ strategy.job-total }})"
           SHARD_INDEX: ${{ strategy.job-index }}
           SHARD_TOTAL: ${{ strategy.job-total }}
+          # the specs Plan selected (JSON array); empty runs every spec
+          SELECTED_SPECS: ${{ needs.Plan.outputs.specs }}
           # One group per machine for the first six machines, in machine order,
           # balanced on spec durations from a full CI run. Specs matching no group
           # (the per-widget component folders) go to the machine with the fewest
@@ -692,6 +822,7 @@ jobs:
 
   notify-slack:
     needs:
+      - Plan
       - Build-Image
       - Cypress-AppBuilder
       - Cypress-AppBuilder-Subpath
@@ -700,7 +831,8 @@ jobs:
     # Cypress-AppBuilder, so it counts on its own.
     if: >-
       always() &&
-      (needs.Build-Image.result != 'skipped' ||
+      (needs.Plan.result == 'failure' ||
+       needs.Build-Image.result != 'skipped' ||
        needs.Cypress-AppBuilder.result != 'skipped' ||
        needs.Cypress-AppBuilder-Subpath.result != 'skipped')
     runs-on: ubuntu-latest
@@ -722,11 +854,12 @@ jobs:
           CHANNEL: ${{ secrets.SLACK_CHANNEL_ID }}
           # Suite name rendered in the Slack headline (e.g. "❌ Cypress App Builder Failed").
           SUITE: App Builder
-          # one "App Builder / ee" row for the 10 Cypress-AppBuilder machines
+          # one "App Builder / ee" row for the Cypress-AppBuilder machines (up to 10)
           COMBINE_SHARDS: "true"
           # Red unless every test job that ran passed (skipped cells don't count).
           OVERALL: >-
-            ${{ (needs.Build-Image.result == 'failure' ||
+            ${{ (needs.Plan.result == 'failure' ||
+                 needs.Build-Image.result == 'failure' ||
                  needs.Cypress-AppBuilder.result == 'failure' ||
                  needs.Cypress-AppBuilder-Subpath.result == 'failure')
                 && 'failure' || 'success' }}
