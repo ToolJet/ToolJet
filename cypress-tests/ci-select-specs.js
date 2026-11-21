@@ -38,7 +38,8 @@ const ALIASES = {
 const IGNORED = [
   /\.md$/i,
   /^docs\//,
-  /^\.agents\//,
+  /^((frontend|server)\/ee\/)?\.agents\//,
+  /^((frontend|server)\/)?\.version$/, // a release version bump (ci.yml ignores it too)
   /^\.claude\//,
   /^\.cursor\//,
   /^marketplace\//, // own workflow (cypress-marketplace.yml)

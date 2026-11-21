@@ -60,46 +60,70 @@ jobs:
             exit 1
           fi
 
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref || github.ref }}
-          fetch-depth: 0
-          filter: blob:none
-
-      - name: List changed files
+      - name: Check base branch name
         env:
-          BASE_REF: ${{ github.event.pull_request.base.ref || inputs.base || 'main' }}
-          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          BASE_REF: ${{ inputs.base }}
         run: |
-          if ! printf '%s' "$BASE_REF" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+          if ! printf '%s' "$BASE_REF" | grep -Eq '^[A-Za-z0-9._/-]*$'; then
             echo "::error::Base branch name may only contain letters, numbers, '.', '_', '/' and '-'."
             exit 1
           fi
-          git fetch --no-tags --filter=blob:none origin "$BASE_REF"
-          BASE=$(git merge-base "origin/$BASE_REF" HEAD)
-          echo "Changes since $BASE (merge base with $BASE_REF)"
-          git diff --no-renames --name-only "$BASE" HEAD > changed.txt
 
-          # A submodule pointer change becomes the files changed inside it. If they can't be
-          # listed, the bare path stays and selects every spec.
-          AUTH="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$CUSTOM_GITHUB_TOKEN" | base64 -w0)"
-          for SUB in frontend/ee server/ee; do
-            grep -qx "$SUB" changed.txt || continue
-            OLD=$(git ls-tree "$BASE" "$SUB" | awk '{print $3}')
-            NEW=$(git ls-tree HEAD "$SUB" | awk '{print $3}')
-            URL=$(git config -f .gitmodules "submodule.$SUB.url")
-            DIR=$(mktemp -d)
-            git init -q --bare "$DIR"
-            if [ -n "$OLD" ] && [ -n "$NEW" ] \
-              && git -C "$DIR" -c http.extraheader="$AUTH" fetch -q --filter=blob:none "$URL" "$OLD" "$NEW" \
-              && git -C "$DIR" diff --no-renames --name-only "$OLD" "$NEW" | sed "s#^#$SUB/#" > sub.txt; then
-              grep -vx "$SUB" changed.txt > rest.txt || true
-              cat rest.txt sub.txt > changed.txt
-            else
-              echo "::warning::Could not list the changes in $SUB; every spec runs."
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+          fetch-depth: 2
+
+      # Same change detection as ci.yml's detect-changes: on a PR the files come from the
+      # GitHub API (the PR's file list); on a manual run, from git against `base`.
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          base: ${{ inputs.base || 'main' }}
+          list-files: json
+          filters: |
+            all:
+              - '**'
+
+      # A submodule pin change becomes the files changed inside it, looked up the way ci.yml's
+      # "Detect EE submodule changes" does. If they can't be listed, the bare path stays and
+      # selects every spec.
+      - name: List changed files
+        env:
+          GH_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          FILES: ${{ steps.filter.outputs.all_files }}
+          BASE: ${{ github.event.pull_request.base.sha || inputs.base || 'main' }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          jq -r '.[]' <<<"${FILES:-[]}" > changed.txt
+          base=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" --jq .merge_base_commit.sha) || base=
+          pin() { gh api "repos/$GITHUB_REPOSITORY/contents/$1?ref=$2" --jq .sha; }
+          expand() {
+            local old new files
+            if ! { [[ -n "$base" ]] && old=$(pin "$1" "$base") && new=$(pin "$1" "$HEAD"); }; then
+              grep -qx "$1" changed.txt || echo "$1" >> changed.txt
+              echo "::warning::Could not read the $1 pin; every spec runs."
+              return
             fi
-          done
+            [[ "$old" == "$new" ]] && return
+            grep -qx "$1" changed.txt || echo "$1" >> changed.txt
+            # compare is three-dot: a pin that isn't strictly ahead hides the commits it drops
+            if ! files=$(gh api "repos/ToolJet/$2/compare/$old...$new" \
+              --jq 'if .status == "ahead" then .files[].filename else error("pin is not ahead") end'); then
+              echo "::warning::Could not list the changes in $1; every spec runs."
+              return
+            fi
+            # compare API caps at 300 files
+            if [[ $(grep -c . <<<"$files") -ge 300 ]]; then
+              echo "::warning::$1 changed 300 or more files; every spec runs."
+              return
+            fi
+            { grep -vx "$1" changed.txt || true; grep . <<<"$files" | sed "s#^#$1/#" || true; } > next.txt
+            mv next.txt changed.txt
+          }
+          expand server/ee ee-server
+          expand frontend/ee ee-frontend
           cat changed.txt
 
       - name: Select specs
