@@ -43,8 +43,10 @@ function listSpecs(configFile) {
   return [...new Set(patterns.flatMap(expandPattern))];
 }
 
-function pickShardSpecs({ configFile, index, total, groups }) {
-  const specs = listSpecs(configFile);
+// `only` (optional) limits the split to those specs, e.g. the ones ci-select-specs.js picked.
+function pickShardSpecs({ configFile, index, total, groups, only }) {
+  const keep = only && new Set(only);
+  const specs = listSpecs(configFile).filter((spec) => !keep || keep.has(spec));
   // index of the first group the spec matches, -1 for none
   const groupOf = (spec) => groups.findIndex((group) => group.some((part) => spec.includes(part)));
 
@@ -65,4 +67,4 @@ function pickShardSpecs({ configFile, index, total, groups }) {
   return specs.filter((spec) => mine.has(spec));
 }
 
-module.exports = { pickShardSpecs };
+module.exports = { pickShardSpecs, listSpecs, expandPattern };

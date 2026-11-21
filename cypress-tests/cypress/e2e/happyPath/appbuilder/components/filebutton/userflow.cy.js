@@ -16,6 +16,12 @@ import {
   selectValidationFileType,
   expectRejectionToast,
 } from "Support/utils/appBuilder/components/fileButton";
+import { addIconsViaApi, openIconAppInViewer } from "Support/utils/appBuilder/components/icon";
+import {
+  interceptFileChooser,
+  trackFileInputActivation,
+  fileInputActivations,
+} from "Support/utils/appBuilder/components/fileInput";
 
 // Userflow facet — end-to-end builder journeys. No config items of its own; it covers
 // COMBINATIONS that properties.cy.js only exercises in isolation.
@@ -120,5 +126,92 @@ describe(
     // isParsing is transient; inspector.cy.js only sees its initial false. Asserting it
     // again after a real parse shows it resets rather than latching on.
     verifyExposedValue("isParsing", "Boolean", "false", widget);
+  });
+});
+
+// ── FileButton-BRW-001: Browse opens the native file dialog ─────────────────
+// Mechanism (react-dropzone, picker forced on / dropzone forced off — FileButton.jsx mergedProperties): the
+// Browse button's onClick is the dropzone root's onClick (FileButton.jsx `openFilePicker`), which calls
+// inputRef.click() on the hidden <input type="file">. Chromium shows the OS chooser for that activation only when
+// the page holds transient user activation and nothing cancels the click's default action. The OS window itself is
+// outside the page and cannot be observed: CDP file-chooser interception keeps it from blocking the run, and the
+// spec asserts the browser-level contract that makes it appear — a REAL click on Browse reaches the file input with
+// user activation, un-cancelled — then hands the input the file a user would pick.
+// Controls: a script-dispatched click lacks user activation; a disabled button never activates its input.
+describe("File Button — native file dialog (viewer)", { testIsolation: false }, () => {
+  const W = "fbpicker"; // dynamic: seeded widget names
+  const DISABLED = "fbdisabled";
+  const PROBE = "fbpicked";
+  const { validFile, validFileName } = fileButtonFixtures;
+
+  beforeEach(() => {
+    cy.apiLogin();
+    cy.apiCreateApp(`${fake.companyName}-FileButton-userflow`);
+    addIconsViaApi([
+      { type: "FileButton", name: W, layout: { top: 40, left: 2, width: 10, height: 40 } },
+      {
+        type: "FileButton",
+        name: DISABLED,
+        layout: { top: 120, left: 2, width: 10, height: 40 },
+        properties: { disabledState: { value: "{{true}}" } }, // source: fileButton.js:75
+      },
+      {
+        type: "Text",
+        name: PROBE,
+        layout: { top: 200, left: 2, width: 14, height: 40 },
+        properties: { text: { value: `{{components.${W}.files.map((f) => f.name).join(',') || 'none'}}` } },
+      },
+    ]);
+    interceptFileChooser();
+    openIconAppInViewer(fileButtonSelector.button(W));
+  });
+
+  afterEach(() => {
+    cy.apiDeleteApp();
+  });
+
+  it("[FileButton-BRW-001] Clicking Browse opens the native file picker on the real file input, and the picked file lands in the widget", () => {
+    const input = fileButtonSelector.inputField(W);
+    cy.get(input).should("have.attr", "type", "file").and("not.be.disabled");
+    cy.get(fileButtonSelector.label(W)).should("have.text", fileButtonText.defaultLabel);
+    cy.get(commonWidgetSelector.draggableWidget(PROBE)).should("contain.text", "none");
+
+    // Control first (transient user activation outlives a real click by seconds, so this must precede it): a
+    // script-dispatched click reaches the input too, but WITHOUT user activation — the browser refuses to show a
+    // chooser for it. Proves the userActivation check below discriminates.
+    trackFileInputActivation(input);
+    cy.get(fileButtonSelector.button(W)).click();
+    fileInputActivations(input).then((activations) => {
+      expect(activations, "synthetic click → one activation").to.have.length(1);
+      expect(activations[0].userActivation, "synthetic click carries no user activation").to.eq(false);
+    });
+
+    // 1. A real click on Browse activates the hidden file input exactly once, with user activation, un-cancelled.
+    trackFileInputActivation(input);
+    cy.get(fileButtonSelector.button(W)).realClick({ scrollBehavior: false });
+    fileInputActivations(input).then((activations) => {
+      expect(activations, "Browse click → one activation of the file input").to.have.length(1);
+      expect(activations[0], "activation that opens the native chooser").to.deep.eq({
+        type: "file",
+        disabled: false,
+        connected: true,
+        userActivation: true,
+        trusted: false, // inputRef.click() — a programmatic click inside the trusted click's handler
+        prevented: false,
+      });
+    });
+
+    // 2. The chooser's result: the file the user picks lands in the widget and its exposed value.
+    cy.get(input).selectFile(validFile, { force: true });
+    cy.get(fileButtonSelector.label(W)).should("have.text", validFileName);
+    cy.get(commonWidgetSelector.draggableWidget(PROBE)).should("contain.text", validFileName);
+
+    // Control: a disabled File Button never activates its input (native disabled <button>; react-dropzone
+    // `disabled` drops the root click handler).
+    const disabledInput = fileButtonSelector.inputField(DISABLED);
+    trackFileInputActivation(disabledInput);
+    cy.get(fileButtonSelector.button(DISABLED)).should("be.disabled").realClick({ scrollBehavior: false });
+    fileInputActivations(disabledInput).should("have.length", 0);
+    cy.get(fileButtonSelector.label(DISABLED)).should("have.text", fileButtonText.defaultLabel);
   });
 });
