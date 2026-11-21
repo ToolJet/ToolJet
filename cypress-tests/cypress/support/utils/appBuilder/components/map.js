@@ -6,7 +6,8 @@
  * mapBoxes reads the real layout boxes (viewport, centre overlay pin tip, SDK marker anchors, search input);
  * mercator/pixelToLatLng/viewportBounds are Web-Mercator maths to check published numbers against real pixels;
  * dragMapBy pans with real CDP mouse events; trackTileRequests/tileStyleStrings decode the style payload the
- * SDK sends with each styled raster tile request.
+ * SDK sends with each styled raster tile request; emulateKeylessMaps lets a server without a key still draw the
+ * real (development-mode) map.
  */
 import { mapText } from "Texts/appBuilder/components/map";
 import { mapSelector } from "Selectors/appBuilder/components/map";
@@ -16,6 +17,47 @@ const authHeaders = (cookie) => ({
   "Tj-Workspace-Id": Cypress.env("workspaceId"),
   Cookie: `tj_auth_token=${cookie.value}`,
 });
+
+// The value emulateKeylessMaps hands the app when the server has no key; never sent to Google.
+export const MAPS_PLACEHOLDER_KEY = "tooljet-cypress-keyless";
+
+/**
+ * @tjBlock  contexts
+ * @tjUsage  emulateKeylessMaps()   // in beforeEach, before the app page loads
+ * @tjDom    GET /api/config: a server without GOOGLE_MAPS_API_KEY gets MAPS_PLACEHOLDER_KEY, so Map.jsx draws the
+ *           map instead of its "Add a Google Maps API key" note; GET maps.googleapis.com/maps/api/js: the
+ *           placeholder is dropped from the SDK request, so Google serves its keyless development-mode map (the map
+ *           CI drew before Map.jsx gated on a key). A server with a real key is left alone.
+ */
+export const emulateKeylessMaps = () => {
+  cy.intercept({ method: "GET", url: /\/api\/config(\?.*)?$/ }, (req) => {
+    delete req.headers["if-none-match"];
+    req.continue((res) => {
+      if (res.body && typeof res.body === "object" && !res.body.GOOGLE_MAPS_API_KEY) {
+        res.body.GOOGLE_MAPS_API_KEY = MAPS_PLACEHOLDER_KEY;
+      }
+    });
+  });
+  cy.intercept({ method: "GET", hostname: "maps.googleapis.com", pathname: "/maps/api/js" }, (req) => {
+    const url = new URL(req.url);
+    if (url.searchParams.get("key") !== MAPS_PLACEHOLDER_KEY) return;
+    url.searchParams.delete("key");
+    req.url = url.toString();
+  });
+};
+
+/**
+ * @tjBlock  contexts
+ * @tjUsage  withoutMapsKey()   // before the app page loads
+ * @tjDom    GET /api/config answered without GOOGLE_MAPS_API_KEY, whatever the server has: the no-key state
+ */
+export const withoutMapsKey = () =>
+  cy.intercept({ method: "GET", url: /\/api\/config(\?.*)?$/ }, (req) => {
+    delete req.headers["if-none-match"];
+    req.continue((res) => {
+      if (res.body && typeof res.body === "object") delete res.body.GOOGLE_MAPS_API_KEY;
+    });
+  });
 
 /**
  * @tjBlock  contexts
@@ -341,11 +383,14 @@ export const mapInstanceStyles = (name, assertFn) =>
 /**
  * @tjBlock  contexts
  * @tjUsage  mapsKeyConfigured().then((hasKey) => ...)
- * @tjDom    whether the server hands the app a Maps API key (window.public_config.GOOGLE_MAPS_API_KEY, which
- *           Map.jsx:88 passes to useJsApiLoader); CI runs without one
+ * @tjDom    whether the server hands the app a real Maps API key (window.public_config.GOOGLE_MAPS_API_KEY, which
+ *           Map.jsx passes to useJsApiLoader; emulateKeylessMaps' placeholder does not count); CI runs without one
  */
 export const mapsKeyConfigured = () =>
-  cy.window().then((win) => Boolean(win.public_config && win.public_config.GOOGLE_MAPS_API_KEY));
+  cy.window().then((win) => {
+    const key = win.public_config && win.public_config.GOOGLE_MAPS_API_KEY;
+    return Boolean(key) && key !== MAPS_PLACEHOLDER_KEY; // emulateKeylessMaps' placeholder is not a key
+  });
 
 /**
  * @tjBlock  contexts

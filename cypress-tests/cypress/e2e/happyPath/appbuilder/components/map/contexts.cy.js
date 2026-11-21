@@ -25,7 +25,10 @@ import {
     tileStyleStrings,
     mapInstanceStyles,
     mapsKeyConfigured,
+    emulateKeylessMaps,
+    withoutMapsKey,
 } from "Support/utils/appBuilder/components/map";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = mapText.defaultWidgetName;
 const T = mapText;
@@ -36,9 +39,10 @@ describe('Map — contexts facet', { testIsolation: false }, () => {
         beforeEach(() => {
             cy.apiLogin();
             cy.apiCreateApp(`${fake.companyName}-Map-contexts-${Cypress._.uniqueId()}`);
+            emulateKeylessMaps();
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -70,6 +74,7 @@ describe('Map — contexts facet', { testIsolation: false }, () => {
         beforeEach(() => {
             cy.apiLogin();
             cy.apiCreateApp(`${fake.companyName}-Map-contexts-${Cypress._.uniqueId()}`);
+            emulateKeylessMaps();
         });
 
         afterEach(() => {
@@ -111,6 +116,36 @@ describe('Map — contexts facet', { testIsolation: false }, () => {
                     expect(styles.filter(hasDarkPayload).length, 'dark: tile requests carrying every darkModeStyles colour').to.be.gte(1);
                 });
             });
+        });
+    });
+
+    // Map.jsx draws a note instead of the map when the server hands the app no GOOGLE_MAPS_API_KEY: Google would
+    // otherwise paint its own error over a grey box.
+    describe('no API key', () => {
+        beforeEach(() => {
+            cy.apiLogin();
+            cy.apiCreateApp(`${fake.companyName}-Map-contexts-${Cypress._.uniqueId()}`);
+            withoutMapsKey();
+        });
+
+        afterEach(() => {
+            cy.apiDeleteApp();
+        });
+
+        it('without a key the editor and the running app show the add-a-key note and no map', () => {
+            addMapsViaApi([{ name: W, layout: { top: 40, left: 2, width: 20, height: 420 } }]);
+            const expectNote = (context) => {
+                cy.get(mapSelector.noKeyNote(W), { timeout: 30000 }).should('be.visible').and(($n) => {
+                    expect($n.find('.map-widget-no-key-title').text(), `${context}: title`).to.eq(T.noKeyTitle);
+                    expect($n.find('.map-widget-no-key-hint').text(), `${context}: hint`).to.eq(T.noKeyHint);
+                });
+                cy.get(mapSelector.gmRoot(W)).should('not.exist');
+                cy.get(mapSelector.searchInput(W)).should('not.exist');
+            };
+            cy.openApp('', undefined, undefined, mapSelector.container(W));
+            expectNote('editor');
+            cy.visit(`/applications/${Cypress.env('appId')}/home?version=v1`); // the preview of the editing version
+            expectNote('running app');
         });
     });
 });

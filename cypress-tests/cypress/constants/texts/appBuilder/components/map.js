@@ -6,6 +6,9 @@ export const mapText = {
   widgetPrefix: "map",
   defaultSize: { width: 16, height: 420 }, // map.js:6-9
   defaultLocation: { lat: 40.7128, lng: -73.935242 }, // map.js:144
+  // Map.jsx — shown instead of the map when the server has no GOOGLE_MAPS_API_KEY
+  noKeyTitle: "Add a Google Maps API key to show this map",
+  noKeyHint: "Set GOOGLE_MAPS_API_KEY in the server environment, or use the ToolJet UI 2.0 Map, which needs no key.",
 
   // Saved definition defaults — merged under every Map that addMapsViaApi posts (map.js:137-163)
   definition: {

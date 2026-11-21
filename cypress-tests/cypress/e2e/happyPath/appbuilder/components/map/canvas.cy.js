@@ -48,8 +48,10 @@ import {
     dragMapBy,
     viewportBounds,
     degPerPx,
+    emulateKeylessMaps,
 } from "Support/utils/appBuilder/components/map";
 import { resizeWidgetBy } from "Support/utils/appBuilder/components/svgImage";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = mapText.defaultWidgetName;
 const T = mapText;
@@ -88,9 +90,10 @@ describe('Map — canvas facet', { testIsolation: false }, () => {
         beforeEach(() => {
             cy.apiLogin();
             cy.apiCreateApp(`${fake.companyName}-Map-canvas-${Cypress._.uniqueId()}`);
+            emulateKeylessMaps();
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -155,7 +158,7 @@ describe('Map — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget('Text', 400, 700);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, 'text1']);
             verifySelectedWidgetCount(2);
@@ -184,6 +187,7 @@ describe('Map — canvas facet', { testIsolation: false }, () => {
         beforeEach(() => {
             cy.apiLogin();
             cy.apiCreateApp(`${fake.companyName}-Map-canvas-${Cypress._.uniqueId()}`);
+            emulateKeylessMaps();
         });
 
         afterEach(() => {
@@ -230,7 +234,7 @@ describe('Map — canvas facet', { testIsolation: false }, () => {
 
             // editor: resizing the widget re-positions the overlay from the new container size
             cy.openApp('', undefined, undefined, mapSelector.container('mapbig'));
-            cy.get('[data-cy="query-manager-toggle-button"]').click(); // the query panel covers the lower canvas
+            closeQueryPanel(); // the query panel covers the lower canvas
             waitForMapTiles('mapbig');
             expectPinAtCentre('mapbig');
             getWidgetRect('mapbig').as('r0');

@@ -27,6 +27,7 @@ import {
     mercator,
     degPerPx,
     mapResourceUrls,
+    emulateKeylessMaps,
 } from "Support/utils/appBuilder/components/map";
 import { counterEvent } from "Support/utils/appBuilder/components/icon";
 
@@ -47,6 +48,7 @@ describe('Map — userflow facet', () => {
     beforeEach(() => {
         cy.apiLogin();
         cy.apiCreateApp(`${fake.companyName}-Map-userflow-${Cypress._.uniqueId()}`);
+        emulateKeylessMaps();
     });
 
     afterEach(() => {

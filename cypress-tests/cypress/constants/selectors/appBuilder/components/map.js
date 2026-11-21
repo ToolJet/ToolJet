@@ -15,6 +15,8 @@ export const mapSelector = {
   mapViewport: (name) => `${container(name)} > div:not(.map-center)`,
   // Google Maps SDK root inside the viewport
   gmRoot: (name) => `${container(name)} .gm-style`,
+  // Map.jsx — the note drawn instead of the map when the server hands the app no GOOGLE_MAPS_API_KEY
+  noKeyNote: (name) => `${container(name)} > .map-widget-no-key[role="note"]`,
   // SDK raster tiles (maps.googleapis.com/maps/vt)
   tiles: (name) => `${container(name)} .gm-style img[src*="/maps/vt"]`,
   // SDK default (legacy google.maps.Marker) icon — one per rendered Marker (Map.jsx:282-284)
