@@ -1,0 +1,91 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Cloudflare AI Search datasource",
+  "description": "Search and chat with Cloudflare AI Search instances and manage instances.",
+  "type": "api",
+  "defaults": {
+    "operation": "search_instance"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select a Cloudflare AI Search operation",
+      "list": [
+        {
+          "value": "search_instance",
+          "name": "Search an instance"
+        },
+        {
+          "value": "chat_completions",
+          "name": "Chat completions"
+        },
+        {
+          "value": "list_instances",
+          "name": "List instances"
+        },
+        {
+          "value": "get_instance",
+          "name": "Get instance"
+        }
+      ]
+    },
+    "search_instance": {
+      "instance_id": {
+        "label": "Instance ID",
+        "key": "instance_id",
+        "type": "codehinter",
+        "description": "ID of the Cloudflare AI Search instance to search",
+        "placeholder": "my-instance",
+        "mandatory": true
+      },
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "description": "Text to search for in the instance",
+        "placeholder": "How do I reset my password?",
+        "mandatory": true
+      },
+      "filters": {
+        "label": "Metadata filters (JSON)",
+        "key": "filters",
+        "type": "codehinter",
+        "description": "Optional metadata filters to narrow search results",
+        "placeholder": "{\"category\": \"support\"}",
+        "height": "100px",
+        "mandatory": false
+      }
+    },
+    "chat_completions": {
+      "instance_id": {
+        "label": "Instance ID",
+        "key": "instance_id",
+        "type": "codehinter",
+        "description": "ID of the Cloudflare AI Search instance",
+        "placeholder": "my-instance",
+        "mandatory": true
+      },
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "description": "Question to ask the AI Search instance",
+        "placeholder": "How do I reset my password?",
+        "mandatory": true
+      }
+    },
+    "list_instances": {},
+    "get_instance": {
+      "instance_id": {
+        "label": "Instance ID",
+        "key": "instance_id",
+        "type": "codehinter",
+        "description": "ID of the Cloudflare AI Search instance to retrieve",
+        "placeholder": "my-instance",
+        "mandatory": true
+      }
+    }
+  }
+}

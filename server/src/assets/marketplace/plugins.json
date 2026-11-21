@@ -419,5 +419,17 @@
     "tags": [
       "AI"
     ]
+  },
+  {
+    "name": "Cloudflare AI Search",
+    "description": "Search indexed content and generate AI-powered answers using Cloudflare AI Search.",
+    "version": "1.0.0",
+    "id": "cloudflare_ai_search",
+    "author": "Tooljet",
+    "timestamp": "Tue, 13 Oct 2026 14:03:08 GMT",
+    "repo": "",
+    "tags": [
+      "AI"
+    ]
   }
 ]
