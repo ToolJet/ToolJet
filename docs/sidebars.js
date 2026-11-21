@@ -411,6 +411,7 @@ const sidebars = {
                 'marketplace/plugins/marketplace-plugin-mistral_ai',
                 'marketplace/plugins/marketplace-plugin-hugging_face',
                 'marketplace/plugins/marketplace-plugin-cohere',
+                'marketplace/plugins/marketplace-plugin-datacircle',
                 'marketplace/plugins/marketplace-plugin-weaviate',
                 'marketplace/plugins/marketplace-plugin-qdrant'
               ],

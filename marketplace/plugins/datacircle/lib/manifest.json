@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Datacircle datasource",
+  "description": "A schema defining Datacircle datasource",
+  "type": "api",
+  "source": {
+    "name": "Datacircle",
+    "kind": "datacircle",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {},
+  "required": []
+}
