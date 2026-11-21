@@ -1,14 +1,15 @@
 /**
  * SPEC — Library component — inspector facet.
  * FOR AI: TESTING.md browser scenario:
- *   LibraryComponent-BRW-004 — selecting an instance shows Component and Revision rows, the manifest props grouped
+ *   LibraryComponent-BRW-004 — selecting an instance shows the library · component identity strip and the Revision
+ *                              row, the manifest props grouped
  *                              by section, an Events section when the manifest declares events, the Additional
- *                              Actions accordion with Visibility and Loading state, and Devices — all for the PINNED
- *                              revision, not the library's latest
+ *                              Actions accordion with Visibility and Loading state, Devices and the host's Container
+ *                              styles — all for the PINNED revision, not the library's latest
  * The fixture library has two revisions with different FocusProbe manifests (helpers manifestV1 / manifestV2):
  * 1.0.0 = an unsectioned prop, two sectioned groups, a hidden prop and one event; 2.0.0 (latest) = one prop in a
- * "Content" section and no events. The app pins 1.0.0, then the test re-pins 2.0.0 through the Custom tab's
- * version picker.
+ * "Content" section and no events. The app pins 1.0.0, then the test re-pins 2.0.0 through the library's version
+ * picker in the Components panel.
  * Helpers: stubCclBackend, addLibraryComponentsViaApi, inspectorSections, pickRevision, openEditorSidebar.
  */
 import { fake } from "Fixtures/fake";
@@ -30,10 +31,12 @@ const FOCUS = T.components.focus;
 const W = FOCUS.runtimeName;
 
 const byTitle = (sections) => Object.fromEntries(sections.map((s) => [s.title, s]));
-// "Component" accordion rows (index.tsx:65-81): label/value pairs
-const expectIdentityRows = (section, componentLabel, revision) => {
-    expect(section.text, "Component row").to.contain(`${I.componentRow} ${componentLabel}`);
-    expect(section.text, "Revision row").to.contain(`${I.revisionRow} ${revision}`);
+// identity above the accordions (index.tsx ManifestPropertiesPanel): the "<library> · <component>" strip
+// (PackIdentityStrip.tsx, component = the manifest displayName) and the Revision row
+const expectIdentityRows = (componentLabel, revision) => {
+    cy.get('[data-cy="pack-identity-strip"]').should("have.attr", "aria-label", `${componentLabel} from ${T.library.name}`);
+    cy.get(".library-component-revision-row").then(($row) =>
+        expect([...$row.children()].map((c) => c.innerText.trim()), "Revision row").to.deep.eq([I.revisionRow, revision]));
 };
 const staticAccordions = (s) => {
     // index.tsx:132-156 — the widget's own section:'additionalActions' properties (libraryComponent.js:15-26)
@@ -78,16 +81,15 @@ describe("Library component — inspector facet", { testIsolation: false }, () =
         cy.get(S.accordion(I.devicesAccordion)).should("exist"); // the docs footer can cover the last header
         inspectorSections().then((sections) => {
             expect(sections.map((s) => s.title), "accordion order").to.deep.eq([
-                I.componentAccordion,
                 I.defaultSection, // unsectioned props
                 "Appearance",
                 "Layout",
                 I.eventsAccordion,
                 I.additionalActionsAccordion,
                 I.devicesAccordion,
+                I.containerAccordion,
             ]);
             const s = byTitle(sections);
-            expectIdentityRows(s[I.componentAccordion], v1.displayName, T.revisions.v1);
             expect(s[I.defaultSection].labels, "Properties fields").to.deep.eq(labelsIn(v1, I.defaultSection));
             expect(s.Appearance.labels, "Appearance fields, declaration order").to.deep.eq(labelsIn(v1, "Appearance"));
             expect(s.Layout.labels, "Layout fields").to.deep.eq(labelsIn(v1, "Layout"));
@@ -95,25 +97,26 @@ describe("Library component — inspector facet", { testIsolation: false }, () =
             sections.forEach((sec) => expect(sec.text, `hidden prop not in ${sec.title}`).to.not.contain(hidden));
             staticAccordions(s);
         });
+        expectIdentityRows(v1.displayName, T.revisions.v1);
         // the Events accordion carries the event manager for the manifest's events (index.tsx:111-130)
         cy.get(S.accordion(I.eventsAccordion)).closest(".accordion-item").find('[data-cy="add-event-handler"]').should("be.visible");
 
-        // re-pin to 2.0.0 from the Custom tab's version picker; the panel switches to that revision's manifest
+        // re-pin to 2.0.0 from the library's version picker in the Components panel; the panel switches to that revision's manifest
         pickRevision(T.revisions.v2);
         openEditorSidebar(W);
         cy.get(S.accordion(I.devicesAccordion)).should("exist"); // the docs footer can cover the last header
         cy.get(S.accordion("Content")).should("exist");
         inspectorSections().then((sections) => {
             expect(sections.map((s) => s.title), "accordion order at 2.0.0 (no events declared → no Events)").to.deep.eq([
-                I.componentAccordion,
                 "Content",
                 I.additionalActionsAccordion,
                 I.devicesAccordion,
+                I.containerAccordion,
             ]);
             const s = byTitle(sections);
-            expectIdentityRows(s[I.componentAccordion], v2.displayName, T.revisions.v2);
             expect(s.Content.labels, "Content fields").to.deep.eq(labelsIn(v2, "Content"));
             staticAccordions(s);
         });
+        expectIdentityRows(v2.displayName, T.revisions.v2);
     });
 });

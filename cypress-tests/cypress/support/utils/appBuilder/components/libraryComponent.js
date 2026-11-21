@@ -97,6 +97,15 @@ export const manifestV2 = {
  *           Revision files 404 for an unknown (libraryId, revision).
  */
 export const stubCclBackend = ({ revisions = [{ version: T.revisions.v1, manifest: manifestV1 }], devUserId = null, devManifest = manifestV1 } = {}) => {
+  // Libraries now mount inline by default; the contract covers the sandboxed shell, which stays behind this flag
+  // (inlineRuntime.ts getLibraryComponentRuntime). Set before every page load of the test.
+  cy.on("window:before:load", (win) => {
+    try {
+      win.localStorage.setItem("tj-cc-runtime", "iframe");
+    } catch (e) {
+      // storage blocked: the page falls back to inline and the iframe assertions fail loudly
+    }
+  });
   cy.intercept({ method: "GET", url: /\/api\/license\/access(\?.*)?$/ }, (req) => {
     delete req.headers["if-none-match"];
     req.continue((res) => {
@@ -251,17 +260,23 @@ export const expectShellMounted = (name, component) =>
 /**
  * @tjBlock  canvas
  * @tjUsage  openCustomTab()
- * @tjDom    opens the Components panel (right-sidebar-components-button) and its Custom tab (license-gated:
- *           ComponentsManagerTab.jsx:317), then waits for the fixture library section
+ * @tjDom    opens the Components panel (right-sidebar-components-button), picks the fixture library in the
+ *           Components tab's library picker (LibraryPicker.jsx; custom libraries are license-gated), then waits for
+ *           the picked library's version chip (the picked section has no data-cy of its own:
+ *           CustomComponentsTab.jsx LibrarySection `picked`)
  */
 export const openCustomTab = () => {
   cy.get("body").then(($body) => {
-    if (!$body.find(`${libraryComponentSelector.customTab}:visible`).length) {
+    if (!$body.find(`${libraryComponentSelector.libraryPicker}:visible`).length) {
       cy.get('[data-cy="right-sidebar-components-button"]').click();
     }
   });
-  cy.get(libraryComponentSelector.customTab, { timeout: 20000 }).should("be.visible").click({ force: true }); // the panel button tooltip can overlap it
-  cy.get(libraryComponentSelector.librarySection(L.cardSlug), { timeout: 20000 }).should("be.visible");
+  cy.get("body").then(($body) => {
+    if ($body.find(`${libraryComponentSelector.versionChip(L.cardSlug)}:visible`).length) return;
+    cy.get(libraryComponentSelector.libraryPicker, { timeout: 20000 }).should("be.visible").click({ force: true }); // the panel button tooltip can overlap it
+    cy.get(libraryComponentSelector.libraryChoice(L.id)).should("be.visible").click();
+  });
+  cy.get(libraryComponentSelector.versionChip(L.cardSlug), { timeout: 20000 }).should("be.visible");
 };
 
 /**

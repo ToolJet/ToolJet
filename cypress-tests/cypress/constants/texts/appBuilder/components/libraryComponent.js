@@ -32,13 +32,12 @@ export const libraryComponentText = {
 
   // Inspector panel (Inspector/Components/LibraryComponent/index.tsx)
   inspector: {
-    componentAccordion: "Component", // index.tsx:66
-    componentRow: "Component", // index.tsx:71
-    revisionRow: "Revision", // index.tsx:72
+    revisionRow: "Revision", // index.tsx LibraryComponentProperties identityRows
     defaultSection: "Properties", // Components/LibraryComponent/utils.ts:4
     eventsAccordion: "Events", // index.tsx:113
     additionalActionsAccordion: "Additional Actions", // index.tsx:135
-    devicesAccordion: "Devices", // index.tsx:159
+    devicesAccordion: "Devices", // index.tsx:227
+    containerAccordion: "Container", // index.tsx LibraryComponentStyles: the host's own styles, always last
     visibilityLabel: "Visibility", // libraryComponent.js:17
     loadingStateLabel: "Loading state", // libraryComponent.js:23
     showOnDesktopLabel: "Show on desktop", // libraryComponent.js:11

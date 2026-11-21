@@ -11,9 +11,10 @@ export const libraryComponentSelector = {
   // LibraryComponent.jsx:273-284 — the sandboxed shell iframe
   iframe: (name) => `${widget(name)} iframe[data-cy="${name}"]`,
 
-  // Components panel › Custom tab (ComponentsManagerTab.jsx:317-330, CustomComponentsTab.jsx)
-  // no data-cy on ToolJetUI/Tabs buttons (Tabs.jsx:46-56) — fall back to the tab key
-  customTab: '#components-manager-tabs button[role="tab"][data-tab-key="custom"]',
+  // Components panel › library picker on the Components tab (LibraryPicker.jsx); a custom library's choice is
+  // `lib:<id>` with every non-alphanumeric run turned into '-' (componentLibrary.js libraryChoices)
+  libraryPicker: '[data-cy="component-library-picker"]',
+  libraryChoice: (libraryId) => `[data-cy="component-library-${`lib:${libraryId}`.replace(/[^a-z0-9]+/gi, "-")}"]`,
   librarySection: (slug) => `[data-cy="custom-library-${slug}"]`, // CustomComponentsTab.jsx:137
   versionChip: (slug) => `[data-cy="custom-library-version-${slug}"]`, // CustomComponentsTab.jsx:211
   versionMenuRow: ".custom-library-version-menu .version-menu-row", // CustomComponentsTab.jsx:218

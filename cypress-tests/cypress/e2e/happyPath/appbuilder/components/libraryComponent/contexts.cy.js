@@ -53,7 +53,7 @@ describe("Library component — contexts facet", { testIsolation: false }, () =>
         // accordion and the fixed "Read documentation" footer covers its Show on mobile fx button.
         it("device context — show on desktop / mobile toggles visibility", () => {
             openEditorSidebar(W);
-            [I.componentAccordion, I.defaultSection, "Appearance", "Layout", I.eventsAccordion].forEach((title) =>
+            [I.defaultSection, "Appearance", "Layout", I.eventsAccordion].forEach((title) =>
                 cy.get(S.accordion(title)).click());
             verifyAndModifyToggleFx(commonWidgetText.parameterShowOnDesktop, commonWidgetText.codeMirrorLabelTrue);
             cy.get(S.draggableWidget(W)).should("not.exist");
