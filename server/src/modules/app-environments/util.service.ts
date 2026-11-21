@@ -113,7 +113,7 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
       };
     }
     const appDetails = await manager.findOneOrFail(App, {
-      select: ['id', 'currentVersionId'],
+      select: ['id', 'currentVersionId', 'organizationId'],
       where: { id: appId },
     });
     const isVersionReleased = appDetails.currentVersionId && appDetails.currentVersionId === versionId;

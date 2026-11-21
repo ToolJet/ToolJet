@@ -183,7 +183,8 @@ export const useCanvasDropHandler = () => {
           realCanvasRef,
           canvasId,
           moduleInfo,
-          libraryComponentInfo
+          libraryComponentInfo,
+          component?.stylePreset
         );
         const childComponents = addChildrenWidgetsToParent(draggedComponentType, parentComponent?.id, currentLayout);
         if (draggedComponentType === 'Form') {
@@ -198,7 +199,8 @@ export const useCanvasDropHandler = () => {
           realCanvasRef,
           canvasId,
           moduleInfo,
-          libraryComponentInfo
+          libraryComponentInfo,
+          component?.stylePreset
         );
         addedComponent = [newComponent];
         await addComponentToCurrentPage(addedComponent);

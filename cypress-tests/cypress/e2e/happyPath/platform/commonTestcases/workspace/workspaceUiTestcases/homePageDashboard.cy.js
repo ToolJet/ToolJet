@@ -5,6 +5,7 @@ import { cleanAllUsers } from "Support/utils/manageUsers";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/platform/dashboard";
 
+const MY_CREDITS_API = "/api/ai/credits-usage/me";
 const AI_CREDITS_BALANCE_API = "/api/ai/get-credits-balance";
 
 const aiCreditsBalance = (aiFeaturesEnabled) => ({
@@ -15,11 +16,17 @@ const aiCreditsBalance = (aiFeaturesEnabled) => ({
   expiry: { recurringExpiryDate: null },
 });
 
+// Builders read the pool from credits-usage/me; get-credits-balance is only the fallback.
 const stubAiFeatures = (aiFeaturesEnabled) => {
+  const pool = aiCreditsBalance(aiFeaturesEnabled);
+  cy.intercept("GET", MY_CREDITS_API, {
+    statusCode: 200,
+    body: { enabled: false, pool },
+  }).as("aiCreditsBalance");
   cy.intercept("GET", AI_CREDITS_BALANCE_API, {
     statusCode: 200,
-    body: aiCreditsBalance(aiFeaturesEnabled),
-  }).as("aiCreditsBalance");
+    body: pool,
+  });
 };
 
 const openHomePage = () => {

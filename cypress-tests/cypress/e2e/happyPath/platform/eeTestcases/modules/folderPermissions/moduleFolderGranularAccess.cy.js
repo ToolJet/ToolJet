@@ -1,4 +1,5 @@
 import { commonSelectors } from 'Selectors/common';
+import { versionModalSelector } from 'Selectors/platform/eeCommon';
 import { versionSwitcherSelectors } from 'Selectors/platform/version';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
 import {
@@ -91,6 +92,9 @@ describe('Modules — Folder Granular Access', { retries: 0 }, () => {
     cy.then(() => {
       cy.apiGetEditingVersionId(moduleId).then((versionId) => cy.apiCreateAppVersion(moduleId, 'v2-folder-edit-allowed', versionId));
       openAppEditor(wsSlug, moduleId);
+      // v1 and v2 can share updated_at, so the editor may open either one; pick v2 explicitly.
+      cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
+      cy.get(versionModalSelector.versionName('v2-folder-edit-allowed')).click();
       cy.get(versionSwitcherSelectors.versionSwitcherButton).should('contain.text', 'v2-folder-edit-allowed');
     });
   });

@@ -29,6 +29,7 @@ Owns `AppEnvironment` (development → staging → production, priority-ordered,
 - TypeORM drops `undefined` from `where`. An omitted `app_id` / id param therefore widens the query to every workspace instead of failing — `getVersionsByEnvironment` rejects a missing `app_id` with 400 for this reason. Check for absent params, not just foreign ones.
 - Missing rows must surface as `NotFoundException`. `EntityNotFoundError` (from `findOneOrFail`) is not an `HttpException`, so `AllExceptionsFilter` turns it into a 500.
 - The frontend reads `response.editorVersion.app.id` from EE `init`; keep the `app` relation loaded.
+- Partial `App` reads must retain `organizationId`: `AppsSubscriber.afterLoad` uses it to resolve workspace git configuration, including when calculating environment button visibility.
 - `GET :id` / `GET default` are already workspace-scoped through `get(organizationId, …)`.
 
 ## Related modules

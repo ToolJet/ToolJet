@@ -26,8 +26,11 @@ describe('ToolJet Database - table create, rename and delete', () => {
   };
 
   const openTableMenu = (name, optionSelector) => {
+    // the edit drawer builds its schema from the loaded table, so select it and wait for the grid first
+    cy.get(tooljetDatabaseSelectors.tableItem(name)).scrollIntoView().click();
+    cy.get(tooljetDatabaseSelectors.columnHeader('id')).should('be.visible');
     // the kebab is only rendered while the pointer is over the list item
-    cy.get(tooljetDatabaseSelectors.tableItem(name)).scrollIntoView().trigger('mouseover');
+    cy.get(tooljetDatabaseSelectors.tableItem(name)).trigger('mouseover');
     cy.get(tooljetDatabaseSelectors.tableItem(name)).find(tooljetDatabaseSelectors.tableKebabIcon).click();
     cy.get(optionSelector).click();
   };
@@ -69,6 +72,8 @@ describe('ToolJet Database - table create, rename and delete', () => {
 
     openDatabase();
     openTableMenu(name, tooljetDatabaseSelectors.renameTableOption);
+    // typing before the drawer has filled in the current name gets overwritten
+    cy.get(tooljetDatabaseSelectors.tableNameInput).should('have.value', name);
     cy.get(tooljetDatabaseSelectors.tableNameInput).clear().type(renamed);
     cy.get(commonSelectors.buttonSelector('Save changes')).click();
 

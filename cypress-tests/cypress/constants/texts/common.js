@@ -180,6 +180,7 @@ export const commonText = {
     "Value should be less than 10000 characters and cannot be empty",
 
   createApp: "Create app",
+  createAppBuildModeNameLabel: "What do you want to build today?",
   appName: "App name",
   enterAppName: "Enter app name",
   appNameInfoLabel: "App name must be unique and max 100 characters",
