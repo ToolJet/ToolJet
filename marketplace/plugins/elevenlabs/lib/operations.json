@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "ElevenLabs datasource",
+  "description": "A schema defining ElevenLabs datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "elevenlabs_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "spec_url": {
+        "Audio": "@spec/elevenlabs/audio",
+        "Voices": "@spec/elevenlabs/voices",
+        "Account & History": "@spec/elevenlabs/account",
+        "Dubbing": "@spec/elevenlabs/dubbing",
+        "Studio": "@spec/elevenlabs/studio",
+        "Agents": "@spec/elevenlabs/agents",
+        "Flows & Assets": "@spec/elevenlabs/flows"
+      }
+    }
+  }
+}
