@@ -44,6 +44,7 @@ import {
     editorMetrics,
     alphaOf,
 } from "Support/utils/appBuilder/components/codeEditor";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = codeEditorText.defaultWidgetName;
 const T = codeEditorText;
@@ -72,7 +73,7 @@ describe('Code Editor — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-CodeEditor-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -136,7 +137,7 @@ describe('Code Editor — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 900, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);

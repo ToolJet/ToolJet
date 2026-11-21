@@ -26,6 +26,7 @@ import {
     dividerBoxes,
     dividerHitAt,
 } from "Support/utils/appBuilder/components/divider";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = dividerText;
 const PX = 0.6; // sub-pixel layout tolerance
@@ -307,7 +308,7 @@ describe('Horizontal Divider — styles facet', { testIsolation: false }, () => 
         const W = T.defaultWidgetName;
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
         resolveCssVarColor(T.defaultBorderVar, dividerSelector.root(W)).then((rgb) => {
             dividerBoxes(W, (b) => {
                 expect(b.lines[0].bgImage, 'default solid').to.eq('none');

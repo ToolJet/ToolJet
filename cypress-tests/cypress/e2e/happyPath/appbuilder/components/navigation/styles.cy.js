@@ -29,6 +29,7 @@ import {
     expectNoTooltipOnHover,
     growingLabels,
 } from "Support/utils/appBuilder/components/navigation";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = navigationText;
 const AUTO = { navItemSize: { value: T.navItemSizeAuto } };
@@ -53,7 +54,7 @@ describe('Navigation — styles facet', { testIsolation: false }, () => {
         // the default menu (navigation.js:241-290), horizontal (navigation.js:307), wide enough for every item
         addNavigationsViaApi([{ name: 'navcaption', layout: { top: 40, left: 2, width: 24, height: 60 } }]);
         cy.openApp('', undefined, undefined, navigationSelector.root('navcaption'));
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
         expectOverflowBucketing('navcaption', T.defaultTopLevelIds, { context: 'fits' }).then((b) =>
             expect(b.overflow, 'Option 1 is in the visible row').to.deep.eq([])
         );
@@ -142,7 +143,7 @@ describe('Navigation — styles facet', { testIsolation: false }, () => {
         };
 
         cy.openApp('', undefined, undefined, navigationSelector.root('navnarrow'));
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
         checkAll('editor');
 
         openNavigationAppInViewer(navigationSelector.root('navnarrow'));

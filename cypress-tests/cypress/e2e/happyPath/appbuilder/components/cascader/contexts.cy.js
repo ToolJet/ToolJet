@@ -33,6 +33,7 @@ import {
     expectCascaderDisplay,
     cascaderState,
 } from "Support/utils/appBuilder/components/cascader";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = T.defaultWidgetName;
 // dynamic: distinct option labels (fake.firstName is lowercase a-z only — safe inside a JSON string)
@@ -52,7 +53,7 @@ describe('Cascader — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Cascader-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

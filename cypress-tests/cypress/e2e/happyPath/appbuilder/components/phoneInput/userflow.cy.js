@@ -26,6 +26,7 @@ import {
     expectActiveElementWithin,
     expectActiveElementOutside,
 } from "Support/utils/appBuilder/components/phoneInput";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = phoneInputText.defaultWidgetName;
 const T = phoneInputText;
@@ -45,7 +46,7 @@ describe('Phone Input — userflow facet', { testIsolation: false }, () => {
         // a Text Input ABOVE the Phone Input: the Tab starting point, and the `value` mirror for BRW-001
         cy.dragAndDropWidget(T.textInputDisplayName, 400, 100);
         cy.dragAndDropWidget(T.displayName, 400, 250);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

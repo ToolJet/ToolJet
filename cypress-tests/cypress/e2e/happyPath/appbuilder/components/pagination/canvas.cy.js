@@ -53,6 +53,7 @@ import {
     expectCurrentPage,
     moveMouseAway,
 } from "Support/utils/appBuilder/components/pagination";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = paginationText.defaultWidgetName;
 const T = paginationText;
@@ -113,7 +114,7 @@ describe('Pagination — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Pagination-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -181,7 +182,7 @@ describe('Pagination — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 650, 300);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);
@@ -232,7 +233,7 @@ describe('Pagination — canvas facet', { testIsolation: false }, () => {
 
             cy.openApp('', undefined, undefined, paginationSelector.items(first));
             cy.get(paginationSelector.items(last)).should('have.length.gte', 5);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
             expectFits('editor');
         });
 
@@ -312,7 +313,7 @@ describe('Pagination — canvas facet', { testIsolation: false }, () => {
                 },
             ]);
             cy.openApp('', undefined, undefined, paginationSelector.items('pg'));
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
             expectRowInsideBox('pg', { context: 'wide' });
 
             getPaginationGeometry('pg').then((wide) => {

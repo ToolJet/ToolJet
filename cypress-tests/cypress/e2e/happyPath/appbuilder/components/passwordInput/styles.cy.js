@@ -25,6 +25,7 @@ import {
 import { expectComputedColor, resolveCssVarColor } from "Support/utils/appBuilder/components/baseInput";
 import { passwordInputSelector } from "Selectors/appBuilder/components/passwordInput";
 import { passwordInputText } from "Texts/appBuilder/components/passwordInput";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec run.
 describe('Password Input — styles facet', { testIsolation: false }, () => {
@@ -36,7 +37,7 @@ describe('Password Input — styles facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-PIStyles-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget('Password Input', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     const openStyles = () => {

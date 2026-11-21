@@ -46,6 +46,7 @@ import {
     undo,
     redo,
 } from "Support/utils/commonWidget";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = circularProgressBarText.defaultWidgetName;
 const T = circularProgressBarText;
@@ -78,7 +79,7 @@ describe('Circular Progressbar — canvas facet', { testIsolation: false }, () =
             cy.apiCreateApp(`${fake.companyName}-CircularProgressBar-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -169,7 +170,7 @@ describe('Circular Progressbar — canvas facet', { testIsolation: false }, () =
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 650, 300);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);

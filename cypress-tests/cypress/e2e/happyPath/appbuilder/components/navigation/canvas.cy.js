@@ -51,6 +51,7 @@ import {
     expectTopLevelRow,
     growingLabels,
 } from "Support/utils/appBuilder/components/navigation";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = navigationText;
 const W = T.defaultWidgetName;
@@ -70,7 +71,7 @@ describe('Navigation — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Navigation-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -134,7 +135,7 @@ describe('Navigation — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 650, 350);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);
@@ -183,7 +184,7 @@ describe('Navigation — canvas facet', { testIsolation: false }, () => {
                 },
             ]);
             cy.openApp('', undefined, undefined, navigationSelector.root('navflow'));
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             // wide: everything fits, no "More"
             expectOverflowBucketing('navflow', order, { context: 'wide' }).then((wide) => {

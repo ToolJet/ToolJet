@@ -45,6 +45,7 @@ import {
     multiSelectImageWidgets,
     wheelCanvasUntil,
 } from "Support/utils/appBuilder/components/image";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = imageText;
 const D = imageText.dynamic;
@@ -63,7 +64,7 @@ describe('Image — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Image-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -127,7 +128,7 @@ describe('Image — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 650, 500);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectImageWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);

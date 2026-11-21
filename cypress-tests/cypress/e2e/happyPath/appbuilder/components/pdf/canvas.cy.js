@@ -42,6 +42,7 @@ import {
 } from "Support/utils/commonWidget";
 import { openLinkAppInViewer } from "Support/utils/appBuilder/components/link";
 import { stubPdfFixtures, addPdfsViaApi, pdfMetrics, wheelPdfUntil } from "Support/utils/appBuilder/components/pdf";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = pdfText;
 const F = T.fixtures;
@@ -93,7 +94,7 @@ describe('PDF — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-PDF-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

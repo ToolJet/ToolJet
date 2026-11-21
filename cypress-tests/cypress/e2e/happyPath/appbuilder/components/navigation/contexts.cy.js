@@ -23,6 +23,7 @@ import {
     openNavigationAppInViewer,
     navRowBoxes,
 } from "Support/utils/appBuilder/components/navigation";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = navigationText;
 const W = T.defaultWidgetName;
@@ -99,7 +100,7 @@ describe('Navigation — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Navigation-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

@@ -22,6 +22,7 @@ import {
 import { checkboxSelector } from "Selectors/appBuilder/components/checkbox";
 import { addIconsViaApi, openIconAppInViewer } from "Support/utils/appBuilder/components/icon";
 import { expectLayout } from "Support/utils/appBuilder/components/textArea";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const PX = 2; // layout tolerance (px)
 
@@ -37,7 +38,7 @@ describe('Checkbox — canvas facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Checkbox-Canvas`);
         cy.openApp();
         cy.dragAndDropWidget('Checkbox', 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     it('drag-and-drop places the widget', () => {
@@ -95,7 +96,7 @@ describe('Checkbox — canvas facet', { testIsolation: false }, () => {
         // add a second widget (toggle panel closed so dragAndDrop re-opens it)
         cy.get('[data-cy="right-sidebar-components-button"]').click();
         cy.dragAndDropWidget('Checkbox', 650, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
 
         multiSelectWidgets(['checkbox1', 'checkbox2']);
         verifySelectedWidgetCount(2);

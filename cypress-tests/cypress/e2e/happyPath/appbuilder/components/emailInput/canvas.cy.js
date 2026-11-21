@@ -42,6 +42,7 @@ import {
     expectRectInside,
     expectRectsDisjoint,
 } from "Support/utils/appBuilder/components/baseInput";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // testIsolation:false for cypress-real-dnd (its CDP client is cached per spec run);
 // each test re-creates its own app in beforeEach.
@@ -54,7 +55,7 @@ describe('Email Input — canvas facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-EICanvas-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(emailInputText.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     const openStyles = () => {
@@ -116,7 +117,7 @@ describe('Email Input — canvas facet', { testIsolation: false }, () => {
     it('multi-select then select-all', () => {
         cy.get('[data-cy="right-sidebar-components-button"]').click();
         cy.dragAndDropWidget(emailInputText.displayName, 650, 300);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
 
         multiSelectWidgets([W, `${PREFIX}2`]);
         verifySelectedWidgetCount(2);

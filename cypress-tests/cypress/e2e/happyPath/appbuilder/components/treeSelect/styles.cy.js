@@ -24,6 +24,7 @@ import {
     readTreeBoxes,
     expectHugsTree,
 } from "Support/utils/appBuilder/components/treeSelect";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = treeSelectText;
 const PX = 0.75; // sub-pixel layout tolerance
@@ -101,7 +102,7 @@ describe('Tree Select — styles facet', () => {
         const W = T.defaultWidgetName;
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
         treeBoxes(W, (b) => expectInset(b, T.boxPadding, 'dropped'));
 
         openEditorSidebar(W);

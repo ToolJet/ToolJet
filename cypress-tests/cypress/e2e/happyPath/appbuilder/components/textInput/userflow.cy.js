@@ -13,6 +13,7 @@ import { textInputSelector as SEL } from "Selectors/appBuilder/components/textIn
 import { addTextInputsViaApi } from "Support/utils/appBuilder/components/textInput";
 import { csaEvent } from "Support/utils/appBuilder/components/dateTimeCommon";
 import { openAppInViewer } from "Support/utils/appBuilder/components/textArea";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec
 // run; testIsolation's per-test AUT reset leaves that client stale, so 2nd+
@@ -26,7 +27,7 @@ describe('Text Input — userflow facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-TIUserflow-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget('Text Input', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     // Happy path: a user types a number → the input reflects it.

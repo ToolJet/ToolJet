@@ -21,6 +21,7 @@ import {
     openRadioAppInViewer,
     radioBoxes,
 } from "Support/utils/appBuilder/components/radioButtonV2";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = radioButtonV2Text;
 const S = radioButtonV2Selector;
@@ -84,7 +85,7 @@ describe('Radio Button (V2) — contexts facet', { testIsolation: false }, () =>
             cy.apiCreateApp(`${fake.companyName}-RadioButtonV2-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

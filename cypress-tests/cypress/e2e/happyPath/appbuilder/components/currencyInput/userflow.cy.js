@@ -30,6 +30,7 @@ import {
     collectTabStops,
     addProbeTextWidget,
 } from "Support/utils/appBuilder/components/currencyInput";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = currencyInputText.defaultWidgetName;
 const T = currencyInputText;
@@ -47,7 +48,7 @@ describe('Currency Input — userflow facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-CurrencyInput-userflow-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

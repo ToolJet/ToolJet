@@ -29,6 +29,7 @@ import {
     expectHugsTree,
     expectAuthoredTree,
 } from "Support/utils/appBuilder/components/treeSelect";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = treeSelectText;
 const W = T.defaultWidgetName;
@@ -105,7 +106,7 @@ describe('Tree Select — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-TreeSelect-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -175,6 +176,7 @@ describe('Tree Select — contexts facet', { testIsolation: false }, () => {
 
             // editor canvas
             cy.openApp('', undefined, undefined, commonWidgetSelector.draggableWidget('bothdevices'));
+            closeQueryPanel(); // a seeded app keeps the remembered open panel, which covers the lower trees
             expectDeviceSet('desktop', 'editor canvas');
             switchLayout('mobile');
             expectDeviceSet('mobile', 'editor canvas');

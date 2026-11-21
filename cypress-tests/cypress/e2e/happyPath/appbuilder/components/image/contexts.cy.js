@@ -16,6 +16,7 @@ import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBu
 import { importAppFixture } from "Support/utils/appBuilder/components/baseInput";
 import { openAppInViewer, expectLayout } from "Support/utils/appBuilder/components/textArea";
 import { stubDefaultImageSource } from "Support/utils/appBuilder/components/image";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = imageText.defaultWidgetName;
 const T = imageText;
@@ -31,7 +32,7 @@ describe('Image — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Image-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

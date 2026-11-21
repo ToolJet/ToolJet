@@ -8,6 +8,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { currencyInputText } from "Texts/appBuilder/components/currencyInput";
 import { verifyLayout } from "Support/utils/commonWidget";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = currencyInputText.defaultWidgetName;
 const T = currencyInputText;
@@ -19,7 +20,7 @@ describe('Currency Input — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-CurrencyInput-contexts-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

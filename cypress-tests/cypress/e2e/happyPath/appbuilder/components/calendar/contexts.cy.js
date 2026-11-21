@@ -24,6 +24,7 @@ import {
     expectDateProbe,
     openDateAppInViewer,
 } from "Support/utils/appBuilder/components/dateTimeCommon";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = T.defaultWidgetName;
 
@@ -35,7 +36,7 @@ describe('Calendar — contexts facet', { testIsolation: false }, () => {
             pinBrowserTimezone(T.browserTimezone);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 300, 100);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -88,6 +89,7 @@ describe('Calendar — contexts facet', { testIsolation: false }, () => {
                     else cy.get(S.calendar(name)).should('not.exist');
                 });
             cy.openApp('', undefined, undefined, S.calendar('both'));
+            closeQueryPanel(); // a seeded app keeps the remembered open panel, which covers the lower calendars
             expectRendered({ desktoponly: true, mobileonly: false, both: true }, 'editor desktop');
             switchLayout('mobile');
             expectRendered({ desktoponly: false, mobileonly: true, both: true }, 'editor mobile');

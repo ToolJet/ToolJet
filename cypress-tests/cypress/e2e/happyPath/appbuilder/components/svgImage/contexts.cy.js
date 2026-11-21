@@ -18,6 +18,7 @@ import { switchLayout } from "Support/utils/appBuilder/layout";
 import { openNode, openAndVerifyNode } from "Support/utils/appBuilder/inspector";
 import { openLinkAppInViewer, viewerPath } from "Support/utils/appBuilder/components/link";
 import { addSvgImagesViaApi, expectSvgDrawn } from "Support/utils/appBuilder/components/svgImage";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = svgImageText.defaultWidgetName;
 const T = svgImageText;
@@ -54,7 +55,7 @@ describe('Svg Image — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-SvgImage-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

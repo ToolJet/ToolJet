@@ -38,6 +38,7 @@ import {
 import { releaseAndMakePublic } from "Support/utils/appBuilder/components/baseInput";
 import { openIconAppInViewer } from "Support/utils/appBuilder/components/icon";
 import { addTextsViaApi, textMetrics } from "Support/utils/appBuilder/components/text";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = textText.defaultWidgetName;
 const T = textText;
@@ -63,7 +64,7 @@ describe('Text — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Text-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -130,7 +131,7 @@ describe('Text — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 650, 300);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);

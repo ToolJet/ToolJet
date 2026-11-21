@@ -23,6 +23,7 @@ import {
     expectTopLevelRow,
     expectGroupMenu,
 } from "Support/utils/appBuilder/components/navigation";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = navigationText;
 const NAV = 'navdnd';
@@ -55,7 +56,7 @@ describe('Navigation — userflow facet', { testIsolation: false }, () => {
         // the default menu (navigation.js:241-290): item1, item2, group1[item3, item4]
         addNavigationsViaApi([{ name: NAV, layout: { top: 40, left: 2, width: 20, height: 60 } }]);
         cy.openApp('', undefined, undefined, navigationSelector.root(NAV));
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
         openTree();
         expectTree(T.defaultTree, 'before dragging');
     });

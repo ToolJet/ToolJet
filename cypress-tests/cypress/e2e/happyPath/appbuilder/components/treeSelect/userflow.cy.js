@@ -29,6 +29,7 @@ import {
     tabTrail,
     focusedNode,
 } from "Support/utils/appBuilder/components/treeSelect";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = treeSelectText;
 const opt = T.option;
@@ -150,7 +151,7 @@ describe('Tree Select — userflow facet', { testIsolation: false }, () => {
 
         moveMouseAway();
         cy.openApp('', undefined, undefined, treeSelectSelector.root('tskey'));
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
         run('editor');
 
         moveMouseAway();

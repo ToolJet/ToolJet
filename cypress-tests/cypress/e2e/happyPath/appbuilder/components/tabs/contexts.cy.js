@@ -24,6 +24,7 @@ import {
     tabsBoxes,
     useMainCanvasForCanvasCommands,
 } from "Support/utils/appBuilder/components/tabs";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = tabsText.defaultWidgetName;
 const T = tabsText;
@@ -81,7 +82,7 @@ describe('Tabs — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Tabs-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 100);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -182,7 +183,7 @@ describe('Tabs — contexts facet', { testIsolation: false }, () => {
             };
 
             cy.openApp('', undefined, undefined, commonWidgetSelector.draggableWidget('probe'));
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
             run('editor');
             openTabsAppInViewer(commonWidgetSelector.draggableWidget('probe'));
             run('viewer');

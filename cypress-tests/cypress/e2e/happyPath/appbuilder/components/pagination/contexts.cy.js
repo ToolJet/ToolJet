@@ -28,6 +28,7 @@ import {
     openPaginationAppInViewer,
     paginationBoxes,
 } from "Support/utils/appBuilder/components/pagination";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = paginationText.defaultWidgetName;
 const T = paginationText;
@@ -105,7 +106,7 @@ describe('Pagination — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Pagination-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

@@ -25,6 +25,7 @@ import { expectComputedColor, resolveCssVarColor } from "Support/utils/appBuilde
 import { baseInputStyleSelector } from "Selectors/appBuilder/components/emailInput";
 import { textInputSelector as SEL } from "Selectors/appBuilder/components/textInput";
 import { textInputText as T } from "Texts/appBuilder/components/textInput";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const rgb = (c) => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
 
@@ -38,7 +39,7 @@ describe('Text Input — styles facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-TIStyles-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget('Text Input', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     const openStyles = () => {

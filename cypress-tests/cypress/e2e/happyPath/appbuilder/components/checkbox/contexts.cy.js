@@ -6,6 +6,7 @@ import { checkboxSelector } from "Selectors/appBuilder/components/checkbox";
 import { switchLayout } from "Support/utils/appBuilder/layout";
 import { releaseAndMakePublic } from "Support/utils/appBuilder/components/baseInput";
 import { addIconsViaApi, openIconAppInViewer } from "Support/utils/appBuilder/components/icon";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // Checkbox-BRW-002 — four saved device combinations (others.showOnDesktop / showOnMobile — checkbox.js:11-12,
 // defaults checkbox.js:210-211: desktop on, mobile off). The device gate reads others.showOnMobile on the
@@ -41,7 +42,7 @@ describe('Checkbox — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Checkbox-Contexts`);
         cy.openApp();
         cy.dragAndDropWidget('Checkbox', 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     // Device-visibility context matrix: Show on Desktop / Show on Mobile.

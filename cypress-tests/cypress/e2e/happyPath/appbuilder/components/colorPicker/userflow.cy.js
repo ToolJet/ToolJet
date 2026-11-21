@@ -26,6 +26,7 @@ import {
     parseHex,
     rgbToHsv,
 } from "Support/utils/appBuilder/components/colorPicker";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = T.defaultWidgetName;
 const PROBE = 'probe';
@@ -184,7 +185,7 @@ describe('Color Picker — userflow facet', () => {
     it('[ColorPicker-BRW-001] On the editor canvas, dragging the sliders picks the colour under the pointer', () => {
         seed();
         cy.openApp('', undefined, undefined, S.button(W));
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
         expectUnchangedDefault();
         openColorPickerPopover(W);
 

@@ -13,6 +13,7 @@ import { linkText } from "Texts/appBuilder/components/link";
 import { openEditorSidebar, openAccordion, verifyAndModifyToggleFx } from "Support/utils/commonWidget";
 import { switchLayout } from "Support/utils/appBuilder/layout";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = linkText.defaultWidgetName;
 const T = linkText;
@@ -24,7 +25,7 @@ describe('Link — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Link-contexts-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

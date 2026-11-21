@@ -15,6 +15,7 @@ import { switchLayout } from "Support/utils/appBuilder/layout";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 import { openLinkAppInViewer } from "Support/utils/appBuilder/components/link";
 import { addFilePickersViaApi, pickerFiles, dropFiles } from "Support/utils/appBuilder/components/filePicker";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = filePickerText;
 const W = T.defaultWidgetName;
@@ -26,7 +27,7 @@ describe("File Picker — contexts facet", { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-FilePicker-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

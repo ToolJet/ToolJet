@@ -19,6 +19,7 @@ import {
     selectColourFromColourPicker,
 } from "Support/utils/commonWidget";
 import { expectComputedColor, resolveCssVarColor } from "Support/utils/appBuilder/components/baseInput";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = currencyInputText.defaultWidgetName;
 const T = currencyInputText;
@@ -33,7 +34,7 @@ describe('Currency Input — styles facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-CurrencyInput-styles-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

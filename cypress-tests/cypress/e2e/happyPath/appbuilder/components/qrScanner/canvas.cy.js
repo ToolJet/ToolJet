@@ -35,6 +35,7 @@ import {
     redo,
 } from "Support/utils/commonWidget";
 import { installFakeCamera, expectFakeCamera, expectScannerVideo } from "Support/utils/appBuilder/components/qrScanner";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = qrScannerText;
 const W = T.defaultWidgetName;
@@ -52,7 +53,7 @@ describe('QR Scanner — canvas facet', { testIsolation: false }, () => {
         installFakeCamera();
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {
@@ -122,7 +123,7 @@ describe('QR Scanner — canvas facet', { testIsolation: false }, () => {
     it('multi-select then select-all', () => {
         cy.get('[data-cy="right-sidebar-components-button"]').click();
         cy.dragAndDropWidget(T.displayName, 900, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
 
         multiSelectWidgets([W, `${PREFIX}2`]);
         verifySelectedWidgetCount(2);

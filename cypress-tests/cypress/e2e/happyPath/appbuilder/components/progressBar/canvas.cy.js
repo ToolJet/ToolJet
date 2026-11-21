@@ -44,6 +44,7 @@ import {
     addProgressBarsViaApi,
     openProgressBarAppInViewer,
 } from "Support/utils/appBuilder/components/progressBar";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = progressBarText.defaultWidgetName;
 const T = progressBarText;
@@ -58,7 +59,7 @@ describe('ProgressBar — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-ProgressBar-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -121,7 +122,7 @@ describe('ProgressBar — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 650, 300);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);
@@ -168,7 +169,7 @@ describe('ProgressBar — canvas facet', { testIsolation: false }, () => {
                 },
             ]);
             cy.openApp('', undefined, undefined, progressBarSelector.root('topbar'));
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             [
                 { name: 'sidebar', alignment: T.alignSide },

@@ -38,6 +38,7 @@ import {
 } from "Support/utils/commonWidget";
 import { openLinkAppInViewer } from "Support/utils/appBuilder/components/link";
 import { addSvgImagesViaApi, svgBoxes, expectSvgDrawn, resizeWidgetBy } from "Support/utils/appBuilder/components/svgImage";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = svgImageText.defaultWidgetName;
 const T = svgImageText;
@@ -62,7 +63,7 @@ describe('Svg Image — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-SvgImage-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -128,7 +129,7 @@ describe('Svg Image — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 650, 300);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);
@@ -303,7 +304,7 @@ describe('Svg Image — canvas facet', { testIsolation: false }, () => {
             cy.then(() =>
                 cy.openApp('', Cypress.env('workspaceId'), Cypress.env('appId'), commonWidgetSelector.draggableWidget('svgimage1'))
             );
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
             getWidgetRect('svgimage1').then((before) => {
                 resizeWidgetBy('svgimage1', 40, 80);
                 verifyWidgetResized('svgimage1', before);

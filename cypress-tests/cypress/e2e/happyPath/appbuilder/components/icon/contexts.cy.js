@@ -18,6 +18,7 @@ import { switchLayout } from "Support/utils/appBuilder/layout";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 import { releaseAndMakePublic } from "Support/utils/appBuilder/components/baseInput";
 import { addIconsViaApi, openIconAppInViewer } from "Support/utils/appBuilder/components/icon";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = iconText.defaultWidgetName;
 const T = iconText;
@@ -51,7 +52,7 @@ describe('Icon — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Icon-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

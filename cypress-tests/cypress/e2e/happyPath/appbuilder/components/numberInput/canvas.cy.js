@@ -30,6 +30,7 @@ import {
 import { numberInputSelector } from "Selectors/appBuilder/components/numberInput";
 import { addIconsViaApi, openIconAppInViewer } from "Support/utils/appBuilder/components/icon";
 import { expectScrollOffsets, resetScroll } from "Support/utils/appBuilder/components/numberInput";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // Canvas facet — component lifecycle on the canvas: drag/drop, move, resize,
 // duplicate (keyboard + menu), copy-paste, cut, nudge, multi-select, rename,
@@ -43,7 +44,7 @@ describe('Number Input — canvas facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-NumberInput-Canvas`);
         cy.openApp();
         cy.dragAndDropWidget('Number Input', 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     it('drag-and-drop places the widget', () => {
@@ -101,7 +102,7 @@ describe('Number Input — canvas facet', { testIsolation: false }, () => {
         // add a second widget (toggle panel closed so dragAndDrop re-opens it)
         cy.get('[data-cy="right-sidebar-components-button"]').click();
         cy.dragAndDropWidget('Number Input', 650, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
 
         multiSelectWidgets(['numberinput1', 'numberinput2']);
         verifySelectedWidgetCount(2);

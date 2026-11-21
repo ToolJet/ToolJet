@@ -27,6 +27,7 @@ import {
     spinnerBoxes,
     setToggleExpression,
 } from "Support/utils/appBuilder/components/spinner";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = spinnerText.defaultWidgetName;
 const T = spinnerText;
@@ -102,7 +103,7 @@ describe('Spinner — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Spinner-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

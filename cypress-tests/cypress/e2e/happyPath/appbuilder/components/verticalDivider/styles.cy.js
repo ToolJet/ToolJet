@@ -25,6 +25,7 @@ import {
     expectCenteredLine,
     lineShadowClip,
 } from "Support/utils/appBuilder/components/verticalDivider";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = verticalDividerText;
 const PX = 0.6; // sub-pixel layout tolerance
@@ -197,7 +198,7 @@ describe('Vertical Divider — styles facet', { testIsolation: false }, () => {
         const W = T.defaultWidgetName;
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
         resolveCssVarColor(T.defaultBorderVar, verticalDividerSelector.root(W)).then((rgb) => {
             dividerBoxes(W, (b) => {
                 expectCenteredLine(b, 'default');

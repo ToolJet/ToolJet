@@ -20,6 +20,7 @@ import { switchLayout } from "Support/utils/appBuilder/layout";
 import { openSubNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 import { openLinkAppInViewer, viewerPath } from "Support/utils/appBuilder/components/link";
 import { addCustomComponentsViaApi, inFrame } from "Support/utils/appBuilder/components/customComponent";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = customComponentText;
 const S = customComponentSelector;
@@ -60,7 +61,7 @@ describe('Custom Component — contexts facet', { testIsolation: false }, () => 
             cy.apiCreateApp(`${fake.companyName}-CustomComponent-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

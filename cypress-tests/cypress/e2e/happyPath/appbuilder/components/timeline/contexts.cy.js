@@ -33,6 +33,7 @@ import {
     expectFixedHeight,
     expectStackedBelow,
 } from "Support/utils/appBuilder/components/timeline";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = timelineText.defaultWidgetName;
 const T = timelineText;
@@ -100,7 +101,7 @@ describe('Timeline — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Timeline-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

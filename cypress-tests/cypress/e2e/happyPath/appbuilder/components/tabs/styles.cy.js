@@ -22,6 +22,7 @@ import {
     openTabsAppInViewer,
     tabsBoxes,
 } from "Support/utils/appBuilder/components/tabs";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = tabsText;
 const PX = 1;
@@ -29,7 +30,7 @@ const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 
 const openEditor = (waitFor) => {
     cy.openApp('', undefined, undefined, waitFor);
-    cy.get('[data-cy="query-manager-toggle-button"]').click();
+    closeQueryPanel();
 };
 
 // rgba() string the runtime paints for a hex colour at the hover alpha (Tabs.jsx:415)

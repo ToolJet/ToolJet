@@ -14,6 +14,7 @@ import { openEditorSidebar, openAccordion, verifyAndModifyToggleFx } from "Suppo
 import { switchLayout } from "Support/utils/appBuilder/layout";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 import { interceptFileChooser } from "Support/utils/appBuilder/components/fileInput";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = fileInputText;
 const W = T.defaultWidgetName;
@@ -25,7 +26,7 @@ describe('File Input — contexts facet', { testIsolation: false }, () => {
         interceptFileChooser();
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

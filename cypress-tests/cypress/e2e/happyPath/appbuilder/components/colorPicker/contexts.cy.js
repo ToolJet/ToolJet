@@ -9,6 +9,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { colorPickerText } from "Texts/appBuilder/components/colorPicker";
 import { verifyLayout } from "Support/utils/commonWidget";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // testIsolation:false for cypress-real-dnd; each test re-creates its app.
 describe('Color Picker — contexts facet', { testIsolation: false }, () => {
@@ -20,7 +21,7 @@ describe('Color Picker — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-ColorPicker-contexts-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(colorPickerText.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     // Device-visibility context matrix: Show on Desktop / Show on Mobile.

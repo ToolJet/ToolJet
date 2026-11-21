@@ -34,6 +34,7 @@ import {
     expectDropdownValue,
     dropdownState,
 } from "Support/utils/appBuilder/components/dropdownV2";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = T.defaultWidgetName;
 const ON = { value: '{{true}}' };
@@ -50,7 +51,7 @@ describe('Dropdown (DropdownV2) — contexts facet', { testIsolation: false }, (
             cy.apiCreateApp(`${fake.companyName}-DropdownV2-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

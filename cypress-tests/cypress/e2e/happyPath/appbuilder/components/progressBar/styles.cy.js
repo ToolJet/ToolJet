@@ -31,6 +31,7 @@ import {
     loadingStripFrames,
     stripLeftOverTime,
 } from "Support/utils/appBuilder/components/progressBar";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = progressBarText;
 const PX = 1; // sub-pixel layout tolerance
@@ -211,7 +212,7 @@ describe('ProgressBar — styles facet', { testIsolation: false }, () => {
         const W = T.defaultWidgetName;
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
         expectProgressBarLayout(W, { context: 'dropped' });
 
         openEditorSidebar(W);

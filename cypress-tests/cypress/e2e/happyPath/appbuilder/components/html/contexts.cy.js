@@ -19,6 +19,7 @@ import { switchLayout } from "Support/utils/appBuilder/layout";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 import { openLinkAppInViewer, viewerPath } from "Support/utils/appBuilder/components/link";
 import { addHtmlWidgetsViaApi } from "Support/utils/appBuilder/components/html";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = htmlText.defaultWidgetName;
 const T = htmlText;
@@ -56,7 +57,7 @@ describe('HTML Viewer — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Html-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

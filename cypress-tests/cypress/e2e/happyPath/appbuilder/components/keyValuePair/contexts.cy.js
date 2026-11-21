@@ -9,6 +9,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { keyValuePairText as T } from "Texts/appBuilder/components/keyValuePair";
 import { verifyLayout } from "Support/utils/commonWidget";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = T.defaultWidgetName;
 
@@ -19,7 +20,7 @@ describe('Key Value Pair — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-KeyValuePair-contexts-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

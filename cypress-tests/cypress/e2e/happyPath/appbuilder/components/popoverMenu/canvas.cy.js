@@ -50,6 +50,7 @@ import {
     popoverMenuState,
     readPopoverMenuState,
 } from "Support/utils/appBuilder/components/popoverMenu";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = T.defaultWidgetName;
 const PX = 2; // sub-pixel + one-frame tolerance for anchored positions
@@ -79,7 +80,7 @@ describe('Popover Menu — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-PopoverMenu-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -145,7 +146,7 @@ describe('Popover Menu — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 650, 300);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, `${T.widgetPrefix}2`]);
             verifySelectedWidgetCount(2);
@@ -283,7 +284,7 @@ describe('Popover Menu — canvas facet', { testIsolation: false }, () => {
         it('[PopoverMenu-BRW-004] Dragging the widget by its trigger with the menu open carries the menu along, anchored, during and after the drop', () => {
             addPopoverMenusViaApi([{ name: 'pm', layout: { top: 60, left: 4 } }]);
             cy.openApp('', undefined, undefined, S.trigger('pm'));
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             openPopoverMenu('pm', { real: true });
             readPopoverMenuState('pm').then((before) => {
@@ -319,7 +320,7 @@ describe('Popover Menu — canvas facet', { testIsolation: false }, () => {
         it('[PopoverMenu-BRW-004] Dragging by the box edge or resizing closes the open menu without a stale portal; reopening anchors it to the new geometry', () => {
             addPopoverMenusViaApi([{ name: 'pm', layout: { top: 60, left: 4 } }]);
             cy.openApp('', undefined, undefined, S.trigger('pm'));
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             // drag from the box padding (outside the trigger)
             openPopoverMenu('pm', { real: true });

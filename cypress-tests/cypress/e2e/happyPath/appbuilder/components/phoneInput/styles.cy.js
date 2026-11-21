@@ -21,6 +21,7 @@ import {
     selectColourFromColourPicker,
 } from "Support/utils/commonWidget";
 import { expectComputedColor, resolveCssVarColor } from "Support/utils/appBuilder/components/baseInput";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = phoneInputText.defaultWidgetName;
 const T = phoneInputText;
@@ -35,7 +36,7 @@ describe('Phone Input — styles facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-PhoneInput-styles-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

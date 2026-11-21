@@ -15,6 +15,7 @@ import { openEditorSidebar, openAccordion, verifyAndModifyToggleFx } from "Suppo
 import { switchLayout } from "Support/utils/appBuilder/layout";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 import { installFakeCamera } from "Support/utils/appBuilder/components/camera";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = cameraText;
 const W = T.defaultWidgetName;
@@ -26,7 +27,7 @@ describe('Camera — contexts facet', { testIsolation: false }, () => {
         cy.openApp();
         installFakeCamera();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

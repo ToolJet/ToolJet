@@ -20,6 +20,7 @@ import { openEditorSidebar, openAccordion, verifyAndModifyToggleFx } from "Suppo
 import { switchLayout } from "Support/utils/appBuilder/layout";
 import { releaseAndMakePublic } from "Support/utils/appBuilder/components/baseInput";
 import { addDividersViaApi, openDividerAppInViewer, dividerBoxes } from "Support/utils/appBuilder/components/divider";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = dividerText.defaultWidgetName;
 const T = dividerText;
@@ -82,7 +83,7 @@ describe('Horizontal Divider — contexts facet', { testIsolation: false }, () =
             cy.apiCreateApp(`${fake.companyName}-Divider-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

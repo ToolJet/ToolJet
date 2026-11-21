@@ -10,6 +10,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { buttonText } from "Texts/appBuilder/components/button";
 import { verifyLayout } from "Support/utils/commonWidget";
 import { openNode, openSubNode, verifyNodes, verifyNodeData } from "Support/utils/appBuilder/inspector";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // testIsolation:false for cypress-real-dnd; each test re-creates its app.
 describe('Button — contexts facet', { testIsolation: false }, () => {
@@ -20,7 +21,7 @@ describe('Button — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Button-contexts-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(buttonText.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

@@ -24,6 +24,7 @@ import {
     expectStepsGeometry,
     focusedWidget,
 } from "Support/utils/appBuilder/components/steps";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = stepsText;
 const moveMouseAway = () => cy.get('body').realHover({ position: 'topLeft' });
@@ -97,7 +98,7 @@ describe('Steps — userflow facet', { testIsolation: false }, () => {
 
         moveMouseAway();
         cy.openApp('', undefined, undefined, stepsSelector.milestones('flow'));
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
         run('editor');
 
         moveMouseAway();

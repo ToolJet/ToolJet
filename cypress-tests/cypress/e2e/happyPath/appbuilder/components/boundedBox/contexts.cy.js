@@ -28,6 +28,7 @@ import {
     chooseLabel,
     svgDataUri,
 } from "Support/utils/appBuilder/components/boundedBox";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = T.defaultWidgetName;
 const PX = 2;
@@ -72,7 +73,7 @@ describe('Bounded Box — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-BoundedBox-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

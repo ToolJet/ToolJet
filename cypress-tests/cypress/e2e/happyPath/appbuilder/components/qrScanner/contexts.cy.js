@@ -30,6 +30,7 @@ import {
     qrScannerItem,
     openQrAppInViewer,
 } from "Support/utils/appBuilder/components/qrScanner";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = qrScannerText;
 const W = T.defaultWidgetName;
@@ -44,7 +45,7 @@ describe('QR Scanner — contexts facet', { testIsolation: false }, () => {
             installFakeCamera(); // the scanner asks for the camera as soon as it mounts on the canvas
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

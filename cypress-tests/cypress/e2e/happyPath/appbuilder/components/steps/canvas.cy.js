@@ -44,6 +44,7 @@ import {
     readStepsBoxes,
     expectStepsGeometry,
 } from "Support/utils/appBuilder/components/steps";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = stepsText.defaultWidgetName;
 const T = stepsText;
@@ -71,7 +72,7 @@ describe('Steps — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Steps-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -137,7 +138,7 @@ describe('Steps — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 650, 350);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);
@@ -206,7 +207,7 @@ describe('Steps — canvas facet', { testIsolation: false }, () => {
                 );
 
             cy.openApp('', undefined, undefined, stepsSelector.milestones(`${T.variantPlain}many`));
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
             checkAll('editor');
 
             // the active milestone is the configured one, whatever the list size
@@ -234,7 +235,7 @@ describe('Steps — canvas facet', { testIsolation: false }, () => {
                 { name: 'flow', layout: { top: 40, left: 2, width: 30, height: 38 }, properties: { steps: { value: steps } } }, // dynamic: wide
             ]);
             cy.openApp('', undefined, undefined, stepsSelector.milestones('flow'));
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             // wide: every caption fits
             expectStepsGeometry('flow', { count: 3, truncated: [false, false, false], context: 'wide' });

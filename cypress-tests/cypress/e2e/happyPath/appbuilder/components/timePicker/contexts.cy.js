@@ -23,6 +23,7 @@ import {
     expectDateProbe,
     openDateAppInViewer,
 } from "Support/utils/appBuilder/components/dateTimeCommon";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = T.defaultWidgetName;
 
@@ -34,7 +35,7 @@ describe('Time Picker — contexts facet', { testIsolation: false }, () => {
             pinBrowserTimezone(T.browserTimezone);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

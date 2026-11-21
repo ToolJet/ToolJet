@@ -37,6 +37,7 @@ import {
 } from "Support/utils/appBuilder/components/baseInput";
 import { passwordInputSelector } from "Selectors/appBuilder/components/passwordInput";
 import { passwordInputText } from "Texts/appBuilder/components/passwordInput";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // Canvas facet — component lifecycle on the canvas: drag/drop, move, resize,
 // duplicate (keyboard + menu), copy-paste, cut, nudge, multi-select, rename,
@@ -52,7 +53,7 @@ describe('Password Input — canvas facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-PasswordInput-Canvas`);
         cy.openApp();
         cy.dragAndDropWidget('Password Input', 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     it('drag-and-drop places the widget', () => {
@@ -110,7 +111,7 @@ describe('Password Input — canvas facet', { testIsolation: false }, () => {
         // add a second widget (toggle panel closed so dragAndDrop re-opens it)
         cy.get('[data-cy="right-sidebar-components-button"]').click();
         cy.dragAndDropWidget('Password Input', 650, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
 
         multiSelectWidgets(['passwordinput1', 'passwordinput2']);
         verifySelectedWidgetCount(2);

@@ -32,6 +32,7 @@ import {
     expectFixedHeight,
     expectStackedBelow,
 } from "Support/utils/appBuilder/components/timeline";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = timelineText.defaultWidgetName;
 const T = timelineText;
@@ -68,7 +69,7 @@ describe('Timeline — styles facet', { testIsolation: false }, () => {
     it('[Timeline-BRW-001] Box shadow set in the Styles panel renders the configured computed CSS on the card in the editor and the running app', () => {
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
         timelineBoxes(W, (b) => expect(b.cardShadow, 'default paints nothing').to.eq(T.defaultShadowComputed));
 
         openEditorSidebar(W);

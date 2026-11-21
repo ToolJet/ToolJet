@@ -17,6 +17,7 @@ import { switchLayout } from "Support/utils/appBuilder/layout";
 import { openNode, openAndVerifyNode } from "Support/utils/appBuilder/inspector";
 import { openLinkAppInViewer } from "Support/utils/appBuilder/components/link";
 import { stubPdfFixtures, addPdfsViaApi, pdfMetrics } from "Support/utils/appBuilder/components/pdf";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = pdfText;
 const MULTI = T.fixtures.multiPage;
@@ -64,7 +65,7 @@ describe('PDF — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-PDF-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

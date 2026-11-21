@@ -15,6 +15,7 @@ import { openEditorSidebar, openAccordion, verifyAndModifyToggleFx } from "Suppo
 import { switchLayout } from "Support/utils/appBuilder/layout";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 import { explorerMetrics } from "Support/utils/appBuilder/components/jsonExplorer";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = jsonExplorerText;
 const W = T.defaultWidgetName;
@@ -31,7 +32,7 @@ describe('JSON Explorer — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-JSONExplorer-contexts-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

@@ -44,6 +44,7 @@ import {
     multiSelectTagsWidgets,
 } from "Support/utils/appBuilder/components/tags";
 import { openAppInViewer } from "Support/utils/appBuilder/components/textArea";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = tagsText.defaultWidgetName;
 const T = tagsText;
@@ -74,7 +75,7 @@ describe('Tags — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Tags-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -136,7 +137,7 @@ describe('Tags — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 650, 350);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectTagsWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);

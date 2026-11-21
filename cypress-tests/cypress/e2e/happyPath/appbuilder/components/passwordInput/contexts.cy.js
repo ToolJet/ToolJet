@@ -24,6 +24,7 @@ import {
     importAppFixture,
 } from "Support/utils/appBuilder/components/baseInput";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // Contexts facet — the checkbox across device + data-binding contexts.
 // testIsolation:false for cypress-real-dnd; each test re-creates its app.
@@ -35,7 +36,7 @@ describe('Password Input — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-PasswordInput-Contexts`);
         cy.openApp();
         cy.dragAndDropWidget('Password Input', 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     // Device-visibility context matrix: Show on Desktop / Show on Mobile.

@@ -50,6 +50,7 @@ import {
     useMainCanvasForCanvasCommands,
     selectAllOnMainCanvas,
 } from "Support/utils/appBuilder/components/tabs";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = tabsText.defaultWidgetName;
 const T = tabsText;
@@ -58,7 +59,7 @@ const PX = 1;
 
 const openEditor = (waitFor) => {
     cy.openApp('', undefined, undefined, waitFor);
-    cy.get('[data-cy="query-manager-toggle-button"]').click();
+    closeQueryPanel();
 };
 const rectOf = (selector) =>
     cy.get(selector).first().then(($el) => {
@@ -77,7 +78,7 @@ describe('Tabs — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Tabs-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 100);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -156,7 +157,7 @@ describe('Tabs — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 950, 100);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);

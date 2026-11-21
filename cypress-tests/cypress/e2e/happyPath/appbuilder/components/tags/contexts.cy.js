@@ -10,6 +10,7 @@ import { tagsText } from "Texts/appBuilder/components/tags";
 import { verifyLayout } from "Support/utils/commonWidget";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 import { expectBadgeTitles } from "Support/utils/appBuilder/components/tags";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = tagsText.defaultWidgetName;
 const T = tagsText;
@@ -21,7 +22,7 @@ describe('Tags — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Tags-contexts-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

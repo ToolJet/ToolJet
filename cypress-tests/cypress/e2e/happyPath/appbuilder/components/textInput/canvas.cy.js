@@ -47,6 +47,7 @@ import {
 } from "Support/utils/appBuilder/components/baseInput";
 import { addTextInputsViaApi, expectClearButtonClearOfText } from "Support/utils/appBuilder/components/textInput";
 import { openAppInViewer, expectLayout } from "Support/utils/appBuilder/components/textArea";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = textInputText;
 const SEL = textInputSelector;
@@ -63,7 +64,7 @@ describe('Text Input — canvas facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-TextInput-Canvas`);
         cy.openApp();
         cy.dragAndDropWidget('Text Input', 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     it('drag-and-drop places the widget', () => {
@@ -121,7 +122,7 @@ describe('Text Input — canvas facet', { testIsolation: false }, () => {
         // add a second widget (toggle panel closed so dragAndDrop re-opens it)
         cy.get('[data-cy="right-sidebar-components-button"]').click();
         cy.dragAndDropWidget('Text Input', 650, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
 
         multiSelectWidgets(['textinput1', 'textinput2']);
         verifySelectedWidgetCount(2);

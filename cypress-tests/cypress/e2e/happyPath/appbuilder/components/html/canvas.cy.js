@@ -40,6 +40,7 @@ import {
 import { openLinkAppInViewer } from "Support/utils/appBuilder/components/link";
 import { resolveCssVarColor } from "Support/utils/appBuilder/components/baseInput";
 import { addHtmlWidgetsViaApi, htmlMetrics } from "Support/utils/appBuilder/components/html";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = htmlText.defaultWidgetName;
 const T = htmlText;
@@ -70,7 +71,7 @@ describe('HTML Viewer — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Html-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -135,7 +136,7 @@ describe('HTML Viewer — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 900, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);

@@ -25,6 +25,7 @@ import {
 } from "Support/utils/appBuilder/components/baseInput";
 import { addTextInputsViaApi } from "Support/utils/appBuilder/components/textInput";
 import { openAppInViewer } from "Support/utils/appBuilder/components/textArea";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // Contexts facet — the checkbox across device + data-binding contexts.
 // testIsolation:false for cypress-real-dnd; each test re-creates its app.
@@ -36,7 +37,7 @@ describe('Text Input — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-TextInput-Contexts`);
         cy.openApp();
         cy.dragAndDropWidget('Text Input', 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     // Device-visibility context matrix: Show on Desktop / Show on Mobile.

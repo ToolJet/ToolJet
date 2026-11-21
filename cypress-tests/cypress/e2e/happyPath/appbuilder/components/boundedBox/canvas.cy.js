@@ -57,6 +57,7 @@ import {
     rectsOverlap,
     relativeBox,
 } from "Support/utils/appBuilder/components/boundedBox";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const PX = 2; // layout tolerance (px)
 const PCT = 1.5; // overlay registration tolerance (% of the image)
@@ -99,7 +100,7 @@ describe('Bounded Box — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-BoundedBox-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

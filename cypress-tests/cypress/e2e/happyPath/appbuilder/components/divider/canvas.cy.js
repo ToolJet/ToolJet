@@ -30,6 +30,7 @@ import {
     undo,
     redo,
 } from "Support/utils/commonWidget";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = dividerText.defaultWidgetName;
 const T = dividerText;
@@ -43,7 +44,7 @@ describe('Horizontal Divider — canvas facet', { testIsolation: false }, () => 
         cy.apiCreateApp(`${fake.companyName}-Divider-canvas-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {
@@ -111,7 +112,7 @@ describe('Horizontal Divider — canvas facet', { testIsolation: false }, () => 
     it('multi-select then select-all', () => {
         cy.get('[data-cy="right-sidebar-components-button"]').click();
         cy.dragAndDropWidget(T.displayName, 650, 300);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
 
         multiSelectWidgets([W, `${PREFIX}2`]);
         verifySelectedWidgetCount(2);

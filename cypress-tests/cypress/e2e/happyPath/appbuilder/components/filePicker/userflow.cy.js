@@ -23,6 +23,7 @@ import {
     dragLeave,
     pickerMetrics,
 } from "Support/utils/appBuilder/components/filePicker";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = filePickerText;
 const FP = "fp";
@@ -147,7 +148,7 @@ describe("File Picker — userflow facet", { testIsolation: false }, () => {
     it("[FilePicker-BRW-001] Real drag-and-drop on the editor canvas selects the files and leaves the canvas unchanged", () => {
         const images = pickerFiles(2, "canvas"); // dynamic
         cy.openApp("", undefined, undefined, SEL.dropzone(FP));
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
         cy.get(`[data-cy^="draggable-widget-"]`).its("length").as("widgetCount");
 
         dragFilesOver(FP, images.slice(0, 1));

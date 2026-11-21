@@ -10,6 +10,7 @@ import { textAreaSelector } from "Selectors/appBuilder/components/textArea";
 import { textAreaText } from "Texts/appBuilder/components/textArea";
 import { verifyLayout } from "Support/utils/commonWidget";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = textAreaText.defaultWidgetName;
 const T = textAreaText;
@@ -21,7 +22,7 @@ describe('Text Area — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-TextArea-contexts-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

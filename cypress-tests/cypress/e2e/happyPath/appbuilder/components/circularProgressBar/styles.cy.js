@@ -27,6 +27,7 @@ import {
     expectDiscInsideBox,
     rootShadowClip,
 } from "Support/utils/appBuilder/components/circularProgressBar";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = circularProgressBarText;
 const PX = 0.75; // sub-pixel layout tolerance
@@ -130,7 +131,7 @@ describe('Circular Progressbar — styles facet', { testIsolation: false }, () =
         const W = T.defaultWidgetName;
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
         cpbBoxes(W, (b) => expectCircleFits(b, 'default'));
 
         openEditorSidebar(W);

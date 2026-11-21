@@ -46,6 +46,7 @@ import {
     readCalendarBoxes,
 } from "Support/utils/appBuilder/components/calendar";
 import { pinBrowserTimezone, openDateAppInViewer } from "Support/utils/appBuilder/components/dateTimeCommon";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const PX = 1.5; // sub-pixel / border tolerance
 
@@ -67,7 +68,7 @@ describe('Calendar — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-Calendar-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 300, 100);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -131,7 +132,7 @@ describe('Calendar — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 300, 750);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);

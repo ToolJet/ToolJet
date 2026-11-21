@@ -55,6 +55,7 @@ import {
     expectVerticallyCentred,
     expectCountryMenuGeometry,
 } from "Support/utils/appBuilder/components/phoneInput";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = phoneInputText.defaultWidgetName;
 const PREFIX = phoneInputText.widgetPrefix;
@@ -72,7 +73,7 @@ describe('Phone Input — canvas facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-PhoneInput-canvas-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {
@@ -133,7 +134,7 @@ describe('Phone Input — canvas facet', { testIsolation: false }, () => {
     it('multi-select then select-all', () => {
         cy.get('[data-cy="right-sidebar-components-button"]').click();
         cy.dragAndDropWidget(T.displayName, 650, 300);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
 
         multiSelectWidgets([W, `${PREFIX}2`]);
         verifySelectedWidgetCount(2);

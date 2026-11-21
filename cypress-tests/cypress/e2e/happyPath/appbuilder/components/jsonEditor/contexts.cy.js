@@ -29,6 +29,7 @@ import {
     typeIntoJsonEditor,
     hoverTwice,
 } from "Support/utils/appBuilder/components/jsonEditor";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = jsonEditorText;
 const W = T.defaultWidgetName;
@@ -44,7 +45,7 @@ describe('JSON Editor — contexts facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-JSONEditor-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

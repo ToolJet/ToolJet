@@ -29,6 +29,7 @@ import {
     undo,
     redo,
 } from "Support/utils/commonWidget";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // testIsolation:false for cypress-real-dnd (its CDP client is cached per spec run);
 // each test re-creates its own app in beforeEach.
@@ -41,7 +42,7 @@ describe('Button — canvas facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Button-canvas-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(buttonText.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     it('drag-and-drop places the widget', () => {
@@ -98,7 +99,7 @@ describe('Button — canvas facet', { testIsolation: false }, () => {
     it('multi-select then select-all', () => {
         cy.get('[data-cy="right-sidebar-components-button"]').click();
         cy.dragAndDropWidget(buttonText.displayName, 650, 300);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
 
         multiSelectWidgets([W, `${PREFIX}2`]);
         verifySelectedWidgetCount(2);

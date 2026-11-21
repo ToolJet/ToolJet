@@ -21,6 +21,7 @@ import { switchLayout } from "Support/utils/appBuilder/layout";
 import { releaseAndMakePublic } from "Support/utils/appBuilder/components/baseInput";
 import { openDividerAppInViewer, dividerBoxes } from "Support/utils/appBuilder/components/divider";
 import { addVerticalDividersViaApi, expectCenteredLine } from "Support/utils/appBuilder/components/verticalDivider";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = verticalDividerText.defaultWidgetName;
 const T = verticalDividerText;
@@ -80,7 +81,7 @@ describe('Vertical Divider — contexts facet', { testIsolation: false }, () => 
             cy.apiCreateApp(`${fake.companyName}-VerticalDivider-contexts-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {

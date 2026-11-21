@@ -9,6 +9,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { phoneInputText } from "Texts/appBuilder/components/phoneInput";
 import { verifyLayout } from "Support/utils/commonWidget";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = phoneInputText.defaultWidgetName;
 const T = phoneInputText;
@@ -20,7 +21,7 @@ describe('Phone Input — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-PhoneInput-contexts-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

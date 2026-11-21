@@ -13,6 +13,7 @@ import { richTextEditorText } from "Texts/appBuilder/components/richTextEditor";
 import { verifyLayout } from "Support/utils/commonWidget";
 import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 import { focusEditor } from "Support/utils/appBuilder/components/richTextEditor";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const W = richTextEditorText.defaultWidgetName;
 const T = richTextEditorText;
@@ -25,7 +26,7 @@ describe('Text Editor — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-RichTextEditor-contexts-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget(T.displayName, 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     afterEach(() => {

@@ -42,6 +42,7 @@ import {
     readExplorerMetrics,
     toggleNode,
 } from "Support/utils/appBuilder/components/jsonExplorer";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 const T = jsonExplorerText;
 const W = T.defaultWidgetName;
@@ -65,7 +66,7 @@ describe('JSON Explorer — canvas facet', { testIsolation: false }, () => {
             cy.apiCreateApp(`${fake.companyName}-JSONExplorer-canvas-${Cypress._.uniqueId()}`);
             cy.openApp();
             cy.dragAndDropWidget(T.displayName, 400, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
         });
 
         afterEach(() => {
@@ -136,7 +137,7 @@ describe('JSON Explorer — canvas facet', { testIsolation: false }, () => {
         it('multi-select then select-all', () => {
             cy.get('[data-cy="right-sidebar-components-button"]').click();
             cy.dragAndDropWidget(T.displayName, 900, 200);
-            cy.get('[data-cy="query-manager-toggle-button"]').click();
+            closeQueryPanel();
 
             multiSelectWidgets([W, `${PREFIX}2`]);
             verifySelectedWidgetCount(2);
