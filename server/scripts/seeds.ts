@@ -38,6 +38,16 @@ function getSeedConfig() {
     firstName: process.env.SEED_FIRST_NAME || SEED_DEFAULTS.firstName,
     lastName: process.env.SEED_LAST_NAME || SEED_DEFAULTS.lastName,
     workspaceName: process.env.SEED_WORKSPACE || SEED_DEFAULTS.workspaceName,
+    // The seeded organization is the default workspace and CE refuses signups
+    // against a workspace whose `enable_sign_up` column is false
+    // (src/modules/onboarding/service.ts). The login page decides whether to
+    // offer the "Create an account" link from the instance level ENABLE_SIGNUP
+    // setting, which is derived from DISABLE_SIGNUPS
+    // (src/modules/login-configs/util.service.ts and the
+    // AddEnableSignUpInInstanceSettings migration). Deriving the workspace flag
+    // from the same value keeps both in sync - otherwise the UI offers
+    // registration while every signup request is rejected with 403.
+    enableSignUp: getEnvVars().DISABLE_SIGNUPS !== 'true',
   };
 }
 
@@ -97,6 +107,7 @@ async function bootstrap() {
       name: config.workspaceName,
       slug: config.workspaceName.toLowerCase().replace(/\s+/g, '-'),
       isDefault: true,
+      enableSignUp: config.enableSignUp,
       ssoConfigs: [
         {
           enabled: true,
