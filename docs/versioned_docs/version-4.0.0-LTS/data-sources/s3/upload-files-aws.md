@@ -118,5 +118,4 @@ Click on the widget handle to edit the file picker properties:
  To accept any/all file type(s), set `Accept file types` to an empty value.
 :::
 
-<img className="screenshot-full img-full" src="/img/how-to/upload-files-aws/filepicker-property
-.png" alt="AWS S3" />
+<img className="screenshot-full img-full" src="/img/how-to/upload-files-aws/filepicker-property.png" alt="AWS S3" />
