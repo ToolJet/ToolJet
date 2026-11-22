@@ -203,13 +203,7 @@ Set `DISABLE_SIGNUPS=true` to allow only invited users to sign up. The signup pa
 
 ToolJet sends emails via SMTP.
 
-:::info
-If you have upgraded from a version prior to v2.62.0, the SMTP variables in your .env file will automatically be mapped to the UI. For versions v2.62.0 and later, SMTP configuration will no longer be picked up from the .env file for Enterprise Edition. You must configure SMTP through the UI. You can safely remove these variables from your .env file after ensuring that the configuration is properly set up in the UI.
-:::
-
-For **Enterprise Edition**, configure SMTP in the ToolJet Settings UI.
-
-For **Community Edition**, use these environment variables:
+A super admin configures SMTP under **Settings > Email protocol (SMTP)**. To read the values from the environment instead, set the variables below and turn on **Apply configuration from environment variables** there. On a new installation that already has these variables, the toggle is on by default. For the full steps, see [Setting Up Outgoing Emails (SMTP)](/docs/tj-setup/smtp-setup/configuration).
 
 - `DEFAULT_FROM_EMAIL`: Sender email address
 - `SMTP_USERNAME`: SMTP username

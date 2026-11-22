@@ -7,7 +7,7 @@ slug: /setup/system-requirements/
 This document covers all the system requirements for self-hosting ToolJet.
 
 :::info
-The official Docker tag for the Enterprise Edition is tooljet/tooljet:ee-lts-latest.
+The official Docker image is `tooljet/tooljet:ee-lts-latest`.
 :::
 
 ## Operating Systems

@@ -7,10 +7,6 @@ title: Python
 
 ToolJet workflows let you install **Python packages** from [PyPI](https://pypi.org/) so that every Python node in the workflow can use them. Packages are installed once per workflow version and available across all Python nodes.
 
-:::info
-External library support for workflows is available on **Enterprise Edition** plans.
-:::
-
 ## Adding Packages
 
 1. Open your workflow in the editor.
@@ -113,7 +109,6 @@ Deploy ToolJet in **worker mode** on a platform that supports privileged contain
 <!-- 
 ## Limitations
 
-- **Enterprise only** — package management is not available in the Community Edition.
 - **PyPI packages only** — packages must be published to the [Python Package Index](https://pypi.org/).
 - **Bundle per workflow version** — each workflow version maintains its own independent set of dependencies.
 - **Prebuilt wheels only** — packages that require C/C++ compilation during installation may not be supported. Pure Python packages and packages with prebuilt manylinux/musllinux wheels work.

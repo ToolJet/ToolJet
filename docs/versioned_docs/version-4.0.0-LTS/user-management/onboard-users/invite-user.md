@@ -14,7 +14,7 @@ Role Required: **Admin** <br/>
 2. Go to **Workspace settings > Users**. <br/> 
     (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
-3. Click on the **Add user** button. On the Community Edition, the button is labeled **Add users**.
+3. Click on the **Add user** button.
     <img className="screenshot-full img-full" src="/img/user-management/onboard-user/bulk-invite/users-page-buttons.png" alt="Add user button on the Users page" />
 
 4. Fill out the following details:

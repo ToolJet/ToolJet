@@ -5,10 +5,6 @@ title: Bulk Upload Users
 
 Admins can add users to a workspace, or update existing users, in bulk by uploading a CSV file. Each row holds a user's email address, **[role](/docs/user-management/role-based-access/user-roles)**, **[custom groups](/docs/user-management/role-based-access/custom-groups)**, **[metadata](/docs/user-management/onboard-users/user-metadata)** and status. New users receive an email with instructions to join the workspace.
 
-:::info
-This page describes the **Bulk upload users** flow available on the Enterprise Edition. On the Community Edition, you can only add new users from a CSV file. See [Community Edition](#community-edition).
-:::
-
 ## Bulk Upload Users
 
 <PlanBadge type="enterprise" />
@@ -89,24 +85,6 @@ ToolJet applies the whole file at once. If any row has an error, no users are ad
 - **Admins**: The workspace must keep at least one active admin, and you can't archive yourself.
 - **License**: If the file needs more user, Builder/Admin or End User seats than your plan has left, the upload is rejected.
 - **Email restrictions**: Users whose email domain isn't allowed in the workspace, or whose account is suspended, can't be added. A user who is archived across the instance can only be activated by a super admin.
-
-## Community Edition
-
-On the Community Edition, you can add new users from a CSV file. Existing users can't be updated this way.
-
-1. Go to **Workspace settings > Users** and click on the **Add users** button.
-2. Switch to the **Upload CSV file** tab and download the template.
-3. Fill in the following columns:
-
-    | Column | Required/Optional | Example |
-    |:-----|:---------|:-------|
-    | First Name | Either first or last name is required. | John |
-    | Last Name | Either first or last name is required. | Doe |
-    | Email | Required | john@corp.com |
-    | User Role | Required | Admin |
-    | Group | Optional. Separate multiple groups with `\|`. | Manager |
-
-4. Upload the file (up to 1 MB) and click **Upload users**.
 
 ## Email Invitation
 
