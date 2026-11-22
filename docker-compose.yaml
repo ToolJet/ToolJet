@@ -10,6 +10,12 @@ services:
     platform: linux/x86_64
     volumes:
       - ./plugins:/app/plugins
+      # The bind mount above shadows the node_modules installed into the image by
+      # docker/plugins.Dockerfile.dev, so `tsc` is not on the PATH and the container
+      # exits with 127 (sh: 1: tsc: not found). Keep the dependencies in a named
+      # volume that the plugins, client and server services share - they all mount
+      # ./plugins and need the same dependencies to resolve @tooljet/plugins.
+      - plugins_node_modules:/app/plugins/node_modules
     command: npm run --prefix plugins start
 
   client:
@@ -19,11 +25,14 @@ services:
     image: tooljet-client:development
     container_name: client
     platform: linux/x86_64
+    depends_on:
+      - plugins
     volumes:
       - ./frontend:/app/frontend:delegated
       - ./packages:/app/packages
       - ./plugins:/app/plugins
       - /app/frontend/node_modules/
+      - plugins_node_modules:/app/plugins/node_modules
     ports:
       - 8082:8082
     environment:
@@ -43,11 +52,13 @@ services:
       - postgres
       - redis
       - postgrest
+      - plugins
     volumes:
       - ./server:/app/server:delegated
       - ./packages:/app/packages
       - ./plugins:/app/plugins
       - /app/server/node_modules/
+      - plugins_node_modules:/app/plugins/node_modules
       - ./.env:/app/.env
       - ./.env.test:/app/.env.test
     ports:
@@ -103,3 +114,4 @@ services:
 volumes:
   postgres:
   redis:
+  plugins_node_modules:
