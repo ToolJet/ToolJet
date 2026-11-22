@@ -66,7 +66,7 @@ The end-to-end flow is shown below. Steps with a `$` are CLI commands you run in
 
 ```mermaid
 flowchart TD
-  A["Create a personal access token<br/>(Profile settings in ToolJet)"] --> B["Sign in to the CLI<br/>$ tooljet login"]
+  A["Create a personal access token<br/>(Workspace settings in ToolJet)"] --> B["Sign in to the CLI<br/>$ tooljet login"]
   B --> C["Create a library<br/>$ tooljet library init my-components"]
   C --> D["Write React components<br/>using the SDK hooks"]
   D --> E{"Ready to<br/>release?"}

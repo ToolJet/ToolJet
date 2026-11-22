@@ -22,13 +22,12 @@ The ToolJet CLI signs in with a personal access token, not a password. This guid
 
 ## Create a Personal Access Token
 
-Personal access tokens are in **Profile settings** → **Personal access tokens**.
+Personal access tokens are in **Workspace settings** → **Personal access token**. A token belongs to the workspace it is created in.
 
-1. Open your profile settings and find the **Personal access tokens** card.
-2. Click **Create new token**. Only admins and builders can create tokens. The button is disabled for other roles.
+1. Open the workspace the token should act on, then go to **Workspace settings** → **Personal access token**.
+2. Click **Create new token**. Admins and builders can create tokens by default. An admin can change this with the **Personal access token** → **Create** permission on a group. Users without it don't see the button.
 3. Fill in the fields:
    - **Token name**: A name you will recognize later, for example "macbook-cli". Required.
-   - **Workspace**: The workspace this token can act on. It defaults to your current workspace. The dropdown lists every workspace where you are an active member.
    - **Expiration**: The date the token expires. The earliest date you can pick is tomorrow. You can't create a token that never expires from the UI.
 4. Click **Create token**.
 
@@ -43,7 +42,7 @@ If you lose a token, you can't view it again. Revoke it and create a new one.
 
 ### Manage Tokens
 
-The token list shows each token's **Name**, **Workspace**, **Last used** time (or "Never used"), and a **Revoke** button. An expired token shows an **Expired** label in place of the last-used time.
+The token list shows each token's **Name**, **Last used** time (or "Never used"), **Created at** date, **Expiry date**, and a **Revoke** button. An expired token shows an **Expired** label in place of its expiry date. You can revoke your own tokens. Admins, and users with the **Personal access token** → **Revoke** group permission, can revoke any token in the workspace.
 
 :::warning
 Revoking a token takes effect immediately and can't be undone. Any CLI session or CI pipeline using that token stops working right away.

@@ -20,11 +20,11 @@ ToolJet MCP supports two ways to connect. With either one, the agent works in a 
 | | OAuth | Personal access token (PAT) |
 |:--|:--|:--|
 | **Available on** | ToolJet Cloud | ToolJet Cloud and self-hosted |
-| **How you authenticate** | Sign in to your workspace in the browser, with password or SSO, and approve access | Create a token in **Profile settings** and add it to your client's environment or configuration |
+| **How you authenticate** | Sign in to your workspace in the browser, with password or SSO, and approve access | Create a token in **Workspace settings** and add it to your client's environment or configuration |
 | **Where the MCP server runs** | Hosted by ToolJet, so there's nothing to install or run locally | On your machine, which needs Node.js 20 or newer |
 | **App-builder skill** | Installed separately, as the `tooljet-app-builder-skills` plugin | Included in the `tooljet-app-builder` plugin |
 | **How long access lasts** | 30 days, or until the client goes unused for 7 days. Then you reconnect from your client | Until the token expires or you revoke it |
-| **Where you revoke access** | **Profile settings > Connected AI clients** | **Profile settings > Personal access tokens** |
+| **Where you revoke access** | **Profile settings > Connected AI clients** | **Workspace settings > Personal access token** |
 
 **Which one should you use?**
 

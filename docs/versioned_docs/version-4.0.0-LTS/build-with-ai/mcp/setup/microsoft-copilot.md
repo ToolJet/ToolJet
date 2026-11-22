@@ -23,10 +23,10 @@ A token only works in the workspace it was created in, and every tool call runs 
 ## Step 1: Create a Personal Access Token
 
 1. In ToolJet, open the workspace you want the agent to work in.
-2. Go to **Profile settings > Personal access tokens** and click **Create new token**.
+2. Go to **Workspace settings > Personal access token** and click **Create new token**. Enter a **Token name**, pick an **Expiration** date, and click **Create token**.
 3. Copy the token, which begins with `tj_pat_`. ToolJet shows it only once.
 
-<img className="screenshot-full img-full" src="/img/tooljet-ai/mcp/pat.png" alt="Personal access tokens in Profile settings" />
+<!-- TODO screenshot: the Personal access tokens list in Workspace settings with the Create new token button (the old pat.png shows Profile settings) -->
 
 ## Step 2: Add ToolJet MCP to Your Agent
 
