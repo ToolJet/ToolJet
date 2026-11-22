@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { User } from '@entities/user.entity';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
+import { DefaultDataSourceKinds } from '@modules/data-sources/constants';
+import { DefaultDataSourceKind } from '@modules/data-sources/types';
 import { DataSource } from '@entities/data_source.entity';
 import { TransactionLogger } from '@modules/logging/service';
 
@@ -39,6 +41,13 @@ export class ValidateQuerySourceGuard implements CanActivate {
 
       if (id) {
         dataSource = await this.dataSourceRepository.findByQuery(id, user.organizationId, dataSourceId);
+      } else if (DefaultDataSourceKinds.includes(dataSourceId as DefaultDataSourceKind)) {
+        // The built-in sources (runjs, runpy, restapi, tooljetdb, workflows) are addressed
+        // by their kind in the route, not by the uuid of the data source row.
+        dataSource = await this.dataSourceRepository.findStaticDataSourceByKind(
+          user.organizationId,
+          dataSourceId as DefaultDataSourceKind
+        );
       } else {
         dataSource = await this.dataSourceRepository.findById(dataSourceId, user.organizationId);
       }

@@ -381,6 +381,17 @@ export class DataSourcesRepository extends Repository<DataSource> {
     return m.findOneOrFail(DataSource, { where: { organizationId, type: DataSourceTypes.STATIC, kind } });
   }
 
+  // Same lookup as getStaticDataSourceByKind, but returns null instead of throwing
+  // when the workspace has no built-in source of that kind.
+  async findStaticDataSourceByKind(
+    organizationId: string,
+    kind: DefaultDataSourceKind,
+    manager?: EntityManager
+  ): Promise<DataSource> {
+    const m = manager ?? this.manager;
+    return m.findOne(DataSource, { where: { organizationId, type: DataSourceTypes.STATIC, kind } });
+  }
+
   findByQuery(dataQueryId: string, organizationId: string, dataSourceId?: string, manager?: EntityManager) {
     const m = manager ?? this.manager;
     return m.findOne(DataSource, {
