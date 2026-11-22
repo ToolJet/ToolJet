@@ -7,9 +7,15 @@ import { SSOType, ConfigScope } from '@entities/sso_config.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GroupUsers } from '@entities/group_users.entity';
 import { Metadata } from '@entities/metadata.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
+import { DataSource as TooljetDataSource } from '@entities/data_source.entity';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { seedOrgEnvironmentsAndDefaultBranch } from '@helpers/utils.helper';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { DEFAULT_GROUP_PERMISSIONS } from '@modules/group-permissions/constants';
+import { DataSourceScopes, DataSourceTypes, DefaultDataSourceKinds } from '@modules/data-sources/constants';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { getEnvVars } from './database-config-utils';
 import {
   isSQLModeDisabled,
@@ -70,6 +76,68 @@ async function provisionTjdbTenantSchema(organizationId: string, entityManager: 
   }
 }
 
+// The seed creates the Organization row directly instead of going through
+// SetupOrganizationsUtilService.create() (the normal signup/workspace creation
+// path), so the built-in static data sources - restapi, runjs, runpy,
+// tooljetdb and workflows - are never provisioned for the seeded workspace.
+// Without them the workspace cannot resolve those sources at all: the data
+// query guard looks them up by kind and finds nothing.
+// Idempotent, so it can also repair a workspace that was seeded before.
+async function ensureDefaultDataSources(manager: EntityManager, organizationId: string): Promise<void> {
+  const environments = await manager.find(AppEnvironment, { where: { organizationId } });
+  const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, organizationId);
+
+  for (const kind of DefaultDataSourceKinds) {
+    let dataSource = await manager.findOne(TooljetDataSource, {
+      where: { organizationId, kind, type: DataSourceTypes.STATIC },
+    });
+
+    if (!dataSource) {
+      dataSource = await manager.save(
+        manager.create(TooljetDataSource, {
+          name: `${kind}default`,
+          kind,
+          organizationId,
+          type: DataSourceTypes.STATIC,
+          scope: DataSourceScopes.GLOBAL,
+        })
+      );
+    }
+
+    // The canonical data source version lives on the organization default branch.
+    let dataSourceVersion = await manager.findOne(DataSourceVersion, {
+      where: { dataSourceId: dataSource.id, branchId: defaultBranchId },
+    });
+
+    if (!dataSourceVersion) {
+      dataSourceVersion = await manager.save(
+        manager.create(DataSourceVersion, {
+          dataSourceId: dataSource.id,
+          name: dataSource.name,
+          isActive: true,
+          branchId: defaultBranchId,
+        })
+      );
+    }
+
+    for (const environment of environments) {
+      const existingOption = await manager.findOne(DataSourceVersionOptions, {
+        where: { dataSourceVersionId: dataSourceVersion.id, environmentId: environment.id },
+      });
+
+      if (!existingOption) {
+        await manager.save(
+          manager.create(DataSourceVersionOptions, {
+            dataSourceVersionId: dataSourceVersion.id,
+            environmentId: environment.id,
+            options: {},
+          })
+        );
+      }
+    }
+  }
+}
+
 async function bootstrap() {
   const config = getSeedConfig();
 
@@ -86,7 +154,9 @@ async function bootstrap() {
   // Check if already seeded
   const existingUser = await manager.findOne(User, { where: { email: config.email } });
   if (existingUser) {
-    console.log('Database already seeded. Skipping.');
+    // Repair a workspace that was seeded before the built-in data sources were provisioned.
+    await manager.transaction((txManager) => ensureDefaultDataSources(txManager, existingUser.defaultOrganizationId));
+    console.log('Database already seeded. Ensured the built-in data sources exist.');
     await dataSource.destroy();
     process.exit(0);
   }
@@ -138,6 +208,9 @@ async function bootstrap() {
 
     // 4. Create default app environments + default workspace branch
     await seedOrgEnvironmentsAndDefaultBranch(organization.id, txManager);
+
+    // 4.5. Create the built-in static data sources - see ensureDefaultDataSources() for why.
+    await ensureDefaultDataSources(txManager, organization.id);
 
     // 5. Create default permission groups (admin, builder, end_user)
     for (const groupKey of Object.keys(DEFAULT_GROUP_PERMISSIONS)) {
