@@ -34,6 +34,22 @@ describe('useTableDraft', () => {
   });
 
   describe('enablement', () => {
+    it('cannot submit while a column name is a reserved keyword, a duplicate or malformed', () => {
+      const hook = setup();
+      act(() => hook.result.current.setTableName('orders'));
+      const id = addNamed(hook, 'add');
+      expect(hook.result.current.canSubmit).toBe(false);
+
+      act(() => hook.result.current.updateColumn(id, { column_name: 'id' }));
+      expect(hook.result.current.canSubmit).toBe(false);
+
+      act(() => hook.result.current.updateColumn(id, { column_name: 'my column' }));
+      expect(hook.result.current.canSubmit).toBe(false);
+
+      act(() => hook.result.current.updateColumn(id, { column_name: 'title' }));
+      expect(hook.result.current.canSubmit).toBe(true);
+    });
+
     it('submits once the name is valid and every column is named', () => {
       const hook = setup();
       act(() => hook.result.current.setTableName('orders'));

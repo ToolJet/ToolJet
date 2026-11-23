@@ -13,6 +13,7 @@ import {
   isPrimaryKeyLocked,
   toColumnPayload,
 } from './columnRules';
+import { getColumnNameError } from '../ColumnDrawer/columnNameRules';
 import { primaryKeyChange as diffPrimaryKey, toEditPayload as buildEditPayload } from './editTableRules';
 import { isTableNameValid } from './tableNameRules';
 import type { ColumnPayload, DraftColumn, DraftRelation, RelationPayload } from './types';
@@ -227,13 +228,26 @@ export function useTableDraft(existingTableNames: string[] = [], initial?: Table
     [update]
   );
 
+  // What is wrong with each new column's name, by column id. A stored column keeps the name it already has.
+  const columnNameErrors = useMemo(() => {
+    const errors: Record<string, string> = {};
+    for (const column of columns) {
+      if (column.existing) continue;
+      const others = columns.filter((other) => other.id !== column.id).map((other) => other.column_name);
+      const error = getColumnNameError(column.column_name, others);
+      if (error) errors[column.id] = error;
+    }
+    return errors;
+  }, [columns]);
+
   const canSubmit = useMemo(
     () =>
       isTableNameValid(tableName, existingTableNames) &&
       columns.some((column) => column.constraints_type.is_primary_key) &&
       columns.every((column) => column.column_name.trim() !== '' && column.data_type !== null) &&
+      Object.keys(columnNameErrors).length === 0 &&
       Object.keys(invalidDefaults).length === 0,
-    [tableName, columns, invalidDefaults, existingTableNames]
+    [tableName, columns, columnNameErrors, invalidDefaults, existingTableNames]
   );
 
   const isDirty = useMemo(
@@ -258,6 +272,7 @@ export function useTableDraft(existingTableNames: string[] = [], initial?: Table
     tableName,
     columns,
     relations,
+    columnNameErrors,
     canSubmit,
     isDirty,
     setTableName,

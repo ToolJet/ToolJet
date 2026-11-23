@@ -67,6 +67,7 @@ export function SchemaColumnRow({ column, columns, draft, reorderable = true }: 
     disabled: pinned || !reorderable,
   });
   const { is_primary_key: isPrimaryKey, is_not_null: isNotNull, is_unique: isUnique } = column.constraints_type;
+  const nameError = draft.columnNameErrors[column.id];
   const typeLocked = !!column.existing;
   const notNullFixed = isPrimaryKey || column.data_type === 'serial';
   const uniqueFixed = isPrimaryKey || !canBeUnique(column.data_type);
@@ -113,10 +114,20 @@ export function SchemaColumnRow({ column, columns, draft, reorderable = true }: 
           value={column.column_name}
           placeholder="column_name"
           aria-label="Column name"
+          aria-invalid={nameError ? true : undefined}
           className={`${field} focus-visible:tw-border-2 focus-visible:tw-border-interactive-focus-outline focus-visible:tw-ring-0`}
           onChange={(event) => draft.updateColumn(column.id, { column_name: event.target.value })}
           data-cy="column-name-input-field"
         />
+        {nameError && (
+          <p
+            role="alert"
+            className="tw-m-0 tw-mt-1 tw-font-body-default tw-text-text-danger"
+            data-cy="column-name-error"
+          >
+            {nameError}
+          </p>
+        )}
       </div>
       <div className="tw-pr-2" title={typeLocked ? typeLockedReason(column) : undefined}>
         <TypeSelect

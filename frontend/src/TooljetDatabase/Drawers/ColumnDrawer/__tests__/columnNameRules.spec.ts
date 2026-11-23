@@ -50,4 +50,16 @@ describe('columnNameRules', () => {
       expect(getColumnNameError('id!', ['id!'])).toBe('Column name can only contain letters, numbers and underscores');
     });
   });
+
+  describe('a reserved keyword', () => {
+    it.each(['abort', 'ADD', 'Default', 'delete', 'from'])('is refused: %s', (name) => {
+      expect(getColumnNameError(name)).toBe('Column name cannot be a reserved keyword');
+      expect(isColumnNameValid(name)).toBe(false);
+    });
+
+    it('is refused as a whole word only', () => {
+      expect(getColumnNameError('added')).toBeNull();
+      expect(getColumnNameError('default_value')).toBeNull();
+    });
+  });
 });
