@@ -187,6 +187,11 @@ const pickerSlots = (p: {
     onBlur: () => p.check.touch(),
     ...checkProps(p.check, p.helperText),
   },
+  // A small field gets a small calendar/clock button: the medium one (40px) held a standard field at its 32px
+  // adornment height, so Size small changed nothing there (MU-32).
+  ...(p.look.size === 'small'
+    ? { openPickerButton: { size: 'small' as const }, openPickerIcon: { fontSize: 'small' as const } }
+    : {}),
 });
 
 // MUI X's DatePicker: label, value (YYYY-MM-DD; MUI holds a date object, ToolJet the ISO date), format (the field's
@@ -404,6 +409,9 @@ export const TimePicker = () => {
         value={time}
         ampm={ampm}
         minutesStep={Math.max(1, Number(minutesStep) || 1)}
+        // The clock lists the minutes by this step too, as the Date Time Picker's does: MUI's default is 5, so step 1
+        // left 07 out and step 15 greyed out the rest (MU-25).
+        timeSteps={{ minutes: Math.max(1, Number(minutesStep) || 1) }}
         minTime={minT ?? undefined}
         maxTime={maxT ?? undefined}
         disabled={disabled}

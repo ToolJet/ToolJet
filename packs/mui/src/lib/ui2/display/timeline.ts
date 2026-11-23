@@ -3,6 +3,21 @@
 
 import { formatDatePattern, isRecord, isScalar, toDay } from './lists/model';
 
+// A palette colour by its theme path (success.main, text.secondary), which MUI's sx reads from the theme.
+const PALETTE_PATH = /^(primary|secondary|error|warning|info|success|grey|text|action|common|background)\.\w+$/;
+
+/** A colour a dot can be drawn in: a palette path or any CSS colour. Text that is neither ('notacolor') drew no dot at
+ *  all, as MUI's sx passes it through and the browser drops it (MU-26). */
+export const usableColor = (value: unknown): string | undefined => {
+  if (!isScalar(value)) return undefined;
+  const v = String(value).trim();
+  if (!v) return undefined;
+  if (PALETTE_PATH.test(v) || typeof document === 'undefined') return v;
+  const probe = document.createElement('span').style;
+  probe.color = v;
+  return probe.color ? v : undefined;
+};
+
 export interface TimelineItem extends Record<string, unknown> {
   key: string;
   index: number;
@@ -67,13 +82,14 @@ const STATUS_PALETTE: Record<string, string> = {
   rejected: 'error.main',
 };
 
-/** A status's colour: the author's statusColors entry (exact word, then lowercase), else its palette colour. */
+/** A status's colour: the author's statusColors entry (exact word, then lowercase) when it is a colour, else its
+ *  palette colour. */
 export const statusColor = (status: unknown, colors: unknown): string | undefined => {
   if (!isScalar(status) || String(status).trim() === '') return undefined;
   const word = String(status).trim();
   if (isRecord(colors)) {
-    const mine = colors[word] ?? colors[word.toLowerCase()];
-    if (isScalar(mine) && String(mine) !== '') return String(mine);
+    const mine = usableColor(colors[word] ?? colors[word.toLowerCase()]);
+    if (mine) return mine;
   }
   const lower = word.toLowerCase();
   return Object.prototype.hasOwnProperty.call(STATUS_PALETTE, lower) ? STATUS_PALETTE[lower] : undefined;

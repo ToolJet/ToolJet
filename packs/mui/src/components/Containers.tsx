@@ -25,6 +25,7 @@ import {
 import { alpha, type Theme } from '@mui/material/styles';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
+import { useEnumeration } from '../lib/enumeration';
 import { MuiProvider, usePopupContainer, useThemeStyles } from '../lib/MuiProvider';
 import { PALETTE_COLORS } from '../lib/field';
 import {
@@ -311,13 +312,15 @@ export const Dialog = () => {
     description: 'Empty for no cancel button.',
     initialValue: 'Cancel',
   });
-  const [confirmColor] = ToolJet.useStateEnumeration({
+  // An unknown Confirm colour or Max width reads as the default: MUI drew a transparent Confirm button and a dialog
+  // as wide as the window (MU-33).
+  const [confirmColor] = useEnumeration({
     name: 'confirmColor',
     label: 'Confirm color',
     enumDefinition: PALETTE_COLORS,
     initialValue: 'primary',
   });
-  const [maxWidth] = ToolJet.useStateEnumeration({
+  const [maxWidth] = useEnumeration({
     name: 'maxWidth',
     label: 'Max width',
     enumDefinition: ['xs', 'sm', 'md', 'lg', 'xl'],

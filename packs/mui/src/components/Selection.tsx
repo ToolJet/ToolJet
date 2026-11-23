@@ -467,7 +467,11 @@ export const ToggleButtonGroup = () => {
           : { justifyContent: alignment === 'right' ? 'flex-end' : alignment === 'center' ? 'center' : 'flex-start' }
       }
     >
-      <Loading loading={loading} look={<Spinner />} className={fullWidth ? 'tj-mui-loading--wide' : undefined}>
+      <Loading
+        loading={loading}
+        look={<Spinner />}
+        className={fullWidth ? 'tj-mui-loading--wide' : 'tj-mui-loading--scroll-x'}
+      >
         <MuiToggleButtonGroup
           exclusive={exclusive}
           value={current}
@@ -484,7 +488,13 @@ export const ToggleButtonGroup = () => {
           }}
         >
           {options.map((o) => (
-            <ToggleButton key={o.key} value={o.value} disabled={o.disabled}>
+            // Each button keeps its label's width (shrunk, the labels broke onto two lines); the row scrolls instead.
+            <ToggleButton
+              key={o.key}
+              value={o.value}
+              disabled={o.disabled}
+              sx={fullWidth ? undefined : { flexShrink: 0, whiteSpace: 'nowrap' }}
+            >
               {o.label}
             </ToggleButton>
           ))}

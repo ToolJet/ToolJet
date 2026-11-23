@@ -1,9 +1,13 @@
-import { fireEvent } from '@testing-library/react';
+import { fireEvent, renderHook, waitFor } from '@testing-library/react';
 import { installBrowserStubs } from './fuzz/packTestEnv';
 import { mountPack, settle } from './packMount';
 import { hostValidation } from './fuzz/hostValidation';
 import { useHostValidation } from '@/AppBuilder/Widgets/LibraryComponent/usePackHost';
 import { acceptedTypes, toPropertyType } from '@/AppBuilder/Widgets/LibraryComponent/packPropertyTypes';
+import { statusColor, usableColor } from '../../../../../../packs/mui/src/lib/ui2/display/timeline';
+import { pieLegendPlace } from '../../../../../../packs/mui/src/lib/chartLegend';
+import { fixedOrigin } from '../../../../../../packs/mui/src/lib/theme';
+import { dropPointAt, useTouchDragRef } from '../../../../../../packs/mui/src/lib/ui2/display/kanban/touchDrag';
 
 installBrowserStubs();
 
@@ -754,5 +758,228 @@ describe('MU-37 / MU-38 Linear Progress', () => {
     const v = await mountPack('mui', 'LinearProgress', { variant: 'buffer', value: 30, valueBuffer });
     await settle();
     expect(bufferShift(v)).toBe(transform);
+  });
+});
+
+// Every match under the document, shadow roots included (the popup layer is in its own shadow root).
+const deepAll = (selector, root = document) => {
+  const found = [...root.querySelectorAll(selector)];
+  for (const el of root.querySelectorAll('*')) if (el.shadowRoot) found.push(...deepAll(selector, el.shadowRoot));
+  return found;
+};
+
+describe('MU-25 Time Picker: Minutes step sets the minute list', () => {
+  // A desktop pointer, so the picker opens its digital clock (the minute list) as in Chrome, not the mobile dial.
+  beforeEach(() => {
+    jest.spyOn(window, 'matchMedia').mockImplementation((media) => ({
+      matches: /pointer:\s*fine/.test(media),
+      media,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }));
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  test.each([
+    [15, ['00', '15', '30', '45']],
+    [1, Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'))],
+  ])('step %p lists %j', async (minutesStep, expected) => {
+    const v = await mountPack('mui', 'TimePicker', { minutesStep, value: '10:00' });
+    await settle();
+    fireEvent.click(v.root().querySelector('button[aria-label*="hoose"]'));
+    await waitFor(() => expect(deepAll('[role="listbox"][aria-label="Select minutes"]')).toHaveLength(1));
+    const minutes = deepAll('[role="listbox"][aria-label="Select minutes"] [role="option"]');
+    expect(minutes.map((o) => o.textContent)).toEqual(expected);
+  });
+});
+
+describe('MU-26 Timeline: a colour that is not one is ignored', () => {
+  // jsdom gets no Emotion styles from the pack, so the dot colour the Timeline picks is checked here and drawn in Chrome.
+  test.each([
+    ['notacolor', undefined],
+    ['', undefined],
+    ['#ff00ff', '#ff00ff'],
+    ['red', 'red'],
+    ['#ff000080', '#ff000080'],
+    ['success.main', 'success.main'],
+  ])('an item colour %p reads as %p', (color, expected) => {
+    expect(usableColor(color)).toBe(expected);
+  });
+
+  test("Colours by status { done: 'notacolor' } leaves done its own green", () => {
+    expect(statusColor('done', { done: 'notacolor' })).toBe('success.main');
+    expect(statusColor('done', { done: '#123456' })).toBe('#123456');
+    expect(statusColor('shipped', { shipped: 'notacolor' })).toBeUndefined();
+  });
+});
+
+describe('MU-29 Avatar: initials from letters only', () => {
+  test.each([
+    ['😀 Smile', 'S'],
+    ['(Admin) Bob', 'AB'],
+    ['<b>x</b> y', 'BY'],
+    ['1st Place', '1P'],
+  ])('%p gives %p', async (alt, expected) => {
+    const v = await mountPack('mui', 'Avatar', { alt });
+    await settle();
+    expect(v.root().querySelector('.MuiAvatar-root').textContent).toBe(expected);
+  });
+});
+
+describe('MU-32 pickers: Size small gets a small calendar/clock button', () => {
+  test.each(['DatePicker', 'TimePicker', 'DateTimePicker'])('%s', async (name) => {
+    const small = await mountPack('mui', name, {}, { styles: { variant: 'standard', size: 'small' } });
+    await settle();
+    const button = small.root().querySelector('button[aria-label*="hoose"]');
+    expect(button.classList.contains('MuiIconButton-sizeSmall')).toBe(true);
+    small.unmount();
+    const medium = await mountPack('mui', name, {}, { styles: { variant: 'standard', size: 'medium' } });
+    await settle();
+    expect(
+      medium.root().querySelector('button[aria-label*="hoose"]').classList.contains('MuiIconButton-sizeSmall')
+    ).toBe(false);
+  });
+});
+
+describe('MU-33 Dialog: an unknown Confirm colour or Max width falls back', () => {
+  test("'zzz' for both draws a primary Confirm button in a sm dialog", async () => {
+    const v = await mountPack('mui', 'Dialog', { confirmColor: 'zzz', maxWidth: 'zzz' });
+    await settle();
+    await v.run('open');
+    await waitFor(() => expect(deepAll('.MuiDialog-paper')).toHaveLength(1));
+    expect(deepAll('.MuiDialog-paper')[0].classList.contains('MuiDialog-paperWidthSm')).toBe(true);
+    const confirm = deepAll('.MuiDialog-paper button').find((b) => b.textContent === 'Confirm');
+    expect(confirm.classList.contains('MuiButton-colorPrimary')).toBe(true);
+  });
+});
+
+describe('MU-16 Pie Chart: a legend taller than the box goes under the pie', () => {
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  test('12 slices in a 451 by 300 box: under the pie, where it wraps into rows (Chrome: all 12 shown)', () => {
+    expect(pieLegendPlace(451, 300, MONTHS)).toBe('bottom');
+  });
+  test('6 slices still fit at the side', () => {
+    expect(pieLegendPlace(451, 300, MONTHS.slice(0, 6))).toBe('side');
+  });
+});
+
+describe('MU-27 / MU-28 content wider or taller than the box scrolls (layout checked in Chrome)', () => {
+  test('a Toggle Button Group without Full width scrolls its row sideways', async () => {
+    const options = Array.from({ length: 10 }, (_, i) => ({ label: `Option ${i + 1}`, value: `o${i}` }));
+    const v = await mountPack('mui', 'ToggleButtonGroup', { options });
+    await settle();
+    expect(v.root().querySelector('.tj-mui-loading').classList.contains('tj-mui-loading--scroll-x')).toBe(true);
+    await v.update({ props: { options, fullWidth: true } });
+    expect(v.root().querySelector('.tj-mui-loading').classList.contains('tj-mui-loading--scroll-x')).toBe(false);
+  });
+
+  test.each(['Typography', 'TypographyHeading'])('%s scrolls text taller than its box', async (name) => {
+    const v = await mountPack('mui', name, { children: 'A long sentence. '.repeat(20) });
+    await settle();
+    const root = v.root().querySelector('.tj-mui-root');
+    expect(root.classList.contains('tj-mui-scroll')).toBe(true);
+    expect(root.classList.contains('tj-mui--fill')).toBe(true);
+  });
+});
+
+describe('MU-14 / MU-43 Menu and Select menus inside a transformed popup layer (placement checked in Chrome)', () => {
+  // ToolJet's popup layer is a containing block (its transform) 33px down the viewer; MUI places a Popover in window
+  // coordinates, so its root is moved back by the layer's offset.
+  const layer = (style) => {
+    const host = document.createElement('div');
+    Object.assign(host.style, style);
+    host.getBoundingClientRect = () => ({ top: 33, left: 12, right: 0, bottom: 0, width: 0, height: 0 });
+    const overlay = document.createElement('div');
+    host.appendChild(overlay);
+    document.body.appendChild(host);
+    return overlay;
+  };
+
+  test('a layer with a transform is the origin a fixed popup is drawn from', () => {
+    expect(fixedOrigin(layer({ transform: 'translateZ(0)' }))).toEqual({ top: 33, left: 12 });
+  });
+
+  test('without one, the window is', () => {
+    expect(fixedOrigin(layer({}))).toEqual({ top: 0, left: 0 });
+  });
+});
+
+describe('MU-13 Kanban: a custom card is moved with the mouse (the drag itself checked in Chrome)', () => {
+  // A board in a shadow root with one card; the card's components are the host's, slotted in from the light DOM.
+  const board = () => {
+    const host = document.createElement('div');
+    host.innerHTML = '<div slot="row"><span class="text">Alpha</span><input class="field" /></div>';
+    document.body.appendChild(host);
+    const shadow = host.attachShadow({ mode: 'open' });
+    shadow.innerHTML =
+      '<div class="board"><div data-kb-col="todo"><div data-kb-card="c1" draggable="true">' +
+      '<b class="own">own part</b><slot name="row"></slot></div></div><div data-kb-col="done"></div></div>';
+    return { host, shadow, root: shadow.querySelector('.board') };
+  };
+  const pointer = (type, target, x, y, pointerType = 'mouse') => {
+    const e = new MouseEvent(type, { bubbles: true, composed: true, clientX: x, clientY: y, button: 0 });
+    Object.defineProperties(e, {
+      pointerType: { value: pointerType },
+      pointerId: { value: 1 },
+      isPrimary: { value: true },
+    });
+    target.dispatchEvent(e);
+  };
+  const press = (target) => {
+    const options = {
+      current: { enabled: true, onPick: jest.fn(), onOver: jest.fn(), onDrop: jest.fn(), onCancel: jest.fn() },
+    };
+    const { root } = target;
+    const { result } = renderHook(() => useTouchDragRef(options));
+    result.current.current = root;
+    return options.current;
+  };
+
+  test.each([
+    ['its Text', (b) => b.host.querySelector('.text')],
+    ['the row around it (the card corner)', (b) => b.host.querySelector('[slot="row"]')],
+  ])('pressing %s and moving picks the card up and drops it', (_, at) => {
+    const b = board();
+    const o = press(b);
+    pointer('pointerdown', at(b), 10, 10);
+    pointer('pointermove', window, 30, 12);
+    expect(o.onPick).toHaveBeenCalledWith('c1');
+    pointer('pointerup', window, 30, 12);
+    expect(o.onDrop).toHaveBeenCalledWith('c1');
+  });
+
+  test("the card's own parts keep the browser's HTML drag, and a field in the card is the field's", () => {
+    const b = board();
+    const o = press(b);
+    pointer('pointerdown', b.shadow.querySelector('.own'), 10, 10);
+    pointer('pointermove', window, 30, 12);
+    pointer('pointerup', window, 30, 12);
+    pointer('pointerdown', b.host.querySelector('.field'), 10, 10);
+    pointer('pointermove', window, 30, 12);
+    pointer('pointerup', window, 30, 12);
+    expect(o.onPick).not.toHaveBeenCalled();
+  });
+
+  test('a small wobble is a click, not a drag', () => {
+    const b = board();
+    const o = press(b);
+    pointer('pointerdown', b.host.querySelector('.text'), 10, 10);
+    pointer('pointermove', window, 13, 12);
+    pointer('pointerup', window, 13, 12);
+    expect(o.onPick).not.toHaveBeenCalled();
+  });
+
+  test("over another custom card the drop finds that card's column", () => {
+    const b = board();
+    const light = b.host.querySelector('.text');
+    const card = b.shadow.querySelector('[data-kb-card]');
+    b.shadow.elementsFromPoint = () => [light, card, card.parentElement, b.root];
+    const columns = [{ id: 'todo', cards: [{ __key: 'c1' }] }];
+    card.getBoundingClientRect = () => ({ top: 0, height: 100 });
+    expect(dropPointAt(b.root, columns, 5, 80)).toEqual({ columnId: 'todo', before: null });
   });
 });

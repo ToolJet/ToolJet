@@ -43,7 +43,7 @@ import {
   type KeyValueRow,
 } from '../lib/ui2/display/lists/model';
 import { BAR_HEIGHT, percentLabel, progressEntries, progressItem, progressMax } from '../lib/ui2/charts/progressModel';
-import { formatTime, statusColor, timelineItems, type TimelineItem } from '../lib/ui2/display/timeline';
+import { formatTime, statusColor, timelineItems, usableColor, type TimelineItem } from '../lib/ui2/display/timeline';
 import { StatusChip } from './DataGrid';
 import { useWidth } from './CardGrid';
 
@@ -746,7 +746,7 @@ export const Timeline = () => {
             <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }}>
               {list.slice(0, grow.shown).map((item, i, shown) => {
                 const colour =
-                  (isSet(item.color) ? item.color : statusColor(item.status, statusColors)) || 'primary.main';
+                  usableColor(item.color) ?? statusColor(item.status, statusColors) ?? 'primary.main';
                 const glyph = icons && item.icon ? iconOf(iconName(item.icon), 'inherit') : undefined;
                 const time = formatTime(item.time, dateFormat);
                 const last = i === shown.length - 1 && !grow.more;

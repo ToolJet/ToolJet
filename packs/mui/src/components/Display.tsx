@@ -33,6 +33,9 @@ import { LOCALE_HINT } from '../lib/locale';
 import { BlockSkeleton, Loading, Spinner, TextSkeleton } from '../lib/loading';
 import { useFitLayout, useFitSquare, useFitText } from '../lib/fitText';
 import { useValueSetter } from '../lib/sameValue';
+// The lists' initials: the first letter or digit of the first and last word with a letter, so an emoji, a bracket or
+// a tag (😀 Smile, (Admin) Bob) no longer gives half a character or a symbol (MU-29).
+import { initials } from '../lib/ui2/display/lists/model';
 
 const COLORS = ['default', ...PALETTE_COLORS];
 
@@ -353,7 +356,8 @@ export const TypographyHeading = () => {
     defaultHeight: 4,
   });
   return (
-    <MuiProvider overrides={overrides}>
+    // The box's height, scrolling text that wraps past it, as a ToolJet Text does: it ran out of the box (MU-28).
+    <MuiProvider overrides={overrides} fill className="tj-mui-scroll">
       <Loading loading={loading} look={<TextSkeleton variant={t.variant as 'h5'} />}>
         <TypographyView t={t} gutterBottom={gutterBottom} heading />
       </Loading>
@@ -387,7 +391,8 @@ export const Typography = () => {
     defaultHeight: 3,
   });
   return (
-    <MuiProvider overrides={overrides}>
+    // The box's height, scrolling text that wraps past it, as a ToolJet Text does: it ran out of the box (MU-28).
+    <MuiProvider overrides={overrides} fill className="tj-mui-scroll">
       <Loading loading={loading} look={<TextSkeleton variant={t.variant as 'body1'} lines={3} />}>
         <TypographyView t={t} />
       </Loading>
@@ -678,14 +683,6 @@ export const LinearProgress = () => {
     </MuiProvider>
   );
 };
-
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join('');
 
 // MUI's Avatar: src (an image URL), alt (the person's name; its initials show without an image), variant (circular,
 // rounded, square), size in px, color (the initials' background). Event onClick.
