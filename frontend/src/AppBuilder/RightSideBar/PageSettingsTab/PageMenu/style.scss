@@ -55,7 +55,8 @@
     }
 }
 
-.tooltip.page-limit-tooltip .tooltip-inner {
+.tooltip.page-limit-tooltip .tooltip-inner,
+.tooltip.page-paid-tooltip .tooltip-inner {
     max-width: 247px;
 }
 
