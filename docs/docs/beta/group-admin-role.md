@@ -7,5 +7,5 @@ A group admin manages the members of the custom groups they are assigned to, wit
 
 The role is documented with custom groups:
 
-- **[Group Admins](/docs/user-management/role-based-access/custom-groups#group-admins)**: what a group admin can and cannot do, who can be one, and how to assign one.
+- **[Group Admin](/docs/user-management/role-based-access/group-admin)**: what a group admin can and cannot do, who can be one, and how to assign one.
 - **[User Roles](/docs/user-management/role-based-access/user-roles)**: the workspace roles, where access is decided, and what each role gets by default.

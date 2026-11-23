@@ -94,7 +94,7 @@ export const GROUP_ADMIN = {
   plan: 'team',
   description: 'Adds and removes members of the custom groups they are assigned to, without changing permissions.',
   highlights: ['Adds and removes members', 'Reads the group’s permissions', 'Assigned per custom group by an admin'],
-  href: '/docs/user-management/role-based-access/custom-groups#group-admins',
+  href: '/docs/user-management/role-based-access/group-admin',
 };
 
 export const ALL_ROLES = [...ROLES, SUPER_ADMIN, GROUP_ADMIN];
@@ -412,15 +412,12 @@ export const WORKSPACE_ADMIN_VS_GROUP_ADMIN = {
       label: 'Groups and members',
       icon: 'users',
       rows: [
-        { id: 'invite', label: 'Invite new users to the workspace', states: { admin: 'always', 'group-admin': 'never' } },
-        { id: 'change-role', label: "Change a user's role", states: { admin: 'always', 'group-admin': 'never' } },
-        { id: 'manage-groups', label: 'Create, rename, duplicate or delete custom groups', states: { admin: 'always', 'group-admin': 'never' } },
-        { id: 'permissions', label: 'Change the permissions and granular access of a group', states: { admin: 'always', 'group-admin': 'never' } },
+        { id: 'members', label: 'Add or remove existing workspace users in a group', states: { admin: 'always', 'group-admin': { state: 'always', note: 'Assigned groups only' } } },
+        { id: 'read-permissions', label: "View a group's permissions and granular access", states: { admin: 'always', 'group-admin': { state: 'always', note: 'Read-only' } } },
+        { id: 'invite-role', label: 'Invite users or change user roles', states: { admin: 'always', 'group-admin': 'never' } },
+        { id: 'manage-groups', label: 'Create, rename, duplicate or delete groups', states: { admin: 'always', 'group-admin': 'never' } },
+        { id: 'permissions', label: 'Edit permissions and granular access', states: { admin: 'always', 'group-admin': 'never' } },
         { id: 'assign-group-admins', label: 'Assign or remove group admins', states: { admin: 'always', 'group-admin': 'never' } },
-        { id: 'members', label: 'Add and remove members of a custom group', states: { admin: 'always', 'group-admin': { state: 'always', note: 'Assigned groups only' } } },
-        { id: 'read-permissions', label: "Open a group's Permissions and Granular access tabs", states: { admin: 'always', 'group-admin': { state: 'always', note: 'Read-only, assigned groups only' } } },
-        { id: 'see-groups', label: 'See the custom groups of the workspace', states: { admin: 'always', 'group-admin': { state: 'always', note: 'Assigned groups only' } } },
-        { id: 'settings', label: 'Open workspace settings', states: { admin: 'always', 'group-admin': { state: 'always', note: 'Groups only' } } },
       ],
     },
   ],

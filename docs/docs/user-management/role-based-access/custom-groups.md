@@ -3,7 +3,7 @@ id: custom-groups
 title: Custom Groups
 ---
 
-import { ALL_ROLES, LAYERS, EFFECTIVE_ACCESS_EXAMPLE, WORKSPACE_ADMIN_VS_GROUP_ADMIN } from './permissions-data';
+import { ALL_ROLES, LAYERS, EFFECTIVE_ACCESS_EXAMPLE } from './permissions-data';
 
 <PlanBadge type="team" />
 
@@ -89,34 +89,7 @@ Role Required: **Admin** <br/>
 
 ## Group Admins
 
-A group admin manages the members of the custom groups they are assigned to, without being able to change what the group may do. Day-to-day membership stays with team leads while admins keep control of permissions.
-
-<PermissionMatrix
-  roles={WORKSPACE_ADMIN_VS_GROUP_ADMIN.roles}
-  sections={WORKSPACE_ADMIN_VS_GROUP_ADMIN.sections}
-  stateLabels={{ always: 'Yes', never: 'No' }}
-  legend={false}
-  firstColumn="Action"
-  caption="What a workspace admin and a group admin can do"
-/>
-
-Any active member of the workspace can be a group admin, whatever their role. Only custom groups can have group admins, and only an admin or a super admin can assign them.
-
-### Assign a Group Admin
-
-Role Required: **Admin** <br/>
-
-1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
-2. Go to **Workspace Settings** > **Groups** and select the custom group.
-3. Open the **Group admins** tab.
-4. Pick the users under **Select users to assign as group admins** and click **Assign group admin**.
-    <!-- TODO screenshot: user-management/rbac/custom-group/group-admins-tab.png | img-l | alt: The Group admins tab of the Finance group with one group admin assigned and the Assign group admin button | shows: Workspace settings > Groups > Finance > Group admins in the Northwind Logistics workspace -->
-
-To remove a group admin, click **Remove** in their row on the same tab.
-
-### What a Group Admin Sees
-
-Under **Workspace settings**, a group admin finds **Groups**, listing only the groups they administer. In each group, the **Users** tab lets them add existing workspace users and remove members; the **Permissions** and **Granular access** tabs are read-only. Every addition and removal is recorded in the audit logs with the role of the person who made it.
+A custom group can have group admins: members who add and remove the group's users without being able to change its permissions. Any active workspace user can be one. See **[Group Admin](/docs/user-management/role-based-access/group-admin)**.
 
 ## Where to Go Next
 
@@ -130,6 +103,11 @@ Under **Workspace settings**, a group admin finds **Groups**, listing only the g
     title="User Roles"
     description="The three roles, where access is decided, and what each role gets by default."
     href="/docs/user-management/role-based-access/user-roles"
+  />
+  <NextStepCard
+    title="Group Admin"
+    description="Let team leads add and remove the members of a custom group."
+    href="/docs/user-management/role-based-access/group-admin"
   />
   <NextStepCard
     title="Group Sync"

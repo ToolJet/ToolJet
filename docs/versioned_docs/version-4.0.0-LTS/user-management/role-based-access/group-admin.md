@@ -3,20 +3,24 @@ id: group-admin
 title: Group Admin
 ---
 
+import { ALL_ROLES, LAYERS, WORKSPACE_ADMIN_VS_GROUP_ADMIN } from './permissions-data';
+
 <PlanBadge type="team" />
+
+<AccessLayers layers={LAYERS} roles={ALL_ROLES} compact highlight="groups" />
 
 A Group Admin manages the members of one or more **[custom groups](/docs/user-management/role-based-access/custom-groups)**. Workspace Admins control what each group can access, while Group Admins, such as team leads, add and remove people as their teams change.
 
 ## Workspace Admin vs Group Admin
 
-| Capability | Workspace Admin | Group Admin |
-|:---|:---:|:---:|
-| Add or remove existing workspace users in a group | ✓ | Assigned groups only |
-| View a group's permissions and granular access | ✓ | Read-only |
-| Invite users or change user roles | ✓ | ✗ |
-| Create, rename, duplicate or delete groups | ✓ | ✗ |
-| Edit permissions and granular access | ✓ | ✗ |
-| Assign or remove Group Admins | ✓ | ✗ |
+<PermissionMatrix
+  roles={WORKSPACE_ADMIN_VS_GROUP_ADMIN.roles}
+  sections={WORKSPACE_ADMIN_VS_GROUP_ADMIN.sections}
+  stateLabels={{ always: 'Yes', never: 'No' }}
+  legend={false}
+  firstColumn="Capability"
+  caption="What a workspace admin and a group admin can do"
+/>
 
 Any active workspace user can be a Group Admin, including End Users. Group Admins can be assigned only to custom groups, not to the default **Admin**, **Builder** and **End User** groups.
 

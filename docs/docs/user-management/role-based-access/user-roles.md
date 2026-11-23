@@ -18,7 +18,7 @@ ToolJet's role-based access control decides who can build, configure and use the
 
 <RoleCards roles={ROLES} />
 
-Two more kinds of administrator exist outside the three roles. A **[Super Admin](/docs/user-management/role-based-access/super-admin)** manages every workspace of a self-hosted instance. A **[Group Admin](/docs/user-management/role-based-access/custom-groups#group-admins)** manages the members of one custom group.
+Two more kinds of administrator exist outside the three roles. A **[Super Admin](/docs/user-management/role-based-access/super-admin)** manages every workspace of a self-hosted instance. A **[Group Admin](/docs/user-management/role-based-access/group-admin)** manages the members of one custom group.
 
 ## Where Access Is Decided
 
