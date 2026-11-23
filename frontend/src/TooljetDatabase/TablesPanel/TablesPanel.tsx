@@ -110,6 +110,15 @@ export function TablesPanel({ onCollapse }: TablesPanelProps) {
             canEditSchema={canEditSchema}
           />
         ))}
+        {!needle && !loading && tables.length === 0 && (
+          <div
+            className="tw-flex tw-flex-col tw-items-center tw-gap-0.5 tw-px-2 tw-py-4 tw-text-center"
+            data-cy="tables-panel-empty"
+          >
+            <p className="tw-m-0 tw-font-title-default tw-text-text-default">No tables yet</p>
+            <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">Tables you create will appear here.</p>
+          </div>
+        )}
         {needle && visible.length === 0 && (
           <p className="tw-m-0 tw-px-2 tw-py-1.5 tw-font-body-default tw-text-text-placeholder">
             {`No tables match "${query.trim()}"`}

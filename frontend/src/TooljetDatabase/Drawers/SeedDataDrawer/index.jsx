@@ -75,25 +75,21 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
         title="Seed data with SQL"
         data-cy="seed-data-sql-header"
         onClose={handleClose}
-        submitLabel="Seed"
+        submitLabel="Run SQL"
         submitDisabled={!sql.trim()}
         isSubmitting={isRunningSql}
         onSubmit={handleRunSql}
       >
-        {/* Table reference must go through {{self}} - the backend rejects anything else,
-            including this table's own literal name, to keep seed-data SQL provably scoped to
-            the table this drawer was opened for. No quotes needed: {{self}} substitutes to the
-            table's logical name, which flows through the same AST-based table resolution
-            Query Manager's SQL mode uses (unlike the migration DDL step, which substitutes
-            directly to a physical uuid and does need quoting). */}
-        <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">
-          Reference this table as <code className="tw-font-code-regular">{'{{self}}'}</code> - not by name.
-        </p>
+        {/* The table must be referenced as {{self}} - the backend rejects anything else, including this table's own
+            literal name, to keep seed-data SQL provably scoped to the table this drawer was opened for. No quotes:
+            {{self}} substitutes to the table's logical name, which flows through the same AST-based table resolution
+            Query Manager's SQL mode uses (unlike the migration DDL step, which substitutes directly to a physical
+            uuid and does need quoting). The placeholder is where the rule is shown. */}
         <SqlEditor
           value={sql}
           onChange={setSql}
           height="100%"
-          placeholder={'-- e.g. INSERT INTO {{self}} (column) VALUES (value);'}
+          placeholder={'-- Seed data into the table, e.g. INSERT INTO {{self}} (column) VALUES (value);'}
           dataCy="seed-data-sql-textarea"
         />
       </DrawerShell>

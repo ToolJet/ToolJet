@@ -56,7 +56,7 @@ function Harness() {
 
 async function runSeedSql() {
   await userEvent.type(await screen.findByLabelText('sql'), 'INSERT INTO {{self}} VALUES (1)');
-  await userEvent.click(screen.getByRole('button', { name: 'Seed' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Run SQL' }));
 }
 
 function serveSql(result) {

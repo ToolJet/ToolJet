@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-hot-toast';
-import { CircleAlert, CircleCheck, FileUp } from 'lucide-react';
+import { CircleAlert, CircleCheck, CloudUpload, FileUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const duration = 1000;
@@ -98,37 +98,49 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
   }
 
   return (
-    <div
-      {...getRootProps({
-        className: cn(
-          'tw-flex tw-cursor-pointer tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-rounded-md tw-border tw-border-dashed tw-border-border-default tw-px-4 tw-py-8 tw-text-center',
-          'hover:tw-bg-interactive-hover',
-          isDragActive && 'tw-border-border-accent-strong tw-bg-background-accent-weak'
-        ),
-      })}
-      onClick={handleClick}
-      data-cy="bulk-upload-dropzone"
-    >
-      <FileUp aria-hidden className="tw-size-6 tw-text-icon-accent" data-cy="icon-bulk-upload" />
-      <p className="tw-m-0 tw-font-title-default tw-text-text-default" data-cy="helper-text-select-file">
-        Select a CSV file to upload
-      </p>
-      <span className="tw-font-body-default tw-text-text-placeholder" data-cy="helper-text-drop-file">
-        {isDragActive ? 'Drop the file here' : 'Or drag and drop it here'}
-      </span>
-      <input
-        {...getInputProps()}
-        style={{ display: 'none' }}
-        ref={hiddenFileInput}
-        onChange={(e) => {
-          const file = e.target.files[0];
-          setFileData(file);
-          handleFileChange(file);
-        }}
-        accept=".csv"
-        type="file"
-        data-cy="input-field-bulk-upload"
-      />
+    <div className="tw-flex tw-flex-col tw-gap-1.5">
+      <div
+        {...getRootProps({
+          className: cn(
+            'tw-flex tw-h-[140px] tw-cursor-pointer tw-flex-col tw-items-center tw-justify-center tw-gap-2 tw-rounded-lg tw-border tw-border-dashed tw-border-border-default tw-px-4 tw-text-center',
+            'hover:tw-bg-interactive-hover',
+            isDragActive && 'tw-border-border-accent-strong tw-bg-background-accent-weak'
+          ),
+        })}
+        onClick={handleClick}
+        data-cy="bulk-upload-dropzone"
+      >
+        <CloudUpload aria-hidden className="tw-size-6 tw-text-icon-weak" data-cy="icon-bulk-upload" />
+        <p
+          className="tw-m-0 tw-max-w-[160px] tw-font-body-default tw-text-text-default"
+          data-cy="helper-text-select-file"
+        >
+          {isDragActive ? (
+            'Drop the file here'
+          ) : (
+            <>
+              Drag and drop your files here or <span className="tw-text-text-accent">browse</span>
+            </>
+          )}
+        </p>
+        <input
+          {...getInputProps()}
+          style={{ display: 'none' }}
+          ref={hiddenFileInput}
+          onChange={(e) => {
+            const file = e.target.files[0];
+            setFileData(file);
+            handleFileChange(file);
+          }}
+          accept=".csv"
+          type="file"
+          data-cy="input-field-bulk-upload"
+        />
+      </div>
+      <div className="tw-flex tw-items-center tw-justify-between tw-font-body-small tw-text-text-placeholder">
+        <span>Supported formats: CSV</span>
+        <span>Max: 2 MB</span>
+      </div>
     </div>
   );
 }

@@ -23,8 +23,8 @@ const NoTablesState = ({ canEditSchema }) => {
       <div className={CENTERED_BELOW_STRIP}>
         <EmptyAndNoResultsState
           variant="no-table-open"
-          title="You don't have any tables yet."
-          description="Create a table to get started!"
+          title="No tables yet"
+          description="Create your first table to start storing data."
           action={
             <Button
               variant="secondary"

@@ -2,11 +2,13 @@ import React, { useState, useCallback, useRef } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
-import { FileText } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/Rocket/Button/Button';
-import { InlineInfo } from '@/components/ui/Rocket/InlineInfo/InlineInfo';
+import { linkButtonVariants } from '@/components/ui/Rocket/LinkButton/LinkButton';
 import { DrawerShell } from '../TableDrawer/DrawerShell';
 import { FileDropzone } from './FileDropzone';
+
+const DOCS = 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#bulk-upload-data';
 
 function BulkUploadDrawer({
   isBulkUploadDrawerOpen,
@@ -76,6 +78,17 @@ function BulkUploadDrawer({
         title="Bulk upload data"
         data-cy="bulk-upload-data-header"
         onClose={close}
+        footerStart={
+          <a
+            href={DOCS}
+            target="_blank"
+            rel="noreferrer"
+            className={linkButtonVariants()}
+            data-cy="bulk-upload-docs-link"
+          >
+            Read docs
+          </a>
+        }
         submitLabel="Upload data"
         submitDataCy="upload-data-button"
         submitDisabled={
@@ -85,37 +98,37 @@ function BulkUploadDrawer({
         isSubmitting={isBulkUploading}
         onSubmit={handleBulkUpload}
       >
-        <InlineInfo
-          type="warning"
-          variant="filled"
-          description={
-            <span data-cy="helper-text-bulk-upload">
-              Download the template to add your data or format your file in the same as the template. ToolJet won’t be
-              able to recognise files in any other format.
-            </span>
-          }
-          action={
+        <section className="tw-flex tw-flex-col tw-gap-2">
+          <h3 className="tw-m-0 tw-font-title-default tw-text-text-default">Download CSV template</h3>
+          <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder" data-cy="helper-text-bulk-upload">
+            Start with a blank template to add new rows, or export the current table data, pre-filled, to edit and
+            re-upload for updates.
+          </p>
+          <div>
             <Button
               variant="outline"
               size="medium"
-              leadingVisual={<FileText />}
+              leadingVisual={<Download />}
               loading={isDownloadingTemplate}
               onClick={handleTemplateDownload}
               data-cy="button-download-template"
             >
               Download template
             </Button>
-          }
-        />
-        <FileDropzone
-          handleClick={handleClick}
-          hiddenFileInput={hiddenFileInput}
-          errors={errors}
-          handleFileChange={handleBulkUploadFileChange}
-          onDrop={onDrop}
-          progress={progress}
-          setProgress={setProgress}
-        />
+          </div>
+        </section>
+        <section className="tw-flex tw-flex-col tw-gap-2">
+          <h3 className="tw-m-0 tw-font-title-default tw-text-text-default">Upload CSV</h3>
+          <FileDropzone
+            handleClick={handleClick}
+            hiddenFileInput={hiddenFileInput}
+            errors={errors}
+            handleFileChange={handleBulkUploadFileChange}
+            onDrop={onDrop}
+            progress={progress}
+            setProgress={setProgress}
+          />
+        </section>
       </DrawerShell>
     </Drawer>
   );
