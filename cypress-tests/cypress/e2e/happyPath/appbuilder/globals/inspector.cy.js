@@ -68,6 +68,13 @@ describe("Editor- Inspector", { testIsolation: false }, () => {
   it("should verify dynamic items", () => {
     // Register a global variable via a component event.
     cy.dragAndDropWidget("Button", 500, 300);
+    // The drop snaps the widget's left edge to the nearest grid column, up to half a column either side of the
+    // pointer. When it snaps right (CI's Linux scrollbars narrow the canvas, so it does there), the CDP drag's
+    // trailing mouseup lands on the empty canvas beside the new button, which clears the selection and swaps the
+    // config panel back to the Components list (add-event-handler never renders). A real drop sends no mouseup,
+    // so select the dropped button explicitly before using its config panel.
+    cy.get(commonWidgetSelector.draggableWidget("button1")).click();
+    cy.get('[data-cy="add-event-handler"]').should("be.visible");
     selectEvent("On click", "Set variable");
     addSupportCSAData("event-key", "globalVar");
     cy.wait(500);

@@ -22,12 +22,13 @@ module.exports = defineConfig({
     setupNodeEvents(on, config) {
       on("task", {
         readPdf(pathToPdf) {
-          return new Promise((resolve) => {
+          return new Promise((resolve, reject) => {
             const pdfPath = path.resolve(pathToPdf);
             let dataBuffer = fs.readFileSync(pdfPath);
+            // reject (fails the calling test) instead of an unhandled rejection that crashes the whole run
             pdf(dataBuffer).then(function ({ text }) {
               resolve(text);
-            });
+            }, reject);
           });
         },
       });
@@ -51,6 +52,9 @@ module.exports = defineConfig({
         deleteFolder(folderName) {
           return new Promise((resolve, reject) => {
             rmdir(folderName, { maxRetries: 10, recursive: true }, (err) => {
+              // a folder that does not exist yet is already "deleted" (a fresh CI checkout has no
+              // cypress/downloads until the first download; Node's recursive rmdir throws ENOENT for it)
+              if (err && err.code === "ENOENT") return resolve(null);
               if (err) {
                 console.error(err);
                 return reject(err);

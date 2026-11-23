@@ -2,10 +2,14 @@
 // button.js
 //   addBasicData                     -                    → properties
 //   verifyBasicData                  -                    → properties
+//   addButtonsViaApi                 -                    → contexts
+//   buttonBoxes                      -                    → canvas
+//   pointerAway                      -                    → styles
 // └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector } from "Selectors/common";
 import { openEditorSidebar } from "Support/utils/commonWidget";
 import { buttonText } from "Texts/appBuilder/components/button";
+import { addIconsViaApi } from "Support/utils/appBuilder/components/icon";
 import { commonWidgetText } from "Texts/common";
 import {
   selectColourFromColourPicker,
@@ -110,3 +114,63 @@ export const verifyBasicData = (widgetName, data) => {
   // Background colour carried over.
   verifyWidgetColorCss(widgetName, "background-color", data.backgroundColor);
 };
+
+// ── Browser-scenario helpers (canvas / contexts / styles / userflow facets) ──────────────────────────────
+
+/**
+ * @tjBlock  contexts
+ * @tjUsage  addButtonsViaApi([{ name: 'button1', layout: { top: 40, left: 2 }, styles: { type: { value: 'outline' } }, events: [counterEvent('onClick', 'clicks')] }, { type: 'TextInput', name: 'textinput1' }])
+ * @tjDom    one components POST via addIconsViaApi. An item without `type` is a Button: button.js definition
+ *           defaults (buttonText.definition) merged under its properties/styles/others, layout defaults to
+ *           6 cols × 40px. Any other `type` is passed through untouched (the app loader fills the rest).
+ */
+export const addButtonsViaApi = (items, appIdArg) => {
+  const D = buttonText.definition;
+  return addIconsViaApi(
+    items.map((item) => {
+      if (item.type && item.type !== "Button") return item;
+      return {
+        ...item,
+        type: "Button",
+        layout: { width: 6, height: buttonText.defaultSize.height, ...item.layout },
+        properties: { ...D.properties, ...item.properties },
+        styles: { ...D.styles, ...item.styles },
+        others: { ...D.others, ...item.others },
+      };
+    }),
+    appIdArg
+  );
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  buttonBoxes('button1', (b) => expect(b.label.left).to.be.closeTo(b.button.left + 13, 1.5))
+ * @tjDom    retries the callback with rects of the RenderWidget box (`draggable-widget-<name>`), the <button>,
+ *           the label <p>, the icon <svg> (null when absent), plus the button + box computed styles
+ */
+export const buttonBoxes = (name, assertFn) =>
+  cy.get(`[data-cy="${name}-button"]`).first().should(($btn) => {
+    const btn = $btn[0];
+    const doc = btn.ownerDocument;
+    const rect = (el) => {
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height };
+    };
+    const box = doc.querySelector(`[data-cy="draggable-widget-${name}"]`);
+    assertFn({
+      box: rect(box),
+      button: rect(btn),
+      label: rect(btn.querySelector(`[data-cy="${name}-label"]`)),
+      icon: rect(btn.querySelector(`[data-cy="${name}-icon"]`)),
+      buttonStyle: doc.defaultView.getComputedStyle(btn),
+      boxStyle: box ? doc.defaultView.getComputedStyle(box) : null,
+    });
+  });
+
+/**
+ * @tjBlock  styles
+ * @tjUsage  pointerAway()
+ * @tjDom    moves the real (CDP) pointer to the page's top-left corner, off every widget
+ */
+export const pointerAway = () => cy.get("body").realHover({ position: "topLeft", scrollBehavior: false });

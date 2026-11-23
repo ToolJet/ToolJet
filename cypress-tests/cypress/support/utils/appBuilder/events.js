@@ -10,6 +10,7 @@
 //   setCSAParam                      -                    → csa
 //   configureCSA                     csa                  → csa
 //   selectQueryForEvent              -                    → events
+//   waitForIdleSaveUi                events               → events
 // └──────────────────────────────────────────────────────────────────┘
 /**
  * MODULE — appBuilder/events: right-Inspector **Events tab** + Component-Specific
@@ -66,6 +67,26 @@ const afterEventSave = (change) => {
   change();
   cy.then(() => poll(40));
 };
+
+// Wait for a UI condition that only turns true once an event-handler save has run, polling with IDLE GAPS.
+// The editor queues handler saves with requestIdleCallback and no timeout (handleLowPriorityWork,
+// editorHelpers.js); a retrying cy.get/should polls the same renderer every few ms and, once the canvas holds
+// several widgets, leaves no idle period — the queued save starves until the retry times out (instrumented on
+// Electron: the idle callback fired 35s late, right after the 30s retry gave up). Checking with plain jQuery
+// between cy.wait()s leaves the main thread idle so the save runs. Never fails itself: the caller's own
+// assertion follows. `check($)` is given Cypress.$ scoped to the AUT document.
+/**
+ * @tjBlock  events
+ * @tjUsage  waitForIdleSaveUi(($) => $('[data-cy="x"]').length > 0)
+ * @tjDom    polls check() every 300ms (up to ~30s) with cy.wait gaps; soft
+ */
+export const waitForIdleSaveUi = (check, attempts = 100) =>
+  cy.wait(300, { log: false }).then(() =>
+    cy.document({ log: false }).then((doc) => {
+      const $ = (sel) => Cypress.$(sel, doc);
+      if (!check($) && attempts > 1) waitForIdleSaveUi(check, attempts - 1);
+    })
+  );
 
 // Soft wait (never fails): poll until no /events save is in flight, giving up after
 // ~5s. A save that lands mid-type re-renders the popover's CodeHinter and detaches
@@ -216,15 +237,18 @@ export const selectCSA = (
 
   // Let the component pick's save land first: a late response re-renders the popover
   // and can reset an action picked in the meantime back to "Select...".
-  afterEventSave(() =>
-    selectSearchableOption(
-      '[data-cy="action-options-component-selection-field"]',
-      component
-    )
-  );
+  // The Component field renders only once the "Control Component" action pick has been SAVED (idle-queued).
+  waitForIdleSaveUi(($) => $('[data-cy="action-options-component-selection-field"]').length > 0);
+  const componentField = '[data-cy="action-options-component-selection-field"]';
+  const shows = ($, field, re) =>
+    $(`${field} input`).filter(":visible").toArray().some((i) => re.test(i.value));
+  afterEventSave(() => selectSearchableOption(componentField, component));
+  // the field shows the pick only once its idle-queued save has landed; the Action options depend on it
+  waitForIdleSaveUi(($) => shows($, componentField, new RegExp(`^\\s*${component}\\s*$`, "i")));
   const actionField = '[data-cy="action-options-action-selection-field"]';
   const actionLabel = new RegExp(`^\\s*${componentAction}\\s*$`, "i");
   afterEventSave(() => selectSearchableOption(actionField, componentAction));
+  waitForIdleSaveUi(($) => shows($, actionField, actionLabel));
   cy.get(actionField)
     .first()
     .find("input:visible")

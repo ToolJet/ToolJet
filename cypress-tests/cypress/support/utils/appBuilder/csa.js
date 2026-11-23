@@ -26,6 +26,7 @@ import {
   selectCSA,
   selectEvent,
   waitForEventSavesToSettle,
+  waitForIdleSaveUi,
 } from "Support/utils/appBuilder/events";
 
 /**
@@ -193,6 +194,12 @@ export const addCSA = (componentName, actions) => {
       cy.get("body").then(($b) => {
         if ($b.find(toggleSel).length) {
           const desired = rawValue !== "{{false}}" && rawValue !== false;
+          // The toggle is controlled by the SAVED handler (EventManager.jsx Toggle → store, updated only when a
+          // save's response lands). On a slow runner the action-pick / debounce saves from selectCSA can still be
+          // queued (requestIdleCallback) or in flight here; their late response re-renders the popover and a click
+          // landing in that window is lost (toggle stays off — CI runs 43699027625, 43749174042). Let the
+          // handler's own saves land first, then click once.
+          waitForEventSavesToSettle(800);
           // Read state, then click via a FRESH cy.get (requeryable) — NOT
           // cy.wrap($t) (a snapshot that detaches if the toggle re-renders,
           // making the click a silent no-op → the assertion never flips).
@@ -203,6 +210,9 @@ export const addCSA = (componentName, actions) => {
                 cy.get(toggleSel).click({ force: true });
               }
             });
+          // the toggle only flips once the click's idle-queued save lands — wait with idle gaps (see
+          // waitForIdleSaveUi), then assert
+          waitForIdleSaveUi(($) => $(toggleSel).prop("checked") === desired);
           cy.get(toggleSel).should(desired ? "be.checked" : "not.be.checked");
         } else {
           // Plain get (no `.last()`) so Cypress can auto-requery on re-render.

@@ -4,7 +4,11 @@
  * field accordion (backgroundColor, borderColor, textColor eq1, accentColor, borderRadius, boxShadow);
  * container accordion (padding/togglr-button-none). Selectors confirmed live: field bg/border/radius/
  * shadow → `-actionable-section`, text color → `-input`, label color/size → `-label`.
- * Helpers: openEditorSidebar, selectColourFromColourPicker, verifyWidgetColorCss, fillBoxShadowParams, verifyBoxShadowCss.
+ * TESTING.md browser scenario TextInput-BRW-005 — the rendered field's COMPUTED CSS matches every configured colour,
+ * radius and shadow in light AND dark app mode; border precedence error > focus(accent) > configured holds, including
+ * an invalid revealed field that is focused or hovered (baseInput.scss hover rule is `!important`).
+ * Helpers: openEditorSidebar, selectColourFromColourPicker, verifyWidgetColorCss, fillBoxShadowParams, verifyBoxShadowCss,
+ * expectComputedColor, resolveCssVarColor.
  */
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
@@ -17,6 +21,13 @@ import {
     fillBoxShadowParams,
     verifyBoxShadowCss,
 } from "Support/utils/commonWidget";
+import { expectComputedColor, resolveCssVarColor } from "Support/utils/appBuilder/components/baseInput";
+import { baseInputStyleSelector } from "Selectors/appBuilder/components/emailInput";
+import { textInputSelector as SEL } from "Selectors/appBuilder/components/textInput";
+import { textInputText as T } from "Texts/appBuilder/components/textInput";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
+
+const rgb = (c) => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec run.
 describe('Text Input — styles facet', { testIsolation: false }, () => {
@@ -28,7 +39,7 @@ describe('Text Input — styles facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-TIStyles-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget('Text Input', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
+        closeQueryPanel();
     });
 
     const openStyles = () => {
@@ -176,5 +187,152 @@ describe('Text Input — styles facet', { testIsolation: false }, () => {
         // source: textinput.js:15
         cy.get('[data-cy="legacy-input-size-toggle-button"]').check({ force: true });
         cy.get('[data-cy="legacy-input-size-toggle-button"]').should('be.checked');
+    });
+
+    // ── TextInput-BRW-005 ────────────────────────────────────────────────────
+    // jsdom drops `var()` on standard properties, so these read getComputedStyle in a real browser; theme
+    // tokens are resolved in-page with a probe element (resolveCssVarColor), never hard-coded.
+    const enableMandatoryThenOpenStyles = () => {
+        openEditorSidebar(W);
+        openAccordion(T.accordionValidation);
+        verifyAndModifyToggleFx(T.mandatory, '{{false}}'); // flips ON. source: textinput.js:100
+        cy.forceClickOnCanvas();
+        openStyles();
+    };
+
+    // One swatch popover at a time: commit each pick by clicking the canvas and reopen the Styles tab.
+    const pickColour = (...args) => {
+        selectColourFromColourPicker(...args);
+        cy.forceClickOnCanvas();
+        openStyles();
+    };
+
+    const switchAppToDark = () => {
+        // globalSettings.appMode drives useAppDarkMode → AppCanvas `dark-theme`
+        cy.apiUpdateGlobalSettings({ appMode: 'dark' });
+        cy.reload();
+        cy.get(SEL.input(W), { timeout: 30000 }).should('be.visible');
+        cy.get('.dark-theme').should('exist');
+    };
+
+    const moveMouseAway = () => cy.get('body').realHover({ position: 'topLeft' });
+
+    const placeholderColour = (selector) =>
+        cy.get(selector).first().then(($el) => $el[0].ownerDocument.defaultView.getComputedStyle($el[0], '::placeholder').color);
+
+    it('[TextInput-BRW-005] Computed colours, radius and shadow match the configured styles in light and dark mode', () => {
+        // dynamic: distinct test colours, one per style (RGBA picker values)
+        const labelColor = [128, 0, 128];
+        const background = [255, 240, 200];
+        const border = [0, 0, 255];
+        const text = [0, 128, 0];
+        const placeholder = [200, 0, 100];
+        const errText = [255, 128, 0];
+        const shadow = [2, 4, 6, 0]; // dynamic: x/y/blur/spread
+        const shadowColor = [255, 0, 0, 90]; // dynamic: alpha < 100 → rgba
+        const radius = '14'; // dynamic (default {{6}} — textinput.js:372)
+        const asPicker = (c) => [...c.map(String), '100'];
+
+        enableMandatoryThenOpenStyles();
+        pickColour('Text', asPicker(labelColor), 0, undefined, 0); // label `color`. source: textinput.js:117
+        pickColour('Background', asPicker(background)); // source: textinput.js:205
+        pickColour('Border', asPicker(border)); // source: textinput.js:211
+        pickColour('Text', asPicker(text), 0, undefined, 1); // field textColor. source: textinput.js:223
+        pickColour('Placeholder Text', asPicker(placeholder)); // source: textinput.js:229
+        pickColour('Error text', asPicker(errText)); // source: textinput.js:235
+        cy.get(baseInputStyleSelector.borderRadiusInput).clear().type(radius); // source: textinput.js:256
+        cy.get(commonWidgetSelector.boxShadowColorPicker).click(); // source: textinput.js:262
+        fillBoxShadowParams(commonWidgetSelector.boxShadowDefaultParam, shadow);
+        selectColourFromColourPicker('Box shadow Color', shadowColor.map(String), 0);
+        cy.forceClickOnCanvas();
+        cy.waitForAutoSave();
+
+        const expectConfiguredStyles = (mode) => {
+            cy.log(`configured styles — ${mode}`);
+            moveMouseAway();
+            expectComputedColor(`${SEL.label(W)} p`, 'color', rgb(labelColor)); // Label.jsx inner <p>
+            expectComputedColor(SEL.field(W), 'background-color', rgb(background));
+            expectComputedColor(SEL.field(W), 'border-top-color', rgb(border));
+            expectComputedColor(SEL.input(W), 'color', rgb(text));
+            cy.get(SEL.input(W)).clear();
+            placeholderColour(SEL.input(W)).should('eq', rgb(placeholder));
+            cy.get(SEL.field(W)).should('have.css', 'border-top-left-radius', `${radius}px`);
+            cy.get(SEL.field(W)).should(
+                'have.css',
+                'box-shadow',
+                `rgba(${shadowColor[0]}, ${shadowColor[1]}, ${shadowColor[2]}, ${shadowColor[3] / 100}) ${shadow[0]}px ${shadow[1]}px ${shadow[2]}px ${shadow[3]}px`
+            );
+            // reveal the mandatory error, then its text colour
+            cy.get(SEL.input(W)).focus().blur();
+            cy.get(SEL.invalidFeedback(W)).should('have.text', T.errorMandatory);
+            expectComputedColor(SEL.invalidFeedback(W), 'color', rgb(errText));
+        };
+
+        expectConfiguredStyles('light');
+        resolveCssVarColor('--cc-surface1-surface', SEL.field(W)).as('lightSurfaceToken');
+
+        switchAppToDark();
+        // the theme really switched where the widget lives: an unconfigured token resolves differently
+        cy.get('@lightSurfaceToken').then((lightToken) => {
+            resolveCssVarColor('--cc-surface1-surface', SEL.field(W)).should('not.eq', lightToken);
+        });
+        expectConfiguredStyles('dark');
+    });
+
+    // BaseInput.jsx:221-234: borderColor = error (if invalid && revealed) → accent (if focused) → configured.
+    it('[TextInput-BRW-005] Border precedence — accent on focus, an invalid revealed field stays in the error colour while focused or hovered, light and dark', () => {
+        const border = [0, 0, 255]; // dynamic: configured border
+        const accent = [255, 0, 255]; // dynamic: configured accent (focus) colour
+
+        enableMandatoryThenOpenStyles();
+        pickColour('Border', [...border.map(String), '100']); // source: textinput.js:211
+        pickColour('Accent', [...accent.map(String), '100']); // source: textinput.js:217
+        cy.forceClickOnCanvas();
+        cy.waitForAutoSave();
+
+        const expectBorderPrecedence = (mode) => {
+            cy.log(`border precedence — ${mode}`);
+            resolveCssVarColor('--cc-error-systemStatus', SEL.field(W)).then((errorRgb) => {
+                expect(errorRgb, 'error token differs from the configured colours').not.to.be.oneOf([rgb(border), rgb(accent)]);
+
+                moveMouseAway();
+                // untouched (invalid but not revealed) → configured border
+                expectComputedColor(SEL.field(W), 'border-top-color', rgb(border));
+                // focused, not revealed → accent
+                cy.get(SEL.input(W)).realClick();
+                expectComputedColor(SEL.field(W), 'border-top-color', rgb(accent));
+                // blur reveals the mandatory error → error colour
+                cy.get(SEL.input(W)).blur();
+                moveMouseAway();
+                cy.get(SEL.invalidFeedback(W)).should('have.text', T.errorMandatory);
+                expectComputedColor(SEL.field(W), 'border-top-color', errorRgb);
+                // invalid + revealed + FOCUSED → still the error colour (error outranks focus)
+                cy.get(SEL.input(W)).realClick();
+                cy.get(SEL.input(W)).should('be.focused');
+                expectComputedColor(SEL.field(W), 'border-top-color', errorRgb);
+                // invalid + revealed + HOVERED (not focused) → still the error colour
+                cy.get(SEL.input(W)).blur();
+                cy.get(SEL.field(W)).realHover();
+                expectComputedColor(SEL.field(W), 'border-top-color', errorRgb);
+                // a valid value while focused → accent; blurred and unhovered → configured colour again
+                cy.get(SEL.input(W)).realClick();
+                cy.get(SEL.input(W)).type(fake.firstName); // dynamic: fake
+                expectComputedColor(SEL.field(W), 'border-top-color', rgb(accent));
+                cy.get(SEL.input(W)).blur();
+                moveMouseAway();
+                expectComputedColor(SEL.field(W), 'border-top-color', rgb(border));
+                cy.get(SEL.input(W)).clear().blur(); // leave it empty for the next mode
+            });
+        };
+
+        cy.openPreview(SEL.input(W));
+        expectBorderPrecedence('light, preview');
+
+        switchAppToDark();
+        expectBorderPrecedence('dark, preview');
+    });
+
+    afterEach(() => {
+        cy.apiDeleteApp();
     });
 });
