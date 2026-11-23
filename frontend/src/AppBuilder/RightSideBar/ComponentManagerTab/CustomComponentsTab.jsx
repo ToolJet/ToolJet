@@ -210,7 +210,7 @@ const VersionPicker = ({ library }) => {
             className="custom-library-version-chip"
             data-cy={`custom-library-version-${library.name.toLowerCase().replace(/\s+/g, '-')}`}
           >
-            {isDevPin ? 'dev' : current ?? 'Select version'}
+            {isDevPin ? 'dev' : (current ?? 'Select version')}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="custom-library-version-menu" onClick={(e) => e.stopPropagation()}>

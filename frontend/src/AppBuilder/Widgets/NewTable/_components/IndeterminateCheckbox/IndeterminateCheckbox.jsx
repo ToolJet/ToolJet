@@ -1,7 +1,7 @@
 import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEvent, isCell = false, ...rest }, ref) => {
+export const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEvent, ...rest }, ref) => {
   const defaultRef = React.useRef();
   const resolvedRef = ref || defaultRef;
 
@@ -10,16 +10,12 @@ export const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEven
   }, [resolvedRef, indeterminate]);
 
   return (
-    <div
-      className={`table-selector-checkbox d-flex flex-column align-items-center ${
-        isCell ? 'justify-content-center h-100' : ''
-      }`}
-    >
+    <div className={`table-selector-checkbox`}>
       <input
         data-cy={`checkbox-input`}
         type="checkbox"
         ref={resolvedRef}
-        onClick={(event) => {
+        onClick={() => {
           if (fireEvent) {
             //! This is a hack to make sure the event is fired after exposed values are updated
             setTimeout(() => {
@@ -28,10 +24,6 @@ export const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEven
           }
         }}
         {...rest}
-        style={{
-          width: '18px',
-          height: '18px',
-        }}
         onMouseDown={(e) => e.preventDefault()}
       />
       <SolidIcon name={'tickv3'} width="14px" fill="var(--icon-inverse)" className="table-selector-checkbox-icon" />
