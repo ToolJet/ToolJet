@@ -9,18 +9,18 @@ import {
   closeTab,
   openTab,
   parseStoredTabs,
-  reconcileTabs,
+  settleTabs,
   type TabsState,
 } from './openTabs';
 
 const TABLE_PARAM = 'table';
 const storageKey = (organizationId: string) => `tjdb-open-tabs:${organizationId}`;
 
-function readStored(organizationId: string | null): TabsState {
+function readStored(organizationId: string | null): TabsState | null {
   try {
     return parseStoredTabs(organizationId ? localStorage.getItem(storageKey(organizationId)) : null);
   } catch {
-    return parseStoredTabs(null);
+    return null;
   }
 }
 
@@ -114,10 +114,10 @@ export function useOpenTabs({ organizationId, tables, selectedTable, setSelected
       const existing = tables.map((table) => table.id);
       let next: TabsState;
       if (restoredRef.current) {
-        next = reconcileTabs(stateRef.current, existing);
+        next = settleTabs(stateRef.current, existing);
       } else {
         restoredRef.current = true;
-        next = reconcileTabs(readStored(organizationId), existing);
+        next = settleTabs(readStored(organizationId), existing);
         const linked = urlTableRef.current;
         if (linked && existing.includes(linked)) next = openTab(next, linked);
       }

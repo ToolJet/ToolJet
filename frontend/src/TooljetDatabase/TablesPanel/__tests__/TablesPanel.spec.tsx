@@ -166,8 +166,17 @@ describe('TablesPanel | list', () => {
     await waitFor(() => expect(openTable()).toHaveTextContent('orders'));
   });
 
-  it('opens no table on a first visit', async () => {
+  it('opens the first table of the list on a first visit', async () => {
     window.localStorage.clear();
+    serve();
+    render(<Harness />);
+    await screen.findByRole('button', { name: 'orders' });
+
+    await waitFor(() => expect(openTable()).toHaveTextContent('orders'));
+  });
+
+  it('keeps every tab closed after a reload when the user closed them all', async () => {
+    saveTabs([], null);
     serve();
     render(<Harness />);
     await screen.findByRole('button', { name: 'orders' });
@@ -426,7 +435,7 @@ describe('TablesPanel | delete table', () => {
     await waitFor(() => expect(openTable()).toHaveTextContent('users'));
   });
 
-  it('leaves no table open when the only open table is the one deleted', async () => {
+  it('opens the first remaining table when the only open table is the one deleted', async () => {
     serve();
     render(<Harness />);
     await waitFor(() => expect(openTable()).toHaveTextContent('orders'));
@@ -436,6 +445,6 @@ describe('TablesPanel | delete table', () => {
     await userEvent.click(await screen.findByRole('button', { name: /delete/i }));
 
     await waitFor(() => expect(screen.queryByRole('button', { name: 'orders' })).not.toBeInTheDocument());
-    expect(openTable()).toHaveTextContent('');
+    await waitFor(() => expect(openTable()).toHaveTextContent('users'));
   });
 });

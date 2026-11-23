@@ -6,6 +6,7 @@ import {
   openTab,
   parseStoredTabs,
   reconcileTabs,
+  settleTabs,
   type TabsState,
 } from '../openTabs';
 
@@ -84,11 +85,44 @@ describe('parseStoredTabs', () => {
     expect(parseStoredTabs(JSON.stringify({ ids: ['a', 'b'], activeId: 'b' }))).toEqual(tabs(['a', 'b'], 'b'));
   });
 
-  it.each([null, '', 'not json', '{"ids":"a"}', '[]', '{"ids":[1,2]}'])('falls back to nothing open for %p', (raw) => {
-    expect(parseStoredTabs(raw)).toEqual(tabs([], null));
+  it.each([null, '', 'not json', '{"ids":"a"}', '[]', '{"ids":[1,2]}'])(
+    'returns null (nothing saved) for %p',
+    (raw) => {
+      expect(parseStoredTabs(raw)).toBeNull();
+    }
+  );
+
+  it('keeps an explicit "all tabs closed" as an empty state, not as nothing saved', () => {
+    expect(parseStoredTabs(JSON.stringify({ ids: [], activeId: null }))).toEqual(tabs([], null));
   });
 
   it('drops an active id that is not among the open tabs', () => {
     expect(parseStoredTabs(JSON.stringify({ ids: ['a'], activeId: 'zzz' }))).toEqual(tabs(['a'], 'a'));
+  });
+});
+
+describe('settleTabs', () => {
+  it('opens the first table for a visitor with nothing saved', () => {
+    expect(settleTabs(null, ['a', 'b'])).toEqual(tabs(['a'], 'a'));
+  });
+
+  it('shows nothing for a visitor with nothing saved when there are no tables', () => {
+    expect(settleTabs(null, [])).toEqual(tabs([], null));
+  });
+
+  it('restores the last viewed tab', () => {
+    expect(settleTabs(tabs(['a', 'b'], 'b'), ['a', 'b', 'c'])).toEqual(tabs(['a', 'b'], 'b'));
+  });
+
+  it('leaves everything closed when the user closed all tabs', () => {
+    expect(settleTabs(tabs([], null), ['a', 'b'])).toEqual(tabs([], null));
+  });
+
+  it('opens the first table when every open table was deleted', () => {
+    expect(settleTabs(tabs(['x'], 'x'), ['a', 'b'])).toEqual(tabs(['a'], 'a'));
+  });
+
+  it('keeps reconcile behaviour when some tabs survive', () => {
+    expect(settleTabs(tabs(['a', 'x', 'b'], 'x'), ['a', 'b'])).toEqual(tabs(['a', 'b'], 'b'));
   });
 });

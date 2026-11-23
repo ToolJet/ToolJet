@@ -49,16 +49,27 @@ export function reconcileTabs(state: TabsState, existingIds: string[]): TabsStat
   return { ids, activeId: next ?? previous ?? null };
 }
 
-// Reads persisted tabs. Anything unexpected means "nothing open"; storage is never trusted.
-export function parseStoredTabs(raw: string | null): TabsState {
-  if (!raw) return NO_TABS;
+// Reads persisted tabs. Anything unexpected means "nothing saved" (null); storage is never trusted. A saved empty
+// list is different: it is the user having closed every tab.
+export function parseStoredTabs(raw: string | null): TabsState | null {
+  if (!raw) return null;
   try {
     const parsed: unknown = JSON.parse(raw);
-    if (typeof parsed !== 'object' || parsed === null) return NO_TABS;
+    if (typeof parsed !== 'object' || parsed === null) return null;
     const { ids, activeId } = parsed as { ids?: unknown; activeId?: unknown };
-    if (!Array.isArray(ids) || !ids.every((id) => typeof id === 'string')) return NO_TABS;
+    if (!Array.isArray(ids) || !ids.every((id) => typeof id === 'string')) return null;
     return { ids, activeId: typeof activeId === 'string' && ids.includes(activeId) ? activeId : (ids[0] ?? null) };
   } catch {
-    return NO_TABS;
+    return null;
   }
+}
+
+// A table stays open unless the user closed every tab: a visitor with nothing saved gets the first table, and so does
+// one whose open tables were all deleted. `state` null = nothing saved.
+export function settleTabs(state: TabsState | null, existingIds: string[]): TabsState {
+  const first = existingIds[0];
+  if (state === null) return first === undefined ? NO_TABS : openTab(NO_TABS, first);
+  const settled = reconcileTabs(state, existingIds);
+  if (state.ids.length > 0 && settled.ids.length === 0 && first !== undefined) return openTab(NO_TABS, first);
+  return settled;
 }
