@@ -17,7 +17,7 @@ import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPan
 // Chunk 5 (DEFERRED STUB) — Table styles, table-option toggles and download menu.
 //
 // Scope when picked up:
-//   1. ~15 styles from WidgetManager/widgets/table.js:364-525, grouped by the
+//   1. ~15 styles from packages/widget-definitions/src/widgets/table.js:364-525, grouped by the
 //      `accordian` key — "Column Header" (columnTitleColor, columnHeaderWrap,
 //      headerCasing, header background/text), "Row" (selectedRowColor, rowStyle,
 //      cellHeight, maxRowHeight) and the container styles (actionButtonRadius,

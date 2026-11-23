@@ -1,4 +1,5 @@
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
+import { DATA_QUERY_EVENTS_META } from './dataQueryEvents';
 
 const allStaticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API', shortName: 'REST API' },
@@ -81,10 +82,7 @@ export const mockDataQueryAsComponent = (events) => {
   return {
     component: { component: { definition: { events: events } } },
     componentMeta: {
-      events: {
-        onDataQuerySuccess: { displayName: 'Query Success' },
-        onDataQueryFailure: { displayName: 'Query Failure' },
-      },
+      events: DATA_QUERY_EVENTS_META,
     },
   };
 };

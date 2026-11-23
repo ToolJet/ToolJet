@@ -32,6 +32,7 @@ const OptionItem = ({
           <div
             key={index}
             data-cy={`${dataCyPrefix}-option-${index}`}
+            data-list-item-id={String(item?.value ?? '')}
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}

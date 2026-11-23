@@ -91,6 +91,8 @@ export const PLAN_DETAILS = {
 
 export const LICENSE_TRIAL_API = process.env.TJ_LICENSE_TRIAL_API || 'https://albecs.tooljet.com/api/license/trial';
 
+// A new field that changes the released app or released version response also goes in
+// VIEWER_LICENSE_FIELDS (apps/app-data-revision.ts), or viewers keep a stale cached app.
 export enum LICENSE_FIELD {
   IS_EXPIRED = 'expired',
   APP_COUNT = 'appCount',
@@ -150,6 +152,8 @@ export enum LICENSE_FIELD {
   QUERY_FOLDERS = 'queryFoldersEnabled',
   PUBLIC_APP = 'publicAppEnabled',
   CUSTOM_COMPONENT_LIBRARIES = 'customComponentLibrariesEnabled',
+  AI_CREDIT_LIMITS = 'aiCreditLimitsEnabled',
+  VERSION_REVIEW = 'versionReviewEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {
@@ -181,6 +185,10 @@ export enum LICENSE_TYPE {
   BUSINESS = 'business',
 }
 
+// Plans below Pro. Features "on Pro and above" are off on these and on an expired or missing
+// licence (plan 'basic'); a trial has no plan name, so it gets them.
+export const PLANS_BELOW_PRO: readonly string[] = [LICENSE_TYPE.BASIC, 'starter', 'basicplus'];
+
 export enum LICENSE_LIMIT {
   UNLIMITED = 'UNLIMITED',
 }
@@ -202,6 +210,7 @@ export enum FEATURE_KEY {
   GENERATE_CLOUD_TRIAL_LICENSE = 'generate_cloud_trial_license',
   GENERATE_EE_TRIAL_LICENSE = 'generate_ee_trial_license',
   GET_SELFHOST_CUSTOMER = 'getSelfhostCustomer',
+  CAN_START_CLOUD_TRIAL = 'can_start_cloud_trial',
 }
 
 export const ORGANIZATION_INSTANCE_KEY = 'INSTANCE';

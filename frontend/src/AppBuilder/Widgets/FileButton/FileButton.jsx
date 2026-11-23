@@ -25,7 +25,7 @@ const justifyClass = {
   right: 'tw-justify-end',
 };
 
-export const FileButton = (props) => {
+const FileButton = (props) => {
   const {
     height,
     properties,
@@ -149,9 +149,10 @@ export const FileButton = (props) => {
   const computedHoverBgColor =
     hoverBackgroundColor !== 'auto' ? hoverBackgroundColor : getModifiedColor(backgroundColor, 'hover');
   const computedPressedBgColor = getModifiedColor(backgroundColor, 'active');
-  const resolvedBgColor = backgroundColor?.startsWith('var(')
-    ? (getCssVarValue(document.documentElement, backgroundColor) ?? backgroundColor)
-    : backgroundColor;
+  const resolvedBgColor =
+    typeof backgroundColor === 'string' && backgroundColor.startsWith('var(')
+      ? (getCssVarValue(document.documentElement, backgroundColor) ?? backgroundColor)
+      : backgroundColor;
   const computedDisabledBgColor = tinycolor(resolvedBgColor).setAlpha(DISABLED_BG_ALPHA).toRgbString();
 
   // Dynamic values that cannot be expressed as static Tailwind classes
@@ -293,3 +294,5 @@ export const FileButton = (props) => {
     </div>
   );
 };
+
+export default FileButton;

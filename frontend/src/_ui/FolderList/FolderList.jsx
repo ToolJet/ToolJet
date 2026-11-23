@@ -123,6 +123,13 @@ function FolderList({
                   variant="tertiary"
                   onMouseEnter={handleMouseEnterInside}
                   onMouseLeave={handleMouseLeaveInside}
+                  onClick={(event) => {
+                    // Open the menu from the button itself. The row's click only toggles it when the hover
+                    // state above is already set, which a fast click (the hover update can land after the
+                    // click under createRoot) or the keyboard never does, so the row selected the item instead.
+                    event.stopPropagation();
+                    menuToggle();
+                  }}
                   dataCy={'groups-list-option-button'}
                 ></ButtonSolid>
               </div>

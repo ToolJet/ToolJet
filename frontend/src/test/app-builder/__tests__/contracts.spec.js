@@ -64,6 +64,10 @@ describe('App Builder test-kit contracts', () => {
     session.render(<button>Ready</button>);
     expect(screen.getByRole('button', { name: 'Ready' })).toBeInTheDocument();
     expect(session.store.read((state) => typeof state)).toBe('object');
+    expect(session.store.read((state) => state.openModalWidgetId, { store: 'grid' })).toBeNull();
+    expect(() => session.store.read((state) => state, { store: 'unknown' })).toThrow(
+      'Unknown App Builder readable store: unknown'
+    );
     expect(session.cleanup).toBeUndefined();
     expect(session.controls).toBeUndefined();
     expect(await fetch('http://localhost/app-builder-canary').then((response) => response.json())).toEqual({

@@ -20,10 +20,19 @@ export const dashboardSelector = {
   updateFolderTitle: "[data-cy=update-folder-title]",
   moveAppText: "[data-cy=move-selected-app-to-text]",
   selectFolder: '[data-cy="select-folder"]>.css-nwhe5y-container > .react-select__control > .react-select__value-container',
+
+  bulkMoveAppsSelect: '[data-cy="move-selected-app-to-text"]',
+  bulkMoveAppOption: '.select-option',
+  bulkMoveSelectedValue: '.selected-value',
   addToFolderButton: "[data-cy=add-to-folder-button]",
   homePageContent: '[data-cy="home-page-content"]',
   seeAllAppsTemplateButton: '[data-cy="see-all-app-template-buton"]',
   folderLabel: '[data-cy="folder-info"]',
+  anyFolderRow: '[data-cy$="-list-card"]',
+  folderSearchIcon: '[data-cy="folder-search-icon"]',
+  folderSearchInput: '[data-cy="query-manager-search-bar"]',
+  allApplicationsLink: '[data-cy="all-applications-link"]',
+  allModulesLink: '[data-cy="all-modules-link"]',
   dashboardAppsHeaderLabel: '[data-cy="app-header-label"]',
   versionLabel: '[data-cy="version-label"]',
 
@@ -82,8 +91,8 @@ export const dashboardSelector = {
     return `[data-cy="byoa-tab-${tabId}"]`;
   },
   byoaCreateTokenLink: '[data-cy="byoa-create-token-link"]',
-  byoaCopyCommand: (index) => {
-    return `[data-cy="byoa-copy-command-${index}"]`;
+  byoaCopyCommand: (stepIndex, index = 0) => {
+    return `[data-cy="byoa-copy-command-${stepIndex}-${index}"]`;
   },
   byoaDocsLink: '[data-cy="byoa-docs-link"]',
   byoaNotNowButton: '[data-cy="byoa-not-now"]',

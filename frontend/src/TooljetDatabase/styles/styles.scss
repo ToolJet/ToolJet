@@ -1,19 +1,3 @@
-.layout-header .tj-dashboard-header-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--page-weak);
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 40px;
-  height: 48px;
-  border-bottom: 1px solid var(--border-weak);
-
-  @media only screen and (max-width: 768px) {
-    border-bottom: none;
-  }
-}
-
 .tooljet-database {
   .search-icon-wrap svg {
     position: relative;

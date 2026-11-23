@@ -5,8 +5,9 @@
  * This is characterization-only: production changes are forbidden.
  */
 import { screen, waitFor, within } from '@testing-library/react';
-import { stepsConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/steps';
-import { stepsConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/steps';
+import { stepsConfig as frontendConfig } from '@tooljet/widget-definitions';
+// eslint-disable-next-line import/no-relative-packages
+import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
 import { componentDefinition } from '@/test/app-builder';
 import {
   binding,
@@ -14,6 +15,8 @@ import {
   MODULE_ID,
   store,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+
+const serverConfig = serverWidgets.stepsConfig;
 
 const ID = 'steps1';
 const HANDLE = 'steps1';
@@ -225,6 +228,30 @@ describe('Steps widget', () => {
     expect(widget.exposed().currentStepId).toBe(3);
   });
 
+  test('[Steps-OPT-003] a dynamic schema that resolves to a JSON array string renders its steps', async () => {
+    // Break this catches: handing the unparsed string back from getFormattedSteps, so the widget
+    // calls .map on a string and crashes into its error boundary.
+    const { container } = widget.render();
+    await waitFor(() => expect(labels(container)).toEqual(['Plan', 'Build', 'Ship']));
+
+    await setProperty('advanced', '{{true}}');
+    await setProperty('schema', `{{ '[{"id":10,"name":"Parsed A"},{"id":20,"name":"Parsed B","visible":false}]' }}`);
+
+    await waitFor(() => expect(labels(container)).toEqual(['Parsed A']));
+    expect(root(container)).not.toBeNull();
+    expect(widget.exposed().steps).toEqual([
+      { id: 10, name: 'Parsed A', visible: true, disabled: false },
+      { id: 20, name: 'Parsed B', visible: false, disabled: false },
+    ]);
+
+    // Blank, malformed, and non-array JSON strings still normalise to an empty list.
+    for (const invalid of ['{{ "" }}', '{{ "[not json" }}', '{{ \'{"id":1}\' }}']) {
+      await setProperty('schema', invalid);
+      await waitFor(() => expect(milestones(container)).toHaveLength(0));
+      expect(widget.exposed().steps).toEqual([]);
+    }
+  });
+
   test('[Steps-CSA-001] setStep follows the approved target and disabled policy without events', async () => {
     // Break this catches: validating target membership/local disabled state, or firing onSelect from a programmatic change.
     const { container } = widget.render({ events: selectEvents() });
@@ -239,10 +266,10 @@ describe('Steps widget', () => {
     await widget.act('setStep', 3);
     await waitFor(() => expect(widget.exposed().currentStepId).toBe(3));
 
+    // D-09: the Disable property blocks user interaction only; programmatic navigation still works.
     await setProperty('disabledState', '{{true}}');
-    await widget.act('setDisabled', false);
     await widget.act('setStep', 1);
-    expect(widget.exposed().currentStepId).toBe(3);
+    await waitFor(() => expect(widget.exposed().currentStepId).toBe(1));
     expect(widget.variables().selectCount).toBeUndefined();
   });
 

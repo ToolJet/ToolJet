@@ -754,6 +754,17 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       const hasAccessToPromotedEnv = response.hasAccessToPromotedEnvironment !== false; // default to true if not specified
       const promotedToEnvironment = response.promotedToEnvironment;
 
+      // Promote is not blocked by a table that is behind on migrations - the app now reads an older
+      // schema there, so say which tables and how far behind.
+      response.tableWarnings?.forEach(({ tableName, missingCount }) =>
+        toast(
+          `ToolJet Database table "${tableName}" is ${missingCount} migration${missingCount === 1 ? '' : 's'} behind in ${
+            response.editorEnvironment?.name
+          }. Run the pending migrations from the table's migration history.`,
+          { icon: '⚠️', duration: 8000 }
+        )
+      );
+
       set((state) => ({
         ...state,
         selectedEnvironment: response.editorEnvironment,

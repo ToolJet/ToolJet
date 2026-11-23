@@ -4,6 +4,7 @@ import { User } from '@entities/user.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { skipAppEditingVersionHydration } from './subscribers/apps.subscriber';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
+import { appVersionOnBranch, nullBranchLast, onBranch } from '@helpers/branch_scope.helper';
 import { catchDbException, cleanObject } from '@helpers/utils.helper';
 import {
   BadRequestException,
@@ -14,7 +15,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
-import { EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
+import { Brackets, EntityManager, In, MoreThan, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -30,6 +31,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppBase } from '@entities/app_base.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { componentTypes } from './services/widget-config';
+import { dropNewContainerDefaults } from '@tooljet/widget-definitions';
 import { cloneDeep, isArray, isPlainObject, merge, mergeWith } from 'lodash';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
@@ -41,8 +43,16 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
+import { InternalTable } from '@entities/internal_table.entity';
+import { tableNamesInSqlQuery } from '@helpers/tooljet_db.helper';
 import { isUUID } from 'class-validator';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from '@modules/versions/module-ref.util';
+import {
+  pinIsDraftSentinel,
+  resolveAllWorkflowRefsForVersion,
+  resolveWorkflowRef,
+} from '@modules/versions/workflow-ref.util';
+import { readWorkflowQueryRefs } from '@helpers/workflow_query_options.helper';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 
 // Permission resource that gates access to each app type. Workflows have their own
@@ -129,8 +139,9 @@ export class AppsUtilService implements IAppsUtilService {
         return manager.save(
           manager.create(App, {
             type,
-            // Workflows still carry name/icon on apps.*; non-workflows store metadata
-            // on app_versions and leave apps.* fields null/placeholder.
+            // Every app type — workflows included — stores name/icon on app_versions and
+            // leaves apps.* null/placeholder. Resolve a workflow's name via
+            // AppsRepository.findAllOrganizationWorkflows, never apps.name.
             name: null,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -185,15 +196,12 @@ export class AppsUtilService implements IAppsUtilService {
             await manager.save(
               AppVersion,
               manager.create(AppVersion, {
-                name: type === APP_TYPES.WORKFLOW ? 'v1' : uuidv4(),
+                name: uuidv4(),
                 appId: app.id,
                 definition: {},
                 currentEnvironmentId: firstPriorityEnv.id,
                 status: AppVersionStatus.DRAFT,
-                // Workflows don't participate in branching — keep them as VERSION.
-                // Apps and modules on a feature branch must be BRANCH-type so the
-                // editor recognises them as editable branch copies.
-                versionType: type === APP_TYPES.WORKFLOW ? AppVersionType.VERSION : AppVersionType.BRANCH,
+                versionType: AppVersionType.BRANCH,
                 branchId: branchId,
                 // A freshly created app/module on a feature branch has never been pushed to git —
                 // it must start unsynced so it's treated as new content until its first push
@@ -496,14 +504,12 @@ export class AppsUtilService implements IAppsUtilService {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
+    const workflowEnabled = appUpdateDto.workflow_enabled;
     const appBuilderMode = appUpdateDto.app_builder_mode;
     const { name, slug, icon } = appUpdateDto;
-    const { id: appId, currentVersionId: lastReleasedVersion, type: appType } = app;
+    const { id: appId, currentVersionId: lastReleasedVersion } = app;
 
-    const branchId =
-      appType === APP_TYPES.WORKFLOW
-        ? (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id
-        : appUpdateDto.branch_id;
+    const branchId = appUpdateDto.branch_id;
 
     // Version-level fields, written to app_versions for every app type.
     const versionParams: Record<string, any> = {};
@@ -511,6 +517,9 @@ export class AppsUtilService implements IAppsUtilService {
     if (name !== undefined) versionParams.appName = name;
     if (icon !== undefined) versionParams.icon = icon;
     if (isPublic !== undefined) versionParams.isPublic = isPublic;
+    // Fifth branch-scoped version column. Never lands in appParams — apps.workflow_enabled
+    // follows apps.is_public into disuse.
+    if (workflowEnabled !== undefined) versionParams.workflowEnabled = workflowEnabled;
 
     // App-level fields (always written to apps table) -- name/slug/icon/isPublic
     // never land here for any type; they're version-level fields above.
@@ -527,7 +536,10 @@ export class AppsUtilService implements IAppsUtilService {
     cleanObject(versionParams);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Setting current_version_id releases a version, so it passes the same release hooks.
+      const isNewRelease = !!appParams.currentVersionId && currentVersionId !== lastReleasedVersion;
       if (appParams.currentVersionId) {
+        if (isNewRelease) await this.beforeVersionRelease(manager, appId, currentVersionId);
         //check if the app version is eligible for release
         const currentEnvironment: AppEnvironment = await this.getEnvironmentOfVersion(currentVersionId, manager);
 
@@ -595,13 +607,15 @@ export class AppsUtilService implements IAppsUtilService {
         // workspaces should never see "branch" in an error they have no context
         // for.
         if (branchId) {
-          const conflictingVersion = await manager.findOne(AppVersion, {
-            where: {
-              slug: versionParams.slug,
-              branchId,
-              appId: Not(appId),
-            },
-          });
+          // Slug namespaces are per apps.type, so an app and a module may share a slug.
+          const conflictingVersion = await manager
+            .createQueryBuilder(AppVersion, 'av')
+            .innerJoin(App, 'a', 'a.id = av.app_id')
+            .where('av.slug = :slug', { slug: versionParams.slug })
+            .andWhere('av.branch_id = :branchId', { branchId })
+            .andWhere('av.app_id <> :appId', { appId })
+            .andWhere('a.type = :appType', { appType: app.type })
+            .getOne();
           if (conflictingVersion) {
             const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
             throw new BadRequestException(
@@ -773,11 +787,32 @@ export class AppsUtilService implements IAppsUtilService {
 
       // Write app-level fields to apps table
       if (Object.keys(appParams).length > 0) {
-        return await catchDbException(async () => {
+        const result = await catchDbException(async () => {
           return await manager.update(App, appId, appParams);
         }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
+        if (isNewRelease) await this.afterVersionRelease(manager, appId, currentVersionId);
+        return result;
       }
     }, manager);
+  }
+
+  /**
+   * Hook called before a version becomes the released version - override in EE
+   */
+  protected async beforeVersionRelease(manager: EntityManager, appId: string, versionId: string): Promise<void> {
+    // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after a version becomes the released version - override in EE
+   */
+  protected async afterVersionRelease(
+    manager: EntityManager,
+    appId: string,
+    versionId: string,
+    userId?: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides
   }
 
   async updateWorflowVersion(version: AppVersion, body: AppVersionUpdateDto, app: App) {
@@ -903,7 +938,7 @@ export class AppsUtilService implements IAppsUtilService {
   // Only runs for FRONT_END apps in the git-sync flow (branchId present) — no-op for
   // all other app types and all non-git flows.
   async stampIsAppSynced(apps: AppBase[], branchId?: string, type?: string): Promise<void> {
-    if (!branchId || !apps.length || type === APP_TYPES.WORKFLOW) return;
+    if (!branchId || !apps.length) return;
     const rows: { app_id: string }[] = await this.appRepository.manager.query(
       `SELECT DISTINCT av.app_id FROM app_versions av
        WHERE av.app_id = ANY($1::uuid[]) AND av.branch_id = $2::uuid AND av.is_synced = true
@@ -942,7 +977,7 @@ export class AppsUtilService implements IAppsUtilService {
       organizationId: user.organizationId,
     });
     // INNER JOIN enforces branch scope; skip EE NOT EXISTS predicate (~600x subplan cost)
-    const willInnerJoinOnBranch = !!branchId && (type === APP_TYPES.MODULE || type === APP_TYPES.FRONT_END);
+    const willInnerJoinOnBranch = !!branchId;
     const qb = this.viewableAppsQueryUsingPermissions(
       user,
       userPermission[resourceType],
@@ -966,10 +1001,10 @@ export class AppsUtilService implements IAppsUtilService {
     branchId: string | undefined,
     isGetAll: boolean
   ): void {
-    const branchPick = `appVersions.branchId = :branchId AND appVersions.id = (
+    const branchPick = `appVersions.id = (
       SELECT av_pick.id FROM app_versions av_pick
-      WHERE av_pick.app_id = apps.id AND av_pick.branch_id = :branchId
-      ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
+      WHERE av_pick.app_id = apps.id AND ${onBranch('av_pick.branch_id', 'branchId')}
+      ORDER BY ${nullBranchLast('av_pick.branch_id')}, av_pick.is_stub ASC, av_pick.updated_at DESC
       LIMIT 1
     )`;
     if (type === APP_TYPES.MODULE) {
@@ -978,7 +1013,7 @@ export class AppsUtilService implements IAppsUtilService {
       } else {
         qb.leftJoinAndSelect('apps.appVersions', 'appVersions');
       }
-    } else if (branchId && type === APP_TYPES.FRONT_END) {
+    } else if (branchId && (type === APP_TYPES.FRONT_END || type === APP_TYPES.WORKFLOW)) {
       qb.innerJoinAndSelect('apps.appVersions', 'appVersions', branchPick, { branchId });
     }
   }
@@ -1044,7 +1079,7 @@ export class AppsUtilService implements IAppsUtilService {
     // the INNER JOIN via applyAppVersionsJoin (_skipBranchScope=true). Without
     // that join, ordering by appVersions columns triggers PostgreSQL error 42P01
     // ("missing FROM-clause entry for table appversions").
-    if (branchId && type !== APP_TYPES.WORKFLOW && _skipBranchScope) {
+    if (branchId && _skipBranchScope) {
       viewableAppsQb
         .orderBy('appVersions.isStub', 'ASC')
         .addOrderBy('appVersions.updatedAt', 'DESC')
@@ -1265,36 +1300,40 @@ export class AppsUtilService implements IAppsUtilService {
 
       const mergedDefinition = {
         // ...componentMeta.definition,
-        properties: mergeWith(
-          componentMeta.definition.properties,
-          currentComponentData?.component?.definition?.properties,
-          (objValue, srcValue) => {
-            if (['Table', 'KeyValuePair'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
-              // Stored array wins: merging it with the widget defaults leaks default entries back in
-              if (isArray(srcValue)) return srcValue;
-              // Older apps can persist the array as an object keyed by index
-              if (isPlainObject(srcValue)) return Object.values(srcValue);
-              // Anything else (an fx expression, for instance) is left to lodash, which replaces it wholesale
-            } else if (
-              [
-                'DropdownV2',
-                'MultiselectV2',
-                'PopoverMenu',
-                'Steps',
-                'Tabs',
-                'RadioButtonV2',
-                'Tags',
-                'TagsInput',
-                'TreeSelect',
-                'Cascader',
-                'Navigation',
-                'ButtonGroupV2',
-              ].includes(currentComponentData?.component?.component) &&
-              isArray(objValue)
-            ) {
-              return isArray(srcValue) ? srcValue : Object.values(srcValue);
+        properties: dropNewContainerDefaults(
+          currentComponentData?.component?.component,
+          mergeWith(
+            componentMeta.definition.properties,
+            currentComponentData?.component?.definition?.properties,
+            (objValue, srcValue) => {
+              if (['Table', 'KeyValuePair'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
+                // Stored array wins: merging it with the widget defaults leaks default entries back in
+                if (isArray(srcValue)) return srcValue;
+                // Older apps can persist the array as an object keyed by index
+                if (isPlainObject(srcValue)) return Object.values(srcValue);
+                // Anything else (an fx expression, for instance) is left to lodash, which replaces it wholesale
+              } else if (
+                [
+                  'DropdownV2',
+                  'MultiselectV2',
+                  'PopoverMenu',
+                  'Steps',
+                  'Tabs',
+                  'RadioButtonV2',
+                  'Tags',
+                  'TagsInput',
+                  'TreeSelect',
+                  'Cascader',
+                  'Navigation',
+                  'ButtonGroupV2',
+                ].includes(currentComponentData?.component?.component) &&
+                isArray(objValue)
+              ) {
+                return isArray(srcValue) ? srcValue : Object.values(srcValue);
+              }
             }
-          }
+          ),
+          currentComponentData?.component?.definition?.properties
         ),
         styles: merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
         generalStyles: merge(
@@ -1347,7 +1386,11 @@ export class AppsUtilService implements IAppsUtilService {
         )
         .getMany();
 
-      const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
+      // A ModuleViewer saved without a module (properties {}) has nothing to load; reading its moduleAppId failed the
+      // whole app load with a 500 (QA DVRL-1).
+      const moduleAppIds = moduleComponents
+        .map((moduleComponent) => moduleComponent.properties?.moduleAppId?.value)
+        .filter(Boolean);
       if (moduleAppIds.length === 0) return [];
 
       const modules = await manager
@@ -1410,15 +1453,17 @@ export class AppsUtilService implements IAppsUtilService {
         .distinctOn(['av.appId'])
         .where('av.appId IN (:...moduleIds)', { moduleIds })
         .andWhere('av.isStub = false')
-        .orderBy('av.appId', 'ASC')
-        .addOrderBy('av.updatedAt', 'DESC');
+        .orderBy('av.appId', 'ASC');
       // A branch in scope → that branch's row; otherwise the default branch, where every
       // non-stub row carries the same metadata. Read from any non-stub row — no status /
       // git-on-off branching.
       const metaTargetBranchId = parentBranchId ?? defaultBranchId;
       if (metaTargetBranchId) {
-        metaQb.andWhere('av.branchId = :metaTargetBranchId', { metaTargetBranchId });
+        metaQb
+          .andWhere(onBranch('av.branch_id', 'metaTargetBranchId'), { metaTargetBranchId })
+          .addOrderBy(nullBranchLast('av.branch_id'), 'ASC');
       }
+      metaQb.addOrderBy('av.updatedAt', 'DESC');
       const metaRows = await metaQb.getMany();
       const metaMap = new Map(metaRows.map((v) => [v.appId, v]));
 
@@ -1464,15 +1509,20 @@ export class AppsUtilService implements IAppsUtilService {
     return await this.appRepository.findAllOrganizationApps(organizationId, defaultBranchId);
   }
 
-  async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {
+  // versionId narrows to one version's data queries (e.g. promote must only ever consider the
+  // version being promoted, never a sibling/abandoned draft's stale references) — optional because
+  // every other caller here (git-sync export, External API export) legitimately wants every version
+  // the app has ever had.
+  async findTooljetDbTables(appId: string, versionId?: string): Promise<{ table_id: string }[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const tooljetDbDataQueries = await manager
+      const query = manager
         .createQueryBuilder(DataQuery, 'data_queries')
         .innerJoin(DataSource, 'data_sources', 'data_queries.data_source_id = data_sources.id')
         .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_queries.app_version_id')
         .where('app_versions.app_id = :appId', { appId })
-        .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
-        .getMany();
+        .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' });
+      if (versionId) query.andWhere('app_versions.id = :versionId', { versionId });
+      const tooljetDbDataQueries = await query.getMany();
 
       const uniqTableIds = new Set();
       tooljetDbDataQueries.forEach((dq) => {
@@ -1499,9 +1549,31 @@ export class AppsUtilService implements IAppsUtilService {
         if (dq.options.table_id) uniqTableIds.add(dq.options.table_id);
       });
 
-      return [...uniqTableIds].map((table_id) => {
-        return { table_id };
-      });
+      // A join_table ref's `.name` field is misleadingly named — it holds a table id like
+      // everything else here — but keep this guard: a malformed non-uuid value would otherwise
+      // throw a Postgres cast error on the IN clause below.
+      const ids = [...uniqTableIds].filter((id): id is string => isUUID(id));
+      // SQL-mode queries name tables, not ids; resolved by name in the app's workspace, as the query runner does.
+      const names = [...new Set(tooljetDbDataQueries.flatMap((dq) => tableNamesInSqlQuery(dq.options)))];
+      if (!ids.length && !names.length) return [];
+
+      const live = await manager
+        .createQueryBuilder(InternalTable, 'it')
+        .select('it.id', 'id')
+        .where(
+          new Brackets((qb) => {
+            if (ids.length) qb.orWhere('it.id IN (:...ids)', { ids });
+            if (names.length)
+              qb.orWhere(
+                'it.table_name IN (:...names) AND it.organization_id = (SELECT organization_id FROM apps WHERE id = :appId)',
+                { names, appId }
+              );
+          })
+        )
+        .andWhere('it.deleted_at IS NULL')
+        .getRawMany();
+
+      return live.map(({ id }) => ({ table_id: id }));
     });
   }
 
@@ -1529,10 +1601,10 @@ export class AppsUtilService implements IAppsUtilService {
     const mgr = manager ?? getConnectionInstance().manager;
 
     const releasedJoin = branchId
-      ? 'released.id = app.currentVersionId AND released.branch_id = :branchId'
+      ? `released.id = app.currentVersionId AND ${appVersionOnBranch('released', 'branchId')}`
       : 'released.id = app.currentVersionId';
     const avJoin = branchId
-      ? 'av.appId = app.id AND av.slug IS NOT NULL AND av.branch_id = :branchId'
+      ? `av.appId = app.id AND av.slug IS NOT NULL AND ${appVersionOnBranch('av', 'branchId')}`
       : 'av.appId = app.id AND av.slug IS NOT NULL';
 
     const qb = mgr
@@ -1561,7 +1633,7 @@ export class AppsUtilService implements IAppsUtilService {
           .select('1')
           .from(AppVersion, 'scope')
           .where('scope.appId = app.id')
-          .andWhere('scope.branch_id = :branchId', { branchId })
+          .andWhere(appVersionOnBranch('scope', 'branchId'), { branchId })
           .getQuery();
         return 'EXISTS ' + exists;
       });
@@ -1696,6 +1768,45 @@ export class AppsUtilService implements IAppsUtilService {
     }
   }
 
+  /** Twin of checkModuleInUseByApps, scoped the same way, naming the consuming apps for workflow-node DataQuery references. */
+  async checkWorkflowInUseByApps(workflowApp: App, manager: EntityManager, branchId?: string): Promise<void> {
+    if (!workflowApp?.co_relation_id) return;
+    try {
+      // Self-ref excluded so a workflow can reference itself without blocking its own
+      // deletion — mirrors checkModuleInUseByApps.
+      const query = manager
+        .createQueryBuilder(DataQuery, 'dq')
+        .innerJoin('dq.dataSource', 'dataSource')
+        .innerJoin('dq.appVersion', 'appVersion')
+        .innerJoin(App, 'app', 'app.id = appVersion.appId')
+        .select('DISTINCT COALESCE(appVersion.app_name, app.name)', 'appName')
+        .where('dataSource.kind = :kind', { kind: 'workflows' })
+        .andWhere(`COALESCE(dq.options::jsonb ->> 'workflowId', dq.options::jsonb ->> 'workflow_id') IN (:...ids)`, {
+          ids: [workflowApp.id, workflowApp.co_relation_id],
+        })
+        .andWhere('app.id != :selfId', { selfId: workflowApp.id });
+
+      if (branchId) {
+        query.andWhere('appVersion.branchId = :branchId', { branchId });
+      } else {
+        query.andWhere('app.organizationId = :orgId', { orgId: workflowApp.organizationId });
+      }
+
+      const consumingApps = await query.getRawMany();
+
+      const appNames = consumingApps.map((r) => r.appName).filter(Boolean);
+      if (appNames.length > 0) {
+        throw new BadRequestException(
+          `Cannot delete workflow "${workflowApp.name}" — it is referenced by: ${appNames.join(', ')}. Remove the workflow queries before deleting.`
+        );
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      console.error('Failed to check if workflow is in use', error?.stack || error);
+      throw new BadRequestException('Failed to validate workflow references');
+    }
+  }
+
   async checkModulesReleasedInApp(versionId: string, organizationId: string, manager: EntityManager): Promise<void> {
     try {
       // Every ModuleViewer's resolved row must be the module's released version.
@@ -1763,6 +1874,76 @@ export class AppsUtilService implements IAppsUtilService {
       if (error instanceof BadRequestException) throw error;
       console.error('Failed to check module release state', error?.stack || error);
       throw new BadRequestException('Failed to validate module versions for release');
+    }
+  }
+
+  // A pinned nested workflow must be released at that version. Unpinned queries run whatever is
+  // released, so they pass; a sentinel can't survive the save gate and degrades to unpinned at run time.
+  async checkWorkflowsReleasedInApp(versionId: string, organizationId: string, manager: EntityManager): Promise<void> {
+    try {
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+      const refs = await resolveAllWorkflowRefsForVersion(manager, versionId, organizationId, defaultBranchId);
+      if (refs.length === 0) return;
+
+      const dataQueries = await manager.find(DataQuery, {
+        where: { id: In(refs.map((r) => r.dataQueryId)) },
+        select: ['id', 'options'],
+      });
+      const optionsByDataQueryId = new Map(dataQueries.map((dq) => [dq.id, dq.options]));
+
+      const offenders = new Map<string, { name: string; versionName: string }>();
+      for (const ref of refs) {
+        const options = optionsByDataQueryId.get(ref.dataQueryId) ?? {};
+        const { workflowVersionId: pin } = readWorkflowQueryRefs(options);
+        if (!pin || pinIsDraftSentinel(pin)) continue;
+
+        const resolved = await resolveWorkflowRef(manager, options, organizationId, defaultBranchId).catch(() => null);
+        const [workflow] = await manager.query(
+          `SELECT a.current_version_id AS "currentVersionId",
+                  COALESCE(a.name, (
+                    SELECT av.app_name FROM app_versions av
+                    WHERE av.app_id = a.id AND av.app_name IS NOT NULL
+                    ORDER BY av.created_at DESC LIMIT 1
+                  )) AS "name"
+           FROM apps a
+           WHERE a.co_relation_id::text = $1 AND a.type = $2 AND a.organization_id = $3
+           ORDER BY a.created_at ASC LIMIT 1`,
+          [ref.workflowCoRel, APP_TYPES.WORKFLOW, organizationId]
+        );
+        if (resolved?.appVersionId && resolved.appVersionId === workflow?.currentVersionId) continue;
+
+        const name = workflow?.name ?? 'unknown workflow';
+        offenders.set(`${ref.workflowCoRel}:${pin}`, { name, versionName: pin });
+      }
+      if (offenders.size === 0) return;
+
+      const workflows = [...offenders.values()];
+      const formatEntry = ({ name, versionName }: { name: string; versionName: string }) =>
+        `Workflow "${name}" version "${versionName}" is not released. Release the workflow first.`;
+      const workflowList = workflows.map(formatEntry).join(' ');
+      const [consumer] = await manager.query(
+        `SELECT a.type FROM apps a JOIN app_versions av ON av.app_id = a.id WHERE av.id = $1`,
+        [versionId]
+      );
+      throw new BadRequestException({
+        message: {
+          error:
+            workflows.length === 1
+              ? `Release blocked - ${formatEntry(workflows[0])}`
+              : `Release blocked - ${workflows.length} workflows need attention. ${workflowList}`,
+          details: workflowList,
+          ...(consumer?.type === APP_TYPES.WORKFLOW && {
+            code: 'NESTED_WORKFLOW_PINS_BLOCKED',
+            action: 'release',
+            workflows,
+          }),
+        },
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      console.error('Failed to check workflow release state', error?.stack || error);
+      throw new BadRequestException('Failed to validate workflow versions for release');
     }
   }
 

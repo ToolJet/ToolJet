@@ -24,19 +24,28 @@ describe("Manage SSO for multi workspace", () => {
     enabled: true,
   };
 
+  let workspaceId, wsName, wsSlug;
+
   beforeEach(() => {
-    cy.defaultWorkspaceLogin();
-    SSO.deleteOrganisationSSO("My workspace", ["google", "git", "openid", "ldap", "saml"]);
+    wsName = `manage-sso-${Date.now()}`;
+    wsSlug = wsName;
+
+    cy.apiLogin();
+    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
+      workspaceId = res.body.organization_id;
+      Cypress.env("workspaceId", workspaceId);
+      Cypress.env("workspaceSlug", wsSlug);
+    });
     updateInstanceSettings('ENABLE_WORKSPACE_LOGIN_CONFIGURATION', 'true');
     instanceSSOConfig(true);
     passwordToggle(true, "organization");
-    SSO.resetDomain();
-    cy.reload();
+    cy.visit(`/${wsSlug}`);
+    cy.get(commonSelectors.homePageLogo, { timeout: 50000 }).should("be.visible");
   });
 
-  after(() => {
-    cy.defaultWorkspaceLogin();
-    SSO.resetDomain();
+  afterEach(() => {
+    cy.apiLogin();
+    cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
   it("Should verify workspace settings page elements and their functionality", () => {
@@ -54,37 +63,37 @@ describe("Manage SSO for multi workspace", () => {
       "Workspace login"
     );
 
-    SSO.loginSettingPageElements("workspace");
+    SSO.loginSettingPageElements("workspace", wsSlug);
     SSO.verifyLoginSettings("workspace");
   });
 
   it("Should verify Google SSO page elements", () => {
     SSO.defaultSSO(true);
     common.navigateToManageSSO();
-    SSO.googleSSOPageElements("workspace");
+    SSO.googleSSOPageElements("workspace", wsSlug);
   });
 
   it("Should verify Git SSO page elements", () => {
     SSO.defaultSSO(true);
     common.navigateToManageSSO();
-    SSO.gitSSOPageElements("workspace");
+    SSO.gitSSOPageElements("workspace", wsSlug);
   });
 
   it("Should verify OIDC SSO page elements", () => {
     SSO.defaultSSO(true);
     common.navigateToManageSSO();
-    SSO.oidcSSOPageElements("workspace");
+    SSO.oidcSSOPageElements("workspace", wsSlug);
   });
 
   it("Should verify LDAP SSO page elements", () => {
     SSO.defaultSSO(true);
     common.navigateToManageSSO();
-    SSO.ldapSSOPageElements();
+    SSO.ldapSSOPageElements(wsSlug);
   });
 
   it("Should verify SAML SSO page elements", () => {
     SSO.defaultSSO(true);
     common.navigateToManageSSO();
-    SSO.samlSSOPageElements();
+    SSO.samlSSOPageElements(wsSlug);
   });
 });

@@ -3,7 +3,7 @@ import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
 import Form from './Components/Form/index.js';
-import { renderElement, renderCustomStyles, goToModule, getDocsLink } from './Utils';
+import { renderElement, renderCustomStyles, goToModule, getDocsLink, shouldClearLegacyInvalidDates } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, resolveReferences } from '@/_helpers/utils';
 import { DefaultComponent } from './Components/DefaultComponent';
@@ -13,7 +13,12 @@ import { CurrencyInput } from './Components/CurrencyInput/CurrencyInput.jsx';
 import { Modal } from './Components/Modal';
 import { ModalV2 } from './Components/ModalV2';
 import { CustomComponent } from './Components/CustomComponent';
-import { LibraryComponentProperties } from './Components/LibraryComponent';
+import {
+  LibraryComponentProperties,
+  LibraryComponentStyles,
+  PackComponentProperties,
+  PackComponentStyles,
+} from './Components/LibraryComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
@@ -51,10 +56,14 @@ import { Button } from '@/components/ui/Button/Button';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 import { Cascader } from './Components/Cascader/Cascader';
-import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash } from 'lucide-react';
+import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash, Blocks } from 'lucide-react';
+import { PackIdentityStrip } from './Components/LibraryComponent/PackIdentityStrip';
+import { componentIdentity } from './componentIdentity';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
+import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -176,6 +185,17 @@ export const Inspector = ({
   const setComponentPermission = useStore((state) => state.setComponentPermission);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const [tabsPropertiesPanelKey, setTabsPropertiesPanelKey] = useState(uuidv4());
+  // The Inspector isn't remounted on selection, so the tab is kept per component: selecting another
+  // component opens on Properties, as when the tabs were uncontrolled.
+  const codeMode = useCodeMode();
+  const [tab, setTab] = useState({ componentId: selectedComponentId, key: 'properties' });
+  const activeTab = tab.componentId === selectedComponentId ? tab.key : 'properties';
+  const setActiveTab = (key) => setTab({ componentId: selectedComponentId, key });
+  // Code search opens the tab (Properties / Styles) a field lives under.
+  useCodeSearchReveal('inspectorTab', selectedComponentId, (tabKey) => {
+    setActiveTab(tabKey);
+    return true;
+  });
   const dataQueries = useDataQueries();
 
   const currentState = useCurrentState();
@@ -204,6 +224,20 @@ export const Inspector = ({
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
   const isRevampedComponent = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
+  // Its Styles tab is manifest-driven accordions (LibraryComponentStyles), laid out like a revamped widget's.
+  const isLibraryComponent = component.component.component === 'LibraryComponent';
+  const isPackComponent = component.component.component === 'PackComponent';
+  // A module instance's name, for the Properties tab's identity strip. The modules slice is EE-only, so CE has none.
+  const moduleAppId = component.component?.definition?.properties?.moduleAppId?.value;
+  const moduleName = useStore(
+    (state) =>
+      moduleAppId
+        ? (state.modulesStore?.modulesList?.find((module) => module.co_relation_id === moduleAppId)?.name ??
+          state.modulesStore?.moduleDefinition?.[moduleAppId]?.name)
+        : undefined,
+    shallow
+  );
+  const identity = componentIdentity(componentMeta?.component, componentMeta?.displayName, moduleName);
   const inspectorHeaderOptions = INSPECTOR_HEADER_OPTIONS.filter(
     (option) => option.value !== 'edit-module' || componentMeta?.component === 'ModuleViewer'
   );
@@ -339,6 +373,26 @@ export const Inspector = ({
       const skipResolve =
         component.component.component === 'CustomComponent' && param.name === 'code' && paramType === 'properties';
       setComponentProperty(selectedComponentId, param.name, value, paramType, attr, skipResolve);
+
+      // A legacy DaterangePicker (migrated with properties.legacyInvalidDates)
+      // opts into the corrected invalid-date exposure the moment its date data
+      // — Default start date, Default end date, or Format — is explicitly
+      // edited. The flag is only ever cleared, never set back.
+      if (
+        shouldClearLegacyInvalidDates({
+          componentType: component.component.component,
+          paramName: param.name,
+          paramType,
+          attr,
+          definition: newDefinition,
+        })
+      ) {
+        newDefinition.properties = {
+          ...newDefinition.properties,
+          legacyInvalidDates: { value: '{{false}}' },
+        };
+        setComponentProperty(selectedComponentId, 'legacyInvalidDates', '{{false}}', 'properties', 'value', false);
+      }
     }
 
     componentDefinitionChanged(newComponent, {
@@ -544,6 +598,13 @@ export const Inspector = ({
         allComponents={allComponents}
         widthSectionTitle={t('widget.flexChild.widthAndHeight', 'Width')}
       >
+        {identity && (
+          <PackIdentityStrip
+            library={identity.library}
+            component={identity.component}
+            {...(identity.kind === 'module' && { icon: Blocks })}
+          />
+        )}
         <div className={`${shouldFreeze && 'disabled'}`}>
           <GetAccordion
             tabsPropertiesPanelKey={tabsPropertiesPanelKey}
@@ -573,16 +634,38 @@ export const Inspector = ({
       resetKeys={[selectedComponentId]}
     >
       <div style={{ marginBottom: '6rem' }} className={`${shouldFreeze && 'disabled'}`}>
-        <div style={{ ...(!isRevampedComponent && { padding: '1rem' }) }}>
-          <Inspector.RenderStyleOptions
-            componentMeta={componentMeta}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            currentState={currentState}
-            allComponents={allComponents}
-            hasCustomStyling={hasCustomStyling}
-          />
+        <div style={{ ...(!isRevampedComponent && !isLibraryComponent && !isPackComponent && { padding: '1rem' }) }}>
+          {isPackComponent ? (
+            <PackComponentStyles
+              componentMeta={componentMeta}
+              component={component}
+              paramUpdated={paramUpdated}
+              dataQueries={dataQueries}
+              currentState={currentState}
+              allComponents={allComponents}
+              darkMode={darkMode}
+            />
+          ) : isLibraryComponent ? (
+            <LibraryComponentStyles
+              componentMeta={componentMeta}
+              component={component}
+              paramUpdated={paramUpdated}
+              dataQueries={dataQueries}
+              currentState={currentState}
+              allComponents={allComponents}
+              darkMode={darkMode}
+            />
+          ) : (
+            <Inspector.RenderStyleOptions
+              componentMeta={componentMeta}
+              component={component}
+              paramUpdated={paramUpdated}
+              dataQueries={dataQueries}
+              currentState={currentState}
+              allComponents={allComponents}
+              hasCustomStyling={hasCustomStyling}
+            />
+          )}
         </div>
         {!isRevampedComponent && buildGeneralStyle()}
       </div>
@@ -609,7 +692,7 @@ export const Inspector = ({
     }
 
     return (
-      <div className="input-icon">
+      <div data-param="name" className="input-icon">
         <input
           onChange={(e) => setNewComponentName(e.target.value)}
           type="text"
@@ -624,8 +707,9 @@ export const Inspector = ({
   };
 
   const renderTabs = () => {
+    if (codeMode && (isPackComponent || component.component.component === 'LibraryComponent')) return propertiesTab;
     return (
-      <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
+      <Tabs activeKey={activeTab} onSelect={setActiveTab} id="inspector" hidden={isModuleContainer}>
         <Tab eventKey="properties" title="Properties">
           {propertiesTab}
         </Tab>
@@ -748,7 +832,8 @@ export const Inspector = ({
           {renderTabs()}
         </div>
       </div>
-      {renderDocumentationLink()}
+      {/* A pack component has no page of its own in the docs yet. */}
+      {!isPackComponent && renderDocumentationLink()}
     </div>
   );
 };
@@ -964,6 +1049,9 @@ const GetAccordion = React.memo(
 
       case 'LibraryComponent':
         return <LibraryComponentProperties {...restProps} />;
+
+      case 'PackComponent':
+        return <PackComponentProperties {...restProps} />;
 
       case 'Icon':
         return <Icon {...restProps} />;

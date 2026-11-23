@@ -48,6 +48,21 @@ const CustomDatePickerHeader = (props) => {
 
   const years = range(1900, 2101);
 
+  // react-select scrolls its menu to the focused (selected) option on open,
+  // but the daterange header's FIRST open happens while the datepicker popper
+  // is still laying out, so the 200-year list is left sitting at 1900; only a
+  // reopen landed on the current year. Scroll the selected option into view
+  // once the menu has actually painted.
+  const scrollSelectedOptionIntoView = () => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document
+          .querySelector('.daterangepicker-header .react-select__option--is-selected')
+          ?.scrollIntoView({ block: 'center' });
+      });
+    });
+  };
+
   const menuHoverColor = getModifiedColor('var(--cc-surface1-surface)', 'hover');
   const menuActiveColor = getModifiedColor('var(--cc-surface1-surface)', 'active');
 
@@ -191,6 +206,7 @@ const CustomDatePickerHeader = (props) => {
                   options={years.map((option) => ({ name: option, value: option }))}
                   value={moment(monthDate).year()}
                   onChange={(value) => changeYear(value)}
+                  onMenuOpen={scrollSelectedOptionIntoView}
                   width={'100%'}
                   styles={customSelectStyles}
                   useCustomStyles={true}

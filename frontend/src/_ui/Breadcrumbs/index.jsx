@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import SolidIcon from '../Icon/SolidIcons';
-import { BreadCrumbContext } from '../../App/App';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import cx from 'classnames';
 
 // define some custom breadcrumbs for certain routes (optional)
@@ -24,12 +24,20 @@ const routes = [
   { path: '/settings/smtp', breadcrumb: 'Settings' },
   { path: '/settings/instance-login', breadcrumb: 'Settings' },
   { path: '/settings/llm-key', breadcrumb: 'Settings' },
+  { path: '/settings/migrations', breadcrumb: 'Settings' },
+  { path: '/settings/ai-credits-usage', breadcrumb: 'Settings' },
   { path: '/:worspace_id/workflows', breadcrumb: 'Workflows', props: { beta: true } },
   { path: '/integrations/installed', breadcrumb: 'Integrations' },
   { path: '/integrations/marketplace', breadcrumb: 'Integrations' },
 ];
 import useBreadcrumbs from 'use-react-router-breadcrumbs';
 import { decodeEntities } from '@/_helpers/utils';
+
+/** Whether the page title repeats the route's own label, so the breadcrumb would read "Home > Home". */
+export const isSameAsSection = (routeLabel, pageTitle) =>
+  typeof routeLabel === 'string' &&
+  typeof pageTitle === 'string' &&
+  routeLabel.trim().toLowerCase() === pageTitle.trim().toLowerCase();
 
 export const Breadcrumbs = ({ darkMode, dataCy }) => {
   const { sidebarNav } = useContext(BreadCrumbContext);
@@ -38,8 +46,18 @@ export const Breadcrumbs = ({ darkMode, dataCy }) => {
   const search = location.search || '';
   return (
     <ol className="breadcrumb breadcrumb-arrows">
-      {breadcrumbs.map(({ breadcrumb, beta }, i) => {
+      {breadcrumbs.map(({ breadcrumb, beta, match }, i) => {
         if (i === 1 || breadcrumbs?.length === 1) {
+          // A page whose title is its section's name (Home) shows it once, not as "Home > Home".
+          if (breadcrumb && sidebarNav?.length > 0 && isSameAsSection(match?.route?.breadcrumb, sidebarNav)) {
+            return (
+              <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
+                <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
+                  {decodeEntities(sidebarNav)}
+                </li>
+              </div>
+            );
+          }
           return (
             breadcrumb &&
             sidebarNav?.length > 0 && (

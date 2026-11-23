@@ -56,6 +56,9 @@ const DISPOSITION_PATTERNS = [
   { kind: 'none', pattern: /^none:([a-z-]+(?::[A-Za-z0-9-]+)?)$/ },
 ];
 
+// Repo-relative: widget definitions live in the shared package, outside frontend/.
+const WIDGET_DEFINITIONS_DIR = 'packages/widget-definitions/src/widgets';
+
 function read(frontendRoot, relative) {
   return fs.readFileSync(path.join(frontendRoot, relative), 'utf8');
 }
@@ -74,7 +77,7 @@ function parseRegisteredWidgets(frontendRoot, registryPath) {
     .split(',')
     .map((value) => value.trim())
     .filter(Boolean);
-  const definitionDirectory = path.join(frontendRoot, 'src/AppBuilder/WidgetManager/widgets');
+  const definitionDirectory = path.join(frontendRoot, '..', WIDGET_DEFINITIONS_DIR);
   const configDefinitions = new Map();
 
   for (const file of fs.readdirSync(definitionDirectory)) {
@@ -84,7 +87,7 @@ function parseRegisteredWidgets(frontendRoot, registryPath) {
     if (match) {
       configDefinitions.set(match[1], {
         componentType: match[2],
-        definition: `src/AppBuilder/WidgetManager/widgets/${file}`,
+        definition: `${WIDGET_DEFINITIONS_DIR}/${file}`,
         surface: parseRegisteredSurface(source),
       });
     }

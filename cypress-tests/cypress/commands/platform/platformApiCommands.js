@@ -315,7 +315,12 @@ Cypress.Commands.add(
       if (isAll) return [];
       else if (type === "datasource") {
         return resources.map((id) => ({ dataSourceId: id }));
-      } else if (resourceType === "folder" || resourceType === "module_folder") {
+      } else if (
+        resourceType === "folder" ||
+        resourceType === "workflow_folder" ||
+        resourceType === "module_folder" ||
+        resourceType === "data_source_folder"
+      ) {
         return resources.map((id) => ({ folderId: id }));
       }
       return resources.map((id) => ({ appId: id }));
@@ -332,7 +337,22 @@ Cypress.Commands.add(
         };
       }
 
-      if (type === "folder" || type === "module_folder") {
+      if (type === "data_source_folder") {
+        return {
+          canEditFolder: perms.canEditFolder ?? false,
+          canEditApps: perms.canEditApps ?? false,
+          canViewApps: perms.canViewApps ?? false,
+          // Defaults true = unrestricted.
+          canRunQuery: perms.canRunQuery ?? true,
+          resourcesToAdd: formattedResources,
+        };
+      }
+
+      if (
+        type === "folder" ||
+        type === "workflow_folder" ||
+        type === "module_folder"
+      ) {
         return {
           canEditFolder: perms.canEditFolder ?? true,
           canEditApps: perms.canEditApps ?? false,
@@ -376,14 +396,19 @@ Cypress.Commands.add(
     };
 
     const sendRequest = (url, headers, body, resourceType, name) => {
+      // failOnStatusCode:false so a rejection surfaces the server's message instead of Cypress' generic "status code was not 2xx" wall of headers.
       cy.request({
         method: "POST",
         url,
         headers,
         body,
         log: false,
+        failOnStatusCode: false,
       }).then((res) => {
-        expect(res.status).to.equal(201);
+        expect(
+          res.status,
+          `Create ${resourceType} granular permission '${name}' -> ${JSON.stringify(res.body)}`,
+        ).to.equal(201);
       });
     };
 
@@ -393,10 +418,19 @@ Cypress.Commands.add(
         const typeMap = {
           app: { type: "app", endpoint: "app" },
           module: { type: "module", endpoint: "data-source" },
-          workflow: { type: "workflow", endpoint: "data-source" },
+          // Workflow resources ride the app granular endpoint (there is no /granular-permissions/workflow route); the DTO's `type` is what the service dispatches on.
+          workflow: { type: "workflow", endpoint: "app" },
           datasource: { type: "data_source", endpoint: "data-source" },
           folder: { type: "folder", endpoint: "folder" },
+          workflow_folder: {
+            type: "workflow_folder",
+            endpoint: "workflow-folder",
+          },
           module_folder: { type: "module_folder", endpoint: "module-folder" },
+          data_source_folder: {
+            type: "data_source_folder",
+            endpoint: "data-source-folder",
+          },
         };
         const { type, endpoint } = typeMap[resourceType] || typeMap.app;
         const url = isEnterprise
@@ -480,6 +514,7 @@ Cypress.Commands.add(
               modules:"data-source",
               workflow_folder: "workflow-folder",
               module_folder: "module-folder",
+              data_source_folder: "data-source-folder",
             };
             const endpoint = typeEndpointMap[permission.type] || "app";
 
@@ -1209,12 +1244,13 @@ Cypress.Commands.add(
   },
 );
 
-Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig) => {
+Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig, organizationId = Cypress.env("workspaceId")) => {
+  const scope = Cypress.env("environment") === "Cloud" ? `/${organizationId}` : "";
   return cy.getAuthHeaders().then((headers) => {
     return cy
       .request({
         method: "PUT",
-        url: `${Cypress.env("server_host")}/api/white-labelling`,
+        url: `${Cypress.env("server_host")}/api/white-labelling${scope}`,
         headers: headers,
         body: whiteLabelConfig,
         log: false,
@@ -1255,21 +1291,30 @@ Cypress.Commands.add("apiGetDefaultWorkspace", () => {
 
 Cypress.Commands.add(
   "apiUpdateLLMKey",
-  (apikey = "", licenseType = "selfhostai", useEnvironmentConfig = false) => {
+  (
+    apikey = "",
+    licenseType = "selfhostai",
+    useEnvironmentConfig = false,
+    { workspaceId, provider, expectedStatus = 200 } = {},
+  ) => {
     return cy.getAuthHeaders().then((headers) => {
       return cy
         .request({
           method: "PATCH",
           url: `${Cypress.env("server_host")}/api/ai/update-key`,
-          headers: headers,
+          headers: workspaceId
+            ? { ...headers, "Tj-Workspace-Id": workspaceId }
+            : headers,
           body: {
             apikey: apikey,
             licenseType: licenseType,
             useEnvironmentConfig: useEnvironmentConfig,
+            ...(provider && { provider }),
           },
+          failOnStatusCode: expectedStatus === 200,
         })
         .then((response) => {
-          expect(response.status).to.equal(200);
+          expect(response.status).to.equal(expectedStatus);
           Cypress.log({
             name: "apiUpdateKey",
             displayName: `AI KEY UPDATED : ${licenseType}`,
@@ -1358,7 +1403,6 @@ Cypress.Commands.add("apiRenameFolder", (folderId, newName) => {
   });
 });
 
-
 Cypress.Commands.add("apiAddModuleToFolder", (moduleId, folderId) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1388,6 +1432,235 @@ Cypress.Commands.add("apiRemoveModuleFromFolder", (moduleId, folderId) => {
   });
 });
 
+const createFolderOfType = (folderName, folderType) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/folders`,
+        headers,
+        body: { name: folderName, type: folderType },
+      })
+      .then((response) => {
+        expect(response.status, `Create ${folderType} folder '${folderName}'`).to.equal(201);
+        return response.body;
+      }),
+  );
+
+const getFolderIdOfType = (folderName, appType) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/folder-apps?searchKey=&type=${appType}`,
+        headers,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        const folder = (response.body.folders || []).find((f) => f.name === folderName);
+        if (!folder) throw new Error(`${appType} folder with name ${folderName} not found`);
+        return folder.id;
+      }),
+  );
+
+const addAppIdToFolder = (appId, folderId) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/folder-apps`,
+        headers,
+        body: { app_id: appId, folder_id: folderId },
+        log: false,
+        failOnStatusCode: false,
+      })
+      .then((response) => {
+        expect(
+          response.status,
+          `Add app ${appId} to folder ${folderId} -> ${JSON.stringify(response.body)}`,
+        ).to.equal(201);
+        return response.body;
+      }),
+  );
+
+const removeAppIdFromFolder = (appId, folderId) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy.request({
+      method: "PUT",
+      url: `${Cypress.env("server_host")}/api/folder-apps/${folderId}`,
+      headers,
+      body: { app_id: appId },
+      log: false,
+    }),
+  );
+
+Cypress.Commands.add("apiCreateAppFolder", (folderName) =>
+  createFolderOfType(folderName, "front-end"),
+);
+
+Cypress.Commands.add("apiGetAppFolderId", (folderName) =>
+  getFolderIdOfType(folderName, "front-end"),
+);
+
+// Argument order is (folderId, appId) — the signature this command has always had, kept so existing callers are unaffected.
+Cypress.Commands.add("apiAddAppToFolder", (folderId, appId) =>
+  addAppIdToFolder(appId, folderId),
+);
+
+Cypress.Commands.add("apiRemoveAppFromFolder", (appId, folderId) =>
+  removeAppIdFromFolder(appId, folderId),
+);
+
+Cypress.Commands.add("apiBulkAddAppsToFolder", (folderId, appIds = []) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/folder-apps`,
+        headers,
+        body: { app_ids: appIds, folder_id: folderId },
+        log: false,
+        failOnStatusCode: false,
+      })
+      .then((response) => {
+        expect(
+          response.status,
+          `Bulk add ${appIds.length} apps to folder ${folderId} -> ${JSON.stringify(response.body)}`,
+        ).to.equal(201);
+        return response.body;
+      }),
+  ),
+);
+
+Cypress.Commands.add("apiCreateWorkflowFolder", (folderName) =>
+  createFolderOfType(folderName, "workflow"),
+);
+
+Cypress.Commands.add("apiGetWorkflowFolderId", (folderName) =>
+  getFolderIdOfType(folderName, "workflow"),
+);
+
+Cypress.Commands.add("apiAddWorkflowToFolder", (workflowId, folderId) =>
+  addAppIdToFolder(workflowId, folderId),
+);
+
+Cypress.Commands.add("apiRemoveWorkflowFromFolder", (workflowId, folderId) =>
+  removeAppIdFromFolder(workflowId, folderId),
+);
+
+const dataSourceFolderUrl = (path, branchId) => {
+  const url = `${Cypress.env("server_host")}/api/folder-data-sources${path}`;
+  return branchId
+    ? `${url}${url.includes("?") ? "&" : "?"}branch_id=${branchId}`
+    : url;
+};
+
+Cypress.Commands.add("apiCreateDataSourceFolder", (folderName) => {
+  return cy.apiCreateFolder(folderName, "data_source");
+});
+
+Cypress.Commands.add(
+  "apiGetDataSourceFolders",
+  (searchKey = "", { branchId = null } = {}) => {
+    return cy.getAuthHeaders().then((headers) => {
+      return cy
+        .request({
+          method: "GET",
+          url: dataSourceFolderUrl(
+            `?searchKey=${encodeURIComponent(searchKey)}`,
+            branchId,
+          ),
+          headers,
+          log: false,
+        })
+        .then((response) => {
+          expect(response.status).to.equal(200);
+          return response.body.folders ?? [];
+        });
+    });
+  },
+);
+
+Cypress.Commands.add("apiGetDataSourceFolderId", (folderName) => {
+  return cy.apiGetDataSourceFolders().then((folders) => {
+    const folder = folders.find((f) => f.name === folderName);
+    if (!folder)
+      throw new Error(`Data source folder with name ${folderName} not found`);
+    return folder.id;
+  });
+});
+
+Cypress.Commands.add("apiGetDataSourceIdsInFolder", (folderId) => {
+  return cy.apiGetDataSourceFolders().then((folders) => {
+    const folder = folders.find((f) => f.id === folderId);
+    return (folder?.folder_data_sources ?? []).map((m) => m.data_source_id);
+  });
+});
+
+Cypress.Commands.add(
+  "apiAddDataSourceToFolder",
+  (dataSourceId, folderId, { branchId = null, failOnStatusCode = false } = {}) => {
+    return cy.getAuthHeaders().then((headers) => {
+      return cy.request({
+        method: "POST",
+        url: dataSourceFolderUrl("", branchId),
+        headers,
+        body: { folder_id: folderId, data_source_id: dataSourceId },
+        failOnStatusCode,
+        log: false,
+      });
+    });
+  },
+);
+
+// Bulk variant — a DIFFERENT request body from the single move.
+Cypress.Commands.add(
+  "apiBulkAddDataSourcesToFolder",
+  (dataSourceIds = [], folderId, { branchId = null, failOnStatusCode = false } = {}) => {
+    return cy.getAuthHeaders().then((headers) => {
+      return cy.request({
+        method: "POST",
+        url: dataSourceFolderUrl("", branchId),
+        headers,
+        body: { folder_id: folderId, data_source_ids: dataSourceIds },
+        failOnStatusCode,
+        log: false,
+      });
+    });
+  },
+);
+
+// PUT, not DELETE — removes one data source from a folder on this branch.
+Cypress.Commands.add(
+  "apiRemoveDataSourceFromFolder",
+  (dataSourceId, folderId, { branchId = null, failOnStatusCode = false } = {}) => {
+    return cy.getAuthHeaders().then((headers) => {
+      return cy.request({
+        method: "PUT",
+        url: dataSourceFolderUrl(`/${folderId}`, branchId),
+        headers,
+        body: { data_source_id: dataSourceId },
+        failOnStatusCode,
+        log: false,
+      });
+    });
+  },
+);
+
+Cypress.Commands.add("apiCreateGlobalDataSource", (dataSourceName) => {
+  cy.apiCreateDataSource(
+    `${Cypress.env("server_host")}/api/data-sources`,
+    dataSourceName,
+    "restapi",
+    [
+      { key: "url", value: "https://example.com" },
+      { key: "auth_type", value: "none" },
+    ],
+  );
+  return cy.then(() => Cypress.env(`${dataSourceName}-dataSource-id`));
+});
+
 Cypress.Commands.add("apiRemoveUserFromGroup", (groupId, email) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1407,6 +1680,205 @@ Cypress.Commands.add("apiRemoveUserFromGroup", (groupId, email) => {
           headers,
           log: false,
         });
+      });
+  });
+});
+
+Cypress.Commands.add("apiCreateModule", (moduleName, branchId) => {
+  return cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/modules`,
+        headers,
+        body: { name: moduleName, icon: "floppydisk", type: "module", branchId },
+      })
+      .then((res) => {
+        expect(res.status, `Create module '${moduleName}'`).to.equal(201);
+        const module = res.body;
+        Cypress.log({ message: `[gitSync] Module '${moduleName}' created (id: ${module.id})` });
+        return module;
+      }),
+  );
+});
+
+Cypress.Commands.add("apiGetEditingVersionId", (appId, branchId = null) => {
+  return cy.getAuthHeaders().then((headers) => {
+    const reqHeaders = branchId ? { ...headers, "x-branch-id": branchId } : headers;
+    return cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/apps/${appId}`,
+        headers: reqHeaders,
+      })
+      .then((res) => {
+        expect(res.status, `GET /api/apps/${appId}`).to.equal(200);
+        const versionId = res.body.editing_version?.id;
+        expect(versionId, "editing_version.id present").to.be.a("string");
+        Cypress.log({
+          message: `[gitSync] Editing version ID for app ${appId}: ${versionId}`,
+        });
+        return versionId;
+      });
+  });
+});
+
+Cypress.Commands.add("apiCreateAppVersion", (appId, versionName, versionFromId, branchId = null) => {
+  return cy.getAuthHeaders().then((headers) => {
+    const reqHeaders = branchId ? { ...headers, "x-branch-id": branchId } : headers;
+    return cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/apps/${appId}/versions`,
+        headers: reqHeaders,
+        body: { versionName, versionFromId },
+      })
+      .then((res) => {
+        expect(res.status, `Create version '${versionName}'`).to.be.oneOf([200, 201]);
+        const version = res.body?.version || res.body;
+        expect(version?.id, "new version id").to.be.a("string");
+        Cypress.log({ message: `[gitSync] Version '${versionName}' created (id: ${version.id})` });
+        return version;
+      });
+  });
+});
+
+// Publishes the existing draft in place (PUT); branching does not allow a second draft.
+Cypress.Commands.add("apiSaveAppVersion", (appId, versionId, versionName, branchId = null) => {
+  return cy.getAuthHeaders().then((headers) => {
+    const reqHeaders = branchId ? { ...headers, "x-branch-id": branchId } : headers;
+    return cy
+      .request({
+        method: "PUT",
+        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${versionId}`,
+        headers: reqHeaders,
+        body: { name: versionName, status: "PUBLISHED" },
+      })
+      .then((res) => {
+        expect(res.status, `Save version '${versionName}'`).to.be.oneOf([200, 201, 204]);
+        Cypress.log({
+          message: `[gitSync] Version ${versionId} saved as '${versionName}' (PUBLISHED)`,
+        });
+        // The PUT endpoint returns an empty body on 204; return a minimal version object.
+        return { id: versionId, name: versionName };
+      });
+  });
+});
+
+Cypress.Commands.add(
+  "apiUpdateComponentLayout",
+  (appId, versionId, pageId, componentId, newLayout) => {
+    return cy.getAuthHeaders().then((headers) =>
+      cy
+        .request({
+          method: "PUT",
+          url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${versionId}/components/layout`,
+          headers,
+          body: {
+            is_user_switched_version: false,
+            pageId,
+            diff: {
+              [componentId]: {
+                layouts: {
+                  desktop: newLayout,
+                },
+              },
+            },
+          },
+        })
+        .then((res) => {
+          expect(res.status, "Update component layout").to.be.oneOf([
+            200, 204,
+          ]);
+          Cypress.log({
+            message: `[gitSync] Component ${componentId} layout updated → ${JSON.stringify(newLayout)}`,
+          });
+        }),
+    );
+  },
+);
+
+Cypress.Commands.add("apiCreatePage", (appId, versionId, pageName, pageId, index = 1) => {
+  return cy.getAuthHeaders().then((headers) => {
+    const handle = pageName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    return cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${versionId}/pages`,
+        headers,
+        body: { id: pageId, name: pageName, handle, index },
+      })
+      .then((res) => {
+        expect(res.status, `POST pages (${pageName})`).to.be.oneOf([200, 201, 204]);
+        Cypress.log({ message: `[lifecycle] Created page '${pageName}' (id: ${pageId})` });
+      });
+  });
+});
+
+Cypress.Commands.add("apiDeletePage", (appId, versionId, pageId) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "DELETE",
+        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${versionId}/pages`,
+        headers,
+        body: { pageId, deleteAssociatedPages: true },
+      })
+      .then((res) => {
+        expect(res.status, `DELETE page ${pageId}`).to.be.oneOf([200, 201, 204]);
+        Cypress.log({ message: `[lifecycle] Deleted page ${pageId}` });
+      });
+  });
+});
+
+Cypress.Commands.add("apiCreateQuery", (dataSourceId, versionId, queryName, kind = "restapi", options = {}) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/data-queries/data-sources/${dataSourceId}/versions/${versionId}`,
+        headers,
+        body: { name: queryName, kind, options, app_version_id: versionId },
+      })
+      .then((res) => {
+        expect(res.status, `POST data-query (${queryName})`).to.be.oneOf([200, 201]);
+        Cypress.log({ message: `[lifecycle] Created query '${queryName}': ${res.body?.id}` });
+        return res.body;
+      });
+  });
+});
+
+Cypress.Commands.add("apiDeleteQuery", (queryId, versionId) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "DELETE",
+        url: `${Cypress.env("server_host")}/api/data-queries/${queryId}/versions/${versionId}`,
+        headers,
+      })
+      .then((res) => {
+        expect(res.status, `DELETE data-query ${queryId}`).to.be.oneOf([200, 201, 204]);
+        Cypress.log({ message: `[lifecycle] Deleted query ${queryId}` });
+      });
+  });
+});
+
+Cypress.Commands.add("apiDeleteComponent", (appId, versionId, componentId, pageId) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "DELETE",
+        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${versionId}/components`,
+        headers,
+        body: {
+          diff: [componentId],
+          pageId,
+          is_user_switched_version: false,
+        },
+      })
+      .then((res) => {
+        expect(res.status, `DELETE component ${componentId}`).to.be.oneOf([200, 201, 204]);
+        Cypress.log({ message: `[lifecycle] Deleted component ${componentId} from page ${pageId}` });
       });
   });
 });

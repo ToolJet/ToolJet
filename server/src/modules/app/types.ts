@@ -17,6 +17,8 @@ export interface UserAllPermissions {
 export interface FeatureConfig {
   license?: LICENSE_FIELD;
   auditLogsKey?: string;
+  // Further action types this feature's endpoints write (set as `actionType` on the audit payload), listed in the audit log filter.
+  auditLogsKeys?: string[];
   skipAuditLogs?: boolean;
   isPublic?: boolean;
   isSuperAdminFeature?: boolean;
@@ -32,6 +34,9 @@ export interface ResourceDetails {
 interface Features {
   [FEATURE_KEY.HEALTH]: FeatureConfig;
   [FEATURE_KEY.ROOT]: FeatureConfig;
+  [FEATURE_KEY.MIGRATION_STATUS]: FeatureConfig;
+  [FEATURE_KEY.MIGRATION_RUNS]: FeatureConfig;
+  [FEATURE_KEY.CLI_COMPATIBILITY]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

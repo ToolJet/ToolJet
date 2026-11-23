@@ -586,7 +586,7 @@ export const addNewRowCellInput = (column = "id", rowIndex = 0, value) => {
 // `type: 'toggle'` property renders through ProgramaticallyHandleProperties, whose
 // data-cy is the displayName slugified + `-toggle-button`
 // (CodeBuilder/Elements/Toggle.jsx). Pass the displayName exactly as it appears in
-// WidgetManager/widgets/table.js (see tableText.toggle* constants).
+// packages/widget-definitions/src/widgets/table.js (see tableText.toggle* constants).
 // force:true — the inspector panel virtualises and a toggle can be partially covered
 // by the sticky accordion header even after scrollIntoView.
 /**

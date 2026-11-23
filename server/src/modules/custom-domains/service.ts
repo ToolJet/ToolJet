@@ -22,7 +22,7 @@ export class CustomDomainsService {
     throw new Error('Method not implemented.');
   }
 
-  async resolveCustomDomain(domain: string): Promise<any> {
+  async resolveCustomDomain(domain: string, options?: { requireActiveSsl?: boolean }): Promise<any> {
     return null;
   }
 }

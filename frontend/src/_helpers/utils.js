@@ -1,7 +1,6 @@
 /* eslint-disable no-useless-escape */
 import moment from 'moment';
 import _, { isEmpty } from 'lodash';
-import JSON5 from 'json5';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
@@ -11,6 +10,7 @@ import { staticDataSources } from '@/AppBuilder/QueryManager/constants';
 import { getDateTimeFormat } from './appUtils';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
 import { materializeFileHandleRefs } from '@/AppBuilder/_utils/fileHandleRegistry';
 
@@ -102,7 +102,7 @@ export function resolveCode(code, state, customObjects = {}, withError = false, 
     error = `Cannot resolve function call ${code}`;
   } else {
     try {
-      const evalFunction = Function(
+      const evalFunction = (strictMode.isStrict?.() ? strictMode.compileBinding : Function)(
         [
           'variables',
           'components',
@@ -341,14 +341,18 @@ export function validateQueryName(name) {
 }
 
 export function validateKebabCase(slug) {
-  const pattern = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/;
+  // Unicode letters and digits: the handle generator (lodash kebabCase of the page name)
+  // keeps non-Latin scripts, and the viewer routes them via percent-encoding. Kept in sync
+  // with the backend rule (server app-validation catalog/pages.json handlePattern) by
+  // AppBuilder/__tests__/validationCatalogParity.spec.js.
+  const pattern = /^[\p{L}\p{N}]+(?:-[\p{L}\p{N}]+)*$/u;
   if (slug === '') {
     return { isValid: false, error: 'Handle cannot be empty.' };
   }
-  if (!/^[a-zA-Z0-9]/.test(slug)) {
+  if (!/^[\p{L}\p{N}]/u.test(slug)) {
     return { isValid: false, error: 'Handle must start with a letter or number.' };
   }
-  if (/[^a-zA-Z0-9-]/.test(slug)) {
+  if (/[^\p{L}\p{N}-]/u.test(slug)) {
     return { isValid: false, error: 'Handle can only contain letters, numbers, and hyphens.' };
   }
   if (/--/.test(slug)) {
@@ -597,15 +601,6 @@ export function toQuery(params, delimiter = '&') {
     return query;
   }, '');
 }
-
-export const isJson = (str) => {
-  try {
-    JSON5.parse(str);
-  } catch (e) {
-    return false;
-  }
-  return true;
-};
 
 export const isStringValidJson = (str) => {
   try {
@@ -1082,6 +1077,7 @@ export const validateName = (
       ':workspaceId',
       'confirm-invite',
       'oauth2',
+      'cli',
       'applications',
       'integrations',
       'login',
@@ -1416,6 +1412,12 @@ export const hasBuilderRole = (roleObj) => {
   return false;
 };
 
+export const canAccessTooljetDbDashboard = () => {
+  const { admin, super_admin, role } = authenticationService.currentSessionValue ?? {};
+  if (admin || super_admin) return true;
+  return hasBuilderRole(role ?? {}) && window.public_config?.TOOLJET_DB_DISABLE_BUILDER_EDIT !== 'true';
+};
+
 export function checkIfToolJetCloud(version) {
   if (!version) return false;
   const parsed = version.split('-');
@@ -1479,8 +1481,19 @@ export function utilityFuncForNameSeed(componentDef) {
   const component = componentDef.component.component;
   switch (component) {
     case 'LibraryComponent':
+    case 'PackComponent':
       return componentDef.component.definition?.properties?.componentName?.value ?? componentDef.component.component;
     default:
       return componentDef.component.component;
+  }
+}
+
+// The AI prompt cookie arrives already decoded by cookie-parser; older website flows may still send
+// it URL-encoded. Decode when possible, otherwise keep the text as-is (a literal "%" would throw).
+export function decodePromptCookie(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
   }
 }

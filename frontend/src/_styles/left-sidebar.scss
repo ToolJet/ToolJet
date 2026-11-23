@@ -157,6 +157,17 @@
     transform-origin: 100% 0%;
   }
 
+  // Same Beta pill as the components panel, scaled onto the 16px search glyph.
+  .search-icon .code-search-beta-tag {
+    position: absolute;
+    top: -7px;
+    right: -2px;
+    z-index: 1;
+    pointer-events: none;
+    transform: scale(0.75);
+    transform-origin: top right;
+  }
+
   .left-sidebar-inspector {
     .card-body {
       padding: 1rem 0rem 1rem 1rem;
@@ -466,6 +477,24 @@
     padding: 4px 7px;
     border-radius: 7px;
     color: var(--slate10);
+    font-size: 10px;
+  }
+
+  .error-target {
+    color: var(--text-placeholder);
+  }
+
+  .debugger-error-title {
+    margin: 4px 0;
+  }
+
+  .debugger-log-message {
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  .debugger-log-message--custom {
+    color: var(--text-placeholder);
   }
 
   .error-target-custom-log {

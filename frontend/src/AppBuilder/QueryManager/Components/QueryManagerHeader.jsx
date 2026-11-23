@@ -21,7 +21,7 @@ import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { debounce } from 'lodash';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
+import TooljetAi from '@/_ui/Icon/solidIcons/TooljetAI';
 import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 import { useWriteQueryEntry } from '@/AppBuilder/QueryManager/_hooks/useWriteQueryEntry';
 
@@ -106,13 +106,14 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
       });
   };
   const tabs = [
-    { id: 1, label: 'Setup' },
+    { id: 1, key: 'setup', label: 'Setup' },
     {
       id: 2,
+      key: 'transformation',
       label: 'Transformation',
       condition: !TRANSFORMATION_DISABLED_KINDS.has(selectedQuery?.kind),
     },
-    { id: 3, label: 'Settings' },
+    { id: 3, key: 'settings', label: 'Settings' },
   ];
 
   const iconOnly = headerWidth > 0 && headerWidth < ICON_ONLY_BUTTON_BREAKPOINT;
@@ -137,6 +138,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
                   <p
                     key={tab.id}
                     data-cy={`query-tab-${tab.label.toLowerCase()}`}
+                    data-tab-key={tab.key}
+                    aria-selected={activeTab === tab.id}
                     className="m-0 d-flex align-items-center h-100"
                     onClick={() => setActiveTab(tab.id)}
                     style={{
@@ -211,7 +214,7 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
   };
 
   return (
-    <div className="query-name-breadcrum d-flex align-items-center ms-1">
+    <div data-param="name" className="query-name-breadcrum d-flex align-items-center ms-1">
       <span
         className="query-manager-header-query-name font-weight-400"
         data-cy={`query-name-label`}
@@ -344,7 +347,7 @@ const GenerateQueryButton = ({ iconOnly }) => {
           disabled={shouldFreeze || isAiBlockedByBranch}
           data-cy="query-generate-button"
         >
-          <AITripleSparkles width="14" height="14" />
+          <TooljetAi width="14" height="14" />
           {!iconOnly && buttonLabel}
         </ButtonComponent>
       </span>

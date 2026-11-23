@@ -119,6 +119,24 @@ export const RadioButtonV2 = ({
     setExposedVariable('isValid', validationStatus?.isValid);
   }
 
+  // The exposed selectOption is created inside effects, so it reads the latest options and selection from here.
+  const latestSelectionRef = useRef();
+  latestSelectionRef.current = { selectOptions, checkedValue };
+
+  function selectOptionAction(value) {
+    const _value = isObject(value) && has(value, 'value') ? value?.value : value;
+    const { selectOptions: currentOptions, checkedValue: currentValue } = latestSelectionRef.current;
+    // Loose match, like the `checked` check in render, so '1' still selects an option whose value is 1.
+    const isOption = currentOptions.some((option) => option.value == _value);
+    if (isOption) {
+      onSelect(_value);
+      fireEvent('onSelectionChange');
+      return;
+    }
+    // A value no option has never replaces a selection; an empty group just reports ''.
+    if (currentValue === undefined || currentValue === null) onSelect('');
+  }
+
   useEffect(() => {
     onSelect(findDefaultItem(advanced ? schema : options));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -138,8 +156,7 @@ export const RadioButtonV2 = ({
     setExposedVariable('options', _options);
 
     setExposedVariable('selectOption', async function (value) {
-      onSelect(value);
-      fireEvent('onSelectionChange');
+      selectOptionAction(value);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(selectOptions)]);
@@ -194,8 +211,7 @@ export const RadioButtonV2 = ({
       isVisible: properties.visibility,
       isDisabled: disabledState,
       selectOption: async function (value) {
-        onSelect(value);
-        fireEvent('onSelectionChange');
+        selectOptionAction(value);
       },
       deselectOption: async function () {
         onSelect(null);
@@ -287,7 +303,7 @@ export const RadioButtonV2 = ({
           <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
         ) : (
           <div
-            className="d-flex px-0"
+            className="radio-button-options d-flex tw-px-0"
             ref={radioBtnRef}
             style={{
               ...computedLayoutStyles,
@@ -315,22 +331,27 @@ export const RadioButtonV2 = ({
                   </span>
                   <input
                     data-cy={`${dataCy}-option-input-${index}`}
+                    className="tw-peer"
                     style={{
                       marginTop: '1px',
                       backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
                     }}
                     checked={checkedValue == option.value}
                     type="radio"
+                    name={`radio-group-${id}`}
                     value={option.value}
                     onChange={() => {
                       onSelect(option.value);
                       fireEvent('onSelectionChange');
                     }}
-                    disabled={option.isDisabled}
+                    // widget-level Disable/Loading must disable every option, not
+                    // just the per-option flag — native disabled also drops it from
+                    // the tab order + blocks Space/arrow selection
+                    disabled={isDisabled || isLoading || option.isDisabled}
                     id={inputId}
                   />
                   <span
-                    className="checkmark"
+                    className="checkmark peer-focus-visible:tw-ring-2 peer-focus-visible:tw-ring-interactive-focus-outline peer-focus-visible:tw-ring-offset-1"
                     style={{
                       backgroundColor:
                         !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : switchOffBackgroundColor),

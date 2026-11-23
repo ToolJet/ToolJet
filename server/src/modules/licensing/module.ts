@@ -4,7 +4,9 @@ import { LicenseRepository } from './repository';
 import { LicenseInitService, LicenseTermsService } from './interfaces/IService';
 import { FeatureAbilityFactory } from './ability';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import { RolesRepository } from '@modules/roles/repository';
 import { SubModule } from '@modules/app/sub-module';
+import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
 export class LicenseModule extends SubModule {
   static async forRoot(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const {
@@ -48,6 +50,7 @@ export class LicenseModule extends SubModule {
     return {
       module: LicenseModule,
       global: true,
+      imports: [await InMemoryCacheModule.register(configs)],
       providers: [
         UserRepository,
         LicenseRepository,
@@ -69,6 +72,7 @@ export class LicenseModule extends SubModule {
         LicenseWorkflowsService,
         FeatureAbilityFactory,
         OrganizationRepository,
+        RolesRepository,
       ],
       controllers: [
         LicenseController,

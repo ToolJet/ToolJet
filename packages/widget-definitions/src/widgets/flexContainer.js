@@ -1,0 +1,298 @@
+export const flexContainerConfig = {
+  name: 'FlexContainer',
+  displayName: 'Flex Container',
+  description: 'Auto-layout flex container',
+  defaultSize: {
+    width: 15,
+    height: 300,
+  },
+  component: 'FlexContainer',
+  others: {
+    showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+    showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+  },
+  properties: {
+    // ToolJet UI 2.0: draw this container as a card with a header above the flex body.
+    cardStyle: {
+      type: 'switch',
+      displayName: 'Surface',
+      isFxNotRequired: true,
+      fullWidth: true,
+      options: [
+        { displayName: 'Plain', value: 'none' },
+        { displayName: 'Card', value: 'shadcnCard' },
+      ],
+      validation: { schema: { type: 'string' }, defaultValue: 'none' },
+    },
+    // A card header drawn as a strip (title left, description right, a divider under it), as Ant's Card draws it; set
+    // by the AI compiler from a pack's surface.
+    cardHeaderDivider: {
+      type: 'toggle',
+      displayName: 'Header divider',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+    },
+    // A card in an app built on a component pack with its own design system (Ant, MUI) takes the pack's card look,
+    // written in its styles by the AI compiler ('own'), instead of the theme's card ('theme').
+    cardLook: {
+      type: 'switch',
+      displayName: 'Card look',
+      isFxNotRequired: true,
+      fullWidth: true,
+      options: [
+        { displayName: 'Theme', value: 'theme' },
+        { displayName: 'Own', value: 'own' },
+      ],
+      validation: { schema: { type: 'string' }, defaultValue: 'theme' },
+    },
+    // Optional: a title or description bound to a query reads undefined until the query answers, and the card draws
+    // nothing for it; required, every page load logged "received undefined" for each card.
+    cardTitle: {
+      type: 'code',
+      displayName: 'Card title',
+      validation: { schema: { type: 'string', optional: true }, defaultValue: '' },
+    },
+    cardExtra: {
+      type: 'code',
+      displayName: 'Card description',
+      validation: { schema: { type: 'string', optional: true }, defaultValue: '' },
+    },
+    direction: {
+      type: 'switch',
+      displayName: 'Direction',
+      isIcon: true,
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'row', value: 'row', lucideIconName: 'move-horizontal' },
+        { displayName: 'column', value: 'column', lucideIconName: 'move-vertical' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'column',
+      },
+    },
+    justifyContent: {
+      type: 'switch',
+      displayName: 'Justify',
+      isIcon: true,
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'flex-start', value: 'flex-start', lucideIconName: 'align-horizontal-justify-start' },
+        { displayName: 'center', value: 'center', lucideIconName: 'align-horizontal-justify-center' },
+        { displayName: 'flex-end', value: 'flex-end', lucideIconName: 'align-horizontal-justify-end' },
+        { displayName: 'space-between', value: 'space-between', lucideIconName: 'align-horizontal-space-between' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'flex-start',
+      },
+    },
+    alignItems: {
+      type: 'switch',
+      displayName: 'Align',
+      isIcon: true,
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'flex-start', value: 'flex-start', lucideIconName: 'align-vertical-justify-start' },
+        { displayName: 'center', value: 'center', lucideIconName: 'align-vertical-justify-center' },
+        { displayName: 'flex-end', value: 'flex-end', lucideIconName: 'align-vertical-justify-end' },
+        // Stretch: in a row, child containers (cards) fill the line's height, so siblings share one height.
+        { displayName: 'stretch', value: 'stretch', lucideIconName: 'stretch-vertical' },
+        // Baseline: the last text lines of a row's children line up (a labelled field's value, a badge, a button).
+        { displayName: 'baseline', value: 'last baseline', lucideIconName: 'baseline' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'flex-start',
+      },
+    },
+    // In a row, the children that draw a surface (a FlexContainer, a Stat card) take the height of the tallest child on
+    // their line, so cards of different content heights line up. Other children keep their height and the row's Align.
+    // On for a new container (definition below); a container saved before has no value and reads off.
+    equalHeights: {
+      type: 'toggle',
+      displayName: 'Equal heights in a row',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    gap: {
+      type: 'numberInput',
+      displayName: 'Gap (px)',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 8,
+      },
+    },
+    padding: {
+      type: 'numberInput',
+      displayName: 'Padding (px)',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 12,
+      },
+    },
+    flexWrap: {
+      type: 'toggle',
+      displayName: 'Allow wrapping',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    stackBelow: {
+      type: 'select',
+      displayName: 'Stack below',
+      options: [
+        { name: 'No stacking', value: 'none' },
+        { name: 'Mobile (375px)', value: '375' },
+        { name: 'Tablet (768px)', value: '768' },
+        { name: 'Desktop (1440px)', value: '1440' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'none',
+      },
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+    },
+  },
+  events: {},
+  styles: {
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'Container',
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-weak-border)',
+      },
+      accordian: 'Container',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'string' }, { type: 'number' }],
+        },
+        defaultValue: 6,
+      },
+      accordian: 'Container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      accordian: 'Container',
+    },
+  },
+  exposedVariables: {
+    isVisible: true,
+    isDisabled: false,
+  },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
+  definition: {
+    others: {
+      showOnDesktop: { value: '{{true}}' },
+      showOnMobile: { value: '{{false}}' },
+    },
+    properties: {
+      cardStyle: { value: 'none' },
+      cardTitle: { value: '' },
+      cardExtra: { value: '' },
+      direction: { value: 'row' },
+      flexWrap: { value: '{{true}}' },
+      gap: { value: '12' },
+      padding: { value: '12' },
+      justifyContent: { value: 'flex-start' },
+      alignItems: { value: 'flex-start' },
+      stackBelow: { value: 'none' },
+      equalHeights: { value: '{{true}}' },
+      // The UI 2.0 layout (_helpers/flexLayoutVersion.js): a container created from these defaults gets it, one saved
+      // before keeps the lts-3.16 layout. Not shown in the inspector. Do not add this or equalHeights to the server's
+      // copy of this config: the server merges its defaults into every saved component on load.
+      layoutVersion: { value: '2' },
+      loadingState: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+    },
+    events: [],
+    styles: {
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      borderRadius: { value: '6' },
+      borderColor: { value: 'var(--cc-weak-border)' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
+    },
+  },
+};

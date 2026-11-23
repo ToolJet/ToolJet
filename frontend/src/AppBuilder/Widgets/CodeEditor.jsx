@@ -10,7 +10,6 @@ import { sql } from '@codemirror/lang-sql';
 import { sass } from '@codemirror/lang-sass';
 import { debounce } from 'lodash';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
-import { EditorView } from '@codemirror/view';
 import './codeEditor.scss';
 
 const langSupport = Object.freeze({
@@ -20,8 +19,6 @@ const langSupport = Object.freeze({
   jsx: javascript({ jsx: true }),
   css: sass(),
 });
-
-const lineWrappingExtension = EditorView.lineWrapping;
 
 const CodeEditor = ({
   id,
@@ -127,7 +124,7 @@ const CodeEditor = ({
           maxHeight={isDynamicHeightEnabled ? 'none' : editorHeight}
           width="100%"
           theme={theme}
-          extensions={[langExtention ?? javascript(), lineWrappingExtension]}
+          extensions={[langExtention ?? javascript()]}
           onChange={updateValue}
           basicSetup={setupConfig}
           className={`codehinter-multi-line-input code-editor-component`}

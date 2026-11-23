@@ -1,5 +1,5 @@
 import React from 'react';
-import * as ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import LegalReasonsErrorModal from '../_components/LegalReasonsErrorModal';
 import WorkspaceLimitModal from '../_components/WorkspaceLimitModal';
 import SolidIcon from '../_ui/Icon/SolidIcons';
@@ -10,6 +10,7 @@ import { handleError } from './handleAppAccess';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { ERROR_TYPES } from './constants';
 import { refreshSsoInfo } from './refreshSsoInfo';
+import { notifyMigrationGate } from './migrationGate';
 
 const copyFunction = (input) => {
   let text = document.getElementById(input).innerHTML;
@@ -44,6 +45,7 @@ export function handleResponse(
     );
     const data = text && JSON.parse(text);
     if (!response.ok) {
+      notifyMigrationGate(response.status, data);
       // Custom friendly error messages
       if (response.status === 422 && typeof data?.message === 'string') {
         if (data.message.includes('value too long for type character varying(50)')) {
@@ -126,8 +128,9 @@ export function handleResponse(
         const modalContainer = document.getElementById('modal-div');
         if (!message?.includes('expired') && !avoidUpgradeModal && modalContainer) {
           // Force remount so the modal reopens on repeated 451s, not just a no-op prop update.
-          ReactDOM.unmountComponentAtNode(modalContainer);
-          ReactDOM.render(modalEl, modalContainer);
+          modalContainer._reactRoot?.unmount();
+          modalContainer._reactRoot = createRoot(modalContainer);
+          modalContainer._reactRoot.render(modalEl);
         }
       } else if ([400].indexOf(response.status) !== -1) {
         // Only hijack navigation for a signed-in visitor who landed on a workspace

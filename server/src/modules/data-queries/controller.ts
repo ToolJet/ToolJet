@@ -22,6 +22,7 @@ import { FeatureAbilityGuard as AppFeatureAbilityGuard } from './ability/app/gua
 import { FeatureAbilityGuard as DataSourceFeatureAbilityGuard } from './ability/data-source/guard';
 import { ValidateQuerySourceGuard } from './guards/validate-query-source.guard';
 import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-version.guard';
+import { MutableAppVersionGuard } from '@modules/apps/guards/mutable-app-version.guard';
 import { AbilityDecorator as Ability } from '@modules/app/decorators/ability.decorator';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
 import { AppDecorator } from '@modules/app/decorators/app.decorator';
@@ -54,7 +55,8 @@ export class DataQueriesController implements IDataQueriesController {
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard,
-    GitSyncQueryEditGuard
+    GitSyncQueryEditGuard,
+    MutableAppVersionGuard
   )
   @Post('/data-sources/:dataSourceId/versions/:versionId')
   create(
@@ -74,7 +76,8 @@ export class DataQueriesController implements IDataQueriesController {
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard,
-    GitSyncQueryEditGuard
+    GitSyncQueryEditGuard,
+    MutableAppVersionGuard
   )
   @Patch(':id/versions/:versionId')
   async updateDataQuery(
@@ -90,10 +93,24 @@ export class DataQueriesController implements IDataQueriesController {
 
   @InitFeature(FEATURE_KEY.UPDATE)
   //* On Updating references, need update the options of multiple queries
-  @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    ValidateAppVersionGuard,
+    ValidateQueryAppGuard,
+    AppFeatureAbilityGuard,
+    MutableAppVersionGuard
+  )
   @Patch('versions/:versionId')
-  async bulkUpdate(@User() user: UserEntity, @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto) {
-    return await this.dataQueriesService.bulkUpdateQueryOptions(user, updatingReferencesOptions.data_queries_options);
+  async bulkUpdate(
+    @User() user: UserEntity,
+    @Param('versionId') versionId: string,
+    @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto
+  ) {
+    return await this.dataQueriesService.bulkUpdateQueryOptions(
+      user,
+      versionId,
+      updatingReferencesOptions.data_queries_options
+    );
   }
 
   @InitFeature(FEATURE_KEY.DELETE)
@@ -103,11 +120,12 @@ export class DataQueriesController implements IDataQueriesController {
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard,
-    GitSyncQueryEditGuard
+    GitSyncQueryEditGuard,
+    MutableAppVersionGuard
   )
   @Delete(':id/versions/:versionId')
-  async delete(@Param('id') dataQueryId) {
-    await this.dataQueriesService.delete(dataQueryId);
+  async delete(@Param('id') dataQueryId, @Param('versionId') versionId) {
+    await this.dataQueriesService.delete(dataQueryId, versionId);
     return;
   }
 

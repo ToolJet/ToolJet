@@ -458,6 +458,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
                       {(provided, snapshot) => (
                         <div
                           key={index}
+                          data-list-item-id={String(item.id ?? '')}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
@@ -569,6 +570,26 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
             allComponents
           )}
           {_renderTabOptions()}
+          {/* ToolJet UI 2.0 Tabs: its style, alignment and wizard options apply to static tabs as well. */}
+          {component?.component?.component === 'ShadTabs' &&
+            properties
+              .filter((property) => !['useDynamicOptions', 'tabs'].includes(property))
+              .map((property) => (
+                // renderElement's elements carry no key of their own.
+                <React.Fragment key={property}>
+                  {renderElement(
+                    component,
+                    componentMeta,
+                    paramUpdated,
+                    dataQueries,
+                    property,
+                    'properties',
+                    currentState,
+                    allComponents,
+                    darkMode
+                  )}
+                </React.Fragment>
+              ))}
         </>
       ),
     });

@@ -1,4 +1,4 @@
-# Own stage (Debian 13, matches final stage) so node:22.15.1 builder stays untouched.
+# Own stage (Debian 13, matches final stage) so node:22.23.4 builder stays untouched.
 FROM debian:13-slim AS python-builder
 
 # Unversioned python3 = trixie default (3.13).
@@ -26,21 +26,41 @@ RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools 
 
 
 # tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827).
-FROM node:22.15.1 AS mcp-builder
+# Use tooljet-mcp main by default; TOOLJET_MCP_REF can override the ref.
+# The GitHub token is a BuildKit secret (github_token), so it stays out of the layers and the build cache.
+FROM node:22.23.4 AS mcp-builder
 WORKDIR /mcp
-ARG CUSTOM_GITHUB_TOKEN
 ARG TOOLJET_MCP_REF=main
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-RUN git clone https://github.com/ToolJet/tooljet-mcp.git . && git checkout ${TOOLJET_MCP_REF}
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git clone https://github.com/ToolJet/tooljet-mcp.git . && \
+    git checkout --detach "${TOOLJET_MCP_REF}"
 RUN npm ci && npm run build:plugin
 
 
-FROM node:22.15.1 AS builder
+# Custom component SDK (private), packed for Code mode app projects (TOOLJET_SDK_SPEC below) and served to a teammate's
+# `tooljet app install` at /api/code-mode/cli/custom-component-sdk.tgz: npm's published SDK is older.
+# Builds CUSTOM_COMPONENT_SDK_REF, the SDK's main branch by default; pass a commit to pin one.
+# The GitHub token is a BuildKit secret (github_token), so it stays out of the layers and the build cache.
+FROM node:22.23.4 AS sdk-builder
+WORKDIR /sdk
+ARG CUSTOM_COMPONENT_SDK_REF=main
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git clone https://github.com/ToolJet/custom-component-sdk.git . && \
+    git checkout --detach "${CUSTOM_COMPONENT_SDK_REF}"
+RUN npm ci && npm run build && mkdir -p /out && \
+    mv "/out/$(npm pack --ignore-scripts --silent --pack-destination /out | tail -n 1)" /out/custom-component-sdk.tgz
+
+
+FROM node:22.23.4 AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@10.9.2 && npm cache clean --force
+RUN npm i -g npm@10.9.9 && npm cache clean --force
 
 # Build nsjail for Python sandboxing
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -66,12 +86,10 @@ RUN git clone --depth 1 --branch 3.4 https://github.com/google/nsjail.git && \
 RUN mkdir -p /app
 WORKDIR /app
 
-# Set GitHub token and branch as build arguments
-ARG CUSTOM_GITHUB_TOKEN
+# GitHub token is a BuildKit secret (--secret id=github_token), mounted only for the steps that
+# fetch private repos and passed to git via env, so it never lands in a layer, the image config
+# or the build provenance like a build arg does.
 ARG BRANCH_NAME
-
-# Clone and checkout the frontend repository
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
@@ -80,17 +98,13 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 # The branch name needs to be changed the branch with modularisation in CE repo
 RUN git checkout ${BRANCH_NAME}
 
-RUN git submodule update --init --recursive
-
-# Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
-RUN git submodule foreach " \
-    if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-    git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
-    else \
-    echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to lts-3.16'; \
-    git checkout lts-3.16; \
-    fi"
+# Checkout the same branch in submodules if it exists, otherwise the branch .gitmodules tracks
+COPY ./docker/LTS/submodule-checkout.sh /tmp/submodule-checkout.sh
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git submodule update --init --recursive && \
+    git submodule foreach 'sh /tmp/submodule-checkout.sh'
 
 # Scripts for building
 COPY ./package.json ./package.json
@@ -103,6 +117,10 @@ RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production 
 
 ENV TOOLJET_EDITION=ee
+
+# Copy shared widget-definitions package (required by frontend + server file: dependency)
+COPY ./packages/widget-definitions/package.json ./packages/widget-definitions/package.json
+COPY ./packages/widget-definitions/src/ ./packages/widget-definitions/src/
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
@@ -120,6 +138,17 @@ COPY ./server/ ./server/
 RUN node server/scripts/compress-templates.js
 RUN npm install -g @nestjs/cli && npm install -g copyfiles
 RUN npm --prefix server run build && npm prune --production --prefix server
+
+# Built-in component packs: each pack in packs/builtin.json is built with the custom component CLI (cli/) into
+# server/builtin-packs, which the server serves to every workspace like native widgets.
+COPY ./cli/ ./cli/
+COPY ./packs/ ./packs/
+RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
+# The same CLI, packed for GET /api/code-mode/cli/tooljet-cli.tgz: `npm i -g` from the instance installs the CLI
+# that matches this server (server/scripts/pack-cli.sh).
+RUN server/scripts/pack-cli.sh
+# The security scanner for Code mode apps (ee/app-security runs it in a child process).
+RUN npm --prefix server/ee/packages/app-scanner ci --omit=dev
 
 # Install dependencies for PostgREST, curl, tar, etc.
 RUN apt-get update && apt-get install -y \
@@ -139,6 +168,7 @@ FROM debian:13-slim
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
+    tini \
     wget \
     gnupg \
     unzip \
@@ -170,13 +200,18 @@ RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyri
 RUN ln -sf /usr/lib/x86_64-linux-gnu/libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1
 
 
-RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
-    && tar -xf node-v22.15.1-linux-x64.tar.xz \
-    && mv node-v22.15.1-linux-x64 /usr/local/lib/nodejs \
+RUN curl -O https://nodejs.org/dist/v22.23.4/node-v22.23.4-linux-x64.tar.xz \
+    && tar -xf node-v22.23.4-linux-x64.tar.xz \
+    && mv node-v22.23.4-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-v22.15.1-linux-x64.tar.xz
+    && rm node-v22.23.4-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:/opt/python-runtime/bin:$PATH
+
+# Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
+COPY ./docker/icu-tz /usr/local/share/icu-tz
+ENV ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tz
+RUN node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: ' + process.versions.tz)"
 
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
@@ -238,6 +273,8 @@ COPY --from=builder --chown=appuser:0 /app/plugins/node_modules ./app/plugins/no
 COPY --from=builder --chown=appuser:0 /app/plugins/packages/common ./app/plugins/packages/common
 COPY --from=builder --chown=appuser:0 /app/plugins/package.json ./app/plugins/package.json
 COPY --from=builder --chown=appuser:0 /app/frontend/build ./app/frontend/build
+# copy widget-definitions (server node_modules symlinks to this)
+COPY --from=builder --chown=appuser:0 /app/packages/widget-definitions ./app/packages/widget-definitions
 COPY --from=builder --chown=appuser:0 /app/server/package.json ./app/server/package.json
 COPY --from=builder --chown=appuser:0 /app/server/.version ./app/server/.version
 COPY --from=builder --chown=appuser:0 /app/server/ee/keys ./app/server/ee/keys
@@ -245,12 +282,32 @@ COPY --from=builder --chown=appuser:0 /app/server/node_modules ./app/server/node
 COPY --from=builder --chown=appuser:0 /app/server/templates ./app/server/templates
 COPY --from=builder --chown=appuser:0 /app/server/scripts ./app/server/scripts
 COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
+COPY --from=builder --chown=appuser:0 /app/server/builtin-packs ./app/server/builtin-packs
+COPY --from=builder --chown=appuser:0 /app/server/code-mode-cli ./app/server/code-mode-cli
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
+
+# Code mode: the MCP's code app tools run the `tooljet` CLI, install the SDK into each project and keep projects
+# under TOOLJET_CODE_APP_ROOT; the server scans Code mode apps with the app scanner. The render check stays off
+# (no browser in this image).
+COPY --from=builder --chown=appuser:0 /app/server/ee/packages/app-scanner ./app/server/ee/packages/app-scanner
+# The SDK as a folder, not the tarball: npm links a folder, and the app scanner skips links, while a tarball entry
+# resolves outside the registry and fails its lockfile host check (the SDK has no dependencies of its own).
+COPY --from=sdk-builder /out/custom-component-sdk.tgz /tmp/custom-component-sdk.tgz
+RUN mkdir -p /app/code-mode/custom-component-sdk /app/code-mode/apps && \
+    tar -xzf /tmp/custom-component-sdk.tgz -C /app/code-mode/custom-component-sdk --strip-components=1 && \
+    mv /tmp/custom-component-sdk.tgz /app/server/code-mode-cli/custom-component-sdk.tgz && \
+    npm install -g /app/server/code-mode-cli/tooljet-cli.tgz && tooljet --version && \
+    chown -R appuser:0 /app/code-mode /app/server/code-mode-cli && chmod -R g=u /app/code-mode
+ENV TOOLJET_SDK_SPEC=file:/app/code-mode/custom-component-sdk \
+    TOOLJET_CODE_APP_ROOT=/app/code-mode/apps \
+    TOOLJET_APP_SCANNER_BIN=/app/server/ee/packages/app-scanner/bin/tj-app-scan.js \
+    MCP_RENDER_AUDIT_ENABLED=false
 COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
 # tooljet-mcp bundle for the socket relay (ee-server#827). data/ must sit next to mcp/,
-# not inside it — bundle resolves it as ../data. package.json ships for its "type":"module".
-COPY --from=mcp-builder --chown=appuser:0 /mcp/bundle/index.js ./app/mcp/index.js
+# not inside it — bundle resolves it as ../data. package.json ships for its "type":"module". The whole
+# bundle/ folder: index.js imports the chunk files next to it.
+COPY --from=mcp-builder --chown=appuser:0 /mcp/bundle/ ./app/mcp/
 COPY --from=mcp-builder --chown=appuser:0 /mcp/package.json ./app/mcp/package.json
 COPY --from=mcp-builder --chown=appuser:0 /mcp/data ./app/data
 
@@ -310,6 +367,6 @@ ENV HOME=/home/appuser
 USER appuser
 WORKDIR /app
 
-RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.4.1 && npm cache clean --force
+RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.13.8 && npm cache clean --force
 
-ENTRYPOINT ["./server/ee-entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "-g", "--", "./server/ee-entrypoint.sh"]

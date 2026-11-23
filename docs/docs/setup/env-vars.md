@@ -322,6 +322,32 @@ If a log file path is specified in environment variables, a log file containing 
 | -------- | --------------------------------------------------------------------------- |
 | LOG_FILE_PATH | the path where the log file will be created ( eg: tooljet/log/tooljet-audit.log) |
 
+## Code app isolation (Enterprise)
+
+A code app's own code runs in a frame the browser treats as a separate origin. It reaches ToolJet only through a message channel the page checks, so it can't read the viewer's session, cookies or the ToolJet page, and it can run only its own app's queries, with the viewer's rights. On by default.
+
+| Variable | Description | Default |
+| -------- | ----------- | ------- |
+| CODE_MODE_ISOLATION | `on`: released apps, Preview, the editor canvas and version comparisons all run isolated. `viewer`: released apps and Preview only; the editor and comparisons, where admins and builders open other people's code, run on the ToolJet origin. `off`: no isolation. `viewer` and `off` are for self-hosted installs where every app builder is trusted, and log a warning at startup. Any other value means `on`, with a warning. Cloud always runs `on`: there any other value is ignored and logged as an error. The in-browser build runs in its own sandboxed frame at every value. | `on` |
+| CODE_MODE_SANDBOX_URL | Optional second domain for the app frame. It must be `https`, must not share a site with `TOOLJET_HOST`, and must route to this server. `https://sandbox.example.com` serves the frame from that domain, and every app still runs on the browser's `null` origin. `https://*.example-usercontent.com` gives each app an origin of its own, `a<app id without dashes>.example-usercontent.com`, which needs wildcard DNS and a wildcard certificate. Unset, the frame comes from this server on the `null` origin. A value that fails these checks is ignored, with a warning in the server log. Has no effect while isolation is `off`. | unset |
+| CODE_MODE_STRICT_BINDINGS | Strict mode for isolated code apps: RunJS, RunPy and transformations are refused, `{{ }}` bindings go through a small interpreter instead of being compiled, JS libraries and preloaded scripts don't load, and the Custom component widget and script addresses in an IFrame are refused. `false` turns strict mode off, for a self-hosted pilot with trusted authors only; cloud ignores it. Visual apps are never affected. | on whenever the app is isolated |
+
+The second domain serves only the frame document. Every other path on it returns 404, and it sets and reads no cookies. With a per-app domain and `ENABLE_CUSTOM_DOMAINS=true`, an app's frame accepts code only from `TOOLJET_HOST` and the custom domain of the workspace that owns the app.
+
+The in-browser build fetches packages from `CODE_MODE_CDN_URL` (default `https://esm.sh`) and follows no redirects: point it at the address that answers directly.
+
+:::caution
+Isolation protects the viewer's session, not the data the app is given. App code still sees what its queries return, and it can send that out by opening a popup or by navigating its own frame. It is not data-loss prevention. What an app may read and write is controlled by query permissions on the server. Popups an app opens stay sandboxed; web links in an app open in a normal new tab, with no opener and no referrer.
+:::
+
+Checks still owed before code apps go to customers:
+
+- **DNS and TLS for the app origin:** a separate registrable domain with wildcard DNS and a wildcard certificate, for each app to get its own origin. Without one, apps share the `null` origin, which works but gives them no storage of their own.
+- **Strict mode:** RunJS and transformations are refused in code apps, so apps that use them must move that logic into their code first.
+- **Production and Docker builds:** the frame runtime and the build worker ship in `frontend/build/assets/code-frame/`. They need checking in the released images, and the MCP server must be deployed with the same release, since its render check reads the isolated frame.
+- **Public and embedded apps:** checked in a browser, signed out and inside a customer's page.
+- **Custom domains:** checked with an app opened from a custom domain, which the frame must accept as a parent.
+
 ## ToolJet Apps
 
 ### Enabling embedding of private apps
