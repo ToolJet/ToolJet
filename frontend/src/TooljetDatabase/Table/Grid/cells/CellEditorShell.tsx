@@ -44,6 +44,8 @@ type ShellProps = {
   children?: ReactNode;
   /** Width of the popover: 296px for the footer alone, 320px for the date picker, 352px for JSON (design: Cell edit popover). */
   widthClass?: string;
+  /** Closes the popover without ending the edit (the expanded JSON dialog takes over). */
+  hidden?: boolean;
   /** The body draws its own padding and dividers (the date picker does). */
   bareBody?: boolean;
   nullable: boolean;
@@ -64,6 +66,7 @@ export function CellEditorShell({
   children,
   widthClass = 'tw-w-[296px]',
   bareBody = false,
+  hidden = false,
   nullable,
   columnDefault,
   mode,
@@ -81,44 +84,48 @@ export function CellEditorShell({
           {cell}
         </div>
       </PopoverAnchor>
-      <PopoverContent
-        side="bottom"
-        align="start"
-        sideOffset={2}
-        className={cn('tw-gap-0 tw-p-0', widthClass)}
-        data-testid="cell-editor"
-        // Each editor focuses its own field, without scrolling the grid (a scroll closes the editor).
-        onOpenAutoFocus={(event) => event.preventDefault()}
-        onFocusOutside={(event) => event.preventDefault()}
-        // An unsaved draft is not dropped by a press elsewhere: the press may start a tab or environment switch, which
-        // asks about it. Escape and Cancel still close it.
-        onPointerDownOutside={(event) => {
-          if (canSave || cellRef.current?.contains(event.target as Node)) event.preventDefault();
-        }}
-      >
-        {children && (
-          <>
-            {bareBody ? children : <div className="tw-p-3">{children}</div>}
-            <Separator />
-          </>
-        )}
-        <EditorFooter
-          className="tw-p-3"
-          nullable={nullable}
-          columnDefault={columnDefault}
-          mode={mode}
-          onModeChange={onModeChange}
-          canSave={canSave}
-          saving={saving}
-          onSave={onSave}
-          onCancel={onCancel}
-        />
-      </PopoverContent>
+      {!hidden && (
+        <PopoverContent
+          side="bottom"
+          align="start"
+          sideOffset={2}
+          className={cn('tw-gap-0 tw-p-0', widthClass)}
+          data-testid="cell-editor"
+          // Each editor focuses its own field, without scrolling the grid (a scroll closes the editor).
+          onOpenAutoFocus={(event) => event.preventDefault()}
+          onFocusOutside={(event) => event.preventDefault()}
+          // An unsaved draft is not dropped by a press elsewhere: the press may start a tab or environment switch, which
+          // asks about it. Escape and Cancel still close it.
+          onPointerDownOutside={(event) => {
+            if (canSave || cellRef.current?.contains(event.target as Node)) event.preventDefault();
+          }}
+        >
+          {children && (
+            <>
+              {bareBody ? children : <div className="tw-p-3">{children}</div>}
+              <Separator />
+            </>
+          )}
+          <EditorFooter
+            className="tw-p-3"
+            nullable={nullable}
+            columnDefault={columnDefault}
+            mode={mode}
+            onModeChange={onModeChange}
+            canSave={canSave}
+            saving={saving}
+            onSave={onSave}
+            onCancel={onCancel}
+          />
+        </PopoverContent>
+      )}
     </Popover>
   );
 }
 
-type FooterProps = Omit<ShellProps, 'cell' | 'children' | 'widthClass' | 'bareBody'> & { className?: string };
+type FooterProps = Omit<ShellProps, 'cell' | 'children' | 'widthClass' | 'bareBody' | 'hidden'> & {
+  className?: string;
+};
 
 // Null / Default chips, Cancel, Save: the popover's footer, and the expanded JSON dialog's.
 export function EditorFooter({

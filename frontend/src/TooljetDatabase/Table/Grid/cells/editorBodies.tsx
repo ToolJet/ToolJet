@@ -1,14 +1,9 @@
 import React from 'react';
-import { Maximize2 } from 'lucide-react';
+import { CircleCheckBig, Expand, TriangleAlert, X } from 'lucide-react';
+import { FieldError } from '@/components/ui/Rocket/Field/Field';
 import { Button } from '@/components/ui/Rocket/Button/Button';
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/Rocket/Dialog/Dialog';
+import { Dialog, DialogClose, DialogContent, DialogTitle } from '@/components/ui/Rocket/Dialog/Dialog';
+import { Separator } from '@/components/ui/Rocket/Separator/Separator';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/Rocket/ToggleGroup/ToggleGroup';
 import { cn } from '@/lib/utils';
 import {
@@ -80,75 +75,149 @@ export function TimestampBody({ text, timezone, onChange }: TimestampBodyProps) 
   );
 }
 
-type JsonBodyProps = {
+// Design: validation message (triangle-alert and the text, small, danger), as in the drawers.
+function ValidationMessage({
+  text,
+  tone = 'error',
+  'data-cy': dataCy,
+}: {
   text: string;
-  columnName: string;
-  disabled: boolean;
-  expanded: boolean;
-  onExpandedChange: (expanded: boolean) => void;
-  onChange: (text: string) => void;
-  /** The footer, repeated at the bottom of the expanded dialog. */
-  footer: React.ReactNode;
-};
+  tone?: 'error' | 'success';
+  'data-cy': string;
+}) {
+  const Icon = tone === 'error' ? TriangleAlert : CircleCheckBig;
+  return (
+    <div className="tw-flex tw-items-center tw-gap-1 tw-pl-0.5">
+      <Icon
+        className={cn('tw-size-3 tw-shrink-0', tone === 'error' ? 'tw-text-icon-danger' : 'tw-text-icon-success')}
+        aria-hidden
+      />
+      <FieldError className={tone === 'success' ? 'tw-text-text-success' : undefined} data-cy={dataCy}>
+        {text}
+      </FieldError>
+    </div>
+  );
+}
 
 const jsonFieldClasses =
-  'tw-w-full tw-resize-none tw-rounded-md tw-border tw-border-solid tw-bg-background-surface-layer-01 tw-p-2 tw-font-code-regular tw-text-text-default tw-outline-none focus:tw-border-border-accent-strong disabled:tw-bg-background-surface-layer-02 disabled:tw-text-text-disabled';
+  'tw-w-full tw-resize-none tw-rounded-md tw-border tw-border-solid tw-bg-background-surface-layer-01 tw-py-3 tw-pl-3 tw-pr-9 tw-font-code-regular tw-text-text-default tw-outline-none disabled:tw-bg-background-surface-layer-02 disabled:tw-text-text-disabled';
 
-// A text area that is parsed before it is saved (an object is sent as an object, never as a string), with the
-// parse error under it and an expanded dialog for long documents.
-export function JsonBody({ text, columnName, disabled, expanded, onExpandedChange, onChange, footer }: JsonBodyProps) {
-  const error = disabled ? null : jsonDraftError(text);
-  const field = (rows: number, className?: string) => (
+type JsonFieldProps = {
+  text: string;
+  columnName: string;
+  error: string | null;
+  disabled: boolean;
+  onChange: (text: string) => void;
+  className?: string;
+};
+
+// A text area that is parsed before it is saved (an object is sent as an object, never as a string).
+function JsonField({ text, columnName, error, disabled, onChange, className }: JsonFieldProps) {
+  return (
     <textarea
       aria-label={columnName}
       aria-invalid={error ? true : undefined}
       value={text}
-      rows={rows}
       disabled={disabled}
       spellCheck={false}
       onChange={(event) => onChange(event.target.value)}
-      className={cn(jsonFieldClasses, error ? 'tw-border-border-danger-strong' : 'tw-border-border-default', className)}
+      className={cn(
+        jsonFieldClasses,
+        error ? 'tw-border-border-danger-strong' : 'tw-border-border-default focus:tw-border-border-accent-strong',
+        className
+      )}
       data-cy="cell-editor-json"
     />
   );
+}
+
+type JsonBodyProps = {
+  text: string;
+  columnName: string;
+  disabled: boolean;
+  onExpand: () => void;
+  onChange: (text: string) => void;
+};
+
+// The popover's body: the field, the expand button and the parse error under it.
+export function JsonBody({ text, columnName, disabled, onExpand, onChange }: JsonBodyProps) {
+  const error = disabled ? null : jsonDraftError(text);
   return (
-    <div className="tw-flex tw-w-full tw-flex-col tw-gap-1">
+    <div className="tw-flex tw-w-full tw-flex-col tw-gap-3">
       <div className="tw-relative">
-        {field(6)}
+        <JsonField
+          text={text}
+          columnName={columnName}
+          error={error}
+          disabled={disabled}
+          onChange={onChange}
+          className="tw-h-[196px]"
+        />
         <Button
           variant="ghost"
           size="small"
-          className="tw-absolute tw-right-1 tw-top-1"
+          className="tw-absolute tw-right-1.5 tw-top-1.5"
           aria-label="Expand editor"
-          onClick={() => onExpandedChange(true)}
+          onClick={onExpand}
         >
-          <Maximize2 size={14} />
+          <Expand size={14} />
         </Button>
       </div>
-      {error && (
-        <span role="alert" className="tw-font-body-default tw-text-text-danger" data-cy="cell-editor-json-error">
-          {error}
-        </span>
-      )}
-      <Dialog open={expanded} onOpenChange={onExpandedChange}>
-        <DialogContent size="large">
-          <DialogHeader>
-            <DialogTitle>
-              {columnName} <span className="tw-text-text-placeholder">jsonb</span>
-            </DialogTitle>
-          </DialogHeader>
-          <DialogBody>
-            {field(18, 'tw-h-[50vh]')}
-            <span
-              className={cn('tw-font-body-default', error ? 'tw-text-text-danger' : 'tw-text-text-success')}
-              data-cy="cell-editor-json-status"
-            >
-              {disabled ? '' : (error ?? 'Valid JSON')}
-            </span>
-          </DialogBody>
-          <DialogFooter>{footer}</DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {error && <ValidationMessage text={error} data-cy="cell-editor-json-error" />}
     </div>
+  );
+}
+
+type JsonDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  text: string;
+  columnName: string;
+  disabled: boolean;
+  onChange: (text: string) => void;
+  /** The same footer as the popover's: Null, Default, Cancel, Save. */
+  footer: React.ReactNode;
+};
+
+// Design: JSON editor modal, 752 x 592: header, divider, field and message, divider, footer. The cell editor hides its
+// popover while this is open, so the two never stack.
+export function JsonDialog({ open, onOpenChange, text, columnName, disabled, onChange, footer }: JsonDialogProps) {
+  const error = disabled ? null : jsonDraftError(text);
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent showCloseButton={false} className="tw-h-[592px] tw-w-[752px] tw-max-w-[752px] tw-overflow-hidden">
+        <div className="tw-flex tw-h-14 tw-shrink-0 tw-items-center tw-gap-2 tw-px-4 tw-py-2">
+          <DialogTitle className="tw-m-0 tw-font-title-large tw-text-text-default">{columnName}</DialogTitle>
+          <span className="tw-font-body-small tw-text-text-placeholder">jsonb</span>
+          <span className="tw-flex-1" />
+          <DialogClose asChild>
+            <Button variant="ghost" iconOnly size="small" aria-label="Close">
+              <X className="tw-size-3.5" />
+            </Button>
+          </DialogClose>
+        </div>
+        <Separator />
+        <div className="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-2 tw-p-4">
+          <JsonField
+            text={text}
+            columnName={columnName}
+            error={error}
+            disabled={disabled}
+            onChange={onChange}
+            className={cn(
+              'tw-min-h-0 tw-flex-1 !tw-p-3 tw-border-2',
+              !error && '!tw-border-[var(--interactive-focus-outline)]'
+            )}
+          />
+          {error ? (
+            <ValidationMessage text={error} data-cy="cell-editor-json-status" />
+          ) : (
+            !disabled && <ValidationMessage tone="success" text="Valid JSON" data-cy="cell-editor-json-status" />
+          )}
+        </div>
+        <Separator />
+        {footer}
+      </DialogContent>
+    </Dialog>
   );
 }

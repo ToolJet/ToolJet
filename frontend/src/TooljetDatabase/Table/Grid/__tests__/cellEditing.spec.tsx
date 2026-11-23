@@ -504,6 +504,22 @@ describe('TableGrid | cell navigation and editing', () => {
       expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
     });
 
+    it('hands the editor over to the expanded dialog, so the popover never stacks behind it', async () => {
+      await setup();
+      await userEvent.dblClick(cellAt('1', 'payload'));
+
+      await userEvent.click(screen.getByRole('button', { name: 'Expand editor' }));
+
+      expect(screen.queryByTestId('cell-editor')).not.toBeInTheDocument();
+      const dialog = screen.getByRole('dialog');
+      expect(within(dialog).getByText('Valid JSON')).toBeInTheDocument();
+
+      fireEvent.change(within(dialog).getByRole('textbox', { name: 'payload' }), { target: { value: '{"a": 3}' } });
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+      await waitFor(() => expect(patches[0].body).toEqual({ payload: { a: 3 } }));
+    });
+
     it('is clean while the text only differs in spacing', async () => {
       await setup();
       await userEvent.dblClick(cellAt('1', 'payload'));

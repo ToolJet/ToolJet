@@ -5,7 +5,7 @@ import type { ForeignKeyTarget, GridColumn } from '../useTableGrid';
 import type { CellPayload } from './cellDraft';
 import { CELL_RING, CellEditorShell, EditorFooter, useCellDraft } from './CellEditorShell';
 import { isNumericType } from './dataTypes';
-import { BooleanBody, JsonBody, ModeNotice, TimestampBody } from './editorBodies';
+import { BooleanBody, JsonBody, JsonDialog, ModeNotice, TimestampBody } from './editorBodies';
 import { ForeignKeyEditor } from './ForeignKeyEditor';
 
 type CellEditorProps = {
@@ -105,20 +105,35 @@ export function CellEditor({ value, column, foreignKey, onSave, onCancel }: Cell
   }
 
   if (column.dataType === 'jsonb') {
+    const disabled = saving || draft.mode !== 'value';
     return (
-      <CellEditorShell {...shell} widthClass="tw-w-[352px]" cell={staticCell(compactJson(draft.text))}>
-        {noticeFor('JSON value') ?? (
-          <JsonBody
-            text={draft.text}
-            columnName={column.Header}
-            disabled={saving}
-            expanded={expanded}
-            onExpandedChange={setExpanded}
-            onChange={draft.setText}
-            footer={<EditorFooter {...shell} />}
-          />
-        )}
-      </CellEditorShell>
+      <>
+        <CellEditorShell
+          {...shell}
+          hidden={expanded}
+          widthClass="tw-w-[452px]"
+          cell={staticCell(compactJson(draft.text))}
+        >
+          {noticeFor('JSON value') ?? (
+            <JsonBody
+              text={draft.text}
+              columnName={column.Header}
+              disabled={disabled}
+              onExpand={() => setExpanded(true)}
+              onChange={draft.setText}
+            />
+          )}
+        </CellEditorShell>
+        <JsonDialog
+          open={expanded}
+          onOpenChange={setExpanded}
+          text={draft.text}
+          columnName={column.Header}
+          disabled={disabled}
+          onChange={draft.setText}
+          footer={<EditorFooter {...shell} className="tw-px-4 tw-py-3" />}
+        />
+      </>
     );
   }
 
