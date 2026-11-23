@@ -148,7 +148,8 @@ export class DataQueriesController implements IDataQueriesController {
     @Ability() ability: AppAbility,
     @DataSource() dataSource: DataSourceEntity,
     @Res({ passthrough: true }) response: Response,
-    @Query('mode') mode?: string
+    @Query('mode') mode?: string,
+    @Ability('tj_app_ability') appAbility?: AppAbility
   ) {
     return this.dataQueriesService.runQueryOnBuilder(
       user,
@@ -159,7 +160,8 @@ export class DataQueriesController implements IDataQueriesController {
       dataSource,
       response,
       mode,
-      app
+      app,
+      appAbility
     );
   }
 
