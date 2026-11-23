@@ -3,6 +3,7 @@ import { McpOAuthScopeInterceptor } from '@modules/mcp-oauth/scope.interceptor';
 import { McpOAuthModule } from '@modules/mcp-oauth/module';
 import { APP_GUARD, APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 import { PatScopeInterceptor } from '@modules/personal-access-tokens/interceptors/pat-scope.interceptor';
+import { GitSyncAuditModule } from '@modules/git-sync-audit/module';
 import { OnModuleInit, DynamicModule, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { GetConnection } from './database/getConnection';
 import { ShutdownHook } from './schedulers/shut-down.hook';
@@ -127,6 +128,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await McpOAuthModule.register(configs),
       await AbilityModule.forRoot(configs),
       await LicenseModule.forRoot(configs),
+      await GitSyncAuditModule.forRoot(configs),
       await FilesModule.register(configs, true),
       await EncryptionModule.register(configs),
       await InstanceSettingsModule.register(configs, true),

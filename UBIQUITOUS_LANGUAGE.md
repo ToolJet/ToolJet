@@ -139,6 +139,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Comment** | An individual message within a thread | — |
 | **Multiplayer Editing** | Real-time collaborative editing of an app by multiple users simultaneously (EE feature) | — |
 | **Audit Log** | A compliance record of user actions (who did what, when); retention varies by plan | — |
+| **Git Sync audit event** | The Audit Log entry for one finished Git Sync push or pull: `RESOURCE_PUSH_COMMIT`, `RESOURCE_DELETE_PUSH_COMMIT`, `RESOURCE_PULL_COMMIT`, `WORKSPACE_PUSH_COMMIT`, `WORKSPACE_PULL_COMMIT` | `MASTER_PULL_COMMIT`, `GIT_SYNC_PUSH`, `GIT_SYNC_APP_CREATE` (older names) |
 | **Git Sync** | Bidirectional sync between a workspace and a Git repository — apps, data sources, and modules pushed/pulled per Workspace Branch (EE feature) | Version control (docs use that for app Versions, a different feature) |
 | **Correlation ID** | Portable identity (`co_relation_id`) carried by apps, versions, components, and data sources so entities survive git/zip round-trips; unique only per workspace — git clones share it, always scope lookups | Git id (adapter-internal term) |
 | **Import** | Loading an app definition (JSON) into a workspace from another ToolJet instance | — |

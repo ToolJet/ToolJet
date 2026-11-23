@@ -28,7 +28,8 @@ export class FeatureAbilityGuard extends AbilityGuard {
     if (appIds.length && organizationId) {
       const apps = await this.dataSource.getRepository(App).find({
         where: { id: In(appIds), organizationId },
-        select: ['id', 'type'],
+        // organizationId is needed by AppsSubscriber.afterLoad's git-sync license lookup (cloud throws without it)
+        select: ['id', 'type', 'organizationId'],
       });
       request.tj_export_app_types = Object.fromEntries(apps.map((app) => [app.id, app.type]));
     }

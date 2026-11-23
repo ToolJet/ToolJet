@@ -146,6 +146,27 @@ export class AppVersion extends BaseEntity {
   @Column({ name: 'is_synced', default: false })
   isSynced: boolean;
 
+  // Git-sync dirty flag: flipped true by an edit (component/page/event/query/version-metadata)
+  // made while isSynced is already true, i.e. content changed since the last push. Cleared back
+  // to false on the next successful push. Content-blind by design — an edit followed by a revert
+  // back to identical content still leaves this true until the next (no-op) push.
+  @Column({ name: 'has_uncommitted_changes', default: false })
+  hasUncommittedChanges: boolean;
+
+  // The git commit this version's content matches: written by push, pull inside the app,
+  // and the open-time pull at the workspace pull commit. Compared (by SHA and ancestry,
+  // never by time) with the branch's workspace_pull_commit_sha to decide whether opening
+  // the app must pull. Null = unknown (rows from before the column, or never synced).
+  @Column({ name: 'synced_commit_sha', type: 'varchar', length: 40, nullable: true, default: null })
+  syncedCommitSha: string | null;
+
+  @Column({ name: 'synced_commit_message', type: 'text', nullable: true, default: null })
+  syncedCommitMessage: string | null;
+
+  // Display and audit only — never used to decide.
+  @Column({ name: 'synced_at', type: 'timestamptz', nullable: true, default: null })
+  syncedAt: Date | null;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
