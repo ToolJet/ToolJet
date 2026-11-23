@@ -50,6 +50,8 @@ import { utilityFuncForNameSeed } from '@/_helpers/utils';
 import * as pageRoots from '@ee/modules/CodeMode/AppBuilder/_hooks/codePageRoot';
 
 const withoutCodePageRoots = pageRoots.withoutCodePageRoots ?? ((ids) => ids || []);
+import { dropMovedComponentKeys } from '@/AppBuilder/_stores/utils/dropMovedComponentKeys';
+import { MOVED_COMPONENT_KEYS } from '@tooljet/widget-definitions';
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
 const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
@@ -216,9 +218,11 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   setPages: (pages = [], moduleId = 'canvas') => {
+    // A moved key's old place stays in the database until its cleanup migration; release code reads only the new one.
+    const loadedPages = dropMovedComponentKeys(pages, MOVED_COMPONENT_KEYS);
     set(
       (state) => {
-        state.modules[moduleId].pages = Object.freeze(pages);
+        state.modules[moduleId].pages = Object.freeze(loadedPages);
       },
       false,
       'setPages'

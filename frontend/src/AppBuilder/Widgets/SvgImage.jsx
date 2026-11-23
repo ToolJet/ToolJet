@@ -20,8 +20,8 @@ export const SvgImage = function SvgImage({
 }) {
   const { boxShadow, alignment } = styles;
   const { data, loadingState, disabledState } = properties;
-  // Apps saved before the visibility data migration still carry it under styles.
-  const resolvedVisibility = properties.visibility ?? styles.visibility ?? true;
+  // visibility lives in properties. The old styles place is dropped on load (MOVED_COMPONENT_KEYS).
+  const resolvedVisibility = properties.visibility ?? true;
 
   const isInitialRender = useRef(true);
   const imageRef = useRef(null);

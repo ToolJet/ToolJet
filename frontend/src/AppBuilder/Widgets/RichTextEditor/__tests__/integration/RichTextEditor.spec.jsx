@@ -22,9 +22,8 @@ const widget = createWidgetHarness({
     placeholder: binding('Placeholder text'),
     defaultValue: binding(''),
     loadingState: binding('{{false}}'),
-    // visibility/disabledState moved from styles to properties (Additional
-    // Actions) in the 2026-10-27 bug-fix batch; the data migration moves saved
-    // definitions and the widget keeps a styles fallback for unmigrated ones.
+    // visibility/disabledState live in properties (Additional Actions). Their old
+    // styles place is dropped on load (MOVED_COMPONENT_KEYS).
     visibility: binding('{{true}}'),
     disabledState: binding('{{false}}'),
     dynamicHeight: binding('{{false}}'),
@@ -237,39 +236,32 @@ describe('RichTextEditor widget', () => {
     expect(outer()).toHaveAttribute('aria-disabled', 'true');
   });
 
-  test('[RichTextEditor-LEGACY-001] unmigrated styles-based visibility/disabledState still apply', async () => {
-    // Break this catches: dropping the styles fallback (properties.visibility ??
-    // styles.visibility) the runtime keeps for definitions the data migration
-    // has not touched — old exports imported after this release would otherwise
-    // ignore their saved hidden/disabled state. The sibling is seeded WITHOUT
-    // registered defaults so the moved keys are truly absent from properties,
-    // exactly like a pre-migration saved definition.
-    const LEGACY = 'rteLegacy';
-    widget.render({
-      extraComponents: {
-        [LEGACY]: componentDefinition(
-          LEGACY,
-          'rtelegacy1',
-          'RichTextEditor',
-          {
-            placeholder: binding('legacy'),
-            defaultValue: binding(''),
-            loadingState: binding('{{false}}'),
-            dynamicHeight: binding('{{false}}'),
-          },
-          {
-            styles: { visibility: binding('{{false}}'), disabledState: binding('{{true}}') },
-            seedFromRegisteredDefinition: false,
-          }
-        ),
-      },
-      also: [{ id: LEGACY, componentType: 'RichTextEditor' }],
-    });
+  test('[RichTextEditor-MOVED-001] the moved keys are read from their new place; a stale old place is dropped on load', async () => {
+    // Break this catches: a reader that still uses an old place (styles.visibility, styles.disabledState,
+    // general.tooltip, generalStyles.boxShadow). Until the cleanup migration the database keeps both places in sync;
+    // the App Builder drops the old one when the app loads, so such a reader breaks now, not after the cleanup.
+    // The old places here disagree with the new ones, as a stale old place would.
+    const MOVED = 'rteMoved';
+    const definition = componentDefinition(
+      MOVED,
+      'rtemoved1',
+      'RichTextEditor',
+      { visibility: binding('{{true}}'), disabledState: binding('{{true}}') },
+      { styles: { visibility: binding('{{false}}'), disabledState: binding('{{false}}') } }
+    );
+    definition.component.definition.general.tooltip = binding('Old tooltip');
+    definition.component.definition.generalStyles.boxShadow = binding('0px 0px 5px red');
+    widget.render({ extraComponents: { [MOVED]: definition }, also: [{ id: MOVED, componentType: 'RichTextEditor' }] });
 
-    await waitFor(() => expect(document.querySelector('[data-cy="rtelegacy1"]')).toBeInTheDocument());
-    const legacyOuter = document.querySelector('[data-cy="rtelegacy1"]');
-    expect(legacyOuter).toHaveStyle({ display: 'none' });
-    expect(legacyOuter).toHaveAttribute('data-disabled', 'true');
+    await waitFor(() => expect(document.querySelector('[data-cy="rtemoved1"]')).toBeInTheDocument());
+    const movedOuter = document.querySelector('[data-cy="rtemoved1"]');
+    expect(movedOuter).not.toHaveStyle({ display: 'none' });
+    expect(movedOuter).toHaveAttribute('data-disabled', 'true');
+    const loaded = store().modules[MODULE_ID].pages[0].components[MOVED].component.definition;
+    expect(loaded.styles).not.toHaveProperty('visibility');
+    expect(loaded.styles).not.toHaveProperty('disabledState');
+    expect(loaded.general).not.toHaveProperty('tooltip');
+    expect(loaded.generalStyles).not.toHaveProperty('boxShadow');
   });
 
   test('[RichTextEditor-STYLE-003] boxShadow is applied to the outer wrapper', async () => {

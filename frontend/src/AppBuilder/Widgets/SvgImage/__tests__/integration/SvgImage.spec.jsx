@@ -215,18 +215,30 @@ describe('SvgImage widget', () => {
     }
   );
 
-  test('[SvgImage-VIS-002] A saved app that still stores visibility under styles stays hidden', async () => {
-    // Break this catches: reading only properties.visibility so an app saved before the D-05 data
-    // migration (visibility under styles, no properties.visibility) pops its hidden Svg Images back
-    // on screen the moment the new build ships.
-    const definition = svgImageDefinition(ID, HANDLE);
-    delete definition.component.definition.properties.visibility;
+  test('[SvgImage-VIS-002] The moved keys are read from their new place; a stale old place is dropped on load', async () => {
+    // Break this catches: a reader that still uses an old place (styles.visibility, general.tooltip,
+    // generalStyles.boxShadow). Until the cleanup migration the database keeps both places in sync; the App Builder
+    // drops the old one when the app loads, so such a reader breaks now, not after the cleanup. The old places here
+    // disagree with the new ones, as a stale old place would.
+    const definition = svgImageDefinition(
+      ID,
+      HANDLE,
+      { visibility: binding('{{true}}') },
+      { boxShadow: binding(SHADOW) }
+    );
     definition.component.definition.styles.visibility = binding('{{false}}');
+    definition.component.definition.general.tooltip = binding('Old tooltip');
+    definition.component.definition.generalStyles.boxShadow = binding('0px 0px 5px red');
     const { container } = widget.render({
       extraComponents: { [ID]: definition },
     });
-    await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
-    expect(within(container).getByRole('img', { hidden: true })).not.toBeNull();
+    await waitFor(() => expect(root(container)).toBeTruthy());
+    expect(root(container).style.display).toBe('');
+    expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
+    const loaded = store().modules[MODULE_ID].pages[0].components[ID].component.definition;
+    expect(loaded.styles).not.toHaveProperty('visibility');
+    expect(loaded.general).not.toHaveProperty('tooltip');
+    expect(loaded.generalStyles).not.toHaveProperty('boxShadow');
   });
 
   test('[SvgImage-TIP-001] A saved app that still stores the tooltip under general keeps showing it', async () => {

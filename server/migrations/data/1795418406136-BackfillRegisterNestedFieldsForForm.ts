@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { deleteAppHistoryForStructuralMigration } from '@helpers/migration.helper';
 
-const MIGRATION_NAME = 'BackfillRegisterNestedFieldsForForm1789042668844';
+const MIGRATION_NAME = 'BackfillRegisterNestedFieldsForForm1795418406136';
 const BATCH_SIZE = 2000;
 const COMPONENT_TYPES = ['Form'];
 
@@ -14,7 +14,7 @@ const PROPERTY_PATCH = JSON.stringify({
   registerNestedFields: { value: '{{false}}' },
 });
 
-export class BackfillRegisterNestedFieldsForForm1789042668844 implements MigrationInterface {
+export class BackfillRegisterNestedFieldsForForm1795418406136 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const [{ count }] = await queryRunner.query(
       `SELECT COUNT(*) FROM components

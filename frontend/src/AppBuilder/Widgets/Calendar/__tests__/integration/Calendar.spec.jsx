@@ -252,44 +252,37 @@ describe('Calendar widget', () => {
     expect(calRoot()).toHaveStyle({ display: 'none' });
   });
 
-  test('[Calendar-LEGACY-001] unmigrated styles-based visibility still applies', async () => {
-    // Break this catches: dropping the styles fallback (properties.visibility ??
-    // styles.visibility) the runtime keeps for definitions the data migration has
-    // not touched — old exports imported after this release would otherwise ignore
-    // their saved hidden state. The sibling is seeded WITHOUT registered defaults
-    // so the moved key is truly absent from properties, exactly like a
-    // pre-migration saved definition.
-    const LEGACY = 'calLegacy';
-    widget.render({
-      extraComponents: {
-        [LEGACY]: componentDefinition(
-          LEGACY,
-          'callegacy1',
-          'Calendar',
-          {
-            dateFormat: binding('MM-DD-YYYY'),
-            defaultDate: binding('06-15-2022'),
-            events: binding('{{[]}}'),
-            resources: binding('{{[]}}'),
-            defaultView: binding("{{'month'}}"),
-            displayToolbar: binding('{{true}}'),
-            displayViewSwitcher: binding('{{true}}'),
-            highlightToday: binding('{{true}}'),
-            showPopOverOnEventClick: binding('{{false}}'),
-          },
-          {
-            styles: { visibility: binding('{{false}}') },
-            seedFromRegisteredDefinition: false,
-          }
-        ),
+  test('[Calendar-MOVED-001] the moved keys are read from their new place; a stale old place is dropped on load', async () => {
+    // Break this catches: a reader that still uses an old place (styles.visibility, general.tooltip,
+    // generalStyles.boxShadow). Until the cleanup migration the database keeps both places in sync; the App Builder
+    // drops the old one when the app loads, so such a reader breaks now, not after the cleanup. The old places here
+    // disagree with the new ones, as a stale old place would.
+    const MOVED = 'calMoved';
+    const definition = componentDefinition(
+      MOVED,
+      'calmoved1',
+      'Calendar',
+      {
+        dateFormat: binding('MM-DD-YYYY'),
+        defaultDate: binding('06-15-2022'),
+        events: binding('{{[]}}'),
+        resources: binding('{{[]}}'),
+        visibility: binding('{{true}}'),
       },
-      also: [{ id: LEGACY, componentType: 'Calendar' }],
-    });
+      { styles: { visibility: binding('{{false}}') } }
+    );
+    definition.component.definition.general.tooltip = binding('Old tooltip');
+    definition.component.definition.generalStyles.boxShadow = binding('0px 0px 5px red');
+    widget.render({ extraComponents: { [MOVED]: definition }, also: [{ id: MOVED, componentType: 'Calendar' }] });
 
     await waitFor(() => expect(document.querySelectorAll('.scrollbar-container')).toHaveLength(2), { timeout: 8000 });
-    const legacyRoot = document.getElementById(LEGACY);
-    expect(legacyRoot).toBeTruthy();
-    expect(legacyRoot).toHaveStyle({ display: 'none' });
+    const movedRoot = document.getElementById(MOVED);
+    expect(movedRoot).toBeTruthy();
+    expect(movedRoot).not.toHaveStyle({ display: 'none' });
+    const loaded = store().modules[MODULE_ID].pages[0].components[MOVED].component.definition;
+    expect(loaded.styles).not.toHaveProperty('visibility');
+    expect(loaded.general).not.toHaveProperty('tooltip');
+    expect(loaded.generalStyles).not.toHaveProperty('boxShadow');
   });
 
   test('[Calendar-STYLE-002] borderColor is applied to the root inline border', async () => {
