@@ -25,12 +25,12 @@ jobs:
         run: |
           fail() { echo "::error::$1"; printf '%s\n' "$1" > "$RUNNER_TEMP/reason"; exit 1; }
           case "$GITHUB_REF_NAME" in
-            main|lts-3.16) ;;
-            *) fail "Run this from main or lts-3.16 (got $GITHUB_REF_NAME)" ;;
+            main|lts-3.16|lts-3.21) ;;
+            *) fail "Run this from main, lts-3.16 or lts-3.21 (got $GITHUB_REF_NAME)" ;;
           esac
           echo "$RELEASE_LEADS" | jq -e 'type == "object"' >/dev/null 2>&1 \
             || fail "Secret RELEASE_LEADS is missing or is not valid JSON"
-          # RELEASE_LEADS = {"main":{"github-user":"SLACKID"},"lts-3.16":{"github-user":"SLACKID"}}
+          # RELEASE_LEADS = {"main":{"github-user":"SLACKID"},"lts-3.16":{"github-user":"SLACKID"},"lts-3.21":{"github-user":"SLACKID"}}
           slack=$(echo "$RELEASE_LEADS" | jq -r --arg b "$GITHUB_REF_NAME" --arg a "$GITHUB_ACTOR" \
             '(.[$b] // {}) | to_entries[] | select(.key | ascii_downcase == ($a | ascii_downcase)) | .value' | head -n1)
           [ -n "$slack" ] || fail "$GITHUB_ACTOR is not a release lead for $GITHUB_REF_NAME"
@@ -47,8 +47,13 @@ jobs:
           fail() { echo "::error::$1"; printf '%s\n' "$1" > "$RUNNER_TEMP/reason"; exit 1; }
           newer() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -n1)" = "$1" ]; }
 
-          if [ "$GITHUB_REF_NAME" = "lts-3.16" ]; then SUFFIX=lts; else SUFFIX=beta; fi
-          re="^v[0-9]+\.[0-9]+\.[0-9]+-$SUFFIX([.-][0-9]+)?\$"
+          # main = beta, lts-3.16 = 3.20.x-lts, lts-3.21 = 3.21.x-lts
+          if [ "$GITHUB_REF_NAME" = "main" ]; then SUFFIX=beta; else SUFFIX=lts; fi
+
+          CURRENT=$(head -n1 .version | tr -d '[:space:]')
+          [[ "$CURRENT" =~ ^([0-9]+)\.([0-9]+)\. ]] || fail ".version contains '$CURRENT' - expected X.Y.Z-$SUFFIX"
+          # Only releases of this branch's X.Y line (from .version), so the two LTS branches never mix
+          re="^v${BASH_REMATCH[1]}\.${BASH_REMATCH[2]}\.[0-9]+-$SUFFIX([.-][0-9]+)?\$"
 
           # All releases of this line (lts or beta): drafts and published ones
           drafts=""; published=""
@@ -66,30 +71,34 @@ jobs:
             fail "$what. Publish or delete them first, then run again:"$'\n'"$list"
           fi
 
-          LATEST=$(printf '%s' "$published" | grep . | sort -V | tail -n1 || true)
-          [ -n "$LATEST" ] || fail "No published *-$SUFFIX release found to compare .version with"
-
-          CURRENT=$(head -n1 .version | tr -d '[:space:]')
           [[ "v$CURRENT" =~ $re ]] || fail ".version contains '$CURRENT' - expected X.Y.Z-$SUFFIX"
+          LATEST=$(printf '%s' "$published" | grep . | sort -V | tail -n1 || true)
 
-          # The next version: latest release + 1 on the patch number
-          [[ "$LATEST" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]
-          NEXT="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((10#${BASH_REMATCH[3]} + 1))-$SUFFIX"
+          NOTE=""; REUSE=false; PREV=""
+          if [ -z "$LATEST" ]; then
+            # First release of this line (lts-3.21, or main moving to a new X.Y): release .version as it is
+            NEXT="$CURRENT"; REUSE=true
+            NOTE="First release of this line - releasing .version ($CURRENT) as it is."
+          else
+            PREV="v$LATEST"
+            # The next version: latest release + 1 on the patch number
+            [[ "$LATEST" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]
+            NEXT="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((10#${BASH_REMATCH[3]} + 1))-$SUFFIX"
 
-          # .version should equal the latest release.
-          #   behind -> corrected by this run's version bump
-          #   ahead by exactly the next version (an earlier draft was deleted) -> reuse it
-          #   ahead by anything else -> stop
-          NOTE=""; REUSE=false
-          if newer "$CURRENT" "$LATEST"; then
-            if [ "$CURRENT" = "$NEXT" ]; then
-              REUSE=true
-              NOTE=".version is already $CURRENT (its earlier draft was deleted) - reusing it."
-            else
-              fail ".version is $CURRENT, ahead of the latest $SUFFIX release v$LATEST, and it is not the next version (v$NEXT). Set .version, server/.version and frontend/.version back to $LATEST, or release v$CURRENT by hand."
+            # .version should equal the latest release.
+            #   behind -> corrected by this run's version bump
+            #   ahead by exactly the next version (an earlier draft was deleted) -> reuse it
+            #   ahead by anything else -> stop
+            if newer "$CURRENT" "$LATEST"; then
+              if [ "$CURRENT" = "$NEXT" ]; then
+                REUSE=true
+                NOTE=".version is already $CURRENT (its earlier draft was deleted) - reusing it."
+              else
+                fail ".version is $CURRENT, ahead of the latest $SUFFIX release v$LATEST, and it is not the next version (v$NEXT). Set .version, server/.version and frontend/.version back to $LATEST, or release v$CURRENT by hand."
+              fi
+            elif newer "$LATEST" "$CURRENT"; then
+              NOTE=".version was $CURRENT, behind the latest release v$LATEST - corrected by this version bump."
             fi
-          elif newer "$LATEST" "$CURRENT"; then
-            NOTE=".version was $CURRENT, behind the latest release v$LATEST - corrected by this version bump."
           fi
           [ -z "$NOTE" ] || echo "::warning::$NOTE"
           TAG="v$NEXT"
@@ -97,10 +106,10 @@ jobs:
             fail "Tag $TAG already exists in ToolJet but has no published release. Check that tag, delete it if it is wrong, then run again."
           fi
 
-          echo "Latest release v$LATEST -> releasing $TAG"
+          echo "Latest release ${PREV:-none} -> releasing $TAG"
           echo "version=$NEXT" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "prev=v$LATEST" >> "$GITHUB_OUTPUT"
+          echo "prev=$PREV" >> "$GITHUB_OUTPUT"
           echo "note=$NOTE" >> "$GITHUB_OUTPUT"
           echo "reuse=$REUSE" >> "$GITHUB_OUTPUT"
 
@@ -217,8 +226,9 @@ jobs:
           SHA: ${{ steps.bump.outputs.sha }}
         run: |
           fail() { echo "::error::$1"; printf '%s\n' "$1" > "$RUNNER_TEMP/reason"; exit 1; }
-          notes=$(gh api -X POST "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
-            -f tag_name="$TAG" -f previous_tag_name="$PREV" -f target_commitish="$SHA" \
+          note_args=(-f tag_name="$TAG" -f target_commitish="$SHA")
+          [ -z "$PREV" ] || note_args+=(-f previous_tag_name="$PREV")
+          notes=$(gh api -X POST "repos/$GITHUB_REPOSITORY/releases/generate-notes" "${note_args[@]}" \
             --jq .body) || fail "Could not generate the release notes"
           # Leave the workflow's own version bump PRs out of the notes
           printf '%s\n' "$notes" | grep -vE '^\* Version bump to v[^ ]+ by @github-actions(\[bot\])? in ' > release-notes.md || true

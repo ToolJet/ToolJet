@@ -3810,33 +3810,28 @@ export class AppImportExportService {
         // ALL branches (no branch filter in their EXISTS):
         //   - enforce_app_versions_default_branch_slug_unique (default-branch rows)
         //   - enforce_app_versions_slug_branch_unique         (feature-branch rows)
-        // For NON-git imports (device upload / clone) the pre-flight must scan every branch —
-        // an earlier import onto THIS feature branch already holds the source slug, and a
-        // default-branch-only check misses it, causing a 23505 at INSERT.
-        //
-        // Git imports keep the ORIGINAL default-branch-only scope to leave the git-sync flow
-        // byte-for-byte unchanged: a re-pull reuses the same App row (co_relation match), so
-        // its own slug is excluded and cross-app slug collisions don't arise on the git path.
+        // The pre-flight mirrors them exactly — every branch, every workspace — for git and
+        // non-git imports alike. A default-branch-only check misses a slug another app holds
+        // only on feature branches (e.g. another workspace on the same instance whose app was
+        // pushed from a feature branch), and the INSERT then fails with
+        // app_versions_slug_branch_id_unique. A git import always creates a NEW App row, so
+        // cross-app collisions do arise on the git path; re-pulls reuse the existing App row
+        // and exclude its own slug via `av.app_id != :appId`. On collision, fall back to the
+        // imported app's own freshly generated id — the same random-UUID placeholder pull
+        // uses (applyVersionMetadataWithSlug) and AppsUtilService.create writes.
         //
         // Use the transaction manager so slugs inserted earlier in this same loop are visible;
         // assignedSlugsThisImport guards the fast-path.
         const rawSlug = appVersion.slug ?? importMeta?.slug;
         let resolvedSlug: string;
         if (rawSlug && !assignedSlugsThisImport.has(rawSlug)) {
-          const slugTakenQb = manager
+          const slugTakenByOther = await manager
             .createQueryBuilder(AppVersion, 'av')
             .innerJoin(App, 'a', 'a.id = av.app_id')
             .where('LOWER(av.slug) = LOWER(:slug)', { slug: rawSlug })
             .andWhere('a.type = :type', { type: importedApp.type || APP_TYPES.FRONT_END })
-            .andWhere('av.app_id != :appId', { appId: importedApp.id });
-          if (isGitApp) {
-            slugTakenQb.innerJoin(
-              'organization_git_sync_branches',
-              'wb',
-              'wb.id = av.branch_id AND wb.is_default = true'
-            );
-          }
-          const slugTakenByOther = await slugTakenQb.getCount();
+            .andWhere('av.app_id != :appId', { appId: importedApp.id })
+            .getCount();
           if (slugTakenByOther > 0) {
             resolvedSlug = importedApp.id;
           } else {
