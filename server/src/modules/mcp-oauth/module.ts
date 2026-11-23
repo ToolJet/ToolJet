@@ -4,6 +4,7 @@ import { CustomDomainsModule } from '@modules/custom-domains/module';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { McpOAuthThrottleGuard } from './throttle.guard';
+import { McpOAuthAccountGuard } from './account.guard';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { McpOAuthService } from './service';
 import { McpOAuthController, McpOAuthMetadataController } from './controller';
@@ -12,7 +13,7 @@ import { McpOAuthController, McpOAuthMetadataController } from './controller';
 @Global()
 @Module({
   imports: [JwtModule.register({})],
-  providers: [McpOAuthThrottleGuard, McpOAuthService, McpOAuthIdentityService, UserRepository],
+  providers: [McpOAuthThrottleGuard, McpOAuthAccountGuard, McpOAuthService, McpOAuthIdentityService, UserRepository],
   controllers: [McpOAuthController, McpOAuthMetadataController],
   exports: [McpOAuthService, McpOAuthIdentityService],
 })

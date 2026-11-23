@@ -167,10 +167,13 @@ export const verifyLoginSettings = (pageName) => {
   );
 };
 
-export const loginSettingPageElements = (pageName) => {
+export const loginSettingPageElements = (pageName, workspaceSlug = "my-workspace") => {
   const pageKey = `${pageName}LoginPage`;
   const selectors = ssoSelector[pageKey];
-  const texts = ssoText[pageKey];
+  const texts = { ...ssoText[pageKey] };
+  if (pageName === "workspace" && Cypress.env("proxy") !== true) {
+    texts.workspaceLoginUrl = `${Cypress.config("baseUrl")}/login/${workspaceSlug}`;
+  }
 
   if (!selectors || !texts) {
     throw new Error(`Unknown pageKey: ${pageKey}`);
@@ -181,7 +184,7 @@ export const loginSettingPageElements = (pageName) => {
   });
 };
 
-export const googleSSOPageElements = (pageName) => {
+export const googleSSOPageElements = (pageName, workspaceSlug = "my-workspace") => {
   cy.get(ssoSelector.google).should("be.visible").click();
   cy.get(ssoSelector.cardTitle)
     .eq(1)
@@ -238,7 +241,7 @@ export const googleSSOPageElements = (pageName) => {
   cy.apiLogout();
   if (
     pageName === "workspace"
-      ? cy.visit(`${Cypress.config("baseUrl")}/login/my-workspace`)
+      ? cy.visit(`${Cypress.config("baseUrl")}/login/${workspaceSlug}`)
       : cy.visit(`${Cypress.config("baseUrl")}/login`)
   );
   cy.get(ssoSelector.googleIcon).should("be.visible");
@@ -248,7 +251,7 @@ export const googleSSOPageElements = (pageName) => {
   );
 };
 
-export const gitSSOPageElements = (pageName) => {
+export const gitSSOPageElements = (pageName, workspaceSlug = "my-workspace") => {
   cy.get(ssoSelector.git).should("be.visible").click();
   cy.get(ssoSelector.cardTitle)
     .eq(1)
@@ -326,7 +329,7 @@ export const gitSSOPageElements = (pageName) => {
   cy.apiLogout();
   if (
     pageName === "workspace"
-      ? cy.visit(`${Cypress.config("baseUrl")}/login/my-workspace`)
+      ? cy.visit(`${Cypress.config("baseUrl")}/login/${workspaceSlug}`)
       : cy.visit(`${Cypress.config("baseUrl")}/login`)
   );
   cy.get(ssoSelector.gitIcon).should("be.visible");
@@ -336,7 +339,7 @@ export const gitSSOPageElements = (pageName) => {
   );
 };
 
-export const oidcSSOPageElements = (pageName) => {
+export const oidcSSOPageElements = (pageName, workspaceSlug = "my-workspace") => {
   cy.wait(1000);
   cy.get(ssoSelector.oidc).click();
   if (pageName === "workspace") {
@@ -464,7 +467,7 @@ export const oidcSSOPageElements = (pageName) => {
   cy.apiLogout();
   if (
     pageName === "workspace"
-      ? cy.visit(`${Cypress.config("baseUrl")}/login/my-workspace`)
+      ? cy.visit(`${Cypress.config("baseUrl")}/login/${workspaceSlug}`)
       : cy.visit(`${Cypress.config("baseUrl")}/login`)
   );
   cy.get(ssoSelector.oidcIcon).should("be.visible");
@@ -474,9 +477,26 @@ export const oidcSSOPageElements = (pageName) => {
   );
 };
 
-export const ldapSSOPageElements = () => {
-  cy.wait(1000);
+const openLdapModal = () => {
+  cy.intercept("GET", "/api/license/access").as("ldapLicenseAccess");
   cy.get(ssoSelector.ldap).click();
+  cy.wait("@ldapLicenseAccess");
+  cy.get(ssoSelector.ldapTitle).should("be.visible");
+  cy.wait(2000);
+};
+
+const clickLdapToggle = () => {
+  const toggleInput = '[data-cy="ldap-toggle-input"] input';
+  cy.get(ssoSelector.ldapEnableToggle).should("be.visible");
+  cy.get(toggleInput).then(($input) => {
+    const wasChecked = $input.prop("checked");
+    cy.get(ssoSelector.ldapEnableToggle).click();
+    cy.get(toggleInput).should(wasChecked ? "not.be.checked" : "be.checked");
+  });
+};
+
+export const ldapSSOPageElements = (workspaceSlug = "my-workspace") => {
+  openLdapModal();
   cy.get(ssoSelector.ldapTitle).verifyVisibleElement(
     "have.text",
     ssoText.ldapTitle
@@ -485,7 +505,7 @@ export const ldapSSOPageElements = () => {
     .eq(0)
     .should("be.visible")
     .and("have.text", "Disabled");
-  cy.get(ssoSelector.ldapEnableToggle).should("be.visible").click();
+  clickLdapToggle();
   cy.get(ssoSelector.saveButton).eq(1).click();
 
   cy.clearAndType(ssoSelector.nameInput, ssoText.ldapName);
@@ -494,8 +514,8 @@ export const ldapSSOPageElements = () => {
   cy.clearAndType(ssoSelector.baseDnInput, ssoText.ldapBaseDn);
 
   cy.get(ssoSelector.cancelButton).eq(1).click();
-  cy.get(ssoSelector.ldap).click();
-  cy.get(ssoSelector.ldapEnableToggle).click();
+  openLdapModal();
+  clickLdapToggle();
 
   cy.get(ssoSelector.nameInput).should("have.value", "");
   cy.get(ssoSelector.hostInput).should("have.value", "");
@@ -542,7 +562,7 @@ export const ldapSSOPageElements = () => {
   cy.get(ssoSelector.saveButton).eq(1).click();
 
   cy.apiLogout();
-  cy.visit("/login/my-workspace");
+  cy.visit(`/login/${workspaceSlug}`);
   cy.get(ssoSelector.ldapIcon).should("be.visible");
   cy.get(ssoSelector.ldapSSOText).verifyVisibleElement(
     "have.text",
@@ -550,7 +570,7 @@ export const ldapSSOPageElements = () => {
   );
 };
 
-export const samlSSOPageElements = () => {
+export const samlSSOPageElements = (workspaceSlug = "my-workspace") => {
   cy.wait(1000);
   cy.get(ssoSelector.saml).click();
   cy.get(ssoSelector.samlTitle).verifyVisibleElement(
@@ -624,7 +644,7 @@ export const samlSSOPageElements = () => {
   cy.get(ssoSelector.saveButton).eq(1).click();
 
   cy.apiLogout();
-  cy.visit("/login/my-workspace");
+  cy.visit(`/login/${workspaceSlug}`);
   cy.get(ssoSelector.samlIcon).should("be.visible");
   cy.get(ssoSelector.samlSSOText).verifyVisibleElement(
     "have.text",
@@ -817,22 +837,15 @@ export const defaultSSO = (enable) => {
   });
 };
 
-export const setSignupStatus = (enable, workspaceName = "My workspace") => {
-  cy.task("dbConnection", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `SELECT id FROM organizations WHERE name = '${workspaceName}'`,
-  }).then((resp) => {
-    const workspaceId = resp.rows[0].id;
-
-    cy.getAuthHeaders().then((headers) => {
-      cy.request({
-        method: "PATCH",
-        url: `${Cypress.env("server_host")}/api/login-configs/organization-general`,
-        headers: headers,
-        body: { enableSignUp: enable },
-      }).then((response) => {
-        expect(response.status).to.equal(200);
-      });
+export const setSignupStatus = (enable) => {
+  cy.getAuthHeaders().then((headers) => {
+    cy.request({
+      method: "PATCH",
+      url: `${Cypress.env("server_host")}/api/login-configs/organization-general`,
+      headers: headers,
+      body: { enableSignUp: enable },
+    }).then((response) => {
+      expect(response.status).to.equal(200);
     });
   });
 };

@@ -45,6 +45,9 @@ export class AppBase extends BaseEntity {
   @Column({ name: 'icon' })
   icon: string;
 
+  @Column({ name: 'build_mode', default: 'visual' })
+  buildMode: 'visual' | 'code';
+
   @Column({ name: 'organization_id' })
   organizationId: string;
 

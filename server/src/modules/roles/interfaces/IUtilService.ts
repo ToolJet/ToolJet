@@ -11,6 +11,13 @@ export interface IRolesUtilService {
     manager?: EntityManager
   ): Promise<void>;
 
+  assertActiveAdminRemains(
+    organizationId: string,
+    adminGroupId: string,
+    removedUserIds: string[],
+    manager?: EntityManager
+  ): Promise<void>;
+
   editDefaultGroupUserRole(
     organizationId: string,
     editRoleDto: EditUserRoleDto,
