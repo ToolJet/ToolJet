@@ -10,6 +10,7 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { fetchEdition } from '@/modules/common/helpers/utils';
+import { displayVersion } from './displayVersion';
 
 function BaseSettingsMenu({
   checkForUnsavedChanges,
@@ -125,7 +126,7 @@ function BaseSettingsMenu({
               className="tw-flex tw-h-10 tw-items-center tw-px-4 tw-font-body-default tw-text-text-placeholder"
               data-cy="version-label"
             >
-              Version {localStorage.getItem('currentVersion')}
+              Version {displayVersion(localStorage.getItem('currentVersion'))}
             </div>
           ),
         },

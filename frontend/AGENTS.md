@@ -126,6 +126,11 @@ No change may break existing saved applications. Always ask: would an app saved 
 - Viewer (`/applications/*`) and editor are separate lazy bundles via `RootRouter.jsx`. Never import editor-only code into viewer paths
 - Avoid `JSON.parse(JSON.stringify(...))` and `_.cloneDeep` in render or hot paths — use Immer
 - Watch for O(N) loops inside already-O(N) resolution paths (eager resolution for ListView children)
+- Inline pack components mount only after code and CSS are ready. Keep mount-batching effects aligned with both signals so delayed or failed stylesheets do not leave initial SDK writes unbatched.
+
+### Git Sync default branch restrictions
+
+In a branching-enabled Git Sync workspace, the configured default branch disables App Builder AI chat and Code mode editing tools. Reuse `useIsAiBlockedOnDefaultBranch` (and its callback getter) so custom default branch names and workspace branch changes follow the same policy. The AI sidebar icon is disabled and an open chat closes; Show code, inspector selection, and their keyboard shortcuts are unavailable. Clear open code/inspector state when entering the default branch. Feature branches and workspaces without this restriction retain their existing behavior.
 
 ### App Builder store
 
@@ -134,7 +139,7 @@ No change may break existing saved applications. Always ask: would an app saved 
 
 ### Released-app cache
 
-- The released-app link reuses the app definition saved in IndexedDB (`_helpers/appDefinitionCache.ts`) while its key matches the `appDataRevision` the server returns. The browser never judges freshness itself; what refreshes it is server-side (`server/src/modules/apps/AGENTS.md` § Released-app viewer cache). Logout wipes it via `clearAllViewerCaches()`.
+- The released-app link reuses the app definition saved in IndexedDB (`_helpers/appDefinitionCache.ts`) while its key matches the `appDataRevision` the server returns. The browser never judges freshness itself; what refreshes it is server-side (the Released-app viewer cache section of `server/src/modules/apps/AGENTS.md`). Logout wipes it via `clearAllViewerCaches()`.
 
 ## Widget config
 
@@ -144,7 +149,7 @@ Widget configs live in the shared `packages/widget-definitions` package (`src/wi
 
 ### Key changes require migrations
 
-Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps. Write a migration in `server/data-migrations/`.
+Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps. Write a data migration in `server/migrations/data/` (rules: the Migrations section of `server/AGENTS.md`).
 
 ## Glossary
 

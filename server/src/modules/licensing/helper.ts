@@ -129,6 +129,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.AI_PLAN:
       return licenseInstance.aiPlan;
 
+    case LICENSE_FIELD.AI_CREDIT_LIMITS:
+      return licenseInstance.aiCreditLimits;
+
     case LICENSE_FIELD.AI:
       return licenseInstance.ai;
 
@@ -184,6 +187,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.CUSTOM_COMPONENT_LIBRARIES:
       return licenseInstance.customComponentLibraries;
+
+    case LICENSE_FIELD.VERSION_REVIEW:
+      return licenseInstance.versionReview;
 
     case LICENSE_FIELD.APP_JS_LIBRARIES:
       return licenseInstance.appJsLibraries;

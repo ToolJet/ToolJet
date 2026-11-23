@@ -5,6 +5,7 @@ import { Home, Blocks, ToyBrick, Workflow, Table2, Puzzle, KeyRound, Moon, Sun }
 import { cn } from '@/lib/utils';
 import { ToolTip } from '@/_components/ToolTip';
 import { NotificationCenter } from '@/_components/NotificationCenter';
+import ReviewInbox from '../../ReviewInbox';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import { appendBranchName } from '@/_helpers/active-branch';
@@ -157,6 +158,7 @@ const BaseLeftNavSideBar = ({
           </ToolTip>
 
           <NotificationCenter darkMode={darkMode} />
+          <ReviewInbox darkMode={darkMode} />
 
           <SettingsMenu
             featureAccess={featureAccess}

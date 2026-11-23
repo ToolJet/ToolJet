@@ -6,7 +6,7 @@
  *
  * Mechanism, read from the migration and the trigger it fires:
  *   - the rename used to concatenate onto the row's CURRENT app_name;
- *   - renaming one draft fires `propagate_app_version_metadata` (data-migrations/1781741000000),
+ *   - renaming one draft fires `propagate_app_version_metadata` (migrations/data/1781741000000),
  *     which copies that draft's app_name and slug onto the app's other non-stub version rows —
  *     on every branch, the second draft included;
  *   - the loop then reached that second draft, read back its already-suffixed name, and
@@ -42,7 +42,7 @@ import {
   initTestApp,
 } from 'test-helper';
 import { App } from 'src/entities/app.entity';
-import { DedupeAppCoRelationIds1793400000000 } from '../../../../data-migrations/1793400000000-DedupeAppCoRelationIds';
+import { DedupeAppCoRelationIds1793400000000 } from '@migrations/data/1793400000000-DedupeAppCoRelationIds';
 
 jest.setTimeout(60_000);
 
@@ -161,7 +161,9 @@ describe('DedupeAppCoRelationIds1793400000000', () => {
         [keeper.id, loser.id, `loser-main-2-${stamp}`]
       );
 
-      await new DedupeAppCoRelationIds1793400000000().up(queryRunner);
+      const migration = new DedupeAppCoRelationIds1793400000000();
+      await migration.up(queryRunner);
+      await migration.beforeCommit(queryRunner);
 
       const loserRows: LoserRow[] = await queryRunner.query(
         `SELECT app_name, slug, is_synced, branch_id FROM app_versions WHERE app_id = $1`,
@@ -307,7 +309,9 @@ describe('DedupeAppCoRelationIds1793400000000', () => {
 
       await queryRunner.query(`ALTER TABLE app_versions ENABLE TRIGGER USER`);
 
-      await new DedupeAppCoRelationIds1793400000000().up(queryRunner);
+      const migration = new DedupeAppCoRelationIds1793400000000();
+      await migration.up(queryRunner);
+      await migration.beforeCommit(queryRunner);
 
       // Nothing of the detached copy still carries the kept app's identity, on any branch.
       const loserRows: { app_name: string; slug: string; is_stub: boolean; branch_id: string }[] =

@@ -40,6 +40,9 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 |------|-----------|-----------------|
 | **App** | A ToolJet application; types: `FRONT_END` (visual app), `WORKFLOW` (automation), `MODULE` (reusable building block) | — |
 | **App-Builder** | The visual IDE/editor where apps are constructed | Editor (frontend code term; ambiguous with the Builder role) |
+| **Build Mode** | How an app is built, chosen once when it is created and stored on the app (`apps.build_mode`): React builder or Visual builder | — |
+| **React Builder** | Build mode where the AI writes a React app that can be edited in ToolJet or locally (EE feature). User-facing name in the UI, errors and messages | Code mode, `build_mode: 'code'`, `CodeMode/`, `code-mode-source` (code and comments) |
+| **Visual Builder** | Build mode where the app is assembled from components on the canvas; every app gets it where React builder is unavailable (CE, or a workspace without it) | Visual mode, `build_mode: 'visual'` (code and comments) |
 | **Page** | A view/screen within an app; one page is designated the Home Page | — |
 | **Page Handle** | The unique URL slug for a page within an app | — |
 | **Component** | A pre-designed, drag-and-drop building block on the canvas (45+ built-in types) | Widget (legacy; docs folder is `widgets/` but content says "Components") |
@@ -95,8 +98,12 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Environment** | A deployment stage — development, staging, production — with per-environment data source configs; priority-ordered per workspace | — |
 | **Promote** | Moving an app version from one environment to the next (e.g., dev to staging to production) (EE feature) | Deploy (informal in docs) |
 | **Maintenance Mode** | A flag that takes a released app offline temporarily while preserving the release | — |
-| **Async Migration Mode** | `MIGRATION_MODE=async`: schema migrations apply at boot, data migrations run in the background while the instance serves; runs listed on the super-admin Migrations page (`server/docs/MIGRATION_FLOW.md`, Async mode). The default is blocking mode | — |
+| **Async Migration Mode** | `MIGRATION_MODE=async`: schema migrations apply at boot, data migrations run in the background while the instance serves, cleanup migrations run after writes reopen; runs listed on the super-admin Migrations page (`server/docs/MIGRATION_FLOW.md`, Async mode). The default is blocking mode | — |
 | **Upgrade Gate** | `MigrationGateMiddleware`: in async mode, answers API writes with 503 while a migration runs or after it failed; the banner tells users | Maintenance (end-user banner text; not Maintenance Mode) |
+| **Migration Phase** | `MigrationPhase`: schema (adds only, before boot), data (fills what schema added, writes paused), cleanup (removes what no released code uses, after writes reopen). Folders `server/migrations/{schema,data,cleanup}/`; set by `MIGRATION_PHASE` | Schema migration, data migration |
+| **Migration Baseline** | A `migration_baselines` row: per newest shipped migration (`code_head`), the last migration id recorded when that code first ran. A cleanup migration runs only when its `requires` migration was recorded at or before the baseline (`planCleanup`) | Not **Baseline** (ToolJet Database) |
+| **Migration Run** | One async-mode data phase, a `migration_runs` row: its steps, state and log, shown on the super-admin Migrations page | — |
+| **Legacy 3.21.58 Upgrade** | The async upgrade of a 3.21.58 database: rules its data phase breaks are dropped first and restored if it fails (`legacy-3-21-58-upgrade.ts`, `npm run db:legacy-upgrade:restore`) | — |
 | **App History** | An audit trail of changes to an app version with undo capability (EE feature) | — |
 | **Write Source** | Who made an app-definition save: `ui`, `pat` (personal access token sessions — agents/MCP), `ext_api`, `import`, `git`, `ai` (AI builder sessions), `copy`, `restore` (`app-validation/core/constants.ts` `WRITE_SOURCES`; resolved from the request by `resolveSource`) | source |
 | **Validation Mode** | What app validation does per write source: `off`, `report` (log + return `validationWarnings`), `enforce` (reject with 400 `APP_VALIDATION_FAILED`). `pat` is the only enforced source today; `copy`/`restore` are hard-capped to report | — |
@@ -118,7 +125,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Internal Table** | A table within ToolJet Database | — |
 | **Internal Table Relation** | An Internal Table's physical presence at one (Environment, Workspace Branch) pair — carries the physical Postgres relation's identity and per-relation configuration (`internal_table_relations`) | Relation (short form, context-dependent) |
 | **Internal Table Migration** | An immutable recorded schema change for an Internal Table — authored (`structured`/`raw_sql`) or synthesized for a pre-existing table (`baseline`) (`internal_table_migrations`) | — |
-| **Baseline** | A synthesized `internal_table_migration` recording the shape a pre-existing physical table already has, so it has a migration history to promote/replay from without ever running DDL | — |
+| **Baseline** | A synthesized `internal_table_migration` recording the shape a pre-existing physical table already has, so it has a migration history to promote/replay from without ever running DDL | Not **Migration Baseline** (runner) |
 | **Internal Table Migration Application** | The record that one Internal Table Migration has been applied to one Internal Table Relation (`internal_table_migration_applications`) | — |
 | **Run JavaScript** | A special query type that executes JavaScript code instead of querying a data source | RunJS (code shorthand) |
 | **Run Python** | A special query type that executes Python code instead of querying a data source | RunPy (code shorthand) |

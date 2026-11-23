@@ -3,6 +3,7 @@ import _, { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { any } from 'superstruct';
 import { generateSchemaFromValidationDefinition, validate } from '@/AppBuilder/_utils/component-properties-validation';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 import { hasCircularDependency, resolveReferences as olderResolverMethod } from '@/_helpers/utils';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { removeNestedDoubleCurlyBraces } from '../_stores/utils';
@@ -162,7 +163,7 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
         }
       }
 
-      const evalFunction = Function(
+      const evalFunction = (strictMode.isStrict?.() ? strictMode.compileBinding : Function)(
         [
           'variables',
           'components',

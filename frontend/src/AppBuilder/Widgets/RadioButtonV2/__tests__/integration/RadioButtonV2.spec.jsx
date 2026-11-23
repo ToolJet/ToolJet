@@ -370,6 +370,20 @@ describe('RadioButtonV2', () => {
       expect(harness.exposed().isValid).toBe(true);
     });
 
+    test('[RadioButtonV2-VAL-006] mandatory group stays invalid after `selectOption` with a value that is not an option', async () => {
+      // Break this catches: an unknown value is accepted as a selection and satisfies the mandatory rule.
+      harness.render({
+        properties: { options: binding([option('A', 'a'), option('B', 'b')]) },
+        validation: { mandatory: binding('{{true}}') },
+      });
+
+      await harness.act('selectOption', 'manish');
+
+      expect(harness.exposed().value).toBe('');
+      expect(harness.exposed().isValid).toBe(false);
+      expect(screen.getByText('Field cannot be empty')).toBeInTheDocument();
+    });
+
     test('[RadioButtonV2-VAL-003] `customRule` failure renders its own error text', async () => {
       // Break this catches: RadioButtonV2 stops passing validation.customRule through to validate() / stops rendering validationError.
       harness.render({
@@ -472,6 +486,37 @@ describe('RadioButtonV2', () => {
 
       harness.render({ properties: { label: binding('Updated') } });
       await waitFor(() => expect(harness.exposed().label).toBe('Updated'));
+    });
+
+    test('[RadioButtonV2-EVT-005] `selectOption` with a value that is not an option leaves an empty group empty', async () => {
+      // Break this catches: selectOption passes any value straight to onSelect, exposing a value no option has.
+      harness.render({
+        properties: { options: binding([option('A', 'a'), option('B', 'b'), option('C', 'c')]) },
+        events: setVariableOn(HANDLE, 'onSelectionChange', { key: 'seen' }),
+      });
+
+      await harness.act('selectOption', 'manish');
+
+      expect(harness.exposed().value).toBe('');
+      expect(harness.exposed().isValid).toBe(true);
+      screen.getAllByRole('radio').forEach((radio) => expect(radio).not.toBeChecked());
+      expect(harness.variables().seen).toBeUndefined();
+    });
+
+    test('[RadioButtonV2-EVT-006] `selectOption` with a value that is not an option keeps the current selection', async () => {
+      // Break this catches: an unknown value overwrites the selected option instead of being ignored.
+      harness.render({
+        properties: { options: binding([option('A', 'a'), option('B', 'b', { isDefault: true }), option('C', 'c')]) },
+        events: setVariableOn(HANDLE, 'onSelectionChange', { key: 'seen' }),
+      });
+      await waitFor(() => expect(harness.exposed().value).toBe('b'));
+
+      await harness.act('selectOption', 'manish');
+
+      expect(harness.exposed().value).toBe('b');
+      expect(harness.exposed().isValid).toBe(true);
+      expect(screen.getByRole('radio', { name: 'B' })).toBeChecked();
+      expect(harness.variables().seen).toBeUndefined();
     });
   });
 

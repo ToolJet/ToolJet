@@ -30,7 +30,7 @@ export class ImportExportResourcesController {
     // Resolve the export workspace from the session, not the body (prevents cross-workspace
     // export of ToolJet-DB schema). Internal callers like git-sync invoke the service directly.
     exportResourcesDto.organization_id = user.organizationId;
-    const result = await this.importExportResourcesService.export(user, exportResourcesDto, user.branchId);
+    const result = await this.importExportResourcesService.export(user, exportResourcesDto, user.branchId, 'file');
     return {
       ...result,
       tooljet_version: globalThis.TOOLJET_VERSION,

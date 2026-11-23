@@ -1,4 +1,4 @@
-import { FEATURE_KEY } from './index';
+import { FEATURE_KEY, REVIEW_AUDIT_KEYS } from './index';
 import { MODULES } from '@modules/app/constants/modules';
 import { FeaturesConfig } from '../types';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
@@ -8,6 +8,36 @@ export const FEATURES: FeaturesConfig = {
     // Public-app skip covers reads only; mutations keep the permission check.
     [FEATURE_KEY.GET]: {},
     [FEATURE_KEY.GET_ONE]: {},
+    // Compare, reviews and AI-turn snapshots are on trial and Pro and above.
+    // Compare itself is a read. The review endpoints that share this feature write their own action types.
+    [FEATURE_KEY.COMPARE]: {
+      license: LICENSE_FIELD.VERSION_REVIEW,
+      shouldNotSkipPublicApp: true,
+      auditLogsKeys: [
+        REVIEW_AUDIT_KEYS.OPENED,
+        REVIEW_AUDIT_KEYS.REREQUESTED,
+        REVIEW_AUDIT_KEYS.CLOSED,
+        REVIEW_AUDIT_KEYS.REOPENED,
+      ],
+    },
+    // One endpoint records an approval, a request for changes or a dismissal.
+    [FEATURE_KEY.REVIEW_APPROVE]: {
+      license: LICENSE_FIELD.VERSION_REVIEW,
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: REVIEW_AUDIT_KEYS.APPROVED,
+      auditLogsKeys: [REVIEW_AUDIT_KEYS.CHANGES_REQUESTED, REVIEW_AUDIT_KEYS.DISMISSED],
+    },
+    [FEATURE_KEY.REVIEW_OVERRIDE]: {
+      license: LICENSE_FIELD.VERSION_REVIEW,
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: REVIEW_AUDIT_KEYS.OVERRIDE,
+    },
+    // Undo an AI turn. A public app must not widen who can rewrite its draft.
+    [FEATURE_KEY.SNAPSHOT_RESTORE]: {
+      license: LICENSE_FIELD.VERSION_REVIEW,
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_UPDATE',
+    },
     [FEATURE_KEY.CREATE]: {
       auditLogsKey: 'APP_UPDATE',
       shouldNotSkipPublicApp: true,
@@ -24,6 +54,7 @@ export const FEATURES: FeaturesConfig = {
       auditLogsKey: 'APP_UPDATE',
       shouldNotSkipPublicApp: true,
     },
+    // Promoting, and reading what a promote would need (missing tables): a public app must not widen who may do either.
     [FEATURE_KEY.PROMOTE]: {
       license: LICENSE_FIELD.VALID,
       auditLogsKey: 'APP_PROMOTE',
