@@ -21,11 +21,10 @@ export default function RichTextEditor({
 }) {
   const isInitialRender = useRef(true);
   const { boxShadow } = styles;
-  // visibility/disabledState moved from styles to properties (Additional Actions,
-  // bug-fix batch 2026-10-27). The styles fallback keeps unmigrated definitions
-  // (old exports/imports that bypass the data migration) rendering correctly.
-  const visibility = properties.visibility ?? styles?.visibility ?? true;
-  const disabledState = properties.disabledState ?? styles?.disabledState ?? false;
+  // visibility/disabledState live in properties (Additional Actions). The old styles place is dropped on load
+  // (MOVED_COMPONENT_KEYS), so it is never read here.
+  const visibility = properties.visibility ?? true;
+  const disabledState = properties.disabledState ?? false;
   const placeholder = properties.placeholder;
   const defaultValue = properties?.defaultValue ?? '';
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
