@@ -32,8 +32,11 @@ export class PostgrestProxyService {
   async proxy(req, res, next) {
     const organizationId = req.headers['tj-workspace-id'] || req.dataQuery?.app?.organizationId;
 
-    if (req.method === 'POST' && (await this.tableOperationsService.isRowLimitReached(organizationId))) {
-      throw new HttpException("You've reached your limit of rows in ToolJet database tables. Upgrade for more.", 451);
+    if (req.method === 'POST') {
+      const rowsToAdd = Array.isArray(req.body) ? req.body.length : 1;
+      if ((await this.tableOperationsService.getRemainingRowCapacity(organizationId)) < rowsToAdd) {
+        throw new HttpException("You've reached your limit of rows in ToolJet database tables. Upgrade for more.", 451);
+      }
     }
 
     const { dbUser, dbSchema } = isSQLModeDisabled()
