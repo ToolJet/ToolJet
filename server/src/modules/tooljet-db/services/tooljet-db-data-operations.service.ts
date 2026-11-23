@@ -23,6 +23,8 @@ import { PostgrestProxyService } from './postgrest-proxy.service';
 import { PostgrestError, TooljetDatabaseError } from '../types';
 import { TooljetDbBulkUploadService } from './tooljet-db-bulk-upload.service';
 import { TooljetDbRelationResolverService } from './relation-resolver.service';
+import { SetRowDefaultDto } from '../dto/set-row-default.dto';
+import { assertCanSetDefault, buildSetDefaultQuery, quoteIdentifier, type ColumnDefault } from '../helpers/row-default';
 import { SELF_PLACEHOLDER, SELF_PLACEHOLDER_REGEX, containsTablePlaceholder } from '../helpers/sql-placeholders';
 
 // This service encapsulates all TJDB data manipulation operations
@@ -856,6 +858,39 @@ export class TooljetDbDataOperationsService implements QueryService {
     } finally {
       await tooljetDbTenantConnection.destroy();
     }
+  }
+
+  /**
+   * `UPDATE ... SET column = DEFAULT` for one row, in the given environment. Returns the value the database stored
+   * (a `now()` or sequence default resolves at write time, so the caller shows what is really there).
+   * The physical table comes from the workspace's own relation, never from the request, like bulk upload.
+   */
+  async setCellToDefault(organizationId: string, tableId: string, dto: SetRowDefaultDto): Promise<{ value: unknown }> {
+    const { environment_id: environmentId, column, where } = dto;
+    const internalTable = await this.manager.findOne(InternalTable, { where: { id: tableId, organizationId } });
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableId);
+
+    const { relation } = await this.tableOperationsService.resolveTableById(organizationId, tableId, environmentId);
+    const schema = findTenantSchema(organizationId);
+
+    const columns: ColumnDefault[] = await this.tooljetDbManager.query(
+      `SELECT column_name, column_default FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2`,
+      [schema, relation.id]
+    );
+    const keyRows: Array<{ attname: string }> = await this.tooljetDbManager.query(
+      `SELECT a.attname FROM pg_index i
+         JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY (i.indkey)
+        WHERE i.indrelid = to_regclass($1) AND i.indisprimary`,
+      [`${quoteIdentifier(schema)}.${quoteIdentifier(relation.id)}`]
+    );
+    const primaryKeys = keyRows.map((row) => row.attname);
+    assertCanSetDefault(column, where, columns, primaryKeys);
+
+    const { sql, params } = buildSetDefaultQuery(schema, relation.id, column, where, primaryKeys);
+    // A pg UPDATE returns [rows, affectedCount]
+    const [rows]: [Array<{ value: unknown }>, number] = await this.tooljetDbManager.query(sql, params);
+    if (rows.length === 0) throw new NotFoundException('Row not found');
+    return { value: rows[0].value };
   }
 
   /**

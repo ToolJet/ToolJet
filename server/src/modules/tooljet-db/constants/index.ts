@@ -21,4 +21,5 @@ export enum FEATURE_KEY {
   ADD_RAW_SQL_MIGRATION = 'add_raw_sql_migration',
   REVERT_MIGRATION = 'revert_migration',
   SQL_EXECUTION = 'sql_execution',
+  SET_ROW_DEFAULT = 'set_row_default',
 }

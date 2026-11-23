@@ -25,6 +25,7 @@ interface Features {
   [FEATURE_KEY.ADD_RAW_SQL_MIGRATION]: FeatureConfig;
   [FEATURE_KEY.REVERT_MIGRATION]: FeatureConfig;
   [FEATURE_KEY.SQL_EXECUTION]: FeatureConfig;
+  [FEATURE_KEY.SET_ROW_DEFAULT]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

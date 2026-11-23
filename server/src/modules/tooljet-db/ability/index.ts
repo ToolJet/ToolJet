@@ -95,6 +95,11 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
+    // Same people who edit a row through the proxy from the dashboard; never a data query.
+    if (isUserLoggedin && (superAdmin || isAdmin || isBuilder || userPermission.tjdbCRUD)) {
+      can([FEATURE_KEY.SET_ROW_DEFAULT], InternalTable);
+    }
+
     // Viewing table metadata is a builder/admin action, not for end-users.
     if (superAdmin || isAdmin || isBuilder || userPermission.tjdbCRUD) {
       can(

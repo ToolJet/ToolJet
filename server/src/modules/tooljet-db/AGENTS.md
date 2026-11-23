@@ -26,6 +26,7 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 | `services/tooljet-db-environment-assignment.service.ts` | Rollout migration B: re-points a migration-A relation to the highest-priority environment and clones a development twin. Also owns the two org-scoped read routes. |
 | `services/tooljet-db-promote.service.ts` (CE stub, real logic in `server/ee/tooljet-db/services/`) | `POST .../table/:tableId/promote` — computes and replays the missing migration set into the next-priority environment. |
 | `helpers/table-schema-snapshot.ts` | Introspects a relation's current shape; shared byte-identical between the recorder and baseline synthesis. |
+| `helpers/row-default.ts` | Pure checks and SQL for `POST table/:tableId/rows/default` (`setCellToDefault`): `UPDATE … SET col = DEFAULT` for one row, because a PostgREST PATCH cannot say `DEFAULT`. The column must have a default and `where` must be exactly the primary key (never a partial key). Runs on `tooljetDbManager` against the physical table of the workspace's own relation (like bulk upload); ability `SET_ROW_DEFAULT` = who may use the proxy as a builder (never a data query). |
 | `helpers/reconcile-columns.ts` | Mints a uuid for a raw-SQL-introduced column after DDL runs. Kept out of both callers' files — an inter-file import between them previously broke NestJS DI non-deterministically. |
 | `controller.ts` | `/proxy/*` (PostgREST passthrough) plus the DDL/DML REST endpoints. |
 
