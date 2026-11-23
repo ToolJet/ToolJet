@@ -4,6 +4,7 @@ import { Definition } from '@modules/organization-themes/dto';
 import { defaultThemeName, TJDefaultTheme } from '@modules/organization-themes/constants';
 import { shippedThemes } from '@modules/organization-themes/constants/shipped-themes';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
+import { toV2 } from '@tooljet/widget-definitions';
 
 /** ToolJet ships a few colour themes beside the basic one, so every workspace can restyle an app in one click. */
 describe('shipped themes', () => {
@@ -99,5 +100,34 @@ describe('shipped themes', () => {
     const shipped = saved.filter((row) => row.name !== defaultThemeName);
     expect(shipped.map((row) => row.name)).toEqual(shippedThemes.map((theme) => theme.name));
     for (const row of shipped) expect(row).toMatchObject({ organizationId: 'org-1', isDefault: false, isBasic: false });
+  });
+
+  // Theme definition v2: rows hold `colors` beside the old groups until a cleanup migration, so new rows do too.
+  it('are created in both theme shapes, the old groups unchanged and in their order', async () => {
+    const saved: any[] = [];
+    const manager: any = {
+      create: (_entity: unknown, values: any) => values,
+      save: async (row: any) => saved.push(row),
+    };
+    await new OrganizationThemesUtilService({} as any).createDefaultTheme(manager, 'org-1');
+
+    const constants = [TJDefaultTheme, ...shippedThemes.map((theme) => theme.definition)];
+    expect(saved).toHaveLength(constants.length);
+    saved.forEach(({ definition }, i) => {
+      expect(definition.version).toBe(2);
+      expect(definition.colors).toEqual(toV2(constants[i]).colors);
+      for (const group of ['brand', 'text', 'border', 'systemStatus', 'surface'])
+        expect(definition[group]).toEqual(constants[i][group]);
+      expect(Object.keys(definition.border)).toEqual(['radius', 'colors']);
+    });
+  });
+
+  // Seven older migrations insert or match these constants (RetuneShippedThemeNeutrals compares stored rows to them
+  // exactly), so they stay in the old shape; rows get v2 where they are created.
+  it('keep the default constants in the old shape the older migrations match on', () => {
+    for (const definition of [TJDefaultTheme, ...shippedThemes.map((theme) => theme.definition)]) {
+      expect(definition).not.toHaveProperty('colors');
+      expect(definition).not.toHaveProperty('version');
+    }
   });
 });

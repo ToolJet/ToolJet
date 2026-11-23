@@ -7,6 +7,7 @@ import { TJDefaultTheme, defaultThemeName, THEME_UPDATE_TYPE } from '@modules/or
 import { shippedThemes } from '@modules/organization-themes/constants/shipped-themes';
 import { IOrganizationThemesUtilService } from './interfaces/IUtilService';
 import { RequestContext } from '@modules/request-context/service';
+import { withLegacyColors } from '@tooljet/widget-definitions';
 import {
   UpdateThemeDefaultDto,
   UpdateThemeNameDto,
@@ -20,8 +21,10 @@ const THEME_MEMO_KEY = 'tj_theme_memo';
 export class OrganizationThemesUtilService implements IOrganizationThemesUtilService {
   constructor(protected themesRepository: OrganizationThemesRepository) {}
 
+  // The constants stay in the old shape (older migrations insert and match them); a new row gets v2 `colors` beside
+  // the old groups, like every other theme write.
   #getDefaultDefinition(): Definition {
-    return TJDefaultTheme;
+    return withLegacyColors(TJDefaultTheme);
   }
   async getTheme(organizationId: string, themeId?: string): Promise<OrganizationThemes> {
     const memoKey = `${organizationId}:${themeId ?? '_default'}`;
@@ -58,7 +61,7 @@ export class OrganizationThemesUtilService implements IOrganizationThemesUtilSer
           manager.create(OrganizationThemes, {
             name: shipped.name,
             organizationId,
-            definition: shipped.definition,
+            definition: withLegacyColors(shipped.definition),
             isDefault: false,
             isBasic: false,
           })

@@ -46,7 +46,7 @@ import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComp
 import * as isolationConfig from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/isolationConfig';
 import { getCachedAppDefinition, setCachedAppDefinition } from '@/AppBuilder/_helpers/appDefinitionCache';
 import { prefetchPacksForPages } from '@/_stores/builtinPacksStore';
-import { setOnBrandColors } from '@/AppBuilder/_helpers/onBrandText';
+import { themeVariables } from '@/AppBuilder/_helpers/themeVariables';
 
 const useAppData = (
   appId,
@@ -1029,41 +1029,11 @@ const useAppData = (
   useEffect(() => {
     const root = document.documentElement;
     const mode = appMode && appMode !== 'auto' ? appMode : darkMode ? 'dark' : 'light';
+    // Colours (either theme shape), On solid, and the radius, on-brand and font values the component packs read.
     const themeObj = appliedThemeDefinition(selectedTheme, themeAccess);
-    Object.keys(themeObj).forEach((category) => {
-      const categoryObj = themeObj[category];
-      Object.keys(categoryObj).forEach((property) => {
-        const propertyObj = categoryObj[property];
-        Object.keys(propertyObj).forEach((type) => {
-          const color = propertyObj[type][mode];
-          root.style.setProperty(`--cc-${camelCase(type)}-${camelCase(category)}`, `${color}`);
-          if (type === 'placeholder' && category === 'text') {
-            root.style.setProperty(`--cc-default-icon`, `${color}`);
-          }
-          if (category === 'text' && type === 'placeholder') {
-            root.style.setProperty(`--cc-default-icon-light`, `${propertyObj[type]['light']}`);
-            root.style.setProperty(`--cc-default-icon-dark`, `${propertyObj[type]['dark']}`);
-            root.style.setProperty(`--cc-placeholder-text-light`, `${propertyObj[type]['light']}`);
-            root.style.setProperty(`--cc-placeholder-text-dark`, `${propertyObj[type]['dark']}`);
-          }
-        });
-      });
-    });
-    // Values the loop above does not set as variables: the radius scale (numbers, not light/dark pairs), a text colour
-    // readable on the brand colour and the brand fill that colour reads on at 4.5:1 (component packs draw primary
-    // buttons and chips with them).
-    const radius = themeObj?.border?.radius;
-    ['default', 'small', 'large'].forEach((size) => {
-      const value = Number(radius?.[size]);
-      if (Number.isFinite(value)) root.style.setProperty(`--cc-radius-${size}`, `${value}px`);
-      else root.style.removeProperty(`--cc-radius-${size}`);
-    });
-    setOnBrandColors(root, themeObj?.brand?.colors?.primary?.[mode]);
-    // The theme's font, for component packs (their shadow roots read --cc-font-family, else the page font).
-    const font = typeof themeObj?.text?.font === 'string' ? themeObj.text.font.trim() : '';
-    if (font)
-      root.style.setProperty('--cc-font-family', `'${font.replace(/'/g, '')}', ui-sans-serif, system-ui, sans-serif`);
-    else root.style.removeProperty('--cc-font-family');
+    Object.entries(themeVariables(themeObj, mode)).forEach(([name, value]) =>
+      value === null ? root.style.removeProperty(name) : root.style.setProperty(name, value)
+    );
     detectThemeChange();
   }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 
