@@ -118,7 +118,7 @@ const LifecycleCTAButton = () => {
   // Only show on the draft version — saved/released versions are read-only and have no
   // commit or pull action to perform. "Sync" is the exception: it acts on the app's
   // default-branch draft regardless of which version is selected in the current environment.
-  if (selectedVersion && selectedVersion.status !== 'DRAFT' && !isUnsynced) {
+  if (selectedVersion && selectedVersion.status !== 'DRAFT' && !isUnsynced && isGitSyncConfigured) {
     return null;
   }
 
@@ -228,24 +228,38 @@ const LifecycleCTAButton = () => {
         />
       )}
       <div className="lifecycle-cta-button">
-        <ToolTip
-          message={config.unsynced ? 'App not synced in remote git' : ''}
-          placement="bottom"
-          show={config.unsynced}
-        >
-          <Button
-            variant={config.variant}
-            onClick={handleClick}
-            disabled={config.disabled}
-            data-tooltip-id="editor-header-tooltip"
-            data-tooltip-content={config.tooltip}
-            data-cy="lifecycle-cta-button"
-            data-unsynced={config.unsynced || undefined}
+        {!isGitSyncConfigured ? (
+          <ToolTip message="Configure Git: connect this workspace to a Git repository" placement="bottom">
+            <Button
+              variant="ghost"
+              iconOnly
+              onClick={handleClick}
+              aria-label="Configure Git"
+              data-cy="lifecycle-cta-button"
+            >
+              <GitBranch size={15} strokeWidth={1.8} aria-hidden="true" />
+            </Button>
+          </ToolTip>
+        ) : (
+          <ToolTip
+            message={config.unsynced ? 'App not synced in remote git' : ''}
+            placement="bottom"
+            show={config.unsynced}
           >
-            <LifecycleIcon size={15} strokeWidth={1.8} aria-hidden="true" />
-            <span>{config.label}</span>
-          </Button>
-        </ToolTip>
+            <Button
+              variant={config.variant}
+              onClick={handleClick}
+              disabled={config.disabled}
+              data-tooltip-id="editor-header-tooltip"
+              data-tooltip-content={config.tooltip}
+              data-cy="lifecycle-cta-button"
+              data-unsynced={config.unsynced || undefined}
+            >
+              <LifecycleIcon size={15} strokeWidth={1.8} aria-hidden="true" />
+              <span>{config.label}</span>
+            </Button>
+          </ToolTip>
+        )}
       </div>
     </>
   );

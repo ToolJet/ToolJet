@@ -4,6 +4,7 @@ import moment from 'moment';
 import { toast } from 'react-hot-toast';
 import {
   IconAlertTriangle,
+  IconArrowBackUp,
   IconCircleCheck,
   IconCircleDashed,
   IconCircleX,
@@ -67,6 +68,7 @@ const STEP = {
   running: { label: 'Running', Icon: IconLoader2, tone: 'tw-text-text-accent', spin: true },
   pending: { label: 'Waiting', Icon: IconCircleDashed, tone: 'tw-text-text-placeholder' },
   failed: { label: 'Failed', Icon: IconCircleX, tone: 'tw-text-text-danger' },
+  rolled_back: { label: 'Rolled back', Icon: IconArrowBackUp, tone: 'tw-text-text-placeholder' },
 };
 
 export const formatMs = (ms) => {

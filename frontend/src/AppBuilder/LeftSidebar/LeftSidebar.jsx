@@ -13,13 +13,14 @@ import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { Blocks, DatabaseZap, Files, Network, Search, Settings } from 'lucide-react';
+import { Blocks, DatabaseZap, Files, History, LockKeyhole, Network, ScanSearch, Search, Settings } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { EditorView } from '@codemirror/view';
 import CodeSearch from './CodeSearch/CodeSearch';
 import Beta from '@/_ui/Beta';
 import SupportButton from './SupportButton';
 import AvatarGroup from '@/_ui/AvatarGroup';
+import { onePerPerson } from './presenceAvatars';
 // eslint-disable-next-line import/no-unresolved
 import { useOthers, useSelf } from '@y-presence/react';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
@@ -38,6 +39,11 @@ import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
 import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
 import AppLibraries from './AppLibraries';
+import { SecurityPanel, AccessPanel, CodeHistoryPanel, useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
+import { railClick } from './railClick';
+import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
+import LegalReasonsErrorModal from '@/_components/LegalReasonsErrorModal';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -51,6 +57,9 @@ export const BaseLeftSidebar = ({
   renderAIChat = () => null,
 }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
+  const codeMode = useCodeMode(moduleId);
+  const isAiBlockedByBranch = useIsAiBlockedOnDefaultBranch();
+  const buildMode = useStore((state) => state.appStore?.modules?.[moduleId]?.app?.buildMode);
   const [
     pinned,
     selectedSidebarItem,
@@ -76,6 +85,12 @@ export const BaseLeftSidebar = ({
     shallow
   );
 
+  useEffect(() => {
+    if (isAiBlockedByBranch && selectedSidebarItem === 'tooljetai' && isSidebarOpen) {
+      toggleLeftSidebar(false);
+    }
+  }, [isAiBlockedByBranch, selectedSidebarItem, isSidebarOpen, toggleLeftSidebar]);
+
   const [popoverContentHeight, setPopoverContentHeight] = useState(
     getLeftPanelHeight(isQueryPaneExpanded, queryPanelHeight)
   );
@@ -83,6 +98,8 @@ export const BaseLeftSidebar = ({
   const [animatePanelSwitch, setAnimatePanelSwitch] = useState(false);
   const sideBarBtnRefs = useRef({});
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const [showAccessUpgrade, setShowAccessUpgrade] = useState(false);
+  const accessInPlan = !!(featureAccess?.appPermissionPages || featureAccess?.appPermissionQuery);
   const returnToSearch = useStore((state) => state.codeSearch.returnToSearch);
   const setCodeSearchReturnToSearch = useStore((state) => state.setCodeSearchReturnToSearch);
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
@@ -94,9 +111,30 @@ export const BaseLeftSidebar = ({
   const panelItem = selectedSidebarItem ?? (isPanelContentMounted ? lastPanelItemRef.current : null);
   const { isLeftPanelOpen, shouldMountLeftPanel } = getLeftPanelState(panelItem, isSidebarOpen);
 
+  // Whether the open panel was opened over the chat, so its icon closes it back to the chat.
+  const overChat = useRef(false);
+  useEffect(() => {
+    if (!isSidebarOpen) overChat.current = false;
+  }, [isSidebarOpen]);
+
   const handleSelectedSidebarItem = (item) => {
+    if (isAiBlockedByBranch && item === 'tooljetai') return;
     // Only a search result opens Settings with a way back to the search panel.
     setCodeSearchReturnToSearch(false);
+    const click = railClick({
+      item,
+      selected: selectedSidebarItem,
+      open: isSidebarOpen,
+      pinned,
+      codeMode,
+      overChat: overChat.current,
+    });
+    overChat.current = click.overChat;
+    if (!isAiBlockedByBranch && click.show === 'tooljetai' && item !== 'tooljetai') {
+      setSelectedSidebarItem('tooljetai');
+      localStorage.setItem('selectedSidebarItem', 'tooljetai');
+      return;
+    }
     // Left-rail clicks never close the right panel; it closes only from its own ×.
     setAnimatePanelSwitch(!isSidebarOpen || item !== selectedSidebarItem);
     setSelectedSidebarItem(item);
@@ -189,7 +227,7 @@ export const BaseLeftSidebar = ({
   const renderSelectedPanel = () => {
     switch (panelItem) {
       case 'tooljetai':
-        return renderAIChat({ darkMode });
+        return isAiBlockedByBranch ? null : renderAIChat({ darkMode });
       case 'pages':
         return <PageSettings surface="navigation" onClose={() => toggleLeftSidebar(false)} />;
       case 'components':
@@ -211,10 +249,18 @@ export const BaseLeftSidebar = ({
         return <CodeSearch darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'libraries':
         return <AppLibraries darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
+      case 'security':
+        return <SecurityPanel onClose={() => toggleLeftSidebar(false)} />;
+      case 'access':
+        return <AccessPanel onClose={() => toggleLeftSidebar(false)} />;
       case 'dependencies':
         return <DependencyViewer darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'apphistory':
-        return <AppHistory darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
+        return codeMode ? (
+          <CodeHistoryPanel darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />
+        ) : (
+          <AppHistory darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />
+        );
       case 'settings':
         return (
           <GlobalSettings
@@ -233,6 +279,7 @@ export const BaseLeftSidebar = ({
   }
 
   // TODO: Move icons as slots
+
   const renderCommonItems = () => {
     return (
       <>
@@ -268,7 +315,7 @@ export const BaseLeftSidebar = ({
         >
           <DatabaseZap size={16} strokeWidth={1.8} />
         </SidebarItem>
-        {shouldShowLibraries(isModuleEditor, featureAccess?.appJsLibraries) && (
+        {!codeMode && shouldShowLibraries(isModuleEditor, featureAccess?.appJsLibraries) && (
           <AppLibrariesIcon
             darkMode={darkMode}
             selectedSidebarItem={selectedSidebarItem}
@@ -283,28 +330,69 @@ export const BaseLeftSidebar = ({
   const renderManageItems = () => (
     <>
       <div className="left-sidebar-section-divider" role="separator" />
-      <SidebarItem
-        panel="search"
-        selectedSidebarItem={selectedSidebarItem}
-        darkMode={darkMode}
-        onClick={() => handleSelectedSidebarItem('search')}
-        className="left-sidebar-item left-sidebar-layout tw-overflow-visible"
-        ref={setSideBarBtnRefs('search')}
-      >
-        <Search size={16} strokeWidth={1.8} />
-        <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
-      </SidebarItem>
-      <SidebarItem
-        panel="dependencies"
-        selectedSidebarItem={selectedSidebarItem}
-        darkMode={darkMode}
-        onClick={() => handleSelectedSidebarItem('dependencies')}
-        className="left-sidebar-item left-sidebar-layout"
-        ref={setSideBarBtnRefs('dependencies')}
-      >
-        <Network size={16} strokeWidth={1.8} />
-      </SidebarItem>
-      {!isModuleEditor && featureAccess?.appHistory && (
+      {!codeMode && (
+        <SidebarItem
+          panel="search"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          onClick={() => handleSelectedSidebarItem('search')}
+          className="left-sidebar-item left-sidebar-layout tw-overflow-visible"
+          ref={setSideBarBtnRefs('search')}
+        >
+          <Search size={16} strokeWidth={1.8} />
+          <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
+        </SidebarItem>
+      )}
+      {(codeMode || buildMode === 'code') && !isModuleEditor && (
+        <SidebarItem
+          panel="security"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          onClick={() => handleSelectedSidebarItem('security')}
+          className="left-sidebar-item left-sidebar-layout"
+          ref={setSideBarBtnRefs('security')}
+        >
+          <ScanSearch size={16} strokeWidth={1.8} />
+        </SidebarItem>
+      )}
+      {(codeMode || buildMode === 'code') && !isModuleEditor && (
+        <SidebarItem
+          panel="access"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          onClick={() => (accessInPlan ? handleSelectedSidebarItem('access') : setShowAccessUpgrade(true))}
+          className="left-sidebar-item left-sidebar-layout"
+          ref={setSideBarBtnRefs('access')}
+        >
+          <LockKeyhole size={16} strokeWidth={1.8} />
+        </SidebarItem>
+      )}
+      {!codeMode && (
+        <SidebarItem
+          panel="dependencies"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          onClick={() => handleSelectedSidebarItem('dependencies')}
+          className="left-sidebar-item left-sidebar-layout"
+          ref={setSideBarBtnRefs('dependencies')}
+        >
+          <Network size={16} strokeWidth={1.8} />
+        </SidebarItem>
+      )}
+      {/* Code mode: shown on every plan; below Pro it opens the upgrade prompt (the edition's component decides). */}
+      {codeMode && !isModuleEditor && (
+        <SidebarItem
+          panel="apphistory"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          onClick={() => handleSelectedSidebarItem('apphistory')}
+          className="left-sidebar-item left-sidebar-layout"
+          ref={setSideBarBtnRefs('apphistory')}
+        >
+          <History size={16} strokeWidth={1.8} />
+        </SidebarItem>
+      )}
+      {!codeMode && !isModuleEditor && featureAccess?.appHistory && (
         <AppHistoryIcon
           darkMode={darkMode}
           selectedSidebarItem={selectedSidebarItem}
@@ -374,6 +462,15 @@ export const BaseLeftSidebar = ({
           </div>
         </div>
       </div>
+      {showAccessUpgrade && (
+        <LegalReasonsErrorModal
+          showModal
+          toggleModal={() => setShowAccessUpgrade(false)}
+          darkMode={darkMode}
+          edition={fetchEdition()}
+          message="Screen and query permissions are not included in your current plan. Upgrade your plan to use Access permissions."
+        />
+      )}
     </>
   );
 };
@@ -394,10 +491,10 @@ const AvatarGroupWrapper = ({ darkMode, maxDisplay }) => {
   const mergedAvatars = [self, ...othersOnSameVersionAndPage];
 
   const transformedAvatars = useMemo(() => {
-    return mergedAvatars.map((other) => ({
-      ...other.presence,
-      text: getAvatarText(other.presence),
-      title: getAvatarTitle(other.presence),
+    return onePerPerson(mergedAvatars.map((other) => other.presence)).map((presence) => ({
+      ...presence,
+      text: getAvatarText(presence),
+      title: getAvatarTitle(presence),
     }));
   }, [JSON.stringify(mergedAvatars)]);
 

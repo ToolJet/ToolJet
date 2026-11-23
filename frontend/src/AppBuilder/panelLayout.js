@@ -10,6 +10,8 @@ export const SIDEBAR_ITEMS = {
   search: { name: 'Code search', label: 'Search', cy: 'code-search' },
   dependencies: { name: 'Dependencies', label: 'Deps', cy: 'dependencies' },
   apphistory: { name: 'App history', label: 'History', cy: 'app-history' },
+  security: { name: 'Security', label: 'Security', cy: 'security' },
+  access: { name: 'Access', label: 'Access', cy: 'access' },
   settings: { name: 'App settings', label: 'Settings', cy: 'settings' },
 };
 

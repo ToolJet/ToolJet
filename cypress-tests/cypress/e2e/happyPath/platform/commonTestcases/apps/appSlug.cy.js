@@ -7,6 +7,7 @@ import {
   verifyURLs,
 } from "Support/utils/apps";
 import { releaseApp } from "Support/utils/common";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 describe("App Slug", () => {
   const generateTestData = () => ({
@@ -33,9 +34,7 @@ describe("App Slug", () => {
       `${host}/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}/`
     );
 
-    cy.get('[data-cy="query-manager-toggle-button"]', { timeout: 20000 })
-      .should("be.visible")
-      .click();
+    closeQueryPanel();
 
     cy.get(commonSelectors.leftSideBarSettingsButton).click();
 

@@ -8,6 +8,7 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
 import { addCSA } from "Support/utils/appBuilder/csa";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec run.
 describe('Number Input — csa facet', { testIsolation: false }, () => {
@@ -18,6 +19,7 @@ describe('Number Input — csa facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-NICsa-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget("Number Input", 500, 100);
+        closeQueryPanel();
     });
 
     it('should verify all the CSA from the number input (On click)', () => {

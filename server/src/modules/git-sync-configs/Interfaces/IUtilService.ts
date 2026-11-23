@@ -14,7 +14,8 @@ export interface GitSyncDetails {
   isMultiBranchingEnabled: boolean;
   options: {
     type: GITConnectionType | null;
-    defaultBranch: { id: string; name: string } | null;
+    // legacy-3.21.58: id is null while the 3.21.58 data phase seeds the branch (findDefaultBranch).
+    defaultBranch: { id: string | null; name: string } | null;
     isBranchingEnabled: boolean;
   };
   orgGit: OrganizationGitSync | null;

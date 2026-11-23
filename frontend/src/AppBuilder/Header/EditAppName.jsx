@@ -24,16 +24,18 @@ import {
   normalizeAppName,
   validateInlineAppName,
 } from './EditAppName.utils';
+import { BuildModeBadge } from '@/AppBuilder/_helpers/codeModeHooks';
 
 function EditAppName() {
   const { moduleId, appType } = useModuleContext();
-  const [appId, appName, setAppName, selectedVersion, orgGit] = useStore(
+  const [appId, appName, setAppName, selectedVersion, orgGit, buildMode] = useStore(
     (state) => [
       state.appStore.modules[moduleId].app.appId,
       state.appStore.modules[moduleId].app.appName,
       state.setAppName,
       state.selectedVersion,
       state.orgGit,
+      state.appStore.modules[moduleId].app.buildMode,
     ],
     shallow
   );
@@ -181,7 +183,7 @@ function EditAppName() {
   );
 
   return (
-    <div className="tw-h-full tw-min-w-0 tw-max-w-full tw-flex tw-items-start tw-justify-start">
+    <div className="tw-h-full tw-min-w-0 tw-max-w-full tw-flex tw-items-center tw-justify-start">
       {isEditing ? (
         <div className="app-name-inline-editor tw-relative tw-flex tw-h-8 tw-min-w-0 tw-max-w-full tw-items-center tw-gap-1.5">
           <input
@@ -252,6 +254,7 @@ function EditAppName() {
       ) : (
         nameButton
       )}
+      {appType !== 'module' && <BuildModeBadge buildMode={buildMode} />}
     </div>
   );
 }

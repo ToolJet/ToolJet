@@ -9,7 +9,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import useStore from '@/AppBuilder/_stores/store';
 import { v4 as uuidv4 } from 'uuid';
 import { ToolTip } from '@/_components';
-import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
+import TooljetAi from '@/_ui/Icon/solidIcons/TooljetAI';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { useWriteQueryEntry } from '@/AppBuilder/QueryManager/_hooks/useWriteQueryEntry';
 import { AI_QUERY_SUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
@@ -76,7 +76,7 @@ const WriteTransformationButton = () => {
           disabled={shouldFreeze}
           data-cy="write-transformation-button"
         >
-          <AITripleSparkles width="14" height="14" />
+          <TooljetAi width="14" height="14" />
         </ButtonComponent>
       </span>
     </ToolTip>

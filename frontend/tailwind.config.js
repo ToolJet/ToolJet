@@ -10,8 +10,8 @@ module.exports = {
     './pages/**/*.{js,jsx}',
     './components/**/*.{js,jsx}',
     './app/**/*.{js,jsx}',
-    './src/**/*.{js,jsx}',
-    './ee/**/*.{js,jsx}',
+    './src/**/*.{js,jsx,ts,tsx}',
+    './ee/**/*.{js,jsx,ts,tsx}',
   ],
   prefix: 'tw-',
   corePlugins: {

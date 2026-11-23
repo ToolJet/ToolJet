@@ -16,7 +16,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
+import TooljetAi from '@/_ui/Icon/solidIcons/TooljetAI';
 import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 import { useWriteQueryEntry } from '@/AppBuilder/QueryManager/_hooks/useWriteQueryEntry';
 import { getPanelCloseLabel } from '@/AppBuilder/panelLayout';
@@ -296,7 +296,7 @@ const GenerateQueryButton = ({ compact }) => {
           disabled={shouldFreeze || isAiBlockedByBranch}
           data-cy="query-generate-button"
         >
-          <AITripleSparkles width="14" height="14" />
+          <TooljetAi width="14" height="14" />
           {!compact && buttonLabel}
         </ButtonComponent>
       </span>

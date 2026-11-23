@@ -16,8 +16,9 @@
   }
 
   // Scrolling comes from getLeftPanelOverflow: the chat scrolls its own messages.
+  // The AI chat panel; AI_CHAT_WIDTH in AppCanvas/appCanvasConstants.js is the same number.
   &.tooljetai {
-    width: 440px;
+    width: 400px;
   }
 
   select {

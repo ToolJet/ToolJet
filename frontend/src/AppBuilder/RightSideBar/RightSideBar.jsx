@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 import useStore from '@/AppBuilder/_stores/store';
 import { ComponentConfigurationTab } from './ComponentConfigurationTab';
 import cx from 'classnames';
@@ -13,6 +14,7 @@ import { AddEditPagePopup } from './PageSettingsTab/PageMenu/AddNewPagePopup';
 import { QueryPanelResizeHandle } from './QueryPanelResizeHandle';
 import { LEFT_SIDEBAR_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './rightSidebar.scss';
+import { useCodeMode, useCodeModePin, CodeInspectorSidebar } from '@/AppBuilder/_helpers/codeModeHooks';
 
 export const RightSideBar = ({ darkMode }) => {
   const { isModuleEditor } = useModuleContext();
@@ -44,7 +46,11 @@ export const RightSideBar = ({ darkMode }) => {
     return () => window.clearTimeout(exitTimer);
   }, [isRightSidebarOpen]);
 
-  if (!isRightSidebarOpen && !isPanelMounted) return null;
+  const pinned = useCodeModePin();
+  const codeMode = useCodeMode();
+  const isBlockedByBranch = useIsAiBlockedOnDefaultBranch();
+
+  if ((!isRightSidebarOpen && !isPanelMounted) || (codeMode && isBlockedByBranch)) return null;
 
   const displayedTab = activeTab ?? renderedTab;
 
@@ -56,7 +62,8 @@ export const RightSideBar = ({ darkMode }) => {
           getRightPanelClassName(displayedTab, isLeftPanelOpen),
           { 'dark-theme theme-dark': darkMode },
           // The query panel freezes its own controls; Run, Preview and close stay usable on a frozen version.
-          { 'tw-pointer-events-none': shouldFreeze && displayedTab !== RIGHT_SIDE_BAR_TAB.QUERY }
+          // Code mode never freezes the right panel.
+          { 'tw-pointer-events-none': shouldFreeze && !codeMode && displayedTab !== RIGHT_SIDE_BAR_TAB.QUERY }
         )}
         data-state={isRightSidebarOpen ? 'open' : 'closed'}
       >
@@ -79,7 +86,7 @@ export const RightSideBar = ({ darkMode }) => {
             darkMode={darkMode}
             resetKeys={[displayedTab]}
           >
-            {displayedTab === RIGHT_SIDE_BAR_TAB.PAGES && (
+            {displayedTab === RIGHT_SIDE_BAR_TAB.PAGES && !codeMode && (
               <FallbackBoundary label="Page settings" location="Page Settings" darkMode={darkMode}>
                 <PageSettings surface="configuration" />
               </FallbackBoundary>
@@ -101,8 +108,14 @@ export const RightSideBar = ({ darkMode }) => {
               </FallbackBoundary>
             )}
             {/* Add component lives only in the left panel; the right side never shows it. */}
-            {displayedTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION && (
-              <ComponentConfigurationTab darkMode={darkMode} isModuleEditor={isModuleEditor} />
+            {pinned ? (
+              <FallbackBoundary label="Style inspector" location="Style inspector" darkMode={darkMode}>
+                <CodeInspectorSidebar darkMode={darkMode} />
+              </FallbackBoundary>
+            ) : (
+              displayedTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION && (
+                <ComponentConfigurationTab darkMode={darkMode} isModuleEditor={isModuleEditor} />
+              )
             )}
             {displayedTab === RIGHT_SIDE_BAR_TAB.QUERY && (
               <FallbackBoundary label="Query configuration" location="Right SideBar Query" darkMode={darkMode}>

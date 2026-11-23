@@ -6,6 +6,8 @@ import { getSubpath } from '@/_helpers/routes';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+// The AI-era empty canvas ships with the AI builder (ee); without it the cards below stay.
+import { EmptyCanvasAiState } from '@ee/modules/AiBuilder/components/CanvasBuild';
 
 const NoComponentCanvasContainer = () => {
   const { isModuleEditor } = useModuleContext();
@@ -13,6 +15,9 @@ const NoComponentCanvasContainer = () => {
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery, shallow);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded);
+  const aiFeaturesEnabled = useStore((state) => state.ai?.aiFeaturesEnabled);
+  const isCodeApp = useStore((state) => state.appStore?.modules?.canvas?.app?.buildMode === 'code');
 
   const queryBoxText = sampleDataSource
     ? 'Connect to your data source or use our sample data source to start playing around!'
@@ -33,6 +38,11 @@ const NoComponentCanvasContainer = () => {
     createDataQuery(source, true, { query });
     setPreviewData(null);
   };
+
+  // A Code mode app is never dragged together, so it gets the ways in even without AI (they drop the chat then).
+  if (typeof EmptyCanvasAiState === 'function' && (aiFeaturesEnabled !== false || isCodeApp)) {
+    return <EmptyCanvasAiState onInviteCollaborators={openAddUserWorkspaceSetting} />;
+  }
 
   return (
     <div style={{ paddingTop: '10%' }}>
