@@ -1,4 +1,15 @@
-import { IsString, IsOptional, ValidateNested, MinLength, MaxLength, IsBoolean, IsNumber } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  ValidateNested,
+  MinLength,
+  MaxLength,
+  IsBoolean,
+  IsNumber,
+  IsIn,
+  IsDefined,
+  ValidateIf,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class Color {
@@ -147,7 +158,72 @@ class Brand {
   colors: Colors;
 }
 
+// Theme definition v2 colours: `colors.<group>.<token>` (packages/widget-definitions/src/theme.js). Strong is the old
+// default border; On solid is new.
+class V2TextColors {
+  @ValidateNested()
+  @Type(() => Color)
+  primary: Color;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => Color)
+  placeholder?: Color;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => Color)
+  onSolid?: Color;
+}
+
+class V2BorderColors {
+  @ValidateNested()
+  @Type(() => Color)
+  strong: Color;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => Color)
+  weak?: Color;
+}
+
+class ThemeColors {
+  @ValidateNested()
+  @Type(() => Colors)
+  brand: Colors;
+
+  @ValidateNested()
+  @Type(() => V2TextColors)
+  text: V2TextColors;
+
+  @ValidateNested()
+  @Type(() => SurfaceColors)
+  surface: SurfaceColors;
+
+  @ValidateNested()
+  @Type(() => V2BorderColors)
+  border: V2BorderColors;
+
+  @ValidateNested()
+  @Type(() => SystemStatusColors)
+  systemStatus: SystemStatusColors;
+}
+
+/** A theme holds its colours in `colors` (v2), in the old `<group>.colors` groups, or in both: rows keep the old groups
+ *  until a cleanup migration, and tooljet-mcp and old bundles still send them alone. Either shape must be present. */
 export class Definition {
+  @IsOptional()
+  @IsIn([2])
+  version?: 2;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ThemeColors)
+  colors?: ThemeColors;
+
+  // Required unless `colors` is given; validated whenever sent.
+  @ValidateIf((definition: Definition) => !definition.colors || definition.brand !== undefined)
+  @IsDefined()
   @ValidateNested()
   @Type(() => Brand)
   brand: Brand;

@@ -91,3 +91,4 @@ export {
   combineProperties,
   dropNewContainerDefaults,
 } from './utils.js';
+export { toV2, withLegacyColors, themeColorTokens, resolveThemeWrite } from './theme.js';
