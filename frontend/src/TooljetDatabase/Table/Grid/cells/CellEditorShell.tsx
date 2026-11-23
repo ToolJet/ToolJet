@@ -64,7 +64,7 @@ type ShellProps = {
 export function CellEditorShell({
   cell,
   children,
-  widthClass = 'tw-w-[296px]',
+  widthClass,
   bareBody = false,
   hidden = false,
   nullable,
@@ -77,6 +77,9 @@ export function CellEditorShell({
   onCancel,
 }: ShellProps) {
   const cellRef = useRef<HTMLDivElement>(null);
+  // With no chips and no body the footer is just Cancel and Save: the popover hugs them instead of showing blank space.
+  const footerOnly = !children && !nullable && columnDefault == null;
+  const width = widthClass ?? (footerOnly ? 'tw-w-fit' : 'tw-w-[296px]');
   return (
     <Popover open onOpenChange={(open) => !open && onCancel()}>
       <PopoverAnchor asChild>
@@ -89,7 +92,7 @@ export function CellEditorShell({
           side="bottom"
           align="start"
           sideOffset={2}
-          className={cn('tw-gap-0 tw-p-0', widthClass)}
+          className={cn('tw-gap-0 tw-p-0', width)}
           data-testid="cell-editor"
           // Each editor focuses its own field, without scrolling the grid (a scroll closes the editor).
           onOpenAutoFocus={(event) => event.preventDefault()}
