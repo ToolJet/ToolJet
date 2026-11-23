@@ -540,6 +540,7 @@ describe('AppsController', () => {
           email: 'superadmin@tooljet.io',
           groups: ['all_users', 'developer'],
           userType: 'instance',
+          organization,
         });
         loggedUser = await login(app, 'developer@tooljet.io');
         developerUserData['tokenCookie'] = loggedUser.tokenCookie;
