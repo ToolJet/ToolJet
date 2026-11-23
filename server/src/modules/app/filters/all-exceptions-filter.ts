@@ -3,6 +3,7 @@ import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from
 import { SentryExceptionCaptured } from '@sentry/nestjs';
 import { Logger } from 'nestjs-pino';
 import { QueryFailedError } from 'typeorm';
+import { scrubSecretsIn } from '@helpers/secret-scrub.helper';
 
 interface ErrorResponse {
   message: string;
@@ -65,7 +66,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         statusCode: errorResponse.status,
         timestamp: new Date().toISOString(),
         path: request.url,
-        message: errorResponse.message,
+        // Errors from git and other providers can echo authenticated URLs or tokens; never send them out.
+        message: scrubSecretsIn(errorResponse.message),
         code: code,
         ...(statement && { statement }),
         ...(organizationSlug && { organizationSlug }),
