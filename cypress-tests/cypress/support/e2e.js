@@ -26,6 +26,7 @@ import "../commands/workflows/workflowsApiCommands";
 import "../commands/workflows/workflowCommands";
 
 import '../commands/platform/platformApiCommands';
+import '../commands/platform/cloudApiCommands';
 
 import '../commands/marketplace/marketplaceAPICommands';
 import '../commands/marketplace/marketplaceCommands';

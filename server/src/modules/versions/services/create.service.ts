@@ -134,11 +134,13 @@ export class VersionsCreateService implements IVersionsCreateService {
       if (dataSources?.length > 0) {
         for (const dataSource of dataSources) {
           const dataSourceParams: Partial<DataSource> = {
-            name: dataSource.name,
+            // The copy's default DSV takes this name, and (name, branch_id) is unique per workspace.
+            name: await this.dataSourceUtilService.generateUniqueName(dataSource.name, organizationId, manager),
             kind: dataSource.kind,
             type: dataSource.type,
             co_relation_id: dataSource?.co_relation_id,
             appVersionId: appVersion.id,
+            organizationId,
           };
           const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
           dataSourceMapping[dataSource.id] = newDataSource.id;

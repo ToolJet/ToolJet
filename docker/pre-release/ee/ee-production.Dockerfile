@@ -1,10 +1,38 @@
+# Own stage (Debian 13, matches final stage) so node:22.23.4 builder stays untouched.
+FROM debian:13-slim AS python-builder
+
+# Unversioned python3 = trixie default (3.13).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-venv \
+    python3-pip \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create isolated Python environment
+RUN python3 -m venv /opt/python-runtime
+
+# Upgrade pip and install common packages
+RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    /opt/python-runtime/bin/pip install --no-cache-dir \
+    numpy==2.1.3 \
+    pandas==2.2.3 \
+    requests==2.31.0 \
+    httpx==0.27.0 \
+    python-dateutil==2.9.0 \
+    pytz==2024.1 \
+    pydantic==2.9.2 \
+    typing-extensions==4.12.2
+
+
 # tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827).
 FROM node:22.23.4 AS mcp-builder
 WORKDIR /mcp
-ARG CUSTOM_GITHUB_TOKEN
 ARG TOOLJET_MCP_REF=main
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-RUN git clone https://github.com/ToolJet/tooljet-mcp.git . && git checkout ${TOOLJET_MCP_REF}
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git clone https://github.com/ToolJet/tooljet-mcp.git . && git checkout ${TOOLJET_MCP_REF}
 RUN npm ci && npm run build:plugin
 
 
@@ -36,38 +64,13 @@ RUN git clone --depth 1 --branch 3.4 https://github.com/google/nsjail.git && \
     make && \
     strip nsjail
 
-# Build Python runtime with pre-installed packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 \
-    python3.11-venv \
-    python3-pip \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create isolated Python environment
-RUN python3.11 -m venv /opt/python-runtime
-
-# Upgrade pip and install common packages
-RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    /opt/python-runtime/bin/pip install --no-cache-dir \
-    numpy==1.26.4 \
-    pandas==2.2.1 \
-    requests==2.31.0 \
-    httpx==0.27.0 \
-    python-dateutil==2.9.0 \
-    pytz==2024.1 \
-    pydantic==2.6.4 \
-    typing-extensions==4.10.0
-
 RUN mkdir -p /app
 WORKDIR /app
 
-# Set GitHub token and branch as build arguments
-ARG CUSTOM_GITHUB_TOKEN
+# GitHub token is a BuildKit secret (--secret id=github_token), mounted only for the steps that
+# fetch private repos and passed to git via env, so it never lands in a layer, the image config
+# or the build provenance like a build arg does.
 ARG BRANCH_NAME
-
-# Clone and checkout the frontend repository
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
@@ -76,10 +79,12 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 # The branch name needs to be changed the branch with modularisation in CE repo
 RUN git checkout ${BRANCH_NAME}
 
-RUN git submodule update --init --recursive
-
 # Checkout the same branch in submodules if it exists, otherwise fallback to main
-RUN git submodule foreach " \
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git submodule update --init --recursive && \
+    git submodule foreach " \
   if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
      git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
     git checkout ${BRANCH_NAME}; \
@@ -134,7 +139,7 @@ RUN curl -fSL --retry 3 --retry-delay 5 -o postgrest.tar.xz "https://github.com/
     rm postgrest.tar.xz && \
     chmod +x /postgrest
 
-FROM debian:12-slim
+FROM debian:13-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -147,15 +152,14 @@ RUN apt-get update && \
     xz-utils \
     tar \
     postgresql-client \
-    redis \
-    libaio1 \
+    libaio1t64 \
     libxml2 \
     git \
     openssh-client \
     freetds-dev \
-    python3.11 \
-    python3.11-venv \
-    libprotobuf32 \
+    python3 \
+    python3-venv \
+    libprotobuf32t64 \
     libnl-route-3-200 \
     procps \
     libcap2-bin \
@@ -165,8 +169,11 @@ RUN apt-get update && \
 
 # Install Redis 7.x from official Redis repository (Debian's bundled package is stale)
 RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bookworm main" | tee /etc/apt/sources.list.d/redis.list \
+    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb trixie main" | tee /etc/apt/sources.list.d/redis.list \
     && apt-get update && apt-get install -y redis-server
+
+# Oracle Instant Client needs libaio.so.1; trixie ships it as .so.1t64 (amd64 path).
+RUN ln -sf /usr/lib/x86_64-linux-gnu/libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1
 
 
 RUN curl -O https://nodejs.org/dist/v22.23.4/node-v22.23.4-linux-x64.tar.xz \
@@ -213,7 +220,7 @@ COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
 RUN chmod 4755 /usr/local/bin/nsjail
 
 # Copy Python runtime with pre-installed packages
-COPY --from=builder /opt/python-runtime /opt/python-runtime
+COPY --from=python-builder /opt/python-runtime /opt/python-runtime
 
 # Copy nsjail configuration file
 RUN mkdir -p /etc/nsjail

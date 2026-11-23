@@ -4,6 +4,7 @@ import { User } from '@entities/user.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { skipAppEditingVersionHydration } from './subscribers/apps.subscriber';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
+import { appVersionOnBranch, nullBranchLast, onBranch } from '@helpers/branch_scope.helper';
 import { catchDbException, cleanObject } from '@helpers/utils.helper';
 import {
   BadRequestException,
@@ -14,7 +15,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
-import { Brackets, EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
+import { Brackets, EntityManager, In, MoreThan, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -45,6 +46,12 @@ import { InternalTable } from '@entities/internal_table.entity';
 import { tableNamesInSqlQuery } from '@helpers/tooljet_db.helper';
 import { isUUID } from 'class-validator';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from '@modules/versions/module-ref.util';
+import {
+  pinIsDraftSentinel,
+  resolveAllWorkflowRefsForVersion,
+  resolveWorkflowRef,
+} from '@modules/versions/workflow-ref.util';
+import { readWorkflowQueryRefs } from '@helpers/workflow_query_options.helper';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 
 // Permission resource that gates access to each app type. Workflows have their own
@@ -595,13 +602,15 @@ export class AppsUtilService implements IAppsUtilService {
         // workspaces should never see "branch" in an error they have no context
         // for.
         if (branchId) {
-          const conflictingVersion = await manager.findOne(AppVersion, {
-            where: {
-              slug: versionParams.slug,
-              branchId,
-              appId: Not(appId),
-            },
-          });
+          // Slug namespaces are per apps.type, so an app and a module may share a slug.
+          const conflictingVersion = await manager
+            .createQueryBuilder(AppVersion, 'av')
+            .innerJoin(App, 'a', 'a.id = av.app_id')
+            .where('av.slug = :slug', { slug: versionParams.slug })
+            .andWhere('av.branch_id = :branchId', { branchId })
+            .andWhere('av.app_id <> :appId', { appId })
+            .andWhere('a.type = :appType', { appType: app.type })
+            .getOne();
           if (conflictingVersion) {
             const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
             throw new BadRequestException(
@@ -966,10 +975,10 @@ export class AppsUtilService implements IAppsUtilService {
     branchId: string | undefined,
     isGetAll: boolean
   ): void {
-    const branchPick = `appVersions.branchId = :branchId AND appVersions.id = (
+    const branchPick = `appVersions.id = (
       SELECT av_pick.id FROM app_versions av_pick
-      WHERE av_pick.app_id = apps.id AND av_pick.branch_id = :branchId
-      ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
+      WHERE av_pick.app_id = apps.id AND ${onBranch('av_pick.branch_id', 'branchId')}
+      ORDER BY ${nullBranchLast('av_pick.branch_id')}, av_pick.is_stub ASC, av_pick.updated_at DESC
       LIMIT 1
     )`;
     if (type === APP_TYPES.MODULE) {
@@ -1410,15 +1419,17 @@ export class AppsUtilService implements IAppsUtilService {
         .distinctOn(['av.appId'])
         .where('av.appId IN (:...moduleIds)', { moduleIds })
         .andWhere('av.isStub = false')
-        .orderBy('av.appId', 'ASC')
-        .addOrderBy('av.updatedAt', 'DESC');
+        .orderBy('av.appId', 'ASC');
       // A branch in scope → that branch's row; otherwise the default branch, where every
       // non-stub row carries the same metadata. Read from any non-stub row — no status /
       // git-on-off branching.
       const metaTargetBranchId = parentBranchId ?? defaultBranchId;
       if (metaTargetBranchId) {
-        metaQb.andWhere('av.branchId = :metaTargetBranchId', { metaTargetBranchId });
+        metaQb
+          .andWhere(onBranch('av.branch_id', 'metaTargetBranchId'), { metaTargetBranchId })
+          .addOrderBy(nullBranchLast('av.branch_id'), 'ASC');
       }
+      metaQb.addOrderBy('av.updatedAt', 'DESC');
       const metaRows = await metaQb.getMany();
       const metaMap = new Map(metaRows.map((v) => [v.appId, v]));
 
@@ -1556,10 +1567,10 @@ export class AppsUtilService implements IAppsUtilService {
     const mgr = manager ?? getConnectionInstance().manager;
 
     const releasedJoin = branchId
-      ? 'released.id = app.currentVersionId AND released.branch_id = :branchId'
+      ? `released.id = app.currentVersionId AND ${appVersionOnBranch('released', 'branchId')}`
       : 'released.id = app.currentVersionId';
     const avJoin = branchId
-      ? 'av.appId = app.id AND av.slug IS NOT NULL AND av.branch_id = :branchId'
+      ? `av.appId = app.id AND av.slug IS NOT NULL AND ${appVersionOnBranch('av', 'branchId')}`
       : 'av.appId = app.id AND av.slug IS NOT NULL';
 
     const qb = mgr
@@ -1588,7 +1599,7 @@ export class AppsUtilService implements IAppsUtilService {
           .select('1')
           .from(AppVersion, 'scope')
           .where('scope.appId = app.id')
-          .andWhere('scope.branch_id = :branchId', { branchId })
+          .andWhere(appVersionOnBranch('scope', 'branchId'), { branchId })
           .getQuery();
         return 'EXISTS ' + exists;
       });
@@ -1829,6 +1840,76 @@ export class AppsUtilService implements IAppsUtilService {
       if (error instanceof BadRequestException) throw error;
       console.error('Failed to check module release state', error?.stack || error);
       throw new BadRequestException('Failed to validate module versions for release');
+    }
+  }
+
+  // A pinned nested workflow must be released at that version. Unpinned queries run whatever is
+  // released, so they pass; a sentinel can't survive the save gate and degrades to unpinned at run time.
+  async checkWorkflowsReleasedInApp(versionId: string, organizationId: string, manager: EntityManager): Promise<void> {
+    try {
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+      const refs = await resolveAllWorkflowRefsForVersion(manager, versionId, organizationId, defaultBranchId);
+      if (refs.length === 0) return;
+
+      const dataQueries = await manager.find(DataQuery, {
+        where: { id: In(refs.map((r) => r.dataQueryId)) },
+        select: ['id', 'options'],
+      });
+      const optionsByDataQueryId = new Map(dataQueries.map((dq) => [dq.id, dq.options]));
+
+      const offenders = new Map<string, { name: string; versionName: string }>();
+      for (const ref of refs) {
+        const options = optionsByDataQueryId.get(ref.dataQueryId) ?? {};
+        const { workflowVersionId: pin } = readWorkflowQueryRefs(options);
+        if (!pin || pinIsDraftSentinel(pin)) continue;
+
+        const resolved = await resolveWorkflowRef(manager, options, organizationId, defaultBranchId).catch(() => null);
+        const [workflow] = await manager.query(
+          `SELECT a.current_version_id AS "currentVersionId",
+                  COALESCE(a.name, (
+                    SELECT av.app_name FROM app_versions av
+                    WHERE av.app_id = a.id AND av.app_name IS NOT NULL
+                    ORDER BY av.created_at DESC LIMIT 1
+                  )) AS "name"
+           FROM apps a
+           WHERE a.co_relation_id::text = $1 AND a.type = $2 AND a.organization_id = $3
+           ORDER BY a.created_at ASC LIMIT 1`,
+          [ref.workflowCoRel, APP_TYPES.WORKFLOW, organizationId]
+        );
+        if (resolved?.appVersionId && resolved.appVersionId === workflow?.currentVersionId) continue;
+
+        const name = workflow?.name ?? 'unknown workflow';
+        offenders.set(`${ref.workflowCoRel}:${pin}`, { name, versionName: pin });
+      }
+      if (offenders.size === 0) return;
+
+      const workflows = [...offenders.values()];
+      const formatEntry = ({ name, versionName }: { name: string; versionName: string }) =>
+        `Workflow "${name}" version "${versionName}" is not released. Release the workflow first.`;
+      const workflowList = workflows.map(formatEntry).join(' ');
+      const [consumer] = await manager.query(
+        `SELECT a.type FROM apps a JOIN app_versions av ON av.app_id = a.id WHERE av.id = $1`,
+        [versionId]
+      );
+      throw new BadRequestException({
+        message: {
+          error:
+            workflows.length === 1
+              ? `Release blocked - ${formatEntry(workflows[0])}`
+              : `Release blocked - ${workflows.length} workflows need attention. ${workflowList}`,
+          details: workflowList,
+          ...(consumer?.type === APP_TYPES.WORKFLOW && {
+            code: 'NESTED_WORKFLOW_PINS_BLOCKED',
+            action: 'release',
+            workflows,
+          }),
+        },
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      console.error('Failed to check workflow release state', error?.stack || error);
+      throw new BadRequestException('Failed to validate workflow versions for release');
     }
   }
 
