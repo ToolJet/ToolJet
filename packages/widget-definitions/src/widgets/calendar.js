@@ -32,6 +32,40 @@ export const calendarConfig = {
       type: 'toggle',
       displayName: 'Show popover when event is clicked',
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   events: {
     onCalendarEventSelect: { displayName: 'On Event Select' },
@@ -40,7 +74,6 @@ export const calendarConfig = {
     onCalendarViewChange: { displayName: 'On View Change' },
   },
   styles: {
-    visibility: { type: 'toggle', displayName: 'Visibility' },
     cellSizeInViewsClassifiedByResource: {
       type: 'select',
       displayName: 'Cell size in views classified by resource',
@@ -68,6 +101,12 @@ export const calendarConfig = {
         schema: { type: 'number' },
         defaultValue: 6,
       },
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      defaultValue: '0px 0px 0px 0px #00000040',
     },
   },
   exposedVariables: {
@@ -116,14 +155,17 @@ export const calendarConfig = {
       showPopOverOnEventClick: {
         value: false,
       },
+      visibility: { value: '{{true}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
       cellSizeInViewsClassifiedByResource: { value: 'spacious' },
       weekDateFormat: { value: 'DD MMM' },
       borderColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: 6 },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };
