@@ -4,6 +4,7 @@ import { commonEeSelectors, multiEnvSelector } from 'Selectors/platform/eeCommon
 import { importSelectors } from 'Selectors/platform/exportImport';
 import { moduleSelectors } from 'Selectors/platform/modules';
 import { dragModuleIntoCanvas, openModulesList } from 'Support/utils/platform/modules';
+import { closeVersionMenu } from 'Support/utils/platform/multiEnv';
 
 describe('Modules — Workspace Constants Across Environments', () => {
   const testId = Date.now();
@@ -84,6 +85,7 @@ describe('Modules — Workspace Constants Across Environments', () => {
     cy.get(commonEeSelectors.promoteVersionButton, { timeout: 10000 }).click();
     cy.get(commonEeSelectors.promoteButton, { timeout: 10000 }).click();
     cy.wait(2000);
+    closeVersionMenu();
   };
 
   const verifyResolvedForEnv = (envLabel) => {

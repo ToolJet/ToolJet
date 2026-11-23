@@ -13,7 +13,12 @@ import { CurrencyInput } from './Components/CurrencyInput/CurrencyInput.jsx';
 import { Modal } from './Components/Modal';
 import { ModalV2 } from './Components/ModalV2';
 import { CustomComponent } from './Components/CustomComponent';
-import { LibraryComponentProperties } from './Components/LibraryComponent';
+import {
+  LibraryComponentProperties,
+  LibraryComponentStyles,
+  PackComponentProperties,
+  PackComponentStyles,
+} from './Components/LibraryComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
@@ -53,9 +58,12 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 import { Cascader } from './Components/Cascader/Cascader';
-import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash } from 'lucide-react';
+import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash, Blocks } from 'lucide-react';
+import { PackIdentityStrip } from './Components/LibraryComponent/PackIdentityStrip';
+import { componentIdentity } from './componentIdentity';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
+import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -180,6 +188,7 @@ export const Inspector = ({
   const [tabsPropertiesPanelKey, setTabsPropertiesPanelKey] = useState(uuidv4());
   // The Inspector isn't remounted on selection, so the tab is kept per component: selecting another
   // component opens on Properties, as when the tabs were uncontrolled.
+  const codeMode = useCodeMode();
   const [tab, setTab] = useState({ componentId: selectedComponentId, key: 'properties' });
   const activeTab = tab.componentId === selectedComponentId ? tab.key : 'properties';
   const setActiveTab = (key) => setTab({ componentId: selectedComponentId, key });
@@ -216,6 +225,20 @@ export const Inspector = ({
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
   const isRevampedComponent = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
+  // Its Styles tab is manifest-driven accordions (LibraryComponentStyles), laid out like a revamped widget's.
+  const isLibraryComponent = component.component.component === 'LibraryComponent';
+  const isPackComponent = component.component.component === 'PackComponent';
+  // A module instance's name, for the Properties tab's identity strip. The modules slice is EE-only, so CE has none.
+  const moduleAppId = component.component?.definition?.properties?.moduleAppId?.value;
+  const moduleName = useStore(
+    (state) =>
+      moduleAppId
+        ? (state.modulesStore?.modulesList?.find((module) => module.co_relation_id === moduleAppId)?.name ??
+          state.modulesStore?.moduleDefinition?.[moduleAppId]?.name)
+        : undefined,
+    shallow
+  );
+  const identity = componentIdentity(componentMeta?.component, componentMeta?.displayName, moduleName);
   const inspectorHeaderOptions = INSPECTOR_HEADER_OPTIONS.filter(
     (option) => option.value !== 'edit-module' || componentMeta?.component === 'ModuleViewer'
   );
@@ -576,6 +599,13 @@ export const Inspector = ({
         allComponents={allComponents}
         widthSectionTitle={t('widget.flexChild.widthAndHeight', 'Width')}
       >
+        {identity && (
+          <PackIdentityStrip
+            library={identity.library}
+            component={identity.component}
+            {...(identity.kind === 'module' && { icon: Blocks })}
+          />
+        )}
         <div className={`${shouldFreeze && 'disabled'}`}>
           <GetAccordion
             tabsPropertiesPanelKey={tabsPropertiesPanelKey}
@@ -605,16 +635,38 @@ export const Inspector = ({
       resetKeys={[selectedComponentId]}
     >
       <div style={{ marginBottom: '6rem' }} className={`${shouldFreeze && 'disabled'}`}>
-        <div style={{ ...(!isRevampedComponent && { padding: '1rem' }) }}>
-          <Inspector.RenderStyleOptions
-            componentMeta={componentMeta}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            currentState={currentState}
-            allComponents={allComponents}
-            hasCustomStyling={hasCustomStyling}
-          />
+        <div style={{ ...(!isRevampedComponent && !isLibraryComponent && !isPackComponent && { padding: '1rem' }) }}>
+          {isPackComponent ? (
+            <PackComponentStyles
+              componentMeta={componentMeta}
+              component={component}
+              paramUpdated={paramUpdated}
+              dataQueries={dataQueries}
+              currentState={currentState}
+              allComponents={allComponents}
+              darkMode={darkMode}
+            />
+          ) : isLibraryComponent ? (
+            <LibraryComponentStyles
+              componentMeta={componentMeta}
+              component={component}
+              paramUpdated={paramUpdated}
+              dataQueries={dataQueries}
+              currentState={currentState}
+              allComponents={allComponents}
+              darkMode={darkMode}
+            />
+          ) : (
+            <Inspector.RenderStyleOptions
+              componentMeta={componentMeta}
+              component={component}
+              paramUpdated={paramUpdated}
+              dataQueries={dataQueries}
+              currentState={currentState}
+              allComponents={allComponents}
+              hasCustomStyling={hasCustomStyling}
+            />
+          )}
         </div>
         {!isRevampedComponent && buildGeneralStyle()}
       </div>
@@ -656,6 +708,7 @@ export const Inspector = ({
   };
 
   const renderTabs = () => {
+    if (codeMode && (isPackComponent || component.component.component === 'LibraryComponent')) return propertiesTab;
     return (
       <Tabs activeKey={activeTab} onSelect={setActiveTab} id="inspector" hidden={isModuleContainer}>
         <Tab eventKey="properties" title="Properties">
@@ -780,7 +833,8 @@ export const Inspector = ({
           {renderTabs()}
         </div>
       </div>
-      {renderDocumentationLink()}
+      {/* A pack component has no page of its own in the docs yet. */}
+      {!isPackComponent && renderDocumentationLink()}
     </div>
   );
 };
@@ -996,6 +1050,9 @@ const GetAccordion = React.memo(
 
       case 'LibraryComponent':
         return <LibraryComponentProperties {...restProps} />;
+
+      case 'PackComponent':
+        return <PackComponentProperties {...restProps} />;
 
       case 'Icon':
         return <Icon {...restProps} />;

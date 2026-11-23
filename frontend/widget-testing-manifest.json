@@ -274,7 +274,8 @@
     },
     {
       "componentType": "Statistics",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Statistics/TESTING.md"
     },
     {
       "componentType": "Timeline",
@@ -302,7 +303,7 @@
     },
     {
       "componentType": "LibraryComponent",
-      "status": "verified",
+      "status": "approved",
       "contract": "ee/test/app-builder/widgets/LibraryComponent/TESTING.md"
     },
     {

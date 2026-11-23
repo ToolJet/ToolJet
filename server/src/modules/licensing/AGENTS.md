@@ -57,7 +57,8 @@ Cloud plan presets: `STARTER/BASIC/PRO/TEAM_PLAN_TERMS_CLOUD` in `ee/licensing/c
 - App-count guards use `manager.count`, never `find().length`: hydrating `App` rows fans out per-row `afterLoad` queries (see `apps/AGENTS.md`, Editing version hydration).
 - `users.editor` / `users.viewer` in terms = **Builder** / **End User** user-facing (`LICENSE_LIMITS_LABEL`). Never surface "editor/viewer" in UI copy.
 - Expiry: `expiry` is `YYYY-MM-DD`, valid until `23:59:59` that day. Expired or unparseable key ⇒ `IsBasicPlan` ⇒ silent fallback to basic terms — no hard errors. Cloud grace period comes from the `expiry_with_grace_period` column, not `Terms.expiry`.
-- CE `BASIC_PLAN_TERMS` ≠ EE `BASIC_PLAN_TERMS`: CE is UNLIMITED users/apps with features off; EE basic is 2 builders / 50 end users / 2 apps.
+- CE `BASIC_PLAN_TERMS` ≠ EE `BASIC_PLAN_TERMS`: CE is UNLIMITED users/apps with features off; EE basic is 2 builders / 50 end users / 10 apps.
+- EE free limits depend on creation date: a workspace (Cloud) or instance (self-hosted, dated by the `LICENSE_KEY` settings row) created from `PLAN_LIMITS_CUTOFF_DATE` gets 1 builder / 10 end users / 3 apps; older ones keep the limits above. Paid Cloud subscriptions from before the cutoff keep their old limits on renewal and move to the new ones on a plan change.
 - `NODE_ENV=test` + no license data ⇒ `LicenseBase` fabricates a valid license (30-min expiry, most flags on). Tests exercise licensed paths by default.
 - A new `LICENSE_FIELD` that changes the released app (`getBySlug`) or the released version response must be added to `VIEWER_LICENSE_FIELDS` (`apps/app-data-revision.ts`), or a license change leaves viewers on a stale cached app. See `apps/AGENTS.md` § Released-app viewer cache.
 - Feature denial is HTTP **451**, not 403 — clients key on this for upgrade prompts.
