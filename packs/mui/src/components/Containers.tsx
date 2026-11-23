@@ -55,6 +55,23 @@ const IMAGE_URL = /^(https?:\/\/|data:image\/|\/|\.\/)/i;
 // MUI's Tabs: tabs [{ value, label, disabled }], value (the open tab; empty opens the first), variant (standard,
 // scrollable, fullWidth), textColor / indicatorColor, centered, orientation; each tab panel is a canvas of ToolJet
 // components (slot tab_<value>). Event onChange; action setValue.
+// Two tabs with one value were both selected and both showed their panel (they share the value's slot). The first
+// keeps the value; a later one is left out, and the console says so once.
+const warnedTabs = new Set<string>();
+const uniqueTabs = <T extends { key: string }>(tabs: T[]): T[] => {
+  const seen = new Set<string>();
+  return tabs.filter((t) => {
+    if (!seen.has(t.key)) return seen.add(t.key);
+    const message = `Tabs: more than one tab has the value ${JSON.stringify(t.key)}; only the first is shown.`;
+    if (!warnedTabs.has(message)) {
+      if (warnedTabs.size >= 100) warnedTabs.clear();
+      warnedTabs.add(message);
+      console.warn(message);
+    }
+    return false;
+  });
+};
+
 export const Tabs = () => {
   const [rawTabs] = ToolJet.useStateArray({
     name: 'tabs',
@@ -112,7 +129,7 @@ export const Tabs = () => {
     defaultWidth: 30,
     defaultHeight: 40,
   });
-  const tabs = toKeyedItems(rawTabs);
+  const tabs = uniqueTabs(toKeyedItems(rawTabs));
   const current = tabs.some((t) => t.key === value) ? value : (tabs[0]?.key ?? false);
   // The open tab is the exposed one: an empty value or a tab that is gone opens the first, and value now says so, with
   // no onChange (it kept the removed tab while the first one showed).
@@ -237,7 +254,9 @@ export const Card = () => {
       <Loading loading={loading} fill look={<BlockSkeleton />}>
         <MuiCard
           variant={variant as 'outlined'}
-          elevation={variant === 'elevation' ? Number(elevation) || 0 : undefined}
+          // Raised is MUI's elevation 8; the elevation passed here overrode it, so Raised did nothing. A higher
+          // Elevation still wins.
+          elevation={variant === 'elevation' ? Math.max(Number(elevation) || 0, raised ? 8 : 0) : undefined}
           raised={variant === 'elevation' && raised}
           onClick={() => onClick()}
           sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}

@@ -26,13 +26,79 @@ const TIME = 'HH:mm';
 // The date-time value: local time, no zone (what the Ant pack's date-time picker writes too).
 const DATE_TIME = 'YYYY-MM-DDTHH:mm:ss';
 
+// A date written year first (2025-03-14, 20250314, with a time after a T or a space) or month first (03/14/2025).
+const YEAR_FIRST = /^(\d{4})-?(\d{1,2})-?(\d{1,2})(?:[T\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/;
+const MONTH_FIRST = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/;
+
+/** Whether the date and time a text names exist: dayjs rolls an overflow into another date (2025-13-45 is
+ *  2026-02-14, 2023-02-30 is 2023-03-02, hour 25 the next day). Text in no shape it knows is left to dayjs. */
+const namesRealDate = (s: string): boolean => {
+  const a = YEAR_FIRST.exec(s);
+  const b = a ? null : MONTH_FIRST.exec(s);
+  if (!a && !b) return true;
+  const [y, m, d] = (a ? [a[1], a[2], a[3]] : [b![3], b![1], b![2]]).map(Number);
+  // Day 0 of the next month is this month's last day. Plain arithmetic: the pack's dayjs may not have the strict
+  // format plugin MUI's adapter adds to its own copy.
+  if (m < 1 || m > 12 || d < 1 || d > new Date(y, m, 0).getDate()) return false;
+  const [h, min, sec] = a ? [a[4], a[5], a[6]] : [];
+  const under = (part: string | undefined, limit: number) => part === undefined || Number(part) < limit;
+  return under(h, 24) && under(min, 60) && under(sec, 60);
+};
+
 const parse = (v: unknown, format: string): Dayjs | null => {
   const s = str(v).trim();
-  if (!s) return null;
+  if (!s || !namesRealDate(s)) return null;
   const strict = dayjs(s, format, true);
   if (strict.isValid()) return strict;
   const loose = dayjs(s);
   return loose.isValid() ? loose : null;
+};
+
+// HH:mm (24-hour) or h:mm AM/PM, seconds allowed; nothing that overflows (25:99 is not 02:39 the next day).
+const TIME_TEXT = /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?$/;
+
+/** A time alone, on today's date, for the adapter; null for text that is not a time. */
+const atToday = (v: unknown): Dayjs | null => {
+  const m = TIME_TEXT.exec(str(v).trim());
+  if (!m) return null;
+  let hour = Number(m[1]);
+  const minute = Number(m[2]);
+  if (m[4]) {
+    if (hour < 1 || hour > 12) return null;
+    hour = (hour % 12) + (/p/i.test(m[4]) ? 12 : 0);
+  }
+  if (hour > 23 || minute > 59 || Number(m[3] ?? 0) > 59) return null;
+  return dayjs().hour(hour).minute(minute).second(0).millisecond(0);
+};
+
+/** The message for a value outside the range the picker offers ('' inside it): MUI greys those days out in the
+ *  calendar, but a typed or bound value got past it with isValid true. */
+const rangeRule = (
+  value: Dayjs | null,
+  { min, max, disablePast, disableFuture, unit, show }: {
+    min?: Dayjs | null;
+    max?: Dayjs | null;
+    disablePast?: boolean;
+    disableFuture?: boolean;
+    unit?: 'day';
+    show: (d: Dayjs) => string;
+  }
+): string => {
+  if (!value) return '';
+  const now = dayjs();
+  if (min && value.isBefore(min, unit)) return `Must be ${show(min)} or later`;
+  if (max && value.isAfter(max, unit)) return `Must be ${show(max)} or earlier`;
+  if (disablePast && value.isBefore(now, unit)) return 'Must not be in the past';
+  if (disableFuture && value.isAfter(now, unit)) return 'Must not be in the future';
+  return '';
+};
+
+/** The bound value as the field shows it (an invalid one as empty), without a change event: a query comparing values
+ *  saw '2025-03-14T10:30:00' or 'not a date' while the field showed 03/14/2025 or nothing. */
+const useShownValue = (value: unknown, shown: string, setValue: (v: string) => void) => {
+  useEffect(() => {
+    if (str(value) !== shown) setValue(shown);
+  }, [value, shown]); // eslint-disable-line react-hooks/exhaustive-deps
 };
 
 /** The events both pickers share, by MUI's names: onChange (each edit), onAccept (a value is committed), onOpen, onClose. */
@@ -176,7 +242,19 @@ export const DatePicker = () => {
   const fieldId = ToolJet.useFieldId();
   const popup = usePickerPopup(events, disabled);
   const date = parse(value, DATE);
-  const check = ToolJet.useValidation({ kind: 'date', value: date ? date.format(DATE) : '', present: !!date });
+  const shown = date ? date.format(DATE) : '';
+  const min = parse(minDate, DATE);
+  const max = parse(maxDate, DATE);
+  const rule = rangeRule(date, {
+    min,
+    max,
+    disablePast,
+    disableFuture,
+    unit: 'day',
+    show: (d) => d.format(format || 'MM/DD/YYYY'),
+  });
+  const check = ToolJet.useValidation({ kind: 'date', value: shown, present: !!date, rule });
+  useShownValue(value, shown, setValue as (v: string) => void);
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({
     role: 'datepicker',
@@ -220,8 +298,8 @@ export const DatePicker = () => {
         format={format || 'MM/DD/YYYY'}
         views={viewList}
         openTo={viewList.includes(openTo as 'day') ? (openTo as 'day') : viewList[viewList.length - 1]}
-        minDate={parse(minDate, DATE) ?? undefined}
-        maxDate={parse(maxDate, DATE) ?? undefined}
+        minDate={min ?? undefined}
+        maxDate={max ?? undefined}
         disablePast={disablePast}
         disableFuture={disableFuture}
         disabled={disabled}
@@ -278,13 +356,13 @@ export const TimePicker = () => {
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const popup = usePickerPopup(events, disabled);
-  // A time alone, on today's date, for the adapter.
-  const atToday = (v: unknown) => {
-    const m = /^(\d{1,2}):(\d{2})/.exec(str(v).trim());
-    return m ? dayjs().hour(Number(m[1])).minute(Number(m[2])).second(0).millisecond(0) : null;
-  };
   const time = atToday(value);
-  const check = ToolJet.useValidation({ kind: 'text', value: time ? time.format(TIME) : '', present: !!time });
+  const shown = time ? time.format(TIME) : '';
+  const minT = atToday(minTime);
+  const maxT = atToday(maxTime);
+  const rule = rangeRule(time, { min: minT, max: maxT, show: (d) => d.format(ampm ? 'hh:mm A' : TIME) });
+  const check = ToolJet.useValidation({ kind: 'text', value: shown, present: !!time, rule });
+  useShownValue(value, shown, setValue as (v: string) => void);
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({
     role: 'timepicker',
@@ -326,8 +404,8 @@ export const TimePicker = () => {
         value={time}
         ampm={ampm}
         minutesStep={Math.max(1, Number(minutesStep) || 1)}
-        minTime={atToday(minTime) ?? undefined}
-        maxTime={atToday(maxTime) ?? undefined}
+        minTime={minT ?? undefined}
+        maxTime={maxT ?? undefined}
         disabled={disabled}
         desktopModeMediaQuery={DESKTOP}
         slotProps={slots}
@@ -412,7 +490,18 @@ export const DateTimePicker = () => {
   const fieldId = ToolJet.useFieldId();
   const popup = usePickerPopup(events, disabled);
   const date = parse(value, DATE_TIME);
-  const check = ToolJet.useValidation({ kind: 'date', value: date ? date.format(DATE_TIME) : '', present: !!date });
+  const shown = date ? date.format(DATE_TIME) : '';
+  const min = bound(minDateTime, 'start');
+  const max = bound(maxDateTime, 'end');
+  const rule = rangeRule(date, {
+    min,
+    max,
+    disablePast,
+    disableFuture,
+    show: (d) => d.format(format || (ampm ? 'MM/DD/YYYY hh:mm A' : 'MM/DD/YYYY HH:mm')),
+  });
+  const check = ToolJet.useValidation({ kind: 'date', value: shown, present: !!date, rule });
+  useShownValue(value, shown, setValue as (v: string) => void);
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({
     role: 'datetimepicker',
@@ -477,8 +566,8 @@ export const DateTimePicker = () => {
         ampm={ampm}
         minutesStep={step}
         timeSteps={{ minutes: step }}
-        minDateTime={bound(minDateTime, 'start')}
-        maxDateTime={bound(maxDateTime, 'end')}
+        minDateTime={min}
+        maxDateTime={max}
         disablePast={disablePast}
         disableFuture={disableFuture}
         disabled={disabled}

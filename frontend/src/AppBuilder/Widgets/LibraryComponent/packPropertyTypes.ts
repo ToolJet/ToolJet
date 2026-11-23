@@ -75,6 +75,14 @@ const ACCEPTS: Record<string, PropertyType[]> = {
   'mui.StatCard.trendLabel': ['string', 'number'],
   // The picked option, or the typed text of a free-solo Autocomplete.
   'mui.Autocomplete.value': ['object', 'string'],
+  // The records, or a query result holding them ({ rows: [...] }, read by the lists' recordsOf): as an array only, a
+  // query result became an empty list and the list showed its empty text (MU-19).
+  'mui.RecordList.data': ['array', 'object'],
+  'mui.ProgressList.data': ['array', 'object'],
+  'mui.CardGrid.dataSource': ['array', 'object'],
+  'mui.Timeline.items': ['array', 'object'],
+  // A step index, or a step's id or label: as a number only, 's2' became 0 and the first step stayed active (MU-44).
+  'mui.Stepper.activeStep': ['number', 'string'],
   // One y field ('sales') or several (['sales', 'cost']), each a series.
   ...Object.fromEntries(
     ['Column', 'Line', 'Area', 'Bar', 'DualAxes', 'Funnel', 'Radar', 'Scatter'].map((chart) => [

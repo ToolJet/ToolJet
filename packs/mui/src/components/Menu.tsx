@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Button, Divider, ListItemIcon, ListItemText, Menu as MuiMenu, MenuItem } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useEnumeration } from '../lib/enumeration';
 import { useStateText } from '../lib/text';
 import { MuiProvider, usePopupContainer, useThemeStyles } from '../lib/MuiProvider';
 import { ICONS, iconOf } from '../lib/icons';
@@ -8,24 +9,27 @@ import { lookOf } from '../lib/field';
 import { str, toArray, type Row } from '../lib/data';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
 
-type Item = { label: string; value: string; icon?: string; disabled?: boolean; divider?: boolean };
+// `value` keeps the type the app gave it (7 stays a number in clickedItem); `key` is its text.
+type Item = { label: string; value: unknown; key: string; icon?: string; disabled?: boolean; divider?: boolean };
 const toItems = (raw: unknown): Item[] =>
   toArray(raw)
     .map((o): Item | null => {
-      if (typeof o === 'string') return { label: o, value: o };
+      if (typeof o === 'string') return { label: o, value: o, key: o };
       if (!o || typeof o !== 'object') return null;
       const r = o as Row;
-      if (r.divider === true && !r.label) return { label: '', value: '', divider: true };
-      const value = str(r.value ?? r.key ?? r.label);
+      if (r.divider === true && !r.label) return { label: '', value: '', key: '', divider: true };
+      const given = r.value ?? r.key ?? r.label;
+      const key = str(given);
       return {
-        label: str(r.label ?? value),
-        value,
+        label: str(r.label ?? key),
+        value: typeof given === 'number' || typeof given === 'boolean' ? given : key,
+        key,
         icon: str(r.icon) || undefined,
         disabled: Boolean(r.disabled),
         divider: Boolean(r.divider),
       };
     })
-    .filter((o): o is Item => !!o && (o.divider || o.value !== ''));
+    .filter((o): o is Item => !!o && (o.divider || o.key !== ''));
 
 // MUI's Menu opened from a Button: the button's children (text), variant and color; items [{ label, value, icon,
 // disabled, divider }] as MenuItems; anchorOrigin (where the menu opens). clickedItem is exposed. Events onItemClick,
@@ -44,8 +48,8 @@ export const Menu = () => {
     enumDefinition: ['inherit', 'primary', 'secondary', 'success', 'error', 'info', 'warning'],
     initialValue: 'primary',
   });
-  const { variant, color } = lookOf(variantProp, colorProp);
-  const [size] = ToolJet.useStateEnumeration({
+  const { variant, color } = lookOf(variantProp, colorProp, 'outlined');
+  const [size] = useEnumeration({
     name: 'size',
     label: 'Size',
     enumDefinition: ['small', 'medium', 'large'],
@@ -117,7 +121,10 @@ export const Menu = () => {
   // widget: it closes (with onClose) once its button cannot take input, and refuses a pick made in that instant.
   const rootRef = useRef<HTMLDivElement | null>(null);
   const available = useOwnerGuard(rootRef, !!open, () => show(false), disabled || loading);
-  ToolJet.useAction({ name: 'open', displayName: 'Open' }, () => show(true));
+  // A disabled (or loading) Menu cannot be opened, by its button or by the action: the action fires no onOpen either.
+  ToolJet.useAction({ name: 'open', displayName: 'Open' }, () => {
+    if (!disabled && !loading) show(true);
+  });
   ToolJet.useAction({ name: 'close', displayName: 'Close' }, () => show(false));
 
   return (
@@ -129,13 +136,17 @@ export const Menu = () => {
         color={color as 'primary'}
         size={size as 'medium'}
         fullWidth={fullWidth}
-        disabled={disabled}
+        // Disabled only by the host, which dims the widget to half and makes it inert, as the Button: MUI's own
+        // disabled look dimmed it a second time (grey fill, faint label). It keeps its look and says it is disabled.
+        aria-disabled={disabled || undefined}
         loading={loading}
         endIcon={iconOf('KeyboardArrowDown')}
         aria-haspopup="menu"
         aria-expanded={open ? 'true' : undefined}
         title={children || undefined}
-        onClick={() => show(!open)}
+        onClick={() => {
+          if (!disabled) show(!open);
+        }}
       >
         <span className="tj-mui-button-label">{children}</span>
       </Button>
@@ -181,7 +192,12 @@ const MenuPopup = (p: {
         item.divider && !item.label ? (
           <Divider key={`divider-${i}`} />
         ) : (
-          <MenuItem key={item.value} disabled={item.disabled} divider={item.divider} onClick={() => p.onPick(item)}>
+          <MenuItem
+            key={`${item.key}-${i}`}
+            disabled={item.disabled}
+            divider={item.divider}
+            onClick={() => p.onPick(item)}
+          >
             {item.icon && ICONS[item.icon] ? <ListItemIcon>{iconOf(item.icon, 'small')}</ListItemIcon> : null}
             <ListItemText>{item.label}</ListItemText>
           </MenuItem>

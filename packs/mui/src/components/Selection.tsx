@@ -11,6 +11,7 @@ import {
   ToggleButtonGroup as MuiToggleButtonGroup,
 } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useEnumeration } from '../lib/enumeration';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { FormControlField, PALETTE_COLORS, useFieldProps } from '../lib/field';
 import { keyForValue, str, toArray, toChoiceValue, toOptions, valueForKey, type Option } from '../lib/data';
@@ -70,13 +71,13 @@ export const Checkbox = () => {
     label: 'Indeterminate',
     initialValue: false,
   });
-  const [color] = ToolJet.useStateEnumeration({
+  const [color] = useEnumeration({
     name: 'color',
     label: 'Color',
     enumDefinition: PALETTE_COLORS,
     initialValue: 'primary',
   });
-  const [size] = ToolJet.useStateEnumeration({
+  const [size] = useEnumeration({
     name: 'size',
     label: 'Size',
     enumDefinition: ['small', 'medium', 'large'],
@@ -132,13 +133,13 @@ export const Checkbox = () => {
 export const Switch = () => {
   const field = useFieldProps({ label: 'Switch' });
   const { checked, change } = useChecked();
-  const [color] = ToolJet.useStateEnumeration({
+  const [color] = useEnumeration({
     name: 'color',
     label: 'Color',
     enumDefinition: PALETTE_COLORS,
     initialValue: 'primary',
   });
-  const [size] = ToolJet.useStateEnumeration({
+  const [size] = useEnumeration({
     name: 'size',
     label: 'Size',
     enumDefinition: ['small', 'medium'],
@@ -175,7 +176,10 @@ export const Switch = () => {
                 checked={checked}
                 color={color as 'primary'}
                 size={size as 'medium'}
-                onChange={(e) => change(e.target.checked)}
+                onChange={(e) => {
+                  change(e.target.checked);
+                  check.touch();
+                }}
               />
             }
           />
@@ -210,13 +214,13 @@ export const RadioGroup = () => {
     description: 'Options side by side.',
     initialValue: false,
   });
-  const [color] = ToolJet.useStateEnumeration({
+  const [color] = useEnumeration({
     name: 'color',
     label: 'Color',
     enumDefinition: PALETTE_COLORS,
     initialValue: 'primary',
   });
-  const [size] = ToolJet.useStateEnumeration({
+  const [size] = useEnumeration({
     name: 'size',
     label: 'Size',
     enumDefinition: ['small', 'medium'],
@@ -233,7 +237,7 @@ export const RadioGroup = () => {
   const fieldId = ToolJet.useFieldId();
   const options = toOptions(rawOptions, 'RadioGroup');
   // The radios hold option keys (lib/data Option); the one clicked is the one exposed.
-  const key = value === '' ? '' : keyForValue(options, value);
+  const key = keyForValue(options, value);
   const check = ToolJet.useValidation({
     kind: 'choice',
     value: str(value),
@@ -261,6 +265,13 @@ export const RadioGroup = () => {
     defaultWidth: 10,
     defaultHeight: 16,
   });
+  // A value naming an option by its text (2 given as '2') is exposed as that option's own value, as a click writes it;
+  // fitting the value is not the user's change, so no event.
+  const own = options.find((o) => o.value === key);
+  React.useEffect(() => {
+    if (own && own.data !== rawValue) setValue(own.data as never);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [own?.value, rawValue]);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (wanted: unknown) => {
@@ -350,13 +361,13 @@ export const ToggleButtonGroup = () => {
     description: 'The value; an array when not exclusive.',
     initialValue: '',
   });
-  const [color] = ToolJet.useStateEnumeration({
+  const [color] = useEnumeration({
     name: 'color',
     label: 'Color',
     enumDefinition: ['standard', ...PALETTE_COLORS],
     initialValue: 'primary',
   });
-  const [size] = ToolJet.useStateEnumeration({
+  const [size] = useEnumeration({
     name: 'size',
     label: 'Size',
     enumDefinition: ['small', 'medium', 'large'],
@@ -414,7 +425,12 @@ export const ToggleButtonGroup = () => {
     : picked.map(keyOf);
   // The value takes the shape Exclusive asks for: turned off, the picked text stayed text, showed no button pressed and
   // was dropped by the next click; turned on, an array stayed. Fires no event.
-  const shaped: unknown = exclusive ? (picked.length ? picked[0] : '') : picked;
+  // Each value naming an option by its text (2 given as '2') takes that option's own value, as a click writes it.
+  const ownValue = (v: unknown) => {
+    const k = keyOf(v);
+    return options.some((o) => o.value === k) ? valueForKey(options, k) : v;
+  };
+  const shaped: unknown = exclusive ? (picked.length ? ownValue(picked[0]) : '') : picked.map(ownValue);
   const shapedKey = JSON.stringify(shaped);
   React.useEffect(() => {
     if (JSON.stringify(value) !== shapedKey) setValue(shaped as never);
@@ -480,6 +496,18 @@ export const ToggleButtonGroup = () => {
 
 // MUI's Rating: label, value (a number, null for none), max, precision (1, or 0.5 for halves), size, readOnly,
 // highlightSelectedOnly; event onChange (and onChangeActive while hovering). Actions setValue, clear.
+// MUI splits each star into 1 / precision parts, so a precision under 1 has to divide 1 into a whole number of parts:
+// 0.3, 0.4 or 0.7 threw 'Invalid array length' and dropped the widget. Such a precision takes the nearest part that
+// does (0.3 draws thirds, 0.7 whole stars); nothing, 0 or text is 1.
+const ratingStep = (precision: unknown): number => {
+  const given = Number(precision);
+  if (!(given > 0) || !Number.isFinite(given)) return 1;
+  if (given >= 1 || Number.isInteger(1 / given)) return given;
+  let parts = Math.min(100, Math.max(1, Math.round(1 / given)));
+  while (parts > 1 && !Number.isInteger(1 / (1 / parts))) parts -= 1;
+  return 1 / parts;
+};
+
 export const Rating = () => {
   const field = useFieldProps({ label: 'Rating' });
   const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', initialValue: null });
@@ -490,7 +518,7 @@ export const Rating = () => {
     enumDefinition: ['1', '0.5'],
     initialValue: '1',
   });
-  const [size] = ToolJet.useStateEnumeration({
+  const [size] = useEnumeration({
     name: 'size',
     label: 'Size',
     enumDefinition: ['small', 'medium', 'large'],
@@ -508,7 +536,7 @@ export const Rating = () => {
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const top = Math.max(1, Number(max) || 5);
-  const step = Number(precision) || 1;
+  const step = ratingStep(precision);
   // What MUI draws: within 0 to max, at the precision. A literal 7 under max 5 drew five stars and exposed 7; the
   // exposed value follows the drawn one, with no onChange (fitting a value is not the user's change).
   const raw = toNumber(value);
@@ -610,13 +638,13 @@ export const Slider = (props: Record<string, unknown>) => {
     enumDefinition: ['auto', 'on', 'off'],
     initialValue: 'auto',
   });
-  const [color] = ToolJet.useStateEnumeration({
+  const [color] = useEnumeration({
     name: 'color',
     label: 'Color',
     enumDefinition: PALETTE_COLORS,
     initialValue: 'primary',
   });
-  const [size] = ToolJet.useStateEnumeration({
+  const [size] = useEnumeration({
     name: 'size',
     label: 'Size',
     enumDefinition: ['small', 'medium'],
@@ -707,7 +735,11 @@ export const Slider = (props: Record<string, unknown>) => {
               setValue((Array.isArray(next) ? [...next] : next) as number);
               onChange();
             }}
-            onChangeCommitted={() => onChangeCommitted()}
+            onChangeCommitted={() => {
+              // A moved thumb is a touched field: a failing rule shows its message (as the Rating's does).
+              check.touch();
+              onChangeCommitted();
+            }}
           />
         </FormControlField>
       </Loading>

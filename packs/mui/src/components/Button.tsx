@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Button as MuiButton, Tooltip } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useEnumeration } from '../lib/enumeration';
 import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { ICON_NAMES, iconOf } from '../lib/icons';
@@ -22,7 +23,7 @@ export const Button = () => {
     enumDefinition: ['inherit', 'primary', 'secondary', 'success', 'error', 'info', 'warning'],
     initialValue: 'primary',
   });
-  const [size] = ToolJet.useStateEnumeration({
+  const [size] = useEnumeration({
     name: 'size',
     label: 'Size',
     enumDefinition: ['small', 'medium', 'large'],

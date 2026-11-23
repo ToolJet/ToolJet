@@ -277,7 +277,22 @@ export const NumberField = () => {
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const num = toNumber(value);
-  const check = ToolJet.useValidation({ kind: 'text', value: num === null ? '' : String(num), present: num !== null });
+  const lo = toNumber(min);
+  const hi = toNumber(max);
+  // A number outside Min and Max that was not typed (a starting value, a binding, setValue) is invalid, as in a ToolJet
+  // Number Input; typed input is still clamped on blur.
+  const rule =
+    num !== null && lo !== null && num < lo
+      ? `Must be ${lo} or more`
+      : num !== null && hi !== null && num > hi
+        ? `Must be ${hi} or less`
+        : '';
+  const check = ToolJet.useValidation({
+    kind: 'text',
+    value: num === null ? '' : String(num),
+    present: num !== null,
+    rule,
+  });
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({
     role: 'numberinput',
@@ -297,8 +312,6 @@ export const NumberField = () => {
     defaultWidth: 8,
     defaultHeight: 9,
   });
-  const lo = toNumber(min);
-  const hi = toNumber(max);
 
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));

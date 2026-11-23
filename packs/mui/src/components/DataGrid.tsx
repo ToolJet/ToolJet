@@ -82,19 +82,26 @@ const UI2_FORMATS: Record<string, string> = {
  */
 const TONE_CHIP: Record<string, string> = { success: 'success', warning: 'warning', danger: 'error', info: 'info' };
 
-export const StatusChip = ({ label, color }: { label: string; color: string }) => {
+// maxWidth: the most of its row the chip takes; a longer status ends in an ellipsis (MUI's Chip label), its full
+// text on hover. Unset, the chip is as wide as its text.
+export const StatusChip = ({ label, color, maxWidth }: { label: string; color: string; maxWidth?: string }) => {
   const themed = useIsThemed();
   const family = themed && color && !CHIP_COLORS.has(color) ? chipFamily(color) : undefined;
-  if (family === null) return <Chip size="small" label={label} />;
-  if (CHIP_COLORS.has(color)) return <Chip size="small" label={label} color={color as 'default'} />;
+  const fit = maxWidth ? { maxWidth, minWidth: 0 } : undefined;
+  const common = { size: 'small' as const, label, title: maxWidth ? label : undefined };
+  if (family === null) return <Chip {...common} sx={fit} />;
+  if (CHIP_COLORS.has(color)) return <Chip {...common} color={color as 'default'} sx={fit} />;
   const css = /^(#|rgb|hsl)/i.test(color) ? color : '';
-  if (!family && !css) return <Chip size="small" label={label} />;
+  if (!family && !css) return <Chip {...common} sx={fit} />;
   const tint = (t: Theme) => (family ? t.palette[family].main : css);
   return (
     <Chip
-      size="small"
-      label={label}
-      sx={(t) => ({ color: themeInk(tint(t), t), bgcolor: `color-mix(in srgb, ${tint(t)} 14%, transparent)` })}
+      {...common}
+      sx={(t) => ({
+        ...fit,
+        color: themeInk(tint(t), t),
+        bgcolor: `color-mix(in srgb, ${tint(t)} 14%, transparent)`,
+      })}
     />
   );
 };

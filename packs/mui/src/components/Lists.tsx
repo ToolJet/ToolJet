@@ -348,7 +348,12 @@ export const RecordList = () => {
                         ) : null}
                       </Box>
                       {row.status ? (
-                        <StatusChip label={chipLabel(row.status)} color={toneChipColor(row.status, statusColors)} />
+                        // A long status is cut short so the title keeps its room and the row does not scroll sideways.
+                        <StatusChip
+                          label={chipLabel(row.status)}
+                          color={toneChipColor(row.status, statusColors)}
+                          maxWidth="40%"
+                        />
                       ) : null}
                       {row.value ? (
                         <Typography
@@ -543,6 +548,7 @@ export const ProgressList = () => {
                           <StatusChip
                             label={chipLabel(row.status)}
                             color={TONE_COLOR[row.tone || chipTone(row.status)] ?? 'default'}
+                            maxWidth="40%"
                           />
                         ) : null}
                         <Box sx={{ flex: 1 }} />
@@ -1041,8 +1047,12 @@ export const KeyValue = () => {
     locale: localeFor(currency, locale),
     dateFormat: dateFormat || 'DD MMM YYYY',
   };
+  // Empty value text left empty or bound to null (which reaches the component as '') is the default dash; a space
+  // shows nothing.
   const empty =
-    emptyText === undefined || emptyText === null || typeof emptyText === 'object' ? '-' : String(emptyText);
+    emptyText === undefined || emptyText === null || emptyText === '' || typeof emptyText === 'object'
+      ? '-'
+      : String(emptyText);
   const live = !disabled && !loading;
   const activate = (row: KeyValueRow) => {
     if (!live) return;
