@@ -381,6 +381,21 @@
   padding: 22px;
 }
 
+/* With an icon, the tile and the pill share one line. */
+.docblk-config__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* The pill drops below the tile in a narrow card instead of breaking its text. */
+.docblk-config__top > .docblk-config__label {
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
 /* The pill keeps the colours passed as labelBg / labelColor in both themes. */
 .docblk-config__label {
   display: inline-block;

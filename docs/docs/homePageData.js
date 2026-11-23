@@ -141,7 +141,7 @@ export const organizationCards = [
     { icon: Users, title: "Workspaces", href: "/docs/tj-setup/workspaces/" },
     { icon: UserCheck, title: "User authentication", href: "/docs/user-management/authentication/self-hosted/overview/" },
     { icon: Lock, title: "Permissions", href: "/docs/user-management/role-based-access/access-control/" },
-    { icon: UserPlus, title: "Users and groups", href: "/docs/user-management/role-based-access/user-roles/" },
+    { icon: UserPlus, title: "Roles and groups", href: "/docs/user-management/role-based-access/user-roles/" },
     { icon: ScrollText, title: "Audit logs", href: "/docs/security/audit-logs/" },
     { icon: Megaphone, title: "White label", href: "/docs/tj-setup/org-branding/white-labeling/" },
     { icon: Gem, title: "Super admin", href: "/docs/user-management/role-based-access/super-admin/" },
