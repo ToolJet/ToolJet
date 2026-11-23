@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/Rocket/Button/Button';
 import { authenticationService } from '@/_services';
 import { getPrivateRoute } from '@/_helpers/routes';
-import { useForeignKeyValues } from '../../rows/useForeignKeyValues';
+import { isNearListEnd, useForeignKeyValues } from '../../rows/useForeignKeyValues';
 
 const SEARCH_DELAY_MS = 300;
 
@@ -61,7 +61,7 @@ export function ForeignKeyValueCombobox({
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { values, isLoading, isError } = useForeignKeyValues({
+  const { values, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } = useForeignKeyValues({
     tableId: tableId ?? '',
     column,
     isTextColumn,
@@ -105,7 +105,11 @@ export function ForeignKeyValueCombobox({
         <ComboboxInput size={size} placeholder={placeholder} disabled={disabled} />
         {/* The drawers sit at z-index 1000-1002; every popup opened from one clears them at 1100. */}
         <ComboboxContent positionerClassName="tw-z-[1100]">
-          <ComboboxList>
+          <ComboboxList
+            onScroll={(event: React.UIEvent<HTMLElement>) => {
+              if (hasNextPage && !isFetchingNextPage && isNearListEnd(event.currentTarget)) fetchNextPage();
+            }}
+          >
             {(item: Option) => (
               <ComboboxItem key={item.value ?? 'null'} value={item}>
                 {item.label}

@@ -35,7 +35,7 @@ The workspace's built-in database UI at `/:workspaceId/database`: a tables panel
 | `Table/Grid/cellNavigation.ts`, `useCellNavigation.ts` | Pure reducer over the focused cell (`{rowIndex, columnId, editing} \| null`) and `scrollLeftToReveal`; the hook stores it per view key and clamps it to the rows on screen |
 | `Table/Grid/cellEditing.ts` | `isEditableColumn`, `toStoredValue`, `buildRowFilter`, `saveCellValue` (the PATCH, with its toasts) |
 | `Table/Grid/cells/CellEditor.tsx`, `CellEditorShell.tsx`, `ForeignKeyEditor.tsx` | In-cell input (text, number) or value picker (foreign key) and the shared popover: Set to null, Cancel, Save |
-| `rows/useForeignKeyValues.ts` | react-query: first 50 values of the referenced column, server-side search |
+| `rows/useForeignKeyValues.ts` | react-query infinite query: the referenced column's values 50 at a time (`limit`/`offset`, fixed `order` so offsets line up), `fetchNextPage` when a list is scrolled to its end (`isNearListEnd`), server-side search. Both pickers (`ForeignKeyValueCombobox`, `ForeignKeyEditor`) load more on scroll; there is no cap |
 | `Table/Grid/useTableGrid.ts` | Headless TanStack instance: column defs, sizing (loaded from and saved to `columnWidths.ts`), pinning (checkbox, then the first primary key), `getRowId` from the primary key values |
 | `Table/Grid/columnWidths.ts` | `readColumnWidths` / `writeColumnWidths`: widths in `localStorage` key `tjdb-col-widths:<workspaceId>:<tableId>` |
 | `Table/Grid/sortState.ts` | Pure: applied `sortFilters` to TanStack `SortingState` (`toSortingState`); the header sort indicator is display-only |

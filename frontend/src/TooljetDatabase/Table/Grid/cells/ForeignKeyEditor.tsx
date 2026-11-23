@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState, type ComponentProps } 
 import { Input } from '@/components/ui/Rocket/Input/Input';
 import { ROCKET_SCROLLBAR } from '@/components/ui/Rocket/scrollbar';
 import { cn } from '@/lib/utils';
-import { useForeignKeyValues } from '../../../rows/useForeignKeyValues';
+import { isNearListEnd, useForeignKeyValues } from '../../../rows/useForeignKeyValues';
 import type { ForeignKeyTarget, GridColumn } from '../useTableGrid';
 import { CELL_RING, CellEditorShell, type useCellDraft } from './CellEditorShell';
 
@@ -20,7 +20,7 @@ export function ForeignKeyEditor({ draft, column, foreignKey, shell }: ForeignKe
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const searchRef = useRef<HTMLInputElement | null>(null);
-  const { values, isLoading, isError } = useForeignKeyValues({
+  const { values, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } = useForeignKeyValues({
     tableId: foreignKey.tableId,
     column: foreignKey.column,
     isTextColumn: column.dataType === 'character varying',
@@ -90,6 +90,9 @@ export function ForeignKeyEditor({ draft, column, foreignKey, shell }: ForeignKe
         <div
           role="listbox"
           aria-label={`${foreignKey.column} values`}
+          onScroll={(event) => {
+            if (hasNextPage && !isFetchingNextPage && isNearListEnd(event.currentTarget)) fetchNextPage();
+          }}
           className={cn('tw-flex tw-max-h-48 tw-flex-col tw-overflow-auto', ROCKET_SCROLLBAR)}
         >
           {values.map((value) => (
