@@ -10,6 +10,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { DataSource } from 'typeorm';
 import { Test } from '@nestjs/testing';
+import { ForbiddenException } from '@nestjs/common';
 import { VersionController } from '@modules/versions/controller';
 import { VersionService } from '@modules/versions/service';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
@@ -85,11 +86,12 @@ describe('Version inventory release preflight', () => {
     const versions = [{ id: 'spring' }, { id: 'autumn' }];
     const preflight = { version_id: 'autumn', environment_path: [{ id: 'one', name: 'development' }] };
     const check = jest.fn().mockResolvedValue(preflight);
+    const checkReleasePolicies = jest.fn();
     const getAllVersions = jest.fn().mockResolvedValue({ versions });
     const module = await Test.createTestingModule({
       controllers: [VersionController],
       providers: [
-        { provide: VersionService, useValue: { getAllVersions } },
+        { provide: VersionService, useValue: { getAllVersions, checkReleasePolicies } },
         { provide: ReleasePreflightService, useValue: { check } },
       ],
     })
@@ -103,6 +105,7 @@ describe('Version inventory release preflight', () => {
     const nest = module.createNestApplication();
     nest.use((req, _res, next) => {
       req.tj_app = app;
+      req.tj_resource_id = app.id;
       req.user = { id: 'grower', branchId: 'seasonal' };
       next();
     });
@@ -113,6 +116,7 @@ describe('Version inventory release preflight', () => {
       expect(getAllVersions).toHaveBeenLastCalledWith(app, 'seasonal', false);
       await server.get('/apps/orchard/versions?releasePreflightFor=elsewhere').expect(404);
       expect(check).not.toHaveBeenCalled();
+      expect(checkReleasePolicies).not.toHaveBeenCalled();
       await server
         .get('/apps/orchard/versions?releasePreflightFor=autumn&includeDefaultBranchVersions=true')
         .expect(200, { versions, release_preflight: preflight });
@@ -120,8 +124,11 @@ describe('Version inventory release preflight', () => {
       expect(check).toHaveBeenCalledWith(
         app,
         versions[1],
-        expect.objectContaining({ user: { id: 'grower', branchId: 'seasonal' } })
+        expect.objectContaining({ tj_resource_id: app.id, user: { id: 'grower', branchId: 'seasonal' } })
       );
+      expect(checkReleasePolicies).toHaveBeenCalledWith(app, versions[1], 0);
+      checkReleasePolicies.mockRejectedValueOnce(new ForbiddenException('Approval required'));
+      await server.get('/apps/orchard/versions?releasePreflightFor=autumn').expect(403);
     } finally {
       await nest.close();
     }

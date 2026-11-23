@@ -17,6 +17,7 @@ Owns the AppVersion lifecycle: named development snapshots of an App. Create/clo
 | `module.ts` | `VersionModule extends SubModule`; registers 5 controllers + services via `getProviders`; exports `VersionUtilService` |
 | `service.ts` | `VersionService`: getAllVersions, getVersion (editor payload), update/updateSettings, promoteVersion, createDraftVersion; CE no-op before/after hooks for app-history |
 | `util.service.ts` | `VersionUtilService`: createVersion, updateVersion (status flips + `handleDefaultBranchPublish`), deleteVersion/deleteVersionGit, checkDraftModulesInApp, checkModulesPromotableToEnvironment |
+| `services/release-preflight.service.ts` | `GET /apps/:id/versions?releasePreflightFor=<versionId>` checks save, promote and release permissions and returns the remaining environment path. The controller checks edition-specific release policies before returning the plan. Keep both checks aligned with the write routes. |
 | `services/create.service.ts` | `VersionsCreateService.setupNewVersion`: deep-clones settings, data sources+queries, pages/components/layouts, event handlers; remaps old→new ids and entity references; copies workflow bundles |
 | `repository.ts` | `VersionRepository`: findVersion, getVersionsInApp (branch-scoped), findLatestVersionForEnvironment, resolveMetadataVersion, updateVersion |
 | `module-ref.util.ts` | Resolves **module** pins (`resolveModuleRef`, `resolveAllModuleViewersForVersion`, `listModuleVersions`); pin/unpinned/orphan fallback rules documented in header |

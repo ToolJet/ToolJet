@@ -42,6 +42,7 @@ export class VersionController implements IVersionController {
     const version = inventory.versions.find((candidate) => candidate.id === versionId);
     if (!version) throw new NotFoundException('Release version not found in this app');
     const preflight = await this.releasePreflight.check(app, version, request);
+    await this.versionService.checkReleasePolicies(app, version, preflight.environment_path.length - 1);
     return { ...inventory, release_preflight: preflight };
   }
 
