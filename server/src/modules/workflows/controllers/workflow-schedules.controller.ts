@@ -6,6 +6,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from '@modules/workflows/constants';
+import { ListSchedulesDto } from '@modules/workflows/dto/list-schedules.dto';
 
 @InitModule(MODULES.WORKFLOWS)
 @Controller('workflow-schedules')
@@ -19,6 +20,7 @@ export class WorkflowSchedulesController implements IWorkflowSchedulesController
     @Body()
     createWorkflowScheduleDto: {
       workflowId: string;
+      name: string;
       active: boolean;
       environmentId: string;
       type: string;
@@ -36,7 +38,10 @@ export class WorkflowSchedulesController implements IWorkflowSchedulesController
 
   @InitFeature(FEATURE_KEY.LIST_WORKFLOW_SCHEDULES)
   @Get()
-  async findAll(@User() user, @Query('app_id') appId: string): Promise<WorkflowSchedule[]> {
+  async findAll(
+    @User() user,
+    @Query() query: ListSchedulesDto
+  ): Promise<WorkflowSchedule[] | { data: WorkflowSchedule[]; total: number; page: number; limit: number }> {
     throw new Error('Method not implemented.');
   }
 
@@ -54,6 +59,7 @@ export class WorkflowSchedulesController implements IWorkflowSchedulesController
     @Body()
     updateWorkflowScheduleDto: Partial<{
       environmentId: string;
+      name: string;
       /* workflow id = versionId */
       workflowId: string;
       type: string;
