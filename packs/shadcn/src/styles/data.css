@@ -1,0 +1,387 @@
+/* Data views (UI 2.0 parity set) */
+
+.ui-list-empty {
+  padding: 24px;
+  text-align: center;
+}
+.ui-mini-progress {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--ui-muted);
+  overflow: hidden;
+}
+.ui-mini-progress.is-lg {
+  height: 8px;
+}
+.ui-mini-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ui-primary);
+  transition: width 0.4s ease;
+}
+
+/* List view */
+.ui-listview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ui-listview-items {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  overflow: auto;
+}
+.ui-listview-items.is-grid {
+  display: grid;
+  align-content: start;
+}
+.ui-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--ui-item-radius, 8px);
+  background: var(--ui-item-bg);
+  color: var(--ui-fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.ui-listview-items.has-border .ui-list-item {
+  border-color: var(--ui-border);
+}
+.ui-list-item:hover {
+  background: color-mix(in srgb, var(--ui-muted) 60%, var(--ui-item-bg));
+}
+.ui-list-item.is-selected {
+  border-color: var(--ui-primary);
+  box-shadow: 0 0 0 1px var(--ui-primary);
+}
+.ui-list-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.ui-list-text {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+}
+.ui-list-title {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ui-list-meta {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.ui-list-pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Card grid */
+.ui-card-grid {
+  display: grid;
+  gap: 16px;
+  padding: 2px;
+}
+.ui-grid-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--ui-border);
+  color: var(--ui-fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s,
+    border-color 0.2s;
+}
+.ui-grid-card.is-elevated {
+  box-shadow: var(--ui-shadow);
+}
+.ui-grid-card.is-elevated:hover {
+  box-shadow: var(--ui-shadow-lg);
+  transform: translateY(-2px);
+}
+.ui-grid-card.is-flat {
+  border-color: transparent;
+  background: var(--ui-muted) !important;
+}
+.ui-grid-card.is-selected {
+  border-color: var(--ui-primary);
+  box-shadow: 0 0 0 1px var(--ui-primary);
+}
+.ui-grid-card-image {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+}
+.ui-grid-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px 14px;
+}
+.ui-grid-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ui-grid-card-title {
+  font-weight: 600;
+}
+.ui-grid-card-text {
+  color: var(--ui-muted-fg);
+  font-size: 13px;
+}
+.ui-grid-card-meta {
+  display: flex;
+  gap: 10px;
+}
+
+/* Record list */
+.ui-records {
+  display: flex;
+  flex-direction: column;
+}
+.ui-records.is-card {
+  border: 1px solid var(--ui-border);
+  padding: 4px;
+}
+.ui-record {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ui-fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.ui-records.is-compact .ui-record {
+  padding: 6px 10px;
+}
+.ui-records.is-comfortable .ui-record {
+  padding: 14px 14px;
+}
+.ui-records.has-dividers .ui-record + .ui-record {
+  border-top: 1px solid var(--ui-border);
+  border-radius: 0;
+}
+.ui-record:hover {
+  background: color-mix(in srgb, var(--ui-muted) 60%, transparent);
+}
+.ui-record.is-selected {
+  background: color-mix(in srgb, var(--ui-primary) 10%, transparent);
+}
+.ui-record-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ui-primary) 14%, transparent);
+  color: var(--ui-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+.ui-record-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ui-record-main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+.ui-record-title {
+  font-weight: 500;
+}
+.ui-record-value {
+  min-width: 70px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Progress list */
+.ui-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: 12px;
+}
+.ui-progress-list.is-card {
+  border: 1px solid var(--ui-border);
+  padding: 6px;
+}
+.ui-progress-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ui-fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.ui-progress-row:hover {
+  background: color-mix(in srgb, var(--ui-muted) 50%, transparent);
+}
+.ui-progress-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ui-progress-row-label {
+  font-weight: 500;
+}
+
+/* Carousel */
+.ui-carousel {
+  position: relative;
+  overflow: hidden;
+  background: var(--ui-muted);
+}
+.ui-carousel-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.ui-carousel-slide {
+  position: relative;
+  display: flex;
+  flex: 0 0 100%;
+  flex-direction: column;
+  margin: 0;
+  cursor: pointer;
+}
+.ui-carousel-slide img,
+.ui-carousel-placeholder {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+.ui-carousel-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+}
+.ui-carousel-caption.is-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding-bottom: 34px;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.65), transparent);
+  color: #fff;
+}
+.ui-carousel-caption.is-below {
+  background: var(--ui-bg);
+}
+.ui-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-top: -17px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.85);
+  color: #111;
+  box-shadow: var(--ui-shadow);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+.ui-carousel:hover .ui-carousel-arrow {
+  opacity: 1;
+}
+.ui-carousel-arrow:disabled {
+  opacity: 0 !important;
+}
+.ui-carousel-arrow.is-prev {
+  left: 12px;
+}
+.ui-carousel-arrow.is-next {
+  right: 12px;
+}
+.ui-carousel-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.ui-carousel-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.5);
+  cursor: pointer;
+  transition:
+    width 0.25s,
+    background-color 0.25s;
+}
+.ui-carousel-dot.is-active {
+  width: 20px;
+  background: var(--ui-dot-active);
+}
+
+/* Built in: an item drawn as a row of ToolJet components (its canvas is projected into the item). */
+.ui-list-item--canvas {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+  cursor: pointer;
+}

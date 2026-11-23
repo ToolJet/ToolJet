@@ -2,13 +2,15 @@ import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GroupUsers } from '@entities/group_users.entity';
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { USER_STATUS } from '@modules/users/constants/lifecycle';
+import { BUILDER_ACCESS_LOST, USER_STATUS } from '@modules/users/constants/lifecycle';
 import { GROUP_PERMISSIONS_TYPE, ResourceType, USER_ROLE } from '@modules/group-permissions/constants';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EntityManager, In } from 'typeorm';
 import { EditUserRoleDto } from './dto';
 import { App } from '@entities/app.entity';
+import { AppBase } from '@entities/app_base.entity';
 import { _ } from 'lodash';
 import { ERROR_HANDLER } from '@modules/group-permissions/constants/error';
 import { RolesRepository } from './repository';
@@ -19,6 +21,9 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 @Injectable()
 export class RolesUtilService implements IRolesUtilService {
+  // Property injection: keeps the constructor (and the EE subclass) unchanged.
+  @Inject(EventEmitter2) protected eventEmitter: EventEmitter2;
+
   constructor(
     protected groupPermissionsRepository: GroupPermissionsRepository,
     protected roleRepository: RolesRepository,
@@ -98,15 +103,14 @@ export class RolesUtilService implements IRolesUtilService {
 
       // Moving from admin/builder to end user
       if (newRole == USER_ROLE.END_USER) {
-        // Check if user has created any apps
-        const userCreatedApps = await manager.find(App, {
+        const ownedAppsCount = await manager.count(AppBase, {
           where: {
             userId: userId,
             organizationId: organizationId,
           },
         });
 
-        if (userCreatedApps?.length > 0) {
+        if (ownedAppsCount > 0) {
           if (updatedAdmin) {
             // Transfer the ownership to session user
             await manager.update(
@@ -124,10 +128,22 @@ export class RolesUtilService implements IRolesUtilService {
                 id: userId,
               },
             });
+            const ownedAppNames = await manager
+              .createQueryBuilder(AppBase, 'app')
+              .select(
+                `COALESCE((SELECT av.app_name FROM app_versions av
+                   WHERE av.app_id = app.id AND av.version_type = 'version'
+                     AND av.is_stub = false AND av.app_name IS NOT NULL
+                   ORDER BY av.is_synced DESC, av.updated_at DESC LIMIT 1), app.name, app.id::text)`,
+                'name'
+              )
+              .where('app.userId = :userId', { userId })
+              .andWhere('app.organizationId = :organizationId', { organizationId })
+              .getRawMany();
             throw new BadRequestException({
               message: {
                 error: ERROR_HANDLER.USER_IS_OWNER_OF_APPS(user.email),
-                data: userCreatedApps.map((app) => app.name),
+                data: ownedAppNames.map((row) => row.name),
                 title: 'Can not change user role',
               },
             });
@@ -150,6 +166,9 @@ export class RolesUtilService implements IRolesUtilService {
 
       // Add to new Role
       await this.addUserRole(organizationId, { role: newRole, userId }, manager);
+      if (newRole === USER_ROLE.END_USER) {
+        await this.eventEmitter.emitAsync(BUILDER_ACCESS_LOST, { userId, organizationId, manager });
+      }
     }, manager);
   }
 

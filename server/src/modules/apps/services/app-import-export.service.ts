@@ -2,8 +2,10 @@ import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Inj
 import { isEmpty, set } from 'lodash';
 import { isUUID } from 'class-validator';
 import { App } from 'src/entities/app.entity';
+import { AppBase } from 'src/entities/app_base.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from 'src/entities/app_version.entity';
+import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
@@ -45,7 +47,10 @@ import {
   resolveLegacyPageTargetSlugs,
   resolvePageTargetCorelationId,
 } from 'src/helpers/go_to_app_link.helper';
-import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
+import {
+  isChildOfSlottedParent,
+  remapFlexContainerChildOrder,
+} from '@modules/versions/helpers/version-copy-parent.helper';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { LayoutDimensionUnits } from '../constants';
 import { convertAppDefinitionFromSinglePageToMultiPage } from 'src/../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -617,7 +622,8 @@ export class AppImportExportService {
           : [];
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
       const moduleAppIds = appModules.map((moduleComponent) => ({
-        moduleId: moduleComponent.properties?.moduleAppId.value,
+        // A ModuleViewer saved without a module has no moduleAppId; the dedupe below drops it (QA DVRL-1).
+        moduleId: moduleComponent.properties?.moduleAppId?.value,
         // moduleVersionId.value holds the version's co_relation_id (portable git identity).
         // The git-sync adapter writes co_relation_id as the version `id` in exported JSON,
         // so pulled/imported data and locally-created refs both use co_relation_id.
@@ -639,13 +645,13 @@ export class AppImportExportService {
       const coRelationIds = uniqueModuleAppIds.map((m) => m.moduleId).filter(Boolean);
       const moduleAppsById: Record<string, string> = {};
       if (coRelationIds.length > 0) {
-        const resolvedModules = await manager
-          .createQueryBuilder(App, 'app')
+        const resolvedModules: { id: string; co_relation_id: string }[] = await manager
+          .createQueryBuilder(AppBase, 'app')
           .where('app.co_relation_id IN (:...coRelationIds)', { coRelationIds })
           .andWhere('app.organization_id = :organizationId', { organizationId: appToExport.organizationId })
           .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
-          .select(['app.id', 'app.co_relation_id'])
-          .getMany();
+          .select(['app.id AS id', 'app.co_relation_id AS co_relation_id'])
+          .getRawMany();
         for (const mod of resolvedModules) {
           moduleAppsById[mod.co_relation_id] = mod.id;
         }
@@ -675,7 +681,7 @@ export class AppImportExportService {
           // the unresolvable reference instead — the parent app still pushes.
           const moduleAppExists = await manager.findOne(App, {
             where: { id: resolvedId, organizationId: appToExport.organizationId },
-            select: ['id'],
+            select: ['id', 'organizationId'],
           });
           if (!moduleAppExists) {
             console.warn(
@@ -883,10 +889,11 @@ export class AppImportExportService {
     // the module, tries to recreate it, and violates app_versions(app_name, branch_id, type).
     const nameMatchBranchIds = Array.from(new Set([defaultBranchId, branchId].filter(Boolean)));
 
-    const existingModules =
+    const existingModules: { id: string; co_relation_id: string }[] =
       moduleAppNames.length > 0 || moduleAppCoRelIds.length > 0
         ? await manager
-            .createQueryBuilder(App, 'app')
+            .createQueryBuilder(AppBase, 'app')
+            .select(['app.id AS id', 'app.co_relation_id AS co_relation_id'])
             .where('app.organizationId = :organizationId', { organizationId: user.organizationId })
             .andWhere(
               new Brackets((qb: any) => {
@@ -915,15 +922,15 @@ export class AppImportExportService {
               })
             )
             .distinct(true)
-            .getMany()
+            .getRawMany()
         : [];
 
     // Index existing modules by passport first, name as fallback. Resolve each module's
     // canonical name from the same source as the lookup above.
-    const existingByCoRel = new Map<string, App>(
+    const existingByCoRel = new Map<string, { id: string; co_relation_id: string }>(
       existingModules.filter((m) => m.co_relation_id).map((m) => [m.co_relation_id, m])
     );
-    const existingByName = new Map<string, App>();
+    const existingByName = new Map<string, { id: string; co_relation_id: string }>();
     if (existingModules.length > 0 && moduleAppNames.length > 0) {
       const nameQb = manager
         .createQueryBuilder(AppVersion, 'av')
@@ -1266,7 +1273,7 @@ export class AppImportExportService {
     manager: EntityManager,
     user: User,
     importedModule: any,
-    existingModule: App,
+    existingModule: { id: string },
     branchId: string,
     externalResourceMappings: any,
     tooljetVersion: string
@@ -1339,7 +1346,7 @@ export class AppImportExportService {
     manager?: EntityManager,
     branchId?: string,
     isTemplateApp = false
-  ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
+  ): Promise<{ newApp: App; resourceMapping: AppResourceMappings; codeMissing: boolean }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
         throw new BadRequestException('Invalid params for app import');
@@ -1410,6 +1417,10 @@ export class AppImportExportService {
         isTemplateApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
+      // Git sync carries an app's code in its own folder; every other import reads it from the file.
+      const { codeMissing } = isGitApp
+        ? { codeMissing: false }
+        : await this.restoreCodeModeApp(manager, user, appParams, importedApp.id, appName, resourceMapping, cloning);
       await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
       // Update latest version as editing version
@@ -1427,7 +1438,7 @@ export class AppImportExportService {
       const newApp = await manager.findOne(App, {
         where: { id: importedApp.id },
       });
-      return { newApp, resourceMapping };
+      return { newApp, resourceMapping, codeMissing };
     }, manager);
   }
 
@@ -1673,6 +1684,24 @@ export class AppImportExportService {
     resourceMapping: AppResourceMappings
   ): Promise<void> {
     return;
+  }
+
+  /** Adds an app's stored code to its export definition (ee). `limited`: the result has to fit an import request. */
+  async addCodeToExport(_user: User, _definition: { appV2: App }, _limited: boolean): Promise<void> {
+    return;
+  }
+
+  /** Restores an app's stored code from its import definition (ee). codeMissing: the file should have had code and did not. */
+  protected async restoreCodeModeApp(
+    _manager: EntityManager,
+    _user: User,
+    _appParams: Record<string, any>,
+    _appId: string,
+    _appName: string,
+    _resourceMapping: AppResourceMappings,
+    _cloning: boolean
+  ): Promise<{ codeMissing: boolean }> {
+    return { codeMissing: false };
   }
 
   async createImportedAppForUser(
@@ -2126,6 +2155,8 @@ export class AppImportExportService {
                   newLayout.height = layout.height;
                   if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
                   if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
+                  if (layout.grow != null) newLayout.grow = layout.grow;
+                  if (layout.minWidthPx != null) newLayout.minWidthPx = layout.minWidthPx;
                   newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
                   componentLayouts.push(newLayout);
@@ -2650,11 +2681,11 @@ export class AppImportExportService {
           // Preserve virtual container parents (canvas-header, canvas-footer) as-is
           // These are not UUID-based and should not be remapped
           if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
-            const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
+            const isParentSlotted = isSlotChild(component, pageComponents, parentId);
             const isParentHeaderOrFooter =
               component?.parent && (component?.parent.includes('header') || component?.parent.includes('footer'));
 
-            if (isParentTabOrCalendar) {
+            if (isParentSlotted) {
               const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
 
               const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
@@ -2771,6 +2802,8 @@ export class AppImportExportService {
                 newLayout.height = layout.height;
                 if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
                 if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
+                if (layout.grow != null) newLayout.grow = layout.grow;
+                if (layout.minWidthPx != null) newLayout.minWidthPx = layout.minWidthPx;
                 newLayout.component = savedComponent;
                 newLayout.co_relation_id = layout.id;
 
@@ -2940,12 +2973,14 @@ export class AppImportExportService {
     resourceMapping: AppResourceMappings
   ): Promise<void> {
     // Get the app versions with their definitions and associated apps
-    const appVersionsWithDefinitions = await manager
-      .createQueryBuilder(AppVersion, 'appVersion')
-      .leftJoinAndSelect('appVersion.app', 'app')
-      .where('appVersion.id IN(:...appVersionIds)', { appVersionIds })
-      .select(['appVersion.id', 'appVersion.definition', 'app.type'])
-      .getMany();
+    const appVersionsWithDefinitions = await skipAppEditingVersionHydration.run(true, () =>
+      manager
+        .createQueryBuilder(AppVersion, 'appVersion')
+        .leftJoinAndSelect('appVersion.app', 'app')
+        .where('appVersion.id IN(:...appVersionIds)', { appVersionIds })
+        .select(['appVersion.id', 'appVersion.definition', 'app.type'])
+        .getMany()
+    );
 
     const workflowAppVersions = appVersionsWithDefinitions.filter(
       (appVersion) => appVersion.app?.type === 'workflow' && appVersion.definition?.queries
@@ -3805,33 +3840,28 @@ export class AppImportExportService {
         // ALL branches (no branch filter in their EXISTS):
         //   - enforce_app_versions_default_branch_slug_unique (default-branch rows)
         //   - enforce_app_versions_slug_branch_unique         (feature-branch rows)
-        // For NON-git imports (device upload / clone) the pre-flight must scan every branch —
-        // an earlier import onto THIS feature branch already holds the source slug, and a
-        // default-branch-only check misses it, causing a 23505 at INSERT.
-        //
-        // Git imports keep the ORIGINAL default-branch-only scope to leave the git-sync flow
-        // byte-for-byte unchanged: a re-pull reuses the same App row (co_relation match), so
-        // its own slug is excluded and cross-app slug collisions don't arise on the git path.
+        // The pre-flight mirrors them exactly — every branch, every workspace — for git and
+        // non-git imports alike. A default-branch-only check misses a slug another app holds
+        // only on feature branches (e.g. another workspace on the same instance whose app was
+        // pushed from a feature branch), and the INSERT then fails with
+        // app_versions_slug_branch_id_unique. A git import always creates a NEW App row, so
+        // cross-app collisions do arise on the git path; re-pulls reuse the existing App row
+        // and exclude its own slug via `av.app_id != :appId`. On collision, fall back to the
+        // imported app's own freshly generated id — the same random-UUID placeholder pull
+        // uses (applyVersionMetadataWithSlug) and AppsUtilService.create writes.
         //
         // Use the transaction manager so slugs inserted earlier in this same loop are visible;
         // assignedSlugsThisImport guards the fast-path.
         const rawSlug = appVersion.slug ?? importMeta?.slug;
         let resolvedSlug: string;
         if (rawSlug && !assignedSlugsThisImport.has(rawSlug)) {
-          const slugTakenQb = manager
+          const slugTakenByOther = await manager
             .createQueryBuilder(AppVersion, 'av')
             .innerJoin(App, 'a', 'a.id = av.app_id')
             .where('LOWER(av.slug) = LOWER(:slug)', { slug: rawSlug })
             .andWhere('a.type = :type', { type: importedApp.type || APP_TYPES.FRONT_END })
-            .andWhere('av.app_id != :appId', { appId: importedApp.id });
-          if (isGitApp) {
-            slugTakenQb.innerJoin(
-              'organization_git_sync_branches',
-              'wb',
-              'wb.id = av.branch_id AND wb.is_default = true'
-            );
-          }
-          const slugTakenByOther = await slugTakenQb.getCount();
+            .andWhere('av.app_id != :appId', { appId: importedApp.id })
+            .getCount();
           if (slugTakenByOther > 0) {
             resolvedSlug = importedApp.id;
           } else {
@@ -4636,7 +4666,7 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @param {NewRevampedComponent[]} componentTypes - An array of component types for which to perform property migration.
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
-function migrateProperties(
+export function migrateProperties(
   componentType: NewRevampedComponent | PartialRevampedComponent | 'ModuleViewer',
   component: Component,
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
@@ -4865,7 +4895,9 @@ function migrateProperties(
 
     // Image
     if (componentType === 'Image') {
-      if (styles.padding) {
+      // Old exports kept the padding number in `padding`; current ones keep the switch value there and the
+      // number in `customPadding`. Only a `padding` that isn't a switch value needs moving.
+      if (styles.padding && !['default', 'custom'].includes(styles.padding.value)) {
         styles.customPadding = styles.padding;
         styles.padding = { value: 'custom' };
       }
@@ -5157,7 +5189,7 @@ function migrateProperties(
     styles.padding = { value: 'default' };
   }
 
-  // Navigation: these keys moved from properties to styles (see server/data-migrations/
+  // Navigation: these keys moved from properties to styles (see server/migrations/data/
   // 1783372800000-MoveNavigationLayoutStylesToStyles.ts for the equivalent one-off DB fixup).
   // Apps exported before that change still carry them under properties, so relocate on import too.
   if (['Navigation'].includes(componentType)) {
@@ -5205,14 +5237,9 @@ function transformComponentData(
     // Preserve virtual container parents (canvas-header, canvas-footer) as-is
     // These are not UUID-based and should not be remapped
     if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
-      const isParentTabOrCalendar = isChildOfTabsOrCalendar(
-        component,
-        allComponents,
-        parentId,
-        isNormalizedAppDefinitionSchema
-      );
+      const isParentSlotted = isSlotChild(component, allComponents, parentId);
 
-      if (isParentTabOrCalendar) {
+      if (isParentSlotted) {
         const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
         const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
         const mappedParentId = componentsMapping[_parentId];
@@ -5281,28 +5308,10 @@ function transformComponentData(
   return transformedComponents;
 }
 
-const isChildOfTabsOrCalendar = (
-  component,
-  allComponents = [],
-  componentParentId = undefined,
-  isNormalizedAppDefinitionSchema: boolean
-) => {
-  if (componentParentId) {
-    const parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-
-    const parentComponent = allComponents.find((comp) => comp.id === parentId);
-
-    if (parentComponent) {
-      if (!isNormalizedAppDefinitionSchema) {
-        return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
-      }
-
-      return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
-    }
-  }
-
-  return false;
-};
+// A child of a slotted parent (a tab, a Calendar popover, a pack or library component's ToolJet.Slot): its parent is
+// `{parentId}-{slotId}`, remapped on the base id with the slot kept.
+const isSlotChild = (component, allComponents = [], componentParentId = undefined) =>
+  !!componentParentId && !!component?.parent && isChildOfSlottedParent(component.parent, allComponents);
 
 const isChildOfKanbanModal = (
   component,

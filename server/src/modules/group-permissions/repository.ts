@@ -21,6 +21,7 @@ import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
 import { DataSourcesGroupPermissions } from '@entities/data_sources_group_permissions.entity';
 import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
 import { GroupApps } from '@entities/group_apps.entity';
+import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/hydration-context';
 import { GroupDataSources } from '@entities/group_data_source.entity';
 import { GroupFolders } from '@entities/group_folders.entity';
 import { GROUP_PERMISSIONS_TYPE, ResourceType } from './constants';
@@ -153,10 +154,14 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     const fgpIds = fgps.map((f) => f.id);
     const [groupApps, groupDataSources, groupFolders] = await Promise.all([
       agpIds.length
-        ? em.find(GroupApps, {
-            where: { appsGroupPermissionsId: In(agpIds) },
-            relations: { app: true },
-          })
+        ? // One App per granted app; callers only read app columns, so skip the per-App
+          // AppsSubscriber.afterLoad hydration (N git-sync + AppVersion lookups).
+          skipAppEditingVersionHydration.run(true, () =>
+            em.find(GroupApps, {
+              where: { appsGroupPermissionsId: In(agpIds) },
+              relations: { app: true },
+            })
+          )
         : Promise.resolve([] as GroupApps[]),
       dgpIds.length
         ? em.find(GroupDataSources, {

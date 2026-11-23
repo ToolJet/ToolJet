@@ -6,7 +6,16 @@
  */
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { createUser, initTestApp, login, closeTestApp, getDefaultDataSource, withRealTransactions } from 'test-helper';
+import {
+  createUser,
+  ensureAppEnvironments,
+  initTestApp,
+  login,
+  closeTestApp,
+  getDefaultDataSource,
+  resetDB,
+  withRealTransactions,
+} from 'test-helper';
 import { getEntityManagerToken } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
@@ -42,7 +51,8 @@ describe('TooljetDb workspace isolation', () => {
       const adminB = await createUser(app, { email: 'tjdb-iso-b@tooljet.io', groups: ['admin', 'end-user'] });
       orgAId = adminA.organization.id;
       orgBId = adminB.organization.id;
-      // createUser seeds the workspace but not its TJDB tenant schema.
+      // createUser seeds the workspace but not its environments (table create reads them) or TJDB tenant schema.
+      await ensureAppEnvironments(app, orgBId);
       await app
         .get(TooljetDbTableOperationsService)
         .createTooljetDbTenantSchemaAndRole(orgBId, getDefaultDataSource().manager);
@@ -68,9 +78,11 @@ describe('TooljetDb workspace isolation', () => {
   });
 
   afterAll(async () => {
-    await withRealTransactions(() =>
-      app.get(TooljetDbTableOperationsService).deleteTooljetDbTenantSchemaAndRole(orgBId)
-    );
+    // The seed committed for real; drop it so later suites don't see these workspaces.
+    await withRealTransactions(async () => {
+      await app.get(TooljetDbTableOperationsService).deleteTooljetDbTenantSchemaAndRole(orgBId);
+      await resetDB();
+    });
     await closeTestApp(app);
   }, 60_000);
 

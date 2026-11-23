@@ -45,21 +45,21 @@ task test:e2e-focus -- form-auth 'Invite token'
 | Task                        | What it does                           |
 |-----------------------------|----------------------------------------|
 | `task db:setup`             | Create + migrate                       |
-| `task db:migrate`           | Run pending migrations (schema + data) |
+| `task db:migrate`           | Run pending migrations (all phases)    |
 | `task db:seed`              | Seed initial data                      |
 | `task db:create`            | Create DB                              |
 | `task db:drop`              | Drop DB                                |
 | `task db:reset`             | Drop + re-setup                        |
 | `task db:reset-from-branch` | Reset using branch-derived DB name     |
 
-**Migrations are always run via `task db:migrate`** — this runs both schema migrations and data migrations in the correct order. Never run TypeORM CLI directly.
+**Migrations are always run via `task db:migrate`** — this runs schema, data and cleanup migrations in order. Never run TypeORM CLI directly.
 
-**Generate a new migration:**
+**Create a new migration** in the folder for its phase (rules: the Migrations section of `server/AGENTS.md`):
 ```bash
 # From ./server
-npm run typeorm migration:generate -- src/migrations/<MigrationName> -d src/migration-helpers/db-migrations-datasource.ts
+npm run typeorm migration:create -- migrations/{schema,data,cleanup}/<MigrationName>
 ```
-Only the generation step uses npm directly. Running it still goes through `task db:migrate`.
+Only the creation step uses npm directly. Running it still goes through `task db:migrate`.
 
 ### Dev Servers — `task dev:*`
 

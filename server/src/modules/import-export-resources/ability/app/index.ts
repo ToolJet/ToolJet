@@ -22,7 +22,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     extractedMetadata: { moduleName: string; features: string[] },
     request?: any
   ): void {
-    const { superAdmin, isAdmin, isBuilder, userPermission } = UserAllPermissions;
+    const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
 
     const requestContext = request;
     const userAppPermissions = userPermission?.[MODULES.APP];
@@ -36,7 +36,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const appUpdateAllowed = userAppPermissions ? isAllAppsEditable || isEditableApp : false;
 
     // Export matches the dashboard's Export option: create + edit on each resource, checked against
-    // that resource type's own permissions. ToolJet Database tables follow the table-metadata view rule.
+    // that resource type's own permissions. ToolJet Database tables need table create access (tjdbCRUD).
     const exportAppTypes: Record<string, string> = requestContext?.tj_export_app_types ?? {};
     const exportAppIds: string[] = (requestContext.body?.app ?? []).map((app) => app?.id).filter(Boolean);
     const canExportResource = (id: string) => {
@@ -62,11 +62,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     };
     const canExportApps = isAdmin || superAdmin || exportAppIds.every(canExportResource);
     const canExportTables =
-      !requestContext.body?.tooljet_database?.length ||
-      isAdmin ||
-      superAdmin ||
-      isBuilder ||
-      !!userPermission?.tjdbCRUD;
+      !requestContext.body?.tooljet_database?.length || isAdmin || superAdmin || !!userPermission?.tjdbCRUD;
 
     if (canExportApps && canExportTables) {
       can([FEATURE_KEY.APP_RESOURCE_EXPORT], App);

@@ -27,8 +27,9 @@ const shared: Config.InitialProjectOptions = {
   testRegex: 'test/modules/.*/e2e/.*spec\\.ts$',
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   runner: 'groups',
+  // sanitize-html >= 2.18 depends on ESM-only htmlparser2 v12 and its dom* / entities deps (nested under sanitize-html).
   transformIgnorePatterns: [
-    'node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser)/)(?!(thrift/node_modules/)?uuid/dist-node/)',
+    'node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser|(sanitize-html/node_modules/)?(htmlparser2|domhandler|domutils|domelementtype|dom-serializer|entities))/)(?!(thrift/node_modules/)?uuid/dist-node/)',
   ],
   transform: {
     '^.+\\.(t|j)s$': [
@@ -50,6 +51,7 @@ const shared: Config.InitialProjectOptions = {
     '@entities/(.*)': '<rootDir>/src/entities/$1',
     '@controllers/(.*)': '<rootDir>/src/controllers/$1',
     '@modules/(.*)': '<rootDir>/src/modules/$1',
+    '^@migrations/(.*)': '<rootDir>/migrations/$1',
     '@ee/(.*)': '<rootDir>/ee/$1',
     '@helpers/(.*)': '<rootDir>/src/helpers/$1',
     '@licensing/(.*)': '<rootDir>/ee/licensing/$1',
@@ -66,7 +68,8 @@ const config: Config.InitialOptions = {
   rootDir: '..',
   projects: editionProjects(join(__dirname, '..'), isCE, shared),
   // Global-only options: Jest ignores these inside a project.
-  testTimeout: 60000,
+  // Also the hook timeout: initTestApp (Nest bootstrap + entity loading) can pass 60s on a loaded CI runner.
+  testTimeout: 120000,
   verbose: true,
   slowTestThreshold: 0,
   ...coverageConfig(isCE),
