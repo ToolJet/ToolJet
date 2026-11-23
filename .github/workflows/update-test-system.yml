@@ -37,31 +37,18 @@ jobs:
 
     steps:
       - name: ✅ Check user authorization
+        env:
+          ALLOWED_USERS: ${{ secrets.ALLOWED_USERS }}
         run: |
-          # Define allowed users
-          allowed_users=(
-            "${{ secrets.PLATFORM_1 }}"
-            "${{ secrets.PLATFORM_2 }}"
-            "${{ secrets.MARKETPLACE_1 }}"
-            "${{ secrets.MARKETPLACE_2 }}"
-            "${{ secrets.AI_1 }}"
-            "${{ secrets.AI_2 }}"
-            "${{ secrets.APP_BUILDER_1 }}"
-            "${{ secrets.APP_BUILDER_2 }}"
-            "${{ secrets.DEVOPS_1 }}"
-            "${{ secrets.DEVOPS_2 }}"
-          )
-
+          mapfile -t allowed_users < <(echo "$ALLOWED_USERS" | jq -r '.[]')
           current_user="${{ github.actor }}"
           authorized=false
-
           for user in "${allowed_users[@]}"; do
             if [[ "$current_user" == "$user" ]]; then
               authorized=true
               break
             fi
           done
-
           if [[ "$authorized" == "false" ]]; then
             echo "❌ User '$current_user' is not authorized to trigger this workflow."
             exit 1
