@@ -13,16 +13,46 @@
 // DOM node so a spec can `fireEvent.click` them.
 const React = require('react');
 
-let latestProps = { googleMap: {}, markers: [], polygon: {}, autocomplete: {} };
+let latestProps = { googleMap: {}, markers: [], polygon: {}, autocomplete: {}, loader: null };
 const __getMapProps = () => latestProps;
 const __resetMapProps = () => {
-  latestProps = { googleMap: {}, markers: [], polygon: {}, autocomplete: {} };
+  latestProps = { googleMap: {}, markers: [], polygon: {}, autocomplete: {}, loader: null };
+  loaderState = { isLoaded: true, loadError: undefined };
+};
+
+// useJsApiLoader fidelity: the real hook is a window-level singleton keyed by `id`
+// — every Map instance shares ONE script load (the LoadScript component it replaces
+// broke when a second instance mounted, e.g. a Map inside a Modal). The mock
+// captures the options and returns a controllable {isLoaded, loadError} so specs
+// can pin the not-yet-loaded placeholder branch.
+let loaderState = { isLoaded: true, loadError: undefined };
+const __setLoaderState = (next) => {
+  loaderState = { isLoaded: true, loadError: undefined, ...next };
+};
+const useJsApiLoader = (options) => {
+  latestProps.loader = options;
+  return loaderState;
 };
 
 const LoadScript = ({ children }) => React.createElement(React.Fragment, null, children);
 
 const GoogleMap = ({ children, onLoad, onClick, onDragEnd, center, ...rest }) => {
-  latestProps.googleMap = { onLoad, onClick, onDragEnd, center, ...rest };
+  // Lib fidelity: the real GoogleMap (componentDidUpdate -> applyUpdaterToNextProps)
+  // pushes a `center` prop whose IDENTITY changed to the SDK via map.setCenter -
+  // even when the coordinates are unchanged. The instance is whatever the spec hands
+  // to onLoad; a fake without setCenter opts out of modeling the SDK's reaction.
+  const instanceRef = React.useRef(null);
+  const appliedCenterRef = React.useRef(center);
+  React.useEffect(() => {
+    if (appliedCenterRef.current === center) return;
+    appliedCenterRef.current = center;
+    instanceRef.current?.setCenter?.(center);
+  });
+  const handleLoad = (instance) => {
+    instanceRef.current = instance;
+    return onLoad?.(instance);
+  };
+  latestProps.googleMap = { onLoad: handleLoad, onClick, onDragEnd, center, ...rest };
   // Markers re-push on every render; reset here (the parent renders before its
   // children) so the array reflects only the current render's markers.
   latestProps.markers = [];
@@ -44,4 +74,14 @@ const Autocomplete = ({ children, onPlaceChanged, onLoad }) => {
   return React.createElement(React.Fragment, null, children);
 };
 
-module.exports = { LoadScript, GoogleMap, Marker, Polygon, Autocomplete, __getMapProps, __resetMapProps };
+module.exports = {
+  LoadScript,
+  GoogleMap,
+  Marker,
+  Polygon,
+  Autocomplete,
+  useJsApiLoader,
+  __getMapProps,
+  __resetMapProps,
+  __setLoaderState,
+};

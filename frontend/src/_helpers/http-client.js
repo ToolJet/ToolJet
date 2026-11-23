@@ -4,6 +4,7 @@ import urlJoin from 'url-join';
 import { isEmpty } from 'lodash';
 import { handleUnSubscription } from '@/_helpers/utils';
 import { refreshSsoInfo } from '@/_helpers/refreshSsoInfo';
+import { notifyMigrationGate } from '@/_helpers/migrationGate';
 
 const HttpVerb = {
   Get: 'GET',
@@ -81,6 +82,7 @@ class HttpClient {
     try {
       payload.data = isEmpty(text) ? text : JSON.parse(text);
       if (!response.ok) {
+        notifyMigrationGate(response.status, payload.data);
         // TODO: add 403 to the below [401] array?
         if ([401].indexOf(response.status) !== -1) {
           // Skip redirect on app-scoped auth pages — they handle their own auth
@@ -101,7 +103,14 @@ class HttpClient {
       }
     } catch (err) {
       payload.data = [];
-      payload.error = !isEmpty(text) && JSON.parse(text);
+      // text already failed JSON.parse once above for a non-JSON error body (e.g. a plain-text
+      // 404 like "Cannot POST /..." from a route that doesn't exist) - re-parsing it here would
+      // throw again, unhandled, and callers would never see an error at all.
+      try {
+        payload.error = !isEmpty(text) && JSON.parse(text);
+      } catch {
+        payload.error = { message: !isEmpty(text) ? text : response.statusText || 'Request failed' };
+      }
     } finally {
       // eslint-disable-next-line no-unsafe-finally
       return payload;
@@ -124,8 +133,8 @@ class HttpClient {
     return this.request(HttpVerb.Patch, url, headers, data);
   }
 
-  delete(url, headers = {}) {
-    return this.request(HttpVerb.Delete, url, headers);
+  delete(url, data = null, headers = {}) {
+    return this.request(HttpVerb.Delete, url, headers, data);
   }
 }
 

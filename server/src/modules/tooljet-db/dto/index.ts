@@ -137,6 +137,13 @@ export class CreatePostgrestTableDto {
   @ValidateNested({ each: true })
   @Type(() => PostgrestForeignKeyDto)
   foreign_keys: Array<PostgrestForeignKeyDto>;
+
+  // Purely a display label for the migration this creates - optional, TooljetDbMigrationRecorderService
+  // generates a default when left blank.
+  @IsOptional()
+  @IsString()
+  @MaxLength(120, { message: 'Migration name must be less than 120 characters' })
+  migration_name?: string;
 }
 
 export class PostgrestForeignKeyDto {
@@ -259,6 +266,49 @@ export class EditTableDto {
   @ValidateNested({ each: true })
   @Type(() => EditTableColumnsDto)
   columns: EditTableColumnsDto[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120, { message: 'Migration name must be less than 120 characters' })
+  migration_name?: string;
+}
+
+// Optional migration label for the three DELETE routes (drop_table, drop_column,
+// delete_foreign_key) - same validation every other structured-migration DTO in this file gives
+// migration_name. Read via `@Query()`, not `@Body()`: a body on DELETE has no defined HTTP
+// semantics, proxies and some clients drop it, so a body-bound param silently arrives as
+// undefined with nothing erroring. The global ValidationPipe only whitelist/type-checks a
+// `@Body()`/`@Query()` bound to a DTO class - a raw `@Body('migration_name')`/`@Query('migration_name')`
+// param extraction bypasses it entirely and lets any JSON type through to the recorded migration's name.
+export class MigrationNameQueryDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(120, { message: 'Migration name must be less than 120 characters' })
+  migration_name?: string;
+}
+
+// Same validation gap as MigrationNameQueryDto above, but on PATCH/POST/PUT routes that already
+// have a real body. EditColumnRequestDto itself is declared further down, after EditColumnTableDto
+// - `emitDecoratorMetadata` turns its `column: EditColumnTableDto` property type into a real
+// runtime reference (not just a compile-time type), so it can't forward-reference a class declared
+// later in the same module.
+export class CreateForeignKeyRequestDto {
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Foreign key must have atleast 1 column' })
+  @ValidateNested({ each: true })
+  @Type(() => PostgrestForeignKeyDto)
+  foreign_keys: Array<PostgrestForeignKeyDto>;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120, { message: 'Migration name must be less than 120 characters' })
+  migration_name?: string;
+}
+
+export class UpdateForeignKeyRequestDto extends CreateForeignKeyRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  foreign_key_id: string;
 }
 
 export class EditColumnTableDto {
@@ -317,6 +367,21 @@ export class EditColumnTableDto {
   configurations: any;
 }
 
+export class EditColumnRequestDto {
+  @ValidateNested()
+  @Type(() => EditColumnTableDto)
+  column: EditColumnTableDto;
+
+  @IsOptional()
+  @IsString()
+  foreignKeyIdToDelete?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120, { message: 'Migration name must be less than 120 characters' })
+  migration_name?: string;
+}
+
 export class AddColumnDto {
   @ValidateNested()
   @Type(() => PostgrestTableColumnDto)
@@ -328,4 +393,9 @@ export class AddColumnDto {
   @ValidateNested({ each: true })
   @Type(() => PostgrestForeignKeyDto)
   foreign_keys: Array<PostgrestForeignKeyDto>;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120, { message: 'Migration name must be less than 120 characters' })
+  migration_name?: string;
 }

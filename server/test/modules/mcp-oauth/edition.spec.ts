@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { McpOAuthThrottleGuard } from '@modules/mcp-oauth/throttle.guard';
+import { McpOAuthAccountGuard } from '@modules/mcp-oauth/account.guard';
 import * as supertest from 'supertest';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { McpOAuthService } from '@modules/mcp-oauth/service';
@@ -33,11 +34,11 @@ test.each(['cloud', 'Cloud', 'CLOUD'])('%s requires the explicit flag and valid 
 });
 
 test.each([
-  { edition: 'ce', enabled: 'true' },
-  { edition: 'ee', enabled: 'true' },
-  { edition: 'cloud', enabled: 'false' },
-])('edition $edition enabled=$enabled exposes no OAuth routes or background work', async ({ edition, enabled }) => {
-  const values = { ...settings, TOOLJET_EDITION: edition, MCP_OAUTH_ENABLED: enabled };
+  { deploymentEdition: 'ce', enabled: 'true' },
+  { deploymentEdition: 'ee', enabled: 'true' },
+  { deploymentEdition: 'cloud', enabled: 'false' },
+])('OAuth stays disabled for $deploymentEdition enabled=$enabled', async ({ deploymentEdition, enabled }) => {
+  const values = { ...settings, TOOLJET_EDITION: deploymentEdition, MCP_OAUTH_ENABLED: enabled };
   const db = { query: jest.fn(), transaction: jest.fn(), manager: { query: jest.fn() } };
   const login = { fetchOrganizationDetails: jest.fn() };
   const oauth = new McpOAuthService(db as any, config(values), new JwtService(), login as any);
@@ -50,6 +51,13 @@ test.each([
   })
     .overrideGuard(McpOAuthThrottleGuard)
     .useValue({ canActivate: () => true })
+    .overrideGuard(McpOAuthAccountGuard)
+    .useValue({
+      canActivate: (context) => {
+        context.switchToHttp().getRequest().user = { id: 'synthetic-user' };
+        return true;
+      },
+    })
     .overrideGuard(JwtAuthGuard)
     .useValue({
       canActivate: (context) => {
@@ -68,6 +76,7 @@ test.each([
       '/api/mcp-oauth/authorize',
       '/api/mcp-oauth/interactions/synthetic',
       '/api/mcp-oauth/interactions/synthetic/session',
+      '/api/mcp-oauth/interactions/synthetic/workspaces',
       '/api/mcp-oauth/connections',
     ]) {
       await http.get(path).expect(404);
@@ -78,6 +87,8 @@ test.each([
       'viewer',
       'interactions/synthetic/bootstrap',
       'interactions/synthetic',
+      'interactions/synthetic/workspace',
+      'interactions/synthetic/cancel',
       'connections/synthetic/revoke',
     ]) {
       await http

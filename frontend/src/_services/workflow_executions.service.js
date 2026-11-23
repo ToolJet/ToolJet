@@ -1,6 +1,8 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { toLocalDayBoundary } from '@/_helpers/dateRange';
 import { authenticationService } from '@/_services';
+import { appendBranchParam } from '@/_helpers/active-branch';
 
 export const workflowExecutionsService = {
   create,
@@ -17,6 +19,9 @@ export const workflowExecutionsService = {
   streamSSE,
   terminate,
   getExecutionStates,
+  getWorkspaceExecutions,
+  getWorkspaceExecutionStates,
+  getUpcomingRuns,
 };
 
 function previewQueryNode(queryId, appVersionId, nodeId, state = {}, environmentId) {
@@ -85,7 +90,10 @@ function enableWebhook(appId, value) {
     isEnable: value,
   };
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
-  return fetch(`${config.apiUrl}/v2/webhooks/workflows/${appId}`, requestOptions).then(handleResponse);
+  // Enablement is branch-scoped, so the write has to say which branch.
+  return fetch(appendBranchParam(`${config.apiUrl}/v2/webhooks/workflows/${appId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function getPaginatedExecutions(appVersionId, page = 1, perPage = 10) {
@@ -167,6 +175,48 @@ function getExecutionStates(appVersionId, executionIds) {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/workflow_executions/states?appVersionId=${appVersionId}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getWorkspaceExecutions(filters = {}, page = 1, perPage = 15, signal) {
+  const params = new URLSearchParams();
+  params.set('page', page);
+  params.set('per_page', perPage);
+  (filters.statuses || []).forEach((status) => params.append('status', status));
+  (filters.triggers || []).forEach((trigger) => params.append('trigger', trigger));
+  if (filters.appId) params.set('app_id', filters.appId);
+  if (filters.folderId) params.set('folder_id', filters.folderId);
+  if (filters.environmentId) params.set('environment_id', filters.environmentId);
+  if (filters.from) params.set('from', toLocalDayBoundary(filters.from, 'start'));
+  if (filters.to) params.set('to', toLocalDayBoundary(filters.to, 'end'));
+
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include', signal };
+  return fetch(`${config.apiUrl}/workflow_executions/workspace?${params.toString()}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getWorkspaceExecutionStates(executionIds, signal) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ executionIds }),
+    credentials: 'include',
+    signal,
+  };
+  return fetch(`${config.apiUrl}/workflow_executions/workspace/states`, requestOptions).then(handleResponse);
+}
+
+// Scope selectors only: status/trigger/date do not apply to future runs.
+function getUpcomingRuns(filters = {}, signal) {
+  const params = new URLSearchParams();
+  if (filters.environmentId) params.set('environment_id', filters.environmentId);
+  if (filters.appId) params.set('app_id', filters.appId);
+  if (filters.folderId) params.set('folder_id', filters.folderId);
+
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include', signal };
+  return fetch(`${config.apiUrl}/workflow_executions/workspace/upcoming?${params.toString()}`, requestOptions).then(
     handleResponse
   );
 }

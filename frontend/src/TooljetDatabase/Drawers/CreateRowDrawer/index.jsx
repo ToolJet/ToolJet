@@ -6,6 +6,7 @@ import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { listAllPrimaryKeyColumns } from '@/TooljetDatabase/constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
+import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
 
 const CreateRowDrawer = ({
   isCreateRowDrawerOpen,
@@ -13,16 +14,9 @@ const CreateRowDrawer = ({
   referencedColumnDetails,
   setReferencedColumnDetails,
 }) => {
-  const {
-    organizationId,
-    selectedTable,
-    setSelectedTableData,
-    setTotalRecords,
-    pageSize,
-    setSortFilters,
-    setQueryFilters,
-    columns,
-  } = useTooljetDatabaseContext();
+  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords, columns } = useTooljetDatabaseContext();
+  const pageSize = useTjdbStore((state) => state.pageSize);
+  const { setSortFilters, setQueryFilters } = useTjdbActions();
   const [shouldResetRowForm, setShouldResetRowForm] = useState(0);
 
   return (
@@ -46,7 +40,7 @@ const CreateRowDrawer = ({
             });
 
             tooljetDatabaseService
-              .findOne(organizationId, selectedTable.id, `${sortQuery.url.toString()}&limit=${limit}`)
+              .findOne(selectedTable.id, `${sortQuery.url.toString()}&limit=${limit}`)
               .then(({ headers, data = [], error }) => {
                 if (error) {
                   toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);

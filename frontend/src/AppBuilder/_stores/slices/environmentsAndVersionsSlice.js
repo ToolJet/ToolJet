@@ -516,8 +516,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
               'is_maintenance_on' in data
                 ? data.is_maintenance_on
                 : 'isMaintenanceOn' in data
-                ? data.isMaintenanceOn
-                : false,
+                  ? data.isMaintenanceOn
+                  : false,
             homePageId: data.editing_version?.homePageId || data.editing_version?.home_page_id,
           },
           moduleId
@@ -578,8 +578,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           get().globalSettings?.appMode && get().globalSettings.appMode !== 'auto'
             ? get().globalSettings.appMode
             : localStorage.getItem('darkMode') === 'true'
-            ? 'dark'
-            : 'light';
+              ? 'dark'
+              : 'light';
         get().setResolvedGlobals('theme', { name: exposedTheme }, moduleId);
         get().setResolvedGlobals(
           'urlparams',
@@ -757,6 +757,17 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       // Check if user has access to the promoted environment
       const hasAccessToPromotedEnv = response.hasAccessToPromotedEnvironment !== false; // default to true if not specified
       const promotedToEnvironment = response.promotedToEnvironment;
+
+      // Promote is not blocked by a table that is behind on migrations - the app now reads an older
+      // schema there, so say which tables and how far behind.
+      response.tableWarnings?.forEach(({ tableName, missingCount }) =>
+        toast(
+          `ToolJet Database table "${tableName}" is ${missingCount} migration${missingCount === 1 ? '' : 's'} behind in ${
+            response.editorEnvironment?.name
+          }. Run the pending migrations from the table's migration history.`,
+          { icon: '⚠️', duration: 8000 }
+        )
+      );
 
       set((state) => ({
         ...state,

@@ -3,6 +3,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 import { appendBranchParam } from '@/_helpers/active-branch';
 
 export const appVersionService = {
+  getSnapshotDefinition,
   getAll,
   getOne,
   getAppVersionData,
@@ -11,6 +12,7 @@ export const appVersionService = {
   del,
   save,
   promoteEnvironment,
+  getMissingTablesForPromote,
   autoSaveApp,
   saveAppVersionEventHandlers,
   createAppVersionEventHandler,
@@ -25,10 +27,15 @@ export const appVersionService = {
 // `parentAppId`, threaded through getAll/getModuleVersionData below, lets the backend
 // grant view access to a module when the requester has no direct module permission but
 // is embedding it in an app they can edit (see FeatureAbilityFactory.defineAbilityFor).
-function getAll(appId, parentAppId) {
+function getAll(appId, parentAppId, includeDefaultBranchVersions) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  const parentAppParam = parentAppId ? `?parentAppId=${encodeURIComponent(parentAppId)}` : '';
-  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/versions${parentAppParam}`), requestOptions).then(
+  const params = new URLSearchParams();
+  if (parentAppId) params.set('parentAppId', parentAppId);
+  // Opt-in: on a feature branch the backend otherwise returns only that branch's rows, which
+  // is the contract the workflow editor's version manager depends on.
+  if (includeDefaultBranchVersions) params.set('includeDefaultBranchVersions', 'true');
+  const query = params.toString() ? `?${params.toString()}` : '';
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/versions${query}`), requestOptions).then(
     handleResponse
   );
 }
@@ -47,6 +54,23 @@ function promoteEnvironment(appId, versionId, currentEnvironmentId) {
   };
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/promote`, requestOptions).then(handleResponse);
 }
+// The ToolJet Database tables the version uses that the next environment does not have yet.
+function getMissingTablesForPromote(appId, versionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/promote/missing-tables`, requestOptions).then(
+    handleResponse
+  );
+}
+// The definition of a version as of a point in app history (before an AI turn), shaped like
+// getAppVersionData's, for rendering it read-only in the compare view.
+function getSnapshotDefinition(appId, versionId, snapshotId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/snapshots/${snapshotId}/definition`,
+    requestOptions
+  ).then(handleResponse);
+}
+
 function getAppVersionData(appId, versionId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(

@@ -11,6 +11,7 @@ export const appsService = {
   setMaintenance,
   setSlug,
   getAll,
+  getWorkflowConsumers,
   getAllAddableApps,
   createApp,
   cloneApp,
@@ -42,7 +43,9 @@ function getAppAuthenticationConfig(slug) {
 
 function getWorkflows(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/${id}/workflows`, requestOptions).then(handleResponse);
+  // Needs the branch param — without it the backend resolves the org default branch and a
+  // workflow that exists only on a feature branch comes back with a null name.
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${id}/workflows`), requestOptions).then(handleResponse);
 }
 
 function getAppsLimit() {
@@ -112,6 +115,13 @@ function createApp(body = {}) {
     default:
       return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
   }
+}
+
+function getWorkflowConsumers(workflowId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(appendBranchParam(`${config.apiUrl}/workflows/${workflowId}/consumers`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function createWorkflow(requestOptions) {
@@ -303,11 +313,13 @@ function getWorkflowLimit(type) {
   return fetch(`${config.apiUrl}/license/workflows/limits/${type}`, requestOptions).then(handleResponse);
 }
 
-function releaseVersion(appId, versionToBeReleased) {
+// expectedReleasedVersionId: the released version the confirmation showed ('' for none). The server refuses the
+// release if another version went live since, instead of silently replacing it.
+function releaseVersion(appId, versionToBeReleased, expectedReleasedVersionId) {
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
-    body: JSON.stringify({ versionToBeReleased }),
+    body: JSON.stringify({ versionToBeReleased, expectedReleasedVersionId }),
     credentials: 'include',
   };
 
