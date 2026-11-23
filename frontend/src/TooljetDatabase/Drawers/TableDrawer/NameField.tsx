@@ -55,7 +55,7 @@ export function NameField({
           placeholder={placeholder}
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : undefined}
-          className="tw-px-2 md:tw-text-base"
+          className="tw-px-2 md:tw-text-base aria-[invalid=true]:focus-visible:!tw-border-border-danger-strong"
           onChange={(event) => {
             setTouched(true);
             onChange(event.target.value);
