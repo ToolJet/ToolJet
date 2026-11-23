@@ -115,19 +115,11 @@ export function SchemaColumnRow({ column, columns, draft, reorderable = true }: 
           placeholder="column_name"
           aria-label="Column name"
           aria-invalid={nameError ? true : undefined}
-          className={`${field} focus-visible:tw-border-2 focus-visible:tw-border-interactive-focus-outline focus-visible:tw-ring-0`}
+          // The message is listed under the rows (SchemaTable), so the row keeps its height; the red border stays while focused.
+          className={`${field} focus-visible:tw-border-2 focus-visible:tw-border-interactive-focus-outline focus-visible:tw-ring-0 aria-[invalid=true]:focus-visible:!tw-border-border-danger-strong`}
           onChange={(event) => draft.updateColumn(column.id, { column_name: event.target.value })}
           data-cy="column-name-input-field"
         />
-        {nameError && (
-          <p
-            role="alert"
-            className="tw-m-0 tw-mt-1 tw-font-body-default tw-text-text-danger"
-            data-cy="column-name-error"
-          >
-            {nameError}
-          </p>
-        )}
       </div>
       <div className="tw-pr-2" title={typeLocked ? typeLockedReason(column) : undefined}>
         <TypeSelect

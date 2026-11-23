@@ -35,6 +35,11 @@ export function SchemaTable({ draft, reorderable = true }: SchemaTableProps) {
     if (over && active.id !== over.id) draft.moveColumn(String(active.id), String(over.id));
   };
 
+  const errors = draft.columns.flatMap((column) => {
+    const message = draft.columnNameErrors[column.id];
+    return message ? [{ id: column.id, name: column.column_name.trim(), message }] : [];
+  });
+
   return (
     <div role="table" aria-label="Columns" data-cy="schema-table">
       <div
@@ -69,6 +74,21 @@ export function SchemaTable({ draft, reorderable = true }: SchemaTableProps) {
           ))}
         </SortableContext>
       </DndContext>
+      {/* Name errors sit under the rows, not inside them: a message in a row would stretch it and push the columns out of line. */}
+      {errors.length > 0 && (
+        <div className="tw-flex tw-flex-col tw-gap-1 tw-pt-2" data-cy="column-name-errors">
+          {errors.map(({ id, name, message }) => (
+            <p
+              key={id}
+              role="alert"
+              className="tw-m-0 tw-font-body-default tw-text-text-danger"
+              data-cy="column-name-error"
+            >
+              {name ? `${name}: ${message}` : message}
+            </p>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
