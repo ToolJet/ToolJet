@@ -40,7 +40,7 @@ export function ForeignKeyEditor({ draft, column, foreignKey, shell }: ForeignKe
 
   const pick = (value: string) => {
     draft.setText(value);
-    draft.setIsNull(false);
+    draft.setMode('value');
   };
 
   // Like a native select: the arrows move the pick through the list.
@@ -53,8 +53,8 @@ export function ForeignKeyEditor({ draft, column, foreignKey, shell }: ForeignKe
   return (
     <CellEditorShell
       {...shell}
-      onNullChange={(isNull) => {
-        shell.onNullChange(isNull);
+      onModeChange={(mode) => {
+        shell.onModeChange(mode);
         searchRef.current?.focus({ preventScroll: true });
       }}
       cell={

@@ -1,10 +1,10 @@
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import type { CellPayload } from './cells/cellDraft';
 import type { GridColumn, GridRow } from './useTableGrid';
 
-// Serial values are generated, and the cell has no editor for jsonb (a JSON string would be saved) or timestamps
-// (shown in the column's time zone, stored as ISO).
-const UNEDITABLE_TYPES = ['serial', 'jsonb', 'timestamp with time zone'];
+// Serial values are generated.
+const UNEDITABLE_TYPES = ['serial'];
 const NUMERIC_TYPES = ['integer', 'bigint', 'double precision'];
 
 export const isEditableColumn = (column: GridColumn): boolean =>
@@ -22,11 +22,8 @@ export const hasExactKeyValues = (primaryKeys: string[], row: GridRow): boolean 
     return typeof value !== 'number' || !Number.isInteger(value) || Number.isSafeInteger(value);
   });
 
-export type CellValue = string | boolean | null;
-type StoredValue = CellValue | number;
-
 // The value as the rows will hold it after a refetch, so the cached cell reads the same either way.
-export const toStoredValue = (dataType: string, value: CellValue): StoredValue => {
+export const toStoredValue = (dataType: string, value: unknown): unknown => {
   if (typeof value !== 'string' || !NUMERIC_TYPES.includes(dataType)) return value;
   const parsed = Number(value);
   return value.trim() !== '' && Number.isFinite(parsed) ? parsed : value;
@@ -45,27 +42,57 @@ type SaveCellArgs = {
   primaryKeys: string[];
   row: GridRow;
   columnName: string;
-  value: CellValue;
+  payload: CellPayload;
+  /** Where the server runs a "use the default" save; a PATCH reads the environment itself. */
+  organizationId?: string | null;
+  environmentId?: string | null;
 };
 
-// Resolves true once the cell is saved. Anything else has already been toasted.
-export const saveCellValue = async ({ tableId, tableName, primaryKeys, row, columnName, value }: SaveCellArgs) => {
+// Resolves with the value the cell now holds once it is saved, or null when it was not. A refusal has been toasted.
+export const saveCellValue = async ({
+  tableId,
+  tableName,
+  primaryKeys,
+  row,
+  columnName,
+  payload,
+  organizationId,
+  environmentId,
+}: SaveCellArgs): Promise<{ stored: unknown } | null> => {
   // Without every key value there is no filter to send, and a PATCH without one would rewrite every row.
   if (primaryKeys.length === 0 || primaryKeys.some((key) => row[key] == null) || !hasExactKeyValues(primaryKeys, row)) {
     toast.error('Something went wrong - Record Id is incorrect');
-    return false;
+    return null;
   }
 
-  const { error } = await tooljetDatabaseService.updateRows(
-    tableId,
-    { [columnName]: value },
-    buildRowFilter(primaryKeys, row)
-  );
-  if (error) {
-    toast.error(error?.message ?? `Failed to update table "${tableName}"`);
-    return false;
+  let stored: unknown = payload.kind === 'value' ? payload.value : undefined;
+  let failure: { message?: string } | null | undefined;
+  if (payload.kind === 'default') {
+    if (!organizationId || !environmentId) {
+      toast.error('Something went wrong - the environment is not selected');
+      return null;
+    }
+    const where = Object.fromEntries(primaryKeys.map((key) => [key, row[key]]));
+    const { data, error } = await tooljetDatabaseService.setCellToDefault(organizationId, tableId, {
+      environment_id: environmentId,
+      column: columnName,
+      where,
+    });
+    failure = error;
+    stored = data?.result?.value ?? null;
+  } else {
+    const { error } = await tooljetDatabaseService.updateRows(
+      tableId,
+      { [columnName]: payload.value },
+      buildRowFilter(primaryKeys, row)
+    );
+    failure = error;
+  }
+  if (failure) {
+    toast.error(failure?.message ?? `Failed to update table "${tableName}"`);
+    return null;
   }
 
   toast.success('Column edited successfully');
-  return true;
+  return { stored };
 };

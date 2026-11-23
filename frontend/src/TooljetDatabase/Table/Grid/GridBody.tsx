@@ -3,6 +3,7 @@ import type { Table } from '@tanstack/react-table';
 import type { Virtualizer } from '@tanstack/react-virtual';
 import { cn } from '@/lib/utils';
 import type { CellNavState } from './cellNavigation';
+import type { CellPayload } from './cells/cellDraft';
 import { GridRow } from './GridRow';
 import type { GridRow as GridRowData } from './useTableGrid';
 
@@ -18,7 +19,7 @@ type GridBodyProps = {
   cell: CellNavState;
   onFocusCell: (rowIndex: number, columnId: string) => void;
   onEditCell: (rowIndex: number, columnId: string) => void;
-  onSaveCell: (rowId: string, columnId: string, value: string | null) => Promise<boolean>;
+  onSaveCell: (rowId: string, columnId: string, payload: CellPayload) => Promise<boolean>;
   onStopEditing: () => void;
   onOpenRow: (rowId: string) => void;
   /** Why a row cannot be opened in the edit drawer, or undefined. */

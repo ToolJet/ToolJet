@@ -10,6 +10,13 @@
     height: 100%;
   }
 
+  // Geist Mono, like every code surface in the design (CodeMirror's own default is the browser's monospace).
+  .cm-scroller,
+  .cm-content,
+  .cm-gutters {
+    font-family: var(--font-family-geist-mono);
+  }
+
   .cm-content {
     padding: 0.5rem 0.75rem !important;
   }

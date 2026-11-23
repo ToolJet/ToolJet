@@ -19,6 +19,8 @@ export type GridColumn = {
   constraints_type?: { is_primary_key?: boolean; is_not_null?: boolean };
   /** The column's SQL default, as the table metadata returns it. */
   column_default?: string | null;
+  /** The time zone a timestamp column is shown and edited in. */
+  timezone?: string;
   /** Display text for a value, when the stored value is not what the cell should read (time zones). */
   formatValue?: (value: unknown) => string;
 };

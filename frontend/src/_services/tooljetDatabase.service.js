@@ -201,6 +201,12 @@ function updateRows(tableId, data, query = '') {
   return getTooljetAdapter().patch(proxyUrl(tableId, query), data);
 }
 
+// "Use the column default" for one cell: a PostgREST PATCH cannot say DEFAULT, so the server runs the UPDATE.
+// Resolves with `{ result: { value } }`, the value the database stored.
+function setCellToDefault(organizationId, tableId, body) {
+  return getTooljetAdapter().post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/rows/default`, body);
+}
+
 function updateColumn(organizationId, tableName, columns) {
   return getTooljetAdapter().patch(
     `/tooljet-db/organizations/${organizationId}/table/${tableName}/column`,
@@ -276,6 +282,7 @@ export const tooljetDatabaseService = {
   createColumn,
   updateTable,
   updateRows,
+  setCellToDefault,
   deleteRows,
   deleteColumn,
   deleteTable,

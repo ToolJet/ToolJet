@@ -123,7 +123,11 @@ const Table = () => {
       ].map((column) => {
         if (column.dataType !== TIMESTAMP_TYPE) return column;
         const timeZone = getConfigurationProperty(column.Header, 'timezone', getLocalTimeZone());
-        return { ...column, formatValue: (value) => convertDateToTimeZoneFormatted(value, timeZone) };
+        return {
+          ...column,
+          timezone: timeZone,
+          formatValue: (value) => convertDateToTimeZoneFormatted(value, timeZone),
+        };
       }),
     // getConfigurationProperty is rebuilt every render and only reads `configurations`.
     // eslint-disable-next-line react-hooks/exhaustive-deps

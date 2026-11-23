@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { cellDomId } from './cellNavigation';
 import { CellContent } from './cells/CellContent';
 import { CELL_RING } from './cells/CellEditorShell';
+import type { CellPayload } from './cells/cellDraft';
 import { CellEditor } from './cells/CellEditor';
 import { ExpandRowButton } from './cells/ExpandRowButton';
 import { isNumericType } from './cells/dataTypes';
@@ -36,7 +37,7 @@ type GridRowProps = {
   /** Stable callbacks: this row is memoised. */
   onFocusCell: (rowIndex: number, columnId: string) => void;
   onEditCell: (rowIndex: number, columnId: string) => void;
-  onSaveCell: (rowId: string, columnId: string, value: string | null) => Promise<boolean>;
+  onSaveCell: (rowId: string, columnId: string, payload: CellPayload) => Promise<boolean>;
   onStopEditing: () => void;
   /** Opens the row in the edit drawer (the id cell's expand button). */
   onOpenRow: (rowId: string) => void;
@@ -125,7 +126,7 @@ function GridRowComponent({
                   value={cell.getValue()}
                   column={meta.column}
                   foreignKey={meta.foreignKey}
-                  onSave={(value) => onSaveCell(row.id, column.id, value)}
+                  onSave={(payload) => onSaveCell(row.id, column.id, payload)}
                   onCancel={onStopEditing}
                 />
               ) : (

@@ -8,6 +8,7 @@ import { ROCKET_SCROLLBAR } from '@/components/ui/Rocket/scrollbar';
 import { TableSkeleton } from '@/components/ui/blocks/TableSkeleton';
 import { selectView, useTjdbStore } from '../../_stores/tjdbStore';
 import { listAllPrimaryKeyColumns } from '../../constants';
+import type { CellPayload } from './cells/cellDraft';
 import { patchCachedRow } from '../../rows/useTableRows';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
 import {
@@ -18,14 +19,7 @@ import {
   type CellNavAction,
   type CellNavState,
 } from './cellNavigation';
-import {
-  hasEditableKey,
-  hasExactKeyValues,
-  isEditableColumn,
-  saveCellValue,
-  toStoredValue,
-  type CellValue,
-} from './cellEditing';
+import { hasEditableKey, hasExactKeyValues, isEditableColumn, saveCellValue, toStoredValue } from './cellEditing';
 import { EditRowDrawer } from './EditRowDrawer';
 import { GridBody } from './GridBody';
 import { GridHeader } from './GridHeader';
@@ -237,7 +231,7 @@ export function TableGrid({
   };
 
   const saveCell = useCallback(
-    async (rowId: string, columnId: string, value: CellValue) => {
+    async (rowId: string, columnId: string, payload: CellPayload) => {
       const row = latest.current.tableRows.find((candidate) => candidate.id === rowId)?.original;
       const column = latest.current.columnsByName.get(columnId);
       const tableId = selectedTable.id;
@@ -256,7 +250,9 @@ export function TableGrid({
           primaryKeys,
           row,
           columnName: columnId,
-          value,
+          payload,
+          organizationId,
+          environmentId,
         });
         if (!saved) return false;
         // Written into the cache instead of refetching, so the row keeps its place even under a sort on this column.
@@ -264,7 +260,7 @@ export function TableGrid({
           queryClient,
           { environmentId, tableId },
           (cached) => primaryKeys.every((key) => cached[key] === row[key]),
-          { [columnId]: toStoredValue(column.dataType, value) }
+          { [columnId]: toStoredValue(column.dataType, saved.stored) }
         );
         // The save can resolve after the editor was closed and another opened: only close the one that finished.
         const { cell: open, editingRowId: openRowId } = latest.current;
@@ -274,7 +270,7 @@ export function TableGrid({
         savingRef.current = false;
       }
     },
-    [selectedTable.id, selectedTable.table_name, primaryKeys, queryClient, environmentId, stopEditing]
+    [selectedTable.id, selectedTable.table_name, primaryKeys, queryClient, environmentId, organizationId, stopEditing]
   );
 
   const editCell = useCallback(
@@ -285,16 +281,11 @@ export function TableGrid({
       const column = columnsByName.get(columnId);
       if (!allowed || !row || !column || !isEditableColumn(column) || !hasExactKeyValues(keys, row)) return;
 
-      // A boolean has nothing to type: it flips on the spot, and NULL becomes true.
-      if (column.dataType === 'boolean') {
-        saveCell(gridRow.id, columnId, row[columnId] !== true);
-        return;
-      }
       setEditingRowId(gridRow.id);
       dispatch({ type: 'focus', rowIndex, columnId });
       dispatch({ type: 'startEditing' });
     },
-    [dispatch, saveCell]
+    [dispatch]
   );
 
   const revealCell = (next: CellFocus) => {

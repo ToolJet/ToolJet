@@ -814,7 +814,7 @@
   .cm-scroller {
     max-height: 130px;
     overflow: auto;
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: var(--font-family-geist-mono);
     font-size: 12px;
     line-height: 16px;
 

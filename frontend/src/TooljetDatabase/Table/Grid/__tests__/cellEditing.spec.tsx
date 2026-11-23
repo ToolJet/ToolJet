@@ -31,12 +31,23 @@ const COLUMNS = [
   column('views', 'integer', false, false),
   column('published', 'boolean', false, false),
   column('code', 'character varying'),
-  column('payload', 'jsonb'),
+  column('payload', 'jsonb', false, false),
+  { ...column('status', 'character varying', false, false), column_default: 'draft' },
+  column('seen_at', 'timestamp with time zone', false, false),
 ];
 const ROWS = [
-  { id: 1, title: 'First post', views: 10, published: true, code: 'a', payload: { a: 1 } },
-  { id: 2, title: null, views: null, published: null, code: 'b', payload: null },
-  { id: 3, title: 'Third', views: 3, published: false, code: 'c', payload: null },
+  {
+    id: 1,
+    title: 'First post',
+    views: 10,
+    published: true,
+    code: 'a',
+    payload: { a: 1 },
+    status: 'sent',
+    seen_at: '2026-01-01T10:00:00.000Z',
+  },
+  { id: 2, title: null, views: null, published: null, code: 'b', payload: null, status: null, seen_at: null },
+  { id: 3, title: 'Third', views: 3, published: false, code: 'c', payload: null, status: 'draft', seen_at: null },
 ];
 
 const COMPOSITE_COLUMNS = [
@@ -82,6 +93,7 @@ function Harness({ columns = COLUMNS, canEditCells = true, foreignKeys = [] }: H
       value={
         {
           selectedTable: { id: 'table-1', table_name: 'orders' },
+          organizationId: 'org-1',
           foreignKeys,
           handleRefetchQuery: jest.fn(),
         } as unknown as React.ContextType<typeof TooljetDatabaseContext>
@@ -105,6 +117,7 @@ describe('TableGrid | cell navigation and editing', () => {
   afterEach(cleanup);
 
   const patches: { url: URL; body: Record<string, unknown> }[] = [];
+  const defaults: Record<string, unknown>[] = [];
   let reads: URL[] = [];
   let patchStatus = 200;
 
@@ -116,6 +129,10 @@ describe('TableGrid | cell navigation and editing', () => {
           headers: { 'content-range': `0-${rows.length - 1}/${rows.length}` },
         });
       }),
+      http.post('*/tooljet-db/organizations/:orgId/table/:tableId/rows/default', async ({ request }) => {
+        defaults.push((await request.json()) as Record<string, unknown>);
+        return HttpResponse.json({ result: { value: 'draft' } }, { status: 201 });
+      }),
       http.patch('*/tooljet-db/proxy/:tableId', async ({ request }) => {
         patches.push({ url: new URL(request.url), body: (await request.json()) as Record<string, unknown> });
         return patchStatus === 200
@@ -126,6 +143,7 @@ describe('TableGrid | cell navigation and editing', () => {
 
   beforeEach(() => {
     patches.length = 0;
+    defaults.length = 0;
     reads = [];
     patchStatus = 200;
     (toast.error as jest.Mock).mockClear();
@@ -201,10 +219,10 @@ describe('TableGrid | cell navigation and editing', () => {
       await userEvent.click(cellAt('1', 'title'));
       expect(fireEvent.keyDown(grid(), { key: 'Tab' })).toBe(false);
 
-      await userEvent.click(cellAt('1', 'payload'));
+      await userEvent.click(cellAt('1', 'seen_at'));
 
       expect(fireEvent.keyDown(grid(), { key: 'Tab' })).toBe(true);
-      expect(focusedCell()).toBe(cellAt('1', 'payload'));
+      expect(focusedCell()).toBe(cellAt('1', 'seen_at'));
     });
 
     it('clears the focus on Escape', async () => {
@@ -364,31 +382,65 @@ describe('TableGrid | cell navigation and editing', () => {
       await setup();
       await userEvent.dblClick(cellAt('1', 'title'));
 
-      await userEvent.click(screen.getByRole('switch', { name: 'Set to null' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Null' }));
       await userEvent.click(screen.getByRole('button', { name: 'Save' }));
 
       await waitFor(() => expect(cellAt('1', 'title')).toHaveTextContent('NULL'));
       expect(patches[0].body).toEqual({ title: null });
     });
 
-    it('opens a NULL cell with the switch on, and saves an empty string once it is off', async () => {
+    it('opens a NULL cell with the Null chip on, and saves an empty string once it is off', async () => {
       await setup();
       await userEvent.dblClick(cellAt('2', 'title'));
-      expect(screen.getByRole('switch', { name: 'Set to null' })).toBeChecked();
+      expect(screen.getByRole('button', { name: 'Null' })).toHaveAttribute('aria-pressed', 'true');
 
-      await userEvent.click(screen.getByRole('switch', { name: 'Set to null' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Null' }));
       await userEvent.click(screen.getByRole('button', { name: 'Save' }));
 
       await waitFor(() => expect(patches).toHaveLength(1));
       expect(patches[0].body).toEqual({ title: '' });
     });
 
-    it('offers no NULL switch for a NOT NULL column', async () => {
+    it('offers no Null chip for a NOT NULL column', async () => {
       await setup();
 
       await userEvent.dblClick(cellAt('1', 'code'));
 
-      expect(screen.queryByRole('switch', { name: 'Set to null' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Null' })).not.toBeInTheDocument();
+    });
+
+    it('offers a Default chip only for a column that has a default', async () => {
+      await setup();
+      await userEvent.dblClick(cellAt('1', 'title'));
+      expect(screen.queryByRole('button', { name: 'Default' })).not.toBeInTheDocument();
+      await userEvent.keyboard('{Escape}');
+
+      await userEvent.dblClick(cellAt('1', 'status'));
+      expect(screen.getByRole('button', { name: 'Default' })).toBeInTheDocument();
+    });
+
+    it('saves the column default through the server action and shows the value it returns', async () => {
+      await setup();
+      await userEvent.dblClick(cellAt('1', 'status'));
+
+      await userEvent.click(screen.getByRole('button', { name: 'Default' }));
+      expect(field('status')).toHaveAttribute('placeholder', 'The column default is used: draft');
+      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+      await waitFor(() => expect(cellAt('1', 'status')).toHaveTextContent('draft'));
+      expect(defaults).toEqual([{ environment_id: 'env-1', column: 'status', where: { id: 1 } }]);
+      expect(patches).toHaveLength(0);
+    });
+
+    it('keeps Null and Default exclusive', async () => {
+      await setup();
+      await userEvent.dblClick(cellAt('1', 'status'));
+
+      await userEvent.click(screen.getByRole('button', { name: 'Null' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Default' }));
+
+      expect(screen.getByRole('button', { name: 'Null' })).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByRole('button', { name: 'Default' })).toHaveAttribute('aria-pressed', 'true');
     });
 
     it('shows a saved number the way a refetch would, and sends what was typed', async () => {
@@ -401,25 +453,80 @@ describe('TableGrid | cell navigation and editing', () => {
       await waitFor(() => expect(cellAt('1', 'views')).toHaveTextContent(/^12$/));
       expect(patches[0].body).toEqual({ views: '012' });
     });
+  });
 
-    it('flips a boolean on Enter and on a double click, and turns NULL into true', async () => {
+  describe('boolean', () => {
+    it('opens on Enter with False and True to choose from, and saves the choice', async () => {
       await setup();
       await userEvent.click(cellAt('1', 'published'));
-
       await userEvent.keyboard('{Enter}');
+      expect(screen.getByRole('radio', { name: 'True' })).toBeChecked();
+
+      await userEvent.click(screen.getByRole('radio', { name: 'False' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
       await waitFor(() => expect(cellAt('1', 'published')).toHaveTextContent('false'));
       expect(patches[0].body).toEqual({ published: false });
-      expect(editor()).not.toBeInTheDocument();
+    });
 
-      await userEvent.dblClick(cellAt('3', 'published'));
-      await waitFor(() => expect(cellAt('3', 'published')).toHaveTextContent('true'));
-      expect(patches[1].body).toEqual({ published: true });
+    it('sets a boolean back to NULL, which the old flip could not', async () => {
+      await setup();
+      await userEvent.dblClick(cellAt('1', 'published'));
 
-      await userEvent.click(cellAt('2', 'published'));
-      await userEvent.keyboard('{Enter}');
-      await waitFor(() => expect(cellAt('2', 'published')).toHaveTextContent('true'));
-      expect(patches[2].body).toEqual({ published: true });
-      expect(patches[2].url.searchParams.get('id')).toBe('eq.2');
+      await userEvent.click(screen.getByRole('button', { name: 'Null' }));
+      expect(screen.getByRole('radio', { name: 'True' })).toBeDisabled();
+      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+      await waitFor(() => expect(cellAt('1', 'published')).toHaveTextContent('NULL'));
+      expect(patches[0].body).toEqual({ published: null });
+    });
+  });
+
+  describe('json', () => {
+    it('saves a parsed document, not a string, and shows it in the cell', async () => {
+      await setup();
+      await userEvent.dblClick(cellAt('1', 'payload'));
+
+      fireEvent.change(screen.getByRole('textbox', { name: 'payload' }), { target: { value: '{"a": 2}' } });
+      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+      await waitFor(() => expect(cellAt('1', 'payload')).toHaveTextContent('{"a":2}'));
+      expect(patches[0].body).toEqual({ payload: { a: 2 } });
+    });
+
+    it('shows a parse error and keeps Save off while the JSON is invalid', async () => {
+      await setup();
+      await userEvent.dblClick(cellAt('1', 'payload'));
+
+      fireEvent.change(screen.getByRole('textbox', { name: 'payload' }), { target: { value: '{"a":' } });
+
+      expect(screen.getByRole('alert')).toHaveTextContent('Invalid JSON');
+      expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+    });
+
+    it('is clean while the text only differs in spacing', async () => {
+      await setup();
+      await userEvent.dblClick(cellAt('1', 'payload'));
+
+      fireEvent.change(screen.getByRole('textbox', { name: 'payload' }), { target: { value: '{"a":1}' } });
+
+      expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+      expect(hasUnsavedChanges()).toBe(false);
+    });
+  });
+
+  describe('timestamp', () => {
+    it('opens an editor and sets the value to NULL', async () => {
+      await setup();
+      await userEvent.dblClick(cellAt('1', 'seen_at'));
+      expect(screen.getByTestId('cell-editor-timestamp')).toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Null' }));
+      expect(screen.getByText('No date or time is stored (NULL).')).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+      await waitFor(() => expect(cellAt('1', 'seen_at')).toHaveTextContent('NULL'));
+      expect(patches[0].body).toEqual({ seen_at: null });
     });
   });
 
@@ -476,14 +583,6 @@ describe('TableGrid | cell navigation and editing', () => {
 
       expect(editor()).not.toBeInTheDocument();
       expect(patches).toHaveLength(0);
-    });
-
-    it('does not edit a jsonb column', async () => {
-      await setup();
-
-      await userEvent.dblClick(cellAt('1', 'payload'));
-
-      expect(editor()).not.toBeInTheDocument();
     });
 
     it('does not edit a serial column that is not the key', async () => {
