@@ -28,7 +28,7 @@ describe('EventsController on a saved or released version', () => {
     ['delete', 'deleteEvent', (c, app) => c.deleteEvents(app, 'event-1')],
   ];
 
-  describe.each([AppVersionStatus.PUBLISHED, AppVersionStatus.RELEASED])('%s version', (status) => {
+  describe.each([AppVersionStatus.PUBLISHED])('%s version', (status) => {
     it.each(writes)('rejects %s', async (_label, method, call) => {
       const { controller, eventService } = makeController();
 

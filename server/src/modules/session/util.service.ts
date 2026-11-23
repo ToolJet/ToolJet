@@ -10,6 +10,7 @@ import { User } from '@entities/user.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { Organization } from '@entities/organization.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { OrganizationUser } from '@entities/organization_user.entity';
 import { WORKSPACE_STATUS, USER_STATUS, WORKSPACE_USER_STATUS, USER_TYPE } from '@modules/users/constants/lifecycle';
 import { applyCustomDomainCookieOptions, isHttpsEnabled, isSuperAdmin } from '@helpers/utils.helper';
 import { CookieOptions } from 'express';
@@ -308,12 +309,11 @@ export class SessionUtilService {
     return this.groupPermissionsRepository.getAllUserGroups(user.id, user.organizationId, manager);
   }
 
-  // Resolves the org's default branch id. Used by the JWT strategy to populate user.branchId
-  // when a request carries no explicit `branch_id` query param. Applies to git and non-git
-  // workspaces alike: git-sync-disabled orgs show no branch on the client, but the server still
-  // resolves the default branch so reads land on the default-branch rows (every org has exactly
-  // one default branch, seeded on creation / backfilled). folder_apps is unaffected — it reads
-  // the raw query param (absent → IS NULL for non-git), not user.branchId.
+  // Resolves the org's default branch id. Applies to git and non-git workspaces alike:
+  // git-sync-disabled orgs show no branch on the client, but the server still resolves the
+  // default branch so reads land on the default-branch rows (every org has exactly one default
+  // branch, seeded on creation / backfilled). folder_apps is unaffected — it reads the raw query
+  // param (absent → IS NULL for non-git), not user.branchId.
   async getDefaultBranchId(organizationId: string, manager?: EntityManager): Promise<string | null> {
     if (!organizationId) return null;
     return dbTransactionWrap(async (manager: EntityManager) => {
@@ -322,6 +322,32 @@ export class SessionUtilService {
         select: ['id'],
       });
       return branch?.id ?? null;
+    }, manager);
+  }
+
+  // Restores a user's last-active branch only if it still exists and belongs to this org;
+  // otherwise falls back to the org default. Used by the JWT strategy's fallback tier.
+  async getActiveOrDefaultBranchId(
+    organizationId: string,
+    userId?: string,
+    manager?: EntityManager
+  ): Promise<string | null> {
+    if (!organizationId) return null;
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      if (userId) {
+        const orgUser = await manager.findOne(OrganizationUser, {
+          where: { userId, organizationId },
+          select: ['lastBranchId'],
+        });
+        if (orgUser?.lastBranchId) {
+          const branch = await manager.findOne(WorkspaceBranch, {
+            where: { id: orgUser.lastBranchId, organizationId },
+            select: ['id'],
+          });
+          if (branch) return branch.id;
+        }
+      }
+      return this.getDefaultBranchId(organizationId, manager);
     }, manager);
   }
 

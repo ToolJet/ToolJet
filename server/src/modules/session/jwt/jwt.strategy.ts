@@ -8,7 +8,7 @@ import { WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { Request } from 'express';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { SessionUtilService } from '../util.service';
-import { JWTPayload } from '../types';
+import { JWTPayload, BranchResolution } from '../types';
 import { UserSessionRepository } from '@modules/session/repository';
 import { TransactionLogger } from '@modules/logging/service';
 import { trackUserActivity, extractAppIdFromPath } from '@otel/tracing';
@@ -95,7 +95,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           payload,
           typeof workspace === 'string' ? workspace : undefined
         ));
-      user.branchId = await this.resolveBranchId(req, user.organizationId);
+      const resolvedBranch = await this.resolveBranchId(req, user.organizationId);
+      user.branchId = resolvedBranch.branchId;
+      user.branchIdExplicit = resolvedBranch.explicit;
       return user;
     }
     if (payload.oauthGrantId || payload.oauthTokenId || payload.aud === 'tooljet:mcp:delegation') {
@@ -105,7 +107,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       if (principal && workspace !== principal.organizationId) return false;
       // This credential has a fixed expiry and active grant, independently of browser sessions.
       const user = principal || (await this.mcpOAuthIdentityService.validateDelegation(payload, workspace));
-      user.branchId = await this.resolveBranchId(req, user.organizationId);
+      const resolvedBranch = await this.resolveBranchId(req, user.organizationId);
+      user.branchId = resolvedBranch.branchId;
+      user.branchIdExplicit = resolvedBranch.explicit;
       return user;
     }
     const startTime = Date.now();
@@ -154,7 +158,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           user.workspaceAuthentication = payload.workspaceAuthentication;
         }
         user.organizationId = user.organizationId ?? organizationId;
-        user.branchId = await this.resolveBranchId(req, user.organizationId);
+        const resolvedBranch = await this.resolveBranchId(
+          req,
+          user.organizationId,
+          payload?.isPATLogin ? undefined : user.id
+        );
+        user.branchId = resolvedBranch.branchId;
+        user.branchIdExplicit = resolvedBranch.explicit;
 
         return user;
       }
@@ -203,10 +213,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.isSSOLogin = payload.isSSOLogin;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
-        // Resolve the active Git branch once per request: explicit `branch_id` query
-        // param, else the org's default branch. Consumers read user.branchId instead
-        // of the old x-branch-id header.
-        user.branchId = await this.resolveBranchId(req, user.organizationId);
+        const resolvedBranch = await this.resolveBranchId(
+          req,
+          user.organizationId,
+          payload?.isPATLogin ? undefined : user.id
+        );
+        user.branchId = resolvedBranch.branchId;
+        user.branchIdExplicit = resolvedBranch.explicit;
         user.workspaceAuthentication = payload.workspaceAuthentication;
         user.isPATLogin = !!payload.isPATLogin;
         user.patAppId = payload.appId;
@@ -238,15 +251,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   /**
-   * Resolves the active Git branch id for a request. Precedence:
-   *   1. The explicit `branch_id` query param (current mechanism).
-   *   2. The legacy `x-branch-id` header — transitional fallback for clients not yet migrated
-   *      to the query param (cached SPAs, mobile, external API callers).
-   *   3. The organization's default branch.
-   * Returns null when none are available (e.g. no org context). NULL-convention consumers
-   * (folder-apps for non-git orgs / workflows) read the raw query param directly instead.
+   * Resolves the active Git branch id for a request, and whether it was explicit. Precedence:
+   *   1. The `branch_id` query param.
+   *   2. The `x-branch-id` header — fallback for clients not using the query param (cached SPAs,
+   *      mobile, external API callers).
+   *   3. The user's last-active branch for this workspace, if it still exists.
+   *   4. The organization's default branch.
+   * `explicit` is true only for tiers 1-2 (a deep link / URL-carried branch) — callers that
+   * persist a last-active-branch pointer must skip that write when explicit is true, only
+   * writing for tiers 3-4. Returns { branchId: null, explicit: false } when none are available.
    */
-  private async resolveBranchId(req: Request, organizationId?: string): Promise<string | null> {
+  private async resolveBranchId(req: Request, organizationId?: string, userId?: string): Promise<BranchResolution> {
     // Callers that want the NULL branch (workflows, non-git contexts) send an empty/`null`
     // value and read the raw query/header themselves; normalize those to "absent" here so
     // user.branchId is never the literal string "null".
@@ -257,14 +272,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     const rawQuery = req.query?.['branch_id'];
     const queryBranchId = normalize(typeof rawQuery === 'string' ? rawQuery : undefined);
-    if (queryBranchId) return queryBranchId;
+    if (queryBranchId) return { branchId: queryBranchId, explicit: true };
 
     const rawHeader = req.headers['x-branch-id'];
     const headerBranchId = normalize(Array.isArray(rawHeader) ? rawHeader[0] : rawHeader);
-    if (headerBranchId) return headerBranchId;
+    if (headerBranchId) return { branchId: headerBranchId, explicit: true };
 
-    if (!organizationId) return null;
-    return this.sessionUtilService.getDefaultBranchId(organizationId);
+    if (!organizationId) return { branchId: null, explicit: false };
+    const branchId = await this.sessionUtilService.getActiveOrDefaultBranchId(organizationId, userId);
+    return { branchId, explicit: false };
   }
 
   /**

@@ -12,6 +12,7 @@ import { PullConflictModal } from './WorkspacePullConflictModal';
 import { Tooltip } from 'react-tooltip';
 import { authenticationService } from '@/_services';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { onJobSwitch } from '@/_helpers/backgroundJobs';
 
 export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,6 +36,9 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
   const isOnDefaultBranch =
     currentBranch?.is_default || currentBranch?.isDefault || currentBranch?.name === defaultGitBranch;
+
+  // the "Switch branch" toast switched for the user — this picker is stale
+  useEffect(() => (show ? onJobSwitch(onClose) : undefined), [show, onClose]);
 
   useEffect(() => {
     if (show) {

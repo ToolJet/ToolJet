@@ -25,3 +25,8 @@ export enum FEATURE_KEY {
   APP_VERSION_UPDATE = 'APP_VERSION_UPDATE',
   APP_DRAFT_VERSION_CREATE = 'APP_DRAFT_VERSION_CREATE',
 }
+
+// Background version-create queue. Lives in src so module registration can reference it.
+export const APP_VERSION_QUEUE = 'app-version';
+
+export const APP_VERSION_JOBS = { CREATE_VERSION: 'version-create' } as const;

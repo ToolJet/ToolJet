@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, IsIn, ValidateNested, IsBoolean } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Exclude, Expose } from 'class-transformer';
 
 export class CreateBranchDto {
   @IsNotEmpty()
@@ -27,6 +27,12 @@ export class CreateBranchDto {
   @IsOptional()
   @IsBoolean()
   confirmImport?: boolean;
+}
+
+@Exclude()
+export class CreateBranchResponseDto {
+  @Expose() enqueued: boolean;
+  @Expose() isImport: boolean;
 }
 
 export class SwitchBranchDto {
