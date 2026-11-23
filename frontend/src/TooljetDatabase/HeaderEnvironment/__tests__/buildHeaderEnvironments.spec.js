@@ -94,6 +94,16 @@ describe('buildHeaderEnvironments', () => {
       expect(rows.filter((row) => row.disabled).map((row) => row.name)).toEqual(['Staging', 'Production']);
     });
 
+    it('marks a licence-locked environment as locked, so the select can show a lock', () => {
+      const rows = build({ multiEnvLocked: true });
+      expect(rows.filter((row) => row.locked).map((row) => row.name)).toEqual(['Staging', 'Production']);
+    });
+
+    it('does not mark an environment that only lacks the table as locked', () => {
+      const rows = build({ relationsByEnvironment: [{ environment_id: DEVELOPMENT.id, has_relation: true }] });
+      expect(rows.some((row) => row.locked)).toBe(false);
+    });
+
     it('never locks development', () => {
       const rows = build({ multiEnvLocked: true, selectedEnvironment: STAGING });
       expect(byName(rows, 'development').disabled).toBeFalsy();

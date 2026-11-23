@@ -42,7 +42,7 @@ export function buildHeaderEnvironments({
 
     // The open environment stays selectable even when locked, or the user could not leave it.
     if (!isSelected && isEnvironmentLocked(environment, multiEnvLocked)) {
-      return { ...base, disabled: true, disabledReason: lockMessage };
+      return { ...base, disabled: true, locked: true, disabledReason: lockMessage };
     }
 
     if (!hasTableContext) return base;

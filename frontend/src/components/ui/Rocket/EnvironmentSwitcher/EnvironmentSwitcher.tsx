@@ -1,5 +1,5 @@
 import React, { forwardRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '../Button/Button';
 import DropdownMenu, { type DropdownMenuSection } from '../DropdownMenu';
@@ -15,6 +15,8 @@ export interface EnvironmentSwitcherOption {
   disabled?: boolean;
   /** Shown in a tooltip on the option's row when it is disabled. */
   disabledReason?: ReactNode;
+  /** Shows a lock beside the label: the plan does not include this environment. */
+  locked?: boolean;
 }
 
 export interface EnvironmentSwitcherProps {
@@ -48,7 +50,9 @@ function OptionRow({ option }: { option: EnvironmentSwitcherOption }) {
   return (
     <span className="tw-flex tw-min-w-0 tw-flex-1 tw-items-center tw-gap-1.5">
       <DotSlot tone={option.tone} />
-      <span className="tw-flex-1 tw-truncate">{option.label}</span>
+      <span className="tw-truncate">{option.label}</span>
+      {option.locked && <Lock aria-hidden className="tw-size-4 tw-shrink-0 tw-text-icon-weak" />}
+      <span className="tw-flex-1" />
       {option.meta && <span className="tw-shrink-0 tw-text-text-placeholder">{option.meta}</span>}
     </span>
   );

@@ -125,6 +125,20 @@ describe('EnvironmentSwitcher menu', () => {
     expect(onValueChange).not.toHaveBeenCalled();
   });
 
+  describe('with a locked option', () => {
+    it('shows a lock beside the locked option only', async () => {
+      setup({
+        options: [OPTIONS[0], { ...OPTIONS[1], disabled: true, locked: true }, OPTIONS[2]],
+        value: 'env-dev',
+      });
+      await openMenu();
+
+      const locked = await screen.findByRole('menuitemcheckbox', { name: /Staging/ });
+      expect(locked.querySelector('svg.lucide-lock')).toBeInTheDocument();
+      expect(screen.getByRole('menuitemcheckbox', { name: /Production/ }).querySelector('svg.lucide-lock')).toBeNull();
+    });
+  });
+
   describe('with a disabled option', () => {
     const lockedSetup = () =>
       setup({

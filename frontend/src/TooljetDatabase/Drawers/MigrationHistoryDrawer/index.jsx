@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import Drawer from '@/_ui/Drawer';
 import { ToolTip } from '@/_components/ToolTip';
 import { tooljetDatabaseService } from '@/_services';
-import { ArrowLeft, ArrowRight, Download, Plus, TriangleAlert, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Download, Lock, Plus, TriangleAlert, X } from 'lucide-react';
 import { Button } from '@/components/ui/Rocket/Button/Button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/Rocket/ToggleGroup/ToggleGroup';
 import { ROCKET_SCROLLBAR } from '@/components/ui/Rocket/scrollbar';
@@ -184,6 +184,7 @@ const MigrationHistoryDrawer = ({
                   data-cy={`migration-history-tab-${label.toLowerCase()}`}
                 >
                   {label}
+                  {locked && <Lock aria-hidden className="tw-size-4 tw-shrink-0" />}
                 </ToggleGroupItem>
               );
               // Every tab sits in a cell of the same width, with or without the tooltip around it.

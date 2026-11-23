@@ -22,7 +22,7 @@ Built from Rocket `Button` (outline, medium), `DropdownMenu`, `Tooltip` and `Sta
 | tooltip | `ReactNode` — shown on trigger hover and focus | — |
 | className | string (trigger) | — |
 
-`EnvironmentSwitcherOption`: `id`, `label`, `tone` (StatusDot tone, default neutral), `meta` (node: the number shown in the trigger while this option is current, and at the end of its menu row), `disabled`, `disabledReason` (tooltip on the disabled row).
+`EnvironmentSwitcherOption`: `id`, `label`, `tone` (StatusDot tone, default neutral), `meta` (node: the number shown in the trigger while this option is current, and at the end of its menu row), `disabled`, `disabledReason` (tooltip on the disabled row), `locked` (a lock beside the label: the plan does not include the environment).
 
 ## States (Figma 🖱️ state)
 
