@@ -364,20 +364,21 @@ export class AppHistoryRepository {
 
   async getVersionAndAppIdForHistory(
     historyId: string
-  ): Promise<{ appVersionId: string | null; appId: string | null }> {
+  ): Promise<{ appVersionId: string | null; appId: string | null; organizationId: string | null }> {
     return await dbTransactionWrap(async (manager) => {
       const history = await manager.findOne(AppHistory, {
         where: { id: historyId },
-        relations: ['appVersion'],
+        relations: ['appVersion', 'appVersion.app'],
       });
 
       if (!history) {
-        return { appVersionId: null, appId: null };
+        return { appVersionId: null, appId: null, organizationId: null };
       }
 
       return {
         appVersionId: history.appVersionId,
         appId: history.appVersion?.appId || null,
+        organizationId: history.appVersion?.app?.organizationId || null,
       };
     });
   }
