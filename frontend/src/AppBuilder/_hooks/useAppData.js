@@ -40,6 +40,7 @@ import { whenBranchResolved } from '@/_helpers/active-branch';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import { appliedThemeDefinition } from '../_utils/themeAccess';
+import { waitForCompareTurn } from '../_utils/compareFrame';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
@@ -528,6 +529,10 @@ const useAppData = (
         !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
 
         fetchAndInjectCustomStyles(isPublicAccess && mode !== 'edit' && appData.is_public);
+
+        // In the compare view, the other version may be building its app: wait for this frame's turn.
+        await waitForCompareTurn();
+        if (cancelled) return;
 
         const pages = appData.pages.map((page) => {
           return page;
