@@ -6,7 +6,6 @@ import {
   markAppLoaded,
 } from '@/_services/frontend-metrics.service';
 import {
-  appEnvironmentService,
   appService,
   appsService,
   appVersionService,
@@ -41,6 +40,7 @@ import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import { appliedThemeDefinition } from '../_utils/themeAccess';
 import { waitForCompareTurn } from '../_utils/compareFrame';
+import { createViewerReads } from './viewerReads';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
@@ -433,6 +433,23 @@ const useAppData = (
       }
     }
 
+    // A signed-in viewer of a version knows its environment and version already, so their reads start with the app
+    // definition instead of one after another after it (viewerReads).
+    const reads = createViewerReads({
+      early:
+        !moduleMode &&
+        mode !== 'edit' &&
+        !isPublicAccess &&
+        !!queryParams.version &&
+        !queryParams.snapshot &&
+        !!environmentId &&
+        !!versionId,
+      environmentId,
+      versionId,
+      slug,
+      mode,
+    });
+
     // const appDataPromise = appService.fetchApp(appId);
     appDataPromise
       .then(async (result) => {
@@ -495,7 +512,7 @@ const useAppData = (
             try {
               const queryParams = { slug: slug };
 
-              const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
+              const viewerEnvironment = await reads.environment(environmentId, queryParams);
 
               editorEnvironment = {
                 id: viewerEnvironment?.environment?.id,
@@ -507,7 +524,7 @@ const useAppData = (
                       slug,
                       viewerEnvironment?.environment?.id
                     )
-                  : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
+                  : await reads.constants(viewerEnvironment?.environment?.id);
             } catch (error) {
               console.error('Error fetching viewer environment:', error);
             }
@@ -788,7 +805,7 @@ const useAppData = (
         const queryData =
           isPublicAccess || (mode !== 'edit' && appData.is_public) || (mode !== 'edit' && queryParams.snapshot)
             ? appData
-            : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
+            : await reads.queries(appData.editing_version?.id || appData.current_version_id, mode);
 
         const dataQueries = (queryData.data_queries || []).map((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
