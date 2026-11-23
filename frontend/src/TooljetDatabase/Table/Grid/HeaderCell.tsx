@@ -1,36 +1,12 @@
 import React from 'react';
 import type { Header } from '@tanstack/react-table';
-import {
-  ArrowDown,
-  ArrowUp,
-  Braces,
-  Calendar,
-  CaseSensitive,
-  KeyRound,
-  Link2,
-  MoreVertical,
-  Pencil,
-  Square,
-  Trash2,
-  Variable,
-} from 'lucide-react';
+import { ArrowDown, ArrowUp, KeyRound, Link2, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Rocket/Button/Button';
 import DropdownMenu from '@/components/ui/Rocket/DropdownMenu';
 import TruncatedText from '@/components/ui/Rocket/Tooltip/TruncatedText';
 import { cn } from '@/lib/utils';
+import { dataTypeIcon } from '../../dataTypeIcons';
 import { ROW_HEIGHT, type GridColumn, type GridColumnMeta, type GridRow } from './useTableGrid';
-
-const TYPE_ICONS = {
-  integer: Variable,
-  bigint: Variable,
-  serial: Variable,
-  'double precision': Variable,
-  boolean: Square,
-  'timestamp with time zone': Calendar,
-  jsonb: Braces,
-} as const;
-
-const typeIcon = (dataType: string) => TYPE_ICONS[dataType as keyof typeof TYPE_ICONS] ?? CaseSensitive;
 
 type HeaderCellProps = {
   header: Header<GridRow, unknown>;
@@ -47,7 +23,7 @@ export function HeaderCell({ header, canEditSchema, onEditColumn, onDeleteColumn
   const pinned = column.getIsPinned() === 'left';
   const sorted = column.getIsSorted();
   const sortCount = header.getContext().table.getState().sorting.length;
-  const TypeIcon = typeIcon(meta.column.dataType);
+  const TypeIcon = dataTypeIcon(meta.column.dataType);
 
   const resizing = column.getIsResizing();
 
