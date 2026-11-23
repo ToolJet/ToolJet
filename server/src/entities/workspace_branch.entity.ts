@@ -52,6 +52,18 @@ export class WorkspaceBranch extends BaseEntity {
   @Column({ name: 'workflows_git_tree_sha', type: 'varchar', length: 64, nullable: true, default: null })
   workflowsGitTreeSha: string;
 
+  // The commit the last workspace pull cloned (X). Opening an app, module or workflow loads
+  // this commit, not the branch HEAD. Separate from last_synced_commit, which a single-app
+  // push also moves. Message and time are for display only.
+  @Column({ name: 'workspace_pull_commit_sha', type: 'varchar', length: 40, nullable: true, default: null })
+  workspacePullCommitSha: string | null;
+
+  @Column({ name: 'workspace_pull_commit_message', type: 'text', nullable: true, default: null })
+  workspacePullCommitMessage: string | null;
+
+  @Column({ name: 'workspace_pull_at', type: 'timestamptz', nullable: true, default: null })
+  workspacePullAt: Date | null;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
