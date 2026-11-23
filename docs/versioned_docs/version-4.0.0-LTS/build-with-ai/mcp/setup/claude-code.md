@@ -83,7 +83,7 @@ A token only works in the workspace it was created in, and every tool call runs 
 2. Go to **Workspace settings > Personal access token** and click **Create new token**. Enter a **Token name**, pick an **Expiration** date, and click **Create token**.
 3. Copy the token, which begins with `tj_pat_`. ToolJet shows it only once.
 
-<!-- TODO screenshot: the Personal access tokens list in Workspace settings with the Create new token button (the old pat.png shows Profile settings) -->
+<img className="screenshot-full img-full" src="/img/tooljet-ai/mcp/pat-v2.png" alt="Personal access tokens in Workspace settings, with the Create new token button and a list of tokens" />
 
 ### Step 2: Set Your Environment Variables
 
