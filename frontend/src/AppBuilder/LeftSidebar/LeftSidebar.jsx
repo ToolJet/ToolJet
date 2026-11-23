@@ -34,6 +34,9 @@ import Beta from '@/_ui/Beta';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 import { SecurityPanel, AccessPanel, CodeHistoryPanel, useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 import { railClick } from './railClick';
+import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
+import LegalReasonsErrorModal from '@/_components/LegalReasonsErrorModal';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 // Human names for the error-boundary label/location of each sidebar panel.
 const LEFT_SIDEBAR_PANEL_LABELS = {
@@ -62,6 +65,7 @@ export const BaseLeftSidebar = ({
 }) => {
   const { moduleId, isModuleEditor, appType } = useModuleContext();
   const codeMode = useCodeMode(moduleId);
+  const isAiBlockedByBranch = useIsAiBlockedOnDefaultBranch();
   const buildMode = useStore((state) => state.appStore?.modules?.[moduleId]?.app?.buildMode);
   const [
     pinned,
@@ -92,9 +96,17 @@ export const BaseLeftSidebar = ({
     shallow
   );
 
+  useEffect(() => {
+    if (isAiBlockedByBranch && selectedSidebarItem === 'tooljetai' && isSidebarOpen) {
+      toggleLeftSidebar(false);
+    }
+  }, [isAiBlockedByBranch, selectedSidebarItem, isSidebarOpen, toggleLeftSidebar]);
+
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const [showAccessUpgrade, setShowAccessUpgrade] = useState(false);
+  const accessInPlan = !!(featureAccess?.appPermissionPages || featureAccess?.appPermissionQuery);
   const returnToSearch = useStore((state) => state.codeSearch.returnToSearch);
   const setCodeSearchReturnToSearch = useStore((state) => state.setCodeSearchReturnToSearch);
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
@@ -107,6 +119,7 @@ export const BaseLeftSidebar = ({
   }, [isSidebarOpen]);
 
   const handleSelectedSidebarItem = (item) => {
+    if (isAiBlockedByBranch && item === 'tooljetai') return;
     if (item === 'debugger') resetUnreadErrorCount();
     // Only a search result opens Settings with a way back to the search panel.
     setCodeSearchReturnToSearch(false);
@@ -119,7 +132,7 @@ export const BaseLeftSidebar = ({
       overChat: overChat.current,
     });
     overChat.current = click.overChat;
-    if (click.show === 'tooljetai' && item !== 'tooljetai') {
+    if (!isAiBlockedByBranch && click.show === 'tooljetai' && item !== 'tooljetai') {
       setSelectedSidebarItem('tooljetai');
       localStorage.setItem('selectedSidebarItem', 'tooljetai');
       return;
@@ -209,7 +222,7 @@ export const BaseLeftSidebar = ({
       case 'search':
         return <CodeSearch darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'tooljetai':
-        return renderAIChat({ darkMode });
+        return isAiBlockedByBranch ? null : renderAIChat({ darkMode });
       case 'apphistory':
         return codeMode ? (
           <CodeHistoryPanel darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />
@@ -309,7 +322,7 @@ export const BaseLeftSidebar = ({
             icon="access"
             selectedSidebarItem={selectedSidebarItem}
             darkMode={darkMode}
-            onClick={() => handleSelectedSidebarItem('access')}
+            onClick={() => (accessInPlan ? handleSelectedSidebarItem('access') : setShowAccessUpgrade(true))}
             className={`left-sidebar-item  left-sidebar-layout`}
             tip="Access"
             ref={setSideBarBtnRefs('access')}
@@ -420,6 +433,15 @@ export const BaseLeftSidebar = ({
       style={{ zIndex: 9999, maxWidth: '304px' }}
     >
       {renderLeftSidebarItems(isModuleEditor)}
+      {showAccessUpgrade && (
+        <LegalReasonsErrorModal
+          showModal
+          toggleModal={() => setShowAccessUpgrade(false)}
+          darkMode={darkMode}
+          edition={fetchEdition()}
+          message="Screen and query permissions are not included in your current plan. Upgrade your plan to use Access permissions."
+        />
+      )}
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close

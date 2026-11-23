@@ -84,6 +84,10 @@
 }
 /* Lists and tables fill the box: a bordered list's border, and a table's surface with its pagination at the foot,
    reach its bottom instead of ending in a blank band. */
+/* Container background on a list (QA PKB-41): the class is set only when the style is. */
+.tj-ant-root .ant-list.tj-ant-list-bg {
+  background: var(--tj-ant-color-bg-container);
+}
 .tj-ant-list.tj-ant--fill > .ant-list {
   min-height: 100%;
   box-sizing: border-box;
@@ -1499,9 +1503,21 @@
   padding-bottom: 4px;
   line-height: 20px;
 }
+/* One line that ends in an ellipsis, as a ToolJet field's label: Ant wraps a vertical label, so a long one was cut off
+   mid-text by the fixed line (PF-089) or pushed the field out of its box (QA PF-078). A cut label shows its whole text
+   in Ant's tooltip on hover (FormField). The label keeps Ant's inline-flex, so the required mark stays beside it. */
 .tj-ant-root .ant-form-item-vertical > .ant-form-item-row > .ant-form-item-label > label {
   height: 20px;
   line-height: 20px;
+  max-width: 100%;
+  min-width: 0;
+}
+.tj-ant-root .ant-form-item-label > label > .tj-ant-label-text {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .tj-ant-root.tj-ant-compact .ant-form-item-control-input,
 .tj-ant-root.tj-ant-compact .ant-form-item-label > label {
@@ -1546,6 +1562,37 @@
 .tj-ant-spin-fill {
   flex: 1 1 auto;
   width: 100%;
+}
+/* Link styles (QA PF-032): each class is set only when its style is, so a plain Link is unchanged. */
+.tj-ant-root .tj-ant-link.has-text {
+  color: var(--tj-ant-color-text);
+}
+.tj-ant-root .tj-ant-link.has-bg,
+.tj-ant-root .tj-ant-link.has-border {
+  display: inline-block;
+  padding: 2px 8px;
+}
+.tj-ant-root .tj-ant-link.has-bg {
+  background: var(--tj-ant-color-bg-container);
+}
+.tj-ant-root .tj-ant-link.has-border {
+  border: 1px solid var(--tj-ant-color-border);
+}
+.tj-ant-root .tj-ant-link.has-radius {
+  border-radius: var(--tj-ant-border-radius);
+}
+/* Disabled wins over Text color. */
+.tj-ant-root .tj-ant-link.ant-typography-disabled {
+  color: var(--ant-color-text-disabled);
+  cursor: not-allowed;
+}
+/* Ant's Segmented draws neither the primary nor the border colour, so those two styles changed nothing (QA PKB-41).
+   Each reads only the variable its style sets: a Segmented without them keeps the stock look. */
+.tj-ant-root .ant-segmented {
+  box-shadow: inset 0 0 0 1px var(--tj-ant-color-border, transparent);
+}
+.tj-ant-root .ant-segmented .ant-segmented-item-selected {
+  color: var(--tj-ant-color-primary, var(--ant-segmented-item-selected-color));
 }
 .tj-ant-spin-inline {
   display: inline-block;

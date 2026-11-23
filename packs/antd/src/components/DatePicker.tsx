@@ -9,27 +9,12 @@ import { str } from '../lib/data';
 import { ControlSkeleton } from '../lib/Loading';
 import { closesOnEscape, useOwnedPopup } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
-import { isBlankDate, parseDate } from '../lib/dates';
+import { isBlankDate, parseDate, PERIOD_FORMAT, startOfPeriod } from '../lib/dates';
 
 const VALUE_FORMAT = 'YYYY-MM-DD';
 const VALUE_FORMAT_TIME = 'YYYY-MM-DDTHH:mm:ss';
 const parse = parseDate;
 
-// The week, month, quarter or year a picked date stands for, as its first day: a month picked over a value of the 25th
-// kept the 25th.
-const startOfPeriod = (d: Dayjs, picker: string): Dayjs => {
-  if (picker === 'week') return d.startOf('week');
-  if (picker === 'month') return d.startOf('month');
-  if (picker === 'quarter') return d.month(Math.floor(d.month() / 3) * 3).startOf('month');
-  if (picker === 'year') return d.startOf('year');
-  return d;
-};
-// Ant's own display format for a period picker (2026-10, 2026-Q4, 2026), not the full date.
-const PERIOD_FORMAT: Record<string, string | undefined> = {
-  month: 'YYYY-MM',
-  quarter: 'YYYY-[Q]Q',
-  year: 'YYYY',
-};
 
 /** A date-time bound: a date alone is the start of that day as a minimum and its end as a maximum, so maxDate
  *  2026-10-25 still allows that afternoon. */
