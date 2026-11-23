@@ -912,7 +912,7 @@
     padding: 4px 7px;
     border-radius: 7px;
     color: var(--slate10);
-    font-size: 10px;
+    font-size: var(--app-builder-small-font-size, 10px);
   }
 
   .error-target {

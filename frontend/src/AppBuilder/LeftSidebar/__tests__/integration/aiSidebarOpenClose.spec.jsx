@@ -37,7 +37,10 @@ beforeEach(() => {
   server.use(
     http.get(`${API}/ai/llm-preference`, () => HttpResponse.json({})),
     http.get(`${API}/ai/taggable-datasources`, () => HttpResponse.json([])),
-    http.get(`${API}/app-environments`, () => HttpResponse.json({ environments: [] }))
+    http.get(`${API}/app-environments`, () => HttpResponse.json({ environments: [] })),
+    // The chat's credit meter reads the caller's own numbers, then the pool balance.
+    http.get(`${API}/ai/credits-usage/me`, () => HttpResponse.json({})),
+    http.get(`${API}/ai/get-credits-balance`, () => HttpResponse.json({}))
   );
   act(() => {
     state().setCurrentMode('edit', 'canvas');
