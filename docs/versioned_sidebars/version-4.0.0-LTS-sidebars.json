@@ -186,6 +186,7 @@
             "build-with-ai/generate-applications",
             "build-with-ai/referencing-app-resources",
             "build-with-ai/ai-credits",
+            "build-with-ai/ai-credits-usage",
             "build-with-ai/model-selection",
             "build-with-ai/ai-model-performance"
           ]
