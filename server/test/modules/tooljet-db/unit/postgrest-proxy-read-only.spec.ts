@@ -9,7 +9,7 @@ describe('PostgrestProxyService.proxy | read-only resolution', () => {
   const tableId = '11111111-1111-4111-8111-111111111111';
 
   function buildService() {
-    const tableOperationsService = { isRowLimitReached: jest.fn().mockResolvedValue(false) };
+    const tableOperationsService = { getRemainingRowCapacity: jest.fn().mockResolvedValue(Infinity) };
     const service = new PostgrestProxyService(
       {} as any,
       { get: () => 'http://localhost:3002' } as any,
