@@ -24,7 +24,7 @@ export const TreeViewHeader = (props) => {
 
   const copyPath = () => {
     const formattedPath = formatPathForCopy(data?.selectedNodePath);
-    generalActions[0].dispatchAction(formattedPath, false);
+    generalActions[0].dispatchAction(formattedPath);
   };
 
   const copyValue = () => {

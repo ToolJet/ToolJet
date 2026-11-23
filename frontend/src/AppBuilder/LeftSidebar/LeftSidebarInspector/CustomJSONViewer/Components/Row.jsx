@@ -97,7 +97,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
               <span
                 onClick={() => {
                   const formattedPath = formatPathForCopy(absolutePath);
-                  copyToClipboard(formattedPath, false);
+                  copyToClipboard(formattedPath);
                 }}
                 className="copy-to-clipboard json-viewer-action-icon"
               >

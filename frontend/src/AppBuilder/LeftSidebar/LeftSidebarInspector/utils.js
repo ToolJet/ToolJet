@@ -98,11 +98,14 @@ export const extractComponentName = (path) => {
   }
 };
 
-export const copyToClipboard = (data, includeQuotes = true) => {
-  const stringified = JSON.stringify(data, null, 2).replace(/\\/g, '');
-  const finalText = includeQuotes ? stringified : stringified.slice(1, -1);
-  navigator.clipboard.writeText(finalText);
-  return toast.success('Copied to the clipboard', { position: 'top-center' });
+export const copyToClipboard = async (data) => {
+  try {
+    const text = typeof data === 'string' ? data : JSON.stringify(data, null, 2) ?? String(data);
+    await navigator.clipboard.writeText(text);
+    return toast.success('Copied to the clipboard', { position: 'top-center' });
+  } catch {
+    return toast.error('Could not copy to the clipboard', { position: 'top-center' });
+  }
 };
 
 export const formatPathForCopy = (path) => {

@@ -19,7 +19,7 @@ export const HiddenOptions = (props) => {
 
   const copyPath = () => {
     const formattedPath = formatPathForCopy(data?.selectedNodePath);
-    generalActionsFiltered[0].dispatchAction(formattedPath, false);
+    generalActionsFiltered[0].dispatchAction(formattedPath);
   };
 
   const copyValue = () => {
