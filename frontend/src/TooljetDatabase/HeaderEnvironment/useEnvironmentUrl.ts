@@ -13,7 +13,9 @@ const DEVELOPMENT_PRIORITY = 1;
 export function useEnvironmentUrl(): string | null {
   const [searchParams, setSearchParams] = useSearchParams();
   const openedWithRef = useRef(searchParams.get(ENV_PARAM));
-  const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
+  const selectedEnvironment = useTjdbStore(
+    (state: { selectedEnvironment: { id: string; priority: number } | null }) => state.selectedEnvironment
+  );
 
   useEffect(() => {
     if (!selectedEnvironment) return;

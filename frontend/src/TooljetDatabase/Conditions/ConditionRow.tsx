@@ -3,7 +3,7 @@ import { Trash } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Rocket/Button/Button';
-import { Input } from '@/components/ui/Rocket/Input/Input';
+import { Input, type InputProps } from '@/components/ui/Rocket/Input/Input';
 import {
   Select,
   SelectContent,
@@ -100,10 +100,7 @@ export function ConditionSelect({
   );
 }
 
-export function ConditionInput({
-  className,
-  ...props
-}: React.InputHTMLAttributes<HTMLInputElement> & { 'data-cy'?: string }) {
+export function ConditionInput({ className, ...props }: InputProps & { 'data-cy'?: string }) {
   return (
     <Input className={cn(FIELD_CLASS, 'focus-visible:tw-ring-inset disabled:tw-border-0', className)} {...props} />
   );
