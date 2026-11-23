@@ -22,10 +22,10 @@ describe('TableRow sync dot', () => {
     expect(screen.getByRole('img', { name: 'Pending in dev' })).toHaveAttribute('data-cy', 'sync-dot-warning');
   });
 
-  test('should show a green dot for a table with changes pending from staging', () => {
+  test('should show an orange dot for a table with changes pending from staging', () => {
     renderRow({ migration_sync: 'pending_in_staging' });
 
-    expect(screen.getByRole('img', { name: 'Pending in staging' })).toHaveAttribute('data-cy', 'sync-dot-success');
+    expect(screen.getByRole('img', { name: 'Pending in staging' })).toHaveAttribute('data-cy', 'sync-dot-warning');
   });
 
   test('should show no dot for a table that is fully migrated', () => {

@@ -17,10 +17,10 @@ const STATES: Record<
     dataCy: 'sync-dot-warning',
   },
   pending_in_staging: {
-    tone: 'success',
+    tone: 'warning',
     title: 'Pending in staging',
     body: 'Changes in Development and Staging are not yet applied to Production.',
-    dataCy: 'sync-dot-success',
+    dataCy: 'sync-dot-warning',
   },
 };
 

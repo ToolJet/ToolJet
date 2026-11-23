@@ -1,5 +1,5 @@
-// The dot at the end of a table row (Figma list item, trailing dot): orange when development is ahead of staging,
-// green when development and staging are ahead of production, nothing when the table is fully migrated.
+// The dot at the end of a table row (Figma list item, trailing dot): orange when changes in development are not yet
+// applied to staging, production or both, nothing when the table is fully migrated.
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -26,12 +26,13 @@ describe('MigrationSyncDot', () => {
     expect(dot.querySelector('.tw-bg-background-warning-strong')).toBeInTheDocument();
   });
 
-  test('should show a green dot for changes pending from staging', () => {
+  test('should show an orange dot for changes pending from staging too', () => {
     render(<MigrationSyncDot sync="pending_in_staging" />);
 
     const dot = screen.getByRole('img', { name: 'Pending in staging' });
-    expect(dot).toHaveAttribute('data-cy', 'sync-dot-success');
-    expect(dot.querySelector('.tw-bg-background-success-strong')).toBeInTheDocument();
+    expect(dot).toHaveAttribute('data-cy', 'sync-dot-warning');
+    expect(dot.querySelector('.tw-bg-background-warning-strong')).toBeInTheDocument();
+    expect(dot.querySelector('.tw-bg-background-success-strong')).not.toBeInTheDocument();
   });
 
   test.each([

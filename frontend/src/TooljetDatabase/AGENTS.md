@@ -14,7 +14,7 @@ The workspace's built-in database UI at `/:workspaceId/database`: a tables panel
 |---|---|
 | `index.jsx` | Owns page state (`tables`, `selectedTable`, columns, …) and the context value; calls `useOpenTabs` |
 | `TablesPanel/TablesPanel.tsx`, `TableRow.tsx`, `useTables.ts` | Left panel; `useTables` loads the list and hands it to `applyTables`. A row never shows as selected: the open table is the active tab in the strip |
-| `TablesPanel/MigrationSyncDot.tsx` | The dot at the end of a table row and its tooltip: orange `pending_in_development`, green `pending_in_staging`, none for `null` or an unset status. The status is `migration_sync` on a row of the table list |
+| `TablesPanel/MigrationSyncDot.tsx` | The dot at the end of a table row and its tooltip: orange for `pending_in_development` and for `pending_in_staging` (each with its own tooltip text, one `sync-dot-warning` data-cy), none for `null` or an unset status. The status is `migration_sync` on a row of the table list |
 | `TablesPanel/openTabs.ts` | Pure tab rules (open, close, close others/all, reconcile, parse saved state) |
 | `TablesPanel/useOpenTabs.ts` | Tab state, `localStorage` save/restore, `?table=` link |
 | `TablesPanel/TableTabStrip.tsx`, `TabStripPopovers.tsx` | Strip, open-or-create picker, open-tabs menu |
