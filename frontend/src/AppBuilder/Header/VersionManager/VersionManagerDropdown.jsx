@@ -299,7 +299,7 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
   // versions under the agent, so close them when a build starts.
   useEffect(() => {
     if (!isAiBuildingApp) return;
-    if (useVersionManagerStore.getState().isDropdownOpen) closeDropdown();
+    if (isDropdownOpen) closeDropdown();
     setOpenMenuVersionId(null);
     setShowCreateDraftModal(false);
     setShowPromoteModal(false);

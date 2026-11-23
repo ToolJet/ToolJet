@@ -15,12 +15,15 @@ function ReleaseConfirmation(props) {
   const { t } = useTranslation();
   const darkMode = props.darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const {
+    resourceType,
     versions,
     selectedVersionId,
     releasedVersionId,
     notices: suppliedNotices = [],
     actions,
   } = useVersionLifecycle();
+  // The code-mode checks below are app-scoped requests; a library version has no app to check.
+  const isLibraryVersion = resourceType === 'library-query';
   const name = versions.find((v) => v.id === (versionId || selectedVersionId))?.name;
   const releasedVersionName = versions.find((v) => v.id === releasedVersionId)?.name;
   const loadNotices = React.useRef(actions.loadReleaseNotices);
@@ -96,16 +99,20 @@ function ReleaseConfirmation(props) {
             ))}
           </ul>
         )}
-        <ReleaseConfirmationExtras
-          show={show}
-          appId={appId}
-          versionId={targetVersionId}
-          releasedVersionId={releasedVersionId}
-          releasedVersionName={releasedVersionName}
-          onLockedChange={setReleaseLocked}
-        />
-        <ReleaseCodeChanges show={show} appId={appId} versionId={targetVersionId} />
-        {show && <ReleaseScanGate appId={appId} versionId={targetVersionId} onLockedChange={setScanLocked} />}
+        {!isLibraryVersion && (
+          <ReleaseConfirmationExtras
+            show={show}
+            appId={appId}
+            versionId={targetVersionId}
+            releasedVersionId={releasedVersionId}
+            releasedVersionName={releasedVersionName}
+            onLockedChange={setReleaseLocked}
+          />
+        )}
+        {!isLibraryVersion && <ReleaseCodeChanges show={show} appId={appId} versionId={targetVersionId} />}
+        {show && !isLibraryVersion && (
+          <ReleaseScanGate appId={appId} versionId={targetVersionId} onLockedChange={setScanLocked} />
+        )}
       </Modal.Body>
       <Modal.Footer className="env-modal-footer">
         <ButtonSolid variant="tertiary" onClick={onClose} data-cy="cancel-button">

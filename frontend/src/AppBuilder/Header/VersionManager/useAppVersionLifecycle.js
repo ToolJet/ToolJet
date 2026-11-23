@@ -104,7 +104,7 @@ export function useAppVersionLifecycle({
 
   const allVersions = useMemo(() => {
     const rows = new Map();
-    [...developmentVersions, ...state.promotedVersions, ...versions].forEach((v) =>
+    [...developmentVersions, ...(state.promotedVersions ?? []), ...versions].forEach((v) =>
       rows.set(v.id, normalizeVersion(v))
     );
     if (state.selectedVersion) {

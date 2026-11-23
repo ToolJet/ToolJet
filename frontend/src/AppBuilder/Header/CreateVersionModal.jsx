@@ -58,16 +58,6 @@ const CreateVersionModal = ({
   const textareaRef = React.useRef(null);
   const appId = useStore((state) => state.appStore.modules.canvas?.app?.appId ?? state.appId);
 
-  const handleDescriptionInput = () => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    textarea.style.height = 'auto';
-    const lineHeight = 24;
-    const maxLines = 4;
-    const maxHeight = lineHeight * maxLines;
-    textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + 'px';
-    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
-  };
   // Code mode: whether the latest code builds is checked as the dialog opens, so a broken build shows before the first
   // click. A refusal from an earlier opening is not shown again: the code may have been fixed since.
   const codeCheck = useSaveVersionCodeCheck({
@@ -262,7 +252,6 @@ const CreateVersionModal = ({
                 type="text"
                 ref={textareaRef}
                 onChange={(e) => setVersionDescription(e.target.value)}
-                onInput={handleDescriptionInput}
                 className="form-control app-version-description"
                 data-cy="version-description-input-field"
                 placeholder={t('editor.appVersionManager.enterVersionDescription', 'Enter version description')}

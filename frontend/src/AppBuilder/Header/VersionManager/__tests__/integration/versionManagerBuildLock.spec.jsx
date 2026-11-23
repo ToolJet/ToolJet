@@ -50,17 +50,23 @@ jest.mock('../../CreateDraftButton', () => ({ onClick }) => (
 ));
 jest.mock('../../VersionSearchField', () => () => null);
 jest.mock('../../VersionItemSkeleton', () => () => null);
-jest.mock('../..', () => {
-  const dialog =
-    (label, showProp) =>
-    // eslint-disable-next-line react/display-name
-    (props) => (props[showProp] ? <div role="dialog">{label}</div> : null);
-  return {
-    CreateDraftVersionModal: dialog('Create draft dialog', 'showCreateAppVersion'),
-    CreateVersionModal: dialog('Save version dialog', 'showCreateAppVersion'),
-    EditVersionModal: dialog('Rename version dialog', 'showEditAppVersion'),
-  };
-});
+// Stand-ins for the three dialogs the dropdown opens: each shows a labelled marker while its show prop is on.
+function mockDialog(label, showProp) {
+  // eslint-disable-next-line react/display-name
+  return (props) => (props[showProp] ? <div role="dialog">{label}</div> : null);
+}
+jest.mock('../../../CreateDraftVersionModal', () => ({
+  __esModule: true,
+  default: mockDialog('Create draft dialog', 'showCreateAppVersion'),
+}));
+jest.mock('../../../CreateVersionModal', () => ({
+  __esModule: true,
+  default: mockDialog('Save version dialog', 'showCreateAppVersion'),
+}));
+jest.mock('../../EditVersionModal', () => ({
+  __esModule: true,
+  default: mockDialog('Rename version dialog', 'showEditAppVersion'),
+}));
 
 const versions = [
   { id: 'v-1', name: 'v1', status: 'DRAFT' },
@@ -71,7 +77,6 @@ const setBuilding = (isLoading) => act(() => useStore.setState({ ai: { isLoading
 
 const openMenu = async () => {
   fireEvent.click(screen.getByText('v1'));
-  await waitFor(() => expect(useVersionManagerStore.getState().isDropdownOpen).toBe(true));
   return screen.findByText('Delete v2');
 };
 
@@ -88,6 +93,12 @@ describe('the version menu when an AI build starts', () => {
         environments: [],
         selectedVersion: versions[0],
         developmentVersions: versions,
+        getCanPromoteAndRelease: () => ({
+          canPromote: true,
+          canRelease: false,
+          isPromoteVersionEnabled: true,
+          isReleaseVersionEnabled: true,
+        }),
         releasedVersionId: null,
         fetchDevelopmentVersions: jest.fn(),
         changeEditorVersionAction: jest.fn(),
@@ -107,7 +118,6 @@ describe('the version menu when an AI build starts', () => {
     await openMenu();
 
     setBuilding(true);
-    expect(useVersionManagerStore.getState().isDropdownOpen).toBe(false);
     await waitFor(() => expect(screen.queryByText('Delete v2')).toBeNull());
   });
 
@@ -140,6 +150,6 @@ describe('the version menu when an AI build starts', () => {
     render(<VersionManagerDropdown />);
     await openMenu();
     setBuilding(false);
-    expect(useVersionManagerStore.getState().isDropdownOpen).toBe(true);
+    expect(screen.getByText('Delete v2')).toBeInTheDocument();
   });
 });

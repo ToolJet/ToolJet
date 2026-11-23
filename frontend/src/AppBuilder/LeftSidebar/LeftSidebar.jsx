@@ -331,7 +331,7 @@ export const BaseLeftSidebar = ({
         >
           <DatabaseZap size={16} strokeWidth={1.8} />
         </SidebarItem>
-        {shouldShowLibraries(isModuleEditor, featureAccess?.appJsLibraries) && (
+        {!codeMode && shouldShowLibraries(isModuleEditor, featureAccess?.appJsLibraries) && (
           <AppLibrariesIcon
             darkMode={darkMode}
             selectedSidebarItem={selectedSidebarItem}
@@ -372,31 +372,35 @@ export const BaseLeftSidebar = ({
   const renderManageItems = () => (
     <>
       <div className="left-sidebar-section-divider" role="separator" aria-label="Manage tools" />
-      <SidebarItem
-        icon="search"
-        selectedSidebarItem={selectedSidebarItem}
-        darkMode={darkMode}
-        onClick={() => handleSelectedSidebarItem('search')}
-        className="left-sidebar-item left-sidebar-layout tw-overflow-visible"
-        tip="Code search"
-        railLabel="Search"
-        ref={setSideBarBtnRefs('search')}
-      >
-        <Search size={16} strokeWidth={1.8} />
-        <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
-      </SidebarItem>
-      <SidebarItem
-        icon="dependencies"
-        selectedSidebarItem={selectedSidebarItem}
-        darkMode={darkMode}
-        onClick={() => handleSelectedSidebarItem('dependencies')}
-        className="left-sidebar-item left-sidebar-layout"
-        tip="Dependencies"
-        railLabel="Deps"
-        ref={setSideBarBtnRefs('dependencies')}
-      >
-        <Network size={16} strokeWidth={1.8} />
-      </SidebarItem>
+      {!codeMode && (
+        <SidebarItem
+          icon="search"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          onClick={() => handleSelectedSidebarItem('search')}
+          className="left-sidebar-item left-sidebar-layout tw-overflow-visible"
+          tip="Code search"
+          railLabel="Search"
+          ref={setSideBarBtnRefs('search')}
+        >
+          <Search size={16} strokeWidth={1.8} />
+          <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
+        </SidebarItem>
+      )}
+      {!codeMode && (
+        <SidebarItem
+          icon="dependencies"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          onClick={() => handleSelectedSidebarItem('dependencies')}
+          className="left-sidebar-item left-sidebar-layout"
+          tip="Dependencies"
+          railLabel="Deps"
+          ref={setSideBarBtnRefs('dependencies')}
+        >
+          <Network size={16} strokeWidth={1.8} />
+        </SidebarItem>
+      )}
       {codeMode && !isModuleEditor && (
         <SidebarItem
           selectedSidebarItem={selectedSidebarItem}
