@@ -11,6 +11,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../Grid/gridUtils';
 import { appsService } from '@/_services';
 import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
+import { isCanvasInteractionV2Enabled } from '../interaction/flags';
 
 const BUFFER_OFFSET = 15;
 
@@ -82,6 +83,12 @@ export const useCanvasDropHandler = () => {
     setShowModuleBorder(false); // Hide the module border when dropping
 
     try {
+      // v2: released where nothing can be dropped (outside every canvas, or on one that refuses this component):
+      // the canvas engine left no target (interaction/engine.js renderInsert) and has said why.
+      if (isCanvasInteractionV2Enabled() && !canvasId) {
+        return;
+      }
+
       if (isModuleEditor && canvasId === 'canvas') {
         return;
       }

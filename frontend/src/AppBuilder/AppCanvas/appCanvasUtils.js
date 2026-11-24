@@ -5,6 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { getMouseDistanceFromParentDiv } from './Grid/gridUtils';
+import { isCanvasInteractionV2Enabled } from './interaction/flags';
 import {
   CANVAS_WIDTHS,
   NO_OF_GRIDS,
@@ -95,25 +96,33 @@ export const addNewWidgetToTheEditor = (
   const defaultWidth = componentData.defaultSize.width;
   const defaultHeight = componentData.defaultSize.height;
 
-  const { e, frozenTargetRect } = useGridStore.getState().getGhostDragPosition();
   const subContainerWidth = canvasBoundingRect?.width;
-
-  const { left: _left, top: _top } = getMouseDistanceFromParentDiv(
-    e,
-    parentId === 'canvas' ? 'real-canvas' : parentId,
-    parentCanvasType,
-    frozenTargetRect
-  );
-  const scrollTop = realCanvasRef?.scrollTop;
   const subContainerWidths = useGridStore.getState().subContainerWidths;
   const targetCanvasId = parentId && parentId !== 'canvas' ? parentId : 'canvas';
   const fallbackGridWidth = subContainerWidth ? subContainerWidth / NO_OF_GRIDS : subContainerWidths.canvas || 1;
   const gridWidth = subContainerWidths[targetCanvasId] || fallbackGridWidth;
-  let [left, top] = snapToGrid(gridWidth * NO_OF_GRIDS, _left, _top + scrollTop);
 
+  let left;
+  let top;
+  if (isCanvasInteractionV2Enabled()) {
+    // Where the canvas engine showed the drop (interaction/engine.js renderInsert): already on the target
+    // canvas's grid, in its units.
+    ({ left = 0, top = 0 } = useGridStore.getState().getGhostDragPosition()?.landing ?? {});
+  } else {
+    const { e, frozenTargetRect } = useGridStore.getState().getGhostDragPosition();
+    const { left: _left, top: _top } = getMouseDistanceFromParentDiv(
+      e,
+      parentId === 'canvas' ? 'real-canvas' : parentId,
+      parentCanvasType,
+      frozenTargetRect
+    );
+    const scrollTop = realCanvasRef?.scrollTop;
+    [left, top] = snapToGrid(gridWidth * NO_OF_GRIDS, _left, _top + scrollTop);
+    left = Math.round(left / gridWidth);
+  }
   // A drop whose pointer sits left of the target's first column (near the left edge of a pack slot, whose box starts
   // inside its card's padding) starts at column 0: it saved a negative left and the widget was cut off.
-  left = Math.max(0, Math.round(left / gridWidth));
+  left = Math.max(0, left);
 
   // Adjust widget width based on the dropping canvas width
   const mainCanvasGridWidth = subContainerWidths.canvas || gridWidth;

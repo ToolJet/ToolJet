@@ -14,6 +14,7 @@ import {
   handleDeactivateTargets,
   hideGridLines,
 } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import { isCanvasInteractionV2Enabled } from '@/AppBuilder/AppCanvas/interaction/flags';
 
 export const DragLayer = ({ index, component, isModuleTab = false, disabled = false }) => {
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
@@ -36,6 +37,12 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
           handleDeactivateTargets();
           hideGridLines();
           setShowModuleBorder(false);
+          return;
+        }
+        // v2: the canvas engine sets the target on every drag-over, once the canvas there accepts the component,
+        // and null when none does (interaction/engine.js renderInsert); the drop lands where it showed it.
+        if (isCanvasInteractionV2Enabled()) {
+          handleDrop(item, useGridStore.getState().currentDragCanvasId);
           return;
         }
         // hover on the target sets currentDragCanvasId, but hover only fires on a

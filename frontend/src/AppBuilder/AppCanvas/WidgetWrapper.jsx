@@ -18,6 +18,9 @@ import { isDynamicHeightActive, isDynamicHeightV2Enabled } from '@/AppBuilder/_s
 import { CONTENT_SIZED_CLASS } from '@/AppBuilder/_stores/dynamicHeight/editorLayout';
 import { syncSelectionCorner } from './selectionCorner';
 import { isCodePageRoot } from '@/AppBuilder/_helpers/codeModeHooks';
+import { isCanvasInteractionV2Enabled } from './interaction/flags';
+import ComponentFrame from './interaction/ComponentFrame';
+import { columnSpan } from './interaction/geometry';
 
 const DYNAMIC_HEIGHT_AUTO_LIST = [
   'CodeEditor',
@@ -124,9 +127,20 @@ const WidgetWrapper = memo(
       shallow
     );
 
+    // Fixed for the page load (interaction/flags.js); off: today's Moveable/Selecto path, unchanged.
+    const canvasInteractionV2 = isCanvasInteractionV2Enabled();
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
-    const isDragging = useStore((state) => state.draggingComponentId === id);
-    const isResizing = useStore((state) => state.resizingComponentId === id);
+    // v2: a member of a group being moved or resized also counts (the engine dims it in place under its ghost).
+    const isDragging = useStore(
+      (state) =>
+        state.draggingComponentId === id ||
+        (canvasInteractionV2 && state.isGroupDragging && state.selectedComponents.includes(id))
+    );
+    const isResizing = useStore(
+      (state) =>
+        state.resizingComponentId === id ||
+        (canvasInteractionV2 && state.isGroupResizing && state.selectedComponents.includes(id))
+    );
     const componentType = useStore(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.component,
       shallow
@@ -233,7 +247,11 @@ const WidgetWrapper = memo(
       newLayoutData = { ...layoutData, top: 0, left: 0, width: isEmbeddedModule ? NO_OF_GRIDS : layoutData.width };
     }
 
-    const gridWidthPx = gridWidth * newLayoutData?.width;
+    // v2: on whole-pixel column edges, the same ones the engine draws grid lines, ghosts and frames on.
+    const span = canvasInteractionV2
+      ? columnSpan(newLayoutData?.left ?? 0, newLayoutData?.width ?? 0, gridWidth)
+      : { x: newLayoutData.left * gridWidth, width: gridWidth * newLayoutData?.width };
+    const gridWidthPx = span.width;
     const gridHeight = calculateMoveableBoxHeightWithId(
       id,
       currentLayout,
@@ -275,7 +293,7 @@ const WidgetWrapper = memo(
           (isDynamicHeightV2Enabled() ? DYNAMIC_HEIGHT_AUTO_LIST_V2 : DYNAMIC_HEIGHT_AUTO_LIST).includes(componentType))
           ? 'auto'
           : gridFinalHeight + 'px',
-      transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
+      transform: `translate(${span.x}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
       borderTop: !visibility && mode === 'edit' ? `1px dashed var(--border-accent-strong)` : 'none',
       ...(showHiddenOverlay && { opacity: 0.5, outline: '1px dashed var(--border-accent-strong)' }),
@@ -339,7 +357,9 @@ const WidgetWrapper = memo(
             [`widget-${id} nested-target`]: id !== 'canvas' && !readOnly,
             'position-absolute': isGridLayout && readOnly,
             'active-target': isWidgetActive,
-            'opacity-0 pointer-events-none': isDragging || isResizing,
+            'opacity-0 pointer-events-none': !canvasInteractionV2 && (isDragging || isResizing),
+            // v2: flex children are resized live on their own element, so only grid components dim under a shadow.
+            'tj-drag-source': canvasInteractionV2 && (isDragging || (isResizing && !isFlexLayout)),
             'module-container': isModuleContainer,
             'dynamic-height-target': showsDynamicHeight,
             [CONTENT_SIZED_CLASS]:
@@ -360,18 +380,32 @@ const WidgetWrapper = memo(
           data-module-id={moduleId || 'canvas'}
           style={outerStyle}
           onClickCapture={isModuleViewerWidget && mode === 'edit' ? handleModuleClickCapture : undefined}
-          onMouseEnter={() => {
-            if (isDragging || isModuleContainer) return;
-            if (isFlexLayout) {
-              flexLayout.refreshConfigWidgetTop();
-              syncSelectionCorner(flexLayout.wrapperRef.current);
-            }
-            setHoveredComponentForGrid(id);
-          }}
-          onMouseLeave={() => {
-            if (isDragging || isModuleContainer) return;
-            setHoveredComponentForGrid('');
-          }}
+          // v2: which component is hovered is tracked by the canvas engine (interaction/engine.js setHovered).
+          onMouseEnter={
+            canvasInteractionV2
+              ? isFlexLayout && !isDragging
+                ? () => {
+                    flexLayout.refreshConfigWidgetTop();
+                    syncSelectionCorner(flexLayout.wrapperRef.current);
+                  }
+                : undefined
+              : () => {
+                  if (isDragging || isModuleContainer) return;
+                  if (isFlexLayout) {
+                    flexLayout.refreshConfigWidgetTop();
+                    syncSelectionCorner(flexLayout.wrapperRef.current);
+                  }
+                  setHoveredComponentForGrid(id);
+                }
+          }
+          onMouseLeave={
+            canvasInteractionV2
+              ? undefined
+              : () => {
+                  if (isDragging || isModuleContainer) return;
+                  setHoveredComponentForGrid('');
+                }
+          }
         >
           {mode == 'edit' && (
             <ConfigHandle
@@ -386,6 +420,14 @@ const WidgetWrapper = memo(
               isModuleContainer={isModuleContainer}
               subContainerIndex={subContainerIndex}
               isDynamicHeightEnabled={showsDynamicHeight}
+            />
+          )}
+          {canvasInteractionV2 && mode === 'edit' && !readOnly && (
+            <ComponentFrame
+              id={id}
+              moduleId={moduleId}
+              canResize={!!visibility}
+              isDynamicHeight={!!isDynamicHeightEnabled}
             />
           )}
           <RenderWidget
