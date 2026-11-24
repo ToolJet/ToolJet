@@ -2021,6 +2021,28 @@ describe('AppsController', () => {
         expect(response.statusCode).toBe(200);
       });
 
+      it('should not move a released version back to draft through the settings route', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const loggedUser = await login(app, 'admin@tooljet.io');
+        const application = await createApplication(app, { user: adminUserData.user });
+        const version = await createApplicationVersion(app, application);
+        await updateEntity(AppVersion, version.id, { status: AppVersionStatus.PUBLISHED });
+        await updateEntity(App, application.id, { currentVersionId: version.id });
+
+        const response = await request(app.getHttpServer())
+          .put(`/api/v2/apps/${application.id}/versions/${version.id}/global_settings`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser['tokenCookie'])
+          .send({ status: AppVersionStatus.DRAFT });
+
+        expect(response.statusCode).toBe(400);
+        const reloaded = await findEntityOrFail(AppVersion, { id: version.id });
+        expect(reloaded.status).toBe(AppVersionStatus.PUBLISHED);
+      });
+
       it('should not be able to update app version if no app create permission within same organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
