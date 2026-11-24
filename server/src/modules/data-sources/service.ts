@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
+import { redactEncryptedOptions } from './audit-redaction';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 import { User } from '@entities/user.entity';
 import { decode } from 'js-base64';
@@ -53,6 +54,7 @@ export class DataSourcesService implements IDataSourcesService {
     userPermissions: UserPermissions
   ): Promise<{ data_sources: object[]; data_source_folders: object[] }> {
     const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
+    await this.checkBranchInWorkspace(query?.branchId, user.organizationId);
 
     // Removed: appVersionId-based branchId derivation (app_version_id dropped from data_source_versions).
     // Released versions now use is_default DSV; branch editors pass branchId directly.
@@ -119,6 +121,7 @@ export class DataSourcesService implements IDataSourcesService {
     user: User,
     userPermissions: UserPermissions
   ): Promise<{ data_sources: object[] }> {
+    await this.checkBranchInWorkspace(query.branchId, user.organizationId);
     const selectedEnvironmentId =
       query.environmentId || (await this.appEnvironmentsUtilService.get(user.organizationId, null, true))?.id;
 
@@ -176,6 +179,7 @@ export class DataSourcesService implements IDataSourcesService {
 
   async create(createDataSourceDto: CreateDataSourceDto, user: User, branchId?: string): Promise<DataSource> {
     const { kind, name, options, plugin_id: pluginId, environment_id } = createDataSourceDto;
+    await this.checkBranchInWorkspace(branchId, user.organizationId);
 
     if (kind === 'grpc') {
       const rootDir = process.cwd().split('/').slice(0, -1).join('/');
@@ -250,7 +254,7 @@ export class DataSourcesService implements IDataSourcesService {
         environmentId: environmentId,
         updatedFields: Object.keys(updateDataSourceDto),
       },
-      metadata: updateDataSourceDto,
+      metadata: options ? { ...updateDataSourceDto, options: redactEncryptedOptions(options) } : updateDataSourceDto,
     });
     return;
   }
@@ -279,6 +283,9 @@ export class DataSourcesService implements IDataSourcesService {
     if (dataSource.type === DataSourceTypes.SAMPLE) {
       throw new BadRequestException('Cannot delete sample data source');
     }
+    if (dataSource.type === DataSourceTypes.STATIC) {
+      throw new BadRequestException('Cannot delete static data source');
+    }
 
     const result = await this.findQueriesLinkedToDatasource(dataSourceId, user.organizationId, branchId);
     if (result.dependent_queries) {
@@ -293,6 +300,11 @@ export class DataSourcesService implements IDataSourcesService {
 
     if (effectiveBranchId) {
       await dbTransactionWrap(async (manager: EntityManager) => {
+        const branch = await manager.findOne(WorkspaceBranch, {
+          where: { id: effectiveBranchId, organizationId: user.organizationId },
+          select: ['id'],
+        });
+        if (!branch) throw new NotFoundException('Branch not found');
         const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, user.organizationId);
         if (effectiveBranchId === defaultBranchId) {
           // Default branch: hard-delete the DSV row (no soft-delete).
@@ -303,7 +315,7 @@ export class DataSourcesService implements IDataSourcesService {
           // has nothing to touch — only a full deserialize re-creates it.
           await manager.update(
             WorkspaceBranch,
-            { id: effectiveBranchId },
+            { id: effectiveBranchId, organizationId: user.organizationId },
             { lastSyncedCommit: null, dataSourcesGitTreeSha: null }
           );
         } else {
@@ -313,7 +325,11 @@ export class DataSourcesService implements IDataSourcesService {
             { dataSourceId, branchId: effectiveBranchId },
             { isActive: false, gitTreeSha: null, updatedAt: new Date() }
           );
-          await manager.update(WorkspaceBranch, { id: effectiveBranchId }, { lastSyncedCommit: null });
+          await manager.update(
+            WorkspaceBranch,
+            { id: effectiveBranchId, organizationId: user.organizationId },
+            { lastSyncedCommit: null }
+          );
         }
 
         // Drop this data source's folder mapping on the branch it was removed from. Both arms above
@@ -349,7 +365,7 @@ export class DataSourcesService implements IDataSourcesService {
   }
 
   async changeScope(dataSourceId: string, user: User) {
-    await this.dataSourcesRepository.convertToGlobalSource(dataSourceId, user.organizationId);
+    await this.dataSourcesRepository.convertToGlobalSource(dataSourceId, user.organizationId, user.id);
   }
 
   async findOneByEnvironment(
@@ -442,6 +458,10 @@ export class DataSourcesService implements IDataSourcesService {
 
     await this.dataSourcesUtilService.authorizeOauth2(dataSource, code, user.id, environmentId, user.organizationId);
     return;
+  }
+
+  async checkBranchInWorkspace(branchId: string | undefined, organizationId: string): Promise<void> {
+    if (branchId) await this.dataSourcesUtilService.findWorkspaceBranchOrFail(branchId, organizationId);
   }
 
   async findQueriesLinkedToDatasource(datasourceId: string, organizationId: string, branchId?: string) {

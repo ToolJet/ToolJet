@@ -3307,6 +3307,7 @@ export class AppImportExportService {
           type: DataSourceTypes.DEFAULT,
           scope: DataSourceScopes.GLOBAL,
           pluginId: plugin.id,
+          createdBy: user?.id,
         });
         await manager.save(newDataSource);
 
@@ -3328,6 +3329,7 @@ export class AppImportExportService {
         type: DataSourceTypes.DEFAULT,
         scope: DataSourceScopes.GLOBAL,
         pluginId: null,
+        createdBy: user?.id,
       });
       await manager.save(newDataSource);
 
@@ -4193,6 +4195,7 @@ export class AppImportExportService {
         name: source.name,
         kind: source.kind,
         appVersionId: version.id,
+        createdBy: user?.id,
       });
       await manager.save(newSource);
       dataSourceMapping[source.id] = newSource.id;

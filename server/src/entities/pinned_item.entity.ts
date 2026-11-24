@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-// Exactly one of appId / folderId is set (chk_pinned_items_one_resource). Two FK columns
-// instead of resource_type + resource_id so deleting the app/folder cascades the pin.
+// Exactly one of appId / folderId / dataSourceId is set (chk_pinned_items_one_resource). FK
+// columns instead of resource_type + resource_id so deleting the resource cascades the pin.
 @Entity({ name: 'pinned_items' })
 export class PinnedItem {
   @PrimaryGeneratedColumn('uuid')
@@ -19,6 +19,9 @@ export class PinnedItem {
 
   @Column({ name: 'folder_id', type: 'uuid', nullable: true })
   folderId: string | null;
+
+  @Column({ name: 'data_source_id', type: 'uuid', nullable: true })
+  dataSourceId: string | null;
 
   @Column({ type: 'int' })
   position: number;
