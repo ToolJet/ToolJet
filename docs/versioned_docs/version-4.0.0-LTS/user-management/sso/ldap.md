@@ -7,6 +7,10 @@ title: LDAP
 
 Lightweight Directory Access Protocol (LDAP) is a protocol used to access and manage directory information, enabling centralized authentication and user management. By configuring LDAP with directory services you can streamline secure user authentication and access control in ToolJet.
 
+:::info
+LDAP can also be configured through environment variables. Refer to [Configure SSO via Environment Variables](/docs/setup/configuration/env-vars#configure-sso-via-environment-variables).
+:::
+
 ## Configure LDAP SSO
 
 To set up LDAP as Single Sign-On (SSO) for ToolJet, follow these steps:

@@ -9,6 +9,10 @@ sidebar_label: GitLab Configuration
 Connect your workspace to a GitLab project using a project access token. The connection works over HTTPS, and you choose the branch to sync with directly in ToolJet.
 
 
+:::info
+GitLab can also be configured through environment variables. Refer to [Configure GitSync via Environment Variables](/docs/setup/configuration/env-vars#configure-gitsync-via-environment-variables).
+:::
+
 Role Required: **Admin**
 
 ### 1. **Create a New Project** 

@@ -11,6 +11,10 @@ OpenID Connect (OIDC) is an authentication protocol that helps applications veri
 ToolJet also allows you to setup OIDC using non email identifier (for example, an employee ID). To learn more, refer to [this section](/docs/user-management/sso/oidc/setup#configuring-tooljet-oidc-with-non-email-identifier).
 :::
 
+:::info
+OIDC can also be configured through environment variables. Refer to [Configure SSO via Environment Variables](/docs/setup/configuration/env-vars#configure-sso-via-environment-variables).
+:::
+
 ## Grant Type
 
 #### Authorization Code
