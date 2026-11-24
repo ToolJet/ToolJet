@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { versionUrlName } from '@/_helpers/versionLabels';
 
 export function useAppPreviewLink() {
   const { moduleId } = useModuleContext();
@@ -50,7 +51,7 @@ export function useAppPreviewLink() {
     // preview of a branch version needs the branch context to resolve — without it the guard's
     // slug lookup misses and the app can't be found.
     const previewQuery = queryString.stringify({
-      version: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
+      version: selectedVersion?.display_name || selectedVersion?.displayName || versionUrlName(selectedVersion),
       ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
       // Carry the editor's mobile view into preview so it opens in mobile too.
       ...(currentLayout === 'mobile' ? { layout: 'mobile' } : {}),

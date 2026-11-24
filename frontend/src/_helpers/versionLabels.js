@@ -75,3 +75,14 @@ export const scopeVersionsForQueryPicker = (versions, { activeBranchId, isGitSyn
 // could only fail. An existing pin keeps the entry so it isn't relabelled as another option.
 export const shouldOfferDefaultBranchDraft = (versions, { isOnFeatureBranch, pinnedValue }) =>
   !isOnFeatureBranch || pinnedValue === DEFAULT_BRANCH_DRAFT_SENTINEL || hasDefaultBranchDraft(versions);
+
+const GENERATED_NAME = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// What `?version=` carries for a version. A default-branch draft is named with a generated id, so
+// the URL says "the default-branch draft" instead; a feature-branch draft is addressed by `?branch=`.
+export const versionUrlName = (v) => {
+  if (!v) return null;
+  if (versionType(v) === 'branch') return null;
+  if (isDefaultBranchDraft(v) && GENERATED_NAME.test(v.name ?? '')) return DEFAULT_BRANCH_DRAFT_SENTINEL;
+  return v.name ?? null;
+};

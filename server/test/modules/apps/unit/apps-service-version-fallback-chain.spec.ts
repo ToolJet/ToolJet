@@ -9,6 +9,7 @@ import { EntityNotFoundError } from 'typeorm';
 import { AppsService } from '../../../../src/modules/apps/service';
 import { APP_TYPES } from '../../../../src/modules/apps/constants';
 import { AppVersion } from '@entities/app_version.entity';
+import { DRAFT_SENTINEL } from '../../../../src/modules/versions/ref-sentinels';
 
 const makeSvc = (overrides: Partial<Record<string, any>> = {}) => {
   const svc = Object.create(AppsService.prototype) as any;
@@ -44,6 +45,33 @@ describe('AppsService.resolveBranchAwareEditingVersion', () => {
     await (svc as any).resolveBranchAwareEditingVersion(a, 'default-branch', user, 'my-saved-version');
     expect(a.editingVersion?.id).toBe('v-named');
     expect((svc as any).userAppVersionStateRepository.findForUserApp).not.toHaveBeenCalled();
+  });
+
+  it('on the default branch, resolves the draft sentinel to the default-branch draft, ignoring last-active', async () => {
+    const svc = makeSvc();
+    (svc as any).versionRepository.findOne.mockResolvedValue({ id: 'v-draft', status: 'DRAFT' });
+    const a = app();
+    await (svc as any).resolveBranchAwareEditingVersion(a, 'default-branch', user, DRAFT_SENTINEL);
+    expect(a.editingVersion?.id).toBe('v-draft');
+    expect((svc as any).versionRepository.findByName).not.toHaveBeenCalled();
+    expect((svc as any).userAppVersionStateRepository.findForUserApp).not.toHaveBeenCalled();
+    const where = (svc as any).versionRepository.findOne.mock.calls[0][0].where;
+    expect(where).toMatchObject({
+      appId: 'app-1',
+      branchId: 'default-branch',
+      status: 'DRAFT',
+      versionType: 'version',
+    });
+  });
+
+  it('falls through to the normal chain when the sentinel finds no draft', async () => {
+    const svc = makeSvc();
+    (svc as any).versionRepository.findOne
+      .mockResolvedValueOnce(null) // sentinel lookup
+      .mockResolvedValueOnce({ id: 'v-newest' }); // last-created
+    const a = app();
+    await (svc as any).resolveBranchAwareEditingVersion(a, 'default-branch', user, DRAFT_SENTINEL);
+    expect(a.editingVersion?.id).toBe('v-newest');
   });
 
   it('on the default branch, uses the last-active version when no URL version is given', async () => {

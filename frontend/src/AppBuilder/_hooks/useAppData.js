@@ -38,6 +38,7 @@ import { getPreviewQueryParams, redirectToErrorPage, getSubpath, replaceEditorUR
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { useLocation, useParams } from 'react-router-dom';
 import { whenBranchResolved, getActiveBranchId, setActiveBranch, setVersionInUrl } from '@/_helpers/active-branch';
+import { versionUrlName } from '@/_helpers/versionLabels';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { isAppMissingOnBranch, redirectAppMissingOnBranch } from '@/AppBuilder/_helpers/appMissingOnBranch';
 import { useMounted } from '@/_hooks/use-mount';
@@ -469,10 +470,10 @@ const useAppData = (
         // preview request, so stamping a resolved-not-requested version here would flip the
         // viewer's own next load into preview mode.
         if (mode === 'edit' && (!moduleMode || moduleId === 'canvas') && !isPreviewForVersion) {
-          const isBranchType = (editingVersion?.versionType ?? editingVersion?.version_type) === 'branch';
           // Branch-type versions store an internal UUID in `name` — the human name lives on the
-          // branch, already covered by ?branch= above — so clear rather than leak the UUID.
-          setVersionInUrl(isBranchType ? null : (editingVersion?.name ?? null));
+          // branch, already covered by ?branch= above — so clear rather than leak the UUID. A
+          // default-branch draft is addressed by the draft sentinel for the same reason.
+          setVersionInUrl(versionUrlName(editingVersion));
         }
         if (isPreviewForVersion) {
           // `convertAllKeysToSnakeCase` normalises the metadata envelope.
@@ -1255,7 +1256,7 @@ const useAppData = (
         );
         // Fires for switch, create, and delete alike — all three change currentVersionId.
         if (mode === 'edit') {
-          setVersionInUrl(selectedVersion?.versionType === 'branch' ? null : (selectedVersion?.name ?? null));
+          setVersionInUrl(versionUrlName(selectedVersion));
         }
         setResolvedGlobals('mode', { value: mode });
         setResolvedGlobals('currentUser', {

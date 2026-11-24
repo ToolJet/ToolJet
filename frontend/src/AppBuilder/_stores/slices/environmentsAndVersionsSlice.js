@@ -19,6 +19,7 @@ import {
 } from '@/_helpers/environmentAccess';
 import { normalizeQueryTransformationOptions } from '@/AppBuilder/_stores/utils/appDataCaseConversion';
 import { setVersionInUrl } from '@/_helpers/active-branch';
+import { versionUrlName } from '@/_helpers/versionLabels';
 
 const initialState = {
   selectedVersion: null,
@@ -498,7 +499,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       // fires when currentVersionId's VALUE changes, but this action is also used to refresh
       // state after an in-place rename/promotion of the same id (CreateVersionModal), where it
       // wouldn't re-fire.
-      setVersionInUrl(selectedVersion.versionType === 'branch' ? null : selectedVersion.name);
+      setVersionInUrl(versionUrlName(selectedVersion));
 
       // The App Builder's own version-switch effect (useAppData.js:880, skipped here via
       // moduleMode) redoes all of the below unconditionally a moment after this action returns
