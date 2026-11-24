@@ -647,7 +647,6 @@ describe('AB-PANEL-NAMES panel and drawer names', () => {
       search: 'code-search',
       dependencies: 'dependencies',
       apphistory: 'app-history',
-      styleinspector: 'style-inspector',
       security: 'security',
       access: 'access',
       settings: 'settings',

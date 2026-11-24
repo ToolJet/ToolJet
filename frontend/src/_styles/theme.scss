@@ -707,37 +707,6 @@ button {
       background-color: var(--surfaces-surface-01);
     }
 
-    .empty-configuration-header {
-      display: flex;
-      padding: 4px 12px;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border-weak);
-
-      .header {
-        color: var(--text-default);
-        font-weight: 500;
-        font-size: 12px;
-        padding: 7px 6px;
-      }
-    }
-
-    .no-component-selected {
-      flex-direction: column;
-      height: 100%;
-      padding: 0px 32px;
-
-      .heading {
-        color: var(--text-default);
-        margin-top: 16px;
-      }
-
-      .sub-heading {
-        color: var(--text-default);
-        text-align: center;
-      }
-    }
-
     .inspector {
       .form-control-plaintext {
         padding: 0;

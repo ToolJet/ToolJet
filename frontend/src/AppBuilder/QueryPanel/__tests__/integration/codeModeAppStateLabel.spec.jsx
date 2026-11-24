@@ -1,6 +1,6 @@
 /**
- * DB-M01: in Code mode the state inspector is called "App state", as main's rail called it; visual
- * apps keep "Inspector". The bottom tab, its open/close toggle and the drawer's close button agree.
+ * Both React Builder (Code mode) and visual apps call the bottom state drawer "Inspector"
+ * (supersedes DB-M01). The bottom tab, its open/close toggle, and the drawer's close button agree.
  */
 import React from 'react';
 import { act } from '@testing-library/react';
@@ -33,18 +33,11 @@ const setup = (buildMode) => {
 
 afterEach(() => controls.restore());
 
-// Break this catches: Code mode's App state reads "Inspector" again.
-test('a Code mode app calls the Inspector "App state"', () => {
-  setup('code');
-
-  expect(tab()).toHaveTextContent('App state');
-  expect(toggle()).toHaveAccessibleName('Close app state');
-  expect(document.querySelector('[data-cy="runtime-inspector-close-button"]')).toHaveAccessibleName('Close app state');
-});
-
-test('a visual app keeps "Inspector"', () => {
-  setup('visual');
+// Break this catches: Code mode reverts to calling the Inspector "App state".
+test.each(['code', 'visual'])('a %s app calls the bottom state drawer "Inspector"', (buildMode) => {
+  setup(buildMode);
 
   expect(tab()).toHaveTextContent('Inspector');
   expect(toggle()).toHaveAccessibleName('Close inspector');
+  expect(document.querySelector('[data-cy="runtime-inspector-close-button"]')).toHaveAccessibleName('Close inspector');
 });

@@ -1,7 +1,8 @@
 /**
  * Once open, the right panel (component, query, page configuration, …) closes only from its own
- * close button — canvas clicks, left-panel changes (the AI chat included), and the bottom runtime
- * panel never close it.
+ * close button — left-panel changes (the AI chat included), the bottom runtime panel, and
+ * `clearSelectedComponents()` never close it. Empty-canvas clicks and Escape close only component
+ * properties (tested in `propertiesPanelOnlyForAComponent.spec.jsx`).
  */
 import useStore from '@/AppBuilder/_stores/store';
 import { seedApp, componentDefinition } from '@/test/app-builder';
@@ -19,7 +20,7 @@ describe('right panel stays open', () => {
     state().setRightSidebarOpen(true);
   });
 
-  it('should stay open when the canvas is clicked to clear the selection', () => {
+  it('should stay open when clearSelectedComponents runs without an empty-canvas click', () => {
     state().setSelectedComponents(['c1']);
     state().clearSelectedComponents();
 

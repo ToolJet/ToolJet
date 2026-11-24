@@ -125,8 +125,15 @@ const useInspectorTreeData = ({ moduleId, appType }) => {
       ],
     };
 
-    if (codeMode && sortedComponents.length === 0) {
-      jsontreeData.children = jsontreeData.children.filter((child) => child.id !== 'components');
+    if (codeMode) {
+      // React builder apps manage UI state in React and route via useNavigation(), so ToolJet's
+      // app-level Variables and Page state do not apply (nor does an empty Components section).
+      jsontreeData.children = jsontreeData.children.filter(
+        (child) =>
+          child.id !== 'variables' &&
+          child.id !== 'page' &&
+          !(child.id === 'components' && sortedComponents.length === 0)
+      );
     }
 
     if (appType === 'module') {

@@ -13,18 +13,7 @@ import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import {
-  Blocks,
-  DatabaseZap,
-  Files,
-  History,
-  LockKeyhole,
-  Network,
-  PencilRuler,
-  ScanSearch,
-  Search,
-  Settings,
-} from 'lucide-react';
+import { Blocks, DatabaseZap, Files, History, LockKeyhole, Network, ScanSearch, Search, Settings } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { EditorView } from '@codemirror/view';
 import CodeSearch from './CodeSearch/CodeSearch';
@@ -50,13 +39,7 @@ import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
 import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
 import AppLibraries from './AppLibraries';
-import {
-  SecurityPanel,
-  AccessPanel,
-  CodeHistoryPanel,
-  useCodeMode,
-  useStyleInspectorRail,
-} from '@/AppBuilder/_helpers/codeModeHooks';
+import { SecurityPanel, AccessPanel, CodeHistoryPanel, useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 import { railClick } from './railClick';
 import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 import LegalReasonsErrorModal from '@/_components/LegalReasonsErrorModal';
@@ -75,8 +58,6 @@ export const BaseLeftSidebar = ({
 }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
   const codeMode = useCodeMode(moduleId);
-  // Code mode's style inspector (null elsewhere). The redesign has one rail, so it sits here (LP-M11).
-  const styleInspector = useStyleInspectorRail();
   const isAiBlockedByBranch = useIsAiBlockedOnDefaultBranch();
   const buildMode = useStore((state) => state.appStore?.modules?.[moduleId]?.app?.buildMode);
   const [
@@ -339,22 +320,6 @@ export const BaseLeftSidebar = ({
         >
           <DatabaseZap size={16} strokeWidth={1.8} />
         </SidebarItem>
-        {styleInspector && !isModuleEditor && (
-          <SidebarItem
-            panel="styleinspector"
-            selectedSidebarItem={styleInspector.active ? 'styleinspector' : selectedSidebarItem}
-            darkMode={darkMode}
-            onClick={styleInspector.toggle}
-            className="left-sidebar-item left-sidebar-layout"
-            tip={styleInspector.tip}
-            disabled={styleInspector.disabled}
-            aria-pressed={styleInspector.active}
-            aria-disabled={styleInspector.waiting || undefined}
-            aria-keyshortcuts={styleInspector.shortcut}
-          >
-            <PencilRuler size={16} strokeWidth={1.8} />
-          </SidebarItem>
-        )}
         {!codeMode && shouldShowLibraries(isModuleEditor, featureAccess?.appJsLibraries) && (
           <AppLibrariesIcon
             darkMode={darkMode}

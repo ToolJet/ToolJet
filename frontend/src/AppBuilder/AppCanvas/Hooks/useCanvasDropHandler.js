@@ -71,6 +71,16 @@ export const useCanvasDropHandler = () => {
   const setFlexContainerDropTarget = useStore((state) => state.setFlexContainerDropTarget, shallow);
   const { isGitSyncEnabled } = useGitSyncConfig();
 
+  // The properties panel opens on the dropped component once it is on the page, not while it is picked or dragged,
+  // and not for a drop that was refused. The component lands synchronously; the save goes on in the background.
+  const openPropertiesOnceLanded = (saving, componentId) => {
+    if (componentId && useStore.getState().getComponentDefinition(componentId)) {
+      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+      setRightSidebarOpen(true);
+    }
+    return saving;
+  };
+
   const handleDrop = async ({ componentType: draggedComponentType, component }, canvasId) => {
     const realCanvasRef =
       !canvasId || canvasId === 'canvas'
@@ -96,9 +106,6 @@ export const useCanvasDropHandler = () => {
         );
         return;
       }
-
-      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
-      setRightSidebarOpen(true);
 
       // If the dragged module is a git-pulled stub (no real version imported yet),
       // hydrate it server-side BEFORE building moduleInfo. Otherwise the stub's
@@ -191,7 +198,7 @@ export const useCanvasDropHandler = () => {
           parentComponent = addDefaultButtonIdToForm(parentComponent, childComponents);
         }
         addedComponent = [parentComponent, ...childComponents];
-        await addComponentToCurrentPage(addedComponent);
+        await openPropertiesOnceLanded(addComponentToCurrentPage(addedComponent), parentComponent?.id);
       } else {
         const newComponent = addNewWidgetToTheEditor(
           draggedComponentType,
@@ -203,7 +210,7 @@ export const useCanvasDropHandler = () => {
           component?.stylePreset
         );
         addedComponent = [newComponent];
-        await addComponentToCurrentPage(addedComponent);
+        await openPropertiesOnceLanded(addComponentToCurrentPage(addedComponent), newComponent?.id);
       }
     } finally {
       // Reset drag bookkeeping when dropping

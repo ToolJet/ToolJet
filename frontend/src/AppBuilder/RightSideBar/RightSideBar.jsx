@@ -108,15 +108,14 @@ export const RightSideBar = ({ darkMode }) => {
               </FallbackBoundary>
             )}
             {/* Add component lives only in the left panel; the right side never shows it. */}
-            {pinned ? (
-              <FallbackBoundary label="Style inspector" location="Style inspector" darkMode={darkMode}>
-                <CodeInspectorSidebar darkMode={darkMode} />
-              </FallbackBoundary>
-            ) : (
-              displayedTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION && (
+            {displayedTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION &&
+              (pinned ? (
+                <FallbackBoundary label="Style inspector" location="Style inspector" darkMode={darkMode}>
+                  <CodeInspectorSidebar darkMode={darkMode} />
+                </FallbackBoundary>
+              ) : (
                 <ComponentConfigurationTab darkMode={darkMode} isModuleEditor={isModuleEditor} />
-              )
-            )}
+              ))}
             {displayedTab === RIGHT_SIDE_BAR_TAB.QUERY && (
               <FallbackBoundary label="Query configuration" location="Right SideBar Query" darkMode={darkMode}>
                 <div className="right-sidebar-query-configuration">

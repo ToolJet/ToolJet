@@ -3,11 +3,10 @@ import cx from 'classnames';
 import { X } from 'lucide-react';
 import { ToolTip } from '@/_components/ToolTip';
 import { getRuntimeToggleLabel } from '@/AppBuilder/panelLayout';
-import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 // Collapses the bottom runtime panel; sits at the right end of the Inspector and Debugger toolbars.
 const RuntimePanelCloseButton = ({ tab, onClose, dataCy, className }) => {
-  const label = getRuntimeToggleLabel(true, tab, useCodeMode());
+  const label = getRuntimeToggleLabel(true, tab);
   return (
     <ToolTip message={label} placement="top">
       <button
