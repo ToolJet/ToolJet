@@ -899,3 +899,7 @@ export const isDragOnInnerElement = (componentType, widgetElement, target) => {
   const selector = [INNER_DRAG_SELECTORS[componentType], INNER_DRAG_MARKER].filter(Boolean).join(', ');
   return Array.from(widgetElement.querySelectorAll(selector)).some((part) => part.contains(target));
 };
+
+// Widgets whose body handles its own drag (drawing, sliding) move only when the drag starts on their handle.
+export const isPointerOnDragHandle = (elementsUnderPointer) =>
+  elementsUnderPointer.some((ele) => ele.classList.contains('config-handle'));

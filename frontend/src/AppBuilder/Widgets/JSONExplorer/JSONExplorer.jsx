@@ -5,6 +5,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import './jsonExplorer.scss';
+import { usesThemeBackground } from './themeBackground';
 
 export const JSONExplorer = function JSONExplorer(props) {
   // ===== PROPS DESTRUCTURING =====
@@ -67,11 +68,12 @@ export const JSONExplorer = function JSONExplorer(props) {
     ...styling,
     base00: 'transparent',
   };
+  const containerBackground = usesThemeBackground(theme, backgroundColor) ? styling.base00 : backgroundColor;
 
   const containerComputedStyles = {
     height: isDynamicHeightEnabled ? '100%' : height,
     ...(isDynamicHeightEnabled ? { minHeight: `${height}px` } : {}),
-    backgroundColor,
+    backgroundColor: containerBackground,
     border: `1px solid ${borderColor}`,
     borderRadius: `${borderRadius}px`,
     boxShadow,

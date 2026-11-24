@@ -98,6 +98,7 @@ export default function RichTextEditor({
         isLoading={isLoading}
         isVisible={visibility}
         isDisabled={disabledState}
+        readOnly={isDisabled}
         setExposedVariable={setExposedVariable}
         setExposedVariables={setExposedVariables}
         setIsDisabled={setIsDisabled}

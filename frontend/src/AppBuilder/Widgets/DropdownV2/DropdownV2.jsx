@@ -15,7 +15,7 @@ import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
-import { useMenuWidth } from './useMenuWidth';
+import { getMenuPortalLeft, useMenuWidth } from './useMenuWidth';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 import {
@@ -495,9 +495,9 @@ export const DropdownV2 = ({
       display: 'flex',
       cursor: 'pointer',
     }),
+    // Each option row sits inside the list box, which already has the menu width.
     menuList: (provided) => ({
       ...provided,
-      ...menuWidthStyle,
       padding: '0 8px',
       borderRadius: '8px',
       // this is needed otherwise :active state doesn't look nice, gap is required
@@ -517,6 +517,7 @@ export const DropdownV2 = ({
     }),
     menuPortal: (base) => ({
       ...base,
+      left: getMenuPortalLeft(base.left, menuWidthStyle),
       ...(menuWidthStyle?.maxWidth ? { maxWidth: menuWidthStyle.maxWidth } : {}),
       zIndex: 1040,
     }),

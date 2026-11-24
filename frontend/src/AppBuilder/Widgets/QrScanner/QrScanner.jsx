@@ -10,8 +10,9 @@ export default function QrScanner({ styles, fireEvent, setExposedVariable, dataC
 
   const handleScan = async (data) => {
     if (data) {
-      await fireEvent('onDetect');
+      // Publish first so onDetect handlers read the new value, not the previous scan's.
       await setExposedVariable('lastDetectedValue', data);
+      await fireEvent('onDetect');
     }
   };
 

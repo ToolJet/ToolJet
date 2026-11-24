@@ -488,6 +488,79 @@ describe('DropdownV2', () => {
       expect(store().getVariable('selectSeen', MODULE_ID)).toBeUndefined();
     });
   });
+
+  describe('menu scroll on open', () => {
+    const ROW = 36;
+    const GAP = 5;
+    let scrollCalls;
+    let restore;
+
+    beforeEach(() => {
+      widget.setup();
+      scrollCalls = [];
+      const heightDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetHeight');
+      const hadScrollTo = Object.prototype.hasOwnProperty.call(Element.prototype, 'scrollTo');
+      const scrollTo = Element.prototype.scrollTo;
+      // The harness gives every element the 300px list height; option rows are 36px.
+      Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
+        configurable: true,
+        get() {
+          return this.hasAttribute('data-index') ? ROW : heightDescriptor.get.call(this);
+        },
+      });
+      Element.prototype.scrollTo = function (opts) {
+        if (this.classList.contains('dropdown-multiselect-widget-custom-menu-list-body')) scrollCalls.push(opts?.top);
+      };
+      restore = () => {
+        Object.defineProperty(HTMLElement.prototype, 'offsetHeight', heightDescriptor);
+        if (hadScrollTo) Element.prototype.scrollTo = scrollTo;
+        else delete Element.prototype.scrollTo;
+      };
+    });
+    afterEach(() => {
+      restore();
+      widget.teardown();
+    });
+
+    test('[DropdownV2-MENU-002] opening with the last option picked scrolls to the real bottom of the list', async () => {
+      // Break this catches: the list has a 5px gap above and below the rows that the scroll maths leaves out, so the
+      // picked last row stops short and its bottom is cut off.
+      // Few enough rows that all of them render and get measured.
+      const count = 20;
+      const options = Array.from({ length: count }, (_, i) =>
+        option(`Item ${i}`, `v${i}`, { isDefault: i === count - 1 })
+      );
+      widget.render({ properties: { options: { value: options } } });
+      await waitFor(() => expect(widget.exposed().value).toBe(`v${count - 1}`));
+
+      await openMenu();
+
+      const listHeight = 300;
+      const realBottom = GAP + count * ROW + GAP - listHeight;
+      await waitFor(() => expect(scrollCalls[scrollCalls.length - 1]).toBe(realBottom));
+    });
+
+    test('[DropdownV2-MENU-002] option rows fill the list box instead of taking the menu width again', async () => {
+      // Break this catches: each row gets the full menu width inside a box that also holds a vertical scrollbar, so
+      // the rows overflow sideways and a horizontal scrollbar takes height from the list.
+      widget.render({
+        properties: { options: OPTIONS },
+        styles: { menuWidthMode: binding('custom'), menuCustomWidth: binding('256') },
+      });
+
+      await openMenu();
+
+      const body = await waitFor(() => {
+        const el = document.querySelector('.dropdown-multiselect-widget-custom-menu-list-body');
+        expect(el).not.toBeNull();
+        return el;
+      });
+      expect(getComputedStyle(body).width).toBe('256px');
+      const rows = body.querySelectorAll('[data-index] > div');
+      expect(rows.length).toBeGreaterThan(0);
+      rows.forEach((row) => expect(getComputedStyle(row).width).not.toBe('256px'));
+    });
+  });
 });
 
 describe('DropdownV2 selection, events and actions', () => {

@@ -37,6 +37,23 @@ const esmPackages = [
   'dnd-core', // react-dnd's ESM dep
   '@react-dnd', // scoped helpers: @react-dnd/invariant, @react-dnd/shallowequal, @react-dnd/asap
   'react-dnd-html5-backend',
+  // Text's Markdown sanitizer (src/AppBuilder/Widgets/rehypeDomPurify.js): a few small hast/parse5 packages.
+  'hast-util-from-parse5',
+  'hast-util-to-parse5',
+  'hastscript',
+  'hast-util-parse-selector',
+  'parse5',
+  'entities',
+  'devlop',
+  'property-information',
+  'vfile',
+  'vfile-location',
+  'vfile-message',
+  'unist-util-stringify-position',
+  'web-namespaces',
+  'comma-separated-tokens',
+  'space-separated-tokens',
+  'zwitch',
 ];
 
 module.exports = {

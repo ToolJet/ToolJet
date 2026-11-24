@@ -757,6 +757,31 @@ describe('KeyValuePair: fieldType adapter wiring', () => {
     );
   });
 
+  test('[KeyValuePair-KEY-002] Escape closes an open select menu', async () => {
+    // Break this catches: the select menu's open state following editing only, with nothing ending editing on
+    // Escape, so the menu stays open until an outside click.
+    renderField(
+      {
+        fieldType: 'select',
+        isEditable: true,
+        options: [
+          { label: 'A', value: 'a' },
+          { label: 'B', value: 'b' },
+        ],
+      },
+      { v: 'a' }
+    );
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    await waitFor(() => expect(document.querySelector('.react-select__menu')).toBeInTheDocument());
+    // In the browser the open menu focuses its search box; jsdom does not move focus, so focus it here.
+    document.querySelector('.react-select__menu input').focus();
+
+    await widget.session.user.keyboard('{Escape}');
+
+    await waitFor(() => expect(document.querySelector('.react-select__menu')).not.toBeInTheDocument());
+  });
+
   test('[KeyValuePair-FIELDTYPE-005] text: renders TextField (multiline, pre-wrapped) via the same click-to-edit contract as string', async () => {
     renderField({ fieldType: 'text', isEditable: true }, { v: 'hello' });
 

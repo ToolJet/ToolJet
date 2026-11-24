@@ -118,6 +118,7 @@ export const DatetimePickerV2 = ({
     selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, displayFormat) : ''
   );
   const [datepickerMode, setDatePickerMode] = useState('date');
+  const previousDatepickerModeRef = useRef(datepickerMode);
 
   const setInputValue = (date, format, propStoreTimezone, skipFireEvent = false) => {
     setTextParseError(false);
@@ -153,6 +154,7 @@ export const DatetimePickerV2 = ({
   };
 
   const onTimeChange = (time, type) => {
+    setTextParseError(false);
     // Empty widget: base time edits on today's midnight so unpicked units stay
     // 00 — see getTimeSelectionBase.
     const updatedSelectedTimestamp = getTimeSelectionBase(selectedTimestamp);
@@ -394,6 +396,17 @@ export const DatetimePickerV2 = ({
     dateFormat,
     textParseError,
   ]);
+
+  // After a month or year pick, react-datepicker shows the picked period's first month (January for a year);
+  // move its view to the selected date so the day stays marked.
+  useEffect(() => {
+    const leftPeriodPicker = previousDatepickerModeRef.current !== 'date' && datepickerMode === 'date';
+    previousDatepickerModeRef.current = datepickerMode;
+    if (leftPeriodPicker && selectedTimestamp) {
+      datePickerRef.current?.setPreSelection?.(moment(selectedTimestamp).toDate());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datepickerMode]);
 
   useFormClear(() => setInputValue(null, null, null, true));
 

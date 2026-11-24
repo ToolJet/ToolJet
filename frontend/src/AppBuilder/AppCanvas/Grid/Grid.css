@@ -1,9 +1,3 @@
-.target,
-.nested-target {
-  position: absolute;
-  box-sizing: border-box;
-}
-
 .target.hovered {
   z-index: 2;
 }

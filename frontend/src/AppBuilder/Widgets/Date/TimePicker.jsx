@@ -86,6 +86,7 @@ export const TimePicker = ({
   };
 
   const onTimeChange = (time, type) => {
+    setTextParseError(false);
     // Empty widget: base time edits on today's midnight so unpicked units stay
     // 00 — see getTimeSelectionBase.
     const updatedSelectedTimestamp = getTimeSelectionBase(selectedTimestamp);

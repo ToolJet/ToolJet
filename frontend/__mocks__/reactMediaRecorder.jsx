@@ -18,6 +18,9 @@ const React = require('react');
 
 let latestOptions = null;
 const __getRecorderOptions = () => latestOptions;
+// stopRecording is what releases the library's own microphone/camera stream.
+let stopCalls = 0;
+const __getStopCalls = () => stopCalls;
 
 const useReactMediaRecorder = (options = {}) => {
   latestOptions = options;
@@ -30,6 +33,7 @@ const useReactMediaRecorder = (options = {}) => {
   }, [options]);
 
   const stopRecording = React.useCallback(() => {
+    stopCalls += 1;
     const blob = new Blob(['mock-camera-recording'], { type: 'video/webm' });
     const url = 'blob:mock/camera-recording';
     setMediaBlobUrl(url);
@@ -37,12 +41,24 @@ const useReactMediaRecorder = (options = {}) => {
     options.onStop && options.onStop(url, blob);
   }, [options]);
 
+  const pauseRecording = React.useCallback(() => setStatus('paused'), []);
+  const resumeRecording = React.useCallback(() => setStatus('recording'), []);
+
   const clearBlobUrl = React.useCallback(() => {
     setMediaBlobUrl(undefined);
     setStatus('idle');
   }, []);
 
-  return { status, startRecording, stopRecording, mediaBlobUrl, clearBlobUrl, error: null };
+  return {
+    status,
+    startRecording,
+    stopRecording,
+    pauseRecording,
+    resumeRecording,
+    mediaBlobUrl,
+    clearBlobUrl,
+    error: null,
+  };
 };
 
-module.exports = { useReactMediaRecorder, __getRecorderOptions };
+module.exports = { useReactMediaRecorder, __getRecorderOptions, __getStopCalls };

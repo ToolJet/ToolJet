@@ -130,8 +130,10 @@ export const CircularProgressBar = function CircularProgressBar({
 
   return (
     <div style={computedStyles} data-cy={dataCy}>
-      <div style={innerContainerStyles} className={cx({ 'rotate-forever': exposedVariablesTemporaryState.isLoading })}>
+      <div style={innerContainerStyles}>
         <CircularProgressbar
+          // Spin the ring itself; spinning the full-width row made an aligned ring orbit outside the widget.
+          className={cx({ 'rotate-forever': exposedVariablesTemporaryState.isLoading })}
           key={allowNegativeProgress && exposedVariablesTemporaryState.value < 0 ? 'negative' : 'positive'}
           value={computedProperties.value}
           text={computedProperties.text}

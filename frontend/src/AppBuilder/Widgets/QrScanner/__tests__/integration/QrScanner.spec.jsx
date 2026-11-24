@@ -84,6 +84,27 @@ describe('QrScanner widget', () => {
     expect(widget.variables().onDetectCount).toBeUndefined();
   });
 
+  test('[QrScanner-DETECT-003] the onDetect handler reads the value of the scan that fired it', async () => {
+    // Break this catches: handleScan firing onDetect before publishing lastDetectedValue
+    // (QrScanner.jsx handleScan), so the handler reads the previous scan's value.
+    const [seenRow] = setVariableOn(ID, 'onDetect', {
+      key: 'seen',
+      value: '{{[...(variables.seen ?? []), components.qrscanner1.lastDetectedValue]}}',
+    });
+    const [countRow] = onDetectCounter();
+    widget.render({
+      events: [seenRow, { ...countRow, id: 'evt-onDetect-count', name: 'evt-onDetect-count', index: 1 }],
+    });
+    await waitFor(() => expect(typeof __getQrReaderProps().onScan).toBe('function'));
+
+    await widget.session.store.act(async () => {
+      await __getQrReaderProps().onScan('TJ-QR-ALPHA-7F3C');
+    });
+
+    await waitFor(() => expect(widget.variables().seen).toEqual(['TJ-QR-ALPHA-7F3C']));
+    expect(widget.variables().onDetectCount).toBe(1);
+  });
+
   test('[QrScanner-ERROR-001] a scanner error swaps in the ErrorModal', async () => {
     // Break this catches: handleError not setting errorOccured (QrScanner.jsx:6-9,23),
     // so a camera failure leaves a broken scanner with no explanation.

@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import moment from 'moment-timezone';
 import {
   createWidgetHarness,
@@ -331,6 +331,37 @@ describe('DatetimePickerV2 widget', () => {
     expect(exposed().storeTimezone).toBe(moment.tz.guess());
   });
 
+  test('[DatetimePickerV2-TZ-005] timezone conversion applies daylight saving time for the date shown', async () => {
+    // Break this catches: reading zone offsets at a fixed winter instant (Date/utils.js getOffset),
+    // so summer dates in DST zones render one hour off and stored values get the wrong wall time.
+    const tzProps = (display, store, defaultValue) => ({
+      properties: {
+        isTimezoneEnabled: binding('{{true}}'),
+        storeTimezone: binding(store),
+        displayTimezone: binding(display),
+        defaultValue: binding(defaultValue),
+      },
+    });
+
+    widget.render(tzProps('America/New_York', 'Etc/UTC', '15/07/2026 12:00'));
+    await waitFor(() => expect(input()).toHaveValue('15/07/2026 08:00'));
+    widget.teardown();
+
+    widget.setup();
+    widget.render(tzProps('Australia/Sydney', 'Etc/UTC', '15/07/2026 12:00'));
+    await waitFor(() => expect(input()).toHaveValue('15/07/2026 22:00'));
+    widget.teardown();
+
+    widget.setup();
+    widget.render(tzProps('America/New_York', 'Etc/UTC', '15/01/2026 12:00'));
+    await waitFor(() => expect(input()).toHaveValue('15/01/2026 07:00'));
+    widget.teardown();
+
+    widget.setup();
+    widget.render(tzProps('America/New_York', 'America/New_York', '15/07/2026 09:00'));
+    await waitFor(() => expect(exposed().value).toMatch(/^2026-07-15T09:00:00\.000-04:00$/));
+  });
+
   test('[DatetimePickerV2-VALID-001] a mandatory empty field is invalid', async () => {
     // Break this catches: dropping the mandatory check from isDateValid
     // (utils.js isMandatoryValid), so a required empty datetime reports valid.
@@ -396,6 +427,63 @@ describe('DatetimePickerV2 widget', () => {
     });
 
     await waitFor(() => expect(store().getExposedValueOfComponent(ID, MODULE_ID).selectedDate).toBeNull());
+  });
+
+  test('[DatetimePickerV2-PARSE-001] picking an hour after unparseable typed text clears the error', async () => {
+    // Break this catches: the hour/minute pick never clearing the typed-text parse error, so isValid stays false.
+    widget.render({});
+    await waitFor(() => expect(input()).toBeTruthy());
+    fireEvent.focus(input());
+    fireEvent.change(input(), { target: { value: 'abc' } });
+    fireEvent.blur(input());
+    await waitFor(() => expect(exposed().isValid).toBe(false));
+
+    fireEvent.click(input());
+    const hour11 = await waitFor(() => {
+      const item = [...document.querySelectorAll('.time-item')].find((el) => el.textContent === '11');
+      expect(item).toBeTruthy();
+      return item;
+    });
+    fireEvent.click(hour11);
+
+    await waitFor(() => expect(exposed().isValid).toBe(true));
+    expect(input().getAttribute('aria-invalid')).not.toBe('true');
+  });
+
+  test('[DatetimePickerV2-NAV-001] picking a year returns to the selected month with the day marked', async () => {
+    // Break this catches: leaving react-datepicker's view on January of the picked year, so the calendar
+    // shows a month without the selected day.
+    widget.render({ properties: { defaultValue: binding('15/06/2026 10:30'), dateFormat: binding('DD/MM/YYYY') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    fireEvent.click(input());
+    const yearSelector = await waitFor(() => {
+      const el = document.querySelector('.tj-datepicker-widget-year-selector');
+      expect(el).toBeTruthy();
+      return el;
+    });
+
+    fireEvent.click(yearSelector);
+    const year2028 = await waitFor(() => {
+      const el = [...document.querySelectorAll('.react-datepicker__year-text')].find((y) => y.textContent === '2028');
+      expect(el).toBeTruthy();
+      return el;
+    });
+    fireEvent.click(year2028);
+
+    await waitFor(() => expect(document.querySelector('.react-datepicker__day--selected')?.textContent).toBe('15'));
+    expect(document.querySelector('.tj-datepicker-widget-month-selector')?.textContent).toMatch(/June/);
+  });
+
+  test('[DatetimePickerV2-KEY-001] Escape in the focused input closes the open popup', async () => {
+    // Break this catches: the custom input dropping react-datepicker's onKeyDown, so Escape never reaches the picker.
+    widget.render({});
+    await waitFor(() => expect(input()).toBeTruthy());
+    fireEvent.click(input());
+    await waitFor(() => expect(document.querySelector('.react-datepicker')).toBeTruthy());
+
+    fireEvent.keyDown(input(), { key: 'Escape', code: 'Escape' });
+
+    await waitFor(() => expect(document.querySelector('.react-datepicker')).toBeNull());
   });
 
   const styleTests = sharedDateStyleTests({ widget, wrapper, input, borderRadiusKey: 'fieldBorderRadius' });

@@ -82,3 +82,30 @@ describe('[KeyValuePair-BUG-DATE-004] typed disabled date', () => {
     expect(onChange).toHaveBeenCalledWith('01/16/2024');
   });
 });
+
+/**
+ * [KeyValuePair-KEY-001] From the focused date input, Escape closes the open calendar.
+ * Break this catches: the custom input dropping react-datepicker's onKeyDown, so no key reaches the picker.
+ */
+test('[KeyValuePair-KEY-001] Escape in the focused date input closes the calendar', () => {
+  render(
+    <DatePickerRenderer
+      value="15/05/2022"
+      onChange={() => {}}
+      isEditable
+      isInputFocused
+      setIsInputFocused={() => {}}
+      dateDisplayFormat="DD/MM/YYYY"
+      parseDateFormat="DD/MM/YYYY"
+      widgetType="KeyValuePair"
+    />
+  );
+  const input = document.querySelector('input.table-column-datepicker-input');
+  fireEvent.focus(input);
+  fireEvent.click(input);
+  expect(document.querySelector('.react-datepicker')).toBeTruthy();
+
+  fireEvent.keyDown(input, { key: 'Escape', code: 'Escape' });
+
+  expect(document.querySelector('.react-datepicker')).toBeNull();
+});

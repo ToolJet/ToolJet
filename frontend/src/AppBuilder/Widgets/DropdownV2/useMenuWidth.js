@@ -50,3 +50,10 @@ export const useMenuWidth = (menuWidthMode, menuCustomWidth, triggerWidth, menuC
     return { maxWidth: viewportClamp };
   }, [menuWidthMode, customWidth, triggerWidth, menuContentWidth]);
 };
+
+// The menu width is capped at the viewport, but the menu starts at the field's left edge; move it left by what
+// would overflow the window. A menu without its own width follows the field and keeps the field position.
+export const getMenuPortalLeft = (left, menuWidthStyle) => {
+  if (!menuWidthStyle?.width || typeof left !== 'number') return left;
+  return `min(${left}px, calc(100vw - min(${menuWidthStyle.width}, ${menuWidthStyle.maxWidth ?? '100vw'}) - 12px))`;
+};

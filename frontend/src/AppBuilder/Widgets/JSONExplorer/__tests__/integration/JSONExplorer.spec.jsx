@@ -60,6 +60,23 @@ describe('JSONExplorer widget', () => {
   beforeEach(() => explorer.setup());
   afterEach(() => explorer.teardown());
 
+  test('[JSONExplorer-THEME-001] dark themes keep their own background unless a Background color is set', async () => {
+    // Break this catches: forcing every theme onto the widget's light surface, so the monokai, tomorrow and bespin
+    // palettes (made for a dark background) become pale and unreadable in light mode.
+    let container = await mounted(explorer.render({ properties: { theme: binding('monokai') } }).container);
+    expect(container$(container)).toHaveStyle({ backgroundColor: '#272822' });
+
+    container = await mounted(explorer.render({ properties: { theme: binding('solarized') } }).container);
+    // solarized already reads on the light surface, so it keeps the widget background.
+    expect(container$(container).style.backgroundColor).not.toMatch(/transparent|#002b36|rgb\(0, 43, 54\)/);
+
+    container = await mounted(
+      explorer.render({ properties: { theme: binding('monokai') }, styles: { backgroundColor: binding('#ffeedd') } })
+        .container
+    );
+    expect(container$(container)).toHaveStyle({ backgroundColor: '#ffeedd' });
+  });
+
   test('[JSONExplorer-REN-001] a dropped explorer shows its JSON as a tree and publishes it unchanged', async () => {
     // Break this catches: serializing the value before display would show escaped JSON text instead
     // of a tree, and publishing a string instead of the object would break every binding reading it.

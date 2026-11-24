@@ -64,6 +64,8 @@ export const PopoverMenu = function PopoverMenu(props) {
   // doesn't close the popover before it lands on the other one.
   const HOVER_CLOSE_DELAY = 100;
   const hoverCloseTimeoutRef = useRef(null);
+  const regionRef = useRef(null);
+  const closedByOutsideInteractionRef = useRef(false);
 
   const clearHoverCloseTimeout = () => {
     if (hoverCloseTimeoutRef.current) {
@@ -183,7 +185,13 @@ export const PopoverMenu = function PopoverMenu(props) {
 
   // ===== MAIN RENDER =====
   return (
-    <div style={{ display: visibility ? 'block' : 'none' }} role="region" aria-label="Popover menu" data-cy={dataCy}>
+    <div
+      ref={regionRef}
+      style={{ display: visibility ? 'block' : 'none' }}
+      role="region"
+      aria-label="Popover menu"
+      data-cy={dataCy}
+    >
       <Popover.Root
         open={exposedVariablesTemporaryState.showPopover}
         onOpenChange={(open) => updateExposedVariablesState('showPopover', open)}
@@ -206,6 +214,16 @@ export const PopoverMenu = function PopoverMenu(props) {
         <Popover.Portal>
           <div data-cy="popover-menu-portal-container" className="popover-menu-container">
             <Popover.Content
+              // Radix returns focus to the trigger wrapper, which cannot hold focus; send it to the real button.
+              onCloseAutoFocus={(event) => {
+                const closedByOutsideInteraction = closedByOutsideInteractionRef.current;
+                closedByOutsideInteractionRef.current = false;
+                const triggerButton = regionRef.current?.querySelector('button');
+                if (!triggerButton) return;
+                event.preventDefault();
+                // Like Radix: an outside click keeps focus where the user clicked.
+                if (!closedByOutsideInteraction) triggerButton.focus();
+              }}
               id={`popover-menu-${id}`}
               className={cx('popover-content', { 'dark-theme': darkMode })}
               data-cy="popover-menu-content"
@@ -225,6 +243,7 @@ export const PopoverMenu = function PopoverMenu(props) {
               onEscapeKeyDown={() => updateExposedVariablesState('showPopover', false)}
               onInteractOutside={() => {
                 if (exposedVariablesTemporaryState.hovered) return;
+                closedByOutsideInteractionRef.current = true;
                 updateExposedVariablesState('showPopover', false);
               }}
               {...(trigger === 'hover' && {

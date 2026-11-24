@@ -409,8 +409,11 @@ export const MultiselectV2 = ({
 
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutsideSelect, { capture: true });
+    // A finger tap often sends no mousedown, so the menu stayed open on phones.
+    document.addEventListener('touchstart', handleClickOutsideSelect, { capture: true });
     return () => {
       document.removeEventListener('mousedown', handleClickOutsideSelect, { capture: true });
+      document.removeEventListener('touchstart', handleClickOutsideSelect, { capture: true });
     };
   }, [isMultiselectOpen, componentName]);
 

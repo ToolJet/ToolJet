@@ -10,10 +10,11 @@
  * writes a constant would pass those on a double fire, so the recorded handler
  * increments a custom variable instead and the assertions read the count.
  */
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { binding, drain, option } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { componentDefinition } from '@/test/app-builder';
+import { DEFAULT_PROPERTIES, DEFAULT_STYLES, createMultiselectHarness } from './multiselectV2Harness';
 import useStore from '@/AppBuilder/_stores/store';
-import { createMultiselectHarness } from './multiselectV2Harness';
 
 const harness = createMultiselectHarness();
 
@@ -496,5 +497,98 @@ describe('MultiselectV2: selection, clearing, and the selection limit', () => {
 
     expect(harness.exposed().values).toEqual(['1', '2']);
     expect(selectCount()).toBe(0);
+  });
+});
+
+describe('select-all row in a long list', () => {
+  beforeEach(() => harness.setup());
+  afterEach(() => harness.teardown());
+
+  test('[MultiselectV2-SEL-014] the select-all row stays rendered after scrolling deep into a long list', async () => {
+    // Break this catches: the pinned select-all row being the virtual list's first item, so it is
+    // dropped once it scrolls past the overscan window.
+    harness.render({
+      properties: {
+        advanced: binding('{{true}}'),
+        schema: binding('{{Array.from({length: 300}, (_, i) => ({label: `${i} Alice`, value: `${i}`}))}}'),
+        value: binding('{{[]}}'),
+        showAllOption: binding('{{true}}'),
+      },
+    });
+    await drain();
+    await openMenu();
+    expect(screen.getByText('Select all')).toBeInTheDocument();
+
+    const body = document.querySelector('.dropdown-multiselect-widget-custom-menu-list-body');
+    // jsdom has no layout, so its scrollTop setter is a no-op; pin an offset at the end of the list.
+    Object.defineProperty(body, 'scrollTop', { configurable: true, value: 100000 });
+    fireEvent.scroll(body);
+    await drain();
+
+    expect(screen.getByText('290 Alice')).toBeInTheDocument();
+    expect(screen.getByText('Select all')).toBeInTheDocument();
+  });
+});
+
+describe('two Multi Selects on one page', () => {
+  beforeEach(() => harness.setup());
+  afterEach(() => harness.teardown());
+
+  test("[MultiselectV2-SEL-015] opening a menu focuses its own search box, not another open menu's", async () => {
+    // Break this catches: focusing the first search box in the document, so with another Multi Select still open
+    // the caret and typed text land in the other widget's search box.
+    harness.render({
+      properties: { label: binding('Multi A') },
+      extraComponents: {
+        ms2: componentDefinition(
+          'ms2',
+          'multiselect2',
+          'MultiselectV2',
+          { ...DEFAULT_PROPERTIES, label: binding('Multi B') },
+          { styles: DEFAULT_STYLES }
+        ),
+      },
+      also: [{ id: 'ms2', componentType: 'MultiselectV2' }],
+    });
+    await drain();
+    const [comboA, comboB] = screen.getAllByRole('combobox');
+
+    await harness.session.user.click(comboB);
+    await drain();
+    const searchB = document.activeElement;
+    expect(searchB).toHaveClass('dropdown-multiselect-widget-search-box');
+
+    // As in the bug: reach Multi A with the keyboard (no outside mousedown), so Multi B stays open.
+    comboA.focus();
+    await harness.session.user.keyboard('{Enter}');
+    await drain();
+
+    const searchBoxes = [...document.querySelectorAll('.dropdown-multiselect-widget-search-box')];
+    expect(searchBoxes.length).toBeGreaterThan(1);
+    expect(document.activeElement).toHaveClass('dropdown-multiselect-widget-search-box');
+    expect(document.activeElement).not.toBe(searchB);
+  });
+
+  test('[MultiselectV2-SEL-016] a finger tap outside an open menu closes it', async () => {
+    // Break this catches: closing on an outside mousedown only; a touch tap often sends no mousedown, so on a phone the
+    // menu stays open after tapping another Multi Select.
+    harness.render({ properties: { label: binding('Multi A') } });
+    await drain();
+    await harness.session.user.click(screen.getByRole('combobox'));
+    await drain();
+    expect(document.querySelector('.dropdown-multiselect-widget-search-box')).toBeInTheDocument();
+
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+    const touch = { clientX: 0, clientY: 0, target: outside };
+    const touches = Object.assign([touch], { item: () => touch });
+    const tap = new Event('touchstart', { bubbles: true, cancelable: true });
+    Object.defineProperty(tap, 'touches', { value: touches });
+    Object.defineProperty(tap, 'changedTouches', { value: touches });
+    outside.dispatchEvent(tap);
+    await drain();
+
+    expect(document.querySelector('.dropdown-multiselect-widget-search-box')).not.toBeInTheDocument();
+    outside.remove();
   });
 });

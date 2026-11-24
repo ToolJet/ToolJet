@@ -240,6 +240,21 @@ describe('disabled, loading and visibility', () => {
   });
 });
 
+describe('keyboard', () => {
+  // Break this catches: the custom value container dropping react-select's input, which is the
+  // country select's only focusable element, so Tab skips the country select.
+  test('[PhoneInput-KEY-001] Tab stops on the country select before the number field', async () => {
+    harness.render({});
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    await userEvent.tab();
+    expect(countrySelect().contains(document.activeElement)).toBe(true);
+
+    await userEvent.tab();
+    expect(document.activeElement).toBe(input());
+  });
+});
+
 describe('validation', () => {
   // Break this catches: validating the raw E.164 value instead of stripping the dial
   // code first. A "Min length 10" rule would then count the +1 too, so a correct
@@ -1572,7 +1587,7 @@ describe('accessibility, async and identity', () => {
       },
       also: [{ id: 'ph2', componentType: 'PhoneInput' }],
     });
-    await waitFor(() => expect(document.querySelectorAll('input')).toHaveLength(2));
+    await waitFor(() => expect(document.querySelectorAll('input[id^="component-"]')).toHaveLength(2));
 
     expect(harness.exposed('ph1').value).toBe('+19876543210');
     expect(harness.exposed('ph2').value).toBe('+15551234567');
@@ -1584,6 +1599,9 @@ describe('accessibility, async and identity', () => {
     expect(harness.exposed('ph1').country).toBe('IN');
     expect(harness.exposed('ph2').country).toBe('US');
     expect(harness.exposed('ph2').value).toBe('+15551234567');
-    expect([...document.querySelectorAll('input')].map((i) => i.value)).toEqual(['98765 43210', '555 123 4567']);
+    expect([...document.querySelectorAll('input[id^="component-"]')].map((i) => i.value)).toEqual([
+      '98765 43210',
+      '555 123 4567',
+    ]);
   });
 });
