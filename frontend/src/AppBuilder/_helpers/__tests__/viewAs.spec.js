@@ -1,4 +1,12 @@
-import { VIEW_AS_HEADER, clearViewAs, readViewAs, saveViewAs, simulatedCurrentUser, viewAsHeaders } from '../viewAs';
+import {
+  VIEW_AS_HEADER,
+  clearViewAs,
+  readViewAs,
+  saveViewAs,
+  simulatedCurrentUser,
+  takeViewAsNotice,
+  viewAsHeaders,
+} from '../viewAs';
 
 const APP_A = 'app-a';
 const APP_B = 'app-b';
@@ -34,6 +42,23 @@ describe('View as', () => {
       window.sessionStorage.setItem(`tj-view-as:${APP_A}`, raw);
 
       expect(readViewAs(APP_A)).toBeNull();
+    });
+
+    it('keeps why the simulation was turned off for the next load, once', () => {
+      saveViewAs(APP_A, SALES);
+      clearViewAs(APP_A, 'View as was turned off: no access');
+
+      expect(readViewAs(APP_A)).toBeNull();
+      expect(takeViewAsNotice(APP_B)).toBeNull();
+      expect(takeViewAsNotice(APP_A)).toBe('View as was turned off: no access');
+      expect(takeViewAsNotice(APP_A)).toBeNull();
+    });
+
+    it('leaves no notice when turned off by the user', () => {
+      saveViewAs(APP_A, SALES);
+      clearViewAs(APP_A);
+
+      expect(takeViewAsNotice(APP_A)).toBeNull();
     });
 
     it('falls back to no simulation when storage is unavailable', () => {

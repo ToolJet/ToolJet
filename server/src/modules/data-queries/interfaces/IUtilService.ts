@@ -13,7 +13,7 @@ export interface WorkflowExecutionOptions {
 
 export interface DataQueryExecutionOptions {
   workflow?: WorkflowExecutionOptions;
-  // Who query permissions are checked for; the requester when absent. See ViewAsService.
+  // Who query permissions are checked for; the requester when absent. See ViewAsInterceptor.
   permissionSubject?: PermissionSubject;
 }
 

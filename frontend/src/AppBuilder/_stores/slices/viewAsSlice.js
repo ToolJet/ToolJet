@@ -3,6 +3,8 @@
 // Both are null when previewing as yourself. Only the canvas app is simulated, never modules.
 const initialState = {
   viewAs: { target: null, identity: null },
+  // Bumped after the choice in sessionStorage changes: useAppData reloads the app in place for it.
+  viewAsReloadTimestamp: null,
 };
 
 export const createViewAsSlice = (set) => ({
@@ -10,6 +12,11 @@ export const createViewAsSlice = (set) => ({
   setViewAs: (target, identity) => {
     set((state) => {
       state.viewAs = { target, identity };
+    });
+  },
+  reloadViewAs: () => {
+    set((state) => {
+      state.viewAsReloadTimestamp = Date.now();
     });
   },
 });

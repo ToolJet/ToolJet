@@ -1,3 +1,4 @@
+import { PermissionSubject } from '@modules/app-permissions/types/view-as';
 import { UserEntity } from '@modules/app/decorators/user.decorator';
 import { DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
 import { CreateDataQueryDto, UpdateDataQueryDto } from '../dto';
@@ -7,7 +8,7 @@ import { App } from '@entities/app.entity';
 import { UpdateSourceDto } from '../dto';
 import { Response } from 'express';
 export interface IDataQueriesController {
-  index(user: UserEntity, app: App, versionId: string, mode?: string): Promise<object>;
+  index(user: UserEntity, app: App, versionId: string, subject: PermissionSubject, mode?: string): Promise<object>;
 
   create(
     user: UserEntity,
@@ -41,8 +42,8 @@ export interface IDataQueriesController {
     ability: AppAbility,
     dataSource: DataSourceEntity,
     response: Response,
-    mode?: string,
-    viewAs?: string
+    subject: PermissionSubject,
+    mode?: string
   ): Promise<object>;
 
   runQuery(

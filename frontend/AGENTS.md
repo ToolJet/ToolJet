@@ -202,7 +202,7 @@ Widget-level CSS class (shipped 2026-06):
 
 - Builders pick **one user or one group** in Preview settings; never combined. Hidden unless the licence has an app-permission feature and the user can edit the app; the server re-checks everything
 - The choice is **session-only**: sessionStorage per app (`tj-view-as:<appId>`), never in the URL, so copied preview links are unaffected
-- Applying or exiting **reloads the page**, so no page, component, query result or global from the previous identity survives
+- Applying or exiting **rebuilds the app in place** (`reloadViewAs` → the in-place refresh in `useAppData`, the same one hot reload uses): the preview bar stays up and only the canvas shows a loader, so nothing blinks. The store is cleaned, exposed values reset, in-flight queries aborted and on-load queries re-run, so no component, query result or global from the previous identity survives. The current page is kept if the new identity can open it, otherwise the preview moves to the first page they can
 - The `x-tj-view-as` header goes only on version load, query list and query run, in view mode, for the canvas app. Embedded modules are never simulated
 - `globals.currentUser` changes only `groups` and `role` (from the server's `view_as`); id, email and name stay the Builder's. A group simulates an end user in it
-- If the server rejects a stale choice, the preview drops it, shows a toast and reloads as the Builder
+- If the server rejects a stale choice, the preview drops it, shows a toast and reloads as the Builder (in place when switching; a full reload only if it was rejected on first load)

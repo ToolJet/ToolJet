@@ -1,3 +1,4 @@
+import { PermissionSubject } from '@modules/app-permissions/types/view-as';
 import { Response } from 'express';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -29,7 +30,13 @@ export interface QueryDeleteContext {
 }
 
 export interface IDataQueriesService {
-  getAll(user: User, app: App, versionId: string, mode?: string, viewAs?: string): Promise<{ data_queries: object[] }>;
+  getAll(
+    user: User,
+    app: App,
+    versionId: string,
+    mode?: string,
+    subject?: PermissionSubject
+  ): Promise<{ data_queries: object[] }>;
 
   create(user: User, dataSource: DataSource, dataQueryDto: CreateDataQueryDto): Promise<object>;
 
@@ -53,7 +60,7 @@ export interface IDataQueriesService {
     response: Response,
     mode?: string,
     app?: App,
-    viewAs?: string
+    subject?: PermissionSubject
   ): Promise<object>;
 
   runQueryForApp(

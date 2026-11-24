@@ -47,7 +47,19 @@ import * as isolationConfig from '@ee/modules/CodeMode/AppBuilder/Widgets/Librar
 import { getCachedAppDefinition, setCachedAppDefinition } from '@/AppBuilder/_helpers/appDefinitionCache';
 import { prefetchPacksForPages } from '@/_stores/builtinPacksStore';
 import { setOnBrandColors } from '@/AppBuilder/_helpers/onBrandText';
-import { clearViewAs, readViewAs, simulatedCurrentUser } from '@/AppBuilder/_helpers/viewAs';
+import { clearViewAs, readViewAs, simulatedCurrentUser, takeViewAsNotice } from '@/AppBuilder/_helpers/viewAs';
+import { queryAbortControllers } from '@/AppBuilder/_utils/queryAbort';
+
+// After View as moves the preview off a page the new identity can't open, point the address bar
+// and history entry at the page shown, so a refresh or back press stays on it.
+const movePreviewToPage = (pages, page) => {
+  const segments = window.location.pathname.split('/');
+  if (pages.some((candidate) => candidate.handle === segments[segments.length - 1])) {
+    segments[segments.length - 1] = page.handle;
+  }
+  const url = `${segments.join('/')}${window.location.search}${window.location.hash}`;
+  window.history.replaceState({ ...(window.history.state || {}), id: page.id, handle: page.handle }, '', url);
+};
 
 const useAppData = (
   appId,
@@ -236,6 +248,9 @@ const useAppData = (
   // Used to trigger the same refresh in place, without unmounting the editor chrome
   const hotReloadTimestamp = useStore((state) => state.hotReloadTimestamp);
   const previousHotReloadTimestamp = usePrevious(hotReloadTimestamp);
+  // Bumped when "View as" is applied or exited in preview: the same in-place refresh, for the new identity
+  const viewAsReloadTimestamp = useStore((state) => state.viewAsReloadTimestamp);
+  const previousViewAsReloadTimestamp = usePrevious(viewAsReloadTimestamp);
   const setCanvasReloading = useStore((state) => state.setCanvasReloading);
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady);
 
@@ -368,6 +383,9 @@ const useAppData = (
       !moduleMode && mode === 'view' && queryParams.version && !queryParams.snapshot && !isPublicAccess
         ? readViewAs(appId)
         : null;
+    // Set by the catch below just before it reloads, so the reason survives the reload.
+    const viewAsNotice = !moduleMode ? takeViewAsNotice(appId) : null;
+    if (viewAsNotice) toast.error(viewAsNotice);
 
     if (moduleMode && isModuleEditor) {
       // Editing the module itself directly — appId is the module's real DB id (from the
@@ -941,8 +959,10 @@ const useAppData = (
         // A stale "View as" choice (the user left the workspace, lost access, or the licence
         // changed) makes the server reject the preview. Turn it off and load as yourself.
         if (viewAsTarget) {
-          clearViewAs(appId);
-          toast.error(`View as was turned off: ${_error?.error || _error?.message || 'it is no longer available'}`);
+          clearViewAs(
+            appId,
+            `View as was turned off: ${_error?.error || _error?.message || 'it is no longer available'}`
+          );
           window.location.reload();
           return;
         }
@@ -1101,6 +1121,10 @@ const useAppData = (
     // A hot reload runs this same pipeline but swaps only the canvas, so the editor chrome
     // (and the AI chat mid-conversation) stays mounted and we stay on the current page.
     const isHotReload = hotReloadTimestamp != previousHotReloadTimestamp;
+    // View as is only offered for the canvas app, so the moduleMode return below never skips it.
+    const isViewAsChange = viewAsReloadTimestamp != previousViewAsReloadTimestamp;
+    // Both swap only the canvas: the header and preview bar stay up, so nothing blinks.
+    const isCanvasOnlyReload = isHotReload || isViewAsChange;
     // The standalone module editor ('canvas') hot-reloads too; embedded module instances never do.
     if (moduleMode && !(isHotReload && moduleId === 'canvas')) return;
     const exposedTheme =
@@ -1118,8 +1142,8 @@ const useAppData = (
     // only the stale cross-app window.
     const isVersionConsistent = selectedVersion?.id && selectedVersion.id === currentVersionId;
 
-    if (isEnvChanged || (isVersionChanged && isVersionConsistent) || isForceRefreshTriggered || isHotReload) {
-      if (isHotReload) {
+    if (isEnvChanged || (isVersionChanged && isVersionConsistent) || isForceRefreshTriggered || isCanvasOnlyReload) {
+      if (isCanvasOnlyReload) {
         setCanvasReloading(true, moduleId);
         // The canvas subtree unmounts while reloading (AppCanvas), but AppCanvas itself stays
         // mounted, so its unmount cleanup won't clear this. Clear it here so it can flip back to
@@ -1133,10 +1157,37 @@ const useAppData = (
       if (isEnvChanged) {
         setEnvironmentLoadingState('loading');
       }
-      // Keep an active "View as" across version and environment switches in preview.
-      const { target: viewAsTarget, identity: viewAsIdentity } = useStore.getState().viewAs;
-      appVersionService.getAppVersionData(appId, selectedVersion?.id, mode, viewAsTarget).then(async (appData) => {
+      // The picker saves a new View as choice to sessionStorage before asking for this reload. Any
+      // other refresh keeps the active one across version and environment switches in preview.
+      const viewAsTarget = isViewAsChange
+        ? mode === 'view' && !moduleMode
+          ? readViewAs(appId)
+          : null
+        : useStore.getState().viewAs.target;
+      if (isViewAsChange) {
+        // A query still running for the previous identity must not land its result in the new one.
+        queryAbortControllers.forEach((controller) => controller.abort());
+        queryAbortControllers.clear();
+      }
+      // Only a rejected load is caught here: an error while applying the response stays loud.
+      const appDataRequest = appVersionService
+        .getAppVersionData(appId, selectedVersion?.id, mode, viewAsTarget)
+        .catch((error) => {
+          if (!viewAsTarget) throw error;
+          // A stale "View as" choice (the user left the workspace, lost access, or the licence
+          // changed) makes the server reject the load. Turn it off and load again as yourself.
+          clearViewAs(appId);
+          toast.error(`View as was turned off: ${error?.error || error?.message || 'it is no longer available'}`);
+          useStore.getState().reloadViewAs();
+          return null;
+        });
+      appDataRequest.then(async (appData) => {
+        if (!appData) return;
         cleanUpStore();
+        // The server confirms a simulation by describing who it simulated; without that it didn't apply.
+        const viewAsIdentity = viewAsTarget ? (appData.view_as ?? null) : null;
+        if (viewAsTarget && !viewAsIdentity) clearViewAs(appId);
+        if (!moduleMode) setViewAs(viewAsIdentity ? viewAsTarget : null, viewAsIdentity);
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
 
@@ -1180,11 +1231,26 @@ const useAppData = (
           computePageSettings(deepCamelCase(appData?.editing_version?.pageSettings ?? appData?.pageSettings))
         );
         const homePageId = appData.editing_version.homePageId || appData.editing_version.home_page_id;
-        const startingPage = appData.pages.find((page) => page.id === homePageId) || appData.pages[0];
-        // A hot reload keeps the user where they are; everything else lands on the home page
-        const pageToLoad = (isHotReload && appData.pages.find((page) => page.id === currentPageId)) || startingPage;
+        // In view mode a page the viewer can't open is skipped, the same as on first load.
+        const canOpen = (page) =>
+          !!page && !page.isPageGroup && !(mode === 'view' && (page.restricted || page.disabled));
+        let startingPage = appData.pages.find((page) => page.id === homePageId) || appData.pages[0];
+        if (mode === 'view' && startingPage?.restricted) {
+          startingPage = appData.pages.find(canOpen) || startingPage;
+        }
+        // A hot reload keeps the user where they are; so does View as, while the new identity can
+        // open that page. Everything else lands on the home page.
+        const currentPage = isCanvasOnlyReload && appData.pages.find((page) => page.id === currentPageId);
+        const pageToLoad = (isHotReload ? currentPage : canOpen(currentPage) && currentPage) || startingPage;
         setCurrentPageId(pageToLoad.id, moduleId);
-        if (isHotReload) {
+        if (isViewAsChange && pageToLoad.id !== currentPageId) {
+          movePreviewToPage(appData.pages, pageToLoad);
+          if (currentPage)
+            toast.error(
+              `${viewAsTarget?.label ?? 'They'} can't open this page, so the preview moved to ${pageToLoad.name}.`
+            );
+        }
+        if (isCanvasOnlyReload) {
           // We're staying on the same page, and the refresh may have renamed it — so refresh the
           // handle and the {{page.*}} constants, which this effect otherwise never sets. Scoped to
           // hot reload to leave the version/env/history flows behaving exactly as before.
@@ -1301,10 +1367,12 @@ const useAppData = (
 
         setQueryMapping(moduleId);
         initDependencyGraph(moduleId);
-        if (isHotReload) {
+        if (isCanvasOnlyReload) {
           // The canvas stayed mounted, so pair the batch the same way initial load does: open it
           // before the rebuilt canvas settles and let the layout-ready effect flush it.
           startExposedValueBatch();
+        }
+        if (isHotReload) {
           // Datasources/modules may be new in this definition (the env branch above only covers
           // datasources, and only when the environment changed).
           getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
@@ -1314,7 +1382,15 @@ const useAppData = (
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp, hotReloadTimestamp]);
+  }, [
+    selectedEnvironment?.id,
+    currentVersionId,
+    moduleMode,
+    moduleId,
+    restoreTimestamp,
+    hotReloadTimestamp,
+    viewAsReloadTimestamp,
+  ]);
 
   useEffect(() => {
     if (moduleMode) return;

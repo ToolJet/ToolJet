@@ -8,6 +8,8 @@ jest.mock('@/_helpers', () => ({
   handleResponse: (res) => Promise.resolve(res),
 }));
 jest.mock('@/_helpers/active-branch', () => ({ appendBranchParam: (url) => url }));
+// dataquery.service reads the snapshot param from here; the real module pulls in the store.
+jest.mock('@/_helpers/routes', () => ({ getPreviewQueryParams: () => ({}) }));
 
 global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
 

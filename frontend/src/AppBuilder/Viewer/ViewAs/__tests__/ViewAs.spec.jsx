@@ -106,6 +106,16 @@ describe('View as', () => {
     expect(onApply).toHaveBeenCalledTimes(1);
   });
 
+  test('[VAS-009] says that only permissions are simulated, not data or modules', async () => {
+    const test = await setup();
+    test.render(<ViewAsPicker onApply={jest.fn()} />);
+
+    await test.user.click(await screen.findByRole('button', { name: 'View as' }));
+
+    expect(await screen.findByText(/Data still loads as you/)).toBeInTheDocument();
+    expect(screen.getByText(/Embedded modules show what you can see/)).toBeInTheDocument();
+  });
+
   test('[VAS-008] search narrows the list to matching groups and users', async () => {
     const test = await setup();
     test.render(<ViewAsPicker onApply={jest.fn()} />);

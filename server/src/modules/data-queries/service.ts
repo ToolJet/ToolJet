@@ -1,5 +1,6 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
+import { PermissionSubject } from '@modules/app-permissions/types/view-as';
 import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -127,7 +128,8 @@ export class DataQueriesService implements IDataQueriesService {
     }
   }
 
-  async getAll(user: User, app: App, versionId: string, mode?: string, viewAs?: string) {
+  // CE enforces no query permissions, so the View as subject changes nothing here.
+  async getAll(user: User, app: App, versionId: string, mode?: string, subject?: PermissionSubject) {
     const queries = await this.dataQueryRepository.getAll(versionId, mode);
     return { data_queries: serializeDataQueries(queries) };
   }
@@ -315,7 +317,8 @@ export class DataQueriesService implements IDataQueriesService {
     response: Response,
     mode?: string,
     app?: App,
-    viewAs?: string
+    // Who query permissions are checked for (View as); the requester when absent.
+    subject?: PermissionSubject
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
@@ -347,21 +350,8 @@ export class DataQueriesService implements IDataQueriesService {
       dataQuery['options'] = options;
     }
 
-    const opts = await this.executionOptionsFor(user, app, mode, viewAs);
+    const opts = subject ? { permissionSubject: subject } : undefined;
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app, opts);
-  }
-
-  /**
-   * Hook for per-run execution options. CE enforces no query permissions, so "View as" (viewAs)
-   * has nothing to change; EE resolves it into a permission subject.
-   */
-  protected async executionOptionsFor(
-    user: User,
-    app?: App,
-    mode?: string,
-    viewAs?: string
-  ): Promise<DataQueryExecutionOptions | undefined> {
-    return undefined;
   }
 
   // GitSyncQueryEditGuard's rule as a check: read-only versions still run, but don't persist options.

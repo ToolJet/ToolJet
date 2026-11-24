@@ -23,7 +23,8 @@ export interface ViewAsIdentity {
 
 export interface ResolveViewAsInput {
   user: User;
-  app: App;
+  // Absent only if a route marked @ResolveViewAs() has no app guard; a simulation then fails.
+  app?: App;
   mode?: string;
   // Raw VIEW_AS_HEADER value; absent when the request isn't simulating anyone.
   viewAs?: string;

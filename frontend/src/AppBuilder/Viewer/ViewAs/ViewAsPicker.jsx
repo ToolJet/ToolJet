@@ -4,7 +4,7 @@ import { Check, UserRoundSearch } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import useStore from '@/AppBuilder/_stores/store';
 import { appPermissionService, authenticationService } from '@/_services';
-import { clearViewAs, saveViewAs } from '@/AppBuilder/_helpers/viewAs';
+import { VIEW_AS_SCOPE_NOTE, clearViewAs, saveViewAs } from '@/AppBuilder/_helpers/viewAs';
 import { useCanvasAppId } from './useCanvasAppId';
 
 const APP_PERMISSION_FEATURES = ['appPermissionPages', 'appPermissionComponent', 'appPermissionQuery'];
@@ -88,8 +88,8 @@ function OptionSection({ title, options, selectedValue, onSelect }) {
 }
 
 // Same shape as the Version and Environment controls beside it: a ghost button with an accent
-// icon and the current value. Applying a choice reloads the preview (onApply) so the whole app is
-// rebuilt for the new identity and nothing loaded for the previous one survives.
+// icon and the current value. Applying a choice saves it, then onApply rebuilds the app in place
+// for the new identity, so nothing loaded for the previous one survives.
 export default function ViewAsPicker({ onApply, showDivider = false }) {
   const appId = useCanvasAppId();
   const available = useViewAsAvailable(appId);
@@ -133,7 +133,7 @@ export default function ViewAsPicker({ onApply, showDivider = false }) {
         <Popover.Trigger asChild>
           <Button
             variant="ghost"
-            className="d-inline-flex align-items-center !tw-px-3 tw-ml-4 tw-max-w-[180px]"
+            className="d-inline-flex align-items-center !tw-px-3 tw-max-w-[180px]"
             aria-label="View as"
             data-cy="preview-view-as"
           >
@@ -168,6 +168,12 @@ export default function ViewAsPicker({ onApply, showDivider = false }) {
               </div>
             )}
           </div>
+          <p
+            className="tw-m-0 tw-border-0 tw-border-t tw-border-solid tw-border-border-weak tw-px-3 tw-py-2 tw-font-body-small tw-text-text-placeholder"
+            data-cy="preview-view-as-note"
+          >
+            {VIEW_AS_SCOPE_NOTE}
+          </p>
         </Popover.Content>
       </Popover.Root>
     </>

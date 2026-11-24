@@ -21,16 +21,15 @@ const AppEnvironments = lazy(() =>
 );
 const ViewAsPicker = lazy(() => import('./ViewAs/ViewAsPicker'));
 
-// Applying "View as" reloads the preview so the whole app is rebuilt for the new identity.
-const reloadPreview = () => window.location.reload();
-
 const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
   const appType = useAppType();
-  const { setShowUndoRedoBtn, editingVersion, selectedVersion } = useStore(
+  const { setShowUndoRedoBtn, editingVersion, selectedVersion, reloadViewAs } = useStore(
     (state) => ({
       setShowUndoRedoBtn: state?.setShowUndoRedoBtn,
       editingVersion: state?.editingVersion,
       selectedVersion: state?.selectedVersion,
+      // Applying "View as" rebuilds the app in place for the new identity, keeping this bar on screen.
+      reloadViewAs: state?.reloadViewAs,
     }),
     shallow
   );
@@ -82,7 +81,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
             <AppVersionsManager darkMode={darkMode} disabled={isSubBranch} />
             <div className="navbar-seperator"></div>
             <AppEnvironments darkMode={darkMode} disabled={isSubBranch} />
-            <ViewAsPicker onApply={reloadPreview} showDivider />
+            <ViewAsPicker onApply={reloadViewAs} showDivider />
           </Suspense>
         )}
         <span style={{ marginLeft: appType === 'module' && '10px' }}>
@@ -110,7 +109,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
               <span className="preview-chip" style={{ color: 'var(--slate11)' }} data-cy="preview-chip">
                 Preview
               </span>
-              <ViewAsChip onApply={reloadPreview} />
+              <ViewAsChip onApply={reloadViewAs} />
               <span
                 style={{ marginLeft: '12px', cursor: 'pointer' }}
                 onClick={props.onClick}
@@ -141,7 +140,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
                   <AppVersionsManager darkMode={darkMode} />
                 </span>
                 <span className="tw-px-2 tw-py-2">
-                  <ViewAsPicker onApply={reloadPreview} />
+                  <ViewAsPicker onApply={reloadViewAs} />
                 </span>
               </Suspense>
 
@@ -169,7 +168,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
       <span className="preview-chip" style={{ color: 'var(--slate12)' }} data-cy="preview-chip">
         Preview
       </span>
-      <ViewAsChip onApply={reloadPreview} />
+      <ViewAsChip onApply={reloadViewAs} />
       <OverlayTrigger
         rootClose
         trigger="click"

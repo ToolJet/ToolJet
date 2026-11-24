@@ -7,6 +7,11 @@ export const VIEW_AS_HEADER = 'x-tj-view-as';
 const KINDS = ['user', 'group'];
 
 const storageKey = (appId) => `tj-view-as:${appId}`;
+const noticeKey = (appId) => `tj-view-as-notice:${appId}`;
+
+// What View as checks, and what it leaves as the Builder: shown beside the picker and on the chip.
+export const VIEW_AS_SCOPE_NOTE =
+  'Checks their page, component and query access. Data still loads as you, so anything filtered by your user ID or email shows yours. Embedded modules show what you can see.';
 
 const isTarget = (value) =>
   !!value &&
@@ -30,15 +35,29 @@ export function saveViewAs(appId, target) {
   try {
     window.sessionStorage.setItem(storageKey(appId), JSON.stringify(target));
   } catch {
-    // Storage blocked: the simulation can't survive the reload that applies it, so it stays off.
+    // Storage blocked: the reload that applies the choice reads it from here, so it stays off.
   }
 }
 
-export function clearViewAs(appId) {
+// notice: why the simulation was turned off, kept for the next page load when the preview was
+// rejected on first load and has to reload the page. Read it back once with takeViewAsNotice.
+export function clearViewAs(appId, notice) {
   try {
     window.sessionStorage.removeItem(storageKey(appId));
+    if (notice) window.sessionStorage.setItem(noticeKey(appId), notice);
   } catch {
     // Nothing stored if storage is blocked.
+  }
+}
+
+export function takeViewAsNotice(appId) {
+  if (!appId) return null;
+  try {
+    const notice = window.sessionStorage.getItem(noticeKey(appId));
+    window.sessionStorage.removeItem(noticeKey(appId));
+    return notice;
+  } catch {
+    return null;
   }
 }
 

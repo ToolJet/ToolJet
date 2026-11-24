@@ -21,7 +21,8 @@ run in view mode (preview and released app); CE stores nothing and enforces noth
 |---|---|
 | `controller.ts` / `service.ts` | CRUD for page/query/component rules; CE stubs throw |
 | `util.service.ts` | CE stubs. EE (`ee/app-permissions/util.service.ts`) adds `checkQueryAccess(For)`, `getSubjectAppGroupIds`, and the pure `isResourceAvailableTo` rule |
-| `view-as.service.ts` | CE: always the requester. EE: parses and authorizes the `x-tj-view-as` header (`VIEW_AS_HEADER`) |
+| `view-as.service.ts` | CE: always the requester. EE: parses and authorizes the `x-tj-view-as` header (`VIEW_AS_HEADER`). Registered under the CE class token, so CE and EE code inject the same one |
+| `view-as.interceptor.ts` | `@ResolveViewAs()` (route opt-in) + `@ViewAsSubject()` (handler param): resolves the header once per request |
 | `ability/index.ts` | who may manage rules: workspace admins, or Builders who can edit the app |
 | `repositories/*` | rule rows per entity type |
 
@@ -29,9 +30,12 @@ run in view mode (preview and released app); CE stores nothing and enforces noth
 
 Header `x-tj-view-as: user:<uuid>` or `group:<uuid>` (one user or one group, never combined). Read by exactly three routes:
 `GET /v2/apps/:id/versions/:versionId?mode=view`, `GET /data-queries/:versionId?mode=view` and
-`POST /data-queries/:id/versions/:versionId/run/:environmentId?mode=view`. Callers thread it into
-`ViewAsService.resolve()` and use the returned subject for page/component/query rules and the
-data source `can_run_query` rule (`ee/data-queries/util.service.ts` `throwIfQueryRunRestricted`).
+`POST /data-queries/:id/versions/:versionId/run/:environmentId?mode=view`. Each is marked
+`@ResolveViewAs()`: `ViewAsInterceptor` runs `ViewAsService.resolve()` after the guards and the
+handler takes the result with `@ViewAsSubject()`. Services receive a `PermissionSubject`, never the
+raw header, and use it for page/component/query rules and the data source `can_run_query` rule
+(`ee/data-queries/util.service.ts` `throwIfQueryRunRestricted`). A new route that should honour
+View as needs both decorators; `@ViewAsSubject()` without `@ResolveViewAs()` throws.
 
 ## Invariants & gotchas
 
@@ -43,10 +47,14 @@ data source `can_run_query` rule (`ee/data-queries/util.service.ts` `throwIfQuer
   "Not found" and "other workspace" return the same 400, so the header can't probe for ids.
 - Released apps (`GET /apps/slugs/:slug`, `POST /data-queries/:id/run`) and embedded modules
   (`getVersionByStableIds`) never read the header. Keep it that way; it is part of the security model.
+- Embedded modules are never simulated: EE `getVersion` evaluates the modules it bundles for the
+  requester (`prepareResponse(..., isModule)`), matching their query runs, which the client sends
+  without the header.
 - Simulated version responses send `Cache-Control: no-store` and skip the released-version ETag
   (`versions/controller.v2.ts`): the ETag doesn't include the header.
 - Simulated groups have no user id, so `SINGLE` rules never match them.
 - Admins are not exempt from page/component/query rules (only from `can_run_query`).
+- Code mode apps (`build_mode = 'code'`) exempt whoever can edit the app from their limits (`ee/app-permissions/code-app-limits.ts`). That exemption is the requester's, so a View as request never gets it: the simulated subject is held to the limits in `getVersion`, `getAll` and query runs.
 - Audit: `APP_PREVIEW_VIEW_AS` on version loads; query runs add `metadata.viewAs`.
 - Simulated version responses carry `view_as` (`ViewAsIdentity`: kind, id, label, custom `groups`,
   `role`), the session's shape, so the client mirrors `globals.currentUser.groups`/`role`. A custom

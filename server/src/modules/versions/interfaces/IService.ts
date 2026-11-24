@@ -1,3 +1,4 @@
+import { PermissionSubject } from '@modules/app-permissions/types/view-as';
 import { App } from '@entities/app.entity';
 import { User } from '@entities/user.entity';
 import { AppVersion } from '@entities/app_version.entity';
@@ -34,8 +35,9 @@ export interface IVersionService {
   deleteVersion(app: App, user: User): Promise<void>;
 
   getViewerLicenseTerms(organizationId: string): Promise<unknown>;
-  // viewAs: raw VIEW_AS_HEADER value, honored by EE in view mode only.
-  getVersion(app: App, user: User, mode?: string, viewAs?: string): Promise<any>;
+  // subject: who page, component and query permissions are checked for (View as); the requester
+  // when absent. Only EE reads it.
+  getVersion(app: App, user: User, mode?: string, subject?: PermissionSubject): Promise<any>;
 
   getVersionByStableIds(
     coRelationId: string,

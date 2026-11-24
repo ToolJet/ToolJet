@@ -1,7 +1,7 @@
 import React from 'react';
 import { UserRoundSearch, X } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
-import { clearViewAs } from '@/AppBuilder/_helpers/viewAs';
+import { VIEW_AS_SCOPE_NOTE, clearViewAs } from '@/AppBuilder/_helpers/viewAs';
 import { useCanvasAppId } from './useCanvasAppId';
 
 export default function ViewAsChip({ onApply }) {
@@ -19,6 +19,7 @@ export default function ViewAsChip({ onApply }) {
     <span
       className="preview-chip tw-ml-2 tw-inline-flex tw-max-w-[220px] tw-items-center tw-gap-1 tw-rounded-full tw-bg-background-accent-weak tw-py-0.5 tw-pl-2 tw-pr-1 tw-text-text-accent"
       data-cy="preview-view-as-chip"
+      title={VIEW_AS_SCOPE_NOTE}
     >
       <UserRoundSearch width={12} height={12} className="tw-shrink-0" />
       <span className="tw-truncate">{`Viewing as ${target.label}`}</span>

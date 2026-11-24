@@ -6,6 +6,7 @@ import { App } from '@entities/app.entity';
 import { User } from '@entities/user.entity';
 import { getAppDataRevision, VIEWER_LICENSE_FIELDS } from '@modules/apps/app-data-revision';
 import { EntityManager } from 'typeorm';
+import { PermissionSubject, requesterSubject } from '@modules/app-permissions/types/view-as';
 import { getConnectionInstance } from '@helpers/database.helper';
 
 jest.mock('@helpers/database.helper', () => ({ getConnectionInstance: jest.fn() }));
@@ -29,7 +30,13 @@ describe('VersionControllerV2.getVersion caching', () => {
   const versionUpdatedAt = new Date('2026-10-02T00:00:00.000Z');
   let etag: string;
 
-  const setup = (status: AppVersionStatus | undefined, ifNoneMatch?: string, viewedApp: App = app, mode = 'view') => {
+  const setup = (
+    status: AppVersionStatus | undefined,
+    ifNoneMatch?: string,
+    viewedApp: App = app,
+    mode = 'view',
+    subject: PermissionSubject = requesterSubject(user)
+  ) => {
     const findOne = jest.fn().mockResolvedValue(status ? { id: 'ver-1', status, updatedAt: versionUpdatedAt } : null);
     (getConnectionInstance as jest.Mock).mockReturnValue({ manager: { findOne, query: revisionQuery() } });
 
@@ -43,7 +50,7 @@ describe('VersionControllerV2.getVersion caching', () => {
     const controller = new VersionControllerV2(versionService);
     const res = { set: jest.fn(), status: jest.fn() } as unknown as Response;
     const req = { headers: ifNoneMatch ? { 'if-none-match': ifNoneMatch } : {} } as unknown as Request;
-    const call = () => controller.getVersion(user, viewedApp, 'ver-1', mode, req, res);
+    const call = () => controller.getVersion(user, viewedApp, 'ver-1', mode, req, res, subject);
     return { call, res, getVersion, getLicenseTerms };
   };
 
@@ -122,5 +129,16 @@ describe('VersionControllerV2.getVersion caching', () => {
     expect(res.set).not.toHaveBeenCalled();
     expect(res.status).not.toHaveBeenCalled();
     expect(getVersion).toHaveBeenCalled();
+  });
+
+  it('never caches or answers from cache a View as response, even with a matching ETag', async () => {
+    const simulated: PermissionSubject = { kind: 'groups', groupIds: ['group-1'], simulated: true };
+    const { call, res, getVersion } = setup(AppVersionStatus.PUBLISHED, etag, app, 'view', simulated);
+
+    await expect(call()).resolves.toEqual({ editing_version: { id: 'ver-1' } });
+
+    expect(res.set).toHaveBeenCalledWith('Cache-Control', 'no-store');
+    expect(res.status).not.toHaveBeenCalled();
+    expect(getVersion).toHaveBeenCalledWith(app, user, 'view', simulated);
   });
 });
