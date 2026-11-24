@@ -46,6 +46,8 @@ import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasCons
 import { SecurityPanel, AccessPanel, CodeHistoryPanel, useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 import { railClick } from './railClick';
 import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
+import LegalReasonsErrorModal from '@/_components/LegalReasonsErrorModal';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 // Human names for the error-boundary label/location of each sidebar panel.
 const LEFT_SIDEBAR_PANEL_LABELS = {
@@ -116,6 +118,8 @@ export const BaseLeftSidebar = ({
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const [showAccessUpgrade, setShowAccessUpgrade] = useState(false);
+  const accessInPlan = !!(featureAccess?.appPermissionPages || featureAccess?.appPermissionQuery);
   const returnToSearch = useStore((state) => state.codeSearch.returnToSearch);
   const setCodeSearchReturnToSearch = useStore((state) => state.setCodeSearchReturnToSearch);
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
@@ -345,7 +349,7 @@ export const BaseLeftSidebar = ({
             icon="access"
             selectedSidebarItem={selectedSidebarItem}
             darkMode={darkMode}
-            onClick={() => handleSelectedSidebarItem('access')}
+            onClick={() => (accessInPlan ? handleSelectedSidebarItem('access') : setShowAccessUpgrade(true))}
             className={`left-sidebar-item  left-sidebar-layout`}
             tip="Access"
             ref={setSideBarBtnRefs('access')}
@@ -456,6 +460,15 @@ export const BaseLeftSidebar = ({
       style={{ zIndex: 9999, maxWidth: '304px' }}
     >
       {renderLeftSidebarItems(isModuleEditor)}
+      {showAccessUpgrade && (
+        <LegalReasonsErrorModal
+          showModal
+          toggleModal={() => setShowAccessUpgrade(false)}
+          darkMode={darkMode}
+          edition={fetchEdition()}
+          message="Screen and query permissions are not included in your current plan. Upgrade your plan to use Access permissions."
+        />
+      )}
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
