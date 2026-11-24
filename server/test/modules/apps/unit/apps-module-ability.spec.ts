@@ -6,6 +6,7 @@ import { FEATURE_KEY, APP_TYPES } from 'src/modules/apps/constants';
 import { MODULES } from 'src/modules/app/constants/modules';
 import { UserAllPermissions } from 'src/modules/app/types';
 import { ForbiddenException } from '@nestjs/common';
+import { EntityNotFoundError } from 'typeorm';
 import { buildPermissions, makeAbilityBuilder } from 'test-helper';
 
 // ---------------------------------------------------------------------------
@@ -426,5 +427,52 @@ describe('AppsService.validatePrivateAppAccess — module canEdit behavior', () 
       expect((result as any).canEdit).toBe(false);
       expect((result as any).versionId).toBeUndefined();
     });
+  });
+});
+
+describe('AppsService.validatePrivateAppAccess — unknown version name', () => {
+  const user = { id: 'user-1' } as any;
+  const notFound = () => new EntityNotFoundError('AppVersion', { name: 'bogus' });
+
+  it('does not throw and resolves no version when the name matches nothing', async () => {
+    const service = makeService();
+    (service as any).versionRepository = { findByName: jest.fn().mockRejectedValue(notFound()) };
+
+    const result = await service.validatePrivateAppAccess(makeApp(APP_TYPES.FRONT_END), makeAbility(true, true), user, {
+      versionName: 'bogus',
+    } as any);
+
+    expect(result).toBeInstanceOf(ValidateAppAccessResponseDto);
+    expect((result as any).versionId).toBeUndefined();
+  });
+
+  it('falls back to the environment lookup when an environment is also given', async () => {
+    const service = makeService();
+    const latest = { id: 'ver-uuid', name: 'v4', currentEnvironmentId: 'env-uuid' };
+    (service as any).versionRepository = {
+      findByName: jest.fn().mockRejectedValue(notFound()),
+      findLatestVersionForEnvironment: jest.fn().mockResolvedValue(latest),
+    };
+    (service as any).appsUtilService.validateVersionEnvironment = jest
+      .fn()
+      .mockResolvedValue({ id: 'env-uuid', name: 'released' });
+
+    const result = await service.validatePrivateAppAccess(makeApp(APP_TYPES.FRONT_END), makeAbility(true, true), user, {
+      versionName: 'bogus',
+      environmentName: 'released',
+    } as any);
+
+    expect((result as any).versionId).toBe('ver-uuid');
+  });
+
+  it('rethrows lookup errors that are not "not found"', async () => {
+    const service = makeService();
+    (service as any).versionRepository = { findByName: jest.fn().mockRejectedValue(new Error('db down')) };
+
+    await expect(
+      service.validatePrivateAppAccess(makeApp(APP_TYPES.FRONT_END), makeAbility(true, true), user, {
+        versionName: 'bogus',
+      } as any)
+    ).rejects.toThrow('db down');
   });
 });

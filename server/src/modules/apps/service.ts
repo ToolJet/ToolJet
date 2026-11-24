@@ -211,8 +211,14 @@ export class AppsService implements IAppsService {
         }
       }
     }
+    // A stale or mistyped ?version= is not an error: findByName throws EntityNotFoundError, so treat
+    // it as absent and let the caller fall back to the remembered/latest version.
+    const versionByName =
+      versionName && !versionId ? await this.findVersionByNameOrNull(versionName, app.id) : undefined;
+    const isUnknownVersionName = !!versionName && !versionId && !versionByName;
+
     /* If the request comes from preview which needs version id */
-    if (versionName || environmentName || (versionId && envId)) {
+    if ((versionName && !isUnknownVersionName) || environmentName || (versionId && envId)) {
       // Check permissions (already computed above)
 
       if (!hasEditPermission && !hasViewPermission) {
@@ -226,8 +232,8 @@ export class AppsService implements IAppsService {
       /* Adding backward compatibility for old URLs */
       const version = versionId
         ? await this.versionRepository.findById(versionId, app.id)
-        : versionName
-          ? await this.versionRepository.findByName(versionName, app.id)
+        : versionName && !isUnknownVersionName
+          ? versionByName
           : // Handle version retrieval based on env
             await this.versionRepository.findLatestVersionForEnvironment(
               app.id,
@@ -303,6 +309,15 @@ export class AppsService implements IAppsService {
       response['canEdit'] = false;
     }
     return plainToClass(ValidateAppAccessResponseDto, response);
+  }
+
+  private async findVersionByNameOrNull(versionName: string, appId: string) {
+    try {
+      return await this.versionRepository.findByName(versionName, appId);
+    } catch (err) {
+      if (!(err instanceof EntityNotFoundError)) throw err;
+      return null;
+    }
   }
 
   async validateReleasedApp(
