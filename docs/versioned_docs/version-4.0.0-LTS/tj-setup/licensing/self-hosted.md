@@ -33,6 +33,10 @@ Checkout [Understanding AI Credits](/docs/build-with-ai/ai-credits#credit-alloca
 
 Once you have received the license key from the ToolJet Team, you can update the license key by following the steps:
 
+:::info
+The license key can also be configured through an environment variable. Refer to [Configure License Key via Environment Variable](/docs/setup/configuration/env-vars#configure-license-key-via-environment-variable).
+:::
+
 Role Required: **Super Admin**
 
 1. Go to the Settings page. <br/>

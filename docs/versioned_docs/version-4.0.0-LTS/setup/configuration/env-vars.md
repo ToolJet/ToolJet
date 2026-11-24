@@ -363,10 +363,6 @@ SAML and LDAP keys can also be added to a workspace's `.tj_env.<workspace>` file
 
 #### Configure License Key via Environment Variable
 
-:::warning BETA
-This feature is currently in beta and is not recommended for production use.
-:::
-
 The license key can be configured via an environment variable to avoid re-entering it through the UI on every new instance. Setting `TJ_LICENSE` ensures the license is applied automatically at startup without any manual configuration.
 
 | **Variable** | **Description** |
