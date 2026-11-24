@@ -142,6 +142,16 @@ function secondDefinition({ selectedByDefault = true } = {}) {
   return definition;
 }
 
+/**
+ * Records native `submit` events dispatched at `form`, in the capture phase so
+ * one is seen even if a handler later stops it.
+ */
+function recordNativeSubmits(form) {
+  const seen = [];
+  form.addEventListener('submit', (e) => seen.push(e.target.id), true);
+  return seen;
+}
+
 describe('ButtonGroupV2', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
@@ -402,6 +412,22 @@ describe('ButtonGroupV2', () => {
     await widget.session.store.act(async () => widget.exposed('form1').clearForm());
     await waitFor(() => expect(widget.exposed().selected).toEqual([]));
     expect(widget.exposed().isValid).toBe(false);
+  });
+
+  test('[ButtonGroupV2-FORM-002] selecting an option inside a Form does not submit the browser form', async () => {
+    // Break this catches: an option <button> losing `type="button"` (ButtonGroupV2.jsx:382). Without it
+    // every option is a submit button, so picking one inside a Form starts a native form submission,
+    // which reloads the page when the Form is nested in another Form.
+    widget.renderInsideForm({ properties: { options: { value: NO_DEFAULT_OPTIONS } } });
+    widget.setEvents(clickEvents());
+    await waitFor(() => expect(widget.exposed().selected).toEqual([]));
+    const nativeSubmits = recordNativeSubmits(document.querySelector('form#form1'));
+
+    await widget.session.user.click(button('Button2'));
+
+    await waitFor(() => expect(widget.exposed().selected).toEqual(['2']));
+    expect(widget.variables().clickCount).toBe(1);
+    expect(nativeSubmits).toEqual([]);
   });
 
   test('[ButtonGroupV2-VAR-001] mount publishes the complete public variable and action surface', async () => {

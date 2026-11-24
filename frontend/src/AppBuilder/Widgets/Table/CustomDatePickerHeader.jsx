@@ -40,6 +40,7 @@ const CustomDatePickerHeader = ({
         }}
       >
         <button
+          type="button"
           className="tj-datepicker-widget-arrows tj-datepicker-widget-left"
           onClick={(e) => {
             e.stopPropagation();
@@ -76,6 +77,7 @@ const CustomDatePickerHeader = ({
         </div>
 
         <button
+          type="button"
           className="tj-datepicker-widget-arrows tj-datepicker-widget-right "
           onClick={(e) => {
             e.stopPropagation();

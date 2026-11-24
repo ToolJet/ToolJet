@@ -451,6 +451,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
             );
           })}
           <button
+            type="button"
             className={cx('kanban-add-card-button jet-button btn', !enableAddCard && 'invisible')}
             style={colAccentColor}
             onClick={() => enableAddCard && fireEvent('onAddCardClick')}

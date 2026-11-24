@@ -159,3 +159,19 @@
 // .show-scrollbar-on-hover:hover::-webkit-scrollbar-thumb:hover {
 //   background: rgba(0, 0, 0, 0.3);
 // }
+// The Form's hidden default button for Enter (Form.jsx `pressConfiguredSubmitButton`).
+// Visually hidden rather than display:none so every browser still treats it as
+// the form's default button for implicit submission.
+.jet-form-widget > .jet-form-default-submit {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}

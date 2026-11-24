@@ -676,3 +676,36 @@ describe('Navigation widget (vertical orientation)', () => {
     expect(isExpanded(container, 'groupB')).toBe(true);
   });
 });
+
+/**
+ * Records native `submit` events dispatched at `form`, in the capture phase so
+ * one is seen even if a handler later stops it.
+ */
+function recordNativeSubmits(form) {
+  const seen = [];
+  form.addEventListener('submit', (e) => seen.push(e.target.id), true);
+  return seen;
+}
+
+describe('Navigation widget (vertical) inside a Form', () => {
+  beforeEach(verticalWidget.setup);
+  afterEach(verticalWidget.teardown);
+
+  test('[Navigation-FORM-001] clicking a nav item or a group header inside a Form does not submit the browser form', async () => {
+    // Break this catches: the item <button> (Navigation.jsx:47) or the vertical group-header <button>
+    // (Navigation.jsx:222) losing `type="button"`. Without it each is a submit button, so selecting an
+    // item or toggling a group inside a Form starts a native form submission, which reloads the page
+    // when the Form is nested in another Form.
+    const { container } = verticalWidget.renderInsideForm();
+    await screen.findByText('Group A');
+    const nativeSubmits = recordNativeSubmits(document.querySelector('form#form1'));
+
+    await verticalWidget.session.user.click(itemButton(container, 'top1'));
+    expect(verticalWidget.exposed().selectedItem).toMatchObject({ id: 'top1' });
+
+    await verticalWidget.session.user.click(groupHeader(container, 'groupA'));
+    expect(isExpanded(container, 'groupA')).toBe(true);
+
+    expect(nativeSubmits).toEqual([]);
+  });
+});

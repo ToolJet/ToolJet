@@ -74,6 +74,7 @@ export const FilterRow = memo(
         </div>
         <div className="col-auto">
           <button
+            type="button"
             data-cy={`close-filter-button-${index}`}
             onClick={() => onRemove(index)}
             className={`btn ${darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}

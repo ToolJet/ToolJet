@@ -249,14 +249,14 @@ export default function Image({
   const ImageControls = (zoomIn, zoomOut) => {
     return (
       <div className="img-control-wrapper">
-        <button className="img-control-btn" onClick={() => zoomIn()} aria-label="Zoom in">
+        <button type="button" className="img-control-btn" onClick={() => zoomIn()} aria-label="Zoom in">
           <ZoomInImage />
         </button>
-        <button className="img-control-btn" onClick={() => zoomOut()} aria-label="Zoom out">
+        <button type="button" className="img-control-btn" onClick={() => zoomOut()} aria-label="Zoom out">
           <ZoomOutImage />
         </button>
         {rotateButton && (
-          <button className="img-control-btn" onClick={rotateImage} aria-label="Rotate image">
+          <button type="button" className="img-control-btn" onClick={rotateImage} aria-label="Rotate image">
             <RotateImage />
           </button>
         )}
@@ -328,7 +328,7 @@ export default function Image({
           <>
             {rotateButton && (
               <div className="img-control-wrapper" style={{ zIndex: 1 }}>
-                <button className="img-control-btn" onClick={rotateImage}>
+                <button type="button" className="img-control-btn" onClick={rotateImage}>
                   <RotateImage />
                 </button>
               </div>

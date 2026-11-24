@@ -45,6 +45,7 @@ const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle, orientatio
 
   const buttonEl = (
     <button
+      type="button"
       className={cx('tj-list-item', {
         'tj-list-item-selected': isSelected,
         'tj-list-item-disabled': isDisabled,
@@ -220,6 +221,7 @@ const RenderNavGroup = ({
   return (
     <div key={group.id} className={cx('accordion-item', { 'dark-theme': darkMode })} data-cy={`nav-group-${group.id}`}>
       <button
+        type="button"
         className={cx('tw-group page-group-wrapper', {
           'page-group-selected': hasSelectedChild,
           'page-group-disabled': isDisabled,
