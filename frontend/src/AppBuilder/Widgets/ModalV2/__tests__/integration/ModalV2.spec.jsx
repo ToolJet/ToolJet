@@ -1262,3 +1262,49 @@ describe('ModalV2: tooltip scoping', () => {
     });
   });
 });
+
+/**
+ * Records native `submit` events dispatched at `form`, in the capture phase so
+ * one is seen even if a handler later stops it.
+ */
+function recordNativeSubmits(form) {
+  const seen = [];
+  form.addEventListener('submit', (e) => seen.push(e.target.id), true);
+  return seen;
+}
+
+describe('ModalV2: inside a form', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[ModalV2-FORM-001] clicking the trigger button inside a form opens the modal without submitting the browser form', async () => {
+    // Break this catches: the trigger <button> (ModalV2.jsx:327) losing `type="button"`. Without it the
+    // trigger is a submit button, so opening the modal inside a Form starts a native form submission,
+    // which reloads the page when the Form is nested in another Form.
+    // A plain <form> stands in for the Form widget's own: the modal's portal target (.tj-canvas-area)
+    // must stay its ancestor, which the Form-widget seam does not provide.
+    const definition = componentDefinition(ID, NAME, 'ModalV2', { ...DEFAULT_PROPERTIES });
+    definition.component.definition.styles = { ...DEFAULT_STYLES };
+    seedApp({ [ID]: definition }, { moduleId: MODULE_ID });
+    store().setEditorLoading(false, MODULE_ID);
+    store().setCurrentMode('edit', MODULE_ID);
+    widget.session.render(
+      <PageWrapper>
+        <form id="host-form">
+          <RenderWidget {...widgetProps(ID, 'ModalV2')} />
+        </form>
+      </PageWrapper>
+    );
+    await waitFor(() => expect(triggerButton()).toBeInTheDocument(), { timeout: 5000 });
+    const form = document.querySelector('form#host-form');
+    const nativeSubmits = recordNativeSubmits(form);
+    // jsdom does not implement navigation; stop a submission here so a regression fails on the
+    // assertion below instead of a jsdom "not implemented" error.
+    form.addEventListener('submit', (e) => e.preventDefault());
+
+    await widget.session.user.click(triggerButton());
+
+    await waitFor(() => expect(exposed()).toBe(true));
+    expect(nativeSubmits).toEqual([]);
+  });
+});

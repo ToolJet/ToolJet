@@ -36,6 +36,7 @@ export const buildTableColumn = (
 
           return (
             <button
+              type="button"
               className="table-expansion-toggle"
               onClick={(e) => {
                 e.stopPropagation();
