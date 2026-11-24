@@ -247,3 +247,22 @@
         }
     }
 }
+
+// In-editor preview (`editor-preview` on the editor wrapper, AppBuilder.jsx):
+// the panels and Moveable's control boxes stay mounted so going back to edit
+// is quick, and are hidden instead.
+.wrapper.editor-preview {
+    .left-sidebar,
+    .editor-sidebar,
+    .right-sidebar-toggle,
+    .query-pane,
+    .editor-realtime-cursors,
+    .moveable-control-box {
+        display: none !important;
+    }
+}
+
+// The left sidebar's panel is portalled to the body.
+body:has(.wrapper.editor-preview) .sidebar-h-100-popover {
+    display: none !important;
+}

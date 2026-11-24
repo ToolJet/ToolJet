@@ -6,6 +6,7 @@ import { shallow } from 'zustand/shallow';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { isModalType } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { selectInEditorPreview } from '@/AppBuilder/_helpers/inEditorPreview';
 
 const EditorSelecto = () => {
   const { moduleId } = useModuleContext();
@@ -115,6 +116,8 @@ const EditorSelecto = () => {
 
   const handleDragCondition = useCallback(
     (e) => {
+      // Mounted but inert while the editor previews in place.
+      if (selectInEditorPreview(useStore.getState())) return false;
       // Clear browser selection on drag
       const selection = window.getSelection();
       if (selection) {

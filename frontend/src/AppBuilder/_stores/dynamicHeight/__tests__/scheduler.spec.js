@@ -1,5 +1,11 @@
 import { flushDynamicHeight } from '../engine';
-import { expectMeasurement, measurementArrived, scheduleDynamicHeight, scheduleMeasuredHeights } from '../scheduler';
+import {
+  expectMeasurement,
+  measurementArrived,
+  scheduleDynamicHeight,
+  scheduleMeasuredHeights,
+  watchEditMode,
+} from '../scheduler';
 
 jest.mock('../engine', () => ({ flushDynamicHeight: jest.fn() }));
 
@@ -11,7 +17,7 @@ const nextFrame = () => {
   current.forEach((callback) => callback());
 };
 
-const state = {};
+const state = { modeStore: { modules: { canvas: { currentMode: 'view' } } } };
 const get = () => state;
 const rowRequest = { id: 'list', layout: 'desktop', isContainer: true, contextIndices: [4], moduleId: 'canvas' };
 
@@ -76,5 +82,48 @@ describe('dynamic height scheduler', () => {
     nextFrame();
     expect(flushDynamicHeight).toHaveBeenCalledTimes(2);
     flushDynamicHeight.mockReset();
+  });
+
+  it('does not solve a module the editor shows in edit mode, even when the request was queued in view mode', () => {
+    scheduleDynamicHeight(get, rowRequest);
+    state.modeStore.modules.canvas.currentMode = 'edit';
+    nextFrame();
+    state.modeStore.modules.canvas.currentMode = 'view';
+    const [, { requests, fullModules }] = flushDynamicHeight.mock.calls[0];
+    expect(requests).toEqual([]);
+    expect(fullModules).toEqual([]);
+  });
+
+  describe('when the canvas switches to edit mode', () => {
+    const modes = (canvas) => ({ modeStore: { modules: { canvas: { currentMode: canvas } } } });
+    const storeWith = (temporaryLayouts) => {
+      const store = { ...modes('edit'), temporaryLayouts, clearTemporaryLayouts: jest.fn() };
+      return store;
+    };
+
+    beforeEach(() => {
+      window.public_config = { ENABLE_DYNAMIC_HEIGHT_V2: 'true' };
+    });
+    afterEach(() => {
+      delete window.public_config;
+    });
+
+    it('drops the positions the engine rendered while the page was loading in view mode', () => {
+      const store = storeWith({ text1: { top: 120, height: 64 } });
+      watchEditMode(() => store)(store, modes('view'));
+      expect(store.clearTemporaryLayouts).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves the store alone when the canvas was already in edit mode', () => {
+      const store = storeWith({ text1: { top: 120, height: 64 } });
+      watchEditMode(() => store)(store, modes('edit'));
+      expect(store.clearTemporaryLayouts).not.toHaveBeenCalled();
+    });
+
+    it('does not write to the store when there are no rendered positions', () => {
+      const store = storeWith({});
+      watchEditMode(() => store)(store, modes('view'));
+      expect(store.clearTemporaryLayouts).not.toHaveBeenCalled();
+    });
   });
 });

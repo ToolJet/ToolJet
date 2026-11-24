@@ -11,6 +11,12 @@ import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useCodeMode, CodeModeHeaderTools } from '@/AppBuilder/_helpers/codeModeHooks';
+import {
+  enterInEditorPreview,
+  exitInEditorPreview,
+  isInEditorPreviewEnabled,
+  selectInEditorPreview,
+} from '@/AppBuilder/_helpers/inEditorPreview';
 
 const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPreviewBtn = true }) {
   const { isModuleEditor } = useModuleContext();
@@ -47,6 +53,7 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
   }, [clearSelectedComponents]);
   const appPreviewLink = useAppPreviewLink();
   const codeMode = useCodeMode();
+  const inEditorPreview = useStore(selectInEditorPreview);
   return (
     <div
       className={cx('tw-flex tw-gap-2 tw-items-center tw-justify-center editor-header-actions', {
@@ -68,6 +75,19 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
           currentLayout={currentLayout}
           toggleCurrentLayout={toggleCurrentLayout}
         />
+      )}
+      {isInEditorPreviewEnabled(isModuleEditor) && !codeMode && (
+        <ButtonComponent
+          isLucid
+          size="default"
+          variant={inEditorPreview ? 'primary' : 'outline'}
+          leadingIcon={inEditorPreview ? 'pencil' : 'eye'}
+          data-cy="editor-inline-preview-toggle"
+          style={{ padding: '7px 12px' }}
+          onClick={() => (inEditorPreview ? exitInEditorPreview() : enterInEditorPreview())}
+        >
+          {inEditorPreview ? 'Edit' : 'Preview'}
+        </ButtonComponent>
       )}
       {showPreviewBtn && (
         <Link
