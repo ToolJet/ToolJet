@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef, forwardRef } from 'rea
 import DatePickerComponent from 'react-datepicker';
 import moment from 'moment-timezone';
 import cx from 'classnames';
+import toast from 'react-hot-toast';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import CustomDatePickerHeader from '@/AppBuilder/Widgets/NewTable/_components/DataTypes/_components/CustomDatePickerHeader';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -61,6 +62,27 @@ export const getDateTimeFormat = (
   return isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
 };
 
+// The renderer emits edits in the display format (see computeDateString), so a value it handed out
+// can't be read back with the parse format. Returns null when the value isn't in the display format.
+export const parseDisplayedDate = ({
+  value,
+  dateDisplayFormat = 'MM/DD/YYYY',
+  isTimeChecked,
+  isTwentyFourHrFormatEnabled,
+  isDateSelectionEnabled = true,
+  timeZoneDisplay,
+}) => {
+  const format = getDateTimeFormat(
+    dateDisplayFormat,
+    isTimeChecked,
+    isTwentyFourHrFormatEnabled,
+    isDateSelectionEnabled
+  );
+  const momentObj =
+    isTimeChecked && timeZoneDisplay ? moment.tz(value, format, true, timeZoneDisplay) : moment(value, format, true);
+  return momentObj.isValid() ? momentObj.toDate() : null;
+};
+
 export const parseDate = ({
   value,
   parseDateFormat,
@@ -80,7 +102,8 @@ export const parseDate = ({
 
   let momentObj;
   if (parseInUnixTimestamp && unixTimestamp) {
-    momentObj = unixTimestamp === 'seconds' ? moment.unix(value) : moment(parseInt(value));
+    const epoch = Number(value);
+    momentObj = unixTimestamp === 'seconds' ? moment.unix(epoch) : moment(epoch);
   } else if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
     momentObj = moment.tz(value, parseDateFormat, true, timeZoneValue);
     if (!momentObj.isValid()) momentObj = parseAsIso(value, timeZoneValue);
@@ -156,6 +179,8 @@ export const DatePickerRenderer = ({
   const textRef = useRef(null);
   // Ref to track if date change was already handled (prevents double-call from onChange + onCalendarClose)
   const dateChangeHandledRef = useRef(false);
+  // Last value emitted via onChange, so it isn't re-parsed when it comes back in as `value`
+  const lastEmittedRef = useRef({ value: undefined, date: undefined });
 
   const readOnly = !isEditable;
 
@@ -198,9 +223,17 @@ export const DatePickerRenderer = ({
 
   const handleDateChange = useCallback(
     (newDate) => {
+      if (!newDate || Number.isNaN(new Date(newDate).getTime())) {
+        setDate(null);
+        lastEmittedRef.current = { value: null, date: null };
+        onChange?.(null);
+        return;
+      }
+
+      const isUnixMs = unixTimestamp === 'milliseconds';
       let processedValue = newDate;
       if (parseInUnixTimestamp && unixTimestamp) {
-        processedValue = moment(newDate).unix();
+        processedValue = isUnixMs ? moment(newDate).valueOf() : moment(newDate).unix();
       }
 
       const parsedDate = parseDate({
@@ -219,11 +252,14 @@ export const DatePickerRenderer = ({
       });
 
       setDate(parsedDate);
-      if (parseInUnixTimestamp && unixTimestamp) {
-        onChange?.(moment(parsedDate).unix());
-      } else {
-        onChange?.(computeDateString(parsedDate));
-      }
+      const emittedValue =
+        parseInUnixTimestamp && unixTimestamp
+          ? isUnixMs
+            ? moment(parsedDate).valueOf()
+            : moment(parsedDate).unix()
+          : computeDateString(parsedDate);
+      lastEmittedRef.current = { value: emittedValue, date: parsedDate };
+      onChange?.(emittedValue);
     },
     [
       parseInUnixTimestamp,
@@ -241,14 +277,38 @@ export const DatePickerRenderer = ({
 
   const handleInputDateChange = useCallback(
     (value) => {
-      const inputDate = moment(value, parseDateFormat).toDate();
-      handleDateChange(inputDate);
+      const typedFormat = getDateTimeFormat(
+        dateDisplayFormat,
+        isTimeChecked,
+        isTwentyFourHrFormatEnabled,
+        isDateSelectionEnabled
+      );
+      const typedMoment =
+        isTimeChecked && timeZoneDisplay ? moment.tz(value, typedFormat, timeZoneDisplay) : moment(value, typedFormat);
+      const typedDay = typedMoment.format('YYYY-MM-DD');
+      if (excludedDates.some((excluded) => moment(excluded).format('YYYY-MM-DD') === typedDay)) {
+        toast.error(`${typedMoment.format(DISABLED_DATE_FORMAT)} is a disabled date. Please enter a valid date`);
+        return;
+      }
+      handleDateChange(typedMoment.toDate());
     },
-    [parseDateFormat, handleDateChange]
+    [
+      dateDisplayFormat,
+      isTimeChecked,
+      isTwentyFourHrFormatEnabled,
+      isDateSelectionEnabled,
+      timeZoneDisplay,
+      handleDateChange,
+      excludedDates,
+    ]
   );
 
   // Initialize date from value
   useEffect(() => {
+    if (lastEmittedRef.current.value !== undefined && value === lastEmittedRef.current.value) {
+      setDate(lastEmittedRef.current.date);
+      return;
+    }
     const parsedDate = parseDate({
       value,
       parseDateFormat: getDateTimeFormat(
@@ -387,14 +447,17 @@ export const DatePickerRenderer = ({
           }}
           onCalendarClose={() => {
             // Only handle input date change if onChange wasn't already called
-            if (isInputFocused && !dateChangeHandledRef.current) {
+            const isInputEdited = inputValue !== computeDateString(date);
+            if (isInputFocused && isInputEdited && !dateChangeHandledRef.current) {
               handleInputDateChange(inputValue);
             }
             setIsInputFocused(false);
             dateChangeHandledRef.current = false;
           }}
         />
-        {isEditable && !isValid && <div className="invalid-feedback-date text-truncate">{validationError}</div>}
+        {isEditable && !isValid && widgetType !== 'KeyValuePair' && (
+          <div className="invalid-feedback-date text-truncate">{validationError}</div>
+        )}
       </div>
     </OverlayTrigger>
   );

@@ -26,7 +26,8 @@ import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from './module-ref.util';
-import { resolveAllWorkflowRefsForVersion, resolveWorkflowRef } from './workflow-ref.util';
+import { pinIsDraftSentinel, resolveAllWorkflowRefsForVersion, resolveWorkflowRef } from './workflow-ref.util';
+import { readWorkflowQueryRefs } from '@helpers/workflow_query_options.helper';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import {
   assertGitSyncEditAllowedForOrg,
@@ -39,6 +40,8 @@ import { VersionSettingsWrite } from '@modules/app-validation/types';
 
 /** A table that resolves in the target environment but hasn't caught up on all its migrations yet. */
 export type TableBehindWarning = { tableId: string; tableName: string; missingCount: number };
+
+const NESTED_WORKFLOW_PINS_BLOCKED = 'NESTED_WORKFLOW_PINS_BLOCKED';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -150,7 +153,15 @@ export class VersionUtilService implements IVersionUtilService {
         // Saved (published/released) versions are immutable — block content edits regardless of git
         // state. A pure status flip (publish/release) is not a content edit and is allowed through.
         assertVersionEditable(appVersion.status);
-        const app = await mgr.findOne(App, { where: { id: appVersion.appId }, select: ['id', 'organizationId'] });
+        const app = await mgr.findOne(App, {
+          where: { id: appVersion.appId },
+          select: ['id', 'organizationId', 'currentVersionId'],
+        });
+        // The released version (App.currentVersionId) is frozen too: releasing only repoints the
+        // pointer and leaves a DRAFT status, so a non-UI client (MCP/PAT) could still edit it.
+        if (app?.currentVersionId === appVersion.id) {
+          throw new BadRequestException('You cannot update a released version');
+        }
         if (app) {
           await assertGitSyncEditAllowedForOrg(
             this.gitSyncConfigsUtilService,
@@ -694,6 +705,14 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
+  private async isWorkflowVersion(versionId: string, manager: EntityManager): Promise<boolean> {
+    const [app] = await manager.query(
+      `SELECT a.type FROM apps a JOIN app_versions av ON av.app_id = a.id WHERE av.id = $1`,
+      [versionId]
+    );
+    return app?.type === APP_TYPES.WORKFLOW;
+  }
+
   // Twin of checkDraftModulesInApp for embedded workflows. Blocks on what a pin RESOLVES TO,
   // never on what it says, so a future sentinel needs no change here.
   //
@@ -728,7 +747,7 @@ export class VersionUtilService implements IVersionUtilService {
       );
       const nameByCoRel = new Map(workflowApps.map((w) => [w.coRel, w.name]));
 
-      type Offender = { name: string; kind: 'no-row' | 'invalid-pin' | 'draft-pinned' };
+      type Offender = { name: string; kind: 'no-row' | 'invalid-pin' | 'draft-pinned'; followsDraft?: boolean };
       const offenders: Offender[] = [];
       const seenCoRel = new Set<string>();
 
@@ -749,7 +768,9 @@ export class VersionUtilService implements IVersionUtilService {
             defaultBranchId
           );
         } catch {
-          offenders.push({ name, kind: 'invalid-pin' });
+          // A draft-following pin throws once that draft has been saved; it is still pinned to a draft.
+          const { workflowVersionId } = readWorkflowQueryRefs(optionsByDataQueryId.get(ref.dataQueryId));
+          offenders.push({ name, kind: 'invalid-pin', followsDraft: pinIsDraftSentinel(workflowVersionId) });
           continue;
         }
 
@@ -777,6 +798,15 @@ export class VersionUtilService implements IVersionUtilService {
             : `Workflow "${o.name}" has a draft version pinned. Pin a saved version.`;
 
       const workflowList = offenders.map(formatEntry).join(' ');
+      const blockedDialog =
+        offenders.every((o) => o.kind === 'draft-pinned' || o.followsDraft) &&
+        (await this.isWorkflowVersion(versionId, manager))
+          ? {
+              code: NESTED_WORKFLOW_PINS_BLOCKED,
+              action: 'save',
+              workflows: offenders.map(({ name }) => ({ name })),
+            }
+          : {};
       throw new BadRequestException({
         message: {
           error:
@@ -784,6 +814,7 @@ export class VersionUtilService implements IVersionUtilService {
               ? `Save blocked - ${formatEntry(offenders[0])}`
               : `Save blocked - ${offenders.length} workflows need saving. ${workflowList}`,
           details: workflowList,
+          ...blockedDialog,
         },
       });
     } catch (error) {
@@ -918,6 +949,25 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
+  // The version's ToolJet Database tables with no relation in the target environment. `resolved` is null
+  // when the version uses no tables.
+  async findTablesMissingInEnvironment(
+    appId: string,
+    versionId: string,
+    targetEnvironmentId: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<{ resolved: Map<string, string> | null; offenders: InternalTable[] }> {
+    const tables = await this.appsUtilService.findTooljetDbTables(appId, versionId);
+    if (!tables.length) return { resolved: null, offenders: [] };
+
+    const tableIds = tables.map((t) => t.table_id);
+    const resolved = await this.relationResolverService.resolve(organizationId, tableIds, targetEnvironmentId, manager);
+    const offenderIds = tableIds.filter((id) => !resolved.has(id));
+    const offenders = offenderIds.length ? await manager.find(InternalTable, { where: { id: In(offenderIds) } }) : [];
+    return { resolved, offenders };
+  }
+
   /**
    * Second dependency type promote must validate, same shape as checkModulesPromotableToEnvironment:
    * a query against a ToolJet DB table that hasn't reached the target environment yet would 404 at
@@ -943,19 +993,15 @@ export class VersionUtilService implements IVersionUtilService {
     manager: EntityManager
   ): Promise<{ warnings: TableBehindWarning[] }> {
     try {
-      const tables = await this.appsUtilService.findTooljetDbTables(appId, versionId);
-      if (!tables.length) return { warnings: [] };
-
-      const tableIds = tables.map((t) => t.table_id);
-      const resolved = await this.relationResolverService.resolve(
-        organizationId,
-        tableIds,
+      const { resolved, offenders } = await this.findTablesMissingInEnvironment(
+        appId,
+        versionId,
         targetEnvironmentId,
+        organizationId,
         manager
       );
-      const offenderIds = tableIds.filter((id) => !resolved.has(id));
-      if (offenderIds.length) {
-        const offenders = await manager.find(InternalTable, { where: { id: In(offenderIds) } });
+      if (!resolved) return { warnings: [] };
+      if (offenders.length) {
         const names = offenders.map((t) => t.tableName);
         const tableList = names.join(', ');
         const message =
@@ -963,7 +1009,12 @@ export class VersionUtilService implements IVersionUtilService {
             ? `Promote blocked - table "${names[0]}" not available in ${targetEnvironmentName}. Promote the table first.`
             : `Promote blocked - ${names.length} tables not available in ${targetEnvironmentName}: ${tableList}. Promote the tables first.`;
         throw new BadRequestException({
-          message: { error: message, details: tableList },
+          message: {
+            error: message,
+            details: tableList,
+            code: 'TABLES_NOT_IN_TARGET_ENVIRONMENT',
+            tables: offenders.map((t) => ({ id: t.id, name: t.tableName })),
+          },
         });
       }
 
@@ -1121,8 +1172,17 @@ export class VersionUtilService implements IVersionUtilService {
         offenders.length === 1
           ? `Promote blocked - ${formatEntry(offenders[0])}`
           : `Promote blocked - ${offenders.length} dependent workflows need attention. ${workflowList}`;
+      const blockedDialog =
+        offenders.every((o) => o.kind === 'not-promoted') && (await this.isWorkflowVersion(versionId, manager))
+          ? {
+              code: NESTED_WORKFLOW_PINS_BLOCKED,
+              action: 'promote',
+              environment: targetEnvironmentName,
+              workflows: offenders.map(({ name, versionName }) => ({ name, versionName })),
+            }
+          : {};
       throw new BadRequestException({
-        message: { error: message, details: workflowList },
+        message: { error: message, details: workflowList, ...blockedDialog },
       });
     } catch (error) {
       if (error instanceof BadRequestException) throw error;

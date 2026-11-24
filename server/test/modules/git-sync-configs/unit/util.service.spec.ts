@@ -13,6 +13,7 @@ jest.mock('@helpers/database.helper', () => ({
 
 import { HttpException } from '@nestjs/common';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { dbTransactionWrap } from '@helpers/database.helper';
 
 describe('GitSyncConfigsUtilService (CE)', () => {
   let svc: GitSyncConfigsUtilService;
@@ -33,6 +34,7 @@ describe('GitSyncConfigsUtilService (CE)', () => {
       create: jest.fn((_e: any, v: any) => v),
       save: jest.fn(),
       createQueryBuilder: jest.fn(() => qb),
+      query: jest.fn().mockResolvedValue([{ '?column?': 1 }]), // EnsureDefaultBranch migration applied
     };
     (globalThis as any).__fakeManager = manager;
     svc = new GitSyncConfigsUtilService();
@@ -72,6 +74,20 @@ describe('GitSyncConfigsUtilService (CE)', () => {
       expect(res.options.defaultBranch).toEqual({ id: 'new-main', name: 'main' });
     });
 
+    // Async upgrade from 3.21.58: the data phase inserts each org's default branch in an uncommitted
+    // transaction, so inserting it here would wait on that row until lock_timeout.
+    it('returns a virtual `main` default without inserting while the default-branch migration is pending', async () => {
+      manager.findOne.mockResolvedValueOnce(null);
+      manager.query.mockResolvedValue([]);
+      const res = await svc.getDetails('org1');
+      expect(manager.query).toHaveBeenCalledWith(expect.stringContaining('FROM migrations'), [
+        'EnsureDefaultBranchForAllOrganizations1781740800000',
+      ]);
+      expect(manager.save).not.toHaveBeenCalled();
+      expect(manager.update).not.toHaveBeenCalled();
+      expect(res.options.defaultBranch).toEqual({ id: null, name: 'main' });
+    });
+
     it('promotes an existing `main` branch (clearing sibling defaults) when there is no current default', async () => {
       // no default; a branch named main already exists → promote it
       manager.findOne.mockResolvedValueOnce(null).mockResolvedValueOnce({ id: 'main-existing' });
@@ -97,6 +113,42 @@ describe('GitSyncConfigsUtilService (CE)', () => {
       manager.findOne.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
       manager.save.mockRejectedValue({ code: '42P01', message: 'boom' });
       await expect(svc.getDetails('org1')).rejects.toMatchObject({ code: '42P01' });
+    });
+  });
+
+  // A caller that already holds a pooled connection (AppsSubscriber.afterLoad) passes its manager
+  // so getDetails reads on it instead of taking a second connection from the pool.
+  describe('getDetails — with a caller-supplied manager', () => {
+    let callerManager: { findOne: jest.Mock; query: jest.Mock };
+
+    beforeEach(() => {
+      jest.mocked(dbTransactionWrap).mockClear();
+      callerManager = {
+        findOne: jest.fn().mockResolvedValue({ id: 'b-caller', name: 'main' }),
+        query: jest.fn().mockResolvedValue([{ '?column?': 1 }]),
+      };
+    });
+
+    it('reads the default branch on the caller manager without opening a transaction', async () => {
+      const res = await svc.getDetails('org1', undefined, { manager: callerManager as never });
+
+      expect(dbTransactionWrap).toHaveBeenCalledTimes(1);
+      expect(dbTransactionWrap).toHaveBeenCalledWith(expect.any(Function), callerManager);
+      expect(callerManager.findOne).toHaveBeenCalled();
+      expect(manager.findOne).not.toHaveBeenCalled();
+      expect(res.options.defaultBranch).toEqual({ id: 'b-caller', name: 'main' });
+    });
+
+    it('creates a missing default branch in its own transaction, not on the caller manager', async () => {
+      callerManager.findOne.mockResolvedValue(null); // no default branch on the caller's view
+      manager.findOne.mockResolvedValue(null); // own-tx: no branch named main → insert
+      manager.save.mockResolvedValue({ id: 'new-main' });
+
+      const res = await svc.getDetails('org1', undefined, { manager: callerManager as never });
+
+      expect(dbTransactionWrap).toHaveBeenLastCalledWith(expect.any(Function));
+      expect(manager.save).toHaveBeenCalled();
+      expect(res.options.defaultBranch).toEqual({ id: 'new-main', name: 'main' });
     });
   });
 

@@ -7,6 +7,7 @@ import {
   DataSource,
   EntityManager,
   Equal,
+  FindOptionsSelect,
   FindOptionsWhere,
   ILike,
   In,
@@ -20,6 +21,7 @@ import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
 import { DataSourcesGroupPermissions } from '@entities/data_sources_group_permissions.entity';
 import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
 import { GroupApps } from '@entities/group_apps.entity';
+import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/hydration-context';
 import { GroupDataSources } from '@entities/group_data_source.entity';
 import { GroupFolders } from '@entities/group_folders.entity';
 import { GROUP_PERMISSIONS_TYPE, ResourceType } from './constants';
@@ -27,6 +29,19 @@ import { GroupUsers } from '@entities/group_users.entity';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { User } from '@entities/user.entity';
 import { DATA_BASE_CONSTRAINTS } from './constants/error';
+
+const GROUP_USERS_SAFE_SELECT: FindOptionsSelect<GroupUsers> = {
+  id: true,
+  userId: true,
+  groupId: true,
+  user: {
+    id: true,
+    email: true,
+    firstName: true,
+    lastName: true,
+    avatarId: true,
+  },
+};
 
 // The user's groups that can view or edit the app. Page, component and query permissions are
 // checked against these, so the released-app cache key reads them too (getAppDataRevision).
@@ -139,10 +154,14 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     const fgpIds = fgps.map((f) => f.id);
     const [groupApps, groupDataSources, groupFolders] = await Promise.all([
       agpIds.length
-        ? em.find(GroupApps, {
-            where: { appsGroupPermissionsId: In(agpIds) },
-            relations: { app: true },
-          })
+        ? // One App per granted app; callers only read app columns, so skip the per-App
+          // AppsSubscriber.afterLoad hydration (N git-sync + AppVersion lookups).
+          skipAppEditingVersionHydration.run(true, () =>
+            em.find(GroupApps, {
+              where: { appsGroupPermissionsId: In(agpIds) },
+              relations: { app: true },
+            })
+          )
         : Promise.resolve([] as GroupApps[]),
       dgpIds.length
         ? em.find(GroupDataSources, {
@@ -287,6 +306,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
             organizationUsers: true,
           },
         },
+        select: GROUP_USERS_SAFE_SELECT,
       });
     }
 
@@ -294,6 +314,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     return m.find(GroupUsers, {
       where: baseWhere,
       relations: { group: true, user: { organizationUsers: true } },
+      select: GROUP_USERS_SAFE_SELECT,
     });
   }
 

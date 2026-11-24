@@ -3,6 +3,7 @@ import { determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { noop } from 'lodash';
+import useStore from '@/AppBuilder/_stores/store';
 
 /**
  * Utility function to generate input step for decimal places
@@ -34,6 +35,39 @@ const removingExcessDecimalPlaces = (value, allowedDecimalPlaces) => {
 };
 
 /**
+ * A number with thousands separators in the viewer's locale (1234567.5 reads 1,234,567.5), keeping the decimals it
+ * has, or exactly `decimalPlaces` of them when set. Anything that is not a finite number is returned as it is.
+ */
+export const groupDigits = (value, decimalPlaces = null) => {
+  if (value === null || value === undefined || value === '' || typeof value === 'boolean') return value;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return value;
+  const places = Number(decimalPlaces);
+  const fixed = decimalPlaces !== null && decimalPlaces !== undefined && Number.isFinite(places) && places >= 0;
+  try {
+    return new Intl.NumberFormat(undefined, {
+      minimumFractionDigits: fixed ? Math.min(20, Math.floor(places)) : 0,
+      maximumFractionDigits: fixed ? Math.min(20, Math.floor(places)) : 20,
+    }).format(n);
+  } catch {
+    return value;
+  }
+};
+
+/**
+ * A displayed number with its prefix and suffix ("$" and "19.50" read "$19.50", "40" and "%" read "40%"). A minus sign
+ * goes before the prefix ("-$4.25"). Empty values and missing affixes leave the value as it is.
+ */
+export const affixNumber = (text, prefix, suffix) => {
+  if (text === null || text === undefined || text === '') return text;
+  const before = typeof prefix === 'string' ? prefix : '';
+  const after = typeof suffix === 'string' ? suffix : '';
+  if (!before && !after) return text;
+  const s = String(text);
+  return s.startsWith('-') ? `-${before}${s.slice(1)}${after}` : `${before}${s}${after}`;
+};
+
+/**
  * NumberRenderer - Pure number value renderer with editing support
  *
  * Renders numeric values with increment/decrement controls, validation, and search highlighting.
@@ -51,6 +85,11 @@ const removingExcessDecimalPlaces = (value, allowedDecimalPlaces) => {
  * @param {string} props.validationError - Validation error message
  * @param {string} props.searchText - Search text for highlighting
  * @param {React.Component} props.SearchHighlightComponent - Optional component for search highlighting
+ * @param {Object} props.validationConfig - Validation rule config (regex/minValue/maxValue/customRule),
+ *                  used to validate the in-progress draft value while editing, ahead of the commit on blur.
+ * @param {Function} props.onValidationChange - Reports the effective ({isValid, validationError}) —
+ *                  draft-based while focused, prop-driven/committed otherwise — to a parent that
+ *                  displays its own validation UI (e.g. KeyValuePair's row-level error text).
  */
 export const NumberRenderer = ({
   value: initialValue,
@@ -61,6 +100,9 @@ export const NumberRenderer = ({
   containerWidth,
   darkMode = false,
   decimalPlaces = null,
+  thousandSeparator = false,
+  prefix = '',
+  suffix = '',
   isValid = true,
   validationError,
   searchText,
@@ -69,12 +111,36 @@ export const NumberRenderer = ({
   id,
   className,
   widgetType,
+  validationConfig,
+  onValidationChange,
 }) => {
   const cellValue = decimalPlaces !== null ? removingExcessDecimalPlaces(initialValue, decimalPlaces) : initialValue;
   const [displayValue, setDisplayValue] = useState(cellValue);
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const ref = useRef(null);
+
+  const draftValidation =
+    isFocused && validationConfig
+      ? useStore.getState().validateWidget({
+          validationObject: {
+            regex: { value: validationConfig?.regex },
+            minValue: { value: validationConfig?.minValue },
+            maxValue: { value: validationConfig?.maxValue },
+            customRule: { value: validationConfig?.customRule },
+          },
+          widgetValue: displayValue,
+          customResolveObjects: { cellValue: displayValue },
+        })
+      : null;
+  const effectiveIsValid = draftValidation ? draftValidation.isValid : isValid;
+  const effectiveValidationError = draftValidation ? draftValidation.validationError : validationError;
+
+  useEffect(() => {
+    onValidationChange?.({ isValid: effectiveIsValid, validationError: effectiveValidationError });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveIsValid, effectiveValidationError]);
 
   useEffect(() => {
     setDisplayValue(cellValue);
@@ -151,7 +217,7 @@ export const NumberRenderer = ({
             background: 'inherit',
             paddingRight: '20px',
           }}
-          className={`${className} input-number h-100 ${!isValid ? 'is-invalid' : ''}`}
+          className={`${className} input-number h-100 ${!effectiveIsValid ? 'is-invalid' : ''}`}
           value={displayValue}
           onChange={(e) => setDisplayValue(e.target.value)}
           step={getInputStep(decimalPlaces)}
@@ -164,11 +230,15 @@ export const NumberRenderer = ({
           }}
           onBlur={() => {
             setIsEditing(false); // Required for KeyValuePair
+            setIsFocused(false);
             if (displayValue !== cellValue) {
               handleValueChange(displayValue);
             }
           }}
-          onFocus={(e) => e.stopPropagation()}
+          onFocus={(e) => {
+            e.stopPropagation();
+            setIsFocused(true);
+          }}
         />
         <div className="arror-container">
           <div onMouseDown={handleIncrement}>
@@ -190,8 +260,8 @@ export const NumberRenderer = ({
             />
           </div>
         </div>
-        {!isValid && widgetType !== 'KeyValuePair' && (
-          <div className="invalid-feedback text-truncate">{validationError}</div>
+        {!effectiveIsValid && widgetType !== 'KeyValuePair' && (
+          <div className="invalid-feedback text-truncate">{effectiveValidationError}</div>
         )}
       </div>
     );
@@ -214,7 +284,7 @@ export const NumberRenderer = ({
         onMouseLeave={() => setHovered(false)}
         ref={ref}
       >
-        {renderText(cellValue)}
+        {renderText(affixNumber(thousandSeparator ? groupDigits(cellValue, decimalPlaces) : cellValue, prefix, suffix))}
       </div>
     </OverlayTrigger>
   );
