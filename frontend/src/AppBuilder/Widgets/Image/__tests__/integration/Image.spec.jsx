@@ -19,6 +19,7 @@ import {
   MODULE_ID,
   setVariableOn,
   widgetProps,
+  recordNativeSubmits,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'img1';
@@ -578,16 +579,6 @@ describe('Image: saved-app compatibility', () => {
     expect(document.querySelector('.lazyload-wrapper')).not.toBeInTheDocument();
   });
 });
-
-/**
- * Records native `submit` events dispatched at `form`, in the capture phase so
- * one is seen even if a handler later stops it.
- */
-function recordNativeSubmits(form) {
-  const seen = [];
-  form.addEventListener('submit', (e) => seen.push(e.target.id), true);
-  return seen;
-}
 
 describe('Image: inside a Form', () => {
   beforeEach(setup);

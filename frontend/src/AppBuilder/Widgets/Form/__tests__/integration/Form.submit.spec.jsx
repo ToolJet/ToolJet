@@ -24,7 +24,15 @@ import { act, fireEvent, screen } from '@testing-library/react';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import useStore from '@/AppBuilder/_stores/store';
 import { AppBuilderTestSession, defineAppBuilderScenario, seedApp, componentDefinition } from '@/test/app-builder';
-import { binding, drain, widgetProps, MODULE_ID } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
+import {
+  binding,
+  drain,
+  widgetProps,
+  preloadLazyComponent,
+  MODULE_ID,
+  recordNativeSubmits,
+} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const state = () => useStore.getState();
 
@@ -114,17 +122,6 @@ function renderFormWithCancelAndSubmit({ buttonToSubmit = 'submit1', submitProps
 }
 
 const formElement = (id) => document.querySelector(`form#${id}`);
-
-/** Records native `submit` events dispatched at `form` (capture phase: seen even if bubbling is stopped). */
-function recordNativeSubmits(form) {
-  const seen = [];
-  form.addEventListener(
-    'submit',
-    (e) => seen.push({ target: e.target.id, defaultPrevented: e.defaultPrevented }),
-    true
-  );
-  return seen;
-}
 
 /**
  * Enter in a single-line field, as a browser handles it (HTML implicit
@@ -281,29 +278,36 @@ describe('Form submission', () => {
       );
     }
 
-    /** Chromium/WebKit: an ancestor <form> stops a bubbling submit that came from a descendant form. */
-    function installChromiumNestedFormStop(outer) {
-      const reached = [];
-      outer.addEventListener('submit', (event) => {
-        if (event.target !== outer) {
-          reached.push({ target: event.target.id, defaultPrevented: event.defaultPrevented });
-          event.stopPropagation();
-        }
+    /**
+     * Chromium/WebKit: a submit from a <form> nested in another <form> does not
+     * bubble past the inner form. It never reaches the outer <form>, `document`
+     * or React's root listener, so React's onSubmit cannot cancel it. This stops
+     * it right above the inner form, as those browsers do, and returns every
+     * submit dispatched at the inner form so a test can check each ended cancelled.
+     */
+    function installChromiumNestedFormStop(inner) {
+      const submits = [];
+      inner.addEventListener('submit', (event) => submits.push(event), true);
+      inner.parentElement.addEventListener('submit', (event) => {
+        if (event.target === inner) event.stopPropagation();
       });
-      return reached;
+      return submits;
     }
+
+    /** Submits that were never cancelled: each one is a page reload in a browser. */
+    const uncancelled = (submits) => submits.filter((event) => !event.defaultPrevented).map((event) => event.target.id);
 
     test('clicking the inner Submit button submits only the inner Form, with no native submission', async () => {
       renderNestedForms();
       await drain();
       expect(formElement('form1').contains(formElement('form2'))).toBe(true);
-      const reachedOuter = installChromiumNestedFormStop(formElement('form1'));
+      const innerSubmits = installChromiumNestedFormStop(formElement('form2'));
 
       await session.user.click(screen.getByRole('button', { name: 'Inner submit' }));
 
-      // Either no native submit started, or it was cancelled before the outer
-      // <form> swallowed it — never an uncancelled one (a page reload).
-      expect(reachedOuter.filter((r) => !r.defaultPrevented)).toEqual([]);
+      // Either no native submit started, or it was cancelled: never an
+      // uncancelled one (a page reload).
+      expect(uncancelled(innerSubmits)).toEqual([]);
       expect(count('innerClicks')).toBe(1);
       expect(count('innerSubmits')).toBe(1);
       expect(count('outerSubmits')).toBe(0);
@@ -312,13 +316,37 @@ describe('Form submission', () => {
     test('Enter in an inner field submits only the inner Form, with no native submission', async () => {
       renderNestedForms();
       await drain();
-      const reachedOuter = installChromiumNestedFormStop(formElement('form1'));
+      const innerSubmits = installChromiumNestedFormStop(formElement('form2'));
 
       await pressEnter(screen.getByRole('textbox'));
 
-      expect(reachedOuter.filter((r) => !r.defaultPrevented)).toEqual([]);
+      expect(uncancelled(innerSubmits)).toEqual([]);
       expect(count('innerSubmits')).toBe(1);
       expect(count('outerSubmits')).toBe(0);
+    });
+
+    test('a button that still submits forms, inside the inner Form, cannot reload the page', async () => {
+      // Break this catches: relying on each widget's buttons being type="button".
+      // FileButton (like the Table button column, FileInput and Chat) renders
+      // through the shared ui Button, a plain <button> that submits its form. In
+      // a nested Form only a listener on the inner <form> itself can cancel that.
+      await preloadLazyComponent(getComponentToRender('FileButton'));
+      renderApp({
+        form1: formDefinition('form1'),
+        form2: formDefinition('form2', { parent: 'form1' }),
+        fileButton1: child('fileButton1', 'FileButton', 'form2'),
+      });
+      await drain();
+      const innerSubmits = installChromiumNestedFormStop(formElement('form2'));
+      const submitting = Array.from(formElement('form2').querySelectorAll('button')).find(
+        (el) => el.type === 'submit' && !el.classList.contains('jet-form-default-submit')
+      );
+      expect(submitting).toBeDefined();
+
+      await act(async () => submitting.click());
+
+      expect(innerSubmits.map((event) => event.target.id)).toEqual(['form2']);
+      expect(uncancelled(innerSubmits)).toEqual([]);
     });
   });
 });

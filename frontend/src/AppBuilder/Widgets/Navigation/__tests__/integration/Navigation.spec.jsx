@@ -25,6 +25,7 @@ import {
   setVariableOn,
   store,
   MODULE_ID,
+  recordNativeSubmits,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'nav1';
@@ -676,16 +677,6 @@ describe('Navigation widget (vertical orientation)', () => {
     expect(isExpanded(container, 'groupB')).toBe(true);
   });
 });
-
-/**
- * Records native `submit` events dispatched at `form`, in the capture phase so
- * one is seen even if a handler later stops it.
- */
-function recordNativeSubmits(form) {
-  const seen = [];
-  form.addEventListener('submit', (e) => seen.push(e.target.id), true);
-  return seen;
-}
 
 describe('Navigation widget (vertical) inside a Form', () => {
   beforeEach(verticalWidget.setup);

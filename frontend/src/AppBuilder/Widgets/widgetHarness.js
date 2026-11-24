@@ -368,6 +368,17 @@ export function createWidgetHarness({
 }
 
 /**
+ * Records the id of each native `submit` event dispatched at `form`, in the
+ * capture phase, so one is seen even if a later listener stops or cancels it.
+ * An empty list means the interaction never started a browser form submission.
+ */
+export function recordNativeSubmits(form) {
+  const seen = [];
+  form.addEventListener('submit', (event) => seen.push(event.target.id), true);
+  return seen;
+}
+
+/**
  * An event handler row that COUNTS its own invocations in `variables[key]`.
  *
  * `set-custom-variable` resolves its `value` against live exposed values, so a

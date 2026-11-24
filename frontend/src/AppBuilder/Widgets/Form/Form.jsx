@@ -398,6 +398,18 @@ const FormComponent = (props) => {
     event.preventDefault();
   };
 
+  // In Chromium and WebKit a submit from a <form> nested in another <form> does
+  // not bubble past the inner form, so React's root listener (handleSubmit) never
+  // sees it. A listener on this <form> itself cancels any native submit, from
+  // whichever button started it, so nothing inside a Form can reload the page.
+  useEffect(() => {
+    const formElement = parentRef.current;
+    if (!formElement) return;
+    const cancelNativeSubmit = (event) => event.preventDefault();
+    formElement.addEventListener('submit', cancelNativeSubmit);
+    return () => formElement.removeEventListener('submit', cancelNativeSubmit);
+  }, []);
+
   // Enter in a single-line field "implicitly submits" its <form> by clicking the
   // form's first submit button. Native buttons render type="button", so the
   // hidden button rendered first in this <form> is that default button. It
