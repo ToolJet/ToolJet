@@ -9,16 +9,15 @@ import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useNotificationsStore, useNotificationsActions } from '@/_stores/notificationsStore';
 import NotificationRow from './NotificationRow';
-import ErrorDetailModal from './ErrorDetailModal';
+import NotificationDetailHost from './NotificationDetailHost';
 
 export const NotificationCenter = ({ darkMode }) => {
-  const { items, unreadCount, isLoading, hasMore, loadingMore, detailNotification } = useNotificationsStore((s) => ({
+  const { items, unreadCount, isLoading, hasMore, loadingMore } = useNotificationsStore((s) => ({
     items: s.items,
     unreadCount: s.unreadCount,
     isLoading: s.isLoading,
     hasMore: s.hasMore,
     loadingMore: s.loadingMore,
-    detailNotification: s.detailNotification,
   }));
   const actions = useNotificationsActions();
 
@@ -152,7 +151,7 @@ export const NotificationCenter = ({ darkMode }) => {
           </ToolTip>
         </div>
       </OverlayTrigger>
-      <ErrorDetailModal notification={detailNotification} show={!!detailNotification} onClose={actions.closeDetail} />
+      <NotificationDetailHost />
     </>
   );
 };

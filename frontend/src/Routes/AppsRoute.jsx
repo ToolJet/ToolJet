@@ -6,6 +6,7 @@ import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
 import { useAutoSyncNotifications } from '@/_hooks/useAutoSyncNotifications';
 import { useNotificationsStore } from '@/_stores/notificationsStore';
+import NotificationDetailHost from '@/_components/NotificationCenter/NotificationDetailHost';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { handleAppAccess, handleError } from '@/_helpers/handleAppAccess';
 import { getQueryParams, getSubpath } from '@/_helpers/routes';
@@ -262,5 +263,11 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
     return <MobileEmptyState darkMode={darkMode} />;
   }
 
-  return <RouteLoader isLoading={isLoading}>{clonedElement}</RouteLoader>;
+  return (
+    <RouteLoader isLoading={isLoading}>
+      {clonedElement}
+      {/* The editor has no NotificationCenter, so toast "View details" needs its own modal host. */}
+      {componentType === 'editor' && <NotificationDetailHost />}
+    </RouteLoader>
+  );
 };
