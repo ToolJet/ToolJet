@@ -45,8 +45,8 @@ const writtenToday = (themeObj, mode) => {
   return vars;
 };
 
-// What the old loop wrote as a side effect of walking non-colour keys; nothing reads them.
-const JUNK = [/-colors$/, /^--cc-\d+-text$/, /^--cc-(small|large)-border$/];
+// What the old loop wrote as a side effect of walking non-colour keys (the v2 lists included); nothing reads them.
+const JUNK = [/-colors$/, /^--cc-\d+-text$/, /^--cc-(small|large)-border$/, /-shadows$/, /-borderRadius$/];
 const withoutJunk = (vars) => Object.fromEntries(Object.entries(vars).filter(([n]) => !JUNK.some((j) => j.test(n))));
 
 const rose = {

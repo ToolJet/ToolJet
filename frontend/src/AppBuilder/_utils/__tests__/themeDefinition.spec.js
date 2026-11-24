@@ -1,6 +1,13 @@
 /** @jest-environment node */
 import camelCase from 'lodash/camelCase';
-import { toV2, withLegacyColors, themeColorTokens, resolveThemeWrite } from '@tooljet/widget-definitions';
+import {
+  toV2,
+  withLegacyColors,
+  themeColorTokens,
+  resolveThemeWrite,
+  DEFAULT_BORDER_RADII,
+  DEFAULT_SHADOWS,
+} from '@tooljet/widget-definitions';
 import { baseTheme } from '@/AppBuilder/_stores/utils';
 
 // Theme definition v2 (docs: custom theme v2, §10). Colours move to `colors.<group>.<token>.{light, dark}`; rows keep
@@ -85,8 +92,8 @@ describe('toV2', () => {
   });
 
   it('handles a missing or empty definition', () => {
-    expect(toV2(undefined)).toEqual({ version: 2, colors: {} });
-    expect(toV2({})).toEqual({ version: 2, colors: {} });
+    expect(toV2(undefined)).toMatchObject({ version: 2, colors: {} });
+    expect(toV2({})).toMatchObject({ version: 2, colors: {} });
   });
 });
 
@@ -191,6 +198,87 @@ describe('themeColorTokens', () => {
     tokens.forEach((t) => {
       expect(t.light).toMatch(/^#/);
       expect(t.dark).toMatch(/^#/);
+    });
+  });
+});
+
+// Theme definition v2 border radii and box shadows: named lists the theme editor shows. Built-in items (from the
+// design) are locked: editable, never removed, keyed by a stable id so renaming one does not break a reference.
+describe('border radius and box shadow lists', () => {
+  const custom8 = { id: 'c-8', name: 'Rounded', value: 8 };
+  const customShadow = {
+    id: 'c-s',
+    name: 'Card',
+    x: 0,
+    y: 1,
+    blur: 3,
+    spread: 0,
+    color: { light: '#00000040', dark: '#00000080' },
+  };
+
+  it('has the designed built-in radii and shadows, all locked', () => {
+    expect(DEFAULT_BORDER_RADII.map(({ id, name, value }) => [id, name, value])).toEqual([
+      ['none', 'None', 0],
+      ['small', 'Small', 2],
+      ['medium', 'Medium', 4],
+      ['large', 'Large', 6],
+    ]);
+    expect(DEFAULT_SHADOWS.map(({ id, name, x, y, blur, spread }) => [id, name, x, y, blur, spread])).toEqual([
+      ['none', 'None', 0, 0, 0, 0],
+      ['100', '100', 0, 2, 4, 0],
+      ['200', '200', 0, 2, 4, 0],
+      ['300', '300', 0, 4, 8, 0],
+      ['400', '400', 0, 8, 16, 0],
+      ['500', '500', 0, 16, 24, 0],
+    ]);
+    DEFAULT_SHADOWS.forEach((s) => expect(s.color).toEqual({ light: expect.any(String), dark: expect.any(String) }));
+    [...DEFAULT_BORDER_RADII, ...DEFAULT_SHADOWS].forEach((item) => expect(item.locked).toBe(true));
+  });
+
+  it("gives a theme without lists the built-in ones, and keeps a theme's own", () => {
+    const v2 = toV2(rose);
+    expect(v2.borderRadius).toEqual(DEFAULT_BORDER_RADII);
+    expect(v2.shadows).toEqual(DEFAULT_SHADOWS);
+    const own = toV2({ ...rose, borderRadius: [...DEFAULT_BORDER_RADII, custom8] });
+    expect(own.borderRadius).toEqual([...DEFAULT_BORDER_RADII, custom8]);
+    expect(toV2(own)).toEqual(own);
+  });
+
+  it('does not share the built-in lists between themes', () => {
+    toV2(rose).borderRadius[0].value = 99;
+    expect(DEFAULT_BORDER_RADII[0].value).toBe(0);
+  });
+
+  describe('saving', () => {
+    const stored = () =>
+      resolveThemeWrite({
+        ...rose,
+        borderRadius: [...DEFAULT_BORDER_RADII, custom8],
+        shadows: [...DEFAULT_SHADOWS, customShadow],
+      });
+
+    it('keeps added and edited items', () => {
+      const sent = stored();
+      sent.borderRadius = sent.borderRadius.map((r) => (r.id === 'medium' ? { ...r, name: 'Mid', value: 5 } : r));
+      const saved = resolveThemeWrite(sent, stored());
+      expect(saved.borderRadius.find((r) => r.id === 'medium')).toMatchObject({ name: 'Mid', value: 5, locked: true });
+      expect(saved.borderRadius).toContainEqual(custom8);
+      expect(saved.shadows).toContainEqual(customShadow);
+    });
+
+    it('keeps the stored lists when a client sends none (tooljet-mcp, an old bundle)', () => {
+      const saved = resolveThemeWrite(structuredClone(rose), stored());
+      expect(saved.borderRadius).toEqual(stored().borderRadius);
+      expect(saved.shadows).toEqual(stored().shadows);
+    });
+
+    it('puts back a built-in item a client left out, built-ins first, and keeps it locked', () => {
+      const sent = stored();
+      sent.borderRadius = [custom8, ...sent.borderRadius.filter((r) => r.id !== 'small' && r.id !== 'c-8')];
+      sent.shadows = sent.shadows.map((s) => ({ ...s, locked: false }));
+      const saved = resolveThemeWrite(sent, stored());
+      expect(saved.borderRadius.map((r) => r.id)).toEqual(['none', 'small', 'medium', 'large', 'c-8']);
+      saved.shadows.filter((s) => s.id !== 'c-s').forEach((s) => expect(s.locked).toBe(true));
     });
   });
 });

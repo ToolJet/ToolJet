@@ -9,6 +9,10 @@ import {
   IsIn,
   IsDefined,
   ValidateIf,
+  IsArray,
+  ArrayMaxSize,
+  Min,
+  Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -209,6 +213,57 @@ class ThemeColors {
   systemStatus: SystemStatusColors;
 }
 
+// Theme definition v2 border radii and box shadows: named lists, built-in items first (packages/widget-definitions
+// src/theme.js). `id` is stable across renames; built-ins are `locked` (never removed; the server puts them back).
+class ThemeListItem {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(64)
+  id: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(50)
+  name: string;
+
+  @IsOptional()
+  @IsBoolean()
+  locked?: boolean;
+}
+
+class BorderRadiusItem extends ThemeListItem {
+  @IsNumber()
+  @Min(0)
+  @Max(999)
+  value: number;
+}
+
+class ShadowItem extends ThemeListItem {
+  @IsNumber()
+  @Min(-999)
+  @Max(999)
+  x: number;
+
+  @IsNumber()
+  @Min(-999)
+  @Max(999)
+  y: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(999)
+  blur: number;
+
+  @IsNumber()
+  @Min(-999)
+  @Max(999)
+  spread: number;
+
+  @ValidateNested()
+  @Type(() => Color)
+  color: Color;
+}
+
 /** A theme holds its colours in `colors` (v2), in the old `<group>.colors` groups, or in both: rows keep the old groups
  *  until a cleanup migration, and tooljet-mcp and old bundles still send them alone. Either shape must be present. */
 export class Definition {
@@ -220,6 +275,20 @@ export class Definition {
   @ValidateNested()
   @Type(() => ThemeColors)
   colors?: ThemeColors;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(100)
+  @ValidateNested({ each: true })
+  @Type(() => BorderRadiusItem)
+  borderRadius?: BorderRadiusItem[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(100)
+  @ValidateNested({ each: true })
+  @Type(() => ShadowItem)
+  shadows?: ShadowItem[];
 
   // Required unless `colors` is given; validated whenever sent.
   @ValidateIf((definition: Definition) => !definition.colors || definition.brand !== undefined)

@@ -91,4 +91,11 @@ export {
   combineProperties,
   dropNewContainerDefaults,
 } from './utils.js';
-export { toV2, withLegacyColors, themeColorTokens, resolveThemeWrite } from './theme.js';
+export {
+  toV2,
+  withLegacyColors,
+  themeColorTokens,
+  resolveThemeWrite,
+  DEFAULT_BORDER_RADII,
+  DEFAULT_SHADOWS,
+} from './theme.js';

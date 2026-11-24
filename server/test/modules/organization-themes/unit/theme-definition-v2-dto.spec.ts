@@ -56,4 +56,29 @@ describe('theme definition DTO (v2)', () => {
   it('rejects an unknown version', () => {
     expect(validate({ ...TJDefaultTheme, version: 3, colors }).errors).not.toEqual([]);
   });
+
+  describe('border radii and box shadows', () => {
+    const radius = { id: 'c-8', name: 'Rounded', value: 8 };
+    const shadow = { id: 'c-s', name: 'Card', x: 0, y: 1, blur: 3, spread: 0, color: pair('#00000040') };
+    const withLists = (lists: Record<string, unknown>) => ({ version: 2, colors, ...lists });
+
+    it('accepts them and keeps them through the whitelist', () => {
+      const { errors, kept } = validate(withLists({ borderRadius: [radius], shadows: [shadow] }));
+      expect(errors).toEqual([]);
+      expect(kept.borderRadius).toEqual([radius]);
+      expect(kept.shadows).toEqual([shadow]);
+    });
+
+    it.each([
+      ['a radius without a name', { borderRadius: [{ ...radius, name: '' }] }],
+      ['a negative radius', { borderRadius: [{ ...radius, value: -1 }] }],
+      ['a radius that is not a number', { borderRadius: [{ ...radius, value: '8px' }] }],
+      ['a shadow without a dark colour', { shadows: [{ ...shadow, color: { light: '#000000' } }] }],
+      ['a shadow with a negative blur', { shadows: [{ ...shadow, blur: -2 }] }],
+      ['an item without an id', { borderRadius: [{ name: 'X', value: 1 }] }],
+      ['a list that is not a list', { borderRadius: radius }],
+    ])('rejects %s', (_label, lists) => {
+      expect(validate(withLists(lists)).errors).not.toEqual([]);
+    });
+  });
 });
