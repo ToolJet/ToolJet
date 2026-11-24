@@ -77,7 +77,8 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
         folders,
         user,
         userPermissions?.isAdmin,
-        folderPermissions
+        folderPermissions,
+        byFolder
       ).map((folder) => {
         const contents = byFolder.get(folder.id) ?? [];
         return { ...folder, folderDataSources: contents, count: contents.length };
@@ -100,22 +101,31 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
   }
 
   // Data-source folders are admin/builder-facing (never end-user assignable). Admins see all;
-  // others see folders they own or have a resolved grant on. With no folder-permission object
-  // (CE / unconfigured EE) fall back to showing all, matching folder-apps.
+  // others see folders they own, have a resolved grant on, or that hold at least one data source
+  // they may see. That last clause mirrors folder-apps (`f.folderApps.length > 0`): a folder is
+  // navigation, so a resource reached by a direct data-source grant still lists under its folder
+  // instead of surfacing at the root as if it were unfoldered. `dataSourcesByFolder` is already
+  // permission-filtered by the caller, so a folder revealed this way shows only the data sources
+  // the user may see, and its count matches. With no folder-permission object (CE / unconfigured
+  // EE) fall back to showing all, matching folder-apps.
   protected filterFoldersByPermissions(
     folders: Folder[],
     user: User,
     isAdmin: boolean,
-    folderPermissions?: UserFolderPermissions
+    folderPermissions?: UserFolderPermissions,
+    dataSourcesByFolder?: Map<string, FolderDataSource[]>
   ): Folder[] {
     if (isAdmin) return folders;
+    const holdsVisibleDataSource = (folder: Folder) => (dataSourcesByFolder?.get(folder.id)?.length ?? 0) > 0;
     if (folderPermissions) {
       if (folderPermissions.isAllEditable || folderPermissions.isAllViewable) return folders;
       const accessibleFolderIds = new Set([
         ...(folderPermissions.editableFoldersId ?? []),
         ...(folderPermissions.viewableFoldersId ?? []),
       ]);
-      return folders.filter((f) => accessibleFolderIds.has(f.id) || f.createdBy === user.id);
+      return folders.filter(
+        (f) => accessibleFolderIds.has(f.id) || f.createdBy === user.id || holdsVisibleDataSource(f)
+      );
     }
     return folders;
   }

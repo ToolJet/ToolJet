@@ -192,7 +192,8 @@ describe('Existing browser and PAT session compatibility', () => {
     expect(instance.sessionUtilService.validateUserSession).toHaveBeenCalledWith(
       owner.id,
       owner.sessionId,
-      organization.id
+      organization.id,
+      { fixedExpiry: false }
     );
     expect(instance.mcpOAuthIdentityService.validateDelegation).not.toHaveBeenCalled();
   });
@@ -217,5 +218,22 @@ describe('Existing browser and PAT session compatibility', () => {
     expect(user.isPATLogin).toBe(false);
     expect(user.workspaceAuthentication).toBeUndefined();
     expect(instance.mcpOAuthIdentityService.validateDelegation).not.toHaveBeenCalled();
+  });
+  test('OAuth account lookup retains the source workspace SSO context for enterprise token refresh checks', async () => {
+    const instance = strategy();
+    const user = await instance.validate(
+      { headers: { 'tj-workspace-id': 'selected-workspace' }, isGetUserSession: true, isMcpOAuthAccount: true },
+      {
+        ...pat,
+        isPATLogin: false,
+        isSSOLogin: true,
+        workspaceAuthentication: { ...evidence, method: 'openid' },
+      }
+    );
+    expect(user).toMatchObject({
+      organizationId: organization.id,
+      isSSOLogin: true,
+      workspaceAuthentication: { ...evidence, method: 'openid' },
+    });
   });
 });

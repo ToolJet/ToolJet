@@ -153,39 +153,6 @@ export const updateUserMetadata = (workspaceId, userId, metadataPayload, headers
     );
 };
 
-// ---------- GitSync (kept for the deferred gitSync spec) ----------
-
-export const configureOrganizationGit = (payload, headers = {}) => {
-    return apiRequest("POST", `${Cypress.env("API_URL")}/ext/organizations/git`, payload, headers);
-};
-
-export const pushAppVersionToGit = (appId, versionId, payload, headers = {}) => {
-    return apiRequest(
-        "POST",
-        `${Cypress.env("API_URL")}/ext/apps/${appId}/versions/${versionId}/git-sync/push`,
-        payload,
-        headers
-    );
-};
-
-export const createAppFromGit = (payload, queryString = "?createMode=git", headers = {}) => {
-    return apiRequest("POST", `${Cypress.env("API_URL")}/ext/apps${queryString}`, payload, headers);
-};
-
-export const pullAppChangesFromGit = (appId, queryString = "?createMode=git", headers = {}) => {
-    return apiRequest("PUT", `${Cypress.env("API_URL")}/ext/apps/${appId}${queryString}`, {}, headers);
-};
-
-export const releaseAppFromGit = (appId, headers = {}) => {
-    return apiRequest("POST", `${Cypress.env("API_URL")}/ext/apps/${appId}/git-sync/release`, {}, headers);
-};
-
-// POST /api/apps only creates an app shell — no app_versions row. The first
-// pushable version must be created explicitly via this endpoint (SAVE_APP_VERSION).
-export const saveAppVersion = (appIdOrSlug, payload = {}, headers = {}) => {
-    return apiRequest("POST", `${Cypress.env("API_URL")}/ext/apps/${appIdOrSlug}/versions/save`, payload, headers);
-};
-
 // ---------- UI helper (used by non-externalApi specs) ----------
 
 export const createGroup = (groupName) => {

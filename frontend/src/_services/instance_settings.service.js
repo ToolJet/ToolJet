@@ -13,6 +13,9 @@ export const instanceSettingsService = {
   updateSmtpEnvSetting,
   updateSmtpStatus,
   updateOidcEnvConfig,
+  fetchSsrfSettings,
+  updateSsrfSettings,
+  dismissSsrfNotice,
 };
 
 function fetchSettings(type = 'user') {
@@ -108,4 +111,24 @@ async function update(settings) {
   });
   const updatedSettings = await handleResponse(response);
   return updatedSettings;
+}
+
+function fetchSsrfSettings() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/instance-settings/ssrf`, requestOptions).then(handleResponse);
+}
+
+function updateSsrfSettings({ enabled, allowed_addresses }) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ enabled, allowed_addresses }),
+  };
+  return fetch(`${config.apiUrl}/instance-settings/ssrf`, requestOptions).then(handleResponse);
+}
+
+function dismissSsrfNotice() {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/instance-settings/ssrf/dismiss-notice`, requestOptions).then(handleResponse);
 }

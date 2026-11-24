@@ -28,6 +28,7 @@ import {
   updateDashedBordersOnDragResize,
   getCanvasBottomBound,
   findNewParentIdFromMousePosition,
+  isDragOnInnerElement as isDragOnInnerElementOf,
 } from './gridUtils';
 import {
   dragContextBuilder,
@@ -41,7 +42,7 @@ import {
   getContainerIdFromSlotId,
 } from './helpers/dragEnd';
 import { handleFlexContainerDragEnd } from './helpers/flexContainerDragEnd';
-import { computeFlexResizeStyles, computeFlexResizeEndPatch } from './helpers/gridResizeUtils';
+import { computeFlexResizeStyles, computeFlexResizeEndPatch, gridResizeEndHeight } from './helpers/gridResizeUtils';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { useFlexContainerDropTarget } from '@/AppBuilder/Widgets/FlexContainer/useFlexContainerDropTarget';
 import useStore from '@/AppBuilder/_stores/store';
@@ -54,12 +55,15 @@ import {
   SUBCONTAINER_WIDGETS,
   TOP_ALIGNMENT_HEIGHT_INCREMENT,
   NESTING_LEVEL_LIMITS,
+  isTabsType,
+  isModalType,
 } from '../appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
 import { getDropTargetLabel } from '../appCanvasUtils';
+import { packSlotRestrictionType, restrictedTypeOf } from '@/AppBuilder/_helpers/packDropRestrictions';
 import {
   RESTRICTED_WIDGETS_CONFIG,
   RESTRICTED_WIDGET_SLOTS_CONFIG,
@@ -236,7 +240,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const parentId = parent.includes('-') ? parent?.split('-').slice(0, -1).join('-') : parent;
           const componentType = boxList.find((box) => box.id === parentId)?.component.component;
           var parentHeight = parentElem?.clientHeight || height;
-          if (height > parentHeight && ['Tabs', 'Listview'].includes(componentType)) {
+          if (height > parentHeight && (isTabsType(componentType) || componentType === 'Listview')) {
             height = parentHeight;
             y = 0;
           }
@@ -583,14 +587,19 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         .map(({ component }) => component.component);
 
       const parentId = targetSlotId?.length > 36 ? targetSlotId.slice(0, 36) : targetSlotId;
-      const parentWidgetType = getComponentTypeFromId(parentId);
       const parentSlotType = targetSlotId ? targetSlotId.split('-').pop() : undefined;
+      // A component pack's widget is checked as the ToolJet widget it stands for (its manifest role).
+      const parentComponent = boxList.find(({ id }) => id === parentId)?.component;
+      const parentWidgetType = packSlotRestrictionType(parentComponent) ?? getComponentTypeFromId(parentId);
+      const restrictedTypesToBeDropped = boxList
+        .filter(({ id }) => events.some((ev) => ev.target.id === id))
+        .map(({ component }) => restrictedTypeOf(component));
 
       let restrictedWidgetsTobeDropped =
         [
           ...(RESTRICTED_WIDGETS_CONFIG?.[parentWidgetType] || []),
           ...(['header', 'footer'].includes(parentSlotType) ? RESTRICTED_WIDGET_SLOTS_CONFIG : []),
-        ].filter((widgetType) => widgetsTypeToBeDropped.includes(widgetType)) || [];
+        ].filter((widgetType) => restrictedTypesToBeDropped.includes(widgetType)) || [];
 
       // Check nesting depth restrictions for all widget types in NESTING_LEVEL_LIMITS
       let nestingDepthExceeded = false;
@@ -643,7 +652,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         } else if (!isParentChangeAllowed) {
           toast.error(
             `${restrictedWidgetsTobeDropped} is not compatible as a child component of ${getDropTargetLabel(
-              parentWidgetType,
+              restrictedTypeOf(parentComponent) ?? parentWidgetType,
               parentSlotType
             )}`
           );
@@ -816,10 +825,13 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             let topAlignmentAddedHeight =
               alignment === 'top' && directions[1] !== 0 && label?.length > 0 ? TOP_ALIGNMENT_HEIGHT_INCREMENT : 0;
 
-            const height = Math.max(
-              GRID_HEIGHT,
-              Math.round((e?.lastEvent?.height - topAlignmentAddedHeight) / GRID_HEIGHT) * GRID_HEIGHT
-            );
+            const height = gridResizeEndHeight({
+              direction: directions,
+              lastHeight: e?.lastEvent?.height,
+              currentHeight: currentWidget?.height,
+              topAlignmentAddedHeight,
+              gridHeight: GRID_HEIGHT,
+            });
             const currentWidth = currentWidget.width * _gridWidth;
             const diffHeight = height - currentWidget?.height;
             const diffWidth = e.lastEvent?.width - currentWidth;
@@ -859,7 +871,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             }
             const resizeData = {
               id: e.target.id,
-              height: directions[1] !== 0 ? height : currentWidget.height,
+              height,
               width: width,
               x: transformX || 0,
               y: transformY || 0,
@@ -997,7 +1009,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             return true;
           }
           if (e.target.id === 'moveable-virtual-ghost-element') {
-            startAutoScroll(e.clientX, e.clientY, e.target);
+            // A component from the panel reaches the canvas at its right edge, right beside the panel.
+            startAutoScroll(e.clientX, e.clientY, e.target, 'drag', { waitForEdgeExit: true });
             return true;
           }
 
@@ -1021,7 +1034,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const isParentLegacyModal = parentComponent?.componentType === 'Modal';
 
           // Special case for Modal. This is added to prevent widget from being dragged out of the modal.
-          if (parentComponent?.componentType === 'ModalV2' || parentComponent?.componentType === 'Modal') {
+          if (isModalType(parentComponent?.componentType) || parentComponent?.componentType === 'Modal') {
             const modalContainer = e.target.closest('.tj-modal--container');
             const mainCanvas = document.getElementById('real-canvas');
             const mainRect = mainCanvas.getBoundingClientRect();
@@ -1051,48 +1064,17 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             setCanvasBounds({ ...relativePosition });
           }
 
-          //  This flag indicates whether the drag event originated on a child element within a component
-          //  (e.g., inside a Table's columns, Calendar's dates, or Kanban's cards).
-          //  When true, it prevents the parent component from being dragged, allowing the inner elements
-          //  to handle their own interactions like column resizing or card dragging
-          let isDragOnInnerElement = false;
-
           /* If the drag or click is on a calender popup draggable interactions are not executed so that popups and other components inside calender popup works.
             Also user dont need to drag an calender from using popup */
           if (hasParentWithClass(e.inputEvent.target, 'react-datepicker-popper')) {
             return false;
           }
 
-          /* Checking if the dragged elemenent is a table. If its a table drag is disabled since it will affect column resizing and reordering */
-          if (box?.component?.component === 'Table') {
-            const tableElem = e.target.querySelector('.jet-data-table');
-            isDragOnInnerElement = tableElem.contains(e.inputEvent.target);
-          }
-          if (box?.component?.component === 'Calendar') {
-            const calenderElem = e.target.querySelector('.rbc-month-view');
-            isDragOnInnerElement = calenderElem.contains(e.inputEvent.target);
-          }
-
-          if (box?.component?.component === 'Kanban') {
-            const handleContainers = e.target.querySelectorAll('.handle-container');
-            isDragOnInnerElement = Array.from(handleContainers).some((container) =>
-              container.contains(e.inputEvent.target)
-            );
-          }
-
-          if (box?.component?.component === 'ReorderableList') {
-            const handleContainers = e.target.querySelectorAll('.reorderable-list-items');
-            isDragOnInnerElement = Array.from(handleContainers).some((container) =>
-              container.contains(e.inputEvent.target)
-            );
-          }
-
-          if (box?.component?.component === 'KeyValuePair') {
-            const handleContainers = e.target.querySelectorAll('.kv-editable');
-            isDragOnInnerElement = Array.from(handleContainers).some((container) =>
-              container.contains(e.inputEvent.target)
-            );
-          }
+          //  This flag indicates whether the drag event originated on a child element within a component
+          //  (e.g., inside a Table's columns, Calendar's dates, or Kanban's cards).
+          //  When true, it prevents the parent component from being dragged, allowing the inner elements
+          //  to handle their own interactions like column resizing or card dragging
+          const isDragOnInnerElement = isDragOnInnerElementOf(box?.component?.component, e.target, e.inputEvent.target);
 
           if (
             ['RangeSlider', 'RangeSliderV2', 'BoundedBox'].includes(box?.component?.component) ||
@@ -1181,9 +1163,10 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               if (isParentModuleContainer) {
                 toast.error('Modules cannot be edited inside an app');
               } else if (!isModalToCanvas) {
+                // A component pack's widget is named as the ToolJet widget it stands for (its manifest role).
                 toast.error(
-                  `${dragged.widgetType} is not compatible as a child component of ${getDropTargetLabel(
-                    target.widgetType,
+                  `${restrictedTypeOf(dragged.widget?.component) ?? dragged.widgetType} is not compatible as a child component of ${getDropTargetLabel(
+                    restrictedTypeOf(target.widget?.component) ?? target.widgetType,
                     target.slotType
                   )}`
                 );

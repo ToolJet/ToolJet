@@ -47,6 +47,8 @@ export const Modal = function Modal({
   const parentRef = useRef(null);
   const controlBoxRef = useRef(null);
   const isInitialRender = useRef(true);
+  // react-bootstrap calls onHide right after onEscapeKeyDown unless the event was default-prevented
+  const skipHideRef = useRef(false);
   const title = properties.title ?? '';
   const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
@@ -255,8 +257,21 @@ export const Modal = function Modal({
         enforceFocus={false}
         animation={false}
         onShow={() => onShowModal()}
-        onHide={() => onHideModal()}
+        onHide={() => {
+          if (skipHideRef.current) {
+            skipHideRef.current = false;
+            return;
+          }
+          onHideModal();
+        }}
         onEscapeKeyDown={(e) => {
+          // Escape from an editor overlay (e.g. the version review) isn't for this modal. Leave the
+          // event un-prevented so the overlay's own Escape handling still runs, and skip the onHide
+          // react-bootstrap fires right after for an un-prevented Escape.
+          if (e.target?.closest?.('[data-editor-overlay]')) {
+            skipHideRef.current = !e.defaultPrevented;
+            return;
+          }
           // A nested Radix overlay (PopoverMenu / Select) dismisses on Escape in the
           // capture phase and calls preventDefault() on the same event; this handler
           // runs later in the bubble phase, so `defaultPrevented` tells us the inner

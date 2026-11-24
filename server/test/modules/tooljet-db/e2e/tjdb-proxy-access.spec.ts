@@ -59,13 +59,13 @@ describe('TooljetDb proxy access', () => {
   });
 
   // Temporary opt-in for apps that still call /proxy from RunJS: restores the pre-3.21.87 rule.
-  describe('TOOLJET_DB_PROXY_ALLOW_END_USERS=true | caller role', () => {
+  describe('TOOLJET_DB_PROXY_LEGACY_COMPAT=true | caller role', () => {
     beforeAll(() => {
-      process.env.TOOLJET_DB_PROXY_ALLOW_END_USERS = 'true';
+      process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT = 'true';
     });
 
     afterAll(() => {
-      delete process.env.TOOLJET_DB_PROXY_ALLOW_END_USERS;
+      delete process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT;
     });
 
     it('should let an end user past the guard for a read', async () => {

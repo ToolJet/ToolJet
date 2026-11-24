@@ -317,3 +317,48 @@
   padding: 16px 20px;
   border-top: 1px solid var(--border-weak, #e4e7eb);
 }
+
+.folder-delete-blocked-body {
+  padding: 16px 20px;
+
+  .folder-delete-blocked-message,
+  .folder-delete-blocked-hint {
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--text-default, #1b1f24);
+    margin-bottom: 0;
+  }
+
+  .folder-delete-blocked-hint {
+    margin-top: 12px;
+    color: var(--text-placeholder, #6a727c);
+  }
+
+  // The branch list is unbounded — a folder can be carried on any number of branches — so it
+  // scrolls rather than pushing the modal footer off-screen.
+  .folder-delete-blocked-branches {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 4px 0;
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid var(--border-weak, #e4e7eb);
+    border-radius: 6px;
+    background: var(--slate3, #f1f3f5);
+  }
+
+  .folder-delete-blocked-branch {
+    font-size: 13px;
+    line-height: 20px;
+    padding: 4px 12px;
+    color: var(--text-default, #1b1f24);
+    overflow-wrap: anywhere;
+  }
+}
+
+.folder-delete-blocked-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-weak, #e4e7eb);
+}

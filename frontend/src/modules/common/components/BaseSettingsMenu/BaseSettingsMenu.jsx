@@ -11,6 +11,7 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { fetchEdition } from '@/modules/common/helpers/utils';
+import { displayVersion } from './displayVersion';
 
 function BaseSettingsMenu({
   darkMode,
@@ -112,7 +113,7 @@ function BaseSettingsMenu({
       checkForUnsavedChanges,
       closeOverlay: closeOverlayIfNotPrevented,
     });
-    const currentVersion = localStorage.getItem('currentVersion');
+    const currentVersion = displayVersion(localStorage.getItem('currentVersion'));
     return (
       <div className={`settings-card tj-text card ${darkMode ? 'dark-theme' : ''}`}>
         <div className="tw-px-2.5 tw-py-2 tw-text-xs tw-font-light tw-text-text-placeholder" data-cy="version-label">
