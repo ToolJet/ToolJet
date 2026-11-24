@@ -609,7 +609,8 @@
   font: inherit;
   text-align: left;
 
-  &:disabled {
+  &:disabled,
+  &[aria-disabled='true'] {
     cursor: not-allowed;
     opacity: 0.5;
 

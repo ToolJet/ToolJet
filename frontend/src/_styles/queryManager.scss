@@ -821,7 +821,18 @@ $border-radius: 4px;
   }
 }
 
-// Selected, keyboard-focused and hovered options each need a visible state (QE-51).
+// A single-line field's CodeMirror scroller can't scroll, but its overscroll-behavior: contain kept the wheel
+// from reaching the settings scroller, so Events stayed out of reach under an open Preview (RP-11).
+.query-details--right .single-line-codehinter-input .cm-scroller {
+  overscroll-behavior: auto !important;
+}
+
+// Selected, keyboard-focused and hovered options each need a visible state (QE-51). Plain options let
+// the menu show through: dark mode's solid option colour was as light as the hover tint (QM-64).
+[class*='query-select-motion__option'] {
+  background: transparent !important;
+}
+
 [class*='query-select-motion__option--is-selected'] {
   background: var(--interactive-default) !important;
   color: var(--text-default) !important;

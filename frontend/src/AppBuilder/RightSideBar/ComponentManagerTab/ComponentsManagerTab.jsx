@@ -180,6 +180,15 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surfac
 
   filterComponentsRef.current = filterComponents;
 
+  // The SearchBox keeps its own text, so clearing from outside it remounts it empty (LP-32).
+  const [searchBoxKey, setSearchBoxKey] = useState(0);
+  const clearSearch = () => {
+    handleSearchQueryChange.cancel();
+    setSearchQuery('');
+    filterComponents('');
+    setSearchBoxKey((key) => key + 1);
+  };
+
   const { t } = useTranslation();
 
   function renderComponentCard(component, index) {
@@ -207,10 +216,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surfac
         <NoMatchesEmptyState
           term={searchQuery}
           description="Search matches component names."
-          onClearSearch={() => {
-            setSearchQuery('');
-            filterComponents('');
-          }}
+          onClearSearch={clearSearch}
           dataCy="components-no-matches"
         />
       );
@@ -274,6 +280,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surfac
     return (
       <div className={`input-icon tj-app-input ${isModuleEditor ? '' : 'mt-3'}`}>
         <SearchBox
+          key={searchBoxKey}
           dataCy={`widget-search-box`}
           initialValue={''}
           callBack={(e) => handleSearchQueryChange(e.target.value)}

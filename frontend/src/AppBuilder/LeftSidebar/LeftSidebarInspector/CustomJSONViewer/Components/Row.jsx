@@ -35,6 +35,9 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList = [], darkMode, 
   const Node = () => {
     if (typeof value === 'string') {
       return <StringNode value={value} />;
+    } else if (value instanceof Date) {
+      // As Copy value gives it (JSON), not an empty object.
+      return <StringNode value={Number.isNaN(value.getTime()) ? 'Invalid Date' : value.toISOString()} />;
     } else if (typeof value === 'undefined' || value === null) {
       return <NullNode value={value} />;
     } else if (typeof value === 'number') {
@@ -50,8 +53,14 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList = [], darkMode, 
     }
   };
 
-  const isObject = typeof value === 'object' && !Array.isArray(value) && value !== null;
-  const isArray = Array.isArray(value);
+  // Empty objects and arrays have nothing to expand, so they get no caret (DB-11b).
+  const isObject =
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    value !== null &&
+    !(value instanceof Date) &&
+    Object.keys(value).length > 0;
+  const isArray = Array.isArray(value) && value.length > 0;
 
   return (
     <div style={{ marginLeft: `${level === 1 ? '0px' : '0.5rem'}` }}>

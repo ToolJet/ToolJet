@@ -14,6 +14,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import RuntimeInspector from '@/AppBuilder/QueryPanel/RuntimeInspector/RuntimeInspector';
 import RuntimeDebugger from '@/AppBuilder/QueryPanel/RuntimeDebugger/RuntimeDebugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 import {
   RUNTIME_PANEL_ITEMS,
   PANEL_MOTION,
@@ -22,6 +23,7 @@ import {
   getRuntimePanelRightOffset,
   getRuntimePanelTheme,
   getRuntimeTabClickAction,
+  getRuntimeTabLabel,
   getRuntimeToggleLabel,
 } from '@/AppBuilder/panelLayout';
 
@@ -31,6 +33,7 @@ const getDragTop = (clientY) => Math.min(Math.max((clientY / window.innerHeight)
 
 export const QueryPanel = ({ darkMode }) => {
   const { moduleId, appType } = useModuleContext();
+  const codeMode = useCodeMode(moduleId);
   const setQueryPanelHeight = useStore((state) => state.queryPanel.setQueryPanelHeight);
   const isDraggingQueryPane = useStore((state) => state.queryPanel.isDraggingQueryPane, shallow);
   const setIsDraggingQueryPane = useStore((state) => state.queryPanel.setIsDraggingQueryPane, shallow);
@@ -165,7 +168,7 @@ export const QueryPanel = ({ darkMode }) => {
   return (
     <div className={cx('runtime-panel', { 'dark-theme theme-dark': darkMode })}>
       <div className="query-pane runtime-panel-bar" style={runtimePanelBarStyle}>
-        {RUNTIME_PANEL_ITEMS.map(({ id, label }) => {
+        {RUNTIME_PANEL_ITEMS.map(({ id }) => {
           const Icon = RUNTIME_PANEL_ICONS[id];
           return (
             <button
@@ -178,7 +181,7 @@ export const QueryPanel = ({ darkMode }) => {
               data-cy={`runtime-panel-tab-${id}`}
             >
               {Icon && <Icon size={14} aria-hidden="true" />}
-              <span>{label}</span>
+              <span>{getRuntimeTabLabel(id, codeMode)}</span>
               {id === 'debugger' && unreadErrorCount > 0 && (
                 <span className="runtime-panel-badge">{unreadErrorCount}</span>
               )}
@@ -192,11 +195,11 @@ export const QueryPanel = ({ darkMode }) => {
             aria-hidden="true"
           />
         )}
-        <ToolTip message={getRuntimeToggleLabel(isQueryPaneExpanded, activeTab)} placement="top">
+        <ToolTip message={getRuntimeToggleLabel(isQueryPaneExpanded, activeTab, codeMode)} placement="top">
           <button
             className="runtime-panel-toggle"
             onClick={toggleRuntimePanel}
-            aria-label={getRuntimeToggleLabel(isQueryPaneExpanded, activeTab)}
+            aria-label={getRuntimeToggleLabel(isQueryPaneExpanded, activeTab, codeMode)}
             // Kept from the old Queries toggle: Cypress specs open and close the bottom panel through it.
             data-cy="query-manager-toggle-button"
           >

@@ -36,6 +36,8 @@ test('keeps the data-cy hook of every rail item', () => {
     'left-sidebar-queries-button',
     'left-sidebar-code-search-button',
     'left-sidebar-dependencies-button',
+    // Shown on every plan (LP-M08).
+    'left-sidebar-app-history-button',
     'left-sidebar-settings-button',
   ]);
 });

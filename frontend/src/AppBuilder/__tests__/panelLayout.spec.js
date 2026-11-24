@@ -130,9 +130,9 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     });
   });
 
-  // Break this catches: the closed runtime bar reserves a blank strip instead of overlaying the canvas.
-  it('reserves canvas height only for open drawer content', () => {
-    expect(getCanvasReservedBottom(0, false)).toBe(0);
+  // Break this catches (LP-20): the closed runtime bar covers the canvas bottom, hiding the page-nav toggle.
+  it('reserves the closed runtime bar, or the whole open drawer', () => {
+    expect(getCanvasReservedBottom(0, false)).toBe(38);
     expect(getCanvasReservedBottom(240, false)).toBe(240);
   });
 
@@ -647,6 +647,7 @@ describe('AB-PANEL-NAMES panel and drawer names', () => {
       search: 'code-search',
       dependencies: 'dependencies',
       apphistory: 'app-history',
+      styleinspector: 'style-inspector',
       security: 'security',
       access: 'access',
       settings: 'settings',

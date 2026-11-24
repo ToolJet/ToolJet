@@ -62,6 +62,7 @@ const initialState = {
   queryPanelSearchTem: '',
   showQueryPermissionModal: false,
   targetBtnForMenu: null,
+  menuQueryId: null,
   showQueryHandlerMenu: false,
   showDeleteConfirmation: false,
   renamingQueryId: null,
@@ -2039,9 +2040,14 @@ export const createQueryPanelSlice = (set, get) => ({
         state.queryPanel.showQueryPermissionModal = show;
       });
     },
-    toggleQueryHandlerMenu: (show, id) => {
+    // queryId: the row whose ⋮ opened the menu. The menu acts on it without selecting it, so a closed
+    // query editor stays closed (QM-62).
+    toggleQueryHandlerMenu: (show, id, queryId) => {
       set((state) => {
-        if (show) state.queryPanel.targetBtnForMenu = id;
+        if (show) {
+          state.queryPanel.targetBtnForMenu = id;
+          state.queryPanel.menuQueryId = queryId ?? null;
+        }
         state.queryPanel.showQueryHandlerMenu = show;
       });
     },

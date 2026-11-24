@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
@@ -21,6 +21,7 @@ import {
 } from './Components/LibraryComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
+import { useMenuDismiss } from './hooks/useMenuDismiss';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
@@ -225,6 +226,8 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
+  const closeHeaderActionsMenu = useCallback(() => setShowHeaderActionsMenu(false), []);
+  useMenuDismiss(showHeaderActionsMenu, closeHeaderActionsMenu, '#list-menu');
   const isRevampedComponent = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
   // Its Styles tab is manifest-driven accordions (LibraryComponentStyles), laid out like a revamped widget's.
   const isLibraryComponent = component.component.component === 'LibraryComponent';
@@ -673,20 +676,6 @@ export const Inspector = ({
       </div>
     </FallbackBoundary>
   );
-
-  React.useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showHeaderActionsMenu && event.target.closest('#list-menu') === null) {
-        setShowHeaderActionsMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ showHeaderActionsMenu })]);
 
   const renderAppNameInput = () => {
     if (isModuleContainer) {

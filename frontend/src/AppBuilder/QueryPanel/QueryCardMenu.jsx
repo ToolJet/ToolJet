@@ -16,7 +16,9 @@ import { getQueryPopoverMotion } from '@/AppBuilder/panelLayout';
 const QueryCardMenu = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
   const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
-  const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
+  // The row whose ⋮ opened the menu; the selected query when opened another way.
+  const menuQueryId = useStore((state) => state.queryPanel.menuQueryId ?? state.queryPanel.selectedQuery?.id);
+  const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
   const hasAppPermissionQuery = useStore((state) => state?.license?.featureAccess?.appPermissionQuery ?? false);
   const targetBtnForMenu = useStore((state) => state.queryPanel.targetBtnForMenu);
@@ -76,20 +78,22 @@ const QueryCardMenu = ({ darkMode }) => {
 
   const handleQueryMenuActions = (value) => {
     if (value === 'rename') {
-      setRenamingQuery(selectedQuery?.id);
+      setRenamingQuery(menuQueryId);
     }
     if (value === 'duplicate') {
-      debouncedDuplicateQuery(selectedQuery?.id, appId);
+      debouncedDuplicateQuery(menuQueryId, appId);
     }
     if (value === 'view-dependencies') {
-      setEntityToViewDependencies?.({ kind: 'query', id: selectedQuery?.id });
+      setEntityToViewDependencies?.({ kind: 'query', id: menuQueryId });
     }
     if (value === 'permission') {
       if (!hasAppPermissionQuery) return;
+      // The permissions modal reads the selected query; select it without opening the editor.
+      setSelectedQuery(menuQueryId, moduleId, { reveal: false });
       toggleQueryPermissionModal(true);
     }
     if (value === 'delete') {
-      deleteDataQuery(selectedQuery?.id);
+      deleteDataQuery(menuQueryId);
     }
     toggleQueryHandlerMenu(false);
   };

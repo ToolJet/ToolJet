@@ -59,19 +59,15 @@ export function AddNewPageMenu({ darkMode }) {
       <Overlay
         target={addPageBtnRef.current}
         show={showMenuPopover}
-        placement="bottom-end"
+        // The button is pinned to the bottom of the Pages panel, so the menu opens upward.
+        placement="top-end"
         rootClose
         onHide={() => setShowMenuPopover(false)}
         popperConfig={{
           modifiers: [
             {
               name: 'flip',
-              options: {
-                fallbackPlacements: ['top', 'bottom', 'left', 'right'],
-                flipVariations: true,
-                allowedAutoPlacements: ['top', 'bottom'],
-                boundary: 'viewport',
-              },
+              options: { fallbackPlacements: ['bottom-end'] },
             },
             {
               name: 'offset',

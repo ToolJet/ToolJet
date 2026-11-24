@@ -184,12 +184,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
           >
             <PanelIconButton
               label="Query options"
-              onClick={() => {
-                if (!isQuerySelected) {
-                  openQueryConfiguration();
-                }
-                toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`);
-              }}
+              onClick={() => toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`, dataQuery?.id)}
               size="small"
               variant="outline"
               className=""

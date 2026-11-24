@@ -10,6 +10,7 @@ export const SIDEBAR_ITEMS = {
   search: { name: 'Code search', label: 'Search', cy: 'code-search' },
   dependencies: { name: 'Dependencies', label: 'Deps', cy: 'dependencies' },
   apphistory: { name: 'App history', label: 'History', cy: 'app-history' },
+  styleinspector: { name: 'Style inspector', label: 'Style', cy: 'style-inspector' },
   security: { name: 'Security', label: 'Security', cy: 'security' },
   access: { name: 'Access', label: 'Access', cy: 'access' },
   settings: { name: 'App settings', label: 'Settings', cy: 'settings' },
@@ -86,10 +87,11 @@ export const getRuntimePanelContentStyle = (isExpanded, panelTop) =>
     : { bottom: RUNTIME_PANEL_COLLAPSED_HEIGHT, height: 0, borderTopWidth: 0 };
 
 // The height is the drawer's committed height, so a drag keeps the last value until mouseup instead of
-// letting the canvas jump to full height. On mobile the drawer overlays the canvas, but the canvas's own
-// bottom toolbar must stay above the runtime bar.
+// letting the canvas jump to full height. Closed, the bar still sits over the canvas bottom, so it is
+// reserved too (LP-20: it hid the page nav's expand toggle). On mobile the drawer overlays the canvas,
+// but the canvas's own bottom toolbar must stay above the runtime bar.
 export const getCanvasReservedBottom = (runtimeContentHeight, isMobile) =>
-  isMobile ? RUNTIME_PANEL_COLLAPSED_HEIGHT : runtimeContentHeight;
+  isMobile ? RUNTIME_PANEL_COLLAPSED_HEIGHT : Math.max(runtimeContentHeight, RUNTIME_PANEL_COLLAPSED_HEIGHT);
 
 // The drawer animates its height, so reading the DOM when a drag or an expand ends gets a mid-transition
 // value (PL-35). Its content starts at topPercent of the viewport and sits on the tab bar, so the two span
@@ -135,8 +137,12 @@ const runtimeItem = (id) => RUNTIME_PANEL_ITEMS.find((item) => item.id === id) ?
 
 export const getRuntimeSearchName = (id) => runtimeItem(id).search;
 
-export const getRuntimeToggleLabel = (isExpanded, activeTab) =>
-  `${isExpanded ? 'Close' : 'Open'} ${runtimeItem(activeTab).label.toLowerCase()}`;
+// Code mode calls the Inspector "App state", as main's rail did (DB-M01).
+export const getRuntimeTabLabel = (id, codeMode = false) =>
+  codeMode && id === 'inspect' ? 'App state' : runtimeItem(id).label;
+
+export const getRuntimeToggleLabel = (isExpanded, activeTab, codeMode = false) =>
+  `${isExpanded ? 'Close' : 'Open'} ${getRuntimeTabLabel(activeTab, codeMode).toLowerCase()}`;
 
 export const getRightPanelForSelection = (selectionType) => {
   if (selectionType === 'component') return 'configuration';

@@ -94,6 +94,9 @@ const EntryIcon = ({ name, iconsList, darkMode }) => {
   return null;
 };
 
+// An entity whose value is undefined, told apart from "nothing selected" (undefined).
+const UNDEFINED_VALUE = Symbol('undefined');
+
 // Mirrors the sidebar detail view: a component inside a Form resolves to its id only.
 const useInspectedValue = (path) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
@@ -111,7 +114,13 @@ const useInspectedValue = (path) => {
     const value = getResolvedValue(`{{${path}}}`);
     return value === undefined ? { id: componentId } : value;
   }
-  return getResolvedValue(`{{${path}}}`);
+  const value = getResolvedValue(`{{${path}}}`);
+  // An undefined value (which the resolver may also turn into "") shows as undefined, not "" or the empty
+  // state (DB-11b).
+  if (value === undefined || (value === '' && getResolvedValue(`{{${path} === undefined}}`) === true)) {
+    return UNDEFINED_VALUE;
+  }
+  return value;
 };
 
 const EntryList = ({ entries, depth, selectedPath, onSelect, expanded, onToggle, forceExpand, searchValue, ...rest }) =>
@@ -136,6 +145,7 @@ const EntryList = ({ entries, depth, selectedPath, onSelect, expanded, onToggle,
             onClick={() => onToggle(path)}
             tabIndex={hasChildren ? 0 : -1}
             aria-label={isOpen ? `Collapse ${entry.name}` : `Expand ${entry.name}`}
+            aria-expanded={hasChildren ? isOpen : undefined}
           >
             <ChevronRight size={12} />
           </button>
@@ -174,6 +184,25 @@ const EntryList = ({ entries, depth, selectedPath, onSelect, expanded, onToggle,
       </React.Fragment>
     );
   });
+
+// Arrow keys walk the list like the base tree did (DB-34): Down/Up move between rows (group headers and
+// entries), Right expands the focused row, Left collapses it. A row's toggle is the group header itself, or
+// the entry's twisty.
+const LIST_ROWS = '.runtime-inspector__group-header, .runtime-inspector__entry-label';
+const handleListKeyDown = (event) => {
+  const rows = [...event.currentTarget.querySelectorAll(LIST_ROWS)];
+  const index = rows.indexOf(document.activeElement);
+  if (index === -1) return;
+  const row = rows[index];
+  const toggle = row.classList.contains('runtime-inspector__entry-label') ? row.previousElementSibling : row;
+  const expanded = toggle?.getAttribute('aria-expanded');
+  if (event.key === 'ArrowDown') rows[index + 1]?.focus();
+  else if (event.key === 'ArrowUp') rows[index - 1]?.focus();
+  else if (event.key === 'ArrowRight' && expanded === 'false') toggle.click();
+  else if (event.key === 'ArrowLeft' && expanded === 'true') toggle.click();
+  else return;
+  event.preventDefault();
+};
 
 const COPIED_FEEDBACK_MS = 1200;
 
@@ -341,7 +370,7 @@ const RuntimeInspector = ({ darkMode, moduleId, appType, onClose }) => {
       </div>
 
       <div className="runtime-inspector__body">
-        <nav className="runtime-inspector__list" aria-label="Inspector entries">
+        <nav className="runtime-inspector__list" aria-label="Inspector entries" onKeyDown={handleListKeyDown}>
           {categories.length === 0 &&
             (searchValue ? (
               <NoMatchesEmptyState term={searchValue} onClearSearch={() => setSearchValue('')} />
@@ -393,7 +422,7 @@ const RuntimeInspector = ({ darkMode, moduleId, appType, onClose }) => {
               <div className="runtime-inspector__values" key={selectedPath}>
                 <CustomJSONViewer
                   absolutePath={selectedPath}
-                  data={selectedValue}
+                  data={selectedValue === UNDEFINED_VALUE ? undefined : selectedValue}
                   darkMode={darkMode}
                   iconsList={iconsList}
                 />

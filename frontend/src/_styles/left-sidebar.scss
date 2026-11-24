@@ -1657,3 +1657,14 @@
     border-radius: 3px;
   }
 }
+
+// A disabled rail item (aria-disabled, so its tooltip still shows) looks as a natively disabled one did:
+// default cursor and no hover or pressed background.
+.left-sidebar-item[aria-disabled='true'] {
+  cursor: default;
+
+  &:hover,
+  &:active {
+    background-color: transparent;
+  }
+}

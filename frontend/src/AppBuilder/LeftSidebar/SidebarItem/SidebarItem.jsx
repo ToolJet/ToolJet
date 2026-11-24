@@ -5,15 +5,33 @@ import { SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 
 // A left rail item. `panel` keys its entry in SIDEBAR_ITEMS: the accessible name is the panel's name,
 // the short label sits under the icon, and when the label is shorter than the name a tooltip shows
-// the name.
+// the name. `tip` replaces that tooltip, e.g. to say why the item is disabled or what it needs.
 export const SidebarItem = forwardRef(
-  ({ panel, selectedSidebarItem, className, commentBadge, onClick, badge = false, count, children, ...rest }, ref) => {
+  (
+    {
+      panel,
+      tip,
+      disabled,
+      selectedSidebarItem,
+      className,
+      commentBadge,
+      onClick,
+      badge = false,
+      count,
+      children,
+      ...rest
+    },
+    ref
+  ) => {
     const { name, label, cy } = SIDEBAR_ITEMS[panel];
     const button = (
       <Button
         {...rest}
         className={`${className} ${selectedSidebarItem === panel && 'sidebar-item--active'} ${panel}-icon`}
-        onClick={onClick}
+        // aria-disabled, not native disabled: a disabled button fires no hover or focus events, and its tooltip
+        // says why it is disabled (as page menu rows do, PG-31).
+        aria-disabled={disabled ? true : rest['aria-disabled']}
+        onClick={disabled ? undefined : onClick}
         ref={ref}
         type="button"
         aria-label={name}
@@ -33,9 +51,9 @@ export const SidebarItem = forwardRef(
       </Button>
     );
 
-    if (label === name) return button;
+    if (!tip && label === name) return button;
     return (
-      <ToolTip message={name} placement="right">
+      <ToolTip message={tip ?? name} placement="right">
         {button}
       </ToolTip>
     );

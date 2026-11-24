@@ -61,6 +61,17 @@ describe('CustomJSONViewer', () => {
     expect(copied()).toBe('queries.q1.rows[0]["full name"]');
   });
 
+  // Break this catches (review N1): an empty {} or [] row shows an expand caret that opens to nothing.
+  it('should show no expand caret on empty objects and arrays', () => {
+    render(<CustomJSONViewer absolutePath="variables.v" data={{ empty: {}, none: [], full: [1] }} />);
+
+    const caretOf = (label) =>
+      screen.getByText(label).closest('.json-viewer-row').querySelector('.json-viewer-expand-icon svg');
+    expect(caretOf('empty')).toBeNull();
+    expect(caretOf('none')).toBeNull();
+    expect(caretOf('full')).not.toBeNull();
+  });
+
   // Break this catches: Copy value on a function row throws (JSON.stringify gives undefined).
   it('should copy a function row without throwing', () => {
     installClipboard();
