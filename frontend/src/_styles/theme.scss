@@ -836,15 +836,19 @@ button {
         margin-top: 4px;
         max-width: 100%;
         text-align: center;
-        word-wrap: break-word;
+        overflow-wrap: anywhere;
         color: var(--slate12);
-        text-align: center;
         font-size: 10px;
         font-style: normal;
         font-weight: 400;
         line-height: 13px;
         height: 26px;
         width: 72px;
+        // Two lines at most: a longer name ends in an ellipsis (full name in the tile's tooltip).
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
       }
 
       .component-description {

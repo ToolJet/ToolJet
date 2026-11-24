@@ -28,6 +28,7 @@ export * from './organization_constants.service';
 export * from './groupPermission.v2.service';
 export * from './workflow_executions.service';
 export * from './workflow_schedules.service';
+export * from './workflow_approvals.service';
 export * from './session.service';
 export * from './login_configs.service';
 export * from './ai.service';

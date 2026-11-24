@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { getWorkspaceId } from '@/_helpers/utils';
 import { useHeaderSearchConfig } from '@/_hooks/useHeaderSearchConfig';
@@ -12,15 +12,17 @@ import { useSearchStore } from '@/_stores/searchStore';
 import { useFetchAppsLimit, useFetchWorkflowLimit } from '@/_services/hooks/appsServiceHooks';
 import { useIsWorkspaceBranchLocked } from '@/pages/AppsDashboard/hooks/useIsWorkspaceBranchLocked';
 import { useRootAppsQuery } from '@/pages/AppsDashboard/hooks/useRootAppsQuery';
+import { useAiOnboarding } from '@/pages/AppsDashboard/hooks/useAiOnboarding';
 
+import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { Separator } from '@/components/ui/Rocket/Separator/Separator';
+import PageHeader from '@/pages/components/PageHeader';
 import WorkspaceLockedBanner from '@/_ui/WorkspaceLockedBanner';
 
 import { NoAppsExist } from './components/EmptyStates';
 import AddNewMenu from './components/AddNewMenu';
 import BuildWithAIButton from './components/BuildWithAIButton';
 import MoreActionsMenu from './components/MoreActionsMenu';
-import PageHeader from './components/PageHeader';
 import ViewTabs from './components/ViewTabs';
 import Dialogs from './components/Dialogs';
 
@@ -34,11 +36,11 @@ import {
 import { useLicenseStore } from '@/_stores/licenseStore';
 import type { ILicenseStore } from '@/_stores/types/licenseStore';
 
-interface AppsDashboardProps {
+interface IAppsDashboardProps {
   appType: TAppType;
 }
 
-export default function AppsDashboard({ appType }: AppsDashboardProps) {
+export default function AppsDashboard({ appType }: IAppsDashboardProps) {
   const navigate = useNavigate();
 
   useHeaderSearchConfig({ placeholder: searchPlaceholderByAppType[appType] });
@@ -56,10 +58,15 @@ export default function AppsDashboard({ appType }: AppsDashboardProps) {
 
   const { isBranchLocked } = useIsWorkspaceBranchLocked();
 
+  const { isOnboarding, showPermissionDenied, closePermissionDenied } = useAiOnboarding(appType);
+
   const checkModuleAccess = useLicenseStore((state: ILicenseStore) => state.actions.checkModuleAccess);
 
   const searchQuery: string = useSearchStore((state) => state.debouncedSearchQuery);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
+  const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { data: rootApps, isLoading: isRootAppsLoading } = useRootAppsQuery(appType);
 
@@ -67,6 +74,17 @@ export default function AppsDashboard({ appType }: AppsDashboardProps) {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, appType, setCurrentPage]);
+
+  // Deep link (e.g. from Get Started): `?fromtemplate=true` opens the template library once, then drops the param.
+  useEffect(() => {
+    if (appType !== 'front-end' || !searchParams.get('fromtemplate')) return;
+
+    setAppDialogState({ type: 'choose-from-template', appDetails: null });
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('fromtemplate');
+    setSearchParams(nextParams, { replace: true });
+  }, [appType, searchParams, setAppDialogState, setSearchParams]);
 
   const {
     role,
@@ -78,7 +96,7 @@ export default function AppsDashboard({ appType }: AppsDashboardProps) {
   const hasCreatePermission = isSuperAdmin
     ? true
     : appType === 'front-end'
-      ? user_permissions?.app_create
+      ? userPermissions?.app_create
       : appType === 'module'
         ? isAdmin || userPermissions?.module_create || role?.name === 'builder'
         : appType === 'workflow'
@@ -127,6 +145,8 @@ export default function AppsDashboard({ appType }: AppsDashboardProps) {
   // Loading keeps the tabs and skeleton up instead of flashing the empty state; an active search shows "No matches" instead.
   const hasItems = isRootAppsLoading || searchQuery.trim() !== '' || (rootApps?.total ?? 0) > 0;
 
+  if (isOnboarding) return <TJLoader />;
+
   return (
     <>
       <WorkspaceLockedBanner showNewBanner pageContext={`${appTypeToDisplayNameMapping[appType]}s`} />
@@ -139,7 +159,7 @@ export default function AppsDashboard({ appType }: AppsDashboardProps) {
             <>
               {hasItems && (
                 <>
-                  <AddNewMenu appType={appType} isBranchLocked={isBranchLocked} />
+                  <AddNewMenu appType={appType} />
                   <BuildWithAIButton appType={appType} data-cy="page-header-build-with-ai" />
                 </>
               )}
@@ -155,7 +175,10 @@ export default function AppsDashboard({ appType }: AppsDashboardProps) {
           <>
             <Separator className="tw-mx-[4.375rem] tw-w-auto" />
 
-            <NoAppsExist showContent appType={appType} {...staticContentMappingByAppType[appType].emptyState} />
+            <NoAppsExist {...staticContentMappingByAppType[appType].emptyState}>
+              <AddNewMenu appType={appType} />
+              <BuildWithAIButton appType={appType} data-cy="no-apps-build-with-ai" />
+            </NoAppsExist>
           </>
         )}
       </main>
@@ -165,6 +188,8 @@ export default function AppsDashboard({ appType }: AppsDashboardProps) {
         isBranchLocked={isBranchLocked}
         limits={appsLimit?.appsCount ?? {}}
         hasCreatePermission={hasCreatePermission}
+        showInsufficentPermissionModalstate={showPermissionDenied}
+        handleClosePermissionDeniedModal={closePermissionDenied}
       />
     </>
   );

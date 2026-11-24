@@ -92,8 +92,12 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Environment** | A deployment stage — development, staging, production — with per-environment data source configs; priority-ordered per workspace | — |
 | **Promote** | Moving an app version from one environment to the next (e.g., dev to staging to production) (EE feature) | Deploy (informal in docs) |
 | **Maintenance Mode** | A flag that takes a released app offline temporarily while preserving the release | — |
-| **Async Migration Mode** | `MIGRATION_MODE=async`: schema migrations apply at boot, data migrations run in the background while the instance serves; runs listed on the super-admin Migrations page (`server/docs/MIGRATION_FLOW.md`, Async mode). The default is blocking mode | — |
+| **Async Migration Mode** | `MIGRATION_MODE=async`: schema migrations apply at boot, data migrations run in the background while the instance serves, cleanup migrations run after writes reopen; runs listed on the super-admin Migrations page (`server/docs/MIGRATION_FLOW.md`, Async mode). The default is blocking mode | — |
 | **Upgrade Gate** | `MigrationGateMiddleware`: in async mode, answers API writes with 503 while a migration runs or after it failed; the banner tells users | Maintenance (end-user banner text; not Maintenance Mode) |
+| **Migration Phase** | `MigrationPhase`: schema (adds only, before boot), data (fills what schema added, writes paused), cleanup (removes what no released code uses, after writes reopen). Folders `server/migrations/{schema,data,cleanup}/`; set by `MIGRATION_PHASE` | Schema migration, data migration |
+| **Migration Baseline** | A `migration_baselines` row: per newest shipped migration (`code_head`), the last migration id recorded when that code first ran. A cleanup migration runs only when its `requires` migration was recorded at or before the baseline (`planCleanup`) | Not **Baseline** (ToolJet Database) |
+| **Migration Run** | One async-mode data phase, a `migration_runs` row: its steps, state and log, shown on the super-admin Migrations page | — |
+| **Legacy 3.21.58 Upgrade** | The async upgrade of a 3.21.58 database: rules its data phase breaks are dropped first and restored if it fails (`legacy-3-21-58-upgrade.ts`, `npm run db:legacy-upgrade:restore`) | — |
 | **App History** | An audit trail of changes to an app version with undo capability (EE feature) | — |
 | **Write Source** | Who made an app-definition save: `ui`, `pat` (personal access token sessions — agents/MCP), `ext_api`, `import`, `git`, `ai` (AI builder sessions), `copy`, `restore` (`app-validation/core/constants.ts` `WRITE_SOURCES`; resolved from the request by `resolveSource`) | source |
 | **Validation Mode** | What app validation does per write source: `off`, `report` (log + return `validationWarnings`), `enforce` (reject with 400 `APP_VALIDATION_FAILED`). `pat` is the only enforced source today; `copy`/`restore` are hard-capped to report | — |
@@ -115,7 +119,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Internal Table** | A table within ToolJet Database | — |
 | **Internal Table Relation** | An Internal Table's physical presence at one (Environment, Workspace Branch) pair — carries the physical Postgres relation's identity and per-relation configuration (`internal_table_relations`) | Relation (short form, context-dependent) |
 | **Internal Table Migration** | An immutable recorded schema change for an Internal Table — authored (`structured`/`raw_sql`) or synthesized for a pre-existing table (`baseline`) (`internal_table_migrations`) | — |
-| **Baseline** | A synthesized `internal_table_migration` recording the shape a pre-existing physical table already has, so it has a migration history to promote/replay from without ever running DDL | — |
+| **Baseline** | A synthesized `internal_table_migration` recording the shape a pre-existing physical table already has, so it has a migration history to promote/replay from without ever running DDL | Not **Migration Baseline** (runner) |
 | **Internal Table Migration Application** | The record that one Internal Table Migration has been applied to one Internal Table Relation (`internal_table_migration_applications`) | — |
 | **Run JavaScript** | A special query type that executes JavaScript code instead of querying a data source | RunJS (code shorthand) |
 | **Run Python** | A special query type that executes Python code instead of querying a data source | RunPy (code shorthand) |
@@ -146,13 +150,19 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | Term | Definition | Also appears as |
 |------|-----------|-----------------|
 | **Workflow** | A visual automation composed of nodes and edges, executed on triggers or schedules (EE feature) | — |
-| **Workflow Trigger** | What starts a workflow: `MANUAL`, `SCHEDULE`, or `WEBHOOK` | Event (reserve for component-level interactions) |
-| **Workflow Execution** | A single run of a workflow; statuses: triggered, running, completed, error, terminated | — |
+| **Workflow Trigger** | What starts a workflow: `manual`, `schedule`, `webhook`, `app` (run triggered from inside an application), `workflow` (run invoked by a parent workflow), or `unknown` (history predating the `trigger_type` column — never back-fill by guessing) | Event — reserved for component-level interactions, but the executions dashboard also labels the `app` trigger "Event" per Figma; see Flagged Ambiguities |
+| **Workflow Execution** | A single run of a workflow. DB `status`: `success` (also the insert default, so an in-flight run carries it), `failure`, `terminated`, and the non-terminal `waiting` / `waiting_for_delay`; `executed` separates a finished run from an in-flight one. The executions dashboard shows a derived display state (DB status plus BullMQ job state plus the termination flag) as Queued, Running, Stopping, Waiting, Success, Failed, Stopped or Unknown (no live job past the stale threshold) | Run; "Stopped" is the UI label for `terminated` |
 | **Workflow Execution Node** | A single step within a workflow execution | — |
-| **Workflow Schedule** | A cron/trigger configuration for recurring workflow runs | — |
+| **Wait Node** | A workflow node that pauses an execution for a configured duration, then continues through its single output | — |
+| **Workflow Schedule** | A cron/trigger configuration for recurring workflow runs. Registered as a BullMQ job scheduler keyed by schedule id; the Postgres row and that registration are independent, so an *active* schedule may hold no registration and never fire | — |
+| **Upcoming Run** | A future firing of a Workflow Schedule, shown on the executions dashboard. Not a Workflow Execution: no `workflow_executions` row exists until it starts | Workflow Execution — an Upcoming Run is a prediction, an Execution is a record |
 | **Workflow Bundle** | Compiled workflow code (JS or Python, runtime version, binary); statuses: none, building, ready, failed | — |
 | **Response Node** | The terminal node in a webhook-triggered workflow that sends data back to the caller | — |
 | **Webhook** | An HTTP endpoint that triggers a workflow from external systems | — |
+| **Workflow input** | A typed, version-level value that can be supplied by a manual run, schedule, webhook, or parent workflow; trigger values override its optional default | `definition.workflowInputs` |
+| **Human Node** | A workflow node that pauses a run to await a person's decision (custom outcomes) and optional structured input; the run suspends until resolved via the approval API (`type: 'human'`, EE feature) | HITL node |
+| **Approval Request** | A decision a suspended workflow run waits on — at most one pending per (execution, node); statuses `pending`, `resolved`, `expired`, `cancelled`. Resolved through the approval API either by its `token` (link route, session optional) or by id from the approvals dashboard (`WorkflowApprovalRequest`, `workflow_approval_requests`) | Approval |
+| **Waiting** (execution status) | Non-terminal status of a workflow execution suspended at a **Human Node**, awaiting input (`status='waiting'`, `executed=false`) | — |
 
 ## AI Features
 
@@ -205,7 +215,8 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 - A **Query** connects an **App** to a **Data Source** and may apply a **Transformation** to results
 - A **Global Data Source** is shared across all **Apps** in a **Workspace**; an **App-Level Data Source** belongs to one **App**
 - An **Environment** (dev/staging/prod) holds per-environment **Data Source** configurations and **Workspace Constant** values
-- A **Workflow** is triggered by a **Workflow Trigger** (manual/schedule/webhook) and produces a **Workflow Execution** composed of **Workflow Execution Nodes**
+- A **Workflow** is triggered by a **Workflow Trigger** (manual/schedule/webhook/app/workflow/unknown) and produces a **Workflow Execution** composed of **Workflow Execution Nodes**
+- A **Human Node** suspends a **Workflow Execution** (status **Waiting**) and creates an **Approval Request**, resolved by token or by id via the approval API
 - A **Plan** determines the **License Terms**, which gate **Features** via **Feature Flags**
 - A **Plugin** backs a **Data Source** type; **Marketplace Plugins** extend the built-in set
 
@@ -225,7 +236,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 
 - **"Branch"** is now three things: a **Workspace Branch** (workspace-scoped git branch entity), a **branch-head Version** (`versionType: BRANCH`, UUID name, display name from the Workspace Branch), and the plain git branch on the remote. Say which one; never use bare "branch" for an app Version.
 
-- **"Event" vs. "Trigger"** serve different domains: **Event** is a component/UI-level interaction (button click, query success). **Trigger** starts a **Workflow** (manual, schedule, webhook). Do not use them interchangeably.
+- **"Event" vs. "Trigger"** serve different domains: **Event** is a component/UI-level interaction (button click, query success). **Trigger** starts a **Workflow** (manual, schedule, webhook, app, workflow, unknown). Do not use them interchangeably in code or general docs — **except** the workflow executions dashboard UI, which labels the `app` trigger "Event" (per Figma, product-owner call); that one shipped label is a known, accepted exception, not a precedent for reuse elsewhere.
 
 - **"Module"** is heavily overloaded: in the backend it's a NestJS architectural module (`server/src/modules/*`); in the frontend it's a reusable app building block (EE feature, app type `MODULE`). Always qualify which you mean.
 

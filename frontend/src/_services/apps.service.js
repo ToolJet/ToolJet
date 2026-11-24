@@ -13,6 +13,7 @@ export const appsService = {
   setMaintenance,
   setSlug,
   getAll,
+  getWorkflowConsumers,
   getAllAddableApps,
   createApp,
   cloneApp,
@@ -170,6 +171,13 @@ function createApp(body = {}) {
     default:
       return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
   }
+}
+
+function getWorkflowConsumers(workflowId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(appendBranchParam(`${config.apiUrl}/workflows/${workflowId}/consumers`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function createWorkflow(requestOptions) {
@@ -361,11 +369,13 @@ function getWorkflowLimit(type) {
   return fetch(`${config.apiUrl}/license/workflows/limits/${type}`, requestOptions).then(handleResponse);
 }
 
-function releaseVersion(appId, versionToBeReleased) {
+// expectedReleasedVersionId: the released version the confirmation showed ('' for none). The server refuses the
+// release if another version went live since, instead of silently replacing it.
+function releaseVersion(appId, versionToBeReleased, expectedReleasedVersionId) {
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
-    body: JSON.stringify({ versionToBeReleased }),
+    body: JSON.stringify({ versionToBeReleased, expectedReleasedVersionId }),
     credentials: 'include',
   };
 

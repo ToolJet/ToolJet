@@ -78,14 +78,14 @@ export class FeatureAbilityGuard extends AbilityGuard {
       const appIds: string[] = request.body?.app_id ? [request.body.app_id] : request.body.app_ids;
       const apps = await this.dataSource.manager.find(App, {
         where: { id: In(appIds), organizationId: request.user.organizationId },
-        select: ['id', 'userId', 'type'],
+        select: ['id', 'userId', 'type', 'organizationId'],
       });
       if (apps.length !== new Set(appIds).size) return false;
 
       request.tj_allow_owner_folder_app_create =
         folderOwnedByUser && apps.every((app) => app.userId === request.user.id);
       request.tj_allow_owner_folder_app_delete = folderOwnedByUser;
-      request.tj_folder_app_type_mismatch = !!folder.type && apps.some((app) => app.type && app.type !== folder.type);
+      request.tj_folder_app_type_mismatch = !!folder?.type && apps.some((app) => app.type && app.type !== folder.type);
     }
 
     return super.canActivate(context);

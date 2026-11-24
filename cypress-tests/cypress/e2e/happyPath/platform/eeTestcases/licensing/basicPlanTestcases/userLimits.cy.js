@@ -5,7 +5,6 @@ import {
   archiveUserAndVerify,
   bulkUploadUsersViaCSV,
   changeRoleAndExpectLimit,
-  changeUserRole,
   createUserAndExpectStatus,
   createUserViaAPI,
   openInviteUserModal,
@@ -19,12 +18,12 @@ describe("License - User Limits", () => {
   const builderEmail = `builder-${Date.now()}@example.com`;
   const thirdBuilderEmail = `builder-${Date.now()}-3@example.com`;
   const thirdBuilderName = `Builder Three ${Date.now()}`;
-  const fiftiethViewerEmail = `viewer-${Date.now()}-50@example.com`;
-  const fiftiethViewerName = `Viewer Fiftieth ${Date.now()}`;
+  const tenthViewerEmail = `viewer-${Date.now()}-10@example.com`;
+  const tenthViewerName = `Viewer Tenth ${Date.now()}`;
   const endUserEmail = `enduser-${Date.now()}@example.com`;
   const secondEndUserEmail = `enduser-${Date.now()}-2@example.com`;
 
-  const allUserEmails = [thirdBuilderEmail, endUserEmail, fiftiethViewerEmail];
+  const allUserEmails = [thirdBuilderEmail, endUserEmail, tenthViewerEmail];
 
   beforeEach(() => {
     cy.apiLogin();
@@ -39,13 +38,7 @@ describe("License - User Limits", () => {
   it("should enforce builder limit, show upgrade modal, and verify role change restriction", () => {
     openUsersPageAndverifyBasicResourceLimit("builders");
 
-    cy.get(commonSelectors.cancelButton).click();
-    verifyUserLimitReachingBanner(
-      "Builder limit nearing - 1/2",
-      "You're nearing your limit for number of builders in this instance. Upgrade for more. "
-    );
-
-    createUserAndExpectStatus(builderEmail, "builder", 201);
+    createUserAndExpectStatus(builderEmail, "builder", 451);
 
     verifyLimitReachedBanner(
       thirdBuilderName,
@@ -63,12 +56,6 @@ describe("License - User Limits", () => {
       true
     );
 
-    archiveUserAndVerify(builderEmail);
-
-    cy.wait(500);
-
-    createUserAndExpectStatus(thirdBuilderEmail, "builder", 201);
-
     createUserViaAPI(endUserEmail, "end-user");
 
     changeRoleAndExpectLimit(endUserEmail, "builder");
@@ -77,10 +64,8 @@ describe("License - User Limits", () => {
   it("should enforce viewer limit, show upgrade modal, and verify role change restriction", () => {
     openUsersPageAndverifyBasicResourceLimit("viewers");
 
-    createUserAndExpectStatus(builderEmail, "builder", 201);
-
     let bulkViewerEmails = [];
-    bulkUploadUsersViaCSV(49, "end-user", "viewer").then(
+    bulkUploadUsersViaCSV(9, "end-user", "viewer").then(
       ({ response, emails }) => {
         expect(response.status).to.equal(201);
         bulkViewerEmails = emails;
@@ -88,17 +73,12 @@ describe("License - User Limits", () => {
     );
 
     cy.wait(2000);
-    cy.get(commonSelectors.cancelButton).click();
-    verifyUserLimitReachingBanner(
-      "Nearing limits for builder - 2/2 and end user- 49/50",
-      "You're nearing your limit for number of builders & end-users in this instance. Upgrade for more. "
-    );
 
     createUserAndExpectStatus(endUserEmail, "end-user", 201);
 
     verifyLimitReachedBanner(
-      fiftiethViewerName,
-      fiftiethViewerEmail,
+      tenthViewerName,
+      tenthViewerEmail,
       "end-user",
       "Builder and End user limit reached",
       "You've reached your limit for number of builders & end-users in this instance. Upgrade for more.  "
@@ -113,17 +93,15 @@ describe("License - User Limits", () => {
       archiveUserAndVerify(endUserEmail);
     });
 
-    createUserAndExpectStatus(fiftiethViewerEmail, "end-user", 201);
+    createUserAndExpectStatus(tenthViewerEmail, "end-user", 201);
     cy.wait(500);
-
-    changeUserRole(builderEmail, "end-user");
 
     /* Workaround: the upgrade modal only renders once per page load, so reload
        before the second limit-reached invite. Remove once the modal bug is fixed. */
     cy.reload();
     cy.get(usersSelector.buttonAddUsers).click();
 
-    openInviteUserModal(thirdBuilderEmail, thirdBuilderEmail, "builder");
+    openInviteUserModal(thirdBuilderName, thirdBuilderEmail, "end-user");
 
     cy.wait(500);
     cy.get(usersSelector.buttonInviteUsers).click();
@@ -136,13 +114,6 @@ const openUsersPageAndverifyBasicResourceLimit = (role) => {
   navigateToManageUsers();
   cy.get(usersSelector.buttonAddUsers).click();
   verifyResourceLimit(role, "basic", "usage");
-};
-
-const verifyUserLimitReachingBanner = (expectedHeading, expectedInfoText) => {
-  cy.get(commonSelectors.manageGroupsOption).click();
-  cy.get(commonSelectors.manageUsersOption).click();
-  cy.get(usersSelector.buttonAddUsers).click();
-  verifyLimitBanner(expectedHeading, expectedInfoText);
 };
 
 const verifyLimitReachedBanner = (

@@ -14,7 +14,7 @@ import { isAppItem, isFolderItem, isInPinnedSection } from '../items';
 import { useFolderView } from '../useFolderView';
 import AppCard from './AppCard';
 import FolderCard from './FolderCard';
-import PageFooter from './PageFooter';
+import PageFooter from '@/pages/components/PageFooter';
 
 import type { AppItem, FolderItem } from '../dummyData/types';
 import type { ListMeta } from '../types';
@@ -269,7 +269,6 @@ function FolderView({ folderId, appType }: FolderViewProps) {
               <NoMatchesFound />
             ) : (
               <NoAppsExist
-                appType={appType}
                 title={`No ${appTypeToDisplayNameMapping[appType]}s in this folder`}
                 icon={staticContentMappingByAppType[appType].emptyState.icon}
               />

@@ -42,6 +42,7 @@ import { BulkFolderDeleteService } from './dashboard/bulk-folder-delete.service'
 import { DataSource } from 'typeorm';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { CodeModeSourceModule } from '@modules/code-mode-source/module';
 @Module({})
 export class AppsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -93,6 +94,7 @@ export class AppsModule extends SubModule {
         await AppHistoryModule.register(configs),
         await UsersModule.register(configs),
         await GitSyncConfigsModule.register(configs),
+        await CodeModeSourceModule.register(configs),
       ],
       controllers: isMainImport
         ? [

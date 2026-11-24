@@ -8,6 +8,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { assertReleaseBaseline } from './release-baseline';
 import { EntityManager, In } from 'typeorm';
 import {
   AppCreateDto,
@@ -621,10 +622,8 @@ export class AppsService implements IAppsService {
             unresolvedAppIds.push(app.id);
             continue;
           }
-          app.name = branchVersion.appName;
-          app.slug = branchVersion.slug;
-          app.icon = branchVersion.icon;
-          app.isPublic = branchVersion.isPublic;
+          // Falls back to apps.*: a 3.21.58 workflow's version has no name until the data phase.
+          this.versionRepository.overlayMetadata(app, branchVersion);
         }
       } else {
         unresolvedAppIds.push(...apps.map((a) => a.id));
@@ -839,7 +838,8 @@ export class AppsService implements IAppsService {
     const version = await this.versionRepository.findOne({
       where: { appId: app.id, branchId: targetBranchId, isStub: false },
       relations: ['branch'],
-      order: { updatedAt: 'DESC' },
+      // Draft first (enum order DRAFT < PUBLISHED): the 3.21.58 upgrade moves the released row onto the branch.
+      order: { status: 'ASC', updatedAt: 'DESC' },
     });
     if (version) {
       if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
@@ -1101,7 +1101,9 @@ export class AppsService implements IAppsService {
       }
 
       await this.appsUtilService.checkModulesReleasedInApp(versionToBeReleased, user.organizationId, manager);
+      await assertReleaseBaseline(manager, appId, versionReleaseDto.expectedReleasedVersionId);
       await this.appsUtilService.checkWorkflowsReleasedInApp(versionToBeReleased, user.organizationId, manager);
+      await this.beforeVersionRelease(manager, appId, versionToBeReleased);
 
       // Get version details for audit log
       const releasedVersion = await this.versionRepository.findVersion(versionToBeReleased);
@@ -1139,6 +1141,7 @@ export class AppsService implements IAppsService {
       }
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
+      await this.afterVersionRelease(manager, appId, versionToBeReleased, user.id);
 
       //APP_RELEASE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -1201,5 +1204,24 @@ export class AppsService implements IAppsService {
 
       return appFolderIds.some((folderId) => editableFolderIds.includes(folderId));
     });
+  }
+
+  /**
+   * Hook called before a version becomes the released version - override in EE
+   */
+  protected async beforeVersionRelease(manager: EntityManager, appId: string, versionId: string): Promise<void> {
+    // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after a version becomes the released version - override in EE
+   */
+  protected async afterVersionRelease(
+    manager: EntityManager,
+    appId: string,
+    versionId: string,
+    userId?: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides
   }
 }

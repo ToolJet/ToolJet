@@ -2,9 +2,9 @@ import React from 'react';
 
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/Rocket/Skeleton/Skeleton';
-import { GRID_TEMPLATE_COLUMNS } from '@/pages/AppsDashboard/ItemsList/columns';
 import { INFO_SKELETON_WIDTHS, SKELETON_BAR_CLASS } from '@/pages/AppsDashboard/ItemsList/FolderStatusRow';
-import { FOOTER_CLASS } from './PageFooter';
+import { useDataTableContext } from '@/pages/components/DataTable/DataTableContext';
+import { FOOTER_CLASS } from '@/pages/components/PageFooter';
 
 const SKELETON_CLASS = 'tw-rounded tw-bg-interactive-default';
 const LIST_ROW_COUNT = 8;
@@ -22,13 +22,14 @@ const range = (count: number) => Array.from({ length: count }, (_, index) => ind
 // Rows under the real column header (Figma 1154-87739). The square sits in the chevron slot and the bar
 // starts at the name label, past the two 20px icon slots.
 export function ListViewLoading() {
+  const { gridTemplateColumns } = useDataTableContext();
   return range(LIST_ROW_COUNT).map((index) => (
     <div
       key={index}
       role="row"
       aria-hidden
       className="tw-grid tw-h-10 tw-items-center tw-px-2"
-      style={{ gridTemplateColumns: GRID_TEMPLATE_COLUMNS }}
+      style={{ gridTemplateColumns }}
     >
       <div className="tw-flex tw-items-center tw-gap-[26px]">
         <Skeleton className={cn(SKELETON_BAR_CLASS, 'tw-w-3.5')} />

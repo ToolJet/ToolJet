@@ -68,7 +68,7 @@ describe('folder-apps FeatureAbilityGuard', () => {
     });
     expect(dataSource.manager.find).toHaveBeenCalledWith(expect.anything(), {
       where: { id: In(['app-1']), organizationId: 'org-1' },
-      select: ['id', 'userId', 'type'],
+      select: ['id', 'userId', 'type', 'organizationId'],
     });
     expect(request.tj_allow_owner_folder_app_create).toBe(true);
     expect(request.tj_allow_owner_folder_app_delete).toBe(true);

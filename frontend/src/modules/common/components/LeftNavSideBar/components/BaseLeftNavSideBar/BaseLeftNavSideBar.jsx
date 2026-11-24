@@ -5,6 +5,8 @@ import { Home, Blocks, ToyBrick, Workflow, Table2, Puzzle, KeyRound, Moon, Sun }
 import { cn } from '@/lib/utils';
 import { ToolTip } from '@/_components/ToolTip';
 import { NotificationCenter } from '@/_components/NotificationCenter';
+import ReviewInbox from '../../ReviewInbox';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import { appendBranchName } from '@/_helpers/active-branch';
@@ -26,6 +28,9 @@ const BaseLeftNavSideBar = ({
   featureAccess,
 }) => {
   const hasModuleAccess = useLicenseStore((state) => state.hasModuleAccess);
+  // Prefix match: dashboard tabs keep the icon active.
+  const workflowsRoute = getPrivateRoute('workflows');
+  const isWorkflowsRoute = router.pathname === workflowsRoute || router.pathname.startsWith(`${workflowsRoute}/`);
 
   return (
     <div>
@@ -83,7 +88,7 @@ const BaseLeftNavSideBar = ({
               <Link
                 to={appendBranchName(getPrivateRoute('workflows'))}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workflows'), event)}
-                className={routeLinkClassName(router.pathname === getPrivateRoute('workflows'))}
+                className={routeLinkClassName(isWorkflowsRoute)}
                 aria-label="Workflows"
               >
                 <Workflow size={16} />
@@ -141,6 +146,8 @@ const BaseLeftNavSideBar = ({
         )}
 
         <li className="tj-leftsidebar-icon-items-bottom text-center">
+          <NotificationCenter darkMode={darkMode} />
+          <ReviewInbox darkMode={darkMode} />
           <ToolTip delay={{ show: 0, hide: 0 }} message="Mode" placement="right">
             <button
               type="button"
