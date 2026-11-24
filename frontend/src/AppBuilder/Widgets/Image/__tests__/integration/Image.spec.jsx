@@ -19,6 +19,7 @@ import {
   MODULE_ID,
   setVariableOn,
   widgetProps,
+  recordNativeSubmits,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'img1';
@@ -576,5 +577,43 @@ describe('Image: saved-app compatibility', () => {
     await waitFor(() => expect(img()).toBeInTheDocument());
     expect(img()).toHaveAttribute('src', 'https://example.com/image.png');
     expect(document.querySelector('.lazyload-wrapper')).not.toBeInTheDocument();
+  });
+});
+
+describe('Image: inside a Form', () => {
+  beforeEach(setup);
+  afterEach(teardown);
+
+  // 90/270 also carry a fit-to-box scale (Image-ROT-003), so match only the rotation.
+  const rotation = () => img().style.transform.match(/^rotate\((\d+)deg\)/)?.[1];
+
+  test('[Image-FORM-001] zoom in, zoom out and rotate inside a Form do not submit the browser form', async () => {
+    // Break this catches: a control <button> (Image.jsx:260,263,267) losing `type="button"`. Without it
+    // each control is a submit button, so zooming or rotating inside a Form starts a native form
+    // submission, which reloads the page when the Form is nested in another Form.
+    widget.renderInsideForm({ properties: { zoomButtons: binding('{{true}}'), rotateButton: binding('{{true}}') } });
+    await waitFor(() => expect(zoomInButton()).toBeInTheDocument());
+    const nativeSubmits = recordNativeSubmits(document.querySelector('form#form1'));
+
+    await widget.session.user.click(zoomInButton());
+    await widget.session.user.click(zoomOutButton());
+    await widget.session.user.click(rotateIcon().closest('button'));
+
+    expect(rotation()).toBe('90');
+    expect(nativeSubmits).toEqual([]);
+  });
+
+  test('[Image-FORM-001] with zoom controls off, rotate inside a Form does not submit the browser form', async () => {
+    // Break this catches: the standalone rotate <button> (Image.jsx:338, the zoomButtons-off branch)
+    // losing `type="button"`.
+    widget.renderInsideForm({ properties: { rotateButton: binding('{{true}}') } });
+    await waitFor(() => expect(rotateIcon()).toBeInTheDocument());
+    expect(zoomInButton()).not.toBeInTheDocument();
+    const nativeSubmits = recordNativeSubmits(document.querySelector('form#form1'));
+
+    await widget.session.user.click(rotateIcon().closest('button'));
+
+    expect(rotation()).toBe('90');
+    expect(nativeSubmits).toEqual([]);
   });
 });

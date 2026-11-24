@@ -26,6 +26,7 @@ export const ActionButtons = ({ actions, row, cell, fireEvent, setExposedVariabl
     <div className="d-flex align-items-center">
       {actions.map((action) => (
         <button
+          type="button"
           key={action.name}
           className="btn btn-sm m-1 btn-light action-button"
           style={{

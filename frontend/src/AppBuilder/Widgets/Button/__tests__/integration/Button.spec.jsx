@@ -14,6 +14,7 @@ import {
   store,
   MODULE_ID,
   setVariableOn,
+  recordNativeSubmits,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
 
@@ -323,5 +324,25 @@ describe('Button: state precedence, deprecated CSAs, type gating, icon, isolatio
     await widget.act('setLoading', true);
     await waitFor(() => expect(widget.exposed('btn1').isLoading).toBe(true));
     expect(widget.exposed('btn2').isLoading).toBe(false);
+  });
+});
+
+describe('Button: inside a Form', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Button-FORM-001] clicking a Button inside a Form fires onClick without submitting the browser form', async () => {
+    // Break this catches: the rendered <button> losing `type="button"` (Button.jsx:224). A missing or
+    // invalid type is a submit button, so every click inside a Form starts a native form submission,
+    // which reloads the page when the Form is nested in another Form.
+    widget.renderInsideForm();
+    widget.setEvents(onClickCapture);
+    await waitFor(() => expect(btn()).toBeInTheDocument());
+    const nativeSubmits = recordNativeSubmits(document.querySelector('form#form1'));
+
+    await widget.session.user.click(btn());
+
+    expect(clicked()).toBe('yes');
+    expect(nativeSubmits).toEqual([]);
   });
 });

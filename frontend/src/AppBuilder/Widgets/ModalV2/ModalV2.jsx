@@ -325,6 +325,7 @@ export const ModalV2 = function Modal({
       {useDefaultButton && isVisible && (
         <WidgetTooltip {...tooltipProps} darkMode={darkMode}>
           <button
+            type="button"
             disabled={isDisabledTrigger}
             className={`jet-btn btn btn-primary overflow-hidden focus-visible:!tw-outline focus-visible:!tw-outline-2 focus-visible:!tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2${skin ? ' tj-shad-trigger' : ''}`}
             style={customStyles.buttonStyles}

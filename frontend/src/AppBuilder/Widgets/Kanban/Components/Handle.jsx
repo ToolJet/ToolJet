@@ -5,6 +5,7 @@ export const Handle = forwardRef(({ style, ...props }, ref) => {
   return (
     <button
       ref={ref}
+      type="button"
       {...props}
       className={'handle'}
       tabIndex={0}

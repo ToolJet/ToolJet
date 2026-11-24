@@ -147,7 +147,12 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           </h4>
         </div>
         <div className="col-auto">
-          <button data-cy="add-new-rows-close-button" onClick={closeAddNewRowPopup} className="btn btn-light btn-sm">
+          <button
+            type="button"
+            data-cy="add-new-rows-close-button"
+            onClick={closeAddNewRowPopup}
+            className="btn btn-light btn-sm"
+          >
             x
           </button>
         </div>
@@ -265,6 +270,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           </tbody>
         </table>
         <button
+          type="button"
           className="btn btn-light btn-sm m-2"
           onClick={addNewRow}
           data-cy={`add-another-row-button`}

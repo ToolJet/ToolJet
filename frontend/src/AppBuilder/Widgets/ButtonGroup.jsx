@@ -156,6 +156,7 @@ export const ButtonGroup = function Button({
         <div>
           {data?.map((item, index) => (
             <button
+              type="button"
               data-cy={`${dataCy}-button-${index}`}
               style={{
                 ...computedStyles,
