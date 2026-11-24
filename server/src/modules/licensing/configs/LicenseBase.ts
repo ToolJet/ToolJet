@@ -154,7 +154,9 @@ export default class LicenseBase {
     this._isServerSideGlobalResolve = this.getFeatureValue('serverSideGlobalResolve');
     this._isMultiEnvironment = this.getFeatureValue('multiEnvironment');
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
-    this._isAutomaticSsoLogin = this.getEnterpriseOnlyFlag(this._features?.['automaticSsoLogin']);
+    const automaticSsoLoginFlag = this._features?.['automaticSsoLogin'];
+    this._isAutomaticSsoLogin =
+      typeof automaticSsoLoginFlag === 'boolean' ? automaticSsoLoginFlag : this.automaticSsoLoginDefault;
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isGitSyncMultiBranch = this.getFeatureValue('gitSyncMultiBranch');
@@ -255,24 +257,23 @@ export default class LicenseBase {
     if (this.IsBasicPlan) {
       return this.BASIC_PLAN_TERMS.app?.pages?.count || LICENSE_LIMIT.UNLIMITED;
     }
-    if (this._app?.['pages']?.count === undefined) {
-      return this.defaultPagesLimit;
-    }
-    return this._app['pages']?.count;
+    return this._app?.['pages']?.count || this.defaultPagesLimit;
   }
 
   public get appPageGroupsLimit(): number | string {
     if (this.IsBasicPlan) {
       return this.BASIC_PLAN_TERMS.app?.pages?.groupCount || LICENSE_LIMIT.UNLIMITED;
     }
-    if (this._app?.['pages']?.groupCount === undefined) {
-      return this.defaultPagesLimit;
-    }
-    return this._app['pages']?.groupCount;
+    return this._app?.['pages']?.groupCount || this.defaultPagesLimit;
   }
 
-  private get isEnterprisePlan(): boolean {
+  protected get isEnterprisePlan(): boolean {
     return this.licenseType === LICENSE_TYPE.ENTERPRISE;
+  }
+
+  // Used when the licence has no automaticSsoLogin flag.
+  protected get automaticSsoLoginDefault(): boolean {
+    return this.isEnterprisePlan;
   }
 
   private get defaultPagesLimit(): number {
