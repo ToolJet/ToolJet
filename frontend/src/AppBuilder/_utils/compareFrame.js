@@ -54,9 +54,11 @@ export const withoutCompareNavigation = (pageSettings) =>
     : pageSettings;
 
 // Resolves when this frame may build its app: at once unless the compare view asked it to take turns, and after
-// `timeoutMs` without an answer, so a frame never hangs.
-export const waitForCompareTurn = ({ timeoutMs = 20000 } = {}) => {
-  if (!isCompareFrame() || new URLSearchParams(window.location.search).get('turns') !== '1') return Promise.resolve();
+// `timeoutMs` without an answer, so a frame never hangs. A module embedded in the app (`embedded`) builds within its
+// frame's turn: a request of its own would read as the frame starting over.
+export const waitForCompareTurn = ({ timeoutMs = 20000, embedded = false } = {}) => {
+  if (embedded || !isCompareFrame() || new URLSearchParams(window.location.search).get('turns') !== '1')
+    return Promise.resolve();
   return new Promise((resolve) => {
     const done = () => {
       window.removeEventListener('message', onMessage);

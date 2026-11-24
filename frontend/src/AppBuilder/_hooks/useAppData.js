@@ -548,7 +548,7 @@ const useAppData = (
         fetchAndInjectCustomStyles(isPublicAccess && mode !== 'edit' && appData.is_public);
 
         // In the compare view, the other version may be building its app: wait for this frame's turn.
-        await waitForCompareTurn();
+        await waitForCompareTurn({ embedded: moduleMode });
         if (cancelled) return;
 
         const pages = appData.pages.map((page) => {
