@@ -445,7 +445,7 @@ const useAppData = (
             isPreviewForVersion,
           })
         ) {
-          redirectAppMissingOnBranch(getWorkspaceId(), result.name);
+          redirectAppMissingOnBranch(getWorkspaceId(), result);
           return;
         }
         // Git-off workspaces deliberately keep the active-branch cache null (see
