@@ -10,7 +10,7 @@
  *  - VIEW_TABLE / VIEW_TABLES were granted unconditionally, letting end-users enumerate
  *    the workspace's internal tables. Now builder/admin/tjdbCRUD only.
  *
- * @group database
+ * @group working
  */
 import { FeatureAbilityFactory } from 'src/modules/tooljet-db/ability';
 import { FEATURE_KEY } from 'src/modules/tooljet-db/constants';
@@ -38,8 +38,16 @@ async function buildAbility(opts: {
   /** The org the resolved data query's app belongs to (undefined => manager returns null). */
   dataQueryAppOrg?: string;
   dataQueryIsPublic?: boolean;
+  hasSession?: boolean;
 }) {
-  const { role, organizationId = ORG_A, dataQueryId, dataQueryAppOrg, dataQueryIsPublic } = opts;
+  const {
+    role,
+    organizationId = ORG_A,
+    dataQueryId,
+    dataQueryAppOrg,
+    dataQueryIsPublic,
+    hasSession = organizationId !== null,
+  } = opts;
 
   const dataQuery =
     dataQueryAppOrg === undefined
@@ -58,7 +66,7 @@ async function buildAbility(opts: {
   const user = { id: 'user-1', organizationId: organizationId ?? undefined } as any;
   const request: any = {
     headers,
-    user: organizationId === null ? undefined : user,
+    user: hasSession ? user : undefined,
     tj_user_permissions: {
       isSuperAdmin: !!role.isSuperAdmin,
       isAdmin: !!role.isAdmin,
@@ -73,6 +81,33 @@ async function buildAbility(opts: {
 
 describe('ToolJet-DB FeatureAbilityFactory', () => {
   describe('PROXY_POSTGREST — data access', () => {
+    const originalFlag = process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT;
+
+    beforeEach(() => {
+      delete process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT;
+    });
+
+    afterEach(() => {
+      if (originalFlag === undefined) {
+        delete process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT;
+      } else {
+        process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT = originalFlag;
+      }
+    });
+
+    it.each([
+      { flag: 'true', hasSession: true, allowed: true },
+      { flag: 'true', hasSession: false, allowed: false },
+      { flag: '1', hasSession: true, allowed: false },
+      { flag: 'TRUE', hasSession: true, allowed: false },
+      { flag: 'true ', hasSession: true, allowed: false },
+    ])('sets proxy access to $allowed with flag "$flag" and session $hasSession', async ({ flag, hasSession, allowed }) => {
+      process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT = flag;
+      const ability = await buildAbility({ role: { isEndUser: true }, hasSession });
+
+      expect(ability.can(FEATURE_KEY.PROXY_POSTGREST, InternalTable)).toBe(allowed);
+    });
+
     it('denies a logged-in end-user with NO data query (the bypass)', async () => {
       const ability = await buildAbility({ role: { isEndUser: true }, organizationId: ORG_A });
       expect(ability.can(FEATURE_KEY.PROXY_POSTGREST, InternalTable)).toBe(false);
