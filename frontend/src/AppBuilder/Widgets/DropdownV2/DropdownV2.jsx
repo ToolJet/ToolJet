@@ -495,9 +495,9 @@ export const DropdownV2 = ({
       display: 'flex',
       cursor: 'pointer',
     }),
+    // Each option row sits inside the list box, which already has the menu width.
     menuList: (provided) => ({
       ...provided,
-      ...menuWidthStyle,
       padding: '0 8px',
       borderRadius: '8px',
       // this is needed otherwise :active state doesn't look nice, gap is required

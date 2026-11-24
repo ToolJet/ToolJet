@@ -27,12 +27,16 @@ const CustomMenuList = ({ selectProps, ...props }) => {
 
   const parentRef = useRef(null);
   const hasScrolledOnOpenRef = useRef(null);
+  const hasRows = (props?.children?.length || 0) > 0;
   const hasSelectAllRow = props.options?.[0]?.value === 'multiselect-custom-menulist-select-all';
   const virtualizer = useVirtualizer({
     count: props?.children?.length || 0,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 40,
     overscan: 15,
+    // The 5px gaps above and below the rows belong in the scroll maths, or the last row stops short.
+    paddingStart: 5,
+    paddingEnd: 5,
     // The sticky select-all row is item 0; keep it rendered however far the list scrolls.
     rangeExtractor: (range) => {
       const indexes = defaultRangeExtractor(range);
@@ -126,12 +130,12 @@ const CustomMenuList = ({ selectProps, ...props }) => {
         >
           <div
             style={{
-              height: `${virtualizer.getTotalSize() || 38}px`,
+              height: hasRows ? `${virtualizer.getTotalSize()}px` : '48px',
               position: 'relative',
-              marginTop: '5px',
+              ...(!hasRows && { padding: '5px 0', boxSizing: 'border-box' }),
             }}
           >
-            {!virtualizer.getTotalSize() && props.children}
+            {!hasRows && props.children}
             {virtualizer.getVirtualItems().map((virtualItem) => {
               const option = props.options[virtualItem.index];
               const child = props.children[virtualItem.index];
@@ -142,7 +146,8 @@ const CustomMenuList = ({ selectProps, ...props }) => {
                   style={{
                     position: isSelectAll ? 'sticky' : 'absolute',
                     width: '100%',
-                    top: 0,
+                    // Its offset already holds the 5px top gap; stick 5px higher so it stays flush with the top.
+                    top: isSelectAll ? -5 : 0,
                     zIndex: isSelectAll && 10,
                     transform: `translateY(${virtualItem.start}px)`,
                   }}

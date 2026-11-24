@@ -250,6 +250,20 @@ export const RadioButtonV2 = ({
     overflow: layout === 'row' ? 'auto hidden' : isDynamicHeightEnabled ? 'visible' : 'hidden auto',
   };
 
+  // The box clips its overflow, which cut the 3px focus ring of an edge option; add room inside and pull the box out
+  // by the same amount so the options stay where they were.
+  const withFocusRingRoom = (style) => {
+    const grow = (size) => (typeof size === 'string' && size.endsWith('%') ? `calc(${size} + 6px)` : size);
+    return {
+      ...style,
+      padding: '3px',
+      margin: '-3px',
+      width: grow(style.width),
+      height: grow(style.height),
+      maxHeight: grow(style.maxHeight),
+    };
+  };
+
   return (
     <>
       <div
@@ -305,10 +319,10 @@ export const RadioButtonV2 = ({
           <div
             className="radio-button-options d-flex tw-px-0"
             ref={radioBtnRef}
-            style={{
+            style={withFocusRingRoom({
               ...computedLayoutStyles,
               ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
-            }}
+            })}
           >
             {selectOptions.map((option, index) => {
               const isChecked = checkedValue == option.value;

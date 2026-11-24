@@ -60,6 +60,8 @@
 		&.disabled {
 			opacity: 0.5;
 			cursor: not-allowed;
+			// The global .disabled rule turns pointer events off, which hides this cursor; clicks stay blocked in Steps.jsx.
+			pointer-events: auto;
 		}
 	}
 

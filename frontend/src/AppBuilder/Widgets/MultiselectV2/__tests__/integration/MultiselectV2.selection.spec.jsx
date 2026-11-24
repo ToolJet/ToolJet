@@ -568,4 +568,27 @@ describe('two Multi Selects on one page', () => {
     expect(document.activeElement).toHaveClass('dropdown-multiselect-widget-search-box');
     expect(document.activeElement).not.toBe(searchB);
   });
+
+  test('[MultiselectV2-SEL-016] a finger tap outside an open menu closes it', async () => {
+    // Break this catches: closing on an outside mousedown only; a touch tap often sends no mousedown, so on a phone the
+    // menu stays open after tapping another Multi Select.
+    harness.render({ properties: { label: binding('Multi A') } });
+    await drain();
+    await harness.session.user.click(screen.getByRole('combobox'));
+    await drain();
+    expect(document.querySelector('.dropdown-multiselect-widget-search-box')).toBeInTheDocument();
+
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+    const touch = { clientX: 0, clientY: 0, target: outside };
+    const touches = Object.assign([touch], { item: () => touch });
+    const tap = new Event('touchstart', { bubbles: true, cancelable: true });
+    Object.defineProperty(tap, 'touches', { value: touches });
+    Object.defineProperty(tap, 'changedTouches', { value: touches });
+    outside.dispatchEvent(tap);
+    await drain();
+
+    expect(document.querySelector('.dropdown-multiselect-widget-search-box')).not.toBeInTheDocument();
+    outside.remove();
+  });
 });

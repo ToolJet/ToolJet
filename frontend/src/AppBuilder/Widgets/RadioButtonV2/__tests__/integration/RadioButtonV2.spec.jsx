@@ -216,6 +216,17 @@ describe('RadioButtonV2', () => {
       options().forEach((option) => expect(option.style.whiteSpace).toBe(''));
     });
 
+    test('[RadioButtonV2-LAY-005] the options box leaves room for the focus ring without moving the options', async () => {
+      // Break this catches: the options box clips everything outside it, so the 3px focus ring (2px ring + 1px gap)
+      // of an option at its edge, like the first option, is cut off.
+      for (const layout of ['row', 'column', 'wrap']) {
+        const { container } = harness.render({ properties: { options: twoOptions, layout: binding(layout) } });
+        const box = container.querySelector('.radio-button-options');
+        expect(box).toHaveStyle({ padding: '3px', margin: '-3px' });
+        expect(box.style.width).toBe('calc(100% + 6px)');
+      }
+    });
+
     test('[RadioButtonV2-LAY-002] `layout: wrap` wraps options onto new rows', async () => {
       // Break this catches: dropping the `...(layout === 'wrap' && { flexWrap: 'wrap', ... })` spread (RadioButtonV2.jsx:229-233).
       let { container } = harness.render({ properties: { options: twoOptions, layout: binding('row') } });
