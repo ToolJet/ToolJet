@@ -39,6 +39,7 @@ import {
   MODULE_ID,
   widgetProps,
   setVariableOn,
+  recordNativeSubmits,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'modal1';
@@ -1053,16 +1054,6 @@ describe('ModalV2: tooltip scoping', () => {
     });
   });
 });
-
-/**
- * Records native `submit` events dispatched at `form`, in the capture phase so
- * one is seen even if a handler later stops it.
- */
-function recordNativeSubmits(form) {
-  const seen = [];
-  form.addEventListener('submit', (e) => seen.push(e.target.id), true);
-  return seen;
-}
 
 describe('ModalV2: inside a form', () => {
   beforeEach(widget.setup);

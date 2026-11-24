@@ -14,6 +14,7 @@ import {
   store,
   MODULE_ID,
   setVariableOn,
+  recordNativeSubmits,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
 
@@ -325,16 +326,6 @@ describe('Button: state precedence, deprecated CSAs, type gating, icon, isolatio
     expect(widget.exposed('btn2').isLoading).toBe(false);
   });
 });
-
-/**
- * Records native `submit` events dispatched at `form`, in the capture phase so
- * one is seen even if a handler later stops it.
- */
-function recordNativeSubmits(form) {
-  const seen = [];
-  form.addEventListener('submit', (e) => seen.push(e.target.id), true);
-  return seen;
-}
 
 describe('Button: inside a Form', () => {
   beforeEach(widget.setup);

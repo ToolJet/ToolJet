@@ -13,6 +13,7 @@ import {
   createWidgetHarness,
   option,
   store,
+  recordNativeSubmits,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'bg1';
@@ -140,16 +141,6 @@ function secondDefinition({ selectedByDefault = true } = {}) {
   definition.component.definition.styles = { ...DEFAULT_STYLES };
   definition.component.definition.validation = { ...DEFAULT_VALIDATION };
   return definition;
-}
-
-/**
- * Records native `submit` events dispatched at `form`, in the capture phase so
- * one is seen even if a handler later stops it.
- */
-function recordNativeSubmits(form) {
-  const seen = [];
-  form.addEventListener('submit', (e) => seen.push(e.target.id), true);
-  return seen;
 }
 
 describe('ButtonGroupV2', () => {
