@@ -198,15 +198,8 @@ describe('prepareRowScope / updateRowScope — descendant overlay', () => {
       expect(resolveInRow(LV, 0, binding(TAB_CHILD_BASE))).toBe('base-row-zero');
     });
 
-    // BUG (unfixed): listViewComponentSlice.js:301
-    //   const allChildren = children.length > 0 ? children : slotChildren;
-    // A container holding BOTH base children and slot children silently drops
-    // every slot child, so those components are never row-scoped and their
-    // bindings resolve against the raw per-row array.
-    // Wrong: descendantIds = [TABS, TAB_CHILD_BASE] and the slot child resolves
-    // to undefined. Right: the slot child is a descendant and resolves to
-    // 'slot-row-zero'.
-    test.failing('collects BOTH base and slot children of the same container', () => {
+    // Listview-BUG-047: a container holding both base and slot children keeps both row-scoped.
+    test('collects BOTH base and slot children of the same container', () => {
       seedChildrenMapping({
         [LV]: [TABS],
         [TABS]: [TAB_CHILD_BASE],

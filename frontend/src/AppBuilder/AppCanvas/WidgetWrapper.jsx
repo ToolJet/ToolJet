@@ -271,10 +271,11 @@ const WidgetWrapper = memo(
     // container it leaves the flow: it took a slot and a gap, and a header's action button stopped short of the row's
     // end. On the grid its empty box stays where it was drawn, so it lets presses through: a closed sheet drawn over a
     // Kanban board swallowed every card drag. In a FlexContainer saved before the UI 2.0 layout it keeps its slot.
+    // The grid wrapper's transform anchors List View's fixed pager to the list; a flex wrapper needs its own.
     const outerStyle = isFlexLayout
       ? leavesFlexFlow({ modalWithoutTrigger, mode, layoutV2: flexLayoutV2 })
         ? { ...flexLayout.outerStyle, position: 'absolute', flex: 'none', width: 0, height: 0, minHeight: 0 }
-        : flexLayout.outerStyle
+        : { ...flexLayout.outerStyle, ...(componentType === 'Listview' && { transform: 'translateZ(0)' }) }
       : modalWithoutTrigger && mode === 'view'
         ? { ...gridOuterStyle, pointerEvents: 'none' }
         : gridOuterStyle;

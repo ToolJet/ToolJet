@@ -16,6 +16,9 @@ export const CustomComponent = (props) => {
   const messageEventListenerRef = useRef(null);
 
   const customPropRef = useRef(data);
+  // The startup reply is sent from a listener bound at mount, when a row in the viewer has no code yet.
+  const codeRef = useRef(code);
+  codeRef.current = code;
   // The data last published and sent to the frame. Kept here rather than read back from the store,
   // which inside a ListView holds one value per row
   const syncedDataRef = useRef();
@@ -139,7 +142,7 @@ export const CustomComponent = (props) => {
             message: 'INIT_RESPONSE',
             componentId: id,
             data: customPropRef.current,
-            code: code,
+            code: codeRef.current,
           },
           '*'
         );

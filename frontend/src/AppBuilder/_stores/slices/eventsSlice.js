@@ -102,6 +102,8 @@ export const createEventsSlice = (set, get) => ({
       // stale value. Resolve every pending write that isn't part of an explicit mount-time
       // bracket (ListView/Form/page-switch) — never touches bracket-protected writes.
       get().flushImplicitBatchEntries();
+      // Row writes are queued in a microtask, so a handler would otherwise read the previous value.
+      get().flushPendingPerRowWrites?.();
       // A dialog the compare view opened in its read-only frame runs none of its own actions.
       if (isCompareMuted(id)) return;
       const events = get().eventsSlice.module[moduleId].events;
@@ -111,7 +113,12 @@ export const createEventsSlice = (set, get) => ({
       handleEvent(
         eventName,
         componentEvents,
-        { ...options, customVariables: { ...customResolvables }, sourceSubContainerIndex },
+        {
+          ...options,
+          customVariables: { ...customResolvables, ...options?.customVariables },
+          // A list fires its row events, so the clicked row wins over the list's own position.
+          sourceSubContainerIndex: options?.sourceSubContainerIndex ?? sourceSubContainerIndex,
+        },
         moduleId,
         mode
       );
@@ -571,7 +578,8 @@ export const createEventsSlice = (set, get) => ({
     executeAction: debounce(
       (eventObj, mode, customVariables = {}, moduleId = 'canvas', sourceSubContainerIndex = null) => {
         const { event = eventObj } = eventObj;
-        const { getExposedValueOfComponent, getResolvedValue } = get();
+        const { getExposedValueOfComponent, getRowScopedResolver } = get();
+        const getResolvedValue = getRowScopedResolver(eventObj?.sourceId, sourceSubContainerIndex, moduleId);
 
         if (event?.disabled) {
           return false;
@@ -980,7 +988,8 @@ export const createEventsSlice = (set, get) => ({
                 const parentType = parentDefinition?.component?.component;
                 const readComponent = () =>
                   parentType === 'Form' && componentName
-                    ? getExposedValueOfComponent(parent, moduleId)?.children?.[componentName]
+                    ? // The Form is itself per-row inside a list, so its children come from its own row.
+                      getExposedValueOfComponent(parent, moduleId, sourceSubContainerIndex)?.children?.[componentName]
                     : getExposedValueOfComponent(event.componentId, moduleId, sourceSubContainerIndex);
                 const component = readComponent();
                 const handle = event.componentSpecificActionHandle;

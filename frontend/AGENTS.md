@@ -90,9 +90,10 @@ No change may break existing saved applications. Always ask: would an app saved 
 ### Subcontainers
 
 - `SubcontainerContext` carries a `contextPath` array: `[{ containerId, index }, ...]`
-- Row-scoped resolution uses prototype overlay (`prepareRowScope` / `updateRowScope`)
+- Row-scoped resolution uses prototype overlay (`prepareRowScope` / `updateRowScope`). The overlay covers the outermost list's subtree and `updateRowScope` takes the full row path (`[outer, inner]`); passing only the inner index reads a whole outer row
+- Row events resolve their fields through `getRowScopedResolver` with the firing row; additional actions (`getExposedPropertyForAdditionalActions`) take the row path in every branch
 - Child-to-parent: `setExposedValuesPerRow` → `_deriveListviewChain`, not callback chains
-- ListView nesting is limited to **2 levels**. Only row 0 is editable; the rest are read-only mirrors
+- ListView nesting is limited to **2 levels**. Only a canvas whose every `contextPath` index is 0 is editable; the rest are read-only mirrors
 - `findNearestSubcontainerAncestor` is load-bearing for dependency resolution — verify it is used when walking the component tree
 - `listItem` is ListView, `cardData` is Kanban. Don't mix them up
 
@@ -143,7 +144,7 @@ Widget configs live in the shared `packages/widget-definitions` package (`src/wi
 
 ### Key changes require migrations
 
-Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps. Write a data migration in `server/migrations/data/` (rules: the Migrations section of `server/AGENTS.md`).
+Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps, and the previous release must keep rendering them after an upgrade. In one PR: every reader switches to the new place, the move goes in `MOVED_COMPONENT_KEYS` (`packages/widget-definitions`, so the App Builder drops the old place on load and a missed reader fails at once), a data migration in `server/migrations/data/` copies the key and keeps both places in sync, a cleanup migration in `server/migrations/cleanup/` removes the old key one upgrade later, and the import path converts old exports. Recipe and templates: `server/docs/APP_DEFINITION_MIGRATIONS.md`.
 
 ## Glossary
 

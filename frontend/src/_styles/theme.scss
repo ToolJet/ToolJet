@@ -18163,6 +18163,8 @@ section.ai-message-prompt-input-wrapper {
 
 .timer-wrapper {
   background-color: var(--cc-surface1-surface);
+  // The card root does not clip, so a square background here covers its rounded top corners.
+  border-radius: inherit;
 
   .counter-container {
     color: var(--cc-primary-text);
