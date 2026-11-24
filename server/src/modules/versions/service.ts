@@ -271,7 +271,7 @@ export class VersionService implements IVersionService {
     return this.licenseTermsService.getLicenseTerms(VIEWER_LICENSE_FIELDS, organizationId);
   }
 
-  async getVersion(app: App, user: User, mode?: string): Promise<any> {
+  async getVersion(app: App, user: User, mode?: string, options?: { persistActive?: boolean }): Promise<any> {
     const prepareResponse = async (app: App, versionId: string) => {
       let appVersion,
         updatedVersionId = versionId;
@@ -376,7 +376,7 @@ export class VersionService implements IVersionService {
     };
 
     const response = await prepareResponse(app, app.appVersions?.[0]?.id);
-    this.persistActiveVersion(user, app, response.editing_version);
+    if (options?.persistActive !== false) this.persistActiveVersion(user, app, response.editing_version);
     const modules = await this.appUtilService.fetchModules(app, false, app.appVersions?.[0]?.id);
 
     response['modules'] = await Promise.all(
@@ -437,7 +437,8 @@ export class VersionService implements IVersionService {
       throw new NotFoundException('Module version not found');
     }
     moduleApp.appVersions = [version];
-    return this.getVersion(moduleApp, user, mode);
+    // An embedded module's version is the host's pin, not the user's own browsing state.
+    return this.getVersion(moduleApp, user, mode, { persistActive: false });
   }
 
   async update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
