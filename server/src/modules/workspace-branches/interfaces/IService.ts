@@ -1,6 +1,7 @@
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { User } from '@entities/user.entity';
 import { CreateBranchDto, WorkspacePushDto, PullConflictResolutionDto } from '../dto';
+import { PullDiagnostics } from '../types';
 
 export interface WorkspaceBranchListResponse {
   branches: WorkspaceBranch[];
@@ -24,6 +25,7 @@ export interface CheckUpdatesResponse {
 export interface PullWorkspaceResponse {
   success: boolean;
   upToDate?: boolean;
+  diagnostics?: PullDiagnostics;
 }
 
 export interface IWorkspaceBranchService {

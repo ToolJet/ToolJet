@@ -20,6 +20,7 @@ import {
   CreateBranchResponseDto,
   WorkspacePushDto,
   WorkspacePullDto,
+  WorkspacePullResponseDto,
   PullAppDto,
   EnsureDraftDto,
   PullModuleDto,
@@ -92,8 +93,15 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @InitFeature(FEATURE_KEY.PULL_WORKSPACE)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post('pull')
-  async pullWorkspace(@User() user, @Body() dto?: WorkspacePullDto) {
-    return this.workspaceBranchService.pullWorkspace(user.organizationId, user, dto?.sourceBranch, dto?.branchId);
+  @UseInterceptors(ClassSerializerInterceptor)
+  async pullWorkspace(@User() user, @Body() dto?: WorkspacePullDto): Promise<WorkspacePullResponseDto> {
+    const result = await this.workspaceBranchService.pullWorkspace(
+      user.organizationId,
+      user,
+      dto?.sourceBranch,
+      dto?.branchId
+    );
+    return plainToInstance(WorkspacePullResponseDto, result);
   }
 
   @InitFeature(FEATURE_KEY.RESOLVE_CONFLICTS)

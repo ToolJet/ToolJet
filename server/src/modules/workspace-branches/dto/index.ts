@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, IsIn, ValidateNested, IsBoolean } from 'class-validator';
 import { Type, Exclude, Expose } from 'class-transformer';
+import { PullDiagnostics } from '../types';
 
 export class CreateBranchDto {
   @IsNotEmpty()
@@ -81,6 +82,29 @@ export class WorkspacePullDto {
   @IsOptional()
   @IsUUID()
   branchId?: string;
+}
+
+@Exclude()
+export class PullDiagnosticsDto implements PullDiagnostics {
+  @Expose() stage: PullDiagnostics['stage'];
+  @Expose() pod: string;
+  @Expose() attempt?: number;
+  @Expose() totalMs: number;
+  @Expose() phases: PullDiagnostics['phases'];
+  @Expose() skips: PullDiagnostics['skips'];
+  @Expose() gitCache?: PullDiagnostics['gitCache'];
+  @Expose() resources?: PullDiagnostics['resources'];
+}
+
+@Exclude()
+export class WorkspacePullResponseDto {
+  @Expose() success: boolean;
+
+  @Expose() upToDate?: boolean;
+
+  @Expose()
+  @Type(() => PullDiagnosticsDto)
+  diagnostics?: PullDiagnosticsDto;
 }
 
 export class PullConflictResolutionDto {
