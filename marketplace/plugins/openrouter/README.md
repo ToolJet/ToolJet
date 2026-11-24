@@ -29,7 +29,8 @@ trains on what you send. Use it when customer data goes through this connector.
 
 For a private gateway, enter its **Base URL** and add the header names and values it expects under **Headers**.
 You can leave **API Key** blank if the gateway authenticates using those headers alone. ToolJet encrypts the saved
-headers together. Editing them replaces the set. **Test connection** calls the custom endpoint's `/models` route.
+headers together. Enter literal values in the Headers editor. Workspace secret and constant expressions in these
+rows are sent as typed. Editing the headers replaces the set. **Test connection** calls the custom endpoint's `/models` route.
 
 ## Logo
 

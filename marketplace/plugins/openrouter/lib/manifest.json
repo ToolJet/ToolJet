@@ -84,6 +84,7 @@
       "$ref": "#/properties/customHeaders",
       "key": "customHeaders",
       "label": "Headers",
+      "tooltip": "Enter literal header names and values. Workspace secret and constant expressions are sent as typed.",
       "widget": "encrypted-headers"
     }
   }

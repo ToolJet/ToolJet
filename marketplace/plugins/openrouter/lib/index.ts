@@ -1,5 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
+import 'openai/shims/node';
 import OpenAI from 'openai';
+import nodeFetch, { Headers, type RequestInfo, type RequestInit } from 'node-fetch';
 import { validateHeaderName, validateHeaderValue } from 'http';
 import { SourceOptions, QueryOptions, Operation } from './types';
 import { getChatCompletion, generateEmbedding, listModels } from './query_operations';
@@ -128,7 +130,8 @@ export default class OpenRouter implements QueryService {
         fetch: (url: RequestInfo, init?: RequestInit) => {
           const headers = new Headers(init?.headers);
           for (const [name, value] of Object.entries(customHeaders)) headers.set(name, value);
-          return fetch(url, { ...init, headers, redirect: 'manual' });
+          // Use the SDK's Node transport so its agent and ToolJet's HTTP proxy still apply.
+          return nodeFetch(url, { ...init, headers, redirect: 'manual' });
         },
       }),
     });

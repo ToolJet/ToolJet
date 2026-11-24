@@ -1,4 +1,4 @@
-import { createServer, IncomingMessage, ServerResponse } from 'http';
+import { Agent, createServer, IncomingMessage, ServerResponse } from 'http';
 import { AddressInfo } from 'net';
 import OpenRouter from '../lib';
 import { Operation, SourceOptions } from '../lib/types';
@@ -112,3 +112,21 @@ test.each(['broken-json', '[123]', '[["", "value"]]', '[["Bad Name", "value"]]',
     });
   }
 );
+
+test('uses the configured Node HTTP agent for requests with custom headers', async () => {
+  const agent = new Agent();
+  const connect = jest.spyOn(agent, 'createConnection');
+  try {
+    await withEndpoint(
+      (_req, res) => res.writeHead(200, { 'content-type': 'application/json' }).end('{"data":[]}'),
+      async (baseUrl) => {
+        const client = await plugin.getConnection({ baseUrl, customHeaders: headers });
+        client.httpAgent = agent;
+        await client.models.list();
+        expect(connect).toHaveBeenCalled();
+      }
+    );
+  } finally {
+    agent.destroy();
+  }
+});

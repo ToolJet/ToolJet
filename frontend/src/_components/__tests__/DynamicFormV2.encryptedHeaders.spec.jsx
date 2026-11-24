@@ -69,7 +69,7 @@ test('keeps saved headers opaque until replaced, supports cancellation and expli
   render(<Form id="configured-datasource" initialOptions={{ customHeaders: saved }} />);
   expect(screen.queryByPlaceholderText('Value')).toBeNull();
   expect(headerOption()).toEqual(saved);
-  fireEvent.click(screen.getByRole('button', { name: 'Replace headers' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Set headers' }));
   fireEvent.click(screen.getByRole('button', { name: 'Add' }));
   fireEvent.change(screen.getByPlaceholderText('Key'), { target: { value: 'X-Color' } });
   fireEvent.change(screen.getAllByPlaceholderText('Value')[0], { target: { value: 'blue' } });
@@ -77,17 +77,25 @@ test('keeps saved headers opaque until replaced, supports cancellation and expli
   fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
   expect(headerOption()).toEqual(saved);
   expect(screen.queryByPlaceholderText('Value')).toBeNull();
-  fireEvent.click(screen.getByRole('button', { name: 'Replace headers' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Set headers' }));
   fireEvent.click(screen.getByRole('button', { name: 'Clear headers' }));
   expect(headerOption().value).toBe('[]');
 });
 
 test('locks the header editor again when saved settings reload', () => {
   render(<Form id="saved-datasource" initialOptions={{ customHeaders: saved }} />);
-  fireEvent.click(screen.getByRole('button', { name: 'Replace headers' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Set headers' }));
   fireEvent.click(screen.getByRole('button', { name: 'Reload saved settings' }));
   expect(screen.queryByPlaceholderText('Value')).toBeNull();
-  fireEvent.click(screen.getByRole('button', { name: 'Replace headers' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Set headers' }));
   fireEvent.click(screen.getByRole('button', { name: 'Add' }));
   expect(screen.getByPlaceholderText('Value')).toHaveValue('');
+});
+
+test.each(['invalid-json', '{}', '[null]'])('allows replacing a malformed header draft', (value) => {
+  render(<Form id="invalid-draft" initialOptions={{ customHeaders: { value } }} />);
+  expect(screen.getByRole('alert')).toHaveTextContent('Enter the headers again');
+  fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+  fireEvent.change(screen.getByRole('textbox', { name: 'Header name 1' }), { target: { value: 'X-Tint' } });
+  expect(JSON.parse(headerOption().value)).toEqual([['X-Tint', '']]);
 });
