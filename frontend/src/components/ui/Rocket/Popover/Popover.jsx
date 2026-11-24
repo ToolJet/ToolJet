@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { cn } from '@/lib/utils';
+import { usePortalContainer } from '@/AppBuilder/PopOut/PanelWindowContext';
 
 import { PopoverTrigger } from '@/components/ui/Rocket/shadcn/popover';
 
@@ -11,8 +12,9 @@ const PopoverContent = forwardRef(function PopoverContent(
   { className, align = 'center', side = 'bottom', sideOffset = 4, children, ...props },
   ref
 ) {
+  const panelBody = usePortalContainer();
   return (
-    <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Portal container={panelBody}>
       <PopoverPrimitive.Content
         ref={ref}
         data-slot="popover-content"

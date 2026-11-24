@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
 import { cn } from '@/lib/utils';
+import { usePortalContainer } from '@/AppBuilder/PopOut/PanelWindowContext';
 import { Button } from '@/components/ui/Rocket/shadcn/button';
 
 function AlertDialog({ ...props }) {
@@ -12,8 +13,9 @@ function AlertDialogTrigger({ ...props }) {
   return <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />;
 }
 
-function AlertDialogPortal({ ...props }) {
-  return <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />;
+function AlertDialogPortal({ container, ...props }) {
+  const panelBody = usePortalContainer();
+  return <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" container={container ?? panelBody} {...props} />;
 }
 
 function AlertDialogOverlay({ className, ...props }) {

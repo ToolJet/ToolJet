@@ -5,6 +5,7 @@ import { Combobox as ComboboxPrimitive } from '@base-ui/react';
 import { CheckIcon, ChevronDownIcon, XIcon } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { usePortalContainer } from '@/AppBuilder/PopOut/PanelWindowContext';
 import { Button } from '@/components/ui/Rocket/Button/Button';
 import {
   InputGroup,
@@ -82,8 +83,9 @@ function ComboboxContent({
   anchor,
   ...props
 }) {
+  const panelBody = usePortalContainer();
   return (
-    <ComboboxPrimitive.Portal>
+    <ComboboxPrimitive.Portal container={panelBody}>
       <ComboboxPrimitive.Positioner
         side={side}
         sideOffset={sideOffset}

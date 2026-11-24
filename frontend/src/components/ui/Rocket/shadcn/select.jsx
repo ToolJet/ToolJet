@@ -3,6 +3,7 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { usePortalContainer } from '@/AppBuilder/PopOut/PanelWindowContext';
 
 const Select = SelectPrimitive.Root;
 
@@ -49,10 +50,16 @@ const SelectScrollDownButton = React.forwardRef(({ className, ...props }, ref) =
 ));
 SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName;
 
-// `container` portals the menu into that element instead of document.body: a menu opened from a
-// full-screen overlay then sits in the overlay's stacking context and inherits its theme.
+const SelectPortal = ({ container, ...props }) => {
+  const panelBody = usePortalContainer();
+  return <SelectPrimitive.Portal container={container ?? panelBody} {...props} />;
+};
+
+// `container` portals the menu into that element instead of the body (inside a pop-out panel, the body of the
+// panel's window): a menu opened from a full-screen overlay then sits in the overlay's stacking context and inherits
+// its theme.
 const SelectContent = React.forwardRef(({ className, children, position = 'popper', container, ...props }, ref) => (
-  <SelectPrimitive.Portal container={container}>
+  <SelectPortal container={container}>
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
@@ -76,7 +83,7 @@ const SelectContent = React.forwardRef(({ className, children, position = 'poppe
       </SelectPrimitive.Viewport>
       <SelectScrollDownButton />
     </SelectPrimitive.Content>
-  </SelectPrimitive.Portal>
+  </SelectPortal>
 ));
 SelectContent.displayName = SelectPrimitive.Content.displayName;
 

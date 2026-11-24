@@ -126,6 +126,19 @@ No change may break existing saved applications. Always ask: would an app saved 
 
 In a branching-enabled Git Sync workspace, the configured default branch disables App Builder AI chat and Code mode editing tools. Reuse `useIsAiBlockedOnDefaultBranch` (and its callback getter) so custom default branch names and workspace branch changes follow the same policy. The AI sidebar icon is disabled and an open chat closes; Show code, inspector selection, and their keyboard shortcuts are unavailable. Clear open code/inspector state when entering the default branch. Feature branches and workspaces without this restriction retain their existing behavior.
 
+### Pop-out panels
+
+A panel can be shown in its own browser window (`AppBuilder/PopOut/`): today, the Code panel in code mode (the React builder). The editor opens an empty same-origin window and moves the panel's element into it. The panel keeps running in the editor's page (one React tree, the same stores); only its DOM is in the other document. Nothing is synced between windows, and the window closes with the editor page.
+
+- **Render through `PopOutPanel`, always.** The same portal docked and in the window, so moving never remounts the panel (open files, tabs and typed text stay). `usePanelPopOut` owns the window; `PopOutSlot` marks the panel's place in the layout.
+- **Inside such a panel, the globals `window` and `document` are the editor's.** For anything about the DOM use the panel's window: `usePanelWindow()` / `usePortalContainer()` from `AppBuilder/PopOut/PanelWindowContext`, or an element's `ownerDocument`. That covers listeners (keys, click-outside, resize, focus), `activeElement`, `requestAnimationFrame`, `confirm`, `navigator.clipboard`, and `ResizeObserver`/`IntersectionObserver` constructors. Effects that bind listeners depend on the panel window, so they bind again when the panel moves.
+- **Every overlay needs the panel's container.** Libraries portal to the global `document.body`, which is the editor. The Rocket wrappers (`components/ui/Rocket`) read the container themselves; other libraries' overlays do not, so use Rocket inside a pop-out panel. A new portal passes `usePortalContainer()`.
+- No `instanceof HTMLElement`: it is false for a node in another window.
+- Shared files the viewer also loads (`components/ui`, `_ui`, `_components`, `_hooks`) import only `PopOut/PanelWindowContext`, never the `PopOut` index (editor-only).
+- With no provider, and while docked, all of these give the editor's window and each library's default container.
+- Not available in a panel window: the editor's own keyboard shortcuts (they listen on the editor's window only); the code editor's shortcuts work.
+- Specs: `@/test/panelWindow` (`stubWindowOpen`) stands in for the window, a second document in its own realm.
+
 ### App Builder store
 
 - AppBuilder store: `AppBuilder/_stores/store.js` (30+ slices), all namespaced by `moduleId` (default `'canvas'`)

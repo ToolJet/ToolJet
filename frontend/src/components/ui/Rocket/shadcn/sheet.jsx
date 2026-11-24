@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as SheetPrimitive from '@radix-ui/react-dialog';
 
 import { cn } from '@/lib/utils';
+import { usePortalContainer } from '@/AppBuilder/PopOut/PanelWindowContext';
 import { Button } from '@/components/ui/Rocket/shadcn/button';
 import { XIcon } from 'lucide-react';
 
@@ -17,8 +18,9 @@ function SheetClose({ ...props }) {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
 }
 
-function SheetPortal({ ...props }) {
-  return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />;
+function SheetPortal({ container, ...props }) {
+  const panelBody = usePortalContainer();
+  return <SheetPrimitive.Portal data-slot="sheet-portal" container={container ?? panelBody} {...props} />;
 }
 
 function SheetOverlay({ className, ...props }) {

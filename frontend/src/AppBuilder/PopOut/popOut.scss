@@ -1,0 +1,21 @@
+// A pop-out panel's element and its place in the editor: neither takes part in the layout while the panel is docked,
+// so the panel's content lays out exactly as it did before it could pop out.
+.tj-popout-host,
+.tj-popout-slot {
+  display: contents;
+}
+
+// In its own window the panel fills it. The wrappers around it are there only so the panel's styles still match
+// (`.editor .editor-sidebar …`); their own boxes, sized and positioned for the editor's layout, must not show.
+.tj-popout-scope {
+  display: contents !important;
+}
+
+.tj-popout-host.tj-popout-host--window {
+  display: block;
+  position: fixed;
+  inset: 0;
+  overflow: auto;
+  background: var(--surfaces-surface-01);
+  color: var(--text-default);
+}
