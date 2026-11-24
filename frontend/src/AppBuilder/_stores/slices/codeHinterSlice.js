@@ -104,6 +104,9 @@ function buildQueryHints(storeState, moduleId) {
     const query = storeState.dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === id);
     if (canRefreshQueryCache(storeState, query)) hints.push({ hint: `queries.${name}.refresh()`, type: 'Function' });
     hints.push({ hint: `queries.${name}.reset()`, type: 'Function' });
+    // Parked: pause/resume periodic-run CSAs are not exposed in v1 (engine kept for future).
+    // hints.push({ hint: `queries.${name}.pausePeriodicRun()`, type: 'Function' });
+    // hints.push({ hint: `queries.${name}.resumePeriodicRun()`, type: 'Function' });
     hints.push({ hint: `queries.${name}.getData()`, type: 'Function' });
     hints.push({ hint: `queries.${name}.getRawData()`, type: 'Function' });
     hints.push({ hint: `queries.${name}.getloadingState()`, type: 'Function' });

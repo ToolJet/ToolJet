@@ -15,6 +15,7 @@ import { customToggles, mockDataQueryAsComponent, RestAPIToggles } from '../cons
 import { DataSourceTypes } from '@/modules/common/components/DataSourceComponents';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
 import ConfirmationInputs from './ConfirmationInputs';
+import PeriodicRunInputs from './PeriodicRunInputs';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import ParameterList from './ParameterList';
@@ -428,6 +429,9 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
                   )}
                   {config.action === 'showSuccessNotification' && (
                     <SuccessNotificationInputs options={options} optionchanged={optionchanged} />
+                  )}
+                  {config.action === 'runPeriodically' && (
+                    <PeriodicRunInputs options={options} darkMode={darkMode} optionchanged={optionchanged} />
                   )}
                 </React.Fragment>
               );
