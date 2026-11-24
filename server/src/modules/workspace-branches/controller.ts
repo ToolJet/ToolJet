@@ -17,6 +17,7 @@ import { User } from '@modules/app/decorators/user.decorator';
 import { WorkspaceBranchService } from './service';
 import {
   CreateBranchDto,
+  CreateBranchResponseDto,
   WorkspacePushDto,
   WorkspacePullDto,
   WorkspacePullResponseDto,
@@ -31,6 +32,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FeatureAbilityGuard } from './ability/guard';
+import { IdempotencyInterceptor } from '@modules/idempotency/interceptor';
 
 @InitModule(MODULES.WORKSPACE_BRANCHES)
 @Controller('workspace-branches')
@@ -60,9 +62,11 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
 
   @InitFeature(FEATURE_KEY.CREATE_BRANCH)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseInterceptors(IdempotencyInterceptor, ClassSerializerInterceptor)
   @Post()
-  async create(@User() user, @Body() dto: CreateBranchDto) {
-    return this.workspaceBranchService.createBranch(user.organizationId, dto, user);
+  async create(@User() user, @Body() dto: CreateBranchDto): Promise<CreateBranchResponseDto> {
+    const result = await this.workspaceBranchService.createBranch(user.organizationId, dto, user);
+    return plainToInstance(CreateBranchResponseDto, result);
   }
 
   @InitFeature(FEATURE_KEY.SWITCH_BRANCH)

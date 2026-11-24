@@ -23,6 +23,7 @@ import { APP_TYPES } from 'src/modules/apps/constants';
 import { AppsRepository } from 'src/modules/apps/repository';
 import { AppsService } from 'src/modules/apps/service';
 import { App } from 'src/entities/app.entity';
+import { User } from 'src/entities/user.entity';
 import { DataSourcesRepository } from 'src/modules/data-sources/repository';
 import { FolderAppsUtilService } from 'src/modules/folder-apps/util.service';
 import { VersionRepository } from 'src/modules/versions/repository';
@@ -420,10 +421,11 @@ async function readThroughRepositories(database: string): Promise<RepositoryRead
   const editingVersionOf = async (id: string, organizationId: string, defaultBranchId: string) => {
     const service = Object.assign(Object.create(AppsService.prototype), {
       versionRepository: versions,
+      userAppVersionStateRepository: { findForUserApp: async () => null },
       gitSyncConfigsUtilService: { getDetails: async () => ({ options: { defaultBranch: { id: defaultBranchId } } }) },
-    }) as { resolveBranchAwareEditingVersion(app: App): Promise<void> };
+    }) as { resolveBranchAwareEditingVersion(app: App, branchId: undefined, user: User): Promise<unknown> };
     const app = { id, organizationId } as App;
-    await service.resolveBranchAwareEditingVersion(app);
+    await service.resolveBranchAwareEditingVersion(app, undefined, { id: 'upgrade-reader', organizationId } as User);
     return app.editingVersion?.id;
   };
   const admin = {

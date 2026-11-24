@@ -11,6 +11,8 @@ import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
+import { GitCommitStatusTag } from '@/_ui/GitCommitStatusTag';
+import { commitFromBranch } from '@/_helpers/gitCommitInfo';
 import { TJDB_HEADER_SLOT_ID } from '@/TooljetDatabase/HeaderSlotPortal';
 
 function Header({
@@ -22,6 +24,11 @@ function Header({
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const isBranchStoreInitialized = useWorkspaceBranchesStore((s) => s.isInitialized);
   const isGitSyncConfigured = useWorkspaceBranchesStore((s) => s.isGitSyncConfigured);
+  const hasUncommittedDatasources = useWorkspaceBranchesStore((s) => s.hasUncommittedDatasources);
+  const hasUncommittedApps = useWorkspaceBranchesStore((s) => s.hasUncommittedApps);
+  const hasUncommittedModules = useWorkspaceBranchesStore((s) => s.hasUncommittedModules);
+  const hasUncommittedWorkflows = useWorkspaceBranchesStore((s) => s.hasUncommittedWorkflows);
+  const currentBranch = useWorkspaceBranchesStore((s) => s.currentBranch);
   // Git set up but the license is expired/invalid → keep the git-sync UI visible but frozen.
   const gitLicenseLocked = isGitSyncConfigured && isGitSyncLicenseInvalid(featureAccess);
   const currentSession = authenticationService.currentSessionValue;
@@ -89,6 +96,11 @@ function Header({
   };
   const isGitSupportedPage = isWorkspaceGitPage(location.pathname);
   const isDatabasePage = location.pathname.split('/').filter(Boolean).includes('database');
+  const isDataSourcesPage = location.pathname.split('/').includes('data-sources');
+  const isModulesPage = location.pathname.split('/').includes('modules');
+  const isWorkflowsPage = location.pathname.split('/').includes('workflows');
+  // Everything isGitSupportedPage covers besides data-sources/modules/workflows is the Applications root.
+  const isApplicationsPage = isGitSupportedPage && !isDataSourcesPage && !isModulesPage && !isWorkflowsPage;
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
@@ -192,11 +204,23 @@ function Header({
                     })}
                     aria-disabled={gitLicenseLocked || undefined}
                   >
+                    {/* Aggregate signal, one flag per page/resource type; over the workspace's
+                        last pull commit, which is branch-wide rather than per-resource. */}
+                    <GitCommitStatusTag
+                      hasUncommittedChanges={
+                        (isDataSourcesPage && hasUncommittedDatasources) ||
+                        (isApplicationsPage && hasUncommittedApps) ||
+                        (isModulesPage && hasUncommittedModules) ||
+                        (isWorkflowsPage && hasUncommittedWorkflows)
+                      }
+                      commit={commitFromBranch(currentBranch)}
+                      darkMode={darkMode}
+                    />
                     <WorkspaceBranchDropdown />
                     {/* Single "Pull commit" button. WorkspaceGitCTA decides whether the modal
                         offers push based on the page + branch state (push only on the data-sources
                         page, and never on the multi-branch default branch). */}
-                    <WorkspaceGitCTA isDataSourcesPage={location.pathname.split('/').includes('data-sources')} />
+                    <WorkspaceGitCTA isDataSourcesPage={isDataSourcesPage} />
                   </div>
                 )}
               {Object.keys(featureAccess).length > 0 && (

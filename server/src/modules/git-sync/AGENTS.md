@@ -115,6 +115,19 @@ logic is in `server/ee/git-sync/`.
   call. Called per row (e.g. `AppsSubscriber.afterLoad`), that exhausts the pool. The rare
   missing-default-branch fallback still writes in its own transaction, never on the caller's manager.
 - **The app-git import lane creates referenced workflow rows, and gates them.** `createGitApp` (and the two tag-import helpers) pre-create + hydrate embedded **workflows** as well as modules, via `pullAndHydrateWorkflowRefs` → `hydrateReferencedWorkflowStubs`. Creating them requires `workflowCreate` (`assertWorkflowCreatePermission`), asserted **before** hydration — after it, the check would always see zero missing. Workflows reached through a module are handled by `hydrateStubApp` step 6b during that module's hydration, so this lane must not walk into modules.
+- **Apps open at the workspace pull commit, not HEAD.** The workspace pull worker records the cloned
+  commit as `organization_git_sync_branches.workspace_pull_commit_sha` (X); `executeCreateBranch`
+  records it too, from its own clone, so a new branch knows X before it is ever pulled. `AppsService.getOne`
+  runs its hydration inside `runPinnedToWorkspacePull`, an `AsyncLocalStorage` pin
+  (`pinnedHydrationCommit`) that `hydrateStubApp` and every module/workflow cascade inherit; tag
+  hydrations ignore it, and pull inside an app never sets it (it pulls HEAD). A real draft is pulled
+  at X only when `isDraftBehindWorkspacePull` says so: compared by `app_versions.synced_commit_sha`
+  and mirror ancestry, never by time; drafts edited since the pull, or whose ancestry is unknown, are
+  kept. Push, pull and hydration write `synced_commit_sha`/`_message`/`synced_at`; the export
+  blacklist keeps them out of git. `last_synced_commit` is not X: a single-app push moves it too.
+  The builder header's git status tag shows that version's `synced_commit_*`; the dashboard's shows
+  the branch's `workspace_pull_commit_*` (`frontend/src/_ui/GitCommitStatusTag`). A null SHA has
+  nothing to show, so the tag's dropdown does not open.
 - Pull / create-branch clone the default `organization_git_sync_branches` row's `branch_name`, not the
   configured branch. Env config keeps it in sync via `reconcileDefaultBranchName` (`ee/git-sync/default-branch.util.ts`)
   on restart hydration and on toggle; renames must also invalidate `RemoteBranchCacheService`.

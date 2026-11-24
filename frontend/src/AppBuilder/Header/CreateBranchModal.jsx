@@ -10,7 +10,30 @@ import { Alert } from '@/_ui/Alert';
 import AlertDialog from '@/_ui/AlertDialog';
 import cx from 'classnames';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
+import { setActiveBranch, appendBranchName } from '@/_helpers/active-branch';
+import { v4 as uuidv4 } from 'uuid';
+import { branchJobKey, JOB_COPY, waitForJob } from '@/_helpers/backgroundJobs';
+import { showActionToast } from '@/_components/NotificationCenter/NotificationToast';
 import '@/_styles/create-branch-modal.scss';
+
+// Switch onto a branch and reload the editor on it — same routine SwitchBranchModal uses. Also the
+// editor's switcher for the "Switch branch" toast once a background create finishes.
+export async function switchEditorToBranch(branch, appId, successMessage = `Switched to ${branch.name}`) {
+  const targetWsBranch = useWorkspaceBranchesStore.getState().branches.find((b) => b.id === branch.id) || branch;
+  const result = await workspaceBranchesService.switchBranch(targetWsBranch.id, appId);
+  setActiveBranch(targetWsBranch);
+  useWorkspaceBranchesStore.setState({ activeBranchId: targetWsBranch.id, currentBranch: targetWsBranch });
+
+  const resolvedAppId = result?.resolvedAppId || result?.resolved_app_id;
+  const pathParts = window.location.pathname.split('/');
+  if (resolvedAppId) {
+    showActionToast({ type: 'success', message: successMessage });
+    window.location.replace(appendBranchName(`/${pathParts[1]}/apps/${result?.slug || resolvedAppId}`, branch.name));
+  } else {
+    sessionStorage.setItem('git_sync_toast', 'This app does not exist on this branch');
+    window.location.replace(`/${pathParts[1]}`);
+  }
+}
 
 export function CreateBranchModal({ onClose, onSuccess, appId, organizationId }) {
   const [branchName, setBranchName] = useState('');
@@ -18,7 +41,39 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   const orgGitConfig = useWorkspaceBranchesStore((state) => state.orgGitConfig);
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
   const LATEST_MAIN_OPTION = { label: `Latest (${defaultGitBranch})`, commitSha: null, isDefault: true };
-  const [selectedOption, setSelectedOption] = useState(LATEST_MAIN_OPTION);
+  const {
+    allBranches,
+    isDraftVersionActive,
+    developmentVersions,
+    fetchDevelopmentVersions,
+    releasedVersionId,
+    selectedVersion,
+  } = useStore((state) => ({
+    allBranches: state.allBranches || [],
+    isDraftVersionActive: state.isDraftVersionActive,
+    developmentVersions: state.developmentVersions || [],
+    fetchDevelopmentVersions: state.fetchDevelopmentVersions,
+    releasedVersionId: state.releasedVersionId,
+    selectedVersion: state.selectedVersion,
+  }));
+
+  // Default "Create from" to the open saved version; otherwise Latest (main).
+  const currentVersionOption = (() => {
+    if (!selectedVersion?.id) return null;
+    const versionType = selectedVersion.versionType || selectedVersion.version_type;
+    if (versionType !== 'version' || selectedVersion.status === 'DRAFT') return null;
+    return {
+      label: selectedVersion.name,
+      commitSha: null,
+      versionId: selectedVersion.id,
+      isLocalVersion: true,
+      status: selectedVersion.status,
+      isReleased: selectedVersion.id === releasedVersionId,
+    };
+  })();
+
+  const [selectedOption, setSelectedOption] = useState(currentVersionOption || LATEST_MAIN_OPTION);
+  const hasUserPickedOptionRef = useRef(false);
   const [isCreating, setIsCreating] = useState(false);
   const [validationError, setValidationError] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -26,15 +81,10 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   const [isLoadingTags, setIsLoadingTags] = useState(true);
   const [isLoadingVersions, setIsLoadingVersions] = useState(true);
   const dropdownRef = useRef(null);
-
-  const { allBranches, isDraftVersionActive, developmentVersions, fetchDevelopmentVersions, releasedVersionId } =
-    useStore((state) => ({
-      allBranches: state.allBranches || [],
-      isDraftVersionActive: state.isDraftVersionActive,
-      developmentVersions: state.developmentVersions || [],
-      fetchDevelopmentVersions: state.fetchDevelopmentVersions,
-      releasedVersionId: state.releasedVersionId,
-    }));
+  // New key per modal mount (this component is mounted only while the modal is open)
+  const idempotencyKeyRef = useRef(uuidv4());
+  const stopWaitingRef = useRef(null);
+  useEffect(() => () => stopWaitingRef.current?.(), []);
 
   const workspaceActions = useWorkspaceBranchesStore((state) => state.actions);
   const workspaceBranches = useWorkspaceBranchesStore((state) => state.branches);
@@ -120,10 +170,23 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   // Git tags that share a label with a local released version are redundant — the local
   // version entry is richer (it carries a versionId for DB-level branching). Drop the
   // duplicate tag so each version name appears exactly once in the dropdown.
-  const localVersionLabels = new Set(localVersionOptions.map((v) => v.label));
-  const uniqueTags = tags.filter((t) => !localVersionLabels.has(t.label));
-  const dropdownOptions = [LATEST_MAIN_OPTION, ...localVersionOptions, ...uniqueTags];
   const isLoadingOptions = isLoadingTags || isLoadingVersions;
+  // Keep the preselected version listed while versions load.
+  const visibleLocalVersionOptions =
+    isLoadingVersions && currentVersionOption ? [currentVersionOption] : localVersionOptions;
+  const localVersionLabels = new Set(visibleLocalVersionOptions.map((v) => v.label));
+  const uniqueTags = tags.filter((t) => !localVersionLabels.has(t.label));
+  const dropdownOptions = [LATEST_MAIN_OPTION, ...visibleLocalVersionOptions, ...uniqueTags];
+
+  // After load, drop the preselection if it isn't a valid source, unless the user already picked one.
+  useEffect(() => {
+    if (isLoadingVersions || hasUserPickedOptionRef.current || !selectedOption.isLocalVersion) return;
+    const isListed = developmentVersions.some((version) => version.id === selectedOption.versionId);
+    if (!isListed) return;
+    const match = localVersionOptions.find((option) => option.versionId === selectedOption.versionId);
+    setSelectedOption(match || LATEST_MAIN_OPTION);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingVersions]);
 
   const validateBranchName = (name) => {
     if (!name || name.trim().length === 0) return 'Branch name is required';
@@ -152,23 +215,38 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       return;
     }
 
+    const name = branchName.trim();
     setIsCreating(true);
+    // Registered before the request: a fast worker can finish before the response arrives. The
+    // spinner stays until it does; closing the modal hands the switch over to the toast.
+    stopWaitingRef.current = waitForJob(branchJobKey(name), (notification) => {
+      if (notification.type !== 'success') {
+        setIsCreating(false);
+        return;
+      }
+      switchEditorToBranch({ id: notification.metadata.branchId, name }, appId, JOB_COPY.branchCreated).catch(() =>
+        toast.error(`Branch ${name} was created but switching to it failed`)
+      );
+    });
     try {
       const defaultBranch = workspaceBranches.find((b) => b.is_default || b.isDefault);
       const sourceBranchId = defaultBranch?.id || null;
 
       await workspaceActions.createBranch(
-        branchName.trim(),
+        name,
         sourceBranchId,
         selectedOption.commitSha || undefined,
         selectedOption.isLocalVersion ? appId : undefined,
-        selectedOption.isLocalVersion ? selectedOption.versionId : undefined
+        selectedOption.isLocalVersion ? selectedOption.versionId : undefined,
+        undefined,
+        idempotencyKeyRef.current
       );
-
-      toast.success('Creating branch. It will show up in the list once ready.', { style: { maxWidth: '640px' } });
-      onClose();
+      idempotencyKeyRef.current = uuidv4();
+      showActionToast({ type: 'info', message: JOB_COPY.branchStarted });
     } catch (error) {
       console.error('Error creating branch:', error);
+      stopWaitingRef.current?.();
+      setIsCreating(false);
       if (error?.statusCode === 409) {
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
@@ -183,8 +261,6 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       const msg = error?.data?.message || error?.message || 'Failed to create branch';
       setValidationError(msg);
       toast.error(msg);
-    } finally {
-      setIsCreating(false);
     }
   };
 
@@ -224,14 +300,14 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
                 type="button"
                 className={cx('custom-dropdown-trigger', { 'is-open': isDropdownOpen })}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                disabled={isCreating || isLoadingOptions}
+                disabled={isCreating}
               >
                 <div className="custom-dropdown-value">
-                  <span className="version-name">{isLoadingOptions ? 'Loading...' : selectedOption.label}</span>
-                  {!isLoadingOptions && selectedOption.isDefault && (
+                  <span className="version-name">{selectedOption.label}</span>
+                  {selectedOption.isDefault && (
                     <span className={cx('status-badge', 'status-badge-draft')}>Default</span>
                   )}
-                  {!isLoadingOptions && selectedOption.isLocalVersion && selectedOption.isReleased && (
+                  {selectedOption.isLocalVersion && selectedOption.isReleased && (
                     <span className={cx('status-badge', 'status-badge-released')}>Released</span>
                   )}
                 </div>
@@ -246,6 +322,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
                         key={idx}
                         className={cx('dropdown-item', { 'is-selected': isSelected })}
                         onClick={() => {
+                          hasUserPickedOptionRef.current = true;
                           setSelectedOption(option);
                           setIsDropdownOpen(false);
                         }}
@@ -270,6 +347,16 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
                       </div>
                     );
                   })}
+                  {isLoadingOptions && (
+                    <div className="dropdown-item" aria-disabled="true">
+                      <div className="check-icon-placeholder" />
+                      <div className="item-content">
+                        <div className="item-header">
+                          <span className="item-name">Loading more versions...</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -316,13 +403,13 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
 
           {/* Footer buttons */}
           <div className="col d-flex justify-content-end gap-2 mt-3">
-            <ButtonSolid variant="tertiary" onClick={onClose} disabled={isCreating} size="md" data-cy="cancel-button">
+            <ButtonSolid variant="tertiary" onClick={onClose} size="md" data-cy="cancel-button">
               Cancel
             </ButtonSolid>
             <ButtonSolid
               variant="primary"
               onClick={handleCreateBranch}
-              disabled={isCreating || isDraftVersionActive || !branchName.trim() || isLoadingOptions}
+              disabled={isCreating || isDraftVersionActive || !branchName.trim()}
               isLoading={isCreating}
               size="md"
               data-cy="create-branch-button"
