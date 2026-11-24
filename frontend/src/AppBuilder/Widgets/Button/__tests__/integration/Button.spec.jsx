@@ -16,6 +16,8 @@ import {
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
+import { buttonConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const ID = 'btn1';
 const NAME = 'button1';
@@ -323,5 +325,89 @@ describe('Button: state precedence, deprecated CSAs, type gating, icon, isolatio
     await widget.act('setLoading', true);
     await waitFor(() => expect(widget.exposed('btn1').isLoading).toBe(true));
     expect(widget.exposed('btn2').isLoading).toBe(false);
+  });
+});
+
+// Theme border radius and box shadow (contract D-03..D-06): `borderRadiusStyle` / `boxShadowStyle` hold a theme item's
+// id or 'custom'; `borderRadius` / `boxShadow` stay the custom value and the fallback.
+describe('Button: theme border radius and box shadow', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Button-THEME-001] a newly dropped Button starts on the theme Large radius and no shadow', () => {
+    // Break this catches: button.js losing the new-drop defaults (a drop deep-clones this definition).
+    expect(buttonConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(buttonConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(buttonConfig.definition.styles.borderRadius).toEqual({ value: '{{6}}' });
+  });
+
+  test('[Button-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: Button.jsx rendering `${borderRadius}px` / the raw boxShadow whatever the theme style.
+    widget.render({
+      styles: {
+        type: binding('primary'),
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(btn()).toBeInTheDocument());
+    expect(btn().style.borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(btn().style.boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty(ID, 'borderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty(ID, 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(btn().style.borderRadius).toBe('10px'));
+  });
+
+  test('[Button-THEME-004] an Outline Button drops a themed shadow too', async () => {
+    // Break this catches: the solid-only shadow gate (Button.jsx) skipped when the shadow comes from the theme.
+    widget.render({ styles: { type: binding('outline'), boxShadowStyle: binding('300') } });
+    await waitFor(() => expect(btn()).toBeInTheDocument());
+    expect(btn().style.boxShadow).toBe('');
+  });
+});
+
+// A Button saved before theme styles: seeded as stored (no registered defaults), then through the editor's load merge.
+const savedWidget = createWidgetHarness({
+  componentType: 'Button',
+  handle: NAME,
+  id: ID,
+  seedFromRegisteredDefinition: false,
+  defaultProperties: {
+    text: binding('Saved'),
+    loadingState: binding('{{false}}'),
+    visibility: binding('{{true}}'),
+    disabledState: binding('{{false}}'),
+  },
+});
+
+describe('Button: saved before theme styles', () => {
+  beforeEach(savedWidget.setup);
+  afterEach(savedWidget.teardown);
+
+  test('[Button-THEME-002] a Button saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults (Large / None) onto saved Buttons.
+    const savedStyles = {
+      type: binding('primary'),
+      borderRadius: binding('{{10}}'),
+      boxShadow: binding('5px 5px 0px 0px #00000040'),
+    };
+    const saved = componentDefinition(
+      ID,
+      NAME,
+      'Button',
+      {},
+      { styles: savedStyles, seedFromRegisteredDefinition: false }
+    );
+    const { styles } = buildComponentMetaDefinition({ [ID]: saved })[ID].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+
+    savedWidget.render({ styles });
+    await waitFor(() => expect(btn()).toBeInTheDocument());
+    expect(btn().style.borderRadius).toBe('10px');
+    expect(btn().style.boxShadow).toBe('5px 5px 0px 0px #00000040');
   });
 });

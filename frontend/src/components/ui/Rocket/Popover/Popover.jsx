@@ -8,11 +8,12 @@ import { PopoverTrigger } from '@/components/ui/Rocket/shadcn/popover';
 // ── PopoverContent ───────────────────────────────────────────────────────────
 
 const PopoverContent = forwardRef(function PopoverContent(
-  { className, align = 'center', side = 'bottom', sideOffset = 4, children, ...props },
+  { className, align = 'center', side = 'bottom', sideOffset = 4, container, children, ...props },
   ref
 ) {
   return (
-    <PopoverPrimitive.Portal>
+    // `container`: where to portal the content (default <body>), e.g. inside a modal that keeps focus within itself.
+    <PopoverPrimitive.Portal container={container}>
       <PopoverPrimitive.Content
         ref={ref}
         data-slot="popover-content"
@@ -47,6 +48,7 @@ PopoverContent.propTypes = {
   align: PropTypes.oneOf(['start', 'center', 'end']),
   side: PropTypes.oneOf(['top', 'right', 'bottom', 'left']),
   sideOffset: PropTypes.number,
+  container: PropTypes.instanceOf(typeof Element === 'undefined' ? Object : Element),
   className: PropTypes.string,
   children: PropTypes.node,
 };

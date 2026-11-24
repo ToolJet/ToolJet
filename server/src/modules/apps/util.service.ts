@@ -32,6 +32,7 @@ import { AppBase } from '@entities/app_base.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { componentTypes } from './services/widget-config';
 import { dropNewContainerDefaults } from '@tooljet/widget-definitions';
+import { dropNewDropOnlyStyles } from '@tooljet/widget-definitions';
 import { cloneDeep, isArray, isPlainObject, merge, mergeWith } from 'lodash';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
@@ -1335,7 +1336,12 @@ export class AppsUtilService implements IAppsUtilService {
           ),
           currentComponentData?.component?.definition?.properties
         ),
-        styles: merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
+        // A saved widget keeps its own radius / shadow: new-drop-only style defaults stay off it.
+        styles: dropNewDropOnlyStyles(
+          currentComponentData?.component?.component,
+          merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
+          currentComponentData?.component?.definition?.styles
+        ),
         generalStyles: merge(
           componentMeta.definition.generalStyles,
           currentComponentData?.component.definition.generalStyles

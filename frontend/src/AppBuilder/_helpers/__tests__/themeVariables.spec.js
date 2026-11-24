@@ -1,9 +1,9 @@
 /** @jest-environment node */
 import { camelCase } from 'lodash';
-import { withLegacyColors } from '@tooljet/widget-definitions';
+import { withLegacyColors, DEFAULT_BORDER_RADII, DEFAULT_SHADOWS } from '@tooljet/widget-definitions';
 import { baseTheme } from '@/AppBuilder/_stores/utils';
 import { onBrandText, setOnBrandColors } from '../onBrandText';
-import { themeVariables } from '../themeVariables';
+import { themeVariables, applyThemeVariables, radiusVar, shadowVar } from '../themeVariables';
 
 // The CSS variables an app's theme writes on <html> (useAppData). Theme definition v2 moved colours to `colors`; saved
 // widgets point at the variable names (`var(--cc-primary-brand)`), so an old theme must write exactly what it did.
@@ -49,6 +49,17 @@ const writtenToday = (themeObj, mode) => {
 const JUNK = [/-colors$/, /^--cc-\d+-text$/, /^--cc-(small|large)-border$/, /-shadows$/, /-borderRadius$/];
 const withoutJunk = (vars) => Object.fromEntries(Object.entries(vars).filter(([n]) => !JUNK.some((j) => j.test(n))));
 
+// The built-in border radii and shadows every theme without its own lists writes.
+const builtInListVars = (mode) => ({
+  ...Object.fromEntries(DEFAULT_BORDER_RADII.map((r) => [`--cc-border-radius-${r.id}`, `${r.value}px`])),
+  ...Object.fromEntries(
+    DEFAULT_SHADOWS.map((s) => [
+      `--cc-box-shadow-${s.id}`,
+      `${s.x}px ${s.y}px ${s.blur}px ${s.spread}px ${s.color[mode]}`,
+    ])
+  ),
+});
+
 const rose = {
   brand: { colors: { primary: { light: '#BE123C', dark: '#E11D48' } } },
   text: {
@@ -74,6 +85,7 @@ describe('themeVariables', () => {
       expect(themeVariables(definition, mode)).toEqual({
         ...withoutJunk(writtenToday(definition, mode)),
         '--cc-onSolid-text': onBrandText(primary),
+        ...builtInListVars(mode),
       });
     });
   });
@@ -105,5 +117,77 @@ describe('themeVariables', () => {
     ['--cc-radius-default', '--cc-font-family', '--cc-on-primary-brand', '--cc-onSolid-text'].forEach((name) =>
       expect(vars[name]).toBeNull()
     );
+  });
+});
+
+// Theme definition v2 border radii and box shadows: one variable per item, which widgets set to a theme item point at
+// (`var(--cc-border-radius-<id>, <saved>px)`).
+describe('border radius and box shadow variables', () => {
+  const definition = {
+    ...withLegacyColors(rose),
+    borderRadius: [...DEFAULT_BORDER_RADII, { id: 'custom-a1', name: 'Rounded', value: 8 }],
+    shadows: [
+      ...DEFAULT_SHADOWS,
+      {
+        id: 'custom-b2',
+        name: 'Card',
+        x: 0,
+        y: 2,
+        blur: 10,
+        spread: 0,
+        color: { light: '#00000040', dark: '#ffffff26' },
+      },
+    ],
+  };
+
+  it('writes one variable per radius, and per shadow in the colour of the mode', () => {
+    const light = themeVariables(definition, 'light');
+    const dark = themeVariables(definition, 'dark');
+    expect(light[radiusVar('large')]).toBe('6px');
+    expect(light[radiusVar('custom-a1')]).toBe('8px');
+    expect(light[shadowVar('custom-b2')]).toBe('0px 2px 10px 0px #00000040');
+    expect(dark[shadowVar('custom-b2')]).toBe('0px 2px 10px 0px #ffffff26');
+    expect(radiusVar('large')).toBe('--cc-border-radius-large');
+    expect(shadowVar('300')).toBe('--cc-box-shadow-300');
+  });
+
+  it('keeps an item id that is not a valid CSS name from breaking the variable', () => {
+    expect(radiusVar('my radius!')).toBe('--cc-border-radius-my-radius-');
+  });
+
+  describe('applyThemeVariables', () => {
+    const fakeRoot = (initial = {}) => {
+      const props = { ...initial };
+      return {
+        props,
+        style: {
+          setProperty: (n, v) => (props[n] = v),
+          removeProperty: (n) => delete props[n],
+          get length() {
+            return Object.keys(props).length;
+          },
+          item: (i) => Object.keys(props)[i],
+        },
+      };
+    };
+
+    it('sets the variables and removes the ones mapped to null', () => {
+      const root = fakeRoot({ '--cc-font-family': 'x' });
+      applyThemeVariables(root, { '--cc-primary-brand': '#111111', '--cc-font-family': null });
+      expect(root.props).toEqual({ '--cc-primary-brand': '#111111' });
+    });
+
+    it('removes radius and shadow variables a previous theme wrote, so widgets fall back to their saved value', () => {
+      const root = fakeRoot({
+        [radiusVar('custom-old')]: '20px',
+        [shadowVar('custom-old')]: '0 0 1px red',
+        '--cc-weak-border': '#eee',
+      });
+      applyThemeVariables(root, themeVariables(rose, 'light'));
+      expect(root.props).not.toHaveProperty(radiusVar('custom-old'));
+      expect(root.props).not.toHaveProperty(shadowVar('custom-old'));
+      expect(root.props[radiusVar('large')]).toBe('6px');
+      expect(root.props['--cc-weak-border']).toBe('#E0D2DA');
+    });
   });
 });

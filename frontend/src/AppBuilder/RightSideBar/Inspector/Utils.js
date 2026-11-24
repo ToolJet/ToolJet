@@ -1,5 +1,6 @@
 import React from 'react';
 import { Code } from './Elements/Code';
+import { ThemeStyleField } from './Elements/ThemeStyleField';
 import { QuerySelector } from './QuerySelector';
 import { convertToKebabCase } from '@/_helpers/utils';
 import { LabeledDivider } from './Components/Form/_components';
@@ -65,6 +66,36 @@ export function renderQuerySelector(component, dataQueries, eventOptionUpdated, 
     />
   );
 }
+// A style that can follow the app theme (meta.themeTokens: Border radius, Box shadow): a dropdown of the theme's items
+// + Custom, saved as `<param>Style`; Custom shows the field's own control (`renderCode`) under it, without its label.
+// Shared by both inspector paths (renderCustomStyles for redesigned widgets, renderElement for the rest).
+function renderThemeTokenField({
+  meta,
+  param,
+  paramType,
+  paramTypeDefinition,
+  paramUpdated,
+  componentMeta,
+  renderCode,
+}) {
+  if (!meta?.themeTokens) return null;
+  const styleKey = `${param}Style`;
+  const unlabelled = {
+    ...componentMeta,
+    [paramType]: { ...componentMeta[paramType], [param]: { ...meta, showLabel: false } },
+  };
+  return (
+    <ThemeStyleField
+      kind={meta.themeTokens}
+      label={meta.displayName}
+      value={paramTypeDefinition[styleKey]?.value}
+      onSelect={(id) => paramUpdated({ name: styleKey }, 'value', id, paramType)}
+    >
+      {renderCode(unlabelled)}
+    </ThemeStyleField>
+  );
+}
+
 export function renderCustomStyles(
   component,
   componentMeta,
@@ -167,7 +198,7 @@ export function renderCustomStyles(
     }
   }
 
-  return (
+  const renderCode = (codeComponentMeta) => (
     <>
       <Code
         param={{ name: param, ...component.component.properties?.[param] }}
@@ -176,7 +207,7 @@ export function renderCustomStyles(
         onChange={paramUpdated}
         paramType={paramType}
         components={components}
-        componentMeta={componentMeta}
+        componentMeta={codeComponentMeta}
         darkMode={darkMode}
         componentName={component.component.name || null}
         type={meta?.type}
@@ -191,6 +222,17 @@ export function renderCustomStyles(
       />
     </>
   );
+
+  const themeField = renderThemeTokenField({
+    meta: componentMeta[paramType]?.[param],
+    param,
+    paramType,
+    paramTypeDefinition,
+    paramUpdated,
+    componentMeta,
+    renderCode,
+  });
+  return themeField ?? renderCode(componentMeta);
 }
 
 export function renderElement(
@@ -276,7 +318,7 @@ export function renderElement(
     return <LabeledDivider label={meta.displayName} />;
   }
 
-  return (
+  const renderCode = (codeComponentMeta) => (
     <Code
       param={{ name: param, ...component.component.properties?.[param] }}
       definition={definition}
@@ -284,7 +326,7 @@ export function renderElement(
       onChange={paramUpdated}
       paramType={paramType}
       components={components}
-      componentMeta={componentMeta}
+      componentMeta={codeComponentMeta}
       darkMode={darkMode}
       componentName={component.component.name || null}
       type={meta?.type}
@@ -300,6 +342,17 @@ export function renderElement(
       customMeta={customMeta}
     />
   );
+
+  const themeField = renderThemeTokenField({
+    meta,
+    param,
+    paramType,
+    paramTypeDefinition,
+    paramUpdated,
+    componentMeta,
+    renderCode,
+  });
+  return themeField ?? renderCode(componentMeta);
 }
 
 // Radix/Base UI popovers, selects and comboboxes portal their content into `document.body`, outside

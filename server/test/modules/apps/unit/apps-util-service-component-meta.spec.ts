@@ -50,3 +50,34 @@ describe('AppsUtilService.buildComponentMetaDefinition — saved KeyValuePair fi
     expect(keys).toContain('status');
   });
 });
+
+/**
+ * Theme border radius / box shadow (Button contract D-05): a Button's default styles carry `borderRadiusStyle: large`
+ * and `boxShadowStyle: none`, which only a new Button should get. A Button saved before them keeps its own radius and
+ * shadow.
+ */
+describe('AppsUtilService.buildComponentMetaDefinition — Button theme styles', () => {
+  const service = Object.create(AppsUtilService.prototype) as AppsUtilService;
+  const button = (styles: Record<string, unknown>) => ({
+    btn: { component: { name: 'button1', component: 'Button', definition: { properties: {}, styles } }, layouts: {} },
+  });
+  const mergedStyles = (styles: Record<string, unknown>) =>
+    (
+      service.buildComponentMetaDefinition(button(styles)) as Record<
+        string,
+        { component: { definition: { styles: Record<string, unknown> } } }
+      >
+    ).btn.component.definition.styles;
+
+  it('does not give a Button saved before theme styles the theme radius and shadow', () => {
+    const styles = mergedStyles({ borderRadius: { value: '{{10}}' } });
+    expect(styles).toMatchObject({ borderRadius: { value: '{{10}}' } });
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+  });
+
+  it('keeps the theme styles a Button was saved with', () => {
+    const styles = mergedStyles({ borderRadiusStyle: { value: 'medium' }, boxShadowStyle: { value: '300' } });
+    expect(styles).toMatchObject({ borderRadiusStyle: { value: 'medium' }, boxShadowStyle: { value: '300' } });
+  });
+});

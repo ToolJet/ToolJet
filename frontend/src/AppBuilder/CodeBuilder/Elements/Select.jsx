@@ -17,8 +17,15 @@ export const Option = (props) => {
   return (
     <components.Option {...props}>
       <DeprecatedColumnTooltip isDeprecatedStyle={isDeprecatedStyle}>
-        <div className="d-flex justify-content-between">
+        {/* Full width only for options with a hint, so other selects (Font Weight, ...) look as before. */}
+        <div className="d-flex justify-content-between" style={props.data?.hint ? { width: '100%' } : undefined}>
           <span>{props.label}</span>
+          {/* An option's optional detail (e.g. a theme radius' "4px"), muted, before the check. */}
+          {props.data?.hint && (
+            <span style={{ marginLeft: 'auto', marginRight: 8, color: 'var(--text-placeholder)' }}>
+              {props.data.hint}
+            </span>
+          )}
           {props.isSelected && (
             <span>
               <Check width={'20'} fill={'#3E63DD'} />
@@ -80,6 +87,16 @@ const selectCustomStyles = (width) => {
   };
 };
 
+// An optional leading icon in the closed field (meta.leadingIcon), e.g. the theme radius / shadow fields.
+const withLeadingIcon = (icon) => (props) => (
+  <components.SingleValue {...props}>
+    <span className="d-flex align-items-center gap-1">
+      {icon}
+      {props.children}
+    </span>
+  </components.SingleValue>
+);
+
 export const Select = ({ value, onChange, meta, width = '144px' }) => {
   return (
     <div
@@ -99,9 +116,11 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
           styles={selectCustomStyles(width)}
           useCustomStyles={true}
           customClassPrefix="inspector-select"
+          aria-label={meta?.displayName}
           components={{
             IndicatorSeparator: () => null,
             Option,
+            ...(meta?.leadingIcon && { SingleValue: withLeadingIcon(meta.leadingIcon) }),
           }}
         />
       </div>

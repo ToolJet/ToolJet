@@ -11,6 +11,7 @@ import { allSvgs } from '@tooljet/plugins/client';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { deepClone } from './utilities/utils.helpers';
 import { dropNewContainerDefaults } from '@/AppBuilder/_helpers/flexLayoutVersion';
+import { dropNewDropOnlyStyles } from '@tooljet/widget-definitions';
 
 export function addToLocalStorage(object) {
   localStorage.setItem(object['key'], object['value']);
@@ -213,7 +214,12 @@ export const buildComponentMetaDefinition = (components = {}) => {
         ),
         currentComponentData?.component?.definition?.properties
       ),
-      styles: merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
+      // A saved widget keeps its own radius / shadow: new-drop-only style defaults stay off it.
+      styles: dropNewDropOnlyStyles(
+        currentComponentData?.component?.component,
+        merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
+        currentComponentData?.component?.definition?.styles
+      ),
       generalStyles: merge(
         componentMeta.definition.generalStyles,
         currentComponentData?.component.definition.generalStyles

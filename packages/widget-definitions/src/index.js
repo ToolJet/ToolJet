@@ -90,6 +90,7 @@ export {
   legacyUniversalProps,
   combineProperties,
   dropNewContainerDefaults,
+  dropNewDropOnlyStyles,
 } from './utils.js';
 export {
   toV2,

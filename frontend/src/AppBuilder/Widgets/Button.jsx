@@ -6,6 +6,7 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 import { getModifiedColor, getSafeRenderableValue } from './utils';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export const Button = function Button(props) {
@@ -18,9 +19,11 @@ export const Button = function Button(props) {
     textSize = 14,
     fontWeight,
     borderRadius,
+    borderRadiusStyle,
     loaderColor,
     borderColor,
     boxShadow,
+    boxShadowStyle,
     iconColor,
     direction,
     contentAlignment,
@@ -105,13 +108,14 @@ export const Button = function Button(props) {
     backgroundColor: computedBgColor,
     color: computedTextColor,
     width: '100%',
-    borderRadius: `${borderRadius}px`,
+    // The app theme's radius / shadow when one is chosen (falling back to the Button's own), else its own.
+    borderRadius: themedRadius(borderRadiusStyle, borderRadius),
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     '--tblr-btn-color-darker': computedHoverBgColor,
     '--tblr-btn-color-clicked': getModifiedColor(computedBgColor, 'active'),
     '--loader-color': tinycolor(computedLoaderColor ?? 'var(--icons-on-solid)').toString(),
     borderColor: computedBorderColor,
-    boxShadow: type == 'primary' && boxShadow,
+    boxShadow: type == 'primary' && themedShadow(boxShadowStyle, boxShadow),
     padding: '0px 12px',
     // cursor: 'pointer',
     opacity: disable && '50%',

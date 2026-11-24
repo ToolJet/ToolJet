@@ -46,7 +46,7 @@ import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComp
 import * as isolationConfig from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/isolationConfig';
 import { getCachedAppDefinition, setCachedAppDefinition } from '@/AppBuilder/_helpers/appDefinitionCache';
 import { prefetchPacksForPages } from '@/_stores/builtinPacksStore';
-import { themeVariables } from '@/AppBuilder/_helpers/themeVariables';
+import { themeVariables, applyThemeVariables } from '@/AppBuilder/_helpers/themeVariables';
 
 const useAppData = (
   appId,
@@ -1031,9 +1031,7 @@ const useAppData = (
     const mode = appMode && appMode !== 'auto' ? appMode : darkMode ? 'dark' : 'light';
     // Colours (either theme shape), On solid, and the radius, on-brand and font values the component packs read.
     const themeObj = appliedThemeDefinition(selectedTheme, themeAccess);
-    Object.entries(themeVariables(themeObj, mode)).forEach(([name, value]) =>
-      value === null ? root.style.removeProperty(name) : root.style.setProperty(name, value)
-    );
+    applyThemeVariables(root, themeVariables(themeObj, mode));
     detectThemeChange();
   }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 

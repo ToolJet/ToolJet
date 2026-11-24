@@ -1,6 +1,14 @@
 import { themeColorTokens, toV2 } from '@tooljet/widget-definitions';
 import { onBrandText, primaryStrong } from './onBrandText';
 
+// Theme border radii and box shadows: one variable per item, keyed by its stable id. A widget set to a theme item
+// points at it with its own saved value as the fallback (var(--cc-border-radius-<id>, 6px)).
+const RADIUS_PREFIX = '--cc-border-radius-';
+const SHADOW_PREFIX = '--cc-box-shadow-';
+const cssName = (id) => String(id).replace(/[^a-zA-Z0-9_-]/g, '-');
+export const radiusVar = (id) => `${RADIUS_PREFIX}${cssName(id)}`;
+export const shadowVar = (id) => `${SHADOW_PREFIX}${cssName(id)}`;
+
 /**
  * The CSS variables a theme writes on <html> in the given mode, as `{ name: value }`; `null` means remove it, so a
  * previous theme's value does not linger. Colours come from the theme's v2 `colors` (toV2 builds them from the old
@@ -35,5 +43,32 @@ export const themeVariables = (definition, mode) => {
   vars['--cc-primary-brand-strong'] = primaryStrong(primary);
   const font = typeof definition?.text?.font === 'string' ? definition.text.font.trim() : '';
   vars['--cc-font-family'] = font ? `'${font.replace(/'/g, '')}', ui-sans-serif, system-ui, sans-serif` : null;
+
+  const { borderRadius, shadows } = toV2(definition);
+  borderRadius.forEach(({ id, value }) => (vars[radiusVar(id)] = `${value}px`));
+  shadows.forEach(
+    ({ id, x, y, blur, spread, color }) =>
+      (vars[shadowVar(id)] = `${x}px ${y}px ${blur}px ${spread}px ${color?.[mode]}`)
+  );
   return vars;
+};
+
+/**
+ * Writes `vars` (themeVariables) on `root`'s inline style: sets each, removes the null ones, and removes border
+ * radius and shadow variables a previous theme wrote that this one does not have, so widgets pointing at them fall
+ * back to their saved value.
+ * @param {HTMLElement} root
+ * @param {Record<string, string | null>} vars
+ */
+export const applyThemeVariables = (root, vars) => {
+  const { style } = root;
+  const stale = [];
+  for (let i = 0; i < style.length; i++) {
+    const name = style.item(i);
+    if ((name.startsWith(RADIUS_PREFIX) || name.startsWith(SHADOW_PREFIX)) && !(name in vars)) stale.push(name);
+  }
+  stale.forEach((name) => style.removeProperty(name));
+  Object.entries(vars).forEach(([name, value]) =>
+    value === null ? style.removeProperty(name) : style.setProperty(name, value)
+  );
 };

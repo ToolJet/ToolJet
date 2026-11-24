@@ -218,12 +218,16 @@ export const buttonConfig = {
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: false },
       accordian: 'button',
     },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
       accordian: 'button',
       conditionallyRender: {
@@ -314,6 +318,10 @@ export const buttonConfig = {
       loaderColor: { value: 'var(--cc-surface1-surface)' },
       contentAlignment: { value: 'center' },
       borderRadius: { value: '{{6}}' },
+      // New Buttons follow the theme's Large radius and None shadow; a saved Button without these keys keeps its own
+      // values (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
+      boxShadowStyle: { value: 'none' },
       backgroundColor: { value: 'var(--cc-primary-brand)' },
       hoverBackgroundMode: { value: 'auto' },
       hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
