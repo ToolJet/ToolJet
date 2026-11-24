@@ -14,6 +14,9 @@ const version = fs.readFileSync(versionPath, 'utf-8').trim();
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const { WidgetDefsAfterServerPlugin, WIDGET_DEFINITIONS_SRC } = require('./scripts/widget-defs-after-server-plugin');
+const { applyPatches } = require('./scripts/apply-patches');
+
+applyPatches();
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 

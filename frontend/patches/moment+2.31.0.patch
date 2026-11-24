@@ -1,0 +1,85 @@
+diff --git a/node_modules/moment/moment.js b/node_modules/moment/moment.js
+index 6b922fc..bc853de 100644
+--- a/node_modules/moment/moment.js
++++ b/node_modules/moment/moment.js
+@@ -472,7 +472,7 @@
+     }
+ 
+     var formattingTokens =
+-            /(\[[^\[]*\])|(\\e)|(\\)?(eHHmm|[Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|N{1,5}|YYYYYY|YYYYY|YYYY|YY|y{2,4}|yo?|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|kk?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g,
++            /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|N{1,5}|YYYYYY|YYYYY|YYYY|YY|y{2,4}|yo?|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|kk?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g,
+         localFormattingTokens = /(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g,
+         formatFunctions = {},
+         formatTokenFunctions = {};
+@@ -545,12 +545,10 @@
+         }
+ 
+         format = expandFormat(format, m.localeData());
+-        var cacheKey = '$' + format;
+-        if (!hasOwnProp(formatFunctions, cacheKey)) {
+-            formatFunctions[cacheKey] = makeFormatFunction(format);
+-        }
++        formatFunctions[format] =
++            formatFunctions[format] || makeFormatFunction(format);
+ 
+-        return formatFunctions[cacheKey](m);
++        return formatFunctions[format](m);
+     }
+ 
+     function expandFormat(format, locale) {
+@@ -2923,7 +2921,6 @@
+         if (
+             config._w &&
+             typeof config._w.d !== 'undefined' &&
+-            !dateIsDefaulted &&
+             config._w.d !== expectedWeekday
+         ) {
+             getParsingFlags(config).weekdayMismatch = true;
+@@ -3344,20 +3341,9 @@
+         if (!moments.length) {
+             return createLocal();
+         }
+-        for (i = 0; i < moments.length; ++i) {
+-            if (isMoment(moments[i])) {
+-                res = moments[i];
+-                break;
+-            }
+-        }
+-        if (!res) {
+-            return createInvalid$1();
+-        }
+-        for (++i; i < moments.length; ++i) {
+-            if (
+-                isMoment(moments[i]) &&
+-                (!moments[i].isValid() || moments[i][fn](res))
+-            ) {
++        res = moments[0];
++        for (i = 1; i < moments.length; ++i) {
++            if (!moments[i].isValid() || moments[i][fn](res)) {
+                 res = moments[i];
+             }
+         }
+@@ -3525,9 +3511,6 @@
+         var offset = offsetFromString(matchShortOffset, input);
+         config._useUTC = true;
+         config._tzm = offset;
+-        if (offset === null) {
+-            getParsingFlags(config).invalidOffset = input;
+-        }
+     });
+ 
+     // HELPERS
+@@ -3551,13 +3534,6 @@
+         parts = (chunk + '').match(chunkOffset) || ['-', 0, 0];
+         minutes = +(parts[1] * 60) + toInt(parts[2]);
+ 
+-        if (
+-            toInt(parts[2]) > 59 ||
+-            (parts[0] === '+' ? minutes > 14 * 60 : minutes > 12 * 60)
+-        ) {
+-            return null;
+-        }
+-
+         return minutes === 0 ? 0 : parts[0] === '+' ? minutes : -minutes;
+     }
+ 
