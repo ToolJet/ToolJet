@@ -316,7 +316,7 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 
 ## Tests
 
-Specs: `test/modules/migrations/{unit,e2e}/`, plus `test/modules/app/` (gate, runs, shutdown) and `test/modules/apps/e2e/viewer-cache-stamps.spec.ts`. Fixtures are in `test/modules/migrations/fixtures/`. The e2e specs run the real `run()` against a scratch database.
+Specs: `test/modules/migrations/{unit,e2e}/`, plus `test/modules/app/` (gate, runs, shutdown) and `test/modules/apps/e2e/viewer-cache-stamps.spec.ts`. Fixtures are in `test/modules/migrations/fixtures/`. The e2e specs run the real `run()` against a scratch database. App Builder key moves (copy, sync trigger, cleanup) are covered by `migrations/e2e/appbuilder-key-move.spec.ts`; see [`APP_DEFINITION_MIGRATIONS.md`](APP_DEFINITION_MIGRATIONS.md).
 
 - `harness.ts`, `pod.ts`: scratch databases and the pod process the specs spawn. `pod.ts` loads the sentinels and the migrations of `FIXTURE_SET`, and exits 75 when `run()` returns false.
 - `fake-runner.js`: a stand-in runner for `app/e2e/migration-runs.spec.ts`.

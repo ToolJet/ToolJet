@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { isEqual } from 'lodash';
 import { createPortal } from 'react-dom';
 import cx from 'classnames';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -48,6 +49,10 @@ export const ReorderableList = (props) => {
   };
 
   const [currentOptions, setCurrentOptions] = useState([]);
+  // Disable control (property or setDisable) kept apart from loading so loading end restores it.
+  const disableControlRef = useRef(disabledState);
+  // Last synced source content; equal re-resolutions must not discard the user's order.
+  const syncedOptionsRef = useRef(null);
 
   // Ref for portal container
   const portalRef = useRef(null);
@@ -95,6 +100,34 @@ export const ReorderableList = (props) => {
       : [];
   };
 
+  // Internal per-card identity; never exposed, so values may be falsy or duplicated.
+  const withDragIds = (opts) => opts.map((option, index) => ({ ...option, dragId: `item-${index}` }));
+
+  const syncOptions = (opts) => {
+    syncedOptionsRef.current = opts;
+    setCurrentOptions(withDragIds(opts));
+    setExposedVariable('options', opts);
+    setExposedVariable(
+      'values',
+      opts.map((option) => option.value)
+    );
+  };
+
+  const applyLoading = (isLoading) => {
+    updateExposedVariablesState('isLoading', isLoading);
+    setExposedVariable('isLoading', isLoading);
+    if (!isLoading) {
+      updateExposedVariablesState('isDisabled', disableControlRef.current);
+      setExposedVariable('isDisabled', disableControlRef.current);
+    }
+  };
+
+  const applyDisable = (isDisabled) => {
+    disableControlRef.current = isDisabled;
+    updateExposedVariablesState('isDisabled', isDisabled);
+    setExposedVariable('isDisabled', isDisabled);
+  };
+
   // Reorder function
   const reorderOptions = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -123,10 +156,7 @@ export const ReorderableList = (props) => {
   useBatchedUpdateEffectArray([
     {
       dep: loadingState,
-      sideEffect: () => {
-        updateExposedVariablesState('isLoading', loadingState);
-        setExposedVariable('isLoading', loadingState);
-      },
+      sideEffect: () => applyLoading(loadingState),
     },
     {
       dep: properties.visibility,
@@ -137,21 +167,14 @@ export const ReorderableList = (props) => {
     },
     {
       dep: disabledState,
-      sideEffect: () => {
-        updateExposedVariablesState('isDisabled', disabledState);
-        setExposedVariable('isDisabled', disabledState);
-      },
+      sideEffect: () => applyDisable(disabledState),
     },
     {
       dep: transformedOptions,
       sideEffect: () => {
         const opts = formatOptions(Array.isArray(transformedOptions) ? transformedOptions : []);
-        setCurrentOptions(opts);
-        setExposedVariable('options', opts);
-        setExposedVariable(
-          'values',
-          opts.map((option) => option.value)
-        );
+        if (isEqual(opts, syncedOptionsRef.current)) return;
+        syncOptions(opts);
       },
     },
   ]);
@@ -159,7 +182,8 @@ export const ReorderableList = (props) => {
   // Initial exposed variables setup
   useEffect(() => {
     const opts = formatOptions(Array.isArray(transformedOptions) ? transformedOptions : []);
-    setCurrentOptions(opts);
+    syncedOptionsRef.current = opts;
+    setCurrentOptions(withDragIds(opts));
 
     const exposedVariables = {
       options: opts,
@@ -168,16 +192,14 @@ export const ReorderableList = (props) => {
       isVisible: visibility,
       isLoading: loadingState,
       setDisable: async function (value) {
-        updateExposedVariablesState('isDisabled', !!value);
-        setExposedVariable('isDisabled', !!value);
+        applyDisable(!!value);
       },
       setVisibility: async function (value) {
         updateExposedVariablesState('isVisible', !!value);
         setExposedVariable('isVisible', !!value);
       },
       setLoading: async function (value) {
-        updateExposedVariablesState('isLoading', !!value);
-        setExposedVariable('isLoading', !!value);
+        applyLoading(!!value);
       },
     };
 
@@ -199,8 +221,8 @@ export const ReorderableList = (props) => {
 
   // Render label content based on format
   const renderLabel = (text, format) => {
-    if (!text) return '';
-    const safeText = typeof text === 'object' ? JSON.stringify(text) : text;
+    if (text === null || text === undefined || text === '') return '';
+    const safeText = typeof text === 'object' ? JSON.stringify(text) : String(text);
     switch (format) {
       case 'markdown':
         return <Markdown className={'reactMarkdown'}>{safeText}</Markdown>;
@@ -218,6 +240,9 @@ export const ReorderableList = (props) => {
     }
   };
 
+  const isDisabled = exposedVariablesTemporaryState.isDisabled;
+  const hasLabel = (label) => label !== null && label !== undefined && label !== '';
+
   // Render draggable item - uses portal when dragging to avoid transform issues
   const renderDraggableItem = (item, _index) => (provided, snapshot) => {
     const itemContent = (
@@ -231,8 +256,10 @@ export const ReorderableList = (props) => {
           color: textColor,
         }}
         role="listitem"
+        aria-roledescription={isDisabled ? undefined : 'draggable item'}
+        aria-disabled={isDisabled || undefined}
       >
-        {renderLabel(item.label || item.value, item.format)}
+        {renderLabel(hasLabel(item.label) ? item.label : item.value, item.format)}
       </div>
     );
 
@@ -247,11 +274,12 @@ export const ReorderableList = (props) => {
   return (
     <div
       ref={contentRef}
-      className={cx('reorderable-list-container', { 'dark-theme': darkMode, 'is-disabled': disabledState })}
+      className={cx('reorderable-list-container', { 'dark-theme': darkMode, 'is-disabled': isDisabled })}
       style={containerStyle}
       data-cy={dataCy}
       role="list"
       aria-label="Reorderable list"
+      aria-disabled={isDisabled || undefined}
     >
       {exposedVariablesTemporaryState.isLoading ? (
         <Loader style={{ right: '50%', top: '50%' }} width="20" />
@@ -263,12 +291,7 @@ export const ReorderableList = (props) => {
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps} className="reorderable-list-items">
                 {currentOptions.map((item, index) => (
-                  <Draggable
-                    key={item.value || index}
-                    draggableId={String(item.value || index)}
-                    index={index}
-                    isDragDisabled={exposedVariablesTemporaryState.isDisabled}
-                  >
+                  <Draggable key={item.dragId} draggableId={item.dragId} index={index} isDragDisabled={isDisabled}>
                     {renderDraggableItem(item, index)}
                   </Draggable>
                 ))}

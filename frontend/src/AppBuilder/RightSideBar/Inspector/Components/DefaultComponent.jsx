@@ -59,6 +59,8 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'FileButton',
   'FlexContainer',
   'Timeline',
+  'Spinner',
+  'BoundedBox',
   'PDF',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
@@ -219,6 +221,8 @@ export const baseComponentProperties = (
       'ModalV2',
       'Container',
       'Timeline',
+      'Spinner',
+      'BoundedBox',
     ],
     Layout: [],
   };

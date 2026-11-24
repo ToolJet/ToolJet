@@ -29,6 +29,7 @@ import {
   getCanvasBottomBound,
   findNewParentIdFromMousePosition,
   isDragOnInnerElement as isDragOnInnerElementOf,
+  isPointOnMoveHandle,
 } from './gridUtils';
 import {
   dragContextBuilder,
@@ -1080,9 +1081,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             ['RangeSlider', 'RangeSliderV2', 'BoundedBox'].includes(box?.component?.component) ||
             isDragOnInnerElement
           ) {
-            const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-            const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
-            if (!isHandle) {
+            if (!isPointOnMoveHandle(document.elementsFromPoint(e.clientX, e.clientY))) {
               return false;
             }
           }

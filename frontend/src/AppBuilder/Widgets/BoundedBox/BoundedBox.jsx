@@ -9,11 +9,32 @@ import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { getSafeRenderableValue } from '../utils';
 
-export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, id }) => {
+const isAnnotationInput = (item) => typeof item === 'object' && item !== null && !Array.isArray(item);
+const clampPercent = (value) => Math.min(100, Math.max(0, Number(value) || 0));
+
+// Geometry is a percentage of the image (0..100); returns a clamped copy, never touching the input.
+const normalizeGeometry = (item) => {
+  let x = clampPercent(item.x);
+  let y = clampPercent(item.y);
+  let width = Math.max(0, Number(item.width) || 0);
+  let height = Math.max(0, Number(item.height) || 0);
+  if (x + width > 100) {
+    if (width <= 100) x = 100 - width;
+    else width = 100 - x;
+  }
+  if (y + height > 100) {
+    if (height <= 100) y = 100 - height;
+    else height = 100 - y;
+  }
+  return { type: item.type, x, y, width, height };
+};
+
+export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles }) => {
   const [annotationState, setAnnotation] = useState({});
   const [annotationsState, setAnnotations] = useState([]);
   const [outerDivHeight, setOuterDivHeight] = useState();
   const [outerDivWidth, setOuterDivWidth] = useState();
+  const isDisabled = !!properties.disabledState;
 
   const [typeState, setType] = useState(properties.selector);
   const labels = _.isArray(properties.labels)
@@ -24,29 +45,18 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       ]
     : [];
   const annotateRef = useRef(null);
+  const rootRef = useRef(null);
 
   useEffect(() => {
+    // Scoped to this instance; generated styled-component class names are not stable.
+    const imageElement = rootRef.current?.querySelector('img');
     const handleImageLoad = () => {
-      const wrapperElement = document.querySelector(`[widgetid="${id}"] .jcdOkx`);
-      if (wrapperElement) {
-        const { width, height } = wrapperElement.getBoundingClientRect();
-        // Use the width and height of bounding image for further calculations
-        setOuterDivWidth(width);
-        setOuterDivHeight(height);
-      }
+      const { width, height } = imageElement.getBoundingClientRect();
+      setOuterDivWidth(width);
+      setOuterDivHeight(height);
     };
-
-    const imageElement = document.querySelector(`[widgetid="${id}"] .hIIYQM`);
-    if (imageElement) {
-      imageElement.addEventListener('load', handleImageLoad);
-    }
-
-    return () => {
-      if (imageElement) {
-        imageElement.removeEventListener('load', handleImageLoad);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    imageElement?.addEventListener('load', handleImageLoad);
+    return () => imageElement?.removeEventListener('load', handleImageLoad);
   }, []);
 
   useEffect(() => {
@@ -66,71 +76,49 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   }, [properties.selector]);
 
   useEffect(() => {
-    if (properties?.defaultValue?.length === 0 || !properties?.imageUrl) {
+    const defaultValue = properties?.defaultValue;
+    const validItems = Array.isArray(defaultValue) ? defaultValue.filter(isAnnotationInput) : [];
+    if (!properties?.imageUrl || validItems.length === 0) {
       setAnnotations([]);
       setExposedVariable('annotations', []);
-    } else if (
-      Array.isArray(properties?.defaultValue) &&
-      properties?.defaultValue?.length > 0 &&
-      properties?.defaultValue.some((item) => typeof item === 'object' && item !== null)
-    ) {
-      if (outerDivWidth && outerDivHeight) {
-        const defaultValueAnnotation = properties?.defaultValue?.map((item) => {
-          // Calculate the rightmost and bottommost coordinates of the inner div
-
-          const innerDivRight = (item.x + item.width) * (1 / 100) * outerDivWidth; //px -> %
-          const innerDivBottom = (item.y + item.height) * (1 / 100) * outerDivHeight;
-          // Check if the inner div exceeds the boundaries of the outer div
-          const exceedsBoundaries = innerDivRight > outerDivWidth || innerDivBottom > outerDivHeight;
-
-          // keeping coordinates inside boundary
-          if (item.x < 0) item.x = 0;
-          if (item.y < 0) item.y = 0;
-          if (item.x > 100) item.x = 100;
-          if (item.y > 100) item.y = 100;
-
-          if (item.width < 0) item.width = 0;
-          if (item.height < 0) item.height = 0;
-
-          if (exceedsBoundaries) {
-            if (innerDivRight > outerDivWidth) {
-              if (item.width <= 100) item.x = 100 - item.width;
-              else {
-                const newWidth = 100 - item.x;
-                item.width = newWidth;
-              }
-            }
-            if (innerDivBottom > outerDivHeight) {
-              if (item.height <= 100) item.y = 100 - item.height;
-              else {
-                const newHeight = 100 - item.y;
-                item.height = newHeight;
-              }
-            }
-          }
-
-          return {
-            geometry: {
-              type: item.type,
-              x: item.x,
-              y: item.y,
-              width: item.width,
-              height: item.height,
-            },
-            data: {
-              text: item.text,
-              id: uuid(),
-            },
-          };
-        });
-
-        setExposedVariable('annotations', getExposedAnnotations(defaultValueAnnotation));
-        setAnnotations(defaultValueAnnotation || []);
-      }
+    } else if (outerDivWidth && outerDivHeight) {
+      const defaultValueAnnotation = validItems.map((item) => ({
+        geometry: normalizeGeometry(item),
+        data: { text: item.text, id: uuid() },
+      }));
+      setExposedVariable('annotations', getExposedAnnotations(defaultValueAnnotation));
+      setAnnotations(defaultValueAnnotation);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(properties?.defaultValue), properties?.imageUrl, outerDivWidth, outerDivHeight]);
+
+  // Publish before firing so onChange handlers read the committed list.
+  const commitAnnotations = (next) => {
+    setAnnotations(next);
+    setExposedVariable('annotations', getExposedAnnotations(next));
+    fireEvent('onChange');
+  };
+
+  const createAnnotation = (geometry, text) => {
+    if (isDisabled) return;
+    setAnnotation({});
+    commitAnnotations(annotationsState.concat({ geometry, data: { text, id: uuid() } }));
+  };
+
+  const relabelAnnotation = (id, text) => {
+    if (isDisabled) return;
+    commitAnnotations(
+      annotationsState.map((annotation) =>
+        annotation.data.id === id ? { ...annotation, data: { ...annotation.data, text } } : annotation
+      )
+    );
+  };
+
+  const deleteAnnotation = (id) => {
+    if (isDisabled) return;
+    commitAnnotations(annotationsState.filter((annotation) => annotation.data.id !== id));
+  };
 
   const onChange = (annotation) => {
     setAnnotation(annotation);
@@ -182,12 +170,15 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
 
   return (
     <div
+      ref={rootRef}
       onMouseDown={(e) => e.stopPropagation()}
-      style={{ display: styles.visibility ? 'block' : 'none', height: height, boxShadow: styles.boxShadow }}
+      style={{ display: properties.visibility ? 'block' : 'none', height: height, boxShadow: styles.boxShadow }}
       className="bounded-box relative"
+      aria-disabled={isDisabled || undefined}
     >
       <Annotation
         src={`${properties.imageUrl}`}
+        alt="Image to annotate"
         annotations={annotationsState}
         type={typeState}
         ref={annotateRef}
@@ -201,30 +192,26 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
             <RenderEditor
               annotation={annotation}
               labels={labels}
-              setAnnotation={setAnnotation}
-              setAnnotations={setAnnotations}
-              setExposedVariable={setExposedVariable}
-              fireEvent={fireEvent}
+              onCreate={createAnnotation}
               darkMode={darkMode}
               selectElementStyles={selectElementStyles}
-              getExposedAnnotations={getExposedAnnotations}
             />
           );
         }}
         renderHighlight={({ annotation }) => (
           <RenderHighlight
             annotation={annotation}
-            setAnnotations={setAnnotations}
-            setExposedVariable={setExposedVariable}
-            fireEvent={fireEvent}
+            position={annotationsState.findIndex((item) => item.data.id === annotation.data.id) + 1}
+            onRelabel={relabelAnnotation}
+            onDelete={deleteAnnotation}
+            disabled={isDisabled}
             darkMode={darkMode}
             selectElementStyles={selectElementStyles}
             labels={labels}
-            getExposedAnnotations={getExposedAnnotations}
           />
         )}
         renderContent={() => null}
-        disableAnnotation={styles.disabledState}
+        disableAnnotation={isDisabled}
       />
     </div>
   );

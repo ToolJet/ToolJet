@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useMemo, useState } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
@@ -9,6 +9,7 @@ const TreeSelectItemPopover = forwardRef(
       item,
       darkMode,
       onItemChange,
+      validateItemField,
       onDeleteItem,
       getResolvedValue,
       parentValue = null,
@@ -34,8 +35,45 @@ const TreeSelectItemPopover = forwardRef(
       type: 'fxEditor',
     };
 
+    // Text being typed per field; the message under the field follows it before anything is saved.
+    const [draft, setDraft] = useState({});
+    const [resetKey, setResetKey] = useState({ label: 0, value: 0 });
+
+    const fieldError = (propertyPath) => {
+      if (draft[propertyPath] === undefined || !validateItemField) return null;
+      const [isValid, message] = validateItemField(propertyPath, draft[propertyPath], item.value);
+      return isValid ? null : message;
+    };
+
+    // Stable identity: the code editor resets an in-progress edit whenever validationFn changes.
+    const [validateLabel, validateValue] = useMemo(
+      () =>
+        ['label', 'value'].map(
+          (propertyPath) => (value) => validateItemField?.(propertyPath, value, item.value) ?? [true, null]
+        ),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [item.value]
+    );
+
     const handleChange = (propertyPath, value) => {
-      onItemChange(propertyPath, value, item.value, parentValue);
+      const accepted = onItemChange(propertyPath, value, item.value, parentValue);
+      if (propertyPath === 'label' || propertyPath === 'value') {
+        setDraft((prev) => ({ ...prev, [propertyPath]: undefined }));
+        // A refused edit remounts the field so it shows the stored value again, as Steps and Tabs do.
+        if (accepted === false) setResetKey((prev) => ({ ...prev, [propertyPath]: prev[propertyPath] + 1 }));
+      }
+    };
+
+    const renderFieldError = (propertyPath) => {
+      const message = fieldError(propertyPath);
+      return message ? (
+        <div
+          className="tw-text-text-danger tw-mt-1"
+          data-cy={`inspector-treeselect-item-details-${propertyPath}-error`}
+        >
+          {message}
+        </div>
+      ) : null;
     };
     const handleDelete = () => {
       onDeleteItem(item.value, parentValue);
@@ -84,10 +122,14 @@ const TreeSelectItemPopover = forwardRef(
               </label>
               <CodeHinter
                 {...basicCodeHinterProps}
+                key={`label-${resetKey.label}`}
                 data-cy="inspector-treeselect-item-details-label-input"
                 initialValue={item?.label || ''}
                 onChange={(value) => handleChange('label', value)}
+                onInputChange={(value) => setDraft((prev) => ({ ...prev, label: value }))}
+                validationFn={validateLabel}
               />
+              {renderFieldError('label')}
             </div>
 
             {/* Value field */}
@@ -100,10 +142,14 @@ const TreeSelectItemPopover = forwardRef(
               </label>
               <CodeHinter
                 {...basicCodeHinterProps}
+                key={`value-${resetKey.value}`}
                 data-cy="inspector-treeselect-item-details-value-input"
                 initialValue={item?.value || ''}
                 onChange={(value) => handleChange('value', value)}
+                onInputChange={(value) => setDraft((prev) => ({ ...prev, value }))}
+                validationFn={validateValue}
               />
+              {renderFieldError('value')}
             </div>
 
             {showSelectionFields && (

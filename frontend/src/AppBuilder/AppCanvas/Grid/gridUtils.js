@@ -894,6 +894,10 @@ const INNER_DRAG_SELECTORS = {
   Map: '.sc-map-canvas, .tj-map-look-shadcn',
 };
 
+// Widgets whose body is their own drag surface move only from the config handle.
+export const isPointOnMoveHandle = (elementsAtPoint) =>
+  elementsAtPoint.some((element) => element.classList.contains('config-handle'));
+
 export const isDragOnInnerElement = (componentType, widgetElement, target) => {
   if (!widgetElement || !target) return false;
   const selector = [INNER_DRAG_SELECTORS[componentType], INNER_DRAG_MARKER].filter(Boolean).join(', ');

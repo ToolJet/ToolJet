@@ -143,7 +143,7 @@ Widget configs live in the shared `packages/widget-definitions` package (`src/wi
 
 ### Key changes require migrations
 
-Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps. Write a data migration in `server/migrations/data/` (rules: the Migrations section of `server/AGENTS.md`).
+Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps, and the previous release must keep rendering them after an upgrade. In one PR: every reader switches to the new place, the move goes in `MOVED_COMPONENT_KEYS` (`packages/widget-definitions`, so the App Builder drops the old place on load and a missed reader fails at once), a data migration in `server/migrations/data/` copies the key and keeps both places in sync, a cleanup migration in `server/migrations/cleanup/` removes the old key one upgrade later, and the import path converts old exports. Recipe and templates: `server/docs/APP_DEFINITION_MIGRATIONS.md`.
 
 ## Glossary
 
@@ -194,6 +194,6 @@ Widget-level CSS class (shipped 2026-06):
 - Added to `universalProps.styles` (not `generalStyles`) in **both** `componentTypes.js` and `server/.../widget-config/index.js`. No DB migration — `lodash.merge` injects the default at load
   - Why `styles`: `generalStyles` ignores the `accordian` key and only renders for non-revamped widgets. `styles` rides `RenderStyleOptions`, which groups by `accordian`, so `accordian: 'Advanced'` yields an Advanced accordion on all revamped widgets with no registration
 - Schema key `cssClass`, label "CSS class", accordion "Advanced" (pinned last). Sanitize = trim + collapse whitespace, no blocklist
-- Legacy non-revamped widgets (~24, mostly deprecated V1 duplicates) render the field as a top-level control rather than grouped — accepted, no wiring on the sunsetting path
+- Legacy non-revamped widgets (not in the Inspector `NEW_REVAMPED_COMPONENTS`) show the field in their own **Advanced** accordion, rendered last in the Styles tab after the legacy General (box shadow) accordion (`Inspector.RenderLegacyAdvancedStyles`). Display only: the value stays at `definition.styles.cssClass`, no migration (decided 2026-10-27, Spinner/BoundedBox D-07; superseded the earlier flat top-level control)
 - v1 is static + `{{}}`-bound class only; imperative runtime control (CSA `setCustomClass`) deferred to v2
 - Gated behind the `customStyling` license flag (same flag as app/workspace Custom CSS, which it depends on), read via `useStore((s) => s.license.featureAccess?.customStyling)`. Two gates: the Inspector hides the control, and `RenderWidget.jsx` skips appending the class. **The saved value is never erased** — re-enabling the license restores the classes, no migration or cleanup
