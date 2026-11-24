@@ -1,7 +1,12 @@
 const CREDENTIAL_KEYS =
-  /^(?:password|current_password|new_password|token|access_token|refresh_token|subject_token|actor_token|id_token|client_secret|code|code_verifier|code_challenge|state|ticket|bootstrap|nonce|clientSecret|csrfToken|secret|authorization|cookie|tj_oauth_viewer|x-tooljet-delegation|x-tooljet-oauth-csrf)$/i;
+  /^(?:password|current_password|new_password|token|access_token|refresh_token|subject_token|actor_token|id_token|client_secret|code|code_verifier|code_challenge|state|ticket|bootstrap|nonce|clientSecret|csrfToken|secret|api[_-]?key|x-tooljet-llm-config|authorization|cookie|tj_oauth_viewer|x-tooljet-delegation|x-tooljet-oauth-csrf)$/i;
 
-/** Keep credential-bearing OAuth requests out of trace attributes. */
+/** LLM settings requests can contain manually entered provider credentials, including in invalid inputs. */
+export function isLlmKeyRequest(url: unknown): boolean {
+  return typeof url === 'string' && /\/ai\/(?:test-key|update-key)\/?(?:[?#]|$)/i.test(url);
+}
+
+/** Keep credentials out of trace attributes. */
 export function sanitizeTraceObject(value: any): any {
   if (Array.isArray(value)) return value.map(sanitizeTraceObject);
   if (!value || typeof value !== 'object') return value;
@@ -36,7 +41,9 @@ export function sanitizeOAuthRequest(request: any): any {
     url,
     ...(request.query ? { query: oauth ? '[REDACTED]' : sanitizeTraceObject(request.query) } : {}),
     ...(request.params && oauth ? { params: '[REDACTED]' } : {}),
-    ...(request.body ? { body: sanitizeTraceObject(request.body) } : {}),
-    ...(request.headers ? { headers: { ...request.headers, referer: sanitizeOAuthUrl(request.headers.referer) } } : {}),
+    ...(request.body ? { body: isLlmKeyRequest(request.url) ? '[REDACTED]' : sanitizeTraceObject(request.body) } : {}),
+    ...(request.headers
+      ? { headers: { ...sanitizeTraceObject(request.headers), referer: sanitizeOAuthUrl(request.headers.referer) } }
+      : {}),
   };
 }

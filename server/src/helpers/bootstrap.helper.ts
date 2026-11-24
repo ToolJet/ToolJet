@@ -11,6 +11,7 @@ import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService'
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { resolveCodeModeIsolation } from '@helpers/code-mode-isolation.helper';
 import * as Sentry from '@sentry/nestjs';
+import { isLlmKeyRequest } from '@otel/sanitize';
 import { DataSource } from 'typeorm';
 import { LoggerService } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
@@ -247,6 +248,10 @@ export function initSentry(logger: any, configService: ConfigService) {
       environment: configService.get<string>('NODE_ENV') || 'development',
       debug: !!configService.get<string>('SENTRY_DEBUG'),
       sendDefaultPii: true,
+      beforeSend(event) {
+        if (isLlmKeyRequest(event.request?.url)) delete event.request.data;
+        return event;
+      },
       // OTel SDK (otel/tracing.ts) owns tracing; else Sentry double-registers spans, splits every trace in two.
       skipOpenTelemetrySetup: true,
     });
