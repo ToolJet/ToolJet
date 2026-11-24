@@ -1,7 +1,12 @@
 import { IsString, IsNotEmpty, IsBoolean, IsOptional, Matches } from 'class-validator';
 
+// gitAppName / gitVersionName become folder names in the git clone path — reject traversal.
+const NO_PATH_TRAVERSAL = /^(?!.*\.\.)[^/\\]*$/;
+const NO_PATH_TRAVERSAL_MESSAGE = 'Name must not contain "/", "\\" or ".."';
+
 export class AppGitPushDto {
   @IsString()
+  @Matches(NO_PATH_TRAVERSAL, { message: NO_PATH_TRAVERSAL_MESSAGE })
   gitAppName: string;
 
   @IsString()
@@ -11,6 +16,7 @@ export class AppGitPushDto {
   lastCommitMessage: string;
 
   @IsString()
+  @Matches(NO_PATH_TRAVERSAL, { message: NO_PATH_TRAVERSAL_MESSAGE })
   gitVersionName: string;
 
   @IsString()
@@ -33,10 +39,12 @@ export class AppGitPullDto {
 
   @IsString()
   @IsOptional()
+  @Matches(NO_PATH_TRAVERSAL, { message: NO_PATH_TRAVERSAL_MESSAGE })
   gitAppName?: string;
 
   @IsString()
   @IsOptional()
+  @Matches(NO_PATH_TRAVERSAL, { message: NO_PATH_TRAVERSAL_MESSAGE })
   gitVersionName?: string;
 
   @IsString()
@@ -59,10 +67,12 @@ export class AppGitPullDto {
 export class AppGitPullUpdateDto {
   @IsString()
   @IsOptional()
+  @Matches(NO_PATH_TRAVERSAL, { message: NO_PATH_TRAVERSAL_MESSAGE })
   gitAppName?: string;
 
   @IsString()
   @IsOptional()
+  @Matches(NO_PATH_TRAVERSAL, { message: NO_PATH_TRAVERSAL_MESSAGE })
   gitVersionName?: string;
 
   @IsOptional()
