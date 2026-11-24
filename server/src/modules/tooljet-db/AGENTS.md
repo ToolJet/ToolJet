@@ -150,7 +150,10 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   environment. `promote` / `promote/preview` gate on licence only - never on the app's granular `environmentAccess`.
 - HTTP `/proxy/*` serves only admins/builders (dashboard, App Builder editor). App queries reach
   PostgREST in-process (`.perform()`), never through this route, so anyone else needs a data query of
-  their own workspace to pass `FEATURE_KEY.PROXY_POSTGREST`.
+  their own workspace to pass `FEATURE_KEY.PROXY_POSTGREST`. That data query only opens its own
+  `table_id` (path, embeds and filter prefixes; no `${name}` placeholders) and its own operation's
+  method (`list_rows` GET/HEAD, `create_row` POST, `update_rows` PATCH, `delete_rows` DELETE);
+  any other operation never opens the proxy (`isProxyRequestWithinDataQuery` in `ability/index.ts`).
 - `internal_table_migrations.resulting_schema` and `internal_table_migration_applications.applied_at`
   are both NULL until `.confirm()` fills them together; `.discard()` deletes both rows.
   `.adjudicatePending()` is the crash-recovery sweep (ignores anything younger than 1 minute, so an

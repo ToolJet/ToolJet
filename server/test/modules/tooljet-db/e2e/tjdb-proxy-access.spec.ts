@@ -8,12 +8,25 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { v4 as uuidv4 } from 'uuid';
-import { createUser, initTestApp, login, closeTestApp } from 'test-helper';
+import {
+  createUser,
+  initTestApp,
+  login,
+  closeTestApp,
+  createApplication,
+  createApplicationVersion,
+  createDataSource,
+  createDataQuery,
+} from 'test-helper';
 
 describe('TooljetDb proxy access', () => {
   let app: INestApplication;
   let orgId: string;
   let organization: any;
+  let readQueryId: string;
+  let otherWorkspaceQueryId: string;
+  const tableX = uuidv4();
+  const tableY = uuidv4();
 
   beforeAll(async () => {
     ({ app } = await initTestApp());
@@ -28,6 +41,30 @@ describe('TooljetDb proxy access', () => {
       groups: ['end-user'],
       organization,
     });
+
+    // A read-only ToolJet Database query on table X, in an app of this workspace and of another one.
+    const seedReadQuery = async (user) => {
+      const application = await createApplication(app, { name: `proxy-access-${uuidv4()}`, user });
+      const appVersion = await createApplicationVersion(app, application);
+      const dataSource = await createDataSource(app, {
+        appVersion,
+        application,
+        name: 'tooljetdb',
+        kind: 'tooljetdb',
+      });
+      const dataQuery = await createDataQuery(app, {
+        dataSource,
+        appVersion,
+        options: { operation: 'list_rows', table_id: tableX },
+      });
+      return dataQuery.id;
+    };
+    readQueryId = await seedReadQuery(admin.user);
+    const otherAdmin = await createUser(app, {
+      email: 'proxy-access-other-admin@tooljet.io',
+      groups: ['admin', 'end-user'],
+    });
+    otherWorkspaceQueryId = await seedReadQuery(otherAdmin.user);
   });
 
   afterAll(async () => {
@@ -55,6 +92,44 @@ describe('TooljetDb proxy access', () => {
         .set({ Cookie: tokenCookie, 'tj-workspace-id': orgId });
 
       expect(res.statusCode).not.toBe(403);
+    });
+  });
+
+  describe('ALL /api/tooljet-db/proxy/:tableId | end user with a data query', () => {
+    const asEndUser = async (req: request.Test, dataQueryId: string) => {
+      const { tokenCookie } = await login(app, 'proxy-access-end-user@tooljet.io');
+      return req.set({ Cookie: tokenCookie, 'tj-workspace-id': orgId, 'data-query-id': dataQueryId });
+    };
+    const http = () => request.agent(app.getHttpServer());
+
+    it("should let a read query through for its own table's rows", async () => {
+      const res = await asEndUser(http().get(`/api/tooljet-db/proxy/${tableX}`), readQueryId);
+
+      expect(res.statusCode).not.toBe(403);
+    });
+
+    it('should 403 a read query used on another table', async () => {
+      const res = await asEndUser(http().get(`/api/tooljet-db/proxy/${tableY}`), readQueryId);
+
+      expect(res.statusCode).toBe(403);
+    });
+
+    it('should 403 a read query used to write its own table', async () => {
+      const res = await asEndUser(http().patch(`/api/tooljet-db/proxy/${tableX}?id=eq.1`), readQueryId);
+
+      expect(res.statusCode).toBe(403);
+    });
+
+    it('should 403 a read query that embeds another table', async () => {
+      const res = await asEndUser(http().get(`/api/tooljet-db/proxy/${tableX}?select=*,${tableY}(*)`), readQueryId);
+
+      expect(res.statusCode).toBe(403);
+    });
+
+    it("should 403 a data query from another workspace's app", async () => {
+      const res = await asEndUser(http().get(`/api/tooljet-db/proxy/${tableX}`), otherWorkspaceQueryId);
+
+      expect(res.statusCode).toBe(403);
     });
   });
 });

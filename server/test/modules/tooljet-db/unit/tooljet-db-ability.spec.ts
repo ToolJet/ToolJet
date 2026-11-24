@@ -18,6 +18,8 @@ import { InternalTable } from 'src/entities/internal_table.entity';
 
 const ORG_A = 'org-a';
 const ORG_B = 'org-b';
+const TABLE_X = '11111111-1111-4111-8111-111111111111';
+const TABLE_Y = '22222222-2222-4222-8222-222222222222';
 
 type RoleFlags = {
   isSuperAdmin?: boolean;
@@ -38,13 +40,31 @@ async function buildAbility(opts: {
   /** The org the resolved data query's app belongs to (undefined => manager returns null). */
   dataQueryAppOrg?: string;
   dataQueryIsPublic?: boolean;
+  /** The data query's own operation and table; defaults to a read of TABLE_X. */
+  dataQueryOptions?: Record<string, unknown>;
+  /** The proxy request; defaults to a read of TABLE_X, matching the default data query. */
+  method?: string;
+  url?: string;
 }) {
-  const { role, organizationId = ORG_A, dataQueryId, dataQueryAppOrg, dataQueryIsPublic } = opts;
+  const {
+    role,
+    organizationId = ORG_A,
+    dataQueryId,
+    dataQueryAppOrg,
+    dataQueryIsPublic,
+    dataQueryOptions = { operation: 'list_rows', table_id: TABLE_X },
+    method = 'GET',
+    url = `/api/tooljet-db/proxy/${TABLE_X}`,
+  } = opts;
 
   const dataQuery =
     dataQueryAppOrg === undefined
       ? null
-      : { app: { organizationId: dataQueryAppOrg }, appVersion: { isPublic: !!dataQueryIsPublic } };
+      : {
+          app: { organizationId: dataQueryAppOrg },
+          appVersion: { isPublic: !!dataQueryIsPublic },
+          options: dataQueryOptions,
+        };
 
   const manager = { findOne: jest.fn().mockResolvedValue(dataQuery) };
   const abilityService = { resourceActionsPermission: jest.fn() };
@@ -57,6 +77,9 @@ async function buildAbility(opts: {
 
   const user = { id: 'user-1', organizationId: organizationId ?? undefined } as any;
   const request: any = {
+    method,
+    url,
+    originalUrl: url,
     headers,
     user: organizationId === null ? undefined : user,
     tj_user_permissions: {
@@ -126,6 +149,97 @@ describe('ToolJet-DB FeatureAbilityFactory', () => {
         dataQueryId: 'dq-1',
         dataQueryAppOrg: ORG_A,
         dataQueryIsPublic: true,
+      });
+      expect(ability.can(FEATURE_KEY.PROXY_POSTGREST, InternalTable)).toBe(true);
+    });
+  });
+
+  // A data query only opens the proxy for its own table and its own operation.
+  describe('PROXY_POSTGREST — bound to the data query', () => {
+    const endUserWith = (overrides: Parameters<typeof buildAbility>[0] extends infer O ? Partial<O> : never) =>
+      buildAbility({
+        role: { isEndUser: true },
+        organizationId: ORG_A,
+        dataQueryId: 'dq-1',
+        dataQueryAppOrg: ORG_A,
+        ...overrides,
+      });
+    const canProxy = async (overrides) =>
+      (await endUserWith(overrides)).can(FEATURE_KEY.PROXY_POSTGREST, InternalTable);
+
+    it("allows a HEAD on the read query's table", async () => {
+      expect(await canProxy({ method: 'HEAD' })).toBe(true);
+    });
+
+    it('denies a read query used on another table', async () => {
+      expect(await canProxy({ url: `/api/tooljet-db/proxy/${TABLE_Y}` })).toBe(false);
+    });
+
+    it.each([['POST'], ['PATCH'], ['PUT'], ['DELETE']])('denies a read query used for %s', async (method) => {
+      expect(await canProxy({ method })).toBe(false);
+    });
+
+    it.each([
+      ['create_row', 'POST'],
+      ['update_rows', 'PATCH'],
+      ['delete_rows', 'DELETE'],
+    ])('allows a %s query its own method (%s) on its own table', async (operation, method) => {
+      expect(await canProxy({ method, dataQueryOptions: { operation, table_id: TABLE_X } })).toBe(true);
+    });
+
+    it('denies a create_row query used to delete rows', async () => {
+      expect(
+        await canProxy({ method: 'DELETE', dataQueryOptions: { operation: 'create_row', table_id: TABLE_X } })
+      ).toBe(false);
+    });
+
+    it.each([['join_tables'], ['sql_execution'], ['bulk_update_with_primary_key']])(
+      'denies a %s query, which never runs through the proxy',
+      async (operation) => {
+        expect(await canProxy({ dataQueryOptions: { operation, table_id: TABLE_X } })).toBe(false);
+      }
+    );
+
+    it('denies a read that embeds another table', async () => {
+      expect(await canProxy({ url: `/api/tooljet-db/proxy/${TABLE_X}?select=*,${TABLE_Y}(*)` })).toBe(false);
+    });
+
+    it('denies a read that embeds another table behind URL encoding', async () => {
+      expect(await canProxy({ url: `/api/tooljet-db/proxy/${TABLE_X}?select=*,${TABLE_Y}%28*%29` })).toBe(false);
+    });
+
+    it("denies a read that filters on another table's columns", async () => {
+      expect(await canProxy({ url: `/api/tooljet-db/proxy/${TABLE_X}?${TABLE_Y}.id=eq.1` })).toBe(false);
+    });
+
+    it('denies a table addressed by a name placeholder', async () => {
+      expect(await canProxy({ url: `/api/tooljet-db/proxy/\${other_table}` })).toBe(false);
+    });
+
+    it('allows a read of its own table with ordinary filters and environment', async () => {
+      expect(
+        await canProxy({ url: `/api/tooljet-db/proxy/${TABLE_X}?select=id,name&id=eq.1&environment_id=env-1` })
+      ).toBe(true);
+    });
+
+    it("denies a public app's read query used on another table", async () => {
+      const ability = await buildAbility({
+        role: { isEndUser: true },
+        organizationId: null,
+        dataQueryId: 'dq-1',
+        dataQueryAppOrg: ORG_A,
+        dataQueryIsPublic: true,
+        url: `/api/tooljet-db/proxy/${TABLE_Y}`,
+      });
+      expect(ability.can(FEATURE_KEY.PROXY_POSTGREST, InternalTable)).toBe(false);
+    });
+
+    it('still allows a builder any table and method without a data query', async () => {
+      const ability = await buildAbility({
+        role: { isBuilder: true },
+        organizationId: ORG_A,
+        method: 'DELETE',
+        url: `/api/tooljet-db/proxy/${TABLE_Y}`,
       });
       expect(ability.can(FEATURE_KEY.PROXY_POSTGREST, InternalTable)).toBe(true);
     });
