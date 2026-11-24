@@ -6,6 +6,9 @@ import _ from 'lodash';
 import queryString from 'query-string';
 import { ERROR_TYPES } from './constants';
 
+const isUnknownVersionError = (error) =>
+  error?.data?.statusCode === 404 && error?.data?.message !== ERROR_TYPES.APP_NOT_READY;
+
 /*  appId, versionId are only for old preview URLs */
 export const handleAppAccess = async (componentType, slug, version_id, environment_id) => {
   const isOldLocalPreview = version_id && environment_id ? true : false;
@@ -24,7 +27,20 @@ export const handleAppAccess = async (componentType, slug, version_id, environme
 
   if (componentType === 'editor' || isLocalPreview || isOldLocalPreview) {
     /* Editor or app preview */
-    return appsService.validatePrivateApp(slug, apiQueryParams).catch((error) => {
+    return appsService.validatePrivateApp(slug, apiQueryParams).catch(async (error) => {
+      // In the editor ?version= is only a hint (a stale link, a deleted version): drop it and let
+      // the server pick the last-used version. The viewer preview keeps the 404 — there it is explicit.
+      if (componentType === 'editor' && queryParams['version'] && isUnknownVersionError(error)) {
+        const { version, version_name, ...withoutVersion } = apiQueryParams; // eslint-disable-line no-unused-vars
+        const url = new URL(window.location.href);
+        url.searchParams.delete('version');
+        window.history.replaceState(window.history.state, '', url);
+        try {
+          return await appsService.validatePrivateApp(slug, withoutVersion);
+        } catch (retryError) {
+          error = retryError;
+        }
+      }
       const editPermission = error?.error?.editPermission;
       handleError(componentType, error, redirectPath, editPermission, slug);
     });
