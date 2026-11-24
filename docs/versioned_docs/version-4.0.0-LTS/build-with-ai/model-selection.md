@@ -37,7 +37,7 @@ If your admin has configured [BYOK](/docs/setup/tooljet-ai/bring-your-own-key) o
 
 ## Selecting an Exact Model
 
-On ToolJet Cloud Enterprise or Self-hosted Enterprise, configure **OpenRouter** as your LLM provider under BYOK to choose a specific model. Only models that are compatible with ToolJet AI are available: the model must support the `tools`, `response_format`, and `structured_outputs` parameters and have a context window of at least 200,000 tokens.
+To choose a specific model, configure **OpenRouter** as your LLM provider under [BYOK](/docs/setup/tooljet-ai/bring-your-own-key). Only models that are compatible with ToolJet AI are available: the model must support the `tools`, `response_format`, and `structured_outputs` parameters and have a context window of at least 200,000 tokens.
 
 :::info
 This is configured by an admin for the whole workspace (ToolJet Cloud) or instance (Self-hosted), like the rest of BYOK, it is not a per-user setting.

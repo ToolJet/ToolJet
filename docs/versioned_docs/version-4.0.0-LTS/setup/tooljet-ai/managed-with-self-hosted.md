@@ -50,7 +50,7 @@ ENABLE_MCP_SOCKET_RELAY=true
 
 With this variable set, ToolJet runs the MCP server the AI builder uses inside its own container. The AI server sends its requests over the outbound connection your instance has already opened, and the MCP server applies them by calling ToolJet locally. Your instance needs no inbound access, and the session the MCP server uses stays on your host.
 
-If ToolJet logs `MCP socket relay is enabled but no bundle at /app/mcp/index.js; staying off.`, your image doesn't include the MCP server and the relay stays turned off. Use the ToolJet Enterprise Edition image.
+If ToolJet logs `MCP socket relay is enabled but no bundle at /app/mcp/index.js; staying off.`, your image doesn't include the MCP server and the relay stays turned off. Use the official `tooljet/tooljet` image, which includes the MCP server.
 
 ### Point the MCP Server at ToolJet Inside the Container
 
@@ -87,5 +87,5 @@ With this setup, each user can pick the LLM provider and model for their own AI 
 
 ## Switching to a Different Setup
 
-- On Self-hosted Enterprise, use your own LLM API key while continuing to route requests through ToolJet Managed AI Server with [Bring Your Own Key (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key).
+- To use your own LLM API key while continuing to route requests through ToolJet Managed AI Server, see [Bring Your Own Key (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key).
 - To keep all AI traffic entirely within your own infrastructure with no data sent to ToolJet Managed AI Server, see [Setup ToolJet Enterprise AI](/docs/setup/tooljet-ai/tj-ai-enterprise).

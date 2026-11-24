@@ -7,10 +7,6 @@ title: JavaScript
 
 ToolJet workflows let you import **npm packages** into your workflow so that every JavaScript node can use them. Once a package is added, it is bundled and available across all JavaScript nodes in that workflow version.
 
-:::info
-External library support for workflows is available on **Enterprise Edition** plans.
-:::
-
 ## Adding Packages
 
 1. Open your workflow in the editor.
@@ -48,7 +44,6 @@ Packages are available to all JavaScript nodes in the workflow — you don't nee
 <!-- 
 ## Limitations
 
-- **Enterprise only** — package management is not available in the Community Edition.
 - **npm packages only** — packages must be published to the npm registry.
 - **Bundle per workflow version** — each workflow version maintains its own independent set of dependencies.
 - **No native add-ons** — packages that require native C/C++ compilation during install are not supported. Pure JavaScript and pre-compiled packages work. -->

@@ -23,7 +23,7 @@ While we currently utilize cloud-based LLMs (such as Anthropic and OpenAI) for A
 
 If you require a strictly air-gapped environment, you can set up a separate instance of ToolJet for development, or choose to disable the AI schema-reading capabilities to ensure no structural data leaves your internal network.
 
-Self-hosted enterprise plan of ToolJet has an option to deploy our AI gateway on-premise with your own LLM keys. Reach out to hello@tooljet.com for details.
+On a self-hosted instance, you can run the AI gateway on-premise with your own LLM keys. See [Setup ToolJet Enterprise AI](/docs/setup/tooljet-ai/tj-ai-enterprise).
 
 ### 3. Data Usage Policies
 
