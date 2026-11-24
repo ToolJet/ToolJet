@@ -63,6 +63,8 @@ ToolJet AI credits are allocated on a per builder per month basis according to t
 - At **Instance Level** for [Self-Hosted](/docs/tj-setup/tj-deployment#self-hosted-tooljet) deployments.
 - At **Workspace Level** for [Cloud](/docs/tj-setup/tj-deployment#tooljet-cloud) deployments.
 
+Admins can track how much of the pool each builder uses and set per-builder credit limits on the [AI credits usage](/docs/build-with-ai/ai-credits-usage) page.
+
 ## Check Available Credits
 
 ### Inside App Builder
