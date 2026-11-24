@@ -51,7 +51,7 @@ describe('ClosableTabs | tabs', () => {
     const onClose = jest.fn();
     render(<Harness onClose={onClose} />);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Close releases' }));
+    await userEvent.click(screen.getByLabelText('Close releases'));
 
     expect(onClose).toHaveBeenCalledWith('releases');
     expect(screen.getByRole('tab', { name: 'authors' })).toHaveAttribute('aria-selected', 'true');

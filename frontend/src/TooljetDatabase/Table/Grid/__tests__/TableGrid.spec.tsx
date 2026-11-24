@@ -221,18 +221,16 @@ describe('TableGrid | loading', () => {
 });
 
 describe('TableGrid | refetch', () => {
-  it('shows a progress bar and dims the rows while a refetch runs behind them', () => {
+  it('dims the rows while a refetch runs behind them, and marks the grid busy', () => {
     setup({ isRefetching: true });
 
-    expect(screen.getByRole('progressbar', { name: 'Refreshing rows' })).toBeInTheDocument();
     expect(screen.getByRole('rowgroup')).toHaveClass('tw-opacity-60');
     expect(screen.getByRole('grid')).toHaveAttribute('aria-busy', 'true');
   });
 
-  it('shows no bar and full-strength rows when idle', () => {
+  it('shows full-strength rows when idle', () => {
     setup();
 
-    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.getByRole('rowgroup')).not.toHaveClass('tw-opacity-60');
   });
 });

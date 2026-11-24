@@ -184,6 +184,7 @@ const ClosableTabs = forwardRef<HTMLDivElement, ClosableTabsProps>(function Clos
                   type="button"
                   role="tab"
                   aria-selected={selected}
+                  aria-keyshortcuts="Delete"
                   tabIndex={selected || (activeId === null && index === 0) ? 0 : -1}
                   data-cy={tab['data-cy']}
                   onClick={() => onSelect(tab.id)}
@@ -215,6 +216,9 @@ const ClosableTabs = forwardRef<HTMLDivElement, ClosableTabsProps>(function Clos
                   size="small"
                   iconOnly
                   tabIndex={-1}
+                  // A tablist may own only tabs. Mouse users click this; keyboard and screen reader users press
+                  // Delete on the tab (aria-keyshortcuts).
+                  aria-hidden
                   aria-label={closeLabel(tab)}
                   data-cy={tab['data-cy'] ? `${tab['data-cy']}-close` : undefined}
                   onClick={() => onClose(tab.id)}

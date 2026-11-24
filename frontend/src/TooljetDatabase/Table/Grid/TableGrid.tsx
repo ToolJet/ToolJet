@@ -369,11 +369,7 @@ export function TableGrid({
             onDeleteColumn={deleteColumn}
           />
           {isRefetching && (
-            <div
-              role="progressbar"
-              aria-label="Refreshing rows"
-              className="tw-relative tw-h-0.5 tw-w-full tw-shrink-0 tw-overflow-hidden"
-            >
+            <div aria-hidden className="tw-relative tw-h-0.5 tw-w-full tw-shrink-0 tw-overflow-hidden">
               <div className="tjdb-grid-refetch-bar tw-absolute tw-inset-y-0 tw-left-0 tw-w-2/5 tw-bg-background-accent-strong" />
             </div>
           )}

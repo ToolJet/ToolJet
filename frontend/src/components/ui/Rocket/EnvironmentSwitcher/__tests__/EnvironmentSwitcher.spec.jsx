@@ -29,7 +29,7 @@ describe('EnvironmentSwitcher trigger', () => {
 
   it('names the button after the current option', () => {
     setup();
-    expect(trigger()).toHaveAccessibleName('Staging environment');
+    expect(trigger()).toHaveAccessibleName('0002 Staging environment');
   });
 
   it('shows only the label when the option has no meta', () => {

@@ -77,7 +77,11 @@ const Trigger = forwardRef<HTMLButtonElement, TriggerProps>(function Trigger(
         ref={ref}
         variant="outline"
         size="medium"
-        aria-label={current ? `${current.label} environment` : 'Environment'}
+        aria-label={
+          current
+            ? `${typeof current.meta === 'string' || typeof current.meta === 'number' ? `${current.meta} ` : ''}${current.label} environment`
+            : 'Environment'
+        }
         className={cn(TRIGGER_CLASS, className)}
         leadingVisual={
           current && (

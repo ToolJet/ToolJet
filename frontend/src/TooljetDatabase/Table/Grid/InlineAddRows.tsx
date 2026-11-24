@@ -175,8 +175,8 @@ export function InlineAddRows({ table, showTrailingCell }: InlineAddRowsProps) {
 
   if (draft.status === 'idle') {
     return (
-      <div className={footerClass}>
-        <div className="tw-sticky tw-left-0 tw-flex tw-h-full tw-w-fit tw-items-center tw-pl-3">
+      <div role="row" className={footerClass}>
+        <div role="gridcell" className="tw-sticky tw-left-0 tw-flex tw-h-full tw-w-fit tw-items-center tw-pl-3">
           {/* Figma Add row: a custom button, not the Rocket Button (14px regular, text/medium, 8px inset). */}
           <button
             ref={addButtonRef}
