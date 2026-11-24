@@ -122,6 +122,10 @@ No change may break existing saved applications. Always ask: would an app saved 
 - Watch for O(N) loops inside already-O(N) resolution paths (eager resolution for ListView children)
 - Inline pack components mount only after code and CSS are ready. Keep mount-batching effects aligned with both signals so delayed or failed stylesheets do not leave initial SDK writes unbatched.
 
+### Git Sync default branch restrictions
+
+In a branching-enabled Git Sync workspace, the configured default branch disables App Builder AI chat and Code mode editing tools. Reuse `useIsAiBlockedOnDefaultBranch` (and its callback getter) so custom default branch names and workspace branch changes follow the same policy. The AI sidebar icon is disabled and an open chat closes; Show code, inspector selection, and their keyboard shortcuts are unavailable. Clear open code/inspector state when entering the default branch. Feature branches and workspaces without this restriction retain their existing behavior.
+
 ### App Builder store
 
 - AppBuilder store: `AppBuilder/_stores/store.js` (30+ slices), all namespaced by `moduleId` (default `'canvas'`)

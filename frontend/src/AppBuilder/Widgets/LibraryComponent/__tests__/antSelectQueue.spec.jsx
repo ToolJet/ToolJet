@@ -166,10 +166,14 @@ describe('Ant Design fields: a long label above the field', () => {
       const at = css.indexOf(`${selector} {`);
       return at < 0 ? '' : css.slice(at, css.indexOf('}', at));
     };
-    const label = rule('.tj-ant-root .ant-form-item-label > label > .tj-ant-label-text');
+    // The label stays inside the field's width; its text (a span inside it, so Ant can show a tooltip when it is cut
+    // off) keeps to one line and ends in an ellipsis.
+    const label = rule('.tj-ant-root .ant-form-item-vertical > .ant-form-item-row > .ant-form-item-label > label');
+    const text = rule('.tj-ant-root .ant-form-item-label > label > .tj-ant-label-text');
 
-    expect(label).toMatch(/white-space:\s*nowrap/);
-    expect(label).toMatch(/overflow:\s*hidden/);
-    expect(label).toMatch(/text-overflow:\s*ellipsis/);
+    expect(label).toMatch(/max-width:\s*100%/);
+    expect(text).toMatch(/white-space:\s*nowrap/);
+    expect(text).toMatch(/overflow:\s*hidden/);
+    expect(text).toMatch(/text-overflow:\s*ellipsis/);
   });
 });
