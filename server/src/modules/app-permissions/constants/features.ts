@@ -7,6 +7,8 @@ export const FEATURES: FeaturesConfig = {
   [MODULES.APP_PERMISSIONS]: {
     [FEATURE_KEY.FETCH_USERS]: {},
     [FEATURE_KEY.FETCH_USER_GROUPS]: {},
+    // A Code mode app's people picker: whoever can open the app, signed in. Never skipped for a public app.
+    [FEATURE_KEY.FETCH_APP_MEMBERS]: { shouldNotSkipPublicApp: true },
     [FEATURE_KEY.FETCH_PAGE_PERMISSIONS]: {
       license: LICENSE_FIELD.APP_PERMISSIONS_PAGES,
     },

@@ -11,7 +11,7 @@ These are the only widget definitions. The builder (frontend) and the server (de
 
 ## Key Changes Require Migrations
 
-If a config change moves, renames, or removes a key (e.g., moving `loadingState` from `styles` to `properties`), this WILL break existing apps. A migration MUST be written in `server/migrations/` to transform saved app definitions. Flag any key restructuring that lacks an accompanying migration.
+If a config change moves, renames, or removes a key (e.g., moving `loadingState` from `styles` to `properties`), this WILL break existing apps. A data migration MUST be written in `server/migrations/data/` to transform saved app definitions. Flag any key restructuring that lacks an accompanying migration.
 
 ## Widget Definition Rules
 

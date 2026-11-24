@@ -39,9 +39,14 @@ import { useLocation, useParams } from 'react-router-dom';
 import { whenBranchResolved } from '@/_helpers/active-branch';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
+import { appliedThemeDefinition } from '../_utils/themeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
+import * as isolationConfig from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/isolationConfig';
 import { getCachedAppDefinition, setCachedAppDefinition } from '@/AppBuilder/_helpers/appDefinitionCache';
+import { prefetchPacksForPages } from '@/_stores/builtinPacksStore';
+import { setOnBrandColors } from '@/AppBuilder/_helpers/onBrandText';
 
 const useAppData = (
   appId,
@@ -189,6 +194,15 @@ const useAppData = (
     const list = state.modulesStore?.modulesList ?? [];
     return list.find((m) => (m.co_relation_id ?? m.id) === appId)?.name ?? null;
   });
+
+  // Strict mode belongs to the app on screen; pages outside an app evaluate bindings as they always did.
+  useEffect(
+    () => () => {
+      if (!moduleMode) strictMode.setStrictForApp?.(false);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   useEffect(() => {
     setCurrentAppName(appName || '');
@@ -417,7 +431,11 @@ const useAppData = (
         // branch_id. The branch is resolved async (URL name -> id) by AppsRoute; without this
         // gate the load can race ahead with no branch_id and hydrate on the default branch.
         appDataPromise = whenBranchResolved().then(() =>
-          isPreviewForVersion ? appVersionService.getAppVersionData(appId, versionId, mode) : appService.fetchApp(appId)
+          isPreviewForVersion && queryParams.snapshot && mode !== 'edit'
+            ? appVersionService.getSnapshotDefinition(appId, versionId, queryParams.snapshot)
+            : isPreviewForVersion
+              ? appVersionService.getAppVersionData(appId, versionId, mode)
+              : appService.fetchApp(appId)
         );
       }
     }
@@ -426,6 +444,8 @@ const useAppData = (
     appDataPromise
       .then(async (result) => {
         if (cancelled) return;
+        // Start the pack list (and the used packs' manifests) now, not when the first pack widget renders.
+        prefetchPacksForPages(result?.pages);
         // Reset the AppBuilder store before populating the new app. The dependency graph and
         // resolvedStore are module-level singletons that are NOT reset between apps; on clone -> open
         // the graph still holds the previous app's edges, so setResolvedGlobals below fires a
@@ -451,6 +471,10 @@ const useAppData = (
             id: environmentId,
             name: queryParams.env,
           };
+        }
+        if (isFreshCanvasMount) {
+          const codeApp = (appData.build_mode ?? appData.buildMode) === 'code';
+          strictMode.setStrictForApp?.(codeApp && !!isolationConfig.strictInMode?.(mode));
         }
 
         let constantsResp;
@@ -565,6 +589,7 @@ const useAppData = (
             appGeneratedFromPrompt: appData.app_generated_from_prompt,
             aiGenerationMetadata: appData.ai_generation_metadata || {},
             appBuilderMode: appData.app_builder_mode || 'visual',
+            buildMode: appData.build_mode ?? appData.buildMode ?? 'visual',
             isReleasedApp: isReleasedApp,
             appType: appData.type,
             currentVersionId: appData.editing_version?.id || appData.current_version_id,
@@ -622,6 +647,8 @@ const useAppData = (
               {},
               {
                 ...(hasTaggedResources ? { taggedResources } : {}),
+                // The version store still holds the previously opened app's version at this point.
+                ...(appData.editing_version?.id ? { versionId: appData.editing_version.id } : {}),
                 attachments: state.attachments,
                 restoreDraftOnFailure: true,
                 onAccepted: clearKickoffDraft,
@@ -637,7 +664,7 @@ const useAppData = (
           getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
         }
 
-        if (appData.app_builder_mode === 'ai') {
+        if (appData.app_builder_mode === 'ai' || (appData.build_mode ?? appData.buildMode) === 'code') {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
           setIsQueryPaneExpanded(false);
@@ -760,8 +787,9 @@ const useAppData = (
           setModuleDefinition(appData.modules);
         }
 
+        // A stored snapshot's queries come with its definition; the version's own may differ.
         const queryData =
-          isPublicAccess || (mode !== 'edit' && appData.is_public)
+          isPublicAccess || (mode !== 'edit' && appData.is_public) || (mode !== 'edit' && queryParams.snapshot)
             ? appData
             : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
 
@@ -957,7 +985,7 @@ const useAppData = (
         const jsLibraries = globalSettings?.libraries?.javascript || [];
         const preloadedJS = globalSettings?.preloadedScript?.javascript || '';
 
-        if (jsLibraries.length > 0 || preloadedJS) {
+        if ((jsLibraries.length > 0 || preloadedJS) && !strictMode.isStrict?.()) {
           setJsLibraryLoading(true);
           try {
             const registry = jsLibraries.length > 0 ? await initializeLibraries(jsLibraries) : {};
@@ -1009,7 +1037,7 @@ const useAppData = (
   useEffect(() => {
     const root = document.documentElement;
     const mode = appMode && appMode !== 'auto' ? appMode : darkMode ? 'dark' : 'light';
-    const themeObj = !themeAccess ? baseTheme?.definition : selectedTheme?.definition || {};
+    const themeObj = appliedThemeDefinition(selectedTheme, themeAccess);
     Object.keys(themeObj).forEach((category) => {
       const categoryObj = themeObj[category];
       Object.keys(categoryObj).forEach((property) => {
@@ -1029,29 +1057,36 @@ const useAppData = (
         });
       });
     });
+    // Values the loop above does not set as variables: the radius scale (numbers, not light/dark pairs), a text colour
+    // readable on the brand colour and the brand fill that colour reads on at 4.5:1 (component packs draw primary
+    // buttons and chips with them).
+    const radius = themeObj?.border?.radius;
+    ['default', 'small', 'large'].forEach((size) => {
+      const value = Number(radius?.[size]);
+      if (Number.isFinite(value)) root.style.setProperty(`--cc-radius-${size}`, `${value}px`);
+      else root.style.removeProperty(`--cc-radius-${size}`);
+    });
+    setOnBrandColors(root, themeObj?.brand?.colors?.primary?.[mode]);
+    // The theme's font, for component packs (their shadow roots read --cc-font-family, else the page font).
+    const font = typeof themeObj?.text?.font === 'string' ? themeObj.text.font.trim() : '';
+    if (font)
+      root.style.setProperty('--cc-font-family', `'${font.replace(/'/g, '')}', ui-sans-serif, system-ui, sans-serif`);
+    else root.style.removeProperty('--cc-font-family');
     detectThemeChange();
   }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 
   useEffect(() => {
-    // Tried extending this to the standalone module editor (isModuleEditor) too, since it
-    // used to run unconditionally here before AppBuilder.jsx started passing moduleMode for
-    // direct module edits. Reverted: changeEditorVersionAction's onSuccess callers set
-    // currentVersionId a beat after changeEditorVersionAction's own atomic state update
-    // (mirroring the non-module VersionManagerDropdown pattern) — for modules that second
-    // write re-triggers this effect on top of the refresh changeEditorVersionAction already
-    // did, racing cleanUpStore/setApp/initDependencyGraph against themselves. The targeted
-    // fix lives in changeEditorVersionAction itself (pages/freeze/environment sync in one
-    // pass) instead of relying on this effect for modules.
-    if (moduleMode) return;
+    // A hot reload runs this same pipeline but swaps only the canvas, so the editor chrome
+    // (and the AI chat mid-conversation) stays mounted and we stay on the current page.
+    const isHotReload = hotReloadTimestamp != previousHotReloadTimestamp;
+    // The standalone module editor ('canvas') hot-reloads too; embedded module instances never do.
+    if (moduleMode && !(isHotReload && moduleId === 'canvas')) return;
     const exposedTheme =
       appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
     const isForceRefreshTriggered = restoreTimestamp != previousRestoreTimestamp;
-    // A hot reload runs this same pipeline but swaps only the canvas, so the editor chrome
-    // (and the AI chat mid-conversation) stays mounted and we stay on the current page.
-    const isHotReload = hotReloadTimestamp != previousHotReloadTimestamp;
 
     // currentVersionId (set by fetchApp -> setApp) and selectedVersion (set by the
     // env-dropdown init) are written by two independent async flows. On clone -> editor
@@ -1112,6 +1147,7 @@ const useAppData = (
           appGeneratedFromPrompt: appData.appGeneratedFromPrompt,
           aiGenerationMetadata: appData.ai_generation_metadata || {},
           appBuilderMode: appData.appBuilderMode || 'visual',
+          buildMode: appData.build_mode ?? appData.buildMode ?? 'visual',
           co_relation_id: appData.co_relation_id,
         });
 

@@ -2,6 +2,12 @@ import { Response } from 'express';
 import { User } from '@entities/user.entity';
 import { UserPersonalAccessToken } from '@entities/user_personal_access_tokens.entity';
 
+export interface PatOwner {
+  id: string;
+  name: string; // first + last name, trimmed
+  email: string;
+}
+
 // The settings-page token table view. Workspace PATs are USER-owned and WORKSPACE-bound:
 // one species (scope='workspace') consumed by the CLI today, MCP later — never per-feature kinds.
 export interface PatView {
@@ -12,6 +18,7 @@ export interface PatView {
   expiresAt: Date; // always set — workspace PATs ALWAYS expire (user-picked future date)
   lastUsedAt: Date | null; // null = never used
   createdAt: Date;
+  owner: PatOwner;
 }
 
 // What a PAT buys: a short-lived SESSION, not access. The internal APIs authenticate a
@@ -23,6 +30,7 @@ export interface PatSession {
   organizationSlug: string | null;
   organizationName: string | null;
   expiresAt: Date; // session expiry, NOT the token's — re-exchange when it lapses
+  appId?: string; // an app-pinned render session's app
 }
 
 // Options for a PAT minted FOR a backend service that is acting as the signed-in user, rather than
@@ -37,9 +45,20 @@ export interface ServicePatOptions {
 
 export interface IPersonalAccessTokensService {
   createPat(user: User, organizationId: string, name: string, expiresAt: Date): Promise<PatView & { token: string }>;
-  listPats(userId: string): Promise<PatView[]>;
-  deletePat(userId: string, id: string): Promise<void>;
-  createSessionFromPat(pat: UserPersonalAccessToken, response: Response, appId?: string): Promise<PatSession>;
+  /* canViewAll: the caller is an admin, a super-admin or holds patCreate or patRevoke. It widens the
+     list from the caller's own tokens to every non-service token in the workspace. */
+  listPats(userId: string, organizationId: string, canViewAll: boolean): Promise<PatView[]>;
+  /* Deletes in the REQUEST workspace only. Anything the caller may not delete is a 404, never a 403. */
+  deletePat(userId: string, organizationId: string, id: string, canRevokeAny: boolean): Promise<void>;
+  createSessionFromPat(
+    pat: UserPersonalAccessToken,
+    response: Response,
+    appId?: string,
+    apiSource?: string,
+    aiAppId?: string,
+    options?: { expiryMinutes?: number }
+  ): Promise<PatSession>;
+  createAiRenderSession?(user: User, response: Response, requestedAppId?: string): Promise<PatSession>;
   /* Find-or-create the single service token for (user, workspace, name). Returns the ENTITY, with
      `user` populated, because the caller mints a session from it in-process via createSessionFromPat
      — no raw token is produced and none is needed. */

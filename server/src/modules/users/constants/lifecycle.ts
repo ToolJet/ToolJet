@@ -129,3 +129,7 @@ export enum WORKSPACE_USER_STATUS {
 
 type source = 'google' | 'git' | 'signup' | 'invite' | 'openid' | 'ldap' | 'saml' | 'workspace_signup';
 type status = 'invited' | 'verified' | 'active' | 'archived';
+
+/** Emitted (emitAsync, inside the change's transaction) when a member is archived or loses the builder role.
+ *  Payload: { userId, organizationId (null = every workspace), manager }. */
+export const BUILDER_ACCESS_LOST = 'organization-user.builder-access-lost';

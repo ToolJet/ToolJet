@@ -89,7 +89,8 @@ $border-radius: 4px;
 
 .query-pane {
   scrollbar-width: none;
-  z-index: 3;
+  // Above widget tooltips (tw-z-50), which are portaled to body
+  z-index: 51;
 }
 
 .query-pane {
@@ -108,7 +109,7 @@ $border-radius: 4px;
 
   &.expanded,
   &.collapsed {
-    z-index: 12 !important;
+    z-index: 52 !important;
   }
 
   // Lift above the mobile canvas frame (z-index 1000); toggle bar stays above the content pane.
@@ -1130,6 +1131,18 @@ $border-radius: 4px;
       .preview-content {
         overflow-y: auto;
       }
+    }
+
+    // "Ran with empty parameters", between the Preview bar and its result.
+    .preview-parameters-note {
+      width: 100%;
+      flex-shrink: 0;
+      padding: 4px 8px;
+      background-color: var(--base);
+      color: var(--slate11);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 16px;
     }
 
     .preview-toggle {

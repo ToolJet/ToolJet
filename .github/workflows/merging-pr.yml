@@ -4,15 +4,20 @@ on:
   pull_request:
     types: [closed, labeled]
 
+# Every API call below uses the TOKEN_PR PAT; the default token needs nothing.
+permissions:
+  contents: read
+
+env:
+  # Branch name comes from the PR, so scripts read it as data ($BRANCH_NAME), never via ${{ }}.
+  BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+
 jobs:
   merge-submodules:
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.base.ref == 'lts-3.16'
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.base.ref == 'main' && github.event.pull_request.base.ref == 'lts-3.16'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Extract Branch Name
-        run: echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
-
       - name: Merge PR in ee-server (if exists)
         run: |
           PR=$(gh pr list -R ToolJet/ee-server --head "$BRANCH_NAME" --state open --json number -q '.[0].number')
@@ -40,7 +45,7 @@ jobs:
 
   update-submodule-sha:
     needs: merge-submodules
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.base.ref == 'lts-3.16'
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.base.ref == 'main' && github.event.pull_request.base.ref == 'lts-3.16'
     runs-on: ubuntu-latest
 
     steps:
@@ -88,13 +93,10 @@ jobs:
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
 
   check-submodule-prs:
-    if: github.event.action == 'labeled' && github.event.label.name == 'ready-to-merge'
+    if: github.event.action == 'labeled' && github.event.label.name == 'ready-to-merge' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
 
     steps:
-      - name: Extract Branch Name
-        run: echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
-
       - name: Check and Comment Linked Submodule PRs
         run: |
           echo "🔍 Checking linked submodule PRs for \`$BRANCH_NAME\`:" > comment.md

@@ -36,6 +36,9 @@ on:
           - ai-3.16-lts
           - ai-pre-release
 
+permissions:
+  contents: read
+
 jobs:
   manage-environment:
     if: ${{ github.event.inputs.env_changes != '' }}
@@ -43,19 +46,10 @@ jobs:
     steps:
       
       - name: ✅ Check user authorization
+        env:
+          ALLOWED_USERS: ${{ secrets.ALLOWED_USERS }}
         run: |
-          allowed_users=(
-            "${{ secrets.PLATFORM_1 }}"
-            "${{ secrets.PLATFORM_2 }}"
-            "${{ secrets.MARKETPLACE_1 }}"
-            "${{ secrets.MARKETPLACE_2 }}"
-            "${{ secrets.AI_1 }}"
-            "${{ secrets.AI_2 }}"
-            "${{ secrets.APP_BUILDER_1 }}"
-            "${{ secrets.APP_BUILDER_2 }}"
-            "${{ secrets.DEVOPS_1 }}"
-            "${{ secrets.DEVOPS_2 }}"
-          )
+          mapfile -t allowed_users < <(echo "$ALLOWED_USERS" | jq -r '.[]')
           current_user="${{ github.actor }}"
           authorized=false
           for user in "${allowed_users[@]}"; do
@@ -269,19 +263,10 @@ jobs:
           sudo apt-get clean
           df -h
       - name: ✅ Check user authorization
+        env:
+          ALLOWED_USERS: ${{ secrets.ALLOWED_USERS }}
         run: |
-          allowed_users=(
-            "${{ secrets.PLATFORM_1 }}"
-            "${{ secrets.PLATFORM_2 }}"
-            "${{ secrets.MARKETPLACE_1 }}"
-            "${{ secrets.MARKETPLACE_2 }}"
-            "${{ secrets.AI_1 }}"
-            "${{ secrets.AI_2 }}"
-            "${{ secrets.APP_BUILDER_1 }}"
-            "${{ secrets.APP_BUILDER_2 }}"
-            "${{ secrets.DEVOPS_1 }}"
-            "${{ secrets.DEVOPS_2 }}"
-          )
+          mapfile -t allowed_users < <(echo "$ALLOWED_USERS" | jq -r '.[]')
           current_user="${{ github.actor }}"
           authorized=false
           for user in "${allowed_users[@]}"; do
@@ -330,11 +315,9 @@ jobs:
           push: true
           tags: ${{ steps.taggen.outputs.tag }}
           platforms: linux/amd64
-          # Pass the token both ways: Dockerfiles read either the build arg or the BuildKit secret
           secrets: |
             github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ github.event.inputs.branch_name }}
       
       - name: Show the full Docker tag

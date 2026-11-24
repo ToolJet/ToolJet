@@ -112,6 +112,13 @@ export class VersionControllerV2 implements IVersionControllerV2 {
 
   @InitFeature(FEATURE_KEY.PROMOTE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Get(':id/versions/:versionId/promote/missing-tables')
+  missingTablesForPromote(@User() user: UserEntity, @App() app: AppEntity) {
+    return this.versionService.missingTablesForPromote(app, user);
+  }
+
+  @InitFeature(FEATURE_KEY.PROMOTE)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/versions/:versionId/promote')
   promoteVersion(@User() user: UserEntity, @App() app: AppEntity, @Body() promoteVersionDto: PromoteVersionDto) {
     return this.versionService.promoteVersion(app, user, promoteVersionDto);
