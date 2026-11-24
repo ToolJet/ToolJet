@@ -209,6 +209,30 @@ describe('Form submission', () => {
       expect(count('formSubmits')).toBe(0);
       expect(count('cancelClicks')).toBe(0);
     });
+
+    test('does nothing when the Form is disabled', async () => {
+      // Break this catches: the Form's hidden default button staying enabled
+      // while the Form is disabled. A field the disabled body cannot reach (here
+      // one in the header) then still submits the Form on Enter.
+      const form = formDefinition('form1', { buttonToSubmit: 'submit1' });
+      form.component.definition.properties.disabledState = binding('{{true}}');
+      renderApp(
+        {
+          form1: form,
+          headerField: textInput('headerField', 'form1-header'),
+          submit1: button('submit1', 'form1-footer', 'Submit'),
+        },
+        [counter('submit1', 'onClick', 'submitClicks'), counter('form1', 'onSubmit', 'formSubmits')]
+      );
+      await drain();
+      const nativeSubmits = recordNativeSubmits(formElement('form1'));
+
+      await pressEnter(screen.getByRole('textbox'));
+
+      expect(count('submitClicks')).toBe(0);
+      expect(count('formSubmits')).toBe(0);
+      expect(nativeSubmits).toEqual([]);
+    });
   });
 
   describe('clicking a Button', () => {
