@@ -88,6 +88,11 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   over-privileged DB role, not an unvalidated identifier (from/join tables are still workspace-checked).
 - Every table reference reaching a query builder must be workspace-validated first — same-shape leak
   as the proxy path if skipped.
+- Column defaults reach DDL on the admin connection as raw SQL (TypeORM `default`), so every string
+  default is a `pg` `escapeLiteral` literal: `addQuotesIfString` (text) and the DTO's
+  `formatTimestamp`/`formatJSONB`. `view_table` reverses it (outer quotes off, `''` → `'`) — change
+  the two together. SQL mode's privilege checks bind their values, and refuse any schema that isn't
+  the workspace's before querying (`validateSchemaAndTablePrivileges`).
 - DDL ops (`create_table`, `drop_table`, `edit_table`, `add_column`, `drop_column`, `edit_column`)
   split `normalize*`/`apply*`: `normalize` resolves names→ids and mints every column uuid (the only
   place `uuidv4()` happens outside raw SQL); `apply` only writes DDL/`configurations` for the one

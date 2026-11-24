@@ -1028,6 +1028,9 @@ export class TooljetDbDataOperationsService implements QueryService {
     await this.validateSchemaPrivileges(tooljetDbManager, pgUser, tenantSchema);
     for (const tableAndSchema of tableAndSchemaList) {
       const { schema, table } = tableAndSchema;
+      // Only the workspace's own schema is ever valid; refuse others before any privilege query sees the name.
+      if (schema && schema !== tenantSchema)
+        throw new Error('You are not authorized to perform actions on some schemas.');
       if (schema) await this.validateSchemaPrivileges(tooljetDbManager, pgUser, schema);
       if (!isEmpty(internalTableNameToRelationIdMap[table]))
         await this.validateUserHasTablePrivileges(
@@ -1042,9 +1045,13 @@ export class TooljetDbDataOperationsService implements QueryService {
   }
 
   protected async validateSchemaPrivileges(tooljetDbManager: EntityManager, pgUser: string, schema: string) {
-    const [{ has_schema_privilege }] = await tooljetDbManager.query(
-      `SELECT has_schema_privilege('${pgUser}', '${schema}', 'USAGE')`
-    );
+    // const [{ has_schema_privilege }] = await tooljetDbManager.query(
+    //   `SELECT has_schema_privilege('${pgUser}', '${schema}', 'USAGE')`
+    // );
+    const [{ has_schema_privilege }] = await tooljetDbManager.query(`SELECT has_schema_privilege($1, $2, 'USAGE')`, [
+      pgUser,
+      schema,
+    ]);
     if (!has_schema_privilege) throw new Error('You are not authorized to perform actions on some schemas.');
   }
 
@@ -1056,10 +1063,14 @@ export class TooljetDbDataOperationsService implements QueryService {
     tableName: string,
     tenantSchema: string
   ) {
-    const queryToExecute = schema
-      ? `SELECT has_table_privilege('${pgUser}', '${schema}.${internalTableNameToRelationIdMap[tableName]}', 'SELECT')`
-      : `SELECT has_table_privilege('${pgUser}', '${tenantSchema}.${internalTableNameToRelationIdMap[tableName]}', 'SELECT')`;
-    const [{ has_table_privilege }] = await tooljetDbManager.query(queryToExecute);
+    // const queryToExecute = schema
+    //   ? `SELECT has_table_privilege('${pgUser}', '${schema}.${internalTableNameToRelationIdMap[tableName]}', 'SELECT')`
+    //   : `SELECT has_table_privilege('${pgUser}', '${tenantSchema}.${internalTableNameToRelationIdMap[tableName]}', 'SELECT')`;
+    // const [{ has_table_privilege }] = await tooljetDbManager.query(queryToExecute);
+    const [{ has_table_privilege }] = await tooljetDbManager.query(
+      `SELECT has_table_privilege($1, format('%I.%I', $2::text, $3::text), 'SELECT')`,
+      [pgUser, schema || tenantSchema, internalTableNameToRelationIdMap[tableName]]
+    );
     if (!has_table_privilege) throw new Error('TJDB table permission denied');
   }
 

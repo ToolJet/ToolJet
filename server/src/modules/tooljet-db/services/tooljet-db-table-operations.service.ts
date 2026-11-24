@@ -23,6 +23,7 @@ import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { TooljetDbRelationResolverService, tableNotInEnvironmentMessage } from './relation-resolver.service';
 import { formatJoinsJSONBPath, formatJSONB, getTooljetEdition } from 'src/helpers/utils.helper';
 import { isString, isEmpty, camelCase } from 'lodash';
+import { escapeLiteral } from 'pg';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   findTenantSchema,
@@ -370,6 +371,9 @@ export class TooljetDbTableOperationsService {
       SELECT c.COLUMN_NAME,
              c.DATA_TYPE,
              CASE
+               -- A quoted literal ('it''s'::character varying): strip the outer quotes and unescape '' to '.
+               WHEN c.Column_default ~ '^''.*''::'
+                 THEN REPLACE(SUBSTRING(c.Column_default FROM '^''(.*)''::'), '''''', '''')
                WHEN c.Column_default LIKE '%::%'
                  THEN REPLACE(SUBSTRING(c.Column_default FROM '^''?(.*?)''?::'), '''', '')
                ELSE c.Column_default
@@ -508,7 +512,9 @@ export class TooljetDbTableOperationsService {
   }
 
   protected addQuotesIfString(value) {
-    if (isString(value)) return `'${value}'`;
+    // if (isString(value)) return `'${value}'`;
+    // Defaults reach DDL on the admin connection: escape, so a quote stays part of the text.
+    if (isString(value)) return escapeLiteral(value);
     return value;
   }
 
