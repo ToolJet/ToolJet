@@ -93,6 +93,7 @@ export class ConfigService implements IConfigService {
       'CODE_MODE_ISOLATION',
       'CODE_MODE_SANDBOX_URL',
       'CODE_MODE_STRICT_BINDINGS',
+      'ENABLE_DYNAMIC_HEIGHT_V2',
     ];
   }
 

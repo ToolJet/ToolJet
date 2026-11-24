@@ -24,6 +24,7 @@ const ChangeSetButtonAnchor = ({ label, tooltipId, children }) =>
   ) : (
     children
   );
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 /**
  * KeyValuePair Widget
@@ -110,7 +111,7 @@ export const KeyValuePair = ({
   const [maxLabelWidth, setMaxLabelWidth] = useState(0);
 
   // Dynamic height support
-  const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(dynamicHeight, currentMode);
   const heightChangeValue = useHeightObserver(containerRef, isDynamicHeightEnabled);
 
   useDynamicHeight({

@@ -13,8 +13,9 @@ import {
   resolveWidgetVisibility,
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
-import { isDynamicHeightV2Enabled } from '../dynamicHeight/flags';
-import { scheduleDynamicHeight, watchSavedLayouts } from '../dynamicHeight/scheduler';
+import { isDynamicHeightEditorPocEnabled, isDynamicHeightV2Enabled } from '../dynamicHeight/flags';
+import { scheduleDynamicHeight, watchSavedLayouts, watchSelection } from '../dynamicHeight/scheduler';
+import { watchStickySiblings } from '../dynamicHeight/editorSticky';
 import { heightHeldInView, isUi2PerRowType, sizesToDropAreas } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -60,7 +61,14 @@ export const createGridSlice = (set, get, store) => {
   let _reflowRafId = null;
 
   // The new engine re-solves a module whenever its saved layouts change.
-  if (isDynamicHeightV2Enabled() && store?.subscribe) store.subscribe(watchSavedLayouts(get));
+  if (store?.subscribe) {
+    // Editor POC: sticky siblings rewrite saved tops before the engine re-solves.
+    store.subscribe(watchStickySiblings(get));
+    store.subscribe(watchSavedLayouts(get));
+    store.subscribe(watchSelection(get));
+    // Editor POC: lets a demo read saved and rendered layouts from the console.
+    if (isDynamicHeightEditorPocEnabled() && typeof window !== 'undefined') window.__tjStore = store;
+  }
 
   const scheduleReflow = (id, layout, isContainer, contextIndices, moduleId) => {
     if (isDynamicHeightV2Enabled()) {

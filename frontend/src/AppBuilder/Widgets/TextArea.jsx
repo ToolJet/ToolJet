@@ -3,12 +3,13 @@ import { BaseInput } from './BaseComponents/BaseInput';
 import { useInput } from './BaseComponents/hooks/useInput';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const TextArea = (props) => {
   const inputLogic = useInput(props);
   const { properties, height, width, id, currentLayout, currentMode, subContainerIndex, componentType } = props;
   const { inputRef, value } = inputLogic;
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
 
   const heightChangeValue = useHeightObserver(inputRef, isDynamicHeightEnabled);
   const resizeTextArea = useCallback(() => {

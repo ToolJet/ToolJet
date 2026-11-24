@@ -5,6 +5,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import './jsonExplorer.scss';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const JSONExplorer = function JSONExplorer(props) {
   // ===== PROPS DESTRUCTURING =====
@@ -27,7 +28,7 @@ export const JSONExplorer = function JSONExplorer(props) {
   const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
 
   // ===== STATE MANAGEMENT =====
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isLoading: loadingState,
     isVisible: visibility,

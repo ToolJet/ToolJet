@@ -7,6 +7,8 @@ export const flexContainerConfig = {
     height: 300,
   },
   component: 'FlexContainer',
+  // How dynamic height treats this container; see frontend dynamicHeight/contracts.js.
+  heightContract: { content: 'flex' },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },

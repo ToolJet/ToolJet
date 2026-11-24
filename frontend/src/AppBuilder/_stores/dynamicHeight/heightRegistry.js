@@ -24,8 +24,10 @@ const handleResize = (entries) => {
     const size = entry.borderBoxSize?.[0]?.blockSize ?? entry.target.offsetHeight;
     const height = Math.round(size);
     // 0 means the widget sits in a hidden tab, closed modal or collapsed
-    // accordion; it reports again once it is shown.
-    if (height === 0 || frozenKeys.has(widget.key) || lastHeights.get(widget.key) === height) continue;
+    // accordion; it reports again once it is shown. 1 is the editor's hidden
+    // widget strip (a 0 px box with a 1 px dashed border), reported in the
+    // same frame the hook stops observing it.
+    if (height <= 1 || frozenKeys.has(widget.key) || lastHeights.get(widget.key) === height) continue;
     lastHeights.set(widget.key, height);
     changes.push({ ...widget, height });
     get = widget.get;

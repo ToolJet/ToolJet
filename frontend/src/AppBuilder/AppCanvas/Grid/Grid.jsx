@@ -64,6 +64,9 @@ import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
 import { getDropTargetLabel } from '../appCanvasUtils';
 import { packSlotRestrictionType, restrictedTypeOf } from '@/AppBuilder/_helpers/packDropRestrictions';
+import { isDynamicHeightV2Enabled } from '@/AppBuilder/_stores/dynamicHeight/flags';
+import { getRenderedHeight, getRenderedTopOffset, toSavedTop } from '@/AppBuilder/_stores/dynamicHeight/editorLayout';
+import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import {
   RESTRICTED_WIDGETS_CONFIG,
   RESTRICTED_WIDGET_SLOTS_CONFIG,
@@ -206,6 +209,25 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
     }
   };
 
+  // The selection box follows a selected widget whose rendered position or
+  // height changed; moveable only re-measures when told to.
+  const selectedRenderedLayout = useStore((state) => {
+    if (!isDynamicHeightV2Enabled()) return '';
+    return selectedComponents
+      .map((id) => {
+        const layout = state.temporaryLayouts?.[getDynamicLayoutKey(id, null, '', moduleId)];
+        return layout ? `${layout.top}:${layout.height}` : '';
+      })
+      .join('|');
+  });
+
+  useEffect(() => {
+    if (!selectedRenderedLayout) return;
+    const frame = requestAnimationFrame(safeUpdateMoveable);
+    return () => cancelAnimationFrame(frame);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRenderedLayout]);
+
   const noOfBoxs = Object.values(boxList || []).length;
 
   const { position: menuPosition, hideLogo, hideHeader } = pageMenuProperties;
@@ -217,6 +239,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const isAutoMobileLayout = useStore((state) => state.getIsAutoMobileLayout(moduleId));
+  const canResize = !(currentLayout === 'mobile' && isAutoMobileLayout) && !shouldFreeze;
+
+  // PDF Q8: a content-sized widget keeps all its resize handles; the bottom
+  // edge saves the visible height.
+  const getIndividualGroupableProps = useCallback((element) => individualGroupableProps(element), []);
 
   const handleResizeStop = useCallback(
     (boxList) => {
@@ -486,6 +513,20 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             y = y % parentHeight;
           }
         }
+        // The drop position is where the builder sees the widget; save the
+        // position behind it, so live heights aren't saved into the layout.
+        const isFlexParent = parent && getComponentTypeFromId(parent) === 'FlexContainer';
+        if (!isFlexParent) {
+          y = toSavedTop({
+            visibleTop: y,
+            slotId: parent ?? null,
+            left: _left,
+            width: _width,
+            height: _height,
+            moduleId,
+            excludeIds: boxPositions.map((box) => box.id),
+          });
+        }
         newParent = parent ? parent : null;
         oldParent = currentWidget.component?.parent;
         if (parent && getComponentTypeFromId(parent) === 'FlexContainer') {
@@ -494,9 +535,10 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             height: _height,
           });
         } else {
+          // PDF Q2/Q3: a moved widget keeps the height it had grown to.
           layouts[id] = {
             width: _width,
-            height: _height,
+            height: getRenderedHeight(id, _height, moduleId),
             top: y,
             left: _left,
           };
@@ -684,9 +726,9 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         origin={false}
         individualGroupable={virtualTarget ? false : groupedTargets.length <= 1}
         draggable={!shouldFreeze}
-        resizable={!(currentLayout === 'mobile' && isAutoMobileLayout) && !shouldFreeze ? isWidgetResizable : false}
+        resizable={canResize ? isWidgetResizable : false}
         keepRatio={false}
-        individualGroupableProps={individualGroupableProps}
+        individualGroupableProps={getIndividualGroupableProps}
         onResize={(e) => {
           const currentWidget = boxList.find(({ id }) => id === e.target.id);
           const parentId = currentWidget?.component?.parent;
@@ -732,9 +774,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           // Get scroll delta from autoscroll hook
           const scrollDelta = getScrollDelta();
 
-          // Calculate positions with scroll delta adjustment
+          // Calculate positions with scroll delta adjustment. The widget is
+          // drawn at its rendered top, which live heights can move away from
+          // its saved top.
           let transformX = currentWidget.left * _gridWidth;
-          let transformY = currentWidget.top;
+          let transformY = currentWidget.top + getRenderedTopOffset(currentWidget.id, currentWidget.top, moduleId);
 
           if (isLeftChanged) {
             // Left resize
@@ -858,8 +902,9 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
             const roundedTransformY = Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT;
             transformY = transformY % GRID_HEIGHT === 5 ? roundedTransformY - GRID_HEIGHT : roundedTransformY;
+            const renderedOffset = getRenderedTopOffset(currentWidget.id, currentWidget.top, moduleId);
             e.target.style.transform = `translate(${Math.round(transformX / _gridWidth) * _gridWidth}px, ${
-              Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
+              Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT + renderedOffset
             }px)`;
             if (!maxWidthHit || e.width < e.target.clientWidth) {
               e.target.style.width = `${Math.round(e.lastEvent.width / _gridWidth) * _gridWidth}px`;
@@ -945,7 +990,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               width = width < _gridWidth ? _gridWidth : width;
               const alignment = getComponentAlignment(currentWidget.id, moduleId);
               let posX = Math.round(ev.drag.translate[0] / _gridWidth) * _gridWidth;
-              let posY = Math.round(ev.drag.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
+              const renderedOffset = getRenderedTopOffset(currentWidget.id, currentWidget.top, moduleId);
+              let posY = Math.round((ev.drag.translate[1] - renderedOffset) / GRID_HEIGHT) * GRID_HEIGHT;
               const label = getComponentLabel(currentWidget.id, moduleId);
               const topAlignmentAddedHeight =
                 alignment === 'top' && label?.length > 0 ? TOP_ALIGNMENT_HEIGHT_INCREMENT : 0;
@@ -957,7 +1003,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               if (heightDiff !== 0) {
                 ev.target.style.height = `${height}px`;
               }
-              ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
+              ev.target.style.transform = `translate(${posX}px, ${posY + renderedOffset}px)`;
               newBoxs.push({
                 id: ev.target.id,
                 height: height,

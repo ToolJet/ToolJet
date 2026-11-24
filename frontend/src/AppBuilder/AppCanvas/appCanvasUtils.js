@@ -22,6 +22,7 @@ import {
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { manifestDefaultToDefinitionValue } from '@/AppBuilder/Widgets/libraryComponentDefaults';
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
+import { toSavedTop } from '@/AppBuilder/_stores/dynamicHeight/editorLayout';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -190,6 +191,15 @@ export const addNewWidgetToTheEditor = (
     activeLayoutData = flexLayout;
     nonActiveLayoutData = { ...flexLayout };
   } else {
+    // The drop is where the builder sees it; save the position behind it.
+    const savedHeight = customLayouts ? customLayouts[currentLayout].height : defaultHeight;
+    top = toSavedTop({
+      visibleTop: top,
+      slotId: parentId && parentId !== 'canvas' ? parentId : null,
+      left,
+      width: customLayouts ? customLayouts[currentLayout].width : width,
+      height: savedHeight,
+    });
     activeLayoutData = {
       top: top,
       left: left,

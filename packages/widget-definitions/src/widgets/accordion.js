@@ -7,6 +7,8 @@ export const accordionConfig = {
     height: 450,
   },
   component: 'Accordion',
+  // How dynamic height treats this container; see frontend dynamicHeight/contracts.js.
+  heightContract: { content: 'grid', followsExpansion: true },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },

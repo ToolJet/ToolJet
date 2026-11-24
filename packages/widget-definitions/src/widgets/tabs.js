@@ -7,6 +7,8 @@ export const tabsConfig = {
     height: 450,
   },
   component: 'Tabs',
+  // How dynamic height treats this container; see frontend dynamicHeight/contracts.js.
+  heightContract: { content: 'grid', contentSlot: 'activeTab' },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },

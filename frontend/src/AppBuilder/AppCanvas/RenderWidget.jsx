@@ -15,6 +15,7 @@ import WidgetTooltip from './WidgetTooltip';
 const SHADCN_COMPONENTS = [];
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
+import { isDynamicHeightLiveInEditor, isDynamicHeightV2Enabled } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
@@ -202,8 +203,19 @@ const RenderWidget = ({
     return component?.properties?.loadingState || component?.styles?.loadingState;
   });
 
+  // Editor POC (PDF Q51): a selected hidden widget is revealed, so the widget
+  // renders its content and measures like a visible one.
+  const isRevealed = useStore(
+    (state) =>
+      isDynamicHeightLiveInEditor() &&
+      state.modeStore?.modules?.[moduleId || 'canvas']?.currentMode === 'edit' &&
+      state.selectedComponents.includes(id) &&
+      !(resolvedProperties?.visibility ?? true),
+    shallow
+  );
+
   const obj = {
-    properties: { ...resolvedGeneralProperties, ...resolvedProperties },
+    properties: { ...resolvedGeneralProperties, ...resolvedProperties, ...(isRevealed && { visibility: true }) },
     styles: { ...resolvedGeneralStyles, ...transformedStyles },
     validation: resolvedValidation,
     ...(componentType === 'CustomComponent' && { component }),
@@ -360,7 +372,7 @@ const RenderWidget = ({
     return resolved?.properties?.visibility ?? resolved?.styles?.visibility ?? true;
   }, shallow);
   useEffect(() => {
-    if (currentMode !== 'view') return;
+    if (currentMode !== 'view' && !isDynamicHeightV2Enabled()) return;
     if (!collapseWhenHidden) return;
     const contextIndices = normalizeLayoutContext(resolveIndex);
     const handle = requestAnimationFrame(() => {

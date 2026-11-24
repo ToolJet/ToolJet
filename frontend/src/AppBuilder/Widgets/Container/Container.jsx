@@ -13,6 +13,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import './container.scss';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 import { HorizontalSlot } from '@/AppBuilder/Widgets/Form/Components/HorizontalSlot';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const Container = ({
   id,
@@ -42,7 +43,7 @@ export const Container = ({
   // Disabled container blocks the mouse via `data-disabled`; `inert` also removes the child
   // components from the tab order (runtime only — keeps the builder editable).
   useDisableInert(containerRef, isDisabled);
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   useDynamicHeight({
     isDynamicHeightEnabled,
     id,

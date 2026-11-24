@@ -88,6 +88,7 @@ const CutOffText = ({ as: Tag, text, style, darkMode, onCutOffHover, wrap }) => 
     </WidgetTooltip>
   );
 };
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const Statistics = function Statistics({
   id,
@@ -163,7 +164,7 @@ export const Statistics = function Statistics({
   // The card's height depends on fonts, icon and layout, so measure the rendered
   // card rather than deriving from data. Enabled only in view mode.
   const statRef = useRef(null);
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   const heightChangeValue = useHeightObserver(statRef, isDynamicHeightEnabled);
 
   useDynamicHeight({

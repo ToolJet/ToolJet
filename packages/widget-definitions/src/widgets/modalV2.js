@@ -3,6 +3,8 @@ export const modalV2Config = {
   displayName: 'Modal',
   description: 'Show pop-up windows',
   component: 'ModalV2',
+  // How dynamic height treats this container; see frontend dynamicHeight/contracts.js.
+  heightContract: { content: 'grid', portal: true },
   defaultSize: {
     width: 10,
     height: 40,

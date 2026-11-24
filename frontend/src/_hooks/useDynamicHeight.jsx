@@ -176,5 +176,11 @@ const useLegacyDynamicHeight = ({
   return;
 };
 
-// The flag is read once per page load, so every render takes the same branch.
-export const useDynamicHeight = isDynamicHeightV2Enabled() ? useDynamicHeightV2 : useLegacyDynamicHeight;
+// The engine is fixed for the life of the page (flags.js), so every render of
+// a widget takes the same branch. It is read here, not at import time: this
+// module can load before the public config that decides it has arrived.
+export const useDynamicHeight = (options) => {
+  const useEngineHook = isDynamicHeightV2Enabled() ? useDynamicHeightV2 : useLegacyDynamicHeight;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return useEngineHook(options);
+};

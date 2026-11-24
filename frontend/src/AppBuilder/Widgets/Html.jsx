@@ -6,6 +6,7 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { sanitizeAuthoredHtml } from '@/_helpers/sanitizeAuthoredHtml';
 import './html.scss';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const Html = function ({
   id,
@@ -38,7 +39,7 @@ export const Html = function ({
   };
 
   const isInitialRender = useRef(true);
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
 
   const wrapperRef = useRef(null);
   const contentRef = useRef(null);

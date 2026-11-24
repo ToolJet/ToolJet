@@ -4,6 +4,7 @@ import 'draft-js/dist/Draft.css';
 import { DraftEditor } from './DraftEditor';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export default function RichTextEditor({
   id,
@@ -23,7 +24,7 @@ export default function RichTextEditor({
   const { visibility, disabledState, boxShadow } = styles;
   const placeholder = properties.placeholder;
   const defaultValue = properties?.defaultValue ?? '';
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   const [currentValue, setCurrentValue] = useState(defaultValue);
 
   const [isDisabled, setIsDisabled] = useState(disabledState);

@@ -56,6 +56,11 @@ const advanceSlot = (slot, box) => {
   return next;
 };
 
+// Column slots are whole columns, but a saved edge can fall inside one (older
+// apps stored fractional lefts), so two widgets that only touch at such an
+// edge land in the same slot without overlapping.
+const overlapsHorizontally = (a, b) => a.left < b.left + b.width && b.left < a.left + a.width;
+
 // Blockers for every box. `sortedBoxes` must be in compareBoxes order.
 // Depends only on saved layouts, so callers can cache it until a layout edit.
 export const buildBlockers = (sortedBoxes) => {
@@ -65,7 +70,7 @@ export const buildBlockers = (sortedBoxes) => {
     const above = new Set();
     const [start, end] = columnSpan(box);
     for (let column = start; column < end; column++) {
-      for (const open of slots[column]) above.add(open);
+      for (const open of slots[column]) if (overlapsHorizontally(open, box)) above.add(open);
       slots[column] = advanceSlot(slots[column], box);
     }
     blockers.set(box.id, [...above]);
@@ -114,6 +119,8 @@ export const solveContainer = (boxes, flowOf) => {
   return { tops, bottom, sorted };
 };
 
+// ── Editor POC: the inverse ─────────────────────────────────────────────────
+
 // Blockers a NEW box would get if it were saved at `top`, without re-running
 // the sweep for the whole container. Only the box's own columns are walked.
 const blockersAt = (sortedSiblings, candidate) => {
@@ -125,6 +132,7 @@ const blockersAt = (sortedSiblings, candidate) => {
       if (compareBoxes(sibling, candidate) >= 0) break;
       const [siblingStart, siblingEnd] = columnSpan(sibling);
       if (column < siblingStart || column >= siblingEnd) continue;
+      if (!overlapsHorizontally(sibling, candidate)) continue;
       slot = advanceSlot(slot, sibling);
     }
     for (const open of slot) above.add(open);
@@ -133,7 +141,7 @@ const blockersAt = (sortedSiblings, candidate) => {
 };
 
 // Rendered top of a box saved at `top`, given the solved layout of the others.
-export const renderedTopFor = ({ top, left, width, height = 0, id = '￿' }, sortedSiblings, tops, flowOf) => {
+export const renderedTopFor = ({ top, left, width, height = 0, id = '\uffff' }, sortedSiblings, tops, flowOf) => {
   const candidate = { id, top, left, width, height };
   return topFromBlockers(candidate, blockersAt(sortedSiblings, candidate), tops, flowOf);
 };

@@ -6,6 +6,7 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { getModifiedColor } from '../utils';
 import './link.scss';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const Link = ({
   id,
@@ -35,7 +36,7 @@ export const Link = ({
   // ===== DYNAMIC HEIGHT =====
   // Grows when the link text wraps to multiple lines. Wrapping depends on width and
   // text length, so observe the rendered widget. Enabled only in view mode.
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   const heightChangeValue = useHeightObserver(wrapperRef, isDynamicHeightEnabled);
 
   useDynamicHeight({

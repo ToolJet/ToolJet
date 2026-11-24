@@ -10,6 +10,7 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -64,7 +65,7 @@ export const Text = function Text({
   const [isLoading, setLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   count = count + 1;
 
   // Create ref for height observation

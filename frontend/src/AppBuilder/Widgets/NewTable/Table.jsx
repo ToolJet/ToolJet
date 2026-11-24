@@ -17,6 +17,7 @@ import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './table.scss';
 import './shadcnLook.scss';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 const Table = memo(
   ({
@@ -110,7 +111,7 @@ const Table = memo(
     const data =
       restOfProperties.dataSourceSelector === 'rawJson' ? restOfProperties.data : restOfProperties.dataSourceSelector;
 
-    const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+    const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
 
     const firstRowOfTable = useMemo(() => {
       if (!Array.isArray(data) || data.length === 0 || isEmpty(data[0])) return undefined;

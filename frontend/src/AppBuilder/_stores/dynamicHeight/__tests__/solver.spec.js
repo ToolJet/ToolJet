@@ -73,6 +73,13 @@ describe('dynamic height solver', () => {
     expect(solveWith(boxes, { a: 150 }).tops.get('b')).toBe(130);
   });
 
+  it('does not treat widgets that only touch at a fractional column edge as stacked', () => {
+    // Saved from an older app: `a` ends at column 10.5 and `b` starts there.
+    // They never share a column, so `a` growing must not move `b`.
+    const boxes = [box('a', 0, 0, 10.5, 50), box('b', 60, 10.5, 10, 50)];
+    expect(solveWith(boxes, { a: 150 }).tops.get('b')).toBe(60);
+  });
+
   it('builds blockers from the nearest widget in each column', () => {
     const sorted = sortBoxes([box('a', 0, 0, 43, 40), box('b', 50, 0, 43, 40), box('c', 100, 0, 43, 40)]);
     const blockers = buildBlockers(sorted);
@@ -81,6 +88,7 @@ describe('dynamic height solver', () => {
   });
 });
 
+// Editor POC: the inverse used for drops, pastes and sticky siblings.
 describe('saved top for a visible drop position', () => {
   const siblingsFor = (boxes, heights) => {
     const flowOf = (id) => heights[id] ?? boxes.find((b) => b.id === id).height;

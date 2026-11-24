@@ -13,6 +13,7 @@ import { shallow } from 'zustand/shallow';
 import Spinner from '@/_ui/Spinner';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import './flexContainer.scss';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const FlexContainer = ({
   id,
@@ -69,8 +70,10 @@ export const FlexContainer = ({
   // A card (component packs) always fits its content in the viewer: it never scrolls inside or leaves a band. A row
   // is never a scroll area either: it grows to its tallest child (a fixed-height column may still scroll).
   const isCardSurface = cardStyle === 'shadcnCard';
-  const isDynamicHeightEnabled =
-    fitsContentInView('FlexContainer', { ...properties, direction: effectiveDirection }) && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(
+    fitsContentInView('FlexContainer', { ...properties, direction: effectiveDirection }),
+    currentMode
+  );
 
   const childIds = useStore((state) => state.containerChildrenMapping?.[id] ?? [], shallow);
 

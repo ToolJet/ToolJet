@@ -12,6 +12,7 @@ import { useFilePicker } from './hooks/useFilePicker';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 const FilePicker = (props) => {
   const {
@@ -71,7 +72,7 @@ const FilePicker = (props) => {
 
   const rootRef = useRef(null);
 
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   // Base (authored) pixel height — used as the dropzone's floor so it keeps its size
   // while the widget grows downward to reveal the selected-file list.
   const dropzoneBaseHeight = numericWidgetHeight + (containerPadding === 'default' ? 0 : 4);

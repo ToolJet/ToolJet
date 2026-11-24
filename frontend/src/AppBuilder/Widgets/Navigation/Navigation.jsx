@@ -24,6 +24,7 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './navigation.scss';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 // max length for label and caption
 const NAV_TEXT_MAX_LENGTH = 25;
@@ -340,7 +341,7 @@ export const Navigation = function Navigation(props) {
   });
 
   // ===== DYNAMIC HEIGHT =====
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   const heightChangeValue = useHeightObserver(containerRef, isDynamicHeightEnabled);
 
   useDynamicHeight({

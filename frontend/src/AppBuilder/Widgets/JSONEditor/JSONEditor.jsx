@@ -12,6 +12,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export async function loadCodeMirrorTheme(theme) {
   const mod = await import('@uiw/codemirror-themes-all');
@@ -53,7 +54,7 @@ export const JSONEditor = function JSONEditor(props) {
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
 
   // ===== STATE MANAGEMENT =====
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isLoading: loadingState,
     isVisible: visibility,

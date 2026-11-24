@@ -27,6 +27,7 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 import './form.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import FormSignalContext from './FormSignalContext';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 const FormComponent = (props) => {
   const {
@@ -78,7 +79,7 @@ const FormComponent = (props) => {
     newJsonSchema,
   } = properties;
 
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   const advanced = _deprecatedAdvanced || isJSONSchema;
   const JSONSchema = _deprecatedAdvanced ? _deprecatedJSONSchema : newJsonSchema;
 

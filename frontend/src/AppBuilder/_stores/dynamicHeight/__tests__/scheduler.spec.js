@@ -51,4 +51,30 @@ describe('dynamic height scheduler', () => {
     nextFrame();
     expect(flushDynamicHeight).toHaveBeenCalledTimes(1);
   });
+
+  it('does not keep waiting on later flushes for a widget that never reported', () => {
+    expectMeasurement('ghost');
+    scheduleDynamicHeight(get, rowRequest);
+    for (let i = 0; i < 10 && frames.length; i++) nextFrame();
+    expect(flushDynamicHeight).toHaveBeenCalledTimes(1);
+
+    scheduleDynamicHeight(get, rowRequest);
+    nextFrame();
+    expect(flushDynamicHeight).toHaveBeenCalledTimes(2);
+  });
+
+  it('solves the whole module again, once, after a pass that reported a failure', () => {
+    flushDynamicHeight.mockImplementation((_, { onError }) => onError?.('canvas', new Error('boom')));
+    scheduleDynamicHeight(get, rowRequest);
+    nextFrame();
+    expect(flushDynamicHeight).toHaveBeenCalledTimes(1);
+
+    nextFrame();
+    expect(flushDynamicHeight).toHaveBeenCalledTimes(2);
+    expect(flushDynamicHeight.mock.calls[1][1].fullModules).toEqual(['canvas']);
+
+    nextFrame();
+    expect(flushDynamicHeight).toHaveBeenCalledTimes(2);
+    flushDynamicHeight.mockReset();
+  });
 });
