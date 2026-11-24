@@ -85,6 +85,12 @@
     display: flex;
     align-items: center
   }
+
+  // The separators already space the controls 8px apart; the environment menu's own 1rem is set
+  // inline for the editor header, so it needs !important to match here.
+  .app-environment-menu {
+    margin-left: 0 !important;
+  }
 }
 
 .offcanvas-header {

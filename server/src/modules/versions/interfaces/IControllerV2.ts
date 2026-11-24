@@ -1,3 +1,4 @@
+import { PermissionSubject } from '@modules/app-permissions/types/view-as';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { User as UserEntity } from '@entities/user.entity';
 import { App as AppEntity } from '@entities/app.entity';
@@ -11,7 +12,8 @@ export interface IVersionControllerV2 {
     versionId: string,
     mode: string,
     req: Request,
-    res: Response
+    res: Response,
+    subject: PermissionSubject
   ): Promise<any>;
   getModuleVersionByStableIds(
     user: UserEntity,

@@ -10,6 +10,7 @@ import { ComponentPermissionsRepository } from './repositories/component-permiss
 import { SubModule } from '@modules/app/sub-module';
 import { AppsRepository } from '@modules/apps/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { ViewAsService } from './view-as.service';
 
 export class AppPermissionsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -17,11 +18,17 @@ export class AppPermissionsModule extends SubModule {
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const { AppPermissionsController, AppPermissionsService, AppPermissionsUtilService } = await this.getProviders(
-      configs,
-      'app-permissions',
-      ['controller', 'service', 'util.service']
-    );
+    const {
+      AppPermissionsController,
+      AppPermissionsService,
+      AppPermissionsUtilService,
+      ViewAsService: ViewAsServiceImpl,
+    } = await this.getProviders(configs, 'app-permissions', [
+      'controller',
+      'service',
+      'util.service',
+      'view-as.service',
+    ]);
 
     return this.cacheModule(cacheKey, {
       module: AppPermissionsModule,
@@ -29,6 +36,9 @@ export class AppPermissionsModule extends SubModule {
       providers: [
         AppPermissionsService,
         AppPermissionsUtilService,
+        // Registered under the CE class so CE code (ViewAsInterceptor) and EE code inject the same
+        // token; the edition decides the implementation.
+        { provide: ViewAsService, useClass: ViewAsServiceImpl },
         AppsRepository,
         RolesRepository,
         PageUsersRepository,
@@ -40,7 +50,7 @@ export class AppPermissionsModule extends SubModule {
         FeatureAbilityFactory,
         GroupPermissionsRepository,
       ],
-      exports: [AppPermissionsUtilService],
+      exports: [AppPermissionsUtilService, ViewAsService],
     });
   }
 }

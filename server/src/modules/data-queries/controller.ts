@@ -1,4 +1,6 @@
 import { Controller, Get, Param, Body, Post, Patch, Delete, UseGuards, Put, Res, Query } from '@nestjs/common';
+import { ResolveViewAs, ViewAsSubject } from '@modules/app-permissions/view-as.interceptor';
+import { PermissionSubject } from '@modules/app-permissions/types/view-as';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { AppScopedThrottlerGuard } from './throttler/app-scoped-throttler.guard';
 import { DataQueriesService } from './service';
@@ -38,13 +40,15 @@ export class DataQueriesController implements IDataQueriesController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
   @Get(':versionId')
+  @ResolveViewAs()
   index(
     @User() user: UserEntity,
     @AppDecorator() app: App,
     @Param('versionId') versionId: string,
+    @ViewAsSubject() subject: PermissionSubject,
     @Query('mode') mode?: string
   ) {
-    return this.dataQueriesService.getAll(user, app, versionId, mode);
+    return this.dataQueriesService.getAll(user, app, versionId, mode, subject);
   }
 
   @InitFeature(FEATURE_KEY.CREATE)
@@ -139,6 +143,7 @@ export class DataQueriesController implements IDataQueriesController {
     AppScopedThrottlerGuard
   )
   @Post(':id/versions/:versionId/run/:environmentId')
+  @ResolveViewAs()
   runQueryOnBuilder(
     @User() user: UserEntity,
     @AppDecorator() app: App,
@@ -148,6 +153,7 @@ export class DataQueriesController implements IDataQueriesController {
     @Ability() ability: AppAbility,
     @DataSource() dataSource: DataSourceEntity,
     @Res({ passthrough: true }) response: Response,
+    @ViewAsSubject() subject: PermissionSubject,
     @Query('mode') mode?: string
   ) {
     return this.dataQueriesService.runQueryOnBuilder(
@@ -159,7 +165,8 @@ export class DataQueriesController implements IDataQueriesController {
       dataSource,
       response,
       mode,
-      app
+      app,
+      subject
     );
   }
 

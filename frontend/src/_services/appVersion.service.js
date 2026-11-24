@@ -1,6 +1,9 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 import { appendBranchParam } from '@/_helpers/active-branch';
+import { viewAsHeaders } from '@/AppBuilder/_helpers/viewAs';
+
+const previewHeaders = (mode, viewAs) => ({ ...authHeader(), ...(mode === 'view' ? viewAsHeaders(viewAs) : {}) });
 
 export const appVersionService = {
   getSnapshotDefinition,
@@ -71,8 +74,9 @@ function getSnapshotDefinition(appId, versionId, snapshotId) {
   ).then(handleResponse);
 }
 
-function getAppVersionData(appId, versionId, mode) {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+// viewAs: the "View as" preview target; only sent in view mode, where the server honours it.
+function getAppVersionData(appId, versionId, mode, viewAs) {
+  const requestOptions = { method: 'GET', headers: previewHeaders(mode, viewAs), credentials: 'include' };
   return fetch(
     appendBranchParam(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}?mode=${mode}`),
     requestOptions

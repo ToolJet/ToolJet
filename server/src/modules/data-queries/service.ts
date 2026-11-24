@@ -1,4 +1,6 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { DataQueryExecutionOptions } from './interfaces/IUtilService';
+import { PermissionSubject } from '@modules/app-permissions/types/view-as';
 import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -126,7 +128,8 @@ export class DataQueriesService implements IDataQueriesService {
     }
   }
 
-  async getAll(user: User, app: App, versionId: string, mode?: string) {
+  // CE enforces no query permissions, so the View as subject changes nothing here.
+  async getAll(user: User, app: App, versionId: string, mode?: string, subject?: PermissionSubject) {
     const queries = await this.dataQueryRepository.getAll(versionId, mode);
     return { data_queries: serializeDataQueries(queries) };
   }
@@ -313,7 +316,9 @@ export class DataQueriesService implements IDataQueriesService {
     dataSource: DataSource,
     response: Response,
     mode?: string,
-    app?: App
+    app?: App,
+    // Who query permissions are checked for (View as); the requester when absent.
+    subject?: PermissionSubject
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
@@ -345,7 +350,8 @@ export class DataQueriesService implements IDataQueriesService {
       dataQuery['options'] = options;
     }
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
+    const opts = subject ? { permissionSubject: subject } : undefined;
+    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app, opts);
   }
 
   // GitSyncQueryEditGuard's rule as a check: read-only versions still run, but don't persist options.
@@ -393,7 +399,8 @@ export class DataQueriesService implements IDataQueriesService {
     response: Response,
     environmentId?: string,
     mode?: string,
-    app?: App
+    app?: App,
+    opts?: DataQueryExecutionOptions
   ): Promise<object> {
     let result = {};
 
@@ -406,7 +413,7 @@ export class DataQueriesService implements IDataQueriesService {
         environmentId,
         mode,
         app,
-        undefined // opts parameter
+        opts
       );
     } catch (error) {
       if (error.constructor.name === 'QueryError') {

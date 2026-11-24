@@ -19,6 +19,8 @@ import { IVersionControllerV2 } from './interfaces/IControllerV2';
 import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { getConnectionInstance } from '@helpers/database.helper';
 import { getAppDataRevision } from '@modules/apps/app-data-revision';
+import { ResolveViewAs, ViewAsSubject } from '@modules/app-permissions/view-as.interceptor';
+import { PermissionSubject } from '@modules/app-permissions/types/view-as';
 
 // ETag for the released version: changes with the version row (e.g. promote) and everything the
 // released-app cache key covers (getAppDataRevision). Other versions aren't tracked by the change
@@ -68,14 +70,23 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   @InitFeature(FEATURE_KEY.GET_ONE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/versions/:versionId')
+  @ResolveViewAs()
   async getVersion(
     @User() user: UserEntity,
     @App() app: AppEntity,
     @Param('versionId') versionId: string,
     @Query('mode') mode: string,
     @Req() req: Request,
-    @Res({ passthrough: true }) res: Response
+    @Res({ passthrough: true }) res: Response,
+    @ViewAsSubject() subject: PermissionSubject
   ) {
+    // A "View as" response is filtered for someone other than the requester and the ETag doesn't
+    // know about the subject, so it must never be cached or answered from cache.
+    if (subject.simulated) {
+      res.set('Cache-Control', 'no-store');
+      return this.versionService.getVersion(app, user, mode, subject);
+    }
+
     // The released version is cached by the browser but revalidated on every load (no-cache), so
     // an unchanged version costs a 304 instead of rebuilding and downloading the payload.
     const etag = await releasedVersionETag(app, versionId, mode, user.id, () =>

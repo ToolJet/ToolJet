@@ -27,3 +27,7 @@ export enum FEATURE_KEY {
   UPDATE_COMPONENT_PERMISSIONS = 'update_component_permissions',
   DELETE_COMPONENT_PERMISSIONS = 'delete_component_permissions',
 }
+
+// "View as" preview: a Builder previews the app with another user's or group's page, component
+// and query permissions. Format: `user:<uuid>` or `group:<uuid>` (one user or one group, never both).
+export const VIEW_AS_HEADER = 'x-tj-view-as';

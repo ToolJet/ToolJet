@@ -1,3 +1,4 @@
+import { PermissionSubject } from '@modules/app-permissions/types/view-as';
 import { App } from '@entities/app.entity';
 import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { APP_TYPES } from '@modules/apps/constants';
@@ -259,7 +260,8 @@ export class VersionService implements IVersionService {
     return this.licenseTermsService.getLicenseTerms(VIEWER_LICENSE_FIELDS, organizationId);
   }
 
-  async getVersion(app: App, user: User, mode?: string): Promise<any> {
+  // CE enforces no page, component or query permissions, so the View as subject changes nothing.
+  async getVersion(app: App, user: User, mode?: string, subject?: PermissionSubject): Promise<any> {
     const prepareResponse = async (app: App, versionId: string) => {
       let appVersion,
         updatedVersionId = versionId;

@@ -41,6 +41,7 @@ import { createEditorOverlaySlice } from './slices/editorOverlaySlice';
 import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
 import { tableComponentSlice } from './slices/componentSlices/tableComponentSlice';
 import { createBranchSlice } from './slices/branchSlice';
+import { createViewAsSlice } from './slices/viewAsSlice';
 import * as compareGuard from '@ee/modules/CodeMode/AppBuilder/CodeDiff/compareGuard';
 
 const exposeCompareProbe = compareGuard.exposeCompareProbe ?? (() => {});
@@ -89,6 +90,7 @@ const useStore = create(
       ...listViewComponentSlice(...state),
       ...tableComponentSlice(...state),
       ...createBranchSlice(...state),
+      ...createViewAsSlice(...state),
     })),
     { name: 'App Builder Store', anonymousActionType: 'unknown' }
   )
