@@ -397,7 +397,10 @@ async function getProviderModels(provider) {
 async function getLlmPreference(conversationId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const query = conversationId ? `?conversationId=${encodeURIComponent(conversationId)}` : '';
-  return fetch(`${config.apiUrl}/ai/llm-preference${query}`, requestOptions).then(handleResponse);
+  // Access can change after the picker mounts. A background read should never prompt for an upgrade.
+  return fetch(`${config.apiUrl}/ai/llm-preference${query}`, requestOptions).then((response) =>
+    handleResponse(response, undefined, undefined, true)
+  );
 }
 
 async function updateLlmPreference(provider, model, modelContextWindow, conversationId) {
