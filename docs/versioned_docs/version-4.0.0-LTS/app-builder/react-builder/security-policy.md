@@ -92,9 +92,7 @@ Workspace admins, and app editors with release permission, can do this. A person
 
 Workspace admins manage security for every React Builder app in the workspace at **Workspace settings** → **App security**.
 
-<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/security/workspace-app-security.png" alt="The App security page in workspace settings: each app with its status and open issues, the allowed addresses, the policy summary, the exceptions and recent activity" />
-
-<!-- TODO retake after the UI rename: the page text says "Code mode". -->
+<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/security/workspace-app-security-v2.png" alt="The App security page in workspace settings: each app with its status and open issues, the allowed addresses, the policy summary, the exceptions and recent activity" />
 
 The page has five sections:
 
