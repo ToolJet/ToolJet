@@ -1,9 +1,12 @@
 import { FEATURE_KEY } from './index';
 import { MODULES } from '@modules/app/constants/modules';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { isCodeModeAllowed } from '@modules/code-mode-source/constants';
 import { FeaturesConfig } from '../types';
 
-const gated = { license: LICENSE_FIELD.CUSTOM_COMPONENT_LIBRARIES };
+// Apps built in code keep their code in a library, so where Code mode is allowed the route gate stays open and the
+// controller checks the license per library: a Code mode app's library is open on every plan, any other needs it.
+const gated = isCodeModeAllowed() ? {} : { license: LICENSE_FIELD.CUSTOM_COMPONENT_LIBRARIES };
 
 export const FEATURES: FeaturesConfig = {
   [MODULES.CUSTOM_COMPONENT_LIBRARIES]: {

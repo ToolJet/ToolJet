@@ -12,6 +12,7 @@ const initialState = {
   error: null,
   retryCount: 0,
   currentFetchId: null, // Track the latest fetch request to prevent race conditions
+  pinsBlocked: null, // Lives here because promote runs inside the dropdown popover, which unmounts on close
 };
 
 export const useVersionManagerStore = create(
@@ -22,6 +23,8 @@ export const useVersionManagerStore = create(
       filteredVersions: [],
 
       // Actions
+      setPinsBlocked: (pinsBlocked) => set({ pinsBlocked }),
+
       setSearchQuery: (query) => {
         set({ searchQuery: query });
         get()._filterVersionsByEnvironmentAndSearch();

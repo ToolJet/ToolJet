@@ -10,6 +10,7 @@ import { handleError } from './handleAppAccess';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { ERROR_TYPES } from './constants';
 import { refreshSsoInfo } from './refreshSsoInfo';
+import { notifyMigrationGate } from './migrationGate';
 
 const copyFunction = (input) => {
   let text = document.getElementById(input).innerHTML;
@@ -44,6 +45,7 @@ export function handleResponse(
     );
     const data = text && JSON.parse(text);
     if (!response.ok) {
+      notifyMigrationGate(response.status, data);
       // Custom friendly error messages
       if (response.status === 422 && typeof data?.message === 'string') {
         if (data.message.includes('value too long for type character varying(50)')) {

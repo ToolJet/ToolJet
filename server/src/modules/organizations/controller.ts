@@ -12,7 +12,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { FeatureAbilityGuard } from './ability/guard';
 import { FEATURE_KEY } from './constants';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
-import { OrganizationAuthGuard } from '@modules/session/guards/organization-auth.guard';
+import { OrganizationsListAuthGuard } from '@modules/session/guards/organizations-list-auth.guard';
 
 @Controller('organizations')
 @InitModule(MODULES.ORGANIZATIONS)
@@ -20,8 +20,7 @@ export class OrganizationsController implements IOrganizationsController {
   constructor(protected organizationsService: OrganizationsService) {}
 
   @InitFeature(FEATURE_KEY.GET)
-  // TODO: Change to jwt auth guard - check why we need OrganizationAuthGuard here
-  @UseGuards(OrganizationAuthGuard, FeatureAbilityGuard)
+  @UseGuards(OrganizationsListAuthGuard, FeatureAbilityGuard)
   @Get()
   async get(
     @User() user: UserEntity,

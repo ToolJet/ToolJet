@@ -19,6 +19,7 @@ import {
   redactHeaders,
   validateUrlForSSRF,
   getSSRFProtectionOptions,
+  queryErrorMessage,
 } from '@tooljet-plugins/common';
 import { QueryOptions, SourceOptions } from './types';
 
@@ -134,7 +135,7 @@ export default class GraphqlQueryService implements QueryService {
         throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, result);
       }
 
-      throw new QueryError('Query could not be completed', error.message, result);
+      throw new QueryError(queryErrorMessage(error), error.message, result);
     }
 
     return {

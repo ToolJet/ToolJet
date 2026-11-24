@@ -8,6 +8,7 @@ import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 import useStore from '@/AppBuilder/_stores/store';
 import { QueryCacheStatus } from './QueryCacheStatus';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { emptyParametersNote } from './previewParameters';
 
 const Preview = ({ darkMode, calculatePreviewHeight }) => {
   const [key, setKey] = useState('raw');
@@ -26,6 +27,8 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
   const queryPreviewCache = useStore((state) => state.queryPanel.queryPreviewCache);
   const cacheEnabled = useStore((state) => state.queryPanel.selectedQuery?.options?.responseCache?.enabled === true);
   const previewLoading = useStore((state) => state.queryPanel.previewLoading);
+  const previewEmptyParameters = useStore((state) => state.queryPanel.previewEmptyParameters);
+  const emptyParametersMessage = emptyParametersNote(previewEmptyParameters);
   const previewPanelRef = useRef();
   const queryPanelHeight = useStore((state) => state.queryPanel.queryPanelHeight);
 
@@ -203,6 +206,11 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
           </div>
         )}
       </div>
+      {previewPanelExpanded && !previewLoading && !!queryPreviewData && emptyParametersMessage && (
+        <div className="preview-parameters-note" role="note" data-cy="preview-empty-parameters-note">
+          {emptyParametersMessage}
+        </div>
+      )}
       <div className="preview-content" data-cy="preview-content">
         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
           <div className="position-relative h-100">

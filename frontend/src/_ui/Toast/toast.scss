@@ -150,3 +150,18 @@
     }
   }
 }
+
+// Dashboard (ungrouped) toasts: long messages scroll inside the toast instead of running off-screen.
+.standard-toast__message {
+  min-width: 0;
+  max-height: max(20px, calc(100dvh - 128px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  overflow-wrap: anywhere;
+
+  &:focus-visible {
+    outline: 2px solid var(--border-accent-strong);
+    outline-offset: 2px;
+  }
+}

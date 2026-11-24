@@ -6,6 +6,7 @@ import SettingsMenu from './SettingsMenu';
 import WorkspaceActions from './WorkspaceActions';
 import ConsultationBanner from './ConsultationBanner';
 import UserGroupMigrationBanner from './UserGroupMigrationBanner';
+import SsrfNoticeBanner from './SsrfNoticeBanner';
 import AppTypeTab from './AppTypeTab';
 
 export {
@@ -17,5 +18,6 @@ export {
   WorkspaceActions,
   ConsultationBanner,
   UserGroupMigrationBanner,
+  SsrfNoticeBanner,
   AppTypeTab,
 };
