@@ -569,11 +569,11 @@ module.exports = {
           },
           {
             from: '/docs/development-lifecycle/branching-and-pr',
-            to: '/docs/beta/branching-and-pr',
+            to: '/docs/development-lifecycle/gitsync/multi-branch/overview',
           },
           {
             from: '/docs/development-lifecycle/gitsync/connect-to-git-repo/gitsync-env-vars/',
-            to: '/docs/beta/gitsync-env-vars',
+            to: '/docs/setup/configuration/env-vars#configure-gitsync-via-environment-variables',
           },
           {
             from: '/docs/tooljet-api/',
