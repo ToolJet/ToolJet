@@ -71,7 +71,9 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 - Fail-closed: a uuid this workspace doesn't own is always 404. An owned-but-unpromoted uuid is 404
   in the URL path (doesn't exist here), 400 in an embedded querystring reference (malformed request).
 - **Five independent resolution seams**, each wireable to `environmentId` — a miss silently resolves
-  to development:
+  to development in the standard path. When `TOOLJET_DB_PROXY_LEGACY_COMPAT=true`, the HTTP proxy
+  admits signed-in workspace members and uses the workspace default for omitted `environment_id`
+  when multi-environment is licensed. Unlicensed workspaces resolve to development.
 
   | Seam | Where | Reached by |
   |---|---|---|

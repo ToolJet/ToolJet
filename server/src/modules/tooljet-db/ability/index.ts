@@ -89,12 +89,12 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
-    // Temporary opt-in for apps that still call /proxy from RunJS: restores the pre-3.21.87 rule, which
-    // gives every workspace member raw read/write access to every table. Off unless explicitly set.
+    // RunJS compatibility opt-in. Signed-in workspace members can read and write tables through
+    // the proxy without a workspace data query.
     const isLegacyProxyCompat = process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT === 'true';
 
-    // Admins/builders (dashboard, App Builder editor); anyone else only through a data query of
-    // their own workspace - without one, an end user would get raw access to every table.
+    // With compatibility disabled, direct access requires an admin, builder, or TJDB CRUD grant.
+    // Other signed-in users need a data query from the same workspace.
     if (
       isUserLoggedin &&
       (isAdmin || isBuilder || userPermission.tjdbCRUD || isLegacyProxyCompat || isValidDataQueryForOrg)

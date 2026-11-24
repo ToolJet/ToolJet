@@ -69,8 +69,8 @@ export class PostgrestProxyService {
     const { url: strippedUrl, environmentId: requestedEnvironmentId } = extractAndStripEnvironmentId(req.url);
     req.url = strippedUrl;
 
-    // Temporary compat flag (see ability/index.ts): a call without environment_id reads the default
-    // environment (production) instead of the empty development copy the environments upgrade left.
+    // With compatibility enabled, use the licensed workspace default or development when the
+    // request omits environment_id.
     const environmentId =
       requestedEnvironmentId ??
       (process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT === 'true'

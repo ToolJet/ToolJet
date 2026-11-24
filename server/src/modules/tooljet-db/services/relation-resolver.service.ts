@@ -297,8 +297,7 @@ export class TooljetDbRelationResolverService {
     return this.resolveEnvironment(organizationId, undefined, manager || this.manager);
   }
 
-  // The workspace's default environment (production), the same one released apps' data queries use.
-  // Single-environment workspaces resolve to development, so this never trips the licence check.
+  // Use the workspace default for licensed multi-environment access and development otherwise.
   async defaultEnvironmentIdFor(organizationId: string, manager?: EntityManager): Promise<string> {
     return (await this.appEnvironmentUtilService.get(organizationId, undefined, false, manager || this.manager)).id;
   }

@@ -1,14 +1,14 @@
 /**
  * Who may call the HTTP `/proxy/*` passthrough. App queries never use this route - they reach
  * PostgREST in-process - so it serves only the TJDB dashboard and the App Builder editor, both
- * admin/builder surfaces. An end user must not get raw row access to any table by calling it.
+ * admin/builder surfaces by default. The compatibility flag also admits signed-in end users.
  *
  * @group database
  */
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { v4 as uuidv4 } from 'uuid';
-import { createUser, initTestApp, login, closeTestApp } from 'test-helper';
+import { createUser, ensureAppEnvironments, initTestApp, login, closeTestApp } from 'test-helper';
 
 describe('TooljetDb proxy access', () => {
   let app: INestApplication;
@@ -23,6 +23,7 @@ describe('TooljetDb proxy access', () => {
     });
     orgId = admin.user.defaultOrganizationId;
     organization = admin.organization;
+    await ensureAppEnvironments(app, orgId);
     await createUser(app, {
       email: 'proxy-access-end-user@tooljet.io',
       groups: ['end-user'],
@@ -54,11 +55,11 @@ describe('TooljetDb proxy access', () => {
         .get(`/api/tooljet-db/proxy/${uuidv4()}`)
         .set({ Cookie: tokenCookie, 'tj-workspace-id': orgId });
 
-      expect(res.statusCode).not.toBe(403);
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toBe('Table not found');
     });
   });
 
-  // Temporary opt-in for apps that still call /proxy from RunJS: restores the pre-3.21.87 rule.
   describe('TOOLJET_DB_PROXY_LEGACY_COMPAT=true | caller role', () => {
     beforeAll(() => {
       process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT = 'true';
@@ -76,7 +77,8 @@ describe('TooljetDb proxy access', () => {
         .get(`/api/tooljet-db/proxy/${uuidv4()}`)
         .set({ Cookie: tokenCookie, 'tj-workspace-id': orgId });
 
-      expect(res.statusCode).not.toBe(403);
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toBe('Table not found');
     });
 
     it('should let an end user past the guard for a write', async () => {
@@ -88,7 +90,8 @@ describe('TooljetDb proxy access', () => {
         .set({ Cookie: tokenCookie, 'tj-workspace-id': orgId })
         .send({ name: 'x' });
 
-      expect(res.statusCode).not.toBe(403);
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toBe('Table not found');
     });
 
     it('should still refuse a caller without a session', async () => {
