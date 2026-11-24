@@ -8,6 +8,8 @@ jest.mock('@/_helpers', () => ({
   handleResponse: (res) => Promise.resolve(res),
 }));
 jest.mock('@/_helpers/active-branch', () => ({ getActiveBranchId: () => null }));
+// Not rendering a history snapshot; the real module pulls in the store, which needs a browser.
+jest.mock('@/_helpers/routes', () => ({ getPreviewQueryParams: () => ({}) }));
 
 global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
 
