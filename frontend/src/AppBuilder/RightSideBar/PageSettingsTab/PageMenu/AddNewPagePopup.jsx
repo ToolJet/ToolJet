@@ -574,6 +574,7 @@ export const AddEditPagePopup = forwardRef(
                   message={"You don't have access to page headers. Upgrade your plan to access this feature."}
                   placement="bottom"
                   show={!hasCanvasPageHeaderEnabled}
+                  tooltipClassName="page-paid-tooltip"
                 >
                   <div className="d-flex align-items-center">
                     {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
@@ -601,6 +602,7 @@ export const AddEditPagePopup = forwardRef(
                   message={"You don't have access to page headers. Upgrade your plan to access this feature."}
                   placement="bottom"
                   show={!hasCanvasPageHeaderEnabled}
+                  tooltipClassName="page-paid-tooltip"
                 >
                   <div className="d-flex align-items-center">
                     {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
@@ -631,6 +633,7 @@ export const AddEditPagePopup = forwardRef(
                   message={"You don't have access to page footers. Upgrade your plan to access this feature."}
                   placement="bottom"
                   show={!hasCanvasPageFooterEnabled}
+                  tooltipClassName="page-paid-tooltip"
                 >
                   <div className="d-flex align-items-center">
                     {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
@@ -658,6 +661,7 @@ export const AddEditPagePopup = forwardRef(
                   message={"You don't have access to page footers. Upgrade your plan to access this feature."}
                   placement="bottom"
                   show={!hasCanvasPageFooterEnabled}
+                  tooltipClassName="page-paid-tooltip"
                 >
                   <div className="d-flex align-items-center">
                     {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
