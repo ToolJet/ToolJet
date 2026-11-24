@@ -9,6 +9,9 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const isLimitReached = (count, limit) => typeof limit === 'number' && count >= limit;
 
+const isLimitNearing = (count, limit) =>
+  typeof limit === 'number' && count < limit && (count / limit >= 0.9 || (limit <= 10 && count === limit - 1));
+
 const PAGE_LIMIT_TOOLTIP = "You've reached your page limit. Upgrade your plan to create more pages.";
 
 const NAV_ITEM_OPTIONS = [
@@ -34,10 +37,19 @@ export function AddNewPageMenu({ darkMode }) {
   const groupsCount = pages.filter((page) => page.isPageGroup).length;
   const isPagesLimitReached = isLimitReached(pagesCount, appPagesLimit);
   const isGroupsLimitReached = isLimitReached(groupsCount, appPageGroupsLimit);
+  const isPagesLimitNearing = isLimitNearing(pagesCount, appPagesLimit);
+  const isGroupsLimitNearing = isLimitNearing(groupsCount, appPageGroupsLimit);
+  const showPagesLimitTooltip = isPagesLimitReached || isPagesLimitNearing;
+  const pagesLimitTooltipMessage = isPagesLimitReached
+    ? PAGE_LIMIT_TOOLTIP
+    : `You're nearing your page limit (${pagesCount}/${appPagesLimit}). Upgrade your plan to create more pages.`;
   const isAddNavGroupDisabled = !hasAppPagesAddNavGroupEnabled || isGroupsLimitReached;
+  const showAddNavGroupTooltip = isAddNavGroupDisabled || isGroupsLimitNearing;
   const addNavGroupTooltipMessage = !hasAppPagesAddNavGroupEnabled
     ? "You don't have access to nav groups. Upgrade your plan to access this feature."
-    : "You've reached your page group limit. Upgrade your plan to create more page groups.";
+    : isGroupsLimitReached
+      ? "You've reached your page group limit. Upgrade your plan to create more page groups."
+      : `You're nearing your page group limit (${groupsCount}/${appPageGroupsLimit}). Upgrade your plan to create more page groups.`;
 
   const handleOpenPopup = (type) => {
     setShowMenuPopover(false);
@@ -49,9 +61,9 @@ export function AddNewPageMenu({ darkMode }) {
       className={`page-type-buttons-container d-flex justify-content-between custom-gap-12 ${darkMode && 'dark-mode'}`}
     >
       <LicenseTooltip
-        message={PAGE_LIMIT_TOOLTIP}
+        message={pagesLimitTooltipMessage}
         placement="bottom"
-        show={isPagesLimitReached}
+        show={showPagesLimitTooltip}
         tooltipClassName="page-limit-tooltip"
       >
         <Button
@@ -118,9 +130,9 @@ export function AddNewPageMenu({ darkMode }) {
             {NAV_ITEM_OPTIONS.map(({ type, icon, label }) => (
               <LicenseTooltip
                 key={type}
-                message={PAGE_LIMIT_TOOLTIP}
+                message={pagesLimitTooltipMessage}
                 placement="bottom"
-                show={isPagesLimitReached}
+                show={showPagesLimitTooltip}
                 tooltipClassName="page-limit-tooltip"
               >
                 <div className="tw-w-full">
@@ -141,7 +153,7 @@ export function AddNewPageMenu({ darkMode }) {
               <LicenseTooltip
                 message={addNavGroupTooltipMessage}
                 placement="bottom"
-                show={isAddNavGroupDisabled}
+                show={showAddNavGroupTooltip}
                 tooltipClassName="page-group-limit-tooltip"
               >
                 <div className="d-flex align-items-center tw-w-full">
