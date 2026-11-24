@@ -22,7 +22,15 @@ export const Option = (props) => {
           <span>{props.label}</span>
           {/* An option's optional detail (e.g. a theme radius' "4px"), muted, before the check. */}
           {props.data?.hint && (
-            <span style={{ marginLeft: 'auto', marginRight: 8, color: 'var(--text-placeholder)' }}>
+            <span
+              style={{
+                marginLeft: 'auto',
+                paddingLeft: 16,
+                marginRight: 8,
+                whiteSpace: 'nowrap',
+                color: 'var(--text-placeholder)',
+              }}
+            >
               {props.data.hint}
             </span>
           )}
@@ -42,8 +50,13 @@ export const Option = (props) => {
   );
 };
 
-const selectCustomStyles = (width) => {
+// `wideMenu`: options carry a hint (a theme radius / shadow value): the menu fits its content instead of the field's
+// 144px, anchored to the field's right edge so it opens over the inspector rather than off-screen.
+const selectCustomStyles = (width, wideMenu = false) => {
   return {
+    ...(wideMenu && {
+      menu: (base) => ({ ...base, width: 'max-content', minWidth: '100%', right: 0, left: 'auto' }),
+    }),
     control: (base, state) => {
       return {
         ...base,
@@ -113,7 +126,10 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
           onChange={onChange}
           width={224}
           height={32}
-          styles={selectCustomStyles(width)}
+          styles={selectCustomStyles(
+            width,
+            meta?.options?.some((option) => option.hint)
+          )}
           useCustomStyles={true}
           customClassPrefix="inspector-select"
           aria-label={meta?.displayName}
