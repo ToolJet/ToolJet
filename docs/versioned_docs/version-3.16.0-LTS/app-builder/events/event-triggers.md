@@ -49,4 +49,4 @@ Each event handler has two additional controls accessible by expanding it in the
 
 **Event name**: A free-text field for assigning a custom label to the handler. Use this to distinguish between multiple handlers on the same event — for example, naming one `"log to console"` and another `"trigger refresh"` when both fire on **On click**.
 
-<img className="screenshot-full img-l" src="/img/app-builder/events/event-handler/manage.png" alt="Event handler enable toggle and name field"/>
+<img className="screenshot-full img-s" src="/img/app-builder/events/event-handler/manage.png" alt="Edit event popover with the Enable event toggle and the Event name field"/>
