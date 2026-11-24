@@ -394,14 +394,11 @@ const FormComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents), resetOnSubmit, validateOnSubmit]);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-  };
-
-  // In Chromium and WebKit a submit from a <form> nested in another <form> does
-  // not bubble past the inner form, so React's root listener (handleSubmit) never
-  // sees it. A listener on this <form> itself cancels any native submit, from
-  // whichever button started it, so nothing inside a Form can reload the page.
+  // Cancels every native submit of this <form>, from whichever button started it,
+  // so nothing inside a Form can reload the page. It is a listener on the <form>
+  // itself, not React's onSubmit: in Chromium and WebKit a submit from a <form>
+  // nested in another <form> does not bubble past the inner form, so React's root
+  // listener never sees it.
   useEffect(() => {
     const formElement = parentRef.current;
     if (!formElement) return;
@@ -494,7 +491,6 @@ const FormComponent = (props) => {
       data-cy={dataCy}
       ref={parentRef}
       style={computedStyles}
-      onSubmit={handleSubmit}
       onClick={(e) => {
         if (e.target.className === 'real-canvas') onComponentClick(id, component);
       }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
