@@ -11,6 +11,7 @@ import { User } from '@entities/user.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { Organization } from '@entities/organization.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { isUUID } from 'class-validator';
 import { WORKSPACE_STATUS, USER_STATUS, WORKSPACE_USER_STATUS, USER_TYPE } from '@modules/users/constants/lifecycle';
 import { applyCustomDomainCookieOptions, isHttpsEnabled, isSuperAdmin } from '@helpers/utils.helper';
 import { CookieOptions } from 'express';
@@ -334,6 +335,14 @@ export class SessionUtilService {
       });
       return branch?.id ?? null;
     }, manager);
+  }
+
+  async isForeignBranch(branchId: string, organizationId: string): Promise<boolean> {
+    if (!isUUID(branchId)) return true;
+    return dbTransactionWrap(
+      async (manager: EntityManager) =>
+        (await manager.count(WorkspaceBranch, { where: { id: branchId, organizationId: Not(organizationId) } })) > 0
+    );
   }
 
   async checkUserWorkspaceStatus(userId: string, manager?: EntityManager): Promise<boolean> {
