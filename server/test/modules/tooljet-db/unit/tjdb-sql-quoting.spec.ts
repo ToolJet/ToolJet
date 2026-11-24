@@ -1,12 +1,11 @@
 import { EntityManager } from 'typeorm';
-import { formatJSONB, formatTimestamp } from 'src/helpers/utils.helper';
+import { formatJoinsJSONBPath, formatJSONB, formatTimestamp } from 'src/helpers/utils.helper';
 import { TooljetDbDataOperationsService } from '@modules/tooljet-db/services/tooljet-db-data-operations.service';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 
 /** @group database */
 
-// Builder text reaches SQL that runs on the ToolJet Database admin connection. These pin the
-// points where it is turned into SQL: literals are escaped, privilege checks bind their values.
+// Literals are escaped and privilege checks bind their values.
 describe('ToolJet Database SQL quoting', () => {
   describe('column default literals', () => {
     const tableOperations = Object.create(TooljetDbTableOperationsService.prototype) as {
@@ -28,6 +27,26 @@ describe('ToolJet Database SQL quoting', () => {
     it('should escape a single quote inside a jsonb key as well as a value', () => {
       expect(formatJSONB({ "it's": "rock'n'roll" }, { data_type: 'jsonb' })).toBe(`'{"it''s":"rock''n''roll"}'`);
     });
+  });
+
+  describe('join JSON paths', () => {
+    it.each([
+      ['->a', "->'a'"],
+      ['->>a', "->>'a'"],
+      ["->>'a b'", "->>'a b'"],
+      ['->a->>b', "->'a'->>'b'"],
+      ["-> 'a' ->> b", "-> 'a' ->> 'b'"],
+      ['->0', "->'0'"],
+    ])('should accept %s as %s', (jsonpath, expected) => {
+      expect(formatJoinsJSONBPath(jsonpath)).toBe(expected);
+    });
+
+    it.each([['->a)'], ['a'], ['->'], ["->'a''"], ['->a; SELECT 1'], ['->a--'], ['->"a"']])(
+      'should refuse %s',
+      (jsonpath) => {
+        expect(() => formatJoinsJSONBPath(jsonpath)).toThrow('Invalid JSON path');
+      }
+    );
   });
 
   describe('SQL mode privilege checks', () => {

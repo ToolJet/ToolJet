@@ -1,7 +1,5 @@
 /**
- * Column defaults and SQL-mode schema names reach SQL that runs on the ToolJet Database admin
- * connection. A quote in either must stay data: a default is stored as the exact text, and a
- * schema name is refused cleanly instead of ending the SQL literal.
+ * A quote in a column default or SQL-mode schema name must stay data, never end the SQL literal.
  *
  * @group database
  */
@@ -51,7 +49,7 @@ describe('TooljetDb SQL escaping', () => {
   beforeAll(async () => {
     ({ app } = await initTestApp());
 
-    // DDL commits on the ToolJet Database connection, so the workspace rows it reads must commit too.
+    // DDL commits on its own connection, so the rows it reads must commit too.
     await withRealTransactions(async () => {
       const admin = await createUser(app, { email: 'tjdb-escape@tooljet.io', groups: ['admin', 'end-user'] });
       const otherAdmin = await createUser(app, {
@@ -67,7 +65,7 @@ describe('TooljetDb SQL escaping', () => {
           .get(TooljetDbTableOperationsService)
           .createTooljetDbTenantSchemaAndRole(id, getDefaultDataSource().manager);
       }
-      // Each test opens a real transaction, which rolls the suite one back, so the session must commit too.
+      // Tests open real transactions, so the session must commit too.
       ({ tokenCookie: cookie } = await login(app, 'tjdb-escape@tooljet.io'));
     });
   });
@@ -158,7 +156,7 @@ describe('TooljetDb SQL escaping', () => {
         await createTable('edit_table_target', [
           { column_name: 'label', data_type: 'character varying', column_default: 'plain', constraints_type: {} },
         ]).then((res) => expect(res.statusCode).toBe(201));
-        // Like the table editor: every current column, as view table returns it, diffed against its edit.
+        // Same payload as the table editor: every current column, diffed against its edit.
         const current = await asAdmin(
           http().get(`/api/tooljet-db/organizations/${orgId}/table/edit_table_target`)
         ).expect(200);

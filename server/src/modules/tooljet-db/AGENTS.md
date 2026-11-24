@@ -86,6 +86,10 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   (`view_table`) independently — both must receive the same `environmentId`, always change together.
 - `joinTable` falls back to the `TOOLJET_DB_USER` admin role when SQL mode is disabled (Cloud) — an
   over-privileged DB role, not an unvalidated identifier (from/join tables are still workspace-checked).
+  Because of that role, nothing from the query options is pasted into join SQL unchecked: JSON paths
+  must fit `formatJoinsJSONBPath`'s grammar, column names may not contain `"` (`joinColumn`),
+  operators and AND/OR come from allowlists, and left-hand values are bound like right-hand ones.
+  The join names tables unqualified, so it relies on the role's `search_path`.
 - Every table reference reaching a query builder must be workspace-validated first — same-shape leak
   as the proxy path if skipped.
 - Column defaults reach DDL on the admin connection as raw SQL (TypeORM `default`), so every string

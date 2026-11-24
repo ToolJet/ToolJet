@@ -114,6 +114,46 @@ SelectQueryBuilder.prototype.fullOuterJoin = function (entityOrProperty, alias, 
 
 type ConnectionManagerKey = 'appManager' | 'tjdbManager';
 
+// Join operators and combinators allowed into SQL (the query editor's options).
+const JOIN_CONDITION_OPERATORS = new Set([
+  '=',
+  '!=',
+  '<>',
+  '>',
+  '>=',
+  '<',
+  '<=',
+  'LIKE',
+  'NOT LIKE',
+  'ILIKE',
+  'NOT ILIKE',
+  '~',
+  '~*',
+  'IN',
+  'NOT IN',
+  'IS',
+]);
+const JOIN_CONDITION_COMBINATORS = new Set(['AND', 'OR']);
+
+// Column names go inside "..." in SQL and the alias, so " and NUL are refused.
+function joinColumn(columnName: unknown): string {
+  if (typeof columnName !== 'string' || !columnName.length || columnName.includes('"') || columnName.includes('\0')) {
+    throw new BadRequestException('Invalid column name in join query');
+  }
+  return columnName;
+}
+
+function joinOperator(operator: unknown, allowed: Set<string>): string {
+  const normalized = typeof operator === 'string' ? operator.trim().toUpperCase() : '';
+  if (!allowed.has(normalized)) throw new BadRequestException('Invalid operator in join query');
+  return normalized;
+}
+
+// TypeORM parameter names allow only letters, digits, underscores and periods.
+function joinParamName(columnName: unknown, index: number): string {
+  return `${String(columnName ?? 'value').replace(/\W/g, '_')}_${index}`;
+}
+
 // Sums COUNT(*) over the given tables, skipping any that don't physically exist: a relation row
 // can outlive its table (e.g. a failed baseline), and one missing table would fail the whole query.
 async function countRelationRows(
@@ -512,8 +552,7 @@ export class TooljetDbTableOperationsService {
   }
 
   protected addQuotesIfString(value) {
-    // if (isString(value)) return `'${value}'`;
-    // Defaults reach DDL on the admin connection: escape, so a quote stays part of the text.
+    // Escaped: defaults reach DDL on the admin connection.
     if (isString(value)) return escapeLiteral(value);
     return value;
   }
@@ -1734,11 +1773,12 @@ export class TooljetDbTableOperationsService {
     // Building `SELECT` statement with aliased column names
     if (!isEmpty(queryJson.fields) && isEmpty(queryJson.aggregates)) {
       queryJson.fields.forEach((field) => {
+        const fieldColumn = joinColumn(field.name);
         const fieldName = field.jsonpath
-          ? `"${internalTableIdToNameMap[field.table]}"."${field.name}"${formatJoinsJSONBPath(field.jsonpath)}`
-          : `"${internalTableIdToNameMap[field.table]}"."${field.name}"`;
+          ? `"${internalTableIdToNameMap[field.table]}"."${fieldColumn}"${formatJoinsJSONBPath(field.jsonpath)}`
+          : `"${internalTableIdToNameMap[field.table]}"."${fieldColumn}"`;
 
-        const fieldAlias = `${internalTableIdToNameMap[field.table]}_${field.name}`;
+        const fieldAlias = `${internalTableIdToNameMap[field.table]}_${fieldColumn}`;
         queryBuilder.addSelect(fieldName, fieldAlias);
       });
     }
@@ -1755,9 +1795,10 @@ export class TooljetDbTableOperationsService {
           throw new BadRequestException('Invalid aggregate function');
         }
 
+        const aggregateColumn = joinColumn(column);
         queryBuilder.addSelect(
-          `${AggregateFunctions[aggFx]}("${internalTableIdToNameMap[tableId]}"."${column}")`,
-          `${internalTableIdToNameMap[tableId]}_${column}_${aggFx}`
+          `${AggregateFunctions[aggFx]}("${internalTableIdToNameMap[tableId]}"."${aggregateColumn}")`,
+          `${internalTableIdToNameMap[tableId]}_${aggregateColumn}_${aggFx}`
         );
       });
     }
@@ -1766,7 +1807,8 @@ export class TooljetDbTableOperationsService {
     if (!isEmpty(queryJson.group_by)) {
       Object.entries(queryJson.group_by).forEach(([groupByTableId, groupByColumList]: [string, Array<string>]) => {
         if (!isEmpty(groupByColumList)) {
-          groupByColumList.forEach((groupByColum) => {
+          groupByColumList.forEach((rawGroupByColum) => {
+            const groupByColum = joinColumn(rawGroupByColum);
             // The 'SELECT' statement needs to have 'GROUP_BY' columns added.
             queryBuilder.addSelect(
               `"${internalTableIdToNameMap[groupByTableId]}"."${groupByColum}"`,
@@ -1808,9 +1850,11 @@ export class TooljetDbTableOperationsService {
     // order by
     if (queryJson.order_by) {
       queryJson.order_by.forEach((order) => {
+        const orderColumn = joinColumn(order.columnName);
         const orderByColumn = order.jsonpath
-          ? `"${internalTableIdToNameMap[order.table]}"."${order.columnName}"${formatJoinsJSONBPath(order.jsonpath)}`
-          : `"${internalTableIdToNameMap[order.table]}"."${order.columnName}"`;
+          ? `"${internalTableIdToNameMap[order.table]}"."${orderColumn}"${formatJoinsJSONBPath(order.jsonpath)}`
+          : `"${internalTableIdToNameMap[order.table]}"."${orderColumn}"`;
+        // TypeORM refuses any direction other than ASC/DESC when it renders the query.
         queryBuilder.addOrderBy(orderByColumn, order.direction as 'ASC' | 'DESC');
       });
     }
@@ -1843,37 +1887,43 @@ export class TooljetDbTableOperationsService {
       }
     };
 
-    conditions.conditionsList.forEach((condition, index) => {
-      const paramName = `${condition.leftField.columnName}_${index}`;
+    // Only consulted between conditions, so a single condition may omit it.
+    const combinator =
+      conditions.conditionsList.length > 1 ? joinOperator(conditions.operator, JOIN_CONDITION_COMBINATORS) : '';
 
+    conditions.conditionsList.forEach((condition, index) => {
+      const paramName = joinParamName(condition.leftField.columnName, index);
+      const operator = joinOperator(condition.operator, JOIN_CONDITION_OPERATORS);
+
+      const columnRef = (field) =>
+        field.jsonpath
+          ? `"${internalTableIdToNameMap[field.table]}"."${joinColumn(field.columnName)}"${formatJoinsJSONBPath(
+              field.jsonpath
+            )}`
+          : `"${internalTableIdToNameMap[field.table]}"."${joinColumn(field.columnName)}"`;
+
+      // A left-hand value is bound like a right-hand one, never pasted.
       let leftField;
       if (condition.leftField.type == 'Column') {
-        leftField = condition.leftField.jsonpath
-          ? `"${internalTableIdToNameMap[condition.leftField.table]}"."${
-              condition.leftField.columnName
-            }"${formatJoinsJSONBPath(condition.leftField.jsonpath)}`
-          : `"${internalTableIdToNameMap[condition.leftField.table]}"."${condition.leftField.columnName}"`;
+        leftField = columnRef(condition.leftField);
       } else {
-        leftField = `${condition.leftField.columnName}`;
+        leftField = `:left_${paramName}`;
+        conditionParams[`left_${paramName}`] = condition.leftField.value;
       }
 
       let rightField;
       if (condition.rightField.type == 'Column') {
-        rightField = condition.rightField.jsonpath
-          ? `"${internalTableIdToNameMap[condition.rightField.table]}"."${
-              condition.rightField.columnName
-            }"${formatJoinsJSONBPath(condition.rightField.jsonpath)}`
-          : `"${internalTableIdToNameMap[condition.rightField.table]}"."${condition.rightField.columnName}"`;
+        rightField = columnRef(condition.rightField);
       } else {
-        rightField = maybeParameterizeValue(condition.operator, paramName, condition.rightField.value);
+        rightField = maybeParameterizeValue(operator, paramName, condition.rightField.value);
       }
 
-      conditionString += `${leftField} ${condition.operator} ${rightField}`;
+      conditionString += `${leftField} ${operator} ${rightField}`;
 
       conditionParams[paramName] = condition.rightField.value;
 
       if (index < conditions.conditionsList.length - 1) {
-        conditionString += ` ${conditions.operator} `;
+        conditionString += ` ${combinator} `;
       }
     });
 
