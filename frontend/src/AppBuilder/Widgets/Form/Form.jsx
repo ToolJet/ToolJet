@@ -487,9 +487,11 @@ const FormComponent = (props) => {
         if (e.target.className === 'real-canvas') onComponentClick(id, component);
       }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
     >
-      {/* The form's default button for Enter; see pressConfiguredSubmitButton. */}
+      {/* The form's default button for Enter; see pressConfiguredSubmitButton.
+          Disabled with the Form: a disabled default button makes Enter do nothing. */}
       <button
         type="submit"
+        disabled={isDisabled || isLoading}
         className="jet-form-default-submit"
         aria-hidden="true"
         tabIndex={-1}
