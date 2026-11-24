@@ -1,3 +1,4 @@
+import { isPublicOAuthProtocolPath, isMcpOAuthEnabled } from '@modules/mcp-oauth/http-security';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
@@ -8,8 +9,10 @@ import { LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService';
 import { getTooljetEdition } from '@helpers/utils.helper';
+import { resolveCodeModeIsolation } from '@helpers/code-mode-isolation.helper';
 import * as Sentry from '@sentry/nestjs';
 import { DataSource } from 'typeorm';
+import { LoggerService } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 
 /**
@@ -72,16 +75,38 @@ export async function handleLicensingInit(app: NestExpressApplication, logger: a
 
     logger.log('Validating hostname and subpath...');
     licenseUtilService.validateHostnameSubpath(license.Instance()?.domains);
-
-    const licenseInfo = license.Instance();
     logger.log(`✅ License validation completed`);
-    logger.log(`License valid: ${licenseInfo.isValid}`);
-    logger.log(`License terms: ${JSON.stringify(licenseInfo.terms)}`);
-
-    console.log(`License valid : ${licenseInfo.isValid} License Terms : ${JSON.stringify(licenseInfo.terms)} 🚀`);
   } catch (error) {
     logger.error('❌ Failed to initialize licensing:', error);
     throw error;
+  }
+}
+
+/**
+ * Re-points sample data sources when their connection settings changed since the last start.
+ * Non-fatal. If the restricted role can't be set up, sample SQL is disabled; `npm run db:sample:reset` forces a sync.
+ */
+export async function handleSampleDataSourceSync(app: NestExpressApplication, logger: LoggerService) {
+  try {
+    const importPath = await getImportPath(false, getTooljetEdition() as TOOLJET_EDITIONS);
+    const { SampleDataSourceService } = await import(`${importPath}/data-sources/services/sample-ds.service`);
+    const updated = await app.get(SampleDataSourceService).syncSampleDataSources();
+    logger.log(updated ? '✅ Sample data sources updated' : '✅ Sample data sources up to date');
+  } catch (error) {
+    logger.error('Failed to sync sample data source credentials:', error);
+  }
+}
+
+export async function warnIfDatabaseSuperuser(app: NestExpressApplication, logger: LoggerService) {
+  try {
+    const [{ is_superuser }] = await app
+      .get(DataSource)
+      .query("SELECT current_setting('is_superuser') AS is_superuser");
+    if (is_superuser === 'on') {
+      logger.warn('Application database user has superuser rights; a least-privilege user is recommended');
+    }
+  } catch (error) {
+    logger.error('Could not check application database user privileges:', error);
   }
 }
 
@@ -296,6 +321,75 @@ async function fetchCustomDomainOrigins(
 }
 
 /**
+ * What the enterprise edition serves ahead of every other middleware, on hosts and paths of its own. It has to come before
+ * session handling and helmet, whose headers don't apply there. Nothing happens on an edition without it.
+ */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/**
+ * The active custom domain of the workspace that owns one app, as origins. Read only; an unknown app has none. Never
+ * another workspace's domain: a per-app frame trusts only its own workspace's pages.
+ */
+export async function fetchAppWorkspaceDomainOrigins(
+  dataSource: DataSource,
+  appId: string,
+  logger: any
+): Promise<string[]> {
+  if (!UUID.test(appId ?? '')) return [];
+  try {
+    const rows: { domain: string }[] = await dataSource.query(
+      `SELECT cd.domain FROM custom_domains cd JOIN apps a ON a.organization_id = cd.organization_id
+       WHERE a.id = $1 AND cd.status = 'active'`,
+      [appId]
+    );
+    return rows.map((row) => `https://${String(row.domain).toLowerCase()}`);
+  } catch (error) {
+    logger.error?.("Failed to read the app's workspace domain for its frame; only TOOLJET_HOST is trusted:", error);
+    return [];
+  }
+}
+
+/**
+ * What the enterprise edition serves ahead of every other middleware, on hosts and paths of its own. It has to come before
+ * session handling and helmet, whose headers don't apply there. Nothing happens on an edition without it.
+ */
+export async function setupEditionEarlyRoutes(app: NestExpressApplication, configService: ConfigService, logger: any) {
+  let middleware;
+  try {
+    const importPath = await getImportPath();
+    const { codeFrameMiddleware } = await import(`${importPath}/code-page-security/frame-route`);
+    const isolation = resolveCodeModeIsolation(process.env);
+    for (const { level, text } of isolation.messages) {
+      if (level === 'error') logger.error?.(text);
+      else logger.warn?.(text);
+    }
+    middleware = codeFrameMiddleware({
+      isolation: isolation.mode,
+      sandboxUrl: configService.get<string>('CODE_MODE_SANDBOX_URL'),
+      tooljetHost: configService.get<string>('TOOLJET_HOST'),
+      subPath: configService.get<string>('SUB_PATH'),
+      allowedParents: async (appId: string) => {
+        const tooljetHost = configService.get<string>('TOOLJET_HOST')?.replace(/\/+$/, '').toLowerCase();
+        const custom =
+          configService.get<string>('ENABLE_CUSTOM_DOMAINS') === 'true'
+            ? await fetchAppWorkspaceDomainOrigins(app.get<DataSource>(DataSource), appId, logger)
+            : [];
+        return [tooljetHost, ...custom].filter(Boolean);
+      },
+      logger,
+    });
+  } catch (error) {
+    // The community edition has no frame route: nothing to serve. Anything else (a stale server/ee, a bad setting) is
+    // a failure to report: the frame then doesn't load, which keeps app code off the page, but nobody would know why.
+    const missing = error?.code === 'MODULE_NOT_FOUND' && String(error?.message ?? '').includes('code-page-security');
+    if (!missing)
+      logger.error?.("Code mode: the isolated frame's route failed to start; apps won't load isolated:", error);
+    return;
+  }
+  app.use(middleware);
+}
+
+/**
  * Middleware that validates the Origin header on mutation requests when custom domains are enabled.
  *
  * With custom domains, cookies must use SameSite=None, which means any site can send
@@ -313,6 +407,7 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
   const logger = createLogger('CsrfOriginCheck');
   const tooljetHost = configService.get<string>('TOOLJET_HOST')?.replace(/\/+$/, '');
   const safeMethods = new Set(['GET', 'HEAD', 'OPTIONS']);
+  const subpath = (configService.get<string>('SUB_PATH') || '').replace(/^\/+|\/+$/g, '');
   // These paths use non-cookie auth (API keys, SAML assertions, webhook signatures)
   // and don't need Origin checks.
   const exemptPrefixes = [
@@ -325,6 +420,9 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
     '/api/ext/',
     '/api/sso/saml/',
     '/api/oauth/saml/',
+    // IdP form posts still use assertion authentication when ToolJet is mounted
+    // below a subpath. Do not subject those callbacks to browser-session CSRF.
+    ...(subpath ? [`/${subpath}/api/sso/saml/`, `/${subpath}/api/oauth/saml/`] : []),
   ];
 
   let dataSource: DataSource | null = null;
@@ -332,6 +430,11 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (safeMethods.has(req.method)) return next();
+    if (
+      isMcpOAuthEnabled(configService.get('TOOLJET_EDITION'), configService.get('MCP_OAUTH_ENABLED')) &&
+      isPublicOAuthProtocolPath(req.path, configService.get('SUB_PATH'))
+    )
+      return next();
     if (exemptPrefixes.some((p) => req.path === p || req.path.startsWith(p))) return next();
 
     let origin = req.headers.origin as string | undefined;
@@ -396,6 +499,23 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
     };
 
     let cacheService: CorsOriginsCache | null = null;
+
+    // Browser MCP clients need public, cookie-free token/registration endpoints. Keep the
+    // workspace browser API's existing CORS policy and credential handling separate.
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      if (
+        !isMcpOAuthEnabled(configService.get('TOOLJET_EDITION'), configService.get('MCP_OAUTH_ENABLED')) ||
+        !isPublicOAuthProtocolPath(req.path, configService.get('SUB_PATH'))
+      )
+        return next();
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      if (req.method === 'OPTIONS') {
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        return res.status(204).end();
+      }
+      next();
+    });
 
     // Enable CORS with a dynamic origin function
     app.enableCors({
@@ -620,6 +740,25 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   );
   logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
   logger.log('='.repeat(60));
+}
+
+// Inside the Kubernetes default 30s grace period, so we exit before the kubelet's SIGKILL.
+export const SHUTDOWN_TIMEOUT_MS = 20_000;
+
+/** Runs `shutdown` once per process, then exits with its code; exits 1 if it outlasts `timeoutMs`. */
+export function onceWithDeadline(
+  shutdown: (signal: string) => Promise<number>,
+  exit: (code: number) => void,
+  timeoutMs = SHUTDOWN_TIMEOUT_MS
+): (signal: string) => void {
+  let started = false;
+  return (signal) => {
+    // tini -g and each npm in the start chain all deliver the same SIGTERM.
+    if (started) return;
+    started = true;
+    setTimeout(() => exit(1), timeoutMs).unref();
+    shutdown(signal).then(exit, () => exit(1));
+  };
 }
 
 /**

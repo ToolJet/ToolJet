@@ -45,8 +45,10 @@ jobs:
               rootDir: "docs",
               envVars: [
                 {key: "NODE_ENV", value: "production"},
-                {key: "NODE_VERSION", value: "18.18.2"},
-                {key: "NPM_VERSION", value: "9.8.1"},
+                {key: "NODE_VERSION", value: "22.23.4"},
+                {key: "NPM_VERSION", value: "10.9.9"},
+                {key: "NODE_OPTIONS", value: "--max-old-space-size=6144"},
+                {key: "TERSER_PARALLEL", value: "2"},
                 {key: "GTM", value: "dummy"},
                 {key: "build_lts", value: $buildLts}
               ],

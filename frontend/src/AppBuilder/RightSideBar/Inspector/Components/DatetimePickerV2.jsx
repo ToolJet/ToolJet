@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
-import { renderElement } from '../Utils';
+import { renderElement, getInvalidFormatError } from '../Utils';
 import { EventManager } from '../EventManager';
 import Select from '@/_ui/Select';
 import CodeHinter from '@/AppBuilder/CodeEditor';
@@ -110,6 +110,14 @@ export const TIMEZONE_OPTIONS_MAP = TIMEZONE_OPTIONS.reduce((acc, curr) => {
   return acc;
 }, {});
 
+// Region-name options for the Display in / Store in dropdowns: zones sharing an
+// offset (Asia/Colombo vs Asia/Kolkata, both +05:30) must stay distinguishable.
+// Values are IANA ids — exactly what existing apps already store, because the
+// old offset-labelled options also persisted IANA values.
+export const TIMEZONE_REGION_OPTIONS = moment.tz
+  .names()
+  .map((zone) => ({ name: `${zone} (UTC${moment.tz(zone).format('Z')})`, value: zone }));
+
 const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...restProps }) => {
   const { t } = useTranslation();
   const {
@@ -137,6 +145,17 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
   const isTimezoneEnabled = resolvedProperties?.isTimezoneEnabled;
   const displayTimezone = resolvedProperties?.displayTimezone;
   const storeTimezone = resolvedProperties?.storeTimezone;
+
+  // Tokenless formats are flagged on the Format field (CodeHinter preview
+  // popover + red error state). The widget still uses the format verbatim.
+  const dateFormatValidationFn = (value) => {
+    const message = getInvalidFormatError(value, 'date');
+    return [!message, message];
+  };
+  const timeFormatValidationFn = (value) => {
+    const message = getInvalidFormatError(value, 'time');
+    return [!message, message];
+  };
 
   const dateValidator = useMemo(() => {
     return (date) => {
@@ -236,6 +255,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
             mode="javascript"
             lineNumbers={false}
             onChange={(value) => paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties')}
+            validationFn={timeFormatValidationFn}
           />
         ) : (
           <Select
@@ -292,6 +312,23 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
       children: (
         <>
           {properties?.map((property) => {
+            // DaterangePicker's Format is a generic code property — a tokenless
+            // value is flagged inside its CodeHinter preview popover.
+            if (property === 'format') {
+              return renderElement(
+                component,
+                componentMeta,
+                paramUpdated,
+                dataQueries,
+                property,
+                'properties',
+                currentState,
+                allComponents,
+                darkMode,
+                '',
+                dateFormatValidationFn
+              );
+            }
             if (['isTimezoneEnabled', 'customDateFormat'].includes(property)) {
               return (
                 <>
@@ -326,6 +363,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
                           mode="javascript"
                           lineNumbers={false}
                           onChange={(value) => paramUpdated({ name: 'dateFormat' }, 'value', value, 'properties')}
+                          validationFn={dateFormatValidationFn}
                         />
                       ) : (
                         <Select
@@ -372,7 +410,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
                               {t('widget.commonProperties.displayIn', 'Display in')}
                             </label>
                             <Select
-                              options={TIMEZONE_OPTIONS}
+                              options={TIMEZONE_REGION_OPTIONS}
                               value={displayTimezone || 'UTC'}
                               search={true}
                               closeOnSelect={true}
@@ -394,7 +432,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
                               {t('widget.commonProperties.storeIn', 'Store in')}
                             </label>
                             <Select
-                              options={TIMEZONE_OPTIONS}
+                              options={TIMEZONE_REGION_OPTIONS}
                               value={storeTimezone || 'UTC'}
                               search={true}
                               closeOnSelect={true}

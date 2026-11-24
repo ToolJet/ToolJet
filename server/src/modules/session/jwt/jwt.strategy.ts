@@ -1,6 +1,7 @@
+import { McpOAuthIdentityService } from '@modules/mcp-oauth/identity.service';
 import { Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/entities/user.entity';
 import { WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
@@ -34,6 +35,9 @@ function safeCompare(a?: string, b?: string): boolean {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
+  @Inject(McpOAuthIdentityService)
+  protected readonly mcpOAuthIdentityService: McpOAuthIdentityService;
+
   constructor(
     protected readonly configService: ConfigService,
     protected readonly sessionUtilService: SessionUtilService,
@@ -57,6 +61,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             return sessionUtilService.sign({ isAdminApiKeyAuth: true });
           }
         }
+        if (typeof request.headers['x-tooljet-delegation'] === 'string') {
+          return request.headers['x-tooljet-delegation'];
+        }
+        if (request.cookies?.tj_oauth_viewer) return request.cookies.tj_oauth_viewer;
         // Ensure PAT is processed correctly without bypassing JWT validation
         if (request.headers['tj_auth_token']) {
           return request.headers['tj_auth_token'];
@@ -70,6 +78,36 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(req: Request, payload: JWTPayload) {
+    if (payload.aud === 'tooljet:mcp:viewer') {
+      if (typeof req.cookies?.tj_oauth_viewer !== 'string' || req.headers['x-tooljet-delegation']) return false;
+      const workspace = req.headers['tj-workspace-id'];
+      if (workspace !== undefined && typeof workspace !== 'string') return false;
+      const principal: User | undefined = req['oauthDelegatedUser'];
+      if (
+        principal &&
+        (principal.oauthAppId !== payload.oauthAppId || (workspace && principal.organizationId !== workspace))
+      ) {
+        return false;
+      }
+      const user =
+        principal ||
+        (await this.mcpOAuthIdentityService.validateViewer(
+          payload,
+          typeof workspace === 'string' ? workspace : undefined
+        ));
+      user.branchId = await this.resolveBranchId(req, user.organizationId);
+      return user;
+    }
+    if (payload.oauthGrantId || payload.oauthTokenId || payload.aud === 'tooljet:mcp:delegation') {
+      const workspace = req.headers['tj-workspace-id'];
+      if (typeof req.headers['x-tooljet-delegation'] !== 'string' || typeof workspace !== 'string') return false;
+      const principal: User | undefined = req['oauthDelegatedUser'];
+      if (principal && workspace !== principal.organizationId) return false;
+      // This credential has a fixed expiry and active grant, independently of browser sessions.
+      const user = principal || (await this.mcpOAuthIdentityService.validateDelegation(payload, workspace));
+      user.branchId = await this.resolveBranchId(req, user.organizationId);
+      return user;
+    }
     const startTime = Date.now();
     this.transactionLogger.log(`JwtStrategy validate invoked at ${new Date().toISOString()}`);
     try {
@@ -98,7 +136,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       }
 
       if (isUserMandatory || isGetUserSession || isInviteSession) {
-        await this.sessionUtilService.validateUserSession(payload.username, payload.sessionId, organizationId);
+        await this.sessionUtilService.validateUserSession(payload.username, payload.sessionId, organizationId, {
+          fixedExpiry: payload.fixedExpiry === true,
+        });
       }
 
       if (isGetUserSession) {
@@ -106,6 +146,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.organizationIds = payload.organizationIds;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
+        user.aiAppId = payload.aiAppId;
+        // Signed token scope travels with the principal on every branch, or the scope
+        // interceptor and session bootstrap would treat a token session as a browser login.
+        user.isPATLogin = !!payload.isPATLogin;
+        user.patAppId = payload.appId;
+        user.patScope = payload.patScope;
+        if (req['isMcpOAuthAccount']) {
+          // Preserve the enterprise strategy's upstream OIDC refresh/revocation
+          // checks on the workspace where this browser actually authenticated.
+          // The OAuth service authorizes the chosen destination separately.
+          user.organizationId = payload.workspaceAuthentication?.organizationId;
+          user.isSSOLogin = payload.isSSOLogin;
+          user.isPasswordLogin = payload.isPasswordLogin;
+          user.workspaceAuthentication = payload.workspaceAuthentication;
+        }
         user.organizationId = user.organizationId ?? organizationId;
         user.branchId = await this.resolveBranchId(req, user.organizationId);
 
@@ -156,10 +211,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.isSSOLogin = payload.isSSOLogin;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
+        user.aiAppId = payload.aiAppId;
         // Resolve the active Git branch once per request: explicit `branch_id` query
         // param, else the org's default branch. Consumers read user.branchId instead
         // of the old x-branch-id header.
         user.branchId = await this.resolveBranchId(req, user.organizationId);
+        user.workspaceAuthentication = payload.workspaceAuthentication;
         user.isPATLogin = !!payload.isPATLogin;
         user.patAppId = payload.appId;
         user.patScope = payload.patScope;

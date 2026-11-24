@@ -1,10 +1,12 @@
-import { AbilityBuilder, Ability } from '@casl/ability';
+/** @group platform */
+import { Ability } from '@casl/ability';
 import { defineAppAbility } from 'src/modules/apps/ability/app.ability';
 import { App } from 'src/entities/app.entity';
 import { FEATURE_KEY, APP_TYPES } from 'src/modules/apps/constants';
 import { MODULES } from 'src/modules/app/constants/modules';
 import { UserAllPermissions } from 'src/modules/app/types';
 import { ForbiddenException } from '@nestjs/common';
+import { buildPermissions, makeAbilityBuilder } from 'test-helper';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -13,36 +15,18 @@ import { ForbiddenException } from '@nestjs/common';
 type FeatureAbility = Ability<[FEATURE_KEY, typeof App | 'all']>;
 
 function buildAbility(permissions: Partial<UserAllPermissions>, appId?: string): FeatureAbility {
-  const { can, build } = new AbilityBuilder<FeatureAbility>(Ability as any);
+  const { can, build } = makeAbilityBuilder<FeatureAbility>();
   defineAppAbility(can as any, permissions as UserAllPermissions, appId);
   return build();
 }
 
 function makeModulePermissions(override: Partial<UserAllPermissions> = {}): UserAllPermissions {
-  return {
-    superAdmin: false,
-    isAdmin: false,
+  return buildPermissions({
     isBuilder: true,
-    isEndUser: false,
     user: { id: 'user-1' } as any,
     resource: [{ resourceType: MODULES.MODULES }],
     userPermission: {
-      appCreate: false,
-      appDelete: false,
-      appRelease: false,
-      appPromote: false,
-      workflowCreate: false,
-      workflowDelete: false,
-      dataSourceCreate: false,
-      dataSourceDelete: false,
-      folderCreate: false,
-      folderDelete: false,
-      orgConstantCRUD: false,
-      orgVariableCRUD: false,
-      isAdmin: false,
       isBuilder: true,
-      isEndUser: false,
-      isSuperAdmin: false,
       [MODULES.APP]: {
         editableAppsId: [],
         isAllEditable: false,
@@ -54,7 +38,7 @@ function makeModulePermissions(override: Partial<UserAllPermissions> = {}): User
       [MODULES.MODULES]: undefined,
     } as any,
     ...override,
-  };
+  });
 }
 
 const MODULE_APP_ID = 'module-app-uuid-1';
@@ -346,7 +330,9 @@ function makeApp(type: APP_TYPES, id = MODULE_APP_ID, orgId = 'org-1') {
 // Minimal mock service (bypass constructor DI)
 function makeService() {
   const svc = Object.create(AppsService.prototype) as AppsService;
-  // Stub versionRepository and appsUtilService to avoid real DB calls
+  // Stub versionRepository and appsUtilService to avoid real DB calls.
+  // overlayAppMetadata mutates `app` in place with branch-scoped metadata in the real
+  // implementation; a no-op is correct here since these cases don't assert on it.
   (svc as any).versionRepository = {};
   (svc as any).appsUtilService = { overlayAppMetadata: jest.fn().mockResolvedValue(undefined) };
   // folder-edit fallback hits the DB; these tests cover app-level ability only
@@ -414,6 +400,7 @@ describe('AppsService.validatePrivateAppAccess — module canEdit behavior', () 
         findByName: jest.fn().mockResolvedValue(fakeVersion),
       };
       (service as any).appsUtilService = {
+        overlayAppMetadata: jest.fn().mockResolvedValue(undefined),
         validateVersionEnvironment: jest.fn().mockResolvedValue(fakeEnv),
         overlayAppMetadata: jest.fn().mockResolvedValue(undefined),
       };

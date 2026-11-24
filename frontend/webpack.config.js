@@ -29,7 +29,7 @@ const emptyModulePath = path.resolve(__dirname, 'src/modules/emptyModule');
 
 const API_URL = {
   production: process.env.TOOLJET_SERVER_URL || (process.env.SERVE_CLIENT !== 'false' ? '__REPLACE_SUB_PATH__' : ''),
-  development: `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
+  development: process.env.TOOLJET_SERVER_URL || `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
 };
 
 const ASSET_PATH = process.env.ASSET_PATH || '';
@@ -355,7 +355,25 @@ module.exports = {
         resourceQuery: { not: [/url/] }, // exclude react component if path has *.svg?url
       },
       {
+        resourceQuery: /raw/,
+        type: 'asset/source',
+      },
+      {
+        test: /[\\/]node_modules[\\/]tailwindcss[\\/]/,
+        resolve: {
+          alias: {
+            fs: path.resolve(__dirname, 'src/_helpers/shims/tailwindFs.js'),
+            url: false,
+            crypto: false,
+            os: false,
+            'fast-glob': false,
+            '@tailwindcss/line-clamp': false,
+          },
+        },
+      },
+      {
         test: /\.css$/,
+        resourceQuery: { not: [/raw/] },
         use: [
           environment === 'production' ? MiniCssExtractPlugin.loader : { loader: 'style-loader' },
           {

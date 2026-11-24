@@ -22,12 +22,13 @@ export class CustomDomainsModule extends SubModule {
       controllers: isMainImport ? [CustomDomainsController] : [],
       providers: [
         CustomDomainsService,
+        { provide: 'MCP_CUSTOM_DOMAINS', useExisting: CustomDomainsService },
         CustomDomainRepository,
         CustomDomainCacheService,
         FeatureAbilityFactory,
         CloudflareProvider,
       ],
-      exports: [CustomDomainsService, CustomDomainCacheService],
+      exports: [CustomDomainsService, CustomDomainCacheService, 'MCP_CUSTOM_DOMAINS'],
     });
   }
 }

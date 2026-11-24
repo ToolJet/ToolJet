@@ -10,5 +10,18 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.ROOT]: {
       isPublic: true,
     },
+    [FEATURE_KEY.MIGRATION_STATUS]: {
+      isPublic: true,
+      skipAuditLogs: true,
+    },
+    // Public: the CLI checks it before signing in.
+    [FEATURE_KEY.CLI_COMPATIBILITY]: {
+      isPublic: true,
+      skipAuditLogs: true,
+    },
+    [FEATURE_KEY.MIGRATION_RUNS]: {
+      isSuperAdminFeature: true,
+      skipAuditLogs: true,
+    },
   },
 };

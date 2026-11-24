@@ -3,11 +3,13 @@ import { FEATURE_KEY } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
 
-// Workflow trigger types
 export const WORKFLOW_TRIGGER_TYPE = {
   MANUAL: 'manual',
   SCHEDULE: 'schedule',
   WEBHOOK: 'webhook',
+  APP: 'app',
+  WORKFLOW: 'workflow',
+  UNKNOWN: 'unknown',
 } as const;
 
 export type WorkflowTriggerType = (typeof WORKFLOW_TRIGGER_TYPE)[keyof typeof WORKFLOW_TRIGGER_TYPE];
@@ -29,6 +31,7 @@ export interface ExecuteWorkflowOptions {
   executionStartTime?: Date;
   startNodeId?: string; // Start execution from a specific node (for preview)
   injectedState?: object; // Inject state when starting from a specific node (for preview)
+  calledFromWorkflow?: boolean; // Child workflow run; cannot pause
 }
 
 // Feature configuration interfaces
@@ -53,6 +56,10 @@ interface Features {
   [FEATURE_KEY.WORKFLOW_PACKAGES]: FeatureConfig;
   [FEATURE_KEY.TERMINATE_WORKFLOW_EXECUTION]: FeatureConfig;
   [FEATURE_KEY.WORKFLOW_EXECUTION_STATE]: FeatureConfig;
+  [FEATURE_KEY.HUMAN_IN_THE_LOOP]: FeatureConfig;
+  [FEATURE_KEY.LIST_APPROVAL_REQUESTS]: FeatureConfig;
+  [FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS]: FeatureConfig;
+  [FEATURE_KEY.LIST_WORKFLOW_CONSUMERS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
@@ -64,11 +71,15 @@ export class WorkflowVersionEnvironmentError extends BadRequestException {
   public readonly versionEnvName: string;
   public readonly executionEnvName: string;
 
-  constructor(versionName: string, versionEnvName: string, executionEnvName: string) {
+  constructor(versionName: string, versionEnvName: string, executionEnvName: string, isBranch = false) {
     super(
-      `Workflow version "${versionName}" is in the "${versionEnvName}" environment ` +
-        `and cannot run in "${executionEnvName}". ` +
-        `Please promote this version to "${executionEnvName}" or higher first.`
+      isBranch
+        ? // A BRANCH row is development-only by design, so promoting it is not the remedy.
+          `Branch "${versionName}" can only run in the development environment, not ` +
+            `"${executionEnvName}". Merge the branch and run the resulting version instead.`
+        : `Workflow version "${versionName}" is in the "${versionEnvName}" environment ` +
+            `and cannot run in "${executionEnvName}". ` +
+            `Please promote this version to "${executionEnvName}" or higher first.`
     );
     this.name = 'WorkflowVersionEnvironmentError';
     this.versionName = versionName;
@@ -101,5 +112,34 @@ export class WorkflowTerminationError extends Error {
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, WorkflowTerminationError);
     }
+  }
+}
+
+export type ApprovalTimerJobData = { requestId: string };
+
+// Injected into a resumed run's state; read only by the node they name.
+export type HumanDecision = {
+  nodeId: string;
+  outcome: string;
+  input?: Record<string, unknown>;
+  resolvedBy?: string | null;
+};
+
+export type WaitResume = {
+  nodeId: string;
+  requestedAt: string;
+  resumeAt: string;
+  requestedDurationMs: number;
+};
+
+export type ResumeState = { __humanDecision?: HumanDecision; __waitResume?: WaitResume };
+
+export class WorkflowSuspendedSignal extends Error {
+  constructor(
+    public readonly executionId: string,
+    public readonly requestId: string
+  ) {
+    super('Workflow execution suspended');
+    this.name = 'WorkflowSuspendedSignal';
   }
 }

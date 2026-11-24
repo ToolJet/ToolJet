@@ -49,13 +49,24 @@ module.exports = {
         babelrc: false,
         configFile: false,
         presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript'],
+        // PDF.jsx sets the pdfjs worker via `new URL(..., import.meta.url)` at
+        // module scope. @babel/preset-env rewrites ESM->CJS, where `import.meta`
+        // has no equivalent and throws "Cannot use 'import.meta' outside a
+        // module". This local plugin (scripts/babel-plugin-local-import-meta.js)
+        // rewrites import.meta to a CJS-safe file URL so the module loads under
+        // jest. PDF is the only frontend/src widget using it.
+        plugins: [require.resolve('./scripts/babel-plugin-local-import-meta')],
       },
     ],
     '^.+\\.svg$': '<rootDir>/__mocks__/svg.js',
   },
   transformIgnorePatterns: [`node_modules/(?!(${esmPackages.join('|')})/)`],
   moduleNameMapper: {
+    // rc-util's ESM files, which the Ant pack imports to reach the module its icons use (packs/antd AntProvider), as
+    // the CommonJS copy those icons load under jest.
+    '^rc-util/es/(.*)$': 'rc-util/lib/$1',
     '^config$': '<rootDir>/src/test/mocks/config.js',
+    '(^|/)createBuildWorker$': '<rootDir>/src/test/mocks/createBuildWorker.js',
     '^@tooljet/plugins/client$': '<rootDir>/src/test/mocks/tooljetPluginsClient.js',
     // Real module uses top-level await (bundler-only); analytics stay dead in tests.
     'modules/common/helpers/posthogHelper(\\.js)?$': '<rootDir>/src/test/mocks/posthogHelper.js',
@@ -69,6 +80,38 @@ module.exports = {
     // markdown *parsing* — only that the widget renders its text — so a
     // renderable pass-through component is the cheap equivalent.
     '^react-markdown$': '<rootDir>/__mocks__/reactMarkdown.jsx',
+    // STUB, not transform: react-pdf's dist is ESM-only and drags in the whole
+    // pdfjs-dist tree + a web worker jsdom can't run, so a real PDF never renders
+    // under jest anyway. Real rendering is QA-owned per the PDF contract; the
+    // engineering layer only needs the empty-url placeholder + container styles.
+    // See ee/test/app-builder/widgets/PDF/TESTING.md (D-10).
+    '^react-pdf$': '<rootDir>/__mocks__/reactPdf.jsx',
+    // STUB, not transform: react-qr-reader@2.2.1 calls getUserMedia at mount,
+    // which jsdom has no camera for, so a real scan never happens under jest.
+    // Real camera scanning is QA-owned per the QrScanner contract; the engineering
+    // layer drives the widget's own onScan/onError handlers through the mock's
+    // captured props. See ee/test/app-builder/widgets/QrScanner/TESTING.md (D-01/D-02).
+    '^react-qr-reader$': '<rootDir>/__mocks__/reactQrReader.jsx',
+    // STUB, not transform: react-media-recorder wraps MediaRecorder +
+    // getUserMedia, neither of which jsdom implements, so a real recording never
+    // happens under jest. Real photo capture (canvas) and live recording are
+    // QA-owned per the Camera contract; the engineering layer drives the widget's
+    // own onRecordingStart/onStop logic through the stub's status transitions and
+    // captured recorderOptions. See ee/test/app-builder/widgets/Camera/TESTING.md (D-01/D-02).
+    '^react-media-recorder$': '<rootDir>/__mocks__/reactMediaRecorder.jsx',
+    // STUB, not transform: AudioRecorder.jsx dynamically imports a single icon from
+    // `@tabler/icons-react/dist/esm/icons/<name>.js`, an ESM-only path outside jest's
+    // transform allowlist, so the real import throws "Cannot use import statement
+    // outside a module" on every render. The glyph is cosmetic; a pass-through icon
+    // is the cheap equivalent. See ee/test/app-builder/widgets/AudioRecorder/TESTING.md.
+    '^@tabler/icons-react/dist/esm/icons/.*$': '<rootDir>/__mocks__/tablerDynamicIcon.jsx',
+    // STUB, not transform: @react-google-maps/api wraps the Google Maps JS SDK
+    // (window.google, an external script, an API key), none of which jsdom has, so
+    // a real map never renders under jest. Real tiles/pan/zoom/drag geometry and the
+    // Places service are QA-owned per the Map contract; the engineering layer drives
+    // the widget's own onLoad/marker/polygon/map-click/drag/search handlers through
+    // the mock's captured props. See ee/test/app-builder/widgets/Map/TESTING.md (D-01/D-03).
+    '^@react-google-maps/api$': '<rootDir>/__mocks__/reactGoogleMapsApi.jsx',
     // Same reasoning, one tree further out: @mdxeditor/editor is ESM-only and
     // carries the whole Lexical stack. It is only reached because the EE
     // AiBuilder doc previewer sits on an import chain that rendering a
@@ -110,6 +153,13 @@ module.exports = {
     '^@white-label/(.*)$': '<rootDir>/src/_helpers/white-label/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@tooljet/widget-definitions$': '<rootDir>/../packages/widget-definitions/src/index.js',
+    // A component pack's source (packs/*) rendered in a test: the runtime's SDK, and the app's React, as inline in
+    // ToolJet (a pack's own node_modules copy of React would be a second React and break its hooks).
+    '^@tooljet/custom-component-sdk$': '<rootDir>/src/test/mocks/customComponentSdk.js',
+    '^react$': '<rootDir>/node_modules/react',
+    '^react/(.*)$': '<rootDir>/node_modules/react/$1',
+    '^react-dom$': '<rootDir>/node_modules/react-dom',
+    '^react-dom/(.*)$': '<rootDir>/node_modules/react-dom/$1',
   },
   // jsdom patched to keep Node's native fetch/TextEncoder/BroadcastChannel —
   // required by MSW v2. Suites can still opt into `@jest-environment node`.

@@ -25,6 +25,15 @@
     padding: 0px;
   }
 
+  // Visible focus ring on the native expand/collapse buttons (keyboard nav).
+  // Reuses the Rocket interactive-focus token; offset kept small so the ring
+  // is not clipped by the tree's scroll container.
+  .rct-collapse-btn:focus-visible {
+    outline: 2px solid var(--interactive-focus-outline);
+    outline-offset: 1px;
+    border-radius: 4px;
+  }
+
   .rct-icons-fa4 {
 
     .rct-icon-expand-open,

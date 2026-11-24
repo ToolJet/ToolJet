@@ -1,3 +1,4 @@
+import type { WorkspaceAuthentication } from '@modules/mcp-oauth/protocol';
 import { FeatureConfig } from '@modules/app/types';
 import { FEATURE_KEY } from '../constants';
 import { MODULES } from '@modules/app/constants/modules';
@@ -16,7 +17,16 @@ export type JWTPayload = {
   token?: string;
   appId?: string;
   patScope?: PersonalAccessTokenScope;
+  workspaceAuthentication?: WorkspaceAuthentication;
+  oauthGrantId?: string;
+  oauthTokenId?: string;
+  oauthAppId?: string;
+  aud?: string;
   tj_api_source?: string;
+  /* The app an AI builder session was minted for; scopes its library calls */
+  aiAppId?: string;
+  /* The session's expiry is absolute: activity does not extend it */
+  fixedExpiry?: boolean;
   /* Set on synthetic tokens minted for admin API key (TJ_ADMIN_API_KEY) authentication */
   isAdminApiKeyAuth?: boolean;
 };

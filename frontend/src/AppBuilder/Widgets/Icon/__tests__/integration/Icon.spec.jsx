@@ -36,8 +36,10 @@ const defaultProperties = {
   disabledState: binding('{{false}}'),
 };
 
+const TOKEN_COLOR = 'var(--cc-default-icon)';
+
 const defaultStyles = {
-  iconColor: binding('#000'),
+  iconColor: binding(TOKEN_COLOR),
   iconAlign: binding('center'),
   padding: binding('default'),
   boxShadow: binding('0px 0px 0px 0px #00000040'),
@@ -148,6 +150,41 @@ describe('Icon widget', () => {
       document.body.removeEventListener('click', bodyClick);
       document.body.removeEventListener('mouseover', bodyMouseOver);
     }
+  });
+
+  test('[Icon-EVT-003] Clicking the widget box outside the SVG fires onClick once', async () => {
+    // Break this catches: binding onClick to the SVG only, so the padding/alignment space around
+    // the glyph (which shows the pointer cursor and fires onHover) swallows clicks.
+    const bodyClick = jest.fn();
+    document.body.addEventListener('click', bodyClick);
+    try {
+      const { container } = widget.render({ events: countClicks() });
+      await waitFor(() => expect(iconSvg(container)).toBeInTheDocument());
+
+      await widget.session.user.click(root(container));
+      await waitFor(() => expect(widget.variables().clickCount).toBe(1));
+      expect(bodyClick).not.toHaveBeenCalled();
+
+      await widget.session.user.click(iconSvg(container));
+      await waitFor(() => expect(widget.variables().clickCount).toBe(2));
+    } finally {
+      document.body.removeEventListener('click', bodyClick);
+    }
+  });
+
+  test('[Icon-EVT-002] A pointer cursor is shown only on an Icon with an onClick event', async () => {
+    // Break this catches: the Sprint-19 rewrite that left `'cursor-pointer': false` hard-coded,
+    // so a clickable Icon gives no affordance; and the reverse, a pointer on a hover-only icon.
+    const { container } = widget.render({
+      extraComponents: { [ID2]: iconDefinition(ID2, HANDLE2) },
+      also: [{ id: ID2, componentType: 'Icon', widgetHeight: 48, widgetWidth: 200 }],
+      events: [...countClicks(ID), ...countHovers(ID2)],
+    });
+    await waitFor(() => expect(iconSvg(container)).toBeInTheDocument());
+    await waitFor(() => expect(iconSvg(container, HANDLE2)).toBeInTheDocument());
+
+    expect(root(container)).toHaveClass('cursor-pointer');
+    expect(root(container, HANDLE2)).not.toHaveClass('cursor-pointer');
   });
 
   test('[Icon-API-001] Mount publishes the Icon state and action API', async () => {
@@ -310,6 +347,7 @@ describe('Icon widget', () => {
     // or letting the universal box shadow overwrite Icon's own registered shadow.
     const { container } = widget.render({
       darkMode: true,
+      styles: { iconColor: binding('#000') }, // the pre-D-08 literal default, kept for saved apps
       afterSeed: () => widget.setComponentProperty(ID, 'boxShadow', GENERAL_SHADOW, 'generalStyles'),
     });
     await waitFor(() => expect(iconSvg(container)).toBeInTheDocument());
@@ -339,6 +377,22 @@ describe('Icon widget', () => {
     expect(iconSvg(container)).toHaveAttribute('stroke', COLOR);
   });
 
+  test('[Icon-STY-002] The registered default is the theme icon token and tokens render via currentColor', async () => {
+    // Break this catches: a literal #000 default that ignores the app theme, and forwarding a
+    // `var(...)` token as the SVG `stroke` attribute, where browsers discard it and the glyph vanishes.
+    expect(frontendConfig.definition.styles.iconColor.value).toBe(TOKEN_COLOR);
+    expect(frontendConfig.styles.iconColor.validation.defaultValue).toBe(TOKEN_COLOR);
+
+    const { container } = widget.render();
+    await waitFor(() => expect(iconSvg(container)).toBeInTheDocument());
+    // jsdom's cssstyle drops `var()` for `color`, so the inline token itself is not observable here;
+    // `stroke="currentColor"` is the behaviour that makes the token resolve in a real browser.
+    expect(iconSvg(container)).toHaveAttribute('stroke', 'currentColor');
+
+    await setStyle('iconColor', COLOR);
+    await waitFor(() => expect(iconSvg(container)).toHaveAttribute('stroke', COLOR));
+  });
+
   test('[Icon-SIZ-001] Both registered aspect branches emit stable sizing rules', async () => {
     // Break this catches: swapping the wide/tall condition or restoring the old fixed-height
     // rule that clipped icons after the f2dd8343a05 sizing fix.
@@ -364,6 +418,24 @@ describe('Icon widget', () => {
       width: '80px',
       height: 'auto',
     });
+  });
+
+  test('[Icon-SIZ-002] The root centres the icon vertically and follows alignment in any slot', async () => {
+    // Break this catches: a text-align-only root, which leaves the SVG hugging the top of a
+    // tall slot (width:<px>; height:auto never fills the height), and alignment that does not
+    // carry into the flex axis.
+    const { container } = widget.render({
+      extraComponents: { [ID2]: iconDefinition(ID2, HANDLE2, {}, { iconAlign: binding('right') }) },
+      also: [{ id: ID2, componentType: 'Icon', widgetHeight: 84, widgetWidth: 80 }],
+    });
+    await waitFor(() => expect(iconSvg(container)).toBeInTheDocument());
+    await waitFor(() => expect(iconSvg(container, HANDLE2)).toBeInTheDocument());
+
+    expect(root(container)).toHaveStyle({ display: 'flex', alignItems: 'center', justifyContent: 'center' });
+    expect(root(container, HANDLE2)).toHaveStyle({ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' });
+
+    await setStyle('iconAlign', 'left', ID2);
+    await waitFor(() => expect(root(container, HANDLE2)).toHaveStyle({ justifyContent: 'flex-start' }));
   });
 
   test('[Icon-ASY-001] Lazy icon completion cannot restore a stale glyph after change or unmount', async () => {

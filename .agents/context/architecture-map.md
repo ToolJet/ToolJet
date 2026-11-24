@@ -54,13 +54,13 @@ graph LR
 
 | Store | Content | Access path |
 |---|---|---|
-| Main PostgreSQL | Workspaces, users/sessions, apps/versions, pages/components/layouts/events, data source metadata and encrypted options, queries, permissions, workflow records, audit and configuration metadata. | `server/ormconfig.ts::buildConnectionOptions`; entities in `server/src/entities/`; schema migrations in `server/migrations/`. |
+| Main PostgreSQL | Workspaces, users/sessions, apps/versions, pages/components/layouts/events, data source metadata and encrypted options, queries, permissions, workflow records, audit and configuration metadata. | `server/ormconfig.ts::buildConnectionOptions`; entities in `server/src/entities/`; schema migrations in `server/migrations/schema/`. |
 | ToolJet DB PostgreSQL | User-created workspace tables and rows, with per-workspace schema/user isolation unless SQL mode is disabled. | Named TypeORM connection from `buildToolJetDbConnectionOptions`; `TooljetDbTableOperationsService`. |
 | PostgREST | HTTP data plane over ToolJet DB; not a source of truth itself. | `PostgrestProxyService::{proxy,perform}` signs a database JWT, selects the workspace schema, and forwards requests. |
 | Redis | BullMQ queues and shared runtime coordination/cache facilities. | `AppModuleLoader` Bull/Redis configuration; `server/src/modules/workflows/module.ts`. |
 | Files/object storage | Uploaded assets/files through configurable storage providers. | `server/src/modules/files/`; deployment environment configuration. |
 
-Schema changes and data transformations are separated: `server/migrations/` contains TypeORM schema migrations, while `server/data-migrations/` contains deployment-time data migrations.
+Migrations are split by phase: `server/migrations/schema/` (additive schema), `server/migrations/data/` (row changes), `server/migrations/cleanup/` (drops and tightenings a release later). How they run: `server/docs/MIGRATION_FLOW.md`.
 
 ## End-to-end flows
 
@@ -100,6 +100,8 @@ sequenceDiagram
 
 `TooljetDbController` exposes guarded table/column/foreign-key/bulk-upload operations. Row operations enter `/tooljet-db/proxy/*` or `PostgrestProxyService.perform`; the service maps opaque table IDs to workspace tables, creates a scoped Postgres JWT/profile header, validates JSONB input, and calls PostgREST. PostgREST performs the SQL against ToolJet DB PostgreSQL and returns representations/count metadata.
 
+Raw SQL and seed-data migrations (`TooljetDbRawSqlMigrationService`) let an authenticated org member run arbitrary SQL against a table's tenant schema; the SQL commit (tenant DB) and the migration-record commit (main DB) are two independent transactions, so a crash between them is a known, currently-undetected gap (main DB's migration row can end up confirmed for tenant-DB SQL that never committed). Environment promote/replay walks these recorded migrations across environments in sequence.
+
 ### 5. Queue and execute background work
 
 Nest schedules and BullMQ share Redis configuration from `AppModuleLoader`. Workflow scheduling/execution queues are registered in `server/src/modules/workflows/module.ts`; processors and schedule bootstrap are registered only when `WORKER=true`. `npm run worker:prod` starts the same compiled server entry with that flag. The non-Cloud deployment also exposes Bull Board under `/jobs`, protected by configured basic authentication. **Boundary:** public workflow contracts are present, but some CE webhook methods throw `Method not implemented`, so full behavior is edition-dependent.
@@ -109,6 +111,7 @@ Nest schedules and BullMQ share Redis configuration from `AppModuleLoader`. Work
 - JWT session: `server/src/modules/session/`, cookie `tj_auth_token`.
 - Feature authorization: module/feature metadata plus CASL in `server/src/modules/app/ability-factory.ts` and `guards/ability.guard.ts`.
 - Resource validation: App, Version, Data Source, workspace, public/private, and feature/license guards close to each controller.
+- Workflow approval links: `GET /workflow-approvals/:token` and `POST /workflow-approvals/:token/resolve` are authorized by the approval request's token, not a session. `OptionalJwtAuthGuard` (`server/src/modules/session/guards/optional-jwt-auth.guard.ts`) attaches the session user when the JWT is valid and proceeds anonymously otherwise (never 401), so a signed-in approver is identified when the request does not allow token-only resolution.
 - Secrets: source options and workspace secrets are decrypted/resolved server-side during query execution.
 - Security middleware: CSRF-origin checks for custom domains, body validation/whitelisting, security headers, redacted request logging, parameterized-query rule, and throttling on app query runs.
 
@@ -139,6 +142,7 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 
 | Failure | Handling/evidence |
 |---|---|
+| Database migration on upgrade (many pods; `MIGRATION_MODE=blocking\|async`) | Advisory locks serialise pods. In async mode the upgrade gate answers API writes with 503 while a migration runs and after a failed run; blocking mode has no gate. Async mode applies schema migrations before boot, data migrations in the background, and cleanup migrations after writes reopen. `server/docs/MIGRATION_FLOW.md` (Many pods, one migration; Upgrade gate; Async mode; Failure modes). |
 | Invalid/expired session or insufficient permission | Guards return authorization errors before service execution. |
 | Public/private or unreleased app mismatch | App access guards and release validation prevent hydration. |
 | Query timeout, connector error, OAuth refresh requirement, or throttling | Data query services return structured failed/`needs_oauth` states; throttler limits per-app runs. |
@@ -147,6 +151,7 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 | Stale frontend chunks after deployment | `RootRouter.jsx::ChunkErrorBoundary` reloads once, then presents a manual refresh action. |
 | Main DB, ToolJet DB, or PostgREST unavailable at boot/runtime | Health/startup or dependent requests fail; Compose/Kubernetes declare these service dependencies. |
 | Server/frontend component config drift | Existing saved apps may render incorrectly; repository instructions require synchronized config and migrations for key changes. |
+| SSRF allowlist or toggle change not yet applied (EE) | The server publishes the SSRF runtime config in-process and refreshes it every 30 s, so a change can lag by up to 30 s; before the first read it fails closed (protection on, empty allowlist). EE blocks private ranges (10/8, 172.16/12, 192.168/16) by default; CE keeps env-var behaviour; Cloud ignores the env vars and always blocks private ranges (`server/src/modules/ssrf/AGENTS.md`). |
 | PAT write fails app validation | Enforced source (`pat`) gets 400 `APP_VALIDATION_FAILED` with `issues`+`warnings`; every other source saves and receives `validationWarnings` in the body and the `x-tooljet-validation-warnings` header (`server/src/modules/app-validation/`). |
 
 ## Inferences

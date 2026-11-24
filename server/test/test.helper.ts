@@ -23,3 +23,5 @@ export * from './helpers/custom-component-libraries';
 
 // --- App permissions: page/component/query access rules ---
 export * from './helpers/app-permissions';
+// --- Ability: CASL ability builder scaffolding + guard ExecutionContext builder ---
+export * from './helpers/ability';

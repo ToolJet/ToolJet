@@ -4,7 +4,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { authenticationService, tooljetService, licenseService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
-import { PrivateRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute } from '@/Routes';
+import { PrivateRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute, SuperAdminRoute } from '@/Routes';
 import { DesktopOnlyPrivateRoute, DesktopOnlyAdminRoute } from '@/Routes/ComposedGuards';
 import { HomePage } from '@/HomePage';
 import './lazyPageStyles';
@@ -16,6 +16,11 @@ import { Authorize as Oauth } from '@/Oauth';
 const TooljetDatabase = React.lazy(() => import('@/TooljetDatabase'));
 
 const ProfileSettingsPage = React.lazy(() => import('@/SettingsPage'));
+const CliActivate = React.lazy(() =>
+  import('@ee/modules/CodeMode/CliActivate').then((m) =>
+    typeof m.default === 'function' ? m : { default: () => null }
+  )
+);
 
 const MarketplacePage = React.lazy(() => import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage'));
 const InstalledPlugins = React.lazy(
@@ -45,6 +50,7 @@ import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import cx from 'classnames';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import useDarkModeAcrossTabs from '@/_hooks/useDarkModeAcrossTabs';
 import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 import {
   onboarding,
@@ -56,12 +62,14 @@ import {
   getAuditLogsRoutes,
 } from '@/modules';
 import './workspaceSettingsStyles';
-import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
+import { isWorkflowsFeatureEnabled, fetchEdition } from '@/modules/common/helpers/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
 import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
+import { MigrationBanner } from '@/_components/MigrationBanner';
+import { MigrationsPage } from '@/MigrationsPage';
 // EmbedApp import removed - now handled by ViewerApp.jsx
 // import EmbedApp from '@/AppBuilder/EmbedApp';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
@@ -80,6 +88,8 @@ const AppWrapper = (props) => {
     }),
     shallow
   );
+  // Dark mode toggled in another tab applies to this whole tab, not only the parts that re-read it.
+  useDarkModeAcrossTabs(updateIsTJDarkMode);
   // NOTE: BrowserRouter removed - now handled by RootRouter.jsx
   // App.jsx is now wrapped by RootRouter which provides the router context
   return (
@@ -112,7 +122,8 @@ class AppComponent extends React.Component {
   updateMargin() {
     const isAdmin = authenticationService?.currentSessionValue?.admin;
     const isBuilder = authenticationService?.currentSessionValue?.role?.name === 'builder';
-    const showBannerCondition = (isAdmin || isBuilder) && this.state.showBanner;
+    const migrationBannerOnTop = this.state.showMigrationBanner && !this.isEditorOrViewerFromPath();
+    const showBannerCondition = ((isAdmin || isBuilder) && this.state.showBanner) || migrationBannerOnTop;
     const marginValue = showBannerCondition ? '25' : '0';
     const marginValueLayout = showBannerCondition ? '35' : '0';
     document.documentElement.style.setProperty('--dynamic-margin', `${marginValue}px`);
@@ -212,11 +223,14 @@ class AppComponent extends React.Component {
     }
     return '';
   };
+  setMigrationBannerVisible = (visible) => {
+    if (this.state.showMigrationBanner !== visible) this.setState({ showMigrationBanner: visible });
+  };
   closeBasicPlanMigrationBanner = () => {
     this.setState({ showBanner: false });
   };
   render() {
-    const { updateAvailable, isEditorOrViewer, showBanner } = this.state;
+    const { updateAvailable, isEditorOrViewer, showBanner, showMigrationBanner } = this.state;
     const { darkMode } = this.props;
     const mergedProps = {
       ...this.props,
@@ -249,7 +263,18 @@ class AppComponent extends React.Component {
     const isBuilder = authenticationService?.currentSessionValue?.role?.name === 'builder';
     return (
       <>
-        <div className={!isApplicationsPath && (isAdmin || isBuilder) ? 'banner-layout-wrapper' : ''}>
+        <div
+          className={
+            !isApplicationsPath && (isAdmin || isBuilder || (showMigrationBanner && !this.isEditorOrViewerFromPath()))
+              ? 'banner-layout-wrapper'
+              : ''
+          }
+        >
+          <MigrationBanner
+            darkMode={darkMode}
+            onVisibilityChange={this.setMigrationBannerVisible}
+            floating={!!this.isEditorOrViewerFromPath()}
+          />
           {!isApplicationsPath && !this.isEditorOrViewerFromPath() && (isAdmin || isBuilder) && showBanner && (
             <BasicPlanMigrationBanner darkMode={darkMode} closeBanner={this.closeBasicPlanMigrationBanner} />
           )}
@@ -265,7 +290,7 @@ class AppComponent extends React.Component {
                 <p>A new version of ToolJet has been released.</p>
                 <div className="btn-list">
                   <a
-                    href="https://docs.tooljet.io/docs/setup/updating"
+                    href="https://docs.tooljet.com/docs/setup/upgrade-to-lts"
                     target="_blank"
                     className="btn btn-info"
                     rel="noreferrer"
@@ -377,6 +402,15 @@ class AppComponent extends React.Component {
                 {/* - /applications/:slug/versions/:versionId/environments/:environmentId/:pageHandle? */}
                 <Route
                   exact
+                  path="/cli/activate"
+                  element={
+                    <PrivateRoute darkMode={darkMode}>
+                      <CliActivate />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  exact
                   path="/oauth2/authorize"
                   element={
                     <PrivateRoute darkMode={darkMode}>
@@ -394,6 +428,19 @@ class AppComponent extends React.Component {
                           <Workflows switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                         </PrivateRoute>
                       </DesktopOnlyRoute>
+                    }
+                  />
+                )}
+                {/* EE renders migrations inside its instance settings shell (settings/*). */}
+                {fetchEdition() === 'ce' && (
+                  <Route
+                    path="settings/migrations"
+                    element={
+                      <DesktopOnlyPrivateRoute darkMode={darkMode}>
+                        <SuperAdminRoute navigate={this.props.navigate}>
+                          <MigrationsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                        </SuperAdminRoute>
+                      </DesktopOnlyPrivateRoute>
                     }
                   />
                 )}
@@ -511,7 +558,7 @@ class AppComponent extends React.Component {
             <UpgradePlanModal />
           </div>
 
-          <Toast toastOptions={toastOptions} />
+          <Toast toastOptions={toastOptions} groupErrors={!!this.isEditorOrViewerFromPath()} />
         </div>
       </>
     );

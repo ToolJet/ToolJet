@@ -5,7 +5,6 @@ import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { LicenseOrganizationService } from '@modules/licensing/services/organization.service';
-import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
@@ -19,12 +18,11 @@ import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DefaultDataSourceKinds } from '@modules/data-sources/constants';
 import { OrganizationInputs } from './types/organization-inputs';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { seedOrgEnvironmentsAndDefaultBranch } from '@helpers/utils.helper';
 
 @Injectable()
 export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilService {
   constructor(
-    protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly groupPermissionUtilService: GroupPermissionsUtilService,
     protected readonly rolesUtilService: RolesUtilService,
     protected readonly tooljetDbTableOperationsService: TooljetDbTableOperationsService,
@@ -41,26 +39,20 @@ export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilSer
   async create(organizationInputs: OrganizationInputs, user?: User, manager?: EntityManager): Promise<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const organization = await this.organizationRepository.createOne(organizationInputs, manager);
-      await this.appEnvironmentUtilService.createDefaultEnvironments(organization.id, manager);
+      // Seeds the default workspace branch before createSampleDB, which requires a non-null
+      // branch_id when creating DataSourceVersion rows.
+      await seedOrgEnvironmentsAndDefaultBranch(organization.id, manager);
       await this.groupPermissionUtilService.createDefaultGroups(organization.id, manager);
 
       if (user) {
         await this.organizationUserRepository.createOne(user, organization, false, manager);
         await this.rolesUtilService.addUserRole(organization.id, { role: USER_ROLE.ADMIN, userId: user.id }, manager);
       }
-      // Seed the default workspace branch before createSampleDB, which requires
-      // a non-null branch_id when creating DataSourceVersion rows.
-      const defaultBranch = manager.create(WorkspaceBranch, {
-        organizationId: organization.id,
-        name: 'main',
-        isDefault: true,
-      });
-      await manager.save(defaultBranch);
 
       await this.sampleDBService.createSampleDB(organization.id, manager);
       await this.licenseOrganizationService.validateOrganization(manager, organization.id);
       await this.licenseUserService.validateUser(manager, organization.id);
-      //create default theme for this organization
+      //create the default theme for this organization
       await this.organizationThemesUtilService.createDefaultTheme(manager, organization.id);
       await this.tooljetDbTableOperationsService.createTooljetDbTenantSchemaAndRole(organization.id, manager);
 

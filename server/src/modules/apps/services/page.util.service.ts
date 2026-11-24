@@ -43,7 +43,7 @@ export class PageHelperService implements IPageHelperService {
       const diff = udpateObject.diff;
       Object.keys(diff).forEach((pageId) => {
         const index = diff[pageId].index;
-        updateArr.push(manager.update(Page, pageId, { index }));
+        updateArr.push(manager.update(Page, { id: pageId, appVersionId }, { index }));
       });
       await Promise.all(updateArr);
     });

@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { BadRequestException, INestApplication } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import {
   initTestApp,
@@ -6,6 +6,7 @@ import {
   createUser,
   createApplication,
   createApplicationVersion,
+  createWorkflowDataQuery,
   findEntityOrFail,
   saveEntity,
   updateEntity,
@@ -16,6 +17,7 @@ import { Page } from '@entities/page.entity';
 import { Component } from '@entities/component.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { DataSource as DataSourceEntity } from '@entities/data_source.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { AppsUtilService } from '@modules/apps/util.service';
 
@@ -141,5 +143,74 @@ describe('Module delete-in-use guard — branch scoping and current name', () =>
     await expect(
       service.checkModuleInUseByApps(moduleUsedOnDefaultBranch, getDefaultDataSource().manager, defaultBranchId)
     ).rejects.toThrow('master-consumer-old');
+  });
+});
+
+/**
+ * checkWorkflowInUseByApps is checkModuleInUseByApps's twin for workflow-node DataQuery
+ * references: it must name the consuming app instead of a generic message, same as the
+ * module guard above.
+ */
+describe('Workflow delete-in-use guard — names the consuming app', () => {
+  let nestApp: INestApplication;
+  let service: AppsUtilService;
+
+  beforeAll(async () => {
+    ({ app: nestApp } = await initTestApp());
+    service = nestApp.get(AppsUtilService);
+  });
+
+  afterAll(async () => {
+    await closeTestApp(nestApp);
+  }, 60_000);
+
+  it('blocks the delete and names the consumer when a workflow query on the branch references the workflow by co_relation_id', async () => {
+    const { user } = await createUser(nestApp, {
+      email: 'workflow-in-use@tooljet.com',
+      organizationName: 'Workflow in-use WS',
+    });
+
+    const workflowCoRelationId = uuidv4();
+    const workflow = await createApplication(nestApp, { name: 'Shared workflow', user, type: APP_TYPES.WORKFLOW });
+    await updateEntity(App, workflow.id, { co_relation_id: workflowCoRelationId });
+    workflow.co_relation_id = workflowCoRelationId;
+
+    const consumer = await createApplication(nestApp, { name: 'Consumer App', user, type: APP_TYPES.FRONT_END });
+    const consumerVersion = await createApplicationVersion(nestApp, consumer as App & { organizationId: string });
+
+    const branchRepo = getDefaultDataSource().getRepository(WorkspaceBranch);
+    const branch = await branchRepo.save(
+      branchRepo.create({ organizationId: user.organizationId, name: 'workflow-feature', isDefault: false })
+    );
+    await updateEntity(AppVersion, consumerVersion.id, { branchId: branch.id, appName: 'Consumer App' });
+
+    const dataSourceRepo = getDefaultDataSource().getRepository(DataSourceEntity);
+    const workflowDataSource = await dataSourceRepo.save(
+      dataSourceRepo.create({
+        id: uuidv4(),
+        name: 'workflows',
+        kind: 'workflows',
+        type: 'default',
+        scope: 'global',
+        appVersionId: null,
+        organizationId: user.organizationId,
+      })
+    );
+    await createWorkflowDataQuery(nestApp, consumerVersion, workflowDataSource, {
+      name: 'call-workflow',
+      options: { workflowId: workflowCoRelationId },
+    });
+
+    let thrown: BadRequestException;
+    try {
+      await service.checkWorkflowInUseByApps(workflow, getDefaultDataSource().manager, branch.id);
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeInstanceOf(BadRequestException);
+    expect(thrown.message).toBe(
+      'Cannot delete workflow "Shared workflow" — it is referenced by: Consumer App. Remove the workflow queries before deleting.'
+    );
   });
 });

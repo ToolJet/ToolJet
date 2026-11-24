@@ -26,10 +26,14 @@
  * prefix, per the widget-testing-contract validator.
  */
 import React from 'react';
-import { waitFor, fireEvent as rtlFireEvent, act, screen } from '@testing-library/react';
+import { waitFor, fireEvent as rtlFireEvent, act, screen, render } from '@testing-library/react';
+import useKeyHooks from '@/_hooks/useKeyHooks';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import { getModalBodyHeight } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
 import { onShowSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
+import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { componentDefinition, seedApp, binding as rawBinding } from '@/test/app-builder';
 import {
   createWidgetHarness,
@@ -65,6 +69,8 @@ const DEFAULT_PROPERTIES = {
   footerHeight: { value: 80 },
   tooltipFormat: binding('plainText'),
   tooltip: binding(''),
+  variant: binding('dialog'),
+  side: binding('right'),
 };
 
 const DEFAULT_STYLES = {
@@ -305,6 +311,48 @@ describe('ModalV2: Escape key', () => {
     rtlFireEvent.keyDown(modalBody(), { key: 'Escape', code: 'Escape' });
 
     await waitFor(() => expect(exposed()).toBe(false));
+  });
+
+  test('[ModalV2-ESC-003] Escape still closes the modal when the editor hotkeys are mounted', async () => {
+    // Break this catches: the editor's useKeyHooks default-preventing Escape before the
+    // modal sees it, which makes Components/Modal.jsx's `if (e.defaultPrevented) return`
+    // guard (meant for a nested Radix overlay) swallow every Escape in edit mode.
+    const EditorHotkeys = () => {
+      useKeyHooks(['esc'], () => {});
+      return null;
+    };
+    // Mounted first, as HotkeyProvider is in the real editor, so its document listener runs first.
+    render(<EditorHotkeys />);
+    renderModal({ properties: { hideOnEsc: binding('{{true}}') } });
+    await openModal();
+
+    rtlFireEvent.keyDown(modalBody(), { key: 'Escape', code: 'Escape' });
+
+    await waitFor(() => expect(exposed()).toBe(false));
+  });
+
+  test('[ModalV2-ESC-004] Escape pressed inside an editor overlay does not close the modal or fire On close', async () => {
+    // Break this catches: the modal's document-level Escape listener reacting to a keypress that
+    // started in the editor's review/compare overlay (a portaled `[data-editor-overlay]` the modal
+    // knows nothing about), closing the modal behind it and running its On close actions.
+    renderModal({ properties: { hideOnEsc: binding('{{true}}') } });
+    await openModal();
+    const overlay = document.createElement('div');
+    overlay.setAttribute('data-editor-overlay', '');
+    const comment = document.createElement('textarea');
+    overlay.appendChild(comment);
+    document.body.appendChild(overlay);
+
+    try {
+      const notPrevented = rtlFireEvent.keyDown(comment, { key: 'Escape', code: 'Escape' });
+
+      // Left untouched, so the overlay's own Escape handling still sees a live event.
+      expect(notPrevented).toBe(true);
+      expect(exposed()).toBe(true);
+      expect(modalBody()).toBeInTheDocument();
+    } finally {
+      overlay.remove();
+    }
   });
 
   test('[ModalV2-ESC-002] hideOnEsc: false keeps the modal open on Escape', async () => {
@@ -622,6 +670,115 @@ describe('ModalV2: styles', () => {
   });
 });
 
+describe('ModalV2: non-text trigger colours and label', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  // The store's resolver turns a non-string colour into '', but paths that apply the schema's
+  // `validation.defaultValue` (Form child validation, the shadcn Dialog's direct props) used to hand ModalV2 `false`,
+  // and getModifiedColor then crashed calling `.startsWith` on it. These render ModalV2 itself with the raw values.
+  function renderModalDirect({ properties = {}, styles = {} } = {}) {
+    const definition = componentDefinition(ID, NAME, 'ModalV2', DEFAULT_PROPERTIES);
+    seedApp({ [ID]: definition }, { moduleId: MODULE_ID });
+    store().setEditorLoading(false, MODULE_ID);
+    store().setCurrentMode('edit', MODULE_ID);
+    const plain = (values) => Object.fromEntries(Object.entries(values).map(([key, { value }]) => [key, value]));
+    return widget.session.render(
+      <PageWrapper>
+        <ModuleProvider moduleId={MODULE_ID}>
+          <ModalV2
+            id={ID}
+            component={definition.component}
+            properties={{ ...plain(DEFAULT_PROPERTIES), visibility: true, useDefaultButton: true, ...properties }}
+            styles={{ ...plain(DEFAULT_STYLES), ...styles }}
+            setExposedVariable={() => {}}
+            setExposedVariables={() => {}}
+            fireEvent={() => {}}
+            dataCy={NAME}
+            height={40}
+            currentMode="edit"
+            componentType="ModalV2"
+          />
+        </ModuleProvider>
+      </PageWrapper>
+    );
+  }
+
+  test('a `false` trigger colour renders the button instead of crashing', async () => {
+    renderModalDirect({
+      styles: {
+        triggerButtonBackgroundColor: false,
+        triggerButtonHoverBackgroundColor: false,
+        triggerButtonTextColor: false,
+      },
+    });
+
+    await waitFor(() => expect(triggerButton()).toBeInTheDocument());
+    expect(triggerButton()).toHaveTextContent('Launch Modal');
+    expect(triggerButton().style.getPropertyValue('--tblr-btn-color-darker')).not.toBe('');
+  });
+
+  test('a numeric trigger colour renders the button instead of crashing', async () => {
+    renderModalDirect({
+      styles: {
+        triggerButtonBackgroundColor: 12,
+        triggerButtonTextColor: 12,
+      },
+    });
+
+    await waitFor(() => expect(triggerButton()).toBeInTheDocument());
+    expect(triggerButton()).toHaveTextContent('Launch Modal');
+    expect(triggerButton().style.getPropertyValue('--tblr-btn-color-darker')).not.toBe('');
+  });
+
+  test('a numeric manual hover colour falls back to the definition colour', async () => {
+    renderModalDirect({
+      styles: { triggerButtonHoverBackgroundMode: 'manual', triggerButtonHoverBackgroundColor: 12 },
+    });
+
+    await waitFor(() => expect(triggerButton()).toBeInTheDocument());
+    expect(triggerButton().style.getPropertyValue('--tblr-btn-color-darker')).toBe('var(--cc-primary-brand)');
+  });
+
+  test('a numeric trigger label renders as text', async () => {
+    renderModalDirect({ properties: { triggerButtonLabel: 42 } });
+
+    await waitFor(() => expect(triggerButton()).toHaveTextContent('42'));
+  });
+
+  test('an object trigger label renders the fallback label instead of throwing', async () => {
+    renderModalDirect({ properties: { triggerButtonLabel: { text: 'Open' } } });
+
+    await waitFor(() => expect(triggerButton()).toBeInTheDocument());
+    expect(triggerButton()).toHaveTextContent('Show Modal');
+  });
+
+  test('a numeric colour binding through the store still renders the trigger button', async () => {
+    renderModal({
+      styles: {
+        triggerButtonBackgroundColor: { value: '{{12}}' },
+        triggerButtonTextColor: { value: '{{12}}' },
+      },
+    });
+
+    await waitFor(() => expect(triggerButton()).toBeInTheDocument());
+    expect(triggerButton()).toHaveTextContent('Launch Modal');
+  });
+});
+
+describe('getModifiedColor', () => {
+  test('returns a colour for non-string input instead of throwing', () => {
+    for (const input of [false, 12, null, undefined, { r: 1 }, ['#fff']]) {
+      expect(() => getModifiedColor(input, 'hover')).not.toThrow();
+      expect(typeof getModifiedColor(input, 'hover')).toBe('string');
+    }
+  });
+
+  test('still darkens a real colour', () => {
+    expect(getModifiedColor('#ffffff', 'hover')).not.toBe('#ffffff');
+  });
+});
+
 describe('ModalV2: saved-app compatibility', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
@@ -727,6 +884,52 @@ describe('ModalV2: size', () => {
     renderModal({ properties: { size: binding('lg') } });
     await openModal();
     expect(bodyCanvas()).toHaveAttribute('canvas-height', '240px');
+  });
+});
+
+describe('ModalV2: sheet', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const dialog = () => document.querySelector('.modal-dialog');
+
+  test('[ModalV2-SHEET-001] the default kind opens a centred dialog', async () => {
+    renderModal();
+    await openModal();
+    expect(dialog()).not.toHaveClass('tj-modal-sheet');
+  });
+
+  test('[ModalV2-SHEET-002] kind sheet opens against the chosen side, the right by default', async () => {
+    renderModal({ properties: { variant: binding('sheet') } });
+    await openModal();
+    expect(dialog()).toHaveClass('tj-modal-sheet', 'tj-modal-sheet--right');
+
+    for (const side of ['left', 'top', 'bottom']) {
+      renderModal({ properties: { variant: binding('sheet'), side: binding(side) } });
+      await openModal();
+      expect(dialog()).toHaveClass('tj-modal-sheet', `tj-modal-sheet--${side}`);
+    }
+  });
+
+  test('[ModalV2-SHEET-003] a sheet keeps its header, body and footer, and closes from its close button', async () => {
+    renderModal({ properties: { variant: binding('sheet'), side: binding('left') } });
+    await openModal();
+    expect(dialog().querySelector('.modal-header')).toBeInTheDocument();
+    expect(dialog().querySelector('.modal-footer')).toBeInTheDocument();
+    rtlFireEvent.click(closeButton());
+    await waitFor(() => expect(exposed()).toBe(false));
+  });
+
+  test('[ModalV2-SHEET-004] an unknown side falls back to the right', async () => {
+    renderModal({ properties: { variant: binding('sheet'), side: binding('middle') } });
+    await openModal();
+    expect(dialog()).toHaveClass('tj-modal-sheet--right');
+  });
+
+  test('[ModalV2-SHEET-005] a side without kind sheet changes nothing', async () => {
+    renderModal({ properties: { side: binding('left') } });
+    await openModal();
+    expect(dialog()).not.toHaveClass('tj-modal-sheet');
   });
 });
 
@@ -947,6 +1150,71 @@ describe('ModalV2: canvas scroll lock', () => {
     // animation hasn't resolved yet, so both DOM nodes still linger.
     expect(document.querySelectorAll('.modal').length).toBeGreaterThan(0);
     expect(canvasContent()).toHaveStyle({ overflow: 'auto' });
+  });
+});
+
+// The editor's open-modal record (`useGridStore.openModalWidgetId`) is what
+// AppCanvas/Grid/Grid.jsx reads to hide every non-child widget's resize
+// controls while a modal is open. It lives in the standalone grid store, read
+// through the harness's `store.read(selector, { store: 'grid' })`.
+const openModalWidgetId = () => widget.session.store.read((state) => state.openModalWidgetId, { store: 'grid' });
+
+describe('ModalV2: editor open-modal record', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[ModalV2-GRID-001] unmounting the modal while it is still open clears the editor open-modal record', async () => {
+    // Break this catches: the modal unmounting while open (a page switch fired
+    // from a button inside it) without clearing `openModalWidgetId`. Grid.jsx
+    // then keeps hiding every widget's resize controls on the next page until a
+    // full browser reload — the reported "can't resize anything" bug (D-04).
+    renderModal();
+    await openModal();
+    await waitFor(() => expect(openModalWidgetId()).toBe(ID));
+
+    // Re-render the SAME root with the modal gone entirely — simulates a page
+    // switch unmounting it without ever going through the normal close path.
+    widget.session.render(<PageWrapper>{null}</PageWrapper>);
+
+    await waitFor(() => expect(openModalWidgetId()).toBeNull());
+  });
+
+  test('[ModalV2-GRID-002] unmounting a modal does not clear another open modal from the editor open-modal record', async () => {
+    // Break this catches: the unmount cleanup clearing the record
+    // unconditionally instead of only when it still names this modal, which
+    // would drop a different, still-open modal and re-expose the resize
+    // controls of widgets behind it.
+    const SECOND_ID = 'modal2';
+    const first = componentDefinition(ID, NAME, 'ModalV2', DEFAULT_PROPERTIES);
+    first.component.definition.styles = DEFAULT_STYLES;
+    const second = componentDefinition(SECOND_ID, 'modal2', 'ModalV2', DEFAULT_PROPERTIES);
+    second.component.definition.styles = DEFAULT_STYLES;
+    seedApp({ [ID]: first, [SECOND_ID]: second }, { moduleId: MODULE_ID });
+    store().setEditorLoading(false, MODULE_ID);
+    store().setCurrentMode('edit', MODULE_ID);
+    // Keys keep React's instance identity per modal, so the re-render below
+    // unmounts modal1's instance rather than handing it modal2's props.
+    widget.session.render(
+      <PageWrapper>
+        <RenderWidget key={ID} {...widgetProps(ID, 'ModalV2')} />
+        <RenderWidget key={SECOND_ID} {...widgetProps(SECOND_ID, 'ModalV2')} />
+      </PageWrapper>
+    );
+    await openModal();
+    const secondTrigger = () => document.querySelector(`[data-cy="${SECOND_ID}-launch-button"]`);
+    await waitFor(() => expect(secondTrigger()).toBeInTheDocument());
+    rtlFireEvent.click(secondTrigger());
+    await waitFor(() => expect(openModalWidgetId()).toBe(SECOND_ID));
+
+    // Unmount only the first (still-open) modal; the second stays mounted and open.
+    widget.session.render(
+      <PageWrapper>
+        <RenderWidget key={SECOND_ID} {...widgetProps(SECOND_ID, 'ModalV2')} />
+      </PageWrapper>
+    );
+
+    await waitFor(() => expect(document.querySelectorAll('[data-cy="modal-body"]')).toHaveLength(1));
+    expect(openModalWidgetId()).toBe(SECOND_ID);
   });
 });
 

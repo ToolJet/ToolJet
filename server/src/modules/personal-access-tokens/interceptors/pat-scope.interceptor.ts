@@ -1,9 +1,22 @@
-import { CallHandler, ExecutionContext, ForbiddenException, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NestInterceptor,
+  Optional,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
+import { from, Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { DataSource } from 'typeorm';
 import { MODULES } from '@modules/app/constants/modules';
 import { User } from '@entities/user.entity';
 import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
+import { AI_BUILDER_API_SOURCE, FEATURE_KEY as PAT_FEATURE } from '@modules/personal-access-tokens/constants';
+import { aiBuilderLibraryDenial } from '@modules/personal-access-tokens/ai-builder-library-scope';
+import { FEATURE_KEY as SESSION_FEATURE } from '@modules/session/constants';
 import {
   PAT_ALLOWED_BUNDLES,
   PAT_APP_VIEWER_MODULES,
@@ -26,7 +39,10 @@ import {
  */
 @Injectable()
 export class PatScopeInterceptor implements NestInterceptor {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    @Optional() private readonly dataSource?: DataSource
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     /* Global interceptors also fire on the websocket gateways (yjs drives multiplayer editing),
@@ -45,6 +61,12 @@ export class PatScopeInterceptor implements NestInterceptor {
     const module = this.reflector.get<MODULES>('tjModuleId', context.getClass());
     const feature = this.reflector.get<string>('tjFeatureId', context.getHandler());
 
+    // The browser's session bootstrap read, needed to open the pinned app. SessionService keeps it to
+    // the token's own workspace and app and leaves out upstream SSO data; it creates no session.
+    if (isSessionBootstrap(request, module, feature)) {
+      return next.handle();
+    }
+
     if (user.patScope === PersonalAccessTokenScope.APP) {
       return next.handle();
     }
@@ -55,7 +77,7 @@ export class PatScopeInterceptor implements NestInterceptor {
     }
 
     if (user.patAppId) {
-      const denial = this.denyViewer(user, request, module, feature);
+      const denial = appViewerDenial(user.patAppId, request, module, feature);
       if (denial) {
         if (auditOnly()) {
           logAudit('DENY', request, module, feature, denial);
@@ -68,6 +90,22 @@ export class PatScopeInterceptor implements NestInterceptor {
       return next.handle();
     }
 
+    // The in-product AI builder's session (only the server mints this source) may ask for a render session for its
+    // own app (the route checks the app), and publish the library of the app its request is for, in its own
+    // workspace (ai-builder-library-scope.ts). Other PAT sessions still can't reach libraries; CASL still applies.
+    if (
+      module === MODULES.PERSONAL_ACCESS_TOKENS &&
+      feature === PAT_FEATURE.CREATE_AI_RENDER_SESSION &&
+      user.tjApiSource === AI_BUILDER_API_SOURCE &&
+      !user.patAppId
+    ) {
+      return next.handle();
+    }
+
+    if (module === MODULES.CUSTOM_COMPONENT_LIBRARIES && user.tjApiSource === AI_BUILDER_API_SOURCE) {
+      return from(this.aiBuilderLibraryCheck(user, request, feature)).pipe(switchMap(() => next.handle()));
+    }
+
     if (!patCanAccess(module, feature)) {
       throw new ForbiddenException(
         `This personal access token cannot access ${feature ?? module ?? 'this resource'}. ` +
@@ -78,34 +116,57 @@ export class PatScopeInterceptor implements NestInterceptor {
     return next.handle();
   }
 
-  /** Returns the denial message, or undefined if the request is allowed. */
-  private denyViewer(
+  private async aiBuilderLibraryCheck(
     user: User,
-    request: { method?: string; originalUrl?: string; url?: string; tj_app?: { id: string } },
-    module: MODULES | undefined,
+    request: { headers?: Record<string, any>; params?: Record<string, any>; body?: Record<string, any> },
     feature: string | undefined
-  ): string | undefined {
-    if (request?.method && request.method !== 'GET' && !isViewerWriteException(request)) {
-      return `This session is read-only. App-scoped render sessions may only issue GET requests.`;
-    }
-
-    /* Pin to the app. Guards resolved it already (slug routes and query runs never carry the uuid
-       in the path); the regex is the fallback for routes with no app guard. */
-    const requestedAppId: string | undefined =
-      request?.tj_app?.id ?? extractAppIdFromPath(request?.originalUrl || request?.url);
-    if (requestedAppId && requestedAppId !== user.patAppId) {
-      return `This session is scoped to a single app and cannot access ${requestedAppId}.`;
-    }
-
-    if (!patAppViewerCanAccess(module, feature)) {
-      return (
-        `This app-scoped session cannot access ${feature ?? module ?? 'this resource'}. ` +
-        `Render sessions are limited to: ${PAT_APP_VIEWER_MODULES.join(', ')}.`
-      );
-    }
-
-    return undefined;
+  ): Promise<void> {
+    if (!this.dataSource) throw new ForbiddenException('The AI builder session cannot use libraries here.');
+    const denial = await aiBuilderLibraryDenial(
+      feature,
+      {
+        organizationId: user.organizationId,
+        aiAppId: user.aiAppId,
+        workspaceHeader: request?.headers?.['tj-workspace-id'],
+        correlationId: request?.params?.correlationId ?? request?.body?.correlationId,
+      },
+      (sql, params) => this.dataSource.query(sql, params)
+    );
+    if (denial) throw new ForbiddenException(denial);
   }
+}
+
+function isSessionBootstrap(request: { method?: string }, module: MODULES | undefined, feature: string | undefined) {
+  return request?.method === 'GET' && module === MODULES.SESSION && feature === SESSION_FEATURE.GET_USER_SESSION;
+}
+
+/** Shared app-pinned render ceiling for workspace PAT and OAuth viewer credentials. */
+export function appViewerDenial(
+  appId: string,
+  request: { method?: string; originalUrl?: string; url?: string; tj_app?: { id: string } },
+  module: MODULES | undefined,
+  feature: string | undefined
+): string | undefined {
+  if (request?.method && request.method !== 'GET' && !isViewerWriteException(request)) {
+    return `This session is read-only. App-scoped render sessions may only issue GET requests.`;
+  }
+
+  /* Pin to the app. Guards resolved it already (slug routes and query runs never carry the uuid
+       in the path); the regex is the fallback for routes with no app guard. */
+  const requestedAppId: string | undefined =
+    request?.tj_app?.id ?? extractAppIdFromPath(request?.originalUrl || request?.url);
+  if (requestedAppId && requestedAppId !== appId) {
+    return `This session is scoped to a single app and cannot access ${requestedAppId}.`;
+  }
+
+  if (!patAppViewerCanAccess(module, feature)) {
+    return (
+      `This app-scoped session cannot access ${feature ?? module ?? 'this resource'}. ` +
+      `Render sessions are limited to: ${PAT_APP_VIEWER_MODULES.join(', ')}.`
+    );
+  }
+
+  return undefined;
 }
 
 // Local copy of the @otel/tracing helper: importing it drags an ESM-only uuid into Jest.

@@ -1,0 +1,121 @@
+/**
+ * Covers: migration-helpers/migration-run-log.ts
+ * @group platform
+ */
+import {
+  applyLogLine,
+  emptyRunProgress,
+  errorSummary,
+  LOG_TAIL_LINES,
+  markFailed,
+  markRolledBack,
+  redactLogLine,
+  RunProgress,
+} from 'src/migration-helpers/migration-run-log';
+
+function replay(lines: string[]): RunProgress {
+  return lines.reduce((run, line) => applyLogLine(run, line), emptyRunProgress());
+}
+
+describe('migration-helpers/migration-run-log', () => {
+  describe('redactLogLine(): removing secrets from log lines before they leave the pod', () => {
+    it.each([
+      [
+        'query is slow: INSERT INTO "users" VALUES ($1) -- PARAMETERS: ["secret"]',
+        'query is slow: INSERT INTO "users" VALUES ($1)',
+      ],
+      ['invited jane.doe@acme.io', 'invited [email]'],
+      ['connecting to postgres://user:pw@db:5432/tooljet', 'connecting to [postgres url]'],
+      ['\u001b[33mquery is slow\u001b[39m', 'query is slow'],
+    ])('should turn %j into %j', (input, expected) => {
+      expect(redactLogLine(input)).toBe(expected);
+    });
+  });
+
+  describe('applyLogLine(): query parameters in error output never reach the stored log', () => {
+    it.each([
+      [['  parameters: [', '    \'{"password":"hunter2"}\'', '  ],', '  driverError: error: boom']],
+      [["  parameters: [ 'hunter2' ],", '  driverError: error: boom']],
+      [['  parameters: [', "    [ 'id-1', 'id-2' ],", "    'hunter2'", '  ],', '  driverError: error: boom']],
+      [['  parameters: [', '    [', "      'id-1'", '    ],', "    'hunter2'", '  ],', '  driverError: error: boom']],
+    ])('should replace the parameters block in %j', (lines) => {
+      const { logTail } = replay(lines);
+
+      expect(logTail).toEqual(['  parameters: [redacted]', '  driverError: error: boom']);
+    });
+  });
+
+  describe('applyLogLine(): tracking migration progress from the runner output', () => {
+    const run = replay([
+      '[migrations] 3 migration(s) pending: LockMigrationsTable1234567890000, AddIndex1700, BackfillX1800',
+      '[migrations] START LockMigrationsTable1234567890000',
+      '[migrations] START AddIndex1700',
+      '[migrations] DONE AddIndex1700 12ms',
+      '[migrations] START BackfillX1800',
+      'BackfillX: [START] Backfilling: 5000',
+      'BackfillX: [PROGRESS] 1200/5000 (24%)',
+    ]);
+
+    it('should list each real migration with its state, leaving out the lock-table steps', () => {
+      expect(run).toMatchObject({
+        hasPendingWork: true,
+        currentMigration: 'BackfillX1800',
+        migrations: [
+          { name: 'AddIndex1700', status: 'done', durationMs: 12 },
+          { name: 'BackfillX1800', status: 'running', percent: 24 },
+        ],
+      });
+    });
+
+    it.each([
+      ['BackfillX: [PROGRESS] Resolved 30/40 (75%)', 75],
+      ['BackfillX1800 Progress 42 %', 42],
+    ])('should read the percent from a progress line like %j', (line, percent) => {
+      const next = applyLogLine(run, line);
+
+      expect(next.migrations[1]).toEqual({ name: 'BackfillX1800', status: 'running', percent });
+    });
+
+    it('should drop a progress line that does not move the percent', () => {
+      expect(applyLogLine(run, 'BackfillX: [PROGRESS] 1201/5000 (24%)')).toBe(run);
+    });
+
+    it('should drop query log lines unless query logging is turned on', () => {
+      const query = 'query is slow: SELECT 1 -- PARAMETERS: ["secret"]';
+
+      expect(applyLogLine(run, query).logTail).toBe(run.logTail);
+      expect(applyLogLine(run, query, { keepQueries: true }).logTail.slice(-1)).toEqual(['query is slow: SELECT 1']);
+    });
+
+    it('should mark the running migration as the failed one', () => {
+      expect(markFailed(run).migrations).toEqual([
+        { name: 'AddIndex1700', status: 'done', durationMs: 12 },
+        { name: 'BackfillX1800', status: 'failed', percent: 24 },
+      ]);
+    });
+
+    it('should mark done steps the migrations table does not record as rolled back, keeping committed ones done', () => {
+      const failed = markFailed(run);
+      expect(markRolledBack(failed, new Set()).migrations).toEqual([
+        { name: 'AddIndex1700', status: 'rolled_back', durationMs: 12 },
+        { name: 'BackfillX1800', status: 'failed', percent: 24 },
+      ]);
+      expect(markRolledBack(failed, new Set(['AddIndex1700'])).migrations[0].status).toBe('done');
+    });
+
+    it('should keep only the last lines of output', () => {
+      const lines = Array.from({ length: LOG_TAIL_LINES + 5 }, (_, i) => `line ${i}`);
+
+      expect(replay(lines).logTail).toHaveLength(LOG_TAIL_LINES);
+      expect(replay(lines).logTail[0]).toBe('line 5');
+    });
+  });
+
+  describe('errorSummary(): the text shown when an upgrade fails', () => {
+    it('should show an error line rather than plain output', () => {
+      const run = replay(['working', 'QueryFailedError: canceling statement due to lock timeout', 'more output']);
+
+      expect(errorSummary(run)).toBe('QueryFailedError: canceling statement due to lock timeout');
+    });
+  });
+});

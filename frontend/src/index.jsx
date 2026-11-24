@@ -3,14 +3,20 @@ import { createRoot } from 'react-dom/client';
 
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
-import { appService } from '@/_services';
+import { appService, aiOnboardingService } from '@/_services';
 import { initFrontendMetrics } from '@/_services/frontend-metrics.service';
+import { persistAiCookiesFromUrl } from '@/_helpers/aiOnboardingCookies';
 import { RootRouter } from './RootRouter';
 // eslint-disable-next-line import/no-unresolved
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import Backend from 'i18next-http-backend';
 import config from 'config';
+import { captureMcpOAuthBootstrap } from './McpOAuth/bootstrap';
+
+// OAuth bootstrap fragments are credentials. Remove them before config,
+// analytics, error reporting, or the router can capture the page URL.
+captureMcpOAuthBootstrap();
 
 // When on a custom domain, use relative API path so requests go through the
 // Cloudflare Worker proxy, making cookies first-party (fixes incognito sign-in).
@@ -18,7 +24,8 @@ import config from 'config';
 try {
   const apiHostname = new URL(config.apiUrl, window.location.origin).hostname;
   if (apiHostname !== window.location.hostname) {
-    config.apiUrl = '/api';
+    const apiPath = new URL(config.apiUrl, window.location.origin).pathname.replace(/\/$/, '');
+    config.apiUrl = apiPath || '/api';
   }
 } catch {
   // apiUrl is already relative — no override needed
@@ -79,6 +86,7 @@ appService
       });
     }
   })
+  .then(() => persistAiCookiesFromUrl((cookies) => aiOnboardingService.setAiCookie(cookies)))
   .then(() => {
     createRoot(document.getElementById('app')).render(<AppWithProfiler />);
 

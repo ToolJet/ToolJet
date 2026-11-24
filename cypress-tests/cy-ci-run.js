@@ -11,9 +11,12 @@
 //   CYPRESS_CONFIG comma-separated --config string, e.g.
 //                  "baseUrl=http://localhost:4001,server_host=http://localhost:3000"
 //   BROWSER        --browser value, e.g. chrome (omit for the Cypress default)
+//   SHARD_INDEX    0-based shard of this machine; with SHARD_TOTAL > 1 only
+//   SHARD_TOTAL    this shard's specs run (see ci-shard.js for the other vars)
 // CYPRESS_* env vars (e.g. CYPRESS_proxy) are picked up by Cypress automatically.
 const fs = require("fs");
 const cypress = require("cypress");
+const { pickShardSpecs } = require("./ci-shard");
 
 const cell = process.env.CELL || "cypress";
 const write = (s) => fs.writeFileSync("summary.json", JSON.stringify(s));
@@ -34,6 +37,23 @@ function parseConfig(str) {
 const runOptions = { config: parseConfig(process.env.CYPRESS_CONFIG) };
 if (process.env.CONFIG_FILE) runOptions.configFile = process.env.CONFIG_FILE;
 if (process.env.BROWSER) runOptions.browser = process.env.BROWSER;
+
+const shardTotal = Number(process.env.SHARD_TOTAL || 1);
+if (shardTotal > 1) {
+  const specs = pickShardSpecs({
+    configFile: process.env.CONFIG_FILE,
+    index: Number(process.env.SHARD_INDEX || 0),
+    total: shardTotal,
+    groups: (process.env.SHARD_GROUPS || "")
+      .split(";")
+      // trimmed, so a YAML folded block can put one group per line
+      .map((group) => group.split(",").map((part) => part.trim()).filter(Boolean))
+      .filter((group) => group.length),
+  });
+  console.log(`Shard ${Number(process.env.SHARD_INDEX || 0) + 1}/${shardTotal} runs ${specs.length} specs:`);
+  specs.forEach((spec) => console.log(`  ${spec}`));
+  runOptions.spec = specs;
+}
 
 cypress
   .run(runOptions)
@@ -56,6 +76,15 @@ cypress
         skipped: results.totalSkipped,
         duration: results.totalDuration,
       },
+      // which specs failed, for the Slack message (a failing hook marks its test failed)
+      failedSpecs: (results.runs || [])
+        .filter((run) => run.stats && run.stats.failures > 0)
+        .map((run) => ({
+          spec: run.spec.relative,
+          tests: (run.tests || [])
+            .filter((test) => test.state === "failed")
+            .map((test) => [].concat(test.title).join(" › ")),
+        })),
     });
     process.exit(results.totalFailed > 0 ? 1 : 0);
   })
