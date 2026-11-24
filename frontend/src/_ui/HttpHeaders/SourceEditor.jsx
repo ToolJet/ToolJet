@@ -16,8 +16,12 @@ export default ({
   width,
   dataCy,
   classes = null,
+  secretValues = false,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const Field = secretValues ? 'input' : Input;
+  const inputProps = secretValues ? {} : { workspaceConstants, classes };
 
   return (
     <div className="table-content-wrapper">
@@ -30,13 +34,15 @@ export default ({
 
       {options.map((option, index) => (
         <div className="d-flex align-items-top row-container query-manager-border-color" key={index}>
-          <Input
+          <Field
+            {...inputProps}
             data-cy={`${dataCy}-key-input-field-${index}`}
+            name={secretValues ? `http-header-name-${index}` : undefined}
+            aria-label={secretValues ? `Header name ${index + 1}` : undefined}
             type="text"
             className="input-control"
             onChange={(e) => keyValuePairValueChanged(e.target.value, 0, index)}
             value={option[0]}
-            workspaceConstants={workspaceConstants}
             placeholder="Key"
             autoComplete="off"
             disabled={isDisabled}
@@ -47,18 +53,19 @@ export default ({
               borderBottomRightRadius: '0',
               borderRight: 'none',
             }}
-            classes={classes}
           />
 
-          <Input
+          <Field
+            {...inputProps}
             data-cy={`${dataCy}-value-input-field-${index}`}
-            type="text"
+            name={secretValues ? `http-header-value-${index}` : undefined}
+            aria-label={secretValues ? `Header value ${index + 1}` : undefined}
+            type={secretValues ? 'password' : 'text'}
             value={option[1]}
             placeholder="Value"
-            autoComplete="off"
+            autoComplete={secretValues ? 'new-password' : 'off'}
             className="input-control"
             onChange={(e) => keyValuePairValueChanged(e.target.value, 1, index)}
-            workspaceConstants={workspaceConstants}
             disabled={isDisabled}
             style={{
               flex: 2,
@@ -68,7 +75,6 @@ export default ({
               borderTopRightRadius: '0',
               borderBottomRightRadius: '0',
             }}
-            classes={classes}
           />
 
           <button
@@ -77,7 +83,8 @@ export default ({
               darkMode ? 'delete-field-option-dark' : ''
             }`}
             style={{ height: '35px' }}
-            role="button"
+            type="button"
+            aria-label={`Remove row ${index + 1}`}
             disabled={isDisabled}
             onClick={() => removeKeyValuePair(index)}
           >

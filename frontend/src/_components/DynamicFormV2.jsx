@@ -5,6 +5,7 @@ import Textarea from '@/_ui/Textarea';
 import Input from '@/_ui/Input';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
+import EncryptedHeaders from '@/_ui/HttpHeaders/EncryptedHeaders';
 import OAuthWrapper from './OAuthWrapper';
 import Toggle from '@/_ui/Toggle';
 import ToggleV2 from '@/_ui/ToggleV2';
@@ -408,6 +409,8 @@ const DynamicFormV2 = ({
         return CheckboxGroup;
       case 'react-component-headers':
         return Headers;
+      case 'encrypted-headers':
+        return EncryptedHeaders;
       case 'react-component-sql-filters':
         return SqlFilters;
       case 'react-component-sql-columns':
@@ -574,6 +577,16 @@ const DynamicFormV2 = ({
           multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           scopes: options?.scopes?.value,
           oauth_configs,
+        };
+      case 'encrypted-headers':
+        return {
+          getter: key,
+          value: currentValue,
+          hasSavedCredential: !!selectedDataSource?.options?.[key]?.credential_id,
+          hasDraft: !options?.[key]?.credential_id,
+          restoreCredential: () => optionsChanged({ ...options, [key]: selectedDataSource.options[key] }),
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          handleOptionChange,
         };
       case 'react-component-headers': {
         let isRenderedAsQueryEditor;

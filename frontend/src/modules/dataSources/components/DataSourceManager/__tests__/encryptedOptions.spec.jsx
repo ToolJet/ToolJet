@@ -1,5 +1,6 @@
 import { DataSourceManagerComponent } from '../DataSourceManager';
 import { globalDatasourceService } from '@/_services';
+import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
 import openaiManifest from '../../../../../../../marketplace/plugins/openai/lib/manifest.json';
 import anthropicManifest from '../../../../../../../marketplace/plugins/anthropic/lib/manifest.json';
 import geminiManifest from '../../../../../../../marketplace/plugins/gemini/lib/manifest.json';
@@ -107,4 +108,26 @@ test('a camelCase option the manifest does not encrypt stays plain', async () =>
 
   expect(savedOptions()).toContainEqual(expect.objectContaining({ key: 'baseUrl', encrypted: undefined }));
   expect(savedOptions()).toContainEqual(expect.objectContaining({ key: 'apiKey', encrypted: true }));
+});
+
+test('saves OpenRouter header pairs as a single encrypted option', async () => {
+  const form = makeMarketplaceForm(openrouterManifest);
+  const headers = JSON.stringify([['X-Style-Token', 'synthetic-test-value']]);
+  await form.optionchanged('baseUrl', 'https://palette.example.test/v1');
+  await form.optionchanged('customHeaders', headers);
+  await form.createDataSource();
+  await settled();
+
+  expect(savedOptions()).toContainEqual({ key: 'customHeaders', value: headers, encrypted: true });
+});
+
+test.each([
+  [{ apiKey: { value: 'existing-test-key' } }, true],
+  [{ baseUrl: { value: 'https://example.test/v1' }, customHeaders: { value: '[["X-Demo","value"]]' } }, true],
+  [{ baseUrl: { value: 'https://example.test/v1' }, customHeaders: { value: '[["",""]]' } }, false],
+  [{ baseUrl: { value: 'https://example.test/v1' }, customHeaders: { value: '[]' } }, false],
+  [{ customHeaders: { value: '[["X-Demo","value"]]' } }, false],
+])('validates credentials in the OpenRouter connection form', async (options, valid) => {
+  const manager = new DataSourceSchemaManager(openrouterManifest);
+  await expect(manager.validateData(options)).resolves.toMatchObject({ valid });
 });

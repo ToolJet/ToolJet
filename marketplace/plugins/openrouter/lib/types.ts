@@ -1,5 +1,7 @@
 export type SourceOptions = {
-  apiKey: string;
+  apiKey?: string;
+  /** The editor stores the header rows as one encrypted credential. */
+  customHeaders?: string;
   /** Any OpenAI-compatible endpoint. Defaults to OpenRouter; set it to reach Together, Groq,
    *  LiteLLM, vLLM or a self-hosted gateway with the same connector. */
   baseUrl?: string;

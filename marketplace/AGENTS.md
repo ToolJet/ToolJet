@@ -57,6 +57,8 @@ ESLINT_USE_FLAT_CONFIG=false npm run lint   # as CI does
 
 ## Invariants & gotchas
 
+- The OpenRouter V2 manifest uses the `encrypted-headers` widget for connection headers that may contain API keys. The option is a string listed in `tj:encrypted`. The connector receives a JSON array of name/value pairs after decryption. Older saved connections omit the option.
+
 - **OAuth widget:** new plugins use `"type": "react-component-oauth"` in `manifest.json` properties. marketplace plugins use it; none use `react-component-oauth-authentication`. That older name is used only by built-in connectors in `plugins/packages/` (restapi, graphql, grpc, grpcv2) and is not handled by `frontend/src/_components/DynamicFormV2.jsx`, which handles only `react-component-oauth`.
 - **`customTesting`:** in `DataSourceManager.jsx`, `false`/absent renders the default footer with the test-connection button; `true` renders a footer without it. Existing OAuth plugins are mixed (`true`, `false`, and unset all occur), so set it deliberately and implement `testConnection` in `lib/index.ts` when it is `false`.
 - Do not edit `dist/`; it is a build artifact.
