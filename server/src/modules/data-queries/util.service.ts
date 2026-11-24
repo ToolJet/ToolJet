@@ -27,6 +27,8 @@ import { AppVersion } from '@entities/app_version.entity';
 import { ListTablesDto } from './dto';
 import { DataSourceTypes, SAMPLE_SQL_DISABLED_KEY } from '@modules/data-sources/constants';
 
+const SQL_PARAMETERIZED_PLUGINS = ['postgresql', 'oracledb', 'mysql', 'mssql', 'mariadb'];
+
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
   constructor(
@@ -603,7 +605,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       environmentId,
       user,
       opts,
-      collectedSecretValues
+      collectedSecretValues,
+      dataSource?.kind
     );
     const service = await this.pluginsSelectorService.getService(dataSource.pluginId, dataSource.kind);
 
@@ -676,7 +679,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     environmentId?: string,
     user?: User,
     opts?: DataQueryExecutionOptions,
-    collectedSecretValues?: string[]
+    collectedSecretValues?: string[],
+    pluginKind?: string
   ): Promise<object> {
     // If workflow bundle context is available, use the enhanced template resolution
     if (opts?.workflow?.bundleContent || opts?.workflow?.isolate || opts?.workflow?.context) {
@@ -703,12 +707,21 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         organization_id,
         environmentId,
         user,
-        collectedSecretValues
+        collectedSecretValues,
+        pluginKind
       );
     }
 
     // Fallback to original logic for non-bundle contexts
-    return this.parseQueryOptionsInternal(object, options, organization_id, environmentId, user, collectedSecretValues);
+    return this.parseQueryOptionsInternal(
+      object,
+      options,
+      organization_id,
+      environmentId,
+      user,
+      collectedSecretValues,
+      pluginKind
+    );
   }
 
   private async parseQueryOptionsInternal(
@@ -717,7 +730,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     organization_id: string,
     environmentId?: string,
     user?: User,
-    collectedSecretValues?: string[]
+    collectedSecretValues?: string[],
+    pluginKind?: string
   ): Promise<object> {
     const stack: any[] = [{ obj: object, key: null, parent: null }];
 
@@ -773,6 +787,38 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           resolvedValue = resolvingConstant;
           if (parent && key !== null) {
             parent[key] = resolvedValue;
+          }
+        }
+
+        // SQL injection prevention: inside a SQL-mode query, bind user-supplied {{}} values as
+        // named parameters instead of interpolating them into the SQL text. Runs after (b) so
+        // constants/secrets/globals.server are already resolved server-side and never bound
+        // from client-supplied values.
+        if (key === 'query' && parent?.mode === 'sql' && SQL_PARAMETERIZED_PLUGINS.includes(pluginKind ?? '')) {
+          const userVars = [...new Set<string>(resolvedValue.match(/\{\{(.*?)\}\}/gs) || [])].filter((v) =>
+            Object.prototype.hasOwnProperty.call(options, v.replace(/\n/g, ' '))
+          );
+
+          if (userVars.length > 0) {
+            const params: [string, any][] = Array.isArray(parent.query_params) ? [...parent.query_params] : [];
+            let parameterizedQuery = resolvedValue;
+
+            for (const variable of userVars) {
+              const placeholder = `:tj_param_${params.length}`;
+              // '{{var}}' / "{{var}}" lose their quotes: a bind param inside a string literal is not bound.
+              parameterizedQuery = parameterizedQuery
+                .split(`'${variable}'`)
+                .join(placeholder)
+                .split(`"${variable}"`)
+                .join(placeholder)
+                .split(variable)
+                .join(placeholder);
+              params.push([placeholder.slice(1), (options as any)[variable.replace(/\n/g, ' ')]]);
+            }
+
+            parent.query = parameterizedQuery;
+            parent.query_params = params;
+            continue;
           }
         }
 
