@@ -53,8 +53,8 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
   app: {
     pages: {
       enabled: false,
-      count: 20,
-      groupCount: 20,
+      count: LICENSE_LIMIT.UNLIMITED,
+      groupCount: LICENSE_LIMIT.UNLIMITED,
       features: {
         appHeaderAndLogo: false,
         addNavGroup: false,

@@ -6,12 +6,13 @@ import useStore from '@/AppBuilder/_stores/store';
 import { AddEditPagePopup } from './AddNewPagePopup';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { fetchEdition } from '@/modules/common/helpers/utils';
 
 const isLimitReached = (count, limit) => typeof limit === 'number' && count >= limit;
 
 const isLimitNearing = (count, limit) =>
   typeof limit === 'number' && count < limit && (count / limit >= 0.9 || (limit <= 10 && count === limit - 1));
+
+const PAGE_LIMIT_TOOLTIP = "You've reached your page limit. Upgrade your plan to create more pages.";
 
 const NAV_ITEM_OPTIONS = [
   { type: 'url', icon: 'link-2', label: 'Add nav item with URL' },
@@ -38,19 +39,17 @@ export function AddNewPageMenu({ darkMode }) {
   const isGroupsLimitReached = isLimitReached(groupsCount, appPageGroupsLimit);
   const isPagesLimitNearing = isLimitNearing(pagesCount, appPagesLimit);
   const isGroupsLimitNearing = isLimitNearing(groupsCount, appPageGroupsLimit);
-  // CE has no plan to upgrade, so it points to the paid plans instead.
-  const upgradeHint = fetchEdition() === 'ce' ? 'Upgrade to a paid plan' : 'Upgrade your plan';
   const showPagesLimitTooltip = isPagesLimitReached || isPagesLimitNearing;
   const pagesLimitTooltipMessage = isPagesLimitReached
-    ? `You've reached your page limit. ${upgradeHint} to create more pages.`
-    : `You're nearing your page limit (${pagesCount}/${appPagesLimit}). ${upgradeHint} to create more pages.`;
+    ? PAGE_LIMIT_TOOLTIP
+    : `You're nearing your page limit (${pagesCount}/${appPagesLimit}). Upgrade your plan to create more pages.`;
   const isAddNavGroupDisabled = !hasAppPagesAddNavGroupEnabled || isGroupsLimitReached;
   const showAddNavGroupTooltip = isAddNavGroupDisabled || isGroupsLimitNearing;
   const addNavGroupTooltipMessage = !hasAppPagesAddNavGroupEnabled
-    ? `You don't have access to nav groups. ${upgradeHint} to access this feature.`
+    ? "You don't have access to nav groups. Upgrade your plan to access this feature."
     : isGroupsLimitReached
-      ? `You've reached your page group limit. ${upgradeHint} to create more page groups.`
-      : `You're nearing your page group limit (${groupsCount}/${appPageGroupsLimit}). ${upgradeHint} to create more page groups.`;
+      ? "You've reached your page group limit. Upgrade your plan to create more page groups."
+      : `You're nearing your page group limit (${groupsCount}/${appPageGroupsLimit}). Upgrade your plan to create more page groups.`;
 
   const handleOpenPopup = (type) => {
     setShowMenuPopover(false);
