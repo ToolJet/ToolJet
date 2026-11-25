@@ -23,6 +23,12 @@ export interface IFolderAppsUtilService {
     type?: APP_TYPES,
     branchId?: string
   ): Promise<{ viewableApps: AppBase[]; totalCount: number }>;
+  findAppIdsInFolder(
+    folderId: string,
+    appIds: string[],
+    branchId?: string,
+    matchNullAsDefaultBranch?: boolean
+  ): Promise<string[]>;
   bulkCreate(
     folderId: string,
     appIds: string[],
