@@ -222,6 +222,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
         const groups = notification.metadata?.conflictGroups;
         if (groups?.length) {
           setConflictGroups(groups);
+          setConflictBranchName(name);
           return true;
         }
         return;

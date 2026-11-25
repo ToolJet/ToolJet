@@ -111,3 +111,30 @@ test('when the clipboard is unavailable the report is still shown for manual cop
   expect(screen.getByText("Couldn't copy to clipboard")).toBeInTheDocument();
   expect(screen.getByText(/ID aaaaaaaa-1111-4111-8111-111111111111/)).toBeInTheDocument();
 });
+
+// A pull-app 409 uses local/remote statuses, which alone look like a push.
+test('a pull describes itself as a pull and names the multi-draft resource type', async () => {
+  renderModal({
+    context: 'pull',
+    conflictGroups: [
+      {
+        type: 'workflow',
+        conflictField: 'name',
+        conflictKey: 'wf',
+        conflicts: [
+          { name: 'wf', status: 'remote', coRelationId: 'eeeeeeee-5555-4555-8555-555555555555' },
+          { name: 'wf', status: 'local', coRelationId: 'ffffffff-6666-4666-8666-666666666666' },
+        ],
+      },
+    ],
+    multiDraftResources: [{ name: 'wf', type: 'workflow', coRelationId: 'ffffffff-6666-4666-8666-666666666666' }],
+  });
+
+  expect(screen.getByText('Cannot pull branch')).toBeInTheDocument();
+  expect(screen.getByText('Workflows with multiple draft versions')).toBeInTheDocument();
+
+  await clickCopyError();
+  const text = writeText.mock.calls[0][0];
+  expect(text).toContain('Action:    Pull branch');
+  expect(text).toContain('== Workflows with multiple draft versions (1) ==');
+});
