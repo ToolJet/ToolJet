@@ -1,5 +1,5 @@
 import { readRenderedSlot } from './engine';
-import { solveContainer } from './solver';
+import { solveContainer, swapsWithinColumns } from './solver';
 import { heightContractOf } from './contracts';
 import { isDynamicHeightLiveInEditor } from './flags';
 import { getDynamicLayoutKey } from '../utils/dynamicHeightReflow';
@@ -72,20 +72,16 @@ const stickyRewritesForSlot = ({ state, previousComponents, moduleId, slotId, to
   const snap = (top) => Math.round(top / GRID_HEIGHT) * GRID_HEIGHT;
   const boxes = siblings.map((box) => ({ ...box }));
 
-  // A change that reorders the untouched widgets (a widget moved onto
-  // another's exact saved spot flips which is drawn first) cannot be kept
-  // still by adjusting saved tops: every correction reorders again. Let the
-  // engine settle instead.
+  // A change that swaps two untouched widgets in the same column (a widget
+  // moved onto another's exact saved spot flips which is drawn first) cannot
+  // be kept still by adjusting saved tops: every correction swaps them again.
+  // Let the engine settle instead. Widgets in other columns don't count.
   {
     const { tops } = solveContainer(boxes, flowOf);
     const untouched = boxes.filter(
       (box) => !touched.has(box.id) && renderedBefore(box.id) !== undefined && tops.has(box.id)
     );
-    const byWant = untouched
-      .map((box) => box.id)
-      .sort((a, b) => renderedBefore(a) - renderedBefore(b) || a.localeCompare(b));
-    const byGot = untouched.map((box) => box.id).sort((a, b) => tops.get(a) - tops.get(b) || a.localeCompare(b));
-    const reordered = byWant.some((id, index) => id !== byGot[index]);
+    const reordered = swapsWithinColumns(untouched, renderedBefore, (id) => tops.get(id));
     if (reordered) {
       if (typeof window !== 'undefined')
         (window.__tjStickyLog ||= []).push({ touched: [...touched], skipped: 'solve order changed', slotId });
