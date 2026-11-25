@@ -24,6 +24,7 @@ export const Code = ({
   setCodeEditorView,
   customMeta,
   canRefresh = true,
+  fieldActions = null,
 }) => {
   const currentState = useCurrentState();
 
@@ -38,8 +39,8 @@ export const Code = ({
 
   let initialValue = getInitialValue();
   const rawParamMeta = accordian
-    ? customMeta ?? componentMeta[paramType]?.[param.name]
-    : customMeta ?? componentMeta[paramType][param.name];
+    ? (customMeta ?? componentMeta[paramType]?.[param.name])
+    : (customMeta ?? componentMeta[paramType][param.name]);
   const isFlexContainer = component?.component?.component === 'FlexContainer';
   const paramMeta = isFlexContainer ? getFlexAxisAwareMeta(rawParamMeta, component, param.name) : rawParamMeta;
   const displayName = paramMeta.displayName || param.name;
@@ -82,6 +83,7 @@ export const Code = ({
         cyLabel={paramMeta?.showLabel === false ? param.name?.toLowerCase() : ''}
         setCodeEditorView={setCodeEditorView}
         canRefresh={canRefresh}
+        fieldActions={fieldActions}
       />
     </div>
   );
