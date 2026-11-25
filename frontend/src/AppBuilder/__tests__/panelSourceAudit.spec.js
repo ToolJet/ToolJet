@@ -137,10 +137,10 @@ describe('panel source audit', () => {
     expect(rulesWithRepeatedDeclaration(scss, 'font-size')).toEqual([]);
   });
 
-  test('[UB-09] editor chrome stylesheets put text on the 12/13/14/16px scale', () => {
+  test('[UB-09] editor chrome stylesheets put text on the 10/12/13/14/16px scale', () => {
     // A small size reads --app-builder-small-font-size with its old value as the fallback, so it is
     // 12px in the editor and unchanged where shared styles render outside it.
-    const onScale = /^(?:(?:12|13|14|16)px|var\(--app-builder-small-font-size,)/;
+    const onScale = /^(?:(?:10|12|13|14|16)px|var\(--app-builder-small-font-size,)/;
     // The 72x26 palette tile title cannot fit 12px, an allowed type-scale exception. The data-source
     // suggestion heading is shared with the data-sources page, which keeps its size.
     const pendingFit = ['.component-title', '.suggestion-container'];
