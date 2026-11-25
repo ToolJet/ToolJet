@@ -66,8 +66,16 @@ export class PostgrestProxyService {
     // environment_id rides the querystring on this route (the editor's direct /proxy/* passthrough
     // has no other channel for it) and must never reach PostgREST itself, or it's forwarded as a
     // column filter. Strip it before replaceUrlForPostgrest/resolveAndRewrite see the url.
-    const { url: strippedUrl, environmentId } = extractAndStripEnvironmentId(req.url);
+    const { url: strippedUrl, environmentId: requestedEnvironmentId } = extractAndStripEnvironmentId(req.url);
     req.url = strippedUrl;
+
+    // With compatibility enabled, use the licensed workspace default or development when the
+    // request omits environment_id.
+    const environmentId =
+      requestedEnvironmentId ??
+      (process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT === 'true'
+        ? await this.relationResolverService.defaultEnvironmentIdFor(organizationId)
+        : undefined);
 
     // replaceUrlForPostgrest strips the /api/tooljet-db/proxy prefix — resolveAndRewrite is
     // written against the bare `/<uuid>?...` form (see its own doc comment).
