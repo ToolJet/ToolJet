@@ -6,6 +6,7 @@ export const licenseService = {
   update,
   updateEnvSetting,
   getFeatureAccess,
+  getInstanceSettingsAccess,
   generateCloudTrial,
   canStartCloudTrial,
   getDomainsList,
@@ -42,6 +43,11 @@ async function updateEnvSetting(body) {
 function getFeatureAccess() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/license/access`, requestOptions).then(handleResponse);
+}
+
+function getInstanceSettingsAccess() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/license/instance-settings-access`, requestOptions).then(handleResponse);
 }
 
 function getDomainsList() {
