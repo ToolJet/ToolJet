@@ -65,14 +65,26 @@ describe('AppsService.resolveBranchAwareEditingVersion', () => {
     expect(call.order).toEqual({ createdAt: 'DESC' });
   });
 
-  it('applies the fallback chain for Workflows even when a feature branch is active elsewhere', async () => {
+  it('on a feature branch, a Workflow gets its own branch version like any other app', async () => {
+    const svc = makeSvc();
+    (svc as any).versionRepository.findOne.mockResolvedValue({ id: 'v-workflow-tip', versionType: 'BRANCH' });
+    const a = app(APP_TYPES.WORKFLOW);
+    const result = await (svc as any).resolveBranchAwareEditingVersion(a, 'feature-branch', user, undefined);
+    expect(a.editingVersion?.id).toBe('v-workflow-tip');
+    expect(result.isDefaultBranchContext).toBe(false);
+    expect((svc as any).userAppVersionStateRepository.findForUserApp).not.toHaveBeenCalled();
+    expect((svc as any).versionRepository.findOne.mock.calls[0][0].where).toMatchObject({ branchId: 'feature-branch' });
+  });
+
+  it('on the default branch, a Workflow uses the fallback chain scoped to the default branch', async () => {
     const svc = makeSvc();
     (svc as any).versionRepository.findOne.mockResolvedValue({ id: 'v-workflow' });
     const a = app(APP_TYPES.WORKFLOW);
-    await (svc as any).resolveBranchAwareEditingVersion(a, 'feature-branch', user, undefined);
+    const result = await (svc as any).resolveBranchAwareEditingVersion(a, 'default-branch', user, undefined);
     expect(a.editingVersion?.id).toBe('v-workflow');
-    // Workflows never do the feature-branch tip lookup — always the fallback chain.
-    expect((svc as any).gitSyncConfigsUtilService.getDetails).not.toHaveBeenCalled();
+    expect(result.isDefaultBranchContext).toBe(true);
+    const call = (svc as any).versionRepository.findOne.mock.calls[0][0];
+    expect(call.where[0]).toMatchObject({ branchId: 'default-branch' });
   });
 
   it('falls through to last-active when an explicit ?version= name does not resolve (stale link)', async () => {
