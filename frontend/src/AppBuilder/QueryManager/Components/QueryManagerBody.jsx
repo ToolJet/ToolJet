@@ -502,9 +502,32 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
                   onChange={(newDataSource) => {
                     changeDataQuery(newDataSource);
                   }}
+                  fxActive={!!options?.dataSourceIdFx}
+                  fxValue={options?.dataSourceIdExpression ?? ''}
+                  onFxToggle={() => {
+                    if (options?.dataSourceIdFx) {
+                      // Turning off fx mode — revert to static source
+                      optionsChanged({
+                        ...options,
+                        dataSourceIdFx: false,
+                        dataSourceIdExpression: '',
+                      });
+                    } else {
+                      // Turning on fx mode — store current DS id as initial expression
+                      optionsChanged({
+                        ...options,
+                        dataSourceIdFx: true,
+                        dataSourceIdExpression: selectedDataSource?.id ?? '',
+                      });
+                    }
+                  }}
+                  onFxValueChange={(value) => {
+                    optionchanged('dataSourceIdExpression', value);
+                  }}
+                  darkMode={darkMode}
                 />
               </div>
-              {showEditDatasourceButton && (
+              {showEditDatasourceButton && !options?.dataSourceIdFx && (
                 <button
                   type="button"
                   onClick={handleEditDatasource}
