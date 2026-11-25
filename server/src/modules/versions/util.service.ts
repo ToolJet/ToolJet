@@ -124,6 +124,9 @@ export class VersionUtilService implements IVersionUtilService {
     }
 
     if (appVersionUpdateDto?.status && appVersion.status !== appVersionUpdateDto.status) {
+      if (appVersion.status !== AppVersionStatus.DRAFT || appVersionUpdateDto.status !== AppVersionStatus.PUBLISHED) {
+        throw new BadRequestException('Invalid version status transition');
+      }
       editableParams['status'] = appVersionUpdateDto.status;
       // branch_id is NOT NULL now and the old chk_app_versions_branched_implies_draft CHECK
       // was dropped — PUBLISHED version rows live on the default branch, so the status flip

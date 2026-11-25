@@ -1,5 +1,8 @@
 const fs = require('fs');
 const path = require('path');
+const { applyPatches } = require('./scripts/apply-patches');
+
+applyPatches();
 
 // ee/ is a git submodule — absent on CE checkouts. The bundlers (webpack and
 // rspack alike) swap @ee/@cloud imports for src/modules/emptyModule based on

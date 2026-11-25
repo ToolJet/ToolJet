@@ -23,6 +23,7 @@ import {
   saveEntity,
   updateEntity,
   markVersionAsReleased,
+  resolveOrSeedDefaultBranch,
 } from 'test-helper';
 import { App } from 'src/entities/app.entity';
 import { AppVersion, AppVersionStatus } from 'src/entities/app_version.entity';
@@ -540,6 +541,7 @@ describe('AppsController', () => {
           email: 'superadmin@tooljet.io',
           groups: ['all_users', 'developer'],
           userType: 'instance',
+          organization,
         });
         loggedUser = await login(app, 'developer@tooljet.io');
         developerUserData['tokenCookie'] = loggedUser.tokenCookie;
@@ -2019,6 +2021,28 @@ describe('AppsController', () => {
         expect(response.statusCode).toBe(200);
       });
 
+      it('should not move a released version back to draft through the settings route', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const loggedUser = await login(app, 'admin@tooljet.io');
+        const application = await createApplication(app, { user: adminUserData.user });
+        const version = await createApplicationVersion(app, application);
+        await updateEntity(AppVersion, version.id, { status: AppVersionStatus.PUBLISHED });
+        await updateEntity(App, application.id, { currentVersionId: version.id });
+
+        const response = await request(app.getHttpServer())
+          .put(`/api/v2/apps/${application.id}/versions/${version.id}/global_settings`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser['tokenCookie'])
+          .send({ status: AppVersionStatus.DRAFT });
+
+        expect(response.statusCode).toBe(400);
+        const reloaded = await findEntityOrFail(AppVersion, { id: version.id });
+        expect(reloaded.status).toBe(AppVersionStatus.PUBLISHED);
+      });
+
       it('should not be able to update app version if no app create permission within same organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -2630,6 +2654,46 @@ describe('AppsController', () => {
 
       await logout(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
       await logout(app, viewerUserData['tokenCookie'], viewerUserData.user.defaultOrganizationId);
+    });
+  });
+
+  describe('POST /api/apps | Create application on a branch', () => {
+    let workspaceId: string;
+    let cookie: string;
+    let ownBranchId: string;
+    let foreignBranchId: string;
+
+    beforeAll(async () => {
+      const attacker = await createUser(app, { email: 'branch-owner@tooljet.io', groups: ['all_users', 'admin'] });
+      const victim = await createUser(app, { email: 'branch-victim@tooljet.io', groups: ['all_users', 'admin'] });
+      workspaceId = attacker.user.defaultOrganizationId;
+      await ensureAppEnvironments(app, workspaceId);
+      cookie = (await login(app, 'branch-owner@tooljet.io')).tokenCookie;
+      ownBranchId = (await resolveOrSeedDefaultBranch(workspaceId)).id;
+      foreignBranchId = (await resolveOrSeedDefaultBranch(victim.user.defaultOrganizationId)).id;
+    });
+
+    const createApp = (name: string, branchId: string) =>
+      request(app.getHttpServer())
+        .post('/api/apps')
+        .set('tj-workspace-id', workspaceId)
+        .set('Cookie', cookie)
+        .send({ name, type: 'front-end', branchId });
+
+    it('should create the app on a branch of the same workspace', async () => {
+      const response = await createApp('Own branch app', ownBranchId);
+
+      expect(response.statusCode).toBe(201);
+      expect(await AppVersion.findOneOrFail({ where: { appId: response.body.id } })).toMatchObject({
+        branchId: ownBranchId,
+      });
+    });
+
+    it('should return 400 for a body branchId from another workspace', async () => {
+      const response = await createApp('Foreign body branch app', foreignBranchId);
+
+      expect(response.statusCode).toBe(400);
+      expect(await AppVersion.count({ where: { branchId: foreignBranchId } })).toBe(0);
     });
   });
 });
