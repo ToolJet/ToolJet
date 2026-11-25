@@ -148,37 +148,38 @@
     color: var(--text-danger);
   }
 
+  // Matches the Code mode command blocks (CodePanel/codePanel.scss `.open-locally-code`).
   .variables-reference {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    position: relative;
     min-width: 0;
-    padding: 6px 8px 6px 10px;
-    border: 1px dashed var(--border-default);
-    border-radius: 6px;
+
+    pre {
+      margin: 0;
+      padding: 10px 40px 10px 12px;
+      border: 1px solid var(--border-weak);
+      border-radius: 8px;
+      background: var(--background-surface-layer-02);
+      color: var(--text-default);
+      font-family: var(--font-family-geist-mono, ui-monospace, Menlo, monospace);
+      font-size: 12px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
 
     code {
-      flex: 1;
-      min-width: 0;
-      font-size: 12px;
-      color: var(--text-default);
-      background: none;
       padding: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      white-space: inherit;
     }
   }
 
   .variables-reference-copy {
-    padding: 2px 4px;
-    border: 0;
-    border-radius: 4px;
-    background: none;
-    color: var(--text-accent);
-    font-size: 12px;
-    font-weight: 500;
-
-    &:hover {
-      background: var(--background-accent-weak);
-    }
+    position: absolute;
+    top: 6px;
+    right: 6px;
   }
 
   .variables-note {

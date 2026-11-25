@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { InfoIcon } from 'lucide-react';
+import { Check, Copy, InfoIcon } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import { Button as RawButton } from '@/components/ui/Button/Button';
 import RawInputComponent from '@/components/ui/Input/Index';
-import { ToggleGroup as RawToggleGroup, ToggleGroupItem as RawToggleGroupItem } from '@/components/ui/Rocket';
+import {
+  Button as RawRocketButton,
+  ToggleGroup as RawToggleGroup,
+  ToggleGroupItem as RawToggleGroupItem,
+} from '@/components/ui/Rocket';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { validateVariableName } from '@/AppBuilder/_utils/variableDefinitions';
 import { previewOf, referenceOf } from './variableRows';
@@ -18,6 +22,7 @@ const ButtonComponent = RawButton as React.ComponentType<any>;
 const InputComponent = RawInputComponent as React.ComponentType<any>;
 const CodeHinterComponent = CodeHinter as React.ComponentType<any>;
 const FxButtonComponent = FxButton as React.ComponentType<any>;
+const RocketButton = RawRocketButton as React.ComponentType<any>;
 const RocketToggleGroup = RawToggleGroup as React.ComponentType<any>;
 const RocketToggleGroupItem = RawToggleGroupItem as React.ComponentType<any>;
 // Plain JS helper: `selfId` defaults to null, which TS infers as its only type.
@@ -31,23 +36,35 @@ const validateName = validateVariableName as (
 
 type SaveResult = { ok: true; definition: any } | { ok: false; field: 'name' | 'value'; error: string };
 
+// Styled like the Code mode command blocks: a code block with an icon-only copy button in its corner.
 export const ReferenceBox = ({ scope, name }: { scope: VariableScope; name: string }) => {
   const reference = referenceOf(scope, name || 'name');
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 1500);
+    return () => clearTimeout(timer);
+  }, [copied]);
   return (
     <div className="variables-reference" data-cy="variable-reference">
-      <code className="text-truncate" title={reference}>
-        {reference}
-      </code>
-      <button
-        type="button"
+      <pre>
+        <code>{reference}</code>
+      </pre>
+      <RocketButton
+        variant="ghost"
+        size="small"
+        iconOnly
         className="variables-reference-copy"
         onClick={() => {
           copyToClipboard(reference);
+          setCopied(true);
         }}
+        aria-label={`Copy reference ${reference}`}
+        title={copied ? 'Copied' : 'Copy'}
         data-cy="variable-reference-copy"
       >
-        Copy
-      </button>
+        {copied ? <Check size={14} /> : <Copy size={14} />}
+      </RocketButton>
     </div>
   );
 };
