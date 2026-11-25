@@ -178,11 +178,9 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   const uniqueTags = tags.filter((t) => !localVersionLabels.has(t.label));
   const dropdownOptions = [LATEST_MAIN_OPTION, ...visibleLocalVersionOptions, ...uniqueTags];
 
-  // After load, drop the preselection if it isn't a valid source, unless the user already picked one.
+  // After load, fall back to Latest unless the preselection is a loaded option; a user's pick stays.
   useEffect(() => {
     if (isLoadingVersions || hasUserPickedOptionRef.current || !selectedOption.isLocalVersion) return;
-    const isListed = developmentVersions.some((version) => version.id === selectedOption.versionId);
-    if (!isListed) return;
     const match = localVersionOptions.find((option) => option.versionId === selectedOption.versionId);
     setSelectedOption(match || LATEST_MAIN_OPTION);
     // eslint-disable-next-line react-hooks/exhaustive-deps
