@@ -9,6 +9,7 @@ import {
 } from '@modules/users/constants/lifecycle';
 import { Injectable } from '@nestjs/common';
 import { UserFilterOptions } from './types';
+import { MAX_CLOUD_WORKSPACES_PER_USER } from './constants';
 import { Organization } from '@entities/organization.entity';
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -186,6 +187,14 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
         },
         relations: ['organization'],
       });
+    }, manager || this.manager);
+  }
+
+  // Cloud: the user's workspace limit, or the default when the team hasn't set one.
+  async getCloudWorkspaceLimit(userId: string, manager?: EntityManager): Promise<number> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const user = await manager.findOne(User, { where: { id: userId }, select: ['id', 'workspaceLimit'] });
+      return user?.workspaceLimit ?? MAX_CLOUD_WORKSPACES_PER_USER;
     }, manager || this.manager);
   }
 
