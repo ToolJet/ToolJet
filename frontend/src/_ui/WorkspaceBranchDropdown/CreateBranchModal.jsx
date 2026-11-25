@@ -89,16 +89,30 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
     setIsCreating(true);
     // Registered before the request: a fast worker can finish before the response arrives. The
     // spinner stays until it does; closing the modal hands the switch over to the toast.
-    stopWaitingRef.current = waitForJob(branchJobKey(name), async (notification) => {
+    // Not async: a failure must return synchronously whether it showed the outcome itself.
+    stopWaitingRef.current = waitForJob(branchJobKey(name), (notification) => {
       if (notification.type !== 'success') {
         setIsCreating(false);
-        return;
+        // The job found naming conflicts: list them here instead of leaving only a toast.
+        const groups = notification.metadata?.conflictGroups;
+        if (groups?.length) {
+          setPendingImportName(null);
+          setConflictGroups(groups);
+          return true;
+        }
+        return false;
       }
-      await actions.fetchBranches();
-      await actions.switchBranch(notification.metadata.branchId);
-      showActionToast({ type: 'success', message: confirmImport ? JOB_COPY.branchImported : JOB_COPY.branchCreated });
-      onSuccess?.();
-      onClose();
+      (async () => {
+        await actions.fetchBranches();
+        await actions.switchBranch(notification.metadata.branchId);
+        showActionToast({
+          type: 'success',
+          message: confirmImport ? JOB_COPY.branchImported : JOB_COPY.branchCreated,
+        });
+        onSuccess?.();
+        onClose();
+      })();
+      return true;
     });
     try {
       const ack = await actions.createBranch(

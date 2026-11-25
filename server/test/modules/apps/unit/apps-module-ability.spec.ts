@@ -5,7 +5,8 @@ import { App } from 'src/entities/app.entity';
 import { FEATURE_KEY, APP_TYPES } from 'src/modules/apps/constants';
 import { MODULES } from 'src/modules/app/constants/modules';
 import { UserAllPermissions } from 'src/modules/app/types';
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { EntityNotFoundError } from 'typeorm';
 import { buildPermissions, makeAbilityBuilder } from 'test-helper';
 
 // ---------------------------------------------------------------------------
@@ -426,5 +427,39 @@ describe('AppsService.validatePrivateAppAccess — module canEdit behavior', () 
       expect((result as any).canEdit).toBe(false);
       expect((result as any).versionId).toBeUndefined();
     });
+  });
+});
+
+describe('AppsService.validatePrivateAppAccess — unknown version name', () => {
+  const user = { id: 'user-1' } as any;
+  const notFound = () => new EntityNotFoundError('AppVersion', { name: 'bogus' });
+  const call = (service: AppsService, dto: object) =>
+    service.validatePrivateAppAccess(makeApp(APP_TYPES.FRONT_END), makeAbility(true, true), user, dto as any);
+
+  it('answers 404, not 500, when the name matches no version', async () => {
+    const service = makeService();
+    (service as any).versionRepository = {
+      findByName: jest.fn().mockRejectedValue(notFound()),
+      findOne: jest.fn().mockResolvedValue(null),
+    };
+
+    await expect(call(service, { versionName: 'bogus' })).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('reports app-not-ready when the only version is a stub', async () => {
+    const service = makeService();
+    (service as any).versionRepository = {
+      findByName: jest.fn().mockRejectedValue(notFound()),
+      findOne: jest.fn().mockResolvedValue({ id: 'stub' }),
+    };
+
+    await expect(call(service, { versionName: 'bogus' })).rejects.toThrow('app-not-ready');
+  });
+
+  it('rethrows lookup errors that are not "not found"', async () => {
+    const service = makeService();
+    (service as any).versionRepository = { findByName: jest.fn().mockRejectedValue(new Error('db down')) };
+
+    await expect(call(service, { versionName: 'bogus' })).rejects.toThrow('db down');
   });
 });

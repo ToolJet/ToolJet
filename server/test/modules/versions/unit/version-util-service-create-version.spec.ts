@@ -1,5 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
-import { EntityNotFoundError } from 'typeorm';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { VersionUtilService } from '@modules/versions/util.service';
 import { VersionRepository } from '@modules/versions/repository';
@@ -132,7 +131,7 @@ describe('VersionUtilService.validateVersionCreate', () => {
     service = module.get(VersionUtilService);
   });
 
-  it('throws when versionFromId does not belong to the app (foreign or missing source)', async () => {
+  it('throws a 404 when versionFromId does not belong to the app (foreign or missing source)', async () => {
     versionRepository.findOne.mockResolvedValue(null); // ownership lookup finds nothing
     await expect(
       service.validateVersionCreate(app, user, {
@@ -140,7 +139,7 @@ describe('VersionUtilService.validateVersionCreate', () => {
         versionFromId: 'foreign-version',
         versionType: undefined,
       } as any)
-    ).rejects.toBeInstanceOf(EntityNotFoundError);
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('throws for an empty (whitespace-only) version name', async () => {

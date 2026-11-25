@@ -1,10 +1,44 @@
-import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, IsIn, ValidateNested, IsBoolean } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsUUID,
+  IsArray,
+  IsIn,
+  ValidateNested,
+  IsBoolean,
+  Validate,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
 import { Type, Exclude, Expose } from 'class-transformer';
 import { PullDiagnostics } from '../types';
+
+// Same list as the Create branch modal (frontend CreateBranchModal), compared case-insensitively.
+const RESERVED_BRANCH_NAMES = ['main', 'master', 'head', 'origin'];
+
+// Mirrors `git check-ref-format --branch`: names git refuses would only fail later, in the worker.
+@ValidatorConstraint({ name: 'isGitBranchName', async: false })
+class GitBranchNameConstraint implements ValidatorConstraintInterface {
+  validate(name: unknown): boolean {
+    if (typeof name !== 'string' || name.trim() === '' || name === '@') return false;
+    if (RESERVED_BRANCH_NAMES.includes(name.toLowerCase())) return false;
+    if (name.startsWith('-')) return false;
+    // eslint-disable-next-line no-control-regex
+    if (/[\x00-\x20\x7f~^:?*[\\]/.test(name) || name.includes('..') || name.includes('@{')) return false;
+    if (name.endsWith('.') || name.startsWith('/') || name.endsWith('/') || name.includes('//')) return false;
+    return name.split('/').every((part) => !part.startsWith('.') && !part.endsWith('.lock'));
+  }
+
+  defaultMessage(): string {
+    return 'name is reserved or not a valid git branch name';
+  }
+}
 
 export class CreateBranchDto {
   @IsNotEmpty()
   @IsString()
+  @Validate(GitBranchNameConstraint)
   name: string;
 
   @IsOptional()

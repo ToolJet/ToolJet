@@ -1560,7 +1560,7 @@ describe('AppsController', () => {
           // each copy gets a unique name (idx_unique_active_name_branch is unique per workspace); a copy of a copy suffixes again
           expect(dataSources.map((s) => s.name).sort()).toEqual(['name', 'name_2', 'name_2_2']);
 
-          // creating a new version from a non existing version id will throw error when more than 1 versions exist
+          // creating a new version from a non existing version id is a 404 (source version not found)
           await createDataSource(app, {
             name: 'another_name',
             kind: 'postgres',
@@ -1584,7 +1584,7 @@ describe('AppsController', () => {
               environmentId: appEnvironments.find((env) => env.priority === 1)?.id,
             });
 
-          expect(version4.statusCode).toBe(500);
+          expect(version4.statusCode).toBe(404);
           await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
         });
 

@@ -45,6 +45,7 @@ Workflows are visual automations: a graph of nodes/edges stored as an app-versio
 - **A pull or PR merge can turn a webhook on.** Enable it on a feature branch, merge, and the default branch's endpoint goes live. Accepted and intended — not a bug to guard.
 - Enablement can only be toggled on a **feature** branch when multi-branching is on (`blockedFields`); single-branch and git-off workspaces toggle it directly.
 - Triggering a DRAFT or feature-branch version is allowed — the restriction was only ever two frontend lines. The environment gate still applies: a draft sits at development priority, so `?environment=production` is rejected.
+- Opening a workflow in the editor resolves its version by branch like any other app (`AppsService.getOne`): a feature branch opens its own BRANCH row; the default branch or git off uses the version fallback chain.
 - `WorkflowWebhooksService.updateWorkflow` writes the **version row** (feature branch → that branch's BRANCH row, otherwise the default-branch draft). Only the token backfill still writes `apps`.
 
 ## Related modules
