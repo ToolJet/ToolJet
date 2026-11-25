@@ -39,10 +39,10 @@ const H = "cypress/e2e/happyPath/";
 const EE_PLATFORM = "cypress-ee-platform.config.js";
 const SPEC_AREAS = [
   { area: "onboarding", specGlobs: [`${H}platform/firstUser/**`, `${H}platform/commonTestcases/userManagment/**`, `${H}platform/eeTestcases/sso/**`], config: EE_PLATFORM },
-  { area: "access", specGlobs: [`${H}platform/commonTestcases/workspace/groups/**`, `${H}platform/eeTestcases/apps/folderPermissions/**`], config: EE_PLATFORM },
+  { area: "access", specGlobs: [`${H}platform/commonTestcases/workspace/groups/**`, `${H}platform/eeTestcases/apps/folderPermissions/**`, `${H}platform/eeTestcases/dataSourceFolders/**`], config: EE_PLATFORM },
   { area: "apps", specGlobs: [`${H}platform/commonTestcases/apps/**`], config: EE_PLATFORM },
   { area: "modules", specGlobs: [`${H}platform/eeTestcases/modules/**`], config: EE_PLATFORM },
-  { area: "workspace", specGlobs: [`${H}platform/commonTestcases/workspace/workspaceUiTestcases/**`, `${H}platform/commonTestcases/workspaceConstants/**`, `${H}platform/ceTestcases/**`, `${H}platform/eeTestcases/settings/**`, `${H}platform/eeTestcases/multi-env/**`, `${H}platform/eeTestcases/userMetadata/**`, `${H}platform/eeTestcases/dataSourceFolders/**`], config: EE_PLATFORM },
+  { area: "workspace", specGlobs: [`${H}platform/commonTestcases/workspace/workspaceUiTestcases/**`, `${H}platform/commonTestcases/workspaceConstants/**`, `${H}platform/ceTestcases/**`, `${H}platform/eeTestcases/settings/**`, `${H}platform/eeTestcases/multi-env/**`, `${H}platform/eeTestcases/userMetadata/**`], config: EE_PLATFORM },
   { area: "licensing", specGlobs: [`${H}platform/eeTestcases/licensing/basicPlanTestcases/**`, `${H}platform/eeTestcases/licensing/paidPlanTestcases/**`, `${H}platform/eeTestcases/licensing/updateLicense.cy.js`], config: EE_PLATFORM },
   { area: "licensing", specGlobs: [`${H}platform/eeTestcases/licensing/ai/**`], config: "cypress.config.js" },
   { area: "superAdmin", specGlobs: [`${H}platform/eeTestcases/superAdmin/**`], config: EE_PLATFORM },

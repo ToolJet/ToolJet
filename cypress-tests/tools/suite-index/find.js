@@ -36,6 +36,7 @@ function findSymbols(symbols, area, words, opts = {}) {
     .filter(r => !opts.kind || r.kind === opts.kind)
     .map(record => ({ record, score: score(record, words) }))
     .filter(h => h.score > 0)
+    .map(h => ({ ...h, score: h.score + (area !== "shared" && h.record.areas.includes(area) ? 2 : 0) }))
     .sort((a, b) => b.score - a.score || (a.record.name < b.record.name ? -1 : a.record.name > b.record.name ? 1 : 0))
     .slice(0, limit);
 }
@@ -47,7 +48,7 @@ function loadSymbols(rootDir) {
 
 function formatHit({ record: r }) {
   const usage = r.kind === "selector" ? r.expression : r.usage;
-  return `${r.kind}  ${r.name}  ${r.file}:${r.line}  ${usage || "-"}`;
+  return `${r.kind}  ${r.name}${r.signature || ""}  ${r.file}:${r.line}  ${usage || "-"}`;
 }
 
 if (require.main === module) {

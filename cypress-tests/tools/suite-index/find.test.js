@@ -25,11 +25,18 @@ assert.deepStrictEqual(findSymbols(recs, "gitSync", ["merge"], { kind: "selector
 assert.strictEqual(findSymbols(recs, "gitSync", ["zzz"]).length, 0);
 assert.strictEqual(findSymbols(recs, "gitSync", ["git"], { limit: 1 }).length, 1);
 
+// a symbol in the requested area beats an equally good shared one
+const tie = [
+  rec({ id: "helper:createFolderShared", kind: "helper", name: "createFolder", areas: ["shared"], file: "a.js" }),
+  rec({ id: "helper:createFolderMod", kind: "helper", name: "createFolder", areas: ["modules"], file: "b.js" }),
+];
+assert.strictEqual(findSymbols(tie, "modules", ["create", "folder"])[0].record.file, "b.js");
+
 // CLI on the real index
 const cli = path.join(__dirname, "find.js");
 const real = spawnSync("node", [cli, "gitSync", "merge", "pr"], { encoding: "utf8" });
 assert.strictEqual(real.status, 0);
-assert.match(real.stdout.split("\n")[0], /gitHubMergePR/);
+assert.match(real.stdout.split("\n")[0], /gitHubMergePR\(/, "signature shown after the name");
 const unknown = spawnSync("node", [cli, "nope", "x"], { encoding: "utf8" });
 assert.strictEqual(unknown.status, 2);
 assert.match(unknown.stderr, /modules/);
@@ -43,6 +50,6 @@ fs.mkdirSync(path.join(tmp, "cypress/commands/platform"), { recursive: true });
 fs.writeFileSync(path.join(tmp, "cypress/commands/platform/gitSyncCommands.js"), 'Cypress.Commands.add("gitHubMergePR", (n) => {});\n');
 const fresh = spawnSync("node", [cli, "gitSync", "merge"], { encoding: "utf8", env: { ...process.env, SUITE_INDEX_ROOT: tmp } });
 assert.strictEqual(fresh.status, 0);
-assert.match(fresh.stdout, /^command  gitHubMergePR  cypress\/commands\/platform\/gitSyncCommands\.js:1/);
+assert.match(fresh.stdout, /^command  gitHubMergePR\(n\)  cypress\/commands\/platform\/gitSyncCommands\.js:1/);
 assert.ok(!fs.existsSync(path.join(tmp, "cypress/support/suiteIndex")), "find writes nothing");
 assert.strictEqual(loadSymbols(tmp).symbols.length, 1);

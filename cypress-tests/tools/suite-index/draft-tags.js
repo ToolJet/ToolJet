@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { suiteForPath, validBlocks, AREAS } = require("./areas");
+const { suiteForPath, validBlocks, defaultAreaForPath, AREAS } = require("./areas");
 const { collectSymbols } = require("./generate");
 const { collectUsage, areaOfSpec } = require("./usage");
 const { tokens } = require("./find");
@@ -9,7 +9,19 @@ const VERBS = new Set([
   "create", "delete", "rename", "update", "add", "remove", "get", "open", "close", "verify", "expect",
   "publish", "promote", "import", "export", "login", "logout", "navigate", "switch", "drag", "drop",
   "select", "toggle", "attempt", "define", "author", "archive", "grant", "pick", "ensure", "visit",
+  "pull", "push", "commit", "merge", "reset", "save", "set", "run", "upload", "fetch", "list", "connect",
+  "configure", "wait", "check", "enable", "disable", "invite", "accept", "edit", "clone", "tag", "release",
+  "deploy", "cancel", "approve", "apply", "assign", "fill", "submit", "search", "copy", "duplicate", "move",
+  "restore", "revoke", "sign", "share", "send", "seed", "clear", "click", "type", "fetch",
 ]);
+const PREFIX_ENTITIES = [["git", "sync", "gitSync"], ["git", "hub", "gitHub"]];
+// General-purpose files: their symbols stay shared even when one area happens to use them.
+const GENERIC_FILES = new Set([
+  "cypress/commands/commands.js", "cypress/commands/apiCommands.js", "cypress/commands/platform/platformApiCommands.js",
+  "cypress/support/utils/common.js", "cypress/support/utils/commonWidget.js",
+]);
+// Overrides of Cypress's own commands are not ToolJet helpers.
+const CYPRESS_BUILTINS = new Set(["intercept", "visit", "request", "get", "contains", "type", "click", "wait", "log", "then"]);
 const SKIP = new Set(["ui", "api", "via"]);
 const WRAPPER_VERBS = new Set(["attempt", "ensure", "try"]);
 const CONTEXT_WORDS = new Set(["from", "into", "in", "on", "expecting"]);
@@ -17,11 +29,14 @@ const MAX_USAGE = 120;
 
 function entityOp(name) {
   const t = tokens(name).filter((x, i, all) => !(SKIP.has(x) && all.slice(0, i).every(y => SKIP.has(y))));
+  let prefix = null;
+  const p = PREFIX_ENTITIES.find(([a, b]) => t[0] === a && t[1] === b);
+  if (p) { prefix = p[2]; t.splice(0, 2); }
   if (WRAPPER_VERBS.has(t[0]) && VERBS.has(t[1])) t.shift();
   if (!t.length || !VERBS.has(t[0])) return "-";
   const cut = t.findIndex((x, i) => i > 0 && CONTEXT_WORDS.has(x));
   const rest = t.slice(1, cut === -1 ? undefined : cut).filter(x => !SKIP.has(x));
-  if (!rest.length) return "-";
+  if (!rest.length) return prefix ? `${prefix}.${t[0]}` : "-";
   const entity = rest[0] + rest.slice(1).map(x => x[0].toUpperCase() + x.slice(1)).join("");
   return `${entity}.${t[0]}`;
 }
@@ -31,11 +46,19 @@ function usable(text) {
   return text.length <= MAX_USAGE && !/[@*]/.test(text);
 }
 
+// Calls from negative tests (empty or invalid arguments) make bad examples.
+function negative(text) {
+  return /[(,]\s*(''|""|``|\{\s*\}|\[\s*\])\s*[,)]/.test(text) || /invalid/i.test(text);
+}
+
 function pickUsage(sites, preferred) {
   const isPreferred = typeof preferred === "function" ? preferred : (f) => preferred.includes(f);
-  const ok = sites.filter(s => usable(s.text));
+  const ok = sites.filter(s => usable(s.text) && !negative(s.text));
+  const freq = new Map();
+  for (const s of ok) freq.set(s.text, (freq.get(s.text) || 0) + 1);
   ok.sort((a, b) =>
     (isPreferred(a.file) ? 0 : 1) - (isPreferred(b.file) ? 0 : 1)
+    || freq.get(b.text) - freq.get(a.text)
     || (a.text.endsWith("()") ? 1 : 0) - (b.text.endsWith("()") ? 1 : 0)
     || a.text.length - b.text.length
     || (a.text < b.text ? -1 : a.text > b.text ? 1 : 0));
@@ -47,9 +70,10 @@ function draftTags(symbols, usage, area, isAreaSpec = (f) => areaOfSpec(f) === a
   const drafts = [];
   for (const s of symbols) {
     if (s.kind === "selector" || suiteForPath(s.file) === "appBuilder") continue;
-    const u = usage.get(`${s.kind}:${s.name}`);
+    if (s.kind === "command" && CYPRESS_BUILTINS.has(s.name)) continue;
+    const u = usage.get(s.kind === "helper" ? `helper:${s.name}@${s.file}` : `command:${s.name}`);
     if (!u || (area && !u.areas.has(area))) continue;
-    let block = u.areas.size === 1 ? [...u.areas][0] : "shared";
+    let block = u.areas.size === 1 && !GENERIC_FILES.has(s.file) ? [...u.areas][0] : "shared";
     if (!validBlocks(suiteForPath(s.file)).includes(block)) block = "shared";
     drafts.push({
       name: s.name, kind: s.kind, file: s.file, line: s.line, duplicateName: s.id.includes("@"),
@@ -99,7 +123,7 @@ function reviewTable(drafts, area) {
   const out = [
     `# Draft tags for ${area} (${drafts.length} symbols)`,
     "",
-    "Usage examples are copied from real spec calls. Edit this table or tell Claude what to change; nothing is written until approved.",
+    "Usage examples are copied from real spec calls. Review the rows before running --write; nothing is written until then.",
     "",
     "| name | kind | file:line | block | type | usage | used by | calls |",
     "|---|---|---|---|---|---|---|---|",

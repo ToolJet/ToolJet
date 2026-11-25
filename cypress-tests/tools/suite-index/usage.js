@@ -23,7 +23,24 @@ function listSpecs(rootDir, rel = "cypress/e2e") {
 }
 
 function oneLine(text) {
-  return text.replace(/\s*\n\s*/g, " ").replace(/\(\s+/g, "(").replace(/,?\s+\)/g, ")").trim();
+  return text.replace(/\s*\n\s*/g, " ").replace(/\(\s+/g, "(").replace(/,?\s+\)/g, ")")
+    .replace(/,\s*\}/g, " }").replace(/,\s*\]/g, "]").trim();
+}
+
+// "Support/utils/x" or a relative path -> "cypress/support/utils/x.js" when that file exists.
+function resolveImport(rootDir, specFile, source) {
+  let base = null;
+  if (source.startsWith("Support/")) base = "cypress/support/" + source.slice("Support/".length);
+  else if (source.startsWith(".")) base = path.posix.normalize(path.posix.join(path.posix.dirname(specFile), source));
+  if (!base) return null;
+  for (const c of [base, `${base}.js`, `${base}/index.js`])
+    if (c.endsWith(".js") && fs.existsSync(path.join(rootDir, c))) return c;
+  return null;
+}
+
+function rootIsCy(node) {
+  while (node && node.type === "CallExpression" && node.callee.type === "MemberExpression") node = node.callee.object;
+  return !!node && node.type === "Identifier" && node.name === "cy";
 }
 
 function walk(node, visit) {
@@ -37,9 +54,9 @@ function walk(node, visit) {
   }
 }
 
-// Keyed by "helper:<name>" / "command:<name>": which areas' specs call it, and where.
+// Keyed by "helper:<name>@<file>" / "command:<name>": which areas' specs call it, and where.
 function collectUsage(rootDir, symbols) {
-  const helpers = new Set(symbols.filter(s => s.kind === "helper").map(s => s.name));
+  const helpers = new Set(symbols.filter(s => s.kind === "helper").map(s => `${s.name}@${s.file}`));
   const commands = new Set(symbols.filter(s => s.kind === "command").map(s => s.name));
   const usage = new Map();
   const record = (key, area, file, node, src) => {
@@ -56,16 +73,19 @@ function collectUsage(rootDir, symbols) {
     try { ast = babel.parse(src, { sourceType: "module", plugins: ["jsx"] }); } catch { continue; }
     const imported = new Map();
     for (const stmt of ast.program.body)
-      if (stmt.type === "ImportDeclaration" && /^Support\//.test(stmt.source.value))
+      if (stmt.type === "ImportDeclaration") {
+        const from = resolveImport(rootDir, file, stmt.source.value);
+        if (!from) continue;
         for (const sp of stmt.specifiers)
-          if (sp.type === "ImportSpecifier") imported.set(sp.local.name, sp.imported.name || sp.imported.value);
+          if (sp.type === "ImportSpecifier") imported.set(sp.local.name, `${sp.imported.name || sp.imported.value}@${from}`);
+      }
     walk(ast.program, (n) => {
       if (n.type !== "CallExpression") return;
       const c = n.callee;
       if (c.type === "Identifier" && imported.has(c.name) && helpers.has(imported.get(c.name)))
         record(`helper:${imported.get(c.name)}`, area, file, n, src);
-      else if (c.type === "MemberExpression" && c.object.type === "Identifier" && c.object.name === "cy"
-        && c.property.type === "Identifier" && commands.has(c.property.name))
+      else if (c.type === "MemberExpression" && c.property.type === "Identifier" && commands.has(c.property.name)
+        && rootIsCy(c.object))
         record(`command:${c.property.name}`, area, file, n, src);
     });
   }
