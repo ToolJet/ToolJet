@@ -117,6 +117,15 @@ export const formConfig = {
         defaultValue: true,
       },
     },
+    validateVisibleFieldsOnly: {
+      type: 'toggle',
+      displayName: 'Validate visible fields only',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     resetOnSubmit: {
       type: 'toggle',
       displayName: 'Reset form on submission',
@@ -366,6 +375,7 @@ export const formConfig = {
       headerHeight: { value: 60 },
       footerHeight: { value: 60 },
       validateOnSubmit: { value: '{{true}}' },
+      validateVisibleFieldsOnly: { value: '{{false}}' },
       resetOnSubmit: { value: '{{true}}' },
       registerNestedFields: { value: '{{true}}' },
       generateFormFrom: {

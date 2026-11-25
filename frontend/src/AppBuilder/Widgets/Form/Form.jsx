@@ -3,7 +3,12 @@ import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
 import _, { debounce, omit } from 'lodash';
-import { collectFormFieldExposedValues, generateUIComponents, getBodyHeight } from './FormUtils';
+import {
+  collectFieldIdsUnderHiddenContainers,
+  collectFormFieldExposedValues,
+  generateUIComponents,
+  getBodyHeight,
+} from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -74,6 +79,7 @@ const FormComponent = (props) => {
     footerHeight = 80,
     canvasHeight,
     validateOnSubmit = true,
+    validateVisibleFieldsOnly = false,
     resetOnSubmit = true,
     registerNestedFields = false,
     newJsonSchema,
@@ -176,6 +182,11 @@ const FormComponent = (props) => {
   const childExposedMap = useStore(
     (state) => collectFormFieldExposedValues(state, id, { moduleId, indices, includeNested: registerNestedFields }),
     shallow
+  );
+  const fieldIdsUnderHiddenContainers = useStore((state) =>
+    validateVisibleFieldsOnly && registerNestedFields
+      ? collectFieldIdsUnderHiddenContainers(state, id, { moduleId, indices, includeNested: true })
+      : ''
   );
 
   useExposedValueBatch(componentCount);
@@ -302,9 +313,17 @@ const FormComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSONSchema, advanced]);
 
+  // A hidden field cannot be filled, so the opt-in toggle stops it blocking the Form.
+  const hiddenByContainer = useMemo(
+    () => new Set(fieldIdsUnderHiddenContainers ? fieldIdsUnderHiddenContainers.split(',') : []),
+    [fieldIdsUnderHiddenContainers]
+  );
+  const isSkippedField = (child, childId) =>
+    validateVisibleFieldsOnly && (child?.isVisible === false || hiddenByContainer.has(childId));
+
   const checkJsonChildrenValidtion = () => {
     const isValid = Object.values(effectiveChildrenData).every(
-      (item) => item?.isVisible === false || item?.isValid !== false
+      (item) => isSkippedField(item) || item?.isValid !== false
     );
     return isValid;
   };
@@ -350,8 +369,7 @@ const FormComponent = (props) => {
             formData[componentName] = componentValue;
           }
           formattedChildData[componentName] = { ...omit(childData, 'name'), id: childId };
-          // A hidden field cannot be filled, so it must not block the Form.
-          if (childData?.isVisible !== false) childValidation = childValidation && (childData?.isValid ?? true);
+          if (!isSkippedField(childData, childId)) childValidation = childValidation && (childData?.isValid ?? true);
         }
       });
     }
@@ -369,7 +387,7 @@ const FormComponent = (props) => {
 
     setExposedVariables(exposedVariables);
     setValidation(childValidation);
-  }, [effectiveChildrenData, advanced]);
+  }, [effectiveChildrenData, advanced, validateVisibleFieldsOnly, hiddenByContainer]);
 
   useEffect(() => {
     document.addEventListener('submitForm', handleFormSubmission);

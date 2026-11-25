@@ -600,22 +600,23 @@ export const tabCanvasIds = (mapping, tabsId) => Object.keys(mapping).filter((ke
  * @param indices         row indices when the Form itself sits inside a ListView
  * @param includeNested   the Form's `registerNestedFields` property
  */
-export function collectFormFieldExposedValues(
-  state,
-  formId,
-  { moduleId = 'canvas', indices = [], includeNested = false } = {}
-) {
+/* Visits every field of `formId` once, with `underHiddenContainer` true when a container between the
+ * field and the Form is hidden. Shared by the two exports below so they follow the same container rules.
+ */
+function walkFormFields(state, formId, { moduleId = 'canvas', indices = [], includeNested = false }, visit) {
   const exposedComponents = state.resolvedStore?.modules?.[moduleId]?.exposedValues?.components;
   const pageComponents = state.modules?.[moduleId]?.pages?.[state.modules?.[moduleId]?.currentPageIndex]?.components;
   const mapping = state.containerChildrenMapping ?? {};
-  const result = {};
+  // Doubles as the visited set, so a corrupted parent chain terminates instead of recursing forever.
+  const visited = new Set();
 
-  const collect = (parentId) => {
+  const collect = (parentId, underHiddenContainer) => {
     const childIds = mapping[parentId];
     if (!childIds?.length) return;
     childIds.forEach((childId) => {
       // Already collected: a cycle in the parent chain, or a duplicate entry.
-      if (Object.prototype.hasOwnProperty.call(result, childId)) return;
+      if (visited.has(childId)) return;
+      visited.add(childId);
 
       let val = exposedComponents?.[childId];
       // If per-row (Form is inside a ListView), navigate to the correct row
@@ -625,25 +626,46 @@ export function collectFormFieldExposedValues(
           if (!val) break;
         }
       }
-      result[childId] = val || null;
+      visit(childId, val || null, underHiddenContainer);
 
       if (!includeNested) return;
       const childType = pageComponents?.[childId]?.component?.component;
       if (OPAQUE_FORM_CONTAINERS.has(childType)) return;
 
-      collect(childId);
+      const hidesChildren = underHiddenContainer || val?.isVisible === false;
+      collect(childId, hidesChildren);
 
       // Tabs keeps its children under per-tab canvas keys, not its base id.
-      if (childType === 'Tabs') tabCanvasIds(mapping, childId).forEach((canvasId) => collect(canvasId));
+      if (childType === 'Tabs') tabCanvasIds(mapping, childId).forEach((canvasId) => collect(canvasId, hidesChildren));
 
       // A nested container's header/footer are separate sub-canvases, and
       // a field placed in one is still a field of this Form. Only ever reached for CHILDREN.
       if (SLOT_SUPPORTED_WIDGETS.includes(childType)) {
-        ['header', 'footer'].forEach((slot) => collect(`${childId}-${slot}`));
+        ['header', 'footer'].forEach((slot) => collect(`${childId}-${slot}`, hidesChildren));
       }
     });
   };
 
-  collect(formId);
+  collect(formId, false);
+}
+
+export function collectFormFieldExposedValues(state, formId, options = {}) {
+  const result = {};
+  walkFormFields(state, formId, options, (childId, val) => {
+    result[childId] = val;
+  });
   return result;
+}
+
+/**
+ * Ids of the Form's fields that sit inside a hidden container, joined into one string so a store
+ * selector can compare it by value. A hidden container keeps its children's own `isVisible` true,
+ * so the Form cannot see this from the field alone.
+ */
+export function collectFieldIdsUnderHiddenContainers(state, formId, options = {}) {
+  const ids = [];
+  walkFormFields(state, formId, options, (childId, _val, underHiddenContainer) => {
+    if (underHiddenContainer) ids.push(childId);
+  });
+  return ids.join(',');
 }
