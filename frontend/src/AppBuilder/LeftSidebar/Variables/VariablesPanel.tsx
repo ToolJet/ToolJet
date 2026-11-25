@@ -71,7 +71,7 @@ const VariablesPanel = ({ darkMode, onClose, moduleId }: VariablesPanelProps) =>
     else setPendingDelete({ row, references });
   };
 
-  const rawAppMap = useStore((state: any) => state.globalSettings?.variables);
+  const rawAppMap = useStore((state: any) => state.getGlobalSettings(moduleId)?.variables);
   const { rawPageMap, pageName } = useStore((state: any) => {
     const pageId = state.getCurrentPageId(moduleId);
     const page = state.modules[moduleId]?.pages?.find((p: any) => p.id === pageId);

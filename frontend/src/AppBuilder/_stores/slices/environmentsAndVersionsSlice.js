@@ -559,7 +559,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         if (!globalSettings?.theme) {
           globalSettings.theme = baseTheme;
         }
-        get().setGlobalSettings(globalSettings);
+        get().setGlobalSettings(globalSettings, moduleId);
         get().setPageSettings(
           get().computePageSettings(
             deepCamelCase(data.editing_version?.pageSettings ?? data.editing_version?.page_settings)

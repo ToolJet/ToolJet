@@ -304,7 +304,17 @@ export const createAppSlice = (set, get) => ({
       }, 'appSaveSettled');
     }
   },
-  setGlobalSettings: (globalSettings) => set(() => ({ globalSettings }), false, 'setGlobalSettings'),
+  getGlobalSettings: (moduleId = 'canvas') =>
+    moduleId === 'canvas' ? get().globalSettings : get().appStore.modules[moduleId]?.globalSettings,
+  setGlobalSettings: (globalSettings, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        if (moduleId === 'canvas') state.globalSettings = globalSettings;
+        else state.appStore.modules[moduleId].globalSettings = globalSettings;
+      },
+      false,
+      'setGlobalSettings'
+    ),
   toggleAppMaintenance: (moduleId = 'canvas') => {
     const { isMaintenanceOn, appId } = get().appStore.modules[moduleId].app;
     const newState = !isMaintenanceOn;
@@ -347,7 +357,7 @@ export const createAppSlice = (set, get) => ({
           ),
         moduleId
       );
-      set((state) => ({ globalSettings: { ...state.globalSettings, ...newOptions } }));
+      get().setGlobalSettings({ ...get().getGlobalSettings(moduleId), ...newOptions }, moduleId);
     } catch (error) {
       toast.error('App could not be saved.');
       console.error('Error updating page:', error);

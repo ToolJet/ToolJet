@@ -39,7 +39,8 @@ const withScope = (map, scope) => Object.values(normalizeVariableDefinitionMap(m
 const toStored = (definition) => normalizeVariableDefinition(definition);
 
 export const createVariablesSlice = (set, get) => ({
-  getAppVariableDefinitions: () => withScope(get().globalSettings?.variables, VARIABLE_SCOPES.APP),
+  getAppVariableDefinitions: (moduleId = 'canvas') =>
+    withScope(get().getGlobalSettings(moduleId)?.variables, VARIABLE_SCOPES.APP),
 
   getPageVariableDefinitions: (moduleId = 'canvas', pageId = get().getCurrentPageId?.(moduleId)) => {
     const page = get().modules?.[moduleId]?.pages?.find((p) => p.id === pageId);
@@ -48,7 +49,7 @@ export const createVariablesSlice = (set, get) => ({
 
   /** App variables plus the current page's variables. */
   getVariableDefinitions: (moduleId = 'canvas') => [
-    ...get().getAppVariableDefinitions(),
+    ...get().getAppVariableDefinitions(moduleId),
     ...get().getPageVariableDefinitions(moduleId),
   ],
 
@@ -206,7 +207,7 @@ export const createVariablesSlice = (set, get) => ({
   getVariableDefinitionMap: (scope, moduleId = 'canvas') =>
     normalizeVariableDefinitionMap(
       scope === VARIABLE_SCOPES.APP
-        ? get().globalSettings?.variables
+        ? get().getGlobalSettings(moduleId)?.variables
         : get().modules[moduleId].pages.find((p) => p.id === get().getCurrentPageId(moduleId))?.variables
     ),
 
@@ -214,11 +215,7 @@ export const createVariablesSlice = (set, get) => ({
   setVariableDefinitionMap: (scope, rawMap, moduleId = 'canvas') => {
     const map = normalizeVariableDefinitionMap(rawMap);
     if (scope === VARIABLE_SCOPES.APP) {
-      set(
-        (state) => ({ globalSettings: { ...state.globalSettings, variables: map } }),
-        false,
-        'setAppVariableDefinitions'
-      );
+      get().setGlobalSettings({ ...get().getGlobalSettings(moduleId), variables: map }, moduleId);
       return;
     }
     const pageId = get().getCurrentPageId(moduleId);
@@ -246,7 +243,7 @@ export const createVariablesSlice = (set, get) => ({
             currentVersionId,
             isPage
               ? { variables: page?.variables ?? {} }
-              : { globalSettings: { variables: get().globalSettings?.variables ?? {} } },
+              : { globalSettings: { variables: get().getGlobalSettings(moduleId)?.variables ?? {} } },
             isPage ? 'pages' : 'global_settings',
             pageId,
             'update'
