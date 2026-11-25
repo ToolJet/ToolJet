@@ -90,6 +90,11 @@ export const deleteConstantFromAllEnvironmentsByName = (constantName) => {
 };
 
 
+/**
+ * @tjType   allConstants.delete
+ * @tjBlock  licensing
+ * @tjUsage  deleteAllUIConstants()
+ */
 export const deleteAllUIConstants = () => {
     cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),

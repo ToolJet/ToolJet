@@ -785,6 +785,11 @@ export const invitePageElements = () => {
     .and("equal", "https://www.tooljet.com/privacy");
 };
 
+/**
+ * @tjType   ssoId.update
+ * @tjBlock  onboarding
+ * @tjUsage  updateSsoId(TEST_SSO_ID, 'google', `${orgId}`)
+ */
 export const updateSsoId = (ssoId, sso, workspaceId) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
@@ -821,6 +826,10 @@ export const setSSOStatus = (workspaceName, ssoType, enabled) => {
   });
 };
 
+/**
+ * @tjBlock  onboarding
+ * @tjUsage  defaultSSO(false)
+ */
 export const defaultSSO = (enable) => {
   cy.getAuthHeaders().then((headers) => {
     cy.request(
@@ -837,6 +846,10 @@ export const defaultSSO = (enable) => {
   });
 };
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  setSignupStatus(true)
+ */
 export const setSignupStatus = (enable) => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -850,6 +863,11 @@ export const setSignupStatus = (enable) => {
   });
 };
 
+/**
+ * @tjType   organisationSso.delete
+ * @tjBlock  onboarding
+ * @tjUsage  deleteOrganisationSSO("My workspace", ["openid"])
+ */
 export const deleteOrganisationSSO = (workspaceName, services) => {
   let workspaceId;
   cy.task("dbConnection", {
@@ -883,6 +901,10 @@ export const resetDomain = () => {
   });
 };
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  enableInstanceSignup(false)
+ */
 export const enableInstanceSignup = (enable = true) => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -896,6 +918,11 @@ export const enableInstanceSignup = (enable = true) => {
   });
 };
 
+/**
+ * @tjType   oidcConfig.update
+ * @tjBlock  onboarding
+ * @tjUsage  updateOIDCConfig(orgId)
+ */
 export const updateOIDCConfig = (orgId) => {
   const ssoConfigId = "22f22523-7bc2-4134-891d-88bdfec073cd";
   const sso = "'openid'";
@@ -971,6 +998,11 @@ export const authResponse = (matcher) => {
   }).as("authorizeCheck");
 };
 
+/**
+ * @tjType   oktaOidcConfig.add
+ * @tjBlock  onboarding
+ * @tjUsage  addOktaOIDCConfig({ Everyone: "Admin" })
+ */
 export const addOktaOIDCConfig = (
   groupMapping,
   level = "workspace",
@@ -1023,6 +1055,11 @@ export const uiOktaLogin = (email, password) => {
   cy.log("Okta login completed");
 };
 
+/**
+ * @tjType   sso.toggle
+ * @tjBlock  onboarding
+ * @tjUsage  toggleSsoViaUI('Google')
+ */
 export const toggleSsoViaUI = (
   provider,
   settingsUrl = "settings/instance-login"
@@ -1083,6 +1120,8 @@ export const gitHubSignInWithAssertion = (
 /**
  * Deletes a single test user by email from the database
  * @param {string} email - The email of the user to delete
+ * @tjBlock  onboarding
+ * @tjUsage  cleanupTestUser(TEST_USER_EMAIL)
  */
 export const cleanupTestUser = (email) => {
   cy.runSqlQueryOnDB(

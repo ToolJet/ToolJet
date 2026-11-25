@@ -5,6 +5,10 @@ const licenseKeys = {
   expired: Cypress.env("expiredLicenseKey"),
 };
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.apiLogin(data.email)
+ */
 Cypress.Commands.add(
   "apiLogin",
   (
@@ -35,6 +39,10 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.apiLogout()
+ */
 Cypress.Commands.add("apiLogout", (cachedHeader = false) => {
   cy.getAuthHeaders(cachedHeader).then((headers) => {
     cy.request(
@@ -50,6 +58,11 @@ Cypress.Commands.add("apiLogout", (cachedHeader = false) => {
   });
 });
 
+/**
+ * @tjType   environments.get
+ * @tjBlock  shared
+ * @tjUsage  cy.apiGetEnvironments()
+ */
 Cypress.Commands.add("apiGetEnvironments", () => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -63,6 +76,11 @@ Cypress.Commands.add("apiGetEnvironments", () => {
   });
 });
 
+/**
+ * @tjType   workspace.create
+ * @tjBlock  shared
+ * @tjUsage  cy.apiCreateWorkspace(wsName, wsSlug)
+ */
 Cypress.Commands.add(
   "apiCreateWorkspace",
   (workspaceName, workspaceSlug, cacheHeaders = false) => {
@@ -91,6 +109,10 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.apiUserInvite(name, email)
+ */
 Cypress.Commands.add(
   "apiUserInvite",
   (userName, userEmail, userRole = "end-user", metaData = {}, groups = []) => {
@@ -126,6 +148,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   workspaceConstant.create
+ * @tjBlock  shared
+ * @tjUsage  cy.apiCreateWorkspaceConstant("db_name", "persons", ["Secret"], [dsEnv])
+ */
 Cypress.Commands.add(
   "apiCreateWorkspaceConstant",
   (constantName, value, types = [], environmentNames = []) => {
@@ -156,6 +183,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   wsConstant.update
+ * @tjBlock  shared
+ * @tjUsage  cy.apiUpdateWsConstant(data.secretId, "prod-secret", "production")
+ */
 Cypress.Commands.add("apiUpdateWsConstant", (id, updateValue, envName) => {
   cy.apiGetEnvironments().then((environments) => {
     const environment = environments.find((env) => env.name === envName);
@@ -178,6 +210,11 @@ Cypress.Commands.add("apiUpdateWsConstant", (id, updateValue, envName) => {
   });
 });
 
+/**
+ * @tjType   groupId.get
+ * @tjBlock  shared
+ * @tjUsage  cy.apiGetGroupId(data.g1)
+ */
 Cypress.Commands.add("apiGetGroupId", (groupName) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -198,6 +235,11 @@ Cypress.Commands.add("apiGetGroupId", (groupName) => {
   });
 });
 
+/**
+ * @tjType   datasourceIds.get
+ * @tjBlock  workspace
+ * @tjUsage  cy.apiGetDatasourceIds([dataSourceName])
+ */
 Cypress.Commands.add("apiGetDatasourceIds", (datasourceNames) => {
   const namesArray = Array.isArray(datasourceNames)
     ? datasourceNames
@@ -248,6 +290,11 @@ Cypress.Commands.add("apiGetUserDetails", (options = {}) => {
   });
 });
 
+/**
+ * @tjType   userRole.update
+ * @tjBlock  shared
+ * @tjUsage  cy.apiUpdateUserRole(data.email, "builder")
+ */
 Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
   return cy.apiGetUserDetails().then((response) => {
     const userId = response.body.users.find((u) => u.email === email).user_id;
@@ -269,6 +316,11 @@ Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
   });
 });
 
+/**
+ * @tjType   superAdmin.update
+ * @tjBlock  licensing
+ * @tjUsage  cy.apiUpdateSuperAdmin(userId1)
+ */
 Cypress.Commands.add("apiUpdateSuperAdmin", (userId, userType = "instance") => {
   if (!userId) {
     throw new Error("userId is required to update user type");
@@ -296,6 +348,11 @@ Cypress.Commands.add("apiUpdateSuperAdmin", (userId, userType = "instance") => {
   });
 });
 
+/**
+ * @tjType   granularPermission.create
+ * @tjBlock  shared
+ * @tjUsage  cy.apiCreateGranularPermission(groupName, `${groupName} perm`, "module", permissions, [moduleId], false)
+ */
 Cypress.Commands.add(
   "apiCreateGranularPermission",
   (
@@ -485,6 +542,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   granularPermission.delete
+ * @tjBlock  shared
+ * @tjUsage  cy.apiDeleteGranularPermission('builder')
+ */
 Cypress.Commands.add(
   "apiDeleteGranularPermission",
   (groupName, typesToDelete = []) => {
@@ -536,6 +598,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   allApps.delete
+ * @tjBlock  shared
+ * @tjUsage  cy.apiDeleteAllApps()
+ */
 Cypress.Commands.add("apiDeleteAllApps", () => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -559,6 +626,8 @@ Cypress.Commands.add("apiDeleteAllApps", () => {
 /**
  * @tjCmd   api · delete every workflow in the workspace via the REST API, mirroring apiDeleteAllApps
  * @tjUsage cy.apiDeleteAllWorkflows()
+ * @tjType   allWorkflows.delete
+ * @tjBlock  licensing
  */
 Cypress.Commands.add("apiDeleteAllWorkflows", () => {
   cy.getAuthHeaders().then((headers) => {
@@ -580,6 +649,11 @@ Cypress.Commands.add("apiDeleteAllWorkflows", () => {
   });
 });
 
+/**
+ * @tjType   ssoConfig.update
+ * @tjBlock  onboarding
+ * @tjUsage  cy.apiUpdateSSOConfig(config)
+ */
 Cypress.Commands.add(
   "apiUpdateSSOConfig",
   (ssoConfig, level = "workspace", cachedHeaders = false) => {
@@ -604,6 +678,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   ssoConfigId.get
+ * @tjBlock  onboarding
+ * @tjUsage  cy.getSsoConfigId("openid")
+ */
 Cypress.Commands.add(
   "getSsoConfigId",
   (ssoType, workspaceSlug = "my-workspace") => {
@@ -696,6 +775,10 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjBlock  onboarding
+ * @tjUsage  cy.oidcLogin(params)
+ */
 Cypress.Commands.add(
   "oidcLogin",
   ({
@@ -774,6 +857,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   profile.update
+ * @tjBlock  shared
+ * @tjUsage  cy.apiUpdateProfile({ firstName: "The", lastName: "Developer", })
+ */
 Cypress.Commands.add("apiUpdateProfile", ({ firstName, lastName }) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request({
@@ -799,6 +887,11 @@ Cypress.Commands.add("apiUpdateProfile", ({ firstName, lastName }) => {
   });
 });
 
+/**
+ * @tjType   allowSignUp.update
+ * @tjBlock  shared
+ * @tjUsage  cy.apiUpdateAllowSignUp(true, "organization")
+ */
 Cypress.Commands.add(
   "apiUpdateAllowSignUp",
   (state, scope = "instance", returnCached = false) => {
@@ -812,6 +905,11 @@ Cypress.Commands.add(
     });
   },
 );
+/**
+ * @tjType   autoSso.update
+ * @tjBlock  workspace
+ * @tjUsage  cy.apiUpdateAutoSSO(false, "organization")
+ */
 Cypress.Commands.add(
   "apiUpdateAutoSSO",
   (state, scope = "instance", returnCached = false) => {
@@ -826,6 +924,10 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.apiFullUserOnboarding(data.user1, data.email1)
+ */
 Cypress.Commands.add(
   "apiFullUserOnboarding",
   (
@@ -928,6 +1030,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   byGoogle.login
+ * @tjBlock  onboarding
+ * @tjUsage  cy.apiLoginByGoogle('')
+ */
 Cypress.Commands.add(
   "apiLoginByGoogle",
   (defaultid = "/688f4b68-8c3b-41b2-aecb-1c1e9a112de1", state = "") => {
@@ -963,6 +1070,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   folder.create
+ * @tjBlock  gitSync
+ * @tjUsage  cy.apiCreateFolder(folderName)
+ */
 Cypress.Commands.add(
   "apiCreateFolder",
   (folderName, folderType = "front-end") => {
@@ -999,6 +1111,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   groupPermission.update
+ * @tjBlock  shared
+ * @tjUsage  cy.apiUpdateGroupPermission(groupName, { appCreate: true })
+ */
 Cypress.Commands.add(
   "apiUpdateGroupPermission",
   (groupName, permissionPayload) => {
@@ -1036,6 +1153,10 @@ const defaultEnvPermissionBody = {
   resourcesToDelete: [],
 };
 
+/**
+ * @tjType   environmentPermission.update
+ * @tjBlock  access
+ */
 Cypress.Commands.add(
   "apiUpdateEnvironmentPermission",
   (groupName, bodyOverrides = {}, permissionName = "Apps") => {
@@ -1084,6 +1205,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   authHeaders.get
+ * @tjBlock  shared
+ * @tjUsage  cy.getAuthHeaders()
+ */
 Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
   let headers = {};
   if (returnCached) {
@@ -1100,6 +1226,10 @@ Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
   }
 });
 
+/**
+ * @tjType   userIdByEmail.get
+ * @tjBlock  workspace
+ */
 Cypress.Commands.add("getUserIdByEmail", (email, idType = "organization") => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1121,6 +1251,10 @@ Cypress.Commands.add("getUserIdByEmail", (email, idType = "organization") => {
   });
 });
 
+/**
+ * @tjBlock  cloud
+ * @tjUsage  cy.apiBulkUploadUsers(generateBulkUsersCSV(50, "end-user", "cloudeu"))
+ */
 Cypress.Commands.add(
   "apiBulkUploadUsers",
   (csvContent, fileName = "users_upload.csv") => {
@@ -1144,6 +1278,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   license.update
+ * @tjBlock  shared
+ * @tjUsage  cy.apiUpdateLicense(type)
+ */
 Cypress.Commands.add("apiUpdateLicense", (keyType = "valid") => {
   const licenseKey = Cypress.env("license_keys")[keyType];
 
@@ -1166,6 +1305,11 @@ Cypress.Commands.add("apiUpdateLicense", (keyType = "valid") => {
   });
 });
 
+/**
+ * @tjType   workspace.archive
+ * @tjBlock  shared
+ * @tjUsage  cy.apiArchiveWorkspace(workspaceId)
+ */
 Cypress.Commands.add("apiArchiveWorkspace", (workspaceId) => {
   if (!workspaceId) {
     throw new Error("Workspace ID is required to archive workspace");
@@ -1189,6 +1333,10 @@ Cypress.Commands.add("apiArchiveWorkspace", (workspaceId) => {
       });
   });
 });
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.apiConfigureSmtp(smtpConfig)
+ */
 Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
   return cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -1219,6 +1367,11 @@ Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
   });
 });
 
+/**
+ * @tjType   workspaceIDs.get
+ * @tjBlock  gitSync
+ * @tjUsage  cy.apiGetWorkspaceIDs()
+ */
 Cypress.Commands.add(
   "apiGetWorkspaceIDs",
   (parameters = "?status=active", cacheHeaders = false) => {
@@ -1244,6 +1397,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   whiteLabeling.update
+ * @tjBlock  shared
+ * @tjUsage  cy.apiUpdateWhiteLabeling(whiteLabelConfig)
+ */
 Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig, organizationId = Cypress.env("workspaceId")) => {
   const scope = Cypress.env("environment") === "Cloud" ? `/${organizationId}` : "";
   return cy.getAuthHeaders().then((headers) => {
@@ -1266,6 +1424,11 @@ Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig, organizationId
   });
 });
 
+/**
+ * @tjType   allWorkspaces.delete
+ * @tjBlock  shared
+ * @tjUsage  cy.apiDeleteAllWorkspaces()
+ */
 Cypress.Commands.add("apiDeleteAllWorkspaces", () => {
   cy.apiGetWorkspaceIDs().then((ids) => {
     ids.forEach((org) => {
@@ -1289,6 +1452,11 @@ Cypress.Commands.add("apiGetDefaultWorkspace", () => {
   });
 });
 
+/**
+ * @tjType   llmKey.update
+ * @tjBlock  shared
+ * @tjUsage  cy.apiUpdateLLMKey("", type, true)
+ */
 Cypress.Commands.add(
   "apiUpdateLLMKey",
   (
@@ -1325,6 +1493,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   allModules.delete
+ * @tjBlock  externalApi
+ * @tjUsage  cy.apiDeleteAllModules()
+ */
 Cypress.Commands.add("apiDeleteAllModules", () => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -1495,23 +1668,47 @@ const removeAppIdFromFolder = (appId, folderId) =>
     }),
   );
 
+/**
+ * @tjType   appFolder.create
+ * @tjBlock  access
+ * @tjUsage  cy.apiCreateAppFolder(name)
+ */
 Cypress.Commands.add("apiCreateAppFolder", (folderName) =>
   createFolderOfType(folderName, "front-end"),
 );
 
+/**
+ * @tjType   appFolderId.get
+ * @tjBlock  access
+ * @tjUsage  cy.apiGetAppFolderId(`beta ${testId}`)
+ */
 Cypress.Commands.add("apiGetAppFolderId", (folderName) =>
   getFolderIdOfType(folderName, "front-end"),
 );
 
 // Argument order is (folderId, appId) — the signature this command has always had, kept so existing gitSync callers are unaffected by the move from gitSyncAppCommands.js.
+/**
+ * @tjType   appToFolder.add
+ * @tjBlock  shared
+ * @tjUsage  cy.apiAddAppToFolder(folderId, appId)
+ */
 Cypress.Commands.add("apiAddAppToFolder", (folderId, appId) =>
   addAppIdToFolder(appId, folderId),
 );
 
+/**
+ * @tjType   app.remove
+ * @tjBlock  access
+ * @tjUsage  cy.apiRemoveAppFromFolder(appIds.removed, folder.id)
+ */
 Cypress.Commands.add("apiRemoveAppFromFolder", (appId, folderId) =>
   removeAppIdFromFolder(appId, folderId),
 );
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.apiBulkAddAppsToFolder(dest.id, bulkIds)
+ */
 Cypress.Commands.add("apiBulkAddAppsToFolder", (folderId, appIds = []) =>
   cy.getAuthHeaders().then((headers) =>
     cy
@@ -1556,6 +1753,11 @@ const dataSourceFolderUrl = (path, branchId) => {
     : url;
 };
 
+/**
+ * @tjType   dataSourceFolder.create
+ * @tjBlock  workspace
+ * @tjUsage  cy.apiCreateDataSourceFolder(beta)
+ */
 Cypress.Commands.add("apiCreateDataSourceFolder", (folderName) => {
   return cy.apiCreateFolder(folderName, "data_source");
 });
@@ -1582,6 +1784,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   dataSourceFolderId.get
+ * @tjBlock  workspace
+ * @tjUsage  cy.apiGetDataSourceFolderId(folderName)
+ */
 Cypress.Commands.add("apiGetDataSourceFolderId", (folderName) => {
   return cy.apiGetDataSourceFolders().then((folders) => {
     const folder = folders.find((f) => f.name === folderName);
@@ -1591,6 +1798,11 @@ Cypress.Commands.add("apiGetDataSourceFolderId", (folderName) => {
   });
 });
 
+/**
+ * @tjType   dataSourceIds.get
+ * @tjBlock  workspace
+ * @tjUsage  cy.apiGetDataSourceIdsInFolder(folderId)
+ */
 Cypress.Commands.add("apiGetDataSourceIdsInFolder", (folderId) => {
   return cy.apiGetDataSourceFolders().then((folders) => {
     const folder = folders.find((f) => f.id === folderId);
@@ -1598,6 +1810,11 @@ Cypress.Commands.add("apiGetDataSourceIdsInFolder", (folderId) => {
   });
 });
 
+/**
+ * @tjType   dataSourceToFolder.add
+ * @tjBlock  workspace
+ * @tjUsage  cy.apiAddDataSourceToFolder(id, folderId)
+ */
 Cypress.Commands.add(
   "apiAddDataSourceToFolder",
   (dataSourceId, folderId, { branchId = null, failOnStatusCode = false } = {}) => {
@@ -1632,6 +1849,11 @@ Cypress.Commands.add(
 );
 
 // PUT, not DELETE — removes one data source from a folder on this branch.
+/**
+ * @tjType   dataSource.remove
+ * @tjBlock  workspace
+ * @tjUsage  cy.apiRemoveDataSourceFromFolder(id, folderId)
+ */
 Cypress.Commands.add(
   "apiRemoveDataSourceFromFolder",
   (dataSourceId, folderId, { branchId = null, failOnStatusCode = false } = {}) => {
@@ -1648,6 +1870,11 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjType   globalDataSource.create
+ * @tjBlock  workspace
+ * @tjUsage  cy.apiCreateGlobalDataSource(one)
+ */
 Cypress.Commands.add("apiCreateGlobalDataSource", (dataSourceName) => {
   cy.apiCreateDataSource(
     `${Cypress.env("server_host")}/api/data-sources`,
@@ -1661,6 +1888,11 @@ Cypress.Commands.add("apiCreateGlobalDataSource", (dataSourceName) => {
   return cy.then(() => Cypress.env(`${dataSourceName}-dataSource-id`));
 });
 
+/**
+ * @tjType   user.remove
+ * @tjBlock  shared
+ * @tjUsage  cy.apiRemoveUserFromGroup(id, email)
+ */
 Cypress.Commands.add("apiRemoveUserFromGroup", (groupId, email) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy

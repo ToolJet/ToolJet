@@ -21,6 +21,11 @@ export const contantsNameValidation = (
   cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
 };
 
+/**
+ * @tjType   andVerifyConstants.add
+ * @tjBlock  shared
+ * @tjUsage  addAndVerifyConstants("rest_api_url_global", "http://130.131.160.149:4000")
+ */
 export const addAndVerifyConstants = (name, value, type = "global") => {
   switchToConstantTab(type);
   cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
@@ -56,6 +61,11 @@ export const existingNameValidation = (
     );
 };
 
+/**
+ * @tjType   constantForm.verify
+ * @tjBlock  shared
+ * @tjUsage  verifyConstantFormUI()
+ */
 export const verifyConstantFormUI = () => {
   cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
   const verificationItems = [
@@ -99,10 +109,20 @@ export const verifyConstantFormUI = () => {
 };
 
 // Function to switch to a specific constant tab (Global or Secrets)
+/**
+ * @tjType   toConstantTab.switch
+ * @tjBlock  shared
+ * @tjUsage  switchToConstantTab("Secrets")
+ */
 export const switchToConstantTab = (constantType) => {
   cy.get(`[data-cy="${constantType.toLowerCase()}-constants-button"]`).click();
 };
 
+/**
+ * @tjType   constantValueVisibility.verify
+ * @tjBlock  shared
+ * @tjUsage  verifyConstantValueVisibility('[value="{{constants.headerValue}}"]', "key=value")
+ */
 export const verifyConstantValueVisibility = (constSelector, constValue) => {
   cy.get(constSelector).click();
   cy.get(dataSourceSelector.editorVariablePreview).should(
@@ -111,6 +131,11 @@ export const verifyConstantValueVisibility = (constSelector, constValue) => {
   );
 };
 
+/**
+ * @tjType   search.verify
+ * @tjBlock  shared
+ * @tjUsage  verifySearch({ envName: "Development" })
+ */
 export const verifySearch = (data) => {
   addAndVerifyConstants("secretconst", "secretvalue", "Secrets");
 
@@ -164,6 +189,11 @@ export const verifySearch = (data) => {
   deleteConstant("secretconst", "Secrets");
 };
 
+/**
+ * @tjType   constantsFormInputValidation.verify
+ * @tjBlock  shared
+ * @tjUsage  VerifyConstantsFormInputValidation()
+ */
 export const VerifyConstantsFormInputValidation = () => {
   const selectorMap = {
     name: {
@@ -215,6 +245,9 @@ export const VerifyConstantsFormInputValidation = () => {
   cy.get(commonSelectors.cancelButton).click();
 };
 
+/**
+ * @tjBlock  shared
+ */
 export const constantsCRUDAndValidations = (data) => {
   cy.get('[data-cy="home-page-icon"]').click();
   cy.wait(500);
@@ -364,6 +397,11 @@ export const selectEnv = (envName) => {
   });
 };
 
+/**
+ * @tjType   andUpdateConstant.create
+ * @tjBlock  shared
+ * @tjUsage  createAndUpdateConstant("gconst", "149", ["Global"], ["development", "staging", "production"])
+ */
 export const createAndUpdateConstant = (
   name,
   value,
@@ -378,6 +416,11 @@ export const createAndUpdateConstant = (
     });
   });
 
+/**
+ * @tjType   inputValues.verify
+ * @tjBlock  shared
+ * @tjUsage  verifyInputValues(3, 6, "Production environment testing")
+ */
 export const verifyInputValues = (
   start,
   end,
@@ -392,6 +435,11 @@ export const verifyInputValues = (
   }
 };
 
+/**
+ * @tjType   constantsApp.import
+ * @tjBlock  shared
+ * @tjUsage  importConstantsApp("cypress/fixtures/templates/workspace_constants.json")
+ */
 export const importConstantsApp = (filePath, app = true) => {
   cy.get(importSelectors.dropDownMenu)
     .should("be.visible")
@@ -418,6 +466,11 @@ export const importConstantsApp = (filePath, app = true) => {
   }
 };
 
+/**
+ * @tjType   secretConstantNotResolved.verify
+ * @tjBlock  shared
+ * @tjUsage  verifySecretConstantNotResolved("textinput2")
+ */
 export const verifySecretConstantNotResolved = (inputWidget) => {
   cy.openComponentSidebar();
   cy.get(`[data-cy="${inputWidget}-input"]`)
@@ -425,6 +478,10 @@ export const verifySecretConstantNotResolved = (inputWidget) => {
     .click();
 };
 
+/**
+ * @tjType   globalConst.verify
+ * @tjBlock  shared
+ */
 export const verifyGlobalConstInStaticQuery = (selector, expected) => {
   cy.get(selector).click();
   cy.get(".rest-api-methods-select-element-container .codehinter-container")
@@ -434,6 +491,11 @@ export const verifyGlobalConstInStaticQuery = (selector, expected) => {
   cy.get(".text-secondary").should("have.text", expected);
 };
 
+/**
+ * @tjType   staticQueryPreview.verify
+ * @tjBlock  shared
+ * @tjUsage  verifyStaticQueryPreview('[data-cy="list-query-constants_runjs"]', "customHeader")
+ */
 export const verifyStaticQueryPreview = (selector, expected) => {
   cy.get(selector).click();
   cy.get(dataSourceSelector.queryPreviewButton).click();
@@ -443,6 +505,11 @@ export const verifyStaticQueryPreview = (selector, expected) => {
   );
 };
 
+/**
+ * @tjType   secret.verify
+ * @tjBlock  shared
+ * @tjUsage  verifySecretInStaticQueryRaw('[data-cy="list-query-secret_runjs"]')
+ */
 export const verifySecretInStaticQueryRaw = (selector) => {
   cy.get(selector).click();
   cy.get(dataSourceSelector.queryPreviewButton).click();
@@ -452,6 +519,10 @@ export const verifySecretInStaticQueryRaw = (selector) => {
   );
 };
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  previewAppAndVerify(3, 6, "Development environment testing")
+ */
 export const previewAppAndVerify = (start, end, expectedValue) => {
   cy.openInCurrentTab(commonWidgetSelector.previewButton);
   cy.wait(3000);
@@ -468,6 +539,11 @@ export const previewAppAndVerify = (start, end, expectedValue) => {
   cy.wait(2000);
 };
 
+/**
+ * @tjType   envAndVerify.promote
+ * @tjBlock  shared
+ * @tjUsage  promoteEnvAndVerify("development", "staging", 3, 16, "Staging environment testing")
+ */
 export const promoteEnvAndVerify = (
   fromEnv,
   toEnv,
@@ -486,6 +562,9 @@ export const promoteEnvAndVerify = (
   previewAppAndVerify(start, end, expectedValue);
 };
 
+/**
+ * @tjBlock  shared
+ */
 export const assertTooltipText = (selector, expected) => {
   cy.get(selector).closest("td").trigger("mouseover");
   cy.get(".tooltip-inner")

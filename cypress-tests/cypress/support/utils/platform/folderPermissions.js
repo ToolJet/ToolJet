@@ -53,13 +53,32 @@ export const TIERS = {
   viewItems: { canEditFolder: false, canEditApps: false, canViewApps: true },
 };
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  phase('Edit folder: cascades Edit apps')
+ */
 export const phase = (title) => cy.log(`**— ${title} —**`);
 
 // apiLogin() without a workspace id lands in the admin's default workspace, so every admin switch pins the test workspace.
+/**
+ * @tjType   asAdmin.login
+ * @tjBlock  shared
+ * @tjUsage  loginAsAdmin()
+ */
 export const loginAsAdmin = () => cy.then(() => cy.apiLogin(undefined, undefined, Cypress.env('workspaceId')));
 
+/**
+ * @tjType   as.login
+ * @tjBlock  shared
+ * @tjUsage  loginAs(email)
+ */
 export const loginAs = (email) => cy.apiLogin(email, 'password');
 
+/**
+ * @tjType   folder.create
+ * @tjBlock  shared
+ * @tjUsage  apiCreateFolder(R, destName)
+ */
 export const apiCreateFolder = (resource, folderName) => {
   if (resource.key === 'workflow') return cy.apiCreateWorkflowFolder(folderName);
   if (resource.key === 'module') return cy.apiCreateModuleFolder(folderName);
@@ -72,28 +91,53 @@ export const apiGetFolderId = (resource, folderName) => {
   return cy.apiGetAppFolderId(folderName);
 };
 
+/**
+ * @tjType   item.create
+ * @tjBlock  shared
+ * @tjUsage  apiCreateItem(R, name)
+ */
 export const apiCreateItem = (resource, itemName) => {
   if (resource.key === 'workflow') return cy.apiCreateWorkflow(itemName).then(() => Cypress.env('workflowId'));
   if (resource.key === 'module') return cy.apiCreateModule(itemName).then((module) => module.id);
   return cy.apiCreateApp(itemName).then(() => Cypress.env('appId'));
 };
 
+/**
+ * @tjType   itemToFolder.add
+ * @tjBlock  shared
+ * @tjUsage  apiAddItemToFolder(R, id, folder.id)
+ */
 export const apiAddItemToFolder = (resource, itemId, folderId) => {
   if (resource.key === 'workflow') return cy.apiAddWorkflowToFolder(itemId, folderId);
   if (resource.key === 'module') return cy.apiAddModuleToFolder(itemId, folderId);
   return cy.apiAddAppToFolder(folderId, itemId);
 };
 
+/**
+ * @tjType   item.remove
+ * @tjBlock  shared
+ * @tjUsage  apiRemoveItemFromFolder(R, ids.removed, folder.id)
+ */
 export const apiRemoveItemFromFolder = (resource, itemId, folderId) => {
   if (resource.key === 'workflow') return cy.apiRemoveWorkflowFromFolder(itemId, folderId);
   if (resource.key === 'module') return cy.apiRemoveModuleFromFolder(itemId, folderId);
   return cy.apiRemoveAppFromFolder(itemId, folderId);
 };
 
+/**
+ * @tjType   folderTier.grant
+ * @tjBlock  shared
+ * @tjUsage  apiGrantFolderTier(R, ctx.groupName, `${ctx.groupName} perm`, tier, [ctx.folderId])
+ */
 export const apiGrantFolderTier = (resource, groupName, name, tier, folderIds, isAll = false) =>
   cy.apiCreateGranularPermission(groupName, name, resource.granularType, tier, folderIds, isAll);
 
 // "Create draft version" only renders once a saved version exists.
+/**
+ * @tjType   v1.publish
+ * @tjBlock  shared
+ * @tjUsage  apiPublishV1(id)
+ */
 export const apiPublishV1 = (itemId) =>
   cy.apiGetEditingVersionId(itemId).then((versionId) => {
     Cypress.env('appId', itemId);
@@ -101,6 +145,11 @@ export const apiPublishV1 = (itemId) =>
     cy.apiPublishDraftVersion('v1');
   });
 
+/**
+ * @tjType   itemIds.get
+ * @tjBlock  shared
+ * @tjUsage  apiGetItemIdsInFolder(folderId)
+ */
 export const apiGetItemIdsInFolder = (folderId, folderType = RESOURCES.app.folderType) =>
   cy.getAuthHeaders().then((headers) =>
     cy
@@ -116,6 +165,11 @@ export const apiGetItemIdsInFolder = (folderId, folderType = RESOURCES.app.folde
       })
   );
 
+/**
+ * @tjType   granularPermissions.get
+ * @tjBlock  shared
+ * @tjUsage  apiGetGranularPermissions(copyId)
+ */
 export const apiGetGranularPermissions = (groupId) =>
   cy.getAuthHeaders().then((headers) =>
     cy
@@ -138,35 +192,75 @@ const openDashboard = (path) => {
   cy.get(dashboardSelector.folderLabel, { timeout: 50000 }).should('be.visible');
 };
 
+/**
+ * @tjType   list.open
+ * @tjBlock  shared
+ * @tjUsage  openList(R)
+ */
 export const openList = (resource) => openDashboard(resource.listPath);
 
+/**
+ * @tjType   appsDashboard.open
+ * @tjBlock  access
+ * @tjUsage  openAppsDashboard()
+ */
 export const openAppsDashboard = () => openList(RESOURCES.app);
 
 export const openWorkflowsList = () => openList(RESOURCES.workflow);
 
+/**
+ * @tjType   folder.open
+ * @tjBlock  shared
+ * @tjUsage  openFolder(renamed)
+ */
 export const openFolder = (folderName) => {
   cy.intercept('GET', '/api/apps*').as('folderContents');
   cy.get(dashboardSelector.folderName(folderName)).click();
   cy.wait('@folderContents');
 };
 
+/**
+ * @tjType   all.open
+ * @tjBlock  shared
+ * @tjUsage  openAll(R)
+ */
 export const openAll = (resource) => {
   cy.intercept('GET', '/api/apps*').as('allItems');
   cy.get(resource.allLink).click({ force: true });
   cy.wait('@allItems');
 };
 
+/**
+ * @tjType   allApps.open
+ * @tjBlock  access
+ * @tjUsage  openAllApps()
+ */
 export const openAllApps = () => openAll(RESOURCES.app);
 
+/**
+ * @tjType   folderListed.expect
+ * @tjBlock  shared
+ * @tjUsage  expectFolderListed(folderName)
+ */
 export const expectFolderListed = (folderName, listed = true) =>
   cy.get(commonSelectors.folderListcard(folderName)).should(listed ? 'exist' : 'not.exist');
 
 // Asserts the folder is listed and has no menu, so it can never pass vacuously.
+/**
+ * @tjType   folderMenuAbsent.expect
+ * @tjBlock  shared
+ * @tjUsage  expectFolderMenuAbsent(folderName)
+ */
 export const expectFolderMenuAbsent = (folderName) => {
   expectFolderListed(folderName);
   cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
 };
 
+/**
+ * @tjType   folderMenuOptions.expect
+ * @tjBlock  shared
+ * @tjUsage  expectFolderMenuOptions(folderName, { rename: true, remove: false })
+ */
 export const expectFolderMenuOptions = (folderName, { rename, remove }) => {
   viewFolderCardOptions(folderName);
   cy.get(commonSelectors.editFolderOption(folderName)).should(rename ? 'exist' : 'not.exist');
@@ -174,6 +268,11 @@ export const expectFolderMenuOptions = (folderName, { rename, remove }) => {
   cy.get('body').type('{esc}');
 };
 
+/**
+ * @tjType   folder.create
+ * @tjBlock  shared
+ * @tjUsage  uiCreateFolder(folderName)
+ */
 export const uiCreateFolder = (folderName) => {
   cy.intercept('POST', '/api/folders').as('createFolder');
   cy.get(commonSelectors.createNewFolderButton).click();
@@ -184,6 +283,11 @@ export const uiCreateFolder = (folderName) => {
   expectFolderListed(folderName);
 };
 
+/**
+ * @tjType   folder.rename
+ * @tjBlock  shared
+ * @tjUsage  uiRenameFolder(folderName, renamed)
+ */
 export const uiRenameFolder = (folderName, newName) => {
   viewFolderCardOptions(folderName);
   cy.get(commonSelectors.editFolderOption(folderName)).click();
@@ -194,6 +298,11 @@ export const uiRenameFolder = (folderName, newName) => {
   expectFolderListed(folderName, false);
 };
 
+/**
+ * @tjType   folder.delete
+ * @tjBlock  shared
+ * @tjUsage  uiDeleteFolder(folderName)
+ */
 export const uiDeleteFolder = (folderName) => {
   cy.intercept('DELETE', '/api/folders/*').as('folderDeleted');
   viewFolderCardOptions(folderName);
@@ -204,6 +313,10 @@ export const uiDeleteFolder = (folderName) => {
   expectFolderListed(folderName, false);
 };
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  stubCardIntersection()
+ */
 export const stubCardIntersection = () => {
   cy.on('window:before:load', (win) => {
     win.IntersectionObserver = class {
@@ -237,17 +350,31 @@ const openItemCardMenu = (itemName) => {
   open(5);
 };
 
+/**
+ * @tjType   addToFolder.open
+ * @tjBlock  shared
+ * @tjUsage  uiOpenAddToFolder(appName)
+ */
 export const uiOpenAddToFolder = (itemName) => {
   openItemCardMenu(itemName);
   cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).click();
   cy.get(commonSelectors.modalComponent).should('be.visible');
 };
 
+/**
+ * @tjType   folder.pick
+ * @tjBlock  shared
+ * @tjUsage  uiPickFolder(folderName)
+ */
 export const uiPickFolder = (folderName) => {
   cy.get(dashboardSelector.selectFolder).click();
   cy.get(commonSelectors.folderList).contains(folderName).click();
 };
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  uiSubmitAddToFolder(folderName)
+ */
 export const uiSubmitAddToFolder = (folderName) => {
   cy.intercept('POST', '/api/folder-apps*').as('addToFolder');
   cy.get(dashboardSelector.addToFolderButton).click();
@@ -255,6 +382,11 @@ export const uiSubmitAddToFolder = (folderName) => {
   cy.verifyToastMessage(commonSelectors.toastMessage, dashboardText.bulkMoveSuccessToast(folderName), false);
 };
 
+/**
+ * @tjType   itemToFolder.add
+ * @tjBlock  shared
+ * @tjUsage  uiAddItemToFolder(looseName, renamed)
+ */
 export const uiAddItemToFolder = (itemName, folderName) => {
   uiOpenAddToFolder(itemName);
   uiPickFolder(folderName);
@@ -262,6 +394,11 @@ export const uiAddItemToFolder = (itemName, folderName) => {
 };
 
 // Must be called from inside the folder the item sits in.
+/**
+ * @tjType   item.remove
+ * @tjBlock  shared
+ * @tjUsage  uiRemoveItemFromFolder(looseName)
+ */
 export const uiRemoveItemFromFolder = (itemName) => {
   cy.intercept('PUT', '/api/folder-apps/*').as('removeFromFolder');
   openItemCardMenu(itemName);
@@ -272,8 +409,18 @@ export const uiRemoveItemFromFolder = (itemName) => {
 };
 
 // The apps multi-select is shared by every resource and stays open after a pick, so clicking it again closes it.
+/**
+ * @tjType   itemsPicker.toggle
+ * @tjBlock  shared
+ * @tjUsage  toggleItemsPicker()
+ */
 export const toggleItemsPicker = () => cy.get(dashboardSelector.bulkMoveAppsSelect).click();
 
+/**
+ * @tjType   item.pick
+ * @tjBlock  shared
+ * @tjUsage  pickItem(names[1])
+ */
 export const pickItem = (itemName) => cy.contains(dashboardSelector.bulkMoveAppOption, itemName).click();
 
 // The editor and the restricted redirect are both decided after a chain of boot calls, so each open waits on a readiness signal.
@@ -283,6 +430,10 @@ const visitEditor = (workspaceSlug, resourceId) =>
   cy.visit(`/${workspaceSlug}/apps/${resourceId}`, { failOnStatusCode: false });
 
 // Parallel app and module-list fetches can return a 403 for the app, so the list waits.
+/**
+ * @tjBlock  workspace
+ * @tjUsage  holdModuleListUntilAppLoads(Cypress.env('appId'))
+ */
 export const holdModuleListUntilAppLoads = (appId) => {
   let appAnswered;
   const appLoaded = new Promise((resolve) => (appAnswered = resolve));
@@ -293,6 +444,11 @@ export const holdModuleListUntilAppLoads = (appId) => {
 };
 
 // Apps and modules: the version switcher is empty until versions load.
+/**
+ * @tjType   appEditor.open
+ * @tjBlock  shared
+ * @tjUsage  openAppEditor(wsSlug, id)
+ */
 export const openAppEditor = (workspaceSlug, appId) => {
   holdModuleListUntilAppLoads(appId);
   visitEditor(workspaceSlug, appId);
@@ -303,6 +459,11 @@ export const openAppEditor = (workspaceSlug, appId) => {
 };
 
 // Workflows have no version switcher; the canvas start node is the readiness signal.
+/**
+ * @tjType   workflowEditor.open
+ * @tjBlock  shared
+ * @tjUsage  openWorkflowEditor(wsSlug, id)
+ */
 export const openWorkflowEditor = (workspaceSlug, workflowId) => {
   visitEditor(workspaceSlug, workflowId);
   cy.get(workflowSelector.startNode, { timeout: EDITOR_BOOT_TIMEOUT }).should('be.visible');
@@ -311,6 +472,11 @@ export const openWorkflowEditor = (workspaceSlug, workflowId) => {
 export const openItemEditor = (resource, workspaceSlug, itemId) =>
   resource.key === 'workflow' ? openWorkflowEditor(workspaceSlug, itemId) : openAppEditor(workspaceSlug, itemId);
 
+/**
+ * @tjType   draftVersion.create
+ * @tjBlock  shared
+ * @tjUsage  uiCreateDraftVersion('v2-after-move')
+ */
 export const uiCreateDraftVersion = (versionName) => {
   cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
   cy.get(commonSelectors.buttonSelector('create draft version')).click();
@@ -319,11 +485,21 @@ export const uiCreateDraftVersion = (versionName) => {
   cy.get(versionSwitcherSelectors.versionSwitcherButton).should('contain.text', versionName);
 };
 
+/**
+ * @tjType   moduleEditor.open
+ * @tjBlock  modules
+ * @tjUsage  openModuleEditorExpectingReadOnly(wsSlug, id)
+ */
 export const openModuleEditorExpectingReadOnly = (workspaceSlug, moduleId) => {
   openAppEditor(workspaceSlug, moduleId);
   cy.contains('Module is locked. You do not have permissions to edit this module.', { timeout: 30000 }).should('be.visible');
 };
 
+/**
+ * @tjType   editor.open
+ * @tjBlock  shared
+ * @tjUsage  openEditorExpectingRestricted(wsSlug, id)
+ */
 export const openEditorExpectingRestricted = (workspaceSlug, resourceId) => {
   visitEditor(workspaceSlug, resourceId);
   cy.url({ timeout: EDITOR_BOOT_TIMEOUT }).should('include', '/error/restricted');

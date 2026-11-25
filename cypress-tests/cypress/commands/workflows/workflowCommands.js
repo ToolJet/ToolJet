@@ -12,6 +12,10 @@ Cypress.Commands.add("createWorkflowApp", (workflowName) => {
   cy.get(workflowSelector.createWorkFlowsButton).click();
 });
 
+/**
+ * @tjBlock  workflows
+ * @tjUsage  cy.connectDataSourceNode(dataSourceName)
+ */
 Cypress.Commands.add("connectDataSourceNode", (nodeType) => {
   cy.get(workflowSelector.startNodeHandleRight).trigger("mousedown", {
     button: 0,
@@ -28,6 +32,11 @@ Cypress.Commands.add("connectDataSourceNode", (nodeType) => {
     .click({ force: true });
 });
 
+/**
+ * @tjType   text.verify
+ * @tjBlock  workflows
+ * @tjUsage  cy.verifyTextInResponseOutput(workflowsText.longStringJsonText)
+ */
 Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
   cy.get(workflowSelector.workflowRunButton).should("not.be.disabled");
   cy.get(workflowSelector.workflowRunButton).click();
@@ -38,6 +47,11 @@ Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
   cy.verifyResponseNodeOutput(expectedText);
 });
 
+/**
+ * @tjType   responseNodeOutput.verify
+ * @tjBlock  workflows
+ * @tjUsage  cy.verifyResponseNodeOutput("122")
+ */
 Cypress.Commands.add("verifyResponseNodeOutput", (expectedText) => {
   cy.get('[data-cy="response1-node-name"]').click();
   cy.wait(500);
@@ -80,6 +94,10 @@ Cypress.Commands.add("verifyResponseNodeOutput", (expectedText) => {
   });
 });
 
+/**
+ * @tjBlock  workflows
+ * @tjUsage  cy.connectNodeToResponseNode(workflowsText.runjs, workflowsText.responseNodeQuery)
+ */
 Cypress.Commands.add(
   "connectNodeToResponseNode",
   (nodeTitle, returnStatement) => {
@@ -143,6 +161,11 @@ Cypress.Commands.add("deleteWorkflowfromDashboard", (workflowName) => {
   cy.wait("@appDeleted");
 });
 
+/**
+ * @tjType   workflowApp.export
+ * @tjBlock  workflows
+ * @tjUsage  cy.exportWorkflowApp(workflowName)
+ */
 Cypress.Commands.add(
   "exportWorkflowApp",
   (workflowName, fixtureFile = "cypress/fixtures/exportedApp.json") => {
@@ -169,6 +192,11 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjType   workflow.add
+ * @tjBlock  workflows
+ * @tjUsage  cy.addWorkflowInApp(data.workflowName)
+ */
 Cypress.Commands.add("addWorkflowInApp", (workflowName) => {
   cy.get(workflowSelector.showDSPopoverButton).click();
   cy.get(workflowSelector.workflowDataSourceOption).click();

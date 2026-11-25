@@ -23,6 +23,10 @@ const assertCloudTarget = () => {
   }
 };
 
+/**
+ * @tjBlock  cloud
+ * @tjUsage  cy.apiCloudSignup({ email, name: fake.firstName })
+ */
 Cypress.Commands.add(
   "apiCloudSignup",
   ({ email, password = "password", name = "Cloud Admin" }) => {
@@ -61,6 +65,11 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjType   licenseAccess.get
+ * @tjBlock  cloud
+ * @tjUsage  cy.apiGetLicenseAccess(teamId)
+ */
 Cypress.Commands.add(
   "apiGetLicenseAccess",
   (workspaceId = Cypress.env("workspaceId")) => {
@@ -80,6 +89,10 @@ Cypress.Commands.add(
 const currentPlanOf = (access) =>
   access.licenseStatus?.licenseType === "trial" ? "trial" : access.plan;
 
+/**
+ * @tjBlock  cloud
+ * @tjUsage  cy.waitForCloudPlan("basic", secondId)
+ */
 Cypress.Commands.add(
   "waitForCloudPlan",
   (expectedPlan, workspaceId = Cypress.env("workspaceId"), attempts = 15) => {
@@ -97,6 +110,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjBlock  cloud
+ * @tjUsage  cy.apiSetCloudPlan(plan, { workspaceId })
+ */
 Cypress.Commands.add(
   "apiSetCloudPlan",
   (
@@ -153,6 +170,11 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjType   cloudLicenseRow.get
+ * @tjBlock  cloud
+ * @tjUsage  cy.apiGetCloudLicenseRow(workspaceId)
+ */
 Cypress.Commands.add(
   "apiGetCloudLicenseRow",
   (workspaceId = Cypress.env("workspaceId")) => {
@@ -164,6 +186,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjBlock  cloud
+ * @tjUsage  cy.apiSetAiCreditWallets({ workspaceId, recurring: 500, topup: 0 })
+ */
 Cypress.Commands.add(
   "apiSetAiCreditWallets",
   ({ workspaceId = Cypress.env("workspaceId"), recurring, topup, renewalDays = 30 } = {}) => {
@@ -190,6 +216,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjBlock  cloud
+ * @tjUsage  cy.setAiGatewayBalance(0, workspaceId)
+ */
 Cypress.Commands.add(
   "setAiGatewayBalance",
   (balance, workspaceId = Cypress.env("workspaceId")) => {
@@ -197,6 +227,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjBlock  cloud
+ * @tjUsage  cy.apiSeedCustomDomain({ workspaceId, domain, status: "active" })
+ */
 Cypress.Commands.add(
   "apiSeedCustomDomain",
   ({ workspaceId = Cypress.env("workspaceId"), domain, status = "pending_verification" }) => {

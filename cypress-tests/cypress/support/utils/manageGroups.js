@@ -11,6 +11,11 @@ import {
 import { groupsText } from "Texts/platform/manageGroups";
 import { enterPasswordAndAcceptInvite } from "Support/utils/onboarding";
 
+/**
+ * @tjType   group.create
+ * @tjBlock  shared
+ * @tjUsage  apiCreateGroup(group1)
+ */
 export const apiCreateGroup = (groupName, cachedHeaders = false) => {
   return cy.getAuthHeaders(cachedHeaders).then((headers) => {
     return cy
@@ -29,6 +34,11 @@ export const apiCreateGroup = (groupName, cachedHeaders = false) => {
   });
 };
 
+/**
+ * @tjType   group.delete
+ * @tjBlock  shared
+ * @tjUsage  apiDeleteGroup(groupName2)
+ */
 export const apiDeleteGroup = (groupName, cachedHeaders = false) => {
   cy.apiGetGroupId(groupName).then((groupId) => {
     cy.getAuthHeaders(cachedHeaders).then((headers) => {
@@ -110,6 +120,11 @@ export const groupPermission = (
   });
 };
 
+/**
+ * @tjType   role.update
+ * @tjBlock  access
+ * @tjUsage  updateRole(from, to, data.email, message)
+ */
 export const updateRole = (user, role, email, message = null) => {
   cy.get(groupsSelector.groupLink(user)).click();
   cy.get(groupsSelector.usersLink).click();
@@ -135,6 +150,11 @@ export const updateRole = (user, role, email, message = null) => {
   cy.get(`[data-cy="${email}-user-row"]`).should("exist");
 };
 
+/**
+ * @tjType   groupsAndAddUser.create
+ * @tjBlock  access
+ * @tjUsage  createGroupsAndAddUserInGroup(group, data.email)
+ */
 export const createGroupsAndAddUserInGroup = (groupName, email) => {
   cy.get(groupsSelector.createNewGroupButton).click();
   cy.clearAndType(groupsSelector.groupNameInput, groupName);
@@ -146,6 +166,11 @@ export const createGroupsAndAddUserInGroup = (groupName, email) => {
   addUserInGroup(groupName, email);
 };
 
+/**
+ * @tjType   user.add
+ * @tjBlock  access
+ * @tjUsage  addUserInGroup(data.g3, data.builder.email)
+ */
 export const addUserInGroup = (groupName, email) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.clearAndType(groupsSelector.multiSelectSearchInput, email);
@@ -158,6 +183,10 @@ export const addUserInGroup = (groupName, email) => {
   );
 };
 
+/**
+ * @tjBlock  access
+ * @tjUsage  inviteUserBasedOnRole(data.firstName, data.email, startRole)
+ */
 export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   fillUserInviteForm(firstName, email);
 
@@ -173,6 +202,10 @@ export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   cy.get(commonSelectors.dashboardIcon).click();
 };
 
+/**
+ * @tjBlock  access
+ * @tjUsage  setupWorkspaceAndInviteUser(data.workspaceName, data.workspaceSlug, data.firstName, data.email)
+ */
 export const setupWorkspaceAndInviteUser = (
   workspaceName,
   workspaceSlug,
@@ -192,6 +225,11 @@ export const setupWorkspaceAndInviteUser = (
   cy.wait(2000);
 };
 
+/**
+ * @tjType   userPrivileges.verify
+ * @tjBlock  access
+ * @tjUsage  verifyUserPrivileges(buttonEnabled ? "be.enabled" : "not.exist", to, hasSettings)
+ */
 export const verifyUserPrivileges = (
   expectedButtonState,
   userRole = "End-user",
@@ -210,6 +248,10 @@ export const verifyUserPrivileges = (
   }
 };
 
+/**
+ * @tjBlock  access
+ * @tjUsage  setupAndUpdateRole(from, to, data.email)
+ */
 export const setupAndUpdateRole = (currentRole, endRole, email) => {
   navigateToManageGroups();
   updateRole(currentRole, endRole, email);
@@ -217,6 +259,10 @@ export const setupAndUpdateRole = (currentRole, endRole, email) => {
   cy.apiLogout();
 };
 
+/**
+ * @tjType   userRole.verify
+ * @tjBlock  onboarding
+ */
 export const verifyUserRole = (userIdAlias, expectedRole, expectedGroups) => {
   cy.get(userIdAlias).then((userId) => {
     getUser(userId).then((response) => {
@@ -230,6 +276,11 @@ export const verifyUserRole = (userIdAlias, expectedRole, expectedGroups) => {
   });
 };
 
+/**
+ * @tjType   userToGroup.add
+ * @tjBlock  shared
+ * @tjUsage  apiAddUserToGroup(id, email)
+ */
 export const apiAddUserToGroup = (groupId, email) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy.apiGetUserDetails(email).then((response) => {

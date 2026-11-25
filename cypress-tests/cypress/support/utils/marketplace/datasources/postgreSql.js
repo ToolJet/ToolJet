@@ -42,6 +42,11 @@ export const addQueryOnGui = (queryName, query) => {
     `Query (${queryName}) completed.`
   );
 };
+/**
+ * @tjType   andAddDataSource.select
+ * @tjBlock  shared
+ * @tjUsage  selectAndAddDataSource("databases", harperDbText.harperDb, data.dataSourceName)
+ */
 export const selectAndAddDataSource = (
   dscategory,
   dataSource,
@@ -111,6 +116,10 @@ export const fillConnectionForm = (data, toggle = "") => {
   }).should("have.text", postgreSqlText.labelConnectionVerified);
 };
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  fillDataSourceTextField(harperDbText.portLabel, harperDbText.portPlaceholder, Cypress.env("harperdb_port"))
+ */
 export const fillDataSourceTextField = (
   fieldName,
   placeholder,

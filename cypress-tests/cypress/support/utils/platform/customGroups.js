@@ -3,6 +3,11 @@ import { commonEeSelectors } from "Selectors/platform/eeCommon";
 import { groupsSelector } from "Selectors/platform/manageGroups";
 import { groupsText } from "Texts/platform/manageGroups";
 
+/**
+ * @tjType   group.create
+ * @tjBlock  access
+ * @tjUsage  createGroupViaUI(groupName)
+ */
 export const createGroupViaUI = (groupName) => {
   cy.get(groupsSelector.createNewGroupButton).click();
   cy.get(groupsSelector.addNewGroupModalTitle).verifyVisibleElement(
@@ -17,12 +22,22 @@ export const createGroupViaUI = (groupName) => {
   );
 };
 
+/**
+ * @tjType   groupCreated.verify
+ * @tjBlock  access
+ * @tjUsage  verifyGroupCreatedInSidebar(groupName)
+ */
 export const verifyGroupCreatedInSidebar = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName))
     .should("be.visible")
     .and("contain.text", groupName);
 };
 
+/**
+ * @tjType   group.rename
+ * @tjBlock  access
+ * @tjUsage  renameGroupViaUI(groupName, newGroupname)
+ */
 export const renameGroupViaUI = (oldName, newName) => {
   cy.get(groupsSelector.groupLink(oldName)).click();
   cy.get(groupsSelector.groupNameUpdateLink).should("be.visible").click();
@@ -34,6 +49,11 @@ export const renameGroupViaUI = (oldName, newName) => {
   );
 };
 
+/**
+ * @tjType   group.delete
+ * @tjBlock  access
+ * @tjUsage  deleteGroupViaUI(newGroupname)
+ */
 export const deleteGroupViaUI = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.get(groupsSelector.groupLink(groupName)).realHover();
@@ -46,10 +66,20 @@ export const deleteGroupViaUI = (groupName) => {
   cy.get(commonSelectors.buttonSelector("Yes")).click();
 };
 
+/**
+ * @tjType   groupRemoved.verify
+ * @tjBlock  access
+ * @tjUsage  verifyGroupRemovedFromSidebar(newGroupname)
+ */
 export const verifyGroupRemovedFromSidebar = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName)).should("not.exist");
 };
 
+/**
+ * @tjType   granularPermission.add
+ * @tjBlock  access
+ * @tjUsage  addGranularPermissionViaUI(workflowPermissionName, { resourceType: "workflow", permission: "build", scope: "all", })
+ */
 export const addGranularPermissionViaUI = (permissionName, options = {}) => {
     const {
         resourceType = "app",
@@ -125,6 +155,11 @@ export const addGranularPermissionViaUI = (permissionName, options = {}) => {
   cy.get(groupsSelector.confimButton).click();
 };
 
+/**
+ * @tjType   betweenAllAndCustom.switch
+ * @tjBlock  access
+ * @tjUsage  switchBetweenAllAndCustom("all")
+ */
 export const switchBetweenAllAndCustom = (targetScope) => {
   if (targetScope === "all") {
     cy.get(groupsSelector.allAppsRadio).check();
@@ -138,6 +173,11 @@ export const switchBetweenAllAndCustom = (targetScope) => {
   }
 };
 
+/**
+ * @tjType   groupThreeDotMenu.open
+ * @tjBlock  shared
+ * @tjUsage  openGroupThreeDotMenu(groupName)
+ */
 export const openGroupThreeDotMenu = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.get(groupsSelector.groupLink(groupName)).realHover();
@@ -146,6 +186,11 @@ export const openGroupThreeDotMenu = (groupName) => {
   });
 };
 
+/**
+ * @tjType   duplicateModal.verify
+ * @tjBlock  access
+ * @tjUsage  verifyDuplicateModal(groupName)
+ */
 export const verifyDuplicateModal = (originalGroupName) => {
   cy.get('[data-cy="modal-title"]')
     .should("be.visible")

@@ -15,6 +15,10 @@ const API_ENDPOINT =
     ? "/api/library_apps"
     : "/api/library_apps";
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.appUILogin(data.email, "password")
+ */
 Cypress.Commands.add(
   "appUILogin",
   (
@@ -33,6 +37,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.clearAndType(ssoEeSelector.portInput, "10389")
+ */
 Cypress.Commands.add("clearAndType", (selector, text) => {
   cy.waitForElement(selector)
     .scrollIntoView()
@@ -42,6 +50,11 @@ Cypress.Commands.add("clearAndType", (selector, text) => {
     .type(`{selectall}{backspace}${text}`);
 });
 
+/**
+ * @tjType   toastMessage.verify
+ * @tjBlock  shared
+ * @tjUsage  cy.verifyToastMessage(commonSelectors.toastMessage, serverMessage)
+ */
 Cypress.Commands.add(
   "verifyToastMessage",
   (selector, message, closeAction = true, timeout = 15000) => {
@@ -72,11 +85,19 @@ Cypress.Commands.add(
       .and(assertion, value, ...arg);
   }
 );
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.scrollToElement(field)
+ */
 Cypress.Commands.add("scrollToElement", (selector) => {
   cy.get(selector).scrollIntoView()
     .should("be.visible");
 });
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.openInCurrentTab(commonWidgetSelector.previewButton)
+ */
 Cypress.Commands.add("openInCurrentTab", (selector) => {
   cy.get(selector).parent().invoke("removeAttr", "target").click({ force: true });
 });
@@ -85,6 +106,10 @@ Cypress.Commands.add("closeToastMessage", () => {
   cy.get(`${commonSelectors.toastCloseButton}:eq(0)`).click();
 });
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.notVisible(whiteLabelSelectors.poweredByBanner)
+ */
 Cypress.Commands.add("notVisible", (dataCy) => { //Should be removed later
   cy.get("body").then(($body) => {
     if ($body.find(dataCy).length > 0) {
@@ -98,6 +123,10 @@ Cypress.Commands.add("notVisible", (dataCy) => { //Should be removed later
   });
 });
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.defaultWorkspaceLogin()
+ */
 Cypress.Commands.add("defaultWorkspaceLogin", (workspaceName = 'my-workspace') => {
   cy.apiLogin("dev@tooljet.io", "password").then(() => {
     cy.visit(`/${workspaceName}`);
@@ -116,6 +145,11 @@ Cypress.Commands.add("defaultWorkspaceLogin", (workspaceName = 'my-workspace') =
 
 });
 
+/**
+ * @tjType   slug.visit
+ * @tjBlock  shared
+ * @tjUsage  cy.visitSlug({ actualUrl: getAppUrl(data.slug) })
+ */
 Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
   cy.visit(actualUrl);
   cy.wait(2000);
@@ -128,6 +162,10 @@ Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
   });
 });
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.backToApps()
+ */
 Cypress.Commands.add("backToApps", () => {
   cy.get(commonSelectors.editorPageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
@@ -162,6 +200,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.skipWalkthrough()
+ */
 Cypress.Commands.add("skipWalkthrough", () => {
   cy.window({ log: false }).then((win) => {
     win.localStorage.setItem("walkthroughCompleted", "true");
@@ -176,6 +218,10 @@ Cypress.Commands.add("appPrivacy", (appName, isPublic) => {
   });
 });
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.intercept('POST', '/api/folders')
+ */
 Cypress.Commands.overwrite( //update required if using
   "intercept",
   (originalFn, ...args) => {
@@ -197,6 +243,11 @@ Cypress.Commands.overwrite( //update required if using
 
 
 
+/**
+ * @tjType   element.verify
+ * @tjBlock  shared
+ * @tjUsage  cy.verifyElement(groupsSelector.adminListItem, "Admin")
+ */
 Cypress.Commands.add("verifyElement", (selector, text, eqValue) => {
   const element =
     eqValue !== undefined ? cy.get(selector).eq(eqValue) : cy.get(selector);
@@ -213,6 +264,10 @@ Cypress.Commands.add("getAppId", (appName) => {
   });
 });
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.ifEnv("Enterprise", () => { enableInstanceSignup(); })
+ */
 Cypress.Commands.add("ifEnv", (expectedEnvs, callback) => {
   const actualEnv = Cypress.env("environment");
   const envArray = Array.isArray(expectedEnvs) ? expectedEnvs : [expectedEnvs];
@@ -222,6 +277,10 @@ Cypress.Commands.add("ifEnv", (expectedEnvs, callback) => {
   }
 });
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.runSqlQueryOnDB(`UPDATE users SET trial_claimed_at = NULL WHERE id = '${signup.userId}';`)
+ */
 Cypress.Commands.add("runSqlQueryOnDB", (query, db = Cypress.env("app_db")) => {
   return cy.task("dbConnection", {
     dbconfig: db,
@@ -229,6 +288,11 @@ Cypress.Commands.add("runSqlQueryOnDB", (query, db = Cypress.env("app_db")) => {
   });
 });
 
+/**
+ * @tjType   workflow.open
+ * @tjBlock  shared
+ * @tjUsage  cy.openWorkflow()
+ */
 Cypress.Commands.add(
   "openWorkflow",
   (
@@ -254,6 +318,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.waitForElement(ssoEeSelector.ldapCard)
+ */
 Cypress.Commands.add("waitForElement", (selector, timeout = 50000) => {
   return cy.get(selector, { timeout: timeout, log: false })
     .should("be.visible", { timeout: timeout, log: false })

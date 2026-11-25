@@ -44,6 +44,10 @@ export const apiGetAddableAdmins = (groupId) => {
   );
 };
 
+/**
+ * @tjBlock  access
+ * @tjUsage  apiAssignGroupAdmin(g1Id, data.builder.email)
+ */
 export const apiAssignGroupAdmin = (groupId, email, { failOnStatusCode = true } = {}) => {
   return apiGetUserIdByEmail(email).then((userId) =>
     apiAssignGroupAdminById(groupId, userId, { failOnStatusCode })
@@ -70,6 +74,10 @@ export const apiAssignGroupAdminById = (groupId, userId, { failOnStatusCode = tr
 };
 
 
+/**
+ * @tjBlock  access
+ * @tjUsage  apiRevokeGroupAdmin(g3Id, data.endUser1.email)
+ */
 export const apiRevokeGroupAdmin = (groupId, email, { failOnStatusCode = true } = {}) => {
   return apiGetUserIdByEmail(email).then((userId) =>
     apiGetGroupAdmins(groupId).then((res) => {
@@ -153,6 +161,11 @@ export const apiGetVisibleGroups = () => {
 };
 
 
+/**
+ * @tjType   customGroupAdminsTab.open
+ * @tjBlock  access
+ * @tjUsage  openCustomGroupAdminsTab(data.g1)
+ */
 export const openCustomGroupAdminsTab = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.get(groupAdminSelector.groupAdminsLink).should("be.visible").click();
@@ -164,6 +177,11 @@ export const verifyGroupAdminsTabHidden = (groupName) => {
   cy.get(groupAdminSelector.groupAdminsLink).should("not.exist");
 };
 
+/**
+ * @tjType   groupAdminTabOrder.verify
+ * @tjBlock  access
+ * @tjUsage  verifyGroupAdminTabOrder()
+ */
 export const verifyGroupAdminTabOrder = () => {
   cy.get(".nav-item.nav-link").then(($tabs) => {
     const order = [...$tabs].map((t) => t.getAttribute("data-cy"));
@@ -176,6 +194,11 @@ export const verifyGroupAdminTabOrder = () => {
   });
 };
 
+/**
+ * @tjType   groupAdminEmptyState.verify
+ * @tjBlock  access
+ * @tjUsage  verifyGroupAdminEmptyState()
+ */
 export const verifyGroupAdminEmptyState = () => {
   cy.get(groupAdminSelector.adminEmptyPageIcon).should("be.visible");
   cy.get(groupAdminSelector.adminEmptyPageTitle).verifyVisibleElement(
@@ -189,6 +212,10 @@ export const verifyGroupAdminEmptyState = () => {
 };
 
 
+/**
+ * @tjBlock  access
+ * @tjUsage  assignGroupAdminViaUI(data.g1, data.builder.email)
+ */
 export const assignGroupAdminViaUI = (groupName, email) => {
   openCustomGroupAdminsTab(groupName);
   cy.get(groupAdminSelector.adminMultiSelectInput).clear().type(email);
@@ -202,10 +229,19 @@ export const assignGroupAdminViaUI = (groupName, email) => {
   cy.verifyToastMessage(commonSelectors.toastMessage, groupAdminText.assignedToast);
 };
 
+/**
+ * @tjType   admin.verify
+ * @tjBlock  access
+ * @tjUsage  verifyAdminInGroupAdminsList(data.builder.email)
+ */
 export const verifyAdminInGroupAdminsList = (email) => {
   cy.get(groupAdminSelector.adminUserRow(email)).should("exist");
 };
 
+/**
+ * @tjBlock  access
+ * @tjUsage  revokeGroupAdminViaUI(data.g1, data.endUser1.email)
+ */
 export const revokeGroupAdminViaUI = (groupName, email) => {
   openCustomGroupAdminsTab(groupName);
   cy.get(groupAdminSelector.adminUserRow(email))
@@ -215,6 +251,11 @@ export const revokeGroupAdminViaUI = (groupName, email) => {
   cy.get(groupAdminSelector.adminUserRow(email)).should("not.exist");
 };
 
+/**
+ * @tjType   userAssignable.verify
+ * @tjBlock  access
+ * @tjUsage  verifyUserAssignable(data.builder.email)
+ */
 export const verifyUserAssignable = (email) => {
   cy.get(groupAdminSelector.adminMultiSelectInput).clear().type(email);
   cy.wait(1000);
@@ -224,6 +265,11 @@ export const verifyUserAssignable = (email) => {
   cy.get(groupAdminSelector.adminMultiSelectInput).clear();
 };
 
+/**
+ * @tjType   userNotAssignable.verify
+ * @tjBlock  access
+ * @tjUsage  verifyUserNotAssignable(invited.email)
+ */
 export const verifyUserNotAssignable = (email) => {
   cy.get(groupAdminSelector.adminMultiSelectInput).clear().type(email);
   cy.wait(1000);
@@ -234,6 +280,11 @@ export const verifyUserNotAssignable = (email) => {
 };
 
 
+/**
+ * @tjType   groupAdminCannotManageAdmins.verify
+ * @tjBlock  access
+ * @tjUsage  verifyGroupAdminCannotManageAdmins(data.g1)
+ */
 export const verifyGroupAdminCannotManageAdmins = (groupName) => {
   openCustomGroupAdminsTab(groupName);
   cy.get(groupAdminSelector.adminMultiSelectSearch).should("not.exist");
@@ -242,6 +293,11 @@ export const verifyGroupAdminCannotManageAdmins = (groupName) => {
 };
 
 
+/**
+ * @tjType   memberExpectRoleChangeModal.add
+ * @tjBlock  access
+ * @tjUsage  addMemberExpectRoleChangeModal(data.g3, data.endUser2.email, { adminLine: true })
+ */
 export const addMemberExpectRoleChangeModal = (groupName, email, { adminLine = false } = {}) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.clearAndType(groupsSelector.multiSelectSearchInput, email);
@@ -259,6 +315,10 @@ export const addMemberExpectRoleChangeModal = (groupName, email, { adminLine = f
 };
 
 
+/**
+ * @tjBlock  access
+ * @tjUsage  assignMultipleGroupAdminsViaUI(data.g3, [data.endUser2.email, data.builder.email])
+ */
 export const assignMultipleGroupAdminsViaUI = (groupName, emails) => {
   openCustomGroupAdminsTab(groupName);
   emails.forEach((email) => {
@@ -277,6 +337,11 @@ export const assignMultipleGroupAdminsViaUI = (groupName, emails) => {
   );
 };
 
+/**
+ * @tjType   groupMember.remove
+ * @tjBlock  access
+ * @tjUsage  removeGroupMemberViaUI(data.g1, data.endUser1.email)
+ */
 export const removeGroupMemberViaUI = (groupName, email) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.get(groupsSelector.usersLink).click();
@@ -287,12 +352,22 @@ export const removeGroupMemberViaUI = (groupName, email) => {
   cy.get(groupsSelector.userRow(email)).should("not.exist");
 };
 
+/**
+ * @tjType   member.verify
+ * @tjBlock  access
+ * @tjUsage  verifyMemberInGroupUI(data.g1, data.endUser1.email, true)
+ */
 export const verifyMemberInGroupUI = (groupName, email, shouldExist = true) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.get(groupsSelector.usersLink).click();
   cy.get(groupsSelector.userRow(email)).should(shouldExist ? "exist" : "not.exist");
 };
 
+/**
+ * @tjType   groupAdminUsersTabHasNoRoleControls.verify
+ * @tjBlock  access
+ * @tjUsage  verifyGroupAdminUsersTabHasNoRoleControls(data.g1, data.endUser2.email)
+ */
 export const verifyGroupAdminUsersTabHasNoRoleControls = (groupName, email) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.get(groupsSelector.usersLink).click();
@@ -301,6 +376,11 @@ export const verifyGroupAdminUsersTabHasNoRoleControls = (groupName, email) => {
   cy.get(groupsSelector.changeRoleModalHeader).should("not.exist");
 };
 
+/**
+ * @tjType   groupAdminHasNoGroupCrudControls.verify
+ * @tjBlock  access
+ * @tjUsage  verifyGroupAdminHasNoGroupCrudControls(data.g1)
+ */
 export const verifyGroupAdminHasNoGroupCrudControls = (groupName) => {
   cy.get(groupsSelector.createNewGroupButton).should("not.exist");
 
@@ -310,6 +390,11 @@ export const verifyGroupAdminHasNoGroupCrudControls = (groupName) => {
   cy.get(groupsSelector.groupOptionIcon(groupName)).should("not.exist");
 };
 
+/**
+ * @tjType   groupAdminPermissionTabsReadOnly.verify
+ * @tjBlock  access
+ * @tjUsage  verifyGroupAdminPermissionTabsReadOnly(data.g1)
+ */
 export const verifyGroupAdminPermissionTabsReadOnly = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.get(groupAdminSelector.permissionsLink).should("be.visible");
@@ -331,6 +416,11 @@ const verifyPermissionCheckboxesDisabled = () => {
   });
 };
 
+/**
+ * @tjType   builderGaDefaultGroupsReadOnly.verify
+ * @tjBlock  access
+ * @tjUsage  verifyBuilderGADefaultGroupsReadOnly()
+ */
 export const verifyBuilderGADefaultGroupsReadOnly = () => {
   cy.get(groupAdminSelector.userRoleSectionTitle).should("be.visible");
   ["Admin", "Builder", "End-user"].forEach((defaultGroup) =>
@@ -342,6 +432,11 @@ export const verifyBuilderGADefaultGroupsReadOnly = () => {
   verifyPermissionCheckboxesDisabled();
 };
 
+/**
+ * @tjType   endUserGaSettingsNavScope.verify
+ * @tjBlock  access
+ * @tjUsage  verifyEndUserGASettingsNavScope()
+ */
 export const verifyEndUserGASettingsNavScope = () => {
   cy.get(commonSelectors.manageGroupsOption).should("be.visible");
   cy.get(commonSelectors.manageUsersOption).should("not.exist");
@@ -349,6 +444,11 @@ export const verifyEndUserGASettingsNavScope = () => {
   cy.get(commonSelectors.themesOption).should("not.exist");
 };
 
+/**
+ * @tjType   restrictedSettingsPagesRedirect.verify
+ * @tjBlock  access
+ * @tjUsage  verifyRestrictedSettingsPagesRedirect(data.workspaceSlug)
+ */
 export const verifyRestrictedSettingsPagesRedirect = (workspaceSlug) => {
   const restricted = [
     "users",
@@ -365,6 +465,11 @@ export const verifyRestrictedSettingsPagesRedirect = (workspaceSlug) => {
 };
 
 
+/**
+ * @tjType   noBuilderCapabilities.verify
+ * @tjBlock  access
+ * @tjUsage  verifyNoBuilderCapabilities(data.workspaceSlug)
+ */
 export const verifyNoBuilderCapabilities = (workspaceSlug) => {
   cy.visit(workspaceSlug);
   cy.wait(2000);
@@ -374,6 +479,10 @@ export const verifyNoBuilderCapabilities = (workspaceSlug) => {
 };
 
 
+/**
+ * @tjBlock  access
+ * @tjUsage  duplicateGroupWithAdminsViaUI(data.g1)
+ */
 export const duplicateGroupWithAdminsViaUI = (groupName) => {
   openGroupThreeDotMenu(groupName);
   cy.get(groupsSelector.duplicateOption).click();
@@ -382,6 +491,11 @@ export const duplicateGroupWithAdminsViaUI = (groupName) => {
   cy.verifyToastMessage(commonSelectors.toastMessage, groupAdminText.duplicatedToast);
 };
 
+/**
+ * @tjType   usersTableGroupAdminColumn.verify
+ * @tjBlock  access
+ * @tjUsage  verifyUsersTableGroupAdminColumn(data.workspaceSlug, data.endUser1.name, data.g1, true)
+ */
 export const verifyUsersTableGroupAdminColumn = (
   workspaceSlug,
   userName,
