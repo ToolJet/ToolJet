@@ -80,15 +80,25 @@ export class DataQueryRepository extends Repository<DataQuery> {
         .andWhere('module_version.app_id != app.id')
         .andWhere('app.organization_id = module_app.organization_id')
         .andWhere("component.properties::jsonb -> 'moduleAppId' ->> 'value' = module_app.co_relation_id::text")
+        // A parent pinned to a version name or id runs that version. A parent set to "latest" ('' or the
+        // default-branch draft) runs the module's released version only, never a newer unreleased one.
         .andWhere(
-          `COALESCE(
-             NULLIF(component.properties::jsonb -> 'moduleVersionId' ->> 'versionName', ''),
-             COALESCE(component.properties::jsonb -> 'moduleVersionId' ->> 'value', '')
-           ) IN (
-             '', '__default_branch_draft__',
-             module_version.module_reference_id::text,
-             module_version.name,
-             data_query.app_version_id::text
+          `(
+             COALESCE(
+               NULLIF(component.properties::jsonb -> 'moduleVersionId' ->> 'versionName', ''),
+               COALESCE(component.properties::jsonb -> 'moduleVersionId' ->> 'value', '')
+             ) IN (
+               module_version.module_reference_id::text,
+               module_version.name,
+               data_query.app_version_id::text
+             )
+             OR (
+               COALESCE(
+                 NULLIF(component.properties::jsonb -> 'moduleVersionId' ->> 'versionName', ''),
+                 COALESCE(component.properties::jsonb -> 'moduleVersionId' ->> 'value', '')
+               ) IN ('', '__default_branch_draft__')
+               AND data_query.app_version_id = module_app.current_version_id
+             )
            )`
         )
         .limit(1)

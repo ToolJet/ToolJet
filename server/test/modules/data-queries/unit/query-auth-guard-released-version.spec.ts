@@ -90,7 +90,7 @@ describe('QueryAuthGuard — public app released-version boundary', () => {
     appRepository.findByDataQuery.mockResolvedValue(publicApp({ currentVersionId: null }));
     jwtCanActivate.mockResolvedValue(true); // valid session
 
-    await expect(guard.canActivate(contextFor({ id: 'builder-user' }))).resolves.toBe(true);
+    await expect(guard.canActivate(contextFor({ id: 'builder-user', organizationId: ORG_ID }))).resolves.toBe(true);
     expect(jwtCanActivate).toHaveBeenCalled();
   });
 });

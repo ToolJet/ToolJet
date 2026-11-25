@@ -4,6 +4,11 @@ import { AppEnvironment } from '@entities/app_environments.entity';
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { redactSecretValues } from '@helpers/utils.helper';
+import {
+  collectCredentialValues,
+  maskErrorDataForViewer,
+  maskMetadataForViewer,
+} from '@helpers/query-request-metadata.helper';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { VersionRepository } from '@modules/versions/repository';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
@@ -145,6 +150,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         dataSourceOptions.id,
         collectedSecretValues
       );
+      collectCredentialValues(sourceOptions, collectedSecretValues);
 
       const isTooljetManagedApp = sourceOptions['oauth_type'] === 'tooljet_app';
       if (!isTooljetManagedApp) {
@@ -311,8 +317,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               environmentId,
               user,
               opts,
-              dataSourceOptions.id
+              dataSourceOptions.id,
+              collectedSecretValues
             ));
+            collectCredentialValues(sourceOptions, collectedSecretValues);
             if (sourceOptions['oauth_type'] !== 'tooljet_app') {
               sourceOptions['tj_redirect_host'] =
                 await this.dataSourceUtilService.resolveOAuthRedirectHost(organizationId);
@@ -419,6 +427,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       // Scrub resolved secrets from metadata before returning.
       result['metadata'] = redactSecretValues(result['metadata'], collectedSecretValues);
+      // An end user gets the shape of the request, not the values; the editor shows credential-free values.
+      if (mode !== 'edit') result['metadata'] = maskMetadataForViewer(result['metadata']);
 
       return result;
     } catch (queryError) {
@@ -433,6 +443,12 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       // Error metadata (e.g. restapi handleError) carries the request too — scrub it before returning.
       if (queryError && queryError.metadata) {
         queryError.metadata = redactSecretValues(queryError.metadata, collectedSecretValues);
+        if (mode !== 'edit') queryError.metadata = maskMetadataForViewer(queryError.metadata);
+      }
+      // The failed call's request object travels in `data` as well.
+      if (queryError?.data) {
+        queryError.data = redactSecretValues(queryError.data, collectedSecretValues);
+        if (mode !== 'edit') queryError.data = maskErrorDataForViewer(queryError.data);
       }
       throw queryError;
     } finally {
@@ -815,10 +831,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             // Check type of replacement and assign accordingly
             if (typeof replacement === 'string' || typeof replacement === 'number') {
               // If replacement is a string, perform the replace
-              resolvedValue = resolvedValue.replace(variable, String(replacement));
+              // A replacer function inserts the value as is; a plain string would read `$&`, `$'` and `$$` as patterns.
+              resolvedValue = resolvedValue.replace(variable, () => String(replacement));
             } else {
               // If replacement is an object or an array, assign the whole value to resolvedValue
-              resolvedValue = resolvedValue.replace(variable, JSON.stringify(replacement));
+              resolvedValue = resolvedValue.replace(variable, () => JSON.stringify(replacement));
             }
           }
           if (parent && key !== null) {

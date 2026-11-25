@@ -58,6 +58,22 @@ describe('DataQueriesUtilService', () => {
   });
 
   describe('parseQueryOptions', () => {
+    describe('a viewer value that contains replacement patterns', () => {
+      // `$&`, `$'`, `$$` and `` $` `` are special in String.replace: they copy text from around the match.
+      it.each(["$'", '$&', '$$', '$`'])('is inserted as typed: %s', async (viewerValue) => {
+        // The secret is resolved first, so it sits next to the viewer variable when the viewer value goes in.
+        (dataSourceUtilService.resolveConstants as jest.Mock).mockResolvedValue('{{components.input.value}}|SECRET');
+
+        const result = await service.parseQueryOptions(
+          { url: '{{components.input.value}}|{{secrets.token}}' },
+          { '{{components.input.value}}': viewerValue },
+          'org-id'
+        );
+
+        expect(result).toEqual({ url: `${viewerValue}|SECRET` });
+      });
+    });
+
     it('should traverse objects and arrays properly', async () => {
       const object = {
         nestedObject: {
