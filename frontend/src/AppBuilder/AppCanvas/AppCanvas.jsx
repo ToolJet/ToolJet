@@ -32,6 +32,10 @@ import { DesktopLayout } from './DesktopLayout';
 const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));
 const EditorSelecto = React.lazy(() => import('./Selecto'));
 const Grid = React.lazy(() => import('./Grid'));
+// Behind `tj-canvas-interaction` = 'v2' (interaction/flags.js): replaces Grid and EditorSelecto, so neither chunk
+// (nor react-moveable / react-selecto) is downloaded while it is on.
+const CanvasInteraction = React.lazy(() => import('./interaction/CanvasInteraction'));
+import { isCanvasInteractionV2Enabled } from './interaction/flags';
 import useCanvasMinWidth from './Hooks/useCanvasMinWidth';
 import useEnableMainCanvasScroll from './Hooks/useEnableMainCanvasScroll';
 
@@ -244,9 +248,14 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     />
   );
 
+  const canvasInteractionV2 = isCanvasInteractionV2Enabled();
   const gridContent = keepEditorLayers ? (
     <Suspense fallback={null}>
-      <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+      {canvasInteractionV2 ? (
+        <CanvasInteraction />
+      ) : (
+        <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+      )}
     </Suspense>
   ) : null;
 
@@ -398,7 +407,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             </div>
           </div>
         </div>
-        {keepEditorLayers && (
+        {keepEditorLayers && !canvasInteractionV2 && (
           <Suspense fallback={null}>
             <EditorSelecto />
           </Suspense>

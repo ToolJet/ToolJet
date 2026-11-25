@@ -146,6 +146,20 @@ export const renderedTopFor = ({ top, left, width, height = 0, id = '\uffff' }, 
   return topFromBlockers(candidate, blockersAt(sortedSiblings, candidate), tops, flowOf);
 };
 
+// Whether two widgets that share a column would change places in drawn order
+// between `before` and `after` (id → top). Widgets in different columns never
+// push each other, so their order is the builder's and is left alone.
+export const swapsWithinColumns = (boxes, before, after) => {
+  const order = (topOf, a, b) => Math.sign(topOf(a.id) - topOf(b.id) || String(a.id).localeCompare(String(b.id)));
+  for (let i = 0; i < boxes.length; i++) {
+    for (let j = i + 1; j < boxes.length; j++) {
+      const [a, b] = [boxes[i], boxes[j]];
+      if (overlapsHorizontally(a, b) && order(before, a, b) !== order(after, a, b)) return true;
+    }
+  }
+  return false;
+};
+
 // Inverse of the rule, used when the builder drops, pastes or adds a widget
 // where they can see it: the saved top whose rendered top lands closest to
 // `visibleTop`. Pushes take the maximum across blockers, so a guess of

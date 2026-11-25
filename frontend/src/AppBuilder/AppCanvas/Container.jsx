@@ -26,6 +26,7 @@ import { findNewParentIdFromMousePosition, isPointerOverCanvasArea } from './Gri
 import { computeFlexInsertIndex } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { FlexContainerDropIndicator } from '@/AppBuilder/Widgets/FlexContainer/FlexContainerDropIndicator';
 import { usesFlexLayoutV2 } from '@/AppBuilder/_helpers/flexLayoutVersion';
+import { isCanvasInteractionV2Enabled } from './interaction/flags';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const ModuleContainerBlank = lazy(() =>
@@ -71,8 +72,11 @@ const Container = React.memo(
     const currentLayout = useStore((state) => state.currentLayout, shallow);
     const isMobileMainCanvas = currentLayout === 'mobile' && id === 'canvas';
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
+    // Fixed for the page load (interaction/flags.js). v2: where a panel drag lands, and moving a child out of a
+    // container (which keeps scrolling), are the canvas engine's business, not this container's.
+    const canvasInteractionV2 = isCanvasInteractionV2Enabled();
     const isWidgetInSubContainerDragging = useStore(
-      (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
+      (state) => !canvasInteractionV2 && state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
       shallow
     );
     const isFlexContainer = componentType === 'FlexContainer';
@@ -138,14 +142,15 @@ const Container = React.memo(
           cancelAnimationFrame(flexRafRef.current);
           flexRafRef.current = null;
         }
-        deactivateMoveableGhost();
+        if (!canvasInteractionV2) deactivateMoveableGhost();
         if (isFlexContainer) {
           setFlexContainerDropTarget(null);
         }
       }
-    }, [id, isDragging, deactivateMoveableGhost, isFlexContainer, setFlexContainerDropTarget]);
+    }, [id, isDragging, deactivateMoveableGhost, isFlexContainer, setFlexContainerDropTarget, canvasInteractionV2]);
 
     useEffect(() => {
+      if (canvasInteractionV2) return;
       if (id !== 'canvas' || !isDragging || !clientOffset || !draggedItem?.component?.defaultSize) return;
 
       if (!isPointerOverCanvasArea(clientOffset.x, clientOffset.y)) return;
@@ -175,6 +180,7 @@ const Container = React.memo(
       updateGhostSize,
       gridWidth,
       setCurrentDragCanvasId,
+      canvasInteractionV2,
     ]);
 
     // Only a row after the first of a row-scoped widget is a read-only mirror (row 0 is the editable one). A canvas
@@ -188,7 +194,7 @@ const Container = React.memo(
       accept: 'box',
       canDrop: () => !isContainerReadOnly,
       hover: (item, monitor) => {
-        if (isContainerReadOnly) return;
+        if (canvasInteractionV2 || isContainerReadOnly) return;
         const clientOffset = monitor.getClientOffset();
 
         if (clientOffset) {
@@ -324,6 +330,7 @@ const Container = React.memo(
           // A moved widget's parent canvas re-renders when the drag starts (is-child-being-dragged), and
           // that className write would wipe the show-grid showGridLines added, so it is derived here too.
           'show-grid':
+            !canvasInteractionV2 &&
             (isDragging || isWidgetInSubContainerDragging) &&
             (index === 0 || index === null) &&
             currentMode === 'edit' &&
