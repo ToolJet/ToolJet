@@ -3,7 +3,8 @@ import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { appVersionService } from '@/_services';
 import { extractAndReplaceReferencesFromString } from '../ast';
-import { replaceEntityReferencesWithIds } from '../utils';
+import { getDynamicVariables, replaceEntityReferencesWithIds, resolveCode } from '../utils';
+import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import { savePageChanges } from './pageMenuSlice';
 import {
   VARIABLE_SCOPES,
@@ -61,6 +62,28 @@ export const createVariablesSlice = (set, get) => ({
     if (isExpressionValue(definition)) return get().getResolvedValue(toExpression(definition), {}, moduleId);
     const parsed = parseStaticValue(definition.value);
     return parsed.ok ? parsed.value : definition.value;
+  },
+
+  /**
+   * What the Variables panel previews: the value, or why it can't be worked out. `getResolvedValue`
+   * swallows errors, so each `{{ }}` part is run once more with errors kept, and the first one wins.
+   */
+  evaluateVariableDefinitionWithError: (definition, moduleId = 'canvas') => {
+    if (!isExpressionValue(definition)) {
+      const parsed = parseStaticValue(definition.value);
+      return parsed.ok ? { value: parsed.value, error: null } : { value: undefined, error: parsed.error };
+    }
+    const { valueWithBrackets } = extractAndReplaceReferencesFromString(
+      toExpression(definition),
+      get().modules[moduleId].componentNameIdMapping,
+      get().modules[moduleId].queryNameIdMapping
+    );
+    const exposed = get().resolvedStore.modules[moduleId].exposedValues;
+    for (const part of getDynamicVariables(valueWithBrackets) || []) {
+      const [, error] = resolveCode(removeNestedDoubleCurlyBraces(part), exposed, {}, true, []);
+      if (error) return { value: undefined, error: error?.message ?? String(error) };
+    }
+    return { value: get().evaluateVariableDefinition(definition, moduleId), error: null };
   },
 
   writeVariableDefinitionValue: (definition, value, moduleId = 'canvas') => {
@@ -176,6 +199,18 @@ export const createVariablesSlice = (set, get) => ({
       .forEach((d) => get().recomputeVariableDefinition(d.id, moduleId));
   },
 
+  /**
+   * One scope's stored definition map, keyed by definition id. Read through this before removing or
+   * replacing an entry by id: a loaded map can be keyed differently (the version-switch response
+   * camelizes keys, turning a UUID key into a different string than the definition's `id`).
+   */
+  getVariableDefinitionMap: (scope, moduleId = 'canvas') =>
+    normalizeVariableDefinitionMap(
+      scope === VARIABLE_SCOPES.APP
+        ? get().globalSettings?.variables
+        : get().modules[moduleId].pages.find((p) => p.id === get().getCurrentPageId(moduleId))?.variables
+    ),
+
   /** Writes one scope's definition map to the store, for the current page when scope is page. */
   setVariableDefinitionMap: (scope, rawMap, moduleId = 'canvas') => {
     const map = normalizeVariableDefinitionMap(rawMap);
@@ -228,11 +263,7 @@ export const createVariablesSlice = (set, get) => ({
    */
   applyVariableDefinitionState: async (scope, id, target, moduleId = 'canvas') => {
     const current = get().getVariableDefinitionById(id, moduleId);
-    const scopeMap =
-      scope === VARIABLE_SCOPES.APP
-        ? get().globalSettings?.variables
-        : get().modules[moduleId].pages.find((p) => p.id === get().getCurrentPageId(moduleId))?.variables;
-    const { [id]: _previous, ...rest } = scopeMap || {};
+    const { [id]: _previous, ...rest } = get().getVariableDefinitionMap(scope, moduleId);
     get().setVariableDefinitionMap(scope, target ? { ...rest, [id]: toStored(target) } : rest, moduleId);
 
     if (current && (!target || current.name !== target.name)) {
@@ -299,11 +330,11 @@ export const createVariablesSlice = (set, get) => ({
       ...draft,
       value: replaceEntityReferencesWithIds(draft.value, componentNameIdMapping, queryNameIdMapping),
     });
-    const scopeMap =
-      scope === VARIABLE_SCOPES.APP
-        ? get().globalSettings?.variables
-        : get().modules[moduleId].pages.find((p) => p.id === get().getCurrentPageId(moduleId))?.variables;
-    get().setVariableDefinitionMap(scope, { ...(scopeMap || {}), [stored.id]: stored }, moduleId);
+    get().setVariableDefinitionMap(
+      scope,
+      { ...get().getVariableDefinitionMap(scope, moduleId), [stored.id]: stored },
+      moduleId
+    );
 
     if (existing && existing.name !== draft.name) {
       if (scope === VARIABLE_SCOPES.PAGE) get().unsetPageVariable(existing.name, moduleId);
@@ -322,11 +353,7 @@ export const createVariablesSlice = (set, get) => ({
     const definition = get().getVariableDefinitionById(id, moduleId);
     if (!definition) return;
     const { scope } = definition;
-    const scopeMap =
-      scope === VARIABLE_SCOPES.APP
-        ? get().globalSettings?.variables
-        : get().modules[moduleId].pages.find((p) => p.id === get().getCurrentPageId(moduleId))?.variables;
-    const { [id]: _removed, ...rest } = scopeMap || {};
+    const { [id]: _removed, ...rest } = get().getVariableDefinitionMap(scope, moduleId);
     get().setVariableDefinitionMap(scope, rest, moduleId);
     get().unregisterVariableDefinitionDependencies(id, moduleId);
     if (scope === VARIABLE_SCOPES.PAGE) get().unsetPageVariable(definition.name, moduleId);

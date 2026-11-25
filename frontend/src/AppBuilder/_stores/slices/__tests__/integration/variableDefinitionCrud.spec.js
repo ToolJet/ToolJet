@@ -170,6 +170,23 @@ describe('delete', () => {
     expect('threshold' in appVars()).toBe(false);
     expect(saved).toEqual([{ type: 'global_settings', body: { globalSettings: { variables: {} } } }]);
   });
+
+  // The version-switch response camelizes keys deeply, so a loaded map can be keyed by a mangled id.
+  test('removes a loaded definition whose map key differs from its id', async () => {
+    const id = '05688c6c-efd3-4726-b6c5-bfde3a2f32c9';
+    state().setGlobalSettings({
+      ...state().globalSettings,
+      variables: { '05688c6cEfd34726B6c5Bfde3a2f32c9': { id, name: 'threshold', value: '5', fxActive: false } },
+    });
+    state().initVariableDefinitions('canvas');
+    expect(appVars().threshold).toBe(5);
+
+    await state().deleteVariableDefinition(id);
+
+    expect(state().getAppVariableDefinitions()).toEqual([]);
+    expect('threshold' in appVars()).toBe(false);
+    expect(saved).toEqual([{ type: 'global_settings', body: { globalSettings: { variables: {} } } }]);
+  });
 });
 
 describe('declared variable boundaries', () => {

@@ -10,7 +10,6 @@ import { EntityManager, MoreThan } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { VersionsCreateService } from './services/create.service';
-import { camelizeKeys } from 'humps';
 import { serializeDataQueries } from '@modules/data-queries/serialization.helper';
 import { PageService } from '@modules/apps/services/page.service';
 import { EventsService } from '@modules/apps/services/event.service';
@@ -40,6 +39,7 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Inject, Optional } from '@nestjs/common';
 import { CodeModeSourceService } from '@modules/code-mode-source/service';
 import { draftVersionName } from './helpers/draft-version-name.helper';
+import { camelizeEditingVersion } from './helpers/camelize-editing-version.helper';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -323,7 +323,7 @@ export class VersionService implements IVersionService {
 
       delete appData['editingVersion'];
 
-      const editingVersion = camelizeKeys(appCurrentEditingVersion);
+      const editingVersion = camelizeEditingVersion(appCurrentEditingVersion);
 
       // For branch-type versions, expose the human-readable branch name so
       // globals.appVersion.name resolves correctly on the frontend.
