@@ -24,13 +24,13 @@ const didRun = (queryId = 'q1') =>
 
 const skippedLogs = () => state().debugger.logs.filter((log) => log.message?.startsWith('Query skipped'));
 
-function seedPeriodicQuery(options = {}, id = 'q1') {
+function seedPeriodicQuery(options = {}, id = 'q1', kind = 'restapi') {
   seedApp({});
   state().setApp({ appId: 'app-1', appName: 'Test app', homePageId: 'page-1' });
   const query = {
     id,
     name: 'query1',
-    kind: 'restapi',
+    kind,
     options: { url: 'https://example.test', runPeriodically: true, queryRunInterval: 1000, ...options },
   };
   state().dataQuery.setQueries([query], 'canvas');
@@ -250,6 +250,24 @@ describe('run query periodically', () => {
     const thresholdWarnings = () =>
       state().debugger.logs.filter((log) => log.message?.startsWith('Pause after failures'));
 
+    test.each([
+      ['RunJS', 'runjs', 'throw new Error("boom")'],
+      ['RunPy', 'runpy', 'raise Exception("boom")'],
+    ])(
+      'a failing %s query pauses after the configured number of failures',
+      async (_, kind, code) => {
+        seedPeriodicQuery({ pauseAfterFailures: '2', code }, `q-fail-${kind}`, kind);
+
+        await waitFor(() => expect(pausedLogs()).toHaveLength(1), { timeout: 4000 });
+        expect(pausedLogs()[0]).toEqual(
+          expect.objectContaining({
+            message: 'Periodic run paused after 2 consecutive failures. Run the query to resume.',
+          })
+        );
+      },
+      10000
+    );
+
     test('a fractional threshold rounds up, with one warning', async () => {
       const runs = serveFailingRuns();
       seedPeriodicQuery({ pauseAfterFailures: '1.5' }, 'q-fail-fraction');
@@ -295,6 +313,27 @@ describe('run query periodically', () => {
       await waitFor(() => expect(runs.length).toBeGreaterThanOrEqual(3), { timeout: 4000 });
       expect(pausedLogs()).toHaveLength(0);
     }, 10000);
+
+    test.each([
+      ['0', '0', 0],
+      ['true', true, 1],
+      ['an array', [1], 1],
+    ])(
+      'a threshold of %s never pauses',
+      async (_, pauseAfterFailures, warnings) => {
+        const runs = serveFailingRuns();
+        seedPeriodicQuery({ pauseAfterFailures }, `q-fail-never-${String(pauseAfterFailures)}`);
+
+        await waitFor(() => expect(runs.length).toBeGreaterThanOrEqual(3), { timeout: 5000 });
+        expect(pausedLogs()).toHaveLength(0);
+        // 0 is the default, so it isn't warned about; an invalid value warns once that 0 is used.
+        expect(thresholdWarnings()).toHaveLength(warnings);
+        if (warnings) {
+          expect(thresholdWarnings()[0].message).toMatch(/using 0, so periodic runs will not auto-pause\.$/);
+        }
+      },
+      10000
+    );
 
     test('without a threshold, failing runs keep going', async () => {
       const runs = serveFailingRuns();

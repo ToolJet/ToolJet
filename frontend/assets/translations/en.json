@@ -198,7 +198,7 @@
             "runQueryPeriodically": "Run this query periodically",
             "timeInterval": "Time interval ( ms )",
             "pauseAfterFailures": "Pause after failures",
-            "pauseAfterFailuresPlaceholder": "Never",
+            "pauseAfterFailuresHelp": "Leave 0 or empty to never pause",
             "runInInactiveTabs": "Keep running when the browser tab is inactive",
             "successMessage": "Success Message",
             "queryRanSuccessfully": "Query ran successfully",

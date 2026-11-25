@@ -1366,11 +1366,12 @@ export const createQueryPanelSlice = (set, get) => ({
       try {
         pyodide = await loadPyodide();
       } catch (errorMessage) {
+        // Same shape as a Python error below. Nesting it under `data` made RunPy queries and Python
+        // transformations treat a Pyodide load failure as a successful run.
         return {
-          data: {
-            status: 'failed',
-            message: errorMessage,
-          },
+          status: 'failed',
+          message: errorMessage,
+          description: errorMessage,
         };
       }
       const log = (line) => console.log({ line });

@@ -166,12 +166,15 @@ const IDLE_RECHECK_MS = 250;
 // Last invalid `pauseAfterFailures` value warned about per query, so each bad value warns once.
 const warnedFailureThresholds = new Map();
 
-// `pauseAfterFailures` as a whole number of failures, or null for "never pause". Positive
-// fractions round up (2.5 → pause after the 3rd failure); anything else set warns once.
+// `pauseAfterFailures` as a whole number of failures, or null for "never pause". The default is 0:
+// empty, unset and 0 all mean never pause. Positive fractions round up (2.5 → pause after the 3rd
+// failure). Any other value is invalid and falls back to 0, with one warning per bad value.
 function resolveFailureThreshold(query, moduleId, store) {
   const raw = store.getResolvedValue(query.options?.pauseAfterFailures, {}, moduleId);
-  const num = Number(raw);
-  if (raw === undefined || raw === null || raw === '' || num === 0) return null;
+  if (raw === undefined || raw === null || (typeof raw === 'string' && raw.trim() === '')) return null;
+  // Only numbers and numeric strings count: Number() would turn true and [1] into 1.
+  const num = typeof raw === 'number' || typeof raw === 'string' ? Number(raw) : NaN;
+  if (num === 0) return null;
   const threshold = Number.isFinite(num) && num > 0 ? Math.ceil(num) : null;
   if (num !== threshold && warnedFailureThresholds.get(query.id) !== String(raw)) {
     warnedFailureThresholds.set(query.id, String(raw));
@@ -181,7 +184,7 @@ function resolveFailureThreshold(query, moduleId, store) {
       kind: query.kind,
       key: query.name,
       message: `Pause after failures "${raw}" is not a positive whole number; ${
-        threshold ? `using ${threshold}.` : 'periodic runs will not auto-pause.'
+        threshold ? `using ${threshold}.` : 'using 0, so periodic runs will not auto-pause.'
       }`,
       errorTarget: 'Queries',
     });
@@ -297,11 +300,33 @@ function armPeriodicTimer(queryId, moduleId, intervalMs, getStore, { delayMs = i
     // Run in the module's current mode so released/public apps don't toast errors on
     // every failing tick (runQuery only toasts when mode !== 'view').
     const mode = store.modeStore?.modules?.[moduleId]?.currentMode || 'edit';
+    // The outcome comes from runQuery's onSuccess / onFailure callbacks, which every query kind calls.
+    // Its resolved value can't be trusted for this: a failed RunJS or RunPy run resolves with the
+    // inner error object, which has no `status`, so it would never count as a failure. Runs that
+    // settle without a callback (blocked, refused) fall back to the resolved status; aborts call neither
+    // and resolve 'aborted', which doesn't count either way.
+    let outcome;
+    const callbackFns = {
+      onSuccess: () => (outcome = 'ok'),
+      onFailure: () => (outcome = 'failed'),
+    };
     // confirmed=true so periodic ticks bypass the "request confirmation" modal.
     Promise.resolve(
-      store.queryPanel.runQuery(queryId, query.name, true, mode, {}, undefined, undefined, false, false, moduleId)
+      store.queryPanel.runQuery(
+        queryId,
+        query.name,
+        true,
+        mode,
+        {},
+        undefined,
+        undefined,
+        false,
+        false,
+        moduleId,
+        callbackFns
+      )
     )
-      .then((result) => recordPeriodicRunResult(query, moduleId, getStore(), result?.status, chain))
+      .then((result) => recordPeriodicRunResult(query, moduleId, getStore(), outcome ?? result?.status, chain))
       .catch(() => recordPeriodicRunResult(query, moduleId, getStore(), 'failed', chain));
   }, delayMs);
   queryPeriodicTimers.set(queryId, { timeoutId, intervalMs, moduleId, getStore, idle });

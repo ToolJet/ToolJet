@@ -44,18 +44,26 @@ export default function PeriodicRunInputs({ options, darkMode, optionchanged }) 
           />
         </div>
       </div>
-      <div data-param="pauseAfterFailures" className="tw-flex tw-items-center tw-gap-[5px] tw-pl-[34px]">
-        <label className="form-label tw-items-center !tw-w-[132px]" data-cy="label-pause-after-failures-input">
+      <div data-param="pauseAfterFailures" className="tw-flex tw-items-start tw-gap-[5px] tw-pl-[34px]">
+        {/* items-start + a fixed label height keep the label level with the input, not the subtext */}
+        <label
+          className="form-label tw-items-center !tw-w-[132px] tw-h-[32px]"
+          data-cy="label-pause-after-failures-input"
+        >
           {t('editor.queryManager.pauseAfterFailures', 'Pause after failures')}
         </label>
         <div className="tw-grow tw-max-w-[530px]">
+          {/* Defaults to 0 (never pause). An unset value is shown as 0 without being saved; both mean never. */}
           <CodeHinter
             type="basic"
-            initialValue={options?.pauseAfterFailures ?? ''}
+            initialValue={options?.pauseAfterFailures ?? '0'}
             onChange={(value) => optionchanged('pauseAfterFailures', value)}
-            placeholder={t('editor.queryManager.pauseAfterFailuresPlaceholder', 'Never')}
+            placeholder="0"
             cyLabel="pause-after-failures"
           />
+          <div className="tw-mt-1 tw-font-body-small tw-text-text-placeholder" data-cy="pause-after-failures-help-text">
+            {t('editor.queryManager.pauseAfterFailuresHelp', 'Leave 0 or empty to never pause')}
+          </div>
         </div>
       </div>
       <div data-param="runPeriodicallyInBackground" className="tw-pl-[34px]">
