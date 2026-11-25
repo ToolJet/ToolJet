@@ -8,10 +8,6 @@ sidebar_label: GitHub Configuration
 
 Connect your workspace to a GitHub repository through a GitHub App. The connection works over HTTPS, and you choose the branch to sync with directly in ToolJet.
 
-:::info
-GitHub can also be configured through environment variables. Refer to [Configure GitSync via Environment Variables](/docs/setup/configuration/env-vars#configure-gitsync-via-environment-variables).
-:::
-
 Role Required: **Admin**
 
 ### 1. Create a New Repository and Make an Initial Commit
@@ -80,6 +76,12 @@ The table below describes each configuration values:
 | **GitHub app private key** | Private key you downloaded after App creation. |
 
 Once you've entered the necessary configurations, click **Save changes**. Your workspace is now connected to your GitHub repository.
+
+#### Using Environment Variables
+
+GitHub can also be configured through [environment variables](/docs/setup/env-vars#configure-gitsync-via-environment-variables). After setting the variables and restarting the server, turn on **Apply configurations from environment variables** in the **Configure git sync** tab and click **Continue** to confirm.
+
+While the toggle is on, the form fields are disabled and the values are read from the environment variables. To configure GitHub from the form again, turn the toggle off.
 
 :::note
 You can use the same credentials to configure a specific repository across multiple instances or workspaces.

@@ -33,10 +33,6 @@ Checkout [Understanding AI Credits](/docs/build-with-ai/ai-credits#credit-alloca
 
 Once you have received the license key from the ToolJet Team, you can update the license key by following the steps:
 
-:::info
-The license key can also be configured through an environment variable. Refer to [Configure License Key via Environment Variable](/docs/setup/configuration/env-vars#configure-license-key-via-environment-variable).
-:::
-
 Role Required: **Super Admin**
 
 1. Go to the Settings page. <br/>
@@ -47,6 +43,12 @@ Role Required: **Super Admin**
 
 3. Within the license tab of the Settings page, you can access the limit tab, which provides details about available total users, builders, and end users. You can also see the expiry date of your license key.
    <img className="screenshot-full" src="/img/licensing/selfhosted-limits.png" alt="Licensing" />
+
+### Using Environment Variables
+
+The license key can also be set through the `TJ_LICENSE` [environment variable](/docs/setup/env-vars#configure-license-key-via-environment-variable). After setting the variable, turn on **Apply configuration from environment variable** in the license key tab and click **Continue** to confirm.
+
+While the toggle is on, the license key field is disabled and shows the `{{TJ_LICENSE_KEY}}` placeholder. To enter the license key in the form again, turn the toggle off.
 
 ## Migrating to New Pricing Plan
 

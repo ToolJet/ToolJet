@@ -314,6 +314,8 @@ WORKSPACE_GIT_CONFIGS='{"my-workspace":{"GITHUB_URL":"https://github.com/acme-co
 
 - `GIT_BRANCHING_ENABLED`: `true` for multi-branch mode, `false` for single-branch mode.
 
+To apply the variables, turn on **Apply configurations from environment variables** in the GitSync settings. For the steps, see [GitHub](/docs/development-lifecycle/gitsync/connect-to-git-repo/github-config#using-environment-variables) or [GitLab](/docs/development-lifecycle/gitsync/connect-to-git-repo/gitlab-config#using-environment-variables).
+
 #### Configure SSO via Environment Variables
 
 OIDC, SAML and LDAP SSO can be configured using environment variables. They are read at server startup. All values inside the JSON variables must be strings.
@@ -361,21 +363,13 @@ WORKSPACE_OIDC_CONFIG='{"my-workspace":[{"OIDC_OKTA_NAME":"Okta","OIDC_OKTA_CLIE
 
 SAML and LDAP keys can also be added to a workspace's `.tj_env.<workspace>` file.
 
+To apply the variables, turn on **Apply configurations from environment variables** in the provider's configuration modal. For the steps, see [OIDC](/docs/user-management/sso/oidc/setup#using-environment-variables), [SAML](/docs/user-management/sso/saml/setup#using-environment-variables) or [LDAP](/docs/user-management/sso/ldap#using-environment-variables).
+
 #### Configure License Key via Environment Variable
 
-The license key can be configured via an environment variable to avoid re-entering it through the UI on every new instance. Setting `TJ_LICENSE` ensures the license is applied automatically at startup without any manual configuration.
+- `TJ_LICENSE`: ToolJet license key.
 
-| **Variable** | **Description** |
-|:--- |:--- |
-| `TJ_LICENSE` | Your ToolJet license key. When set, the license key field on the **Settings** page is populated automatically from this variable. |
-
-**How it works:**
-
-- When `TJ_LICENSE` variable is set, the **Settings** page shows the license key field pre-filled with the placeholder `{{TJ_LICENSE_KEY}}`, indicating the value is sourced from the environment.
-- The field will be disabled and the toggle will be switched to **Env variable** mode automatically.
-- To switch back to entering the key manually via the UI, use the toggle on the **Settings** page to switch to **UI** mode.
-
-<img className="screenshot-full img-m" src="/img/env-vars/prefilled-license-key.png" alt="Prefilled License Key" />
+To apply it, turn on **Apply configuration from environment variable** in the license key tab of **Settings**. For the steps, see [Updating License Key](/docs/tj-setup/licensing/self-hosted#using-environment-variables).
 
 #### Version Reviews
 

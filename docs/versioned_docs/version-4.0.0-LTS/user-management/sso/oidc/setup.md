@@ -11,10 +11,6 @@ OpenID Connect (OIDC) is an authentication protocol that helps applications veri
 ToolJet also allows you to setup OIDC using non email identifier (for example, an employee ID). To learn more, refer to [this section](/docs/user-management/sso/oidc/setup#configuring-tooljet-oidc-with-non-email-identifier).
 :::
 
-:::info
-OIDC can also be configured through environment variables. Refer to [Configure SSO via Environment Variables](/docs/setup/configuration/env-vars#configure-sso-via-environment-variables).
-:::
-
 ## Grant Type
 
 #### Authorization Code
@@ -54,6 +50,12 @@ Role Required: <br/>
 6.  After selecting the grant type, provide the Client ID, Client Secret / Code Verifier, and Well-Known URL from your identity provider. Once done, click Save changes at the bottom of the modal.
 
 Upon saving, OIDC SSO will be successfully enabled using your configured Identity Provider, allowing your users to seamlessly authenticate via OpenID Connect for enhanced security and ease of use.
+
+### Using Environment Variables
+
+OIDC can also be configured through [environment variables](/docs/setup/env-vars#configure-sso-via-environment-variables). After setting the variables and restarting the server, turn on **Apply configurations from environment variables** in the OIDC configuration modal and click **Continue** to confirm.
+
+While the toggle is on, the form fields are disabled and the values are read from the environment variables. To configure OIDC from the form again, turn the toggle off. This restores the values previously saved in the form.
 
 ## Configuring Multiple OIDC Providers
 
