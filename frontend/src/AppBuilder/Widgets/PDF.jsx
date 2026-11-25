@@ -128,7 +128,7 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
           <button
             class="pdf-retry-button"
             data-cy="draggable-widget-button3"
-            type="default"
+            type="button"
             onClick={() => setIsPasswordPromptClosed(false)}
           >
             <div>

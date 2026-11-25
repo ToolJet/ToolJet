@@ -3,7 +3,7 @@ import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
 import _, { debounce, omit } from 'lodash';
-import { generateUIComponents, getBodyHeight } from './FormUtils';
+import { collectFormFieldExposedValues, generateUIComponents, getBodyHeight } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -75,6 +75,7 @@ const FormComponent = (props) => {
     canvasHeight,
     validateOnSubmit = true,
     resetOnSubmit = true,
+    registerNestedFields = false,
     newJsonSchema,
   } = properties;
 
@@ -171,23 +172,11 @@ const FormComponent = (props) => {
 
   // Lightweight selector: returns raw exposed value references (no spreading).
   // shallow comparison works because immer only creates new references for mutated paths.
-  const childExposedMap = useStore((state) => {
-    const childIds = state.containerChildrenMapping?.[id] || [];
-    const exposedComponents = state.resolvedStore.modules[moduleId]?.exposedValues?.components;
-    const result = {};
-    childIds.forEach((childId) => {
-      let val = exposedComponents?.[childId];
-      // If per-row (Form is inside a ListView), navigate to correct row
-      if (Array.isArray(val) && indices.length > 0) {
-        for (const idx of indices) {
-          val = val?.[idx];
-          if (!val) break;
-        }
-      }
-      result[childId] = val || null;
-    });
-    return result;
-  }, shallow);
+  // See collectFormFieldExposedValues for which containers the walk descends into.
+  const childExposedMap = useStore(
+    (state) => collectFormFieldExposedValues(state, id, { moduleId, indices, includeNested: registerNestedFields }),
+    shallow
+  );
 
   useExposedValueBatch(componentCount);
 
@@ -385,8 +374,39 @@ const FormComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents), resetOnSubmit, validateOnSubmit]);
 
-  const handleSubmit = (event) => {
+  // Cancels every native submit of this <form>, from whichever button started it,
+  // so nothing inside a Form can reload the page. It is a listener on the <form>
+  // itself, not React's onSubmit: in Chromium and WebKit a submit from a <form>
+  // nested in another <form> does not bubble past the inner form, so React's root
+  // listener never sees it.
+  useEffect(() => {
+    const formElement = parentRef.current;
+    if (!formElement) return;
+    const cancelNativeSubmit = (event) => event.preventDefault();
+    formElement.addEventListener('submit', cancelNativeSubmit);
+    return () => formElement.removeEventListener('submit', cancelNativeSubmit);
+  }, []);
+
+  // Enter in a single-line field "implicitly submits" its <form> by clicking the
+  // form's first submit button. Native buttons render type="button", so the
+  // hidden button rendered first in this <form> is that default button. It
+  // presses the Form's configured Submit button, exactly as a click on it would
+  // (its onClick, its disabled/loading guard, then the Form's onSubmit), and does
+  // nothing when none is set. Cancelling this click also stops the browser's own
+  // submission, so Enter never reloads the page.
+  const pressConfiguredSubmitButton = (event) => {
     event.preventDefault();
+    event.stopPropagation();
+    const formElement = parentRef.current;
+    if (!formElement) return;
+    let selector = null;
+    if (advanced) {
+      if (JSONSchema?.submitButton && uiComponents?.length) selector = `.form-${id}-${uiComponents.length - 1} button`;
+    } else if (buttonToSubmit && buttonToSubmit !== 'none') {
+      selector = `[id="component-${buttonToSubmit}"]`;
+    }
+    const submitButton = selector ? formElement.querySelector(selector) : null;
+    submitButton?.click();
   };
   const fireSubmissionEvent = () => {
     if (validateOnSubmit) {
@@ -448,11 +468,21 @@ const FormComponent = (props) => {
       data-cy={dataCy}
       ref={parentRef}
       style={computedStyles}
-      onSubmit={handleSubmit}
       onClick={(e) => {
         if (e.target.className === 'real-canvas') onComponentClick(id, component);
       }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
     >
+      {/* The form's default button for Enter; see pressConfiguredSubmitButton.
+          Disabled with the Form: a disabled default button makes Enter do nothing. */}
+      <button
+        type="submit"
+        disabled={isDisabled || isLoading}
+        className="jet-form-default-submit"
+        aria-hidden="true"
+        tabIndex={-1}
+        data-cy={`${dataCy}-default-submit`}
+        onClick={pressConfiguredSubmitButton}
+      />
       {!advanced && showHeader && !isLoading && (
         <HorizontalSlot
           slotName="header"

@@ -10,6 +10,7 @@ export const FilterHeader = memo(({ setShowFilter }) => {
       </div>
       <div className="col-auto">
         <button
+          type="button"
           data-cy={`close-filters-button`}
           onClick={() => {
             setShowFilter(false);

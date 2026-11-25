@@ -380,6 +380,7 @@ export const ButtonGroupV2 = (props) => {
             <div className="button-group-content" style={groupStyles} ref={groupRef}>
               {formattedOptions?.map((option, index) => (
                 <button
+                  type="button"
                   data-cy={`${dataCy}-button-${index}`}
                   style={{
                     ...commonStyles,

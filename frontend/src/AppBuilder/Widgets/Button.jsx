@@ -221,7 +221,7 @@ export const Button = function Button(props) {
         // blocks Enter/Space activation (aria-disabled alone does neither)
         disabled={disable || loading}
         data-cy={`${generateCypressDataCy(dataCy)}-button`}
-        type="default"
+        type="button"
         onMouseOver={() => {
           //cannot use mouseEnter here since mouse enter does not trigger consistently. Mouseover gets triggered for all child components
           setHovered(true);

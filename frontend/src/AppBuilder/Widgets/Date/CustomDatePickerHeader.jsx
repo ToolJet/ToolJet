@@ -144,6 +144,7 @@ const CustomDatePickerHeader = (props) => {
       >
         {!(datepickerSelectionType === 'range' && customHeaderCount === 1) && (
           <button
+            type="button"
             className="tj-datepicker-widget-arrows tj-datepicker-widget-left"
             onClick={(e) => {
               e.stopPropagation();
@@ -206,6 +207,7 @@ const CustomDatePickerHeader = (props) => {
         {(!(datepickerSelectionType === 'range' && customHeaderCount === 0) ||
           (datepickerSelectionType === 'range' && datepickerMode === 'year')) && (
           <button
+            type="button"
             className="tj-datepicker-widget-arrows tj-datepicker-widget-right "
             onClick={(e) => {
               e.stopPropagation();
