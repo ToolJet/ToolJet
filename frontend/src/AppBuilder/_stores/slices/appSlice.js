@@ -267,6 +267,43 @@ export const createAppSlice = (set, get) => ({
       'setIsAppSaving'
     );
   },
+  /**
+   * Runs one editor save so the header's save indicator follows it: "Saving..." while any save is
+   * in flight, "Could not save changes" after one fails, cleared once a later save succeeds.
+   * `save` must reject when the save fails; the rejection is passed on to the caller.
+   */
+  trackAppSave: async (save, moduleId = 'canvas') => {
+    const update = (change, action) =>
+      set(
+        (state) => {
+          const app = state.appStore.modules[moduleId]?.app;
+          if (app) change(app);
+        },
+        false,
+        action
+      );
+    update((app) => {
+      app.pendingSaves = (app.pendingSaves ?? 0) + 1;
+      app.isSaving = true;
+    }, 'appSaveStarted');
+    try {
+      const result = await save();
+      update((app) => {
+        app.saveError = false;
+      }, 'appSaveSucceeded');
+      return result;
+    } catch (error) {
+      update((app) => {
+        app.saveError = true;
+      }, 'appSaveFailed');
+      throw error;
+    } finally {
+      update((app) => {
+        app.pendingSaves = Math.max(0, (app.pendingSaves ?? 1) - 1);
+        app.isSaving = app.pendingSaves > 0;
+      }, 'appSaveSettled');
+    }
+  },
   setGlobalSettings: (globalSettings) => set(() => ({ globalSettings }), false, 'setGlobalSettings'),
   toggleAppMaintenance: (moduleId = 'canvas') => {
     const { isMaintenanceOn, appId } = get().appStore.modules[moduleId].app;
@@ -298,13 +335,17 @@ export const createAppSlice = (set, get) => ({
     const newOptions = replaceEntityReferencesWithIds(options, componentNameIdMapping, queryNameIdMapping);
     const { appStore, currentVersionId, currentPageId } = get();
     try {
-      const res = await appVersionService.autoSaveApp(
-        appStore.modules[moduleId].app.appId,
-        currentVersionId,
-        { globalSettings: newOptions },
-        'global_settings',
-        currentPageId,
-        'update'
+      await get().trackAppSave(
+        () =>
+          appVersionService.autoSaveApp(
+            appStore.modules[moduleId].app.appId,
+            currentVersionId,
+            { globalSettings: newOptions },
+            'global_settings',
+            currentPageId,
+            'update'
+          ),
+        moduleId
       );
       set((state) => ({ globalSettings: { ...state.globalSettings, ...newOptions } }));
     } catch (error) {

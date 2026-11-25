@@ -2656,29 +2656,25 @@ export const createComponentsSlice = (set, get) => ({
       { type: 'setFocusedParentId', payload: { parentId } });
   },
   saveComponentChanges: (diff, type, operation, moduleId = 'canvas', { onCycleReject } = {}) => {
-    set(
-      (state) => {
-        state.appStore.modules[moduleId].app.isSaving = true;
-      },
-      false,
-      'setAppSavingChanges'
-    );
-    const { getAppId, currentVersionId, getCurrentPageId } = get();
+    const { getAppId, currentVersionId, getCurrentPageId, trackAppSave } = get();
     const appId = getAppId(moduleId);
     const currentPageId = getCurrentPageId(moduleId);
 
     return new Promise((resolve) => {
-      appVersionService
-        .autoSaveApp(
-          appId,
-          currentVersionId,
-          diff,
-          type,
-          currentPageId,
-          operation,
-          false, // isUserSwitchedVersion
-          false // isComponentCutProcess
-        )
+      trackAppSave(
+        () =>
+          appVersionService.autoSaveApp(
+            appId,
+            currentVersionId,
+            diff,
+            type,
+            currentPageId,
+            operation,
+            false, // isUserSwitchedVersion
+            false // isComponentCutProcess
+          ),
+        moduleId
+      )
         .then((response) => {
           resolve(response);
         })
@@ -2706,15 +2702,6 @@ export const createComponentsSlice = (set, get) => ({
           }
           console.error('Error saving component changes:', error);
           resolve(null);
-        })
-        .finally(() => {
-          set(
-            (state) => {
-              state.appStore.modules[moduleId].app.isSaving = false;
-            },
-            false,
-            'setAppSavingChanges'
-          );
         });
     });
   },
@@ -2732,9 +2719,17 @@ export const createComponentsSlice = (set, get) => ({
       'turnOffAutoComputeLayout'
     );
 
-    await savePageChanges(app.appId, currentVersionId, currentPageId, {
-      autoComputeLayout: false,
-    });
+    await savePageChanges(
+      app.appId,
+      currentVersionId,
+      currentPageId,
+      {
+        autoComputeLayout: false,
+      },
+      'update',
+      'pages',
+      get().trackAppSave
+    );
   },
   turnOnAutoComputeLayout: async (moduleId = 'canvas') => {
     const { appStore, getCurrentPageId, currentVersionId, getCurrentPageComponents, withUndoRedo, setComponentLayout } =
@@ -2758,9 +2753,17 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'turnOnAutoComputeLayout'
     );
-    await savePageChanges(app.appId, currentVersionId, currentPageId, {
-      autoComputeLayout: true,
-    });
+    await savePageChanges(
+      app.appId,
+      currentVersionId,
+      currentPageId,
+      {
+        autoComputeLayout: true,
+      },
+      'update',
+      'pages',
+      get().trackAppSave
+    );
     setComponentLayout(updatedBoxes, undefined, moduleId, {
       skipUndoRedo: true,
     });
@@ -2779,9 +2782,17 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'setAutoComputeLayout'
     );
-    await savePageChanges(app.appId, currentVersionId, currentPageId, {
-      autoComputeLayout: value,
-    });
+    await savePageChanges(
+      app.appId,
+      currentVersionId,
+      currentPageId,
+      {
+        autoComputeLayout: value,
+      },
+      'update',
+      'pages',
+      get().trackAppSave
+    );
   },
   setWidgetDeleteConfirmation: (value, second = null) => {
     if (value) {

@@ -26,16 +26,30 @@ const didItemChangePosition = (originalArr, sortedArry) => {
   });
 };
 
-export const savePageChanges = async (appId, versionId, pageId, diff, operation = 'update', type = 'pages') => {
+/**
+ * Saves a page change. Pass the store's `trackAppSave` as `trackSave` so the header's save
+ * indicator follows this save; a failure is shown as a toast and never thrown.
+ */
+export const savePageChanges = async (
+  appId,
+  versionId,
+  pageId,
+  diff,
+  operation = 'update',
+  type = 'pages',
+  trackSave = (save) => save()
+) => {
   const updateObj = createUpdateObject(appId, versionId, pageId, diff, operation, type);
   try {
-    const res = await appVersionService.autoSaveApp(
-      updateObj.appId,
-      updateObj.versionId,
-      updateObj.diff,
-      updateObj.type,
-      updateObj.pageId,
-      updateObj.operation
+    await trackSave(() =>
+      appVersionService.autoSaveApp(
+        updateObj.appId,
+        updateObj.versionId,
+        updateObj.diff,
+        updateObj.type,
+        updateObj.pageId,
+        updateObj.operation
+      )
     );
   } catch (error) {
     toast.error('App could not be saved.');
@@ -61,7 +75,7 @@ const createPageUpdateCommand =
       const { appStore, currentVersionId } = get();
       const app = appStore.modules.canvas.app;
       const diff = _.zipObject(updatePaths, values);
-      if (enableSave) savePageChanges(app.appId, currentVersionId, pageId, diff);
+      if (enableSave) savePageChanges(app.appId, currentVersionId, pageId, diff, 'update', 'pages', get().trackAppSave);
     };
   };
 
@@ -332,7 +346,7 @@ export const createPageMenuSlice = (set, get) => {
       });
 
       if (saveAfterAction) {
-        await savePageChanges(appId, currentVersionId, pageId, diff, 'delete');
+        await savePageChanges(appId, currentVersionId, pageId, diff, 'delete', 'pages', get().trackAppSave);
       }
 
       toast.success('Page deleted successfully');
@@ -380,7 +394,7 @@ export const createPageMenuSlice = (set, get) => {
           const homePage = pages.find((p) => p.id === homePageId);
           get().switchPage(homePage.id, homePage.handle);
         }
-        await savePageChanges(appId, currentVersionId, pageGroupId, diff, 'delete');
+        await savePageChanges(appId, currentVersionId, pageGroupId, diff, 'delete', 'pages', get().trackAppSave);
       } else {
         set((state) => {
           const pages = get().modules.canvas.pages;
@@ -399,7 +413,7 @@ export const createPageMenuSlice = (set, get) => {
           state.modules.canvas.pages = newPages;
           state.showDeleteConfirmationModal = false;
         });
-        await savePageChanges(appId, currentVersionId, pageGroupId, diff, 'delete');
+        await savePageChanges(appId, currentVersionId, pageGroupId, diff, 'delete', 'pages', get().trackAppSave);
       }
     },
     markAsHomePage: async (pageId, moduleId = 'canvas') => {
@@ -413,7 +427,7 @@ export const createPageMenuSlice = (set, get) => {
         state.appStore.modules[moduleId].app.homePageId = pageId;
         state.showEditingPopover = false;
       });
-      await savePageChanges(appId, currentVersionId, editingPage.id, diff, 'update', null);
+      await savePageChanges(appId, currentVersionId, editingPage.id, diff, 'update', null, get().trackAppSave);
     },
     reorderPages: async (reorderdPages) => {
       const diff = {};
@@ -443,7 +457,15 @@ export const createPageMenuSlice = (set, get) => {
       });
       const { getAppId, currentVersionId } = get();
       const appId = getAppId('canvas');
-      await savePageChanges(appId, currentVersionId, currentPageId, diff, 'update', 'pages/reorder');
+      await savePageChanges(
+        appId,
+        currentVersionId,
+        currentPageId,
+        diff,
+        'update',
+        'pages/reorder',
+        get().trackAppSave
+      );
     },
 
     addNewPage: async (name, handle, isPageGroup = false, pageObj) => {
@@ -491,7 +513,7 @@ export const createPageMenuSlice = (set, get) => {
       });
       const { getAppId, currentVersionId } = get();
       const appId = getAppId('canvas');
-      await savePageChanges(appId, currentVersionId, '', pageObject, 'create', 'pages');
+      await savePageChanges(appId, currentVersionId, '', pageObject, 'create', 'pages', get().trackAppSave);
       if (!isPageGroup && pageObj?.type === 'default') get().switchPage(newPageId, newHandle);
       return pageObject;
     },
@@ -528,13 +550,15 @@ export const createPageMenuSlice = (set, get) => {
       const { getAppId, currentVersionId, currentPageId } = get();
       const appId = getAppId('canvas');
       try {
-        const res = await appVersionService.autoSaveApp(
-          appId,
-          currentVersionId,
-          { pageSettings: { [type]: newOptions } },
-          'page_settings',
-          currentPageId,
-          'update'
+        await get().trackAppSave(() =>
+          appVersionService.autoSaveApp(
+            appId,
+            currentVersionId,
+            { pageSettings: { [type]: newOptions } },
+            'page_settings',
+            currentPageId,
+            'update'
+          )
         );
       } catch (error) {
         toast.error('Page settings could not be saved.');

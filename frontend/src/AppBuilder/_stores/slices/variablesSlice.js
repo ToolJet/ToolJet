@@ -239,17 +239,29 @@ export const createVariablesSlice = (set, get) => ({
     const pageId = get().getCurrentPageId(moduleId);
     if (scope === VARIABLE_SCOPES.PAGE) {
       const page = get().modules[moduleId].pages.find((p) => p.id === pageId);
-      await savePageChanges(appId, currentVersionId, pageId, { variables: page?.variables ?? {} });
+      await savePageChanges(
+        appId,
+        currentVersionId,
+        pageId,
+        { variables: page?.variables ?? {} },
+        'update',
+        'pages',
+        (save) => get().trackAppSave(save, moduleId)
+      );
       return;
     }
     try {
-      await appVersionService.autoSaveApp(
-        appId,
-        currentVersionId,
-        { globalSettings: { variables: get().globalSettings?.variables ?? {} } },
-        'global_settings',
-        pageId,
-        'update'
+      await get().trackAppSave(
+        () =>
+          appVersionService.autoSaveApp(
+            appId,
+            currentVersionId,
+            { globalSettings: { variables: get().globalSettings?.variables ?? {} } },
+            'global_settings',
+            pageId,
+            'update'
+          ),
+        moduleId
       );
     } catch (error) {
       toast.error('App could not be saved.');
