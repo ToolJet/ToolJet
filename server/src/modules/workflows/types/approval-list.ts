@@ -15,11 +15,15 @@ export interface ApprovalListFilters {
   environmentId?: string | string[];
   /** Free-text match against approver ids and emails, and the user or group names the list shows. */
   approver?: string;
+  /** Exact approvers: user or group ids, or approver emails. A request matches when it lists any of them. */
+  approverIds?: string[];
   from?: Date;
   to?: Date;
   /** Deadline (`expires_at`) window; a request without a deadline never matches. */
   dueFrom?: Date;
   dueTo?: Date;
+  /** Only requests without a deadline. */
+  noDeadline?: boolean;
   /** Defaults to `created_desc`. */
   sort?: ApprovalListSort;
   resolvableBy?: { userId: string; email: string; groupIds: string[] };

@@ -18,6 +18,8 @@ function getAll(filters = {}, page = 1, perPage = 25, signal) {
   if (filters.folderId) params.set('folder_id', filters.folderId);
   [].concat(filters.environmentId || []).forEach((id) => params.append('environment_id', id));
   if (filters.approver) params.set('approver', filters.approver);
+  (filters.approverIds || []).forEach((id) => params.append('approver_id', id));
+  if (filters.noDeadline) params.set('no_deadline', 'true');
   if (filters.from) params.set('from', toLocalDayBoundary(filters.from, 'start'));
   if (filters.to) params.set('to', toLocalDayBoundary(filters.to, 'end'));
   if (filters.dueFrom) params.set('due_from', toLocalDayBoundary(filters.dueFrom, 'start'));

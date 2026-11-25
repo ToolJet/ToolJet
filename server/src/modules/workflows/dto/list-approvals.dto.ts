@@ -1,4 +1,16 @@
-import { IsOptional, IsString, IsUUID, IsDateString, IsIn, IsInt, Matches, Min, Max } from 'class-validator';
+import {
+  IsBoolean,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsDateString,
+  IsIn,
+  IsInt,
+  Matches,
+  MaxLength,
+  Min,
+  Max,
+} from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { FULL_DATE } from '@modules/workflows/helpers/approval-date-range';
 import { APPROVAL_LIST_SORTS, ApprovalListSort } from '@modules/workflows/types/approval-list';
@@ -28,6 +40,18 @@ export class ListApprovalsDto {
   @IsOptional()
   @IsString()
   approver?: string;
+
+  // A user or group id, or an approver email (the id email approvers carry in the list).
+  @IsOptional()
+  @Transform(toArray)
+  @IsString({ each: true })
+  @MaxLength(320, { each: true })
+  approver_id?: string[];
+
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  no_deadline?: boolean;
 
   @IsOptional()
   @IsDateString()

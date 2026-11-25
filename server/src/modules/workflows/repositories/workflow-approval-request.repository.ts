@@ -153,6 +153,19 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
     if (filters.dueTo) {
       query.andWhere('request.expires_at <= :dueTo', { dueTo: filters.dueTo });
     }
+    if (filters.noDeadline) {
+      query.andWhere('request.expires_at IS NULL');
+    }
+    const approverIds = toIdList(filters.approverIds);
+    if (approverIds.length) {
+      // Ids match users or groups; emails match email approvers. Names never collide: one is a UUID, the other has an @.
+      query.andWhere(
+        `(EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'users')} AS listed_user WHERE listed_user IN (:...approverIds))
+          OR EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'groups')} AS listed_group WHERE listed_group IN (:...approverIds))
+          OR EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'emails')} AS listed_email WHERE lower(trim(listed_email)) IN (:...approverEmails)))`,
+        { approverIds, approverEmails: approverIds.map((value) => value.trim().toLowerCase()) }
+      );
+    }
     if (filters.resolvableBy) {
       const { userId, email, groupIds } = filters.resolvableBy;
       const matches = [
