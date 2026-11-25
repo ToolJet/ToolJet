@@ -10,7 +10,7 @@ describe('CreateBranchDto name validation', () => {
     return errors.find((error) => error.property === 'name');
   };
 
-  it.each(['feature-1', 'devtest_a', 'feature/login-page', 'release-1.2.0', 'a.b', 'UPPER'])(
+  it.each(['feature-1', 'devtest_a', 'feature/login-page', 'release-1.2.0', 'a.b', 'UPPER', 'main-2', 'feature/main'])(
     'accepts %s',
     async (name) => {
       expect(await nameError(name)).toBeUndefined();
@@ -41,6 +41,13 @@ describe('CreateBranchDto name validation', () => {
     ['caret', 'a^b'],
     ['reflog syntax', 'a@{b'],
     ['a lone @', '@'],
+    ['a leading dash', '-lead'],
+    ['the reserved name HEAD', 'HEAD'],
+    ['the reserved name main', 'main'],
+    ['the reserved name master', 'master'],
+    ['the reserved name origin', 'origin'],
+    ['a reserved name in another case', 'Main'],
+    ['a lowercase head', 'head'],
   ])('rejects %s', async (_label, name) => {
     expect(await nameError(name)).toBeDefined();
   });
