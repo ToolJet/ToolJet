@@ -125,6 +125,13 @@ export class AppModuleLoader {
               paths: [
                 'req.headers.authorization',
                 'req.headers.cookie',
+                // Second layer for log calls that pass raw headers under a top-level `headers` key.
+                'headers.authorization',
+                'headers.cookie',
+                'headers["x-api-key"]',
+                'headers["tj-admin-api-key"]',
+                'headers["x-tooljet-delegation"]',
+                'headers["proxy-authorization"]',
                 'res.headers.authorization',
                 'res.headers["set-cookie"]',
                 'req.headers["proxy-authorization"]',

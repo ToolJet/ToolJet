@@ -16,6 +16,21 @@ enum PostgresErrorCode {
   ForeignKeyViolation = '23503',
 }
 
+// Allow list, not deny list: a header we did not think of must not reach the log.
+const LOGGABLE_HEADERS = [
+  'user-agent',
+  'content-type',
+  'accept',
+  'origin',
+  'referer',
+  'x-request-id',
+  'tj-workspace-id',
+];
+
+function pickLoggableHeaders(headers: Record<string, unknown> = {}): Record<string, unknown> {
+  return Object.fromEntries(LOGGABLE_HEADERS.filter((name) => name in headers).map((name) => [name, headers[name]]));
+}
+
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(private readonly logger: Logger) {}
@@ -31,7 +46,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         {
           method: request.method,
           url: request.url,
-          headers: request.headers,
+          headers: pickLoggableHeaders(request.headers),
           exception,
         },
         exception.stack
