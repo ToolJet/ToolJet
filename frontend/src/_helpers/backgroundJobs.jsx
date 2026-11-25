@@ -47,8 +47,9 @@ export function waitForJob(key, onSettled) {
   };
 }
 
-// Hands a job notification to the modal waiting on it. Returns true when the modal took over the
-// success toast; failures still get the generic error toast.
+// Hands a job notification to the modal waiting on it. The modal's callback may return true to say
+// it showed the outcome itself (a failure it listed in its own dialog). Returns true when the modal
+// took over the toast; any other failure still gets the generic error toast.
 export function settleWaitingModal(notification) {
   // the "started" notification (info) carries the same metadata — only an outcome settles the modal
   if (notification?.type !== 'success' && notification?.type !== 'error') return false;
@@ -56,8 +57,8 @@ export function settleWaitingModal(notification) {
   const onSettled = job && waitingModals.get(job.key);
   if (!onSettled) return false;
   waitingModals.delete(job.key);
-  onSettled(notification);
-  return notification.type === 'success';
+  const handled = onSettled(notification);
+  return notification.type === 'success' || handled === true;
 }
 
 // Defaults work from any page; the editor registers overrides that keep the current app open.

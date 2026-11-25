@@ -1,8 +1,9 @@
 // The editor's Create branch modal asks before importing a branch that already exists in git.
 import React from 'react';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { CreateBranchModal } from '@/AppBuilder/Header/CreateBranchModal';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
+import { settleWaitingModal } from '@/_helpers/backgroundJobs';
 import { AppBuilderTestSession, defineAppBuilderScenario } from '@/test/app-builder';
 
 const APP_ID = 'app-1';
@@ -28,7 +29,18 @@ const importConfirmationError = {
   data: { message: JSON.stringify({ needsImportConfirmation: true, name: 'feature-x' }) },
 };
 
+// jsdom has no ResizeObserver; the conflict modal measures its list with one.
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
 describe('the editor Create branch modal when the branch already exists in git', () => {
+  beforeAll(() => {
+    (global as unknown as { ResizeObserver: unknown }).ResizeObserver = ResizeObserverStub;
+  });
+
   let session: AppBuilderTestSession;
   let create: jest.SpyInstance;
 
@@ -78,5 +90,37 @@ describe('the editor Create branch modal when the branch already exists in git',
 
     expect(create).toHaveBeenCalledTimes(1);
     expect(screen.queryByText(/already exists in git remote/)).not.toBeInTheDocument();
+  });
+
+  test('lists the naming conflicts in the conflict modal when the job fails on them', async () => {
+    create.mockResolvedValueOnce({ enqueued: true, isImport: false });
+
+    submitName();
+    await waitFor(() => expect(create).toHaveBeenCalledTimes(1));
+    act(() => {
+      settleWaitingModal({
+        type: 'error',
+        metadata: {
+          source: 'git-sync',
+          action: 'git-create-branch',
+          branchName: 'feature-x',
+          conflictGroups: [
+            {
+              type: 'app',
+              label: 'Applications — slug',
+              conflictField: 'slug',
+              conflictKey: 'orders-app',
+              conflicts: [
+                { name: 'Orders A', status: 'incoming', coRelationId: 'a044da59-ead4-450c-b1ed-53562d3067de' },
+                { name: 'Orders B', status: 'incoming', coRelationId: '7c21e0b3-1111-2222-3333-444455556666' },
+              ],
+            },
+          ],
+        },
+      });
+    });
+
+    expect(await screen.findByText('Cannot create branch')).toBeInTheDocument();
+    expect(screen.getByText(/App slug - 'orders-app'/)).toBeInTheDocument();
   });
 });

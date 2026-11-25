@@ -218,6 +218,12 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
     stopWaitingRef.current = waitForJob(branchJobKey(name), (notification) => {
       if (notification.type !== 'success') {
         setIsCreating(false);
+        // The job found naming conflicts: list them here instead of leaving only a toast.
+        const groups = notification.metadata?.conflictGroups;
+        if (groups?.length) {
+          setConflictGroups(groups);
+          return true;
+        }
         return;
       }
       switchEditorToBranch(
