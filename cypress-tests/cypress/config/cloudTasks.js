@@ -23,7 +23,7 @@ const loadPlanTerms = () => {
   const body =
     source
       .replace(/^import .*$/gm, "")
-      .replace(/:\s*Partial<Terms>/g, "")
+      .replace(/^((?:export )?const \w+)\s*:[^=]+=/gm, "$1 =")
       .replace(/export const /g, "const ") +
     `\nreturn { ${names.join(", ")} };`;
   return new Function(body)();
