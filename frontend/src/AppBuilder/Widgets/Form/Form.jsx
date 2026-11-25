@@ -393,8 +393,7 @@ const FormComponent = (props) => {
   // presses the Form's configured Submit button, exactly as a click on it would
   // (its onClick, its disabled/loading guard, then the Form's onSubmit), and does
   // nothing when none is set. Cancelling this click also stops the browser's own
-  // submission, so Enter never reloads the page. Pack fields reach it as well:
-  // InlineLibraryComponent's submitOnEnter clicks the form's first submit button.
+  // submission, so Enter never reloads the page.
   const pressConfiguredSubmitButton = (event) => {
     event.preventDefault();
     event.stopPropagation();

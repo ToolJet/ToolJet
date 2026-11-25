@@ -1060,7 +1060,7 @@ describe('ModalV2: inside a form', () => {
   afterEach(widget.teardown);
 
   test('[ModalV2-FORM-001] clicking the trigger button inside a form opens the modal without submitting the browser form', async () => {
-    // Break this catches: the trigger <button> (ModalV2.jsx:327) losing `type="button"`. Without it the
+    // Break this catches: the trigger <button> (ModalV2.jsx:269) losing `type="button"`. Without it the
     // trigger is a submit button, so opening the modal inside a Form starts a native form submission,
     // which reloads the page when the Form is nested in another Form.
     // A plain <form> stands in for the Form widget's own: the modal's portal target (.tj-canvas-area)

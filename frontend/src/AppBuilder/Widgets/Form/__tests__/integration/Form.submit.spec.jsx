@@ -15,9 +15,8 @@
  *
  * jsdom implements neither rule, and user-event only treats `button:not([type])`
  * / `button[type=submit]` as submit buttons. `pressEnter` below therefore follows
- * the browser's rule (the same one `InlineLibraryComponent.tsx`'s `submitOnEnter`
- * re-implements for pack fields), and the nested-form case installs Chromium's
- * stop on the outer `<form>`.
+ * the browser's rule, and the nested-form case installs Chromium's stop on the
+ * outer `<form>`.
  */
 import React from 'react';
 import { act, fireEvent, screen } from '@testing-library/react';
