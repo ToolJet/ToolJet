@@ -1,4 +1,12 @@
-import { buildBlockers, renderedTopFor, savedTopForVisibleTop, solveContainer, solveTops, sortBoxes } from '../solver';
+import {
+  buildBlockers,
+  renderedTopFor,
+  savedTopForVisibleTop,
+  solveContainer,
+  solveTops,
+  sortBoxes,
+  swapsWithinColumns,
+} from '../solver';
 
 const box = (id, top, left, width, height, extra = {}) => ({ id, top, left, width, height, ...extra });
 
@@ -133,5 +141,30 @@ describe('saved top for a visible drop position', () => {
   it('keeps the visible top when nothing is above the drop', () => {
     const context = siblingsFor([box('a', 0, 0, 10, 100)], { a: 300 });
     expect(savedTopForVisibleTop({ visibleTop: 50, left: 20, width: 10, height: 40, ...context })).toBe(50);
+  });
+});
+
+describe('drawn order swaps between widgets that share a column', () => {
+  const topsOf = (map) => (id) => map[id];
+
+  it('ignores a widget in another column passing one on the left', () => {
+    // A button on the left drawn at 340 would move to 140; a button on the right stays at 240.
+    const boxes = [box('left', 140, 0, 5, 40), box('right', 240, 20, 5, 40)];
+    expect(swapsWithinColumns(boxes, topsOf({ left: 340, right: 240 }), topsOf({ left: 140, right: 240 }))).toBe(false);
+  });
+
+  it('reports two widgets in the same column that change places', () => {
+    const boxes = [box('a', 140, 0, 5, 40), box('b', 190, 2, 5, 40)];
+    expect(swapsWithinColumns(boxes, topsOf({ a: 140, b: 190 }), topsOf({ a: 240, b: 190 }))).toBe(true);
+  });
+
+  it('reports a swap with a wide widget that spans both columns', () => {
+    const boxes = [box('left', 140, 0, 5, 40), box('wide', 240, 0, 30, 40)];
+    expect(swapsWithinColumns(boxes, topsOf({ left: 140, wide: 240 }), topsOf({ left: 300, wide: 240 }))).toBe(true);
+  });
+
+  it('keeps a tie in the same order on both sides', () => {
+    const boxes = [box('a', 140, 0, 5, 40), box('b', 140, 0, 5, 40)];
+    expect(swapsWithinColumns(boxes, topsOf({ a: 340, b: 340 }), topsOf({ a: 140, b: 140 }))).toBe(false);
   });
 });
