@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { In } from 'typeorm';
 import { FolderDataSource } from '@entities/folder_data_source.entity';
@@ -130,14 +130,11 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
     return folders;
   }
 
-  async create(
-    folderId: string,
-    dataSourceId: string,
-    branchId?: string,
-    organizationId?: string
-  ): Promise<FolderDataSource> {
+  async create(folderId: string, dataSourceId: string, branchId?: string, user?: User): Promise<FolderDataSource> {
+    const organizationId = user?.organizationId;
     const resolvedBranchId = await this.resolveEffectiveBranchId(branchId, organizationId);
     await this.verifyOrganizationScope(folderId, [dataSourceId], resolvedBranchId, organizationId);
+    await this.verifyCanConfigureDataSources(user, [dataSourceId]);
     return this.folderDataSourcesUtilService.create(folderId, dataSourceId, resolvedBranchId);
   }
 
@@ -145,10 +142,12 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
     folderId: string,
     dataSourceIds: string[],
     branchId?: string,
-    organizationId?: string
+    user?: User
   ): Promise<FolderDataSource[]> {
+    const organizationId = user?.organizationId;
     const resolvedBranchId = await this.resolveEffectiveBranchId(branchId, organizationId);
     await this.verifyOrganizationScope(folderId, dataSourceIds, resolvedBranchId, organizationId);
+    await this.verifyCanConfigureDataSources(user, dataSourceIds);
     return this.folderDataSourcesUtilService.bulkCreate(folderId, dataSourceIds, resolvedBranchId);
   }
 
@@ -190,6 +189,30 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
 
     const branch = await manager.findOne(WorkspaceBranch, { where: { id: branchId, organizationId } });
     if (!branch) throw new NotFoundException('Branch not found');
+  }
+
+  // A folder's grant cascades configure/use onto the data sources inside it, so editing the target
+  // folder isn't enough to move a data source in — the caller must already be able to configure it,
+  // else a restricted builder self-grants access. Mirrors data-sources/ability.
+  private async verifyCanConfigureDataSources(user: User, dataSourceIds: string[]): Promise<void> {
+    const uniqueDataSourceIds = [...new Set(dataSourceIds.filter(Boolean))];
+    if (uniqueDataSourceIds.length === 0 || !user) return;
+
+    const userPermissions = await this.abilityService.resourceActionsPermission(user, {
+      resources: [{ resource: MODULES.GLOBAL_DATA_SOURCE }],
+      organizationId: user.organizationId,
+    });
+
+    if (userPermissions.isAdmin || userPermissions.isSuperAdmin || userPermissions.dataSourceCreate) return;
+
+    const dataSourcePermissions = userPermissions?.[MODULES.GLOBAL_DATA_SOURCE];
+    if (dataSourcePermissions?.isAllConfigurable) return;
+
+    const configurableDataSourceIds = new Set(dataSourcePermissions?.configurableDataSourceId ?? []);
+    const hasRestrictedDataSource = uniqueDataSourceIds.some((id) => !configurableDataSourceIds.has(id));
+    if (hasRestrictedDataSource) {
+      throw new ForbiddenException('You do not have permission to move this data source into a folder');
+    }
   }
 
   // folder_data_sources.branch_id is NOT NULL, so every write needs a branch. When the caller
