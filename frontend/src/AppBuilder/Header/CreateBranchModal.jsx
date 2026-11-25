@@ -41,6 +41,8 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   const [conflictGroups, setConflictGroups] = useState(null);
   // Set when the name already exists in git: the user confirms before the branch is imported.
   const [pendingImportName, setPendingImportName] = useState(null);
+  // Branch named in the Copy error report.
+  const [conflictBranchName, setConflictBranchName] = useState(null);
   const orgGitConfig = useWorkspaceBranchesStore((state) => state.orgGitConfig);
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
   const LATEST_MAIN_OPTION = { label: `Latest (${defaultGitBranch})`, commitSha: null, isDefault: true };
@@ -181,11 +183,9 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   const uniqueTags = tags.filter((t) => !localVersionLabels.has(t.label));
   const dropdownOptions = [LATEST_MAIN_OPTION, ...visibleLocalVersionOptions, ...uniqueTags];
 
-  // After load, drop the preselection if it isn't a valid source, unless the user already picked one.
+  // After load, fall back to Latest unless the preselection is a loaded option; a user's pick stays.
   useEffect(() => {
     if (isLoadingVersions || hasUserPickedOptionRef.current || !selectedOption.isLocalVersion) return;
-    const isListed = developmentVersions.some((version) => version.id === selectedOption.versionId);
-    if (!isListed) return;
     const match = localVersionOptions.find((option) => option.versionId === selectedOption.versionId);
     setSelectedOption(match || LATEST_MAIN_OPTION);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -262,6 +262,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
           }
           if (parsed?.conflictGroups?.length) {
             setConflictGroups(parsed.conflictGroups);
+            setConflictBranchName(name);
             return;
           }
         } catch {
@@ -449,6 +450,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
         show={!!conflictGroups}
         conflictGroups={conflictGroups || []}
         onClose={() => setConflictGroups(null)}
+        branchName={conflictBranchName}
         context="branch-creation"
       />
 

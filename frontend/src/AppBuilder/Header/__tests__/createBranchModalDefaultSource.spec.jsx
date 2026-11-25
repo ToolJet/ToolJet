@@ -1,10 +1,11 @@
 // "Create from" defaults to the open version; assertions run before the network responds.
 import React from 'react';
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { CreateBranchModal } from '@/AppBuilder/Header/CreateBranchModal';
 import { AppBuilderTestSession, defineAppBuilderScenario } from '@/test/app-builder';
 
 const APP_ID = 'app-1';
+const DEVELOPMENT = { id: 'env-dev', name: 'development', priority: 1 };
 
 const scenario = defineAppBuilderScenario({
   id: 'create-branch-modal-default-source',
@@ -18,7 +19,18 @@ const scenario = defineAppBuilderScenario({
   transferPath: 'not-applicable',
   access: 'authenticated',
   capabilities: {
-    network: [{ url: `*/app-git/gitpull/app/${APP_ID}`, json: { meta_data: { tags: [] } } }],
+    network: [
+      { url: `*/app-git/gitpull/app/${APP_ID}`, json: { meta_data: { tags: [] } } },
+      {
+        url: '*/app-environments/init',
+        json: { environments: [DEVELOPMENT], editorEnvironment: DEVELOPMENT, editorVersion: { appId: APP_ID } },
+      },
+      { method: 'post', url: '*/app-environments/post-action/environment_changed', json: {} },
+      {
+        url: `*/app-environments/${DEVELOPMENT.id}/versions`,
+        json: { appVersions: [{ id: 'v-2', name: 'v2', versionType: 'version', status: 'PUBLISHED' }] },
+      },
+    ],
   },
 });
 
@@ -75,6 +87,31 @@ describe('the Create branch modal "Create from" default', () => {
     renderModal(session);
 
     expect(createFromTrigger()).toHaveTextContent('Latest (main)');
+  });
+
+  test('falls back to Latest (main) once the versions load without the open version', async () => {
+    await session.store.act('init');
+    // v1 is open but not in the loaded list.
+    await session.store.act('setSelectedVersion', { ...savedVersion, id: 'v-1', name: 'v1' });
+    renderModal(session);
+
+    expect(createFromTrigger()).toHaveTextContent('v1');
+
+    // Catches: a stale preselection staying selected.
+    await waitFor(() => expect(createFromTrigger()).toHaveTextContent('Latest (main)'));
+  });
+
+  test('keeps the open version once the versions load with it listed', async () => {
+    await session.store.act('init');
+    await session.store.act('setSelectedVersion', savedVersion);
+    renderModal(session);
+
+    await waitFor(() => expect(screen.queryByText('Loading more versions...')).not.toBeInTheDocument());
+    fireEvent.click(createFromTrigger());
+
+    // Catches: falling back when the open version is listed.
+    expect(createFromTrigger()).toHaveTextContent('v2');
+    expect(screen.getAllByText('v2').length).toBeGreaterThan(1);
   });
 
   test('falls back to Latest (main) when the open version is a branch', async () => {

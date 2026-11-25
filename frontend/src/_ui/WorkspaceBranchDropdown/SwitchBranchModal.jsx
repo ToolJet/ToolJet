@@ -20,6 +20,8 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState(null);
   const [pullConflictGroups, setPullConflictGroups] = useState(null);
+  // Branch named in the Copy error report.
+  const [conflictBranchName, setConflictBranchName] = useState(null);
 
   const { branches, activeBranchId, orgGitConfig, currentBranch, remoteBranches, visibleCount } =
     useWorkspaceBranchesStore((state) => ({
@@ -152,6 +154,7 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
               const parsed = JSON.parse(pullError?.data?.message || pullError?.error || '{}');
               if (parsed?.conflictGroups?.length) {
                 setPullConflictGroups(parsed.conflictGroups);
+                setConflictBranchName(branch.name);
                 return;
               }
             } catch {
@@ -394,6 +397,7 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
         show={!!pullConflictGroups}
         conflictGroups={pullConflictGroups || []}
         onClose={() => setPullConflictGroups(null)}
+        branchName={conflictBranchName}
         context="branch-switch"
       />
     </>

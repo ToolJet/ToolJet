@@ -23,6 +23,8 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [sourceBranchId, setSourceBranchId] = useState('');
   const [conflictGroups, setConflictGroups] = useState(null);
+  // Branch named in the Copy error report.
+  const [conflictBranchName, setConflictBranchName] = useState(null);
   const [pendingImportName, setPendingImportName] = useState(null);
   const dropdownRef = useRef(null);
   // New key per modal mount; the import-confirmation resubmit reuses it deliberately —
@@ -140,6 +142,7 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
           }
           if (parsed?.conflictGroups?.length) {
             setConflictGroups(parsed.conflictGroups);
+            setConflictBranchName(name);
             setPendingImportName(null);
             setIsCreating(false);
             return;
@@ -320,6 +323,7 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
         show={!!conflictGroups}
         conflictGroups={conflictGroups || []}
         onClose={() => setConflictGroups(null)}
+        branchName={conflictBranchName}
         context="branch-creation"
       />
 
