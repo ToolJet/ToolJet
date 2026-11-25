@@ -81,3 +81,68 @@ describe('save indicator state', () => {
     expect(app().saveError).toBe(false);
   });
 });
+
+describe('query saves', () => {
+  const QUERY = { id: 'query-1', name: 'getOrders', kind: 'restapi', options: {} };
+  const QUERY_UPDATE = '*/data-queries/:queryId/versions/:versionId';
+  // saveData is throttled (500 ms); let the throttle window close between saves.
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 600));
+  const waitFor = async (check) => {
+    for (let i = 0; i < 50 && !check(); i++) await new Promise((r) => setTimeout(r, 10));
+  };
+
+  beforeEach(async () => {
+    await settle();
+    state().setIsEditorFreezed(false);
+    useStore.setState((s) => {
+      s.dataQuery.creatingQueryInProcessId = null;
+      s.dataQuery.queries.modules.canvas = [{ ...QUERY }];
+    });
+  });
+
+  test('a failed query save is reported and stops showing saving', async () => {
+    offline(QUERY_UPDATE, 'patch');
+    state().dataQuery.saveData({ ...QUERY, options: { url: 'https://example.test' } });
+    await waitFor(() => app().saveError === true && !app().isSaving);
+
+    expect(app().saveError).toBe(true);
+    expect(app().isSaving).toBe(false);
+  });
+
+  test('a failed query rename is reported', async () => {
+    offline(QUERY_UPDATE, 'patch');
+    state().dataQuery.renameQuery('query-1', 'getAllOrders');
+    await waitFor(() => app().saveError === true && !app().isSaving);
+
+    expect(app().saveError).toBe(true);
+  });
+
+  test('a query save that finishes while a component save is pending keeps showing saving', async () => {
+    let releaseComponentSave;
+    server.use(
+      http.put('*/v2/apps/:appId/versions/:versionId/components', async () => {
+        await new Promise((resolve) => (releaseComponentSave = resolve));
+        return HttpResponse.json({});
+      })
+    );
+    online(QUERY_UPDATE, 'patch');
+
+    const componentSave = state().saveComponentChanges(
+      { c1: { component: { name: 'text2' } } },
+      'components',
+      'update',
+      'canvas'
+    );
+    await waitFor(() => typeof releaseComponentSave === 'function');
+    state().dataQuery.saveData({ ...QUERY, options: { url: 'https://example.test' } });
+    await waitFor(() => state().dataQuery.isUpdatingQueryInProcess === false);
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(app().isSaving).toBe(true);
+
+    releaseComponentSave();
+    await componentSave;
+    expect(app().isSaving).toBe(false);
+    expect(app().saveError).toBe(false);
+  });
+});

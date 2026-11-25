@@ -92,8 +92,6 @@ export const createDataQuerySlice = (set, get) => ({
       const setQueryToBeRun = get().queryPanel.setQueryToBeRun;
       const dataSourceId = selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;
       const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
-      const setIsAppSaving = get().setIsAppSaving;
-      setIsAppSaving(true);
       const dataQueries = get().dataQuery.queries.modules[moduleId];
       const currDataQueries = [...dataQueries];
       const runOnCreate = options.runOnCreate;
@@ -123,8 +121,11 @@ export const createDataQuerySlice = (set, get) => ({
       });
       setSelectedQuery(tempId);
       setNameInputFocused(true);
-      dataqueryService
-        .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId, folderId)
+      get()
+        .trackAppSave(
+          () => dataqueryService.create(appId, appVersionId, name, kind, options, dataSourceId, pluginId, folderId),
+          moduleId
+        )
         .then((data) => {
           set((state) => {
             state.dataQuery.creatingQueryInProcessId = null;
@@ -195,8 +196,7 @@ export const createDataQuerySlice = (set, get) => ({
           });
           setSelectedQuery(null);
           toast.error(`Failed to create query: ${error.message ?? error.error}`);
-        })
-        .finally(() => setIsAppSaving(false));
+        });
     },
     renameQuery: (id, newName, moduleId = 'canvas') => {
       /** If query creation in progress, skips call and pushes the update to queue */
@@ -206,8 +206,6 @@ export const createDataQuerySlice = (set, get) => ({
         });
         return;
       }
-      const setIsAppSaving = get().setIsAppSaving;
-      setIsAppSaving(true);
       /**
        * Seting name to store before api call for instant UI update and better UX.
        * Name is again set to state post api call to handle if renaming fails in backend.
@@ -218,8 +216,8 @@ export const createDataQuerySlice = (set, get) => ({
         );
       });
       const versionId = get().currentVersionId;
-      dataqueryService
-        .update(id, versionId, newName)
+      get()
+        .trackAppSave(() => dataqueryService.update(id, versionId, newName), moduleId)
         .then((data) => {
           set((state) => {
             state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) =>
@@ -235,9 +233,6 @@ export const createDataQuerySlice = (set, get) => ({
         })
         .catch((error) => {
           toast.error(`Failed to rename query: ${error.message ?? error.error}`);
-        })
-        .finally(() => {
-          setIsAppSaving(false);
         });
     },
     deleteDataQueries: (queryId, moduleId = 'canvas') => {
@@ -245,10 +240,8 @@ export const createDataQuerySlice = (set, get) => ({
         state.dataQuery.isDeletingQueryInProcess = true;
       });
       const versionId = get().currentVersionId;
-      const setIsAppSaving = get().setIsAppSaving;
-      setIsAppSaving(true);
-      dataqueryService
-        .del(queryId, versionId)
+      get()
+        .trackAppSave(() => dataqueryService.del(queryId, versionId), moduleId)
         .then(() => {
           const dataQueries = get().dataQuery.queries.modules[moduleId];
           // const deletedQueryName = dataQueries.find((query) => query.id === queryId).name;
@@ -281,8 +274,7 @@ export const createDataQuerySlice = (set, get) => ({
           set((state) => {
             state.dataQuery.isDeletingQueryInProcess = false;
           });
-        })
-        .finally(() => setIsAppSaving(false));
+        });
 
       clearQueryRerunTimer(queryId);
       get().removeNode(`queries.${queryId}`, moduleId);
@@ -305,19 +297,21 @@ export const createDataQuerySlice = (set, get) => ({
       }
       queryToClone.name = newName;
 
-      const setIsAppSaving = get().setIsAppSaving;
       const setSelectedQuery = get().queryPanel.setSelectedQuery;
-      setIsAppSaving(true);
 
-      dataqueryService
-        .create(
-          appId,
-          queryToClone.app_version_id,
-          queryToClone.name,
-          queryToClone.kind,
-          queryToClone.options,
-          queryToClone.data_source_id,
-          queryToClone.pluginId
+      get()
+        .trackAppSave(
+          () =>
+            dataqueryService.create(
+              appId,
+              queryToClone.app_version_id,
+              queryToClone.name,
+              queryToClone.kind,
+              queryToClone.options,
+              queryToClone.data_source_id,
+              queryToClone.pluginId
+            ),
+          moduleId
         )
         .then((data) => {
           set((state) => {
@@ -418,19 +412,19 @@ export const createDataQuerySlice = (set, get) => ({
           set((state) => {
             state.dataQuery.creatingQueryInProcessId = null;
           });
-        })
-        .finally(() => setIsAppSaving(false));
+        });
     },
     changeDataQuery: (newDataSource, moduleId = 'canvas') => {
       const appVersionId = get().currentVersionId;
-      const { queryPanel, setIsAppSaving } = get();
+      const { queryPanel, trackAppSave } = get();
       const { selectedQuery, setSelectedQuery, setSelectedDataSource } = queryPanel;
       set((state) => {
         state.dataQuery.isUpdatingQueryInProcess = true;
       });
-      setIsAppSaving(true);
-      dataqueryService
-        .changeQueryDataSource(selectedQuery?.id, newDataSource.id, appVersionId)
+      trackAppSave(
+        () => dataqueryService.changeQueryDataSource(selectedQuery?.id, newDataSource.id, appVersionId),
+        moduleId
+      )
         .then(() => {
           set((state) => {
             state.dataQuery.isUpdatingQueryInProcess = false;
@@ -449,8 +443,7 @@ export const createDataQuerySlice = (set, get) => ({
           set((state) => {
             state.dataQuery.isUpdatingQueryInProcess = false;
           });
-        })
-        .finally(() => setIsAppSaving(false));
+        });
     },
     updateDataQuery: (options, moduleId = 'canvas') => {
       const componentNameIdMapping = get().modules['canvas'].componentNameIdMapping;
@@ -516,15 +509,12 @@ export const createDataQuerySlice = (set, get) => ({
       }
       // const entityIdMappedOptions = useResolveStore.getState().actions.findReferences(newValues?.options);
 
-      const setIsAppSaving = get().setIsAppSaving;
-      setIsAppSaving(true);
       set((state) => {
         state.dataQuery.isUpdatingQueryInProcess = true;
       });
 
       // .update(newValues?.id, newValues?.name, entityIdMappedOptions)
       if (!newValues?.id) {
-        setIsAppSaving(false);
         set((state) => {
           state.dataQuery.isUpdatingQueryInProcess = true;
         });
@@ -535,7 +525,8 @@ export const createDataQuerySlice = (set, get) => ({
       set((state) => {
         state.dataQuery.queryUpdates[newValues?.id] = updatePromise;
       });
-      updatePromise
+      get()
+        .trackAppSave(() => updatePromise, moduleId)
         .then((data) => {
           localStorage.removeItem('transformation');
           set((state) => {
@@ -555,7 +546,6 @@ export const createDataQuerySlice = (set, get) => ({
           });
         })
         .finally(() => {
-          setIsAppSaving(false);
           set((state) => {
             delete state.dataQuery.queryUpdates[newValues?.id];
           });
