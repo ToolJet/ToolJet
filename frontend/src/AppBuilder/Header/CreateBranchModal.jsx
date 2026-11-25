@@ -38,6 +38,8 @@ export async function switchEditorToBranch(branch, appId, successMessage = `Swit
 export function CreateBranchModal({ onClose, onSuccess, appId, organizationId }) {
   const [branchName, setBranchName] = useState('');
   const [conflictGroups, setConflictGroups] = useState(null);
+  // Branch named in the Copy error report.
+  const [conflictBranchName, setConflictBranchName] = useState(null);
   const orgGitConfig = useWorkspaceBranchesStore((state) => state.orgGitConfig);
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
   const LATEST_MAIN_OPTION = { label: `Latest (${defaultGitBranch})`, commitSha: null, isDefault: true };
@@ -250,6 +252,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
           if (parsed?.conflictGroups?.length) {
             setConflictGroups(parsed.conflictGroups);
+            setConflictBranchName(name);
             return;
           }
         } catch {
@@ -422,6 +425,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
         show={!!conflictGroups}
         conflictGroups={conflictGroups || []}
         onClose={() => setConflictGroups(null)}
+        branchName={conflictBranchName}
         context="branch-creation"
       />
     </>

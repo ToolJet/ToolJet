@@ -164,6 +164,8 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
   const [switchingBranchName, setSwitchingBranchName] = useState(null);
   const [branchToDelete, setBranchToDelete] = useState(null);
   const [pullConflictGroups, setPullConflictGroups] = useState(null);
+  // Branch named in the Copy error report.
+  const [conflictBranchName, setConflictBranchName] = useState(null);
 
   const handleBranchClick = async (branch) => {
     if (branch.name === currentBranchName) {
@@ -204,6 +206,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
                   if (parsed?.conflictGroups?.length) {
                     setSwitchingBranchName(null);
                     setPullConflictGroups(parsed.conflictGroups);
+                    setConflictBranchName(branch.name);
                     return;
                   }
                 } catch {
@@ -485,6 +488,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
         show={!!pullConflictGroups}
         conflictGroups={pullConflictGroups || []}
         onClose={() => setPullConflictGroups(null)}
+        branchName={conflictBranchName}
         context="branch-switch"
       />
     </>
