@@ -4,10 +4,29 @@ const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
 const pad = (n) => String(n).padStart(2, '0');
 
+function formatUtcOffset(date) {
+  const offset = -date.getTimezoneOffset();
+  const abs = Math.abs(offset);
+  return `UTC${offset < 0 ? '-' : '+'}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
+}
+
+// Short zone name (e.g. IST), else a UTC offset.
+function formatTimeZone(date) {
+  try {
+    const zone = new Intl.DateTimeFormat(undefined, { timeZoneName: 'short' })
+      .formatToParts(date)
+      .find((part) => part.type === 'timeZoneName')?.value;
+    if (zone) return zone;
+  } catch {
+    // use the offset
+  }
+  return formatUtcOffset(date);
+}
+
 function formatLocalTimestamp(date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(
     date.getMinutes()
-  )}`;
+  )} ${formatTimeZone(date)}`;
 }
 
 export function buildConflictReport({ action, branchName, reportedAt = new Date(), sections = [] }) {
