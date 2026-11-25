@@ -4,7 +4,7 @@ import { EntityManager } from 'typeorm';
 
 export interface IFoldersUtilService {
   allFolders(user: User, manager: EntityManager, type?: string): Promise<Folder[]>;
-  findOne(folderId: string, manager: EntityManager): Promise<Folder>;
+  findOne(folderId: string, organizationId: string, manager: EntityManager): Promise<Folder>;
   findBranchNamesWithApps(folderId: string, manager: EntityManager): Promise<string[]>;
   findBranchNamesWithDataSources(folderId: string, manager: EntityManager): Promise<string[]>;
 }

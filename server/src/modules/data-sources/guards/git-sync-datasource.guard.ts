@@ -3,6 +3,7 @@ import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { DataSource } from '@entities/data_source.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import {
@@ -86,9 +87,22 @@ export class GitSyncDataSourceEditGuard implements CanActivate {
     const branchId = request.query?.branch_id;
     const environmentId = request.query?.environment_id;
 
+    // Without branch_id the edit touches the default (git-tracked) version, so check that version's
+    // lock rather than an arbitrary one that could be an unsynced feature-branch version.
+    let effectiveBranchId = branchId;
+    if (!effectiveBranchId) {
+      const defaultBranch = await dbTransactionWrap((manager: EntityManager) =>
+        manager.findOne(WorkspaceBranch, {
+          where: { organizationId, isDefault: true },
+          select: ['id'],
+        })
+      );
+      effectiveBranchId = defaultBranch?.id;
+    }
+
     const dsv = await dbTransactionWrap((manager: EntityManager) =>
       manager.findOne(DataSourceVersion, {
-        where: { dataSourceId, ...(branchId ? { branchId } : {}) },
+        where: { dataSourceId, ...(effectiveBranchId ? { branchId: effectiveBranchId } : {}) },
         select: ['id', 'branchId', 'isSynced'],
       })
     );
@@ -100,7 +114,7 @@ export class GitSyncDataSourceEditGuard implements CanActivate {
           dataSourceId,
           organizationId,
           environmentId,
-          dsv.branchId ?? branchId
+          dsv.branchId ?? effectiveBranchId
         ),
         dbTransactionWrap((manager: EntityManager) =>
           manager.findOne(DataSource, {
@@ -117,7 +131,7 @@ export class GitSyncDataSourceEditGuard implements CanActivate {
       this.gitSyncConfigsUtilService,
       organizationId,
       {
-        branchId: dsv?.branchId ?? branchId,
+        branchId: dsv?.branchId ?? effectiveBranchId,
         isSynced: !!dsv?.isSynced,
         secretsOnly,
       },

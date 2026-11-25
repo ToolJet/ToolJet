@@ -313,7 +313,8 @@ export class DataQueriesService implements IDataQueriesService {
     dataSource: DataSource,
     response: Response,
     mode?: string,
-    app?: App
+    app?: App,
+    appAbility?: AppAbility
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
@@ -332,6 +333,7 @@ export class DataQueriesService implements IDataQueriesService {
     const isReleasedVersion = !!app?.currentVersionId && dataQuery.appVersionId === app.currentVersionId;
     if (
       mode !== 'view' &&
+      appAbility?.can(FEATURE_KEY.UPDATE_ONE, App) &&
       !user.patAppId &&
       !user.oauthAppId &&
       !isReleasedVersion &&

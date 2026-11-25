@@ -4,6 +4,7 @@ import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import { PageUsersRepository } from './page-users.repository';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { PAGE_PERMISSION_TYPE } from '../constants';
+import { toSafeAccessRuleUser } from '../helpers/safe-user.helper';
 
 @Injectable()
 export class PagePermissionsRepository extends Repository<PagePermission> {
@@ -22,14 +23,19 @@ export class PagePermissionsRepository extends Repository<PagePermission> {
       });
 
       return pagePermissions.map((permission) => {
+        const users = permission.users?.map((pageUser) => ({
+          ...pageUser,
+          user: toSafeAccessRuleUser(pageUser.user),
+        }));
+
         if (permission.type === PAGE_PERMISSION_TYPE.GROUP) {
           return {
             ...permission,
-            groups: permission.users,
+            groups: users,
             users: undefined,
           };
         }
-        return permission;
+        return { ...permission, users };
       });
     }, manager || this.manager);
   }
