@@ -142,6 +142,13 @@ export const NEW_DROP_ONLY_STYLES = {
   KeyValuePair: THEME_STYLE_KEYS,
   Table: THEME_STYLE_KEYS,
   Chart: THEME_STYLE_KEYS,
+  Form: THEME_STYLE_KEYS,
+  Container: THEME_STYLE_KEYS,
+  Accordion: THEME_STYLE_KEYS,
+  Tabs: THEME_STYLE_KEYS,
+  Listview: THEME_STYLE_KEYS,
+  Calendar: THEME_STYLE_KEYS,
+  Kanban: THEME_STYLE_KEYS,
 };
 
 /**

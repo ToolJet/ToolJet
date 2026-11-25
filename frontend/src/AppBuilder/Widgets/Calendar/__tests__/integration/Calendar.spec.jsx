@@ -1,4 +1,7 @@
 import { waitFor, fireEvent } from '@testing-library/react';
+import { calendarConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { componentDefinition } from '@/test/app-builder';
 import {
   createWidgetHarness,
   binding,
@@ -44,6 +47,10 @@ const defaultStyles = {
   weekDateFormat: binding('DD MMM'),
   borderColor: binding('var(--cc-weak-border)'),
   borderRadius: binding('{{6}}'),
+  // The scenarios above the theme ones drive the widget's own radius / shadow (Custom); new drops default to the
+  // theme's Large / None (Calendar-THEME-001).
+  borderRadiusStyle: binding('custom'),
+  boxShadowStyle: binding('custom'),
 };
 
 const widget = createWidgetHarness({
@@ -290,5 +297,65 @@ describe('Calendar widget', () => {
     });
 
     expect(exposed().currentDate).toBe('07-15-2022');
+  });
+});
+
+// Theme border radius / box shadow (contract D-09; Button's D-03..D-06 transferred).
+describe('Calendar: theme border radius and box shadow', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+  const themedRoot = () => document.getElementById(ID);
+
+  test('[Calendar-THEME-001] a newly dropped Calendar starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(calendarConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(calendarConfig.definition.generalStyles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(calendarConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(calendarConfig.generalStyles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[Calendar-THEME-002] a Calendar saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults (Large / None) onto saved widgets.
+    const saved = componentDefinition(
+      ID,
+      ID,
+      'Calendar',
+      {},
+      {
+        styles: { borderRadius: binding('{{10}}') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    saved.component.definition.generalStyles = { boxShadow: binding('5px 5px 0px 0px #00000040') };
+    const { styles, generalStyles } = buildComponentMetaDefinition({ [ID]: saved })[ID].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({
+      styles: { ...styles, ...generalStyles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(themedRoot()).toBeInTheDocument());
+    expect(themedRoot().style.borderRadius).toBe('10px');
+    expect(themedRoot().style.boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[Calendar-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw radius / shadow whatever the theme style.
+    widget.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(themedRoot()).toBeInTheDocument());
+    expect(themedRoot().style.borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(themedRoot().style.boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty(ID, 'borderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty(ID, 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(themedRoot().style.borderRadius).toBe('10px'));
   });
 });

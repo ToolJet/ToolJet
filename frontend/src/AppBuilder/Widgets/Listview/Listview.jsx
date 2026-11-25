@@ -14,6 +14,7 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 import { ListviewSubcontainer } from './ListviewSubcontainer';
 import cx from 'classnames';
 import Spinner from '@/_ui/Spinner';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const Listview = function Listview({
   id,
@@ -59,7 +60,7 @@ export const Listview = function Listview({
 
   const data = dataSourceSelector === 'rawJson' ? combinedProperties?.data : dataSourceSelector;
 
-  const { borderRadius, boxShadow } = styles;
+  const { borderRadius, borderRadiusStyle, boxShadow, boxShadowStyle } = styles;
   const visibility = combinedProperties.visibility ?? true;
   const disabledState = combinedProperties.disabledState ?? false;
   const backgroundColor =
@@ -75,8 +76,8 @@ export const Listview = function Listview({
     ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
     height: isDynamicHeightEnabled ? '100%' : enablePagination ? height - 54 : height,
     display: visibility ? 'flex' : 'none',
-    borderRadius: borderRadius ?? 0,
-    boxShadow,
+    borderRadius: themedRadius(borderRadiusStyle, borderRadius ?? 0),
+    boxShadow: themedShadow(boxShadowStyle, boxShadow),
     padding: '7px',
     overflowX: 'hidden',
     // Dynamic mode (view-only) hides the listview's own scroll to suppress

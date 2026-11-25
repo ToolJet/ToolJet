@@ -39,7 +39,8 @@
     },
     {
       "componentType": "Form",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Form/TESTING.md"
     },
     {
       "componentType": "ModalV2",
@@ -48,7 +49,8 @@
     },
     {
       "componentType": "Container",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Container/TESTING.md"
     },
     {
       "componentType": "FlexContainer",
@@ -56,7 +58,8 @@
     },
     {
       "componentType": "Accordion",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Accordion/TESTING.md"
     },
     {
       "componentType": "Tabs",
@@ -65,7 +68,8 @@
     },
     {
       "componentType": "Listview",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Listview/TESTING.md"
     },
     {
       "componentType": "Calendar",

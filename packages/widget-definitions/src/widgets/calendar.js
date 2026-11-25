@@ -64,6 +64,8 @@ export const calendarConfig = {
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       validation: {
         schema: { type: 'number' },
         defaultValue: 6,
@@ -75,6 +77,11 @@ export const calendarConfig = {
     selectedSlots: {},
     currentView: 'month',
     currentDate: undefined,
+  },
+  // The universal General Box Shadow, as a dropdown of the app theme's shadows + Custom (this shadow); the choice is
+  // generalStyles.boxShadowStyle (the canvas merges generalStyles into the widget's styles).
+  generalStyles: {
+    boxShadow: { type: 'boxShadow', displayName: 'Box Shadow', themeTokens: 'shadows' },
   },
   definition: {
     others: {
@@ -124,6 +131,12 @@ export const calendarConfig = {
       weekDateFormat: { value: 'DD MMM' },
       borderColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: 6 },
+      // New drops follow the theme's Large radius and None shadow; a saved widget without these keys keeps its own
+      // values (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
+    },
+    generalStyles: {
+      boxShadowStyle: { value: 'none' },
     },
   },
 };

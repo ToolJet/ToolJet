@@ -285,6 +285,8 @@ export const formConfig = {
     borderRadius: {
       type: 'code',
       displayName: 'Border radius',
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       validation: {
         schema: {
           type: 'union',
@@ -292,6 +294,15 @@ export const formConfig = {
         },
         defaultValue: 6,
       },
+      accordian: 'container',
+    },
+    // New with theme styles: Form had no shadow, so the default is none and saved forms look the same.
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
       accordian: 'container',
     },
   },
@@ -377,6 +388,11 @@ export const formConfig = {
       footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '6' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      // New drops follow the theme's Large radius and None shadow; a saved widget without these keys keeps its own
+      // values (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
+      boxShadowStyle: { value: 'none' },
       borderColor: { value: 'var(--cc-weak-border)' },
       headerDividerColor: { value: 'var(--cc-weak-border)' },
       footerDividerColor: { value: 'var(--cc-weak-border)' },

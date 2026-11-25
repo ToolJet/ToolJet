@@ -37,9 +37,10 @@ const Header = (props) => {
   const accordionHeaderStyles = useMemo(() => {
     return {
       maxHeight: `${headerMaxHeight}px`,
-      borderTopLeftRadius: `${borderRadius}px`,
-      borderTopRightRadius: `${borderRadius}px`,
-      ...(!isExpanded && { borderBottomLeftRadius: `${borderRadius}px`, borderBottomRightRadius: `${borderRadius}px` }),
+      // `borderRadius` is the Accordion's CSS radius (its number in px, or the theme variable).
+      borderTopLeftRadius: borderRadius,
+      borderTopRightRadius: borderRadius,
+      ...(!isExpanded && { borderBottomLeftRadius: borderRadius, borderBottomRightRadius: borderRadius }),
       ...headerBgColor,
     };
   }, [borderRadius, isExpanded, headerBgColor, headerMaxHeight]);

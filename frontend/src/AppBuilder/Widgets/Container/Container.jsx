@@ -13,6 +13,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import './container.scss';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 import { HorizontalSlot } from '@/AppBuilder/Widgets/Form/Components/HorizontalSlot';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const Container = ({
   id,
@@ -58,7 +59,9 @@ export const Container = ({
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
-  const { borderRadius, borderColor, boxShadow, headerDividerColor } = styles;
+  const { borderRadius, borderRadiusStyle, borderColor, boxShadow, boxShadowStyle, headerDividerColor } = styles;
+  // The box, its header and its canvas share one radius: the theme item's, or the widget's own number.
+  const radius = themedRadius(borderRadiusStyle, borderRadius ? parseFloat(borderRadius) : 0);
   const headerMaxHeight = isDynamicHeightEnabled ? 10000 : parseInt(height, 10) - 100 - 10;
   const contentBgColor = useMemo(() => {
     return {
@@ -78,14 +81,14 @@ export const Container = ({
 
   const computedStyles = {
     backgroundColor: contentBgColor.backgroundColor,
-    borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
+    borderRadius: radius,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
     height: isDynamicHeightEnabled ? '100%' : height,
     display: isVisible ? 'flex' : 'none',
     flexDirection: 'column',
     position: 'relative',
-    boxShadow,
+    boxShadow: themedShadow(boxShadowStyle, boxShadow),
     '--cc-container-header-divider-color': headerDividerColor,
   };
 
@@ -93,8 +96,8 @@ export const Container = ({
     flexShrink: 0,
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
     maxHeight: `${headerMaxHeight}px`,
-    borderTopLeftRadius: `${borderRadius}px`,
-    borderTopRightRadius: `${borderRadius}px`,
+    borderTopLeftRadius: radius,
+    borderTopRightRadius: radius,
     overflow: 'hidden',
     ...headerBgColor,
   };
@@ -149,7 +152,7 @@ export const Container = ({
               id={id}
               styles={{
                 ...contentBgColor,
-                borderRadius: `${borderRadius}px`,
+                borderRadius: radius,
               }}
               canvasHeight={isDynamicHeightEnabled ? '100%' : height}
               canvasWidth={width}

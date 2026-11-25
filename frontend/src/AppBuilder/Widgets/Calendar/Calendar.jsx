@@ -5,6 +5,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { CalendarEventPopover } from './CalendarPopover';
 import './Calendar.scss';
 import _ from 'lodash';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 const localizer = momentLocalizer(moment);
 
@@ -40,7 +41,9 @@ export default function Calendar({
   setExposedVariable,
   dataCy,
 }) {
-  const style = { height, borderRadius: `${styles.borderRadius}px`, overflow: 'hidden' };
+  // The box and the calendar inside share one radius: the theme item's, or the widget's own number.
+  const radius = themedRadius(styles.borderRadiusStyle, styles.borderRadius);
+  const style = { height, borderRadius: radius, overflow: 'hidden' };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
   const events = Array.isArray(properties?.events)
     ? properties?.events?.map((event) => prepareEvent(event, properties.dateFormat))
@@ -131,9 +134,9 @@ export default function Calendar({
       id={id}
       style={{
         display: styles.visibility ? 'block' : 'none',
-        boxShadow: styles.boxShadow,
+        boxShadow: themedShadow(styles.boxShadowStyle, styles.boxShadow),
         border: `1px solid ${styles.borderColor}`,
-        borderRadius: `${styles.borderRadius}px`,
+        borderRadius: radius,
       }}
       data-cy={dataCy}
       className="scrollbar-container"

@@ -27,6 +27,7 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 import './form.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import FormSignalContext from './FormSignalContext';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 const FormComponent = (props) => {
   const {
@@ -56,8 +57,10 @@ const FormComponent = (props) => {
 
   const {
     borderRadius,
+    borderRadiusStyle,
     borderColor,
     boxShadow,
+    boxShadowStyle,
     footerBackgroundColor,
     headerBackgroundColor,
     headerDividerColor,
@@ -95,18 +98,20 @@ const FormComponent = (props) => {
   const activeColor = getModifiedColor(backgroundColor, 'active');
   const computedFormBodyHeight = getBodyHeight(height, showHeader, showFooter, headerHeight, footerHeight);
   const [canHeight, setCanHeight] = useState('100%');
-  const computedBorderRadius = `${borderRadius ? parseFloat(borderRadius) : 0}px`;
+  // The box, its header and its footer share one radius: the theme item's, or the widget's own number.
+  const radius = themedRadius(borderRadiusStyle, borderRadius ? parseFloat(borderRadius) : 0);
 
   const computedStyles = {
     backgroundColor,
-    borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
+    borderRadius: radius,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     height: isDynamicHeightEnabled ? '100%' : height,
     display: isVisible ? 'flex' : 'none',
     position: 'relative',
-    boxShadow,
+    boxShadow: themedShadow(boxShadowStyle, boxShadow),
     flexDirection: 'column',
-    clipPath: `inset(0 round ${computedBorderRadius})`,
+    // Clips the content to the rounded corners; unlike clip-path it leaves the box's own shadow visible.
+    overflow: 'hidden',
     '--cc-form-scroll-bar-color': activeColor,
     '--cc-form-header-divider-color': headerDividerColor,
     '--cc-form-footer-divider-color': footerDividerColor,
@@ -132,8 +137,8 @@ const FormComponent = (props) => {
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     maxHeight: `${footerMaxHeight}px`,
-    borderBottomLeftRadius: `${borderRadius}px`,
-    borderBottomRightRadius: `${borderRadius}px`,
+    borderBottomLeftRadius: radius,
+    borderBottomRightRadius: radius,
     backgroundColor:
       ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
   };
@@ -144,8 +149,8 @@ const FormComponent = (props) => {
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     maxHeight: `${headerMaxHeight}px`,
-    borderTopLeftRadius: `${borderRadius}px`,
-    borderTopRightRadius: `${borderRadius}px`,
+    borderTopLeftRadius: radius,
+    borderTopRightRadius: radius,
     backgroundColor:
       ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
     overflow: 'hidden',

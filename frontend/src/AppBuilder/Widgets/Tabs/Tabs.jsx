@@ -14,6 +14,7 @@ import { useTabsNavScrollArrows } from '@/AppBuilder/Widgets/Tabs/useTabsNavScro
 import { shallow } from 'zustand/shallow';
 import { getCssVarValue, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import './tabs.scss';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 const tinycolor = require('tinycolor2');
 const TAB_HEADER_HEIGHT = 49.5;
 
@@ -66,7 +67,7 @@ export const Tabs = function Tabs({
   subContainerIndex,
   componentType,
 }) {
-  const { tabWidth, boxShadow } = styles;
+  const { tabWidth, boxShadow, boxShadowStyle, borderRadiusStyle } = styles;
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
     properties.visibility,
@@ -308,8 +309,8 @@ export const Tabs = function Tabs({
         ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
         display: isVisible ? 'flex' : 'none',
         backgroundColor: darkMode ? '#324156' : '#fff',
-        boxShadow,
-        borderRadius: `${borderRadius}px`,
+        boxShadow: themedShadow(boxShadowStyle, boxShadow),
+        borderRadius: themedRadius(borderRadiusStyle, borderRadius),
         overflow: 'hidden',
         '--cc-tabs-border-color': border,
       }}

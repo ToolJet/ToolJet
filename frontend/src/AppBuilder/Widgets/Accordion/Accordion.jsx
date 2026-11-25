@@ -12,6 +12,7 @@ import Header from './components/Header';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const Accordion = ({
   id,
@@ -30,7 +31,17 @@ export const Accordion = ({
   componentType,
 }) => {
   const { headerHeight = 80, showHeader, dynamicHeight, loadingState, visibility, disabledState } = properties;
-  const { borderRadius, borderColor, boxShadow, headerDividerColor, chevronIconColor } = styles;
+  const {
+    borderRadius,
+    borderRadiusStyle,
+    borderColor,
+    boxShadow,
+    boxShadowStyle,
+    headerDividerColor,
+    chevronIconColor,
+  } = styles;
+  // The box, its header and its canvas share one radius: the theme item's, or the widget's own number.
+  const radius = themedRadius(borderRadiusStyle, borderRadius ? parseFloat(borderRadius) : 0);
 
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isVisible: visibility,
@@ -147,7 +158,7 @@ export const Accordion = ({
 
   const computedStyles = {
     backgroundColor: contentBgColor.backgroundColor,
-    borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
+    borderRadius: radius,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     ...(isDynamicHeightEnabled && exposedVariablesTemporaryState.isExpanded && { minHeight: `${height}px` }),
     height: !exposedVariablesTemporaryState.isExpanded
@@ -161,7 +172,7 @@ export const Accordion = ({
         : 'none',
     flexDirection: 'column',
     position: 'relative',
-    boxShadow,
+    boxShadow: themedShadow(boxShadowStyle, boxShadow),
     '--cc-accordion-header-divider-color': headerDividerColor,
   };
 
@@ -199,7 +210,7 @@ export const Accordion = ({
               isDynamicHeightEnabled={isDynamicHeightEnabled}
               headerBackgroundColor={styles.headerBackgroundColor}
               darkMode={darkMode}
-              borderRadius={borderRadius}
+              borderRadius={radius}
               headerHeight={headerHeight}
               isExpanded={exposedVariablesTemporaryState.isExpanded}
               setExpanded={(expand) => {
@@ -224,7 +235,7 @@ export const Accordion = ({
               id={id}
               styles={{
                 ...contentBgColor,
-                borderRadius: `${borderRadius}px`,
+                borderRadius: radius,
               }}
               canvasHeight={isDynamicHeightEnabled ? '100%' : height}
               canvasWidth={width}
