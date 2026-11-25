@@ -6,9 +6,7 @@ export function sanitizeTraceObject(value: any): any {
   if (Array.isArray(value)) return value.map(sanitizeTraceObject);
   if (!value || typeof value !== 'object') return value;
   // Data source options are { key, value, encrypted } items: the secret sits under the key "value".
-  const valueIsSecret =
-    (value as any).encrypted === true ||
-    (typeof (value as any).key === 'string' && CREDENTIAL_KEYS.test((value as any).key));
+  const valueIsSecret = value.encrypted === true || (typeof value.key === 'string' && CREDENTIAL_KEYS.test(value.key));
   return Object.fromEntries(
     Object.entries(value)
       .filter(([, item]) => typeof item !== 'function')

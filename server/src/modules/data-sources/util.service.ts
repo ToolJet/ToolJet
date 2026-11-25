@@ -1165,7 +1165,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     let result = str;
     for (let i = 0; i < matches.length; i++) {
-      // A replacer function inserts the value as is; a plain string would read `$&`, `$'` and `$$` as patterns.
+      // Replacer function: a plain string would read `$&` and `$'` as patterns.
       result = result.replace(matches[i][0], () => replacements[i]);
     }
 

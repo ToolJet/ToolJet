@@ -1,8 +1,11 @@
+import { redactSecretValues } from '@helpers/utils.helper';
+
 const MASK = '[REDACTED]';
 // A shorter value would blank unrelated text (a page number, a one letter header) when scrubbed from a response.
 const MIN_CREDENTIAL_LENGTH = 4;
 // Data source options that hold [name, value] pairs sent with every request.
 const PAIR_LIST_OPTIONS = ['headers', 'url_params', 'custom_query_params', 'cookies'];
+const REQUEST_FIELDS = ['request', 'queryDefinition', 'requestObject'];
 const CREDENTIAL_OPTIONS = ['bearer_token', 'password', 'client_secret', 'api_key', 'access_token', 'refresh_token'];
 
 type Json = Record<string, any>;
@@ -38,6 +41,19 @@ export function maskErrorDataForViewer<T>(data: T): T {
   const source: unknown = data;
   if (!isObject(source) || !('requestObject' in source)) return data;
   return { ...source, requestObject: maskRequest(source.requestObject) } as T;
+}
+
+/**
+ * Scrubs data source credential values from the request parts only (`request`, `queryDefinition`, `requestObject`).
+ * The response body and response headers keep their text: a header value such as `application/json` is not a secret there.
+ */
+export function redactRequestCredentials<T>(value: T, credentials: string[]): T {
+  if (!isObject(value) || credentials.length === 0) return value;
+  const redacted: Json = { ...value };
+  for (const field of REQUEST_FIELDS) {
+    if (field in redacted) redacted[field] = redactSecretValues(redacted[field], credentials);
+  }
+  return redacted as T;
 }
 
 /** Adds the credential values of a data source (headers, URL parameters, cookies, auth fields) to `into`, to be scrubbed from responses. */
