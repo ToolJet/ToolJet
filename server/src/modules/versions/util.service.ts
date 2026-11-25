@@ -8,6 +8,7 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { IVersionUtilService } from './interfaces/IUtilService';
 import { dbTransactionWrap } from '@helpers/database.helper';
+import { assertVariableDefinitionMap } from '@helpers/variable-definition-map.helper';
 import { App } from '@entities/app.entity';
 import { Component } from '@entities/component.entity';
 import { User } from '@entities/user.entity';
@@ -90,6 +91,8 @@ export class VersionUtilService implements IVersionUtilService {
   }
 
   async updateVersion(appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto, manager?: EntityManager) {
+    // Every route that writes globalSettings (general version update, settings update) lands here.
+    assertVariableDefinitionMap(appVersionUpdateDto?.globalSettings?.variables, 'globalSettings.variables');
     const touched = ['homePageId', 'globalSettings', 'pageSettings'].filter(
       (field) => appVersionUpdateDto?.[field] !== undefined
     );
