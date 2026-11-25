@@ -39,6 +39,7 @@ Owns the AppVersion lifecycle: named development snapshots of an App. Create/clo
 
 ## Invariants & gotchas
 
+- Version copying remaps `Page.variables` as well as app-level settings, after **all** new component/query ids exist. Keep this pass in shared `setupNewVersion` so CE and EE/Cloud use it, scope writes to the copied version, and preserve variable-definition UUID keys, static values and references between variables. Previously copied versions are not repaired automatically.
 - Initial-version creation reads the parent app type without hydrating an `App` entity. Partial app entities trigger editor-state subscribers without the workspace context they need; keep scalar-only lookups free of those side effects.
 - Non-DRAFT versions are immutable in name/description (`service.ts` update: "Cannot edit name or description of a saved version"). Content edits are frozen via `should_freeze_editor` (env priority > 1, status PUBLISHED, or EE git freeze).
 - Promote: DRAFT cannot be promoted (save first); request's `currentEnvironmentId` must equal the version's, else 406; next env = lowest priority above current; `promotedFrom` is nulled on promote.

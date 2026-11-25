@@ -93,6 +93,24 @@ export class VersionsCreateService implements IVersionsCreateService {
         await manager.update(AppVersion, { id: appVersion.id }, { globalSettings: updatedGlobalSettings });
       }
 
+      // All pages' component ids must exist before rewriting cross-page variable references.
+      const copiedPages = await manager.find(Page, {
+        where: { appVersionId: appVersion.id },
+        select: ['id', 'variables'],
+      });
+      const variableReferenceMapping = { ...oldDataQueryToNewMapping, ...oldComponentToNewComponentMapping };
+      for (const page of copiedPages) {
+        if (page.variables && Object.keys(page.variables).length > 0) {
+          await manager.update(
+            Page,
+            { id: page.id },
+            {
+              variables: updateEntityReferences(page.variables, variableReferenceMapping),
+            }
+          );
+        }
+      }
+
       await this.updateEventActionsForNewVersionWithNewMappingIds(
         manager,
         appVersion.id,
