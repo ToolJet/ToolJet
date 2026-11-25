@@ -1,5 +1,6 @@
 import './rating.scss';
 import React from 'react';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 import { useTrail } from '@react-spring/web';
 import Label from '@/_ui/Label';
 import RatingIcon from './RatingIcon';
@@ -43,7 +44,8 @@ export const Rating = ({
   const {
     labelStyle,
     textColor: selectedBgColorStars,
-    boxShadow,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
     alignment,
     direction,
     auto,
@@ -54,6 +56,8 @@ export const Rating = ({
     unselectedBackground,
     labelFontSize,
   } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
 
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
 

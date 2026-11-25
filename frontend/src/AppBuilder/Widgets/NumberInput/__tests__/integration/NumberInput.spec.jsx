@@ -34,6 +34,8 @@ import {
   setVariableOn,
   widgetProps,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { numberinputConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const ID = 'num1';
 const NAME = 'numberinput1';
@@ -927,4 +929,63 @@ describe('NumberInput: known bugs (unfixed)', () => {
       expect(handlerSaw()).toBeNull();
     }
   );
+});
+
+// Theme border radius / box shadow (contract D-05; Button's D-03..D-06 transferred).
+describe('NumberInput: theme border radius and box shadow', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+  const themedBox = () => document.querySelector('[data-cy="numberinput1-actionable-section"]');
+
+  test('[NumberInput-THEME-001] a newly dropped NumberInput starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(numberinputConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(numberinputConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(numberinputConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(numberinputConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[NumberInput-THEME-002] a NumberInput saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'num1',
+      'num1',
+      'NumberInput',
+      {},
+      {
+        styles: { borderRadius: binding('{{10}}'), boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles, generalStyles } = buildComponentMetaDefinition({ num1: saved })['num1'].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({
+      styles: { ...styles, ...generalStyles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(themedBox().style.borderRadius).toBe('10px');
+    expect(themedBox().style.boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[NumberInput-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw radius / shadow whatever the theme style.
+    widget.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(themedBox().style.borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(themedBox().style.boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('num1', 'borderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty('num1', 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(themedBox().style.borderRadius).toBe('10px'));
+  });
 });

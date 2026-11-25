@@ -35,6 +35,8 @@ import {
   getWidthTypeOfComponentStyles,
   checkIfInputWidgetTypeIsDeprecated,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { currencyinputConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const harness = createWidgetHarness({ componentType: 'CurrencyInput', handle: 'currencyinput1', id: 'ci1' });
 
@@ -1469,6 +1471,9 @@ describe('styles', () => {
   test('[CurrencyInput-STYLE-005] radius, background, border and shadow reach the field, with legacy fallbacks', async () => {
     harness.render({
       styles: {
+        // Pinned to Custom: the registered definition now seeds new drops onto the theme (D-10).
+        borderRadiusStyle: binding('custom'),
+        boxShadowStyle: binding('custom'),
         borderRadius: binding('{{14}}'),
         backgroundColor: binding('#123456'),
         borderColor: binding('#654321'),
@@ -1493,7 +1498,8 @@ describe('styles', () => {
   // Break this catches: giving the input a uniform radius, which would round the edge that
   // sits against the currency select and split one control into two boxes.
   test('[CurrencyInput-STYLE-006] the field is square on the left, where the currency select joins it', async () => {
-    harness.render({ styles: { borderRadius: binding('{{6}}') } });
+    // Pinned to Custom: the registered definition now seeds new drops onto the theme (D-10).
+    harness.render({ styles: { borderRadius: binding('{{6}}'), borderRadiusStyle: binding('custom') } });
     await waitFor(() => expect(input()).toBeTruthy());
 
     expect(inlineStyle(input())).toContain('border-radius: 0px 6px 6px 0px');
@@ -1743,5 +1749,67 @@ describe('accessibility, async and identity', () => {
     expect(harness.exposed('ci1').country).toBe('IN');
     expect(harness.exposed('ci2').country).toBe('US');
     expect(harness.exposed('ci2').value).toBe(250);
+  });
+});
+
+// Theme border radius / box shadow (contract D-10; Button's D-03..D-06 transferred).
+describe('CurrencyInput: theme border radius and box shadow', () => {
+  const themedBox = () => document.querySelector('[data-cy="currencyinput1-actionable-section"]');
+
+  test('[CurrencyInput-THEME-001] a newly dropped CurrencyInput starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(currencyinputConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(currencyinputConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(currencyinputConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(currencyinputConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[CurrencyInput-THEME-002] a CurrencyInput saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'ci1',
+      'ci1',
+      'CurrencyInput',
+      {},
+      {
+        styles: { borderRadius: binding('{{10}}'), boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles, generalStyles } = buildComponentMetaDefinition({ ci1: saved })['ci1'].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    harness.render({
+      styles: { ...styles, ...generalStyles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(themedBox().style.borderRadius).toBe('10px');
+    expect(themedBox().style.boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[CurrencyInput-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw radius / shadow whatever the theme style.
+    harness.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(themedBox().style.borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(themedBox().style.boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+    // The number field's right corners and the country picker's left corners follow the same radius.
+    const numberField = themedBox().querySelector('input[style*="border-radius"]');
+    expect(numberField.style.borderRadius).toBe(
+      '0px var(--cc-border-radius-medium, 6px) var(--cc-border-radius-medium, 6px) 0px'
+    );
+
+    harness.setComponentProperty('ci1', 'borderRadiusStyle', 'custom', 'styles');
+    harness.setComponentProperty('ci1', 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(themedBox().style.borderRadius).toBe('10px'));
   });
 });

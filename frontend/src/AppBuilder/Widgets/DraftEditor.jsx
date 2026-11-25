@@ -291,7 +291,7 @@ class DraftEditor extends React.Component {
         </center>
       </div>
     ) : (
-      <div className="RichEditor-root" style={{ overflowY: 'scroll', scrollbarWidth: 'none' }}>
+      <div className="RichEditor-root" style={{ overflowY: 'scroll', scrollbarWidth: 'none', borderRadius: 'inherit' }}>
         <div className="RichEditor-controls" ref={this.controlsRef}>
           <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
           <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />

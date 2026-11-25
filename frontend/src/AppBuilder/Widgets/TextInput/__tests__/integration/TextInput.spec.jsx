@@ -19,6 +19,8 @@ import {
   getWidthTypeOfComponentStyles,
   checkIfInputWidgetTypeIsDeprecated,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { textinputConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 // No default properties/styles are passed: componentDefinition() seeds the
 // widget's own registered `definition` (textinput.js), so every test below
@@ -814,6 +816,9 @@ describe('styles reach the rendered field', () => {
   test('[TextInput-STYLE-005] radius, background, border and shadow reach the field, with legacy fallbacks', async () => {
     harness.render({
       styles: {
+        // Pinned to Custom: the registered definition now seeds new drops onto the theme (D-08).
+        borderRadiusStyle: binding('custom'),
+        boxShadowStyle: binding('custom'),
         borderRadius: binding('{{14}}'),
         backgroundColor: binding('#123456'),
         borderColor: binding('#654321'),
@@ -1059,5 +1064,62 @@ describe('async lifecycle and instance isolation', () => {
     expect([...document.querySelectorAll('input')].map((i) => i.value)).toEqual(['changed', 'second']);
     expect(harness.exposed('ti1').value).toBe('changed');
     expect(harness.exposed('ti2').value).toBe('second');
+  });
+});
+
+// Theme border radius / box shadow (contract D-08; Button's D-03..D-06 transferred).
+describe('TextInput: theme border radius and box shadow', () => {
+  const themedBox = () => document.querySelector('[data-cy="textinput1-actionable-section"]');
+
+  test('[TextInput-THEME-001] a newly dropped TextInput starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(textinputConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(textinputConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(textinputConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(textinputConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[TextInput-THEME-002] a TextInput saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'ti1',
+      'ti1',
+      'TextInput',
+      {},
+      {
+        styles: { borderRadius: binding('{{10}}'), boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles, generalStyles } = buildComponentMetaDefinition({ ti1: saved })['ti1'].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    harness.render({
+      styles: { ...styles, ...generalStyles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(themedBox().style.borderRadius).toBe('10px');
+    expect(themedBox().style.boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[TextInput-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw radius / shadow whatever the theme style.
+    harness.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(themedBox().style.borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(themedBox().style.boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    harness.setComponentProperty('ti1', 'borderRadiusStyle', 'custom', 'styles');
+    harness.setComponentProperty('ti1', 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(themedBox().style.borderRadius).toBe('10px'));
   });
 });

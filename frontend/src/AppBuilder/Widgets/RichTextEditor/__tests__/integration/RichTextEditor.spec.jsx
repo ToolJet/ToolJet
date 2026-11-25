@@ -5,6 +5,9 @@ import {
   store,
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { richtextareaConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { componentDefinition } from '@/test/app-builder';
 
 // Engineering scenarios for the RichTextEditor (display name "Text Editor").
 // Contract: frontend/ee/test/app-builder/widgets/RichTextEditor/TESTING.md.
@@ -215,9 +218,73 @@ describe('RichTextEditor widget', () => {
   test('[RichTextEditor-STYLE-003] boxShadow is applied to the outer wrapper', async () => {
     // Break this catches: not forwarding the universal `boxShadow` style to the
     // outer node (RichTextEditor.jsx:23,80), so shadow styling silently no-ops.
-    widget.render({ styles: { boxShadow: binding('0px 0px 5px red') } });
+    // Pinned to Custom: the registered definition now seeds new drops onto the theme (D-10).
+    widget.render({ styles: { boxShadow: binding('0px 0px 5px red'), boxShadowStyle: binding('custom') } });
 
     await waitFor(() => expect(outer()).toBeInTheDocument());
     expect(outer()).toHaveStyle({ boxShadow: '0px 0px 5px red' });
+  });
+});
+
+// Theme border radius / box shadow (contract D-10; Button's D-03..D-06 transferred).
+describe('RichTextEditor: theme border radius and box shadow', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+  const themedBox = () => document.querySelector('[data-cy="richtexteditor1"]');
+
+  test('[RichTextEditor-THEME-001] a newly dropped RichTextEditor starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(richtextareaConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(richtextareaConfig.definition.generalStyles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(richtextareaConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(richtextareaConfig.generalStyles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[RichTextEditor-THEME-002] a RichTextEditor saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'richtexteditor1',
+      'richtexteditor1',
+      'RichTextEditor',
+      {},
+      {
+        styles: { borderRadius: binding('{{10}}') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    saved.component.definition.generalStyles = { boxShadow: binding('5px 5px 0px 0px #00000040') };
+    const { styles, generalStyles } = buildComponentMetaDefinition({ richtexteditor1: saved })['richtexteditor1']
+      .component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({
+      styles: { ...styles, ...generalStyles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(themedBox().style.borderRadius).toBe('10px');
+    expect(themedBox().style.boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[RichTextEditor-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw radius / shadow whatever the theme style.
+    widget.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(themedBox().style.borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(themedBox().style.boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+    // The editor's own bordered box (DraftEditor) takes the wrapper's corners.
+    expect(themedBox().querySelector('.RichEditor-root').style.borderRadius).toBe('inherit');
+
+    widget.setComponentProperty('richtexteditor1', 'borderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty('richtexteditor1', 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(themedBox().style.borderRadius).toBe('10px'));
   });
 });

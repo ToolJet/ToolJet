@@ -17,6 +17,7 @@ import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { CountrySelect } from './CountrySelect';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 export const PhoneInput = (props) => {
@@ -77,7 +78,9 @@ export const PhoneInput = (props) => {
     accentColor,
     errTextColor,
     boxShadow,
+    boxShadowStyle,
     borderRadius,
+    borderRadiusStyle,
     widthType,
     labelFontSize,
     padding,
@@ -203,9 +206,11 @@ export const PhoneInput = (props) => {
 
   const clearButtonTransform = 'translateY(-50%)';
 
+  // The theme radius (or this widget's own) as CSS, shared by the field, the number input and the country picker.
+  const radius = themedRadius(borderRadiusStyle, borderRadius);
   const computedStyles = {
     height: '100%',
-    borderRadius: `0px ${borderRadius}px ${borderRadius}px 0px`,
+    borderRadius: `0px ${radius} ${radius} 0px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
@@ -286,8 +291,8 @@ export const PhoneInput = (props) => {
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className="d-flex"
           style={{
-            boxShadow,
-            borderRadius: `${borderRadius}px`,
+            boxShadow: themedShadow(boxShadowStyle, boxShadow),
+            borderRadius: radius,
             ...getWidthTypeOfComponentStyles(widthType, width, auto, defaultAlignment),
             ...(defaultAlignment === 'top' && label?.length != 0
               ? {
@@ -304,7 +309,7 @@ export const PhoneInput = (props) => {
             options={options}
             isCountryChangeEnabled={isCountryChangeEnabled}
             disabledState={disabledState}
-            borderRadius={borderRadius}
+            borderRadius={radius}
             isValid={isValid}
             computedStyles={computedStyles}
             showValidationError={showValidationError}

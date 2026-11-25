@@ -295,6 +295,8 @@ export const starratingConfig = {
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box Shadow',
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: '0px 0px 0px 0px #00000040',
@@ -375,6 +377,9 @@ export const starratingConfig = {
       labelColor: { value: 'var(--cc-primary-text)' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      // New drops follow the theme's None shadow; a saved widget without the key keeps its own (NEW_DROP_ONLY_STYLES
+      // in ../utils.js). StarRating has no border radius.
+      boxShadowStyle: { value: 'none' },
       labelStyle: { value: 'standard' },
       alignment: { value: 'side' },
       direction: { value: 'left' },

@@ -149,6 +149,15 @@ export const NEW_DROP_ONLY_STYLES = {
   Listview: THEME_STYLE_KEYS,
   Calendar: THEME_STYLE_KEYS,
   Kanban: THEME_STYLE_KEYS,
+  TextInput: THEME_STYLE_KEYS,
+  EmailInput: THEME_STYLE_KEYS,
+  PasswordInput: THEME_STYLE_KEYS,
+  TextArea: THEME_STYLE_KEYS,
+  NumberInput: THEME_STYLE_KEYS,
+  PhoneInput: THEME_STYLE_KEYS,
+  CurrencyInput: THEME_STYLE_KEYS,
+  RichTextEditor: THEME_STYLE_KEYS,
+  StarRating: THEME_STYLE_KEYS,
 };
 
 /**

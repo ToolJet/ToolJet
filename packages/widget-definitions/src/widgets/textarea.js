@@ -251,12 +251,16 @@ export const textareaConfig = {
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
       accordian: 'field',
     },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box Shadow',
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: '0px 0px 0px 0px #00000040',
@@ -372,6 +376,10 @@ export const textareaConfig = {
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      // New drops follow the theme's Large radius and None shadow; a saved widget without these keys keeps its own
+      // values (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
+      boxShadowStyle: { value: 'none' },
       icon: { value: 'IconHome2' },
       iconVisibility: { value: false },
       widthType: { value: 'ofComponent' },

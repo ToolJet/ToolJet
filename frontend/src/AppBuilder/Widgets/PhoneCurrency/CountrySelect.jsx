@@ -59,8 +59,9 @@ export const CountrySelect = ({ value, onChange, options, dataCy, ...rest }) => 
       ...provided,
       minHeight: '0px',
       height: '100%',
-      borderTopLeftRadius: `${borderRadius}px`,
-      borderBottomLeftRadius: `${borderRadius}px`,
+      // borderRadius is CSS (a theme variable or px), shared with the number field's right corners.
+      borderTopLeftRadius: borderRadius,
+      borderBottomLeftRadius: borderRadius,
       borderTopRightRadius: '0px',
       borderBottomRightRadius: '0px',
       borderColor: `${

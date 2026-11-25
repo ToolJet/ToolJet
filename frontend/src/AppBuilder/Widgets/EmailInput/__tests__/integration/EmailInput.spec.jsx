@@ -25,6 +25,8 @@ import {
   getWidthTypeOfComponentStyles,
   checkIfInputWidgetTypeIsDeprecated,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { emailinputConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const harness = createWidgetHarness({ componentType: 'EmailInput', handle: 'emailinput1', id: 'ei1' });
 
@@ -932,6 +934,9 @@ describe('styles', () => {
   test('[EmailInput-STYLE-005] radius, background, border and shadow reach the field, with legacy fallbacks', async () => {
     harness.render({
       styles: {
+        // Pinned to Custom: the registered definition now seeds new drops onto the theme (D-05).
+        borderRadiusStyle: binding('custom'),
+        boxShadowStyle: binding('custom'),
         borderRadius: binding('{{14}}'),
         backgroundColor: binding('#123456'),
         borderColor: binding('#654321'),
@@ -1091,5 +1096,62 @@ describe('remaining accessibility', () => {
     harness.render({ properties: { label: binding('Email ID') }, styles: { auto: binding('{{true}}') } });
     await waitFor(() => expect(input()).toBeTruthy());
     expect(input()).not.toHaveAttribute('aria-label');
+  });
+});
+
+// Theme border radius / box shadow (contract D-05; Button's D-03..D-06 transferred).
+describe('EmailInput: theme border radius and box shadow', () => {
+  const themedBox = () => document.querySelector('[data-cy="emailinput1-actionable-section"]');
+
+  test('[EmailInput-THEME-001] a newly dropped EmailInput starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(emailinputConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(emailinputConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(emailinputConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(emailinputConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[EmailInput-THEME-002] a EmailInput saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'ei1',
+      'ei1',
+      'EmailInput',
+      {},
+      {
+        styles: { borderRadius: binding('{{10}}'), boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles, generalStyles } = buildComponentMetaDefinition({ ei1: saved })['ei1'].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    harness.render({
+      styles: { ...styles, ...generalStyles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(themedBox().style.borderRadius).toBe('10px');
+    expect(themedBox().style.boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[EmailInput-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw radius / shadow whatever the theme style.
+    harness.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(themedBox().style.borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(themedBox().style.boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    harness.setComponentProperty('ei1', 'borderRadiusStyle', 'custom', 'styles');
+    harness.setComponentProperty('ei1', 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(themedBox().style.borderRadius).toBe('10px'));
   });
 });

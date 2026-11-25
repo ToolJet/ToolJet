@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
@@ -60,11 +61,13 @@ export const BaseInput = ({
   const {
     padding,
     borderRadius,
+    borderRadiusStyle,
     borderColor,
     backgroundColor,
     textColor,
     placeholderTextColor,
     boxShadow,
+    boxShadowStyle,
     width,
     alignment,
     direction,
@@ -219,7 +222,7 @@ export const BaseInput = ({
             classes?.inputContainer
           )}
           style={{
-            borderRadius: `${borderRadius}px`,
+            borderRadius: themedRadius(borderRadiusStyle, borderRadius),
             borderColor:
               !isValid && showValidationError
                 ? 'var(--cc-error-systemStatus)'
@@ -241,7 +244,7 @@ export const BaseInput = ({
                     ? 'var(--surfaces-app-bg-default)'
                     : 'var(--surfaces-surface-03)'
                   : 'var(--surfaces-surface-01)',
-            boxShadow,
+            boxShadow: themedShadow(boxShadowStyle, boxShadow),
             ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
             ...(defaultAlignment === 'top' &&
               label?.length != 0 && {

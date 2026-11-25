@@ -4,6 +4,7 @@ import 'draft-js/dist/Draft.css';
 import { DraftEditor } from './DraftEditor';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export default function RichTextEditor({
   id,
@@ -20,7 +21,7 @@ export default function RichTextEditor({
   componentType,
 }) {
   const isInitialRender = useRef(true);
-  const { visibility, disabledState, boxShadow } = styles;
+  const { visibility, disabledState, boxShadow, boxShadowStyle, borderRadius, borderRadiusStyle } = styles;
   const placeholder = properties.placeholder;
   const defaultValue = properties?.defaultValue ?? '';
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
@@ -77,7 +78,9 @@ export default function RichTextEditor({
         height: isDynamicHeightEnabled ? '100%' : `${height}px`,
         ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
         display: isVisible ? '' : 'none',
-        boxShadow,
+        boxShadow: themedShadow(boxShadowStyle, boxShadow),
+        // The editor's bordered box (DraftEditor's RichEditor-root) inherits these corners.
+        borderRadius: themedRadius(borderRadiusStyle, borderRadius ? parseFloat(borderRadius) : 0),
       }}
       data-cy={dataCy}
       className="scrollbar-container"
