@@ -451,6 +451,7 @@ export default function AppCard({
                           appCreationMode={app?.creation_mode || app?.creationMode}
                           ownedFolders={ownedFolders}
                           isUnsynced={isUnsynced}
+                          isReleased={!!app?.current_version_id}
                         />
                       )}
                     </div>

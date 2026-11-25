@@ -38,6 +38,7 @@ export interface Terms {
     mfa?: boolean;
     aiCreditLimits?: boolean;
     customDomains?: boolean;
+    appUsageAnalytics?: boolean;
     google?: boolean;
     github?: boolean;
     observability?: boolean;

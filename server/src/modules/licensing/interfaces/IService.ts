@@ -15,7 +15,11 @@ export interface ILicenseUserService {
 export abstract class LicenseTermsService {
   constructor(protected readonly licenseInitService: LicenseInitService) {}
   abstract getLicenseTermsInstance(type: any): Promise<any>;
-  abstract getLicenseTerms(type: any, organizationId: string): Promise<any>;
+  /**
+   * `strict`: throw instead of falling back to the basic plan when a Cloud workspace's licence
+   * cannot be loaded. Use it before destructive work that a wrong "unlicensed" answer would harm.
+   */
+  abstract getLicenseTerms(type: any, organizationId: string, options?: { strict?: boolean }): Promise<any>;
   abstract getOrganizationLicense(organizationId: string): Promise<any>;
   // Whether the workspace (Cloud) or instance (self-hosted) is on the Free limits introduced at the plan limits cutoff.
   abstract usesNewFreeLimits(organizationId: string): Promise<boolean>;
