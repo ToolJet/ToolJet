@@ -521,6 +521,20 @@ export class PageService implements IPageService {
 
       await manager.save(clonedComponents);
       await manager.save(newComponentLayouts);
+
+      const [clonedPage] = await manager.find(Page, {
+        where: { id: clonePageId },
+        select: ['id', 'variables'],
+      });
+      if (clonedPage?.variables && Object.keys(clonedPage.variables).length > 0) {
+        await manager.update(
+          Page,
+          { id: clonePageId },
+          {
+            variables: updateEntityReferences(clonedPage.variables, componentsIdMap),
+          }
+        );
+      }
     }, manager);
   }
 
