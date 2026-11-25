@@ -303,7 +303,9 @@ const FormComponent = (props) => {
   }, [JSONSchema, advanced]);
 
   const checkJsonChildrenValidtion = () => {
-    const isValid = Object.values(effectiveChildrenData).every((item) => item?.isValid !== false);
+    const isValid = Object.values(effectiveChildrenData).every(
+      (item) => item?.isVisible === false || item?.isValid !== false
+    );
     return isValid;
   };
 
@@ -348,7 +350,8 @@ const FormComponent = (props) => {
             formData[componentName] = componentValue;
           }
           formattedChildData[componentName] = { ...omit(childData, 'name'), id: childId };
-          childValidation = childValidation && (childData?.isValid ?? true);
+          // A hidden field cannot be filled, so it must not block the Form.
+          if (childData?.isVisible !== false) childValidation = childValidation && (childData?.isValid ?? true);
         }
       });
     }
