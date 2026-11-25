@@ -49,13 +49,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       );
     }
 
-    if (isAdmin || superAdmin) {
-      can([FEATURE_KEY.UPDATE_KEY], AiConversation);
-      can([FEATURE_KEY.GET_KEY_SETTINGS], AiConversation);
+    // Cloud keeps the key per workspace; elsewhere it is one instance-wide row, so only super admins may change it.
+    const isCloud = getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
+    if (superAdmin || (isCloud && isAdmin)) {
+      can([FEATURE_KEY.UPDATE_KEY, FEATURE_KEY.GET_KEY_SETTINGS], AiConversation);
     }
 
     // Cloud pool is per workspace; self-hosted pool is per instance, so only super admins see it.
-    const isCloud = getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
     if (superAdmin || (isCloud && isAdmin)) {
       can([FEATURE_KEY.GET_CREDITS_USAGE, FEATURE_KEY.UPDATE_CREDIT_LIMITS], AiConversation);
     }

@@ -4,12 +4,7 @@ import { GroupPermissions } from '@entities/group_permissions.entity';
 import { AddUserRoleObject } from '@modules/group-permissions/types';
 
 export interface IRolesUtilService {
-  changeEndUserToEditor(
-    organizationId: string,
-    userIds: string[],
-    endUserGroupId: string,
-    manager?: EntityManager
-  ): Promise<void>;
+  changeEndUserToEditor(organizationId: string, userIds: string[], manager?: EntityManager): Promise<void>;
 
   assertActiveAdminRemains(
     organizationId: string,

@@ -30,19 +30,16 @@ export class RolesUtilService implements IRolesUtilService {
     protected licenseTermsService: LicenseTermsService
   ) {}
 
-  async changeEndUserToEditor(
-    organizationId: string,
-    userIds: string[],
-    endUserGroupId: string,
-    manager?: EntityManager
-  ): Promise<void> {
+  async changeEndUserToEditor(organizationId: string, userIds: string[], manager?: EntityManager): Promise<void> {
     if (!userIds?.length) {
       return;
     }
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Delete all users from end user group
+      // The end-user group is resolved from the workspace here, never taken from the caller,
+      // so this can only ever remove rows from the workspace's own end-user group.
+      const endUserGroup = await this.roleRepository.getRole(USER_ROLE.END_USER, organizationId, manager);
       await manager.delete(GroupUsers, {
-        groupId: endUserGroupId,
+        groupId: endUserGroup.id,
         userId: In(userIds),
       });
 
