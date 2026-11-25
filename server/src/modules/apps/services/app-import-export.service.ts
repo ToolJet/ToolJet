@@ -53,6 +53,7 @@ import {
 } from '@modules/versions/helpers/version-copy-parent.helper';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { LayoutDimensionUnits } from '../constants';
+import { isCodePageRoot } from './component.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from 'src/../lib/single-page-to-and-from-multipage-definition-conversion';
 import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
@@ -1422,6 +1423,7 @@ export class AppImportExportService {
         ? { codeMissing: false }
         : await this.restoreCodeModeApp(manager, user, appParams, importedApp.id, appName, resourceMapping, cloning);
       await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
+      await this.settleImportedBuildMode(manager, importedApp.id);
 
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
@@ -1689,6 +1691,56 @@ export class AppImportExportService {
   /** Adds an app's stored code to its export definition (ee). `limited`: the result has to fit an import request. */
   async addCodeToExport(_user: User, _definition: { appV2: App }, _limited: boolean): Promise<void> {
     return;
+  }
+
+  /*
+    Settles an imported app's build mode. An app with a code page is a Code mode app whatever its file says: a file
+    exported before apps had a build mode carries the code page alone. A Code mode app holds nothing but its code
+    pages' roots, so a file that mixes them with visual components is refused (ComponentsService.assertFitsBuildMode
+    keeps the same rule for later writes). App security and the editor can then go by apps.build_mode.
+    Reads the app's root pack and library components as text and parses them here: a NUL in one would fail a JSON
+    operator in SQL.
+  */
+  protected async settleImportedBuildMode(manager: EntityManager, appId: string): Promise<void> {
+    const [app] = await manager.query('SELECT build_mode FROM apps WHERE id = $1', [appId]);
+    const roots: { id: string; type: string; properties: string | null }[] = await manager.query(
+      `SELECT c.id, c.type, c.properties::text AS properties
+         FROM components c
+         JOIN pages p ON p.id = c.page_id
+         JOIN app_versions v ON v.id = p.app_version_id
+        WHERE v.app_id = $1
+          AND c.type IN ('LibraryComponent', 'PackComponent')
+          AND (c.parent IS NULL OR c.parent = '')`,
+      [appId]
+    );
+    const parse = (text: string | null): unknown => {
+      try {
+        return text ? JSON.parse(text) : null;
+      } catch {
+        return null;
+      }
+    };
+    const candidates = roots.map((root) => ({ id: root.id, type: root.type, properties: parse(root.properties) }));
+    const codePages = candidates.filter(isCodePageRoot).length;
+    if (app?.build_mode !== 'code' && !codePages) return;
+
+    // Anything that is not a top-level pack or library component is visual; so is such a root without `codePage`.
+    const [{ others }] = await manager.query(
+      `SELECT EXISTS (
+         SELECT 1 FROM components c
+           JOIN pages p ON p.id = c.page_id
+           JOIN app_versions v ON v.id = p.app_version_id
+          WHERE v.app_id = $1
+            AND (c.type NOT IN ('LibraryComponent', 'PackComponent') OR (c.parent IS NOT NULL AND c.parent <> ''))
+       ) AS others`,
+      [appId]
+    );
+    if (others || codePages < candidates.length) {
+      throw new BadRequestException(
+        'This app mixes code with visual components, so it cannot be imported. A Code mode app holds only its code, and a visual app holds no code.'
+      );
+    }
+    if (app?.build_mode !== 'code') await manager.update(App, { id: appId }, { buildMode: 'code' });
   }
 
   /** Restores an app's stored code from its import definition (ee). codeMissing: the file should have had code and did not. */

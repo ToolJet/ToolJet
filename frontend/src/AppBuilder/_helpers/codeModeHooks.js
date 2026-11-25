@@ -51,4 +51,3 @@ export const viewerLayoutFor =
   ee.viewerLayoutFor ?? (({ width, forcedMobile = false }) => (forcedMobile || width < 600 ? 'mobile' : 'desktop'));
 export const isCodePageRoot = ee.isCodePageRoot ?? (() => false);
 export const withoutCodePageRoots = ee.withoutCodePageRoots ?? ((ids) => ids || []);
-export const withCodeModeParam = ee.withCodeModeParam ?? ((query = '') => query);

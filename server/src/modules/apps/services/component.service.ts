@@ -49,6 +49,53 @@ const WHOLE_ARRAY_TYPES = [
 // Pack components (built-in packs and custom component libraries) store every property as a plain value.
 const PACK_TYPES = ['PackComponent', 'LibraryComponent'];
 
+const CODE_PAGE_FLAGS = new Set<unknown>([true, 'true', '{{true}}']);
+
+/** A component as a write will leave it: enough to tell a code page's root from anything else. */
+export interface CodePageCandidate {
+  id: string;
+  type: string;
+  parent?: string | null;
+  properties?: unknown;
+}
+
+const hasCodePageFlag = (component: CodePageCandidate) =>
+  PACK_TYPES.includes(component.type) &&
+  CODE_PAGE_FLAGS.has((component.properties as { codePage?: { value?: unknown } } | null)?.codePage?.value);
+
+/** A code page's root: a top-level pack or library component with `codePage` set. The only component a Code mode app holds. */
+export const isCodePageRoot = (component: CodePageCandidate) => hasCodePageFlag(component) && !component.parent;
+
+/** The ids of the writes that set `codePage` on a pack or library component: each would make it a code page's root. */
+export function codePageRootIds(components: CodePageCandidate[]): string[] {
+  return components.filter(hasCodePageFlag).map((component) => component.id);
+}
+
+/**
+ * Why `components` cannot be stored in an app of `buildMode`, or null when they can. A visual app holds no code page;
+ * a Code mode app holds nothing but its code pages' roots (its code draws everything else).
+ */
+export function buildModeRefusal(buildMode: string | null | undefined, components: CodePageCandidate[]) {
+  if (buildMode === 'code') {
+    const visual = components.find((component) => !isCodePageRoot(component));
+    return visual
+      ? {
+          message: `Component ${visual.id} cannot be added: this app is built in Code mode, so its code draws every screen and it holds no visual components.`,
+          code: 'VISUAL_COMPONENT_IN_CODE_APP',
+          componentId: visual.id,
+        }
+      : null;
+  }
+  const [codePage] = codePageRootIds(components);
+  return codePage
+    ? {
+        message: `Component ${codePage} cannot be a code page: this app is not built in Code mode.`,
+        code: 'CODE_PAGE_IN_VISUAL_APP',
+        componentId: codePage,
+      }
+    : null;
+}
+
 /** One definition column (properties, styles, ...) of a stored component with an update's values merged in: a deep
  *  merge, with arrays merged by position except where a component type sends them whole. */
 export function mergeComponentDefinitionColumn(type: string, stored: unknown, incoming: unknown) {
@@ -66,6 +113,35 @@ export function mergeComponentDefinitionColumn(type: string, stored: unknown, in
       return srcValue;
     }
   });
+}
+
+/**
+ * A stored component as an update request leaves it. A definition is merged into the stored columns and leaves type
+ * and parent alone; without one, the request's fields replace the columns as sent.
+ */
+export function afterUpdate(
+  stored: Pick<Component, 'id' | 'type' | 'parent' | 'properties'>,
+  request: { definition?: { properties?: unknown }; type?: string; parent?: string | null; properties?: unknown }
+): CodePageCandidate {
+  if (request.definition) {
+    const properties = request.definition.properties;
+    return {
+      id: stored.id,
+      type: stored.type,
+      parent: stored.parent,
+      properties: properties
+        ? // mergeWith writes into its first argument; the stored row stays as it was for the real merge.
+          mergeComponentDefinitionColumn(stored.type, _.cloneDeep(stored.properties), properties)
+        : stored.properties,
+    };
+  }
+  const sent = (key: string) => Object.prototype.hasOwnProperty.call(request, key);
+  return {
+    id: stored.id,
+    type: sent('type') ? request.type : stored.type,
+    parent: sent('parent') ? request.parent : stored.parent,
+    properties: sent('properties') ? request.properties : stored.properties,
+  };
 }
 
 @Injectable()
@@ -764,6 +840,8 @@ export class ComponentsService implements IComponentsService {
       }
     }
 
+    await this.assertFitsBuildMode(newComponents, appVersionId, manager);
+
     // Name lock before cycle lock - every component write path takes them in this order.
     // The overlay adds the components this request creates, so siblings can reference each
     // other as parents and in-batch duplicate names are caught.
@@ -863,6 +941,32 @@ export class ComponentsService implements IComponentsService {
     }
   }
 
+  /** The build mode of the app that owns `appVersionId`. */
+  async buildModeOf(appVersionId: string, manager: EntityManager): Promise<string | null> {
+    const [app]: { build_mode: string }[] = await manager.query(
+      'SELECT a.build_mode FROM apps a JOIN app_versions v ON v.app_id = a.id WHERE v.id = $1',
+      [appVersionId]
+    );
+    return app?.build_mode ?? null;
+  }
+
+  /**
+   * Refuses a write that would mix the two build modes: a code page in a visual app, or a visual component in a Code
+   * mode app. The editor offers neither; the CLI, MCP, the API and the AI builder could. With the modes kept apart,
+   * `apps.build_mode` alone says whether an app runs code, so app security and the editor never read components to
+   * find out. `components` are as the write leaves them (an update's properties merged with the stored ones).
+   */
+  async assertFitsBuildMode(
+    components: CodePageCandidate[],
+    appVersionId: string,
+    manager: EntityManager,
+    buildMode?: string | null
+  ) {
+    if (!components.length) return;
+    const refusal = buildModeRefusal(buildMode ?? (await this.buildModeOf(appVersionId, manager)), components);
+    if (refusal) throw new BadRequestException(refusal);
+  }
+
   /**
    * Grows the ModuleContainer so every direct child sits inside it; a child placed below its
    * bottom edge would be clipped from the module. Never shrinks it.
@@ -906,6 +1010,7 @@ export class ComponentsService implements IComponentsService {
       await this.assertNoParentCycle(parentWrites, appVersionId, manager);
     }
 
+    let buildMode: string | null | undefined;
     for (const componentId in diff) {
       let { component } = diff[componentId];
 
@@ -926,6 +1031,12 @@ export class ComponentsService implements IComponentsService {
       });
 
       const incomingProperties = component.definition?.properties;
+      await this.assertFitsBuildMode(
+        [afterUpdate(componentData, component)],
+        appVersionId,
+        manager,
+        (buildMode ??= await this.buildModeOf(appVersionId, manager))
+      );
       if (
         componentData.type === 'ModuleViewer' &&
         incomingProperties &&

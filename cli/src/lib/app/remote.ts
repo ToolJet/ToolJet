@@ -35,6 +35,14 @@ export async function readApp(session: Session, appId: string, versionId?: strin
       `${name ? `"${name}"` : 'This app'} is a module. Code mode is for apps only, so nothing was changed.`
     );
   }
+  // ToolJet refuses code in a visual app; saying so here stops before any page is added. A server without build
+  // modes sends none, and is let through as before.
+  if ((app.build_mode ?? app.buildMode) === 'visual') {
+    throw new Error(
+      `${name ? `"${name}"` : 'This app'} is a visual app, and only an app built in Code mode can hold code, so ` +
+        'nothing was changed. Create one with `tooljet app init --create`.'
+    );
+  }
   return {
     id: app.id,
     name,

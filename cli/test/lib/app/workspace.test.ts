@@ -332,6 +332,52 @@ describe('tooljet app clone, pull and checkout', () => {
     });
   });
 
+  // ToolJet refuses code in a visual app, so the CLI stops at the first read, before it adds a page.
+  describe('on a visual app', () => {
+    const visualSession = () => {
+      const session = fakeSession('none');
+      const api = session.api;
+      session.api = async (p: string, init?: { method?: string }) => {
+        const res = await api(p, init);
+        return res?.slug ? { ...res, build_mode: 'visual' } : res;
+      };
+      return session;
+    };
+    const refusal = async (run: Promise<unknown>): Promise<string> => {
+      let error: Error | undefined;
+      await run.catch((e) => (error = e));
+      return error?.message ?? 'no error';
+    };
+
+    it('clone is refused before a folder is made', async () => {
+      const session = visualSession();
+      expect(await refusal(cloneApp(session, 'app-1'))).to.equal(
+        '"Orders Desk" is a visual app, and only an app built in Code mode can hold code, so nothing was changed. ' +
+          'Create one with `tooljet app init --create`.'
+      );
+      expect(fs.readdirSync(tmp)).to.deep.equal([]);
+      expect(session.calls).to.deep.equal(['GET /apps/app-1']);
+    });
+
+    it('the link step of dev and publish writes nothing to it', async () => {
+      const { project } = await cloneApp(fakeSession(), 'app-1');
+      const session = visualSession();
+      const library = { id: 'lib-1', correlationId: 'corr-1234', name: 'Orders Desk', componentName: 'App' };
+      expect(await refusal(syncApp(session, project.readApp(), library, 'dev:user-1'))).to.contain('is a visual app');
+      expect(session.calls).to.deep.equal(['GET /apps/app-1']);
+    });
+
+    it('lets a Code mode app, and a server that sends no build mode, through', async () => {
+      const session = fakeSession('none');
+      const api = session.api;
+      session.api = async (p: string, init?: { method?: string }) => {
+        const res = await api(p, init);
+        return res?.slug ? { ...res, build_mode: 'code' } : res;
+      };
+      expect((await cloneApp(session, 'app-1')).name).to.equal('Orders Desk');
+    });
+  });
+
   it('app.json rejects a malformed version', () => {
     const dir = path.join(tmp, 'p');
     fs.mkdirSync(dir);
