@@ -1115,6 +1115,7 @@
           "items": [
             "workflows/nodes/start-trigger",
             "workflows/nodes/agent",
+            "workflows/nodes/human-in-the-loop",
             {
               "type": "category",
               "label": "Logic Nodes",
