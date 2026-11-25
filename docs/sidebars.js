@@ -1289,10 +1289,15 @@ const sidebars = {
         {
           "type": "category",
           "label": "Role Based Access Control",
+          "link": {
+            "type": "doc",
+            "id": "user-management/role-based-access/user-roles"
+          },
           "items": [
             "user-management/role-based-access/super-admin",
             "user-management/role-based-access/user-roles",
             "user-management/role-based-access/custom-groups",
+            "user-management/role-based-access/group-admin",
             "user-management/role-based-access/access-control"
           ]
         },

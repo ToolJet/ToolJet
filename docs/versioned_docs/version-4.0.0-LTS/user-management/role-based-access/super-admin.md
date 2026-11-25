@@ -3,45 +3,26 @@ id: super-admin
 title: Super Admin
 ---
 
+import { ALL_ROLES, LAYERS, ADMIN_VS_SUPER_ADMIN } from './permissions-data';
+
 <PlanBadge type="team" />
+
+<AccessLayers layers={LAYERS} roles={ALL_ROLES} compact highlight="instance" />
 
 On a self-hosted ToolJet, a Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance. An instance can have more than one Super Admin. A Super Admin has full control over other users' workspaces and can create users, groups, and other super admins. The user who creates the instance gets the Super Admin role by default.
 
 ## Admin v/s Super Admin
 
-### User Management
+A workspace admin's reach ends at their workspace. A super admin reaches every workspace and user of the instance, and the settings of the instance itself.
 
-| Privilege                                                                                                                                                                                                                                                           | Admin | Super Admin |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---: | :---------: |
-| Manage Users in their workspace ([Invite](/docs/user-management/onboard-users/invite-user)/[Archive](/docs/user-management/onboard-users/archive-user#steps-to-archive-user)/[Unarchive](/docs/user-management/onboard-users/archive-user#steps-to-unarchive-user)) |  ✅   |     ✅      |
-| [Archive](/docs/user-management/onboard-users/archive-user#steps-to-archive-user)/[Unarchive](/docs/user-management/onboard-users/archive-user#steps-to-unarchive-user) any user from all the workspaces in the instance                                            |  ❌   |     ✅      |
-| [Reset password of any user](/docs/user-management/profile-management/reset-password#super-admin-reset-password)                                                                                                                                                    |  ❌   |     ✅      |
-| [Edit name of any user](/docs/user-management/profile-management/user-details)                                                                                                                                                                                      |  ❌   |     ✅      |
-| [Make any user Super Admin](#promote-a-user-to-super-admin)                                                                                                                                                                                                         |  ❌   |     ✅      |
-
-### Workspace Management
-
-| Privilege                                                                                                                                                                                  | Admin | Super Admin |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---: | :---------: |
-| Manage Groups in their workspace ([Create Group](/docs/user-management/role-based-access/custom-groups#creating-custom-groups)/ Add or Delete Users from groups/ Modify Group Permissions) |  ✅   |     ✅      |
-| [Manage SSO](/docs/user-management/sso/overview) in their workspace                                                                                                                        |  ✅   |     ✅      |
-| [Manage Workspace Constants](/docs/security/constants/) in their workspace                                                                                                                 |  ✅   |     ✅      |
-| [Manage Data Sources](/docs/data-sources/overview) for the user group in their workspace                                                                                                   |  ✅   |     ✅      |
-| Access any user's personal workspace (Create/Edit/Delete Apps)                                                                                                                             |  ❌   |     ✅      |
-| Archive Admin or any user of any workspace                                                                                                                                                 |  ❌   |     ✅      |
-| Access any user's ToolJet Database (Create/Edit/Delete Database))                                                                                                                          |  ❌   |     ✅      |
-| Manage any workspace's setting (Groups/SSO/Workspace constants)                                                                                                                            |  ❌   |     ✅      |
-| Manage all users from all the workspaces in the instance                                                                                                                                   |  ❌   |     ✅      |
-
-### Instance Management
-
-| Privilege                                                | Admin | Super Admin |
-| -------------------------------------------------------- | :---: | :---------: |
-| Manage all workspaces in the instance(Archive/Unarchive) |  ❌   |     ✅      |
-| Restrict creation of personal workspace of users         |  ❌   |     ✅      |
-| Configure instance level login                           |  ❌   |     ✅      |
-| Enable Multiplayer editing                               |  ❌   |     ✅      |
-| Implement White Labelling                                |  ❌   |     ✅      |
+<PermissionMatrix
+  roles={ADMIN_VS_SUPER_ADMIN.roles}
+  sections={ADMIN_VS_SUPER_ADMIN.sections}
+  stateLabels={{ always: 'Yes', never: 'No' }}
+  legend={false}
+  firstColumn="Privilege"
+  caption="What an admin and a super admin can do"
+/>
 
 ## Promote a User to Super Admin
 

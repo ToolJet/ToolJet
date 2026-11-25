@@ -77,7 +77,7 @@ Switching environments on the **ToolJet Database** page only changes the data sh
 
 ### Environment Access Permission
 
-Admin can configure environment access for user groups or roles from the [Granular Access Control](/docs/user-management/role-based-access/access-control#granular-access-control) page.  
+Admin can configure environment access for user groups or roles from the [Granular Access Control](/docs/user-management/role-based-access/access-control#granular-access-control) page. The **Environment** setting of an app grant lists **Development**, **Staging**, **Production** and **Released app**; see the levels and modifiers of [Apps](/docs/user-management/role-based-access/access-control#apps).  
 Environment access determines the environment the user can access the app, while the user’s application permission (Edit or View) determines what they can do inside that environment.
 
 Final access is decided by both, App Permission (Edit/View) and Environment Access.
@@ -109,8 +109,8 @@ The following examples illustrate how different combinations of application perm
 2. **Builder with overlapping permissions across groups**  
    When a user belongs to multiple groups, ToolJet combines permissions. Edit overrides View, and environment access becomes the union of environments assigned across groups. If Staging is the only specified environment, the user can open and run queries in Staging but cannot access other environments.
 
-3. **Builder (default role) with no environment specified**  
-   If no environment access is explicitly defined, the permission applies to all environments by default. A Builder with Edit permission can edit the application in Development and can open and run queries in Staging and Production, but cannot edit UI or queries in those environments.
+3. **Builder (default role)**  
+   The Builder group grants Edit on all apps with access to Development, Staging and the released app. A Builder can edit the application in Development, open it and run queries in Staging, and open the released app, but has no access to Production unless a group grants it.
 
 4. **End User (default role)**  
    An End User has View permission by default and can access only the released Production application. They cannot access Development or Staging unless explicitly granted preview access.

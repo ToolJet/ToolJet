@@ -1,0 +1,981 @@
+/*
+ * AccessBlocks: data-driven blocks for the roles and permissions pages
+ * (PermissionMatrix, AccessLevels, AccessLayers, RoleCards). They follow the
+ * two DocBlocks.css conventions:
+ *   1. Site-wide rules (Infima's `table` rules, `.markdown li + li`, the link
+ *      rule in custom.css) are out-ranked by specificity, never by order.
+ *   2. No two rules of equal specificity set the same property on the same
+ *      element. Variants set custom properties or use a two-class selector.
+ * Colours are custom properties set per role tone or per state, so dark mode
+ * only changes the custom properties. Every state and role shows text and an
+ * icon, never colour alone.
+ */
+
+/* ─── Shared ───────────────────────────────────────────────────── */
+.accblk-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.accblk-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--ifm-color-emphasis-700);
+}
+
+/* Role tones (the PlanBadge palette plus teal). */
+.accblk-role--violet {
+  --accblk-role-bg: #f3f0ff;
+  --accblk-role-fg: #6941c6;
+  --accblk-role-border: #d9ccff;
+}
+
+.accblk-role--blue {
+  --accblk-role-bg: #ecf0fe;
+  --accblk-role-fg: #4368e3;
+  --accblk-role-border: #c7d7fc;
+}
+
+.accblk-role--teal {
+  --accblk-role-bg: #e6f6f1;
+  --accblk-role-fg: #0b7a5a;
+  --accblk-role-border: #b4e3d3;
+}
+
+.accblk-role--slate {
+  --accblk-role-bg: #f0f4f8;
+  --accblk-role-fg: #374151;
+  --accblk-role-border: #d0d7de;
+}
+
+.accblk-role--amber {
+  --accblk-role-bg: #faefe7;
+  --accblk-role-fg: #bf4f03;
+  --accblk-role-border: #f0c4a8;
+}
+
+[data-theme='dark'] .accblk-role--violet {
+  --accblk-role-bg: #2a2150;
+  --accblk-role-fg: #c4b5fd;
+  --accblk-role-border: #4c3d99;
+}
+
+[data-theme='dark'] .accblk-role--blue {
+  --accblk-role-bg: #1a2e5c;
+  --accblk-role-fg: #7eb8f7;
+  --accblk-role-border: #2d4f9e;
+}
+
+[data-theme='dark'] .accblk-role--teal {
+  --accblk-role-bg: #0f3b2e;
+  --accblk-role-fg: #6ee7b7;
+  --accblk-role-border: #1f6b52;
+}
+
+[data-theme='dark'] .accblk-role--slate {
+  --accblk-role-bg: #2a3139;
+  --accblk-role-fg: #c9d1d9;
+  --accblk-role-border: #444c56;
+}
+
+[data-theme='dark'] .accblk-role--amber {
+  --accblk-role-bg: #3d2a14;
+  --accblk-role-fg: #fbbf24;
+  --accblk-role-border: #6b4e00;
+}
+
+.accblk-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 1px solid var(--accblk-role-border);
+  border-radius: 20px;
+  background: var(--accblk-role-bg);
+  color: var(--accblk-role-fg);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.accblk-role svg {
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+}
+
+/* State chips */
+.accblk-state-wrap {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.accblk-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 1px solid var(--accblk-state-border);
+  border-radius: 6px;
+  background: var(--accblk-state-bg);
+  color: var(--accblk-state-fg);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.accblk-state svg {
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+}
+
+.accblk-state__note {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.accblk-state--always {
+  --accblk-state-bg: #e6f4ea;
+  --accblk-state-fg: #1a6b2f;
+  --accblk-state-border: #b7dfbf;
+}
+
+.accblk-state--default {
+  --accblk-state-bg: #e8f0fe;
+  --accblk-state-fg: #1a56db;
+  --accblk-state-border: #c7d7fc;
+}
+
+.accblk-state--never {
+  --accblk-state-bg: var(--ifm-color-emphasis-100);
+  --accblk-state-fg: var(--ifm-color-emphasis-700);
+  --accblk-state-border: var(--ifm-color-emphasis-300);
+}
+
+.accblk-state--na {
+  --accblk-state-bg: transparent;
+  --accblk-state-fg: var(--ifm-color-emphasis-600);
+  --accblk-state-border: transparent;
+}
+
+[data-theme='dark'] .accblk-state--always {
+  --accblk-state-bg: #1a3d26;
+  --accblk-state-fg: #6fcf97;
+  --accblk-state-border: #2e6b42;
+}
+
+[data-theme='dark'] .accblk-state--default {
+  --accblk-state-bg: #1a2e5c;
+  --accblk-state-fg: #7eb8f7;
+  --accblk-state-border: #2d4f9e;
+}
+
+/* A PlanBadge inside a block: inline, small, no bottom margin. */
+.accblk-plan .plan-badge {
+  margin: 0 0 0 6px;
+  padding: 2px 6px;
+  font-size: 10px;
+  vertical-align: middle;
+}
+
+.accblk-plan .plan-badge svg {
+  width: 11px;
+  height: 11px;
+}
+
+/* Lists of chips (scope, environment options). Two classes out-rank `.markdown li + li`. */
+.accblk-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.accblk-chips > .accblk-chip {
+  margin: 0;
+  padding: 2px 9px;
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: 20px;
+  background: var(--ifm-color-emphasis-100);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.accblk-chips.accblk-chips--small > .accblk-chip {
+  padding: 1px 7px;
+  font-size: 11px;
+}
+
+/* Notes per role (matrix details, levels cards). */
+.accblk-notes {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--ifm-color-emphasis-100);
+  list-style: none;
+}
+
+.accblk-notes > .accblk-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ─── Permission matrix ────────────────────────────────────────── */
+.accblk-matrix {
+  margin: 16px 0 24px;
+}
+
+/* Infima gives every table `display: block; overflow: auto`, which also stops a sticky header. */
+.accblk-matrix__table {
+  display: table;
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  overflow: visible;
+  table-layout: auto;
+  font-size: 14px;
+}
+
+.accblk-matrix__head {
+  background: transparent;
+}
+
+.accblk-matrix__head-row {
+  border-bottom: 2px solid var(--ifm-toc-border-color);
+}
+
+/* Every cell carries this class: Infima styles `table th, table td` and `table th` by element. */
+.accblk-matrix__cell {
+  padding: 10px 12px;
+  border: 0;
+  border-top: 1px solid var(--ifm-toc-border-color);
+  background: transparent;
+  color: var(--ifm-font-color-base);
+  text-align: left;
+  vertical-align: top;
+}
+
+.accblk-matrix__head .accblk-matrix__cell {
+  position: sticky;
+  top: var(--ifm-navbar-height);
+  z-index: 1;
+  border-top: 0;
+  background: var(--ifm-background-surface-color);
+  color: var(--ifm-color-emphasis-700);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+/* `table tr` and `table tr:nth-child(2n)` (0,1,2) set backgrounds and borders. */
+.accblk-matrix__table .accblk-matrix__row,
+.accblk-matrix__table .accblk-matrix__detail,
+.accblk-matrix__table .accblk-matrix__section-row,
+.accblk-matrix__table .accblk-matrix__head-row {
+  background: transparent;
+  border-top: 0;
+}
+
+.accblk-matrix__cell.accblk-matrix__section-cell {
+  padding: 8px 12px;
+  background: var(--ifm-color-emphasis-100);
+  color: var(--ifm-font-color-base);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.accblk-matrix__section-cell > * {
+  vertical-align: middle;
+}
+
+.accblk-matrix__section-cell .accblk-icon {
+  display: inline-block;
+  margin-right: 8px;
+  color: var(--ifm-color-emphasis-800);
+}
+
+.accblk-matrix__cell.accblk-matrix__cell--label {
+  width: 36%;
+  min-width: 180px;
+  font-weight: 600;
+}
+
+.accblk-matrix__cell.accblk-matrix__cell--detail {
+  padding: 4px 12px 16px 40px;
+  border-top: 0;
+}
+
+.accblk-matrix__label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+
+.accblk-matrix__label-text {
+  display: inline;
+}
+
+.accblk-matrix__static,
+.accblk-matrix__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accblk-matrix__desc {
+  margin-top: 3px;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.accblk-matrix__links {
+  margin-top: 3px;
+  color: var(--ifm-color-emphasis-600);
+  font-size: 12.5px;
+  font-weight: 400;
+}
+
+.accblk-matrix__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.accblk-matrix__toggle:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.accblk-matrix__chevron {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--ifm-color-emphasis-600);
+  transform: rotate(-90deg);
+}
+
+.accblk-matrix__toggle[aria-expanded='true'] .accblk-matrix__chevron {
+  transform: rotate(0deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .accblk-matrix__chevron {
+    transition: transform 0.15s ease;
+  }
+}
+
+/* The role label beside each chip exists for the stacked layout only. */
+.accblk-matrix__cell-label {
+  display: none;
+}
+
+/* The stacked layout sets `display: block` on rows, so [hidden] needs its own rule. */
+.accblk-matrix .accblk-matrix__detail[hidden] {
+  display: none;
+}
+
+.accblk-detail {
+  display: grid;
+  gap: 10px;
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.accblk-facts {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.accblk-facts > .accblk-facts__item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin: 0;
+}
+
+.accblk-facts__key {
+  min-width: 120px;
+  color: var(--ifm-color-emphasis-800);
+  font-weight: 600;
+}
+
+.accblk-detail__link {
+  justify-self: start;
+  font-size: 13px;
+}
+
+.accblk-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.accblk-legend > .accblk-legend__item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* Stacked layout: each row becomes a card, the header row is read by assistive tech only. */
+@media (max-width: 639px) {
+  .accblk-matrix--stack-sm .accblk-matrix__table,
+  .accblk-matrix--stack-sm .accblk-matrix__section,
+  .accblk-matrix--stack-sm .accblk-matrix__row,
+  .accblk-matrix--stack-sm .accblk-matrix__section-row,
+  .accblk-matrix--stack-sm .accblk-matrix__detail,
+  .accblk-matrix--stack-sm .accblk-matrix__cell {
+    display: block;
+  }
+
+  .accblk-matrix--stack-sm .accblk-matrix__head {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .accblk-matrix--stack-sm .accblk-matrix__table .accblk-matrix__row {
+    margin: 0 0 10px;
+    border: 1px solid var(--ifm-toc-border-color);
+    border-radius: 10px;
+  }
+
+  .accblk-matrix--stack-sm .accblk-matrix__table .accblk-matrix__detail {
+    margin: -10px 0 10px;
+    border: 1px solid var(--ifm-toc-border-color);
+    border-top: 0;
+    border-radius: 0 0 10px 10px;
+  }
+
+  .accblk-matrix--stack-sm .accblk-matrix__table .accblk-matrix__row + .accblk-matrix__detail:not([hidden]) {
+    margin-top: -10px;
+  }
+
+  .accblk-matrix--stack-sm .accblk-matrix__cell {
+    padding: 8px 12px;
+    border-top: 0;
+  }
+
+  .accblk-matrix--stack-sm .accblk-matrix__cell.accblk-matrix__cell--label {
+    width: auto;
+    min-width: 0;
+    padding-top: 10px;
+    border-bottom: 1px solid var(--ifm-toc-border-color);
+  }
+
+  .accblk-matrix--stack-sm .accblk-matrix__cell.accblk-matrix__cell--state {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .accblk-matrix--stack-sm .accblk-matrix__cell.accblk-matrix__cell--detail {
+    padding: 8px 12px 12px;
+  }
+
+  .accblk-matrix--stack-sm .accblk-matrix__cell.accblk-matrix__section-cell {
+    margin: 4px 0 8px;
+    border-radius: 8px;
+  }
+
+  .accblk-matrix--stack-sm .accblk-matrix__cell-label {
+    display: inline-block;
+    min-width: 72px;
+    color: var(--ifm-color-emphasis-700);
+    font-size: 12px;
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 996px) {
+  .accblk-matrix--stack-md .accblk-matrix__table,
+  .accblk-matrix--stack-md .accblk-matrix__section,
+  .accblk-matrix--stack-md .accblk-matrix__row,
+  .accblk-matrix--stack-md .accblk-matrix__section-row,
+  .accblk-matrix--stack-md .accblk-matrix__detail,
+  .accblk-matrix--stack-md .accblk-matrix__cell {
+    display: block;
+  }
+
+  .accblk-matrix--stack-md .accblk-matrix__head {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .accblk-matrix--stack-md .accblk-matrix__table .accblk-matrix__row {
+    margin: 0 0 10px;
+    border: 1px solid var(--ifm-toc-border-color);
+    border-radius: 10px;
+  }
+
+  .accblk-matrix--stack-md .accblk-matrix__table .accblk-matrix__detail {
+    margin: -10px 0 10px;
+    border: 1px solid var(--ifm-toc-border-color);
+    border-top: 0;
+    border-radius: 0 0 10px 10px;
+  }
+
+  .accblk-matrix--stack-md .accblk-matrix__cell {
+    padding: 8px 12px;
+    border-top: 0;
+  }
+
+  .accblk-matrix--stack-md .accblk-matrix__cell.accblk-matrix__cell--label {
+    width: auto;
+    min-width: 0;
+    padding-top: 10px;
+    border-bottom: 1px solid var(--ifm-toc-border-color);
+  }
+
+  .accblk-matrix--stack-md .accblk-matrix__cell.accblk-matrix__cell--state {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .accblk-matrix--stack-md .accblk-matrix__cell.accblk-matrix__cell--detail {
+    padding: 8px 12px 12px;
+  }
+
+  .accblk-matrix--stack-md .accblk-matrix__cell.accblk-matrix__section-cell {
+    margin: 4px 0 8px;
+    border-radius: 8px;
+  }
+
+  .accblk-matrix--stack-md .accblk-matrix__cell-label {
+    display: inline-block;
+    min-width: 72px;
+    color: var(--ifm-color-emphasis-700);
+    font-size: 12px;
+    font-weight: 600;
+  }
+}
+
+/* ─── Access levels ────────────────────────────────────────────── */
+.accblk-levels {
+  gap: 14px;
+  margin: 16px 0 24px;
+  padding: 18px 20px;
+}
+
+/* Inside a CardGrid the grid provides the spacing. */
+.docblk-grid > .accblk-levels {
+  margin: 0;
+}
+
+.accblk-levels__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.accblk-levels__heading {
+  min-width: 0;
+}
+
+.accblk-levels__title {
+  color: var(--ifm-font-color-base);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.accblk-levels__kinds {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 12.5px;
+}
+
+.accblk-levels__link {
+  margin-left: auto;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.accblk-levels__row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 6px 12px;
+  align-items: start;
+}
+
+.accblk-levels__key {
+  padding-top: 4px;
+  color: var(--ifm-color-emphasis-600);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.accblk-levels__hint {
+  grid-column: 2;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 12.5px;
+}
+
+.accblk-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A step is its arrow (from the second step on) and its body. */
+.accblk-ladder > .accblk-ladder__step {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+}
+
+.accblk-ladder__arrow {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--ifm-color-emphasis-500);
+}
+
+.accblk-ladder__arrow svg {
+  width: 16px;
+  height: 16px;
+  transform: rotate(90deg);
+}
+
+@media (min-width: 640px) {
+  .accblk-ladder.accblk-ladder--steps {
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .accblk-ladder.accblk-ladder--steps > .accblk-ladder__step {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .accblk-ladder--steps .accblk-ladder__arrow {
+    padding-top: 12px;
+  }
+
+  .accblk-ladder--steps .accblk-ladder__arrow svg {
+    transform: none;
+  }
+}
+
+.accblk-ladder__body {
+  display: flex;
+  flex: 1;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: 8px;
+  background: var(--ifm-background-surface-color);
+}
+
+.accblk-ladder__rung {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ifm-color-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.accblk-ladder__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.accblk-ladder__name {
+  color: var(--ifm-font-color-base);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.accblk-ladder__desc {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.accblk-ceiling {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--ifm-color-emphasis-800);
+  font-size: 12px;
+}
+
+.accblk-modifiers {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.accblk-modifiers > .accblk-modifier {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+}
+
+.accblk-modifier__label {
+  color: var(--ifm-font-color-base);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.accblk-modifier__desc {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.accblk-modifier__link {
+  justify-self: start;
+  font-size: 12.5px;
+}
+
+/* ─── Access layers ────────────────────────────────────────────── */
+.accblk-layers {
+  margin: 16px 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+/* The indent grows with depth from 640px up, so each layer sits inside the one above. */
+.accblk-layers > .accblk-layers__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 var(--accblk-indent, 0);
+}
+
+@media (min-width: 640px) {
+  .accblk-layers__item {
+    --accblk-indent: calc(var(--accblk-depth, 0) * 22px);
+  }
+}
+
+.docblk-card.accblk-layer {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  height: auto;
+  padding: 14px 16px;
+}
+
+.accblk-layer__index {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ifm-color-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.accblk-layer__body {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.accblk-layer__title {
+  color: var(--ifm-font-color-base);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.accblk-layer__by {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 12px;
+}
+
+.accblk-layer__desc {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.accblk-layers__arrow {
+  display: inline-flex;
+  padding: 2px 0;
+  color: var(--ifm-color-emphasis-500);
+}
+
+.accblk-layers__arrow svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* The compact strip */
+.accblk-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 2px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.accblk-strip > .accblk-strip__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+}
+
+.accblk-strip__sep {
+  width: 14px;
+  height: 14px;
+  color: var(--ifm-color-emphasis-500);
+}
+
+.accblk-strip__link {
+  display: inline-block;
+  padding: 3px 10px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* custom.css colours and underlines every `.theme-doc-markdown a` at (0,2,2). */
+.theme-doc-markdown .accblk-strip a.accblk-strip__link {
+  color: var(--ifm-color-emphasis-700);
+  text-decoration: none;
+}
+
+.theme-doc-markdown .accblk-strip a.accblk-strip__link:hover,
+.theme-doc-markdown .accblk-strip a.accblk-strip__link:focus-visible {
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+}
+
+.accblk-strip__link.accblk-strip__link--current {
+  border-color: color-mix(in srgb, var(--ifm-color-primary) 35%, transparent);
+  background: color-mix(in srgb, var(--ifm-color-primary) 12%, transparent);
+  color: var(--ifm-color-primary);
+}
+
+/* ─── Role cards ───────────────────────────────────────────────── */
+.accblk-role-card {
+  --docblk-label-bg: var(--accblk-role-bg);
+  --docblk-label-color: var(--accblk-role-fg);
+  display: flex;
+  min-width: 0;
+}
+
+.accblk-role-card > .docblk-card {
+  flex: 1;
+}
+
+.accblk-role-card .docblk-card__icon--tile,
+.accblk-role-card .docblk-card--link:hover .docblk-card__icon--tile {
+  border-color: var(--accblk-role-border);
+  background: var(--accblk-role-bg);
+  color: var(--accblk-role-fg);
+}
+
+/* ─── Print ────────────────────────────────────────────────────── */
+@media print {
+  .accblk-matrix .accblk-matrix__head .accblk-matrix__cell {
+    position: static;
+  }
+
+  .accblk-matrix .accblk-matrix__table .accblk-matrix__detail[hidden] {
+    display: table-row;
+  }
+
+  .accblk-matrix__chevron {
+    display: none;
+  }
+}

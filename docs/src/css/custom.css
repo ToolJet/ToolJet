@@ -973,6 +973,10 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   background-color: #F6F8FA;
 }
 
+[data-theme='dark'] #tj-dropdown {
+  background-color: #161b22;
+}
+
 #tj-dropdown code {
   border-radius: 4px;
   background: inherit;

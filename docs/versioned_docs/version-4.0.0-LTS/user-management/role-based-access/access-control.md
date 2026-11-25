@@ -3,27 +3,24 @@ id: access-control
 title: Access Control
 ---
 
-ToolJet enables you to manage access control by configuring permissions like create and delete. Access control can be applied to all of your resources such as apps, data sources and workflows. Additionally, ToolJet supports granular access control, allowing you to configure permissions for individual resources to ensure precise and secure management.
+import { ROLES, ALL_ROLES, RESOURCES, LAYERS } from './permissions-data';
+
+<AccessLayers layers={LAYERS} roles={ALL_ROLES} compact highlight="groups" />
+
+Access control in ToolJet is configured per group. Under **Workspace Settings > Groups**, every group has two tabs:
+
+- **Permissions**: workspace-wide actions, such as creating or deleting apps, data sources and folders.
+- **Granular access**: what the group can do with individual apps, workflows, modules, data sources and folders, on all of them or on selected ones.
+
+Admins configure both tabs. A group admin can open the two tabs of their own groups but not change them. For what each role gets by default, see **[User Roles](/docs/user-management/role-based-access/user-roles#permissions-for-user-roles)**.
 
 ## Permissions
 
-The following permissions can be configured for the given resources:
-| Resource | Permission | Description |
-|:---------|:-----------|:------------|
-| **Apps** | Create | Allows users of the group to create new applications within the workspace. |
-| | Delete | Allows users of the group to delete applications from the workspace. |
-| | Promote | Allows users of the group to promote the applications from one environment to the other. |
-| | Release | Allows users of the group to release the applications from the production environment. |
-| **Data sources** | Create | Allows users of the group to add new data sources in the workspace. |
-| | Delete | Allows users of the group to remove data sources from the workspace. |
-| **Modules** | Create | Allows users of the group to create new modules within the workspace. This includes cloning and importing modules. |
-| | Delete | Allows users of the group to delete modules from the workspace. This is blocked if the module is being used in any app. |
-| **Folder** | Create/Delete | Allows users of the group to create or delete folders to organize resources. |
-| **Workspace constants/variables** | Create/Update/Delete | Allows users of the group to define, modify, or remove constants and variables used across the workspace. |
-| **Workflows** | Create | Allows users of the group to create new workflows within the workspace. |
-| | Delete | Allows users of the group to delete workflows from the workspace. |
+<SectionSubtitle text="Workspace-wide actions a group may perform. Labels and descriptions are the ones the Permissions tab shows." />
 
-To configure view or edit access, please refer to **[Granular Access Control](#granular-access-control)**.
+<PermissionMatrix level="permission" roles={ROLES} sections={RESOURCES} caption="Workspace permissions and who has them by default" />
+
+To configure view or edit access to individual resources, see **[Granular Access Control](#granular-access-control)**.
 
 :::info
 If a user has the create permission and creates a resource, the user becomes the owner of that resource and has all the permissions related to it by default. <br/>
@@ -41,78 +38,70 @@ Role Required: **Admin** <br/>
 
 3. Select the group to configure permissions.
 
-4. Switch to the **Permissions** tab and configure the required permissions.
-    <img className="screenshot-full img-full" src="/img/user-management/rbac/access-control/workflow_config.png" alt="Create Custom Group" />
+4. Switch to the **Permissions** tab and tick the permissions the group needs. Each change is saved as you make it.
+    <!-- TODO screenshot: user-management/rbac/access-control/permissions-tab-v2.png | img-l | alt: The Permissions tab of the Operations group with Create apps and Create data sources ticked and Delete left unticked | shows: Workspace settings > Groups > Operations > Permissions tab in the Northwind Logistics workspace -->
 
+The **Admin** group has every permission and the **End-user** group has none; neither can be changed. Give end-users more access through the **Granular access** tab of a custom group instead.
 
 ## Granular Access Control
 
-In ToolJet, you can set granular level access control for apps, data sources, and modules, by configuring permissions like view access or edit access, to manage who can interact with the resources in your workspace. You can apply permissions either to all resources (e.g., all apps or all data sources) or to specific, selected resources, offering flexibility and precision in managing access. <br/>
-To configure Granular Access Control, you need to create custom groups. Refer to **[custom groups](/docs/user-management/role-based-access/custom-groups)** guide for more information.
+Granular access decides what a group can do with specific resources. Every grant has three parts:
+
+<CardGrid columns={3}>
+  <FlowStep
+    number="1"
+    title="Choose the resources"
+    description="All of a kind, including ones created later, or Custom: a hand-picked list. Custom is available on custom groups only."
+  />
+  <FlowStep
+    number="2"
+    title="Choose the level"
+    description="View or Edit for apps, Execute or Edit for workflows, Build with or Edit for modules, Build with or Configure for data sources, and the three folder levels."
+  />
+  <FlowStep
+    number="3"
+    title="Add modifiers"
+    description="Hide from dashboard, the environments the group can open an app in, or Restrict query run on a data source."
+  />
+</CardGrid>
+
+The **Admin** group has every granular permission and can't be edited. The **End-user** group, and any custom group that contains end-users, can only hold View on apps, Execute on workflows, and View apps on app and workflow folders. Adding a higher grant to such a group asks you to change those users' role first.
 
 ### Apps
 
-- **Edit**: Grants edit access to the selected apps. With this access, users can build or edit the apps they are granted access to. This permission should be assigned to builders or developers.
+<AccessLevels resources={RESOURCES} id="apps" roles={ROLES} />
 
-- **View**: With View access, users can preview the application in the development and staging environments, and access the released version in the production environment. This access level does not allow users to edit or modify the application. It is best suited for end users, testers, or consumers who only need to review or use the app.
+With **View**, users open the app in the environments selected under **Environment** and use the released version. With **Edit**, they open it in the builder as well. **Hide from dashboard** removes the app from the dashboard for everyone in the group, builders included; the app stays reachable by its URL. For how environment access combines across groups, see **[Environment Access Permission](/docs/development-lifecycle/environment/cloud/multi-environment#environment-access-permission)**.
 
-    :::note 
-    For end users, preview access is environment-specific. By default, end users can access only the Released app. To allow preview access in Development or Staging, the corresponding environment must be explicitly selected under **Workspace settings > Groups > End-user > Granular access  > Environment**.
-    :::
-
-
-- **Hide from dashboard**: Hides the selected apps from the dashboard, making them accessible only via URL. This permission applies to both **View** and **Edit** access, so if it is enabled for a group, users with Edit access (builders) will also not see the app on the dashboard, in addition to users with View access. The app remains accessible via its URL for both.
-
-- **Environment**: Using environment-level permissions, access to each environment can be restricted based on user groups or roles. For example, members of a custom group *Developer* may be granted access only to the *Development* environment. You can apply these permissions to specific apps or across all apps.  
-    Refer [this documentation](/docs/development-lifecycle/environment/cloud/multi-environment#environment-access-permission) to learn more about Environment Access Permissions.
-
-- **All apps**: Provides the selected access (Edit or View) to all the apps in the workspace, including any newly created apps.
-
-- **Custom**: Provide the selected access (Edit or View) only to the specified apps.
-
-
-
-    <img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/app-permission-v2.png" alt="Create Custom Group" />
+<img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/app-permission-v2.png" alt="The Edit app permissions modal with Edit selected, the environments Development, Staging and Released app, and All apps as the resources" />
 
 ### Data Sources
 
-- **Configure**: Users in the group can access and edit the configuration details of the selected data sources. This permission should be given to the admin users who needs to configure the data source.
+<AccessLevels resources={RESOURCES} id="data-sources" roles={ROLES} />
 
-- **Build with**: Users in the group can use the selected data sources in apps and workflows to create queries. This permission should be given to the builders or developers who will create the queries for the apps or workflows.
+**Build with** is for the builders who write queries against the data source. **Configure** is for the people who own the connection and its credentials. **Restrict query run** stops the group's members from running the data source's queries, whatever else they can do with the apps that use it.
 
-- **All data sources**: Provides the selected access (Configure or Build with) to all the data sources in the workspace, including any newly created data source.
-
-- **Custom**: Provide the selected access (Configure or Build with) only to the specified data sources.
-
-    <img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/ds-permission.png" alt="Create Custom Group" />
+<img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/ds-permission.png" alt="The Add data sources permissions modal with Configure selected and All data sources as the resources" />
 
 ### Modules
 
-- **Edit**: Grants access to open and edit the module builder. Users with this access can build, rename, and export the module. This permission should be given to the builders or developers who own or maintain the module.
+<AccessLevels resources={RESOURCES} id="modules" roles={ROLES} />
 
-- **Build with**: Users in the group can use the selected modules in the apps they build. Modules with only Build with access are shown on the dashboard in a locked, read-only state, letting builders review a module's internals (queries, components, logic) to understand or debug it, without being able to make any changes.
+Modules with **Build with** access open on the dashboard in a locked, read-only state, so builders can read a module's queries, components and logic without changing them. **Hide from dashboard** hides a module from the dashboard and from search, but not from the **Module** section of the component library in the App Builder.
 
-    :::info
-    There is no separate **View** permission for modules. Modules can't be accessed independently of an app, so end users always inherit access to a module from their access to the app it's used in — no additional module permission needs to be configured for end users.
-    :::
+:::info
+There is no separate **View** permission for modules. A module is never opened on its own, so end users inherit access to a module from their access to the app it is used in.
+:::
 
-- **Hide from dashboard**: Hides the selected modules from the dashboard and search results, making them accessible only via URL for users with Build with access. This does not affect the **Module** section of the component library panel in the App Builder — builders with Build with access can still find and add a hidden module to their apps from there.
-
-- **All modules**: Provides the selected access (Edit or Build with) to all the modules in the workspace, including any newly created module.
-
-- **Custom**: Provide the selected access (Edit or Build with) only to the specified modules.
-
-    :::note
-    If an app already has a module added to it by another builder, any builder with access to that app can edit the module's properties and styles, and move, resize, or delete it on the canvas, even without Edit or Build with access to that module itself. They cannot, however, open the module builder to view or change its internal logic.
-    :::
+:::note
+A builder with access to an app can change the properties and styles of a module that is already on its canvas, and move, resize or delete it, without any module permission. Opening the module builder to see or change the module's internals needs **Edit** on the module.
+:::
 
 ### Workflows
-- **Build**: Users in this group can build or edit the workflows they are granted access to. 
-- **Execute**: Users in this group can run/execute the selected workflows. This access does not allow users to edit or make changes to the workflows.
-- **All workflows**: Provides the selected access (Build or Execute) to all the workflows in the workspace, including any newly created workflows.
-- **Custom**: Provide the selected access (Build or Execute) only to the specified workflows.
 
-<img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/workflow.png" alt="Create Custom Group" />
+<AccessLevels resources={RESOURCES} id="workflows" roles={ROLES} />
+
+<!-- TODO screenshot: user-management/rbac/access-control/workflow-permissions-v2.png | img-m | alt: The Add workflows permissions modal with Execute selected and two workflows chosen under Custom | shows: the Add permission > Workflows modal filled in for the Operations group -->
 
 ### Folders
 
@@ -120,23 +109,13 @@ To configure Granular Access Control, you need to create custom groups. Refer to
 Folder permissions is currently in beta and not recommended for production use.
 :::
 
-Folder-level permissions let you control who can access and work on groups of applications at once. For example, if your workspace has hundreds of apps organized by team, you can grant each team the right access to their folder instead of setting permissions for every app individually. All users in the group automatically get the appropriate access to every app inside it.
+Folder permissions grant access to everything in a folder at once. If a workspace has hundreds of apps organised by team, give each team the right level on its folder instead of a grant per app. Everyone in the group gets that access to every app in the folder, including apps added later.
 
-- **Edit Folder**: Users in the group can rename the folder and add or remove apps from it. This access also grants Edit Apps and View Apps permissions for all apps within the folder by default.
+<AccessLevels resources={RESOURCES} id="folders" roles={ROLES} />
 
-- **Edit Apps**: Users in the group can edit apps within the folder. This access also grants View Apps permission for all apps within the folder by default.
+Each level includes the ones below it: **Edit folder** includes **Edit apps**, which includes **View apps**. Folder permissions apply across all environments.
 
-- **View Apps**: Users in the group can view and launch apps within the folder. They cannot edit apps or make changes to the folder.
-
-- **All folders**: Provides the selected access to all folders in the workspace, including any newly created folders.
-
-- **Custom**: Provides the selected access only to the specified folders.
-
-    :::info
-    Folder permissions apply across all environments.
-    :::
-
-    <img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/folder-permissions.png" alt="Folder Permissions" />
+<img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/folder-permissions.png" alt="The Add folder permissions modal with the Edit folder, Edit apps and View apps levels and All folders as the resources" />
 
 ### Configuring Granular Access Permission
 
@@ -149,10 +128,36 @@ Role Required: **Admin** <br/>
 
 3. Select the group to configure granular access permissions.
 
-4. Switch to the **Granular access** tab and click on **+ Add permission** button.
+4. Switch to the **Granular access** tab and click **Add permission**.
 
-5. Select the resource (Apps/Data source/Modules) based on requirement. Give a name for the permission, configure required permission and click on **Add** at the bottom of the modal.
+5. Pick the kind of resource: **Apps**, **Modules**, **Data source**, **Workflows**, **App folders**, **Workflow folders**, **Module folders** or **Data source folders**.
 
-    <img className="screenshot-full" src="/img/user-management/rbac/access-control/select-resource.png" alt="Create Custom Group" />
+6. Enter a **Permission name**, choose the level and any modifiers, choose **All** or **Custom** under **Resources**, and click **Add**.
+    <!-- TODO screenshot: user-management/rbac/access-control/add-permission-menu-v2.png | img-l | alt: The Granular access tab of the Operations group with the Add permission menu open, listing Apps, Modules, Data source, Workflows and the four kinds of folders | shows: existing grants Dispatch apps, Fleet data and Carrier onboarding in the list behind the menu -->
 
+To change or remove a grant later, click it in the list. The modal shows its settings and a delete icon.
 
+## Where to Go Next
+
+<CardGrid min={220}>
+  <NextStepCard
+    title="Custom Groups"
+    description="Create a group for a team, see how access adds up, and delegate membership to group admins."
+    href="/docs/user-management/role-based-access/custom-groups"
+  />
+  <NextStepCard
+    title="Environment Access"
+    description="How Development, Staging, Production and the released app combine across groups."
+    href="/docs/development-lifecycle/environment/cloud/multi-environment#environment-access-permission"
+  />
+  <NextStepCard
+    title="Dynamic Access Rules"
+    description="Restrict pages, components, queries and rows inside an app."
+    href="/docs/app-builder/dynamic-access-rule/overview"
+  />
+  <NextStepCard
+    title="React Builder Access"
+    description="Restrict screens and queries of a React Builder app to groups or users."
+    href="/docs/app-builder/react-builder/access-control"
+  />
+</CardGrid>

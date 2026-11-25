@@ -89,20 +89,13 @@ The default workspace cannot be archived. Please set a different workspace as th
 
 ## Workspace Admin
 
--   A Workspace has a three predefined roles, Admins, Builders and Endusers with predefined permissions. Checkout the [users and groups](/docs/user-management/role-based-access/user-roles) docs for more details.
+-   A workspace has three predefined roles, Admin, Builder and End-user, each with its own permissions. See **[User Roles](/docs/user-management/role-based-access/user-roles)** for details.
 -   The user who creates a workspace is automatically assigned as its **Admin**.
 -   An **Admin** can:
     -   Manage users, groups, data and apps within each workspace.
     -   Configure authentication methods for their workspaces.
 
-Admin user has access to all the permission at workspace level, while an end user can only view and use the released apps they are given access to and permissions can be configured for a builder.
-
-|          Permission           | Admin | Builder | End User |
-|:------------------------------|:-----:|:-------:|:--------:|
-| App                           |  ✅   | Configurable |    ❌    | 
-| Data sources                  |  ✅   | Configurable |    ❌    |
-| Folder                        |  ✅   | Configurable |    ❌    |
-| Workspace constants/variables |  ✅   | Configurable |    ❌    |
+Every member of a workspace has one role. Admins have every permission. Builders start with every permission on by default, and an admin can change what the Builder group and custom groups may do. End-users only view and use what they are given access to. The full list is in **[Permissions for User Roles](/docs/user-management/role-based-access/user-roles#permissions-for-user-roles)**.
 
 
 ## FAQ
