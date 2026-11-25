@@ -468,6 +468,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         selectedVersion,
         currentVersionId: selectedVersion.id,
         appVersionEnvironment,
+        // The header shows selectedEnvironment: when the version can't be opened under it (a
+        // development draft reached from Production), follow the environment it opens in.
+        ...(!isSelectedEnvironmentValid && versionOwnEnvironment && { selectedEnvironment: versionOwnEnvironment }),
         versionsPromotedToEnvironment: [...updatedVersionsArray],
         ...calculatePromoteAndReleaseButtonVisibility(
           selectedVersion.id,

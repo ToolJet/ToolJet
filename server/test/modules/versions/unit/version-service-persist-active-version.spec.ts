@@ -5,6 +5,12 @@
  * @group platform
  */
 import { VersionService } from '@modules/versions/service';
+import { resolveModuleRef } from '@modules/versions/module-ref.util';
+
+jest.mock('@modules/versions/module-ref.util', () => ({
+  ...jest.requireActual('@modules/versions/module-ref.util'),
+  resolveModuleRef: jest.fn(),
+}));
 
 const makeSvc = () => {
   const svc = Object.create(VersionService.prototype) as any;
@@ -40,5 +46,20 @@ describe('VersionService.persistActiveVersion', () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
     expect(() => svc.persistActiveVersion(user, app, { id: 'v-2', versionType: 'version' })).not.toThrow();
     consoleErrorSpy.mockRestore();
+  });
+});
+
+describe('VersionService.getVersionByStableIds (module embedded in a host app)', () => {
+  it('loads the module without remembering its version, so the module editor keeps its own', async () => {
+    const svc = makeSvc() as any;
+    const moduleApp = { id: 'module-1', type: 'module' };
+    svc.versionRepository = { manager: { findOne: jest.fn().mockResolvedValue(moduleApp) } };
+    svc.gitSyncConfigsUtilService = { getDetails: jest.fn().mockResolvedValue({ isEnabled: false }) };
+    svc.getVersion = jest.fn().mockResolvedValue({});
+    (resolveModuleRef as jest.Mock).mockResolvedValue({ id: 'v-1' });
+
+    await svc.getVersionByStableIds('co-rel', 'ref', { id: 'user-1', organizationId: 'org-1' }, 'edit', 'branch-1');
+
+    expect(svc.getVersion).toHaveBeenCalledWith(moduleApp, expect.anything(), 'edit', { persistActive: false });
   });
 });

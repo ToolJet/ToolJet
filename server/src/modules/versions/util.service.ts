@@ -5,7 +5,7 @@ import { InternalTableRelation } from '@entities/internal_table_relation.entity'
 import { computeMissingMigrations } from '@modules/tooljet-db/services/tooljet-db-promote.service';
 import { VersionRepository } from './repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
-import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { IVersionUtilService } from './interfaces/IUtilService';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { App } from '@entities/app.entity';
@@ -14,7 +14,7 @@ import { User } from '@entities/user.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
-import { EntityManager, EntityNotFoundError, IsNull, Not, In } from 'typeorm';
+import { EntityManager, IsNull, Not, In } from 'typeorm';
 import { VersionsCreateService } from './services/create.service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
@@ -391,18 +391,12 @@ export class VersionUtilService implements IVersionUtilService {
     const branchId = await this.resolveVersionBranchId(user, versionCreateDto);
 
     // A foreign/missing source is rejected up front instead of surfacing as a late worker failure.
-    // Same exception buildVersionFromParent throws for this case.
     if (versionFromId) {
       const sourceVersion = await this.versionRepository.findOne({
         where: { id: versionFromId, appId: app.id },
         select: ['id'],
       });
-      if (!sourceVersion) {
-        throw new EntityNotFoundError(AppVersion, {
-          where: { id: versionFromId, appId: app.id },
-          relations: ['dataSources', 'dataSources.dataQueries'],
-        });
-      }
+      if (!sourceVersion) throw new NotFoundException('Source version not found');
     }
 
     if (!versionName || versionName.trim().length === 0) {

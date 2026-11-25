@@ -227,7 +227,8 @@ export class AppsService implements IAppsService {
       const version = versionId
         ? await this.versionRepository.findById(versionId, app.id)
         : versionName
-          ? await this.versionRepository.findByName(versionName, app.id)
+          ? // An unknown name is a 404 below (findByName throws instead of returning null).
+            await this.findVersionByNameOrNull(versionName, app.id)
           : // Handle version retrieval based on env
             await this.versionRepository.findLatestVersionForEnvironment(
               app.id,
@@ -303,6 +304,15 @@ export class AppsService implements IAppsService {
       response['canEdit'] = false;
     }
     return plainToClass(ValidateAppAccessResponseDto, response);
+  }
+
+  private async findVersionByNameOrNull(versionName: string, appId: string) {
+    try {
+      return await this.versionRepository.findByName(versionName, appId);
+    } catch (err) {
+      if (!(err instanceof EntityNotFoundError)) throw err;
+      return null;
+    }
   }
 
   async validateReleasedApp(

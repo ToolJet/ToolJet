@@ -20,6 +20,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { camelCase, isEmpty, mapKeys, noop } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
+import { getWorkspaceId } from '@/_helpers/utils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
 import { setSuppressQueryRerun } from '@/AppBuilder/_stores/slices/componentsSlice';
 import useRouter from '@/_hooks/use-router';
@@ -38,6 +39,7 @@ import { ERROR_TYPES } from '@/_helpers/constants';
 import { useLocation, useParams } from 'react-router-dom';
 import { whenBranchResolved, getActiveBranchId, setActiveBranch, setVersionInUrl } from '@/_helpers/active-branch';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { isAppMissingOnBranch, redirectAppMissingOnBranch } from '@/AppBuilder/_helpers/appMissingOnBranch';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
@@ -436,6 +438,16 @@ const useAppData = (
         // misleading "Error fetching module data" toast.
         let editorEnvironment = result.editorEnvironment ?? (moduleMode ? { id: environmentId } : undefined);
         let editingVersion = result.editing_version;
+        if (
+          isAppMissingOnBranch(result, {
+            mode,
+            moduleMode,
+            isPreviewForVersion,
+          })
+        ) {
+          redirectAppMissingOnBranch(getWorkspaceId(), result);
+          return;
+        }
         // Git-off workspaces deliberately keep the active-branch cache null (see
         // workspaceBranchesStore) even though every org has a hidden default-branch row —
         // only reflect a resolved branch here when git sync is actually on for this org.

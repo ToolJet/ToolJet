@@ -10,6 +10,7 @@ import { Alert } from '@/_ui/Alert';
 import AlertDialog from '@/_ui/AlertDialog';
 import cx from 'classnames';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
+import { ImportBranchModal } from '@/_ui/WorkspaceBranchDropdown/ImportBranchModal';
 import { setActiveBranch, appendBranchName } from '@/_helpers/active-branch';
 import { v4 as uuidv4 } from 'uuid';
 import { branchJobKey, JOB_COPY, waitForJob } from '@/_helpers/backgroundJobs';
@@ -38,6 +39,8 @@ export async function switchEditorToBranch(branch, appId, successMessage = `Swit
 export function CreateBranchModal({ onClose, onSuccess, appId, organizationId }) {
   const [branchName, setBranchName] = useState('');
   const [conflictGroups, setConflictGroups] = useState(null);
+  // Set when the name already exists in git: the user confirms before the branch is imported.
+  const [pendingImportName, setPendingImportName] = useState(null);
   const orgGitConfig = useWorkspaceBranchesStore((state) => state.orgGitConfig);
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
   const LATEST_MAIN_OPTION = { label: `Latest (${defaultGitBranch})`, commitSha: null, isDefault: true };
@@ -208,41 +211,43 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
     if (validationError) setValidationError('');
   };
 
-  const handleCreateBranch = async () => {
-    const error = validateBranchName(branchName);
-    if (error) {
-      setValidationError(error);
-      return;
-    }
-
-    const name = branchName.trim();
+  const performCreate = async (name, confirmImport = false) => {
     setIsCreating(true);
     // Registered before the request: a fast worker can finish before the response arrives. The
     // spinner stays until it does; closing the modal hands the switch over to the toast.
     stopWaitingRef.current = waitForJob(branchJobKey(name), (notification) => {
       if (notification.type !== 'success') {
         setIsCreating(false);
+        // The job found naming conflicts: list them here instead of leaving only a toast.
+        const groups = notification.metadata?.conflictGroups;
+        if (groups?.length) {
+          setConflictGroups(groups);
+          return true;
+        }
         return;
       }
-      switchEditorToBranch({ id: notification.metadata.branchId, name }, appId, JOB_COPY.branchCreated).catch(() =>
-        toast.error(`Branch ${name} was created but switching to it failed`)
-      );
+      switchEditorToBranch(
+        { id: notification.metadata.branchId, name },
+        appId,
+        confirmImport ? JOB_COPY.branchImported : JOB_COPY.branchCreated
+      ).catch(() => toast.error(`Branch ${name} was created but switching to it failed`));
     });
     try {
       const defaultBranch = workspaceBranches.find((b) => b.is_default || b.isDefault);
       const sourceBranchId = defaultBranch?.id || null;
 
-      await workspaceActions.createBranch(
+      const ack = await workspaceActions.createBranch(
         name,
         sourceBranchId,
         selectedOption.commitSha || undefined,
         selectedOption.isLocalVersion ? appId : undefined,
         selectedOption.isLocalVersion ? selectedOption.versionId : undefined,
-        undefined,
+        confirmImport || undefined,
         idempotencyKeyRef.current
       );
       idempotencyKeyRef.current = uuidv4();
-      showActionToast({ type: 'info', message: JOB_COPY.branchStarted });
+      setPendingImportName(null);
+      showActionToast({ type: 'info', message: ack?.isImport ? JOB_COPY.branchImportStarted : JOB_COPY.branchStarted });
     } catch (error) {
       console.error('Error creating branch:', error);
       stopWaitingRef.current?.();
@@ -250,6 +255,11 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       if (error?.statusCode === 409) {
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
+          // Branch name already exists in git — ask before importing it instead of creating from scratch.
+          if (parsed?.needsImportConfirmation) {
+            setPendingImportName(name);
+            return;
+          }
           if (parsed?.conflictGroups?.length) {
             setConflictGroups(parsed.conflictGroups);
             return;
@@ -258,10 +268,25 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
           /* fall through */
         }
       }
+      setPendingImportName(null);
       const msg = error?.data?.message || error?.message || 'Failed to create branch';
       setValidationError(msg);
       toast.error(msg);
     }
+  };
+
+  const handleCreateBranch = async () => {
+    const error = validateBranchName(branchName);
+    if (error) {
+      setValidationError(error);
+      return;
+    }
+    await performCreate(branchName.trim(), false);
+  };
+
+  const handleConfirmImport = async () => {
+    if (!pendingImportName) return;
+    await performCreate(pendingImportName, true);
   };
 
   const handleKeyDown = (e) => {
@@ -275,7 +300,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   return (
     <>
       <AlertDialog
-        show={true}
+        show={!pendingImportName}
         closeModal={onClose}
         title="Create branch"
         checkForBackground={true}
@@ -425,6 +450,14 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
         conflictGroups={conflictGroups || []}
         onClose={() => setConflictGroups(null)}
         context="branch-creation"
+      />
+
+      <ImportBranchModal
+        show={!!pendingImportName}
+        branchName={pendingImportName}
+        isImporting={isCreating}
+        onCancel={() => setPendingImportName(null)}
+        onConfirm={handleConfirmImport}
       />
     </>
   );
