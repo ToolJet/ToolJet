@@ -8,6 +8,8 @@ import { DataQueryRepository } from '@modules/data-queries/repository';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppsRepository } from '@modules/apps/repository';
+import { FeatureAbilityFactory as AppAbilityFactory } from '@modules/apps/ability';
+import { ReleasePreflightService } from './services/release-preflight.service';
 import { FeatureAbilityFactory } from './ability';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
@@ -97,7 +99,9 @@ export class VersionModule extends SubModule {
         VersionService,
         VersionUtilService,
         ...VersionCompareProviders,
+        AppAbilityFactory,
         FeatureAbilityFactory,
+        ReleasePreflightService,
         GroupPermissionsRepository,
         ValidModuleByCorrelationGuard,
         GitSyncEditGuard,
