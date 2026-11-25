@@ -15,12 +15,15 @@ shared import pipeline (`import-export-resources`), then has its tables seeded f
 
 | File | Role |
 |---|---|
-| `controller.ts` | `GET /library_apps` (manifests), `POST /library_apps` (create from template), sample and onboarding apps, `:identifier/plugins` |
+| `controller.ts` | `GET /library_apps` (manifests + category titles), `POST /library_apps` (create from template), `:identifier/default-name` (next free app name), sample and onboarding apps, `:identifier/plugins` |
 | `service.ts` | `perform` → `importTemplate` → `processCsvFile`; theme and table-id preparation before import |
 | `server/templates/index.ts` | Reads every `manifest.json` at startup, sorted by name |
 | `server/templates/<id>/` | `manifest.json` (`id` = folder name), `definition.json`, `data/<table>/data.csv` |
 | `server/scripts/compress-templates.js` | Docker builds minify and Brotli-compress definitions to `.json.br`; `readTemplateJson` prefers them |
 | `frontend/assets/custom-components/templates/<id>.html` | Preview shown in the template library, one per template |
+| `server/templates/categories.json` | Category id → display title for the gallery; every manifest `category` must be a key here |
+| `server/scripts/generate-template-assets.ts` | Writes manifest `sources` from each definition and validates every manifest; `--check` runs in CI |
+| `template-assets.ts` | Pure logic behind the generator: data-source derivation, manifest validation |
 
 ## Edition split
 
@@ -40,7 +43,14 @@ shared import pipeline (`import-export-resources`), then has its tables seeded f
   failure must surface as `Failed to process CSV file` instead of a false success. The app is already created by then.
 - CSV headers must be a subset of the table's columns. Blank cells take the column default or NULL, so required text
   columns that may be blank in sample data must not be `NOT NULL` without a default.
+- Every route that takes a template identifier checks it against the loaded manifests (`findManifest`) before any file
+  read; unknown ids return 400 `App definition not found`.
+- `default-name` mirrors the `app_versions` name-uniqueness trigger: same branch, same app type, case-sensitive, and it
+  always filters by the caller's workspace.
 - Template id = folder name = `manifest.json` `id` = preview file name. Nothing maps them.
+- After adding or editing a template, run `cd server && npm run templates:generate` and commit its output. CI fails on stale
+  `sources`, and on invalid manifests (missing fields, unknown category, name over 90 characters, no preview).
+- Manifest `sources` is generated from the data sources the queries use; do not edit it by hand.
 
 ## Related modules
 

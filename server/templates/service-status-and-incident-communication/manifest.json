@@ -6,8 +6,8 @@
   ],
   "sources": [
     {
-      "name": "ToolJet Database",
-      "id": "tooljetdb"
+      "id": "tooljetdb",
+      "name": "ToolJet Database"
     }
   ],
   "id": "service-status-and-incident-communication",

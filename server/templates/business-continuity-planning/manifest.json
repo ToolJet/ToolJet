@@ -8,12 +8,12 @@
   ],
   "sources": [
     {
-      "name": "ToolJet Database",
-      "id": "tooljetdb"
+      "id": "runjs",
+      "name": "Run JavaScript"
     },
     {
-      "name": "Run JavaScript",
-      "id": "runjs"
+      "id": "tooljetdb",
+      "name": "ToolJet Database"
     }
   ],
   "id": "business-continuity-planning",
