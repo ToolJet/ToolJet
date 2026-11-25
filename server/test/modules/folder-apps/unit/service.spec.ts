@@ -1,4 +1,5 @@
 /** @group platform */
+import { ConflictException } from '@nestjs/common';
 import { FolderAppsService } from '../../../../src/modules/folder-apps/service';
 import { User } from '../../../../src/entities/user.entity';
 import { USER_ROLE } from '../../../../src/modules/group-permissions/constants';
@@ -149,5 +150,35 @@ describe('FolderAppsService.filterFoldersByPermissions', () => {
       const result = service.exposeFilterFolders(folders, user, false, perms);
       expect(result.map((f) => f.id)).toEqual(['f1']);
     });
+  });
+});
+
+describe('FolderAppsService.create | already in folder', () => {
+  const build = (inFolder: string[]) => {
+    const util = {
+      findAppIdsInFolder: jest.fn().mockResolvedValue(inFolder),
+      create: jest.fn(),
+      bulkCreate: jest.fn(),
+    };
+    const gitSync = { getDetails: jest.fn().mockResolvedValue({ options: { defaultBranch: { id: 'b1' } } }) };
+    const service = new FolderAppsService(null as never, null as never, util as never, gitSync as never);
+    return { service, util };
+  };
+
+  it('rejects with 409 when the app is already in the target folder', async () => {
+    const { service, util } = build(['a1']);
+    await expect(service.create('f1', 'a1', undefined, 'org')).rejects.toBeInstanceOf(ConflictException);
+    expect(util.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects a bulk add only when every app is already in the folder', async () => {
+    const { service } = build(['a1', 'a2']);
+    await expect(service.bulkCreate('f1', ['a1', 'a2'], undefined, 'org')).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('still adds a bulk selection that is only partly in the folder', async () => {
+    const { service, util } = build(['a1']);
+    await service.bulkCreate('f1', ['a1', 'a2'], undefined, 'org');
+    expect(util.bulkCreate).toHaveBeenCalled();
   });
 });
