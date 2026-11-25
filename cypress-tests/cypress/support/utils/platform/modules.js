@@ -2,6 +2,11 @@ import { commonSelectors, commonWidgetSelector, cyParamName } from 'Selectors/co
 import { moduleSelectors } from 'Selectors/platform/modules';
 import { versionModalSelector } from 'Selectors/platform/eeCommon';
 
+/**
+ * @tjType   modulesList.open
+ * @tjBlock  modules
+ * @tjUsage  openModulesList()
+ */
 export const openModulesList = () => {
   cy.intercept('GET', '/api/library_apps').as('libraryApps');
   cy.visit(`/${Cypress.env('workspaceSlug')}/modules`);
@@ -14,6 +19,11 @@ export const openModulesList = () => {
   cy.get(commonSelectors.pageSectionHeader, { timeout: 50000 }).should('contain.text', 'Modules');
 };
 
+/**
+ * @tjType   module.create
+ * @tjBlock  modules
+ * @tjUsage  createModuleViaAPI(moduleName)
+ */
 export const createModuleViaAPI = (moduleName) => {
   return cy.apiCreateModule(moduleName).then((module) => {
     Cypress.env('user_id', module.user_id);
@@ -21,6 +31,11 @@ export const createModuleViaAPI = (moduleName) => {
   });
 };
 
+/**
+ * @tjType   module.create
+ * @tjBlock  modules
+ * @tjUsage  createModuleViaUI(moduleName)
+ */
 export const createModuleViaUI = (moduleName) => {
   openModulesList();
 
@@ -31,12 +46,22 @@ export const createModuleViaUI = (moduleName) => {
   cy.url({ timeout: 15000 }).should('include', '/apps/');
 };
 
+/**
+ * @tjType   moduleComponent.drop
+ * @tjBlock  modules
+ * @tjUsage  dropModuleComponent()
+ */
 export const dropModuleComponent = (widgetName = 'Text') => {
   cy.get(moduleSelectors.blankModuleContent).should('be.visible');
   cy.dragAndDropWidget(widgetName);
   cy.get(moduleSelectors.blankModuleContent).should('not.exist');
 };
 
+/**
+ * @tjType   moduleContract.define
+ * @tjBlock  modules
+ * @tjUsage  defineModuleContract()
+ */
 export const defineModuleContract = () => {
   cy.get(moduleSelectors.moduleContainerWidget).click();
   cy.get(commonWidgetSelector.widgetConfigHandle('modulecontainer')).click();
@@ -48,11 +73,21 @@ export const defineModuleContract = () => {
   cy.get(moduleSelectors.outputItem('output1')).should('exist');
 };
 
+/**
+ * @tjType   moduleContract.author
+ * @tjBlock  modules
+ * @tjUsage  authorModuleContract()
+ */
 export const authorModuleContract = () => {
   dropModuleComponent();
   defineModuleContract();
 };
 
+/**
+ * @tjType   moduleDraftVersion.create
+ * @tjBlock  modules
+ * @tjUsage  createModuleDraftVersion("v2-draft")
+ */
 export const createModuleDraftVersion = (draftVersionName, fromVersion) => {
   cy.get(moduleSelectors.versionSwitcherButton).click();
   cy.get('body').then(($body) => {
@@ -75,6 +110,11 @@ export const createModuleDraftVersion = (draftVersionName, fromVersion) => {
   cy.get(commonSelectors.buttonSelector('create draft version create')).should('not.exist');
 };
 
+/**
+ * @tjType   moduleVersion.publish
+ * @tjBlock  modules
+ * @tjUsage  publishModuleVersion("v1", "v1")
+ */
 export const publishModuleVersion = (currentVersionName, newVersionName) => {
   cy.get(moduleSelectors.versionSwitcherButton).click();
   cy.get(commonSelectors.buttonSelector(`${currentVersionName} save version`)).click();
@@ -92,11 +132,21 @@ export const ensureVersionSwitcherOpen = () => {
   });
 };
 
+/**
+ * @tjType   moduleEditorVersion.switch
+ * @tjBlock  modules
+ * @tjUsage  switchModuleEditorVersion("v1")
+ */
 export const switchModuleEditorVersion = (versionName) => {
   cy.get(moduleSelectors.versionSwitcherButton).click();
   cy.get(`[data-cy="${cyParamName(versionName)}-version-name"]`).click();
 };
 
+/**
+ * @tjType   module.rename
+ * @tjBlock  modules
+ * @tjUsage  renameModuleFromList(lifecycleModuleName, lifecycleRenamedModuleName)
+ */
 export const renameModuleFromList = (currentModuleName, newModuleName) => {
   cy.get(commonSelectors.appCard(currentModuleName))
     .trigger('mousehover')
@@ -108,6 +158,11 @@ export const renameModuleFromList = (currentModuleName, newModuleName) => {
   cy.get(moduleSelectors.renameModuleSubmitButton).click();
 };
 
+/**
+ * @tjType   module.delete
+ * @tjBlock  modules
+ * @tjUsage  attemptDeleteModuleFromList(lifecycleClonedModuleName)
+ */
 export const attemptDeleteModuleFromList = (moduleName) => {
   cy.get(commonSelectors.appCard(moduleName))
     .trigger('mousehover')
@@ -125,6 +180,11 @@ export const attemptDeleteModuleVersion = (versionName) => {
   cy.get(commonSelectors.yesButton).click();
 };
 
+/**
+ * @tjType   module.drag
+ * @tjBlock  modules
+ * @tjUsage  dragModuleIntoCanvas(moduleName)
+ */
 export const dragModuleIntoCanvas = (moduleName, positionX = 100, positionY = 100) => {
   cy.get('body').then(($body) => {
     if ($body.find('[role="tab"]:contains("Modules")').length === 0) {

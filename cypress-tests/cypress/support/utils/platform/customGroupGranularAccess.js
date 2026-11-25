@@ -9,6 +9,11 @@ import {
 import { getGroupPermissionInput } from "Support/utils/userPermissions";
 import { groupsText } from "Texts/platform/manageGroups";
 
+/**
+ * @tjType   andReleaseApp.create
+ * @tjBlock  access
+ * @tjUsage  createAndReleaseApp(data.appName, { componentValue: `{{globals.environment.name}}` })
+ */
 export const createAndReleaseApp = (
     appName,
     componentDetails = {},
@@ -65,6 +70,11 @@ export const createAndReleaseApp = (
     cy.go("back");
 };
 
+/**
+ * @tjType   workspaceOnboardUser.create
+ * @tjBlock  access
+ * @tjUsage  createWorkspaceOnboardUser({ data, groupName, appName2, appName3, appSlug, isEnterprise })
+ */
 export const createWorkspaceOnboardUser = ({
     data,
     groupName,
@@ -99,6 +109,11 @@ export const createWorkspaceOnboardUser = ({
     createAndReleaseApp(appName3, {}, appSlug, data.workspaceSlug);
 };
 
+/**
+ * @tjType   appGranularPermissions.configure
+ * @tjBlock  access
+ * @tjUsage  configureAppGranularPermissions(groupName, [ data.appName, appName2, appName3])
+ */
 export const configureAppGranularPermissions = (groupName, apps) => {
     navigateToManageGroups();
     cy.get(groupsSelector.groupLink(groupName)).click();
@@ -136,6 +151,10 @@ export const configureAppGranularPermissions = (groupName, apps) => {
     cy.get(groupsSelector.confimButton).click();
 };
 
+/**
+ * @tjType   enterpriseGranularPermissions.configure
+ * @tjBlock  access
+ */
 export const configureEnterpriseGranularPermissions = ({
     groupName,
     workflowNames,
@@ -204,6 +223,10 @@ export const configureEnterpriseGranularPermissions = ({
     });
 };
 
+/**
+ * @tjType   builderAccessAsPerTheConfig.verify
+ * @tjBlock  access
+ */
 export const verifyBuilderAccessAsPerTheConfig = ({
     workspaceSlug,
     email,
@@ -261,6 +284,10 @@ export const verifyBuilderAccessAsPerTheConfig = ({
     });
 };
 
+/**
+ * @tjBlock  access
+ * @tjUsage  validateAndEditEnvironmentsInEditModal(builderEnvTags, "Production")
+ */
 export const validateAndEditEnvironmentsInEditModal = (envTags, envOption) => {
     cy.get(".css-1dyz3mf .css-k3krtu-multiValue").each(($el, index) => {
         cy.wrap($el).should("contain", envTags[index]);
@@ -276,6 +303,11 @@ export const validateAndEditEnvironmentsInEditModal = (envTags, envOption) => {
     cy.get('[data-cy="environment-tags"]').should("contain", envOption);
 };
 
+/**
+ * @tjType   granularPermissions.open
+ * @tjBlock  access
+ * @tjUsage  openGranularPermissions("builder")
+ */
 export const openGranularPermissions = (groupName) => {
     navigateToManageGroups();
     cy.get(groupsSelector.groupLink(groupName)).click();
@@ -283,6 +315,11 @@ export const openGranularPermissions = (groupName) => {
     cy.get(groupsSelector.granularLink).click();
 };
 
+/**
+ * @tjType   specWorkspace.create
+ * @tjBlock  access
+ * @tjUsage  createSpecWorkspace("cgga-admin")
+ */
 export const createSpecWorkspace = (prefix) => {
     const workspaceName = `${prefix}-${Date.now()}`;
     cy.apiLogin();
@@ -296,23 +333,43 @@ export const createSpecWorkspace = (prefix) => {
     });
 };
 
+/**
+ * @tjType   specWorkspace.archive
+ * @tjBlock  access
+ * @tjUsage  archiveSpecWorkspace()
+ */
 export const archiveSpecWorkspace = () => {
     cy.apiLogin();
     cy.then(() => cy.apiArchiveWorkspace(Cypress.env("specWorkspaceId")));
 };
 
+/**
+ * @tjType   asAdmin.login
+ * @tjBlock  access
+ * @tjUsage  loginAsAdmin()
+ */
 export const loginAsAdmin = () => {
     cy.apiLogout();
     cy.apiLogin("dev@tooljet.io", "password", Cypress.env("specWorkspaceId"));
     cy.visit(`/${Cypress.env("workspaceSlug")}`);
 };
 
+/**
+ * @tjType   asUser.login
+ * @tjBlock  access
+ * @tjUsage  loginAsUser(data.email)
+ */
 export const loginAsUser = (email) => {
     cy.apiLogout();
     cy.apiLogin(email, "password", Cypress.env("specWorkspaceId"));
     cy.visit(`/${Cypress.env("workspaceSlug")}`);
 };
 
+/**
+ * @tjType   appAsBuilder.open
+ * @tjBlock  access
+ * @tjUsage  openAppAsBuilder(appId1)
+ */
 export const openAppAsBuilder = (appId) => {
     cy.openApp(
         Cypress.env("workspaceSlug"),
@@ -322,6 +379,11 @@ export const openAppAsBuilder = (appId) => {
     );
 };
 
+/**
+ * @tjType   restrictedModal.expect
+ * @tjBlock  access
+ * @tjUsage  expectRestrictedModal()
+ */
 export const expectRestrictedModal = () => {
     cy.url().should("match", /\/error\/restricted(-preview)?/);
     cy.get('[data-cy="modal-header"]')
@@ -329,6 +391,10 @@ export const expectRestrictedModal = () => {
         .and("contain.text", "Restricted access");
 };
 
+/**
+ * @tjBlock  access
+ * @tjUsage  validateAppCardCTAs(data.appName, false, true, true)
+ */
 export const validateAppCardCTAs = (appName, edit, preview, launch, launchEnabled = true) => {
     cy.get(commonSelectors.appCard(appName)).within(() => {
         if (edit)

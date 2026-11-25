@@ -12,6 +12,11 @@ export const promoteApp = () => {
   cy.wait(3000);
 };
 
+/**
+ * @tjType   app.release
+ * @tjBlock  access
+ * @tjUsage  releaseApp()
+ */
 export const releaseApp = () => {
   cy.get(multiEnvSelector.environmentsTag("production")).click();
 
@@ -30,6 +35,11 @@ export const launchApp = () => {
   });
 };
 
+/**
+ * @tjType   version.create
+ * @tjBlock  shared
+ * @tjUsage  createVersionFromDraft("v1")
+ */
 export const createVersionFromDraft = (version) => {
   cy.get(multiEnvSelector.environmentsTag("development")).click();
   cy.get(versionModalSelector.saveVersionButton(version)).click();
@@ -40,6 +50,11 @@ export const createVersionFromDraft = (version) => {
   );
 
 };
+/**
+ * @tjType   env.promote
+ * @tjBlock  access
+ * @tjUsage  promoteEnv("staging")
+ */
 export const promoteEnv = (fromEnv) => {
   cy.get(multiEnvSelector.environmentsTag(fromEnv)).click();
   cy.waitForElement(commonEeSelectors.promoteVersionButton);
@@ -48,6 +63,10 @@ export const promoteEnv = (fromEnv) => {
   cy.reload();
 };
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  appPromote(Environments.development, Environments.staging)
+ */
 export const appPromote = (fromEnv, toEnv) => {
   const commonActions = () => {
     cy.get(multiEnvSelector.environmentsTag(fromEnv)).click();
@@ -145,6 +164,10 @@ export const selectEnv = (envName) => {
   }
 };
 
+/**
+ * @tjBlock  workspace
+ * @tjUsage  setupPostgreSQLDataSource(names.dsName, names.secretConstantName, names.dbNameConstant)
+ */
 export const setupPostgreSQLDataSource = (
   dsName,
   secretConstantName,
@@ -180,6 +203,10 @@ export const setupPostgreSQLDataSource = (
   );
 };
 
+/**
+ * @tjType   appWithComponents.create
+ * @tjBlock  workspace
+ */
 export const createAppWithComponents = (
   appName,
   dsName,
@@ -218,6 +245,11 @@ export const createAppWithComponents = (
   });
 };
 
+/**
+ * @tjType   environmentData.verify
+ * @tjBlock  workspace
+ * @tjUsage  verifyEnvironmentData(DBValues.production, EnvironmentValues.production)
+ */
 export const verifyEnvironmentData = (expectedDbValue, expectedQueryValue) => {
   cy.get(commonWidgetSelector.draggableWidget("constant_data"))
     .should("be.visible")
@@ -228,6 +260,11 @@ export const verifyEnvironmentData = (expectedDbValue, expectedQueryValue) => {
   );
 };
 
+/**
+ * @tjType   environment.select
+ * @tjBlock  workspace
+ * @tjUsage  selectEnvironment("Staging")
+ */
 export const selectEnvironment = (envName) => {
   cy.get(multiEnvSelector.previewSettings).click({ timeout: 10000 });
   cy.forceClickOnCanvas();
@@ -240,6 +277,11 @@ export const selectEnvironment = (envName) => {
     .click({ timeout: 10000 });
 };
 
+/**
+ * @tjType   andVisitApp.release
+ * @tjBlock  workspace
+ * @tjUsage  releaseAndVisitApp(testData.appSlug)
+ */
 export const releaseAndVisitApp = (appSlug) => {
   cy.get(multiEnvSelector.environmentsTag("production")).click();
   cy.get(commonSelectors.releaseButton).click();
@@ -260,6 +302,11 @@ export const releaseAndVisitApp = (appSlug) => {
   });
 };
 
+/**
+ * @tjType   queryEditorDisabled.verify
+ * @tjBlock  workspace
+ * @tjUsage  verifyQueryEditorDisabled()
+ */
 export const verifyQueryEditorDisabled = () => {
   cy.get(appEditorSelector.editor.queryDetailsContainer).should(
     "have.class",
@@ -267,6 +314,11 @@ export const verifyQueryEditorDisabled = () => {
   );
 };
 
+/**
+ * @tjType   globalSettingsDisabled.verify
+ * @tjBlock  workspace
+ * @tjUsage  verifyGlobalSettingsDisabled()
+ */
 export const verifyGlobalSettingsDisabled = () => {
   cy.get(versionModalSelector.versionLockInfoText, { timeout: 10000 }).verifyVisibleElement(
     "have.text",
@@ -280,6 +332,11 @@ export const verifyGlobalSettingsDisabled = () => {
   cy.get(appEditorSelector.settings.appSlugInput).should("not.be.disabled");
 };
 
+/**
+ * @tjType   inspectorMenuHasNoDeleteOption.verify
+ * @tjBlock  workspace
+ * @tjUsage  verifyInspectorMenuHasNoDeleteOption()
+ */
 export const verifyInspectorMenuHasNoDeleteOption = () => {
   cy.get(appEditorSelector.editor.inspector.buttonAria).click({
     timeout: 1000,
@@ -301,11 +358,21 @@ export const verifyInspectorMenuHasNoDeleteOption = () => {
   cy.forceClickOnCanvas();
 };
 
+/**
+ * @tjType   componentsManagerDisabled.verify
+ * @tjBlock  workspace
+ * @tjUsage  verifyComponentsManagerDisabled()
+ */
 export const verifyComponentsManagerDisabled = () => {
   //cy.get(".widgets-list").should("have.css", "pointer-events", "none");
   cy.get(appEditorSelector.editor.components.componentsPlusButton).click();
 };
 
+/**
+ * @tjType   pageSettingsDisabled.verify
+ * @tjBlock  workspace
+ * @tjUsage  verifyPageSettingsDisabled()
+ */
 export const verifyPageSettingsDisabled = () => {
   cy.get(appEditorSelector.editor.pages.pagesTabButton).click();
   cy.get(versionModalSelector.versionLockInfoText).verifyVisibleElement(
@@ -330,6 +397,10 @@ export const verifyComponentInspectorDisabled = () => {
   cy.forceClickOnCanvas();
 };
 
+/**
+ * @tjBlock  workspace
+ * @tjUsage  setupWorkspaceConstant(names.dbNameConstant, DBValues, "Global")
+ */
 export const setupWorkspaceConstant = (
   constantName,
   values,

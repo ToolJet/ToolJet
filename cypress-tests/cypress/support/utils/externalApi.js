@@ -5,6 +5,10 @@ import { navigateToManageGroups } from 'Support/utils/common';
 export const invalidAuthHeader = { Authorization: "Basic invalid-token" };
 export const emptyAuthHeader = { Authorization: "" };
 
+/**
+ * @tjBlock  onboarding
+ * @tjUsage  baseApiRequest(method, `${apiBaseUrl}${endpoint}`, body, headers)
+ */
 export const apiRequest = (method, url, body = {}, headers = {}) => {
     return cy.request({
         method,
@@ -22,24 +26,49 @@ export const apiRequest = (method, url, body = {}, headers = {}) => {
 
 // ---------- Users ----------
 
+/**
+ * @tjType   user.create
+ * @tjBlock  externalApi
+ * @tjUsage  createUser(payload)
+ */
 export const createUser = (userData, headers = {}) => {
     return apiRequest("POST", `${Cypress.env("API_URL")}/ext/users`, userData, headers);
 };
 
+/**
+ * @tjType   user.get
+ * @tjBlock  externalApi
+ * @tjUsage  getUser(userId)
+ */
 export const getUser = (userId, headers = {}) => {
     return apiRequest("GET", `${Cypress.env("API_URL")}/ext/user/${userId}`, {}, headers);
 };
 
+/**
+ * @tjType   allUsers.get
+ * @tjBlock  externalApi
+ * @tjUsage  getAllUsers(`?group_names=${data.groupName}`)
+ */
 export const getAllUsers = (queryString = "", headers = {}) => {
     return apiRequest("GET", `${Cypress.env("API_URL")}/ext/users${queryString}`, {}, headers);
 };
 
+/**
+ * @tjType   user.update
+ * @tjBlock  externalApi
+ * @tjUsage  updateUser(userId, { name: updatedName })
+ */
 export const updateUser = (userId, userData, headers = {}) => {
     return apiRequest("PATCH", `${Cypress.env("API_URL")}/ext/user/${userId}`, userData, headers);
 };
 
 // ---------- Roles & workspace relations ----------
 
+/**
+ * @tjType   userRole.update
+ * @tjBlock  externalApi
+ * @tjUsage  updateUserRole(workspaceId, { newRole: "end-user", userId })
+ */
 export const updateUserRole = (workspaceId, roleData, headers = {}) => {
     return apiRequest(
         "PUT",
@@ -49,6 +78,10 @@ export const updateUserRole = (workspaceId, roleData, headers = {}) => {
     );
 };
 
+/**
+ * @tjBlock  externalApi
+ * @tjUsage  replaceUserWorkspace(userId, workspaceId, { groups: [] })
+ */
 export const replaceUserWorkspace = (userId, workspaceId, workspaceData, headers = {}) => {
     return apiRequest(
         "PATCH",
@@ -58,6 +91,10 @@ export const replaceUserWorkspace = (userId, workspaceId, workspaceData, headers
     );
 };
 
+/**
+ * @tjBlock  externalApi
+ * @tjUsage  replaceUserWorkspacesRelations(userId, [ { name: workspaceName, status: "active", groups: [] }])
+ */
 export const replaceUserWorkspacesRelations = (userId, workspacesData, headers = {}) => {
     return apiRequest(
         "PUT",
@@ -67,12 +104,22 @@ export const replaceUserWorkspacesRelations = (userId, workspacesData, headers =
     );
 };
 
+/**
+ * @tjType   allWorkspaces.get
+ * @tjBlock  externalApi
+ * @tjUsage  getAllWorkspaces()
+ */
 export const getAllWorkspaces = (headers = {}) => {
     return apiRequest("GET", `${Cypress.env("API_URL")}/ext/workspaces`, {}, headers);
 };
 
 // ---------- Apps ----------
 
+/**
+ * @tjType   app.import
+ * @tjBlock  externalApi
+ * @tjUsage  importApp(workspaceId, namedApp)
+ */
 export const importApp = (workspaceId, appData, headers = {}) => {
     return apiRequest(
         "POST",
@@ -82,6 +129,11 @@ export const importApp = (workspaceId, appData, headers = {}) => {
     );
 };
 
+/**
+ * @tjType   app.export
+ * @tjBlock  externalApi
+ * @tjUsage  exportApp(workspaceId, appId)
+ */
 export const exportApp = (workspaceId, appId, queryString = "", headers = {}) => {
     return apiRequest(
         "POST",
@@ -91,6 +143,11 @@ export const exportApp = (workspaceId, appId, queryString = "", headers = {}) =>
     );
 };
 
+/**
+ * @tjType   workspaceApps.fetch
+ * @tjBlock  externalApi
+ * @tjUsage  fetchWorkspaceApps(workspaceId)
+ */
 export const fetchWorkspaceApps = (workspaceId, headers = {}) => {
     return apiRequest(
         "GET",
@@ -106,6 +163,11 @@ export const allAppsDetails = (workspaceIds, headers = {}) => {
 
 // ---------- Modules ----------
 
+/**
+ * @tjType   workspaceModules.list
+ * @tjBlock  externalApi
+ * @tjUsage  listWorkspaceModules(workspaceId)
+ */
 export const listWorkspaceModules = (workspaceId, headers = {}) => {
     return apiRequest(
         "GET",
@@ -115,6 +177,11 @@ export const listWorkspaceModules = (workspaceId, headers = {}) => {
     );
 };
 
+/**
+ * @tjType   module.export
+ * @tjBlock  externalApi
+ * @tjUsage  exportModule(workspaceId, moduleId)
+ */
 export const exportModule = (workspaceId, moduleId, queryString = "", headers = {}) => {
     return apiRequest(
         "POST",
@@ -124,6 +191,11 @@ export const exportModule = (workspaceId, moduleId, queryString = "", headers = 
     );
 };
 
+/**
+ * @tjType   module.import
+ * @tjBlock  externalApi
+ * @tjUsage  importModule(workspaceId, { ...requestData, appName: moduleName })
+ */
 export const importModule = (workspaceId, moduleData, headers = {}) => {
     return apiRequest(
         "POST",
@@ -135,6 +207,11 @@ export const importModule = (workspaceId, moduleData, headers = {}) => {
 
 // ---------- User metadata ----------
 
+/**
+ * @tjType   userMetadata.get
+ * @tjBlock  externalApi
+ * @tjUsage  getUserMetadata(workspaceId, userId)
+ */
 export const getUserMetadata = (workspaceId, userId, headers = {}) => {
     return apiRequest(
         "GET",
@@ -144,6 +221,11 @@ export const getUserMetadata = (workspaceId, userId, headers = {}) => {
     );
 };
 
+/**
+ * @tjType   userMetadata.update
+ * @tjBlock  externalApi
+ * @tjUsage  updateUserMetadata(workspaceId, userId, metadataPayload)
+ */
 export const updateUserMetadata = (workspaceId, userId, metadataPayload, headers = {}) => {
     return apiRequest(
         "PUT",
@@ -194,6 +276,11 @@ export const createGroup = (groupName) => {
     cy.get(groupsSelector.createGroupButton).click();
 }
 
+/**
+ * @tjType   user.verify
+ * @tjBlock  shared
+ * @tjUsage  verifyUserInGroups(data.email, ["Admin"])
+ */
 export const verifyUserInGroups = (email, groupNames = [], shouldExist = true, workspaceSlug = 'my-workspace') => {
     if (workspaceSlug) cy.visit(workspaceSlug);
     navigateToManageGroups();
@@ -212,6 +299,11 @@ export const verifyUserInGroups = (email, groupNames = [], shouldExist = true, w
     });
 };
 
+  /**
+   * @tjType   workspaceUsersByGroups.get
+   * @tjBlock  externalApi
+   * @tjUsage  getWorkspaceUsersByGroups(workspaceId, { group_names: [] })
+   */
   export const getWorkspaceUsersByGroups = (workspaceId, payload, headers = {}) => {
       return apiRequest(
           "POST",
