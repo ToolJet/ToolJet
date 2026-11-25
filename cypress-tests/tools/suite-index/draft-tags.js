@@ -11,12 +11,16 @@ const VERBS = new Set([
   "select", "toggle", "attempt", "define", "author", "archive", "grant", "pick", "ensure", "visit",
 ]);
 const SKIP = new Set(["ui", "api", "via"]);
+const WRAPPER_VERBS = new Set(["attempt", "ensure", "try"]);
+const CONTEXT_WORDS = new Set(["from", "into", "in", "on", "expecting"]);
 const MAX_USAGE = 120;
 
 function entityOp(name) {
   const t = tokens(name).filter((x, i, all) => !(SKIP.has(x) && all.slice(0, i).every(y => SKIP.has(y))));
+  if (WRAPPER_VERBS.has(t[0]) && VERBS.has(t[1])) t.shift();
   if (!t.length || !VERBS.has(t[0])) return "-";
-  const rest = t.slice(1).filter(x => !SKIP.has(x));
+  const cut = t.findIndex((x, i) => i > 0 && CONTEXT_WORDS.has(x));
+  const rest = t.slice(1, cut === -1 ? undefined : cut).filter(x => !SKIP.has(x));
   if (!rest.length) return "-";
   const entity = rest[0] + rest.slice(1).map(x => x[0].toUpperCase() + x.slice(1)).join("");
   return `${entity}.${t[0]}`;
@@ -38,13 +42,14 @@ function pickUsage(sites, preferred) {
   return ok.length ? ok[0].text : "";
 }
 
+// area = null drafts every used symbol once, from all areas' specs together.
 function draftTags(symbols, usage, area, isAreaSpec = (f) => areaOfSpec(f) === area) {
   const drafts = [];
   for (const s of symbols) {
     if (s.kind === "selector" || suiteForPath(s.file) === "appBuilder") continue;
     const u = usage.get(`${s.kind}:${s.name}`);
-    if (!u || !u.areas.has(area)) continue;
-    let block = u.areas.size === 1 ? area : "shared";
+    if (!u || (area && !u.areas.has(area))) continue;
+    let block = u.areas.size === 1 ? [...u.areas][0] : "shared";
     if (!validBlocks(suiteForPath(s.file)).includes(block)) block = "shared";
     drafts.push({
       name: s.name, kind: s.kind, file: s.file, line: s.line, duplicateName: s.id.includes("@"),
@@ -53,6 +58,10 @@ function draftTags(symbols, usage, area, isAreaSpec = (f) => areaOfSpec(f) === a
     });
   }
   return drafts.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : a.file < b.file ? -1 : 1));
+}
+
+function draftAllTags(symbols, usage) {
+  return draftTags(symbols, usage, null, () => false);
 }
 
 function tagLine(indent, tag, value) {
@@ -117,15 +126,16 @@ function writeTags(rootDir, drafts) {
 
 if (require.main === module) {
   const [mode, area] = process.argv.slice(2);
-  if (!["--review", "--write"].includes(mode) || !AREAS.includes(area)) {
-    console.error(`usage: draft-tags.js --review|--write <area>\nareas: ${AREAS.join(", ")}`);
+  if (!["--review", "--write"].includes(mode) || !(area === "all" || AREAS.includes(area))) {
+    console.error(`usage: draft-tags.js --review|--write <area|all>\nareas: ${AREAS.join(", ")}`);
     process.exit(2);
   }
   const root = process.env.SUITE_INDEX_ROOT || path.join(__dirname, "../..");
   const symbols = collectSymbols(root).symbols;
-  const drafts = draftTags(symbols, collectUsage(root, symbols), area);
+  const usage = collectUsage(root, symbols);
+  const drafts = area === "all" ? draftAllTags(symbols, usage) : draftTags(symbols, usage, area);
   if (mode === "--review") process.stdout.write(reviewTable(drafts, area));
   else console.log(`tagged ${drafts.length} symbols in:\n  ${writeTags(root, drafts).join("\n  ")}`);
 }
 
-module.exports = { entityOp, pickUsage, draftTags, applyTags, reviewTable, writeTags };
+module.exports = { entityOp, pickUsage, draftTags, draftAllTags, applyTags, reviewTable, writeTags };

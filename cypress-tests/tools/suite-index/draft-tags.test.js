@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { entityOp, draftTags, applyTags, pickUsage } = require("./draft-tags");
+const { entityOp, draftTags, draftAllTags, applyTags, pickUsage } = require("./draft-tags");
 const { parseHelpers, parseCommands } = require("./parse");
 
 // entity.op from the name
@@ -8,6 +8,11 @@ assert.strictEqual(entityOp("apiCreateWorkspace"), "workspace.create");
 assert.strictEqual(entityOp("openModulesList"), "modulesList.open");
 assert.strictEqual(entityOp("uiRenameFolder"), "folder.rename");
 assert.strictEqual(entityOp("phase"), "-");
+assert.strictEqual(entityOp("attemptDeleteModuleFromList"), "module.delete");
+assert.strictEqual(entityOp("renameModuleFromList"), "module.rename");
+assert.strictEqual(entityOp("dragModuleIntoCanvas"), "module.drag");
+assert.strictEqual(entityOp("openModuleEditorExpectingReadOnly"), "moduleEditor.open");
+assert.strictEqual(entityOp("apiAddUserToGroup"), "userToGroup.add");
 
 // usage: prefer this area's sites, then calls with arguments; skip text the tag reader would cut
 const site = (file, text) => ({ file, line: 1, text });
@@ -60,3 +65,10 @@ assert.ok(!t2.includes("@tjType"), "type '-' is not written");
 const list = "const localA = (x) => x;\n\nexport { localA };\n";
 const t3 = applyTags(list, [{ line: 1, type: "-", block: "licensing", usage: "localA(1)" }]);
 assert.strictEqual(parseHelpers(t3, "l.js").records[0].block, "licensing");
+
+// all areas at once: one draft per symbol, block from every area that uses it
+const all = draftAllTags(symbols, new Map([
+  ["helper:createModuleViaAPI", { areas: new Set(["modules"]), sites: [site("cypress/e2e/m.cy.js", 'createModuleViaAPI("QA")')] }],
+  ["command:apiLogin", { areas: new Set(["gitSync"]), sites: [site("cypress/e2e/g.cy.js", "cy.apiLogin(1)")] }],
+]));
+assert.deepStrictEqual(all.map(d => [d.name, d.block]), [["apiLogin", "gitSync"], ["createModuleViaAPI", "modules"]]);
