@@ -1,0 +1,48 @@
+const assert = require("assert");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { spawnSync } = require("child_process");
+const { findSymbols, loadSymbols, tokens } = require("./find");
+
+const rec = (o) => ({ type: [], usage: "", file: "", line: 1, ...o });
+const recs = [
+  rec({ id: "command:gitHubMergePR", kind: "command", name: "gitHubMergePR", areas: ["gitSync"], usage: "cy.gitHubMergePR(prNumber)", file: "cypress/commands/platform/gitSyncAppCommands.js" }),
+  rec({ id: "command:gitHubCreatePR", kind: "command", name: "gitHubCreatePR", areas: ["gitSync"] }),
+  rec({ id: "helper:randomNumber", kind: "helper", name: "randomNumber", areas: ["shared"] }),
+  rec({ id: "selector:s.mergeButton", kind: "selector", name: "s.mergeButton", areas: ["gitSync"], expression: "'[data-cy=\"merge\"]'" }),
+  rec({ id: "helper:createModuleViaAPI", kind: "helper", name: "createModuleViaAPI", areas: ["modules"] }),
+];
+
+assert.deepStrictEqual(tokens("gitHubMergePR"), ["git", "hub", "merge", "pr"]);
+assert.deepStrictEqual(tokens("s.merge_button-x"), ["s", "merge", "button", "x"]);
+
+const hits = findSymbols(recs, "gitSync", ["merge", "pr"]);
+assert.strictEqual(hits[0].record.name, "gitHubMergePR");
+assert.ok(!hits.some(h => h.record.name === "createModuleViaAPI"), "other areas excluded");
+assert.ok(findSymbols(recs, "modules", ["random"]).some(h => h.record.name === "randomNumber"), "shared always included");
+assert.deepStrictEqual(findSymbols(recs, "gitSync", ["merge"], { kind: "selector" }).map(h => h.record.name), ["s.mergeButton"]);
+assert.strictEqual(findSymbols(recs, "gitSync", ["zzz"]).length, 0);
+assert.strictEqual(findSymbols(recs, "gitSync", ["git"], { limit: 1 }).length, 1);
+
+// CLI on the real index
+const cli = path.join(__dirname, "find.js");
+const real = spawnSync("node", [cli, "gitSync", "merge", "pr"], { encoding: "utf8" });
+assert.strictEqual(real.status, 0);
+assert.match(real.stdout.split("\n")[0], /gitHubMergePR/);
+const unknown = spawnSync("node", [cli, "nope", "x"], { encoding: "utf8" });
+assert.strictEqual(unknown.status, 2);
+assert.match(unknown.stderr, /modules/);
+const none = spawnSync("node", [cli, "gitSync", "qqqzzzxxx"], { encoding: "utf8" });
+assert.strictEqual(none.status, 0);
+assert.match(none.stdout, /^no match in gitSync\+shared \(searched \d+ symbols\)/);
+
+// the index is built in memory, so find works on a tree that was never generated
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "suite-find-"));
+fs.mkdirSync(path.join(tmp, "cypress/commands/platform"), { recursive: true });
+fs.writeFileSync(path.join(tmp, "cypress/commands/platform/gitSyncCommands.js"), 'Cypress.Commands.add("gitHubMergePR", (n) => {});\n');
+const fresh = spawnSync("node", [cli, "gitSync", "merge"], { encoding: "utf8", env: { ...process.env, SUITE_INDEX_ROOT: tmp } });
+assert.strictEqual(fresh.status, 0);
+assert.match(fresh.stdout, /^command  gitHubMergePR  cypress\/commands\/platform\/gitSyncCommands\.js:1/);
+assert.ok(!fs.existsSync(path.join(tmp, "cypress/support/suiteIndex")), "find writes nothing");
+assert.strictEqual(loadSymbols(tmp).symbols.length, 1);
