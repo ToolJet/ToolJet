@@ -7,7 +7,32 @@ import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { AppVersion } from '@entities/app_version.entity';
-import { ApprovalListFilters, ApprovalListRow } from '../types/approval-list';
+import { ApprovalListFilters, ApprovalListRow, ApprovalListSort } from '../types/approval-list';
+import { toIdList } from '../helpers/id-list';
+
+type OrderTerm = [column: string, direction: 'ASC' | 'DESC', nulls?: 'NULLS LAST'];
+
+// Every order ends on id so equal timestamps page deterministically; requests without a deadline sort last.
+const LIST_ORDER: Record<ApprovalListSort, OrderTerm[]> = {
+  created_desc: [
+    ['request.createdAt', 'DESC'],
+    ['request.id', 'DESC'],
+  ],
+  created_asc: [
+    ['request.createdAt', 'ASC'],
+    ['request.id', 'ASC'],
+  ],
+  due_asc: [
+    ['request.expiresAt', 'ASC', 'NULLS LAST'],
+    ['request.createdAt', 'DESC'],
+    ['request.id', 'DESC'],
+  ],
+  due_desc: [
+    ['request.expiresAt', 'DESC', 'NULLS LAST'],
+    ['request.createdAt', 'DESC'],
+    ['request.id', 'DESC'],
+  ],
+};
 
 const APPROVER_SNAPSHOT_KEYS = ['users', 'groups', 'emails', 'notificationEmails'] as const;
 
@@ -51,13 +76,11 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
 
     const total = await idQuery.getCount();
 
-    idQuery
-      .select('request.id')
-      .orderBy('request.createdAt', 'DESC')
-      // id tiebreaker: created_at ties would repeat or drop rows across pages.
-      .addOrderBy('request.id', 'DESC')
-      .skip((page - 1) * perPage)
-      .take(perPage);
+    idQuery.select('request.id');
+    for (const [column, direction, nulls] of LIST_ORDER[filters.sort ?? 'created_desc']) {
+      idQuery.addOrderBy(column, direction, nulls);
+    }
+    idQuery.skip((page - 1) * perPage).take(perPage);
 
     const ids = (await idQuery.getMany()).map((r) => r.id);
     if (ids.length === 0) return { rows: [], total };
@@ -103,11 +126,13 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
     if (filters.statuses?.length) {
       query.andWhere('request.status IN (:...statuses)', { statuses: filters.statuses });
     }
-    if (filters.appId) {
-      query.andWhere('request.app_id = :appId', { appId: filters.appId });
+    const appIds = toIdList(filters.appId);
+    if (appIds.length) {
+      query.andWhere('request.app_id IN (:...appIds)', { appIds });
     }
-    if (filters.environmentId) {
-      query.andWhere('request.environment_id = :environmentId', { environmentId: filters.environmentId });
+    const environmentIds = toIdList(filters.environmentId);
+    if (environmentIds.length) {
+      query.andWhere('request.environment_id IN (:...environmentIds)', { environmentIds });
     }
     if (filters.folderId) {
       // Subquery, not join: id query must stay join-free for LIMIT pushdown.
@@ -121,6 +146,12 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
     }
     if (filters.to) {
       query.andWhere('request.created_at <= :to', { to: filters.to });
+    }
+    if (filters.dueFrom) {
+      query.andWhere('request.expires_at >= :dueFrom', { dueFrom: filters.dueFrom });
+    }
+    if (filters.dueTo) {
+      query.andWhere('request.expires_at <= :dueTo', { dueTo: filters.dueTo });
     }
     if (filters.resolvableBy) {
       const { userId, email, groupIds } = filters.resolvableBy;

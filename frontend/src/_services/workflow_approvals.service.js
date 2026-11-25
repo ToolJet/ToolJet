@@ -13,12 +13,16 @@ function getAll(filters = {}, page = 1, perPage = 25, signal) {
   params.set('page', page);
   params.set('per_page', perPage);
   (filters.statuses || []).forEach((status) => params.append('status', status));
-  if (filters.appId) params.set('app_id', filters.appId);
+  // appId / environmentId take one id or an array of ids.
+  [].concat(filters.appId || []).forEach((appId) => params.append('app_id', appId));
   if (filters.folderId) params.set('folder_id', filters.folderId);
-  if (filters.environmentId) params.set('environment_id', filters.environmentId);
+  [].concat(filters.environmentId || []).forEach((id) => params.append('environment_id', id));
   if (filters.approver) params.set('approver', filters.approver);
   if (filters.from) params.set('from', toLocalDayBoundary(filters.from, 'start'));
   if (filters.to) params.set('to', toLocalDayBoundary(filters.to, 'end'));
+  if (filters.dueFrom) params.set('due_from', toLocalDayBoundary(filters.dueFrom, 'start'));
+  if (filters.dueTo) params.set('due_to', toLocalDayBoundary(filters.dueTo, 'end'));
+  if (filters.sort) params.set('sort', filters.sort);
 
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include', signal };
   return fetch(`${config.apiUrl}/workflow-approvals?${params.toString()}`, requestOptions).then(handleResponse);

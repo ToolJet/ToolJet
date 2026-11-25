@@ -1,79 +1,34 @@
 import React, { useState } from 'react';
-import { BadgeCheck, Grid2x2, History, ListTodo, Workflow } from 'lucide-react';
+import { Grid2x2, ListTodo } from 'lucide-react';
 
-import { Button } from '@/components/ui/Button/Button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Rocket/Tabs/Tabs';
-import Tooltip from '@/components/ui/Rocket/Tooltip';
-import { useAppsStore } from '@/_stores/appsStore';
-import GridView from './GridView';
+import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import ItemsList from '@/pages/AppsDashboard/ItemsList/ItemsList';
+import CollapseFoldersButton from './CollapseFoldersButton';
+import GridView from './GridView';
 
 import type { TAppType } from '../helper';
 
-const VIEW_ACTIONS = [
-  // { label: 'Filter', icon: 'funnel' },
-  // { label: 'Sort', icon: 'arrow-down-wide-narrow' },
-  { id: 'collapse-folder', label: 'Collapse folders', icon: 'list-collapse' },
-];
-
 // Actions sit beside TabsList, not inside it: a tablist may only own tabs (ARIA), and
 // Radix's arrow-key roving would skip them anyway.
-export default function ViewTabs({ appType }: { appType: TAppType }) {
-  const setExpanded = useAppsStore((state) => state.setExpanded);
-
+function ListAndGridTabs({ appType }: { appType: TAppType }) {
   const [selectedView, setSelectedView] = useState('list');
-
-  const handleCollapseFolder = () => {
-    setExpanded({});
-  };
 
   return (
     <Tabs value={selectedView} onValueChange={setSelectedView} className="tw-min-h-0 tw-flex-1 tw-gap-2.5">
       <div className="tw-mx-[4.375rem] tw-flex tw-items-center tw-justify-between tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
         {/* The row owns the full-width border; the active indicator overlaps it. */}
         <TabsList aria-label="View" className="tw-border-b-0 tw-pl-0">
-          {appType === 'workflow' ? (
-            <>
-              <TabsTrigger value="list" leadingVisual={<Workflow />}>
-                Workflows
-              </TabsTrigger>
-              <TabsTrigger value="approvals" leadingVisual={<BadgeCheck />}>
-                Approvals
-              </TabsTrigger>
-              <TabsTrigger value="executions" leadingVisual={<History />}>
-                Executions
-              </TabsTrigger>
-            </>
-          ) : (
-            <>
-              <TabsTrigger value="list" leadingVisual={<ListTodo />}>
-                List view
-              </TabsTrigger>
-              <TabsTrigger value="grid" leadingVisual={<Grid2x2 />}>
-                Grid view
-              </TabsTrigger>
-            </>
-          )}
+          <TabsTrigger value="list" leadingVisual={<ListTodo />}>
+            List view
+          </TabsTrigger>
+          <TabsTrigger value="grid" leadingVisual={<Grid2x2 />}>
+            Grid view
+          </TabsTrigger>
         </TabsList>
 
         <div role="group" aria-label="View options" className="tw-flex tw-items-center tw-gap-1">
-          {VIEW_ACTIONS.map(({ id, label, icon }) => {
-            if (id === 'collapse-folder' && selectedView === 'grid') return <></>;
-
-            return (
-              <Tooltip arrow key={id} content={label}>
-                <Button
-                  variant="ghost"
-                  size="medium"
-                  isLucid
-                  iconOnly
-                  leadingIcon={icon}
-                  aria-label={label}
-                  onClick={handleCollapseFolder}
-                />
-              </Tooltip>
-            );
-          })}
+          {selectedView === 'list' && <CollapseFoldersButton />}
         </div>
       </div>
 
@@ -86,10 +41,18 @@ export default function ViewTabs({ appType }: { appType: TAppType }) {
       <TabsContent value="grid" className="tw-min-h-0 tw-flex-col data-[state=active]:tw-flex">
         <GridView appType={appType} />
       </TabsContent>
-
-      <TabsContent value="approvals" className="tw-min-h-0 tw-flex-col data-[state=active]:tw-flex"></TabsContent>
-
-      <TabsContent value="executions" className="tw-min-h-0 tw-flex-col data-[state=active]:tw-flex"></TabsContent>
     </Tabs>
   );
+}
+
+// CE has no Approvals or Executions; EE swaps this for its Workflows / Approvals / Executions tabs.
+function WorkflowsTabs() {
+  return <ListAndGridTabs appType="workflow" />;
+}
+
+const EditionWorkflowsTabs = withEditionSpecificComponent(WorkflowsTabs, 'Workflows');
+
+export default function ViewTabs({ appType }: { appType: TAppType }) {
+  if (appType === 'workflow') return <EditionWorkflowsTabs />;
+  return <ListAndGridTabs appType={appType} />;
 }

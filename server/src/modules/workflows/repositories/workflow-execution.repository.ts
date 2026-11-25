@@ -7,6 +7,7 @@ import { AppVersion } from '@entities/app_version.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { ExecutionListFilters, ExecutionListRow } from '../types/execution-list';
+import { toIdList } from '../helpers/id-list';
 
 export const STATUS_FILTER_TO_PREDICATE: Record<string, string> = {
   running:
@@ -44,11 +45,12 @@ export class WorkflowExecutionRepository extends Repository<WorkflowExecution> {
 
     const total = await idQuery.getCount();
 
+    const direction = filters.sort === 'created_asc' ? 'ASC' : 'DESC';
     idQuery
       .select('execution.id')
-      .orderBy('execution.createdAt', 'DESC')
+      .orderBy('execution.createdAt', direction)
       // id tiebreaker: created_at ties would repeat or drop rows across pages.
-      .addOrderBy('execution.id', 'DESC')
+      .addOrderBy('execution.id', direction)
       .skip((page - 1) * perPage)
       .take(perPage);
 
@@ -89,11 +91,13 @@ export class WorkflowExecutionRepository extends Repository<WorkflowExecution> {
         .filter((predicate): predicate is string => !!predicate);
       if (predicates.length) query.andWhere(`(${predicates.join(' OR ')})`);
     }
-    if (filters.appId) {
-      query.andWhere(`${RUN_APP_ID} = :appId`, { appId: filters.appId });
+    const appIds = toIdList(filters.appId);
+    if (appIds.length) {
+      query.andWhere(`${RUN_APP_ID} IN (:...appIds)`, { appIds });
     }
-    if (filters.environmentId) {
-      query.andWhere('execution.environment_id = :environmentId', { environmentId: filters.environmentId });
+    const environmentIds = toIdList(filters.environmentId);
+    if (environmentIds.length) {
+      query.andWhere('execution.environment_id IN (:...environmentIds)', { environmentIds });
     }
     if (filters.triggers?.length) {
       query.andWhere('execution.trigger_type IN (:...triggers)', { triggers: filters.triggers });

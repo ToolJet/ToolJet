@@ -1,23 +1,29 @@
-import { IsOptional, IsString, IsUUID, IsDateString, IsInt, Matches, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsUUID, IsDateString, IsIn, IsInt, Matches, Min, Max } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { FULL_DATE } from '@modules/workflows/helpers/approval-date-range';
+import { APPROVAL_LIST_SORTS, ApprovalListSort } from '@modules/workflows/types/approval-list';
+
+// A query param given once arrives as a string, repeated as an array.
+const toArray = ({ value }: { value: unknown }) => (Array.isArray(value) ? value : value ? [value] : undefined);
 
 export class ListApprovalsDto {
   @IsOptional()
-  @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : undefined))
+  @Transform(toArray)
   status?: string[];
 
   @IsOptional()
-  @IsUUID()
-  app_id?: string;
+  @Transform(toArray)
+  @IsUUID('all', { each: true })
+  app_id?: string[];
 
   @IsOptional()
   @IsUUID()
   folder_id?: string;
 
   @IsOptional()
-  @IsUUID()
-  environment_id?: string;
+  @Transform(toArray)
+  @IsUUID('all', { each: true })
+  environment_id?: string[];
 
   @IsOptional()
   @IsString()
@@ -32,6 +38,20 @@ export class ListApprovalsDto {
   @IsDateString()
   @Matches(FULL_DATE)
   to?: string;
+
+  @IsOptional()
+  @IsDateString()
+  @Matches(FULL_DATE)
+  due_from?: string;
+
+  @IsOptional()
+  @IsDateString()
+  @Matches(FULL_DATE)
+  due_to?: string;
+
+  @IsOptional()
+  @IsIn(APPROVAL_LIST_SORTS)
+  sort?: ApprovalListSort;
 
   @IsOptional()
   @Type(() => Number)

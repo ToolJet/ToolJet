@@ -2,34 +2,44 @@ import { IsOptional, IsUUID, IsDateString, IsInt, IsIn, Matches, Min, Max } from
 import { Transform, Type } from 'class-transformer';
 import { WORKFLOW_TRIGGER_TYPE } from '@modules/workflows/types';
 import { FULL_DATE } from '@modules/workflows/helpers/approval-date-range';
+import { EXECUTION_LIST_SORTS, ExecutionListSort } from '@modules/workflows/types/execution-list';
 
 // No 'unknown': it needs BullMQ job state, so it is display-only, never a SQL filter.
 export const EXECUTION_STATUS_FILTERS = ['running', 'waiting', 'success', 'failed', 'terminated'] as const;
 
 const EXECUTION_TRIGGER_FILTERS = Object.values(WORKFLOW_TRIGGER_TYPE);
 
+// A query param given once arrives as a string, repeated as an array.
+const toArray = ({ value }: { value: unknown }) => (Array.isArray(value) ? value : value ? [value] : undefined);
+
 export class ListExecutionsDto {
   @IsOptional()
-  @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : undefined))
+  @Transform(toArray)
   @IsIn(EXECUTION_STATUS_FILTERS, { each: true })
   status?: string[];
 
   @IsOptional()
-  @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : undefined))
+  @Transform(toArray)
   @IsIn(EXECUTION_TRIGGER_FILTERS, { each: true })
   trigger?: string[];
 
   @IsOptional()
-  @IsUUID()
-  app_id?: string;
+  @Transform(toArray)
+  @IsUUID('all', { each: true })
+  app_id?: string[];
 
   @IsOptional()
   @IsUUID()
   folder_id?: string;
 
   @IsOptional()
-  @IsUUID()
-  environment_id?: string;
+  @Transform(toArray)
+  @IsUUID('all', { each: true })
+  environment_id?: string[];
+
+  @IsOptional()
+  @IsIn(EXECUTION_LIST_SORTS)
+  sort?: ExecutionListSort;
 
   @IsOptional()
   @IsDateString()
