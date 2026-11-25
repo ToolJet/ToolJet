@@ -210,3 +210,4 @@ export {
   PopoverDescription,
   PopoverTrigger,
 } from './Popover/Popover';
+export { Calendar } from './Calendar/Calendar';

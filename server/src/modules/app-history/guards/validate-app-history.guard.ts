@@ -36,6 +36,13 @@ export class ValidateAppHistoryGuard implements CanActivate {
       throw new NotFoundException('App history not found');
     }
 
+    // The history entry is resolved by ID alone, so it may belong to another workspace. Reject it
+    // unless it lives in the caller's workspace, otherwise a user could restore or edit the history
+    // of an app in a workspace they are not part of.
+    if (!result.organizationId || result.organizationId !== user.organizationId) {
+      throw new NotFoundException('App history not found');
+    }
+
     // Attach the found appId to the request
     request.tj_resource_id = result.appId;
 

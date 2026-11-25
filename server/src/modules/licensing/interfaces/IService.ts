@@ -15,7 +15,11 @@ export interface ILicenseUserService {
 export abstract class LicenseTermsService {
   constructor(protected readonly licenseInitService: LicenseInitService) {}
   abstract getLicenseTermsInstance(type: any): Promise<any>;
-  abstract getLicenseTerms(type: any, organizationId: string): Promise<any>;
+  /**
+   * `strict`: throw instead of falling back to the basic plan when a Cloud workspace's licence
+   * cannot be loaded. Use it before destructive work that a wrong "unlicensed" answer would harm.
+   */
+  abstract getLicenseTerms(type: any, organizationId: string, options?: { strict?: boolean }): Promise<any>;
   abstract getOrganizationLicense(organizationId: string): Promise<any>;
   // Whether the workspace (Cloud) or instance (self-hosted) is on the Free limits introduced at the plan limits cutoff.
   abstract usesNewFreeLimits(organizationId: string): Promise<boolean>;
@@ -74,10 +78,24 @@ export interface ILicenseCountsService {
   fetchTotalWorkflowsCount(workspaceId: string, manager: EntityManager): Promise<number>;
   organizationsCount(manager?: EntityManager): Promise<number>;
   fetchTotalAppCount(organizationId: string, manager: EntityManager): Promise<number>;
+  fetchTotalPagesCount(appVersionId: string, manager: EntityManager): Promise<number>;
+  fetchTotalPageGroupsCount(appVersionId: string, manager: EntityManager): Promise<number>;
+  fetchMaxPagesCount(organizationId: string, manager: EntityManager): Promise<number>;
+  fetchMaxPageGroupsCount(organizationId: string, manager: EntityManager): Promise<number>;
 }
 
 export interface ILicenseAppsService {
   getAppsLimit(organizationId: string): Promise<any>;
+}
+
+export abstract class LicensePageService {
+  abstract validatePages(
+    manager: EntityManager,
+    appVersionId: string,
+    organizationId: string,
+    isPageGroup: boolean
+  ): Promise<void>;
+  abstract getPagesLimit(organizationId: string): Promise<any>;
 }
 
 export interface ILicenseService {

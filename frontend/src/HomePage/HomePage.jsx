@@ -1238,8 +1238,15 @@ class HomePageComponent extends React.Component {
           folder_id: appOperations?.selectedFolder,
         });
       })
-      .catch(() => {
-        toast.error('Failed to move apps to folder');
+      .catch((error) => {
+        const appType = this.getAppType();
+        toast.error(
+          error?.statusCode === 409
+            ? appIds.length > 1
+              ? `Selected ${appType.toLowerCase()}s already exist in the folder`
+              : `${appType} already exists in the folder`
+            : 'Failed to move apps to folder'
+        );
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
       });
   };

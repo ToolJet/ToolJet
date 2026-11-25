@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { FolderApp } from '../../entities/folder_app.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { EntityManager, Equal, IsNull, Or } from 'typeorm';
@@ -30,6 +30,7 @@ export class FolderAppsService implements IFolderAppsService {
       branchId,
       organizationId
     );
+    await this.assertNotAllInFolder(folderId, [appId], resolvedBranchId, isDefaultFallback);
     return this.folderAppsUtilService.create(folderId, appId, resolvedBranchId, isDefaultFallback, organizationId);
   }
 
@@ -44,7 +45,26 @@ export class FolderAppsService implements IFolderAppsService {
       branchId,
       organizationId
     );
+    await this.assertNotAllInFolder(folderId, appIds, resolvedBranchId, isDefaultFallback);
     return this.folderAppsUtilService.bulkCreate(folderId, appIds, resolvedBranchId, isDefaultFallback, organizationId);
+  }
+
+  // Only the user-facing path (controller → here) rejects; util create/bulkCreate stay idempotent
+  // for git-sync. A mixed bulk (some already there) still succeeds — it moves the rest.
+  private async assertNotAllInFolder(
+    folderId: string,
+    appIds: string[],
+    branchId: string | undefined,
+    isDefaultFallback: boolean
+  ): Promise<void> {
+    const unique = new Set(appIds);
+    const inFolder = await this.folderAppsUtilService.findAppIdsInFolder(
+      folderId,
+      [...unique],
+      branchId,
+      isDefaultFallback
+    );
+    if (inFolder.length === unique.size) throw new ConflictException('Already exists in the folder');
   }
 
   async remove(folderId: string, appId: string, branchId?: string, organizationId?: string): Promise<void> {

@@ -52,6 +52,7 @@ export enum MODULES {
   CRM = 'CRM',
   SCIM = 'SCIM',
   CUSTOM_DOMAINS = 'customDomains',
+  APP_USAGE_ANALYTICS = 'appUsageAnalytics',
   DATA_QUERY_FOLDERS = 'DataQueryFolders',
   WORKFLOW_FOLDER = 'WorkflowFolder',
   MODULE_FOLDER = 'ModuleFolder',

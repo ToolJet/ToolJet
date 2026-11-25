@@ -58,6 +58,7 @@ graph LR
 | ToolJet DB PostgreSQL | User-created workspace tables and rows, with per-workspace schema/user isolation unless SQL mode is disabled. | Named TypeORM connection from `buildToolJetDbConnectionOptions`; `TooljetDbTableOperationsService`. |
 | PostgREST | HTTP data plane over ToolJet DB; not a source of truth itself. | `PostgrestProxyService::{proxy,perform}` signs a database JWT, selects the workspace schema, and forwards requests. |
 | Redis | BullMQ queues and shared runtime coordination/cache facilities. | `AppModuleLoader` Bull/Redis configuration; `server/src/modules/workflows/module.ts`. |
+| Usage analytics rollups (main PostgreSQL) | `app_usage_daily` (one row per app, user and UTC day; partitioned by month, 13-month retention; 60 days for workspaces without the licence), `app_user_first_seen`, `workspace_user_first_seen`. No raw event table. | Written only by the EE `app-usage-analytics` queue worker; read by `/api/analytics/*`. Migration `server/migrations/1794700000000-CreateAppUsageAnalyticsTables.ts`. |
 | Files/object storage | Uploaded assets/files through configurable storage providers. | `server/src/modules/files/`; deployment environment configuration. |
 
 Migrations are split by phase: `server/migrations/schema/` (additive schema), `server/migrations/data/` (row changes), `server/migrations/cleanup/` (drops and tightenings a release later). How they run: `server/docs/MIGRATION_FLOW.md`.
@@ -104,7 +105,7 @@ Raw SQL and seed-data migrations (`TooljetDbRawSqlMigrationService`) let an auth
 
 ### 5. Queue and execute background work
 
-Nest schedules and BullMQ share Redis configuration from `AppModuleLoader`. Workflow scheduling/execution queues are registered in `server/src/modules/workflows/module.ts`; processors and schedule bootstrap are registered only when `WORKER=true`. `npm run worker:prod` starts the same compiled server entry with that flag. The non-Cloud deployment also exposes Bull Board under `/jobs`, protected by configured basic authentication. **Boundary:** public workflow contracts are present, but some CE webhook methods throw `Method not implemented`, so full behavior is edition-dependent.
+Nest schedules and BullMQ share Redis configuration from `AppModuleLoader`. Workflow scheduling/execution queues are registered in `server/src/modules/workflows/module.ts`; processors and schedule bootstrap are registered only when `WORKER=true`. `npm run worker:prod` starts the same compiled server entry with that flag. The non-Cloud deployment also exposes Bull Board under `/jobs`, protected by configured basic authentication. Usage analytics (EE/Cloud) uses the same pattern: `AppsService.validateReleasedApp` emits an in-process `app-usage.app-opened` event, a listener adds it to the `app-usage-analytics` BullMQ queue without awaiting, and the `WORKER=true` processor batches jobs (5 s or 500) into one upsert transaction; a daily, advisory-locked cron keeps monthly partitions ahead (`server/src/modules/app-usage-analytics/AGENTS.md`). **Boundary:** public workflow contracts are present, but some CE webhook methods throw `Method not implemented`, so full behavior is edition-dependent.
 
 ## Authentication and authorization
 

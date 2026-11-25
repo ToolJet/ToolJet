@@ -131,6 +131,7 @@ export const PAT_UNASSIGNED_MODULES: MODULES[] = [
   // Scan policy and exceptions decide what may ship; an admin's decision in the browser only.
   MODULES.APP_SECURITY_POLICY,
   MODULES.SSRF, // outbound request settings: super admin in the UI only, never a token
+  MODULES.APP_USAGE_ANALYTICS, // admin dashboard reads; not granted to tokens pending a decision
   // Uploads and publishes JS bundles that execute inside every app that uses them.
   MODULES.CUSTOM_COMPONENT_LIBRARIES,
 ];

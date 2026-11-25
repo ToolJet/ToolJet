@@ -68,8 +68,10 @@ export const MoveDataSourceModal = ({ show, initialDataSource, dataSources, fold
         toast.success('Data sources moved successfully!');
         onClose();
       })
-      .catch(({ error }) => {
-        toast.error(error || 'Could not move data sources');
+      .catch(({ error, statusCode }) => {
+        toast.error(
+          statusCode === 409 ? 'Data source already exists in the folder' : error || 'Could not move data sources'
+        );
         setIsSubmitting(false);
       });
   };

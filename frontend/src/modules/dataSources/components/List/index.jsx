@@ -228,7 +228,13 @@ export const List = ({ updateSelectedDatasource }) => {
       expandFolder(targetFolderId);
       addDataSourcesToFolder(ids, targetFolderId)
         .then(() => setSelectedDataSourceIds([]))
-        .catch(({ error }) => toast.error(error || 'Could not move data source to folder'));
+        .catch(({ error, statusCode }) =>
+          toast.error(
+            statusCode === 409
+              ? 'Data source already exists in the folder'
+              : error || 'Could not move data source to folder'
+          )
+        );
     } else {
       removeDataSourcesFromFolder(ids)
         .then(() => setSelectedDataSourceIds([]))

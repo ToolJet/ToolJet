@@ -38,10 +38,12 @@ export interface Terms {
     mfa?: boolean;
     aiCreditLimits?: boolean;
     customDomains?: boolean;
+    appUsageAnalytics?: boolean;
     google?: boolean;
     github?: boolean;
     observability?: boolean;
     queryFolders?: boolean;
+    automaticSsoLogin?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
@@ -55,6 +57,7 @@ export interface Terms {
     pages: {
       enabled: boolean;
       count: number | string;
+      groupCount?: number | string;
       features: {
         appHeaderAndLogo: boolean;
         addNavGroup: boolean;

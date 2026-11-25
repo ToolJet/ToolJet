@@ -85,6 +85,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.MULTIPLAYER_EDIT:
       return licenseInstance.multiPlayerEdit;
 
+    case LICENSE_FIELD.AUTOMATIC_SSO_LOGIN:
+      return licenseInstance.automaticSsoLogin;
+
     case LICENSE_FIELD.VALID:
       return licenseInstance.isValid && !licenseInstance.isExpired;
 
@@ -167,6 +170,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.CUSTOM_DOMAINS:
       return licenseInstance.customDomains;
 
+    case LICENSE_FIELD.APP_USAGE_ANALYTICS:
+      return licenseInstance.appUsageAnalytics;
+
     case LICENSE_FIELD.GOOGLE:
       return licenseInstance.google;
 
@@ -175,6 +181,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.APP_PAGES_LIMIT:
       return licenseInstance.appPagesLimit;
+
+    case LICENSE_FIELD.APP_PAGE_GROUPS_LIMIT:
+      return licenseInstance.appPageGroupsLimit;
 
     case LICENSE_FIELD.OBSERVABILITY_ENABLED:
       return licenseInstance.observabilityEnabled;
@@ -193,6 +202,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.APP_JS_LIBRARIES:
       return licenseInstance.appJsLibraries;
+
+    case LICENSE_FIELD.RELEASE:
+      return licenseInstance.canRelease;
 
     case LICENSE_FIELD.PUBLIC_APP:
       return licenseInstance.publicApp;

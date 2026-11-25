@@ -131,6 +131,9 @@ class BaseManageGranularAccess extends React.Component {
     this.fetchGranularPermissions(this.props.groupPermissionId, { showLoader: true });
   }
   componentDidUpdate(prevProps) {
+    if (!prevProps.isFeatureEnabled && this.props.isFeatureEnabled) {
+      this.fetchAppsCanBeAdded();
+    }
     if (prevProps.addableDs !== this.props.addableDs) {
       this.setState({
         addableDs: this.props.addableDs,
@@ -159,8 +162,8 @@ class BaseManageGranularAccess extends React.Component {
   }
 
   fetchAppsCanBeAdded = () => {
-    // Addable resources only feed the add-permission modal, which read-only group admins never open
-    if (this.props.isBasicPlan || this.isGroupAdminReadOnly()) {
+    // Addable apps need custom groups (the endpoint 451s without them) and only feed the add-permission modal
+    if (this.props.isBasicPlan || !this.props.isFeatureEnabled || this.isGroupAdminReadOnly()) {
       return;
     }
     groupPermissionV2Service

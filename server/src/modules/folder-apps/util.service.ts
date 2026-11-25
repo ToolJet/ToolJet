@@ -321,6 +321,20 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     }
   }
 
+  // Subset of appIds already bound to folderId on this branch. Lets the HTTP path reject a no-op
+  // add; create()/bulkCreate() stay idempotent because git-sync pull re-runs them.
+  async findAppIdsInFolder(
+    folderId: string,
+    appIds: string[],
+    branchId?: string,
+    matchNullAsDefaultBranch = false
+  ): Promise<string[]> {
+    const rows = await getConnectionInstance().manager.find(FolderApp, {
+      where: { folderId, appId: In(appIds), ...this.buildBranchFilter(branchId, matchNullAsDefaultBranch) },
+    });
+    return rows.map((r) => r.appId);
+  }
+
   async bulkCreate(
     folderId: string,
     appIds: string[],

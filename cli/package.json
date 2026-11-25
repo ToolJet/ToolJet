@@ -1,7 +1,7 @@
 {
   "name": "@tooljet/cli",
   "description": "tooljet cli tool",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "bin": {
     "tooljet": "./bin/run"
   },
@@ -92,7 +92,7 @@
     "lint": "eslint .  '**/*.ts'",
     "postpack": "shx rm -f oclif.manifest.json npm-shrinkwrap.json",
     "posttest": "npm run lint",
-    "prepack": "npm run build && oclif manifest && oclif readme --no-aliases && shx cp package-lock.json npm-shrinkwrap.json",
+    "prepack": "npm run build && oclif manifest && oclif readme --no-aliases && node scripts/write-shrinkwrap.mjs",
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif readme --no-aliases && git add README.md"
   },
@@ -103,6 +103,7 @@
       "js-yaml": "^4.3.2",
       "serialize-javascript": "^7.1.4"
     },
-    "tmp": "^0.2.7"
+    "tmp": "^0.2.7",
+    "minimatch@^9.0.0": "^9.0.7"
   }
 }

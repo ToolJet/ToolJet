@@ -35,7 +35,9 @@ describe('DataQueriesService', () => {
         { can: () => true } as never,
         { id: 'data-source-1' } as never,
         {} as never,
-        'edit'
+        'edit',
+        undefined,
+        { can: () => true } as never
       );
     }
 
