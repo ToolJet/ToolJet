@@ -1,5 +1,5 @@
 import { debounce } from 'lodash';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { PAGES_SIDEBAR_WIDTH_COLLAPSED, PAGES_SIDEBAR_WIDTH_EXPANDED } from '../appCanvasConstants';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -13,10 +13,52 @@ const useCanvasResizing = ({
   isViewerSidebarPinned,
   position,
   currentMode,
+  inEditorPreview,
 }) => {
   const canvasMaxWidthValue = useStore((state) => state.globalSettings.canvasMaxWidth, shallow);
   const canvasMaxWidthType = useStore((state) => state.globalSettings.canvasMaxWidthType, shallow);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
+
+  // Desktop canvas width inside a `.canvas-container` that is `containerWidth` px wide.
+  const getDesktopCanvasWidth = useCallback(
+    (containerWidth) => {
+      const pageSidebarWidth =
+        !isPagesSidebarHidden && position === 'side'
+          ? isViewerSidebarPinned
+            ? PAGES_SIDEBAR_WIDTH_EXPANDED
+            : PAGES_SIDEBAR_WIDTH_COLLAPSED
+          : 0;
+      const viewerWidth = containerWidth - (currentMode === 'edit' ? 16 : 0); // padding of 'div.canvas-container.page-container' container in editor is 16px (8px on each side)
+      const canvasWidth = viewerWidth - pageSidebarWidth;
+      if (canvasMaxWidthType === 'px') return canvasMaxWidthValue < canvasWidth ? canvasMaxWidthValue : canvasWidth;
+      if (canvasMaxWidthType === '%') return (canvasMaxWidthValue / 100) * canvasWidth;
+      return undefined;
+    },
+    [isPagesSidebarHidden, position, isViewerSidebarPinned, currentMode, canvasMaxWidthType, canvasMaxWidthValue]
+  );
+
+  // Entering or leaving a preview in the editor changes the canvas frame. The
+  // width for the new frame is set in the same render as the mode, so widgets
+  // render once per switch instead of again when the effect below measures the
+  // new frame; that effect then lands on the same width and changes nothing.
+  const [renderedPreview, setRenderedPreview] = useState(inEditorPreview);
+  const editContainerWidth = useRef(null);
+  if (renderedPreview !== inEditorPreview) {
+    setRenderedPreview(inEditorPreview);
+    if (moduleId === 'canvas' && currentLayout === 'desktop') {
+      let containerWidth = editContainerWidth.current;
+      if (inEditorPreview) {
+        // The DOM still has the edit frame: keep its width for the way back.
+        // The preview frame is fixed to the viewport at full width.
+        editContainerWidth.current = document
+          .querySelector('.canvas-container.page-container')
+          ?.getBoundingClientRect()?.width;
+        containerWidth = document.documentElement.clientWidth;
+      }
+      const width = containerWidth > 0 ? getDesktopCanvasWidth(containerWidth) : undefined;
+      if (width) setCanvasWidth(width);
+    }
+  }
 
   const handleResizeImmediate = useCallback(() => {
     const _canvasWidth =
@@ -54,47 +96,19 @@ const useCanvasResizing = ({
   // Also, prevents visual jumps between component/canvas width change during page menu animations
   useEffect(() => {
     if (moduleId === 'canvas' && currentLayout === 'desktop') {
-      const pageSidebarWidth =
-        !isPagesSidebarHidden && position === 'side'
-          ? isViewerSidebarPinned
-            ? PAGES_SIDEBAR_WIDTH_EXPANDED
-            : PAGES_SIDEBAR_WIDTH_COLLAPSED
-          : 0;
-
-      let _canvasWidth;
-
       const containerWidth = document.querySelector('.canvas-container.page-container')?.getBoundingClientRect()?.width;
 
       if (!containerWidth || containerWidth <= 0) {
         return;
       }
 
-      const viewerWidth = containerWidth - (currentMode === 'edit' ? 16 : 0); // padding of 'div.canvas-container.page-container' container in editor is 16px (8px on each side)
-
-      const canvasWidth = viewerWidth - pageSidebarWidth;
-
-      if (canvasMaxWidthType === 'px') {
-        if (canvasMaxWidthValue < canvasWidth) _canvasWidth = canvasMaxWidthValue;
-        else _canvasWidth = canvasWidth;
-      } else if (canvasMaxWidthType === '%') {
-        _canvasWidth = (canvasMaxWidthValue / 100) * canvasWidth;
-      }
+      const _canvasWidth = getDesktopCanvasWidth(containerWidth);
 
       if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
     }
 
     localStorage.setItem('isPagesSidebarPinned', isViewerSidebarPinned);
-  }, [
-    isViewerSidebarPinned,
-    position,
-    currentLayout,
-    isPagesSidebarHidden,
-    currentMode,
-    canvasMaxWidthType,
-    canvasMaxWidthValue,
-    moduleId,
-    setCanvasWidth,
-  ]);
+  }, [getDesktopCanvasWidth, isViewerSidebarPinned, currentLayout, moduleId, setCanvasWidth]);
 };
 
 export default useCanvasResizing;

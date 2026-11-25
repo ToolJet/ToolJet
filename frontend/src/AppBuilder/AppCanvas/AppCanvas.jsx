@@ -7,11 +7,17 @@ import { HotkeyProvider } from './HotkeyProvider';
 import useStore from '@/AppBuilder/_stores/store';
 import AgentBuildingOverlay from '@/AppBuilder/AgentBuildingOverlay';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
-import { NO_OF_GRIDS, PAGE_CANVAS_HEADER_HEIGHT, PAGE_CANVAS_FOOTER_HEIGHT } from './appCanvasConstants';
+import {
+  APP_HEADER_HEIGHT,
+  NO_OF_GRIDS,
+  PAGE_CANVAS_HEADER_HEIGHT,
+  PAGE_CANVAS_FOOTER_HEIGHT,
+} from './appCanvasConstants';
 
 // TODO: Move these to page settings / global settings when ready
 import cx from 'classnames';
 import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
+import { selectInEditorPreview } from '../_helpers/inEditorPreview';
 import MobileAutoLayoutToolbar from './MobileAutoLayoutToolbar';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useAppCanvasMaxWidth from './Hooks/useAppCanvasMaxWidth';
@@ -48,6 +54,10 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const [canvasWidth, setCanvasWidth] = useState(getCanvasWidth(moduleId));
   const gridWidth = canvasWidth / NO_OF_GRIDS;
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
+  // Previewing in the editor: the canvas is in view mode, but the editor-only
+  // layers stay mounted (hidden and inert) so going back to edit is quick.
+  const inEditorPreview = useStore((state) => moduleId === 'canvas' && selectInEditorPreview(state));
+  const keepEditorLayers = currentMode === 'edit' || inEditorPreview;
   const pageSidebarStyle = useStore((state) => state?.pageSettings?.definition?.properties?.style, shallow);
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const queryPanelHeight = useStore((state) => state?.queryPanel?.queryPanelHeight || 0);
@@ -169,6 +179,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     isViewerSidebarPinned,
     position,
     currentMode,
+    inEditorPreview,
   });
 
   const canvasContainerStyles = useMemo(() => {
@@ -190,7 +201,14 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
     return {
       borderLeft: currentMode === 'edit' && `${editorMarginLeft}px solid ${canvasBgColor}`,
-      height: currentMode === 'edit' ? canvasContainerHeight : '100%',
+      // The preview fills the editor below its header.
+      height:
+        currentMode === 'edit'
+          ? canvasContainerHeight
+          : inEditorPreview
+            ? `calc(100% - ${APP_HEADER_HEIGHT}px)`
+            : '100%',
+      ...(inEditorPreview && { left: 0 }),
       background: canvasBgColor,
       width: currentMode === 'edit' ? `calc(100% - 96px)` : '100%',
       alignItems: 'unset',
@@ -201,6 +219,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     };
   }, [
     currentMode,
+    inEditorPreview,
     isAppDarkMode,
     isModuleMode,
     editorMarginLeft,
@@ -225,12 +244,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     />
   );
 
-  const gridContent =
-    currentMode === 'view' ? null : (
-      <Suspense fallback={null}>
-        <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
-      </Suspense>
-    );
+  const gridContent = keepEditorLayers ? (
+    <Suspense fallback={null}>
+      <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+    </Suspense>
+  ) : null;
 
   return (
     <div>
@@ -254,14 +272,16 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             )}
             style={canvasContainerStyles}
           >
-            {currentMode === 'edit' && (
+            {keepEditorLayers && (
               <Suspense fallback={null}>
-                <AppCanvasBanner
-                  appId={appId}
-                  onVersionLockStatusChange={(isLocked) => {
-                    setIsCurrentVersionLocked(isLocked);
-                  }}
-                />
+                <div style={{ display: inEditorPreview ? 'none' : 'contents' }}>
+                  <AppCanvasBanner
+                    appId={appId}
+                    onVersionLockStatusChange={(isLocked) => {
+                      setIsCurrentVersionLocked(isLocked);
+                    }}
+                  />
+                </div>
               </Suspense>
             )}
             <div
@@ -277,8 +297,10 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 ...(isMobileLayout && currentMode === 'edit' ? { paddingBottom: '76px' } : {}),
               }}
             >
-              {currentMode === 'edit' && (
-                <MobileAutoLayoutToolbar currentLayout={currentLayout} darkMode={isAppDarkMode} moduleId={moduleId} />
+              {keepEditorLayers && (
+                <div style={{ display: inEditorPreview ? 'none' : 'contents' }}>
+                  <MobileAutoLayoutToolbar currentLayout={currentLayout} darkMode={isAppDarkMode} moduleId={moduleId} />
+                </div>
               )}
               {/* The same overlay the viewer uses for lazy-loading. It has to sit here rather than
                   deeper in the canvas: the wrappers below collapse to zero height while the widget
@@ -376,7 +398,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             </div>
           </div>
         </div>
-        {currentMode === 'edit' && (
+        {keepEditorLayers && (
           <Suspense fallback={null}>
             <EditorSelecto />
           </Suspense>

@@ -65,6 +65,7 @@ import ConfigHandleButton from '@/_components/ConfigHandleButton';
 import { getDropTargetLabel } from '../appCanvasUtils';
 import { packSlotRestrictionType, restrictedTypeOf } from '@/AppBuilder/_helpers/packDropRestrictions';
 import { isDynamicHeightV2Enabled } from '@/AppBuilder/_stores/dynamicHeight/flags';
+import { selectInEditorPreview } from '@/AppBuilder/_helpers/inEditorPreview';
 import { getRenderedHeight, getRenderedTopOffset, toSavedTop } from '@/AppBuilder/_stores/dynamicHeight/editorLayout';
 import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import {
@@ -89,6 +90,9 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
   const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
+  // Previewing in place, Grid stays mounted but inert: rebuilding Moveable's
+  // control boxes on the way back to edit costs seconds on a large page.
+  const inEditorPreview = useStore((state) => moduleId === 'canvas' && selectInEditorPreview(state));
   const getComponentAlignment = useStore((state) => state.getComponentAlignment, shallow);
   const [boxList, setBoxList] = useState([]);
   const currentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
@@ -202,6 +206,9 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   }, [selectedComponents]);
 
   const safeUpdateMoveable = () => {
+    // Widgets drop the `target` class in view mode; re-reading the selectors
+    // while previewing would tear down every control box.
+    if (selectInEditorPreview(useStore.getState())) return;
     if (!isDraggingRef.current && moveableRef.current) {
       moveableRef.current.updateTarget();
       moveableRef.current.updateRect();
@@ -442,11 +449,24 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
     });
   }, [selectedComponents]);
 
+  const wasInEditorPreview = useRef(inEditorPreview);
   useEffect(() => {
-    if (moveableRef.current) {
+    const leftPreview = wasInEditorPreview.current && !inEditorPreview;
+    wasInEditorPreview.current = inEditorPreview;
+    if (!moveableRef.current) return;
+    if (!leftPreview) {
       safeUpdateMoveable();
+      return;
     }
-  }, [boxList, selectedComponents, mainCanvasWidth]);
+    // Back from a preview every control box has to be re-measured (the canvas
+    // width changed), which takes Moveable about 0.4 s on a 500-widget page.
+    // Nothing is selected at that moment, so the boxes are invisible: let the
+    // edit canvas paint first and re-measure right after.
+    const idle = window.requestIdleCallback
+      ? window.requestIdleCallback(safeUpdateMoveable, { timeout: 300 })
+      : setTimeout(safeUpdateMoveable, 0);
+    return () => (window.cancelIdleCallback ? window.cancelIdleCallback(idle) : clearTimeout(idle));
+  }, [boxList, selectedComponents, mainCanvasWidth, inEditorPreview]);
 
   useEffect(() => {
     reloadGrid();
@@ -709,7 +729,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   };
 
   useGroupedTargetsScrollHandler(groupedTargets, boxList, moveableRef);
-  if (mode !== 'edit') return null;
+  if (mode !== 'edit' && !inEditorPreview) return null;
   return (
     <>
       <Moveable
@@ -725,8 +745,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         target={getMoveableTarget()}
         origin={false}
         individualGroupable={virtualTarget ? false : groupedTargets.length <= 1}
-        draggable={!shouldFreeze}
-        resizable={canResize ? isWidgetResizable : false}
+        draggable={!shouldFreeze && !inEditorPreview}
+        resizable={canResize && !inEditorPreview ? isWidgetResizable : false}
         keepRatio={false}
         individualGroupableProps={getIndividualGroupableProps}
         onResize={(e) => {
@@ -1483,6 +1503,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           incrementCanvasUpdater();
         }}
         onClickGroup={(e) => {
+          if (inEditorPreview) return;
           // hideGridLines();
           // This runs after Selecto's multiselect logic. This is required to handle shift + click inside group area which selecto can't handle
           const targetId = e.inputEvent.target.closest('.moveable-box')?.getAttribute('widgetid');
@@ -1537,6 +1558,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         }}
         snapGridAll={true}
         onClick={(e) => {
+          if (inEditorPreview) return;
           // Check if the click is on a config handle button
           const configHandleButton = e.inputEvent?.target?.closest('.config-handle-button');
 

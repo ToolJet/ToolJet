@@ -14,7 +14,7 @@ import {
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
 import { isDynamicHeightEditorPocEnabled, isDynamicHeightV2Enabled } from '../dynamicHeight/flags';
-import { scheduleDynamicHeight, watchSavedLayouts, watchSelection } from '../dynamicHeight/scheduler';
+import { scheduleDynamicHeight, watchEditMode, watchSavedLayouts, watchSelection } from '../dynamicHeight/scheduler';
 import { watchStickySiblings } from '../dynamicHeight/editorSticky';
 import { heightHeldInView, isUi2PerRowType, sizesToDropAreas } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
@@ -65,6 +65,7 @@ export const createGridSlice = (set, get, store) => {
     // Editor POC: sticky siblings rewrite saved tops before the engine re-solves.
     store.subscribe(watchStickySiblings(get));
     store.subscribe(watchSavedLayouts(get));
+    store.subscribe(watchEditMode(get));
     store.subscribe(watchSelection(get));
     // Editor POC: lets a demo read saved and rendered layouts from the console.
     if (isDynamicHeightEditorPocEnabled() && typeof window !== 'undefined') window.__tjStore = store;
@@ -217,6 +218,10 @@ export const createGridSlice = (set, get, store) => {
         }
         return key === `${base}-${prefix}` || key.startsWith(`${base}-${prefix}.`);
       };
+
+      // Nothing to drop: skip the store write. Leaving a preview clears every
+      // position first, and then each list view on the page lands here.
+      if (!Object.keys(get().temporaryLayouts || {}).some(matches)) return;
 
       set((state) => {
         const next = {};

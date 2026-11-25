@@ -354,7 +354,8 @@ export const createAppSlice = (set, get) => ({
         setPageSwitchInProgress,
         bufferExposedValuePostFlush,
       } = get();
-      const isPreview = getCurrentMode(moduleId) !== 'edit';
+      // A preview inside the editor stays on the editor's route.
+      const isPreview = getCurrentMode(moduleId) !== 'edit' && !get().isPreviewInEditor;
 
       setPageLoader(true);
       await yieldToMain(); // Paint the loader before doing heavy work

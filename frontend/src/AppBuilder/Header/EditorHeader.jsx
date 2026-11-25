@@ -21,6 +21,7 @@ import {
   LocalBehindNote,
   SecurityStatusChip,
 } from '@/AppBuilder/_helpers/codeModeHooks';
+import { selectInEditorPreview } from '@/AppBuilder/_helpers/inEditorPreview';
 
 export const EditorHeader = ({ darkMode, appType }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
@@ -59,6 +60,10 @@ export const EditorHeader = ({ darkMode, appType }) => {
   // branch, version, release/commit). The logo/app-name nav stays clickable so the user can
   // still navigate to workspace settings and turn git off.
   const headerLockClass = cx({ 'tw-pointer-events-none tw-opacity-50': isGitSyncLicenseLocked });
+  // While previewing in place, what renames the app or changes its version,
+  // branch or release is locked too; the layout toggle and preview buttons stay.
+  const inEditorPreview = useStore(selectInEditorPreview);
+  const editLockClass = cx({ 'tw-pointer-events-none tw-opacity-50': isGitSyncLicenseLocked || inEditorPreview });
 
   const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
 
@@ -111,7 +116,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
                     <h1 className="navbar-brand d-none-navbar-horizontal p-0 tw-shrink-0" data-cy="editor-page-logo">
                       <LogoNavDropdown darkMode={darkMode} type={appType} />
                     </h1>
-                    <div className={cx('d-flex flex-row tw-mr-1', headerLockClass)}>
+                    <div className={cx('d-flex flex-row tw-mr-1', editLockClass)}>
                       {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
                       <EditAppName />
                     </div>
@@ -141,8 +146,8 @@ export const EditorHeader = ({ darkMode, appType }) => {
             <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
               <div className="d-flex align-items-center p-0">
                 <div
-                  className={cx('d-flex version-manager-container p-0  align-items-center gap-0', headerLockClass)}
-                  aria-disabled={isGitSyncLicenseLocked || undefined}
+                  className={cx('d-flex version-manager-container p-0  align-items-center gap-0', editLockClass)}
+                  aria-disabled={isGitSyncLicenseLocked || inEditorPreview || undefined}
                 >
                   {!isModuleEditor && <PreviewAndShareIcons />}
                   {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}

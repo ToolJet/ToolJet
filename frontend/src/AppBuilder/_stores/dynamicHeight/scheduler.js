@@ -59,9 +59,15 @@ const flush = () => {
   awaitingMeasurement.clear();
   waitedFrames = 0;
   frame = null;
-  const requests = [...pendingRequests.values()];
+  // Without the editor POC the edit canvas shows saved layouts, so only
+  // modules in view mode (the viewer, a preview in the editor) are solved.
+  // Requests from an edit canvas, or still queued when a preview ends, are dropped.
+  const state = storeGet();
+  const solved = (moduleId) =>
+    isDynamicHeightLiveInEditor() || state.modeStore?.modules?.[moduleId]?.currentMode === 'view';
+  const requests = [...pendingRequests.values()].filter((request) => solved(request.moduleId));
   const measuredHeights = new Map(pendingHeights);
-  const fullModules = [...pendingFullModules];
+  const fullModules = [...pendingFullModules].filter(solved);
   pendingRequests.clear();
   pendingHeights.clear();
   pendingFullModules.clear();
@@ -78,7 +84,7 @@ const flush = () => {
     measuredHeights,
     fullModules,
     onError,
-    editor: editorOptions(storeGet()),
+    editor: editorOptions(state),
   });
   for (const moduleId of retriedModules) if (!failed.has(moduleId)) retriedModules.delete(moduleId);
 };
@@ -126,6 +132,21 @@ export const watchSavedLayouts = (get) => (state, previous) => {
       state.currentLayout !== previous.currentLayout ||
       pageComponents(state, moduleId) !== pageComponents(previous, moduleId);
     if (changed) scheduleFullSolve(get, moduleId);
+  }
+};
+
+// The editor draws saved layouts. A page starts loading in view mode, so the
+// engine may already have positioned widgets by the time the editor switches
+// the canvas to edit: drop those positions, and solve again the embedded
+// modules that stay in view mode.
+export const watchEditMode = (get) => (state, previous) => {
+  if (!isDynamicHeightV2Enabled() || isDynamicHeightLiveInEditor()) return;
+  const mode = (s) => s.modeStore?.modules?.canvas?.currentMode;
+  if (mode(state) !== 'edit' || mode(previous) === 'edit') return;
+  if (Object.keys(get().temporaryLayouts || {}).length === 0) return;
+  get().clearTemporaryLayouts();
+  for (const [moduleId, module] of Object.entries(state.modeStore.modules)) {
+    if (moduleId !== 'canvas' && module?.currentMode === 'view') scheduleFullSolve(get, moduleId);
   }
 };
 

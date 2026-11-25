@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
 import { getErrorContext } from '@/_ui/ErrorBoundary/errorReport';
 import useCustomComponentDevPreviewSync from '@/AppBuilder/_hooks/useCustomComponentDevPreviewSync';
+import { exitInEditorPreview, selectInEditorPreview } from '@/AppBuilder/_helpers/inEditorPreview';
 
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
@@ -34,6 +35,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   useAppData(appId, moduleId, darkMode, 'edit', {}, isModuleEditor, isModuleEditor);
   const isEditorLoading = useStore((state) => state.loaderStore.modules[moduleId].isEditorLoading, shallow);
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
+  const inEditorPreview = useStore(selectInEditorPreview);
   const hasModuleAccess = useStore((state) => state.license.featureAccess?.modulesEnabled);
 
   const updateIsTJDarkMode = useStore((state) => state.updateIsTJDarkMode, shallow);
@@ -84,6 +86,14 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
 
   useCustomComponentDevPreviewSync(appId);
 
+  // The store outlives the editor; a preview must not follow the user to
+  // another app or to the viewer.
+  useEffect(() => {
+    return () => {
+      if (useStore.getState().isPreviewInEditor) exitInEditorPreview(moduleId);
+    };
+  }, [appId, moduleId]);
+
   //TODO: This can be added to the mode slice and set based on the mode
   if (isEditorLoading) {
     return (
@@ -93,7 +103,15 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     );
   }
   return (
-    <div className={cx('wrapper', { editor: currentMode === 'edit' })}>
+    // A preview keeps the `editor` frame (fixed header and panels) and hides the
+    // panels with `editor-preview` (appCanvas.scss), so returning to edit
+    // re-lays out nothing outside the canvas.
+    <div
+      className={cx('wrapper', {
+        editor: currentMode === 'edit' || inEditorPreview,
+        'editor-preview': inEditorPreview,
+      })}
+    >
       {/* Last-resort boundary — catches anything the panel-level boundaries miss. */}
       <FallbackBoundary label="App builder" location="Editor" darkMode={darkMode}>
         <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false} isModuleEditor={isModuleEditor}>
@@ -104,7 +122,9 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
           </Suspense>
 
           {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled && (
-            <RealtimeCursors />
+            <div className="editor-realtime-cursors">
+              <RealtimeCursors />
+            </div>
           )}
           <DndProvider backend={HTML5Backend}>
             <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
