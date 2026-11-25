@@ -38,14 +38,9 @@ export class FolderDataSourcesController {
     const { folder_id: folderId, data_source_id: dataSourceId, data_source_ids: dataSourceIds } = createBody;
 
     if (dataSourceIds?.length) {
-      return this.folderDataSourcesService.bulkCreate(folderId, dataSourceIds, branchId, user?.organizationId);
+      return this.folderDataSourcesService.bulkCreate(folderId, dataSourceIds, branchId, user);
     }
-    const folderDataSource = await this.folderDataSourcesService.create(
-      folderId,
-      dataSourceId,
-      branchId,
-      user?.organizationId
-    );
+    const folderDataSource = await this.folderDataSourcesService.create(folderId, dataSourceId, branchId, user);
     return decamelizeKeys(folderDataSource);
   }
 
