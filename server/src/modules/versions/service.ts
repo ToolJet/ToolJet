@@ -8,6 +8,7 @@ import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { EntityManager, MoreThan } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
+import { assertVariableDefinitionMap } from '@helpers/variable-definition-map.helper';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { VersionsCreateService } from './services/create.service';
 import { serializeDataQueries } from '@modules/data-queries/serialization.helper';
@@ -507,6 +508,7 @@ export class VersionService implements IVersionService {
   }
 
   async updateSettings(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
+    assertVariableDefinitionMap(appVersionUpdateDto?.globalSettings?.variables, 'globalSettings.variables');
     const context = await this.beforeVersionSettingsUpdate(app, user, appVersionUpdateDto);
 
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);

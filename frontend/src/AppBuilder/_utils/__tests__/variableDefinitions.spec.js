@@ -6,6 +6,7 @@ import {
   findVariableCycle,
   orderVariableDefinitions,
   normalizeVariableDefinition,
+  normalizeVariableDefinitionMap,
 } from '../variableDefinitions';
 
 const appVar = (name, value = '', fxActive = false) => ({ id: `app-${name}`, scope: 'app', name, value, fxActive });
@@ -192,5 +193,30 @@ describe('normalizeVariableDefinition', () => {
       value: '',
       fxActive: false,
     });
+  });
+});
+
+// Saved maps come from the API, which did not always validate them: a bad entry must not stop the editor loading.
+describe('normalizeVariableDefinitionMap', () => {
+  const valid = { id: 'v1', name: 'threshold', value: '5', fxActive: false };
+
+  test.each([
+    ['null', null],
+    ['a string', 'x'],
+    ['a number', 5],
+    ['an array', []],
+    ['an object without an id', { name: 'a' }],
+    ['an object without a name', { id: 'v2' }],
+  ])('skips an entry that is %s and keeps the valid ones', (_label, bad) => {
+    expect(normalizeVariableDefinitionMap({ bad, v1: valid })).toEqual({ v1: valid });
+  });
+
+  test.each([
+    ['null', null],
+    ['undefined', undefined],
+    ['a string', 'str'],
+    ['an array of nulls', [null]],
+  ])('reads a map that is %s as empty', (_label, map) => {
+    expect(normalizeVariableDefinitionMap(map)).toEqual({});
   });
 });

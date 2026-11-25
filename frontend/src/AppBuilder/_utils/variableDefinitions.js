@@ -29,9 +29,27 @@ export function normalizeVariableDefinition(raw = {}) {
   };
 }
 
-/** A definition map (`{ [id]: definition }`) with every entry normalized. */
-export const normalizeVariableDefinitionMap = (map) =>
-  Object.fromEntries(Object.values(map || {}).map((d) => [d.id, normalizeVariableDefinition(d)]));
+/** A saved entry the editor can use: an object with a string id and name. */
+const isStoredDefinition = (raw) =>
+  !!raw &&
+  typeof raw === 'object' &&
+  !Array.isArray(raw) &&
+  typeof raw.id === 'string' &&
+  !!raw.id &&
+  typeof raw.name === 'string';
+
+/**
+ * A definition map (`{ [id]: definition }`) with every entry normalized. Saved maps come from the
+ * API, so a malformed map or entry is skipped rather than allowed to stop the editor loading.
+ */
+export const normalizeVariableDefinitionMap = (map) => {
+  if (!map || typeof map !== 'object' || Array.isArray(map)) return {};
+  return Object.fromEntries(
+    Object.values(map)
+      .filter(isStoredDefinition)
+      .map((d) => [d.id, normalizeVariableDefinition(d)])
+  );
+};
 
 export function validateVariableName(rawName, scope, definitions = [], selfId = null, pageName = '') {
   const name = String(rawName ?? '');

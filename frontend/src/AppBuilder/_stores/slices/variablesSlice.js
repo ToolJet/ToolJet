@@ -36,7 +36,7 @@ import {
 export const VARIABLE_DEFINITION_NODE_SUFFIX = '.__vardef__';
 const nodePathOf = (id) => `variableDefinitions.${id}${VARIABLE_DEFINITION_NODE_SUFFIX}`;
 
-const withScope = (map, scope) => Object.values(map || {}).map((d) => ({ ...normalizeVariableDefinition(d), scope }));
+const withScope = (map, scope) => Object.values(normalizeVariableDefinitionMap(map)).map((d) => ({ ...d, scope }));
 const toStored = (definition) => normalizeVariableDefinition(definition);
 
 export const createVariablesSlice = (set, get) => ({

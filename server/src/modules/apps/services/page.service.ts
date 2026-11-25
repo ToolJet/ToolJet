@@ -34,6 +34,7 @@ import { LicensePageService } from '@modules/licensing/interfaces/IService';
 import { AppValidationService } from '@modules/app-validation/service';
 import { lockForValidation } from '@modules/app-validation/lock';
 import { PageWrite } from '@modules/app-validation/types';
+import { assertVariableDefinitionMap } from '@helpers/variable-definition-map.helper';
 
 @Injectable()
 export class PageService implements IPageService {
@@ -192,6 +193,7 @@ export class PageService implements IPageService {
   }
 
   async createPage(page: CreatePageDto, appVersionId: string, organizationId: string): Promise<Page> {
+    assertVariableDefinitionMap(page?.variables, 'variables');
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageCreate(page, appVersionId, organizationId);
 
@@ -548,6 +550,7 @@ export class PageService implements IPageService {
     if (Object.keys(pageUpdates.diff).length > 1) {
       throw new Error('Can not update multiple pages');
     }
+    assertVariableDefinitionMap(pageUpdates.diff?.variables, 'diff.variables');
 
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageUpdate(pageUpdates.pageId, pageUpdates.diff, appVersionId);

@@ -190,6 +190,20 @@ describe('delete', () => {
 });
 
 describe('declared variable boundaries', () => {
+  test('a malformed saved entry is skipped instead of stopping the editor from loading', () => {
+    const valid = { id: 'v1', name: 'threshold', value: '5', fxActive: false };
+    state().setGlobalSettings({ ...state().globalSettings, variables: { bad: null, v1: valid } });
+    state().setPages([{ ...state().modules.canvas.pages[0], variables: { bad: 'x', also: null } }], 'canvas');
+
+    expect(() => state().initVariableDefinitions('canvas')).not.toThrow();
+    expect(
+      state()
+        .getVariableDefinitions()
+        .map((d) => d.name)
+    ).toEqual(['threshold']);
+    expect(appVars().threshold).toBe(5);
+  });
+
   test('invalid JSON leaves an existing value and its saved definition unchanged', async () => {
     const { definition } = await state().saveVariableDefinition({ scope: 'app', name: 'threshold', value: '5' });
     saved = [];
