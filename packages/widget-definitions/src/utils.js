@@ -139,6 +139,9 @@ export const NEW_DROP_ONLY_STYLES = {
   ButtonGroupV2: THEME_STYLE_KEYS,
   PopoverMenu: THEME_STYLE_KEYS,
   FileButton: THEME_STYLE_KEYS,
+  KeyValuePair: THEME_STYLE_KEYS,
+  Table: THEME_STYLE_KEYS,
+  Chart: THEME_STYLE_KEYS,
 };
 
 /**

@@ -161,6 +161,8 @@ export const chartConfig = {
     borderRadius: {
       type: 'number',
       displayName: 'Border radius',
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       validation: {
         schema: { type: 'number' },
         defaultValue: 6,
@@ -193,6 +195,11 @@ export const chartConfig = {
     xAxisTitle: null,
     yAxisTitle: null,
     clickedDataPoint: {},
+  },
+  // The universal General Box Shadow, as a dropdown of the app theme's shadows + Custom (this shadow); the choice is
+  // generalStyles.boxShadowStyle (the canvas merges generalStyles into the widget's styles).
+  generalStyles: {
+    boxShadow: { type: 'boxShadow', displayName: 'Box Shadow', themeTokens: 'shadows' },
   },
   definition: {
     others: {
@@ -240,9 +247,16 @@ export const chartConfig = {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       padding: { value: '50' },
       borderRadius: { value: '{{6}}' },
+      // New drops follow the theme's Large radius and None shadow; a saved widget without these keys keeps its own
+      // values (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       borderColor: { value: 'var(--cc-default-border)' },
+    },
+    // New drops follow the theme's None shadow (merged over the universal boxShadow default); saved charts keep theirs.
+    generalStyles: {
+      boxShadowStyle: { value: 'none' },
     },
   },
 };

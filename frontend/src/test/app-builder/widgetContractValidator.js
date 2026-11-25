@@ -335,6 +335,9 @@ function walkSpecs(frontendRoot) {
   visit('src/AppBuilder/RightSideBar/Inspector/Components/Navigation/hooks/__tests__', (rel) =>
     /\.(js|jsx)$/.test(rel)
   );
+  // The theme border radius / box shadow dropdown (Button D-03 and the widgets that transferred it) is the inspector's
+  // shared field; its scenarios (e.g. Button-THEME-005) are tested beside the inspector's render paths.
+  visit('src/AppBuilder/RightSideBar/Inspector/__tests__', (rel) => /\.spec\.[jt]sx?$/.test(rel));
   return specs;
 }
 

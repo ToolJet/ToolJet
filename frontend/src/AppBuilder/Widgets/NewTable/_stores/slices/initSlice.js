@@ -106,7 +106,9 @@ export const createInitSlice = (set, get) => ({
       (state) => {
         const {
           borderRadius = 0,
+          borderRadiusStyle,
           boxShadow,
+          boxShadowStyle,
           borderColor = 'var(--borders-weak-disabled)',
           contentWrap = true,
           textColor,
@@ -126,6 +128,8 @@ export const createInitSlice = (set, get) => ({
 
         state.components[id].styles.borderRadius = Number.parseFloat(borderRadius);
         state.components[id].styles.boxShadow = boxShadow;
+        state.components[id].styles.borderRadiusStyle = borderRadiusStyle;
+        state.components[id].styles.boxShadowStyle = boxShadowStyle;
         state.components[id].styles.borderColor = borderColor;
         state.components[id].styles.contentWrap = contentWrap;
         state.components[id].styles.textColor = textColor !== '#000' ? textColor : darkMode && '#fff';

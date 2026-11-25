@@ -11,6 +11,7 @@ import { useAutoGenerateFields } from './_hooks/useAutoGenerateFields';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { isEditedDataValid } from './_utils/fieldValidity';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 // From this width the Cancel/Save bar floats with text labels; below it, it docks as an icon-only footer.
 const CTA_TEXT_MIN_WIDTH = 200;
@@ -79,18 +80,22 @@ export const KeyValuePair = ({
     backgroundColor = 'var(--cc-surface1-surface)',
     borderColor = 'var(--cc-weak-border)',
     borderRadius = 6,
+    borderRadiusStyle,
     boxShadow = '0px 0px 0px 0px #00000040',
+    boxShadowStyle,
     hoverBackgroundMode = 'auto',
     hoverBackgroundColor,
   } = styles;
 
+  // The container and its rows (--kv-border-radius) share one radius: the theme item's, or the widget's own number.
+  const radius = themedRadius(borderRadiusStyle, borderRadius ? parseFloat(borderRadius) : 0);
   const containerStyles = {
     padding: paddingInside ? parseFloat(paddingInside) : 0,
     backgroundColor,
     border: `1px solid ${borderColor}`,
-    borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
-    '--kv-border-radius': `${borderRadius ? parseFloat(borderRadius) : 0}px`,
-    boxShadow,
+    borderRadius: radius,
+    '--kv-border-radius': radius,
+    boxShadow: themedShadow(boxShadowStyle, boxShadow),
     ...(hoverBackgroundMode === 'manual' && hoverBackgroundColor && { '--kv-hover-bg': hoverBackgroundColor }),
   };
 

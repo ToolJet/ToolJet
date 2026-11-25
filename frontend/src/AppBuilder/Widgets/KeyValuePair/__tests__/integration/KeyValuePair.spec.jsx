@@ -24,6 +24,8 @@ import { widgets } from '@/AppBuilder/WidgetManager/configs/widgetConfig';
 import useStore from '@/AppBuilder/_stores/store';
 import { componentDefinition } from '@/test/app-builder';
 import { createWidgetHarness, binding, store, MODULE_ID, setVariableOn } from '@/AppBuilder/Widgets/widgetHarness';
+import { keyValuePairConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const ID = 'kv1';
 const NAME = 'keyvaluepair1';
@@ -1313,5 +1315,60 @@ describe('KeyValuePair: label overflow tooltip', () => {
     await widget.session.user.hover(labelText());
 
     expect(document.querySelector('.overlay-cell-table')).not.toBeInTheDocument();
+  });
+});
+
+// Theme border radius / box shadow (contract D-09, as Button's D-03..D-06).
+describe('KeyValuePair: theme border radius and box shadow', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[KeyValuePair-THEME-001] a newly dropped KeyValuePair starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: keyValuePair.js losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(keyValuePairConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(keyValuePairConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(keyValuePairConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(keyValuePairConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[KeyValuePair-THEME-002] a KeyValuePair saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults (Large / None) onto saved KeyValuePairs.
+    const savedStyles = { borderRadius: binding('10'), boxShadow: binding('5px 5px 0px 0px #00000040') };
+    const saved = componentDefinition(
+      ID,
+      NAME,
+      'KeyValuePair',
+      {},
+      { styles: savedStyles, seedFromRegisteredDefinition: false }
+    );
+    const { styles } = buildComponentMetaDefinition({ [ID]: saved })[ID].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({ styles: { ...styles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') } });
+    await waitFor(() => expect(container()).toBeInTheDocument());
+    expect(container().style.borderRadius).toBe('10px');
+    expect(container().style.boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[KeyValuePair-THEME-003] a theme item renders its variable with the saved value as fallback, rows included; custom renders the saved value', async () => {
+    // Break this catches: KeyValuePair.jsx rendering the raw number / boxShadow whatever the theme style, or the rows'
+    // --kv-border-radius left on the saved number.
+    widget.render({
+      styles: {
+        borderRadius: binding('6'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(container()).toBeInTheDocument());
+    expect(container().style.borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(container().style.getPropertyValue('--kv-border-radius')).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(container().style.boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty(ID, 'borderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty(ID, 'borderRadius', '10', 'styles');
+    await waitFor(() => expect(container().style.borderRadius).toBe('10px'));
   });
 });

@@ -17,6 +17,7 @@ import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './table.scss';
 import './shadcnLook.scss';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 const Table = memo(
   ({
@@ -73,6 +74,8 @@ const Table = memo(
 
     // get table styles
     const boxShadow = useTableStore((state) => state.getTableStyles(id)?.boxShadow, shallow);
+    const borderRadiusStyle = useTableStore((state) => state.getTableStyles(id)?.borderRadiusStyle, shallow);
+    const boxShadowStyle = useTableStore((state) => state.getTableStyles(id)?.boxShadowStyle, shallow);
     const borderColor = useTableStore((state) => state.getTableStyles(id)?.borderColor, shallow);
     const containerBackgroundColor = useTableStore(
       (state) => state.getTableStyles(id)?.containerBackgroundColor,
@@ -371,8 +374,8 @@ const Table = memo(
           // band under the last row of a short page.
           ...(isDynamicHeightEnabled && styles?.tableLook !== 'shadcn' && { minHeight: `${height}px` }),
           display: exposedVariablesTemporaryState.isVisible ? '' : 'none',
-          borderRadius: Number.parseFloat(borderRadius),
-          boxShadow,
+          borderRadius: themedRadius(borderRadiusStyle, Number.parseFloat(borderRadius)),
+          boxShadow: themedShadow(boxShadowStyle, boxShadow),
           ...(surface && surface !== 'card' ? { '--tj-table-surface': surface } : {}),
           borderColor,
           backgroundColor: containerBackgroundColor,

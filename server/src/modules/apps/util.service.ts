@@ -1342,9 +1342,11 @@ export class AppsUtilService implements IAppsUtilService {
           merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
           currentComponentData?.component?.definition?.styles
         ),
-        generalStyles: merge(
-          componentMeta.definition.generalStyles,
-          currentComponentData?.component.definition.generalStyles
+        // Chart's General shadow follows the theme too (boxShadowStyle): kept off saved widgets the same way.
+        generalStyles: dropNewDropOnlyStyles(
+          currentComponentData?.component?.component,
+          merge(componentMeta.definition.generalStyles, currentComponentData?.component.definition.generalStyles),
+          currentComponentData?.component?.definition?.generalStyles
         ),
         validation: merge(componentMeta.definition.validation, currentComponentData?.component.definition.validation),
         others: merge(componentMeta.definition.others, currentComponentData?.component.definition.others),

@@ -24,11 +24,13 @@
     },
     {
       "componentType": "Table",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Table/TESTING.md"
     },
     {
       "componentType": "Chart",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Chart/TESTING.md"
     },
     {
       "componentType": "KeyValuePair",

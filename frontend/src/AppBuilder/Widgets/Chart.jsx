@@ -10,6 +10,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { getCssVarValue, getModifiedColor, buildChartAxis, toPlotlyColor } from './utils';
 import { applyPlotlyCompat } from './plotlyCompat';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 var tinycolor = require('tinycolor2');
 
@@ -54,7 +55,17 @@ export default function Chart({
     return '#fff';
   };
 
-  const { padding, visibility, disabledState, boxShadow, backgroundColor, borderRadius, borderColor } = styles;
+  const {
+    padding,
+    visibility,
+    disabledState,
+    boxShadow,
+    boxShadowStyle,
+    backgroundColor,
+    borderRadius,
+    borderRadiusStyle,
+    borderColor,
+  } = styles;
   const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes, barmode } =
     properties;
 
@@ -77,8 +88,8 @@ export default function Chart({
     display: visibility ? '' : 'none',
     // background: darkMode ? '#1f2936' : 'white',
     border: `1px solid ${borderColor}`,
-    boxShadow,
-    borderRadius,
+    boxShadow: themedShadow(boxShadowStyle, boxShadow),
+    borderRadius: themedRadius(borderRadiusStyle, borderRadius),
   };
   const dataString = data ?? [];
 
