@@ -100,11 +100,6 @@
     align-items: flex-start;
     gap: 6px;
     min-width: 0;
-
-    .fx-button {
-      flex-shrink: 0;
-      margin-top: 4px;
-    }
   }
 
   .variables-value-editor {
@@ -115,25 +110,37 @@
   .variables-preview {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 6px 10px;
+    gap: 4px;
+    padding: 8px 12px;
     border-radius: 6px;
-    background: var(--background-surface-layer-01);
+    background: var(--background-success-weak);
     word-break: break-all;
 
     code {
+      display: block;
       padding: 0;
+      border: none;
       background: none;
-      font-size: 12px;
-      line-height: 18px;
+      font-family: var(--font-family-geist-mono, ui-monospace, Menlo, monospace);
+      font-size: 13px;
+      line-height: 20px;
       color: var(--text-default);
     }
   }
 
   .variables-preview-type {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
-    color: var(--text-placeholder);
+    line-height: 16px;
+    color: var(--text-success);
+  }
+
+  .variables-preview.error {
+    background: var(--background-error-weak);
+
+    .variables-preview-type {
+      color: var(--text-danger);
+    }
   }
 
   // Validation text quotes the name, so a long name must wrap instead of widening the panel.

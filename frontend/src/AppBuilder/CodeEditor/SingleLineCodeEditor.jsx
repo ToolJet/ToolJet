@@ -235,7 +235,9 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
         paramName={paramName}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
-        previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
+        previewPlacement={
+          restProps?.previewPlacement ?? (restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start')
+        }
         isPortalOpen={restProps?.portalProps?.isOpen}
         validationFn={validationFn}
         onAiSuggestionAccept={(newValue) => {

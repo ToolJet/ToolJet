@@ -33,10 +33,9 @@ function enterValue(value) {
   valueInput().find('.cm-content').should('have.text', value);
 }
 
-function createVariable(scope, name, value, fx = false) {
+function createVariable(scope, name, value) {
   byCy(`variables-add-${scope}`).click();
   nameInput().type(name);
-  if (fx) byCy('variable-initial-value-fx-button').click();
   enterValue(value);
   byCy('variable-create-button').click();
   byCy('variable-detail-form').should('be.visible');
@@ -119,7 +118,7 @@ describe('Declared app and page variables', () => {
 
   it('edits a dependency through CodeMirror and shows the recalculated value', () => {
     createVariable('app', 'threshold', '5');
-    createVariable('app', 'doubled', '{{variables.threshold * 2}}', true);
+    createVariable('app', 'doubled', '{{variables.threshold * 2}}');
     row('app', 'doubled').should('contain.text', '10');
     row('app', 'threshold').click();
     enterValue('8');

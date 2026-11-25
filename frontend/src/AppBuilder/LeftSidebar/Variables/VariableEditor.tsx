@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 import { Check, Copy, InfoIcon } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import { Button as RawButton } from '@/components/ui/Button/Button';
 import RawInputComponent from '@/components/ui/Input/Index';
 import {
@@ -12,7 +11,7 @@ import {
   ToggleGroupItem as RawToggleGroupItem,
 } from '@/components/ui/Rocket';
 import { copyToClipboard } from '@/_helpers/appUtils';
-import { validateVariableName } from '@/AppBuilder/_utils/variableDefinitions';
+import { toExpression, validateVariableName } from '@/AppBuilder/_utils/variableDefinitions';
 import { previewOf, referenceOf } from './variableRows';
 import VariableReferencesDialog, { computeVariableReferences } from './VariableReferencesDialog';
 import type { VariableReference } from './variableReferences';
@@ -21,7 +20,6 @@ import type { VariableRow, VariableScope } from './variableRows';
 const ButtonComponent = RawButton as React.ComponentType<any>;
 const InputComponent = RawInputComponent as React.ComponentType<any>;
 const CodeHinterComponent = CodeHinter as React.ComponentType<any>;
-const FxButtonComponent = FxButton as React.ComponentType<any>;
 const RocketButton = RawRocketButton as React.ComponentType<any>;
 const RocketToggleGroup = RawToggleGroup as React.ComponentType<any>;
 const RocketToggleGroupItem = RawToggleGroupItem as React.ComponentType<any>;
@@ -93,54 +91,55 @@ const typeOf = (value: unknown) => {
   return t.charAt(0).toUpperCase() + t.slice(1);
 };
 
-/** Type and value the initial value evaluates to right now, as in the prototype. */
-const ValuePreview = ({ value, error }: { value: unknown; error?: string | null }) =>
-  error ? null : (
+export type ValueEvaluation = { value: unknown; error: string | null };
+
+/** What the initial value evaluates to right now, or why it can't be evaluated. */
+const ValuePreview = ({ evaluation }: { evaluation: ValueEvaluation }) =>
+  evaluation.error ? (
+    <div className="variables-preview error" data-cy="variable-value-evaluation-error">
+      <span className="variables-preview-type">Can’t evaluate</span>
+      <code>{evaluation.error}</code>
+    </div>
+  ) : (
     <div className="variables-preview" data-cy="variable-value-preview">
-      <span className="variables-preview-type">{typeOf(value)}</span>
-      <code>{previewOf(value, 220)}</code>
+      <span className="variables-preview-type">{typeOf(evaluation.value)}</span>
+      <code>{previewOf(evaluation.value, 220)}</code>
     </div>
   );
 
-const toggleBraces = (value: string, active: boolean) => {
-  const trimmed = value.trim();
-  const wrapped = /^\{\{[\s\S]*\}\}$/.test(trimmed);
-  if (active) return wrapped ? value : `{{${trimmed}}}`;
-  return wrapped ? trimmed.slice(2, -2) : value;
+/**
+ * A variable saved with the old fx toggle on may hold an expression without braces; show it as {{ }}
+ * so the field, like every Inspector code field, reads anything in braces as an expression.
+ */
+const editableValueOf = (definition: { value?: string; fxActive?: boolean }) => {
+  const text = definition.value ?? '';
+  return definition.fxActive && text.trim() && !(text.includes('{{') && text.includes('}}'))
+    ? toExpression({ value: text })
+    : text;
 };
 
 /**
- * Initial value: the Inspector's fx button beside a single-line code editor. With fx off the text is a
- * static value; with fx on (or when it is written as {{ }}) it is an expression with autocomplete and
- * the resolved-value preview.
+ * Initial value: a single-line code field that works like the Inspector's property fields. Text in
+ * {{ }} is an expression with autocomplete; anything else is a static value.
  */
 const ValueField = ({
   value,
-  fxActive,
   onChange,
-  onFxChange,
   error,
   optional = false,
-  preview = null,
+  evaluation = null,
 }: {
   value: string;
-  fxActive: boolean;
   onChange: (value: string) => void;
-  onFxChange: (active: boolean, value: string) => void;
   error?: string | null;
   optional?: boolean;
-  preview?: { value: unknown } | null;
+  evaluation?: ValueEvaluation | null;
 }) => (
   <div className="variables-field" data-cy="variable-initial-value">
     <span className="variables-label">
       Initial value {optional && <span className="variables-hint">Optional</span>}
     </span>
     <div className="variables-value-row">
-      <FxButtonComponent
-        active={fxActive}
-        onPress={() => onFxChange(!fxActive, toggleBraces(value, !fxActive))}
-        dataCy="variable-initial-value"
-      />
       <div className="variables-value-editor">
         <CodeHinterComponent
           type="basic"
@@ -152,13 +151,15 @@ const ValueField = ({
           onChange={() => {}}
           usePortalEditor={false}
           delayOnChange={false}
-          placeholder={fxActive ? '{{queries.getProducts.data[0]}}' : 'e.g. 5, open, [] or {}'}
+          // The default left placement suits the right-hand Inspector; in the left sidebar it covers the field.
+          previewPlacement="bottom-start"
+          placeholder="e.g. 5, open, [] or {{ }}"
           cyLabel="variable-initial-value"
         />
       </div>
     </div>
     <FieldError message={error} dataCy="variable-value-error" />
-    {preview && <ValuePreview value={preview.value} error={error} />}
+    {!error && evaluation && <ValuePreview evaluation={evaluation} />}
   </div>
 );
 
@@ -183,19 +184,11 @@ export const CreateVariableForm = ({
   onCreated,
 }: CreateProps) => {
   const saveVariableDefinition = useStore((state: any) => state.saveVariableDefinition);
-  const evaluateVariableDefinition = useStore((state: any) => state.evaluateVariableDefinition);
-  const evaluate = (draft: { value: string; fxActive: boolean }) => {
-    try {
-      return evaluateVariableDefinition({ ...draft, scope }, moduleId);
-    } catch {
-      return undefined;
-    }
-  };
+  const evaluateWithError = useStore((state: any) => state.evaluateVariableDefinitionWithError);
   const [scope, setScope] = useState<VariableScope>(runtimeVariable?.scope ?? initialScope);
   const [name, setName] = useState(runtimeVariable?.name ?? '');
   const [nameTouched, setNameTouched] = useState(false);
   const [value, setValue] = useState('');
-  const [fxActive, setFxActive] = useState(false);
   const [errors, setErrors] = useState<{ name?: string | null; value?: string | null }>({});
   const [saving, setSaving] = useState(false);
 
@@ -206,7 +199,7 @@ export const CreateVariableForm = ({
     setNameTouched(true);
     if (validateName(name, scope, definitions, null, pageName)) return;
     setSaving(true);
-    const result: SaveResult = await saveVariableDefinition({ scope, name, value, fxActive }, moduleId);
+    const result: SaveResult = await saveVariableDefinition({ scope, name, value, fxActive: false }, moduleId);
     setSaving(false);
     if (!result.ok) {
       setErrors({ [result.field]: result.error });
@@ -261,18 +254,13 @@ export const CreateVariableForm = ({
 
       <ValueField
         value={value}
-        fxActive={fxActive}
         onChange={(next) => {
           setValue(next);
           setErrors((prev) => ({ ...prev, value: null }));
         }}
-        onFxChange={(active, next) => {
-          setFxActive(active);
-          setValue(next);
-        }}
         error={errors.value}
         optional
-        preview={value.trim() ? { value: evaluate({ value, fxActive }) } : null}
+        evaluation={value.trim() ? evaluateWithError({ value, fxActive: false, scope }, moduleId) : null}
       />
 
       <div className="variables-field">
@@ -309,6 +297,7 @@ type EditProps = {
 export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenamed }: EditProps) => {
   const saveVariableDefinition = useStore((state: any) => state.saveVariableDefinition);
   const replaceIdsWithName = useStore((state: any) => state.replaceIdsWithName);
+  const evaluateWithError = useStore((state: any) => state.evaluateVariableDefinitionWithError);
   const definition = row.definition!;
   const currentValue = useStore((state: any) => {
     const exposed = state.resolvedStore.modules[moduleId]?.exposedValues;
@@ -349,8 +338,9 @@ export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenam
     else rename();
   };
 
-  const saveValue = async (patch: { value?: string; fxActive?: boolean }) => {
-    const result: SaveResult = await saveVariableDefinition({ id: definition.id, ...patch }, moduleId);
+  const saveValue = async (value: string) => {
+    // Braces now mark an expression, so a value saved from this field never needs the old fx flag.
+    const result: SaveResult = await saveVariableDefinition({ id: definition.id, value, fxActive: false }, moduleId);
     setValueError(result.ok ? null : result.error);
   };
 
@@ -394,12 +384,13 @@ export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenam
 
       <ValueField
         key={definition.id}
-        value={replaceIdsWithName(definition.value ?? '')}
-        fxActive={definition.fxActive}
-        onChange={(value) => saveValue({ value })}
-        onFxChange={(fxActive, value) => saveValue({ fxActive, value })}
+        value={replaceIdsWithName(editableValueOf(definition))}
+        onChange={saveValue}
         error={valueError}
-        preview={{ value: currentValue }}
+        evaluation={{
+          value: currentValue,
+          error: evaluateWithError({ ...definition, scope: row.scope }, moduleId).error,
+        }}
       />
 
       <ReferenceBox scope={row.scope} name={definition.name} />

@@ -120,3 +120,69 @@ test('editing applies the value immediately; blur does not save twice or add ano
   await session.store.act('handleUndo');
   expect(session.store.read((state) => state.resolvedStore.modules.canvas.exposedValues.variables.threshold)).toBe('');
 });
+
+test('the initial value is a plain code field with no fx toggle', async () => {
+  const session = await setup();
+  const { container } = session.render(
+    <CreateVariableForm moduleId="canvas" pageName="Home" definitions={[]} initialScope="app" onCreated={() => {}} />
+  );
+
+  expect(container.querySelector('[data-cy="variable-initial-value-fx-button"]')).toBeNull();
+});
+
+test.each([
+  ['{{{test:asdasd"asdasdada"}}}', 'Unexpected string'],
+  ['{{notDefinedAnywhere}}', 'notDefinedAnywhere is not defined'],
+])('an expression that cannot be evaluated (%s) shows why', async (text, message) => {
+  const session = await setup();
+  const { container } = session.render(
+    <CreateVariableForm moduleId="canvas" pageName="Home" definitions={[]} initialScope="app" onCreated={() => {}} />
+  );
+  const editor = within(container.querySelector('[data-cy="variable-initial-value"]')).getByRole('textbox');
+  await session.user.click(editor);
+  await session.user.paste(text);
+
+  const error = container.querySelector('[data-cy="variable-value-evaluation-error"]');
+  expect(error).toHaveTextContent('Can’t evaluate');
+  expect(error).toHaveTextContent(message);
+  expect(container.querySelector('[data-cy="variable-value-preview"]')).toBeNull();
+});
+
+test('a saved expression that cannot be evaluated shows why in the detail view', async () => {
+  const session = await setup();
+  await session.store.act('saveVariableDefinition', { scope: 'app', name: 'broken', value: '{{missingThing.value}}' });
+  const definition = session.store.read((state) => state.getAppVariableDefinitions()[0]);
+  const { container } = session.render(
+    <EditVariableForm
+      moduleId="canvas"
+      pageName="Home"
+      definitions={[definition]}
+      row={{ key: 'app:broken', scope: 'app', name: 'broken', definition }}
+      onRenamed={() => {}}
+    />
+  );
+
+  expect(container.querySelector('[data-cy="variable-value-evaluation-error"]')).toHaveTextContent(
+    'missingThing is not defined'
+  );
+});
+
+test('a value saved with the old fx toggle and no braces is shown as {{ }}', async () => {
+  const session = await setup();
+  await session.store.act('saveVariableDefinition', { scope: 'app', name: 'doubled', value: '5 * 2', fxActive: true });
+  const definition = session.store.read((state) => state.getAppVariableDefinitions()[0]);
+  const { container } = session.render(
+    <EditVariableForm
+      moduleId="canvas"
+      pageName="Home"
+      definitions={[definition]}
+      row={{ key: 'app:doubled', scope: 'app', name: 'doubled', definition }}
+      onRenamed={() => {}}
+    />
+  );
+
+  expect(within(container.querySelector('[data-cy="variable-initial-value"]')).getByRole('textbox')).toHaveTextContent(
+    '{{5 * 2}}'
+  );
+  expect(container.querySelector('[data-cy="variable-value-preview"]')).toHaveTextContent('10');
+});
