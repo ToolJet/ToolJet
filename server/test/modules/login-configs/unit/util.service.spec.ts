@@ -40,19 +40,15 @@ describe('LoginConfigsUtilService', () => {
 
     it('strips client_secret (snake_case) from configs', () => {
       const config = {
-        sso: 'openid',
+        sso: 'git',
         enabled: true,
-        configs: {
-          client_id: 'my-client-id',
-          client_secret: 'super-secret',
-          well_known_url: 'https://provider/.well-known/openid-configuration',
-        },
+        configs: { client_id: 'my-client-id', client_secret: 'super-secret', host_name: 'github.com' },
       };
 
       const result = service.buildConfigs(config, 'config-id-2');
 
       expect(result.configs.client_id).toBe('my-client-id');
-      expect(result.configs.well_known_url).toBeDefined();
+      expect(result.configs.host_name).toBe('github.com');
       expect(result.configs.client_secret).toBeUndefined();
     });
 
@@ -71,14 +67,13 @@ describe('LoginConfigsUtilService', () => {
 
       const result = service.buildConfigs(config, 'config-id-3');
 
-      expect(result.configs.clientId).toBe('id');
       expect(result.configs.name).toBe('My OIDC');
       expect(result.configs.clientSecret).toBeUndefined();
       expect(result.configs.CLIENT_SECRET).toBeUndefined();
       expect(result.configs.someSecretKey).toBeUndefined();
     });
 
-    it('preserves non-secret fields and the configId', () => {
+    it('keeps only the fields the login page shows, and the configId', () => {
       const config = {
         sso: 'openid',
         enabled: true,
@@ -90,11 +85,7 @@ describe('LoginConfigsUtilService', () => {
       expect(result.configId).toBe('cfg-abc');
       expect(result.sso).toBe('openid');
       expect(result.enabled).toBe(true);
-      expect(result.configs).toEqual({
-        clientId: 'id',
-        wellKnownUrl: 'https://example.com/.well-known',
-        name: 'Corp SSO',
-      });
+      expect(result.configs).toEqual({ name: 'Corp SSO' });
     });
 
     it('handles empty configs object without throwing', () => {
