@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { In } from 'typeorm';
 import { FolderDataSource } from '@entities/folder_data_source.entity';
@@ -138,6 +138,7 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
   ): Promise<FolderDataSource> {
     const resolvedBranchId = await this.resolveEffectiveBranchId(branchId, organizationId);
     await this.verifyOrganizationScope(folderId, [dataSourceId], resolvedBranchId, organizationId);
+    await this.assertNotAllInFolder(folderId, [dataSourceId], resolvedBranchId);
     return this.folderDataSourcesUtilService.create(folderId, dataSourceId, resolvedBranchId);
   }
 
@@ -149,7 +150,18 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
   ): Promise<FolderDataSource[]> {
     const resolvedBranchId = await this.resolveEffectiveBranchId(branchId, organizationId);
     await this.verifyOrganizationScope(folderId, dataSourceIds, resolvedBranchId, organizationId);
+    await this.assertNotAllInFolder(folderId, dataSourceIds, resolvedBranchId);
     return this.folderDataSourcesUtilService.bulkCreate(folderId, dataSourceIds, resolvedBranchId);
+  }
+
+  // Only the user-facing path rejects; util create/bulkCreate stay idempotent for git-sync.
+  // A mixed bulk (some already there) still succeeds — it moves the rest.
+  private async assertNotAllInFolder(folderId: string, dataSourceIds: string[], branchId: string): Promise<void> {
+    const unique = [...new Set(dataSourceIds)];
+    const count = await getConnectionInstance().manager.count(FolderDataSource, {
+      where: { folderId, dataSourceId: In(unique), branchId },
+    });
+    if (count === unique.length) throw new ConflictException('Already exists in the folder');
   }
 
   async remove(folderId: string, dataSourceId: string, branchId?: string, organizationId?: string): Promise<void> {

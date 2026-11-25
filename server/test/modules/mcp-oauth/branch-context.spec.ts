@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { ExecutionContext } from '@nestjs/common';
+import { BadRequestException, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
 import { User } from '@entities/user.entity';
 import { AppsRepository } from '@modules/apps/repository';
@@ -26,7 +26,10 @@ describe.each(['delegation', 'viewer'] as const)('OAuth %s branch context', (kin
         oauthGrantId: 'review-grant',
         ...(kind === 'viewer' ? { oauthAppId: appId } : {}),
       });
-      const session = { getDefaultBranchId: jest.fn().mockResolvedValue('default-branch') };
+      const session = {
+        getDefaultBranchId: jest.fn().mockResolvedValue('default-branch'),
+        isForeignBranch: jest.fn().mockResolvedValue(false),
+      };
       const identity = {
         validateDelegation: jest.fn().mockResolvedValue(user),
         validateViewer: jest.fn().mockResolvedValue(user),
@@ -71,10 +74,22 @@ describe.each(['delegation', 'viewer'] as const)('OAuth %s branch context', (kin
       expect(await strategy.validate(request, payload)).toBe(user);
       expect(user.branchId).toBe(expected);
       if (expected === 'default-branch') expect(session.getDefaultBranchId).toHaveBeenCalledWith(workspaceId);
-      else expect(session.getDefaultBranchId).not.toHaveBeenCalled();
+      else {
+        expect(session.getDefaultBranchId).not.toHaveBeenCalled();
+        expect(session.isForeignBranch).toHaveBeenCalledWith(expected, workspaceId);
+      }
       expect(identity[kind === 'viewer' ? 'validateViewer' : 'validateDelegation']).toHaveBeenCalledTimes(
         cached ? 0 : 1
       );
+    });
+
+    test.each([
+      { query: { branch_id: 'foreign-branch' }, headers: {} },
+      { query: {}, headers: { 'x-branch-id': 'foreign-branch' } },
+    ])('rejects a branch outside the workspace for query=$query and headers=$headers', async ({ query, headers }) => {
+      const { session, strategy, request, payload } = setup(query, headers);
+      session.isForeignBranch.mockResolvedValue(true);
+      await expect(strategy.validate(request, payload)).rejects.toBeInstanceOf(BadRequestException);
     });
 
     test('passes the selected branch into the app lookup used by branch-aware routes', async () => {

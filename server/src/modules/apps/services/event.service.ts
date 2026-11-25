@@ -158,6 +158,42 @@ export class EventsService implements IEventsService {
     });
   }
 
+  /**
+   * The attach target (component/query/page) is taken from the request by ID. Scope the existence
+   * check to the guarded version, so an event can't be attached to a component/query/page that
+   * belongs to another app version (another workspace).
+   */
+  private async assertAttachTargetBelongsToVersion(
+    manager: EntityManager,
+    eventType: string,
+    attachedTo: string,
+    versionId: string
+  ): Promise<void> {
+    if (eventType === 'component' || eventType === 'table_column' || eventType === 'table_action') {
+      const exists = await manager
+        .createQueryBuilder()
+        .select('1')
+        .from('components', 'c')
+        .innerJoin('pages', 'p', 'p.id = c.page_id')
+        .where('c.id = :attachedTo', { attachedTo })
+        .andWhere('p.app_version_id = :versionId', { versionId })
+        .getRawOne();
+      if (!exists) {
+        throw new BadRequestException('Component does not exist');
+      }
+    } else if (eventType === 'data_query') {
+      const exists = await manager.findOne('DataQuery', { where: { id: attachedTo, appVersionId: versionId } });
+      if (!exists) {
+        throw new BadRequestException('Data Query does not exist');
+      }
+    } else if (eventType === 'page') {
+      const exists = await manager.findOne('Page', { where: { id: attachedTo, appVersionId: versionId } });
+      if (!exists) {
+        throw new BadRequestException('Page does not exist');
+      }
+    }
+  }
+
   async createEvent(eventHandler: CreateEventHandlerDto, versionId: string, skipHistoryCapture: boolean = false) {
     if (!eventHandler.attachedTo) {
       throw new BadRequestException('No attachedTo found');
@@ -180,45 +216,12 @@ export class EventsService implements IEventsService {
         manager,
       });
 
-      if (
-        eventHandler.eventType === 'component' ||
-        eventHandler.eventType === 'table_column' ||
-        eventHandler.eventType === 'table_action'
-      ) {
-        const componentExists = await manager.findOne('Component', {
-          where: {
-            id: eventHandler.attachedTo,
-          },
-        });
-
-        if (!componentExists) {
-          throw new BadRequestException('Component does not exist');
-        }
-      }
-
-      if (eventHandler.eventType === 'data_query') {
-        const dataQueryExists = await manager.findOne('DataQuery', {
-          where: {
-            id: eventHandler.attachedTo,
-          },
-        });
-
-        if (!dataQueryExists) {
-          throw new BadRequestException('Data Query does not exist');
-        }
-      }
-
-      if (eventHandler.eventType === 'page') {
-        const pageExists = await manager.findOne('Page', {
-          where: {
-            id: eventHandler.attachedTo,
-          },
-        });
-
-        if (!pageExists) {
-          throw new BadRequestException('Page does not exist');
-        }
-      }
+      await this.assertAttachTargetBelongsToVersion(
+        manager,
+        eventHandler.eventType,
+        eventHandler.attachedTo,
+        versionId
+      );
 
       const newEvent = new EventHandler();
       newEvent.name = eventHandler?.name;
@@ -271,39 +274,12 @@ export class EventsService implements IEventsService {
 
       // Validate entity existence unless skipped (e.g., when entities are created in same transaction)
       if (!options.skipValidation) {
-        if (
-          eventHandler.eventType === 'component' ||
-          eventHandler.eventType === 'table_column' ||
-          eventHandler.eventType === 'table_action'
-        ) {
-          const componentExists = await manager.findOne('Component', {
-            where: { id: eventHandler.attachedTo },
-          });
-
-          if (!componentExists) {
-            throw new BadRequestException('Component does not exist');
-          }
-        }
-
-        if (eventHandler.eventType === 'data_query') {
-          const dataQueryExists = await manager.findOne('DataQuery', {
-            where: { id: eventHandler.attachedTo },
-          });
-
-          if (!dataQueryExists) {
-            throw new BadRequestException('Data Query does not exist');
-          }
-        }
-
-        if (eventHandler.eventType === 'page') {
-          const pageExists = await manager.findOne('Page', {
-            where: { id: eventHandler.attachedTo },
-          });
-
-          if (!pageExists) {
-            throw new BadRequestException('Page does not exist');
-          }
-        }
+        await this.assertAttachTargetBelongsToVersion(
+          manager,
+          eventHandler.eventType,
+          eventHandler.attachedTo,
+          versionId
+        );
       }
 
       const newEvent = new EventHandler();
@@ -453,10 +429,19 @@ export class EventsService implements IEventsService {
   }
 
   getEvents(app: App, sourceId: string): Promise<EventHandler[]> {
+    const appVersionId = app.appVersions[0].id;
     if (!sourceId) {
-      return this.findEventsForVersion(app.appVersions[0].id);
+      return this.findEventsForVersion(appVersionId);
     }
 
-    return this.findAllEventsWithSourceId(sourceId);
+    // Scope by the guarded version, not sourceId alone -- otherwise a source ID from another app
+    // version (another workspace) would return that version's event handlers.
+    return this.findEventsForVersionAndSource(appVersionId, sourceId);
+  }
+
+  async findEventsForVersionAndSource(appVersionId: string, sourceId: string): Promise<EventHandler[]> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager.find(EventHandler, { where: { appVersionId, sourceId } });
+    });
   }
 }

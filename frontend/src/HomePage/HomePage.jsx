@@ -30,7 +30,7 @@ import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
-import { getWorkspaceId, decodePromptCookie } from '@/_helpers/utils';
+import { getWorkspaceId } from '@/_helpers/utils';
 import { getQueryParams } from '@/_helpers/routes';
 import { withRouter } from '@/_hoc/withRouter';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
@@ -58,7 +58,7 @@ import {
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
-import { v4 as uuidv4 } from 'uuid';
+import { websitePromptApp } from './websitePrompt';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
 import CreateModuleWithPrompt from '@/modules/AiBuilder/components/CreateModuleWithPrompt';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
@@ -180,7 +180,7 @@ class HomePageComponent extends React.Component {
   };
 
   /* For cloud ai onboarding */
-  handleAiOnboarding = () => {
+  handleAiOnboarding = async () => {
     const aiCookies = authenticationService.currentSessionValue?.ai_cookies;
     const latestPrompt = aiCookies?.tj_ai_prompt;
     const templateId = aiCookies?.tj_template_id;
@@ -194,14 +194,12 @@ class HomePageComponent extends React.Component {
     }
 
     switch (true) {
-      case !!latestPrompt:
-        // toast.success(`Prompt you have entered: ${decodeURIComponent(latestPrompt)}`, {
-        //   duration: 10000,
-        // });
-        // Optional: Clear the cookie after showing toast
+      case !!latestPrompt: {
         this.setState({ showAIOnboardingLoadingScreen: true });
-        this.createApp(`Untitled App: ${uuidv4()}`, undefined, decodePromptCookie(latestPrompt));
+        const { name, prompt, buildMode } = await websitePromptApp(latestPrompt);
+        this.createApp(name, undefined, prompt, undefined, buildMode);
         break;
+      }
       case !!templateId: {
         this.setState({ showAIOnboardingLoadingScreen: true });
         const { activeBranchId } = useWorkspaceBranchesStore.getState();
@@ -1243,8 +1241,15 @@ class HomePageComponent extends React.Component {
           folder_id: appOperations?.selectedFolder,
         });
       })
-      .catch(() => {
-        toast.error('Failed to move apps to folder');
+      .catch((error) => {
+        const appType = this.getAppType();
+        toast.error(
+          error?.statusCode === 409
+            ? appIds.length > 1
+              ? `Selected ${appType.toLowerCase()}s already exist in the folder`
+              : `${appType} already exists in the folder`
+            : 'Failed to move apps to folder'
+        );
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
       });
   };

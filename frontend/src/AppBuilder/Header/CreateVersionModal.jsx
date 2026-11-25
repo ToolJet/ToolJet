@@ -44,7 +44,8 @@ const CreateVersionModal = ({
   const [pinsBlocked, setPinsBlocked] = useState(null);
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
-  const isGitSyncEnabled = orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const isGitSyncEnabled =
+    orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled || orgGit?.git_bitbucket?.is_enabled;
   const { current_organization_id } = authenticationService.currentSessionValue;
 
   const {

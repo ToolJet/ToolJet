@@ -60,6 +60,7 @@ import {
   Workflows,
   getDataSourcesRoutes,
   getAuditLogsRoutes,
+  getUsageAnalyticsRoutes,
 } from '@/modules';
 import './workspaceSettingsStyles';
 import { isWorkflowsFeatureEnabled, fetchEdition } from '@/modules/common/helpers/utils';
@@ -375,6 +376,7 @@ class AppComponent extends React.Component {
                   }
                 >
                   {getAuditLogsRoutes({ ...mergedProps, darkMode })}
+                  {getUsageAnalyticsRoutes({ ...mergedProps, darkMode })}
                 </Route>
 
                 {this.state.tooljetVersion && !checkIfToolJetCloud(this.state.tooljetVersion) && (

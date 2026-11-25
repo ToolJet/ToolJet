@@ -11,7 +11,7 @@ $ npm install -g @tooljet/cli
 $ tooljet COMMAND
 running command...
 $ tooljet (--version)
-@tooljet/cli/1.0.0 darwin-arm64 node-v22.23.4
+@tooljet/cli/1.0.1 darwin-arm64 node-v22.23.4
 $ tooljet --help [COMMAND]
 USAGE
   $ tooljet COMMAND

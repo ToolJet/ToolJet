@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager, In, SelectQueryBuilder } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { Folder } from '@entities/folder.entity';
@@ -17,8 +17,11 @@ export class FoldersUtilService implements IFoldersUtilService {
   async allFolders(user: User, manager: EntityManager, type = 'front-end'): Promise<Folder[]> {
     return this.getAllFoldersQuery(user.organizationId, manager, type).getMany();
   }
-  async findOne(folderId: string, manager: EntityManager): Promise<Folder> {
-    return await manager.findOneOrFail(Folder, { where: { id: folderId } });
+  // Scoped to the caller's workspace: a folder id from another workspace must not resolve.
+  async findOne(folderId: string, organizationId: string, manager: EntityManager): Promise<Folder> {
+    const folder = await manager.findOne(Folder, { where: { id: folderId, organizationId } });
+    if (!folder) throw new NotFoundException('Folder not found');
+    return folder;
   }
 
   // Returns the names of every branch that has at least one app in this folder,

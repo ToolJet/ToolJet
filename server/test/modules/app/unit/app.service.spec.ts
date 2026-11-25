@@ -34,11 +34,17 @@ describe('AppsService.getBySlug', () => {
 
 /** @group platform */
 describe('AppsService.validateReleasedApp', () => {
-  // A real instance (no Nest DI): only appRepository.manager.query and the license lookup are touched.
+  // A real instance (no Nest DI): only appRepository.manager.query, the license lookup and the
+  // app-open event are touched.
   const getLicenseTerms = jest.fn().mockResolvedValue({ valid: true });
+  const emit = jest.fn();
   const makeService = (query: jest.Mock): AppsService => {
     const service = Object.create(AppsService.prototype) as AppsService;
-    Object.assign(service, { appRepository: { manager: { query } }, licenseTermsService: { getLicenseTerms } });
+    Object.assign(service, {
+      appRepository: { manager: { query } },
+      licenseTermsService: { getLicenseTerms },
+      eventEmitter: { emit },
+    });
     return service;
   };
   // Answers the change-stamp read.
@@ -67,6 +73,10 @@ describe('AppsService.validateReleasedApp', () => {
     });
     expect(ability.can).not.toHaveBeenCalled();
     expect(query).toHaveBeenCalledWith(expect.stringContaining('app_viewer_cache_stamps'), ['app-uuid-1']);
+    expect(emit).toHaveBeenCalledWith(
+      'app-usage.app-opened',
+      expect.objectContaining({ userId: 'user-1', properties: expect.objectContaining({ appId: 'app-uuid-1' }) })
+    );
   });
 
   it('throws 501 HttpException when app has no released version', async () => {

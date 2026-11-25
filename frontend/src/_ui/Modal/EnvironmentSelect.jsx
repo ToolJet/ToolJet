@@ -159,6 +159,10 @@ export function EnvironmentSelect(props) {
       ...base,
       background: 'var(--slate1)',
     }),
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 1060,
+    }),
   };
 
   return (
@@ -198,6 +202,9 @@ export function EnvironmentSelect(props) {
       }}
       options={[props.allowSelectAll ? props.allOption : null, ...props.options]}
       styles={selectStyles}
+      menuPortalTarget={document.body}
+      menuPosition="fixed"
+      classNames={{ menuPortal: () => (darkMode ? 'theme-dark dark-theme' : '') }}
       placeholder="Select environments..."
       noOptionsMessage={() => 'No environments found'}
     />

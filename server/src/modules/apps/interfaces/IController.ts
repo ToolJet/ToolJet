@@ -19,7 +19,7 @@ export interface IAppsController {
     user: UserEntity
   ): Promise<any>;
 
-  validateReleasedAppAccess(ability: AppAbility, app: AppEntity, user?: UserEntity): any;
+  validateReleasedAppAccess(ability: AppAbility, app: AppEntity, user?: UserEntity, publicAppViewer?: UserEntity): any;
 
   update(user: UserEntity, app: AppEntity, appUpdateDto: AppUpdateDto): Promise<any>;
 

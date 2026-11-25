@@ -335,7 +335,11 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       // AND removes the git tag in one server-side call; non-git workspaces (incl. CE) use the
       // versions endpoint. (This replaces the old versions→app-git moduleRef git-tag cleanup.)
       const orgGit = useStore.getState().orgGit;
-      const isGitSyncEnabled = !!(orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled);
+      const isGitSyncEnabled = !!(
+        orgGit?.git_https?.is_enabled ||
+        orgGit?.git_lab?.is_enabled ||
+        orgGit?.git_bitbucket?.is_enabled
+      );
       if (isGitSyncEnabled) {
         await gitSyncService.deleteVersion(appId, versionId);
       } else {
