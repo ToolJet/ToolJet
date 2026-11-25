@@ -128,12 +128,14 @@ const ValueField = ({
   error,
   optional = false,
   evaluation = null,
+  disabled = false,
 }: {
   value: string;
   onChange: (value: string) => void;
   error?: string | null;
   optional?: boolean;
   evaluation?: ValueEvaluation | null;
+  disabled?: boolean;
 }) => (
   <div className="variables-field" data-cy="variable-initial-value">
     <span className="variables-label">
@@ -143,6 +145,7 @@ const ValueField = ({
       <div className="variables-value-editor">
         <CodeHinterComponent
           type="basic"
+          disabled={disabled}
           initialValue={value}
           // The basic editor's onChange is a blur commit. Keep this form's
           // draft current while typing; a second commit on blur would duplicate
@@ -183,6 +186,7 @@ export const CreateVariableForm = ({
   runtimeVariable,
   onCreated,
 }: CreateProps) => {
+  const readOnly = useStore((state: any) => state.getShouldFreeze());
   const saveVariableDefinition = useStore((state: any) => state.saveVariableDefinition);
   const evaluateWithError = useStore((state: any) => state.evaluateVariableDefinitionWithError);
   const [scope, setScope] = useState<VariableScope>(runtimeVariable?.scope ?? initialScope);
@@ -196,6 +200,7 @@ export const CreateVariableForm = ({
   const nameError = errors.name ?? liveNameError;
 
   const create = async () => {
+    if (readOnly || saving) return;
     setNameTouched(true);
     if (validateName(name, scope, definitions, null, pageName)) return;
     setSaving(true);
@@ -218,7 +223,7 @@ export const CreateVariableForm = ({
           value={scope}
           onValueChange={(next: VariableScope) => next && !runtimeVariable && setScope(next)}
           className="tw-w-full"
-          disabled={!!runtimeVariable}
+          disabled={readOnly || !!runtimeVariable}
           data-cy="variable-scope-toggle"
         >
           <RocketToggleGroupItem value="app" className="tw-flex-1">
@@ -239,7 +244,7 @@ export const CreateVariableForm = ({
           size="medium"
           placeholder="e.g. selectedOrderId"
           value={name}
-          disabled={!!runtimeVariable}
+          disabled={readOnly || !!runtimeVariable}
           onChange={(e: any) => {
             setName(e.target.value);
             setNameTouched(true);
@@ -260,6 +265,7 @@ export const CreateVariableForm = ({
         }}
         error={errors.value}
         optional
+        disabled={readOnly}
         evaluation={value.trim() ? evaluateWithError({ value, fxActive: false, scope }, moduleId) : null}
       />
 
@@ -275,7 +281,7 @@ export const CreateVariableForm = ({
           variant="primary"
           size="medium"
           onClick={create}
-          disabled={saving || !!validateName(name, scope, definitions, null, pageName)}
+          disabled={readOnly || saving || !!validateName(name, scope, definitions, null, pageName)}
           data-cy="variable-create-button"
         >
           {runtimeVariable ? 'Save initial value' : 'Create variable'}
@@ -295,6 +301,7 @@ type EditProps = {
 
 /** Detail view of a declared variable: rename on blur or Enter, value changes apply as you type. */
 export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenamed }: EditProps) => {
+  const readOnly = useStore((state: any) => state.getShouldFreeze());
   const saveVariableDefinition = useStore((state: any) => state.saveVariableDefinition);
   const replaceIdsWithName = useStore((state: any) => state.replaceIdsWithName);
   const evaluateWithError = useStore((state: any) => state.evaluateVariableDefinitionWithError);
@@ -315,6 +322,7 @@ export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenam
   const [pendingRename, setPendingRename] = useState<VariableReference[] | null>(null);
 
   const rename = async () => {
+    if (readOnly) return;
     setPendingRename(null);
     const result: SaveResult = await saveVariableDefinition({ id: definition.id, name }, moduleId);
     if (!result.ok) {
@@ -327,7 +335,7 @@ export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenam
   };
 
   const commitName = () => {
-    if (name === definition.name || pendingRename) return;
+    if (readOnly || name === definition.name || pendingRename) return;
     const error = validateName(name, row.scope, definitions, definition.id, pageName);
     if (error) {
       setNameError(error);
@@ -339,6 +347,7 @@ export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenam
   };
 
   const saveValue = async (value: string) => {
+    if (readOnly) return;
     // Braces now mark an expression, so a value saved from this field never needs the old fx flag.
     const result: SaveResult = await saveVariableDefinition({ id: definition.id, value, fxActive: false }, moduleId);
     setValueError(result.ok ? null : result.error);
@@ -365,6 +374,7 @@ export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenam
           label="Name"
           size="medium"
           value={name}
+          disabled={readOnly}
           onChange={(e: any) => {
             setName(e.target.value);
             setNameError(null);
@@ -384,6 +394,7 @@ export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenam
 
       <ValueField
         key={definition.id}
+        disabled={readOnly}
         value={replaceIdsWithName(editableValueOf(definition))}
         onChange={saveValue}
         error={valueError}
@@ -395,7 +406,7 @@ export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenam
 
       <ReferenceBox scope={row.scope} name={definition.name} />
 
-      {pendingRename && (
+      {pendingRename && !readOnly && (
         <VariableReferencesDialog
           open
           mode="rename"
@@ -422,20 +433,29 @@ export const RuntimeVariableDetail = ({
 }: {
   row: VariableRow;
   onAddInitialValue: () => void;
-}) => (
-  <div className="variables-form" data-cy="variable-runtime-detail">
-    <div className="variables-note warning">
-      <InfoIcon size={14} />
-      <span>
-        No initial value. This variable only exists after {row.setBy ? <b>{row.setBy}</b> : 'a script or event'} runs,
-        so bindings read <code>undefined</code> until then.
-      </span>
+}) => {
+  const readOnly = useStore((state: any) => state.getShouldFreeze());
+  return (
+    <div className="variables-form" data-cy="variable-runtime-detail">
+      <div className="variables-note warning">
+        <InfoIcon size={14} />
+        <span>
+          No initial value. This variable only exists after {row.setBy ? <b>{row.setBy}</b> : 'a script or event'} runs,
+          so bindings read <code>undefined</code> until then.
+        </span>
+      </div>
+      <div>
+        <ButtonComponent
+          variant="outline"
+          size="medium"
+          onClick={onAddInitialValue}
+          disabled={readOnly}
+          data-cy="variable-add-initial-value"
+        >
+          Add initial value
+        </ButtonComponent>
+      </div>
+      <ReferenceBox scope={row.scope} name={row.name} />
     </div>
-    <div>
-      <ButtonComponent variant="outline" size="medium" onClick={onAddInitialValue} data-cy="variable-add-initial-value">
-        Add initial value
-      </ButtonComponent>
-    </div>
-    <ReferenceBox scope={row.scope} name={row.name} />
-  </div>
-);
+  );
+};

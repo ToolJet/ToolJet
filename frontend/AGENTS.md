@@ -128,6 +128,8 @@ In a branching-enabled Git Sync workspace, the configured default branch disable
 
 ### App Builder store
 
+- Variables mutations use the canonical `getShouldFreeze()` lock in both controls and store actions. App and page persistence must return a failure result when HTTP saving fails: do not show success, navigate to a created/renamed variable, or record an undo command for a rejected save. Restore the previous local definition without overwriting a newer edit. Keep the shared `savePageChanges` swallowing contract separate from Variables persistence.
+
 - The Variables panel's basic CodeHinter uses `onInputChange` to keep the initial-value draft current for previews, fx toggles and saving. The basic editor's `onChange` runs on blur; do not save the same variable through both callbacks, which duplicates saves and undo entries. Blank initial input deliberately means an empty string; preserve explicit `0`, `false`, `null` and expressions through the variable-definition parser.
 
 - AppBuilder store: `AppBuilder/_stores/store.js` (30+ slices), all namespaced by `moduleId` (default `'canvas'`)

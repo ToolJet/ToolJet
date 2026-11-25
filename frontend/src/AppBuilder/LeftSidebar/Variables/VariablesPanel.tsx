@@ -47,6 +47,7 @@ const LiveValue = ({ moduleId, scope, name }: { moduleId: string; scope: Variabl
 
 /** Left sidebar "Variables" panel: create, initialise, edit and delete app and page variables. */
 const VariablesPanel = ({ darkMode, onClose, moduleId }: VariablesPanelProps) => {
+  const readOnly = useStore((state: any) => state.getShouldFreeze());
   const [view, setView] = useState<View>({ name: 'list' });
   const [search, setSearch] = useState('');
   const [pendingDelete, setPendingDelete] = useState<{ row: VariableRow; references: VariableReference[] } | null>(
@@ -55,13 +56,16 @@ const VariablesPanel = ({ darkMode, onClose, moduleId }: VariablesPanelProps) =>
   const deleteVariableDefinition = useStore((state: any) => state.deleteVariableDefinition);
 
   const deleteRow = async (row: VariableRow) => {
-    await deleteVariableDefinition(row.definition!.id, moduleId);
+    if (readOnly) return;
+    const result = await deleteVariableDefinition(row.definition!.id, moduleId);
+    if (!result.ok) return;
     toast.success(`Deleted ${row.name}`);
     setPendingDelete(null);
     setView({ name: 'list' });
   };
 
   const requestDelete = (row: VariableRow) => {
+    if (readOnly) return;
     const references = computeVariableReferences(moduleId, row.scope, row.name);
     if (!references.length) deleteRow(row);
     else setPendingDelete({ row, references });
@@ -133,6 +137,7 @@ const VariablesPanel = ({ darkMode, onClose, moduleId }: VariablesPanelProps) =>
             size="small"
             isLucid
             aria-label={`New ${scope} variable`}
+            disabled={readOnly}
             onClick={() => setView({ name: 'new', scope })}
             data-cy={`variables-add-${scope}`}
           />
@@ -199,7 +204,7 @@ const VariablesPanel = ({ darkMode, onClose, moduleId }: VariablesPanelProps) =>
             ) : (
               <>
                 No {scope} variables yet.{' '}
-                <button type="button" onClick={() => setView({ name: 'new', scope })}>
+                <button type="button" disabled={readOnly} onClick={() => setView({ name: 'new', scope })}>
                   Create one
                 </button>
               </>
@@ -242,7 +247,7 @@ const VariablesPanel = ({ darkMode, onClose, moduleId }: VariablesPanelProps) =>
               onClick: () =>
                 setEntityToViewDependencies({ kind: 'variable', id: rowKey(selectedRow.scope, selectedRow.name) }),
             },
-            ...(selectedRow.definition
+            ...(selectedRow.definition && !readOnly
               ? [
                   {
                     label: 'Delete variable',
@@ -332,6 +337,7 @@ const VariablesPanel = ({ darkMode, onClose, moduleId }: VariablesPanelProps) =>
                 leadingIcon="plus"
                 isLucid
                 onClick={() => setView({ name: 'new', scope: 'app' })}
+                disabled={readOnly}
                 data-cy="variables-new-button"
               >
                 New variable
@@ -351,7 +357,7 @@ const VariablesPanel = ({ darkMode, onClose, moduleId }: VariablesPanelProps) =>
         {header()}
       </div>
       <div className="variables-body">{body()}</div>
-      {pendingDelete && (
+      {pendingDelete && !readOnly && (
         <VariableReferencesDialog
           open
           mode="delete"

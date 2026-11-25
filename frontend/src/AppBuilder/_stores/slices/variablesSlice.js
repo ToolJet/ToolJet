@@ -5,7 +5,6 @@ import { appVersionService } from '@/_services';
 import { extractAndReplaceReferencesFromString } from '../ast';
 import { getDynamicVariables, replaceEntityReferencesWithIds, resolveCode } from '../utils';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
-import { savePageChanges } from './pageMenuSlice';
 import {
   VARIABLE_SCOPES,
   findVariableCycle,
@@ -237,35 +236,28 @@ export const createVariablesSlice = (set, get) => ({
     const { appStore, currentVersionId } = get();
     const appId = appStore.modules[moduleId]?.app?.appId;
     const pageId = get().getCurrentPageId(moduleId);
-    if (scope === VARIABLE_SCOPES.PAGE) {
-      const page = get().modules[moduleId].pages.find((p) => p.id === pageId);
-      await savePageChanges(
-        appId,
-        currentVersionId,
-        pageId,
-        { variables: page?.variables ?? {} },
-        'update',
-        'pages',
-        (save) => get().trackAppSave(save, moduleId)
-      );
-      return;
-    }
+    const isPage = scope === VARIABLE_SCOPES.PAGE;
+    const page = get().modules[moduleId].pages.find((p) => p.id === pageId);
     try {
       await get().trackAppSave(
         () =>
           appVersionService.autoSaveApp(
             appId,
             currentVersionId,
-            { globalSettings: { variables: get().globalSettings?.variables ?? {} } },
-            'global_settings',
+            isPage
+              ? { variables: page?.variables ?? {} }
+              : { globalSettings: { variables: get().globalSettings?.variables ?? {} } },
+            isPage ? 'pages' : 'global_settings',
             pageId,
             'update'
           ),
         moduleId
       );
+      return true;
     } catch (error) {
-      toast.error('App could not be saved.');
+      toast.error('Variable changes could not be saved.');
       console.error('Error saving variables:', error);
+      return false;
     }
   },
 
@@ -273,7 +265,7 @@ export const createVariablesSlice = (set, get) => ({
    * Puts one definition back to a recorded state (`null` = absent): store, runtime value, dependency
    * node and saved copy. Undo and redo use it, so neither re-runs validation.
    */
-  applyVariableDefinitionState: async (scope, id, target, moduleId = 'canvas') => {
+  applyVariableDefinitionState: async (scope, id, target, moduleId = 'canvas', persist = true) => {
     const current = get().getVariableDefinitionById(id, moduleId);
     const { [id]: _previous, ...rest } = get().getVariableDefinitionMap(scope, moduleId);
     get().setVariableDefinitionMap(scope, target ? { ...rest, [id]: toStored(target) } : rest, moduleId);
@@ -289,7 +281,7 @@ export const createVariablesSlice = (set, get) => ({
     } else {
       get().unregisterVariableDefinitionDependencies(id, moduleId);
     }
-    await get().persistVariableDefinitions(scope, moduleId);
+    if (persist) await get().persistVariableDefinitions(scope, moduleId);
   },
 
   recordVariableDefinitionChange: (scope, id, before, after, moduleId = 'canvas') => {
@@ -305,6 +297,8 @@ export const createVariablesSlice = (set, get) => ({
    * Scope is fixed once created. Returns `{ ok: true, definition }` or `{ ok: false, field, error }`.
    */
   saveVariableDefinition: async (input, moduleId = 'canvas') => {
+    if (get().getShouldFreeze()) return { ok: false, field: 'value', error: 'This version is read-only.' };
+    const pageId = get().getCurrentPageId(moduleId);
     const all = get().getVariableDefinitions(moduleId);
     const existing = input.id ? all.find((d) => d.id === input.id) : null;
     const scope = existing?.scope ?? input.scope ?? VARIABLE_SCOPES.APP;
@@ -356,21 +350,51 @@ export const createVariablesSlice = (set, get) => ({
     get().registerVariableDefinitionDependencies(definition, moduleId);
     get().writeVariableDefinitionValue(definition, get().evaluateVariableDefinition(definition, moduleId), moduleId);
 
+    const saved = await get().persistVariableDefinitions(scope, moduleId);
+    if (!saved) {
+      // A slower failed save must not overwrite a newer edit or another page's state.
+      const current = get().getVariableDefinitionById(stored.id, moduleId);
+      if (
+        (scope === VARIABLE_SCOPES.APP || pageId === get().getCurrentPageId(moduleId)) &&
+        current &&
+        isEqual(toStored(current), stored)
+      ) {
+        await get().applyVariableDefinitionState(
+          scope,
+          stored.id,
+          existing ? toStored(existing) : null,
+          moduleId,
+          false
+        );
+      }
+      return { ok: false, field: 'value', error: 'Variable changes could not be saved. Try again.' };
+    }
     get().recordVariableDefinitionChange(scope, stored.id, existing ? toStored(existing) : null, stored, moduleId);
-    await get().persistVariableDefinitions(scope, moduleId);
     return { ok: true, definition };
   },
 
   deleteVariableDefinition: async (id, moduleId = 'canvas') => {
+    if (get().getShouldFreeze()) return { ok: false };
+    const pageId = get().getCurrentPageId(moduleId);
     const definition = get().getVariableDefinitionById(id, moduleId);
-    if (!definition) return;
+    if (!definition) return { ok: true };
     const { scope } = definition;
     const { [id]: _removed, ...rest } = get().getVariableDefinitionMap(scope, moduleId);
     get().setVariableDefinitionMap(scope, rest, moduleId);
     get().unregisterVariableDefinitionDependencies(id, moduleId);
     if (scope === VARIABLE_SCOPES.PAGE) get().unsetPageVariable(definition.name, moduleId);
     else get().unsetVariable(definition.name, moduleId);
+    const saved = await get().persistVariableDefinitions(scope, moduleId);
+    if (!saved) {
+      if (
+        (scope === VARIABLE_SCOPES.APP || pageId === get().getCurrentPageId(moduleId)) &&
+        !get().getVariableDefinitionById(id, moduleId)
+      ) {
+        await get().applyVariableDefinitionState(scope, id, definition, moduleId, false);
+      }
+      return { ok: false };
+    }
     get().recordVariableDefinitionChange(scope, id, toStored(definition), null, moduleId);
-    await get().persistVariableDefinitions(scope, moduleId);
+    return { ok: true };
   },
 });
