@@ -23,9 +23,9 @@ const symbols = [
   sym({ name: "dragAndDropWidget", kind: "command", file: "cypress/commands/appbuilder/appbuilderCommands.js", areas: ["appBuilder"] }),
 ];
 const usage = new Map([
-  ["createModuleViaAPI", { areas: new Set(["modules"]), sites: [site("cypress/e2e/m.cy.js", 'createModuleViaAPI("QA")')] }],
-  ["apiLogin", { areas: new Set(["modules", "apps"]), sites: [site("cypress/e2e/m.cy.js", "cy.apiLogin()")] }],
-  ["dragAndDropWidget", { areas: new Set(["modules"]), sites: [site("cypress/e2e/m.cy.js", "cy.dragAndDropWidget(1)")] }],
+  ["helper:createModuleViaAPI", { areas: new Set(["modules"]), sites: [site("cypress/e2e/m.cy.js", 'createModuleViaAPI("QA")')] }],
+  ["command:apiLogin", { areas: new Set(["modules", "apps"]), sites: [site("cypress/e2e/m.cy.js", "cy.apiLogin()")] }],
+  ["command:dragAndDropWidget", { areas: new Set(["modules"]), sites: [site("cypress/e2e/m.cy.js", "cy.dragAndDropWidget(1)")] }],
 ]);
 const drafts = draftTags(symbols, usage, "modules", (f) => /\/m\.cy\.js$/.test(f));
 assert.deepStrictEqual(drafts.map(d => [d.name, d.block, d.type, d.usage]), [

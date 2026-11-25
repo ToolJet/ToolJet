@@ -37,14 +37,14 @@ function walk(node, visit) {
   }
 }
 
-// For each indexed helper/command: which areas' specs call it, and where.
+// Keyed by "helper:<name>" / "command:<name>": which areas' specs call it, and where.
 function collectUsage(rootDir, symbols) {
   const helpers = new Set(symbols.filter(s => s.kind === "helper").map(s => s.name));
   const commands = new Set(symbols.filter(s => s.kind === "command").map(s => s.name));
   const usage = new Map();
-  const record = (name, area, file, node, src) => {
-    if (!usage.has(name)) usage.set(name, { areas: new Set(), sites: [] });
-    const u = usage.get(name);
+  const record = (key, area, file, node, src) => {
+    if (!usage.has(key)) usage.set(key, { areas: new Set(), sites: [] });
+    const u = usage.get(key);
     u.areas.add(area);
     u.sites.push({ file, line: node.loc.start.line, text: oneLine(src.slice(node.start, node.end)) });
   };
@@ -63,10 +63,10 @@ function collectUsage(rootDir, symbols) {
       if (n.type !== "CallExpression") return;
       const c = n.callee;
       if (c.type === "Identifier" && imported.has(c.name) && helpers.has(imported.get(c.name)))
-        record(imported.get(c.name), area, file, n, src);
+        record(`helper:${imported.get(c.name)}`, area, file, n, src);
       else if (c.type === "MemberExpression" && c.object.type === "Identifier" && c.object.name === "cy"
         && c.property.type === "Identifier" && commands.has(c.property.name))
-        record(c.property.name, area, file, n, src);
+        record(`command:${c.property.name}`, area, file, n, src);
     });
   }
   return usage;

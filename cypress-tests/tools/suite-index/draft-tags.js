@@ -42,7 +42,7 @@ function draftTags(symbols, usage, area, isAreaSpec = (f) => areaOfSpec(f) === a
   const drafts = [];
   for (const s of symbols) {
     if (s.kind === "selector" || suiteForPath(s.file) === "appBuilder") continue;
-    const u = usage.get(s.name);
+    const u = usage.get(`${s.kind}:${s.name}`);
     if (!u || !u.areas.has(area)) continue;
     let block = u.areas.size === 1 ? area : "shared";
     if (!validBlocks(suiteForPath(s.file)).includes(block)) block = "shared";
