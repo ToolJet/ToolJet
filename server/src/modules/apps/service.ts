@@ -32,8 +32,6 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { plainToClass } from 'class-transformer';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { VersionRepository } from '@modules/versions/repository';
-import { DRAFT_SENTINEL } from '@modules/versions/ref-sentinels';
-import { findDefaultBranchDraft } from '@modules/versions/default-branch-draft.util';
 import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { skipAppEditingVersionHydration } from './subscribers/apps.subscriber';
@@ -230,7 +228,7 @@ export class AppsService implements IAppsService {
         ? await this.versionRepository.findById(versionId, app.id)
         : versionName
           ? // An unknown name is a 404 below (findByName throws instead of returning null).
-            await this.findVersionByNameOrNull(versionName, app.id, app.organizationId)
+            await this.findVersionByNameOrNull(versionName, app.id)
           : // Handle version retrieval based on env
             await this.versionRepository.findLatestVersionForEnvironment(
               app.id,
@@ -308,11 +306,7 @@ export class AppsService implements IAppsService {
     return plainToClass(ValidateAppAccessResponseDto, response);
   }
 
-  private async findVersionByNameOrNull(versionName: string, appId: string, organizationId: string) {
-    if (versionName === DRAFT_SENTINEL) {
-      const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
-      return findDefaultBranchDraft(this.versionRepository, appId, options.defaultBranch?.id);
-    }
+  private async findVersionByNameOrNull(versionName: string, appId: string) {
     try {
       return await this.versionRepository.findByName(versionName, appId);
     } catch (err) {
@@ -903,14 +897,7 @@ export class AppsService implements IAppsService {
     user: User,
     versionName?: string
   ): Promise<void> {
-    if (versionName === DRAFT_SENTINEL) {
-      const draft = await findDefaultBranchDraft(this.versionRepository, app.id, defaultBranchId);
-      if (draft) {
-        app.editingVersion = draft;
-        (app as any).isStub = false;
-        return;
-      }
-    } else if (versionName) {
+    if (versionName) {
       try {
         const version = await this.versionRepository.findByName(versionName, app.id);
         if (version && this.isVersionOnlyContext(version, defaultBranchId)) {

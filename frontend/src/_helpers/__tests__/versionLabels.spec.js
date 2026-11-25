@@ -2,7 +2,6 @@ import {
   scopeVersionsForQueryPicker,
   shouldOfferDefaultBranchDraft,
   DEFAULT_BRANCH_DRAFT_SENTINEL,
-  versionUrlName,
 } from '../versionLabels';
 
 describe('scopeVersionsForQueryPicker', () => {
@@ -33,37 +32,5 @@ describe('shouldOfferDefaultBranchDraft', () => {
         pinnedValue: null,
       })
     ).toBe(true);
-  });
-});
-
-describe('versionUrlName', () => {
-  const generated = '16f005c9-3bd9-4b01-80e1-c0d9d0137542';
-
-  it('uses the draft sentinel for a default-branch draft with a generated name', () => {
-    expect(versionUrlName({ name: generated, status: 'DRAFT', versionType: 'version' })).toBe(
-      DEFAULT_BRANCH_DRAFT_SENTINEL
-    );
-  });
-
-  it('keeps the real name of a saved version', () => {
-    expect(versionUrlName({ name: 'v2', status: 'PUBLISHED', versionType: 'version' })).toBe('v2');
-  });
-
-  it('keeps a draft name the user chose', () => {
-    expect(versionUrlName({ name: 'my-draft', status: 'DRAFT', versionType: 'version' })).toBe('my-draft');
-  });
-
-  it('gives no version for a feature-branch draft (the branch is in ?branch=)', () => {
-    expect(versionUrlName({ name: generated, status: 'DRAFT', versionType: 'branch' })).toBeNull();
-  });
-
-  it('reads the snake_case API casing too', () => {
-    expect(versionUrlName({ name: generated, status: 'DRAFT', version_type: 'version' })).toBe(
-      DEFAULT_BRANCH_DRAFT_SENTINEL
-    );
-  });
-
-  it('returns null without a version', () => {
-    expect(versionUrlName(undefined)).toBeNull();
   });
 });

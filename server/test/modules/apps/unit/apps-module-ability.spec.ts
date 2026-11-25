@@ -311,7 +311,6 @@ describe('defineAppAbility — MODULES.MODULES resource', () => {
 
 import { AppsService } from 'src/modules/apps/service';
 import { ValidateAppAccessResponseDto } from 'src/modules/apps/dto';
-import { DRAFT_SENTINEL } from 'src/modules/versions/ref-sentinels';
 
 // Minimal mock of the ability object shape
 function makeAbility(canUpdate: boolean, canGetBySlug: boolean) {
@@ -462,41 +461,5 @@ describe('AppsService.validatePrivateAppAccess — unknown version name', () => 
     (service as any).versionRepository = { findByName: jest.fn().mockRejectedValue(new Error('db down')) };
 
     await expect(call(service, { versionName: 'bogus' })).rejects.toThrow('db down');
-  });
-});
-
-describe('AppsService.validatePrivateAppAccess — draft sentinel', () => {
-  const user = { id: 'user-1' } as any;
-  const setup = (draft: unknown) => {
-    const service = makeService();
-    (service as any).gitSyncConfigsUtilService = {
-      getDetails: jest.fn().mockResolvedValue({ options: { defaultBranch: { id: 'default-branch' } } }),
-    };
-    (service as any).versionRepository = {
-      findByName: jest.fn(),
-      findOne: jest.fn().mockResolvedValue(draft),
-    };
-    (service as any).appsUtilService.validateVersionEnvironment = jest
-      .fn()
-      .mockResolvedValue({ id: 'env-uuid', name: 'released' });
-    return service;
-  };
-  const call = (service: AppsService) =>
-    service.validatePrivateAppAccess(makeApp(APP_TYPES.FRONT_END), makeAbility(true, true), user, {
-      versionName: DRAFT_SENTINEL,
-    } as any);
-
-  it('resolves the sentinel to the default-branch draft', async () => {
-    const draft = { id: 'ver-draft', name: 'generated-name', currentEnvironmentId: 'env-uuid' };
-    const service = setup(draft);
-
-    const result = await call(service);
-
-    expect((result as any).versionId).toBe('ver-draft');
-    expect((service as any).versionRepository.findByName).not.toHaveBeenCalled();
-  });
-
-  it('answers 404 when the default branch has no draft', async () => {
-    await expect(call(setup(null))).rejects.toBeInstanceOf(NotFoundException);
   });
 });
