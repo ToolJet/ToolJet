@@ -101,12 +101,15 @@ describe('ToolJet-DB FeatureAbilityFactory', () => {
       { flag: '1', hasSession: true, allowed: false },
       { flag: 'TRUE', hasSession: true, allowed: false },
       { flag: 'true ', hasSession: true, allowed: false },
-    ])('sets proxy access to $allowed with flag "$flag" and session $hasSession', async ({ flag, hasSession, allowed }) => {
-      process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT = flag;
-      const ability = await buildAbility({ role: { isEndUser: true }, hasSession });
+    ])(
+      'sets proxy access to $allowed with flag "$flag" and session $hasSession',
+      async ({ flag, hasSession, allowed }) => {
+        process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT = flag;
+        const ability = await buildAbility({ role: { isEndUser: true }, hasSession });
 
-      expect(ability.can(FEATURE_KEY.PROXY_POSTGREST, InternalTable)).toBe(allowed);
-    });
+        expect(ability.can(FEATURE_KEY.PROXY_POSTGREST, InternalTable)).toBe(allowed);
+      }
+    );
 
     it('denies a logged-in end-user with NO data query (the bypass)', async () => {
       const ability = await buildAbility({ role: { isEndUser: true }, organizationId: ORG_A });

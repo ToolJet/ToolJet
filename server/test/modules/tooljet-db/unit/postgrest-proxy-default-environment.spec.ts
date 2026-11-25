@@ -73,20 +73,19 @@ describe('PostgrestProxyService.proxy | TOOLJET_DB_PROXY_LEGACY_COMPAT environme
   it.each([
     { licensed: true, environmentId: defaultEnvironmentId, criteria: { isDefault: true } },
     { licensed: false, environmentId: developmentEnvironmentId, criteria: { priority: 1 } },
-  ])('resolves an omitted environment with multi-environment licence = $licensed', async ({
-    licensed,
-    environmentId,
-    criteria,
-  }) => {
-    process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT = 'true';
-    const { service, getLicenseTerms, findOneOrFail } = buildService(licensed);
+  ])(
+    'resolves an omitted environment with multi-environment licence = $licensed',
+    async ({ licensed, environmentId, criteria }) => {
+      process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT = 'true';
+      const { service, getLicenseTerms, findOneOrFail } = buildService(licensed);
 
-    await service.proxy(request(), { set: jest.fn() }, jest.fn());
+      await service.proxy(request(), { set: jest.fn() }, jest.fn());
 
-    expect(getLicenseTerms).toHaveBeenCalledWith(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
-    expect(findOneOrFail).toHaveBeenCalledWith(AppEnvironment, { where: { organizationId, ...criteria } });
-    expect(service.resolveAndRewrite).toHaveBeenCalledWith(expect.any(String), organizationId, environmentId, true);
-  });
+      expect(getLicenseTerms).toHaveBeenCalledWith(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
+      expect(findOneOrFail).toHaveBeenCalledWith(AppEnvironment, { where: { organizationId, ...criteria } });
+      expect(service.resolveAndRewrite).toHaveBeenCalledWith(expect.any(String), organizationId, environmentId, true);
+    }
+  );
 
   it('should keep an explicit environment_id when the flag is on', async () => {
     process.env.TOOLJET_DB_PROXY_LEGACY_COMPAT = 'true';
