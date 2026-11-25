@@ -23,6 +23,9 @@ const CompressionPlugin = require('compression-webpack-plugin');
 const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
 const hash = require('string-hash');
 const { WidgetDefsAfterServerPlugin, WIDGET_DEFINITIONS_SRC } = require('./scripts/widget-defs-after-server-plugin');
+const { applyPatches, PATCH_FILES } = require('./scripts/apply-patches');
+
+applyPatches();
 
 // --- Env / mode flags used throughout the config below ---
 const versionPath = path.resolve(__dirname, '.version');
@@ -348,7 +351,8 @@ module.exports = {
     cache: {
       type: 'persistent',
       version: `${environment}-${isServe ? 'serve' : 'build'}`,
-      buildDependencies: [__filename],
+      // node_modules is cached by package version, so a changed patch must bust the cache itself.
+      buildDependencies: [__filename, ...PATCH_FILES],
     },
   },
   // lazyCompilation is DISABLED on Rspack (unlike the webpack config), and it MUST
@@ -477,7 +481,25 @@ module.exports = {
         resourceQuery: { not: [/url/] },
       },
       {
+        resourceQuery: /raw/,
+        type: 'asset/source',
+      },
+      {
+        test: /[\\/]node_modules[\\/]tailwindcss[\\/]/,
+        resolve: {
+          alias: {
+            fs: path.resolve(__dirname, 'src/_helpers/shims/tailwindFs.js'),
+            url: false,
+            crypto: false,
+            os: false,
+            'fast-glob': false,
+            '@tailwindcss/line-clamp': false,
+          },
+        },
+      },
+      {
         test: /\.css$/,
+        resourceQuery: { not: [/raw/] },
         use: [
           isProductionMode ? rspack.CssExtractRspackPlugin.loader : { loader: 'style-loader' },
           {

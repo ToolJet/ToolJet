@@ -22,16 +22,16 @@ import {
 } from 'test-helper';
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 import { ResourceType } from 'src/modules/group-permissions/constants';
-import { CreateFolderDataSourcesTable1793250000000 } from '../../../../migrations/1793250000000-CreateFolderDataSourcesTable';
-import { AddDataSourceFolderGranularPermissions1793250000100 } from '../../../../migrations/1793250000100-AddDataSourceFolderGranularPermissions';
-import { AddWorkflowsGitTreeShaColumn1793250000200 } from '../../../../migrations/1793250000200-AddWorkflowsGitTreeShaColumn';
-import { TjdbRolloutSubstrateSchema1793250000300 } from '../../../../migrations/1793250000300-TjdbRolloutSubstrateSchema';
-import { BackfillWorkflowPinPortability1793250000400 } from '../../../../data-migrations/1793250000400-BackfillWorkflowPinPortability';
-import { AddWorkflowEnabledToAppVersions1793250000500 } from '../../../../migrations/1793250000500-AddWorkflowEnabledToAppVersions';
-import { AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups1793250000600 } from '../../../../data-migrations/1793250000600-AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups';
-import { SeedMissingAppEnvironments1793250000700 } from '../../../../data-migrations/1793250000700-SeedMissingAppEnvironments';
-import { BackfillWorkflowEnabledOnAppVersions1793250000900 } from '../../../../data-migrations/1793250000900-BackfillWorkflowEnabledOnAppVersions';
-import { FixWorkflowSlugTriggerSelfCollision1793250001000 } from '../../../../data-migrations/1793250001000-FixWorkflowSlugTriggerSelfCollision';
+import { CreateFolderDataSourcesTable1793250000000 } from '@migrations/schema/1793250000000-CreateFolderDataSourcesTable';
+import { AddDataSourceFolderGranularPermissions1793250000100 } from '@migrations/schema/1793250000100-AddDataSourceFolderGranularPermissions';
+import { AddWorkflowsGitTreeShaColumn1793250000200 } from '@migrations/schema/1793250000200-AddWorkflowsGitTreeShaColumn';
+import { TjdbRolloutSubstrateSchema1793250000300 } from '@migrations/schema/1793250000300-TjdbRolloutSubstrateSchema';
+import { BackfillWorkflowPinPortability1793250000400 } from '@migrations/data/1793250000400-BackfillWorkflowPinPortability';
+import { AddWorkflowEnabledToAppVersions1793250000500 } from '@migrations/schema/1793250000500-AddWorkflowEnabledToAppVersions';
+import { AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups1793250000600 } from '@migrations/data/1793250000600-AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups';
+import { SeedMissingAppEnvironments1793250000700 } from '@migrations/data/1793250000700-SeedMissingAppEnvironments';
+import { BackfillWorkflowEnabledOnAppVersions1793250000900 } from '@migrations/data/1793250000900-BackfillWorkflowEnabledOnAppVersions';
+import { FixWorkflowSlugTriggerSelfCollision1793250001000 } from '@migrations/data/1793250001000-FixWorkflowSlugTriggerSelfCollision';
 
 // Migration A and B need the ToolJet Database and EE; their second-run tests live in ee/test.
 const MIGRATIONS: Array<new () => MigrationInterface> = [

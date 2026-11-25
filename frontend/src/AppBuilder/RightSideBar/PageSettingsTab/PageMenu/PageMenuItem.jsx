@@ -376,7 +376,7 @@ export const PageMenuItem = withRouter(
                             }
                             placement="auto"
                             show={!hasAppPermissionPages}
-                            tooltipClassName="!tw-z-[100000]"
+                            tooltipClassName="!tw-z-[100000] page-paid-tooltip"
                           >
                             <div className="d-flex align-items-center enterprise-feature">
                               <div>Page permission</div>

@@ -146,13 +146,18 @@ export enum LICENSE_FIELD {
   CUSTOM_DOMAINS = 'customDomainsEnabled',
   APP_USAGE_ANALYTICS = 'appUsageAnalyticsEnabled',
   APP_PAGES_LIMIT = 'appPagesLimit',
+  APP_PAGE_GROUPS_LIMIT = 'appPageGroupsLimit',
   GOOGLE = 'googleEnabled',
   GITHUB = 'githubEnabled',
   OBSERVABILITY_ENABLED = 'observabilityEnabled',
   MULTIPLAYER_EDIT = 'multiPlayerEditEnabled',
   QUERY_FOLDERS = 'queryFoldersEnabled',
   PUBLIC_APP = 'publicAppEnabled',
+  AUTOMATIC_SSO_LOGIN = 'automaticSsoLoginEnabled',
+  RELEASE = 'releaseEnabled',
   CUSTOM_COMPONENT_LIBRARIES = 'customComponentLibrariesEnabled',
+  AI_CREDIT_LIMITS = 'aiCreditLimitsEnabled',
+  VERSION_REVIEW = 'versionReviewEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {
@@ -166,6 +171,8 @@ export enum LICENSE_LIMITS_LABEL {
   //Apps
   APPS = 'Apps',
   WORKFLOWS = 'Workflows',
+  PAGES = 'Pages per App',
+  PAGE_GROUPS = 'Page groups per App',
 
   //Workspaces
   WORKSPACES = 'Workspaces',
@@ -184,9 +191,18 @@ export enum LICENSE_TYPE {
   BUSINESS = 'business',
 }
 
+// Plans below Pro. Features "on Pro and above" are off on these and on an expired or missing
+// licence (plan 'basic'); a trial has no plan name, so it gets them.
+export const PLANS_BELOW_PRO: readonly string[] = [LICENSE_TYPE.BASIC, 'starter', 'basicplus'];
+
 export enum LICENSE_LIMIT {
   UNLIMITED = 'UNLIMITED',
 }
+
+export const NON_ENTERPRISE_PLANS = ['basic', 'starter', 'basicplus', 'pro', 'team'];
+
+export const ENTERPRISE_DEFAULT_PAGES_LIMIT = 100;
+export const DEFAULT_PAGES_LIMIT = 20;
 
 export enum FEATURE_KEY {
   GET_LICENSE = 'get_license',
@@ -197,6 +213,7 @@ export enum FEATURE_KEY {
   UPDATE_LICENSE = 'update_license',
   UPDATE_ENV_LICENSE_SETTING = 'update_env_license_setting',
   GET_APP_LIMITS = 'get_app_limits',
+  GET_PAGE_LIMITS = 'get_page_limits',
   CHECK_AUDIT_LOGS_LICENSE = 'check_audit_logs_license',
   GET_AUDIT_LOGS_MAX_DURATION = 'get_audit_logs_max_duration',
   GET_ORGANIZATION_LIMITS = 'get_organization_limits',

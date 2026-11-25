@@ -332,7 +332,8 @@ export class DataSourceManagerComponent extends React.Component {
       // to resolve any casing mis-match
       if (decamelize(key) !== key) {
         const newKey = decamelize(key);
-        isEncrypted = dataSourceMeta.options[newKey]?.encrypted;
+        // tj:version manifests key meta by camelCase (e.g. apiKey); keep that flag if no snake_case meta exists
+        isEncrypted = dataSourceMeta.options[newKey]?.encrypted ?? isEncrypted;
       }
 
       return {

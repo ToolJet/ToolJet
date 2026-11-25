@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { EntityManager } from 'typeorm';
 import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
@@ -11,7 +12,10 @@ import { Layout } from 'src/entities/layout.entity';
 import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
-import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
+import {
+  isChildOfSlottedParent,
+  remapFlexContainerChildOrder,
+} from '@modules/versions/helpers/version-copy-parent.helper';
 import { PageHelperService } from './page.util.service';
 import * as _ from 'lodash';
 import * as uuid from 'uuid';
@@ -26,6 +30,7 @@ import {
 } from '../interfaces/services/IPageService';
 import { RequestContext } from '@modules/request-context/service';
 import { TransactionLogger } from '@modules/logging/service';
+import { LicensePageService } from '@modules/licensing/interfaces/IService';
 import { AppValidationService } from '@modules/app-validation/service';
 import { lockForValidation } from '@modules/app-validation/lock';
 import { PageWrite } from '@modules/app-validation/types';
@@ -37,7 +42,8 @@ export class PageService implements IPageService {
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService,
     protected readonly transactionLogger: TransactionLogger,
-    protected readonly appValidationService: AppValidationService
+    protected readonly appValidationService: AppValidationService,
+    protected readonly licensePageService: LicensePageService
   ) {}
 
   protected toPageWrite(op: 'create' | 'update', page: Page): PageWrite {
@@ -197,7 +203,9 @@ export class PageService implements IPageService {
         organizationId,
         manager,
       });
-      return await manager.save(Page, newPage);
+      const savedPage = await manager.save(Page, newPage);
+      await this.licensePageService.validatePages(manager, appVersionId, organizationId, !!savedPage.isPageGroup);
+      return savedPage;
     });
 
     const operationTimestamp = Date.now();
@@ -262,6 +270,7 @@ export class PageService implements IPageService {
       });
 
       clonedPage = await manager.save(newPage);
+      await this.licensePageService.validatePages(manager, appVersionId, organizationId, false);
 
       await this.clonePageEventsAndComponents(pageId, clonedPage.id, manager);
 
@@ -311,8 +320,7 @@ export class PageService implements IPageService {
 
         if (parentComponent) {
           return (
-            parentComponent.type === 'Tabs' ||
-            parentComponent.type === 'Calendar' ||
+            isChildOfSlottedParent(componentParentId, allOriginalComponents) ||
             parentComponent.type === 'Kanban' ||
             isChildOfHeaderOrFooter(componentParentId)
           );
@@ -358,7 +366,7 @@ export class PageService implements IPageService {
             id: newComponentId,
             pageId: clonePageId,
             parent: null,
-            co_relation_id: undefined,
+            co_relation_id: randomUUID(),
             createdAt: undefined,
             updatedAt: undefined,
           });

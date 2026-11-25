@@ -1,4 +1,11 @@
-import { LICENSE_LIMIT, LICENSE_TYPE } from '@modules/licensing/constants';
+import { isCodeModeAllowed } from '@modules/code-mode-source/constants';
+import {
+  DEFAULT_PAGES_LIMIT,
+  ENTERPRISE_DEFAULT_PAGES_LIMIT,
+  LICENSE_LIMIT,
+  LICENSE_TYPE,
+  PLANS_BELOW_PRO,
+} from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
 import {
   BUSINESS_PLAN_TERMS,
@@ -26,6 +33,7 @@ export default class LicenseBase {
   private _isServerSideGlobalResolve: boolean;
   private _isMultiEnvironment: boolean;
   private _isMultiPlayerEdit: boolean;
+  private _isAutomaticSsoLogin: boolean;
   private _isComments: boolean;
   private _expiryDate: Date;
   private _updatedDate: Date;
@@ -89,6 +97,7 @@ export default class LicenseBase {
       this._isServerSideGlobalResolve = true;
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
+      this._isAutomaticSsoLogin = true;
       this._isAi = true;
       this._aiPlan = 'credits';
       this._isExternalApis = true;
@@ -150,6 +159,9 @@ export default class LicenseBase {
     this._isServerSideGlobalResolve = this.getFeatureValue('serverSideGlobalResolve');
     this._isMultiEnvironment = this.getFeatureValue('multiEnvironment');
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
+    const automaticSsoLoginFlag = this._features?.['automaticSsoLogin'];
+    this._isAutomaticSsoLogin =
+      typeof automaticSsoLoginFlag === 'boolean' ? automaticSsoLoginFlag : this.automaticSsoLoginDefault;
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isGitSyncMultiBranch = this.getFeatureValue('gitSyncMultiBranch');
@@ -249,12 +261,33 @@ export default class LicenseBase {
 
   public get appPagesLimit(): number | string {
     if (this.IsBasicPlan) {
-      return this.BASIC_PLAN_TERMS.app?.pages?.count || 5;
+      return this.BASIC_PLAN_TERMS.app?.pages?.count || LICENSE_LIMIT.UNLIMITED;
     }
-    if (!this._app || this._app['pages']?.count === undefined) {
-      return ''; //Not passed set to infinite for older licenses and trial
+    return this._app?.['pages']?.count || this.defaultPagesLimit;
+  }
+
+  public get appPageGroupsLimit(): number | string {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.app?.pages?.groupCount || LICENSE_LIMIT.UNLIMITED;
     }
-    return this._app['pages']?.count;
+    return this._app?.['pages']?.groupCount || this.defaultPagesLimit;
+  }
+
+  protected get isEnterprisePlan(): boolean {
+    return this.licenseType === LICENSE_TYPE.ENTERPRISE;
+  }
+
+  // Used when the licence has no automaticSsoLogin flag.
+  protected get automaticSsoLoginDefault(): boolean {
+    return this.isEnterprisePlan;
+  }
+
+  private get defaultPagesLimit(): number {
+    return this.isEnterprisePlan ? ENTERPRISE_DEFAULT_PAGES_LIMIT : DEFAULT_PAGES_LIMIT;
+  }
+
+  private getEnterpriseOnlyFlag(value: unknown): boolean {
+    return typeof value === 'boolean' ? value : this.isEnterprisePlan;
   }
 
   public get appPagesHeaderAndLogoEnabled(): boolean {
@@ -478,6 +511,19 @@ export default class LicenseBase {
     return !!this._app?.features?.customComponentLibraries;
   }
 
+  // Version compare, AI-turn snapshots and reviews: trial and Pro and above. A licence can set it
+  // either way; without that term it follows the plan, so existing licences need no reissue.
+  public get versionReview(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS?.app?.features?.versionReview;
+    }
+    const term = this._app?.features?.versionReview;
+    if (term !== undefined) {
+      return !!term;
+    }
+    return !PLANS_BELOW_PRO.includes(this._plan?.toLowerCase());
+  }
+
   public get saml(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.saml;
@@ -490,6 +536,13 @@ export default class LicenseBase {
       return !!this.BASIC_PLAN_TERMS.features?.multiEnvironment;
     }
     return this._isMultiEnvironment;
+  }
+
+  public get automaticSsoLogin(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.automaticSsoLogin;
+    }
+    return this._isAutomaticSsoLogin;
   }
 
   public get customStyling(): boolean {
@@ -596,6 +649,19 @@ export default class LicenseBase {
     return this._aiPlan || 'credits';
   }
 
+  /** The licence's raw `features.aiCreditLimits` value. */
+  protected get aiCreditLimitsFlag(): unknown {
+    return (this._features as any)?.aiCreditLimits;
+  }
+
+  /** Per-builder AI credit limits, self-hosted: Enterprise and trial; Team (business) and basic don't. */
+  // Strict opt-in, like mfa: the licence must set `features.aiCreditLimits: true`; a missing key is off.
+  // Cloud overrides this in OrganizationLicense.
+  public get aiCreditLimits(): boolean {
+    if (!this.aiFeature || this.IsBasicPlan || this.aiCreditLimitsFlag !== true) return false;
+    return this.licenseType === LICENSE_TYPE.ENTERPRISE || this.licenseType === LICENSE_TYPE.TRIAL;
+  }
+
   public get updatedAt(): Date {
     return this._updatedDate;
   }
@@ -624,6 +690,7 @@ export default class LicenseBase {
       serverSideGlobalResolve: this.serverSideGlobalResolve,
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
+      automaticSsoLogin: this.automaticSsoLogin,
       gitSync: this.gitSync,
       gitSyncMultiBranch: this.gitSyncMultiBranch,
       comments: this.comments,
@@ -640,6 +707,7 @@ export default class LicenseBase {
       appPermissionQuery: this.appPermissionQuery,
       appPermissionPages: this.appPermissionPages,
       appPagesLimit: this.appPagesLimit,
+      appPageGroupsLimit: this.appPageGroupsLimit,
       workflowsEnabled: this.getWorkflowsEnabled(),
       customDomain: this.customDomains,
       appUsageAnalytics: this.appUsageAnalytics,
@@ -656,7 +724,12 @@ export default class LicenseBase {
       queryFolders: this.queryFolders,
       workspaceEnv: this.workspaceEnv,
       customComponentLibraries: this.customComponentLibraries,
+      // Not licence terms: what this server's edition supports (code-mode-source/constants).
+      codeAppsDevTrack: isCodeModeAllowed(),
+      codeModeApps: isCodeModeAllowed(),
+      versionReview: this.versionReview,
       aiPlan: this.aiPlan,
+      aiCreditLimits: this.aiCreditLimits,
       publicApp: this.publicApp,
     };
   }
@@ -725,34 +798,27 @@ export default class LicenseBase {
     return !!this._workflows?.['enabled'];
   }
   public get canPromote(): boolean {
-    if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.app?.features?.promote;
-    }
-    if (this._app?.features?.promote === undefined) {
-      return true;
-    }
-    return !!this._app?.features?.promote;
+    return this.canRelease;
   }
 
   public get canRelease(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.release;
     }
-    if (this._app?.features?.release === undefined) {
-      return true;
-    }
-    return !!this._app?.features?.release;
+    return this.getEnterpriseOnlyFlag(this._app?.features?.release);
   }
 
+  // App history: trial and Pro and above, like version compare (AI turns are compared and undone through
+  // history). A licence can set it either way; without that term it follows the plan.
   public get appHistory(): boolean {
-    if (this.IsBasicPlan || this.licenseType === LICENSE_TYPE.TRIAL || this.licenseType === LICENSE_TYPE.BUSINESS) {
+    if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.history;
     }
-
-    if (this._app?.features?.history === undefined) {
-      return false;
+    const term = this._app?.features?.history;
+    if (term !== undefined) {
+      return !!term;
     }
-    return !!this._app?.features?.history;
+    return !PLANS_BELOW_PRO.includes(this._plan?.toLowerCase());
   }
 
   public get workspaceEnv(): boolean {

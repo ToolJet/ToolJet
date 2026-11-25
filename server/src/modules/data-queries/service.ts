@@ -313,7 +313,8 @@ export class DataQueriesService implements IDataQueriesService {
     dataSource: DataSource,
     response: Response,
     mode?: string,
-    app?: App
+    app?: App,
+    appAbility?: AppAbility
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
@@ -324,19 +325,25 @@ export class DataQueriesService implements IDataQueriesService {
 
     // Persisting options on run is an EDITOR authoring convenience.
     // This endpoint is also hit by app preview, and there the user is consuming, not editing,
-    // so the loaded options must NOT be written back.
+    // so the loaded options must NOT be written back. An app-pinned session (an app token, or an AI connection made
+    // for one app) is read-only whatever the mode.
     // The released version (App.currentVersionId) is frozen too: a non-UI client (MCP/PAT) can hit
     // this endpoint directly, so skip the write-back when the query's version is the released one.
     // Only the authoring persist is gated — the query still executes below.
     const isReleasedVersion = !!app?.currentVersionId && dataQuery.appVersionId === app.currentVersionId;
     if (
       mode !== 'view' &&
+      appAbility?.can(FEATURE_KEY.UPDATE_ONE, App) &&
+      !user.patAppId &&
+      !user.oauthAppId &&
       !isReleasedVersion &&
       ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) &&
       !isEmpty(options) &&
       (await this.isGitSyncEditAllowed(user.organizationId, dataQuery.appVersion))
     ) {
-      await this.dataQueryRepository.updateOne(dataQueryId, { options });
+      // The upgrade gate pauses writes (migration-gate.middleware.ts): the save would wait on the data
+      // phase's row locks until lock_timeout, so the run uses the posted options without saving them.
+      if (!response?.locals?.writesPaused) await this.dataQueryRepository.updateOne(dataQueryId, { options });
       dataQuery['options'] = options;
     }
 

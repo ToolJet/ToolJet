@@ -1,0 +1,45 @@
+.inspector-segmented-control {
+  width: 142px;
+  min-width: 0;
+  max-width: 100%;
+
+  &.inspector-segmented-control-full {
+    width: 100%;
+  }
+
+  .inspector-segmented-options {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .ToggleGroupItem {
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 2px;
+
+    .toggle-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 0;
+      height: 28px;
+      padding: 4px 6px;
+
+      > span {
+        display: inline-block;
+        width: max-content;
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+}

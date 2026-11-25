@@ -123,7 +123,7 @@ jobs:
         run: |
           for i in {1..60}; do
             response=$(curl -s --fail https://gcpstage-server.tooljet.dev/health || true)
-            if [[ "$response" == *'"works":"yeah"'* ]]; then
+            if [[ "$response" == *'"works":"yeah"'* || "$response" == *'"status":"healthy"'* ]]; then
               echo "✅ Backend is up and healthy"
               exit 0
             fi

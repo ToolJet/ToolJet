@@ -36,12 +36,14 @@ export interface Terms {
     appWhiteLabelling?: boolean;
     scim?: boolean;
     mfa?: boolean;
+    aiCreditLimits?: boolean;
     customDomains?: boolean;
     appUsageAnalytics?: boolean;
     google?: boolean;
     github?: boolean;
     observability?: boolean;
     queryFolders?: boolean;
+    automaticSsoLogin?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
@@ -55,6 +57,7 @@ export interface Terms {
     pages: {
       enabled: boolean;
       count: number | string;
+      groupCount?: number | string;
       features: {
         appHeaderAndLogo: boolean;
         addNavGroup: boolean;
@@ -74,6 +77,7 @@ export interface Terms {
       jsLibraries: boolean;
       publicApp: boolean;
       customComponentLibraries?: boolean;
+      versionReview?: boolean;
     };
     components?: {
       navigation: boolean;
@@ -93,6 +97,8 @@ export interface Terms {
     generatedFrom?: 'API';
     customerId?: string;
     createdBy?: string;
+    // Monthly AI credits per builder; set on cloud licenses sold on the plan limits from the cutoff.
+    aiCreditsPerBuilder?: number;
   };
   workflows?: {
     enabled?: boolean;

@@ -111,7 +111,7 @@ export class AppHistoryRepository {
       const results = await manager.query(
         `SELECT
           h.id, h.sequence_number, h.description, h.is_ai_generated,
-          h.created_at, h.updated_at, h.history_type, h.action_type,
+          h.created_at, h.updated_at, h.history_type, h.action_type, h.operation_scope,
           u.id as user_id, u.first_name, u.last_name, u.email
          FROM app_history h
          LEFT JOIN users u ON h.user_id = u.id
@@ -131,6 +131,7 @@ export class AppHistoryRepository {
         updatedAt: row.updated_at,
         historyType: row.history_type,
         actionType: row.action_type,
+        operationScope: row.operation_scope,
         user: row.user_id
           ? {
               id: row.user_id,
@@ -363,20 +364,21 @@ export class AppHistoryRepository {
 
   async getVersionAndAppIdForHistory(
     historyId: string
-  ): Promise<{ appVersionId: string | null; appId: string | null }> {
+  ): Promise<{ appVersionId: string | null; appId: string | null; organizationId: string | null }> {
     return await dbTransactionWrap(async (manager) => {
       const history = await manager.findOne(AppHistory, {
         where: { id: historyId },
-        relations: ['appVersion'],
+        relations: ['appVersion', 'appVersion.app'],
       });
 
       if (!history) {
-        return { appVersionId: null, appId: null };
+        return { appVersionId: null, appId: null, organizationId: null };
       }
 
       return {
         appVersionId: history.appVersionId,
         appId: history.appVersion?.appId || null,
+        organizationId: history.appVersion?.app?.organizationId || null,
       };
     });
   }

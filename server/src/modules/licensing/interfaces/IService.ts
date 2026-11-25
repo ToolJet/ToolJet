@@ -21,6 +21,8 @@ export abstract class LicenseTermsService {
    */
   abstract getLicenseTerms(type: any, organizationId: string, options?: { strict?: boolean }): Promise<any>;
   abstract getOrganizationLicense(organizationId: string): Promise<any>;
+  // Whether the workspace (Cloud) or instance (self-hosted) is on the Free limits introduced at the plan limits cutoff.
+  abstract usesNewFreeLimits(organizationId: string): Promise<boolean>;
 }
 
 export interface ILicenseOrganizationService {
@@ -76,10 +78,24 @@ export interface ILicenseCountsService {
   fetchTotalWorkflowsCount(workspaceId: string, manager: EntityManager): Promise<number>;
   organizationsCount(manager?: EntityManager): Promise<number>;
   fetchTotalAppCount(organizationId: string, manager: EntityManager): Promise<number>;
+  fetchTotalPagesCount(appVersionId: string, manager: EntityManager): Promise<number>;
+  fetchTotalPageGroupsCount(appVersionId: string, manager: EntityManager): Promise<number>;
+  fetchMaxPagesCount(organizationId: string, manager: EntityManager): Promise<number>;
+  fetchMaxPageGroupsCount(organizationId: string, manager: EntityManager): Promise<number>;
 }
 
 export interface ILicenseAppsService {
   getAppsLimit(organizationId: string): Promise<any>;
+}
+
+export abstract class LicensePageService {
+  abstract validatePages(
+    manager: EntityManager,
+    appVersionId: string,
+    organizationId: string,
+    isPageGroup: boolean
+  ): Promise<void>;
+  abstract getPagesLimit(organizationId: string): Promise<any>;
 }
 
 export interface ILicenseService {

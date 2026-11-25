@@ -14,7 +14,7 @@ import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getPrivateRoute, getSubpath, getHostURL } from '@/_helpers/routes';
 import { validateName, decodeEntities, hasBuilderRole } from '@/_helpers/utils';
 import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
-import { canShowPreviewButton } from './appCardActions';
+import { canShowPreviewButton, canShowBuildModeTag } from './appCardActions';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService, gitSyncService } from '@/_services';
 import { toast } from 'react-hot-toast';
@@ -22,6 +22,7 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
 import { appendBranchName } from '@/_helpers/active-branch';
+import { BuildModeBadge } from '@/AppBuilder/_helpers/codeModeHooks';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
 const { defaultIcon } = configs;
@@ -461,13 +462,19 @@ export default function AppCard({
             <div>
               <AppNameDisplay tooltipRef={tooltipRef} />
             </div>
-            <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
+            <div
+              className="app-creation-time-container tw-flex tw-items-center tw-gap-2"
+              style={{ marginBottom: '12px' }}
+            >
               {canUpdate && (
-                <div className="app-creation-time tj-text-xsm" data-cy="app-creation-details">
+                <div className="app-creation-time tj-text-xsm tw-min-w-0" data-cy="app-creation-details">
                   <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
                     <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
                   </ToolTip>
                 </div>
+              )}
+              {canShowBuildModeTag({ role: session?.role }) && (
+                <BuildModeBadge buildMode={app?.build_mode ?? app?.buildMode} variant="card" />
               )}
             </div>
             <div className="appcard-buttons-wrap">

@@ -1,3 +1,4 @@
+import { withholdsUpstreamSso } from '@modules/session/sso-exposure';
 import { invalidateUserCredentials } from '@modules/mcp-oauth/revocation';
 import { McpOAuthService } from '@modules/mcp-oauth/service';
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
@@ -10,6 +11,7 @@ import { User } from '@entities/user.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { Organization } from '@entities/organization.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { isUUID } from 'class-validator';
 import { WORKSPACE_STATUS, USER_STATUS, WORKSPACE_USER_STATUS, USER_TYPE } from '@modules/users/constants/lifecycle';
 import { applyCustomDomainCookieOptions, isHttpsEnabled, isSuperAdmin } from '@helpers/utils.helper';
 import { CookieOptions } from 'express';
@@ -157,6 +159,8 @@ export class SessionUtilService {
         ...(isPatLogin && extraData?.token ? { token: extraData?.token } : {}),
         ...(isPatLogin && extraData?.appId ? { appId: extraData?.appId, scope: 'App' } : {}),
         ...(isPatLogin && extraData?.patScope ? { patScope: extraData.patScope } : {}),
+        ...(isPatLogin && extraData?.aiAppId ? { aiAppId: extraData.aiAppId } : {}),
+        ...(isPatLogin && extraData?.fixedExpiry ? { fixedExpiry: true } : {}),
         ...(extraData?.tj_api_source ? { tj_api_source: extraData.tj_api_source } : {}),
       };
 
@@ -199,6 +203,14 @@ export class SessionUtilService {
           ? { currentOrganizationId: organization.id, currentOrganizationSlug: organization.slug }
           : { noWorkspaceAttachedInTheSession: true }),
         ...permissionData,
+        // A workspace token or render login returns a machine credential without the owner's upstream
+        // SSO data; an embed login keeps the viewer's own (sso-exposure.ts).
+        ...((isPatLogin &&
+          withholdsUpstreamSso({ isPATLogin: true, patScope: extraData?.patScope, patAppId: extraData?.appId })) ||
+        withholdsUpstreamSso(user) ||
+        withholdsUpstreamSso(loggedInUser)
+          ? { ssoUserInfo: {} }
+          : {}),
         noActiveWorkspaces,
         ...publicExtraData,
         ...(isPatLogin ? { signedPat } : {}),
@@ -323,6 +335,14 @@ export class SessionUtilService {
       });
       return branch?.id ?? null;
     }, manager);
+  }
+
+  async isForeignBranch(branchId: string, organizationId: string): Promise<boolean> {
+    if (!isUUID(branchId)) return true;
+    return dbTransactionWrap(
+      async (manager: EntityManager) =>
+        (await manager.count(WorkspaceBranch, { where: { id: branchId, organizationId: Not(organizationId) } })) > 0
+    );
   }
 
   async checkUserWorkspaceStatus(userId: string, manager?: EntityManager): Promise<boolean> {
@@ -564,7 +584,12 @@ export class SessionUtilService {
     return this.userRepository.getUser({ email, status: USER_STATUS.ACTIVE });
   }
 
-  async validateUserSession(userId: string, sessionId: string, organizationId?: string): Promise<void> {
+  async validateUserSession(
+    userId: string,
+    sessionId: string,
+    organizationId?: string,
+    options?: { fixedExpiry?: boolean }
+  ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const session: UserSessions = await manager.findOne(UserSessions, {
         where: {
@@ -599,7 +624,9 @@ export class SessionUtilService {
         }
 
         // Extend PAT session expiry
-        session.expiry = new Date(Date.now() + session.pat.sessionExpiryMinutes * 60 * 1000);
+        if (!options?.fixedExpiry) {
+          session.expiry = new Date(Date.now() + session.pat.sessionExpiryMinutes * 60 * 1000);
+        }
       } else {
         // Regular session extension
         if (session.expiry < now) {

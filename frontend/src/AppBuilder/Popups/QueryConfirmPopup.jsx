@@ -1,12 +1,18 @@
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
+import { isCompareFrame } from '@/AppBuilder/_utils/compareFrame';
 
-export const QueryConfirmPopup = ({ show, message, onConfirm, onCancel, darkMode, dialogKey }) => {
+export const QueryConfirmPopup = ({ show, message, onConfirm, onCancel, darkMode, dialogKey, overlayOpen = false }) => {
+  const compareFrame = isCompareFrame();
   return (
     <Modal
       show={show}
       animation={false}
       onHide={onCancel}
+      // A full-screen view (compare versions) covers this popup: it must not pull focus or take Escape from it.
+      enforceFocus={!overlayOpen}
+      autoFocus={!overlayOpen}
+      keyboard={!overlayOpen}
       centered
       backdrop
       dialogClassName="tw-max-w-[491px]"
@@ -14,6 +20,8 @@ export const QueryConfirmPopup = ({ show, message, onConfirm, onCancel, darkMode
         darkMode ? 'dark-theme' : ''
       }`}
       key={dialogKey}
+      // Tells the compare frame's read-only guard that this popup takes input.
+      data-compare-interactive={compareFrame ? 'true' : undefined}
     >
       <div className="tw-flex tw-flex-col tw-items-start tw-gap-[2px] tw-w-full">
         <p

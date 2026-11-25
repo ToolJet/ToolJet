@@ -1,5 +1,7 @@
 import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu as ShadcnDropdownMenu,
@@ -7,7 +9,6 @@ import {
   DropdownMenuContent as ShadcnDropdownMenuContent,
   DropdownMenuItem as ShadcnDropdownMenuItem,
   DropdownMenuCheckboxItem as ShadcnDropdownMenuCheckboxItem,
-  DropdownMenuRadioItem as ShadcnDropdownMenuRadioItem,
   DropdownMenuLabel as ShadcnDropdownMenuLabel,
   DropdownMenuSeparator as ShadcnDropdownMenuSeparator,
   DropdownMenuShortcut as ShadcnDropdownMenuShortcut,
@@ -25,7 +26,7 @@ import {
 const contentClasses = [
   'tw-bg-background-surface-layer-01',
   'tw-border-solid tw-border-border-default',
-  'tw-shadow-[var(--elevation-300-box-shadow)]',
+  'tw-shadow-elevation-300',
   'tw-rounded-lg',
   'tw-text-text-default',
 ].join(' ');
@@ -84,8 +85,26 @@ DropdownMenuCheckboxItem.displayName = 'DropdownMenuCheckboxItem';
 
 // ── RadioItem ────────────────────────────────────────────────────────────────
 
-const DropdownMenuRadioItem = forwardRef(function DropdownMenuRadioItem({ className, ...props }, ref) {
-  return <ShadcnDropdownMenuRadioItem ref={ref} className={cn(checkRadioClasses, className)} {...props} />;
+// Selected = brand check, same as Select and Combobox (shadcn draws a dot).
+const DropdownMenuRadioItem = forwardRef(function DropdownMenuRadioItem({ className, children, ...props }, ref) {
+  return (
+    <DropdownMenuPrimitive.RadioItem
+      ref={ref}
+      className={cn(
+        'tw-relative tw-flex tw-cursor-default tw-select-none tw-items-center tw-gap-2 tw-py-1.5 tw-pl-[30px] tw-pr-2 tw-text-base tw-outline-none',
+        itemClasses,
+        className
+      )}
+      {...props}
+    >
+      <span className="tw-absolute tw-left-2 tw-flex tw-h-3.5 tw-w-3.5 tw-items-center tw-justify-center">
+        <DropdownMenuPrimitive.ItemIndicator>
+          <Check size={14} className="tw-text-text-brand" />
+        </DropdownMenuPrimitive.ItemIndicator>
+      </span>
+      {children}
+    </DropdownMenuPrimitive.RadioItem>
+  );
 });
 DropdownMenuRadioItem.displayName = 'DropdownMenuRadioItem';
 

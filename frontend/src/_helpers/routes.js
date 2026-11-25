@@ -169,6 +169,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
     ':workspaceId',
     'confirm-invite',
     'oauth2',
+    'cli',
     'applications',
     'embed-apps',
     'integrations',
@@ -242,6 +243,7 @@ export const getRedirectURL = (path, isUserLoggingIn = false) => {
     '/instance-login',
     '/smtp',
     '/llm-key',
+    '/ai-credits-usage',
     '/license',
     '/security',
     '/migrations',
@@ -292,6 +294,8 @@ export const getPreviewQueryParams = () => {
   return {
     ...(queryParams['version'] && { version: queryParams.version }),
     ...(queryParams['env'] && { env: queryParams.env }),
+    // Renders a stored snapshot of the version, read-only.
+    ...(queryParams['snapshot'] && { snapshot: queryParams.snapshot }),
   };
 };
 

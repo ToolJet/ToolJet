@@ -53,7 +53,7 @@ import {
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
-import { v4 as uuidv4 } from 'uuid';
+import { websitePromptApp } from './websitePrompt';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
 import CreateModuleWithPrompt from '@/modules/AiBuilder/components/CreateModuleWithPrompt';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
@@ -175,7 +175,7 @@ class HomePageComponent extends React.Component {
   };
 
   /* For cloud ai onboarding */
-  handleAiOnboarding = () => {
+  handleAiOnboarding = async () => {
     const aiCookies = authenticationService.currentSessionValue?.ai_cookies;
     const latestPrompt = aiCookies?.tj_ai_prompt;
     const templateId = aiCookies?.tj_template_id;
@@ -189,14 +189,12 @@ class HomePageComponent extends React.Component {
     }
 
     switch (true) {
-      case !!latestPrompt:
-        // toast.success(`Prompt you have entered: ${decodeURIComponent(latestPrompt)}`, {
-        //   duration: 10000,
-        // });
-        // Optional: Clear the cookie after showing toast
+      case !!latestPrompt: {
         this.setState({ showAIOnboardingLoadingScreen: true });
-        this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(latestPrompt)}`);
+        const { name, prompt, buildMode } = await websitePromptApp(latestPrompt);
+        this.createApp(name, undefined, prompt, undefined, buildMode);
         break;
+      }
       case !!templateId: {
         this.setState({ showAIOnboardingLoadingScreen: true });
         if (templateId) {
@@ -420,7 +418,8 @@ class HomePageComponent extends React.Component {
     return 'app';
   };
 
-  createApp = async (appName, type, prompt, taggedResources) => {
+  // buildMode comes from the enterprise "Create app" dialog (Visual or Code mode); without it the server builds visually.
+  createApp = async (appName, type, prompt, taggedResources, buildMode) => {
     const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
     if (currentBranch && this.props.appType !== 'workflow') {
       try {
@@ -445,7 +444,14 @@ class HomePageComponent extends React.Component {
         name: appName,
         type: this.props.appType,
         prompt,
+        ...(buildMode && { buildMode }),
       });
+      // Never a silent downgrade: an app asked for in Code mode that the server stored as visual says so.
+      if (buildMode === 'code' && (data?.buildMode ?? data?.build_mode) !== 'code') {
+        toast.error(
+          'This server created the app in Visual builder. Ask an admin to update ToolJet to use React builder.'
+        );
+      }
       /* Posthog Event */
       posthogHelper.captureEvent('click_new_app', {
         workspace_id:
@@ -720,6 +726,12 @@ class HomePageComponent extends React.Component {
 
       const data = await appsService.importResource(requestBody, this.props.appType);
       toast.success(`${this.getAppType()} imported successfully.`);
+      if (data.imports.app?.[0]?.codeMissing) {
+        toast.error(
+          "This file doesn't include the app's code: it was exported before exports carried it. Export the app again from the original and import the new file.",
+          { duration: 10000, style: { maxWidth: '425px' } }
+        );
+      }
       this.setState({ isImportingApp: false });
 
       if (!isEmpty(data.imports.app)) {
@@ -1226,8 +1238,15 @@ class HomePageComponent extends React.Component {
           folder_id: appOperations?.selectedFolder,
         });
       })
-      .catch(() => {
-        toast.error('Failed to move apps to folder');
+      .catch((error) => {
+        const appType = this.getAppType();
+        toast.error(
+          error?.statusCode === 409
+            ? appIds.length > 1
+              ? `Selected ${appType.toLowerCase()}s already exist in the folder`
+              : `${appType} already exists in the folder`
+            : 'Failed to move apps to folder'
+        );
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
       });
   };
@@ -1840,7 +1859,7 @@ class HomePageComponent extends React.Component {
       create: {
         modalType: 'create',
         closeModal: this.closeCreateAppModal,
-        processApp: (name) => this.createApp(name),
+        processApp: (name, buildMode) => this.createApp(name, undefined, undefined, undefined, buildMode),
         show: this.openCreateAppModal,
         title: `Create ${this.getAppType().toLocaleLowerCase()}`,
         actionButton: `+ Create ${this.getAppType().toLocaleLowerCase()}`,

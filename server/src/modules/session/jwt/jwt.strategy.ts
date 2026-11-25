@@ -136,7 +136,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       }
 
       if (isUserMandatory || isGetUserSession || isInviteSession) {
-        await this.sessionUtilService.validateUserSession(payload.username, payload.sessionId, organizationId);
+        await this.sessionUtilService.validateUserSession(payload.username, payload.sessionId, organizationId, {
+          fixedExpiry: payload.fixedExpiry === true,
+        });
       }
 
       if (isGetUserSession) {
@@ -144,6 +146,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.organizationIds = payload.organizationIds;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
+        user.aiAppId = payload.aiAppId;
+        // Signed token scope travels with the principal on every branch, or the scope
+        // interceptor and session bootstrap would treat a token session as a browser login.
+        user.isPATLogin = !!payload.isPATLogin;
+        user.patAppId = payload.appId;
+        user.patScope = payload.patScope;
         if (req['isMcpOAuthAccount']) {
           // Preserve the enterprise strategy's upstream OIDC refresh/revocation
           // checks on the workspace where this browser actually authenticated.
@@ -203,6 +211,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.isSSOLogin = payload.isSSOLogin;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
+        user.aiAppId = payload.aiAppId;
         // Resolve the active Git branch once per request: explicit `branch_id` query
         // param, else the org's default branch. Consumers read user.branchId instead
         // of the old x-branch-id header.
@@ -257,14 +266,22 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     const rawQuery = req.query?.['branch_id'];
     const queryBranchId = normalize(typeof rawQuery === 'string' ? rawQuery : undefined);
-    if (queryBranchId) return queryBranchId;
+    if (queryBranchId) return this.checkWorkspaceBranch(queryBranchId, organizationId);
 
     const rawHeader = req.headers['x-branch-id'];
     const headerBranchId = normalize(Array.isArray(rawHeader) ? rawHeader[0] : rawHeader);
-    if (headerBranchId) return headerBranchId;
+    if (headerBranchId) return this.checkWorkspaceBranch(headerBranchId, organizationId);
 
     if (!organizationId) return null;
     return this.sessionUtilService.getDefaultBranchId(organizationId);
+  }
+
+  private async checkWorkspaceBranch(branchId: string, organizationId?: string): Promise<string | null> {
+    if (!organizationId) return null;
+    if (await this.sessionUtilService.isForeignBranch(branchId, organizationId)) {
+      throw new BadRequestException('Branch not found in this workspace');
+    }
+    return branchId;
   }
 
   /**
