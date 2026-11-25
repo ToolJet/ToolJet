@@ -349,4 +349,57 @@ describe('undo and redo', () => {
       },
     ]);
   });
+  describe('when the save fails', () => {
+    const failSaves = () =>
+      server.use(
+        http.put('*/v2/apps/:appId/versions/:versionId/global_settings', () =>
+          HttpResponse.json({ message: 'offline' }, { status: 500 })
+        )
+      );
+    // A failed save settles through several awaits (request, rollback); let them all finish.
+    const settle = async () => {
+      for (let i = 0; i < 10; i += 1) await flush();
+    };
+
+    test('a failed undo keeps the variable and the step, so undo can be retried', async () => {
+      state().resetUndoRedoStack();
+      await state().saveVariableDefinition({ scope: 'app', name: 'threshold', value: '5' });
+      failSaves();
+
+      state().handleUndo();
+      await settle();
+
+      expect(
+        state()
+          .getAppVariableDefinitions()
+          .map((d) => d.name)
+      ).toEqual(['threshold']);
+      expect(appVars().threshold).toBe(5);
+      expect(state().canUndo).toBe(true);
+      expect(state().canRedo).toBe(false);
+
+      server.use(http.put('*/v2/apps/:appId/versions/:versionId/global_settings', () => HttpResponse.json({})));
+      state().handleUndo();
+      await settle();
+
+      expect(state().getAppVariableDefinitions()).toEqual([]);
+      expect('threshold' in appVars()).toBe(false);
+    });
+
+    test('a failed redo keeps the undone state and the step, so redo can be retried', async () => {
+      state().resetUndoRedoStack();
+      await state().saveVariableDefinition({ scope: 'app', name: 'threshold', value: '5' });
+      state().handleUndo();
+      await settle();
+      failSaves();
+
+      state().handleRedo();
+      await settle();
+
+      expect(state().getAppVariableDefinitions()).toEqual([]);
+      expect('threshold' in appVars()).toBe(false);
+      expect(state().canRedo).toBe(true);
+      expect(state().canUndo).toBe(false);
+    });
+  });
 });

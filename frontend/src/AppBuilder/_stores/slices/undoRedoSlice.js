@@ -190,6 +190,22 @@ export const createUndoRedoSlice = (set, get) => {
       updateCanUndoRedo();
     },
 
+    /**
+     * Puts back a command step whose replay failed (its save was rejected), so the builder can retry
+     * it: a failed undo returns to the undo stack, a failed redo to the redo stack. Undo and redo move
+     * the step before its asynchronous replay finishes, so the step is found by the `run` that failed.
+     */
+    returnUndoRedoCommand: (run) => {
+      // A moved step is stored as [the replay it now offers, the replay that just ran].
+      const justRan = (entry) => entry[1]?.some((patch) => patch?.op === COMMAND_OP && patch.run === run);
+      const [from, to] = redoStack.some(justRan) ? [redoStack, undoStack] : [undoStack, redoStack];
+      const index = from.findLastIndex(justRan);
+      if (index === -1) return;
+      const [entry] = from.splice(index, 1);
+      to.push([entry[1], entry[0]]);
+      updateCanUndoRedo();
+    },
+
     resetUndoRedoStack: () => {
       undoStack.length = 0;
       redoStack.length = 0;

@@ -260,9 +260,11 @@ export const createVariablesSlice = (set, get) => ({
 
   /**
    * Puts one definition back to a recorded state (`null` = absent): store, runtime value, dependency
-   * node and saved copy. Undo and redo use it, so neither re-runs validation.
+   * node and saved copy. Undo and redo use it, so neither re-runs validation. Returns whether the
+   * save succeeded; a failed save puts the previous definition back.
    */
   applyVariableDefinitionState: async (scope, id, target, moduleId = 'canvas', persist = true) => {
+    const pageId = get().getCurrentPageId(moduleId);
     const current = get().getVariableDefinitionById(id, moduleId);
     const { [id]: _previous, ...rest } = get().getVariableDefinitionMap(scope, moduleId);
     get().setVariableDefinitionMap(scope, target ? { ...rest, [id]: toStored(target) } : rest, moduleId);
@@ -278,14 +280,27 @@ export const createVariablesSlice = (set, get) => ({
     } else {
       get().unregisterVariableDefinitionDependencies(id, moduleId);
     }
-    if (persist) await get().persistVariableDefinitions(scope, moduleId);
+    if (!persist || (await get().persistVariableDefinitions(scope, moduleId))) return true;
+
+    // Restore only while the target is still what the store holds, so a newer edit or another page's
+    // state is never overwritten by this slower failure.
+    const now = get().getVariableDefinitionById(id, moduleId);
+    const stillTarget = target ? !!now && isEqual(toStored(now), toStored(target)) : !now;
+    if (stillTarget && (scope === VARIABLE_SCOPES.APP || pageId === get().getCurrentPageId(moduleId))) {
+      await get().applyVariableDefinitionState(scope, id, current ? toStored(current) : null, moduleId, false);
+    }
+    return false;
   },
 
+  /** Records one undo step. A replay whose save fails puts the step back so it can be retried. */
   recordVariableDefinitionChange: (scope, id, before, after, moduleId = 'canvas') => {
-    get().pushUndoRedoCommand?.({
-      undo: () => get().applyVariableDefinitionState(scope, id, before, moduleId),
-      redo: () => get().applyVariableDefinitionState(scope, id, after, moduleId),
-    });
+    const undo = async () => {
+      if (!(await get().applyVariableDefinitionState(scope, id, before, moduleId))) get().returnUndoRedoCommand?.(undo);
+    };
+    const redo = async () => {
+      if (!(await get().applyVariableDefinitionState(scope, id, after, moduleId))) get().returnUndoRedoCommand?.(redo);
+    };
+    get().pushUndoRedoCommand?.({ undo, redo });
   },
 
   /**
