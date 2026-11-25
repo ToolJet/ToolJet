@@ -12,7 +12,7 @@ const VERBS = new Set([
   "pull", "push", "commit", "merge", "reset", "save", "set", "run", "upload", "fetch", "list", "connect",
   "configure", "wait", "check", "enable", "disable", "invite", "accept", "edit", "clone", "tag", "release",
   "deploy", "cancel", "approve", "apply", "assign", "fill", "submit", "search", "copy", "duplicate", "move",
-  "restore", "revoke", "sign", "share", "send", "seed", "clear", "click", "type", "fetch",
+  "restore", "revoke", "share", "send", "seed", "clear", "click", "type", "fetch",
 ]);
 const PREFIX_ENTITIES = [["git", "sync", "gitSync"], ["git", "hub", "gitHub"]];
 // General-purpose files: their symbols stay shared even when one area happens to use them.

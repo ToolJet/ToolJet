@@ -16,6 +16,7 @@ assert.strictEqual(entityOp("apiAddUserToGroup"), "userToGroup.add");
 assert.strictEqual(entityOp("gitSyncPull"), "gitSync.pull");
 assert.strictEqual(entityOp("apiGitSyncPull"), "gitSync.pull");
 assert.strictEqual(entityOp("gitHubCreatePR"), "pr.create");
+assert.strictEqual(entityOp("SignUpPageElements"), "-", "sign up/in is not an operation on an entity");
 
 // usage: prefer this area's sites, then calls with arguments; skip text the tag reader would cut
 const site = (file, text) => ({ file, line: 1, text });
