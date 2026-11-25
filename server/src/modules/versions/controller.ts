@@ -1,6 +1,6 @@
 import { InitModule } from '@modules/app/decorators/init-module';
 import { VersionService } from './service';
-import { Body, Controller, Delete, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, NotFoundException, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
@@ -12,21 +12,38 @@ import { User as UserEntity } from '@entities/user.entity';
 import { App as AppEntity } from '@entities/app.entity';
 import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { DraftVersionDto, VersionCreateDto } from './dto';
+import { ReleasePreflightService } from './services/release-preflight.service';
 import { IVersionController } from './interfaces/IController';
 @InitModule(MODULES.VERSION)
 @Controller('apps')
 export class VersionController implements IVersionController {
+  @Inject(ReleasePreflightService)
+  private readonly releasePreflight: ReleasePreflightService;
+
   constructor(protected readonly versionService: VersionService) {}
 
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/versions')
-  fetchVersions(
+  async fetchVersions(
     @User() user: UserEntity,
     @App() app: AppEntity,
-    @Query('includeDefaultBranchVersions') includeDefaultBranchVersions?: string
+    @Query('includeDefaultBranchVersions') includeDefaultBranchVersions?: string,
+    @Query('releasePreflightFor') versionId?: string,
+    @Req() request?: { user: UserEntity }
   ) {
-    return this.versionService.getAllVersions(app, user.branchId, includeDefaultBranchVersions === 'true');
+    const inventory = await this.versionService.getAllVersions(
+      app,
+      user.branchId,
+      includeDefaultBranchVersions === 'true'
+    );
+    if (versionId === undefined) return inventory;
+
+    const version = inventory.versions.find((candidate) => candidate.id === versionId);
+    if (!version) throw new NotFoundException('Release version not found in this app');
+    const preflight = await this.releasePreflight.check(app, version, request);
+    await this.versionService.checkReleasePolicies(app, version, preflight.environment_path.length - 1);
+    return { ...inventory, release_preflight: preflight };
   }
 
   @InitFeature(FEATURE_KEY.APP_VERSION_CREATE)
