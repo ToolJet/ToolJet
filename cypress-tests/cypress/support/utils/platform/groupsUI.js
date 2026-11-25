@@ -3,11 +3,6 @@ import { groupsSelector } from "Selectors/platform/manageGroups";
 import { dataSourceFolderPermissionSelectors as dsFolderPerm } from "Selectors/platform/dataSourceFolders";
 import { groupsText } from "Texts/platform/manageGroups";
 
-/**
- * @tjType   adminHelperText.verify
- * @tjBlock  access
- * @tjUsage  verifyAdminHelperText(0)
- */
 export const verifyAdminHelperText = (index = 0) => {
     cy.get(groupsSelector.helperTextAdminAppAccess)
         .eq(index)
@@ -26,10 +21,6 @@ export const verifyAdminHelperText = (index = 0) => {
         );
 };
 
-/**
- * @tjType   editUserRoleModal.verify
- * @tjBlock  access
- */
 export const verifyEditUserRoleModal = (userEmail) => {
     cy.get('[data-cy="modal-title"]')
         .last()
@@ -65,11 +56,6 @@ export const verifyEditUserRoleModal = (userEmail) => {
     cy.get('[data-cy="modal-close-button"]').should("be.visible");
 };
 
-/**
- * @tjType   allPermissions.toggle
- * @tjBlock  access
- * @tjUsage  toggleAllPermissions()
- */
 export const toggleAllPermissions = (status = ["uncheck", "check"]) => {
     permissions.forEach((permissionSelector) => {
         cy.get(permissionSelector).should("be.visible")[status[0]]();
@@ -143,11 +129,6 @@ export const selectEnvironments = (envs) => {
     });
 };
 
-/**
- * @tjType   granularEditModal.verify
- * @tjBlock  access
- * @tjUsage  verifyGranularEditModal("builder")
- */
 export const verifyGranularEditModal = (role, userType) => {
     cy.get(groupsSelector.permissionsLink).should("be.visible").click();
     cy.get(groupsSelector.granularLink).should("be.visible").click();
@@ -196,11 +177,6 @@ export const verifyGranularEditModal = (role, userType) => {
 
 };
 
-/**
- * @tjType   granularAddModal.verify
- * @tjBlock  access
- * @tjUsage  verifyGranularAddModal("builder")
- */
 export const verifyGranularAddModal = (role) => {
     cy.ifEnv("Community", () => {
         cy.get(groupsSelector.addAppsButton)
@@ -244,11 +220,6 @@ export const verifyGranularAddModal = (role) => {
     cy.get(groupsSelector.cancelButton).click();
 };
 
-/**
- * @tjType   enduserHelperText.verify
- * @tjBlock  access
- * @tjUsage  verifyEnduserHelperText(0)
- */
 export const verifyEnduserHelperText = (index = 0) => {
     cy.get(groupsSelector.helperTextAdminAppAccess)
         .eq(index)
@@ -267,11 +238,6 @@ export const verifyEnduserHelperText = (index = 0) => {
         );
 };
 
-/**
- * @tjType   granularPermissionModal.verify
- * @tjBlock  shared
- * @tjUsage  verifyGranularPermissionModalUI('folder')
- */
 export const verifyGranularPermissionModalUI = (
     resourceType,
     isEdit = false,
@@ -457,11 +423,6 @@ export const verifyGranularPermissionModalUI = (
     }
 };
 
-/**
- * @tjType   granularPermissionModalStates.verify
- * @tjBlock  access
- * @tjUsage  verifyGranularPermissionModalStates("app", "custom")
- */
 export const verifyGranularPermissionModalStates = (
     resourceType,
     role,
@@ -627,11 +588,6 @@ export const verifyGranularPermissionModalStates = (
         .and(config.customRadio.enabled ? "be.enabled" : "be.disabled");
 };
 
-/**
- * @tjType   emptyStates.verify
- * @tjBlock  access
- * @tjUsage  verifyEmptyStates()
- */
 export const verifyEmptyStates = () => {
     // Users empty state
     cy.get(groupsSelector.usersLink).click();
@@ -656,11 +612,6 @@ export const verifyEmptyStates = () => {
     );
 };
 
-/**
- * @tjType   groupLinks.verify
- * @tjBlock  access
- * @tjUsage  verifyGroupLinks()
- */
 export const verifyGroupLinks = () => {
     const links = [
         { selector: groupsSelector.usersLink, text: groupsText.usersLink },
@@ -676,10 +627,6 @@ export const verifyGroupLinks = () => {
     });
 };
 
-/**
- * @tjBlock  access
- * @tjUsage  commonGroupVerification()
- */
 export const commonGroupVerification = () => {
     cy.verifyElement(
         groupsSelector.textDefaultGroup,
@@ -723,11 +670,6 @@ export const permissions =
             groupsSelector.workspaceVarCheckbox,
         ];
 
-/**
- * @tjType   checkPermissionStates.verify
- * @tjBlock  access
- * @tjUsage  verifyCheckPermissionStates("admin")
- */
 export const verifyCheckPermissionStates = (roleType, action = null) => {
     const roleConfig = {
         admin: { checked: true, enabled: false },
@@ -746,11 +688,6 @@ export const verifyCheckPermissionStates = (roleType, action = null) => {
     });
 };
 
-/**
- * @tjType   permissionCheckBoxLabelsAndHelperTexts.verify
- * @tjBlock  access
- * @tjUsage  verifyPermissionCheckBoxLabelsAndHelperTexts()
- */
 export const verifyPermissionCheckBoxLabelsAndHelperTexts = () => {
     const commonPermissions = [
         { selector: groupsSelector.resourcesApps, text: groupsText.resourcesApps },
@@ -865,11 +802,6 @@ export const verifyEnvironmentsTags = (selector, role, userType, expectedEnvs) =
         });
 };
 
-/**
- * @tjType   granularAccessByRole.verify
- * @tjBlock  access
- * @tjUsage  verifyGranularAccessByRole("admin")
- */
 export const verifyGranularAccessByRole = (role) => {
     const roleConfig = {
         admin: {
@@ -1161,11 +1093,6 @@ export const permissionModal = () => {
     );
 };
 
-/**
- * @tjType   userRow.verify
- * @tjBlock  shared
- * @tjUsage  verifyUserRow(user.firstName, ` ${user.email}`)
- */
 export const verifyUserRow = (name, email) => {
     cy.get('[data-cy="avatar-image"]').should("be.visible");
     cy.get('[data-cy="user-name"]')
@@ -1174,10 +1101,6 @@ export const verifyUserRow = (name, email) => {
     cy.get('[data-cy="user-email"]').should("be.visible").and("have.text", email);
 };
 
-/**
- * @tjBlock  access
- * @tjUsage  granularPermissionEmptyState()
- */
 export const granularPermissionEmptyState = () => {
     cy.get(groupsSelector.granularLink).click();
 

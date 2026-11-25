@@ -144,10 +144,6 @@ export const deleteAssignedDatasources = () => {
   });
 };
 
-/**
- * @tjBlock  apps
- * @tjUsage  userSignUp(data.firstName, data.email, data.workspaceName)
- */
 export const userSignUp = (fullName, email, workspaceName) => {
   const verificationFunction =
     Cypress.env("environment") === "Enterprise"
@@ -177,10 +173,6 @@ export const userSignUp = (fullName, email, workspaceName) => {
   });
 };
 
-/**
- * @tjBlock  workspace
- * @tjUsage  allowPersonalWorkspace(true)
- */
 export const allowPersonalWorkspace = (allow = true) => {
   const value = allow ? "true" : "false";
   cy.task("dbConnection", {
@@ -211,10 +203,6 @@ export const addNewUserEE = (firstName, email) => {
   );
 };
 
-/**
- * @tjBlock  onboarding
- * @tjUsage  inviteUser(data.firstName, data.email)
- */
 export const inviteUser = (firstName, email) => {
   cy.get(usersSelector.buttonAddUsers).click();
   cy.get(commonSelectors.inputFieldFullName).type(firstName);
@@ -510,11 +498,6 @@ export const createAnAppWithSlug = (appName, slug) => {
   cy.get(commonWidgetSelector.modalCloseButton).click();
 };
 
-/**
- * @tjType   instanceSettings.open
- * @tjBlock  workspace
- * @tjUsage  openInstanceSettings()
- */
 export const openInstanceSettings = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonEeSelectors.instanceSettingIcon).click();
@@ -536,10 +519,6 @@ export const archiveWorkspace = (workspaceName) => {
   cy.get(commonEeSelectors.confirmButton).click();
 };
 
-/**
- * @tjBlock  workspace
- * @tjUsage  passwordToggle(true)
- */
 export const passwordToggle = (enable, formName = "instance") => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request(
@@ -559,10 +538,6 @@ export const passwordToggle = (enable, formName = "instance") => {
   });
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  InstanceSSO(true, true, true)
- */
 export const InstanceSSO = (personalWorkspace, enableSignup, workspaceSSO) => {
   allowPersonalWorkspace(personalWorkspace);
 
@@ -572,10 +547,6 @@ export const InstanceSSO = (personalWorkspace, enableSignup, workspaceSSO) => {
   });
 };
 
-/**
- * @tjBlock  workspace
- * @tjUsage  resetInstanceDomain(false)
- */
 export const resetInstanceDomain = () => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request(
@@ -612,10 +583,6 @@ export const defaultInstanceSSO = (enable = true) => {
     });
   });
 };
-/**
- * @tjBlock  workspace
- * @tjUsage  instanceSSOConfig(true)
- */
 export const instanceSSOConfig = (allow = true) => {
   const value = allow ? "true" : "false";
 
@@ -625,22 +592,12 @@ export const instanceSSOConfig = (allow = true) => {
   });
 };
 
-/**
- * @tjType   instanceSettings.update
- * @tjBlock  workspace
- * @tjUsage  updateInstanceSettings('ENABLE_SIGNUP', 'true')
- */
 export const updateInstanceSettings = (key, value) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `UPDATE instance_settings SET value = '${value}' WHERE key = '${key}';`,
   });
 };
-/**
- * @tjType   autoSsoToggle.update
- * @tjBlock  workspace
- * @tjUsage  updateAutoSSOToggle()
- */
 export const updateAutoSSOToggle = (allow = false) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
@@ -648,11 +605,6 @@ export const updateAutoSSOToggle = (allow = false) => {
   });
 };
 
-/**
- * @tjType   previewIsDisabled.verify
- * @tjBlock  apps
- * @tjUsage  verifyPreviewIsDisabled()
- */
 export const verifyPreviewIsDisabled = () => {
   cy.get(commonSelectors.previewSettings).should("not.exist");
   cy.get(commonSelectors.previewText).should("not.exist") 

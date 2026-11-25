@@ -9,10 +9,6 @@ import {
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/platform/dashboard";
 
-/**
- * @tjBlock  shared
- * @tjUsage  modifyAndVerifyAppCardIcon(lifecycleModuleName)
- */
 export const modifyAndVerifyAppCardIcon = (appName) => {
   var random = function (obj) {
     var keys = Object.keys(obj);

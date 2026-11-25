@@ -1,8 +1,3 @@
-/**
- * @tjType   profile.update
- * @tjBlock  access
- * @tjUsage  apiUpdateProfile("The", "Developer")
- */
 export const apiUpdateProfile = (firstName, lastName) => {
     return cy.getAuthHeaders().then((headers) => {
         return cy.request({

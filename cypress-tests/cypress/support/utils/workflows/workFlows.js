@@ -8,10 +8,6 @@ import { postgreSqlSelector } from "Selectors/marketplace/postgreSql";
 import { postgreSqlText } from "Texts/marketplace/postgreSql";
 import { viewAppCardOptions } from "Support/utils/common";
 
-/**
- * @tjBlock  workflows
- * @tjUsage  enterJsonInputInStartNode()
- */
 export const enterJsonInputInStartNode = (jsonValue) => {
   cy.get(workflowSelector.startNode).click({ force: true });
   cy.get(workflowSelector.parametersInputField)
@@ -31,20 +27,11 @@ export const enterJsonInputInStartNode = (jsonValue) => {
   cy.wait(500);
 };
 
-/**
- * @tjType   backToWorkflowsDashboard.navigate
- * @tjBlock  workflows
- * @tjUsage  navigateBackToWorkflowsDashboard()
- */
 export const navigateBackToWorkflowsDashboard = () => {
   cy.get(commonSelectors.pageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
 };
 
-/**
- * @tjBlock  workflows
- * @tjUsage  revealWorkflowToken(workflowSelector)
- */
 export const revealWorkflowToken = (selectors) => {
   cy.get(selectors.workflowTokenField)
     .invoke("text")
@@ -59,11 +46,6 @@ export const revealWorkflowToken = (selectors) => {
 
 // `fixture` is a path or an in-memory file — anything cy.selectFile accepts.
 // `beforeImport` runs once the file is picked, while the import modal is open.
-/**
- * @tjType   workflowApp.import
- * @tjBlock  workflows
- * @tjUsage  importWorkflowApp(data.workflowName, file, options)
- */
 export const importWorkflowApp = (
   workflowName,
   fixture = "cypress/fixtures/exportedApp.json",
@@ -103,11 +85,6 @@ export const deleteAppandWorkflowAfterExecution = (workflowName, appName) => {
   cy.wait("@appDeleted");
 };
 
-/**
- * @tjType   previewOutputText.verify
- * @tjBlock  workflows
- * @tjUsage  verifyPreviewOutputText(workflowsText.jsonValuePlaceholder)
- */
 export const verifyPreviewOutputText = (expectedOutput) => {
   cy.get('[data-cy="preview-button"]').click();
   cy.wait(2000);
@@ -134,21 +111,11 @@ export const verifyPreviewOutputText = (expectedOutput) => {
 // the card-menu copy differ.
 // ---------------------------------------------------------------------------
 
-/**
- * @tjType   workflowsDashboard.open
- * @tjBlock  workflows
- * @tjUsage  openWorkflowsDashboard()
- */
 export const openWorkflowsDashboard = () => {
   cy.get(workflowSelector.globalWorkFlowsIcon).click();
   cy.wait(2000);
 };
 
-/**
- * @tjType   workflow.create
- * @tjBlock  workflows
- * @tjUsage  createWorkflowFromDashboard(data.workflowName)
- */
 export const createWorkflowFromDashboard = (workflowName) => {
   cy.get(workflowSelector.workflowsCreateButton).click();
   cy.get(workflowSelector.workFlowNameInputField).clear().type(workflowName);
@@ -160,11 +127,6 @@ export const createWorkflowFromDashboard = (workflowName) => {
 // app type, so on the workflows dashboard the input is `workflow-name-input` and
 // the submit is `rename-workflow` — not the app-typed `app-name-input` /
 // `rename-app`. The submit stays disabled until the name actually changes.
-/**
- * @tjType   workflow.rename
- * @tjBlock  workflows
- * @tjUsage  renameWorkflowFromCard(data.workflowName, data.renamedWorkflow)
- */
 export const renameWorkflowFromCard = (currentName, newName) => {
   viewAppCardOptions(currentName);
   cy.get(commonSelectors.appCardOptions(workflowsText.renameWorkflowOption)).click();
@@ -179,10 +141,6 @@ export const renameWorkflowFromCard = (currentName, newName) => {
 
 // Moves a workflow into a folder through the shared Add-to-folder modal, the
 // same flow the apps dashboard spec exercises.
-/**
- * @tjBlock  workflows
- * @tjUsage  moveWorkflowToFolder(data.workflowName, data.folderName)
- */
 export const moveWorkflowToFolder = (workflowName, folderName) => {
   viewAppCardOptions(workflowName);
   cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).click();
@@ -194,11 +152,6 @@ export const moveWorkflowToFolder = (workflowName, folderName) => {
 
 // Remove from folder only renders while a folder is open, so the caller must
 // already be inside the folder.
-/**
- * @tjType   workflow.remove
- * @tjBlock  workflows
- * @tjUsage  removeWorkflowFromFolder(data.workflowName)
- */
 export const removeWorkflowFromFolder = (workflowName) => {
   viewAppCardOptions(workflowName);
   cy.get(
@@ -258,23 +211,11 @@ const cleanupAppsOfType = (names, type) => {
   });
 };
 
-/**
- * @tjBlock  workflows
- * @tjUsage  cleanupWorkflows([data.workflowName])
- */
 export const cleanupWorkflows = (names = []) => cleanupAppsOfType(names, "workflow");
-/**
- * @tjBlock  workflows
- * @tjUsage  cleanupApps([data.appName])
- */
 export const cleanupApps = (names = []) => cleanupAppsOfType(names, "front-end");
 
 // Deletes each named folder if it still exists. `types` matters: folder names
 // are unique per type, so a workflow folder and an app folder can share a name.
-/**
- * @tjBlock  workflows
- * @tjUsage  cleanupFolders([data.folderName, data.updatedFolderName], ["workflow", "front-end"])
- */
 export const cleanupFolders = (names = [], types = ["workflow"]) => {
   withAuthHeaders((headers) => {
     types.forEach((type) => {
@@ -303,10 +244,6 @@ export const cleanupFolders = (names = [], types = ["workflow"]) => {
 
 // Run after cleanupWorkflows: a data source still used by a workflow query
 // can't be deleted.
-/**
- * @tjBlock  workflows
- * @tjUsage  cleanupDataSources([data.dataSourceName])
- */
 export const cleanupDataSources = (names = []) => {
   withAuthHeaders((headers) => {
     cy.request({
@@ -340,9 +277,6 @@ export const cleanupDataSources = (names = []) => {
 // spec reads as the guarantee it makes rather than thirty lines of wiring.
 // ---------------------------------------------------------------------------
 
-/**
- * @tjBlock  workflows
- */
 export const buildLinearWorkflow = ({
   blockLabel,
   nodeName,
@@ -383,11 +317,6 @@ export const buildLinearWorkflow = ({
 // change to the connection shape is made once.
 // ---------------------------------------------------------------------------
 
-/**
- * @tjType   postgresDataSource.create
- * @tjBlock  workflows
- * @tjUsage  createPostgresDataSource(dataSourceName)
- */
 export const createPostgresDataSource = (dataSourceName) => {
   cy.get(commonSelectors.globalDataSourceIcon).click();
   cy.apiCreateDataSource(
@@ -414,11 +343,6 @@ export const createPostgresDataSource = (dataSourceName) => {
   verifyDataSourceConnection(dataSourceName);
 };
 
-/**
- * @tjType   restDataSource.create
- * @tjBlock  workflows
- * @tjUsage  createRestApiDataSource(dataSourceName)
- */
 export const createRestApiDataSource = (dataSourceName) => {
   cy.apiCreateDataSource(
     `${Cypress.env("server_host")}/api/data-sources`,
@@ -467,10 +391,6 @@ export const verifyDataSourceConnection = (dataSourceName) => {
 
 // The result arrives as a toast. A failed test reads "Test connection could not
 // be verified", which then shows up in the assertion message.
-/**
- * @tjBlock  workflows
- * @tjUsage  testDataSourceConnection()
- */
 export const testDataSourceConnection = () => {
   cy.get(postgreSqlSelector.buttonTestConnection).click();
   cy.verifyToastMessage(
@@ -485,10 +405,6 @@ export const testDataSourceConnection = () => {
 
 // Import reuses any global data source with the same name and kind, so the
 // export's data source is renamed per run to keep each import on its own.
-/**
- * @tjBlock  workflows
- * @tjUsage  workflowImportFile(workflowsText.llmAgentFixturePath, "openai", data.dataSourceName)
- */
 export const workflowImportFile = (fixturePath, dataSourceKind, dataSourceName) =>
   cy.readFile(fixturePath).then((exported) => {
     exported.app[0].definition.appV2.dataSources
@@ -503,10 +419,6 @@ export const workflowImportFile = (fixturePath, dataSourceKind, dataSourceName) 
     };
   });
 
-/**
- * @tjBlock  workflows
- * @tjUsage  isPluginInstalled("openai")
- */
 export const isPluginInstalled = (pluginId) =>
   cy.getAuthHeaders().then((headers) =>
     cy
@@ -516,10 +428,6 @@ export const isPluginInstalled = (pluginId) =>
 
 // Not cy.apiSetDataSourceCredentials: a failed request there dumps the request
 // body, key included, into the run log. Here only the status is asserted.
-/**
- * @tjBlock  workflows
- * @tjUsage  setOpenAiApiKey(data.dataSourceName, apiKey)
- */
 export const setOpenAiApiKey = (dataSourceName, apiKey) =>
   cy.apiGetEnvironments().then((environments) => {
     const development = environments.find((env) => env.name === "development");
@@ -545,10 +453,6 @@ export const setOpenAiApiKey = (dataSourceName, apiKey) =>
 
 // The editor runs workflows synchronously: the trigger request resolves only
 // once the run has finished, so waiting on it also covers slow agent runs.
-/**
- * @tjBlock  workflows
- * @tjUsage  runWorkflowFromEditor()
- */
 export const runWorkflowFromEditor = (timeout = 120000) => {
   cy.intercept("POST", "/api/workflow_executions/*/trigger").as("workflowRun");
   cy.get(workflowSelector.workflowRunButton).should("not.be.disabled").click();
@@ -558,10 +462,6 @@ export const runWorkflowFromEditor = (timeout = 120000) => {
 };
 
 // An app's workflow query runs the workflow's released version.
-/**
- * @tjBlock  workflows
- * @tjUsage  releaseWorkflow(data.workflowName)
- */
 export const releaseWorkflow = (workflowName) => {
   cy.then(() => {
     const workflowId = Cypress.env("workflowId");
@@ -575,10 +475,6 @@ export const releaseWorkflow = (workflowName) => {
 
 // An app's workflow query triggers the run the same synchronous way, so the
 // trigger response carries the workflow's result.
-/**
- * @tjBlock  workflows
- * @tjUsage  previewWorkflowQueryInApp(workflowsText.jsonValuePlaceholder)
- */
 export const previewWorkflowQueryInApp = (expectedText, timeout = 60000) => {
   cy.intercept("POST", "/api/workflow_executions/*/trigger").as("appWorkflowRun");
   cy.get(dataSourceSelector.queryPreviewButton).click();
@@ -593,11 +489,6 @@ export const previewWorkflowQueryInApp = (expectedText, timeout = 60000) => {
   return cy.get("@appWorkflowResult");
 };
 
-/**
- * @tjType   workflowExecution.get
- * @tjBlock  workflows
- * @tjUsage  getWorkflowExecution(result.executionId)
- */
 export const getWorkflowExecution = (executionId) =>
   cy.getAuthHeaders().then((headers) =>
     cy
@@ -609,11 +500,6 @@ export const getWorkflowExecution = (executionId) =>
       .its("body")
   );
 
-/**
- * @tjType   workflowQueries.get
- * @tjBlock  workflows
- * @tjUsage  getWorkflowQueries(workflowId)
- */
 export const getWorkflowQueries = (workflowId) =>
   cy.getAuthHeaders().then((headers) =>
     cy
@@ -621,11 +507,6 @@ export const getWorkflowQueries = (workflowId) =>
       .its("body.data_queries")
   );
 
-/**
- * @tjType   text.verify
- * @tjBlock  workflows
- * @tjUsage  verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue)
- */
 export const verifyTextInResponseOutputLimited = (expectedText, limit = 5) => {
   cy.get(workflowSelector.workflowRunButton).click();
   cy.get(workflowSelector.workflowLogs).should(
@@ -685,10 +566,6 @@ export const verifyTextInResponseOutputLimited = (expectedText, limit = 5) => {
 };
 // Graph builders for cy.apiSaveWorkflowDefinition.
 
-/**
- * @tjBlock  workflows
- * @tjUsage  wfStartNode()
- */
 export const wfStartNode = (id = "start") => ({
   id,
   type: "input",
@@ -699,10 +576,6 @@ export const wfStartNode = (id = "start") => ({
 });
 
 // `queryId` is the data query created by cy.apiCreateWorkflowNode.
-/**
- * @tjBlock  workflows
- * @tjUsage  wfQueryNode("echo-node", ids.echo)
- */
 export const wfQueryNode = (id, queryId, kind = "runjs", extraData = {}) => ({
   id,
   type: "query",
@@ -713,10 +586,6 @@ export const wfQueryNode = (id, queryId, kind = "runjs", extraData = {}) => ({
 });
 
 // `code` is an expression (no `return`); its truthiness picks the branch.
-/**
- * @tjBlock  workflows
- * @tjUsage  wfIfNode("if", "startTrigger.params.route === 'yes'")
- */
 export const wfIfNode = (id, code, nodeName = "ifCondition1") => ({
   id,
   type: "if-condition",
@@ -727,10 +596,6 @@ export const wfIfNode = (id, code, nodeName = "ifCondition1") => ({
 });
 
 // `code` is a function body (`return ...`). statusCode is used literally.
-/**
- * @tjBlock  workflows
- * @tjUsage  wfResponseNode("response", "return echo.data")
- */
 export const wfResponseNode = (
   id,
   code,
@@ -752,10 +617,6 @@ export const wfResponseNode = (
 });
 
 // sourceHandle: null from start, success/failure from query nodes, true/false from if nodes.
-/**
- * @tjBlock  workflows
- * @tjUsage  wfEdge("start", "if")
- */
 export const wfEdge = (source, target, sourceHandle = null) => ({
   id: `${source}-${sourceHandle ?? "out"}-${target}`,
   source,
@@ -764,9 +625,6 @@ export const wfEdge = (source, target, sourceHandle = null) => ({
   type: "custom",
 });
 
-/**
- * @tjBlock  workflows
- */
 export const workflowDefinition = ({
   nodes,
   edges,
@@ -785,10 +643,6 @@ export const workflowDefinition = ({
 });
 
 // Query nodes are named by definition.handle (the query name).
-/**
- * @tjBlock  workflows
- * @tjUsage  findExecutionNode(nodes, taken)
- */
 export const findExecutionNode = (nodes, name) =>
   nodes.find(
     (node) =>
@@ -796,11 +650,6 @@ export const findExecutionNode = (nodes, name) =>
   );
 
 // Creates runjs data queries for a graph and resolves with { name: queryId }.
-/**
- * @tjType   runjsQueries.create
- * @tjBlock  workflows
- * @tjUsage  createRunjsQueries({ pong: "return 'pong'" })
- */
 export const createRunjsQueries = (queries) => {
   const ids = {};
   cy.apiGetDataSourceId("runjs");

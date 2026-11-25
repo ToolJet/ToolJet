@@ -17,11 +17,6 @@ const optionsFallback = (kind = "runjs", nodeName = "runjs1") => {
   return {};
 };
 
-/**
- * @tjType   workflow.create
- * @tjBlock  shared
- * @tjUsage  cy.apiCreateWorkflow(resourceName)
- */
 Cypress.Commands.add("apiCreateWorkflow", (workflowName, reuseSession = false) => {
   cy.getAuthHeaders(reuseSession).then((headers) => {
     cy.request({
@@ -83,11 +78,6 @@ Cypress.Commands.add(
   }
 );
 
-/**
- * @tjType   workflow.delete
- * @tjBlock  shared
- * @tjUsage  cy.apiDeleteWorkflow(workflow1Name)
- */
 Cypress.Commands.add("apiDeleteWorkflow", (workflowName, reuseSession = false) => {
   cy.getAuthHeaders(reuseSession).then((headers) => {
     cy.request({
@@ -116,11 +106,6 @@ Cypress.Commands.add("apiDeleteWorkflow", (workflowName, reuseSession = false) =
   });
 });
 
-/**
- * @tjType   workflowApp.create
- * @tjBlock  workflows
- * @tjUsage  cy.apiCreateWorkflowApp(data.workflowName)
- */
 Cypress.Commands.add("apiCreateWorkflowApp", (workflowName, reuseSession = false) => {
   cy.getAuthHeaders(reuseSession).then((headers) => {
     cy.request({
@@ -136,10 +121,6 @@ Cypress.Commands.add("apiCreateWorkflowApp", (workflowName, reuseSession = false
   });
 });
 
-/**
- * @tjBlock  workflows
- * @tjUsage  cy.apiFetchWorkflowContext()
- */
 Cypress.Commands.add("apiFetchWorkflowContext", (reuseSession = false) => {
   cy.getAuthHeaders(reuseSession).then((headers) => {
     const workflowId = Cypress.env("workflowId");
@@ -157,11 +138,6 @@ Cypress.Commands.add("apiFetchWorkflowContext", (reuseSession = false) => {
   });
 });
 
-/**
- * @tjType   dataSourceId.get
- * @tjBlock  workflows
- * @tjUsage  cy.apiGetDataSourceId("runjs")
- */
 Cypress.Commands.add("apiGetDataSourceId", (kindOrName = "runjs", reuseSession = false) => {
   cy.getAuthHeaders(reuseSession).then((headers) => {
     const versionId = Cypress.env("editingVersionId");
@@ -182,11 +158,6 @@ Cypress.Commands.add("apiGetDataSourceId", (kindOrName = "runjs", reuseSession =
   });
 });
 
-/**
- * @tjType   workflowNode.create
- * @tjBlock  workflows
- * @tjUsage  cy.apiCreateWorkflowNode("runjs", "runjs1", { code: workflowsText.runjsNodeCode, parameters: [], })
- */
 Cypress.Commands.add("apiCreateWorkflowNode", (kind = "runjs", name = "node1", options = {}, reuseSession = false) => {
   cy.getAuthHeaders(reuseSession).then((headers) => {
     const workflowId = Cypress.env("workflowId");
@@ -216,9 +187,6 @@ Cypress.Commands.add("apiCreateWorkflowNode", (kind = "runjs", name = "node1", o
   });
 });
 
-/**
- * @tjBlock  workflows
- */
 Cypress.Commands.add(
   "apiWireWorkflowDefinition",
   (
@@ -304,10 +272,6 @@ Cypress.Commands.add(
   }
 );
 
-/**
- * @tjBlock  workflows
- * @tjUsage  cy.apiExecuteWorkflow(workflowsText.jsonValuePlaceholder)
- */
 Cypress.Commands.add("apiExecuteWorkflow", (paramValue = "your value", reuseSession = false) => {
   cy.getAuthHeaders(reuseSession).then((headers) => {
     const appVersionId = Cypress.env("editingVersionId");
@@ -341,10 +305,6 @@ Cypress.Commands.add("apiExecuteWorkflow", (paramValue = "your value", reuseSess
   });
 });
 
-/**
- * @tjBlock  workflows
- * @tjUsage  cy.apiValidateLogs()
- */
 Cypress.Commands.add("apiValidateLogs", (reuseSession = false) => {
   cy.getAuthHeaders(reuseSession).then((headers) => {
     const executionId = Cypress.env("executionId");
@@ -364,10 +324,6 @@ Cypress.Commands.add("apiValidateLogs", (reuseSession = false) => {
   });
 });
 
-/**
- * @tjBlock  workflows
- * @tjUsage  cy.apiValidateLogsWithData(workflowsText.jsonValuePlaceholder)
- */
 Cypress.Commands.add("apiValidateLogsWithData", (expectedValue, reuseSession = false) => {
   cy.getAuthHeaders(reuseSession).then((headers) => {
     const executionId = Cypress.env("executionId");
@@ -389,10 +345,6 @@ Cypress.Commands.add("apiValidateLogsWithData", (expectedValue, reuseSession = f
 });
 // Graph-level API commands.
 
-/**
- * @tjBlock  workflows
- * @tjUsage  cy.apiSaveWorkflowDefinition(data.definition)
- */
 Cypress.Commands.add(
   "apiSaveWorkflowDefinition",
   (
@@ -414,10 +366,6 @@ Cypress.Commands.add(
 );
 
 // Runs the editing version synchronously.
-/**
- * @tjBlock  workflows
- * @tjUsage  cy.apiRunWorkflow({ params: {} })
- */
 Cypress.Commands.add(
   "apiRunWorkflow",
   ({
@@ -454,11 +402,6 @@ Cypress.Commands.add(
   }
 );
 
-/**
- * @tjType   workflowExecution.get
- * @tjBlock  workflows
- * @tjUsage  cy.apiGetWorkflowExecution(failedId)
- */
 Cypress.Commands.add(
   "apiGetWorkflowExecution",
   (executionId = Cypress.env("executionId")) => {
@@ -493,11 +436,6 @@ const parseFlatted = (text) => {
 };
 
 // Resolves with the execution's node rows.
-/**
- * @tjType   workflowExecutionNodes.get
- * @tjBlock  workflows
- * @tjUsage  cy.apiGetWorkflowExecutionNodes()
- */
 Cypress.Commands.add(
   "apiGetWorkflowExecutionNodes",
   (executionId = Cypress.env("executionId")) => {
@@ -518,10 +456,6 @@ Cypress.Commands.add(
 );
 
 // The editor's "Enable" toggle: runs and webhooks are refused while off.
-/**
- * @tjBlock  workflows
- * @tjUsage  cy.apiSetWorkflowEnabled(true)
- */
 Cypress.Commands.add(
   "apiSetWorkflowEnabled",
   (enabled, workflowId = Cypress.env("workflowId")) => {
@@ -539,10 +473,6 @@ Cypress.Commands.add(
 );
 
 // Writes `workflow_enabled` on the editable version.
-/**
- * @tjBlock  workflows
- * @tjUsage  cy.apiSetWorkflowWebhookEnabled(true)
- */
 Cypress.Commands.add(
   "apiSetWorkflowWebhookEnabled",
   (enabled, workflowId = Cypress.env("workflowId")) => {
@@ -559,11 +489,6 @@ Cypress.Commands.add(
   }
 );
 
-/**
- * @tjType   workflowToken.get
- * @tjBlock  workflows
- * @tjUsage  cy.apiGetWorkflowToken()
- */
 Cypress.Commands.add(
   "apiGetWorkflowToken",
   (workflowId = Cypress.env("workflowId")) => {
@@ -579,10 +504,6 @@ Cypress.Commands.add(
 );
 
 // Calls the public webhook endpoint without session cookies.
-/**
- * @tjBlock  workflows
- * @tjUsage  cy.apiTriggerWorkflowWebhook({ qs: draftQuery() })
- */
 Cypress.Commands.add(
   "apiTriggerWorkflowWebhook",
   ({
@@ -603,11 +524,6 @@ Cypress.Commands.add(
   }
 );
 
-/**
- * @tjType   workflowWebhookStatus.get
- * @tjBlock  workflows
- * @tjUsage  cy.apiGetWorkflowWebhookStatus({ token: data.token, executionId: res.body.workflow_execution_id, })
- */
 Cypress.Commands.add(
   "apiGetWorkflowWebhookStatus",
   ({ idOrName = Cypress.env("workflowId"), token, executionId }) => {
@@ -620,11 +536,6 @@ Cypress.Commands.add(
 );
 
 // `workflowId` in the schedule body is the APP VERSION id.
-/**
- * @tjType   workflowSchedule.create
- * @tjBlock  workflows
- * @tjUsage  cy.apiCreateWorkflowSchedule({ type: "cron", details: invalidCron })
- */
 Cypress.Commands.add(
   "apiCreateWorkflowSchedule",
   ({
@@ -653,10 +564,6 @@ Cypress.Commands.add(
   }
 );
 
-/**
- * @tjBlock  workflows
- * @tjUsage  cy.apiListWorkflowSchedules()
- */
 Cypress.Commands.add(
   "apiListWorkflowSchedules",
   (workflowId = Cypress.env("workflowId")) => {
@@ -671,10 +578,6 @@ Cypress.Commands.add(
   }
 );
 
-/**
- * @tjBlock  workflows
- * @tjUsage  cy.apiActivateWorkflowSchedule(data.intervalId, true)
- */
 Cypress.Commands.add("apiActivateWorkflowSchedule", (scheduleId, active) => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -688,11 +591,6 @@ Cypress.Commands.add("apiActivateWorkflowSchedule", (scheduleId, active) => {
   });
 });
 
-/**
- * @tjType   workflowSchedule.delete
- * @tjBlock  workflows
- * @tjUsage  cy.apiDeleteWorkflowSchedule(data.cronId)
- */
 Cypress.Commands.add("apiDeleteWorkflowSchedule", (scheduleId) => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({

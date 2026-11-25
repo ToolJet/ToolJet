@@ -15,32 +15,18 @@ export const navigateToProfile = () => {
   cy.url().should("include", "settings");
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  logout()
- */
 export const logout = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.logoutLink).click();
   cy.wait(1000);
 };
 
-/**
- * @tjType   toManageUsers.navigate
- * @tjBlock  shared
- * @tjUsage  navigateToManageUsers()
- */
 export const navigateToManageUsers = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.manageUsersOption).click({ force: true });
 };
 
-/**
- * @tjType   toManageGroups.navigate
- * @tjBlock  shared
- * @tjUsage  navigateToManageGroups()
- */
 export const navigateToManageGroups = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).click();
@@ -53,11 +39,6 @@ export const navigateToWorkspaceVariable = () => {
   cy.get(commonSelectors.workspaceVariableOption).click();
 };
 
-/**
- * @tjType   toManageSso.navigate
- * @tjBlock  shared
- * @tjUsage  navigateToManageSSO()
- */
 export const navigateToManageSSO = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).click();
@@ -74,11 +55,6 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   return moment(startDate).format(format);
 };
 
-/**
- * @tjType   folder.create
- * @tjBlock  shared
- * @tjUsage  createFolder(folderName)
- */
 export const createFolder = (folderName) => {
   cy.intercept("POST", "/api/folders").as("folderCreated");
   cy.get(commonSelectors.createNewFolderButton).click();
@@ -91,11 +67,6 @@ export const createFolder = (folderName) => {
   );
 };
 
-/**
- * @tjType   folder.delete
- * @tjBlock  shared
- * @tjUsage  deleteFolder(data.folderName)
- */
 export const deleteFolder = (folderName) => {
   viewFolderCardOptions(folderName);
   cy.get(commonSelectors.deleteFolderOption(folderName)).click();
@@ -107,22 +78,12 @@ export const deleteFolder = (folderName) => {
   );
 };
 
-/**
- * @tjType   downloadsFolder.delete
- * @tjBlock  shared
- * @tjUsage  deleteDownloadsFolder()
- */
 export const deleteDownloadsFolder = () => {
   cy.exec("cd ./cypress/downloads/ && rm -rf *", {
     failOnNonZeroExit: false,
   });
 };
 
-/**
- * @tjType   toAppEditor.navigate
- * @tjBlock  shared
- * @tjUsage  navigateToAppEditor(appName)
- */
 export const navigateToAppEditor = (appName) => {
   cy.get(commonSelectors.appCard(appName))
     .trigger("mousehover")
@@ -140,10 +101,6 @@ export const navigateToAppEditor = (appName) => {
   }
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  viewAppCardOptions(data.rename)
- */
 export const viewAppCardOptions = (appName) => {
   if (Cypress.env("environment") !== "Community") {
     // waitForElement's 2nd arg is a plain number, not an options object —
@@ -162,10 +119,6 @@ export const viewAppCardOptions = (appName) => {
   });
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  viewFolderCardOptions(data.folderName)
- */
 export const viewFolderCardOptions = (folderName) => {
   cy.get(commonSelectors.folderListcard(folderName))
     .parent()
@@ -174,11 +127,6 @@ export const viewFolderCardOptions = (folderName) => {
     });
 };
 
-/**
- * @tjType   modal.verify
- * @tjBlock  shared
- * @tjUsage  verifyModal(commonText.createFolder, commonText.createFolderButton, commonSelectors.folderNameInput)
- */
 export const verifyModal = (title, buttonText, inputFiledSelector) => {
   cy.get(commonSelectors.modalComponent).should("be.visible");
   cy.get(commonSelectors.modalTitle(title))
@@ -213,20 +161,11 @@ export const verifyConfirmationModal = (messagse) => {
     .and("have.text", commonText.modalYesButton);
 };
 
-/**
- * @tjType   modal.close
- * @tjBlock  shared
- * @tjUsage  closeModal(commonText.closeButton)
- */
 export const closeModal = (buttonText) => {
   cy.get(commonSelectors.buttonSelector(buttonText)).click();
   cy.get(commonSelectors.modalComponent).should("not.exist");
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  cancelModal(commonText.cancelButton)
- */
 export const cancelModal = (buttonText) => {
   cy.get(commonSelectors.buttonSelector(buttonText)).click();
   cy.get(commonSelectors.modalComponent).should("not.exist");
@@ -250,20 +189,11 @@ export const manageUsersPagination = (email) => {
   });
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  searchUser(data.email)
- */
 export const searchUser = (email) => {
   cy.clearAndType(commonSelectors.inputUserSearch, email);
   cy.wait(1000);
 };
 
-/**
- * @tjType   appCardOption.select
- * @tjBlock  shared
- * @tjUsage  selectAppCardOption(data.appName, commonSelectors.appCardOptions(commonText.exportAppOption))
- */
 export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
   cy.get(appCardOption).should("be.visible").click();
@@ -277,11 +207,6 @@ export const randomValue = () => {
   return Math.floor(Math.random() * (1000 - 100) + 100) / 100;
 };
 
-/**
- * @tjType   tooltip.verify
- * @tjBlock  shared
- * @tjUsage  verifyTooltip(commonEeSelectors.auditLogIcon, "Audit logs are available only in paid plans", true)
- */
 export const verifyTooltip = (selector, message) => {
   cy.get(selector)
     .trigger("mouseover", { timeout: 2000 })
@@ -310,10 +235,6 @@ export const navigateToworkspaceConstants = () => {
   cy.get(commonSelectors.workspaceConstantsOption).click();
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  releaseApp()
- */
 export const releaseApp = () => {
   cy.ifEnv("Enterprise", () => {
     appPromote("development", "production");
@@ -340,10 +261,6 @@ export const verifyTooltipDisabled = (selector, message) => {
     });
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  fillInputField(googleSsoConfig)
- */
 export const fillInputField = (data) => {
   Object.entries(data).forEach(([key, value]) => {
     const labelSelector = `[data-cy="${cyParamName(key)}-label"]`;
@@ -359,11 +276,6 @@ export const navigateToSettingPage = () => {
   cy.get(commonSelectors.pageSectionHeader).should("be.visible");
 };
 
-/**
- * @tjType   instanceSettings.update
- * @tjBlock  shared
- * @tjUsage  apiUpdateInstanceSettings({customLogoutUrl: ''})
- */
 export const apiUpdateInstanceSettings = (variables) => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -379,8 +291,4 @@ export const apiUpdateInstanceSettings = (variables) => {
   })
 }
 
-/**
- * @tjBlock  shared
- * @tjUsage  sanitize(fake.lastName)
- */
 export const sanitize = (str) => str.toLowerCase().replace(/[^A-Za-z]/g, "");

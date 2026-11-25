@@ -8,11 +8,6 @@ const slugValidations = [
   { input: "T", error: "Only lowercase letters are accepted." },
 ];
 
-/**
- * @tjType   slugValidations.verify
- * @tjBlock  shared
- * @tjUsage  verifySlugValidations(commonWidgetSelector.appSlugInput)
- */
 export const verifySlugValidations = (inputSelector) => {
   slugValidations.forEach(({ input, error }) => {
     cy.get(inputSelector).clear();
@@ -25,11 +20,6 @@ export const verifySlugValidations = (inputSelector) => {
   });
 };
 
-/**
- * @tjType   successfulSlugUpdate.verify
- * @tjBlock  shared
- * @tjUsage  verifySuccessfulSlugUpdate(Cypress.env("workspaceId"), data.slug)
- */
 export const verifySuccessfulSlugUpdate = (workspaceId, slug) => {
   const host = resolveHost();
   cy.get('[data-cy="app-slug-accepted-label"]').verifyVisibleElement(
@@ -49,11 +39,6 @@ export const verifySuccessfulSlugUpdate = (workspaceId, slug) => {
   );
 };
 
-/**
- * @tjType   urLs.verify
- * @tjBlock  shared
- * @tjUsage  verifyURLs(Cypress.env("workspaceId"), newSlug, true)
- */
 export const verifyURLs = (workspaceId, slug, page) => {
   const baseUrl = Cypress.config("baseUrl");
 
@@ -82,10 +67,6 @@ export const verifyURLs = (workspaceId, slug, page) => {
   cy.url().should("eq", `${baseUrl}/applications/${slug}`);
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  setUpSlug(data.slug)
- */
 export const setUpSlug = (slug) => {
   cy.get(commonWidgetSelector.shareAppButton).click();
   cy.clearAndType(commonWidgetSelector.appNameSlugInput, slug);
@@ -95,10 +76,6 @@ export const setUpSlug = (slug) => {
   cy.get(commonWidgetSelector.modalCloseButton).click();
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  setupAppWithSlug(data.appName, data.slug)
- */
 export const setupAppWithSlug = (
   appName,
   slug,
@@ -132,11 +109,6 @@ export const setupAppWithSlug = (
   cy.log(`App ID: ${Cypress.env("appId")}`);
 };
 
-/**
- * @tjType   restrictedAccess.verify
- * @tjBlock  shared
- * @tjUsage  verifyRestrictedAccess(data.appName)
- */
 export const verifyRestrictedAccess = (appName) => {
   cy.get('[data-cy="modal-header"]').should("have.text", "Restricted access");
   cy.get('[data-cy="back-to-home-button"]').verifyVisibleElement(
@@ -213,10 +185,6 @@ export const onboardUserFromAppLink = (
   });
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  resolveHost()
- */
 export const resolveHost = () => {
   // When running behind a proxy (nginx), use the actual server host
   // Otherwise, use the baseUrl directly

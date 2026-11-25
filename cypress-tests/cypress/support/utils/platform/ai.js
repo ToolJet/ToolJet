@@ -3,11 +3,6 @@ import { aiSelectors } from "Selectors/platform/ai";
 import { aiText } from "Texts/platform/ai";
 
 
-/**
- * @tjType   toLlmKeyPage.navigate
- * @tjBlock  shared
- * @tjUsage  navigateToLlmKeyPage(workspaceId)
- */
 export const navigateToLlmKeyPage = (workspaceId = Cypress.env("workspaceId")) => {
   cy.visit(
     Cypress.env("environment") === "Cloud"
@@ -18,11 +13,6 @@ export const navigateToLlmKeyPage = (workspaceId = Cypress.env("workspaceId")) =
 };
 
 
-/**
- * @tjType   envToggleState.verify
- * @tjBlock  licensing
- * @tjUsage  verifyEnvToggleState(true)
- */
 export const verifyEnvToggleState = (expectedOn) => {
   if (expectedOn) {
     cy.get(aiSelectors.llmKeyEnvToggle)
@@ -36,10 +26,6 @@ export const verifyEnvToggleState = (expectedOn) => {
 };
 
 
-/**
- * @tjBlock  licensing
- * @tjUsage  enterAndSaveApiKey(validApiKey)
- */
 export const enterAndSaveApiKey = (apiKey) => {
   cy.get(aiSelectors.llmKeyInput).click();
   cy.clearAndType(aiSelectors.llmKeyInput, apiKey);
@@ -47,40 +33,20 @@ export const enterAndSaveApiKey = (apiKey) => {
 };
 
 
-/**
- * @tjType   keyInputDisabled.verify
- * @tjBlock  licensing
- * @tjUsage  verifyKeyInputDisabled()
- */
 export const verifyKeyInputDisabled = () => {
   cy.get(aiSelectors.llmKeyInput).should("be.disabled");
 };
 
-/**
- * @tjType   keyInputEnabled.verify
- * @tjBlock  licensing
- * @tjUsage  verifyKeyInputEnabled()
- */
 export const verifyKeyInputEnabled = () => {
   cy.get(aiSelectors.llmKeyInput).should("be.enabled");
 };
 
 
-/**
- * @tjType   saveButtonDisabled.verify
- * @tjBlock  licensing
- * @tjUsage  verifySaveButtonDisabled()
- */
 export const verifySaveButtonDisabled = () => {
   cy.get(aiSelectors.llmKeySaveButton).should("be.disabled");
 };
 
 
-/**
- * @tjType   keyMasked.verify
- * @tjBlock  shared
- * @tjUsage  verifyKeyMasked()
- */
 export const verifyKeyMasked = () => {
   cy.get(aiSelectors.llmKeyInput)
     .invoke("attr", "type")
@@ -100,11 +66,6 @@ export const verifyNoCreditUI = () => {
 };
 
 
-/**
- * @tjType   noAiCreditSection.verify
- * @tjBlock  licensing
- * @tjUsage  verifyNoAiCreditSection()
- */
 export const verifyNoAiCreditSection = () => {
   cy.get("body").then(($body) => {
     expect($body.find(aiSelectors.aiCreditsSubTab).length).to.eq(0);
@@ -131,11 +92,6 @@ export const verifyAiChatResponse = () => {
 };
 
 
-/**
- * @tjType   envToggleOff.ensure
- * @tjBlock  licensing
- * @tjUsage  ensureEnvToggleOff()
- */
 export const ensureEnvToggleOff = () => {
   cy.get(aiSelectors.llmKeyEnvToggle).then(($toggle) => {
     if ($toggle.find("input").is(":checked")) {
@@ -158,11 +114,6 @@ export const ensureEnvToggleOff = () => {
 };
 
 
-/**
- * @tjType   aiChatWorksWithCredits.verify
- * @tjBlock  licensing
- * @tjUsage  verifyAiChatWorksWithCredits(data.appName)
- */
 export const verifyAiChatWorksWithCredits = (appName) => {
   cy.apiCreateApp(appName);
   cy.openApp(appName);
@@ -182,11 +133,6 @@ export const verifyAiChatWorksWithCredits = (appName) => {
 };
 
 
-/**
- * @tjType   aiChatWorksWithoutCredits.verify
- * @tjBlock  licensing
- * @tjUsage  verifyAiChatWorksWithoutCredits(data.appName, "Create a table component")
- */
 export const verifyAiChatWorksWithoutCredits = (appName, message = "Create a simple hello world button", type) => {
   cy.apiCreateApp(appName);
   cy.openApp(appName);
@@ -199,11 +145,6 @@ export const verifyAiChatWorksWithoutCredits = (appName, message = "Create a sim
 };
 
 
-/**
- * @tjType   keyRequired.verify
- * @tjBlock  licensing
- * @tjUsage  verifyApiKeyRequiredInApp(data.appName)
- */
 export const verifyApiKeyRequiredInApp = (appName, options = {}) => {
   const message = options.message || aiText.apiKeyRequiredMessage;
   const buttonText = options.buttonText || aiText.connectApiKeyButton;
@@ -218,11 +159,6 @@ export const verifyApiKeyRequiredInApp = (appName, options = {}) => {
 };
 
 
-/**
- * @tjType   copilot.verify
- * @tjBlock  licensing
- * @tjUsage  verifyCopilotInQueryPanel(data.appName)
- */
 export const verifyCopilotInQueryPanel = (appName, errorMessage = "") => {
   cy.apiCreateApp(appName);
   cy.openApp(appName);
@@ -246,11 +182,6 @@ export const verifyCopilotInQueryPanel = (appName, errorMessage = "") => {
 };
 
 
-/**
- * @tjType   fixWithAi.verify
- * @tjBlock  licensing
- * @tjUsage  verifyFixWithAiInStyles(data.appName)
- */
 export const verifyFixWithAiInStyles = (appName, options = {}) => {
   cy.apiCreateApp(appName);
   cy.openApp(appName);
@@ -276,22 +207,12 @@ export const verifyFixWithAiInStyles = (appName, options = {}) => {
 
 
 // The auth cookie is tied to one workspace, so switch the session before calling or opening another one.
-/**
- * @tjType   toWorkspace.login
- * @tjBlock  cloud
- * @tjUsage  loginToWorkspace(adminEmail, teamId)
- */
 export const loginToWorkspace = (adminEmail, workspaceId, password = "password") => {
   cy.clearCookies();
   cy.apiLogin(adminEmail, password, workspaceId);
 };
 
 // A fresh workspace per test lets its plan be set before the server caches its licence.
-/**
- * @tjType   freshCloudWorkspace.create
- * @tjBlock  cloud
- * @tjUsage  createFreshCloudWorkspace(adminEmail, signupWorkspaceId)
- */
 export const createFreshCloudWorkspace = (adminEmail, loginWorkspaceId, password = "password") => {
   const name = `cloud-ai-${Date.now()}-${Cypress._.random(1e6)}`;
   // A second login on top of an existing session sends two auth cookies.

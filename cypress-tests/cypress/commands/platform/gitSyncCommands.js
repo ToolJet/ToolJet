@@ -1,9 +1,5 @@
 import { gitSyncSelectors as GS } from "Selectors/platform/gitsync";
 
-/**
- * @tjBlock  gitSync
- * @tjUsage  cy.gitSyncCheckAndConfigure()
- */
 Cypress.Commands.add("gitSyncCheckAndConfigure", () => {
   return cy.getAuthHeaders().then((headers) => {
     const orgId = Cypress.env("workspaceId");
@@ -63,10 +59,6 @@ Cypress.Commands.add("gitSyncCheckAndConfigure", () => {
   });
 });
 
-/**
- * @tjBlock  gitSync
- * @tjUsage  cy.gitSyncGetBranchId(branchA)
- */
 Cypress.Commands.add("gitSyncGetBranchId", (branchName) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -85,10 +77,6 @@ Cypress.Commands.add("gitSyncGetBranchId", (branchName) => {
   });
 });
 
-/**
- * @tjBlock  gitSync
- * @tjUsage  cy.gitSyncCreateBranchViaApi(branchA)
- */
 Cypress.Commands.add("gitSyncCreateBranchViaApi", (branchName) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -129,10 +117,6 @@ Cypress.Commands.add("gitSyncCreateBranchViaApi", (branchName) => {
   });
 });
 
-/**
- * @tjBlock  gitSync
- * @tjUsage  cy.gitSyncImportAppFromFixture(FIXTURE, appName, branchName)
- */
 Cypress.Commands.add(
   "gitSyncImportAppFromFixture",
   (fixturePath, appName, branchName) => {
@@ -196,10 +180,6 @@ Cypress.Commands.add(
   },
 );
 
-/**
- * @tjBlock  gitSync
- * @tjUsage  cy.gitSyncCreateBranchViaUI(branchName)
- */
 Cypress.Commands.add("gitSyncCreateBranchViaUI", (branchName) => {
   cy.get("body").then(($body) => {
     if ($body.find(GS.wsBranchPopover).length === 0) {
@@ -217,10 +197,6 @@ Cypress.Commands.add("gitSyncCreateBranchViaUI", (branchName) => {
   cy.log(`[gitSync] Branch '${branchName}' created via UI`);
 });
 
-/**
- * @tjBlock  gitSync
- * @tjUsage  cy.gitSyncSwitchBranch("master")
- */
 Cypress.Commands.add("gitSyncSwitchBranch", (branchName) => {
   cy.get(GS.wsBranchHeader).click();
   cy.get(GS.wsBranchPopover).should("be.visible");
@@ -234,10 +210,6 @@ Cypress.Commands.add("gitSyncSwitchBranch", (branchName) => {
   cy.log(`[gitSync] Switched to branch '${branchName}'`);
 });
 
-/**
- * @tjBlock  gitSync
- * @tjUsage  cy.gitSyncDashboardPush(message)
- */
 Cypress.Commands.add("gitSyncDashboardPush", (message) => {
   // The "Commit" CTA button is only rendered when the URL includes "data-sources".
   // Navigate there so the button is visible, then open the push modal.
@@ -264,10 +236,6 @@ Cypress.Commands.add("gitSyncDashboardPush", (message) => {
 });
 
 
-/**
- * @tjBlock  gitSync
- * @tjUsage  cy.gitHubWaitForCommitsAhead(branchName, "master")
- */
 Cypress.Commands.add(
   "gitHubWaitForCommitsAhead",
   (headBranch, baseBranch = "master", retries = 10) => {
@@ -308,10 +276,6 @@ Cypress.Commands.add(
   },
 );
 
-/**
- * @tjBlock  gitSync
- * @tjUsage  cy.gitHubCreatePR(branchName, message, "master")
- */
 Cypress.Commands.add(
   "gitHubCreatePR",
   (headBranch, title, baseBranch = "master") => {
@@ -339,10 +303,6 @@ Cypress.Commands.add(
   },
 );
 
-/**
- * @tjBlock  gitSync
- * @tjUsage  cy.gitHubMergePR(pr)
- */
 Cypress.Commands.add("gitHubMergePR", (prNumber = Cypress.env("prNumber")) => {
   const owner = Cypress.env("GITHUB_REPO_OWNER");
   const repo = Cypress.env("GITHUB_REPO_NAME");
@@ -363,10 +323,6 @@ Cypress.Commands.add("gitHubMergePR", (prNumber = Cypress.env("prNumber")) => {
     });
 });
 
-/**
- * @tjBlock  gitSync
- * @tjUsage  cy.gitHubDeleteBranch(branchName)
- */
 Cypress.Commands.add("gitHubDeleteBranch", (branchName) => {
   const owner = Cypress.env("GITHUB_REPO_OWNER");
   const repo = Cypress.env("GITHUB_REPO_NAME");
@@ -389,10 +345,6 @@ Cypress.Commands.add("gitHubDeleteBranch", (branchName) => {
 });
 
 
-/**
- * @tjBlock  gitSync
- * @tjUsage  cy.gitSyncGoToDashboard()
- */
 Cypress.Commands.add("gitSyncGoToDashboard", () => {
   const workspace = Cypress.env("workspaceSlug") || "";
   const url = workspace ? `/${workspace}` : "/";
@@ -404,11 +356,6 @@ Cypress.Commands.add("gitSyncGoToDashboard", () => {
 });
 
 
-/**
- * @tjType   module.create
- * @tjBlock  shared
- * @tjUsage  cy.apiCreateModule(moduleName)
- */
 Cypress.Commands.add("apiCreateModule", (moduleName, branchId) => {
   return cy.getAuthHeaders().then((headers) =>
     cy
@@ -427,11 +374,6 @@ Cypress.Commands.add("apiCreateModule", (moduleName, branchId) => {
   );
 });
 
-/**
- * @tjType   moduleCorrelationId.get
- * @tjBlock  gitSync
- * @tjUsage  cy.apiGetModuleCorrelationId(module.id)
- */
 Cypress.Commands.add("apiGetModuleCorrelationId", (moduleId) => {
   return cy.getAuthHeaders().then((headers) =>
     cy
@@ -452,11 +394,6 @@ Cypress.Commands.add("apiGetModuleCorrelationId", (moduleId) => {
   );
 });
 
-/**
- * @tjType   module.rename
- * @tjBlock  gitSync
- * @tjUsage  cy.apiRenameModule(module.id, renamedName)
- */
 Cypress.Commands.add("apiRenameModule", (moduleId, newName) => {
   return cy.getAuthHeaders().then((headers) =>
     cy
@@ -474,11 +411,6 @@ Cypress.Commands.add("apiRenameModule", (moduleId, newName) => {
 });
 
 
-/**
- * @tjType   app.create
- * @tjBlock  gitSync
- * @tjUsage  cy.apiCreateAppOnBranch(appA, branchAId)
- */
 Cypress.Commands.add("apiCreateAppOnBranch", (appName, branchId) => {
   return cy.getAuthHeaders().then((headers) =>
     cy
@@ -497,11 +429,6 @@ Cypress.Commands.add("apiCreateAppOnBranch", (appName, branchId) => {
   );
 });
 
-/**
- * @tjType   appIdByName.get
- * @tjBlock  gitSync
- * @tjUsage  cy.apiGetAppIdByNameOnBranch(appName, branchId2)
- */
 Cypress.Commands.add("apiGetAppIdByNameOnBranch", (appName, branchId) => {
   return cy.getAuthHeaders().then((headers) =>
     cy

@@ -31,11 +31,6 @@ export const uiVerifyAppCreatePrivilege = (hasPrivilege = true) => {
   cy.get(commonSelectors.appCreateButton).should(assertion);
 };
 
-/**
- * @tjType   folder.create
- * @tjBlock  shared
- * @tjUsage  uiCreateFolder(folderName)
- */
 export const uiCreateFolder = (folderName) => {
   cy.get(commonSelectors.createNewFolderButton).click();
   cy.clearAndType(commonSelectors.folderNameInput, folderName);

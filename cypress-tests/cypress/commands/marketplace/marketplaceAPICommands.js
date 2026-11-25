@@ -1,9 +1,5 @@
 const envVar = Cypress.env("environment");
 
-/**
- * @tjType   dataSource.create
- * @tjBlock  shared
- */
 Cypress.Commands.add("apiCreateDataSource", (url, name, kind, options, setCredentials = false) => {
     cy.getAuthHeaders().then((headers) => {
         cy.request(
@@ -105,11 +101,6 @@ Cypress.Commands.add("apiFetchDataSourcesIdFromApp", (cachedHeader) => {
     });
 });
 
-/**
- * @tjType   dataSource.delete
- * @tjBlock  shared
- * @tjUsage  cy.apiDeleteDataSource(deletedName)
- */
 Cypress.Commands.add("apiDeleteDataSource", (name, cachedHeader) => {
     const dataSourceId = Cypress.env(`${name}-dataSource-id`);
 
@@ -166,11 +157,6 @@ Cypress.Commands.add(
     }
 );
 
-/**
- * @tjType   dataSourceIdByName.get
- * @tjBlock  shared
- * @tjUsage  cy.apiGetDataSourceIdByName(data.dataSourceName)
- */
 Cypress.Commands.add("apiGetDataSourceIdByName", (dataSourceName, cachedHeader) => {
     return cy.getAuthHeaders(cachedHeader).then((headers) => {
         return cy.request({

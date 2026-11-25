@@ -11,11 +11,6 @@ import {
   importText,
 } from "Texts/platform/exportImport";
 
-/**
- * @tjType   elementsOfExportModal.verify
- * @tjBlock  shared
- * @tjUsage  verifyElementsOfExportModal("v1")
- */
 export const verifyElementsOfExportModal = (
   currentVersionName,
   otherVersionName = []
@@ -93,10 +88,6 @@ export const createNewVersion = (newVersion = [], version) => {
   );
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  clickOnExportButtonAndVerify(exportAppModalText.exportAll, appName)
- */
 export const clickOnExportButtonAndVerify = (buttonText, appName) => {
   cy.get(commonSelectors.buttonSelector(buttonText)).click();
   cy.wait(1000);
@@ -108,11 +99,6 @@ export const clickOnExportButtonAndVerify = (buttonText, appName) => {
   });
 };
 
-/**
- * @tjType   allVersionsAndVerify.export
- * @tjBlock  shared
- * @tjUsage  exportAllVersionsAndVerify(data.appName2, "v1")
- */
 export const exportAllVersionsAndVerify = (
   appName,
   currentVersionName,
@@ -143,11 +129,6 @@ export const exportAllVersionsAndVerify = (
   });
 };
 
-/**
- * @tjType   andVerifyApp.import
- * @tjBlock  shared
- * @tjUsage  importAndVerifyApp(TEST_DATA.appFiles.singleVersion)
- */
 export const importAndVerifyApp = (filePath, expectedToast) => {
   cy.get(importSelectors.importOptionInput)
     .eq(0)
@@ -164,11 +145,6 @@ export const importAndVerifyApp = (filePath, expectedToast) => {
   }
 };
 
-/**
- * @tjType   importModalElements.verify
- * @tjBlock  shared
- * @tjUsage  verifyImportModalElements("three-versions")
- */
 export const verifyImportModalElements = (expectedAppName) => {
   cy.get(importSelectors.importAppTitle).verifyVisibleElement(
     "have.text",
@@ -194,10 +170,6 @@ export const verifyImportModalElements = (expectedAppName) => {
   );
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  setupDataSourceWithConstants(dsEnv)
- */
 export const setupDataSourceWithConstants = (
   dsEnv,
   name = "postgresql",
@@ -219,10 +191,6 @@ export const setupDataSourceWithConstants = (
   });
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  validateExportedAppStructure(appData, data.appName, { validateVersions: false, })
- */
 export const validateExportedAppStructure = (
   appData,
   expectedAppName,

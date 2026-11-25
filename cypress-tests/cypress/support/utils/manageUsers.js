@@ -10,11 +10,6 @@ import { usersText } from "Texts/platform/manageUsers";
 
 const envVar = Cypress.env("environment");
 
-/**
- * @tjType   manageUsersPageElements.verify
- * @tjBlock  onboarding
- * @tjUsage  verifyManageUsersPageElements()
- */
 export const verifyManageUsersPageElements = () => {
   cy.get(
     `[data-cy="breadcrumb-header-${cyParamName(commonText.breadcrumbworkspaceSettingTitle)}"]>>`
@@ -115,10 +110,6 @@ export const verifyManageUsersPageElements = () => {
   cy.get(usersSelector.bulkUploadUsers).should("be.visible");
 };
 
-/**
- * @tjBlock  apps
- * @tjUsage  inviteUserToWorkspace(data.firstName, data.email)
- */
 export const inviteUserToWorkspace = (firstName, email) => {
   cy.apiUserInvite(firstName, email);
   fetchAndVisitInviteLink(email);
@@ -127,10 +118,6 @@ export const inviteUserToWorkspace = (firstName, email) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  confirmInviteElements(data.email)
- */
 export const confirmInviteElements = (
   email,
   workspaceName = "My workspace"
@@ -190,10 +177,6 @@ export const userStatus = (email) => {
     });
 };
 
-/**
- * @tjBlock  onboarding
- * @tjUsage  bulkUserUpload(testCase.path, testCase.fileName, testCase.error, testCase.isDuplicate)
- */
 export const bulkUserUpload = (
   file,
   fileName,
@@ -240,11 +223,6 @@ export const bulkUserUpload = (
 // Verifies the static elements of the new bulk upload drawer (opened from the
 // "Bulk upload users" header button) and that both CSV downloads actually work.
 // Assumes the drawer is already open.
-/**
- * @tjType   bulkUploadDrawerElements.verify
- * @tjBlock  onboarding
- * @tjUsage  verifyBulkUploadDrawerElements()
- */
 export const verifyBulkUploadDrawerElements = () => {
   cy.get(usersSelector.bulkUploadDrawerTitle).verifyVisibleElement(
     "have.text",
@@ -328,20 +306,11 @@ export const copyInvitationLink = (firstName, email) => {
   });
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  fillUserInviteForm(data.firstName, data.email)
- */
 export const fillUserInviteForm = (firstName, email) => {
   cy.get(usersSelector.buttonAddUsers).click();
   fillInputField({ Name: firstName, "Email address": email });
 };
 
-/**
- * @tjType   userGroup.select
- * @tjBlock  shared
- * @tjUsage  selectUserGroup("Admin")
- */
 export const selectUserGroup = (groupName) => {
   cy.wait(1500);
   cy.get("body").then(($body) => {
@@ -356,32 +325,18 @@ export const selectUserGroup = (groupName) => {
   });
 };
 
-/**
- * @tjType   group.select
- * @tjBlock  onboarding
- * @tjUsage  selectGroup("Admin")
- */
 export const selectGroup = (groupName, timeout = 1000) => {
   cy.get(usersSelector.groupSelector).eq(0).type(groupName);
   cy.wait(timeout);
   cy.get(usersSelector.groupSelectInput).eq(0).check();
 };
 
-/**
- * @tjType   userGroup.update
- * @tjBlock  onboarding
- * @tjUsage  updateUserGroup("Admin")
- */
 export const updateUserGroup = (groupName) => {
   cy.get(usersSelector.userActionButton).click();
   cy.get(usersSelector.editUserDetailsButton).click();
   selectGroup(groupName);
 };
 
-/**
- * @tjBlock  onboarding
- * @tjUsage  inviteUserWithUserGroups(data.firstName, data.email, data.groupName1, data.groupName2)
- */
 export const inviteUserWithUserGroups = (firstName, email, ...groupNames) => {
   fillUserInviteForm(firstName, email);
 
@@ -418,10 +373,6 @@ export const inviteUserWithUserGroups = (firstName, email, ...groupNames) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  fetchAndVisitInviteLink(email)
- */
 export const fetchAndVisitInviteLink = (
   email,
   workspaceName = "My workspace"
@@ -456,10 +407,6 @@ export const fetchAndVisitInviteLink = (
     });
 };
 
-/**
- * @tjBlock  onboarding
- * @tjUsage  fetchAndVisitInviteLinkViaMH(data.email)
- */
 export const fetchAndVisitInviteLinkViaMH = (email) => {
   cy.mhGetMailsByRecipient(email).then((mails) => {
     expect(mails).to.have.length.greaterThan(0);
@@ -499,10 +446,6 @@ export const fetchAndVisitInviteLinkViaMH = (email) => {
   });
 };
 
-/**
- * @tjBlock  onboarding
- * @tjUsage  inviteUserWithUserRole(data.firstName, data.email, "Admin")
- */
 export const inviteUserWithUserRole = (firstName, email, role) => {
   fillUserInviteForm(firstName, email);
 
@@ -534,11 +477,6 @@ export const inviteUserWithUserRole = (firstName, email, role) => {
   cy.get(commonSelectors.acceptInviteButton).click();
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should("be.visible");
 };
-/**
- * @tjType   userStatusAndMetadata.verify
- * @tjBlock  workspace
- * @tjUsage  verifyUserStatusAndMetadata(data.email, usersText.activeStatus, "{..}")
- */
 export const verifyUserStatusAndMetadata = (
   email,
   expectedStatus = usersText.activeStatus,
@@ -555,11 +493,6 @@ export const verifyUserStatusAndMetadata = (
     });
 };
 
-/**
- * @tjType   editUserDetails.open
- * @tjBlock  workspace
- * @tjUsage  openEditUserDetails(data.email)
- */
 export const openEditUserDetails = (
   email,
   activeStatusText = usersText.activeStatus,
@@ -572,11 +505,6 @@ export const openEditUserDetails = (
   navigateToEditUser(email);
 };
 
-/**
- * @tjType   toEditUser.navigate
- * @tjBlock  licensing
- * @tjUsage  navigateToEditUser(commonText.email)
- */
 export const navigateToEditUser = (email) => {
   cy.contains("td", email)
     .parent()
@@ -588,10 +516,6 @@ export const navigateToEditUser = (email) => {
     .click();
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  cleanAllUsers()
- */
 export const cleanAllUsers = () => {
   let authHeaders;
   const emailsToDelete = new Set();
@@ -669,11 +593,6 @@ export const cleanAllUsers = () => {
     });
 };
 
-/**
- * @tjType   unarchiveUser.archive
- * @tjBlock  shared
- * @tjUsage  apiArchiveUnarchiveUser(data.endUser1.email, "archive")
- */
 export const apiArchiveUnarchiveUser = (
   email,
   action,

@@ -12,11 +12,6 @@ import {
     openInstanceSettings,
 } from "Support/utils/platform/eeCommon";
 
-/**
- * @tjType   smtpSettings.open
- * @tjBlock  superAdmin
- * @tjUsage  openSMTPSettings()
- */
 export const openSMTPSettings = () => {
     openInstanceSettings();
     cy.get(smtpSelectors.smtpListItem).click();
@@ -29,11 +24,6 @@ export const verifyInputPlaceholder = (selector, expected) => {
         .and(($p) => expect(($p || "").toString().toLowerCase()).to.contain(expected));
 };
 
-/**
- * @tjType   smtpSettings.verify
- * @tjBlock  superAdmin
- * @tjUsage  verifySmtpSettingsUI()
- */
 export const verifySmtpSettingsUI = () => {
     cy.get(smtpSelectors.smtpStatuslabel).then(($label) => {
         const currentState = $label.text().trim();

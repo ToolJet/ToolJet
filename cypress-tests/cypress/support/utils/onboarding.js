@@ -7,11 +7,6 @@ import { commonText } from "Texts/common";
 import { ssoText } from "Texts/platform/manageSSO";
 import { onboardingText } from "Texts/platform/onboarding";
 
-/**
- * @tjType   confirmEmailPage.verify
- * @tjBlock  cloud
- * @tjUsage  verifyConfirmEmailPage(signupEmail)
- */
 export const verifyConfirmEmailPage = (email) => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
   cy.get('[data-cy="check-your-mail-header"]').verifyVisibleElement(
@@ -67,10 +62,6 @@ export const verifyInvalidInvitationLink = () => {
   // );
 };
 
-/**
- * @tjBlock  apps
- * @tjUsage  userSignUp(data.firstName, data.email, data.workspaceName)
- */
 export const userSignUp = (fullName, email, workspaceName = "test") => {
   cy.intercept("GET", "/api/login-configs/public").as("publicConfig");
   cy.visit("/");
@@ -96,10 +87,6 @@ export const userSignUp = (fullName, email, workspaceName = "test") => {
   }
 };
 
-/**
- * @tjBlock  onboarding
- * @tjUsage  inviteUser(data.firstName, data.email)
- */
 export const inviteUser = (firstName, email) => {
   cy.apiUserInvite(firstName, email);
   fetchAndVisitInviteLink(email);
@@ -112,11 +99,6 @@ export const inviteUser = (firstName, email) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
-/**
- * @tjType   newUser.add
- * @tjBlock  onboarding
- * @tjUsage  addNewUser(data.firstName, data.email)
- */
 export const addNewUser = (firstName, email) => {
   navigateToManageUsers();
   inviteUser(firstName, email);
@@ -135,11 +117,6 @@ export const roleBasedOnboarding = (firstName, email, userRole) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
-/**
- * @tjType   workspaceInvitation.visit
- * @tjBlock  onboarding
- * @tjUsage  visitWorkspaceInvitation(data.email, workspaceName)
- */
 export const visitWorkspaceInvitation = (email, workspaceName) => {
   let workspaceId, userId, url, organizationToken;
 
@@ -168,10 +145,6 @@ export const visitWorkspaceInvitation = (email, workspaceName) => {
   });
 };
 
-/**
- * @tjBlock  onboarding
- * @tjUsage  SignUpPageElements()
- */
 export const SignUpPageElements = () => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
   cy.get(commonSelectors.signUpSectionHeader).verifyVisibleElement(
@@ -250,10 +223,6 @@ export const signUpLink = (email) => {
   });
 };
 
-/**
- * @tjBlock  onboarding
- * @tjUsage  bannerElementsVerification()
- */
 export const bannerElementsVerification = () => {
   const bannerElements = [
     { selector: commonSelectors.HostBanner },
@@ -274,10 +243,6 @@ export const enableInstanceSignUp = (allow = true) => {
   });
 };
 
-/**
- * @tjBlock  onboarding
- * @tjUsage  onboardingStepOne()
- */
 export const onboardingStepOne = () => {
   const companyPageTexts = [
     {
@@ -324,10 +289,6 @@ export const onboardingStepOne = () => {
     .click();
 };
 
-/**
- * @tjBlock  onboarding
- * @tjUsage  onboardingStepTwo()
- */
 export const onboardingStepTwo = (workspaceName = "My workspace") => {
   cy.get(commonSelectors.setUpworkspaceCheckPoint)
     .should("be.visible")
@@ -372,11 +333,6 @@ export const onboardingStepThree = () => {
     .click();
 };
 
-/**
- * @tjType   userMetadata.add
- * @tjBlock  workspace
- * @tjUsage  addUserMetadata(metadata)
- */
 export const addUserMetadata = (metadataList) => {
   metadataList.forEach(([key, value], index) => {
     cy.get(commonSelectors.buttonSelector("add-more"))
@@ -405,10 +361,6 @@ export const addUserMetadata = (metadataList) => {
   });
 };
 
-/**
- * @tjBlock  workspace
- * @tjUsage  userMetadataOnboarding(data.firstName, data.email, "builder", metadata)
- */
 export const userMetadataOnboarding = (
   firstName,
   email,
@@ -433,11 +385,6 @@ export const userMetadataOnboarding = (
   return cy.wrap(metadataCount);
 };
 
-/**
- * @tjType   userMetadataElements.verify
- * @tjBlock  workspace
- * @tjUsage  verifyUserMetadataElements(index)
- */
 export const verifyUserMetadataElements = (index = 0) => {
   cy.get(onboardingSelectors.userMetadataLabel).should("be.visible");
   cy.get(onboardingSelectors.emptyKeyValueLabel).should("be.visible");
@@ -453,11 +400,6 @@ export const verifyUserMetadataElements = (index = 0) => {
   ).should("be.visible");
 };
 
-/**
- * @tjType   userGroup.select
- * @tjBlock  shared
- * @tjUsage  selectUserGroup("Admin")
- */
 export const selectUserGroup = (groupName) => {
   cy.get(onboardingSelectors.userGroupSelect).should("be.visible").click();
   cy.contains(`[id*="react-select-"]`, groupName).should("be.visible").click();

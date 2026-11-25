@@ -5,11 +5,6 @@ import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { openInstanceSettings } from "Support/utils/platform/eeCommon";
 import { whitelabelTestData } from "Constants/constants/whitelabel";
 
-/**
- * @tjType   whiteLabelingSettings.open
- * @tjBlock  shared
- * @tjUsage  openWhiteLabelingSettings(workspaceId)
- */
 export const openWhiteLabelingSettings = (
   workspaceId = Cypress.env("workspaceId")
 ) => {
@@ -26,11 +21,6 @@ export const openWhiteLabelingSettings = (
   cy.get(whiteLabelSelectors.navWhiteLabellingListItem).click();
 };
 
-/**
- * @tjType   whiteLabeling.verify
- * @tjBlock  shared
- * @tjUsage  verifyWhiteLabelingUI()
- */
 export const verifyWhiteLabelingUI = () => {
   cy.get(commonEeSelectors.pageTitle).verifyVisibleElement(
     "have.text",
@@ -76,10 +66,6 @@ export const verifyWhiteLabelingUI = () => {
   );
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  fillWhiteLabelingForm(whitelabelTestData.logo, pageTitle, whitelabelTestData.favicon, loginBanner)
- */
 export const fillWhiteLabelingForm = (
   logo = whitelabelTestData.logo,
   pageTitle = whitelabelTestData.pageTitle,
@@ -94,20 +80,11 @@ export const fillWhiteLabelingForm = (
   }
 };
 
-/**
- * @tjBlock  shared
- * @tjUsage  saveWhiteLabelingChanges()
- */
 export const saveWhiteLabelingChanges = () => {
   cy.get(whiteLabelSelectors.saveButton).click();
   cy.wait("@saveWhitelabel");
 };
 
-/**
- * @tjType   customLogo.verify
- * @tjBlock  shared
- * @tjUsage  verifyCustomLogo(whiteLabelSelectors.tooljetHeaderImg)
- */
 export const verifyCustomLogo = (
   selector,
   logoIdentifier = whitelabelTestData.logoIdentifier
@@ -118,11 +95,6 @@ export const verifyCustomLogo = (
     .and("include", logoIdentifier);
 };
 
-/**
- * @tjType   pageTitleAndFavicon.verify
- * @tjBlock  shared
- * @tjUsage  verifyPageTitleAndFavicon(pageTitle)
- */
 export const verifyPageTitleAndFavicon = (
   pageTitle = whitelabelTestData.pageTitle,
   logoIdentifier = whitelabelTestData.logoIdentifier
@@ -133,11 +105,6 @@ export const verifyPageTitleAndFavicon = (
     .and("include", logoIdentifier);
 };
 
-/**
- * @tjType   logo.verify
- * @tjBlock  shared
- * @tjUsage  verifyLogoOnLoginPage()
- */
 export const verifyLogoOnLoginPage = () => {
   cy.apiLogout();
   cy.visit("/");
@@ -145,11 +112,6 @@ export const verifyLogoOnLoginPage = () => {
   verifyCustomLogo(whiteLabelSelectors.tooljetHeaderImg);
 };
 
-/**
- * @tjType   logo.verify
- * @tjBlock  shared
- * @tjUsage  verifyLogoOnWorkspaceLoginPage("my-workspace")
- */
 export const verifyLogoOnWorkspaceLoginPage = (workspaceName) => {
   cy.visit(`/${workspaceName}`);
   verifyCustomLogo(whiteLabelSelectors.tooljetHeaderImg);
@@ -206,11 +168,6 @@ export const verifyWhiteLabelInEmail = (
   }
 };
 
-/**
- * @tjType   invitationEmail.verify
- * @tjBlock  shared
- * @tjUsage  verifyInvitationEmail(email, { expectedLogo: whitelabelTestData.logo, expectedText: whitelabelTestData.pageTitle, })
- */
 export const verifyInvitationEmail = (
   email,
   whiteLabelConfig = {},
@@ -266,11 +223,6 @@ export const verifyInvitationEmail = (
   checkForEmail();
 };
 
-/**
- * @tjType   whiteLabelInputs.verify
- * @tjBlock  shared
- * @tjUsage  verifyWhiteLabelInputs(whitelabelTestData.logo, pageTitle, whitelabelTestData.favicon, loginBanner)
- */
 export const verifyWhiteLabelInputs = (
   logo = whitelabelTestData.logo,
   pageTitle = whitelabelTestData.pageTitle,

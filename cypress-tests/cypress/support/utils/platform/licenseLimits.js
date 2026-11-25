@@ -45,31 +45,16 @@ const verifySuperAdminModalState = ({
     }
 };
 
-/**
- * @tjType   allUsersTab.ensure
- * @tjBlock  licensing
- * @tjUsage  ensureAllUsersTab()
- */
 const ensureAllUsersTab = () => {
     cy.get(instanceSettingsSelector.allWorkspaceTab).click();
     cy.get(instanceSettingsSelector.allUsersTab).click({ force: true });
 };
 
-/**
- * @tjType   allUsersSettings.visit
- * @tjBlock  licensing
- * @tjUsage  visitAllUsersSettings()
- */
 const visitAllUsersSettings = () => {
     cy.visit("settings/all-users");
     ensureAllUsersTab();
 };
 
-/**
- * @tjType   nearingSuperAdminLimit.verify
- * @tjBlock  licensing
- * @tjUsage  verifyNearingSuperAdminLimit(data.email1)
- */
 const verifyNearingSuperAdminLimit = (email) => {
     verifySuperAdminModalState({
         email,
@@ -81,11 +66,6 @@ const verifyNearingSuperAdminLimit = (email) => {
     });
 };
 
-/**
- * @tjType   limitReachedForSuperAdmin.verify
- * @tjBlock  licensing
- * @tjUsage  verifyLimitReachedForSuperAdmin(data.email1)
- */
 const verifyLimitReachedForSuperAdmin = (email) => {
     verifySuperAdminModalState({
         email,
@@ -95,11 +75,6 @@ const verifyLimitReachedForSuperAdmin = (email) => {
     });
 };
 
-/**
- * @tjType   limitReachedForOtherUser.verify
- * @tjBlock  licensing
- * @tjUsage  verifyLimitReachedForOtherUser(data.email2)
- */
 const verifyLimitReachedForOtherUser = (email) => {
     verifySuperAdminModalState({
         email,
@@ -109,11 +84,6 @@ const verifyLimitReachedForOtherUser = (email) => {
     });
 };
 
-/**
- * @tjType   toggleEnabledAfterDemotion.verify
- * @tjBlock  licensing
- * @tjUsage  verifyToggleEnabledAfterDemotion(data.email2)
- */
 const verifyToggleEnabledAfterDemotion = (email) => {
     verifySuperAdminModalState({
         email,

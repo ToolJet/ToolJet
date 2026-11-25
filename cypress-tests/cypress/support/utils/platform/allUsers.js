@@ -22,20 +22,10 @@ import { onboardingSelectors } from "Selectors/platform/onboarding";
 
 import { usersText } from "Texts/platform/manageUsers";
 
-/**
- * @tjType   allUsersPage.open
- * @tjBlock  superAdmin
- * @tjUsage  openAllUsersPage()
- */
 export const openAllUsersPage = () => {
   openInstanceSettings();
 };
 
-/**
- * @tjType   allUsersHeader.verify
- * @tjBlock  superAdmin
- * @tjUsage  verifyAllUsersHeaderUI()
- */
 export const verifyAllUsersHeaderUI = () => {
   cy.get(commonEeSelectors.pageTitle).verifyVisibleElement(
     "have.text",
@@ -59,11 +49,6 @@ export const verifyAllUsersHeaderUI = () => {
   );
 };
 
-/**
- * @tjType   tableControls.verify
- * @tjBlock  superAdmin
- * @tjUsage  verifyTableControls()
- */
 export const verifyTableControls = () => {
   for (const element in usersTableElementsInInstance) {
     cy.get(usersTableElementsInInstance[element]).verifyVisibleElement(
@@ -82,11 +67,6 @@ export const verifyTableControls = () => {
   );
 };
 
-/**
- * @tjType   usersFilterOptions.verify
- * @tjBlock  superAdmin
- * @tjUsage  verifyUsersFilterOptions()
- */
 export const verifyUsersFilterOptions = () => {
   cy.get(usersSelector.userFilterInput).click();
   ["All", "Active", "Invited", "Archived"].forEach((opt) => {
@@ -95,11 +75,6 @@ export const verifyUsersFilterOptions = () => {
   cy.get("body").click(0, 0);
 };
 
-/**
- * @tjType   userRow.verify
- * @tjBlock  shared
- * @tjUsage  verifyUserRow(user.firstName, ` ${user.email}`)
- */
 export const verifyUserRow = (
   userName,
   userEmail,
@@ -128,11 +103,6 @@ export const openResetPasswordModal = () => {
   cy.get(instanceAllUsersSelectors.resetPasswordButton).click();
 };
 
-/**
- * @tjType   resetPasswordModal.verify
- * @tjBlock  superAdmin
- * @tjUsage  verifyResetPasswordModalUI(data.userEmail)
- */
 export const verifyResetPasswordModalUI = (userEmail) => {
   openResetPasswordModal();
   cy.get('[data-cy="reset-password-title"]').should(
@@ -155,11 +125,6 @@ export const verifyResetPasswordModalUI = (userEmail) => {
   cy.get(commonSelectors.cancelButton).click();
 };
 
-/**
- * @tjType   userActionMenu.verify
- * @tjBlock  superAdmin
- * @tjUsage  verifyUserActionMenu(data.userEmail)
- */
 export const verifyUserActionMenu = (userEmail) => {
   openUserActionMenu(userEmail);
   cy.get(instanceAllUsersSelectors.editUserDetailsButton).verifyVisibleElement(
@@ -178,11 +143,6 @@ export const openArchiveUserModal = (userName) => {
   cy.get(instanceAllUsersSelectors.archiveUserButton).click();
 };
 
-/**
- * @tjType   archiveUserModal.verify
- * @tjBlock  superAdmin
- * @tjUsage  verifyArchiveUserModalUI(data.userName, data.userEmail)
- */
 export const verifyArchiveUserModalUI = (userName, userEmail) => {
   openArchiveUserModal(userEmail);
   cy.get(commonEeSelectors.modalTitle).contains(
@@ -210,21 +170,11 @@ export const verifyArchiveUserModalUI = (userName, userEmail) => {
 
 };
 
-/**
- * @tjType   editUserModal.open
- * @tjBlock  superAdmin
- * @tjUsage  openEditUserModal(data.userEmail)
- */
 export const openEditUserModal = (userEmail) => {
   openUserActionMenu(userEmail);
   cy.get(instanceAllUsersSelectors.editUserDetailsButton).click();
 };
 
-/**
- * @tjType   userNameAndVerifyChanges.update
- * @tjBlock  superAdmin
- * @tjUsage  updateUserNameAndVerifyChanges({ currentName: data.userName, userEmail: data.userEmail, newName: updatedName, })
- */
 export const updateUserNameAndVerifyChanges = ({
   currentName,
   userEmail,
@@ -250,11 +200,6 @@ export const updateUserNameAndVerifyChanges = ({
   cy.contains(newName).should("be.visible");
 };
 
-/**
- * @tjType   unarchiveUserModal.verify
- * @tjBlock  superAdmin
- * @tjUsage  verifyUnarchiveUserModal(data.userName, data.userEmail)
- */
 export const verifyUnarchiveUserModal = (userName, userEmail) => {
   openArchiveUserModal(userEmail);
 
@@ -280,11 +225,6 @@ export const verifyUnarchiveUserModal = (userName, userEmail) => {
   );
 };
 
-/**
- * @tjType   asUser.login
- * @tjBlock  access
- * @tjUsage  loginAsUser(data.email)
- */
 export const loginAsUser = (email, password = usersText.password) => {
   cy.visit("/my-workspace");
   cy.waitForElement(onboardingSelectors.signupEmailInput);
@@ -294,21 +234,11 @@ export const loginAsUser = (email, password = usersText.password) => {
   cy.get(onboardingSelectors.signInButton).click();
 };
 
-/**
- * @tjType   andExpectToast.login
- * @tjBlock  superAdmin
- * @tjUsage  loginAndExpectToast(data.userEmail, "Invalid credentials")
- */
 export const loginAndExpectToast = (email, message, password = usersText.password) => {
   loginAsUser(email, password);
   cy.verifyToastMessage(commonSelectors.toastMessage, message);
 };
 
-/**
- * @tjType   allUsersPage.visit
- * @tjBlock  superAdmin
- * @tjUsage  visitAllUsersPage(data.userEmail)
- */
 export const visitAllUsersPage = (loginEmail) => {
   if (loginEmail) {
     cy.apiLogin(loginEmail);
