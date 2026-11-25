@@ -12,6 +12,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const ButtonGroupV2 = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -53,8 +54,10 @@ export const ButtonGroupV2 = (props) => {
     selectedTextColor,
     selectedIconColor,
     borderRadius,
+    borderRadiusStyle,
     btnAlignment,
     boxShadow,
+    boxShadowStyle,
     padding,
     labelFontSize,
   } = styles;
@@ -275,10 +278,10 @@ export const ButtonGroupV2 = (props) => {
   const commonStyles = {
     backgroundColor,
     color: textColor,
-    borderRadius: `${borderRadius}px`,
+    borderRadius: themedRadius(borderRadiusStyle, borderRadius),
     border: `1px solid ${borderColor}`,
     transition: 'all .1s ease',
-    boxShadow,
+    boxShadow: themedShadow(boxShadowStyle, boxShadow),
   };
 
   const normalizedTextSize = Number(textSize);

@@ -18,6 +18,9 @@ import {
   MODULE_ID,
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { componentDefinition } from '@/test/app-builder';
+import { fileButtonConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const ID = 'filebtn1';
 const NAME = 'filebutton1';
@@ -716,5 +719,60 @@ describe('FileButton: saved-app compatibility', () => {
     await selectFiles(container, file);
 
     expect(clearButton(container)).not.toBeInTheDocument();
+  });
+});
+
+// Theme border radius / box shadow (contract D-07..D-10, as Button's D-03..D-06).
+// This spec seeds no registered defaults, so a render without the theme keys is a FileButton saved before them.
+describe('FileButton: theme border radius and box shadow', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[FileButton-THEME-001] a newly dropped FileButton starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: fileButton.js losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(fileButtonConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(fileButtonConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(fileButtonConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(fileButtonConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[FileButton-THEME-002] a FileButton saved before theme styles keeps its own radius and shadow after load', () => {
+    // Break this catches: the load merge stamping the new-drop defaults (Large / None) onto saved FileButtons.
+    const savedStyles = { borderRadius: binding('10'), boxShadow: binding('5px 5px 0px 0px #00000040') };
+    const saved = componentDefinition(
+      ID,
+      NAME,
+      'FileButton',
+      {},
+      {
+        styles: savedStyles,
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles } = buildComponentMetaDefinition({ [ID]: saved })[ID].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+
+    const { container } = widget.render({ styles });
+    expect(browseButton(container).style.borderRadius).toBe('10px');
+    expect(browseButton(container).style.boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[FileButton-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: FileButton.jsx rendering `${borderRadius}px` / the raw boxShadow whatever the theme style.
+    const { container } = widget.render({
+      styles: {
+        borderRadius: binding('6'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    expect(browseButton(container).style.borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(browseButton(container).style.boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty(ID, 'borderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty(ID, 'borderRadius', '10', 'styles');
+    await waitFor(() => expect(browseButton(container).style.borderRadius).toBe('10px'));
   });
 });

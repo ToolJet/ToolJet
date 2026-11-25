@@ -8,6 +8,7 @@ import { useFilePicker } from '@/AppBuilder/Widgets/FilePicker/hooks/useFilePick
 import { getModifiedColor, getCssVarValue } from '@/AppBuilder/Widgets/utils';
 import clsx from 'clsx';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 // Alpha applied to the configured background to render the disabled state. Fading (rather than
 // lightening/darkening) keeps the chosen hue and reads as disabled on both light and dark surfaces.
@@ -55,7 +56,9 @@ const FileButton = (props) => {
     backgroundColor = 'var(--cc-primary-brand)',
     hoverBackgroundColor = 'auto',
     borderRadius = 6,
+    borderRadiusStyle,
     boxShadow = '0px 0px 0px 0px #00000040',
+    boxShadowStyle,
     padding = 'default',
   } = styles;
 
@@ -157,8 +160,8 @@ const FileButton = (props) => {
 
   // Dynamic values that cannot be expressed as static Tailwind classes
   const buttonStyle = {
-    borderRadius: `${borderRadius}px`,
-    boxShadow,
+    borderRadius: themedRadius(borderRadiusStyle, borderRadius),
+    boxShadow: themedShadow(boxShadowStyle, boxShadow),
     ...(buttonType === 'solid' && {
       '--button-primary': backgroundColor,
       '--button-primary-hover': computedHoverBgColor,

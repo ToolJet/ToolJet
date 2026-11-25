@@ -3,6 +3,7 @@ import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 const tinycolor = require('tinycolor2');
 
 export const CustomButton = forwardRef((props, forwardedRef) => {
@@ -30,9 +31,11 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
     textSize = 14,
     fontWeight,
     borderRadius,
+    borderRadiusStyle,
     loaderColor,
     borderColor,
     boxShadow,
+    boxShadowStyle,
     iconColor,
     direction,
     contentAlignment,
@@ -98,7 +101,7 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
     backgroundColor: computedBgColor,
     color: computedTextColor,
     width: '100%',
-    borderRadius: `${borderRadius}px`,
+    borderRadius: themedRadius(borderRadiusStyle, borderRadius),
     height: height === 36 ? '36px' : height,
     '--tblr-btn-color-darker': computedHoverBgColor,
     '--tblr-btn-color-clicked':
@@ -107,7 +110,7 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
         : 'var(--interactive-overlay-fill-pressed)',
     '--loader-color': tinycolor(computedLoaderColor ?? 'var(--icons-on-solid)').toString(),
     borderColor: computedBorderColor,
-    boxShadow: buttonType === 'primary' && boxShadow,
+    boxShadow: buttonType === 'primary' && themedShadow(boxShadowStyle, boxShadow),
     padding: '0px 12px',
     opacity: exposedVariablesTemporaryState.isDisabled && '50%',
     display: exposedVariablesTemporaryState.isVisible

@@ -8,6 +8,9 @@
  */
 import { screen, waitFor, within } from '@testing-library/react';
 import { createWidgetHarness, binding, store } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { componentDefinition } from '@/test/app-builder';
+import { popoverMenuConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const ID = 'pm1';
 const NAME = 'popovermenu1';
@@ -61,6 +64,10 @@ const widget = createWidgetHarness({
     direction: binding('left'),
     borderRadius: binding('6'),
     boxShadow: binding('0px 0px 0px 0px #00000040'),
+    // The scenarios above the theme ones drive the widget's own radius / shadow (Custom); new drops default to the
+    // theme's Large / None (PopoverMenu-THEME-001).
+    borderRadiusStyle: binding('custom'),
+    boxShadowStyle: binding('custom'),
     optionsTextColor: binding('var(--cc-primary-text)'),
     optionsIconColor: binding('var(--cc-default-icon)'),
     optionsDescriptionColor: binding('var(--cc-placeholder-text)'),
@@ -685,5 +692,88 @@ describe('PopoverMenu', () => {
       await openViaClick();
       expect(popup()).toHaveStyle({ width: '300px' });
     });
+  });
+});
+
+// Theme border radius / box shadow (contract D-07..D-10, as Button's D-03..D-06).
+describe('PopoverMenu: theme border radius and box shadow', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[PopoverMenu-THEME-001] a newly dropped menu starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: popoverMenu.js losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(popoverMenuConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(popoverMenuConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(popoverMenuConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(popoverMenuConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[PopoverMenu-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value; outline drops a themed shadow', async () => {
+    // Break this catches: CustomButton.jsx rendering `${borderRadius}px` / the raw boxShadow whatever the theme style,
+    // or the primary-only shadow gate skipped for a themed shadow.
+    widget.render({
+      styles: {
+        borderRadius: binding('6'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    expect(trigger().style.borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(trigger().style.boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty(ID, 'borderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty(ID, 'borderRadius', '10', 'styles');
+    await waitFor(() => expect(trigger().style.borderRadius).toBe('10px'));
+
+    widget.render({ styles: { boxShadowStyle: binding('300') }, properties: { buttonType: binding('outline') } });
+    expect(trigger().style.boxShadow).toBeFalsy();
+  });
+});
+
+// A menu saved before theme styles: seeded as stored (no registered defaults), then through the editor's load merge.
+const savedWidget = createWidgetHarness({
+  componentType: 'PopoverMenu',
+  handle: NAME,
+  id: ID,
+  seedFromRegisteredDefinition: false,
+  defaultProperties: {
+    label: binding('Menu'),
+    buttonType: binding('primary'),
+    trigger: binding('click'),
+    visibility: binding('{{true}}'),
+    disabledState: binding('{{false}}'),
+    loadingState: binding('{{false}}'),
+    advanced: binding('{{false}}'),
+    optionsLoadingState: binding('{{false}}'),
+    schema: binding('{{[]}}'),
+    options: { value: THREE_OPTIONS },
+  },
+});
+
+describe('PopoverMenu: saved before theme styles', () => {
+  beforeEach(savedWidget.setup);
+  afterEach(savedWidget.teardown);
+
+  test('[PopoverMenu-THEME-002] a menu saved before theme styles keeps its own radius and shadow after load', () => {
+    // Break this catches: the load merge stamping the new-drop defaults (Large / None) onto saved menus.
+    const savedStyles = { borderRadius: binding('10'), boxShadow: binding('5px 5px 0px 0px #00000040') };
+    const saved = componentDefinition(
+      ID,
+      NAME,
+      'PopoverMenu',
+      {},
+      {
+        styles: savedStyles,
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles } = buildComponentMetaDefinition({ [ID]: saved })[ID].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+
+    savedWidget.render({ styles });
+    expect(trigger().style.borderRadius).toBe('10px');
+    expect(trigger().style.boxShadow).toBe('5px 5px 0px 0px #00000040');
   });
 });

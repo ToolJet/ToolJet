@@ -133,7 +133,13 @@ export const dropNewContainerDefaults = (componentType, mergedProperties, savedP
 // boxShadowStyle). Both load merges (the frontend's buildComponentMetaDefinition, the server's on every load) would
 // stamp them onto every saved widget and switch it from its own radius and shadow to the theme's; a saved widget
 // without them keeps its own values (an absent key renders as custom).
-export const NEW_DROP_ONLY_STYLES = { Button: ['borderRadiusStyle', 'boxShadowStyle'] };
+const THEME_STYLE_KEYS = ['borderRadiusStyle', 'boxShadowStyle'];
+export const NEW_DROP_ONLY_STYLES = {
+  Button: THEME_STYLE_KEYS,
+  ButtonGroupV2: THEME_STYLE_KEYS,
+  PopoverMenu: THEME_STYLE_KEYS,
+  FileButton: THEME_STYLE_KEYS,
+};
 
 /**
  * Takes the new-drop-only style defaults back out of a saved widget's merged styles when the saved styles did not have

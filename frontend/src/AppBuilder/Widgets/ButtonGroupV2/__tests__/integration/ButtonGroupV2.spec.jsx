@@ -7,6 +7,8 @@
  */
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
+import { buttonGroupV2Config } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 import {
   MODULE_ID,
   binding,
@@ -70,8 +72,12 @@ const DEFAULT_STYLES = {
   selectedTextColor: binding('#ffffff'),
   selectedIconColor: binding('#eeeeee'),
   borderRadius: binding('{{6}}'),
+  // The scenarios above the theme ones drive the widget's own radius / shadow (Custom); new drops default to the
+  // theme's Large / None (ButtonGroupV2-THEME-001).
+  borderRadiusStyle: binding('custom'),
   btnAlignment: binding('left'),
   boxShadow: binding('0px 1px 2px 0px #00000040'),
+  boxShadowStyle: binding('custom'),
   padding: binding('default'),
 };
 
@@ -619,5 +625,86 @@ describe('ButtonGroupV2', () => {
     await waitFor(() => expect(outer(container, NAME)).not.toBeInTheDocument());
     expect(outer(container, 'buttongroup2')).toBeInTheDocument();
     expect(widget.exposed('bg2').selected).toEqual([]);
+  });
+});
+
+// Theme border radius / box shadow (contract D-07..D-10, as Button's D-03..D-06).
+describe('ButtonGroupV2: theme border radius and box shadow', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[ButtonGroupV2-THEME-001] a newly dropped group starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: buttonGroupV2.js losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(buttonGroupV2Config.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(buttonGroupV2Config.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(buttonGroupV2Config.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(buttonGroupV2Config.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[ButtonGroupV2-THEME-003] a theme item renders its variable on every button with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: ButtonGroupV2.jsx rendering `${borderRadius}px` / the raw boxShadow whatever the theme style.
+    const { container } = widget.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    buttons(container).forEach((b) => {
+      expect(b.style.borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+      expect(b.style.boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+    });
+
+    await setProperty('borderRadiusStyle', 'custom', 'styles');
+    await setProperty('borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(button('Button1', container).style.borderRadius).toBe('10px'));
+  });
+});
+
+// A group saved before theme styles: seeded as stored (no registered defaults), then through the editor's load merge.
+const savedWidget = createWidgetHarness({
+  componentType: 'ButtonGroupV2',
+  handle: NAME,
+  id: ID,
+  seedFromRegisteredDefinition: false,
+  defaultProperties: DEFAULT_PROPERTIES,
+  defaultValidation: DEFAULT_VALIDATION,
+  widgetHeight: 80,
+  widgetWidth: 420,
+});
+
+describe('ButtonGroupV2: saved before theme styles', () => {
+  beforeEach(savedWidget.setup);
+  afterEach(savedWidget.teardown);
+
+  test('[ButtonGroupV2-THEME-002] a group saved before theme styles keeps its own radius and shadow after load', () => {
+    // Break this catches: the load merge stamping the new-drop defaults (Large / None) onto saved groups.
+    const {
+      borderRadiusStyle: _r,
+      boxShadowStyle: _s,
+      ...savedStyles
+    } = {
+      ...DEFAULT_STYLES,
+      borderRadius: binding('{{10}}'),
+      boxShadow: binding('5px 5px 0px 0px #00000040'),
+    };
+    const saved = componentDefinition(
+      ID,
+      NAME,
+      'ButtonGroupV2',
+      {},
+      {
+        styles: savedStyles,
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles } = buildComponentMetaDefinition({ [ID]: saved })[ID].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+
+    const { container } = savedWidget.render({ styles });
+    expect(button('Button1', container).style.borderRadius).toBe('10px');
+    expect(button('Button1', container).style.boxShadow).toBe('5px 5px 0px 0px #00000040');
   });
 });
