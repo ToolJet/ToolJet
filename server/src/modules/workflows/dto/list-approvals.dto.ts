@@ -1,57 +1,27 @@
-import {
-  IsBoolean,
-  IsOptional,
-  IsString,
-  IsUUID,
-  IsDateString,
-  IsIn,
-  IsInt,
-  Matches,
-  MaxLength,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsOptional, IsString, IsUUID, IsDateString, IsInt, Matches, Min, Max } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { FULL_DATE } from '@modules/workflows/helpers/approval-date-range';
-import { APPROVAL_LIST_SORTS, ApprovalListSort } from '@modules/workflows/types/approval-list';
-
-// A query param given once arrives as a string, repeated as an array.
-const toArray = ({ value }: { value: unknown }) => (Array.isArray(value) ? value : value ? [value] : undefined);
 
 export class ListApprovalsDto {
   @IsOptional()
-  @Transform(toArray)
+  @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : undefined))
   status?: string[];
 
   @IsOptional()
-  @Transform(toArray)
-  @IsUUID('all', { each: true })
-  app_id?: string[];
+  @IsUUID()
+  app_id?: string;
 
   @IsOptional()
   @IsUUID()
   folder_id?: string;
 
   @IsOptional()
-  @Transform(toArray)
-  @IsUUID('all', { each: true })
-  environment_id?: string[];
+  @IsUUID()
+  environment_id?: string;
 
   @IsOptional()
   @IsString()
   approver?: string;
-
-  // A user or group id, or an approver email (the id email approvers carry in the list).
-  @IsOptional()
-  @Transform(toArray)
-  @IsString({ each: true })
-  @MaxLength(320, { each: true })
-  approver_id?: string[];
-
-  @IsOptional()
-  @Transform(({ value }) => value === true || value === 'true')
-  @IsBoolean()
-  no_deadline?: boolean;
 
   @IsOptional()
   @IsDateString()
@@ -62,20 +32,6 @@ export class ListApprovalsDto {
   @IsDateString()
   @Matches(FULL_DATE)
   to?: string;
-
-  @IsOptional()
-  @IsDateString()
-  @Matches(FULL_DATE)
-  due_from?: string;
-
-  @IsOptional()
-  @IsDateString()
-  @Matches(FULL_DATE)
-  due_to?: string;
-
-  @IsOptional()
-  @IsIn(APPROVAL_LIST_SORTS)
-  sort?: ApprovalListSort;
 
   @IsOptional()
   @Type(() => Number)

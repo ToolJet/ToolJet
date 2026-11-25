@@ -185,10 +185,11 @@ function getWorkspaceExecutions(filters = {}, page = 1, perPage = 15, signal) {
   params.set('per_page', perPage);
   (filters.statuses || []).forEach((status) => params.append('status', status));
   (filters.triggers || []).forEach((trigger) => params.append('trigger', trigger));
-  appendScope(params, filters);
+  if (filters.appId) params.set('app_id', filters.appId);
+  if (filters.folderId) params.set('folder_id', filters.folderId);
+  if (filters.environmentId) params.set('environment_id', filters.environmentId);
   if (filters.from) params.set('from', toLocalDayBoundary(filters.from, 'start'));
   if (filters.to) params.set('to', toLocalDayBoundary(filters.to, 'end'));
-  if (filters.sort) params.set('sort', filters.sort);
 
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include', signal };
   return fetch(`${config.apiUrl}/workflow_executions/workspace?${params.toString()}`, requestOptions).then(
@@ -207,17 +208,12 @@ function getWorkspaceExecutionStates(executionIds, signal) {
   return fetch(`${config.apiUrl}/workflow_executions/workspace/states`, requestOptions).then(handleResponse);
 }
 
-// appId / environmentId take one id or an array of ids.
-function appendScope(params, filters) {
-  [].concat(filters.appId || []).forEach((appId) => params.append('app_id', appId));
-  [].concat(filters.environmentId || []).forEach((id) => params.append('environment_id', id));
-  if (filters.folderId) params.set('folder_id', filters.folderId);
-}
-
 // Scope selectors only: status/trigger/date do not apply to future runs.
 function getUpcomingRuns(filters = {}, signal) {
   const params = new URLSearchParams();
-  appendScope(params, filters);
+  if (filters.environmentId) params.set('environment_id', filters.environmentId);
+  if (filters.appId) params.set('app_id', filters.appId);
+  if (filters.folderId) params.set('folder_id', filters.folderId);
 
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include', signal };
   return fetch(`${config.apiUrl}/workflow_executions/workspace/upcoming?${params.toString()}`, requestOptions).then(

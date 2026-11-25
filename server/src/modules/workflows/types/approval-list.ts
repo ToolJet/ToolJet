@@ -2,30 +2,16 @@ import { ApprovalRequestStatus, WorkflowApprovalRequest } from '@entities/workfl
 import { App } from '@entities/app.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
 
-export const APPROVAL_LIST_SORTS = ['created_desc', 'created_asc', 'due_asc', 'due_desc'] as const;
-export type ApprovalListSort = (typeof APPROVAL_LIST_SORTS)[number];
-
 export interface ApprovalListFilters {
   statuses?: string[];
-  /** One workflow id or several. */
-  appId?: string | string[];
+  appId?: string;
   /** Folder membership only; folder_apps.branch_id ignored (workflows are not git-synced). */
   folderId?: string;
-  /** One environment id or several. */
-  environmentId?: string | string[];
+  environmentId?: string;
   /** Free-text match against approver ids and emails, and the user or group names the list shows. */
   approver?: string;
-  /** Exact approvers: user or group ids, or approver emails. A request matches when it lists any of them. */
-  approverIds?: string[];
   from?: Date;
   to?: Date;
-  /** Deadline (`expires_at`) window; a request without a deadline never matches. */
-  dueFrom?: Date;
-  dueTo?: Date;
-  /** Only requests without a deadline. */
-  noDeadline?: boolean;
-  /** Defaults to `created_desc`. */
-  sort?: ApprovalListSort;
   resolvableBy?: { userId: string; email: string; groupIds: string[] };
 }
 

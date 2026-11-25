@@ -11,10 +11,8 @@ export type ScheduleRow = {
 };
 
 export type UpcomingRunFilters = {
-  /** One id or several. */
-  environmentId?: string | string[];
-  /** One id or several. */
-  appId?: string | string[];
+  environmentId?: string;
+  appId?: string;
   folderId?: string;
 };
 

@@ -1,20 +1,13 @@
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 
-export const EXECUTION_LIST_SORTS = ['created_desc', 'created_asc'] as const;
-export type ExecutionListSort = (typeof EXECUTION_LIST_SORTS)[number];
-
 export interface ExecutionListFilters {
   statuses?: string[];
-  /** One id or several. */
-  appId?: string | string[];
+  appId?: string;
   folderId?: string;
-  /** One id or several. */
-  environmentId?: string | string[];
+  environmentId?: string;
   triggers?: string[];
   from?: string;
   to?: string;
-  /** Defaults to `created_desc`. */
-  sort?: ExecutionListSort;
 }
 
 export interface ExecutionListItem {
