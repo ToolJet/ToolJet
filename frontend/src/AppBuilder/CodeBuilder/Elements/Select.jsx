@@ -14,30 +14,41 @@ export const Option = (props) => {
   const isDeprecatedStyle =
     checkIfInputWidgetTypeIsDeprecated(props.value) || checkIfStarRatingLabelTypeIsDeprecated(props.value);
 
+  // A theme menu (some options carry a hint): every row, Custom included, gets the check slot so names line up.
+  const hinted = props.selectProps?.options?.some((option) => option.hint);
+
   return (
     <components.Option {...props}>
       <DeprecatedColumnTooltip isDeprecatedStyle={isDeprecatedStyle}>
-        {/* Full width only for options with a hint, so other selects (Font Weight, ...) look as before. */}
-        <div className="d-flex justify-content-between" style={props.data?.hint ? { width: '100%' } : undefined}>
-          <span>{props.label}</span>
-          {/* An option's optional detail (e.g. a theme radius' "4px"), muted, before the check. */}
-          {props.data?.hint && (
-            <span
-              style={{
-                marginLeft: 'auto',
-                paddingLeft: 16,
-                marginRight: 8,
-                whiteSpace: 'nowrap',
-                color: 'var(--text-placeholder)',
-              }}
-            >
-              {props.data.hint}
-            </span>
-          )}
-          {props.isSelected && (
-            <span>
-              <Check width={'20'} fill={'#3E63DD'} />
-            </span>
+        {/* Full width only in theme menus, so other selects (Font Weight, ...) look as before. */}
+        <div
+          className="d-flex justify-content-between align-items-center"
+          style={hinted ? { width: '100%', gap: 16 } : undefined}
+        >
+          {hinted ? (
+            // A check slot every row keeps before the name, so names (and the muted detail, e.g. a theme radius'
+            // "4px", on the right) line up whether or not the row is selected.
+            <>
+              <span className="d-flex align-items-center" style={{ gap: 8, whiteSpace: 'nowrap' }}>
+                <span className="d-flex" style={{ width: 20, flexShrink: 0 }}>
+                  {/* The icon's path is drawn on a 20 x 20 grid; its default 8 x 8 viewBox leaves it blank. */}
+                  {props.isSelected && <Check width={'20'} viewBox="0 0 20 20" fill={'#3E63DD'} />}
+                </span>
+                {props.label}
+              </span>
+              {props.data?.hint && (
+                <span style={{ whiteSpace: 'nowrap', color: 'var(--text-placeholder)' }}>{props.data.hint}</span>
+              )}
+            </>
+          ) : (
+            <>
+              <span>{props.label}</span>
+              {props.isSelected && (
+                <span>
+                  <Check width={'20'} fill={'#3E63DD'} />
+                </span>
+              )}
+            </>
           )}
           {isDeprecatedStyle && (
             <span>
@@ -110,7 +121,13 @@ const withLeadingIcon = (icon) => (props) => (
   </components.SingleValue>
 );
 
+// Theme selects (options with a hint) are taller than the room below a field near the inspector's foot. Measured
+// against the window (fixed) and needing the full menu below, react-select opens them upwards when they do not fit
+// instead of running off-screen.
+const HINTED_MENU_HEIGHT = 250;
+
 export const Select = ({ value, onChange, meta, width = '144px' }) => {
+  const hinted = meta?.options?.some((option) => option.hint);
   return (
     <div
       className="row fx-container"
@@ -126,10 +143,12 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
           onChange={onChange}
           width={224}
           height={32}
-          styles={selectCustomStyles(
-            width,
-            meta?.options?.some((option) => option.hint)
-          )}
+          styles={selectCustomStyles(width, hinted)}
+          {...(hinted && {
+            menuPosition: 'fixed',
+            minMenuHeight: HINTED_MENU_HEIGHT,
+            maxMenuHeight: HINTED_MENU_HEIGHT,
+          })}
           useCustomStyles={true}
           customClassPrefix="inspector-select"
           aria-label={meta?.displayName}

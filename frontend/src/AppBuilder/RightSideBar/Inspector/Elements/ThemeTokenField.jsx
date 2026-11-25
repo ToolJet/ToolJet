@@ -18,20 +18,20 @@ const KINDS = {
  */
 export const ThemeTokenField = ({ kind, label, items, value, onSelect, children }) => {
   const { Icon, valueLabel } = KINDS[kind];
-  const selected = value || CUSTOM_STYLE;
-  const isCustom = selected === CUSTOM_STYLE;
+  // No theme style yet, or an item this theme does not have (the previous theme's, or removed): the widget draws its
+  // saved custom value, so the field reads Custom. The saved id is kept, so switching back to that theme restores it.
+  const isCustom = !value || value === CUSTOM_STYLE || !items.some((item) => item.id === value);
+  const selected = isCustom ? CUSTOM_STYLE : value;
 
   const meta = useMemo(() => {
     const options = items.map((item) => ({ label: item.name, value: item.id, hint: valueLabel(item) }));
-    // An item this theme does not have (another theme's, or removed) stays shown and selectable by its id.
-    if (!isCustom && !items.some((item) => item.id === selected)) options.push({ label: selected, value: selected });
     options.push({ label: 'Custom', value: CUSTOM_STYLE });
     return {
       displayName: label,
       options,
       leadingIcon: <Icon className="tw-size-4 tw-shrink-0 tw-text-icon-default" aria-hidden />,
     };
-  }, [items, selected, isCustom, label, Icon, valueLabel]);
+  }, [items, label, valueLabel]);
 
   return (
     <div role="group" aria-label={label} className="tw-flex tw-flex-col tw-gap-2 tw-mb-2">

@@ -58,9 +58,14 @@ describe('ThemeTokenField', () => {
     expect(screen.getByRole('option', { name: /^300/ })).toHaveTextContent('0 4px 8px 0');
   });
 
-  it("keeps a widget's item that this theme does not have selectable, by its id", () => {
+  // Found in the browser: after the app's theme changed, a widget set to the old theme's item showed that item's
+  // internal id ("custom-x8k2p1q"). The widget draws its saved custom value then, so the field reads Custom with the
+  // custom control, and never the id.
+  it('reads Custom, with the custom control, for an item this theme does not have', () => {
     setup({ value: 'custom-gone' });
-    expect(shown('Border radius').getByText('custom-gone')).toBeInTheDocument();
+    expect(shown('Border radius').getByText('Custom')).toBeInTheDocument();
+    expect(shown('Border radius').queryByText('custom-gone')).toBeNull();
+    expect(screen.getByRole('textbox', { name: 'custom radius' })).toBeInTheDocument();
   });
 
   // Reuse: the same dropdown as the other inspector selects (Font Weight): its active states, menu and dark mode.
