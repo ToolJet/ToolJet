@@ -11,7 +11,7 @@ import RenderWidget from './RenderWidget';
 import { NO_OF_GRIDS, HIDDEN_COMPONENT_HEIGHT, SUBCONTAINER_WIDGETS, isModalType } from './appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
-import { getDynamicLayoutKey, serializeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { getDynamicLayoutKey, serializeLayoutContext } from '@/AppBuilder/_stores/dynamicHeight/layoutKeys';
 import { useFlexWidgetLayout } from '@/AppBuilder/Widgets/FlexContainer/useFlexWidgetLayout';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { syncSelectionCorner } from './selectionCorner';

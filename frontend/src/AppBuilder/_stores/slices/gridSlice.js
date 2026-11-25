@@ -3,16 +3,14 @@ import { debounce } from 'lodash';
 import {
   bindModuleAwareGetResolvedComponent,
   buildReflowPatch,
-  getDynamicElementSelector,
-  getDynamicLayoutKey,
   getNextBubbleContext,
   getNextBubbleTargetId,
-  normalizeLayoutContext,
   resolveContainerHeight,
   resolveWidgetMeasuredHeight,
   resolveWidgetVisibility,
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
+import { getDynamicElementSelector, getDynamicLayoutKey, normalizeLayoutContext } from '../dynamicHeight/layoutKeys';
 import { heightHeldInView, isUi2PerRowType, sizesToDropAreas } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // ─────────────────────────────────────────────────────────────────────────────

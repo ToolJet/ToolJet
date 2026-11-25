@@ -6,7 +6,7 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
 import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
-import { getDynamicLayoutKey } from '../utils/dynamicHeightReflow';
+import { getDynamicLayoutKey } from '../dynamicHeight/layoutKeys';
 import _, { isEmpty, has } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
 import { v4 as uuidv4 } from 'uuid';

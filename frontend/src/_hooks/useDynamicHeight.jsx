@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { getDynamicElementSelector, normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { getDynamicElementSelector, normalizeLayoutContext } from '@/AppBuilder/_stores/dynamicHeight/layoutKeys';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import useStore from '@/AppBuilder/_stores/store';
 

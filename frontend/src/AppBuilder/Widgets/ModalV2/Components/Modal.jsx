@@ -10,7 +10,7 @@ import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 import Spinner from '@/_ui/Spinner';
 import classNames from 'classnames';
 import { shallow } from 'zustand/shallow';
-import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { getDynamicLayoutKey } from '@/AppBuilder/_stores/dynamicHeight/layoutKeys';
 
 export const ModalWidget = ({ ...restProps }) => {
   const {

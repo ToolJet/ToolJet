@@ -13,7 +13,7 @@ import WidgetTooltip from './WidgetTooltip';
 // UI 2.0's built-in widgets are not on this branch (components come from packs); the policies below that name them
 // stay for the core, with no types listed.
 const SHADCN_COMPONENTS = [];
-import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { normalizeLayoutContext } from '@/AppBuilder/_stores/dynamicHeight/layoutKeys';
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [

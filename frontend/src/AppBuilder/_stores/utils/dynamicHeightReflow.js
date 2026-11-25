@@ -10,6 +10,13 @@ import {
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
+import {
+  getDynamicElementSelector,
+  getDynamicLayoutKey,
+  getEffectiveLayout,
+  normalizeLayoutContext,
+  serializeLayoutContext,
+} from '../dynamicHeight/layoutKeys';
 import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
 import {
   heightHeldInView,
@@ -89,77 +96,6 @@ const SHRUNK_CARD_MIN_HEIGHT = 40;
 //     widgets stay in the blocker list — they just contribute a 0-height
 //     constraint, so downstream widgets collapse up into the gap naturally.
 // ═════════════════════════════════════════════════════════════════════════════
-
-export const ROOT_LAYOUT_CONTEXT = 'root';
-
-// normalizeLayoutContext — canonicalizes the incoming context input to either
-// null (root canvas) or a non-empty array of indices. Used everywhere as the
-// single source of truth for "am I in a subcontainer?".
-export const normalizeLayoutContext = (contextIndices = null) => {
-  if (contextIndices === null || contextIndices === undefined) {
-    return null;
-  }
-
-  const indices = Array.isArray(contextIndices) ? contextIndices : [contextIndices];
-  const normalized = indices.filter((value) => isTruthyOrZero(value));
-
-  return normalized.length > 0 ? normalized : null;
-};
-
-// Serialized form used as the `data-layout-context` DOM attribute and inside
-// map keys. Root maps to the literal "root".
-export const serializeLayoutContext = (contextIndices = null) => {
-  const normalized = normalizeLayoutContext(contextIndices);
-  return normalized ? normalized.join('.') : ROOT_LAYOUT_CONTEXT;
-};
-
-// Key for `temporaryLayouts[...]` lookups. A suffix is used only by the Modal
-// body short-circuit (suffix === '-body') — normal widget entries have no
-// suffix.
-export const getDynamicLayoutKey = (componentId, contextIndices = null, suffix = '', moduleId = 'canvas') => {
-  const normalized = normalizeLayoutContext(contextIndices);
-  const baseKey = normalized ? `${componentId}-${normalized.join('.')}` : componentId;
-  // Scope by moduleId for embedded modules.
-  // The same module reused across multiple ModuleViewer instances shares its internal component ids,
-  // so an unscoped key collides across instances and their reflow temp layouts overwrite each other.
-  // 'canvas' stays unscoped so the top-level app keys and behavior are unchanged.
-  const scopedKey = moduleId && moduleId !== 'canvas' ? `${moduleId}::${baseKey}` : baseKey;
-  return suffix ? `${scopedKey}${suffix}` : scopedKey;
-};
-
-// Scoped DOM selector for a widget's moveable-box wrapper.
-// Relies on `WidgetWrapper` emitting `data-layout-context` and `data-module-id`.
-// The module scope disambiguates the SAME component id rendered by multiple ModuleViewer instances of one module.
-// 'canvas' is the top-level app scope.
-export const getDynamicElementSelector = (componentId, contextIndices = null, moduleId = 'canvas') => {
-  return (
-    `.ele-${componentId}` +
-    `[data-layout-context="${serializeLayoutContext(contextIndices)}"]` +
-    `[data-module-id="${moduleId || 'canvas'}"]`
-  );
-};
-
-// Canonical layout merged with any temporary override. "Effective" = what the
-// widget currently renders as, including reflow results. Use this anywhere you
-// need the widget's CURRENT top/height.
-export const getEffectiveLayout = (
-  componentId,
-  currentLayout,
-  currentPageComponents,
-  temporaryLayouts,
-  contextIndices,
-  moduleId = 'canvas'
-) => {
-  const component = currentPageComponents?.[componentId];
-  const baseLayout = component?.layouts?.[currentLayout];
-
-  if (!baseLayout) {
-    return null;
-  }
-
-  const temporaryLayout = temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '', moduleId)] || {};
-  return { ...baseLayout, ...temporaryLayout };
-};
 
 // The authored layout (from the app definition). Temp layouts are never
 // written into this. Used whenever we need the "rest" position, not the
