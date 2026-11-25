@@ -162,7 +162,13 @@ function terminate(executionId) {
 }
 
 function streamSSE(workflowExecutionId) {
-  return new EventSource(`${config.apiUrl}/workflow_executions/${workflowExecutionId}/stream`, {
+  // EventSource sends the auth cookie (withCredentials) but cannot set the tj-workspace-id header,
+  // so the active workspace rides as a query param; WorkflowSseAuthGuard promotes it to the header.
+  const currentSession = authenticationService.currentSessionValue;
+  const workspaceId = currentSession?.current_organization_id;
+  const url = new URL(`${config.apiUrl}/workflow_executions/${workflowExecutionId}/stream`, window.location.origin);
+  if (workspaceId) url.searchParams.set('tj-workspace-id', workspaceId);
+  return new EventSource(url.toString(), {
     withCredentials: true,
   });
 }

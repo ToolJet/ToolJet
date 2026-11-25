@@ -11,7 +11,8 @@ import {
   UpdateResourceGroupPermissionsObject,
   ValidateResourceAction,
 } from '../types/granular_permissions';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
+import { Folder } from '@entities/folder.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { catchDbException } from '@helpers/utils.helper';
@@ -219,6 +220,22 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     }, manager);
   }
 
+  /** Every folder id must belong to `organizationId`, else the grant is cross-workspace. */
+  protected async assertFoldersInOrganization(
+    folderIds: string[],
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    const uniqueIds = Array.from(new Set(folderIds));
+    if (!uniqueIds.length) return;
+    const matchingCount = await manager.count(Folder, {
+      where: { id: In(uniqueIds), organizationId },
+    });
+    if (matchingCount !== uniqueIds.length) {
+      throw new BadRequestException('One or more folders do not belong to this workspace');
+    }
+  }
+
   protected async createFolderGroupPermission(
     organizationId: string,
     granularPermissions: GranularPermissions,
@@ -259,6 +276,11 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
       );
 
       if (resourcesToAdd?.length) {
+        await this.assertFoldersInOrganization(
+          resourcesToAdd.map((folder) => folder.folderId),
+          organizationId,
+          manager
+        );
         await manager.insert(
           GroupFolders,
           resourcesToAdd.map((folder) => ({
@@ -678,6 +700,11 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
 
       // Add new folders
       if (resourcesToAdd?.length) {
+        await this.assertFoldersInOrganization(
+          resourcesToAdd.map((folder) => folder.folderId),
+          organizationId,
+          manager
+        );
         await manager.insert(
           GroupFolders,
           resourcesToAdd.map((folder) => ({
