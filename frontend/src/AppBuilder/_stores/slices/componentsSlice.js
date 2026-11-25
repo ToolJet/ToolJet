@@ -134,20 +134,23 @@ const hasObjectEntry = (items) => items.some((item) => item && typeof item === '
 // these are self-re-arming one-shot setTimeouts (NOT a fixed-rate setInterval):
 // every run of the query — manual, event, page/app load, or a periodic tick —
 // re-anchors the next run to now + interval (see reconcileQueryPeriodicRun).
-// Keyed by queryId (queries are app-global); moduleId is stored in the value so
-// each tick targets the right module.
+// Every map below is keyed per module instance AND query (periodicKey). A module placed twice on a
+// page loads the same queries, with the same ids, into two namespaces (moduleId = the module
+// component's id); keyed by query id alone, the second instance's run would take the timer from the
+// first. The app's own queries use moduleId 'canvas'.
 // ---------------------------------------------------------------------------
-const queryPeriodicTimers = new Map(); // queryId -> { timeoutId, intervalMs, moduleId, getStore }
+const periodicKey = (moduleId, queryId) => `${moduleId}::${queryId}`;
+const queryPeriodicTimers = new Map(); // key -> { queryId, moduleId, timeoutId, intervalMs, getStore, idle }
 // Queries explicitly paused via the pausePeriodicRun CSA. Reconcile must not
 // auto-restart these (a manual run / option edit shouldn't override a pause).
-const pausedPeriodicQueries = new Set();
+const pausedPeriodicQueries = new Set(); // keys
 // The current run chain per query: armed by its first run, ended by clearPeriodicTimer. Holds the
 // consecutive failed periodic runs for the `pauseAfterFailures` auto-pause. A tick keeps a reference
 // to its chain, so a run that settles after its chain ended (teardown, then a re-arm with the same
 // query id) can't count toward, or pause, the new chain.
-const periodicChains = new Map(); // queryId -> { failures }
+const periodicChains = new Map(); // key -> { failures }
 // Queries whose tick fell while the tab was hidden; each runs once when the tab is visible again.
-const missedWhileHidden = new Set();
+const missedWhileHidden = new Set(); // keys
 let visibilityListenerAdded = false;
 // setTimeout stores its delay as a signed 32-bit int (~24.8 days); a larger delay overflows and
 // fires almost immediately, which would re-run the query back to back.
@@ -176,8 +179,9 @@ function resolveFailureThreshold(query, moduleId, store) {
   const num = typeof raw === 'number' || typeof raw === 'string' ? Number(raw) : NaN;
   if (num === 0) return null;
   const threshold = Number.isFinite(num) && num > 0 ? Math.ceil(num) : null;
-  if (num !== threshold && warnedFailureThresholds.get(query.id) !== String(raw)) {
-    warnedFailureThresholds.set(query.id, String(raw));
+  const key = periodicKey(moduleId, query.id);
+  if (num !== threshold && warnedFailureThresholds.get(key) !== String(raw)) {
+    warnedFailureThresholds.set(key, String(raw));
     store.debugger?.log({
       logLevel: 'warning',
       type: 'query',
@@ -194,10 +198,10 @@ function resolveFailureThreshold(query, moduleId, store) {
 
 function runMissedPeriodicTicks() {
   if (document.hidden) return;
-  missedWhileHidden.forEach((queryId) => {
-    const entry = queryPeriodicTimers.get(queryId);
+  missedWhileHidden.forEach((key) => {
+    const entry = queryPeriodicTimers.get(key);
     // Fire the tick now; it re-arms itself with the real interval.
-    if (entry) armPeriodicTimer(queryId, entry.moduleId, entry.intervalMs, entry.getStore, { delayMs: 0 });
+    if (entry) armPeriodicTimer(entry.queryId, entry.moduleId, entry.intervalMs, entry.getStore, { delayMs: 0 });
   });
   missedWhileHidden.clear();
 }
@@ -206,7 +210,8 @@ function runMissedPeriodicTicks() {
 // failed. Only ticks are counted; running the query again (manually / event) re-arms it.
 // A result from a chain that has since ended is ignored.
 function recordPeriodicRunResult(query, moduleId, store, status, chain) {
-  if (periodicChains.get(query.id) !== chain) return;
+  const key = periodicKey(moduleId, query.id);
+  if (periodicChains.get(key) !== chain) return;
   if (status === 'ok') {
     chain.failures = 0;
     return;
@@ -215,8 +220,8 @@ function recordPeriodicRunResult(query, moduleId, store, status, chain) {
   chain.failures += 1;
   const { failures } = chain;
   const threshold = resolveFailureThreshold(query, moduleId, store);
-  if (!threshold || failures < threshold || !queryPeriodicTimers.has(query.id)) return;
-  clearPeriodicTimer(query.id);
+  if (!threshold || failures < threshold || !queryPeriodicTimers.has(key)) return;
+  clearPeriodicTimer(query.id, { moduleId });
   store.debugger?.log({
     logLevel: 'warning',
     type: 'query',
@@ -261,16 +266,17 @@ function resolvePeriodicConfig(query, moduleId, store) {
 function armPeriodicTimer(queryId, moduleId, intervalMs, getStore, { delayMs = intervalMs, idle = false } = {}) {
   // Idempotent: clear any pending timer before scheduling (avoids HMR/re-run dupes and
   // resets the clock when a fresh run re-anchors the next tick).
-  if (queryPeriodicTimers.has(queryId)) {
-    clearTimeout(queryPeriodicTimers.get(queryId).timeoutId);
+  const key = periodicKey(moduleId, queryId);
+  if (queryPeriodicTimers.has(key)) {
+    clearTimeout(queryPeriodicTimers.get(key).timeoutId);
   }
-  if (!periodicChains.has(queryId)) periodicChains.set(queryId, { failures: 0 });
-  const chain = periodicChains.get(queryId);
+  if (!periodicChains.has(key)) periodicChains.set(key, { failures: 0 });
+  const chain = periodicChains.get(key);
   const timeoutId = setTimeout(() => {
     const store = getStore();
     const query = store.dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === queryId);
-    if (!query || pausedPeriodicQueries.has(queryId)) {
-      clearPeriodicTimer(queryId);
+    if (!query || pausedPeriodicQueries.has(key)) {
+      clearPeriodicTimer(queryId, { moduleId });
       return;
     }
     const { shouldRun, intervalMs: nextMs, invalid } = resolvePeriodicConfig(query, moduleId, store);
@@ -294,7 +300,7 @@ function armPeriodicTimer(queryId, moduleId, intervalMs, getStore, { delayMs = i
     if (query.options?.disableQuery && store.getResolvedValue(query.options.disableQuery, {}, moduleId)) return;
     // Pause in inactive tabs unless the query opts into background runs; catch up once on return.
     if (document.hidden && !query.options?.runPeriodicallyInBackground) {
-      missedWhileHidden.add(queryId);
+      missedWhileHidden.add(key);
       return;
     }
     // Run in the module's current mode so released/public apps don't toast errors on
@@ -329,27 +335,55 @@ function armPeriodicTimer(queryId, moduleId, intervalMs, getStore, { delayMs = i
       .then((result) => recordPeriodicRunResult(query, moduleId, getStore(), outcome ?? result?.status, chain))
       .catch(() => recordPeriodicRunResult(query, moduleId, getStore(), 'failed', chain));
   }, delayMs);
-  queryPeriodicTimers.set(queryId, { timeoutId, intervalMs, moduleId, getStore, idle });
+  queryPeriodicTimers.set(key, { queryId, moduleId, timeoutId, intervalMs, getStore, idle });
   if (!visibilityListenerAdded) {
     document.addEventListener('visibilitychange', runMissedPeriodicTicks);
     visibilityListenerAdded = true;
   }
 }
 
-/**
- * Stop and forget a single periodic timer (e.g., on delete / toggle-off).
- * `forgetPaused` also drops the query from the paused-set — pass it only from the
- * delete path. Reconcile/toggle-off must NOT forget the pause (pause survives edits),
- * and pauseQueryPeriodicRun relies on the default (it adds to the set then clears).
- */
-export function clearPeriodicTimer(queryId, { forgetPaused = false } = {}) {
-  if (queryPeriodicTimers.has(queryId)) {
-    clearTimeout(queryPeriodicTimers.get(queryId).timeoutId);
-    queryPeriodicTimers.delete(queryId);
+function clearPeriodicKey(key, forgetPaused) {
+  if (queryPeriodicTimers.has(key)) {
+    clearTimeout(queryPeriodicTimers.get(key).timeoutId);
+    queryPeriodicTimers.delete(key);
   }
-  periodicChains.delete(queryId);
-  missedWhileHidden.delete(queryId);
-  if (forgetPaused) pausedPeriodicQueries.delete(queryId);
+  periodicChains.delete(key);
+  missedWhileHidden.delete(key);
+  if (forgetPaused) {
+    pausedPeriodicQueries.delete(key);
+    warnedFailureThresholds.delete(key);
+  }
+}
+
+// Every key the scheduler holds anything for, so a clear also reaches a paused query with no timer.
+const allPeriodicKeys = () =>
+  new Set([...queryPeriodicTimers.keys(), ...pausedPeriodicQueries, ...periodicChains.keys()]);
+
+/**
+ * Stop and forget a query's periodic timer (e.g., on delete / auto-pause).
+ * With `moduleId`, only that module instance's timer; without it, the query's timer in every
+ * instance — the delete path, since a deleted query is gone from every placed copy.
+ * `forgetPaused` also drops the pause — pass it only from the delete path. Reconcile/toggle-off
+ * must NOT forget the pause (pause survives edits), and pauseQueryPeriodicRun relies on the default
+ * (it adds to the set then clears).
+ */
+export function clearPeriodicTimer(queryId, { forgetPaused = false, moduleId } = {}) {
+  if (moduleId !== undefined) {
+    clearPeriodicKey(periodicKey(moduleId, queryId), forgetPaused);
+    return;
+  }
+  const suffix = `::${queryId}`;
+  allPeriodicKeys().forEach((key) => key.endsWith(suffix) && clearPeriodicKey(key, forgetPaused));
+}
+
+/**
+ * Stop every periodic timer of one module instance, and forget its pauses: used when the
+ * instance unmounts (deleted from the canvas, or its page left), since its namespace stays in the
+ * store and its ticks would otherwise keep running queries for components no longer on screen.
+ */
+export function clearModulePeriodicTimers(moduleId) {
+  const prefix = `${moduleId}::`;
+  allPeriodicKeys().forEach((key) => key.startsWith(prefix) && clearPeriodicKey(key, true));
 }
 
 /** Stop ALL periodic timers (full app teardown only — NOT page switch). */
@@ -375,12 +409,12 @@ export function clearAllPeriodicTimers() {
 export function reconcileQueryPeriodicRun(queryId, moduleId, getStore, { allowStart = true } = {}) {
   const store = getStore();
   const query = store.dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === queryId);
-  if (!query || pausedPeriodicQueries.has(queryId)) {
-    clearPeriodicTimer(queryId);
+  if (!query || pausedPeriodicQueries.has(periodicKey(moduleId, queryId))) {
+    clearPeriodicTimer(queryId, { moduleId });
     return;
   }
   const { shouldRun, intervalMs, invalid, rawInterval } = resolvePeriodicConfig(query, moduleId, store);
-  const existing = queryPeriodicTimers.get(queryId);
+  const existing = queryPeriodicTimers.get(periodicKey(moduleId, queryId));
   if (!shouldRun || invalid) {
     // Toggle off, or the interval is invalid → no runs. Warn once, only on a genuine start
     // attempt (a real run with no timer yet) — never on edits/ticks. An existing chain goes
@@ -409,15 +443,15 @@ export function reconcileQueryPeriodicRun(queryId, moduleId, getStore, { allowSt
   }
 }
 
-/** Pause a query's periodic re-run (pausePeriodicRun CSA). */
-export function pauseQueryPeriodicRun(queryId) {
-  pausedPeriodicQueries.add(queryId);
-  clearPeriodicTimer(queryId);
+/** Pause a query's periodic re-run in one module instance (pausePeriodicRun CSA). */
+export function pauseQueryPeriodicRun(queryId, moduleId = 'canvas') {
+  pausedPeriodicQueries.add(periodicKey(moduleId, queryId));
+  clearPeriodicTimer(queryId, { moduleId });
 }
 
 /** Resume a previously-paused periodic re-run (resumePeriodicRun CSA). */
 export function resumeQueryPeriodicRun(queryId, moduleId, getStore) {
-  pausedPeriodicQueries.delete(queryId);
+  pausedPeriodicQueries.delete(periodicKey(moduleId, queryId));
   reconcileQueryPeriodicRun(queryId, moduleId, getStore, { allowStart: true });
 }
 

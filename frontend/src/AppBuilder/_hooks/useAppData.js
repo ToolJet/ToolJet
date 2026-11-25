@@ -21,7 +21,11 @@ import { camelCase, isEmpty, mapKeys, noop } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
-import { setSuppressQueryRerun, clearAllPeriodicTimers } from '@/AppBuilder/_stores/slices/componentsSlice';
+import {
+  setSuppressQueryRerun,
+  clearAllPeriodicTimers,
+  clearModulePeriodicTimers,
+} from '@/AppBuilder/_stores/slices/componentsSlice';
 import useRouter from '@/_hooks/use-router';
 import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
@@ -209,11 +213,12 @@ const useAppData = (
     return () => setCurrentAppName('');
   }, [appName]);
 
-  // Periodic query timers live outside the store and survive page switches; stop them when
-  // leaving the app (and on environment / version / restore reloads, below). Embedded modules
-  // don't own them.
+  // Periodic query timers live outside the store and survive the app's own page switches; stop them
+  // when leaving the app (and on environment / version / restore reloads, below). A placed module
+  // instance stops only its own timers when it unmounts (deleted, or its page left), since its
+  // queries stay in the store after it's gone. Its on-load queries restart polling if it mounts again.
   useEffect(() => {
-    if (moduleMode && moduleId !== 'canvas') return;
+    if (moduleMode && moduleId !== 'canvas') return () => clearModulePeriodicTimers(moduleId);
     return () => clearAllPeriodicTimers();
   }, [moduleMode, moduleId]);
 

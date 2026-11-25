@@ -14,7 +14,13 @@ import { server } from '@/test/msw/server';
 import useStore from '@/AppBuilder/_stores/store';
 import { resetAllStores } from '@/AppBuilder/_stores/utils';
 // Module-level exports, not store actions.
-import { reconcileQueryPeriodicRun, clearAllPeriodicTimers } from '@/AppBuilder/_stores/slices/componentsSlice';
+import {
+  reconcileQueryPeriodicRun,
+  clearAllPeriodicTimers,
+  clearModulePeriodicTimers,
+  clearPeriodicTimer,
+  pauseQueryPeriodicRun,
+} from '@/AppBuilder/_stores/slices/componentsSlice';
 import { seedApp } from '@/test/app-builder';
 
 const state = () => useStore.getState();
@@ -342,6 +348,91 @@ describe('run query periodically', () => {
       await waitFor(() => expect(runs.length).toBeGreaterThanOrEqual(3), { timeout: 5000 });
       expect(pausedLogs()).toHaveLength(0);
     }, 10000);
+  });
+
+  describe('in module instances', () => {
+    // A module placed twice loads the same queries, with the same ids, into two namespaces: each
+    // instance's moduleId is its module component's id. Same setup as moduleIsolation.spec.js.
+    function bootModule(moduleId) {
+      state().initializeComponentsSlice(moduleId);
+      state().initializeAppSlice(moduleId);
+      state().initializeEventsSlice(moduleId);
+      state().initializeResolvedSlice(moduleId);
+      state().initializeDependencySlice(moduleId);
+      state().initializeDataQuerySlice(moduleId);
+      state().initializeModeSlice(moduleId);
+      state().initializeLoaderSlice(moduleId);
+      state().setEditorLoading(false, moduleId);
+      state().setCurrentMode('view', moduleId);
+    }
+
+    const instances = ['module-a', 'module-b'];
+    const runInstance = (moduleId) => reconcileQueryPeriodicRun('q1', moduleId, state);
+    const ranIn = (moduleId) => state().resolvedStore.modules[moduleId]?.exposedValues?.queries?.q1?.isLoading === true;
+
+    beforeEach(() => {
+      seedApp({});
+      instances.forEach((moduleId) => {
+        bootModule(moduleId);
+        seedApp({}, { moduleId });
+        state().dataQuery.setQueries(
+          [
+            {
+              id: 'q1',
+              name: 'query1',
+              kind: 'restapi',
+              options: { url: 'https://example.test', runPeriodically: true, queryRunInterval: 1000 },
+            },
+          ],
+          moduleId
+        );
+        state().setQueryMapping(moduleId);
+      });
+    });
+
+    // Runs started by a tick settle after the test; let them finish before the store reset drops
+    // the module namespaces they write to. (Inner afterEach runs before the outer one.)
+    afterEach(async () => {
+      clearAllPeriodicTimers();
+      jest.useRealTimers();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
+
+    test('the same module placed twice polls in both instances', () => {
+      // Both instances run the query (on load), one after the other.
+      instances.forEach(runInstance);
+
+      jest.advanceTimersByTime(1000);
+      expect(ranIn('module-a')).toBe(true);
+      expect(ranIn('module-b')).toBe(true);
+    });
+
+    test('pausing one instance leaves the other polling', () => {
+      instances.forEach(runInstance);
+      pauseQueryPeriodicRun('q1', 'module-a');
+
+      jest.advanceTimersByTime(1000);
+      expect(ranIn('module-a')).toBe(false);
+      expect(ranIn('module-b')).toBe(true);
+    });
+
+    test('an unmounted instance stops polling, and the other keeps going', () => {
+      instances.forEach(runInstance);
+      clearModulePeriodicTimers('module-b');
+
+      jest.advanceTimersByTime(1000);
+      expect(ranIn('module-a')).toBe(true);
+      expect(ranIn('module-b')).toBe(false);
+    });
+
+    test('deleting the query stops it in every instance', () => {
+      instances.forEach(runInstance);
+      clearPeriodicTimer('q1', { forgetPaused: true });
+
+      jest.advanceTimersByTime(3000);
+      expect(ranIn('module-a')).toBe(false);
+      expect(ranIn('module-b')).toBe(false);
+    });
   });
 
   test('clearing all timers (app teardown) stops further ticks', () => {

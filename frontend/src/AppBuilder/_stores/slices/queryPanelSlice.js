@@ -362,8 +362,8 @@ export const createQueryPanelSlice = (set, get) => ({
     },
     // Stop a query's periodic re-run at runtime (pausePeriodicRun CSA). The pause is
     // sticky: reconcile won't auto-restart it on the next manual run / option edit.
-    pausePeriodicRun: (queryId) => {
-      pauseQueryPeriodicRun(queryId);
+    pausePeriodicRun: (queryId, moduleId = 'canvas') => {
+      pauseQueryPeriodicRun(queryId, moduleId);
     },
     // Resume a paused periodic re-run (resumePeriodicRun CSA).
     resumePeriodicRun: (queryId, moduleId = 'canvas') => {
