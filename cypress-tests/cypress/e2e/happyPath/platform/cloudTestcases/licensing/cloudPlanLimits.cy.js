@@ -54,17 +54,17 @@ describe("Cloud Licensing — Plan Limits", { retries: 0 }, () => {
     });
   };
 
-  it("should warn near the Basic app limit and block the 11th app", () => {
+  it("should warn near the Basic app limit and block the 4th app", () => {
     signUp("basic");
     appsLimit().then(({ current, total }) => {
-      expect(total).to.equal(10);
+      expect(total).to.equal(3);
       Cypress._.times(total - 1 - current, (index) => {
         createApp(`cloud-limit-app-${Date.now()}-${index}`).its("status").should("equal", 201);
       });
     });
 
     cy.then(() => cy.visit(`/${signup.workspaceSlug}`));
-    verifyLimitBanner(cloudLicenseText.apps.nearing(9, 10), cloudLicenseText.apps.nearingInfoAdmin, "apps");
+    verifyLimitBanner(cloudLicenseText.apps.nearing(2, 3), cloudLicenseText.apps.nearingInfoAdmin, "apps");
     cy.get(cloudLicenseSelectors.limitBanner("apps"))
       .find(cloudLicenseSelectors.upgradeButton)
       .should("be.visible");
@@ -88,18 +88,17 @@ describe("Cloud Licensing — Plan Limits", { retries: 0 }, () => {
     createUserAndExpectStatus(`cloud-builder2-${Date.now()}@tooljet.test`, "builder", 451);
   });
 
-  // The invite guard enforces total users (52 = 2 builders + 50 end users), same as self-hosted.
-  it("should allow 50 end users on the Basic plan and block users past the total limit", () => {
+  // The invite guard enforces total users (11 = 1 builder + 10 end users), same as self-hosted.
+  it("should allow 10 end users on the Basic plan and block users past the total limit", () => {
     signUp("basic");
-    userLimit("editor").its("total").should("equal", 2);
+    userLimit("editor").its("total").should("equal", 1);
     userLimit("viewer").should((limit) => {
-      expect(limit).to.include({ total: 50, current: 0, canAddUnlimited: false });
+      expect(limit).to.include({ total: 10, current: 0, canAddUnlimited: false });
     });
 
-    cy.apiBulkUploadUsers(generateBulkUsersCSV(50, "end-user", "cloudeu")).its("status").should("equal", 201);
-    userLimit("viewer").its("current").should("equal", 50);
-    createUserAndExpectStatus(`cloud-enduser51-${Date.now()}@tooljet.test`, "end-user", 201);
-    createUserAndExpectStatus(`cloud-enduser52-${Date.now()}@tooljet.test`, "end-user", 451);
+    cy.apiBulkUploadUsers(generateBulkUsersCSV(10, "end-user", "cloudeu")).its("status").should("equal", 201);
+    userLimit("viewer").its("current").should("equal", 10);
+    createUserAndExpectStatus(`cloud-enduser11-${Date.now()}@tooljet.test`, "end-user", 451);
   });
 
   it("should warn near the Basic ToolJet database table limit and block the 11th table", () => {
