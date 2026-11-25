@@ -818,7 +818,7 @@ export class AppsService implements IAppsService {
   /**
    * Set `app.editingVersion` to the right row given the request's branch context.
    *
-   *   - Workflow, or resolved branch IS the org's default branch (every org always has
+   *   - Resolved branch IS the org's default branch (every org always has
    *     exactly one default branch row, git-on or off): "version-only" context, no branch
    *     dimension to key by. Apply the fallback chain — URL name -> user_app_version_state
    *     -> last-created.
@@ -830,11 +830,6 @@ export class AppsService implements IAppsService {
     user: User,
     versionName?: string
   ): Promise<{ isDefaultBranchContext: boolean }> {
-    if (app.type === APP_TYPES.WORKFLOW) {
-      await this.resolveVersionFallbackChain(app, undefined, user, versionName);
-      return { isDefaultBranchContext: true };
-    }
-
     const { options } = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
     const defaultBranchId = options.defaultBranch?.id;
     const isFeatureBranch = !!defaultBranchId && !!branchId && branchId !== defaultBranchId;
@@ -955,7 +950,7 @@ export class AppsService implements IAppsService {
     }).catch((err) => console.error('Failed to persist last-active branch:', err));
   }
 
-  // Only in a version-only context (Workflows, git-off, or the default branch) — a feature
+  // Only in a version-only context (git-off or the default branch) — a feature
   // branch has no version dimension to remember.
   protected persistActiveVersion(user: User, app: App, isDefaultBranchContext: boolean): void {
     if (!isDefaultBranchContext || !app.editingVersion?.id) return;
