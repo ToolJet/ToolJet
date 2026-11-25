@@ -1658,6 +1658,25 @@ export class AppImportExportService {
       await this.updateCoRelationIdsForEntities(manager, resourceMapping);
     }
 
+    const importedPageIds = Object.values(resourceMapping.pagesMapping);
+    if (importedPageIds.length > 0) {
+      const pages = await manager.find(Page, {
+        where: { id: In(importedPageIds) },
+        select: ['id', 'variables'],
+      });
+      for (const page of pages) {
+        if (page.variables && Object.keys(page.variables).length > 0) {
+          await manager.update(
+            Page,
+            { id: page.id },
+            {
+              variables: updateEntityReferences(page.variables, mappings),
+            }
+          );
+        }
+      }
+    }
+
     // update Global settings of created versions
     const newAppVersions = await manager.find(AppVersion, {
       where: {
