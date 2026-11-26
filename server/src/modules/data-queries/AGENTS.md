@@ -99,9 +99,15 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 - The ToolJet release (`TOOLJET_VERSION`) is stored in each entry, not in its key. Another release reads it as a miss and its
   save replaces the entry under the same key (reserve drops the old value first), so upgrades and rolling deploys never leave
   unreadable copies counted against the budget. Entries of queries nobody runs after an upgrade still wait for their TTL.
-- Create and update reject a `ttlSeconds` above 1 day. Import (`normalizeImportedQueryOptions`, also used by git pull) and the
-  editor Run (which saves the options it is sent) cap it at 1 day instead, so a value from another instance never leaves a
-  query that fails validation on every later save.
+- Create and update reject invalid `responseCache` settings (`validateResponseCacheOptions`), including a `ttlSeconds` above
+  1 day. Import (`normalizeImportedQueryOptions`, also used by git pull) caps an over-long TTL at 1 day instead, so a value
+  from another instance never leaves a query that fails validation on every later save. The editor Run applies the same
+  rules whenever it may author the query (CE hook `prepareOptionsSavedOnRun`): it caps an over-long TTL and answers 400 to
+  anything else a save would reject. That includes runs while the upgrade gate pauses writes (`res.locals.writesPaused`):
+  invalid settings still get 400, valid ones run without being saved. Runs that may not author the query (view mode,
+  released version, app-scoped tokens, read-only git-sync versions) ignore their posted options and skip the check.
+  Specs (`ee/test/modules/data-queries/`): `e2e/response-cache-ttl-cap.spec.ts`,
+  `unit/run-options-validation-writes-paused.spec.ts`.
 - Cache refusal logs include workspace/query identifiers and the token/reserve/confirm stage, without inputs or response data.
 - Telemetry (`ENABLE_OTEL=true`, `src/otel/query-cache-metrics.ts`): `tooljet.query_cache.writes{write_result}` counts each
   logged write outcome; `tooljet.query_cache.bytes_stored{organization.id}` adds the charge CONFIRM returns. The

@@ -280,7 +280,9 @@ export const createQueryPanelSlice = (set, get) => ({
           undefined,
           queryConfirmationData.shouldSetPreviewData,
           false,
-          moduleId
+          moduleId,
+          undefined,
+          queryConfirmationData.runOptions
         );
 
       !isConfirm &&
@@ -561,6 +563,8 @@ export const createQueryPanelSlice = (set, get) => ({
           shouldSetPreviewData,
           parameters,
           confirmationMessage,
+          // Kept so Yes resumes the same kind of run: a refresh stays a refresh.
+          runOptions,
         };
 
         if (confirmed === undefined) {

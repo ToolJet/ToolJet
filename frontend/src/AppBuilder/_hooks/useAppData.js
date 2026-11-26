@@ -26,6 +26,7 @@ import {
   clearAllPeriodicTimers,
   clearModulePeriodicTimers,
 } from '@/AppBuilder/_stores/slices/componentsSlice';
+import { useStopPeriodicRunsOnContextChange } from './useStopPeriodicRunsOnContextChange';
 import useRouter from '@/_hooks/use-router';
 import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
@@ -214,7 +215,7 @@ const useAppData = (
   }, [appName]);
 
   // Periodic query timers live outside the store and survive the app's own page switches; stop them
-  // when leaving the app (and on environment / version / restore reloads, below). A placed module
+  // when leaving the app (and on environment / version / restore changes, further down). A placed module
   // instance stops only its own timers when it unmounts (deleted, or its page left), since its
   // queries stay in the store after it's gone. Its on-load queries restart polling if it mounts again.
   useEffect(() => {
@@ -249,6 +250,15 @@ const useAppData = (
   const previousHotReloadTimestamp = usePrevious(hotReloadTimestamp);
   const setCanvasReloading = useStore((state) => state.setCanvasReloading);
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady);
+
+  useStopPeriodicRunsOnContextChange({
+    moduleMode,
+    moduleId,
+    environmentId: selectedEnvironment?.id,
+    versionId: currentVersionId,
+    selectedVersionId: selectedVersion?.id,
+    restoreTimestamp,
+  });
 
   const location = useRouter().location;
 
@@ -1102,10 +1112,8 @@ const useAppData = (
     const isVersionConsistent = selectedVersion?.id && selectedVersion.id === currentVersionId;
 
     if (isEnvChanged || (isVersionChanged && isVersionConsistent) || isForceRefreshTriggered || isHotReload) {
-      // Environment / version / restore reload the app's data context: stop periodic polling so
-      // nothing keeps running against the new environment unasked. Run-on-page-load queries
-      // restart it. A hot reload only swaps the canvas, so polling carries on.
-      if (!isHotReload) clearAllPeriodicTimers();
+      // Periodic polling was already stopped for environment / version / restore by
+      // useStopPeriodicRunsOnContextChange; run-on-page-load queries restart it after this reload.
       if (isHotReload) {
         setCanvasReloading(true, moduleId);
         // The canvas subtree unmounts while reloading (AppCanvas), but AppCanvas itself stays

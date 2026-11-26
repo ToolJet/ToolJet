@@ -14,6 +14,7 @@ import {
 import { queriesBelongToVersion, waitForVersionQueries } from '@/AppBuilder/_helpers/queriesForVersion';
 import { codeAppReadsResultFrom } from '@/AppBuilder/_helpers/codeAppReaders';
 import { getQueryUsage } from '@/AppBuilder/_utils/entityUsage/queryUsage';
+import { canRefreshQueryCache } from '@/AppBuilder/_utils/queryResponseCache';
 
 const initialState = {
   sortBy: 'custom',
@@ -472,6 +473,8 @@ export const createDataQuerySlice = (set, get) => ({
         componentNameIdMapping,
         queryNameIdMapping
       );
+      const findStoredQuery = () => get().dataQuery.queries.modules[moduleId]?.find((q) => q.id === selectedQuery.id);
+      const couldRefreshCache = canRefreshQueryCache(get(), findStoredQuery());
 
       set((state) => {
         state.dataQuery.isUpdatingQueryInProcess = false;
@@ -490,6 +493,10 @@ export const createDataQuerySlice = (set, get) => ({
       // (interval change or toggled back on → restart, toggle off → idle). allowStart:false so editing
       // options never starts a timer for a query that hasn't been run yet.
       reconcileQueryPeriodicRun(selectedQuery.id, moduleId, get, { allowStart: false });
+
+      // Turning response caching on or off adds or removes queries.<name>.refresh(). Rebuild the query hints in full
+      // (the result-shape shortcut can't see this) only when that eligibility flips, not on every options edit.
+      if (canRefreshQueryCache(get(), findStoredQuery()) !== couldRefreshCache) get().rebuildQueryHints(moduleId);
 
       // Update query dependency registrations when options change.
       // Pass `options` (with entity names), not `newOptions` (with IDs), because
