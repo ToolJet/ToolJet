@@ -72,7 +72,6 @@ const FormComponent = (props) => {
     showFooter = false,
     headerHeight = 80,
     footerHeight = 80,
-    canvasHeight,
     validateOnSubmit = true,
     resetOnSubmit = true,
     newJsonSchema,
@@ -94,7 +93,6 @@ const FormComponent = (props) => {
 
   const activeColor = getModifiedColor(backgroundColor, 'active');
   const computedFormBodyHeight = getBodyHeight(height, showHeader, showFooter, headerHeight, footerHeight);
-  const [canHeight, setCanHeight] = useState('100%');
   const computedBorderRadius = `${borderRadius ? parseFloat(borderRadius) : 0}px`;
 
   const computedStyles = {
@@ -114,7 +112,8 @@ const FormComponent = (props) => {
 
   const formContent = {
     display: 'flex',
-    height: canHeight || '100%',
+    // Fill the space between header and footer, so the body grows with the Form under dynamic height.
+    height: '100%',
     paddingTop: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingBottom: showFooter ? '3px' : '7px',
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
@@ -434,18 +433,6 @@ const FormComponent = (props) => {
     const _height = parseInt(newHeight, 10);
     setComponentProperty(id, `footerHeight`, _height, 'properties', 'value', false);
   };
-
-  useEffect(() => {
-    // const newHeight = parseInt(height, 10) - 14;
-
-    // const autoCanvasHeight = document.querySelector(`#canvas-${id}`)?.scrollHeight;
-    const wrapHeight = parseInt(computedFormBodyHeight, 10);
-    // Set height to the larger value between computed body height and canvas scroll height
-    const maxHeight = Math.max(wrapHeight, canvasHeight || 10);
-
-    const roundedHeight = Math.round(maxHeight / 10) * 10;
-    setCanHeight(`${roundedHeight}px`);
-  }, [computedFormBodyHeight, canvasHeight]);
 
   const formSignalContextValue = useMemo(
     () => ({ submitAttemptCount: effectiveSubmitAttemptCount, clearCount }),
