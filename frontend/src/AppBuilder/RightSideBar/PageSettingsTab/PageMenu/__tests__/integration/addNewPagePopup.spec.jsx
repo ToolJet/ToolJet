@@ -216,6 +216,73 @@ describe('AddEditPagePopup embedded in the right panel', () => {
   });
 });
 
+describe('AddEditPagePopup New page draft (embedded)', () => {
+  const nameInput = (view) => view.container.querySelector('input.form-control[type="text"]');
+
+  // Break this catches: New page while a page is being edited keeps the old name and handle in the form.
+  test('New page while editing a page empties the fields and shows only the create form', async () => {
+    seedFreshApp();
+    state().setEditingPage(state().modules.canvas.pages[0]);
+    state().setNewPagePopupConfig({ show: true, mode: 'edit', type: 'default' });
+    let view;
+    await act(async () => {
+      view = render(<AddEditPagePopup darkMode={false} embedded onClose={() => {}} />);
+    });
+    expect(nameInput(view)).toHaveValue('Home');
+
+    await act(async () => {
+      state().setEditingPage(null);
+      state().setNewPagePopupConfig({ type: 'default', show: true, mode: 'add' });
+    });
+
+    expect(nameInput(view)).toHaveValue('');
+    expect(nameInput(view)).toHaveAttribute('placeholder', 'Page 1');
+    expect(screen.getByRole('button', { name: 'Create page' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Page options' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Page header')).not.toBeInTheDocument();
+    expect(state().modules.canvas.pages).toHaveLength(1);
+  });
+
+  // Break this catches: Create with nothing typed does nothing, so a new page can never be made.
+  test('Create with the fields empty adds the suggested page and switches to editing it', async () => {
+    const user = userEvent.setup();
+    seedFreshApp();
+    state().setNewPagePopupConfig({ type: 'default', show: true, mode: 'add' });
+    await act(async () => {
+      render(<AddEditPagePopup darkMode={false} embedded onClose={() => {}} />);
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Create page' }));
+    await act(async () => {
+      await settle();
+    });
+
+    expect(state().modules.canvas.pages.map((p) => p.name)).toEqual(['Home', 'Page 1']);
+    expect(state().modules.canvas.pages[1]).toMatchObject({ handle: 'page-1', type: 'default' });
+    expect(state().newPagePopupConfig.mode).toBe('edit');
+    expect(screen.getByRole('button', { name: 'Page options' })).toBeVisible();
+  });
+
+  // Break this catches: the typed name or handle is ignored on Create.
+  test('Create uses the typed name and handle', async () => {
+    const user = userEvent.setup();
+    seedFreshApp();
+    state().setNewPagePopupConfig({ type: 'default', show: true, mode: 'add' });
+    let view;
+    await act(async () => {
+      view = render(<AddEditPagePopup darkMode={false} embedded onClose={() => {}} />);
+    });
+
+    await user.type(nameInput(view), 'Reports');
+    await user.click(screen.getByRole('button', { name: 'Create page' }));
+    await act(async () => {
+      await settle();
+    });
+
+    expect(state().modules.canvas.pages[1]).toMatchObject({ name: 'Reports', handle: 'reports' });
+  });
+});
+
 // HP-47b: in one open page configuration, renaming A → B and then back to A must save A again.
 describe('AddEditPagePopup page name', () => {
   test('renaming a page back to its original name saves it', async () => {

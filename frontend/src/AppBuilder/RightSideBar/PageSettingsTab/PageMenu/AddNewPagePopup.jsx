@@ -61,6 +61,16 @@ export const getPagePopupPopperConfig = (target) => ({
   ],
 });
 
+const EMPTY_DRAFT = { icon: undefined, openIn: 'new_tab', app: null };
+const DRAFT_NAME_PREFIX = { default: 'Page', url: 'URL', app: 'App', custom: 'Custom', group: 'Group' };
+
+const getNextFreeName = (pages, prefix) => {
+  const taken = new Set(pages.map((p) => p.name.toLowerCase()));
+  let index = 1;
+  while (taken.has(`${prefix} ${index}`.toLowerCase())) index++;
+  return `${prefix} ${index}`;
+};
+
 const OPEN_APP_MODES = [
   { label: 'New tab', value: 'new_tab' },
   { label: 'Same tab', value: 'same_tab' },
@@ -159,6 +169,53 @@ export const AddEditPagePopup = forwardRef(
     useEffect(() => {
       setError(null);
     }, [show]);
+
+    // The right panel's "New page" is a draft: nothing exists until Create. Every New page click writes a
+    // fresh popupConfig object, so this also wipes whatever a page being edited left in the fields.
+    const isDraft = embedded && mode === 'add';
+    const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
+    const [draft, setDraft] = useState(EMPTY_DRAFT);
+    const [creating, setCreating] = useState(false);
+    useEffect(() => {
+      if (!isDraft) return;
+      setPage(null);
+      setPageName('');
+      setHandle('');
+      setPageURL('');
+      setError(null);
+      setDraft(EMPTY_DRAFT);
+    }, [isDraft, popupConfig]);
+
+    const suggestedName = isDraft ? getNextFreeName(pages, DRAFT_NAME_PREFIX[type] ?? 'Page') : '';
+
+    const handleCreate = async () => {
+      if (creating) return;
+      const name = pageName.trim() || suggestedName;
+      const newHandle = handle.trim() || kebabCase(name.toLowerCase());
+      if (type === 'default') {
+        const { isValid, error: handleError } = validateKebabCase(newHandle);
+        if (!isValid) return setError(handleError);
+      }
+      const pageObj = {
+        type,
+        ...(type === 'url' ? { url: pageURL.trim() || 'https://www.tooljet.com' } : {}),
+        ...(['url', 'app', 'group'].includes(type) ? { openIn: draft.openIn } : {}),
+        ...(draft.icon ? { icon: draft.icon } : {}),
+      };
+      setCreating(true);
+      try {
+        const created = await addNewPage(name, newHandle, type === 'group', pageObj);
+        // A duplicate name comes back as a toast id, not a page: stay on the draft so the name can change.
+        if (!created?.id) return;
+        if (type === 'app' && draft.app) {
+          const { value, slug, currentVersionId } = draft.app;
+          updatePageTargetApp(created.id, value, slug ?? null, currentVersionId ?? null, moduleId);
+        }
+        setNewPagePopupConfig({ show: true, mode: 'edit', type });
+      } finally {
+        setCreating(false);
+      }
+    };
 
     useEffect(() => {
       if (mode === 'add' && type === 'default' && !hasAutoSavedRef.current) {
@@ -387,7 +444,7 @@ export const AddEditPagePopup = forwardRef(
         id="add-new-page-popup"
         ref={ref}
         {...props}
-        className={`add-new-page-popup ${embedded ? 'add-new-page-popup--embedded' : ''} ${darkMode && 'dark-theme theme-dark'}`}
+        className={`add-new-page-popup ${embedded ? 'add-new-page-popup--embedded' : ''} ${isDraft ? 'add-new-page-popup--draft' : ''} ${darkMode && 'dark-theme theme-dark'}`}
       >
         {embedded ? (
           <PanelHeader
@@ -401,73 +458,75 @@ export const AddEditPagePopup = forwardRef(
               label="Read pages documentation"
               dataCy="page-documentation-link"
             />
-            <DropdownMenu.Root modal={false}>
-              <DropdownMenu.Trigger asChild>
-                <PanelIconButton
-                  label="Page options"
-                  leadingIcon="ellipsis-vertical"
-                  size="medium"
-                  isLucid
-                  data-cy="page-options-button"
-                />
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Portal>
-                <DropdownMenu.Content
-                  align="end"
-                  sideOffset={8}
-                  className={cx('popover page-header-options', { 'dark-theme': darkMode })}
-                >
-                  <div className="list-item-popover-body">
-                    {actions.map(
-                      ({ label, menuIcon: MenuIcon, dataCy, destructive, enterprise, onSelect, disabledReason }) => (
-                        <ToolTip
-                          key={label}
-                          message={disabledReason ?? label}
-                          placement="left"
-                          show={Boolean(disabledReason)}
-                        >
-                          <DropdownMenu.Item
-                            className="list-item-popover-option"
-                            data-cy={dataCy}
-                            disabled={Boolean(disabledReason)}
-                            aria-label={label}
-                            aria-describedby={disabledReason && destructive ? deleteDisabledReasonId : undefined}
-                            onSelect={onSelect}
+            {!isDraft && (
+              <DropdownMenu.Root modal={false}>
+                <DropdownMenu.Trigger asChild>
+                  <PanelIconButton
+                    label="Page options"
+                    leadingIcon="ellipsis-vertical"
+                    size="medium"
+                    isLucid
+                    data-cy="page-options-button"
+                  />
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Portal>
+                  <DropdownMenu.Content
+                    align="end"
+                    sideOffset={8}
+                    className={cx('popover page-header-options', { 'dark-theme': darkMode })}
+                  >
+                    <div className="list-item-popover-body">
+                      {actions.map(
+                        ({ label, menuIcon: MenuIcon, dataCy, destructive, enterprise, onSelect, disabledReason }) => (
+                          <ToolTip
+                            key={label}
+                            message={disabledReason ?? label}
+                            placement="left"
+                            show={Boolean(disabledReason)}
                           >
-                            <span className="list-item-popover-menu-option-icon">
-                              <MenuIcon
-                                size={16}
-                                color={
-                                  disabledReason
-                                    ? 'var(--icon-disabled)'
-                                    : destructive
-                                      ? 'var(--icon-danger)'
-                                      : 'var(--icon-weak)'
-                                }
-                              />
-                            </span>
-                            <span
-                              className={cx('list-item-option-menu-label', {
-                                'tw-text-editor-text-danger': destructive && !disabledReason,
-                                'color-disabled': disabledReason,
-                              })}
+                            <DropdownMenu.Item
+                              className="list-item-popover-option"
+                              data-cy={dataCy}
+                              disabled={Boolean(disabledReason)}
+                              aria-label={label}
+                              aria-describedby={disabledReason && destructive ? deleteDisabledReasonId : undefined}
+                              onSelect={onSelect}
                             >
-                              {label}
-                            </span>
-                            {enterprise && <SolidIcon width={16} name="enterprisecrown" className="mx-1" />}
-                            {disabledReason && destructive && (
-                              <span id={deleteDisabledReasonId} className="visually-hidden">
-                                {disabledReason}
+                              <span className="list-item-popover-menu-option-icon">
+                                <MenuIcon
+                                  size={16}
+                                  color={
+                                    disabledReason
+                                      ? 'var(--icon-disabled)'
+                                      : destructive
+                                        ? 'var(--icon-danger)'
+                                        : 'var(--icon-weak)'
+                                  }
+                                />
                               </span>
-                            )}
-                          </DropdownMenu.Item>
-                        </ToolTip>
-                      )
-                    )}
-                  </div>
-                </DropdownMenu.Content>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Root>
+                              <span
+                                className={cx('list-item-option-menu-label', {
+                                  'tw-text-editor-text-danger': destructive && !disabledReason,
+                                  'color-disabled': disabledReason,
+                                })}
+                              >
+                                {label}
+                              </span>
+                              {enterprise && <SolidIcon width={16} name="enterprisecrown" className="mx-1" />}
+                              {disabledReason && destructive && (
+                                <span id={deleteDisabledReasonId} className="visually-hidden">
+                                  {disabledReason}
+                                </span>
+                              )}
+                            </DropdownMenu.Item>
+                          </ToolTip>
+                        )
+                      )}
+                    </div>
+                  </DropdownMenu.Content>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Root>
+            )}
           </PanelHeader>
         ) : (
           <Popover.Header>
@@ -503,8 +562,9 @@ export const AddEditPagePopup = forwardRef(
                 value={pageName}
                 autoFocus={true}
                 onChange={(e) => setPageName(e.target.value)}
+                placeholder={suggestedName}
                 onBlur={() => {
-                  pageName && pageName !== savedPage?.name && updatePageName(page?.id, pageName);
+                  !isDraft && pageName && pageName !== savedPage?.name && updatePageName(page?.id, pageName);
                 }}
                 minLength="1"
                 maxLength="32"
@@ -519,7 +579,8 @@ export const AddEditPagePopup = forwardRef(
                   type="text"
                   className={`form-control ${error ? 'is-invalid' : ''}`}
                   onChange={(e) => onChangePageHandleValue(e)}
-                  onBlur={() => handleSave()}
+                  onBlur={() => !isDraft && handleSave()}
+                  placeholder={isDraft ? kebabCase((pageName.trim() || suggestedName).toLowerCase()) : undefined}
                   value={handle}
                   minLength="1"
                   maxLength="32"
@@ -538,7 +599,8 @@ export const AddEditPagePopup = forwardRef(
                   onChange={(e) => setPageURL(e.target.value)}
                   className="form-control"
                   value={pageURL}
-                  onBlur={(e) => savedPage?.url !== e.target.value && updatePageURL(page?.id, pageURL)}
+                  placeholder={isDraft ? 'https://www.tooljet.com' : undefined}
+                  onBlur={(e) => !isDraft && savedPage?.url !== e.target.value && updatePageURL(page?.id, pageURL)}
                   minLength="1"
                 />
               </div>
@@ -552,12 +614,15 @@ export const AddEditPagePopup = forwardRef(
                   options={appOptions}
                   search={true}
                   value={
-                    isTargetMissing
-                      ? { label: 'Undefined app', value: page?.targetCorelationId }
-                      : page?.targetCorelationId
+                    isDraft
+                      ? draft.app?.value
+                      : isTargetMissing
+                        ? { label: 'Undefined app', value: page?.targetCorelationId }
+                        : page?.targetCorelationId
                   }
                   onChange={(value) => {
                     const selected = appOptions.find((opt) => opt.value === value);
+                    if (isDraft) return setDraft((d) => ({ ...d, app: selected ?? null }));
                     updatePageTargetApp(
                       page?.id,
                       value,
@@ -593,9 +658,10 @@ export const AddEditPagePopup = forwardRef(
               <div className="ms-auto position-relative app-mode-switch">
                 <ToggleGroup
                   onValueChange={(value) => {
+                    if (isDraft) return setDraft((d) => ({ ...d, openIn: value }));
                     updatePageTarget(page?.id, value);
                   }}
-                  defaultValue={page?.openIn}
+                  defaultValue={isDraft ? draft.openIn : page?.openIn}
                 >
                   {OPEN_APP_MODES.map((mode) => (
                     <ToggleGroupItem key={mode.value} value={mode.value}>
@@ -611,176 +677,196 @@ export const AddEditPagePopup = forwardRef(
               <label className="form-label font-weight-400 mb-0">Icon</label>
               <Icon
                 isVisibilityEnabled={false}
-                onChange={(value) => updatePageIcon(page?.id, value)}
-                value={page?.icon || 'IconFile'}
+                onChange={(value) =>
+                  isDraft ? setDraft((d) => ({ ...d, icon: value })) : updatePageIcon(page?.id, value)
+                }
+                value={(isDraft ? draft.icon : page?.icon) || 'IconFile'}
               />
             </div>
           </div>
-          <div className={`${['default', 'custom'].includes(type) ? 'pb-3' : ''}`}>
-            {type === 'default' && (
-              <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Mark as home</label>
-                <label className={`form-switch`}>
-                  <input
-                    aria-label="Mark as home"
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={isHomePage}
-                    onChange={() => markAsHomePage(page?.id)}
-                    disabled={isHomePage || resolveReferences(page?.hidden?.value) || page?.disabled}
-                  />
-                </label>
+          {!isDraft && (
+            <>
+              <div className={`${['default', 'custom'].includes(type) ? 'pb-3' : ''}`}>
+                {type === 'default' && (
+                  <div className=" d-flex justify-content-between align-items-center pb-2">
+                    <label className="form-label font-weight-400 mb-0">Mark as home</label>
+                    <label className={`form-switch`}>
+                      <input
+                        aria-label="Mark as home"
+                        className="form-check-input"
+                        type="checkbox"
+                        checked={isHomePage}
+                        onChange={() => markAsHomePage(page?.id)}
+                        disabled={isHomePage || resolveReferences(page?.hidden?.value) || page?.disabled}
+                      />
+                    </label>
+                  </div>
+                )}
+                <HidePageOnNavigation
+                  hidden={page?.hidden}
+                  disabled={['default', 'custom'].includes(type) ? page?.disabled : false}
+                  page={page}
+                  updatePageVisibility={updatePageVisibility}
+                  darkMode={darkMode}
+                  isHomePage={isHomePage}
+                />
+                {type === 'default' && (
+                  <div className=" d-flex justify-content-between align-items-center pb-2">
+                    <label className="form-label font-weight-400 mb-0">Disable page</label>
+                    <label className={`form-switch`}>
+                      <input
+                        aria-label="Disable page"
+                        className="form-check-input"
+                        type="checkbox"
+                        checked={page?.disabled}
+                        onChange={() => disableOrEnablePage(page?.id, !page.disabled)}
+                        disabled={isHomePage}
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
-            )}
-            <HidePageOnNavigation
-              hidden={page?.hidden}
-              disabled={['default', 'custom'].includes(type) ? page?.disabled : false}
-              page={page}
-              updatePageVisibility={updatePageVisibility}
-              darkMode={darkMode}
-              isHomePage={isHomePage}
-            />
-            {type === 'default' && (
-              <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Disable page</label>
-                <label className={`form-switch`}>
-                  <input
-                    aria-label="Disable page"
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={page?.disabled}
-                    onChange={() => disableOrEnablePage(page?.id, !page.disabled)}
-                    disabled={isHomePage}
-                  />
-                </label>
+              <div className="pb-3">
+                <div className="section-header pb-2">Page header</div>
+                <div className=" d-flex justify-content-between align-items-center pb-2">
+                  <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+                    Show on desktop
+                    <LicenseTooltip
+                      message={"You don't have access to page headers. Upgrade your plan to access this feature."}
+                      placement="bottom"
+                      show={!hasCanvasPageHeaderEnabled}
+                      tooltipClassName="page-paid-tooltip"
+                    >
+                      <div className="d-flex align-items-center">
+                        {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                      </div>
+                    </LicenseTooltip>
+                  </label>
+                  <label className={`form-switch`}>
+                    <input
+                      aria-label="Show page header on desktop"
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={showPageHeaderOnDesktop ?? false}
+                      disabled={!hasCanvasPageHeaderEnabled}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        togglePageHeader(page?.id, checked, 'desktop');
+                      }}
+                    />
+                  </label>
+                </div>
+                <div className=" d-flex justify-content-between align-items-center pb-2">
+                  <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+                    Show on mobile
+                    <LicenseTooltip
+                      message={"You don't have access to page headers. Upgrade your plan to access this feature."}
+                      placement="bottom"
+                      show={!hasCanvasPageHeaderEnabled}
+                      tooltipClassName="page-paid-tooltip"
+                    >
+                      <div className="d-flex align-items-center">
+                        {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                      </div>
+                    </LicenseTooltip>
+                  </label>
+                  <label className={`form-switch`}>
+                    <input
+                      aria-label="Show page header on mobile"
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={showPageHeaderOnMobile ?? false}
+                      disabled={!hasCanvasPageHeaderEnabled}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        togglePageHeader(page?.id, checked, 'mobile');
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
-            )}
-          </div>
-          <div className="pb-3">
-            <div className="section-header pb-2">Page header</div>
-            <div className=" d-flex justify-content-between align-items-center pb-2">
-              <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-                Show on desktop
-                <LicenseTooltip
-                  message={"You don't have access to page headers. Upgrade your plan to access this feature."}
-                  placement="bottom"
-                  show={!hasCanvasPageHeaderEnabled}
-                  tooltipClassName="page-paid-tooltip"
-                >
-                  <div className="d-flex align-items-center">
-                    {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
-                  </div>
-                </LicenseTooltip>
-              </label>
-              <label className={`form-switch`}>
-                <input
-                  aria-label="Show page header on desktop"
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={showPageHeaderOnDesktop ?? false}
-                  disabled={!hasCanvasPageHeaderEnabled}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    togglePageHeader(page?.id, checked, 'desktop');
-                  }}
+              <div className="pb-3">
+                <div className="section-header pb-2">Page footer</div>
+                <div className=" d-flex justify-content-between align-items-center pb-2">
+                  <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+                    Show on desktop
+                    <LicenseTooltip
+                      message={"You don't have access to page footers. Upgrade your plan to access this feature."}
+                      placement="bottom"
+                      show={!hasCanvasPageFooterEnabled}
+                      tooltipClassName="page-paid-tooltip"
+                    >
+                      <div className="d-flex align-items-center">
+                        {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                      </div>
+                    </LicenseTooltip>
+                  </label>
+                  <label className={`form-switch`}>
+                    <input
+                      aria-label="Show page footer on desktop"
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={showPageFooterOnDesktop ?? false}
+                      disabled={!hasCanvasPageFooterEnabled}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        togglePageFooter(page?.id, checked, 'desktop');
+                      }}
+                    />
+                  </label>
+                </div>
+                <div className=" d-flex justify-content-between align-items-center pb-2">
+                  <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+                    Show on mobile
+                    <LicenseTooltip
+                      message={"You don't have access to page footers. Upgrade your plan to access this feature."}
+                      placement="bottom"
+                      show={!hasCanvasPageFooterEnabled}
+                      tooltipClassName="page-paid-tooltip"
+                    >
+                      <div className="d-flex align-items-center">
+                        {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                      </div>
+                    </LicenseTooltip>
+                  </label>
+                  <label className={`form-switch`}>
+                    <input
+                      aria-label="Show page footer on mobile"
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={showPageFooterOnMobile ?? false}
+                      disabled={!hasCanvasPageFooterEnabled}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        togglePageFooter(page?.id, checked, 'mobile');
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+              {['default', 'custom'].includes(type) && (
+                <PageEvents
+                  type={type}
+                  page={page}
+                  allPages={pages}
+                  onNestedPopoverOpenChange={onNestedPopoverOpenChange}
                 />
-              </label>
+              )}
+            </>
+          )}
+          {isDraft && (
+            <div className="page-create-footer">
+              <Button
+                variant="primary"
+                size="medium"
+                className="tw-w-full"
+                data-cy="create-page-button"
+                disabled={creating}
+                onClick={handleCreate}
+              >
+                {type === 'default' ? 'Create page' : type === 'group' ? 'Create group' : 'Create nav item'}
+              </Button>
             </div>
-            <div className=" d-flex justify-content-between align-items-center pb-2">
-              <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-                Show on mobile
-                <LicenseTooltip
-                  message={"You don't have access to page headers. Upgrade your plan to access this feature."}
-                  placement="bottom"
-                  show={!hasCanvasPageHeaderEnabled}
-                  tooltipClassName="page-paid-tooltip"
-                >
-                  <div className="d-flex align-items-center">
-                    {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
-                  </div>
-                </LicenseTooltip>
-              </label>
-              <label className={`form-switch`}>
-                <input
-                  aria-label="Show page header on mobile"
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={showPageHeaderOnMobile ?? false}
-                  disabled={!hasCanvasPageHeaderEnabled}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    togglePageHeader(page?.id, checked, 'mobile');
-                  }}
-                />
-              </label>
-            </div>
-          </div>
-          <div className="pb-3">
-            <div className="section-header pb-2">Page footer</div>
-            <div className=" d-flex justify-content-between align-items-center pb-2">
-              <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-                Show on desktop
-                <LicenseTooltip
-                  message={"You don't have access to page footers. Upgrade your plan to access this feature."}
-                  placement="bottom"
-                  show={!hasCanvasPageFooterEnabled}
-                  tooltipClassName="page-paid-tooltip"
-                >
-                  <div className="d-flex align-items-center">
-                    {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
-                  </div>
-                </LicenseTooltip>
-              </label>
-              <label className={`form-switch`}>
-                <input
-                  aria-label="Show page footer on desktop"
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={showPageFooterOnDesktop ?? false}
-                  disabled={!hasCanvasPageFooterEnabled}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    togglePageFooter(page?.id, checked, 'desktop');
-                  }}
-                />
-              </label>
-            </div>
-            <div className=" d-flex justify-content-between align-items-center pb-2">
-              <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-                Show on mobile
-                <LicenseTooltip
-                  message={"You don't have access to page footers. Upgrade your plan to access this feature."}
-                  placement="bottom"
-                  show={!hasCanvasPageFooterEnabled}
-                  tooltipClassName="page-paid-tooltip"
-                >
-                  <div className="d-flex align-items-center">
-                    {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
-                  </div>
-                </LicenseTooltip>
-              </label>
-              <label className={`form-switch`}>
-                <input
-                  aria-label="Show page footer on mobile"
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={showPageFooterOnMobile ?? false}
-                  disabled={!hasCanvasPageFooterEnabled}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    togglePageFooter(page?.id, checked, 'mobile');
-                  }}
-                />
-              </label>
-            </div>
-          </div>
-          {['default', 'custom'].includes(type) && (
-            <PageEvents
-              type={type}
-              page={page}
-              allPages={pages}
-              onNestedPopoverOpenChange={onNestedPopoverOpenChange}
-            />
           )}
         </Popover.Body>
       </Popover>
