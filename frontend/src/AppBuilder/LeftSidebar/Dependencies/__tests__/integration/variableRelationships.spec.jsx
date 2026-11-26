@@ -59,3 +59,78 @@ test.each([
     expect(screen.getByText('Uses (1)')).toBeVisible();
   }
 );
+
+// Break this catches: initial-value query/component sources disappear from Uses and reverse Used by.
+test.each(
+  ['app', 'page'].flatMap((scope) =>
+    ['query', 'component'].flatMap((kind) =>
+      ['name', 'id', 'bracket', 'optional', 'legacy'].map((notation) => [scope, kind, notation])
+    )
+  )
+)('%s declaration using a %s via %s exposes both directions', async (scope, kind, notation) => {
+  const session = new AppBuilderTestSession({ scenario });
+  const queryId = 'a1111111-1111-4111-8111-111111111111';
+  const sourceId = 'b2222222-2222-4222-8222-222222222222';
+  const textId = 'c3333333-3333-4333-8333-333333333333';
+  const sourceName = kind === 'query' ? 'restapi1' : 'input1';
+  const root = kind === 'query' ? 'queries' : 'components';
+  const key = notation === 'id' ? (kind === 'query' ? queryId : sourceId) : sourceName;
+  const access = notation === 'bracket' ? `${root}['${key}']` : `${root}${notation === 'optional' ? '?.' : '.'}${key}`;
+  const code = `${access}.${kind === 'query' ? 'data.users' : 'text'}`;
+  const definition = { value: notation === 'legacy' ? code : `{{${code}}}`, fxActive: notation === 'legacy' };
+  const variableName = 'processedUserDetailsObject';
+  const map = { [variableName]: definition, staticLiteral: { value: code, fxActive: false } };
+  const consumer = {
+    component: {
+      name: 'text1',
+      component: 'Text',
+      definition: {
+        properties: {
+          text: { value: `{{JSON.stringify(${scope === 'page' ? 'page.' : ''}variables.${variableName})}}` },
+        },
+      },
+    },
+    layouts: {},
+  };
+  await session.store.act((state) => {
+    state.initializeDependencySlice('canvas');
+    state.setApp({ appId: 'app-entity-source' }, 'canvas');
+    state.setCurrentVersionId('version-entity-source');
+    state.setGlobalSettings({ ...state.globalSettings, variables: scope === 'app' ? map : {} });
+    state.setPages(
+      [
+        {
+          id: 'p1',
+          name: 'Home',
+          handle: 'home',
+          variables: scope === 'page' ? map : {},
+          components: {
+            [textId]: consumer,
+            [sourceId]: {
+              component: { name: 'input1', component: 'Text', definition: { properties: { text: { value: 'Ada' } } } },
+              layouts: {},
+            },
+          },
+        },
+      ],
+      'canvas'
+    );
+    state.setCurrentPageId('p1', 'canvas');
+    state.dataQuery.setQueries([{ id: queryId, name: 'restapi1', kind: 'restapi', options: {} }], 'canvas');
+    state.setQueryMapping('canvas');
+    state.setComponentNameIdMapping('canvas');
+    state.initDependencyGraph('canvas');
+    state.initVariableDefinitions('canvas');
+  });
+  session.render(<DependencyViewer moduleId="canvas" onClose={() => {}} />);
+  await session.store.act((s) => s.setEntityToViewDependencies({ kind: 'variable', id: `${scope}:${variableName}` }));
+  expect(await screen.findByText('Read by (1)')).toBeVisible();
+  expect(screen.getByRole('button', { name: /^text1 / })).toBeVisible();
+  expect(screen.getByText('Uses (1)')).toBeVisible();
+  expect(screen.queryByText('staticLiteral')).not.toBeInTheDocument();
+  await session.user.click(screen.getByRole('button', { name: new RegExp(`^${sourceName} `) }));
+  expect(await screen.findByText('Used by (1)')).toBeVisible();
+  await session.user.click(screen.getByRole('button', { name: new RegExp(`^${variableName} `) }));
+  expect(screen.getByTitle(variableName)).toBeVisible();
+  expect(screen.getByText('Uses (1)')).toBeVisible();
+});

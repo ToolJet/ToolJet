@@ -1,3 +1,4 @@
+import { getVariableDefinitionRefs } from './variableDefinitionRefs';
 import { getComponentUsage } from './componentUsage';
 import { getPageLoadQueries, getQueryOwnEvents, getQueryUsage, type RunsOnLoadSections } from './queryUsage';
 import { getVariableUsage, type ComponentUsageById, type VariableUsage } from './variableUsage';
@@ -35,13 +36,14 @@ export type DependencySections = {
  * references nothing is not a dependency, so it is left out of the lists.
  */
 export function getDependencySections(state: any, moduleId = 'canvas'): DependencySections {
+  const definitionRefs = getVariableDefinitionRefs(state, moduleId);
   const runsOnLoad = getPageLoadQueries(state, moduleId);
   const appLoadIds = new Set(runsOnLoad.appLoad.map((entry) => entry.id));
   const pageLoadIds = new Set(runsOnLoad.pageLoad.map((entry) => entry.id));
 
   const queries: QuerySection[] = [];
   getQueries(state, moduleId).forEach((query: any) => {
-    const usage = getQueryUsage(state, query.id, moduleId);
+    const usage = getQueryUsage(state, query.id, moduleId, definitionRefs);
     const ownEvents = getQueryOwnEvents(state, query.id, moduleId);
     const loadTriggers = { appLoad: appLoadIds.has(query.id), pageLoad: pageLoadIds.has(query.id) };
     const total =
@@ -64,7 +66,7 @@ export function getDependencySections(state: any, moduleId = 'canvas'): Dependen
   // dominant cost of a refresh.
   const componentUsageById: ComponentUsageById = {};
   Object.entries(pageComponents).forEach(([id, definition]: [string, any]) => {
-    const usage = getComponentUsage(state, id, moduleId);
+    const usage = getComponentUsage(state, id, moduleId, definitionRefs);
     componentUsageById[id] = usage;
     if (usage.uses.length + usage.usedBy.length + usage.triggers.length === 0) return;
     components.push({
@@ -77,7 +79,7 @@ export function getDependencySections(state: any, moduleId = 'canvas'): Dependen
   });
   components.sort((a, b) => a.name.localeCompare(b.name));
 
-  const { variables: allVariables } = getVariableUsage(state, moduleId, componentUsageById);
+  const { variables: allVariables } = getVariableUsage(state, moduleId, componentUsageById, definitionRefs);
   const relatedVariables = allVariables.filter((v) => v.uses.length + v.setBy.length + v.readBy.length > 0);
 
   return {

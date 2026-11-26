@@ -4,6 +4,7 @@ import {
   addComponentEntry,
   addEntry,
   addQueryEntry,
+  addRefEntry,
   detailOf,
   getComponentName,
   getEvents,
@@ -14,7 +15,8 @@ import {
 import { VARIABLE_EVENT_TARGETS } from './eventTargets';
 import { getQueryRefs } from './queryRefs';
 import { getComponentUsage } from './componentUsage';
-import { getVariableRefs, isExpressionValue, toExpression, variableKey } from '../variableDefinitions';
+import { getVariableRefs, variableKey } from '../variableDefinitions';
+import { getVariableDefinitionRefs } from './variableDefinitionRefs';
 
 export type VariableUsage = {
   name: string;
@@ -39,7 +41,12 @@ export type ComponentUsageById = Record<string, ReturnType<typeof getComponentUs
  * getDependencySections) hand those results in. Recomputing them here would double the
  * graph traversals for the whole page, which is the dominant cost of a panel refresh.
  */
-export function getVariableUsage(state: any, moduleId = 'canvas', componentUsageById?: ComponentUsageById) {
+export function getVariableUsage(
+  state: any,
+  moduleId = 'canvas',
+  componentUsageById?: ComponentUsageById,
+  definitionRefs = getVariableDefinitionRefs(state, moduleId)
+) {
   type Row = {
     name: string;
     scope: 'app' | 'page';
@@ -92,7 +99,7 @@ export function getVariableUsage(state: any, moduleId = 'canvas', componentUsage
 
   const pageComponents = state.getCurrentPageComponents?.(moduleId) ?? {};
   Object.keys(pageComponents).forEach((componentId) => {
-    const usage = componentUsageById?.[componentId] ?? getComponentUsage(state, componentId, moduleId);
+    const usage = componentUsageById?.[componentId] ?? getComponentUsage(state, componentId, moduleId, definitionRefs);
     usage.uses.forEach((entry) => {
       if (entry.kind === 'variable') {
         addComponentEntry(state, moduleId, row('app', entry.name).readBy, componentId, entry.details[0]);
@@ -134,11 +141,22 @@ export function getVariableUsage(state: any, moduleId = 'canvas', componentUsage
   });
 
   const exposed = state.resolvedStore?.modules?.[moduleId]?.exposedValues;
-  (state.getVariableDefinitions?.(moduleId) ?? []).forEach(
-    (definition: { scope: 'app' | 'page'; name: string; value: string; fxActive: boolean }) => {
+  definitionRefs.forEach(
+    ({
+      definition,
+      expression,
+      refs,
+    }: {
+      definition: { scope: 'app' | 'page'; name: string; value: string; fxActive: boolean };
+      expression: string;
+      refs: any[];
+    }) => {
       const reader = row(definition.scope, definition.name);
-      if (!isExpressionValue(definition)) return;
-      const expression = toExpression(definition);
+      refs.forEach((ref) => {
+        // Variable edges retain their scoped identities below.
+        if (ref.entityType !== 'variables' && !(ref.entityType === 'page' && ref.entityNameOrId === 'variables'))
+          addRefEntry(state, moduleId, reader.uses, { ...ref, sourceString: expression });
+      });
       getVariableRefs(expression).forEach((source: { scope: 'app' | 'page'; name: string }) => {
         const detail = detailOf('Initial value', expression);
         addEntry(
