@@ -4,7 +4,7 @@ export const checkboxConfig = {
   description: 'Single checkbox toggle',
   component: 'Checkbox',
   defaultSize: {
-    width: 6,
+    width: 2,
     height: 30,
   },
   others: {

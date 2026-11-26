@@ -3,7 +3,7 @@ export const dropdownV2Config = {
   displayName: 'Dropdown',
   description: 'Single item selector',
   defaultSize: {
-    width: 10,
+    width: 3,
     height: 40,
   },
   component: 'DropdownV2',

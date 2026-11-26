@@ -240,7 +240,7 @@ function scaleLayouts(layouts, cols = 6) {
     ...layout,
     // width: layout.width <= 4 ? 2 : layout.width <= 8 ? 3 : layout.width,
     // width: layout.width <= 10 ? 10 : layout.width <= 20 ? 24 : 43,
-    width: layout.width * 3 > 43 ? 43 : layout.width * 3,
+    width: layout.width * 3 > NO_OF_GRIDS ? NO_OF_GRIDS : layout.width * 3,
   }));
 }
 
