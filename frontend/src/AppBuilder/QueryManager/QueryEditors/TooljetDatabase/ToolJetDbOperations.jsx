@@ -636,6 +636,7 @@ const ToolJetDbOperations = ({
                   onAdd={() => navigate(getPrivateRoute('database'))}
                   addBtnLabel={'Add new table'}
                   value={generateListForDropdown(tables).find((val) => val?.value === selectedTableId)}
+                  showOptionTooltip
                 />
               </div>
             </div>

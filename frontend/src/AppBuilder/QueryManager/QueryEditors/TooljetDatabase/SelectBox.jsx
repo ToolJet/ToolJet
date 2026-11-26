@@ -178,6 +178,7 @@ function DataSourceSelect({
   columnDefaultValue,
   setColumnDefaultValue,
   showControlComponent = false,
+  showOptionTooltip = false,
 }) {
   const [isLoadingFKDetails, setIsLoadingFKDetails] = useState(isLoading);
   const [searchValue, setSearchValue] = useState('');
@@ -501,7 +502,8 @@ function DataSourceSelect({
                           isCreateColumn ||
                           isEditColumn ||
                           isEditTable ||
-                          isCreateTable) &&
+                          isCreateTable ||
+                          showOptionTooltip) &&
                         children?.length > 30
                       }
                     >
