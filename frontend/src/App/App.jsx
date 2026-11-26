@@ -6,10 +6,6 @@ import { authenticationService, tooljetService, licenseService } from '@/_servic
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute, SuperAdminRoute } from '@/Routes';
 import { DesktopOnlyPrivateRoute, DesktopOnlyAdminRoute } from '@/Routes/ComposedGuards';
-import { HomePage } from '@/HomePage';
-import ApprovalsPage from '@ee/modules/Workflows/pages/ApprovalsPage';
-import ExecutionsPage from '@ee/modules/Workflows/pages/ExecutionsPage';
-import WorkflowsPageGuard from '@ee/modules/Workflows/components/WorkflowsPageGuard';
 import './lazyPageStyles';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
@@ -512,37 +508,16 @@ class AppComponent extends React.Component {
                   {isWorkflowsFeatureEnabled() && (
                     <>
                       <Route exact path="/:workspaceId/workflows" element={<AppsDashboard appType="workflow" />} />
+                      {/* Dashboard tabs; the approval email links to /approvals. */}
                       <Route
                         exact
                         path="/:workspaceId/workflows/approvals"
-                        element={
-                          <HomePage
-                            switchDarkMode={this.switchDarkMode}
-                            darkMode={darkMode}
-                            appType="workflow"
-                            contentOverride={
-                              <WorkflowsPageGuard page="approvals">
-                                <ApprovalsPage darkMode={darkMode} />
-                              </WorkflowsPageGuard>
-                            }
-                          />
-                        }
+                        element={<AppsDashboard appType="workflow" />}
                       />
                       <Route
                         exact
                         path="/:workspaceId/workflows/executions"
-                        element={
-                          <HomePage
-                            switchDarkMode={this.switchDarkMode}
-                            darkMode={darkMode}
-                            appType="workflow"
-                            contentOverride={
-                              <WorkflowsPageGuard page="executions">
-                                <ExecutionsPage darkMode={darkMode} />
-                              </WorkflowsPageGuard>
-                            }
-                          />
-                        }
+                        element={<AppsDashboard appType="workflow" />}
                       />
                     </>
                   )}

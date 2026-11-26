@@ -1,3 +1,4 @@
+// migration-lint: allow-destructive the unique and check constraints are on pinned_items, a table this migration creates
 import { MigrationInterface, QueryRunner, Table, TableIndex } from 'typeorm';
 
 export class CreateDashboardV2Tables1791000000000 implements MigrationInterface {

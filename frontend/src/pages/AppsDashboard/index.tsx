@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { getWorkspaceId } from '@/_helpers/utils';
 import { useHeaderSearchConfig } from '@/_hooks/useHeaderSearchConfig';
@@ -33,6 +33,7 @@ import {
   staticContentMappingByAppType,
   type TAppType,
 } from './helper';
+import { getWorkflowTab, WORKFLOW_TABS } from './workflowTabs';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import type { ILicenseStore } from '@/_stores/types/licenseStore';
 
@@ -42,6 +43,9 @@ interface IAppsDashboardProps {
 
 export default function AppsDashboard({ appType }: IAppsDashboardProps) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  // Approvals/Executions guard their own access.
+  const isWorkflowSubTab = appType === 'workflow' && getWorkflowTab(pathname) !== WORKFLOW_TABS.LIST;
 
   useHeaderSearchConfig({ placeholder: searchPlaceholderByAppType[appType] });
 
@@ -129,7 +133,7 @@ export default function AppsDashboard({ appType }: IAppsDashboardProps) {
       role?.name == 'end-user' && navigate(`/${workspaceId}/home`);
     }
 
-    if (appType === 'workflow') {
+    if (appType === 'workflow' && !isWorkflowSubTab) {
       const { hasViewPermission } = canUserPerformWorkflowAction();
 
       const canView = hasViewPermission && isWorkflowsFeatureEnabled();
@@ -140,10 +144,10 @@ export default function AppsDashboard({ appType }: IAppsDashboardProps) {
         navigate(`/${workspaceId}/home`);
       }
     }
-  }, [appType, navigate]);
+  }, [appType, navigate, isWorkflowSubTab]);
 
   // Loading keeps the tabs and skeleton up instead of flashing the empty state; an active search shows "No matches" instead.
-  const hasItems = isRootAppsLoading || searchQuery.trim() !== '' || (rootApps?.total ?? 0) > 0;
+  const hasItems = isWorkflowSubTab || isRootAppsLoading || searchQuery.trim() !== '' || (rootApps?.total ?? 0) > 0;
 
   if (isOnboarding) return <TJLoader />;
 
