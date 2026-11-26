@@ -7,7 +7,7 @@ import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { UI2_ROW_CHROME } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { getDynamicLayoutKey, getEffectiveLayout } from '@/AppBuilder/_stores/dynamicHeight/layoutKeys';
-import { resolveWidgetVisibility } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { resolveWidgetVisibility } from '@/AppBuilder/_stores/dynamicHeight/visibility';
 import { useMeasuredWidth } from './useMeasuredWidth';
 
 const SubContainerComponent = SubContainer as React.ComponentType<any>;

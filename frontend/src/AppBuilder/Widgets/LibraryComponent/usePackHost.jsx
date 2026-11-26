@@ -10,7 +10,7 @@ import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast'
 import { resolveDynamicValues } from '@/AppBuilder/_stores/utils';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { getEffectiveLayout } from '@/AppBuilder/_stores/dynamicHeight/layoutKeys';
-import { resolveWidgetVisibility } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { resolveWidgetVisibility } from '@/AppBuilder/_stores/dynamicHeight/visibility';
 import { UI2_ROW_CHROME } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { ROW_VARIABLES } from './inlineRuntime';
 import { useMeasuredWidth } from './useMeasuredWidth';

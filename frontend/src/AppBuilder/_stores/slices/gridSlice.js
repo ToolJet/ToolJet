@@ -7,9 +7,9 @@ import {
   getNextBubbleTargetId,
   resolveContainerHeight,
   resolveWidgetMeasuredHeight,
-  resolveWidgetVisibility,
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
+import { resolveWidgetVisibility } from '../dynamicHeight/visibility';
 import { getDynamicElementSelector, getDynamicLayoutKey, normalizeLayoutContext } from '../dynamicHeight/layoutKeys';
 import { heightHeldInView, isUi2PerRowType, sizesToDropAreas } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 

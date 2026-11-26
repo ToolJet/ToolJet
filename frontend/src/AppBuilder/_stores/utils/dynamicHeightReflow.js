@@ -17,6 +17,7 @@ import {
   normalizeLayoutContext,
   serializeLayoutContext,
 } from '../dynamicHeight/layoutKeys';
+import { resolveWidgetVisibility } from '../dynamicHeight/visibility';
 import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
 import {
   heightHeldInView,
@@ -234,33 +235,6 @@ export const getConnectedLaneComponentIds = (
   }
 
   return connected;
-};
-
-// Visibility resolution:
-//   exposed `isVisible`    →  (from runtime side-effects / events)
-//   properties.visibility  →  (explicit)
-//   styles.visibility      →  (legacy)
-//   `others.showOn<Mobile|Desktop>` can force-false regardless of the above.
-// Defaults to true when all sources are undefined.
-export const resolveWidgetVisibility = ({
-  componentId,
-  contextIndices,
-  currentLayout,
-  getResolvedComponent,
-  getExposedPropertyForAdditionalActions,
-}) => {
-  const component = getResolvedComponent(componentId, contextIndices);
-  const displayProperty = currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop';
-  const componentDisplay = component?.others?.[displayProperty];
-  const exposedVisibility = getExposedPropertyForAdditionalActions(componentId, contextIndices, 'isVisible');
-
-  let visibility = exposedVisibility ?? component?.properties?.visibility ?? component?.styles?.visibility;
-
-  if (componentDisplay === false) {
-    visibility = false;
-  }
-
-  return visibility ?? true;
 };
 
 // Container-specific extras added on top of the content-height calculation:
