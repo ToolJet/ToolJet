@@ -31,8 +31,7 @@ import { useDataQueries } from '@/_stores/dataQueriesStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
-import Student from '@/_ui/Icon/solidIcons/Student';
-import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
+import PanelDocumentationLink from '@/AppBuilder/Shared/Panel/PanelDocumentationLink';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import classNames from 'classnames';
@@ -561,35 +560,14 @@ export const Inspector = ({
     return <Accordion items={items} />;
   };
 
-  const renderDocumentationLink = () => {
-    return (
-      <span className="widget-documentation-link">
-        <a
-          href={getDocsLink(componentMeta?.component)}
-          target="_blank"
-          rel="noreferrer"
-          data-cy="widget-documentation-link"
-        >
-          <span>
-            <Student width={13} fill={'#3E63DD'} />
-            <small className="widget-documentation-link-text">
-              {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta:
-                  componentMeta.displayName === 'Toggle Switch (Legacy)'
-                    ? 'Toggle (Legacy)'
-                    : componentMeta.displayName === 'Toggle Switch'
-                      ? 'Toggle Switch'
-                      : componentMeta.component,
-              })}
-            </small>
-          </span>
-          <span>
-            <ArrowRight width={20} fill={'#3E63DD'} />
-          </span>
-        </a>
-      </span>
-    );
-  };
+  const componentDocsLabel = t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
+    componentMeta:
+      componentMeta.displayName === 'Toggle Switch (Legacy)'
+        ? 'Toggle (Legacy)'
+        : componentMeta.displayName === 'Toggle Switch'
+          ? 'Toggle Switch'
+          : componentMeta.component,
+  });
 
   const propertiesTab = isMounted && (
     <FallbackBoundary
@@ -717,6 +695,13 @@ export const Inspector = ({
         <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
           <div className={`panel-header-name ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
           <div className="panel-header-actions">
+            {!isPackComponent && (
+              <PanelDocumentationLink
+                href={getDocsLink(componentMeta?.component)}
+                label={componentDocsLabel}
+                dataCy="widget-documentation-link"
+              />
+            )}
             {!isModuleContainer && (
               <>
                 <div data-cy={'component-inspector-options'}>
@@ -818,8 +803,6 @@ export const Inspector = ({
           {renderTabs()}
         </div>
       </div>
-      {/* A pack component has no page of its own in the docs yet. */}
-      {!isPackComponent && renderDocumentationLink()}
     </div>
   );
 };

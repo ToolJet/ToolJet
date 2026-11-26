@@ -152,6 +152,7 @@ describe('AddEditPagePopup embedded in the right panel', () => {
     const menu = within(screen.getByRole('menu'));
     expect(menu.getByRole('menuitem', { name: 'Go to page' })).toHaveFocus();
     expect(menu.getByRole('menuitem', { name: 'Duplicate page' })).toBeVisible();
+    expect(menu.getByRole('menuitem', { name: 'Page permission' })).toBeVisible();
     const deletePage = menu.getByRole('menuitem', { name: 'Delete page' });
 
     if (name === 'Home') {
@@ -301,10 +302,20 @@ describe('[LR-23] page popups open past the Pages panel', () => {
     unmount();
   };
 
-  test('New page opens 8px past the panel', () =>
-    openInPagesPanel(<AddNewPageMenu darkMode={false} />, async () => {
-      fireEvent.click(screen.getByRole('button', { name: /new page/i }));
-    }));
+  test('New page opens in the right sidebar without a floating popover', () => {
+    const { unmount } = render(
+      <ModuleProvider moduleId="canvas" isModuleMode={false}>
+        <AddNewPageMenu darkMode={false} />
+      </ModuleProvider>
+    );
+    fireEvent.click(screen.getByRole('button', { name: /new page/i }));
+
+    expect(state().newPagePopupConfig).toMatchObject({ show: true, mode: 'add', type: 'default' });
+    expect(state().activeRightSideBarTab).toBe('page-configuration');
+    expect(state().isRightSidebarOpen).toBe(true);
+    expect(document.getElementById('add-new-page-popup')).toBeNull();
+    unmount();
+  });
 
   test('Edit group opens 8px past the panel, not off the left edge', () =>
     openInPagesPanel(<PageGroupItem page={state().modules.canvas.pages[1]} darkMode={false} />, async () => {

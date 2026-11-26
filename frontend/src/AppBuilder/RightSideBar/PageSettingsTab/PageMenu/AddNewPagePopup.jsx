@@ -1,6 +1,6 @@
 import React, { forwardRef, useCallback, useEffect, useId, useRef, useState } from 'react';
 import cx from 'classnames';
-import { AlertTriangle, ArrowRight, Copy, Trash } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Copy, Lock, Trash } from 'lucide-react';
 import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 import { Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/Button/Button';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
 import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
+import PanelDocumentationLink from '@/AppBuilder/Shared/Panel/PanelDocumentationLink';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getPanelCloseLabel, getPastPanelOffset } from '@/AppBuilder/panelLayout';
 
@@ -122,6 +123,8 @@ export const AddEditPagePopup = forwardRef(
     const hasCanvasPageHeaderEnabled = useStore((state) => state.license?.featureAccess?.canvasPageHeaderEnabled);
 
     const hasCanvasPageFooterEnabled = useStore((state) => state.license?.featureAccess?.canvasPageFooterEnabled);
+    const hasAppPermissionPages = useStore((state) => state.license?.featureAccess?.appPermissionPages);
+    const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
     const [pageName, setPageName] = useState('');
     const [handle, setHandle] = useState('');
     const [pageURL, setPageURL] = useState('');
@@ -337,6 +340,9 @@ export const AddEditPagePopup = forwardRef(
 
     const entity = type === 'group' ? 'group' : 'page';
     const deleteDisabledReason = isHomePage ? "Home page can't be deleted" : undefined;
+    const permissionDisabledReason = !hasAppPermissionPages
+      ? "You don't have access to page permissions. Upgrade your plan to access this feature."
+      : undefined;
     const actions = [
       ...(!['group', 'custom'].includes(type)
         ? [{ label: 'Go to page', icon: 'arrowright01', menuIcon: ArrowRight, onSelect: handlePageSwitch }]
@@ -347,6 +353,21 @@ export const AddEditPagePopup = forwardRef(
         menuIcon: Copy,
         onSelect: () => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id)),
       },
+      ...(type !== 'group'
+        ? [
+            {
+              label: 'Page permission',
+              icon: 'lock',
+              menuIcon: Lock,
+              dataCy: 'page-permission-button',
+              enterprise: !hasAppPermissionPages,
+              disabledReason: permissionDisabledReason,
+              onSelect: () => {
+                if (hasAppPermissionPages && page) togglePagePermissionModal(true, page);
+              },
+            },
+          ]
+        : []),
       {
         label: `Delete ${entity}`,
         icon: 'delete01',
@@ -375,6 +396,11 @@ export const AddEditPagePopup = forwardRef(
             closeLabel={getPanelCloseLabel('page')}
             closeDataCy="close-page-configuration-button"
           >
+            <PanelDocumentationLink
+              href="https://docs.tooljet.com/docs/app-builder/left-sidebar/pages/"
+              label="Read pages documentation"
+              dataCy="page-documentation-link"
+            />
             <DropdownMenu.Root modal={false}>
               <DropdownMenu.Trigger asChild>
                 <PanelIconButton
@@ -392,49 +418,52 @@ export const AddEditPagePopup = forwardRef(
                   className={cx('popover page-header-options', { 'dark-theme': darkMode })}
                 >
                   <div className="list-item-popover-body">
-                    {actions.map(({ label, menuIcon: MenuIcon, dataCy, destructive, onSelect, disabledReason }) => (
-                      <ToolTip
-                        key={label}
-                        message={disabledReason ?? label}
-                        placement="left"
-                        show={Boolean(disabledReason)}
-                      >
-                        <DropdownMenu.Item
-                          className="list-item-popover-option"
-                          data-cy={dataCy}
-                          disabled={Boolean(disabledReason)}
-                          aria-label={label}
-                          aria-describedby={disabledReason ? deleteDisabledReasonId : undefined}
-                          onSelect={onSelect}
+                    {actions.map(
+                      ({ label, menuIcon: MenuIcon, dataCy, destructive, enterprise, onSelect, disabledReason }) => (
+                        <ToolTip
+                          key={label}
+                          message={disabledReason ?? label}
+                          placement="left"
+                          show={Boolean(disabledReason)}
                         >
-                          <span className="list-item-popover-menu-option-icon">
-                            <MenuIcon
-                              size={16}
-                              color={
-                                disabledReason
-                                  ? 'var(--icon-disabled)'
-                                  : destructive
-                                    ? 'var(--icon-danger)'
-                                    : 'var(--icon-weak)'
-                              }
-                            />
-                          </span>
-                          <span
-                            className={cx('list-item-option-menu-label', {
-                              'tw-text-editor-text-danger': destructive && !disabledReason,
-                              'color-disabled': disabledReason,
-                            })}
+                          <DropdownMenu.Item
+                            className="list-item-popover-option"
+                            data-cy={dataCy}
+                            disabled={Boolean(disabledReason)}
+                            aria-label={label}
+                            aria-describedby={disabledReason && destructive ? deleteDisabledReasonId : undefined}
+                            onSelect={onSelect}
                           >
-                            {label}
-                          </span>
-                          {disabledReason && (
-                            <span id={deleteDisabledReasonId} className="visually-hidden">
-                              {disabledReason}
+                            <span className="list-item-popover-menu-option-icon">
+                              <MenuIcon
+                                size={16}
+                                color={
+                                  disabledReason
+                                    ? 'var(--icon-disabled)'
+                                    : destructive
+                                      ? 'var(--icon-danger)'
+                                      : 'var(--icon-weak)'
+                                }
+                              />
                             </span>
-                          )}
-                        </DropdownMenu.Item>
-                      </ToolTip>
-                    ))}
+                            <span
+                              className={cx('list-item-option-menu-label', {
+                                'tw-text-editor-text-danger': destructive && !disabledReason,
+                                'color-disabled': disabledReason,
+                              })}
+                            >
+                              {label}
+                            </span>
+                            {enterprise && <SolidIcon width={16} name="enterprisecrown" className="mx-1" />}
+                            {disabledReason && destructive && (
+                              <span id={deleteDisabledReasonId} className="visually-hidden">
+                                {disabledReason}
+                              </span>
+                            )}
+                          </DropdownMenu.Item>
+                        </ToolTip>
+                      )
+                    )}
                   </div>
                 </DropdownMenu.Content>
               </DropdownMenu.Portal>

@@ -45,7 +45,6 @@ export const PageMenuItem = withRouter(
     const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
     const setEditingPage = useStore((state) => state.setEditingPage);
     const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
-    const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
     const clonePage = useStore((state) => state.clonePage);
     const markAsHomePage = useStore((state) => state.markAsHomePage);
     const restricted = page?.permissions && page?.permissions?.length > 0;
@@ -163,15 +162,6 @@ export const PageMenuItem = withRouter(
         setRightSidebarOpen,
       ]
     );
-
-    // "Edit page details" opens the docked Edit page panel, the same one a row click opens.
-    const handleOpenPopup = (page) => {
-      setEditingPage(page);
-      toggleShowPageOptions(false);
-      setNewPagePopupConfig({ show: true, mode: 'edit', type: page?.type || 'default' });
-      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION);
-      setRightSidebarOpen(true);
-    };
 
     function getTooltip() {
       const permission = page?.permissions?.length ? page?.permissions[0] : null;
@@ -323,12 +313,6 @@ export const PageMenuItem = withRouter(
                     className={`${darkMode && 'dark-theme theme-dark'}`}
                   >
                     <div className="list-item-popover-body">
-                      <PageOptions
-                        text="Edit page details"
-                        icon="editable"
-                        darkMode={darkMode}
-                        onClick={() => handleOpenPopup(page)}
-                      />
                       {page?.type === 'default' && (
                         <PageOptions
                           text="Mark as home"
@@ -374,32 +358,6 @@ export const PageMenuItem = withRouter(
                           e.preventDefault();
                           toggleShowPageOptions(false);
                           toggleDeleteConfirmationModal(true, page);
-                        }}
-                      />
-                      <PageOptions
-                        text={
-                          <ToolTip
-                            message={
-                              "You don't have access to page permissions. Upgrade your plan to access this feature."
-                            }
-                            placement="auto"
-                            show={!hasAppPermissionPages}
-                            tooltipClassName="!tw-z-[100000] page-paid-tooltip"
-                          >
-                            <div className="d-flex align-items-center enterprise-feature">
-                              <div>Page permission</div>
-                              {!hasAppPermissionPages && <SolidIcon name="enterprisecrown" />}
-                            </div>
-                          </ToolTip>
-                        }
-                        icon="lock"
-                        darkMode={darkMode}
-                        disabled={!hasAppPermissionPages}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          toggleShowPageOptions(false);
-                          togglePagePermissionModal(true, page);
                         }}
                       />
                     </div>

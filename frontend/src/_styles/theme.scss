@@ -1564,11 +1564,7 @@ button {
 .inspector {
   .tab-content {
     overflow-y: auto;
-    // TAB HEADER HEIGHT + FOOTER HEIGHT + Extra padding = 120px
     height: calc(100vh - 8rem);
-    // The fixed "Read documentation" footer overlays the bottom of this area; pad it so the last row
-    // (e.g. "Show on mobile") scrolls clear of the footer.
-    padding-bottom: 64px;
     // Hide scrollbar
     -ms-overflow-style: none;
     /* IE and Edge */

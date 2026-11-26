@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { Check, PencilLine, X } from 'lucide-react';
-import { QueryDocumentationLink } from './QueryDocumentationLink';
 import {
   EDIT_APP_NAME_ICON_PROPS,
   EDIT_ICON_REVEAL_CLASS,
@@ -16,12 +15,11 @@ import {
 import {
   getInlineQueryNameCursorPosition,
   getInlineQueryNameStyle,
-  getQueryDocumentationPresentation,
   normalizeQueryName,
   validateInlineQueryName,
 } from './QueryRename.utils';
 
-export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSave, disabled, queryDocumentation }) => {
+export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSave, disabled }) => {
   const [draftName, setDraftName] = useState(value);
   const [errorText, setErrorText] = useState('');
   const [isClosing, setIsClosing] = useState(false);
@@ -179,9 +177,6 @@ export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSav
             </span>
           )}
         </button>
-      )}
-      {queryDocumentation && (
-        <QueryDocumentationLink {...queryDocumentation} {...getQueryDocumentationPresentation()} />
       )}
     </div>
   );

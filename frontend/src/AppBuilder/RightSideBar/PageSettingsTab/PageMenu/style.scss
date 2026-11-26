@@ -98,6 +98,7 @@
         margin-top: 2px;
         width: 100%;
         justify-content: space-between;
+        background-color: var(--interactive-default);
         border: 1px solid transparent;
         &.highlight {
             border: 2px solid var(--border-accent-strong);

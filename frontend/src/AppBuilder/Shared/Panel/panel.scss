@@ -62,18 +62,42 @@ body.app-builder-chrome {
   }
 }
 
-// Every keyboard stop in the editor chrome shows the one ring. Widgets render a customer's app, so the
+// Every keyboard stop in the editor chrome shows focus clearly. Widgets render a customer's app, so the
 // canvas and the modals and overlays widgets open keep their own focus styles, as in the Viewer.
-// Code fields, react-select and the runtime search box ring their visible box, not the text node or the
-// input inside it (the input's own ring cut across the search icon and clear button).
+// Non-input controls (buttons, links, tabs, checkboxes, radios) keep the outer focus ring; text inputs,
+// textareas, selects, CodeHinter, react-select, and wrapped search/width fields use a single 1px blue
+// border with no outward shadow so focused fields never enlarge or draw double borders.
 $widget-scopes: '.main-editor-canvas *, .tj-modal-widget-content *, .tj-widget-overlay *';
+$non-text-input-types: "[type='checkbox'], [type='radio'], [type='range'], [type='button'], [type='submit'], [type='reset']";
+$inner-focus-inputs: ".cm-content, input[id^='react-select-'], .runtime-inspector__search input, .runtime-inspector__entry-label, .search-input-wrapper .search-input, .tj-code-width-exact input";
 
 body.app-builder-chrome {
-  :focus-visible:not(.cm-content, input[id^='react-select-'], .runtime-inspector__search input, .runtime-inspector__entry-label, #{$widget-scopes}),
-  .cm-editor.cm-focused:not(#{$widget-scopes}),
-  .runtime-inspector__search:has(input:focus-visible),
-  [class*='-control']:has(input[id^='react-select-']:focus-visible):not(#{$widget-scopes}) {
+  :focus-visible:not(
+    input:not(#{$non-text-input-types}),
+    textarea,
+    select,
+    #{$inner-focus-inputs},
+    #{$widget-scopes}
+  ) {
     @include focus-ring;
+  }
+
+  input:not(#{$non-text-input-types}, #{$inner-focus-inputs}, #{$widget-scopes}, .query-details--right *):focus-visible,
+  textarea:not(#{$widget-scopes}, .query-details--right *):focus-visible,
+  select:not(#{$widget-scopes}, .query-details--right *):focus-visible,
+  .runtime-inspector__search:has(input:focus-visible),
+  .search-input-wrapper:has(.search-input:focus-visible),
+  .tj-code-width-exact:focus-within,
+  [class*='-control']:has(input[id^='react-select-']:focus-visible):not(#{$widget-scopes}, .query-details--right *) {
+    border-color: var(--border-accent-strong) !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .cm-editor.cm-focused:not(#{$widget-scopes}, .query-details--right *) {
+    border: 1px solid var(--border-accent-strong) !important;
+    outline: none !important;
+    box-shadow: none !important;
   }
 }
 
@@ -119,6 +143,24 @@ body.app-builder-chrome {
   flex-shrink: 0;
   align-items: center;
   gap: 4px;
+}
+
+.tj-panel-header__doc-link {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--icon-strong);
+  text-decoration: none;
+  transition: background-color 120ms ease, color 120ms ease;
+
+  &:hover {
+    background: var(--interactive-hover);
+    color: var(--icon-strong);
+  }
 }
 
 .tj-panel-empty {

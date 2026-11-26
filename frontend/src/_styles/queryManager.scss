@@ -370,13 +370,34 @@ $border-radius: 4px;
   }
 
   // Same spec as the panel tabs (tj-tabs): 12px/500, placeholder text, default text and an accent
-  // underline when active.
-  .query-manager-tabs {
+  // underline when active. Run / Preview sit on the right of the tab row.
+  .query-manager-tabs-row {
     display: flex;
-    gap: 4px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     height: 36px;
     padding: 0 16px;
     border-bottom: 1px solid var(--border-weak);
+  }
+
+  .query-manager-tabs {
+    display: flex;
+    gap: 4px;
+    height: 100%;
+    min-width: 0;
+  }
+
+  .query-manager-tabs-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 6px;
+
+    .query-header-control {
+      height: 28px !important;
+      min-height: 28px;
+    }
   }
 
   .query-manager-tab {
@@ -386,6 +407,7 @@ $border-radius: 4px;
     margin-bottom: -1px;
     padding: 0;
     border: 0;
+    border-radius: 0;
     border-bottom: 2px solid transparent;
     background: transparent;
     color: var(--text-placeholder);
