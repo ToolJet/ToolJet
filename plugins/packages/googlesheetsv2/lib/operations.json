@@ -246,10 +246,10 @@
         "key": "filter",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter Filter",
+        "description": "Enter a JSON filter array. Example: [{\"a1Range\": \"Sheet1!A28:B28\"}]",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter Filter"
+        "placeholder": "[{\"a1Range\": \"Sheet1!A28:B28\"}]"
       }
     },
     "bulk_update_by_primary_key": {
