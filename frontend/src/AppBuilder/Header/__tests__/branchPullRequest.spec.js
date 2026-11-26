@@ -1,4 +1,4 @@
-import { pullRequestAction } from '../branchPullRequest';
+import { approvedCommitNote, pullRequestAction } from '../branchPullRequest';
 
 // With git branching on, a branch's pull request is created only once every app committed on it is approved.
 const status = (overrides) => ({ pullRequest: null, apps: [], ready: true, ...overrides });
@@ -47,5 +47,23 @@ describe('the branch menu pull request button', () => {
 
   it('stays usable while the status is unknown', () => {
     expect(pullRequestAction(null)).toMatchObject({ disabled: false, label: 'Create pull request' });
+  });
+});
+
+// The review's approved step names the commit ToolJet's pull request comment is for: a later commit needs a new
+// approval before the pull request can merge.
+describe("the review's note about the approved commit", () => {
+  const SHA = 'abcdef1234567890abcdef1234567890abcdef12';
+
+  it('names the commit once the pull request comment does', () => {
+    expect(approvedCommitNote(status({ reviewComment: { state: 'approved', commit: SHA } }))).toBe(
+      'Approved for commit abcdef1. A new commit needs a new approval.'
+    );
+  });
+
+  it('says nothing until the branch is approved and the pull request is open', () => {
+    expect(approvedCommitNote(status({ reviewComment: { state: 'pending', commit: SHA } }))).toBeNull();
+    expect(approvedCommitNote(status({ reviewComment: { state: 'approved', commit: null } }))).toBeNull();
+    expect(approvedCommitNote(null)).toBeNull();
   });
 });
