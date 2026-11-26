@@ -41,7 +41,7 @@
     },
     {
       "componentType": "ModalV2",
-      "status": "verified",
+      "status": "approved",
       "contract": "ee/test/app-builder/widgets/ModalV2/TESTING.md"
     },
     {
