@@ -63,6 +63,9 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 - `runQueryOnBuilder` saves the sent `options` back (editor convenience) but skips the write when the
   git-sync edit rule forbids it (e.g. synced draft on the default branch under branching) — the run itself
   still executes. Update/create/delete enforce the same rule as a 403 via `GitSyncQueryEditGuard`.
+- Raw SQL: user `{{}}` values are bound as `tj_param_N` query params, never inlined, for plugins in
+  `SQL_PARAMETERIZED_PLUGINS` (util.service.ts). A new SQL plugin needs an entry there (SQL field, mode
+  check, placeholder style) and must pass `query_params` to its driver as real bindings.
 - Delete removes query events first (`deleteDataQueryEvents`) inside the same transaction.
 - `after*` history hooks are fire-and-forget — never await them in request flow.
 - Never abbreviate `data_source` as `ds`.

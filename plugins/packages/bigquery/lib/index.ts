@@ -390,9 +390,10 @@ export default class Bigquery implements QueryService {
     return this.executeOperation(client, sourceOptions, queryOptions);
   }
 
-  // SQL query params arrive as strings; coerce back to their original type before sending to BigQuery
-  private coerceParam(value: any): any {
-    if (typeof value !== 'string') return value;
+  // User-defined SQL query params arrive as strings; coerce back to their original type before sending to BigQuery.
+  // tj_param_* values come from {{}} bindings with their real JS type, so a text input "123" stays a STRING.
+  private coerceParam(key: string, value: any): any {
+    if (typeof value !== 'string' || key.startsWith('tj_param_')) return value;
     try {
       return JSON.parse(value.trim());
     } catch {
@@ -414,7 +415,7 @@ export default class Bigquery implements QueryService {
 
       if (queryParams.length > 0) {
         jobOptions.params = Object.fromEntries(
-          queryParams.map(([key, value]: [string, any]) => [key, this.coerceParam(value)])
+          queryParams.map(([key, value]: [string, any]) => [key, this.coerceParam(key, value)])
         );
       }
 
@@ -506,7 +507,7 @@ export default class Bigquery implements QueryService {
           };
           if (queryParams.length > 0) {
             jobOptions.params = Object.fromEntries(
-              queryParams.map(([key, value]: [string, any]) => [key, this.coerceParam(value)])
+              queryParams.map(([key, value]: [string, any]) => [key, this.coerceParam(key, value)])
             );
           }
           const [job] = await client.createQueryJob(jobOptions);

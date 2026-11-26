@@ -21,7 +21,7 @@ export type QueryOptions = {
   operation: string;
   sql_query: string;
   query: string;
-  query_params: [string, string][];
+  query_params: [string, unknown][];
   mode: string;
   // GUI mode fields
   table?: string;
