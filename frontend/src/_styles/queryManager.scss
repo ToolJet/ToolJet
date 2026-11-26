@@ -3357,8 +3357,11 @@ body.app-builder-chrome .popover.tjdb-workflow-query-editor-popover-index {
         box-shadow: none !important;
       }
 
+      // CodeHinter, single- and multi-line: one 1px accent border, matching the Properties panel
+      // (panel.scss). No outer ring and no inset shadow, so a focused field never reads as 2px+.
       &.cm-focused {
-        @include focus-ring;
+        border-color: var(--query-dropdown-focus-border) !important;
+        box-shadow: none !important;
       }
     }
 
@@ -3371,11 +3374,6 @@ body.app-builder-chrome .popover.tjdb-workflow-query-editor-popover-index {
         border-color: var(--query-dropdown-focus-border) !important;
         box-shadow: var(--query-dropdown-focus-shadow) !important;
       }
-    }
-
-    .single-line-codehinter-input .cm-editor.cm-focused {
-      border-color: var(--query-dropdown-focus-border) !important;
-      box-shadow: var(--query-dropdown-focus-shadow) !important;
     }
 
     // React Select keeps a tiny searchable input beside the selected value. It must
