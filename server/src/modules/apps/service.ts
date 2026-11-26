@@ -239,9 +239,11 @@ export class AppsService implements IAppsService {
 
       if (!version) {
         // Check if the app is in stub state (pulled from git but not yet hydrated). Scoped to the
-        // requested branch: a stub on another branch says nothing about this one.
+        // requested branch, or the user's remembered one when the link names none: a stub on
+        // another branch says nothing about this one.
+        const stubBranchId = branchId ?? user.branchId;
         const stubVersion = await this.versionRepository.findOne({
-          where: { appId: app.id, isStub: true, ...(branchId && { branchId }) },
+          where: { appId: app.id, isStub: true, ...(stubBranchId && { branchId: stubBranchId }) },
         });
         if (stubVersion) {
           throw new NotFoundException('app-not-ready');

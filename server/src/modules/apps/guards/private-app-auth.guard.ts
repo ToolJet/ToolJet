@@ -38,8 +38,8 @@ export class PrivateAppAuthGuard extends AuthGuard('jwt') {
     //   2. workspaceId absent → cross-org findAppBySlug (default/branchless rows only).
     //   3. Either path → findByAppId as UUID fallback.
     const workspaceId = request.headers['tj-workspace-id'] as string;
-    // Public/private-share path — bypasses the JWT strategy, so user.branchId isn't populated;
-    // read the branch_id query param directly.
+    // This lookup runs before the JWT strategy resolves user.branchId (and public-share requests
+    // never get one), so read the branch_id query param directly.
     const branchId = request.query['branch_id'] as string;
 
     let app = workspaceId ? await this.appRepository.findBySlug(slug, workspaceId, undefined, branchId) : null;

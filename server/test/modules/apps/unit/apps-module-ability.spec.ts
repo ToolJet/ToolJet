@@ -467,6 +467,22 @@ describe('AppsService.validatePrivateAppAccess — unknown version name', () => 
     expect(findOne).toHaveBeenCalledWith({ where: { appId: expect.anything(), isStub: true, branchId: 'branch-1' } });
   });
 
+  it("falls back to the user's remembered branch when the link names none", async () => {
+    const service = makeService();
+    const findOne = jest.fn().mockResolvedValue(null);
+    (service as any).versionRepository = { findByName: jest.fn().mockRejectedValue(notFound()), findOne };
+    const rememberedUser = { id: 'user-1', branchId: 'remembered-branch' } as any;
+
+    await expect(
+      service.validatePrivateAppAccess(makeApp(APP_TYPES.FRONT_END), makeAbility(true, true), rememberedUser, {
+        versionName: 'bogus',
+      } as any)
+    ).rejects.toThrow("Couldn't found app version");
+    expect(findOne).toHaveBeenCalledWith({
+      where: { appId: expect.anything(), isStub: true, branchId: 'remembered-branch' },
+    });
+  });
+
   it('rethrows lookup errors that are not "not found"', async () => {
     const service = makeService();
     (service as any).versionRepository = { findByName: jest.fn().mockRejectedValue(new Error('db down')) };
