@@ -105,9 +105,26 @@ export class EmailUtilService implements IEmailUtilService {
     });
   }
 
-  async sendEmail(to: string | string[], subject: string, templateData: any) {
+  async sendEmail(to: string | string[], subject: string, templateData: any, cc?: string | string[]) {
+    return this.sendEmailWithSettings(to, subject, templateData, this.SMTP, this.WHITE_LABEL_TEXT, cc);
+  }
+
+  async sendEmailWithSettings(
+    to: string | string[],
+    subject: string,
+    templateData: any,
+    smtp: typeof this.SMTP,
+    fromName: string,
+    cc?: string | string[]
+  ) {
     if (!to) {
       return;
+    }
+
+    // Callers that use EmailUtilService directly (bypassing EmailService, which always calls init()
+    // first) would otherwise hit this.SMTP as undefined on a freshly started process.
+    if (!this.SMTP) {
+      await this.init();
     }
 
     // Filter out test emails if configured
@@ -143,9 +160,10 @@ export class EmailUtilService implements IEmailUtilService {
     // Define the email options
     const mailOptions = {
       to,
+      ...(cc ? { cc } : {}),
       subject,
       html: htmlToSend,
-      from: `"${this.WHITE_LABEL_TEXT}" <${this.SMTP[INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL]}>`,
+      from: `"${fromName}" <${smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL]}>`,
       ...(templateData?.whiteLabelText === 'ToolJet' && {
         attachments: [
           {
@@ -179,14 +197,11 @@ export class EmailUtilService implements IEmailUtilService {
 
     try {
       // Skip sending email if test env or production and smtp disabled
-      if (
-        this.NODE_ENV === 'test' ||
-        (this.NODE_ENV !== 'development' && !this.SMTP[INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED])
-      )
+      if (this.NODE_ENV === 'test' || (this.NODE_ENV !== 'development' && !smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED]))
         return;
 
       /* if development environment and disabled SMTP, log the content of email instead of sending actual emails */
-      if (this.NODE_ENV === 'development' && !this.SMTP[INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED]) {
+      if (this.NODE_ENV === 'development' && !smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED]) {
         console.log('Captured email');
         console.log('to: ', to);
         console.log('Subject: ', subject);
@@ -199,7 +214,7 @@ export class EmailUtilService implements IEmailUtilService {
         const result = await transport.sendMail(mailOptions);
         previewEmail(JSON.parse(result.message)).then(console.log).catch(console.error);
       } else {
-        const transport = this.mailTransport(this.SMTP);
+        const transport = this.mailTransport(smtp);
         const result = await transport.sendMail(mailOptions);
         this.logger.log(`Message sent: ${result?.messageId || 'No message ID'}`);
         return result;
@@ -273,6 +288,32 @@ export class EmailUtilService implements IEmailUtilService {
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });
+  }
+
+  async sendSelfhostLicensePurchaseEmail(to: string, name: string) {
+    if (!to) {
+      return;
+    }
+    const subject = 'Action needed - one thing we need before your license is ready';
+    const templateData = {
+      name: name || '',
+      whiteLabelText: DEFAULT_WHITE_LABELLING_SETTINGS.white_label_text,
+      whiteLabelLogo: DEFAULT_WHITE_LABELLING_SETTINGS.white_label_logo,
+    };
+    const templatePath = 'selfhost_license_purchase.hbs';
+    const htmlEmailContent = this.compileTemplate(templatePath, templateData);
+
+    return await this.sendEmail(
+      to,
+      subject,
+      {
+        bodyContent: htmlEmailContent,
+        footerText: 'You have received this email because you purchased a self-hosted ToolJet license',
+        whiteLabelText: DEFAULT_WHITE_LABELLING_SETTINGS.white_label_text,
+        whiteLabelLogo: DEFAULT_WHITE_LABELLING_SETTINGS.white_label_logo,
+      },
+      ['souvik@tooljet.com', 'manpreet@tooljet.com', 'adish@tooljet.com']
+    );
   }
 
   async sendPaymentConfirmationEmail(to: string, firstName: string, invoiceLink: string, amount: string) {

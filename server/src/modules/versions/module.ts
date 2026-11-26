@@ -1,3 +1,4 @@
+import { CodeModeSourceModule } from '@modules/code-mode-source/module';
 import { DynamicModule } from '@nestjs/common';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { VersionRepository } from '@modules/versions/repository';
@@ -7,6 +8,8 @@ import { DataQueryRepository } from '@modules/data-queries/repository';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppsRepository } from '@modules/apps/repository';
+import { FeatureAbilityFactory as AppAbilityFactory } from '@modules/apps/ability';
+import { ReleasePreflightService } from './services/release-preflight.service';
 import { FeatureAbilityFactory } from './ability';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
@@ -34,6 +37,8 @@ export class VersionModule extends SubModule {
       VersionService,
       VersionUtilService,
       GitSyncEditGuard,
+      VersionCompareControllers,
+      VersionCompareProviders,
     } = await this.getProviders(configs, 'versions', [
       'controller',
       'controller.v2',
@@ -44,6 +49,7 @@ export class VersionModule extends SubModule {
       'service',
       'util.service',
       'guards/git-sync-edit.guard',
+      'compare',
     ]);
 
     // Get apps related providers
@@ -65,9 +71,17 @@ export class VersionModule extends SubModule {
         await EncryptionModule.register(configs),
         await GitSyncConfigsModule.register(configs),
         await TooljetDbModule.register(configs),
+        await CodeModeSourceModule.register(configs),
       ],
       controllers: isMainImport
-        ? [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2]
+        ? [
+            ComponentsController,
+            EventsController,
+            PagesController,
+            ...VersionCompareControllers,
+            VersionController,
+            VersionControllerV2,
+          ]
         : [],
       providers: [
         ComponentsService,
@@ -84,7 +98,10 @@ export class VersionModule extends SubModule {
         EventsService,
         VersionService,
         VersionUtilService,
+        ...VersionCompareProviders,
+        AppAbilityFactory,
         FeatureAbilityFactory,
+        ReleasePreflightService,
         GroupPermissionsRepository,
         ValidModuleByCorrelationGuard,
         GitSyncEditGuard,

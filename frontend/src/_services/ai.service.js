@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { appendBranchParam } from '@/_helpers/active-branch';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 export const aiService = {
@@ -9,6 +10,10 @@ export const aiService = {
   voteMessage,
   getCopilotSuggestion,
   getCreditBalance,
+  getCreditsUsage,
+  getMyCredits,
+  updateCreditLimits,
+  updateBuilderLimit,
   fixWithAI,
   updateKey,
   getKeySettings,
@@ -168,7 +173,9 @@ export function attachmentStreamFetch(url, options, onProgress) {
 
 async function sendMessage(body, onMessage, isDocs = false) {
   const fullResponse = [];
-  const url = isDocs ? `${config.apiUrl}/ai/conversation/docs-message` : `${config.apiUrl}/ai/conversation/message`;
+  const url = isDocs
+    ? `${config.apiUrl}/ai/conversation/docs-message`
+    : appendBranchParam(`${config.apiUrl}/ai/conversation/message`);
   const { attachments = [], ...payload } = body;
   const files = attachments.filter((file) => file instanceof File);
   const retained = attachments.filter((file) => !(file instanceof File));
@@ -277,6 +284,29 @@ async function getCreditBalance() {
   );
 }
 
+// Caller's own numbers; scope from the session.
+async function getMyCredits() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/credits-usage/me`, requestOptions).then((response) =>
+    handleResponse(response, undefined, undefined, true)
+  );
+}
+
+async function getCreditsUsage() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/credits-usage`, requestOptions).then(handleResponse);
+}
+
+async function updateCreditLimits(body) {
+  const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/credits-usage/limits`, requestOptions).then(handleResponse);
+}
+
+async function updateBuilderLimit(userId, body) {
+  const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/credits-usage/limits/builders/${userId}`, requestOptions).then(handleResponse);
+}
+
 async function fixWithAI(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/ai/fix-with-ai`, requestOptions).then(handleAITextResponse);
@@ -367,7 +397,10 @@ async function getProviderModels(provider) {
 async function getLlmPreference(conversationId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const query = conversationId ? `?conversationId=${encodeURIComponent(conversationId)}` : '';
-  return fetch(`${config.apiUrl}/ai/llm-preference${query}`, requestOptions).then(handleResponse);
+  // Access can change after the picker mounts. A background read should never prompt for an upgrade.
+  return fetch(`${config.apiUrl}/ai/llm-preference${query}`, requestOptions).then((response) =>
+    handleResponse(response, undefined, undefined, true)
+  );
 }
 
 async function updateLlmPreference(provider, model, modelContextWindow, conversationId) {

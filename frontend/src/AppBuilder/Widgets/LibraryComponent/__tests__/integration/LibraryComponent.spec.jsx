@@ -25,6 +25,9 @@ const PIN_KEY = dashlessId(CORRELATION_ID);
 // (see useEffectiveLibraryRevision). Every scenario below that expects a
 // configured/iframe render sets this pin explicitly instead of a `revisionId`
 // property on the instance.
+// These scenarios drive the sandboxed-iframe runtime; the POC inline runtime is the default otherwise.
+window.localStorage.setItem('tj-cc-runtime', 'iframe');
+
 const setPin = (value) =>
   act(() => store().setGlobalSettings({ customComponentLibraries: value ? { [PIN_KEY]: value } : {} }));
 
@@ -256,6 +259,34 @@ describe('LibraryComponent integration', () => {
     await waitFor(() => expect(getWrapperEl()).toBeInTheDocument());
 
     renderWrapped({ others: { showOnMobile: binding('{{false}}') }, currentLayout: 'mobile' });
+    await waitFor(() => expect(getWrapperEl()).toBeNull());
+  });
+
+  test('[LibraryComponent-CODEPAGE-001] a page root renders whatever its visibility and device settings say', async () => {
+    const codePage = { codePage: binding('{{true}}'), visibility: binding('{{false}}') };
+    const hidden = { showOnDesktop: binding('{{false}}'), showOnMobile: binding('{{false}}') };
+
+    renderWrapped({ properties: codePage, others: hidden, currentMode: 'view' });
+    await waitFor(() => expect(getWrapperEl()).toBeInTheDocument());
+    expect(getWrapperEl()).not.toHaveStyle({ display: 'none' });
+
+    renderWrapped({ properties: codePage, others: hidden, currentMode: 'view', currentLayout: 'mobile' });
+    await waitFor(() => expect(getWrapperEl()).toBeInTheDocument());
+    expect(getWrapperEl()).not.toHaveStyle({ display: 'none' });
+
+    renderWrapped({ properties: codePage, others: hidden, currentMode: 'edit' });
+    await waitFor(() => expect(getWrapperEl()).toBeInTheDocument());
+    expect(getWrapperEl()).not.toHaveStyle({ height: '0px' });
+  });
+
+  test('[LibraryComponent-CODEPAGE-002] the same settings still hide a component that is not a page root', async () => {
+    renderWrapped({ others: { showOnDesktop: binding('{{false}}') }, currentMode: 'view' });
+    await waitFor(() => expect(getWrapperEl()).toBeNull());
+    renderWrapped({
+      properties: { codePage: binding('{{false}}') },
+      others: { showOnMobile: binding('{{false}}') },
+      currentLayout: 'mobile',
+    });
     await waitFor(() => expect(getWrapperEl()).toBeNull());
   });
 
