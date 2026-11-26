@@ -154,9 +154,11 @@ describe("Workflows - webhook endpoint (API)", () => {
         token: data.token,
         qs: { version: "no-such-version", environment: "development" },
       }).then((res) => {
-        // An unknown version is refused by the guard (403) before the service's 404.
-        expect(res.status).to.equal(403);
-        expect(res.body.message).to.equal(workflowsText.webhookDisabledError);
+        // An unknown version is reported as not found, naming the version and workflow.
+        expect(res.status).to.equal(404);
+        expect(res.body.message).to.equal(
+          `Version "no-such-version" not found for workflow "${data.workflowName}"`
+        );
       });
 
       cy.apiTriggerWorkflowWebhook({

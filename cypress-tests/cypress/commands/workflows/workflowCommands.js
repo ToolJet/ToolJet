@@ -95,6 +95,9 @@ Cypress.Commands.add(
 
     cy.get(".react-flow__pane")
       .trigger("mousemove", { clientX: 800, clientY: 400, force: true })
+      // Same pause as connectDataSourceNode: releasing straight after the move
+      // drops the line before the canvas has started drawing it, so no node menu opens.
+      .wait(500)
       .trigger("mouseup", { force: true });
 
     cy.wait(500);
@@ -177,5 +180,11 @@ Cypress.Commands.add("addWorkflowInApp", (workflowName) => {
   .find('.react-select__control')
   .click();
   cy.get(workflowSelector.workflowSelectInput).realType(workflowName);
+  // The trigger is authorized against the saved query, so callers must not run it
+  // until the selected workflow has been saved.
+  cy.intercept("PATCH", "/api/data-queries/**", (req) => {
+    if (req.body?.options?.workflowId) req.alias = "workflowQuerySaved";
+  });
   cy.get(workflowSelector.workflowSelectOption).contains(workflowName).click();
+  cy.wait("@workflowQuerySaved").its("response.statusCode").should("eq", 200);
 });
