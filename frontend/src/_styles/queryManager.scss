@@ -3376,6 +3376,13 @@ body.app-builder-chrome .popover.tjdb-workflow-query-editor-popover-index {
       }
     }
 
+    // Single-line CodeHinter: the extra `.single-line-codehinter-input` scope out-ranks the grey
+    // border the TJDB condition rows force (`.tjdb-codhinter-wrapper .cm-editor`, above).
+    .single-line-codehinter-input .cm-editor.cm-focused {
+      border-color: var(--query-dropdown-focus-border) !important;
+      box-shadow: none !important;
+    }
+
     // React Select keeps a tiny searchable input beside the selected value. It must
     // remain interactive without inheriting the visible field chrome around it.
     input[role='combobox'] {
