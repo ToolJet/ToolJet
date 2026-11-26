@@ -44,7 +44,7 @@ interface IAppsDashboardProps {
 export default function AppsDashboard({ appType }: IAppsDashboardProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  // Approvals/Executions guard their own access (approvers may not see workflows) and show with no workflows.
+  // Approvals/Executions guard their own access.
   const isWorkflowSubTab = appType === 'workflow' && getWorkflowTab(pathname) !== WORKFLOW_TABS.LIST;
 
   useHeaderSearchConfig({ placeholder: searchPlaceholderByAppType[appType] });

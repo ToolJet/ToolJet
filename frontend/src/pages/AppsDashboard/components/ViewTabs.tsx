@@ -45,7 +45,7 @@ function ListAndGridTabs({ appType }: { appType: TAppType }) {
   );
 }
 
-// CE has no Approvals or Executions; EE swaps this for its Workflows / Approvals / Executions tabs.
+// EE swaps this for its Workflows / Approvals / Executions tabs.
 function WorkflowsTabs() {
   return <ListAndGridTabs appType="workflow" />;
 }

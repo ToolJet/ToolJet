@@ -7,14 +7,13 @@ const TAB_PATH_SUFFIX: Record<TWorkflowTab, string> = {
   executions: '/executions',
 };
 
-// The workflows dashboard tab comes from the URL, so links like the approval email open the right tab.
+// The tab comes from the URL, so the approval email opens Approvals.
 export function getWorkflowTab(pathname: string): TWorkflowTab {
   if (/\/workflows\/approvals\/?$/.test(pathname)) return WORKFLOW_TABS.APPROVALS;
   if (/\/workflows\/executions\/?$/.test(pathname)) return WORKFLOW_TABS.EXECUTIONS;
   return WORKFLOW_TABS.LIST;
 }
 
-// Appended to the workflows route, e.g. `/approvals`.
 export function getWorkflowTabPathSuffix(tab: TWorkflowTab): string {
   return TAB_PATH_SUFFIX[tab] ?? '';
 }

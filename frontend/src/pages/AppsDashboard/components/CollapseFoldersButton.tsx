@@ -6,7 +6,6 @@ import { useAppsStore } from '@/_stores/appsStore';
 
 const LABEL = 'Collapse folders';
 
-// List-view action beside the tabs: closes every open folder.
 export default function CollapseFoldersButton() {
   const setExpanded = useAppsStore((state) => state.setExpanded);
 
