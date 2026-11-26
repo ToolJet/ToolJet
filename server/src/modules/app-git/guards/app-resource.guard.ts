@@ -1,4 +1,11 @@
-import { Injectable, CanActivate, ExecutionContext, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { AppsRepository } from '@modules/apps/repository';
 import { User } from '@entities/user.entity';
 import { VersionRepository } from '@modules/versions/repository';
@@ -13,12 +20,17 @@ export class AppResourceGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const { appId, versionId } = request.params;
+    const { appId, versionId, organizationId } = request.params;
     const user: User = request.user;
     // user.branchId (resolved in the JWT strategy) so metadata overlay reflects the caller's active branch.
     const branchId = user?.branchId || undefined;
     if (!appId && !versionId) {
       throw new BadRequestException('App ID or version ID must be provided');
+    }
+
+    // Tenant isolation: refuse a route :organizationId that is not the caller's workspace.
+    if (organizationId && organizationId !== user.organizationId) {
+      throw new ForbiddenException('App not found. Invalid App id');
     }
 
     let app: App;
@@ -33,6 +45,11 @@ export class AppResourceGuard implements CanActivate {
       app = version?.app;
     }
     if (!app) {
+      throw new NotFoundException('App not found. Invalid App id');
+    }
+
+    // Tenant isolation: the :versionId path loads by id with no workspace filter.
+    if (app.organizationId !== user.organizationId) {
       throw new NotFoundException('App not found. Invalid App id');
     }
 

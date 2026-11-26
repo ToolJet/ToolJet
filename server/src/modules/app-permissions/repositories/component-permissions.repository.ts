@@ -4,6 +4,7 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { ComponentUsersRepository } from './component-users.repository';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { PAGE_PERMISSION_TYPE } from '../constants';
+import { toSafeAccessRuleUser } from '../helpers/safe-user.helper';
 
 @Injectable()
 export class ComponentPermissionsRepository extends Repository<ComponentPermission> {
@@ -22,14 +23,19 @@ export class ComponentPermissionsRepository extends Repository<ComponentPermissi
       });
 
       return componentPermissions.map((permission) => {
+        const users = permission.users?.map((componentUser) => ({
+          ...componentUser,
+          user: toSafeAccessRuleUser(componentUser.user),
+        }));
+
         if (permission.type === PAGE_PERMISSION_TYPE.GROUP) {
           return {
             ...permission,
-            groups: permission.users,
+            groups: users,
             users: undefined,
           };
         }
-        return permission;
+        return { ...permission, users };
       });
     }, manager || this.manager);
   }

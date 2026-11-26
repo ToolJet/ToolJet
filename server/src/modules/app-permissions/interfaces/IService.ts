@@ -7,9 +7,14 @@ export interface IAppPermissionsService {
 
   fetchUserGroups(appId: string, user: User): Promise<any>;
 
-  fetchAppPermissions(type: PERMISSION_ENTITY_TYPE, id: string): Promise<any>;
+  fetchAppPermissions(type: PERMISSION_ENTITY_TYPE, appId: string, id: string): Promise<any>;
 
-  createAppPermissions(type: PERMISSION_ENTITY_TYPE, id: string, body: CreatePermissionDto): Promise<any>;
+  createAppPermissions(
+    type: PERMISSION_ENTITY_TYPE,
+    appId: string,
+    id: string,
+    body: CreatePermissionDto
+  ): Promise<any>;
 
   updateAppPermissions(
     type: PERMISSION_ENTITY_TYPE,
@@ -19,5 +24,5 @@ export interface IAppPermissionsService {
     user: User
   ): Promise<any>;
 
-  deleteAppPermissions(type: PERMISSION_ENTITY_TYPE, id: string): Promise<any>;
+  deleteAppPermissions(type: PERMISSION_ENTITY_TYPE, appId: string, id: string): Promise<any>;
 }
