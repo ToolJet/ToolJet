@@ -25,6 +25,7 @@ export const multipageSelector = {
   // Handle invalid feedback — AddNewPagePopup.jsx:382
   pageHandleInvalidFeedback: '[data-cy="page-handle-invalid-feedback"]',
   // Header actions of the page configuration, now shown in the right panel (AddNewPagePopup.jsx)
+  pageOptionsButton: '[data-cy="page-options-button"]',
   deletePageButton: '[data-cy="delete-page-button"]',
   closePageConfigurationButton: '[data-cy="close-page-configuration-button"]',
 

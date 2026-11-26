@@ -187,11 +187,12 @@ export const modifyPageHandle = (pageName, handle) => {
 /**
  * @tjBlock  pages
  * @tjUsage  detetePage('Reports')
- * @tjDom    addEditPagePopup delete-page-button → modalConfirmButton → asserts pageRow(handle) not visible
+ * @tjDom    page-options-button → delete-page-button → modalConfirmButton → asserts pageRow(handle) not visible
  */
 export const detetePage = (pageName) => {
   openPageEditor(pageName);
-  cy.get(`${multipageSelector.addEditPagePopup} ${multipageSelector.deletePageButton}`).click();
+  cy.get(multipageSelector.pageOptionsButton).click();
+  cy.get(`[role="menu"] ${multipageSelector.deletePageButton}`).click();
   cy.get(multipageSelector.modalConfirmButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,

@@ -85,9 +85,7 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
         style={{ position: 'relative', width: '100%' }}
       >
         <div
-          className={`page-menu-item page-group-item ${highlight ? 'highlight' : ''} ${
-            darkMode ? 'dark-theme theme-dark' : ''
-          } ${(showPageOptions || showEditPopover) && isEditing ? 'is-selected' : ''}`}
+          className={cx('page-menu-item page-group-item', { highlight, 'dark-theme theme-dark': darkMode })}
           data-page-id={page?.id}
           onClick={() => {
             handleOpenPopup('group', page);

@@ -14,6 +14,7 @@ import { PageMenuItem } from '../../PageMenuItem';
 
 const controls = createAppBuilderControls();
 const HOME = { id: 'home-1', handle: 'home', name: 'Home', components: {} };
+const REPORTS = { id: 'reports-1', handle: 'reports', name: 'Reports', type: 'default', components: {} };
 const DOCS = { id: 'nav-1', name: 'Docs', type: 'url', url: 'https://example.com', openIn: 'new_tab' };
 
 beforeEach(() => {
@@ -21,7 +22,7 @@ beforeEach(() => {
   const s = useStore.getState();
   act(() => {
     s.initializeDependencySlice('canvas');
-    s.setPages([HOME, DOCS], 'canvas');
+    s.setPages([HOME, REPORTS, DOCS], 'canvas');
     s.setCurrentPageId('home-1', 'canvas');
     s.setApp({ appId: 'app-1', appName: 'Test app', homePageId: 'home-1', slug: 'slug-app-1' }, 'canvas');
     s.setPageSettings(s.computePageSettings({}), 'canvas');
@@ -52,25 +53,34 @@ test('clicking a URL nav item opens its configuration without opening the URL', 
   open.mockRestore();
 });
 
-// Break this catches: with "Edit page" open for a page, no row in the Pages list is highlighted,
-// so nothing says which page the right panel belongs to.
-test('the page being edited in the right panel is the highlighted row', () => {
+// Opening settings or the options menu for another row must keep the current canvas page highlighted.
+test('the highlight follows the current page while another row is being configured', () => {
   const { container, unmount } = render(
     <ModuleProvider moduleId="canvas" isModuleMode={false}>
       <PageMenuItem page={HOME} darkMode={false} />
+      <PageMenuItem page={REPORTS} darkMode={false} />
       <PageMenuItem page={DOCS} darkMode={false} />
     </ModuleProvider>
   );
-  const [homeRow, docsRow] = container.querySelectorAll('.page-menu-item');
+  const [homeRow, reportsRow, docsRow] = container.querySelectorAll('.page-menu-item');
+  const expectCurrentRow = (row) => {
+    expect([...container.querySelectorAll('.page-menu-item.is-selected')]).toEqual([row]);
+    expect(row).toHaveAttribute('aria-current', 'page');
+  };
 
-  fireEvent.click(docsRow);
+  try {
+    expectCurrentRow(homeRow);
+    fireEvent.click(reportsRow.querySelector('.action-btn-wrapper .icon-btn:last-of-type'));
+    expectCurrentRow(homeRow);
+    fireEvent.click(document.body);
 
-  expect(docsRow.classList.contains('is-selected')).toBe(true);
-  expect(homeRow.classList.contains('is-selected')).toBe(false);
-
-  act(() => useStore.getState().setRightSidebarOpen(false));
-
-  expect(docsRow.classList.contains('is-selected')).toBe(false);
-  // Before the store resets: a mounted row cannot render without page settings.
-  unmount();
+    fireEvent.click(docsRow);
+    expectCurrentRow(homeRow);
+    act(() => useStore.getState().setCurrentPageId(REPORTS.id, 'canvas'));
+    expectCurrentRow(reportsRow);
+    act(() => useStore.getState().setRightSidebarOpen(false));
+    expectCurrentRow(reportsRow);
+  } finally {
+    unmount();
+  }
 });

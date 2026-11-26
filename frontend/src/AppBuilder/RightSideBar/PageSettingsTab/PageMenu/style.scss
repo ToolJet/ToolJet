@@ -103,7 +103,7 @@
             border: 2px solid var(--border-accent-strong);
         }
 
-        // Same "this is the one that is open" look as the Queries list.
+        // Marks the page currently displayed on the canvas.
         &.is-selected {
             border-color: var(--border-accent-weak);
             background-color: var(--background-accent-weak) !important;
@@ -371,6 +371,21 @@
     }
 }
 
+// Radix positions the wrapper; the menu itself uses the component inspector popover surface.
+.popover.page-header-options {
+    position: static;
+
+    .list-item-popover-option[data-highlighted] {
+        border-radius: 6px;
+        background-color: var(--slate3);
+    }
+
+    .list-item-popover-option[data-disabled] {
+        cursor: default;
+        background-color: transparent;
+    }
+}
+
 #add-new-page-popup {
     width: 304px;
     max-width: none;
@@ -555,25 +570,6 @@
     border: 0;
     border-radius: 0;
     box-shadow: none;
-
-    // As a right-panel title row it follows the shared panel header: 48px, 14px title, pinned.
-    .popover-header {
-        position: sticky;
-        top: 0;
-        z-index: 3;
-        height: 48px;
-        padding: 0 16px;
-        background-color: var(--background-surface-layer-01);
-
-        > div {
-            height: 100%;
-        }
-    }
-
-    .add-new-page-popup__title {
-        font-size: 14px !important;
-        line-height: 20px !important;
-    }
 
     .popover-arrow {
         display: none;

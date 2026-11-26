@@ -28,7 +28,7 @@
  */
 import '@/test/setupMsw';
 import React from 'react';
-import { render, act, fireEvent, screen, waitFor } from '@/test/test-utils';
+import { render, act, fireEvent, screen, userEvent, waitFor, within } from '@/test/test-utils';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import useStore from '@/AppBuilder/_stores/store';
@@ -36,6 +36,7 @@ import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { createAppBuilderControls } from '@/test/app-builder/controls';
 import { AddEditPagePopup } from '../../AddNewPagePopup';
 import { AddNewPageMenu } from '../../AddNewPageMenu';
+import { DeletePageConfirmationModal } from '../../DeletePageConfirmationModal';
 import { PageGroupItem } from '../../PageGroupItem';
 // Imported last: imported first, PageSettings enters the ColorSwatches import cycle before it resolves.
 import { PageSettings } from '@/AppBuilder/RightSideBar/PageSettingsTab/PageSettings';
@@ -124,6 +125,74 @@ describe('AddEditPagePopup auto-create (mode: add)', () => {
 });
 
 describe('AddEditPagePopup embedded in the right panel', () => {
+  // Break this catches: page actions stay in the header or the menu allows deleting Home.
+  test.each(['Home', 'Reports'])('shows the actions for %s in Page options beside the close button', async (name) => {
+    const user = userEvent.setup();
+    seedFreshApp();
+    const s = state();
+    const reports = { id: 'reports-1', handle: 'reports', name: 'Reports', type: 'default', components: {} };
+    s.setPages([...s.modules.canvas.pages, reports], 'canvas');
+    s.setEditingPage(state().modules.canvas.pages.find((page) => page.name === name));
+    s.setNewPagePopupConfig({ show: true, mode: 'edit', type: 'default' });
+    render(
+      <>
+        <AddEditPagePopup darkMode={false} embedded onClose={() => {}} />
+        <DeletePageConfirmationModal darkMode={false} />
+      </>
+    );
+
+    expect(screen.getByRole('button', { name: 'Close page configuration' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Go to page' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Duplicate page' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete page' })).not.toBeInTheDocument();
+
+    const trigger = screen.getByRole('button', { name: 'Page options' });
+    trigger.focus();
+    await user.keyboard('{Enter}');
+    const menu = within(screen.getByRole('menu'));
+    expect(menu.getByRole('menuitem', { name: 'Go to page' })).toHaveFocus();
+    expect(menu.getByRole('menuitem', { name: 'Duplicate page' })).toBeVisible();
+    const deletePage = menu.getByRole('menuitem', { name: 'Delete page' });
+
+    if (name === 'Home') {
+      expect(deletePage).toHaveAttribute('aria-disabled', 'true');
+      expect(deletePage).toHaveAccessibleDescription("Home page can't be deleted");
+      await user.keyboard('{Escape}');
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      expect(trigger).toHaveFocus();
+    } else {
+      await user.click(deletePage);
+      expect(screen.getByRole('heading', { name: 'Delete "Reports"?' })).toBeVisible();
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    }
+  });
+
+  // Break this catches: choosing Duplicate page fails to clone the page being edited once.
+  test('duplicates the edited page once from Page options', async () => {
+    const user = userEvent.setup();
+    seedFreshApp();
+    const s = state();
+    const home = s.modules.canvas.pages[0];
+    const copy = { ...home, id: 'home-copy-1', handle: 'home-copy', name: 'Home copy' };
+    let cloneRequests = 0;
+    server.use(
+      http.post('http://localhost:3000/api/v2/apps/app-1/versions/version-1/pages/home-1/clone', () => {
+        cloneRequests++;
+        return HttpResponse.json({ pages: [home, copy], events: [] });
+      })
+    );
+    s.setEditingPage(home);
+    s.setNewPagePopupConfig({ show: true, mode: 'edit', type: 'default' });
+    render(<AddEditPagePopup darkMode={false} embedded onClose={() => {}} />);
+
+    await user.click(screen.getByRole('button', { name: 'Page options' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Duplicate page' }));
+
+    await waitFor(() => expect(state().modules.canvas.currentPageId).toBe(copy.id));
+    expect(state().modules.canvas.pages.map((page) => page.name)).toEqual(['Home', 'Home copy']);
+    expect(cloneRequests).toBe(1);
+  });
+
   // The page configuration panel embeds the popup and shares newPagePopupConfig with the Pages panel's
   // floating popups. Only the floating "New page" popup may create the page.
   test('New page with a page configuration open creates ONE page, not one per mounted popup', async () => {

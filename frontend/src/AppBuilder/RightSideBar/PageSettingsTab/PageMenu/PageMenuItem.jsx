@@ -32,7 +32,7 @@ export const PageMenuItem = withRouter(
     const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
     const isHomePage = page.id === homePageId;
     const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
-    const isSelected = page.id === currentPageId;
+    const isCurrentPage = page.id === currentPageId;
     const isHidden = useStore((state) => state.getPagesVisibility('canvas', page?.id));
     const isDisabled = page?.disabled ?? false;
     const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
@@ -66,11 +66,6 @@ export const PageMenuItem = withRouter(
     const moreBtnRef = useRef(null);
 
     const isEditingPage = editingPage?.id === page?.id;
-    // The row whose "Edit page" panel is open on the right stays highlighted, like the open query does.
-    const isPageConfigurationOpen = useStore(
-      (state) => state.isRightSidebarOpen && state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION
-    );
-
     const icon = (props) => {
       const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
       // eslint-disable-next-line import/namespace
@@ -93,7 +88,7 @@ export const PageMenuItem = withRouter(
       };
 
       switch (true) {
-        case isSelected: {
+        case isCurrentPage: {
           return {
             ...baseStyles,
             text: {
@@ -134,7 +129,7 @@ export const PageMenuItem = withRouter(
           };
         }
       }
-    }, [styles, isSelected, isHovered, page.id, editingPage?.id]);
+    }, [styles, isCurrentPage, isHovered, page.id, editingPage?.id]);
 
     const computedStyles = computeStyles();
 
@@ -219,9 +214,8 @@ export const PageMenuItem = withRouter(
         }}
       >
         <div
-          className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
-            isEditingPage && (showPageOptions || isPageConfigurationOpen) ? 'is-selected' : ''
-          }`}
+          className={cx('page-menu-item', { 'dark-theme theme-dark': darkMode, 'is-selected': isCurrentPage })}
+          aria-current={isCurrentPage ? 'page' : undefined}
           data-page-id={page?.id}
           style={{
             position: 'relative',

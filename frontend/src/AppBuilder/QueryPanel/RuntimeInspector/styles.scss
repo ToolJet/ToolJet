@@ -240,9 +240,16 @@
 
   &__entry-icon {
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
     width: 14px;
     height: 14px;
+
+    // Some query icons have an inline top margin for baseline alignment in other views.
+    > :is(svg, img) {
+      margin-top: 0 !important;
+    }
 
     &:empty {
       display: none;

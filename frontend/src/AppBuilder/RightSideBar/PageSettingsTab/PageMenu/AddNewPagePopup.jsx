@@ -1,6 +1,6 @@
-import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useId, useRef, useState } from 'react';
 import cx from 'classnames';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Copy, Trash } from 'lucide-react';
 import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 import { Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
@@ -21,9 +21,11 @@ import { resolveReferences, validateKebabCase } from '@/_helpers/utils';
 import { ToolTip as InspectorTooltip } from '../../Inspector/Elements/Components/ToolTip';
 import { shallow } from 'zustand/shallow';
 import { Button } from '@/components/ui/Button/Button';
-import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
+import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { getPastPanelOffset } from '@/AppBuilder/panelLayout';
+import { getPanelCloseLabel, getPastPanelOffset } from '@/AppBuilder/panelLayout';
 
 const POPOVER_TITLES = {
   add: {
@@ -136,6 +138,7 @@ export const AddEditPagePopup = forwardRef(
     const [error, setError] = useState(null);
 
     const isHomePage = page?.id === homePageId;
+    const deleteDisabledReasonId = useId();
 
     //Nav item with app
     const [appOptions, setAppOptions] = useState([]);
@@ -332,6 +335,35 @@ export const AddEditPagePopup = forwardRef(
       setError(null);
     };
 
+    const entity = type === 'group' ? 'group' : 'page';
+    const deleteDisabledReason = isHomePage ? "Home page can't be deleted" : undefined;
+    const actions = [
+      ...(!['group', 'custom'].includes(type)
+        ? [{ label: 'Go to page', icon: 'arrowright01', menuIcon: ArrowRight, onSelect: handlePageSwitch }]
+        : []),
+      {
+        label: `Duplicate ${entity}`,
+        icon: 'duplicatepage',
+        menuIcon: Copy,
+        onSelect: () => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id)),
+      },
+      {
+        label: `Delete ${entity}`,
+        icon: 'delete01',
+        menuIcon: Trash,
+        dataCy: 'delete-page-button',
+        destructive: true,
+        onSelect: () => {
+          if (!isHomePage && page) {
+            openPageEditPopover(page);
+            toggleDeleteConfirmationModal(true);
+          }
+        },
+        disabledReason: deleteDisabledReason,
+      },
+    ];
+    const title = POPOVER_TITLES?.[mode]?.[type];
+
     return (
       <Popover
         id="add-new-page-popup"
@@ -339,69 +371,102 @@ export const AddEditPagePopup = forwardRef(
         {...props}
         className={`add-new-page-popup ${embedded ? 'add-new-page-popup--embedded' : ''} ${darkMode && 'dark-theme theme-dark'}`}
       >
-        <Popover.Header>
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="add-new-page-popup__title tj-text-xsm font-weight-500 text-default">
-              {POPOVER_TITLES?.[mode]?.[type]}
-            </div>
-            <div className="actions-container">
-              {!['group', 'custom'].includes(type) && (
-                <>
-                  <ToolTip message={'Go to page'} placement="bottom">
+        {embedded ? (
+          <PanelHeader
+            title={title}
+            onClose={onClose}
+            closeLabel={getPanelCloseLabel('page')}
+            closeDataCy="close-page-configuration-button"
+          >
+            <DropdownMenu.Root modal={false}>
+              <DropdownMenu.Trigger asChild>
+                <PanelIconButton
+                  label="Page options"
+                  leadingIcon="ellipsis-vertical"
+                  size="medium"
+                  isLucid
+                  data-cy="page-options-button"
+                />
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content
+                  align="end"
+                  sideOffset={8}
+                  className={cx('popover page-header-options', { 'dark-theme': darkMode })}
+                >
+                  <div className="list-item-popover-body">
+                    {actions.map(({ label, menuIcon: MenuIcon, dataCy, destructive, onSelect, disabledReason }) => (
+                      <ToolTip
+                        key={label}
+                        message={disabledReason ?? label}
+                        placement="left"
+                        show={Boolean(disabledReason)}
+                      >
+                        <DropdownMenu.Item
+                          className="list-item-popover-option"
+                          data-cy={dataCy}
+                          disabled={Boolean(disabledReason)}
+                          aria-label={label}
+                          aria-describedby={disabledReason ? deleteDisabledReasonId : undefined}
+                          onSelect={onSelect}
+                        >
+                          <span className="list-item-popover-menu-option-icon">
+                            <MenuIcon
+                              size={16}
+                              color={
+                                disabledReason
+                                  ? 'var(--icon-disabled)'
+                                  : destructive
+                                    ? 'var(--icon-danger)'
+                                    : 'var(--icon-weak)'
+                              }
+                            />
+                          </span>
+                          <span
+                            className={cx('list-item-option-menu-label', {
+                              'tw-text-editor-text-danger': destructive && !disabledReason,
+                              'color-disabled': disabledReason,
+                            })}
+                          >
+                            {label}
+                          </span>
+                          {disabledReason && (
+                            <span id={deleteDisabledReasonId} className="visually-hidden">
+                              {disabledReason}
+                            </span>
+                          )}
+                        </DropdownMenu.Item>
+                      </ToolTip>
+                    ))}
+                  </div>
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
+          </PanelHeader>
+        ) : (
+          <Popover.Header>
+            <div className="d-flex justify-content-between align-items-center">
+              <div className="tj-text-xsm font-weight-500 text-default">{title}</div>
+              <div className="actions-container">
+                {actions.map(({ label, icon, dataCy, onSelect, disabledReason }) => (
+                  <ToolTip key={icon} message={disabledReason ?? label} placement="bottom">
                     <Button
-                      key="go-to-page-btn"
+                      data-cy={dataCy}
                       fill="var(--icon-strong)"
-                      leadingIcon="arrowright01"
-                      aria-label="Go to page"
+                      leadingIcon={icon}
+                      aria-label={label}
+                      aria-disabled={disabledReason ? true : undefined}
                       iconOnly
                       variant="ghost"
                       size="medium"
-                      onClick={handlePageSwitch}
+                      onClick={onSelect}
                     />
                   </ToolTip>
-                </>
-              )}
-
-              <ToolTip message={`Duplicate ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
-                <Button
-                  key="duplicate-page-btn"
-                  fill="var(--icon-strong)"
-                  leadingIcon="duplicatepage"
-                  aria-label={`Duplicate ${type === 'group' ? 'group' : 'page'}`}
-                  iconOnly
-                  variant="ghost"
-                  size="medium"
-                  onClick={() => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id))}
-                />
-              </ToolTip>
-
-              <ToolTip message={`Delete ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
-                <Button
-                  key="delete-page-btn"
-                  data-cy="delete-page-button"
-                  fill="var(--icon-strong)"
-                  leadingIcon="delete01"
-                  aria-label={`Delete ${type === 'group' ? 'group' : 'page'}`}
-                  iconOnly
-                  variant="ghost"
-                  size="medium"
-                  onClick={() => {
-                    openPageEditPopover(page);
-                    toggleDeleteConfirmationModal(true);
-                  }}
-                />
-              </ToolTip>
-              {embedded && (
-                <PanelCloseButton
-                  key="close-page-configuration"
-                  label="Close page configuration"
-                  dataCy="close-page-configuration-button"
-                  onClose={onClose}
-                />
-              )}
+                ))}
+              </div>
             </div>
-          </div>
-        </Popover.Header>
+          </Popover.Header>
+        )}
         <Popover.Body className={`${darkMode && 'dark-theme'}`}>
           <div className="pb-2">
             <div className="col">

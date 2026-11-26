@@ -440,6 +440,21 @@ describe("Panel sweep", { testIsolation: false }, () => {
     // New page switches the canvas to the page it creates, so every journey starts from a fresh load.
     beforeEach(() => openEditor("light"));
 
+    it("centers Inspector icons vertically with their labels", () => {
+      const centerY = (element) => {
+        const { top, height } = element.getBoundingClientRect();
+        return top + height / 2;
+      };
+      openPanel("inspect");
+      cy.get('[data-cy="inspector-runjs1-subnode-label"] svg').should("exist");
+      cy.get(".runtime-inspector__group-header, .runtime-inspector__entry-label").each(($row) => {
+        const icon = $row[0].querySelector(":scope > svg, .runtime-inspector__entry-icon :is(svg, img)");
+        if (!icon) return;
+        const label = $row[0].querySelector(".tj-panel-section-header__title, .runtime-inspector__entry-name");
+        expect(centerY(icon), label.textContent).to.be.closeTo(centerY(label), 0.5);
+      });
+    });
+
     flow("[UC-14] New page stays pinned at the bottom of the Pages panel", (violations) => {
       openPanel("pages");
       // The Pages panel ends where the drawer starts, so its bottom moves until the drawer height settles.
