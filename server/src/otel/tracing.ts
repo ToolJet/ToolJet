@@ -104,7 +104,11 @@ function createSDK(): NodeSDK {
               span.setAttribute('http.query', JSON.stringify(sanitizeObject(request.query)));
             }
 
-            if (!isLlmKeyRequest(request.originalUrl || request.url) && request.body && Object.keys(request.body).length > 0) {
+            if (
+              !isLlmKeyRequest(request.originalUrl || request.url) &&
+              request.body &&
+              Object.keys(request.body).length > 0
+            ) {
               span.setAttribute('http.body', JSON.stringify(sanitizeObject(request.body)));
             }
           }
