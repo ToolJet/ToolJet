@@ -15,6 +15,11 @@ import { isSuperAdmin } from '@helpers/utils.helper';
 import { cloneDeep } from 'lodash';
 import { TransactionLogger } from '@modules/logging/service';
 
+// "Public" lets anonymous viewers open a front-end app. A workflow is only ever run, never viewed:
+// even if one is marked public (import, old data), it is never treated as public.
+export const isAppPublic = (app?: Pick<App, 'isPublic' | 'type'>): boolean =>
+  !!app?.isPublic && app.type !== APP_TYPES.WORKFLOW;
+
 // User should be present or app should be public
 @Injectable()
 export abstract class AbilityGuard implements CanActivate {
@@ -69,10 +74,8 @@ export abstract class AbilityGuard implements CanActivate {
       const request = context.switchToHttp().getRequest();
       const user = request.user;
       const app: App = request.tj_app;
-      // "Public" lets anonymous viewers open a front-end app, so permission checks are skipped for
-      // it. A workflow is only ever run, never viewed: even if one is marked public (import, old
-      // data), its routes keep their full permission checks.
-      const isPublicApp = !!app?.isPublic && app?.type !== APP_TYPES.WORKFLOW;
+      // Permission checks are skipped for a public app; a workflow's routes keep them.
+      const isPublicApp = isAppPublic(app);
       // Guard instances are singleton-scoped in Nest's DI container, so `this.resource`
       // persists across requests. It must always be overwritten (even with undefined) so a
       // request with no app in context can't inherit a stale value set by an earlier request.

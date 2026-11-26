@@ -7,6 +7,7 @@ import { TransactionLogger } from '@modules/logging/service';
 import { APP_TYPES } from '@modules/apps/constants';
 import { App } from '@entities/app.entity';
 import { DataQueryRepository } from '../repository';
+import { isAppPublic } from '@modules/app/guards/ability.guard';
 
 @Injectable()
 export class QueryAuthGuard extends AuthGuard('jwt') {
@@ -46,7 +47,7 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
       request.tj_app = app;
       request.tj_resource_id = app.id;
 
-      if (app.isPublic === true) {
+      if (isAppPublic(app)) {
         // A public front-end app exposes only its RELEASED version to anonymous callers; a draft
         // query requires auth. Scoped to front-end: workflows/modules keep is_public elsewhere and
         // the module branch below handles public-parent embedding.
