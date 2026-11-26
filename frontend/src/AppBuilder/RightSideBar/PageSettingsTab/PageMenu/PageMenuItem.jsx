@@ -45,7 +45,6 @@ export const PageMenuItem = withRouter(
     const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
     const setEditingPage = useStore((state) => state.setEditingPage);
     const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
-    const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
     const clonePage = useStore((state) => state.clonePage);
     const markAsHomePage = useStore((state) => state.markAsHomePage);
     const restricted = page?.permissions && page?.permissions?.length > 0;
@@ -359,32 +358,6 @@ export const PageMenuItem = withRouter(
                           e.preventDefault();
                           toggleShowPageOptions(false);
                           toggleDeleteConfirmationModal(true, page);
-                        }}
-                      />
-                      <PageOptions
-                        text={
-                          <ToolTip
-                            message={
-                              "You don't have access to page permissions. Upgrade your plan to access this feature."
-                            }
-                            placement="auto"
-                            show={!hasAppPermissionPages}
-                            tooltipClassName="!tw-z-[100000] page-paid-tooltip"
-                          >
-                            <div className="d-flex align-items-center enterprise-feature">
-                              <div>Page permission</div>
-                              {!hasAppPermissionPages && <SolidIcon name="enterprisecrown" />}
-                            </div>
-                          </ToolTip>
-                        }
-                        icon="lock"
-                        darkMode={darkMode}
-                        disabled={!hasAppPermissionPages}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          toggleShowPageOptions(false);
-                          togglePagePermissionModal(true, page);
                         }}
                       />
                     </div>

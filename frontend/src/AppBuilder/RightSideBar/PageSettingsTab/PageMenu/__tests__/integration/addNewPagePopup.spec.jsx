@@ -152,6 +152,7 @@ describe('AddEditPagePopup embedded in the right panel', () => {
     const menu = within(screen.getByRole('menu'));
     expect(menu.getByRole('menuitem', { name: 'Go to page' })).toHaveFocus();
     expect(menu.getByRole('menuitem', { name: 'Duplicate page' })).toBeVisible();
+    expect(menu.getByRole('menuitem', { name: 'Page permission' })).toBeVisible();
     const deletePage = menu.getByRole('menuitem', { name: 'Delete page' });
 
     if (name === 'Home') {

@@ -84,6 +84,7 @@ test('page menu does not include "Edit page details" and clicking a row opens th
   fireEvent.click(buttons[buttons.length - 1]);
   expect(screen.getByRole('button', { name: 'Duplicate page' })).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Edit page details' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Page permission' })).not.toBeInTheDocument();
   fireEvent.click(document.body);
 
   fireEvent.click(container.querySelector('.page-menu-item'));

@@ -358,17 +358,6 @@
       color: var(--left-rail-accent) !important;
       background: var(--left-rail-accent-soft);
 
-      &::before {
-        content: '';
-        position: absolute;
-        left: -5px;
-        top: 10px;
-        bottom: 10px;
-        width: 2px;
-        border-radius: 2px;
-        background: var(--left-rail-accent);
-      }
-
       svg {
         color: currentColor;
       }
