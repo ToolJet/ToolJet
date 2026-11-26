@@ -24,7 +24,7 @@ import {
   listviewRowCount,
   listviewRowHeight,
 } from '../dynamicHeight/listviewHeight';
-import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
+import { resolveFlexContainerHeight } from '../dynamicHeight/flexContainerHeight';
 import {
   heightHeldInView,
   isUi2PerRowType,
@@ -565,19 +565,15 @@ export const resolveContainerHeight = ({
     return resolveFlexContainerHeight({
       componentId,
       currentLayout,
+      contextIndices: context,
+      moduleId,
       currentPageComponents,
       temporaryLayouts,
-      contextIndices: context,
+      wrapperWidth: document.querySelector(getDynamicElementSelector(componentId, context, moduleId))?.clientWidth,
       getResolvedComponent,
-      getContainerChildrenMapping,
       getExposedPropertyForAdditionalActions,
+      getContainerChildrenMapping,
       calculateMoveableBoxHeightWithId,
-      getComponentDefinition,
-      getCanonicalLayout,
-      getDynamicElementSelector,
-      getEffectiveLayout,
-      resolveWidgetVisibility,
-      moduleId,
     });
   }
 
