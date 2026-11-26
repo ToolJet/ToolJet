@@ -10,8 +10,14 @@ import { ResourceDetails } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
 import { cloneDeep } from 'lodash';
 import { FEATURE_KEY } from '../constants';
+import { APP_TYPES } from '@modules/apps/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { TransactionLogger } from '@modules/logging/service';
+
+const APP_RESOURCE_BY_FOLDER_TYPE: Partial<Record<APP_TYPES, MODULES>> = {
+  [APP_TYPES.WORKFLOW]: MODULES.WORKFLOWS,
+  [APP_TYPES.MODULE]: MODULES.MODULES,
+};
 
 @Injectable()
 export class FeatureAbilityGuard extends AbilityGuard {
@@ -33,12 +39,17 @@ export class FeatureAbilityGuard extends AbilityGuard {
     return FolderApp;
   }
 
-  protected getResource(): ResourceDetails | ResourceDetails[] {
-    return [
+  protected getResource(request?: any): ResourceDetails | ResourceDetails[] {
+    const resources: ResourceDetails[] = [
       { resourceType: MODULES.FOLDER },
       { resourceType: MODULES.WORKFLOW_FOLDER },
       { resourceType: MODULES.MODULE_FOLDER },
     ];
+    // An add also needs the caller's edit access on the apps themselves, which only their own bucket carries.
+    if (request?.tj_folder_add_app_ids) {
+      resources.push({ resourceType: APP_RESOURCE_BY_FOLDER_TYPE[request.tj_folder_type as APP_TYPES] ?? MODULES.APP });
+    }
+    return resources;
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -90,10 +101,13 @@ export class FeatureAbilityGuard extends AbilityGuard {
         request.tj_allow_owner_folder_app_delete = folderOwnedByUser;
         request.tj_folder_app_type_mismatch = !!(folder.type && app.type && folder.type !== app.type);
       } else {
-        // Bulk path (app_ids): folder ownership is sufficient — the frontend already
-        // gates on canModifyApp before surfacing the "Add to folder" option.
+        // Bulk path (app_ids): folder ownership alone is not enough.
         request.tj_allow_owner_folder_app_create = folderOwnedByUser;
       }
+      // Adding an app to a folder makes it editable for the folder's owner/editors, so every add path
+      // (owner or folder-granular) needs edit access on the apps before the add. The factory checks these.
+      request.tj_folder_add_app_ids = appIds;
+      request.tj_folder_add_owned_app_ids = apps.filter((app) => app.userId === request.user.id).map((app) => app.id);
     }
 
     return super.canActivate(context);

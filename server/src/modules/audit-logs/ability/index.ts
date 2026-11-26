@@ -14,7 +14,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   }
 
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
-    can(FEATURE_KEY.VIEW_LOGS, AuditLog);
-    can(FEATURE_KEY.VIEW_RESOURCES, AuditLog);
+    const { superAdmin, isAdmin } = UserAllPermissions;
+    if (superAdmin || isAdmin) {
+      can([FEATURE_KEY.VIEW_LOGS, FEATURE_KEY.VIEW_RESOURCES], AuditLog);
+    }
   }
 }

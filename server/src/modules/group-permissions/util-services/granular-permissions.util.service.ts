@@ -11,7 +11,10 @@ import {
   UpdateResourceGroupPermissionsObject,
   ValidateResourceAction,
 } from '../types/granular_permissions';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
+import { AppBase } from '@entities/app_base.entity';
+import { Folder } from '@entities/folder.entity';
+import { DataSource as DataSourceEntity } from '@entities/data_source.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { catchDbException } from '@helpers/utils.helper';
@@ -161,6 +164,22 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     }, manager);
   }
 
+  // Resource ids arrive in the request body. Resolving them inside the caller's workspace means an id
+  // that belongs to another workspace simply does not resolve, and the whole request is refused.
+  protected async assertIdsInOrganization(
+    entity: typeof AppBase | typeof Folder | typeof DataSourceEntity,
+    ids: string[],
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    const uniqueIds = [...new Set(ids)];
+    if (!uniqueIds.length) return;
+    const found = await manager.find(entity, { where: { id: In(uniqueIds), organizationId }, select: ['id'] });
+    if (found.length !== uniqueIds.length) {
+      throw new BadRequestException('One or more resources do not belong to this workspace');
+    }
+  }
+
   protected async createAppGroupPermission(
     organizationId: string,
     granularPermissions: GranularPermissions,
@@ -200,6 +219,13 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
           manager
         );
       }
+
+      await this.assertIdsInOrganization(
+        AppBase,
+        (resourcesToAdd ?? []).map((app) => app.appId),
+        organizationId,
+        manager
+      );
 
       createAppPermissionsObj.appType = this.getAppTypeFromResourceType(granularPermissions.type);
 
@@ -246,6 +272,12 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         },
         manager,
         granularPermissions.type
+      );
+      await this.assertIdsInOrganization(
+        Folder,
+        (resourcesToAdd ?? []).map((folder) => folder.folderId),
+        organizationId,
+        manager
       );
       const foldersGroupPermissions = await manager.save(
         manager.create(FoldersGroupPermissions, {
@@ -668,16 +700,22 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         });
       }
 
-      // Delete removed folders
+      // Delete removed folders — only rows that belong to this permission
       if (resourcesToDelete?.length) {
-        await manager.delete(
-          GroupFolders,
-          resourcesToDelete.map((item) => item.id)
-        );
+        await manager.delete(GroupFolders, {
+          id: In(resourcesToDelete.map((item) => item.id)),
+          foldersGroupPermissionsId: foldersGroupPermissions.id,
+        });
       }
 
       // Add new folders
       if (resourcesToAdd?.length) {
+        await this.assertIdsInOrganization(
+          Folder,
+          resourcesToAdd.map((folder) => folder.folderId),
+          organizationId,
+          manager
+        );
         await manager.insert(
           GroupFolders,
           resourcesToAdd.map((folder) => ({
@@ -741,9 +779,18 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         await manager.update(AppsGroupPermissions, appsGroupPermissions.id, actions);
       }
       if (resourcesToDelete?.length) {
-        for (const groupApp of resourcesToDelete) await manager.delete(GroupApps, groupApp.id);
+        await manager.delete(GroupApps, {
+          id: In(resourcesToDelete.map((groupApp) => groupApp.id)),
+          appsGroupPermissionsId: appsGroupPermissions.id,
+        });
       }
       if (resourcesToAdd?.length) {
+        await this.assertIdsInOrganization(
+          AppBase,
+          resourcesToAdd.map((app) => app.appId),
+          organizationId,
+          manager
+        );
         for (const app of resourcesToAdd) {
           await manager.save(
             manager.create(GroupApps, {
@@ -808,7 +855,6 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
       await this.roleUtilService.changeEndUserToEditor(
         organizationId,
         endUsersList.map((user) => user.id),
-        endUsersList[0].userGroups[0].group.id,
         manager
       );
     }
