@@ -1,3 +1,4 @@
+import { assertImportedVariableDefinitions } from '@helpers/import-variable-validation.helper';
 import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { isEmpty, set } from 'lodash';
 import { isUUID } from 'class-validator';
@@ -1352,6 +1353,7 @@ export class AppImportExportService {
       if (typeof appParamsObj !== 'object') {
         throw new BadRequestException('Invalid params for app import');
       }
+      assertImportedVariableDefinitions(appParamsObj);
       let appParams = appParamsObj;
 
       if (appParams?.appV2) {
@@ -1666,8 +1668,8 @@ export class AppImportExportService {
         select: ['id', 'variables'],
       });
       for (const page of pages) {
-        if (page.variables && Object.keys(page.variables).length > 0) {
-          // Files from development builds keyed definitions by id; save them keyed by name.
+        if (page.variables !== undefined) {
+          // Imported definitions must already use variable names as keys.
           const variables = readVariableDefinitionMap(
             updateEntityReferences(page.variables, mappings),
             `pages.${page.id}.variables`
@@ -1687,7 +1689,7 @@ export class AppImportExportService {
     for (const appVersion of newAppVersions) {
       if (appVersion.globalSettings) {
         const updatedGlobalSettings = updateEntityReferences(appVersion.globalSettings, mappings);
-        if (updatedGlobalSettings.variables) {
+        if (Object.prototype.hasOwnProperty.call(updatedGlobalSettings, 'variables')) {
           updatedGlobalSettings.variables = readVariableDefinitionMap(
             updatedGlobalSettings.variables,
             'globalSettings.variables'
@@ -1920,6 +1922,8 @@ export class AppImportExportService {
     isTemplateApp = false,
     source?: WriteSource
   ): Promise<AppResourceMappings> {
+    assertImportedVariableDefinitions(appParams, importedApp.type === 'module');
+
     // Old version without app version
     // Handle exports prior to 0.12.0
     // TODO: have version based conditional based on app versions
@@ -2141,7 +2145,7 @@ export class AppImportExportService {
                 border: 'var(--cc-weak-border)',
                 height: 60,
               },
-              variables: page.variables || null,
+              variables: page.variables ?? null,
               autoComputeLayout: page.autoComputeLayout || false,
               isPageGroup: page.isPageGroup,
               pageGroupIndex: page.pageGroupIndex || null,
@@ -2631,7 +2635,7 @@ export class AppImportExportService {
           hidden: page.hidden || false,
           pageHeader: page.pageHeader || null,
           pageFooter: page.pageFooter || null,
-          variables: page.variables || null,
+          variables: page.variables ?? null,
           autoComputeLayout: page.autoComputeLayout || false,
           icon: page.icon || null,
           isPageGroup: !!page.isPageGroup,

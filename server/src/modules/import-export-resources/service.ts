@@ -1,3 +1,4 @@
+import { assertImportedVariableDefinitions } from '@helpers/import-variable-validation.helper';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
@@ -200,6 +201,8 @@ export class ImportExportResourcesService {
     if (importResourcesDto.organization_id !== user.organizationId) {
       throw new ForbiddenException('Cannot import resources into a different organization.');
     }
+
+    assertImportedVariableDefinitions(importResourcesDto);
 
     let tableNameMapping: Record<string, { id: string }> = {};
     // tableNameMapping plus the internal ids of legacy exports (see legacyTableRefsToEntryIds)

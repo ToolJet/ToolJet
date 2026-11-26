@@ -4,8 +4,8 @@
  * Declared-variable maps (src/helpers/variable-definition-map.helper.ts) are keyed by variable name:
  * `{ [name]: { value, fxActive } }`. The page and global settings routes save a map as sent, and the
  * editor cannot load a malformed one, so `assertVariableDefinitionMap` rejects it with a 400.
- * `readVariableDefinitionMap` converts development data saved under definition ids (imports and
- * Git pulls of older files) to name keys, refusing duplicate names rather than dropping one.
+ * Imports and Git pulls use the same name-keyed shape. ID-keyed development definitions never
+ * shipped and are rejected rather than migrated.
  */
 import { BadRequestException } from '@nestjs/common';
 import { assertVariableDefinitionMap, readVariableDefinitionMap } from 'src/helpers/variable-definition-map.helper';
@@ -71,33 +71,10 @@ describe('readVariableDefinitionMap', () => {
     expect(readVariableDefinitionMap(map, 'variables')).toEqual(map);
   });
 
-  it('re-keys development entries saved under definition ids by their names', () => {
-    expect(
-      readVariableDefinitionMap(
-        {
-          '05688c6c-efd3-4726-b6c5-bfde3a2f32c9': {
-            id: '05688c6c-efd3-4726-b6c5-bfde3a2f32c9',
-            name: 'selectedOrderID',
-            value: '42',
-            fxActive: false,
-          },
-          other: { value: '1', fxActive: false },
-        },
-        'variables'
-      )
-    ).toEqual({ selectedOrderID: { value: '42', fxActive: false }, other: { value: '1', fxActive: false } });
-  });
-
-  it('refuses two development entries with the same name instead of dropping one', () => {
-    expect(() =>
-      readVariableDefinitionMap(
-        {
-          a1: { id: 'a1', name: 'count', value: '1', fxActive: false },
-          a2: { id: 'a2', name: 'count', value: '2', fxActive: false },
-        },
-        'pages.Home.variables'
-      )
-    ).toThrow('pages.Home.variables has more than one variable named count');
+  it.each(['old-id', 'source'])('rejects ID-keyed definitions under %s with a clear format error', (key) => {
+    expect(() => readVariableDefinitionMap({ [key]: { id: 'old-id', name: 'source', ...valid } }, 'variables')).toThrow(
+      'ID-keyed variable definitions are not supported'
+    );
   });
 
   it('keeps null and undefined as they are', () => {
@@ -106,9 +83,9 @@ describe('readVariableDefinitionMap', () => {
   });
 
   it('rejects an imported variable named after an inherited method', () => {
-    expect(() =>
-      readVariableDefinitionMap({ v1: { id: 'v1', name: 'toString', value: '1', fxActive: false } }, 'variables')
-    ).toThrow('variables.toString is a reserved name');
+    expect(() => readVariableDefinitionMap({ toString: valid }, 'variables')).toThrow(
+      'variables.toString is a reserved name'
+    );
   });
 
   it('rejects a malformed map instead of importing it', () => {

@@ -10,18 +10,12 @@ const sourceComponentId = '11111111-1111-4111-8111-111111111111';
 const sourceQueryId = '22222222-2222-4222-8222-222222222222';
 const componentId = '33333333-3333-4333-8333-333333333333';
 const queryId = '44444444-4444-4444-8444-444444444444';
-const legacyVariableId = '55555555-5555-4555-8555-555555555555';
 const sourcePageId = '66666666-6666-4666-8666-666666666666';
 const pageId = '77777777-7777-4777-8777-777777777777';
 const versionId = '88888888-8888-4888-8888-888888888888';
 
 // Saved maps are keyed by variable name.
 const definitions = (value: string): NonNullable<Page['variables']> => ({ result: { value, fxActive: false } });
-// Development data saved before maps were keyed by name.
-const legacyDefinitions = (value: string) =>
-  ({
-    [legacyVariableId]: { id: legacyVariableId, name: 'result', value, fxActive: false },
-  }) as unknown as Page['variables'];
 
 async function importVariables(
   variables: Page['variables'],
@@ -132,19 +126,10 @@ describe.each([false, true])('AppImportExportService | page variables (git corre
   it.each([null, {}])('should preserve pages without declarations (%j)', async (variables) => {
     expect(await importVariables(variables, git)).toEqual(variables);
   });
-  // Exports and Git files written by development builds keyed definitions by id.
-  it('should re-key development page and app variable maps by name, remapping their references', async () => {
-    const value = `{{components.${sourceComponentId}.value}}`;
-    expect(await importVariables(legacyDefinitions(value), git, legacyDefinitions(value))).toEqual(
-      definitions(`{{components.${componentId}.value}}`)
+  it.each(['app', 'page'])('should reject ID-keyed %s maps rather than convert them', async (scope) => {
+    const map = { old: { id: 'old', name: 'result', value: '1', fxActive: false } } as unknown as Page['variables'];
+    await expect(importVariables(scope === 'page' ? map : {}, git, scope === 'app' ? map : {})).rejects.toThrow(
+      'ID-keyed variable definitions are not supported'
     );
-  });
-
-  it('should refuse a development map with two variables of the same name instead of dropping one', async () => {
-    const duplicated = {
-      a1: { id: 'a1', name: 'result', value: '1', fxActive: false },
-      a2: { id: 'a2', name: 'result', value: '2', fxActive: false },
-    } as unknown as Page['variables'];
-    await expect(importVariables(duplicated, git)).rejects.toThrow('more than one variable named result');
   });
 });

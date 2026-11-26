@@ -79,30 +79,19 @@ export function assertVariableDefinitionMap(map: unknown, path: string): void {
   }
 }
 
-/**
- * A map read from an import or a Git pull, in the saved shape. Development builds saved
- * `{ [id]: { id, name, value, fxActive } }` before maps were keyed by name; those entries are
- * re-keyed by their name. Two entries with the same name are refused instead of one being dropped,
- * and anything else malformed is rejected as it would be on save. null and undefined pass through.
- */
+/** Imports and Git pulls accept only the current name-keyed shape; no development-format migration. */
 export function readVariableDefinitionMap<T extends null | undefined>(map: T, path: string): T;
 export function readVariableDefinitionMap(map: unknown, path: string): VariableDefinitionMap | null | undefined;
 export function readVariableDefinitionMap(map: unknown, path: string): VariableDefinitionMap | null | undefined {
-  if (map === null || map === undefined) return map as null | undefined;
-  if (!isPlainObject(map)) {
-    throw new BadRequestException(`${path} must be an object of variable definitions keyed by name`);
-  }
-  const result: VariableDefinitionMap = {};
-  for (const [key, entry] of Object.entries(map)) {
-    const isIdKeyed = isPlainObject(entry) && typeof entry.id === 'string' && typeof entry.name === 'string';
-    const name = isIdKeyed ? (entry.name as string) : key;
-    const definition = isIdKeyed ? { value: entry.value, fxActive: entry.fxActive ?? entry.fx_active ?? false } : entry;
-    if (Object.prototype.hasOwnProperty.call(result, name)) {
-      throw new BadRequestException(`${path} has more than one variable named ${name}`);
+  if (isPlainObject(map)) {
+    for (const [key, entry] of Object.entries(map)) {
+      if (isPlainObject(entry) && ('id' in entry || 'name' in entry)) {
+        throw new BadRequestException(
+          `${path}.${key}: ID-keyed variable definitions are not supported. Use variable names as keys and { value, fxActive } definitions.`
+        );
+      }
     }
-    const problem = nameProblem(name) ?? definitionProblem(definition);
-    if (problem) throw new BadRequestException(`${path}.${name} ${problem}`);
-    result[name] = definition as VariableDefinition;
   }
-  return result;
+  assertVariableDefinitionMap(map, path);
+  return map as VariableDefinitionMap | null | undefined;
 }
