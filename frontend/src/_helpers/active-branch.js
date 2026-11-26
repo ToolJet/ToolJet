@@ -191,3 +191,15 @@ export function appendBranchParam(url, branchId = getActiveBranchId()) {
   const separator = url.includes('?') ? '&' : '?';
   return `${url}${separator}branch_id=${encodeURIComponent(branchId)}`;
 }
+
+/**
+ * Whether a list that already fetched (carrying `fetchedWithBranchId`) must refetch when the
+ * active branch moves prevId -> nextId. The first null -> id hydration is skipped only when the
+ * list was fetched with that branch already; a fetch that went out branchless (no `?branch=` in
+ * the URL, remembered branch resolved afterwards) is stale and must be redone.
+ */
+export function shouldRefetchOnBranchChange(prevId, nextId, fetchedWithBranchId) {
+  if (!nextId) return false;
+  if (prevId) return prevId !== nextId;
+  return !fetchedWithBranchId;
+}

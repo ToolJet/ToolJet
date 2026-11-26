@@ -1,4 +1,4 @@
-import { getVersionNameFromUrl, setVersionInUrl } from '../active-branch';
+import { getVersionNameFromUrl, setVersionInUrl, shouldRefetchOnBranchChange } from '../active-branch';
 
 const setUrl = (path) => window.history.pushState({}, '', path);
 
@@ -54,5 +54,24 @@ describe('setVersionInUrl', () => {
     setUrl('/my-workspace/apps/app-slug?version=v2');
     setVersionInUrl(null);
     expect(getVersionNameFromUrl()).toBeNull();
+  });
+});
+
+describe('shouldRefetchOnBranchChange', () => {
+  it('refetches when the first fetch went out branchless and a branch then resolves', () => {
+    expect(shouldRefetchOnBranchChange(null, 'b1', null)).toBe(true);
+  });
+
+  it('skips the first hydration when the list was already fetched with that branch', () => {
+    expect(shouldRefetchOnBranchChange(null, 'b1', 'b1')).toBe(false);
+  });
+
+  it('refetches on a real branch switch', () => {
+    expect(shouldRefetchOnBranchChange('b1', 'b2', 'b1')).toBe(true);
+  });
+
+  it('ignores a same-id update and an unresolved branch', () => {
+    expect(shouldRefetchOnBranchChange('b1', 'b1', 'b1')).toBe(false);
+    expect(shouldRefetchOnBranchChange('b1', null, 'b1')).toBe(false);
   });
 });

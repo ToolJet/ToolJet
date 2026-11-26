@@ -65,7 +65,7 @@ import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
-import { whenBranchResolved } from '@/_helpers/active-branch';
+import { whenBranchResolved, getActiveBranchId, shouldRefetchOnBranchChange } from '@/_helpers/active-branch';
 import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
@@ -237,6 +237,7 @@ class HomePageComponent extends React.Component {
     // Gate the first apps/folders fetch on branch resolution so they carry the right branch_id
     // after a hard reload on a feature branch (no-op when the URL has no `branch` param).
     whenBranchResolved().then(() => {
+      this._initialFetchBranchId = getActiveBranchId();
       if (!urlFolderSlug) {
         this.fetchApps(1, this.state.currentFolder.id);
       }
@@ -256,7 +257,12 @@ class HomePageComponent extends React.Component {
 
     // Refetch on real branch switch only (skip the initial null→<id> hydration).
     this._branchStoreUnsubscribe = useWorkspaceBranchesStore.subscribe((state, prevState) => {
-      if (state.activeBranchId && prevState.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
+      // A mount fetch that went out before the remembered branch resolved carried no branch_id.
+      if (
+        this._initialFetchBranchId !== undefined &&
+        shouldRefetchOnBranchChange(prevState.activeBranchId, state.activeBranchId, this._initialFetchBranchId)
+      ) {
+        this._initialFetchBranchId = state.activeBranchId;
         this.fetchApps(1, this.state.currentFolder.id);
         this.fetchFolders();
       }
