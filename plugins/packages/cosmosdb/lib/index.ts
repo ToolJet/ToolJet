@@ -34,7 +34,13 @@ export default class Cosmosdb implements QueryService {
           );
           break;
         case 'query_database':
-          result = await queryDatabase(client, queryOptions.database, queryOptions.container, queryOptions.query);
+          result = await queryDatabase(
+            client,
+            queryOptions.database,
+            queryOptions.container,
+            queryOptions.query,
+            queryOptions.query_params
+          );
           break;
 
         default:

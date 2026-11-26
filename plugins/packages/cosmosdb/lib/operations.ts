@@ -1,4 +1,4 @@
-import { Container, CosmosClient } from '@azure/cosmos';
+import { Container, CosmosClient, JSONValue } from '@azure/cosmos';
 
 export async function listDatabases(client: CosmosClient): Promise<object> {
   return new Promise((resolve, reject) => {
@@ -87,12 +87,21 @@ export function deleteItem(client: CosmosClient, database: string, containerId: 
   });
 }
 
-export function queryDatabase(client: CosmosClient, database: string, containerId: string, query: string) {
+export function queryDatabase(
+  client: CosmosClient,
+  database: string,
+  containerId: string,
+  query: string,
+  queryParams: [string, unknown][] = []
+) {
   return new Promise((resolve, reject) => {
     lookUpContainer(client, database, containerId)
       .then((container: Container) => {
         container.items
-          .query(query)
+          .query({
+            query,
+            parameters: queryParams.map(([name, value]) => ({ name: '@' + name, value: (value ?? null) as JSONValue })),
+          })
           .fetchAll()
           .then((data) => {
             resolve(data.resources);

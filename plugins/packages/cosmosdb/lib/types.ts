@@ -9,5 +9,6 @@ export type QueryOptions = {
   items?: [];
   itemId?: string;
   query?: string;
+  query_params?: [string, unknown][];
   partitionKey?: string;
 };

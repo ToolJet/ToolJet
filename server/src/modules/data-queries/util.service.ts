@@ -30,14 +30,25 @@ import { DataSourceTypes, SAMPLE_SQL_DISABLED_KEY } from '@modules/data-sources/
 // Plugins whose raw SQL gets user-supplied {{}} values bound as parameters instead of interpolated.
 // `fields`: option keys holding the SQL text. `isSql`: whether the query is in raw-SQL mode.
 // `placeholder`: the driver's bind marker for the Nth parameter (0-based).
+// `positional`: the driver binds by order of appearance, so every occurrence gets its own parameter.
 type SqlParamConfig = {
   fields: string[];
   isSql: (options: any) => boolean;
-  placeholder: (index: number, options: any) => string;
+  placeholder: (index: number, options: any, value: unknown) => string;
+  positional?: boolean;
 };
 
 const namedColon = (index: number) => `:tj_param_${index}`;
 const namedAt = (index: number) => `@tj_param_${index}`;
+const positionalMark: SqlParamConfig['placeholder'] = () => '?';
+
+// ClickHouse placeholders carry a type; the value's JS type picks it.
+const clickHouseType = (value: unknown) => {
+  if (typeof value === 'number') return Number.isInteger(value) ? 'Int64' : 'Float64';
+  if (typeof value === 'boolean') return 'Bool';
+  return value === null || value === undefined ? 'Nullable(String)' : 'String';
+};
+
 const knexSqlMode: SqlParamConfig = { fields: ['query'], isSql: (o) => o?.mode === 'sql', placeholder: namedColon };
 
 const SQL_PARAMETERIZED_PLUGINS: Record<string, SqlParamConfig> = {
@@ -66,6 +77,22 @@ const SQL_PARAMETERIZED_PLUGINS: Record<string, SqlParamConfig> = {
     isSql: (o) => !o?.operation || o.operation === 'sql_query',
     placeholder: namedColon,
   },
+  // Snowflake :1, :2 … bind by 1-based position in query_params and can repeat.
+  snowflake: { fields: ['query'], isSql: (o) => o?.mode !== 'gui', placeholder: (index) => `:${index + 1}` },
+  athena: { fields: ['query'], isSql: () => true, placeholder: positionalMark, positional: true },
+  saphana: { fields: ['query'], isSql: () => true, placeholder: positionalMark, positional: true },
+  clickhouse: {
+    fields: ['query'],
+    isSql: (o) => o?.operation === 'sql',
+    placeholder: (index, _o, value) => `{tj_param_${index}:${clickHouseType(value)}}`,
+  },
+  awsredshift: { fields: ['sql_query'], isSql: () => true, placeholder: namedColon },
+  couchbase: {
+    fields: ['query'],
+    isSql: (o) => o?.operation === 'query',
+    placeholder: (index) => `$tj_param_${index}`,
+  },
+  cosmosdb: { fields: ['query'], isSql: (o) => o?.operation === 'query_database', placeholder: namedAt },
 };
 
 @Injectable()
@@ -835,27 +862,27 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         // from client-supplied values.
         const sqlParamConfig = SQL_PARAMETERIZED_PLUGINS[pluginKind ?? ''];
         if (sqlParamConfig?.fields.includes(key) && sqlParamConfig.isSql(parent)) {
-          const userVars = [...new Set<string>(resolvedValue.match(/\{\{(.*?)\}\}/gs) || [])].filter((v) =>
-            Object.prototype.hasOwnProperty.call(options, v.replace(/\n/g, ' '))
-          );
+          const params: [string, any][] = Array.isArray(parent.query_params) ? [...parent.query_params] : [];
+          const indexByVariable = new Map<string, number>();
+          let bound = false;
 
-          if (userVars.length > 0) {
-            const params: [string, any][] = Array.isArray(parent.query_params) ? [...parent.query_params] : [];
-            let parameterizedQuery = resolvedValue;
-
-            for (const variable of userVars) {
-              const placeholder = sqlParamConfig.placeholder(params.length, parent);
-              // '{{var}}' / "{{var}}" lose their quotes: a bind param inside a string literal is not bound.
-              parameterizedQuery = parameterizedQuery
-                .split(`'${variable}'`)
-                .join(placeholder)
-                .split(`"${variable}"`)
-                .join(placeholder)
-                .split(variable)
-                .join(placeholder);
-              params.push([`tj_param_${params.length}`, (options as any)[variable.replace(/\n/g, ' ')]]);
+          // '{{var}}' / "{{var}}" lose their quotes: a bind param inside a string literal is not bound.
+          const parameterizedQuery = resolvedValue.replace(/(['"]?)(\{\{.*?\}\})\1/gs, (match, _quote, variable) => {
+            const optionKey = variable.replace(/\n/g, ' ');
+            if (!Object.prototype.hasOwnProperty.call(options, optionKey)) return match;
+            const value = (options as any)[optionKey];
+            // Positional markers (?) need one value per occurrence; named markers reuse one value.
+            let index = sqlParamConfig.positional ? undefined : indexByVariable.get(variable);
+            if (index === undefined) {
+              index = params.length;
+              params.push([`tj_param_${index}`, value]);
+              indexByVariable.set(variable, index);
             }
+            bound = true;
+            return sqlParamConfig.placeholder(index, parent, value);
+          });
 
+          if (bound) {
             parent[key] = parameterizedQuery;
             parent.query_params = params;
             continue;

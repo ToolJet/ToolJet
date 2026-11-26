@@ -521,6 +521,23 @@ describe('DataQueriesUtilService', () => {
         'query',
         ':tj_param_0',
       ],
+      ['snowflake', { mode: 'sql', query: "SELECT * FROM t WHERE name = '{{name}}'" }, 'query', ':1'],
+      ['athena', { query: "SELECT * FROM t WHERE name = '{{name}}'" }, 'query', '?'],
+      ['saphana', { query: "SELECT * FROM t WHERE name = '{{name}}'" }, 'query', '?'],
+      [
+        'clickhouse',
+        { operation: 'sql', query: "SELECT * FROM t WHERE name = '{{name}}'" },
+        'query',
+        '{tj_param_0:String}',
+      ],
+      ['awsredshift', { sql_query: "SELECT * FROM t WHERE name = '{{name}}'" }, 'sql_query', ':tj_param_0'],
+      ['couchbase', { operation: 'query', query: "SELECT * FROM t WHERE name = '{{name}}'" }, 'query', '$tj_param_0'],
+      [
+        'cosmosdb',
+        { operation: 'query_database', query: 'SELECT * FROM t WHERE name = "{{name}}"' },
+        'query',
+        '@tj_param_0',
+      ],
     ])('should bind the value as a parameter for %s', async (kind, query, field, placeholder) => {
       const result = await parse(query, kind);
 
@@ -549,11 +566,56 @@ describe('DataQueriesUtilService', () => {
       });
     });
 
+    it('should give positional markers one parameter per occurrence', async () => {
+      const result = await parse({ query: 'SELECT * FROM t WHERE a = {{name}} OR b = {{name}}' }, 'athena');
+
+      expect(result).toMatchObject({
+        query: 'SELECT * FROM t WHERE a = ? OR b = ?',
+        query_params: [
+          ['tj_param_0', injection],
+          ['tj_param_1', injection],
+        ],
+      });
+    });
+
+    it('should reuse one parameter for repeated named markers', async () => {
+      const result = await parse(
+        { mode: 'sql', query: 'SELECT * FROM t WHERE a = {{name}} OR b = {{name}}' },
+        'snowflake'
+      );
+
+      expect(result).toMatchObject({
+        query: 'SELECT * FROM t WHERE a = :1 OR b = :1',
+        query_params: [['tj_param_0', injection]],
+      });
+    });
+
+    it('should type ClickHouse placeholders from the bound value', async () => {
+      const result = await service.parseQueryOptions(
+        { operation: 'sql', query: 'SELECT {{a}}, {{b}}, {{c}}, {{d}}' },
+        { '{{a}}': 7, '{{b}}': 1.5, '{{c}}': true, '{{d}}': null },
+        'org-id',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'clickhouse'
+      );
+
+      expect(result).toMatchObject({
+        query: 'SELECT {tj_param_0:Int64}, {tj_param_1:Float64}, {tj_param_2:Bool}, {tj_param_3:Nullable(String)}',
+      });
+    });
+
     it.each([
       ['databricks', { mode: 'gui', sql_query: 'name = {{name}}' }, 'sql_query'],
       ['bigquery', { mode: 'gui', operation: 'insert_record', query: 'name = {{name}}' }, 'query'],
       ['supabase', { operation: 'get_rows', query: 'name = {{name}}' }, 'query'],
-      ['snowflake', { mode: 'sql', query: 'name = {{name}}' }, 'query'],
+      ['snowflake', { mode: 'gui', query: 'name = {{name}}' }, 'query'],
+      ['clickhouse', { operation: 'insert', query: 'name = {{name}}' }, 'query'],
+      ['couchbase', { operation: 'get_document', query: 'name = {{name}}' }, 'query'],
+      ['cosmosdb', { operation: 'read_item', query: 'name = {{name}}' }, 'query'],
+      ['presto', { presto_sql_query: 'name = {{name}}' }, 'presto_sql_query'],
     ])('should leave %s non-SQL or unsupported queries interpolated', async (kind, query, field) => {
       const result = await parse(query, kind);
 

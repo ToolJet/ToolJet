@@ -31,6 +31,7 @@ export type SourceOptions = {
 export type QueryOptions = {
   mode: 'sql' | 'gui';
   query?: string;
+  query_params?: [string, unknown][];
   database?: string;
   warehouse?: string;
   role?: string;

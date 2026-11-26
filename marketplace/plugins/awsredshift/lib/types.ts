@@ -9,5 +9,6 @@ export type SourceOptions = {
 export type QueryOptions = {
   operation: string;
   sql_query: string;
+  query_params?: [string, unknown][];
   mode: string;
 };

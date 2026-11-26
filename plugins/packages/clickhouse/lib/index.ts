@@ -7,6 +7,12 @@ import { Parser } from 'node-sql-parser';
 export default class Click implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const { query, operation, fields, tablename } = queryOptions;
+    const query_params = Object.fromEntries(
+      (queryOptions.query_params || []).map(([key, value]) => [
+        key,
+        value !== null && typeof value === 'object' ? JSON.stringify(value) : value,
+      ])
+    );
     let result = {};
     const clickhouseClient = await this.getConnection(sourceOptions);
     try {
@@ -18,6 +24,7 @@ export default class Click implements QueryService {
             const format = 'JSONEachRow';
             const resultSet = await clickhouseClient.query({
               query,
+              query_params,
               format: format,
             });
 
@@ -27,6 +34,7 @@ export default class Click implements QueryService {
           } else {
             await clickhouseClient.command({
               query,
+              query_params,
             });
             result = { r: 1 }; //for backward compatibility
           }

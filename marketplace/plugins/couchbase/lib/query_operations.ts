@@ -129,6 +129,8 @@ export async function queryDocument(options: QueryOptions, sourceOptions: Source
     statement: query,
     ...(parsedArgs ? parsedArgs : {}),
     ...(parsedQueryOptions ? parsedQueryOptions : {}),
+    // Bound {{}} values go last so user-supplied args can't override them.
+    ...Object.fromEntries((options.query_params || []).map(([name, value]) => ['$' + name, value ?? null])),
   };
 
   const dapi_url = `${data_api_url}/_p/query/query/service`;
