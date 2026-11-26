@@ -2,8 +2,9 @@ import { getContentSlotId, resolveContainerHeight } from './containerHeight';
 import { resolveFlexContainerHeight } from './flexContainerHeight';
 import { getDynamicLayoutKey, normalizeLayoutContext } from './layoutKeys';
 import { listviewFallbackRowHeight, listviewRowCount, listviewRowHeight } from './listviewHeight';
+import { createArrangementCache } from './arrangement';
 import { createModuleScope } from './moduleScope';
-import { solveContainer } from './solver';
+import { contentBottom, solveTops } from './solver';
 import { createWorkQueue } from './workQueue';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -60,6 +61,13 @@ const canvasKeyOf = (scope, canvasId, context) =>
 const outerContextOf = (rowContext) => normalizeLayoutContext(rowContext.slice(0, -1));
 
 const isProduction = () => process.env.NODE_ENV === 'production';
+
+// Each canvas's saved order and blockers, kept between passes until its page is edited (arrangement.js). Only the
+// tops are solved again for each pass's heights.
+const arrangements = createArrangementCache();
+
+// A canvas's arrangement does not depend on the row it is drawn in, so one is kept per canvas, not per row.
+const arrangementKeyOf = (canvasId) => canvasId ?? ROOT_CANVAS;
 
 // One pass over the store state it was created from. Everything it decides is
 // kept here until `run` returns, so the store is written once.
@@ -199,7 +207,10 @@ const createPass = (state, { measureWidth }) => {
       });
     }
 
-    const { tops, bottom } = solveContainer(boxes, (id) => flows.get(id));
+    const flowOf = (id) => flows.get(id);
+    const { sorted, blockers } = arrangements.arrange(scope.components, arrangementKeyOf(canvasId), boxes);
+    const tops = solveTops(sorted, blockers, flowOf);
+    const bottom = contentBottom(sorted, tops, flowOf);
     const onRoot = canvasId == null;
     // An embedded module's root is drawn flush with the top of its instance. In the module editor (the module is the
     // main canvas) it stays where it is drawn.

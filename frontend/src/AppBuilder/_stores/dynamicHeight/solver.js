@@ -164,21 +164,25 @@ export const solveTops = (sortedBoxes, blockers, flowOf) => {
 
 // ── One container ───────────────────────────────────────────────────────────
 
-// Solves one container: sort, sweep, solve. Returns the rendered tops (Map of
-// id → px) and `bottom`, the lowest rendered bottom, which is how tall the
-// container's content is. A collapsed widget (flow 0) takes no room, so it
-// never sets the bottom.
-//
-// A caller solving the same container again for new heights only (no layout
-// edit) can keep `sortBoxes` + `buildBlockers` and call `solveTops` alone.
-export const solveContainer = (boxes, flowOf) => {
-  const sorted = sortBoxes(boxes);
-  const tops = solveTops(sorted, buildBlockers(sorted), flowOf);
-
+// The lowest rendered bottom of the boxes, which is how tall the container's
+// content is. A collapsed widget (flow 0) takes no room, so it never sets it.
+export const contentBottom = (boxes, tops, flowOf) => {
   let bottom = 0;
-  for (const box of sorted) {
+  for (const box of boxes) {
     const flow = flowOf(box.id);
     if (flow > 0) bottom = Math.max(bottom, tops.get(box.id) + flow);
   }
-  return { tops, bottom };
+  return bottom;
+};
+
+// Solves one container: sort, sweep, solve. Returns the rendered tops (Map of
+// id → px) and the content's `bottom`.
+//
+// A caller solving the same container again for new heights only (no layout
+// edit) can keep `sortBoxes` + `buildBlockers` and call `solveTops` alone
+// (the engine does, through arrangement.js).
+export const solveContainer = (boxes, flowOf) => {
+  const sorted = sortBoxes(boxes);
+  const tops = solveTops(sorted, buildBlockers(sorted), flowOf);
+  return { tops, bottom: contentBottom(sorted, tops, flowOf) };
 };
