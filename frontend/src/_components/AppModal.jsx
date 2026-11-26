@@ -43,7 +43,7 @@ export function AppModal({
   // isAutoCommit = false,
 }) {
   if (!selectedAppName && templateDetails) {
-    selectedAppName = templateDetails?.name || '';
+    selectedAppName = templateDetails?.defaultAppName || templateDetails?.name || '';
   } else if (!selectedAppName) {
     selectedAppName = '';
   }

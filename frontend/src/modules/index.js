@@ -4,6 +4,7 @@ import './common/resources/styles/common.styles.scss';
 import Appbuilder from './Appbuilder';
 import AiBuilder from './AiBuilder';
 import getAuditLogsRoutes from './auditLogs';
+import getUsageAnalyticsRoutes from './usageAnalytics';
 import auth from './auth';
 import Dashboard from './dashboard';
 import getDataSourcesRoutes from './dataSources/index';
@@ -23,6 +24,7 @@ export {
   getDataSourcesRoutes,
   Appbuilder,
   getAuditLogsRoutes,
+  getUsageAnalyticsRoutes,
   AiBuilder,
   Modules,
 };
