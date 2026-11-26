@@ -164,15 +164,6 @@ export const PageMenuItem = withRouter(
       ]
     );
 
-    // "Edit page details" opens the docked Edit page panel, the same one a row click opens.
-    const handleOpenPopup = (page) => {
-      setEditingPage(page);
-      toggleShowPageOptions(false);
-      setNewPagePopupConfig({ show: true, mode: 'edit', type: page?.type || 'default' });
-      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION);
-      setRightSidebarOpen(true);
-    };
-
     function getTooltip() {
       const permission = page?.permissions?.length ? page?.permissions[0] : null;
       if (!permission) return 'Access restricted';
@@ -323,12 +314,6 @@ export const PageMenuItem = withRouter(
                     className={`${darkMode && 'dark-theme theme-dark'}`}
                   >
                     <div className="list-item-popover-body">
-                      <PageOptions
-                        text="Edit page details"
-                        icon="editable"
-                        darkMode={darkMode}
-                        onClick={() => handleOpenPopup(page)}
-                      />
                       {page?.type === 'default' && (
                         <PageOptions
                           text="Mark as home"

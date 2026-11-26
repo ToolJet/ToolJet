@@ -24,10 +24,10 @@ describe('inline query rename helpers', () => {
     });
   });
 
-  // Break this catches: the documentation action is positioned against a fixed header width instead of following the name.
-  test('keeps the compact documentation action attached to the query name flow', () => {
+  // Break this catches: the documentation action drifts out of the shared panel header actions.
+  test('places the documentation action in the panel header actions', () => {
     expect(getQueryDocumentationPresentation()).toEqual({
-      placement: 'inline-after-name',
+      placement: 'header-actions',
       tooltipClassName: 'query-documentation-tooltip',
       tooltipPlacement: 'bottom',
     });

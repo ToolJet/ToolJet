@@ -81,4 +81,63 @@ describe('CustomJSONViewer', () => {
 
     expect(copied()).toBe('function');
   });
+
+  it('should order component exposed data by id, string, number, boolean, array, object, undefined, null, function (alphabetically within each group)', () => {
+    const { container } = render(
+      <CustomJSONViewer
+        absolutePath="components.table1"
+        data={{
+          setVisibility: () => {},
+          clearValue: () => {},
+          emptyNull: null,
+          anotherNull: null,
+          missingUndef: undefined,
+          alphaUndef: undefined,
+          styles: { color: 'red' },
+          config: { dense: true },
+          rows: [1, 2],
+          columns: ['a'],
+          isVisible: true,
+          isDisabled: false,
+          pageIndex: 2,
+          count: 10,
+          title: 'Orders',
+          createdAt: new Date('2026-01-01T00:00:00.000Z'),
+          badge: 'New',
+          id: 'comp-1',
+        }}
+      />
+    );
+
+    const labels = [...container.querySelectorAll('.json-viewer-label-container')].map((el) => el.textContent);
+    expect(labels).toEqual([
+      'id',
+      'badge',
+      'createdAt',
+      'title',
+      'count',
+      'pageIndex',
+      'isDisabled',
+      'isVisible',
+      'columns',
+      'rows',
+      'config',
+      'styles',
+      'alphaUndef',
+      'missingUndef',
+      'anotherNull',
+      'emptyNull',
+      'clearValue',
+      'setVisibility',
+    ]);
+  });
+
+  it('should preserve original key order for non-component payloads', () => {
+    const { container } = render(
+      <CustomJSONViewer absolutePath="queries.q1" data={{ zeta: 1, alpha: 'a', id: 'q-1' }} />
+    );
+
+    const labels = [...container.querySelectorAll('.json-viewer-label-container')].map((el) => el.textContent);
+    expect(labels).toEqual(['zeta', 'alpha', 'id']);
+  });
 });

@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/Button/Button';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
 import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
+import PanelDocumentationLink from '@/AppBuilder/Shared/Panel/PanelDocumentationLink';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getPanelCloseLabel, getPastPanelOffset } from '@/AppBuilder/panelLayout';
 
@@ -375,6 +376,11 @@ export const AddEditPagePopup = forwardRef(
             closeLabel={getPanelCloseLabel('page')}
             closeDataCy="close-page-configuration-button"
           >
+            <PanelDocumentationLink
+              href="https://docs.tooljet.com/docs/app-builder/left-sidebar/pages/"
+              label="Read pages documentation"
+              dataCy="page-documentation-link"
+            />
             <DropdownMenu.Root modal={false}>
               <DropdownMenu.Trigger asChild>
                 <PanelIconButton

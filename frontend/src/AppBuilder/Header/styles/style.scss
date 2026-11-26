@@ -219,14 +219,14 @@
   [data-cy='editor-app-share-button'],
   [data-cy='lifecycle-cta-button'] {
     color: var(--editor-header-accent) !important;
-    background: var(--editor-header-accent-soft) !important;
+    background: var(--surfaces-surface-01) !important;
     border: 1px solid var(--editor-header-accent-border) !important;
     border-radius: 6px;
     box-shadow: none !important;
 
     &:hover {
       color: var(--editor-header-accent) !important;
-      background: var(--editor-header-accent-soft) !important;
+      background: var(--surfaces-surface-02) !important;
       border-color: var(--editor-header-accent) !important;
     }
 

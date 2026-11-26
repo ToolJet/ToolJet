@@ -4,7 +4,7 @@ import { shallow } from 'zustand/shallow';
 import { Button } from '@/components/ui/Button/Button';
 import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import useStore from '@/AppBuilder/_stores/store';
-import { AddEditPagePopup, getPagePopupPopperConfig } from './AddNewPagePopup';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
@@ -28,7 +28,8 @@ export function AddNewPageMenu({ darkMode }) {
   const [showMenuPopover, setShowMenuPopover] = useState(false);
   const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
   const setEditingPage = useStore((state) => state.setEditingPage);
-  const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
   const appPagesLimit = useStore((state) => state.license?.featureAccess?.appPagesLimit);
   const appPageGroupsLimit = useStore((state) => state.license?.featureAccess?.appPageGroupsLimit);
@@ -54,7 +55,10 @@ export function AddNewPageMenu({ darkMode }) {
 
   const handleOpenPopup = (type) => {
     setShowMenuPopover(false);
+    setEditingPage(null);
     setNewPagePopupConfig({ type, show: true, mode: 'add' });
+    setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION);
+    setRightSidebarOpen(true);
   };
 
   return (
@@ -77,9 +81,7 @@ export function AddNewPageMenu({ darkMode }) {
           className="add-new-page icon-btn d-flex flex-grow-1"
           id="add-new-page"
           disabled={isPagesLimitReached}
-          onClick={() => {
-            setNewPagePopupConfig({ show: true, mode: 'add', type: 'default' });
-          }}
+          onClick={() => handleOpenPopup('default')}
         >
           New page
         </Button>
@@ -94,7 +96,6 @@ export function AddNewPageMenu({ darkMode }) {
         className="more-page-opts"
         onClick={() => {
           setShowMenuPopover((prev) => !prev);
-          setNewPagePopupConfig({ show: false, mode: null, type: null });
         }}
         variant="outline"
       />
@@ -170,20 +171,6 @@ export function AddNewPageMenu({ darkMode }) {
             </div>
           </div>
         </Popover>
-      </Overlay>
-
-      <Overlay
-        target={newPageBtnRef.current}
-        show={newPagePopupConfig.show && newPagePopupConfig?.mode == 'add'}
-        placement="right-start"
-        popperConfig={getPagePopupPopperConfig(newPageBtnRef.current)}
-        rootClose
-        onHide={() => {
-          setNewPagePopupConfig({ show: false, mode: null, type: null });
-          setEditingPage(null);
-        }}
-      >
-        <AddEditPagePopup darkMode={darkMode} />
       </Overlay>
     </div>
   );

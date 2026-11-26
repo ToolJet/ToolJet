@@ -16,7 +16,7 @@ export const getInlineQueryNameStyle = () => ({
 });
 
 export const getQueryDocumentationPresentation = () => ({
-  placement: 'inline-after-name',
+  placement: 'header-actions',
   tooltipClassName: 'query-documentation-tooltip',
   tooltipPlacement: 'bottom',
 });

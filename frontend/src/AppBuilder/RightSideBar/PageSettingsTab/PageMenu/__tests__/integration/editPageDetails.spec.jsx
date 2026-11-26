@@ -1,7 +1,5 @@
 /**
- * "Edit page details" in a page's 3-dot menu opens the same docked "Edit page" panel a row click does.
- * Break this catches: the menu also opened a floating copy of the form beside the Pages panel, so two
- * "Edit page" panels showed at once and the floating one covered the header at narrow widths.
+ * Page 3-dot menu actions and docked "Edit page" panel behavior.
  */
 import React from 'react';
 import { act, fireEvent, screen } from '@testing-library/react';
@@ -44,7 +42,7 @@ test('opening and dismissing a page menu preserves the open page configuration',
 
   for (const row of [homeRow, secondRow]) {
     fireEvent.click(row.querySelector('.action-btn-wrapper .icon-btn:last-of-type'));
-    expect(screen.getByRole('button', { name: 'Edit page details' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Duplicate page' })).toBeInTheDocument();
     fireEvent.click(document.body);
     expect(useStore.getState().editingPage?.id).toBe(HOME.id);
     expect(useStore.getState().newPagePopupConfig).toMatchObject({ mode: 'edit', type: 'default' });
@@ -75,7 +73,7 @@ test('the Delete dialog targets the menu row and Cancel leaves the open page con
 
 afterEach(() => controls.restore());
 
-test('"Edit page details" opens the docked Edit page panel and no floating copy', () => {
+test('page menu does not include "Edit page details" and clicking a row opens the docked Edit page panel', () => {
   const { container, unmount } = render(
     <ModuleProvider moduleId="canvas" isModuleMode={false}>
       <PageMenuItem page={HOME} darkMode={false} />
@@ -84,7 +82,11 @@ test('"Edit page details" opens the docked Edit page panel and no floating copy'
 
   const buttons = container.querySelectorAll('.action-btn-wrapper .icon-btn');
   fireEvent.click(buttons[buttons.length - 1]);
-  fireEvent.click(screen.getByText('Edit page details'));
+  expect(screen.getByRole('button', { name: 'Duplicate page' })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Edit page details' })).not.toBeInTheDocument();
+  fireEvent.click(document.body);
+
+  fireEvent.click(container.querySelector('.page-menu-item'));
 
   const state = useStore.getState();
   expect(state.editingPage?.id).toBe('home-1');

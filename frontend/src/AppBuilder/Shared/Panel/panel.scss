@@ -121,6 +121,24 @@ body.app-builder-chrome {
   gap: 4px;
 }
 
+.tj-panel-header__doc-link {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--icon-strong);
+  text-decoration: none;
+  transition: background-color 120ms ease, color 120ms ease;
+
+  &:hover {
+    background: var(--interactive-hover);
+    color: var(--icon-strong);
+  }
+}
+
 .tj-panel-empty {
   display: flex;
   flex-direction: column;
