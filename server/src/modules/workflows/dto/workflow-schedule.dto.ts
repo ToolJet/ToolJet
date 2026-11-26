@@ -27,7 +27,7 @@ export class CreateWorkflowScheduleDto {
   active: boolean;
 
   @IsOptional()
-  @IsString()
+  @IsUUID()
   environmentId: string;
 
   @IsString()
@@ -57,7 +57,7 @@ export class UpdateWorkflowScheduleDto {
   name?: string;
 
   @IsOptional()
-  @IsString()
+  @IsUUID()
   environmentId?: string;
 
   @IsOptional()
