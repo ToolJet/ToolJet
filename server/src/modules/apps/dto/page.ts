@@ -11,6 +11,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import type { PageVariableDefinition } from '@entities/page.entity';
+import { KeepVariableMapAsSent } from '@helpers/variable-definition-map.helper';
 
 // 1. Define your enums here in the same file
 export enum PageOpenIn {
@@ -58,6 +59,7 @@ export class CreatePageDto {
 
   @IsOptional()
   @IsObject()
+  @KeepVariableMapAsSent()
   variables: Record<string, PageVariableDefinition>;
 
   @IsOptional()

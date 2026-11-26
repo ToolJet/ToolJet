@@ -13,7 +13,7 @@ function seed() {
   store.initializeDependencySlice('canvas');
   store.setGlobalSettings({
     ...store.globalSettings,
-    variables: { v1: { id: 'v1', name: 'threshold', value: '5', fx_active: false } },
+    variables: { threshold: { value: '5', fxActive: false } },
   });
   store.setPages([{ id: 'page-1', handle: 'home', name: 'Home', components: {}, variables: {} }], 'canvas');
   store.setCurrentPageId('page-1', 'canvas');

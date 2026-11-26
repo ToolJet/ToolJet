@@ -1,3 +1,5 @@
+@import '../../Shared/Panel/mixins';
+
 .left-sidebar-dependency-viewer {
   // Fills the popover that hosts it rather than carrying a width of its own. The host is
   // `.PopoverContent` (350px, with its padding removed by the `p-0` class the sidebar
@@ -21,73 +23,6 @@
 
 }
 
-/* ---------- empty states ---------- */
-
-.dependency-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 40px 16px;
-
-  .dependency-empty-state-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-  }
-
-  .dependency-empty-state-spot {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px;
-    border-radius: 8px;
-    background: var(--surfaces-surface-02);
-  }
-
-  .dependency-empty-state-icon {
-    color: var(--icon-default);
-  }
-
-  .dependency-empty-state-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    width: 100%;
-    text-align: center;
-  }
-
-  .dependency-empty-state-title {
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
-    color: var(--text-default);
-  }
-
-  .dependency-empty-state-description {
-    font-size: 12px;
-    line-height: 18px;
-    color: var(--text-placeholder);
-  }
-
-  .dependency-empty-state-action {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 6px;
-    background: transparent;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
-    color: var(--primary-brand);
-
-    &:hover {
-      background: var(--interactive-overlays-fill-hover);
-    }
-  }
-}
-
 /* ---------- section ---------- */
 
 .dependency-section-header {
@@ -100,7 +35,7 @@
   user-select: none;
 
   &:hover {
-    background: var(--interactive-overlays-fill-hover);
+    background: var(--interactive-hover);
   }
 }
 
@@ -156,7 +91,7 @@
 }
 
 .dependency-subsection-title {
-  font-size: 11px;
+  font-size: var(--app-builder-small-font-size, 11px);
   font-weight: 500;
   line-height: 16px;
   color: var(--text-placeholder);
@@ -175,7 +110,7 @@
 .dependency-row {
   display: flex;
   gap: 8px;
-  border-radius: 4px;
+  @include panel-row;
   overflow: hidden;
 
   &.compact {
@@ -194,11 +129,11 @@
   }
 
   &:hover {
-    background: var(--interactive-overlays-fill-hover);
+    background: var(--interactive-hover);
   }
 
   &.selected {
-    background: var(--interactive-overlays-fill-selected);
+    background: var(--background-accent-weak);
   }
 
   .dependency-row-icon {
@@ -283,9 +218,10 @@
   padding-right: 16px;
 }
 
-// Sits inside .inspector-header (which already supplies the 16px padding),
-// in place of the search input on the main tab.
+// Sits inside .inspector-header, in place of the search input on the main tab; its left padding
+// lines the breadcrumb up with the panel title.
 .dependency-breadcrumb-bar {
+  padding: 0 10px 8px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -337,7 +273,7 @@
   padding: 8px 16px 4px 24px;
 
   .dependency-detail-value-label {
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     font-weight: 500;
     line-height: 16px;
     color: var(--text-placeholder);
@@ -355,87 +291,6 @@
 .dependency-detail-menu-wrapper {
   position: relative;
   flex-shrink: 0;
-}
-
-.dependency-detail-menu-trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 7px;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-
-  &:hover {
-    background: var(--interactive-overlays-fill-hover);
-  }
-}
-
-// Three stacked dots — matches the 14px more-vertical glyph in the design.
-.dependency-kebab {
-  position: relative;
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  background: var(--icon-strong);
-
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    width: 2px;
-    height: 2px;
-    border-radius: 50%;
-    background: var(--icon-strong);
-  }
-
-  &::before {
-    top: -4px;
-  }
-
-  &::after {
-    top: 4px;
-  }
-}
-
-.dependency-detail-menu {
-  position: absolute;
-  top: 30px;
-  right: 0;
-  z-index: 10;
-  min-width: 196px;
-  padding: 8px;
-  border-radius: 10px;
-  background: var(--surfaces-surface-01);
-  border: 1px solid var(--border-weak);
-  box-shadow: var(--elevation-300-box-shadow);
-
-  .dependency-detail-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 32px;
-    padding: 6px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    line-height: 18px;
-    color: var(--text-default);
-    cursor: pointer;
-
-    &:hover {
-      background: var(--interactive-overlays-fill-hover);
-    }
-  }
-
-  .dependency-detail-menu-icon {
-    display: inline-flex;
-    align-items: center;
-    flex-shrink: 0;
-    color: var(--icon-strong);
-  }
 }
 
 /* ---------- binding tooltip ---------- */
@@ -505,4 +360,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+// Supports both the intent-aware tooltip root and Bootstrap's inner content.
+.dependency-row-full-text,
+.dependency-row-full-text .tooltip-inner {
+  max-width: min(320px, calc(100vw - 32px));
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }

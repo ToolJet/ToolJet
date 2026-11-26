@@ -35,7 +35,6 @@ const NoComponentCanvasContainer = () => {
   const handleConnectSampleDB = () => {
     const source = sampleDataSource;
     const query = `SELECT tablename \nFROM pg_catalog.pg_tables \nWHERE schemaname='public';`;
-    expandQueryPaneIfNeeded();
     createDataQuery(source, true, { query });
     setPreviewData(null);
   };
@@ -56,7 +55,8 @@ const NoComponentCanvasContainer = () => {
             Drag and drop a component
           </div>
           <div className="title-desc" data-cy="drag-and-drop-a-component-description">
-            Choose a component from the right side panel or use our pre-built templates to get started quickly!
+            Choose a component from the Components panel on the left or use our pre-built templates to get started
+            quickly!
           </div>
         </div>
         <div className="col-md-4 dotted-cont">

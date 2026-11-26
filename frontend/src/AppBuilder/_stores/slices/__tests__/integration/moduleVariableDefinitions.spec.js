@@ -15,13 +15,8 @@ const scenario = defineAppBuilderScenario({
   capabilities: {},
 });
 const declarations = (count) => ({
-  'counter-definition': { id: 'counter-definition', name: 'count', value: String(count), fxActive: false },
-  'derived-definition': {
-    id: 'derived-definition',
-    name: 'doubled',
-    value: '{{variables.count * 2}}',
-    fxActive: false,
-  },
+  count: { value: String(count), fxActive: false },
+  doubled: { value: '{{variables.count * 2}}', fxActive: false },
 });
 async function setup(parentHasVariables) {
   const session = new AppBuilderTestSession({ scenario });

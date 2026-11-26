@@ -21,7 +21,7 @@ const SaveIndicator = ({ isSaving, saveError }) => {
       <ToolTip message="Could not save changes" placement="bottom">
         <div className="d-flex align-items-center" style={{ gap: '4px' }}>
           <CloudAlert width={16} height={16} color="var(--icon-danger)" />
-          <p className="mb-0 text-center tw-text-text-danger">Could not save changes</p>
+          <p className="mb-0 text-center tw-text-editor-text-danger">Could not save changes</p>
         </div>
       </ToolTip>
     );

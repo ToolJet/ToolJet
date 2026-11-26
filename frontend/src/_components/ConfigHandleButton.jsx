@@ -4,6 +4,7 @@ import './_styles/config-handle-button.scss';
 
 const ConfigHandleButton = ({
   message = '',
+  ariaLabel,
   show = false,
   className = '',
   customStyles = {},
@@ -29,6 +30,7 @@ const ConfigHandleButton = ({
           }}
           className="badge text-truncate"
           onClick={onClick}
+          aria-label={ariaLabel}
           data-cy={dataCy}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}

@@ -14,21 +14,23 @@ import { copyToClipboard } from '@/_helpers/appUtils';
 import { toExpression, validateVariableName } from '@/AppBuilder/_utils/variableDefinitions';
 import { previewOf, referenceOf } from './variableRows';
 import VariableReferencesDialog, { computeVariableReferences } from './VariableReferencesDialog';
+import TruncatedText from '../Dependencies/TruncatedText';
 import type { VariableReference } from './variableReferences';
 import type { VariableRow, VariableScope } from './variableRows';
 
 const ButtonComponent = RawButton as React.ComponentType<any>;
 const InputComponent = RawInputComponent as React.ComponentType<any>;
-const CodeHinterComponent = CodeHinter as React.ComponentType<any>;
+// Resolve the editor at render time: contextual panels and the code editor share an import graph.
+const CodeHinterComponent = (props: any) => React.createElement(CodeHinter as React.ComponentType<any>, props);
 const RocketButton = RawRocketButton as React.ComponentType<any>;
 const RocketToggleGroup = RawToggleGroup as React.ComponentType<any>;
 const RocketToggleGroupItem = RawToggleGroupItem as React.ComponentType<any>;
-// Plain JS helper: `selfId` defaults to null, which TS infers as its only type.
+// Plain JS helper: `selfName` defaults to null, which TS infers as its only type.
 const validateName = validateVariableName as (
   name: string,
   scope: VariableScope,
-  definitions: Array<{ id: string; scope: VariableScope; name: string }>,
-  selfId?: string | null,
+  definitions: Array<{ scope: VariableScope; name: string }>,
+  selfName?: string | null,
   pageName?: string
 ) => string | null;
 
@@ -170,7 +172,7 @@ type CreateProps = {
   moduleId: string;
   pageName: string;
   /** Every declared variable in scope (app + current page), for name validation. */
-  definitions: Array<{ id: string; scope: VariableScope; name: string }>;
+  definitions: Array<{ scope: VariableScope; name: string }>;
   initialScope: VariableScope;
   /** Prefilled when adding an initial value to a runtime-only variable; the name and scope are then fixed. */
   runtimeVariable?: VariableRow;
@@ -186,27 +188,33 @@ export const CreateVariableForm = ({
   runtimeVariable,
   onCreated,
 }: CreateProps) => {
+  const isModule = useStore((state: any) => state.getAppType(moduleId) === 'module');
   const readOnly = useStore((state: any) => state.getShouldFreeze());
   const saveVariableDefinition = useStore((state: any) => state.saveVariableDefinition);
   const evaluateWithError = useStore((state: any) => state.evaluateVariableDefinitionWithError);
-  const [scope, setScope] = useState<VariableScope>(runtimeVariable?.scope ?? initialScope);
+  const [scope, setScope] = useState<VariableScope>(isModule ? 'app' : (runtimeVariable?.scope ?? initialScope));
   const [name, setName] = useState(runtimeVariable?.name ?? '');
   const [nameTouched, setNameTouched] = useState(false);
   const [value, setValue] = useState('');
   const [errors, setErrors] = useState<{ name?: string | null; value?: string | null }>({});
   const [saving, setSaving] = useState(false);
+  // The variable this form created (or is creating). Saving writes it to the store at once, so
+  // `definitions` holds it before the panel leaves this form; it must not clash with itself.
+  const [createdName, setCreatedName] = useState<string | null>(null);
 
-  const liveNameError = nameTouched ? validateName(name, scope, definitions, null, pageName) : null;
-  const nameError = errors.name ?? liveNameError;
+  const nameProblem = validateName(name, scope, definitions, createdName, pageName);
+  const nameError = errors.name ?? (nameTouched ? nameProblem : null);
 
   const create = async () => {
     if (readOnly || saving) return;
     setNameTouched(true);
-    if (validateName(name, scope, definitions, null, pageName)) return;
+    if (nameProblem) return;
     setSaving(true);
+    setCreatedName(name);
     const result: SaveResult = await saveVariableDefinition({ scope, name, value, fxActive: false }, moduleId);
     setSaving(false);
     if (!result.ok) {
+      setCreatedName(null);
       setErrors({ [result.field]: result.error });
       return;
     }
@@ -226,15 +234,21 @@ export const CreateVariableForm = ({
           disabled={readOnly || !!runtimeVariable}
           data-cy="variable-scope-toggle"
         >
-          <RocketToggleGroupItem value="app" className="tw-flex-1">
+          <RocketToggleGroupItem value="app" className="tw-flex-1 tw-basis-0 tw-min-w-0 tw-overflow-hidden">
             App
           </RocketToggleGroupItem>
-          <RocketToggleGroupItem value="page" className="tw-flex-1">
-            Page · {pageName}
-          </RocketToggleGroupItem>
+          {!isModule && (
+            <RocketToggleGroupItem value="page" className="tw-flex-1 tw-basis-0 tw-min-w-0 tw-overflow-hidden">
+              <TruncatedText className="variables-scope-label" text={`Page · ${pageName}`} />
+            </RocketToggleGroupItem>
+          )}
         </RocketToggleGroup>
         <span className="variables-hint">
-          {scope === 'app' ? 'Available on every page.' : `Available only on ${pageName}.`}
+          {isModule
+            ? 'Available throughout this module.'
+            : scope === 'app'
+              ? 'Available on every page.'
+              : `Available only on ${pageName}.`}
         </span>
       </div>
 
@@ -281,7 +295,7 @@ export const CreateVariableForm = ({
           variant="primary"
           size="medium"
           onClick={create}
-          disabled={readOnly || saving || !!validateName(name, scope, definitions, null, pageName)}
+          disabled={readOnly || saving || !!nameProblem}
           data-cy="variable-create-button"
         >
           {runtimeVariable ? 'Save initial value' : 'Create variable'}
@@ -294,13 +308,14 @@ export const CreateVariableForm = ({
 type EditProps = {
   moduleId: string;
   pageName: string;
-  definitions: Array<{ id: string; scope: VariableScope; name: string }>;
+  definitions: Array<{ scope: VariableScope; name: string }>;
   row: VariableRow;
   onRenamed: (scope: VariableScope, name: string) => void;
+  onRenameSaving?: (saving: boolean) => void;
 };
 
 /** Detail view of a declared variable: rename on blur or Enter, value changes apply as you type. */
-export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenamed }: EditProps) => {
+export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenamed, onRenameSaving }: EditProps) => {
   const readOnly = useStore((state: any) => state.getShouldFreeze());
   const saveVariableDefinition = useStore((state: any) => state.saveVariableDefinition);
   const replaceIdsWithName = useStore((state: any) => state.replaceIdsWithName);
@@ -317,26 +332,36 @@ export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenam
   useEffect(() => {
     setName(definition.name);
     setNameError(null);
-  }, [definition.id, definition.name]);
+  }, [row.scope, definition.name]);
 
   const [pendingRename, setPendingRename] = useState<VariableReference[] | null>(null);
 
   const rename = async () => {
     if (readOnly) return;
     setPendingRename(null);
-    const result: SaveResult = await saveVariableDefinition({ id: definition.id, name }, moduleId);
-    if (!result.ok) {
-      setNameError(result.error);
-      return;
+    onRenameSaving?.(true);
+    try {
+      const result: SaveResult = await saveVariableDefinition(
+        { scope: row.scope, previousName: definition.name, name },
+        moduleId
+      );
+      if (!result.ok) {
+        setNameError(result.error);
+        return;
+      }
+      setNameError(null);
+      toast.success(
+        `Renamed ${definition.name} to ${name}. References that build the name dynamically aren't updated.`
+      );
+      onRenamed(row.scope, name);
+    } finally {
+      onRenameSaving?.(false);
     }
-    setNameError(null);
-    toast.success(`Renamed ${definition.name} to ${name}. References that build the name dynamically aren't updated.`);
-    onRenamed(row.scope, name);
   };
 
   const commitName = () => {
     if (readOnly || name === definition.name || pendingRename) return;
-    const error = validateName(name, row.scope, definitions, definition.id, pageName);
+    const error = validateName(name, row.scope, definitions, definition.name, pageName);
     if (error) {
       setNameError(error);
       return;
@@ -349,7 +374,10 @@ export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenam
   const saveValue = async (value: string) => {
     if (readOnly) return;
     // Braces now mark an expression, so a value saved from this field never needs the old fx flag.
-    const result: SaveResult = await saveVariableDefinition({ id: definition.id, value, fxActive: false }, moduleId);
+    const result: SaveResult = await saveVariableDefinition(
+      { scope: row.scope, previousName: definition.name, value, fxActive: false },
+      moduleId
+    );
     setValueError(result.ok ? null : result.error);
   };
 
@@ -360,11 +388,11 @@ export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenam
           Scope <span className="variables-hint">Created in the builder</span>
         </span>
         <RocketToggleGroup type="single" value={row.scope} className="tw-w-full" disabled>
-          <RocketToggleGroupItem value="app" className="tw-flex-1">
+          <RocketToggleGroupItem value="app" className="tw-flex-1 tw-basis-0 tw-min-w-0 tw-overflow-hidden">
             App
           </RocketToggleGroupItem>
-          <RocketToggleGroupItem value="page" className="tw-flex-1">
-            Page · {pageName}
+          <RocketToggleGroupItem value="page" className="tw-flex-1 tw-basis-0 tw-min-w-0 tw-overflow-hidden">
+            <TruncatedText className="variables-scope-label" text={`Page · ${pageName}`} />
           </RocketToggleGroupItem>
         </RocketToggleGroup>
       </div>
@@ -393,7 +421,7 @@ export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenam
       </div>
 
       <ValueField
-        key={definition.id}
+        key={`${row.scope}:${definition.name}`}
         disabled={readOnly}
         value={replaceIdsWithName(editableValueOf(definition))}
         onChange={saveValue}

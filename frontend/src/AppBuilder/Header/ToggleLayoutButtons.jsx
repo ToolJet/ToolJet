@@ -1,10 +1,10 @@
 import React from 'react';
 import { Monitor, Smartphone } from 'lucide-react';
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 import useStore from '@/AppBuilder/_stores/store';
+import { ToolTip } from '@/_components/ToolTip';
 
 export function ToggleLayoutButtons({
   currentLayout,
@@ -26,13 +26,14 @@ export function ToggleLayoutButtons({
         aria-orientation="horizontal"
         data-cy="layout-toggle-buttons"
       >
-        <OverlayTrigger placement="bottom" overlay={<Tooltip id="desktop-layout-tooltip">Desktop Layout</Tooltip>}>
+        <ToolTip message="Desktop layout" placement="bottom">
           <Button
             variant="ghost"
             className={cn({
               'tw-pressed tw-bg-button-outline-pressed': currentLayout === 'desktop',
             })}
             iconOnly
+            size="default"
             aria-label="Switch to desktop layout"
             aria-selected={currentLayout === 'desktop'}
             tabIndex={currentLayout === 'desktop' ? 0 : -1}
@@ -45,20 +46,21 @@ export function ToggleLayoutButtons({
             disabled={isDesktopLayoutDisabled}
           >
             <Monitor
-              width="16"
-              height="16"
+              size={16}
+              strokeWidth={1.8}
               className={cn('tw-text-icon-strong', { 'tw-text-icon-disabled': isDesktopLayoutDisabled })}
             />
           </Button>
-        </OverlayTrigger>
+        </ToolTip>
 
-        <OverlayTrigger placement="bottom" overlay={<Tooltip id="mobile-layout-tooltip">Mobile Layout</Tooltip>}>
+        <ToolTip message="Mobile layout" placement="bottom">
           <Button
             variant="ghost"
             className={cn({
               'tw-pressed tw-bg-button-outline-pressed': currentLayout === 'mobile',
             })}
             iconOnly
+            size="default"
             aria-label="Switch to mobile layout"
             aria-selected={currentLayout === 'mobile'}
             tabIndex={currentLayout === 'mobile' ? 0 : -1}
@@ -71,12 +73,12 @@ export function ToggleLayoutButtons({
             disabled={isMobileLayoutDisabled}
           >
             <Smartphone
-              width="16"
-              height="16"
+              size={16}
+              strokeWidth={1.8}
               className={cn('tw-text-icon-strong', { 'tw-text-icon-disabled': isMobileLayoutDisabled })}
             />
           </Button>
-        </OverlayTrigger>
+        </ToolTip>
       </div>
     </div>
   );

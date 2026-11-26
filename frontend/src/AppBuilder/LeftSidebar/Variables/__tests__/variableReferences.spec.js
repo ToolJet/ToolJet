@@ -96,8 +96,8 @@ describe('findVariableReferences', () => {
       pages: [{ id: 'p1', name: 'Home', components: {} }],
       globalSettings: {
         variables: {
-          v1: { id: 'v1', name: 'threshold', value: '5', fxActive: false },
-          v2: { id: 'v2', name: 'double', value: '{{variables.threshold * 2}}', fxActive: true },
+          threshold: { value: '5', fxActive: false },
+          double: { value: '{{variables.threshold * 2}}', fxActive: true },
         },
       },
     });
@@ -152,11 +152,154 @@ describe('findVariableReferences', () => {
     const legacy = input({
       pages: [{ id: 'p1', name: 'Home', components: {} }],
       globalSettings: {
-        variables: { v2: { id: 'v2', name: 'doubled', value: 'variables.threshold * 2', fx_active: true } },
+        variables: { doubled: { value: 'variables.threshold * 2', fx_active: true } },
       },
     });
     expect(findVariableReferences(legacy, { scope: 'app', name: 'threshold' }).map((r) => r.confidence)).toEqual([
       'confirmed',
     ]);
+  });
+  test('a page variable reading the value is named and labelled from its own page, even when an app variable shares its name', () => {
+    const sameNames = input({
+      pages: [
+        {
+          id: 'p1',
+          name: 'Home',
+          components: {},
+          variables: { double: { value: '{{variables.threshold * 3}}', fxActive: false } },
+        },
+      ],
+      globalSettings: { variables: { double: { value: '{{variables.threshold * 2}}', fxActive: false } } },
+    });
+    const refs = findVariableReferences(sameNames, { scope: 'app', name: 'threshold' });
+    expect(refs.map((r) => [r.entityName, r.fieldLabel, r.preview.includes('* 3') ? 'page' : 'app']).sort()).toEqual(
+      [
+        ['double', 'App variable · Initial value', 'app'],
+        ['double', 'Page variable · Initial value', 'page'],
+      ].sort()
+    );
+  });
+
+  test('a development value saved under a definition id is still named after its variable', () => {
+    const legacy = input({
+      pages: [{ id: 'p1', name: 'Home', components: {} }],
+      globalSettings: {
+        variables: { v9: { id: 'v9', name: 'tripled', value: '{{variables.threshold * 3}}', fxActive: false } },
+      },
+    });
+    expect(findVariableReferences(legacy, { scope: 'app', name: 'threshold' }).map((r) => r.entityName)).toEqual([
+      'tripled',
+    ]);
+  });
+  // Saved maps are keyed by name, so a variable's name is a map key. Names that collide with keys the
+  // search index treats specially (a definition's old `name` field, or bookkeeping keys it skips)
+  // must still have their values searched.
+  const READ_THRESHOLD = '{{variables.threshold * 2}}';
+  describe.each(['name', 'id', 'fxActive', 'layouts', 'parent', 'createdAt', 'updatedAt', 'isDefault'])(
+    'a variable named %s',
+    (name) => {
+      test('reading the variable is listed as an app variable initial value', () => {
+        const app = input({
+          pages: [{ id: 'p1', name: 'Home', components: {} }],
+          globalSettings: { variables: { [name]: { value: READ_THRESHOLD, fxActive: false } } },
+        });
+        expect(findVariableReferences(app, { scope: 'app', name: 'threshold' })).toEqual([
+          expect.objectContaining({
+            confidence: 'confirmed',
+            entityName: name,
+            fieldLabel: 'App variable · Initial value',
+          }),
+        ]);
+      });
+
+      test('reading the variable is listed as a page variable initial value', () => {
+        const page = input({
+          pages: [
+            {
+              id: 'p1',
+              name: 'Home',
+              components: {},
+              variables: { [name]: { value: READ_THRESHOLD, fxActive: false } },
+            },
+          ],
+        });
+        expect(findVariableReferences(page, { scope: 'app', name: 'threshold' })).toEqual([
+          expect.objectContaining({
+            confidence: 'confirmed',
+            entityName: name,
+            fieldLabel: 'Page variable · Initial value',
+          }),
+        ]);
+      });
+    }
+  );
+
+  test("a development definition's own name field is still not listed as a reference", () => {
+    const legacy = input({
+      pages: [{ id: 'p1', name: 'Home', components: {} }],
+      globalSettings: {
+        variables: { v1: { id: 'v1', name: 'threshold', value: '5', fxActive: false } },
+      },
+    });
+    expect(findVariableReferences(legacy, { scope: 'app', name: 'threshold' })).toEqual([]);
+  });
+  // A variable value is code only when it is an expression: fx on, or containing {{ }}. A value saved
+  // with fx on but without braces is code as a whole; with braces, only what is inside them is.
+  describe('initial values that are text, not code', () => {
+    const appWith = (definition) =>
+      input({
+        pages: [{ id: 'p1', name: 'Home', components: {} }],
+        globalSettings: { variables: { note: definition } },
+      });
+    const pageWith = (definition) =>
+      input({ pages: [{ id: 'p1', name: 'Home', components: {}, variables: { note: definition } }] });
+
+    test.each([
+      ['an app variable', appWith],
+      ['a page variable', pageWith],
+    ])('static text in %s is not a reference', (_label, build) => {
+      const app = build({ value: 'variables.threshold', fxActive: false });
+      expect(findVariableReferences(app, { scope: 'app', name: 'threshold' })).toEqual([]);
+    });
+
+    test('text outside the {{ }} of an fx value is not a reference', () => {
+      const app = appWith({ value: 'variables.threshold is {{1 + 1}}', fxActive: true });
+      expect(findVariableReferences(app, { scope: 'app', name: 'threshold' })).toEqual([]);
+    });
+
+    test('an expression inside {{ }} in a static value is still a reference', () => {
+      const app = appWith({ value: 'limit {{variables.threshold}}', fxActive: false });
+      expect(summary(findVariableReferences(app, { scope: 'app', name: 'threshold' }))).toEqual(['confirmed:note']);
+    });
+  });
+
+  // A variable may be named `variables`, which is also the map's own key in the field path.
+  describe('a variable named variables with an fx value saved without {{ }}', () => {
+    const fx = { value: 'variables.threshold * 2', fxActive: true };
+
+    test('is listed and named as an app variable initial value', () => {
+      const app = input({
+        pages: [{ id: 'p1', name: 'Home', components: {} }],
+        globalSettings: { variables: { variables: fx } },
+      });
+      expect(findVariableReferences(app, { scope: 'app', name: 'threshold' })).toEqual([
+        expect.objectContaining({
+          confidence: 'confirmed',
+          entityName: 'variables',
+          fieldLabel: 'App variable · Initial value',
+        }),
+      ]);
+    });
+
+    test('is listed and named as a page variable initial value', () => {
+      const page = input({ pages: [{ id: 'p1', name: 'Home', components: {}, variables: { variables: fx } }] });
+      expect(findVariableReferences(page, { scope: 'app', name: 'threshold' })).toEqual([
+        expect.objectContaining({
+          confidence: 'confirmed',
+          entityName: 'variables',
+          fieldLabel: 'Page variable · Initial value',
+        }),
+      ]);
+    });
   });
 });

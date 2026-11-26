@@ -14,10 +14,12 @@ import {
 import { VARIABLE_EVENT_TARGETS } from './eventTargets';
 import { getQueryRefs } from './queryRefs';
 import { getComponentUsage } from './componentUsage';
+import { getVariableRefs, isExpressionValue, toExpression, variableKey } from '../variableDefinitions';
 
 export type VariableUsage = {
   name: string;
   scope: 'app' | 'page';
+  uses: UsageEntry[];
   setBy: UsageEntry[];
   readBy: UsageEntry[];
 };
@@ -28,8 +30,8 @@ export type ComponentUsageById = Record<string, ReturnType<typeof getComponentUs
 /**
  * Variable-centric view: who sets / reads each app and page variable.
  * Sources: script analyses (RunJS + JS transformations), {{}} refs in query
- * options, component bindings (via getComponentUsage), and event-handler
- * variable writes. Runtime-only variables (set but never referenced
+ * options, component bindings (via getComponentUsage), declared-variable expressions,
+ * and event-handler variable writes. Runtime-only variables (set but never referenced
  * statically) are included via exposedValues keys.
  * Current values are NOT returned — the UI reads them live via selectors.
  *
@@ -38,14 +40,20 @@ export type ComponentUsageById = Record<string, ReturnType<typeof getComponentUs
  * graph traversals for the whole page, which is the dominant cost of a panel refresh.
  */
 export function getVariableUsage(state: any, moduleId = 'canvas', componentUsageById?: ComponentUsageById) {
-  type Row = { name: string; scope: 'app' | 'page'; setBy: Map<string, UsageEntry>; readBy: Map<string, UsageEntry> };
+  type Row = {
+    name: string;
+    scope: 'app' | 'page';
+    uses: Map<string, UsageEntry>;
+    setBy: Map<string, UsageEntry>;
+    readBy: Map<string, UsageEntry>;
+  };
   const rows = new Map<string, Row>();
 
   const row = (scope: 'app' | 'page', name: string): Row => {
     const key = `${scope}:${name}`;
     let r = rows.get(key);
     if (!r) {
-      r = { name, scope, setBy: new Map(), readBy: new Map() };
+      r = { name, scope, uses: new Map(), setBy: new Map(), readBy: new Map() };
       rows.set(key, r);
     }
     return r;
@@ -126,11 +134,41 @@ export function getVariableUsage(state: any, moduleId = 'canvas', componentUsage
   });
 
   const exposed = state.resolvedStore?.modules?.[moduleId]?.exposedValues;
+  (state.getVariableDefinitions?.(moduleId) ?? []).forEach(
+    (definition: { scope: 'app' | 'page'; name: string; value: string; fxActive: boolean }) => {
+      const reader = row(definition.scope, definition.name);
+      if (!isExpressionValue(definition)) return;
+      const expression = toExpression(definition);
+      getVariableRefs(expression).forEach((source: { scope: 'app' | 'page'; name: string }) => {
+        const detail = detailOf('Initial value', expression);
+        addEntry(
+          reader.uses,
+          source.scope === 'app' ? 'variable' : 'pageVariable',
+          variableKey(source.scope, source.name),
+          source.name,
+          detail
+        );
+        addEntry(
+          row(source.scope, source.name).readBy,
+          definition.scope === 'app' ? 'variable' : 'pageVariable',
+          variableKey(definition.scope, definition.name),
+          definition.name,
+          detail
+        );
+      });
+    }
+  );
   Object.keys(exposed?.variables ?? {}).forEach((n) => row('app', n));
   Object.keys(exposed?.page?.variables ?? {}).forEach((n) => row('page', n));
 
   const variables: VariableUsage[] = Array.from(rows.values())
-    .map((r) => ({ name: r.name, scope: r.scope, setBy: sorted(r.setBy), readBy: sorted(r.readBy) }))
+    .map((r) => ({
+      name: r.name,
+      scope: r.scope,
+      uses: sorted(r.uses),
+      setBy: sorted(r.setBy),
+      readBy: sorted(r.readBy),
+    }))
     .sort((a, b) => a.scope.localeCompare(b.scope) || a.name.localeCompare(b.name));
 
   return { variables };

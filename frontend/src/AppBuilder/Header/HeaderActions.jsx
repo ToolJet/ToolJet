@@ -5,7 +5,7 @@ import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
 import { Button, Button as ButtonComponent } from '@/components/ui/Button/Button';
-import { Monitor, Smartphone, Play } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
@@ -78,16 +78,17 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
           className="text-decoration-none"
           style={{ color: 'var(--text-default)' }}
           data-cy="editor-preview-Link"
+          // One tab stop: the inner button takes focus, and its click bubbles to this link.
+          tabIndex={-1}
         >
           <ButtonComponent
-            isLucid
             size="default"
             variant="outline"
-            leadingIcon="play"
             data-cy="editor-preview-button"
             style={{ padding: '7px 12px' }}
           >
             Preview
+            <ExternalLink size={15} strokeWidth={1.8} aria-hidden="true" />
           </ButtonComponent>
         </Link>
       )}

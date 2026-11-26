@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { getPanelCloseLabel, SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
 import { ChevronsDownUp, ChevronsUpDown, FileText, type LucideIcon } from 'lucide-react';
@@ -6,7 +7,6 @@ import useStore from '@/AppBuilder/_stores/store';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { pageConfig } from '@/AppBuilder/RightSideBar/PageSettingsTab/pageConfig';
 import { ActionTypes } from '@/AppBuilder/RightSideBar/Inspector/ActionTypes';
-import { Button as RawButton } from '@/components/ui/Button/Button';
 import RawInput from '@/components/ui/Input/Index';
 import { ToolTip } from '@/_components/ToolTip';
 import type { CodeSearchOptions } from '@/AppBuilder/_stores/slices/codeSearchSlice';
@@ -25,10 +25,16 @@ import {
 import { runSearch, disposeSearchWorker } from './searchWorker';
 import { navigateToResult } from './navigateToResult';
 import { Chevron, CountBadge, EntityIcon, ResultRow } from './ResultRow';
+import RawPanelSectionHeader from '@/AppBuilder/Shared/Panel/PanelSectionHeader';
+import RawPanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
+import { NoMatchesEmptyState as RawNoMatchesEmptyState } from '@/AppBuilder/Shared/Panel/PanelEmptyState';
+import '@/AppBuilder/LeftSidebar/panelHeader.scss';
 import './codeSearch.scss';
+const PanelSectionHeader = RawPanelSectionHeader as React.ComponentType<any>;
 
 // Untyped JS components.
-const ButtonComponent = RawButton as React.ComponentType<any>;
+const PanelHeader = RawPanelHeader as React.ComponentType<any>;
+const NoMatchesEmptyState = RawNoMatchesEmptyState as React.ComponentType<any>;
 const InputComponent = RawInput as React.ComponentType<any>;
 // The App Builder store is untyped JS.
 type StoreState = any;
@@ -293,11 +299,13 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
       const groupOpen = !collapsed.has(`group:${group.key}`);
       return (
         <div key={group.key} className="code-search-group">
-          <button type="button" className="code-search-group-header" onClick={() => toggle(`group:${group.key}`)}>
-            <Chevron open={groupOpen} />
-            <span className="code-search-group-title">{SECTION_TITLES[group.key]}</span>
-            <CountBadge count={group.count} />
-          </button>
+          <PanelSectionHeader
+            className="code-search-group-header"
+            title={SECTION_TITLES[group.key]}
+            count={group.count.toLocaleString()}
+            open={groupOpen}
+            onToggle={() => toggle(`group:${group.key}`)}
+          />
           {groupOpen &&
             group.entities.map((entity) => {
               const key = entityKey(group, entity);
@@ -305,7 +313,12 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
               const pageTag = pageTagOf(group, entity);
               return (
                 <div key={entity.entityId} className="code-search-entity">
-                  <button type="button" className="code-search-entity-header" onClick={() => toggle(key)}>
+                  <button
+                    type="button"
+                    className="code-search-entity-header"
+                    onClick={() => toggle(key)}
+                    title={[entity.entityName, entity.entitySubtype, pageTag].filter(Boolean).join(' · ')}
+                  >
                     <Chevron open={entityOpen} />
                     <EntityIcon entity={entity} darkMode={darkMode} />
                     <span className="code-search-entity-name">{entity.entityName}</span>
@@ -334,19 +347,18 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
       );
     if (result.total === 0)
       return (
-        <div className="code-search-empty">
-          No matches for “{debouncedTerm}”{currentPageOnly ? ' on this page' : ''}
-          <div className="code-search-empty-actions">
-            {currentPageOnly && (
-              <ButtonComponent variant="ghost" size="small" onClick={() => setOptions({ currentPageOnly: false })}>
-                Search all pages
-              </ButtonComponent>
-            )}
-            <ButtonComponent variant="ghost" size="small" onClick={() => setTerm('')}>
-              Clear search
-            </ButtonComponent>
-          </div>
-        </div>
+        <NoMatchesEmptyState
+          term={debouncedTerm}
+          scope={currentPageOnly ? ' on this page' : ''}
+          description="Search matches names, bindings, queries, code and settings."
+          onClearSearch={() => setTerm('')}
+          extraActions={
+            currentPageOnly
+              ? [{ label: 'Search all pages', onClick: () => setOptions({ currentPageOnly: false }) }]
+              : []
+          }
+          dataCy="code-search-no-matches"
+        />
       );
     return renderTree();
   };
@@ -372,10 +384,13 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
   return (
     <div ref={rootRef} className={cx('code-search', { 'dark-theme': darkMode })} onKeyDown={handleKeyDown}>
       <div className="inspector-header code-search-header">
-        <div className="inspector-header-top">
-          <span className="inspector-header-title">Code search</span>
-          <ButtonComponent iconOnly leadingIcon="x" onClick={onClose} variant="ghost" size="medium" isLucid />
-        </div>
+        <PanelHeader
+          title={SIDEBAR_ITEMS.search.name}
+          onClose={onClose}
+          closeLabel={getPanelCloseLabel('search')}
+          closeDataCy="code-search-close-button"
+          divider={false}
+        />
         <div className="code-search-input-row">
           <div className="code-search-input">
             <InputComponent
@@ -383,7 +398,8 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTerm(e.target.value)}
               onClear={() => setTerm('')}
               size="medium"
-              placeholder="Search in app"
+              placeholder="Search code"
+              aria-label="Search code"
               value={term}
               {...(term && { trailingAction: 'clear' })}
             />

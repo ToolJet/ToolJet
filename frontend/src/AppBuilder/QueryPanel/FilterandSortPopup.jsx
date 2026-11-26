@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { OverlayTrigger, Popover, Form } from 'react-bootstrap';
+import { Fade, OverlayTrigger, Popover, Form } from 'react-bootstrap';
 import { ListFilter } from 'lucide-react';
 import cx from 'classnames';
 import { Button } from '@/_ui/LeftSidebar';
@@ -12,10 +12,15 @@ import { staticDataSources } from '../QueryManager/constants';
 import { ToolTip } from '@/_components';
 import { PillButton } from '../QueryManager/Components/ParameterDetails';
 import useStore from '@/AppBuilder/_stores/store';
+import { getQueryPopoverMotion } from '@/AppBuilder/panelLayout';
 
 const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasourcesChange, clearSelectedDataSources }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-sort-filter-popover', '#query-sort-filter-popover-btn');
-  const closeMenu = () => setShowMenu(false);
+  const triggerRef = useRef(null);
+  const closeMenu = () => {
+    setShowMenu(false);
+    triggerRef.current?.focus();
+  };
   const [action, setAction] = useState();
   const [search, setSearch] = useState('');
   const sortDataQueries = useStore((state) => state.dataQuery.sortDataQueries);
@@ -26,13 +31,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
   const globalDataSources = useStore((state) => state.globalDataSources);
   const sampleDataSources = useStore((state) => state.sampleDataSources);
   const [sources, setSources] = useState();
-  const searchBoxRef = useRef(null);
-
-  useState(() => {
-    if (action === 'filter-by-datasource' && searchBoxRef.current) {
-      searchBoxRef.current.focus();
-    }
-  }, [action]);
+  const popoverMotion = getQueryPopoverMotion('filter');
 
   useEffect(() => {
     if (showMenu) {
@@ -104,15 +103,18 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
       default:
         return (
           <div className="card-body p-0 tj-scrollbar query-editor-sort-filter-popup query-editor-sort-filter-body">
-            <div className="color-slate9 px-3 pb-2 w-100">
-              <small data-cy="label-filter-by">Filter By</small>
+            <div className="tw-text-text-placeholder px-3 pb-2 w-100">
+              <span className="tj-text-xsm" data-cy="label-filter-by">
+                Filter by
+              </span>
             </div>
             <div className={`tj-list-btn mx-1 ${selectedDataSources.length ? 'd-flex' : ''}`}>
               <MenuButton
                 id="filter-by-datasource"
-                text="Data Source"
+                text="Data source"
                 callback={handlePageCallback}
                 disabled={dataQueries.length === 0}
+                autoFocus={dataQueries.length > 0}
                 noMargin
               />
               {selectedDataSources.length ? (
@@ -128,10 +130,18 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
               )}
             </div>
             <div className="border-bottom mt-1"></div>
-            <div className="color-slate9 px-3 pb-2 pt-1 w-100">
-              <small data-cy="label-sort-by">Sort By</small>
+            <div className="tw-text-text-placeholder px-3 pb-2 pt-1 w-100">
+              <span className="tj-text-xsm" data-cy="label-sort-by">
+                Sort by
+              </span>
             </div>
-            <MenuButton id="custom" text="Custom order" callback={handleSort} active={sortBy === 'custom'} />
+            <MenuButton
+              id="custom"
+              text="Custom order"
+              callback={handleSort}
+              active={sortBy === 'custom'}
+              autoFocus={dataQueries.length === 0}
+            />
             <MenuButton
               id="name"
               order="asc"
@@ -184,11 +194,21 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
       placement="right-end"
       // rootClose={true}
       show={showMenu}
+      transition={popoverMotion.transition ? Fade : false}
       overlay={
         <Popover
           key={'page.i'}
           id="query-sort-filter-popover"
-          className={`query-manager-sort-filter-popup ${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
+          role="group"
+          aria-label="Sort and filter queries"
+          onKeyDown={(event) => {
+            if (event.key !== 'Escape') return;
+            event.stopPropagation();
+            closeMenu();
+          }}
+          className={`query-manager-sort-filter-popup ${popoverMotion.className} ${
+            darkMode && 'popover-dark-themed dark-theme tj-dark-mode'
+          }`}
         >
           <Popover.Body key={'1'} bsPrefix="popover-body" className="pt-1 p-0">
             {renderPopupComponent(action)}
@@ -199,7 +219,11 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
       <span>
         <ToolTip message="Show sort/filter" placement="bottom">
           <button
+            type="button"
+            ref={triggerRef}
             id="query-sort-filter-popover-btn"
+            aria-label="Show sort/filter"
+            aria-expanded={showMenu}
             onClick={(e) => {
               e.stopPropagation();
               setShowMenu((showMenu) => !showMenu);
@@ -248,7 +272,12 @@ const DataSourceSelector = ({
     <div className="card-body p-0 mt-1">
       <div className="border-bottom d-flex px-2">
         <div className="d-flex align-items-center mb-1">
-          <button className="border-0 bg-transparent rounded-0 p-0" onClick={onBackBtnClick}>
+          <button
+            type="button"
+            aria-label="Back to sort and filter"
+            className="border-0 bg-transparent rounded-0 p-0"
+            onClick={onBackBtnClick}
+          >
             <Arrowleft fill="#3E63DD" tailOpacity={1} />
           </button>
         </div>
@@ -303,6 +332,7 @@ const MenuButton = ({
   callback = () => null,
   active,
   noMargin = false,
+  autoFocus = false,
 }) => {
   const handleOnClick = (e) => {
     e.stopPropagation();
@@ -310,11 +340,17 @@ const MenuButton = ({
   };
 
   return (
-    <div className={`field p-2 ${noMargin ? '' : 'mx-1'} tj-list-btn`}>
-      <Button.UnstyledButton onClick={handleOnClick} disabled={disabled} classNames="d-flex justify-content-between">
+    <div className={`field ${noMargin ? '' : 'mx-1'} tj-list-btn`}>
+      <button
+        type="button"
+        onClick={handleOnClick}
+        disabled={disabled}
+        autoFocus={autoFocus}
+        className="unstyled-button d-flex justify-content-between p-2 w-100"
+      >
         <Button.Content title={text} iconSrc={iconSrc} direction="left" />
         {active && <Tick width="20" height="20" viewBox="0 0 22 22" fill="var(--indigo9)" />}
-      </Button.UnstyledButton>
+      </button>
     </div>
   );
 };

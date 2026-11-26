@@ -78,7 +78,7 @@ export function getDependencySections(state: any, moduleId = 'canvas'): Dependen
   components.sort((a, b) => a.name.localeCompare(b.name));
 
   const { variables: allVariables } = getVariableUsage(state, moduleId, componentUsageById);
-  const relatedVariables = allVariables.filter((v) => v.setBy.length + v.readBy.length > 0);
+  const relatedVariables = allVariables.filter((v) => v.uses.length + v.setBy.length + v.readBy.length > 0);
 
   return {
     runsOnLoad,

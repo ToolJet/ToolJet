@@ -2,11 +2,12 @@ import { camelizeEditingVersion } from 'src/modules/versions/helpers/camelize-ed
 
 type CamelizedVersion = { globalSettings?: { variables?: Record<string, unknown> } | null };
 
-const variableId = '05688c6c-efd3-4726-b6c5-bfde3a2f32c9';
-const variable = { id: variableId, name: 'selectedOrderId', value: '42', fxActive: false };
+// Saved maps are keyed by variable name; names keep their exact case, underscores and $.
+const variableId = 'selectedOrderID';
+const variable = { value: '42', fxActive: false };
 
 describe('camelizeEditingVersion', () => {
-  it('keeps the definition-id keys of app variables unchanged', () => {
+  it('keeps the name keys of app variables unchanged', () => {
     const result = camelizeEditingVersion({
       id: 'version-1',
       global_settings: { app_mode: 'auto', variables: { [variableId]: variable } },

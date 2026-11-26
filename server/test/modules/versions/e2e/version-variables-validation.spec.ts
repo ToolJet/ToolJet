@@ -26,7 +26,8 @@ describe('Version global settings: declared variables map', () => {
   let orgId: string;
   let cookie: string[];
 
-  const valid = { id: 'v1', name: 'threshold', value: '5', fxActive: false };
+  // Saved maps are keyed by variable name.
+  const valid = { value: '5', fxActive: false };
 
   beforeAll(async () => {
     ({ app: nestApp } = await initTestApp());
@@ -59,13 +60,13 @@ describe('Version global settings: declared variables map', () => {
     ['PUT /v2/apps/:id/versions/:versionId/global_settings', '/global_settings'],
   ])('%s', (_route, path) => {
     it('should reject a null entry with a 400 naming it and leave the saved map unchanged', async () => {
-      await put(path, { globalSettings: { variables: { v1: valid } } }).expect(200);
+      await put(path, { globalSettings: { variables: { threshold: valid } } }).expect(200);
 
-      const response = await put(path, { globalSettings: { variables: { v1: valid, bad: null } } });
+      const response = await put(path, { globalSettings: { variables: { threshold: valid, bad: null } } });
 
       expect(response.status).toBe(400);
       expect(response.body).toMatchObject({ message: 'globalSettings.variables.bad must be an object' });
-      expect(await savedVariables()).toEqual({ v1: valid });
+      expect(await savedVariables()).toEqual({ threshold: valid });
     });
 
     it('should reject a map that is not an object', async () => {
@@ -79,6 +80,42 @@ describe('Version global settings: declared variables map', () => {
       await put(path, { globalSettings: { variables: {} } }).expect(200);
 
       expect(await savedVariables()).toEqual({});
+    });
+  });
+  // Names are case-sensitive identifiers. Responses that run through humps must not rename them
+  // (`selectedOrderID` would become `selected_order_i_d`, `fxActive` inside the map `fx_active`).
+  describe('reading the saved map back', () => {
+    const named = {
+      selectedOrderID: { value: '42', fxActive: false },
+      user_name: { value: 'a', fxActive: true },
+      $total: { value: '{{1}}', fxActive: false },
+    };
+    const get = (path: string) =>
+      request(nestApp.getHttpServer()).get(path).set('tj-workspace-id', orgId).set('Cookie', cookie);
+
+    beforeAll(async () => {
+      await put('/global_settings', { globalSettings: { variables: named } }).expect(200);
+    });
+
+    it('should keep variable names and fields as stored on editor load (GET /api/apps/:id)', async () => {
+      const response = await get(`/api/apps/${appId}`).expect(200);
+
+      expect(response.body.editing_version.global_settings.variables).toEqual(named);
+    });
+
+    it('should keep variable names and fields as stored on version switch (GET /api/v2/apps/:id/versions/:versionId)', async () => {
+      const response = await get(`/api/v2/apps/${appId}/versions/${versionId}?mode=edit`).expect(200);
+
+      expect(response.body.editing_version.globalSettings.variables).toEqual(named);
+    });
+
+    it('should reject an old id-keyed map on save', async () => {
+      const response = await put('/global_settings', {
+        globalSettings: { variables: { 'a1b2-c3': { id: 'a1b2-c3', name: 'x', value: '1', fxActive: false } } },
+      });
+
+      expect(response.status).toBe(400);
+      expect(await savedVariables()).toEqual(named);
     });
   });
 });

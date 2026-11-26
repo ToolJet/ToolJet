@@ -7,7 +7,6 @@ import { PageService } from '@modules/apps/services/page.service';
 const inputId = '11111111-1111-4111-8111-111111111111';
 const outsideInputId = '22222222-2222-4222-8222-222222222222';
 const queryId = '33333333-3333-4333-8333-333333333333';
-const variableId = '44444444-4444-4444-8444-444444444444';
 const sourceId = 'source-page';
 const copyId = 'copied-page';
 
@@ -61,7 +60,7 @@ async function duplicate(variables: Page['variables']) {
 }
 
 const definitions = (value: string): NonNullable<Page['variables']> => ({
-  [variableId]: { id: variableId, name: 'greeting', value, fxActive: false },
+  greeting: { value, fxActive: false },
 });
 
 describe('PageService | duplicated page variables', () => {

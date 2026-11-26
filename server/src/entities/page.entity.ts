@@ -11,9 +11,8 @@ import {
 import { AppVersion } from './app_version.entity';
 
 /** A page variable declared in the App Builder Variables panel. `value` is static text or a {{ }} expression. */
+/** A declared page variable. The page's `variables` map is keyed by variable name. */
 export interface PageVariableDefinition {
-  id: string;
-  name: string;
   value: string;
   fxActive: boolean;
 }
@@ -102,7 +101,7 @@ export class Page {
   @Column('jsonb', { name: 'page_footer', nullable: true })
   pageFooter;
 
-  /** Page variables declared in the Variables panel, keyed by definition id. */
+  /** Page variables declared in the Variables panel, keyed by variable name. */
   @Column('jsonb', { name: 'variables', nullable: true })
   variables: Record<string, PageVariableDefinition> | null;
 

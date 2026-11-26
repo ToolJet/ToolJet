@@ -3,6 +3,7 @@ import { screen, within, waitFor } from '@testing-library/react';
 import _useStore from '@/AppBuilder/_stores/store';
 import { AppBuilderTestSession, defineAppBuilderScenario } from '@/test/app-builder';
 import { CreateVariableForm, EditVariableForm } from '../../VariableEditor';
+import { definitionsOf } from '@/AppBuilder/_utils/variableDefinitions';
 
 let savedRequests;
 const scenario = defineAppBuilderScenario({
@@ -77,6 +78,45 @@ test.each([
   expect(session.store.read((state) => state.resolvedStore.modules.canvas.exposedValues.variables.threshold)).toBe(
     expected
   );
+});
+
+// The panel passes the store's live definitions. Creating writes the new variable to the store
+// before the panel leaves the form, so the form must not then report its own name as a duplicate.
+const LiveCreateForm = ({ onCreated }) => {
+  const appMap = _useStore((state) => state.globalSettings?.variables);
+  const definitions = React.useMemo(() => definitionsOf(appMap, 'app'), [appMap]);
+  return (
+    <CreateVariableForm
+      moduleId="canvas"
+      pageName="Home"
+      definitions={definitions}
+      initialScope="app"
+      onCreated={onCreated}
+    />
+  );
+};
+
+test('creating does not flash a duplicate-name error for the variable just created', async () => {
+  const session = await setup();
+  const created = [];
+  session.render(<LiveCreateForm onCreated={(scope, name) => created.push(`${scope}:${name}`)} />);
+  await session.user.type(screen.getByPlaceholderText('e.g. selectedOrderId'), 'threshold');
+  await session.user.click(screen.getByRole('button', { name: 'Create variable' }));
+
+  await waitFor(() => expect(created).toEqual(['app:threshold']));
+  expect(screen.queryByText(/already exists/)).not.toBeInTheDocument();
+});
+
+test('a real duplicate is still reported before creating', async () => {
+  const session = await setup();
+  await session.store.act((state) =>
+    state.setGlobalSettings({ ...state.globalSettings, variables: { threshold: { value: '1', fxActive: false } } })
+  );
+  session.render(<LiveCreateForm onCreated={() => {}} />);
+  await session.user.type(screen.getByPlaceholderText('e.g. selectedOrderId'), 'threshold');
+
+  expect(screen.getByText(/already exists/)).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Create variable' })).toBeDisabled();
 });
 
 test('an intentionally omitted initial value stays an empty string', async () => {

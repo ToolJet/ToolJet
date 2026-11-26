@@ -1,9 +1,13 @@
 /**
  * Variable definitions: app and page variables a builder declares in the Variables panel.
  *
- * A definition is `{ id, scope: 'app' | 'page', name, value, fxActive }`. `value` is the text the
- * builder typed — a static value (number, boolean, null, JSON or plain string) or a `{{ }}`
- * expression. Expressions are evaluated on load and again whenever anything they read changes.
+ * Saved maps are keyed by variable name: `globalSettings.variables` (app) and `page.variables`
+ * (that page), each `{ [name]: { value, fxActive } }`. A variable is identified by its scope and
+ * name (plus the page or module that owns the map); there is no separate definition id. `value` is
+ * the text the builder typed — a static value (number, boolean, null, JSON or plain string) or a
+ * `{{ }}` expression. Expressions are evaluated on load and again whenever anything they read changes.
+ *
+ * In memory a definition is `{ scope, name, value, fxActive }` (see `definitionsOf`).
  *
  * Everything here is pure, so the panel (validation, preview) and the store (init order, cycle
  * guard) share one implementation.
@@ -11,47 +15,82 @@
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
-// Special on plain objects: assigning variables['__proto__'] changes the prototype instead of storing a value.
-const BLOCKED_NAMES = new Set(['__proto__', 'constructor', 'prototype']);
+// Names that can't be declared. Keep in step with the other copy (frontend _utils/variableDefinitions.js
+// and server helpers/variable-definition-map.helper.ts).
+const BLOCKED_NAMES = new Set([
+  'prototype',
+  // Inherited by every plain object, so `variables.<name>` already resolves to one of these:
+  // `__proto__` changes the prototype when assigned, and the rest are Object.prototype methods
+  // (`variables.toString` is a function until a variable with that name is set).
+  '__proto__',
+  'constructor',
+  'hasOwnProperty',
+  'isPrototypeOf',
+  'propertyIsEnumerable',
+  'toLocaleString',
+  'toString',
+  'valueOf',
+  '__defineGetter__',
+  '__defineSetter__',
+  '__lookupGetter__',
+  '__lookupSetter__',
+]);
 
 export const VARIABLE_SCOPES = { APP: 'app', PAGE: 'page' };
 
+/** The key that identifies a variable within one page/module context: app and page names may repeat. */
+export const variableKey = (scope, name) => `${scope}:${name}`;
+
+const isUsableName = (name) => typeof name === 'string' && IDENTIFIER.test(name) && !BLOCKED_NAMES.has(name);
+
 /**
- * A saved definition in its canonical shape. The app payload snake-cases keys nested inside
- * global_settings, so an app variable comes back as `fx_active`; both spellings are accepted.
+ * A saved definition in its stored shape. The app payload snake-cases keys nested inside
+ * global_settings, so an older fx flag can come back as `fx_active`; both spellings are accepted.
  */
 export function normalizeVariableDefinition(raw = {}) {
   return {
-    id: raw.id,
-    name: raw.name ?? '',
     value: raw.value === undefined || raw.value === null ? '' : String(raw.value),
     fxActive: Boolean(raw.fxActive ?? raw.fx_active),
   };
 }
 
-/** A saved entry the editor can use: an object with a string id and name. */
-const isStoredDefinition = (raw) =>
-  !!raw &&
-  typeof raw === 'object' &&
-  !Array.isArray(raw) &&
-  typeof raw.id === 'string' &&
-  !!raw.id &&
-  typeof raw.name === 'string';
+const isPlainObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
 
 /**
- * A definition map (`{ [id]: definition }`) with every entry normalized. Saved maps come from the
- * API, so a malformed map or entry is skipped rather than allowed to stop the editor loading.
+ * Reads a saved definition map into `{ [name]: { value, fxActive } }`. Saved maps come from the
+ * API, so a malformed entry is skipped rather than allowed to stop the editor loading.
+ *
+ * Development data saved before definitions were keyed by name is `{ [id]: { id, name, ... } }`;
+ * such an entry is read under its `name`. Two of those with the same name can't both be kept, so
+ * the first wins and the name is reported in `duplicates` for the caller to surface.
  */
-export const normalizeVariableDefinitionMap = (map) => {
-  if (!map || typeof map !== 'object' || Array.isArray(map)) return {};
-  return Object.fromEntries(
-    Object.values(map)
-      .filter(isStoredDefinition)
-      .map((d) => [d.id, normalizeVariableDefinition(d)])
-  );
-};
+export function readVariableDefinitionMap(map) {
+  const definitions = {};
+  const duplicates = [];
+  if (!isPlainObject(map)) return { definitions, duplicates };
+  Object.entries(map).forEach(([key, raw]) => {
+    if (!isPlainObject(raw)) return;
+    const isIdKeyed = typeof raw.id === 'string' && typeof raw.name === 'string';
+    const name = isIdKeyed ? raw.name : key;
+    if (!isUsableName(name)) return;
+    if (Object.prototype.hasOwnProperty.call(definitions, name)) {
+      if (!duplicates.includes(name)) duplicates.push(name);
+      return;
+    }
+    definitions[name] = normalizeVariableDefinition(raw);
+  });
+  return { definitions, duplicates };
+}
 
-export function validateVariableName(rawName, scope, definitions = [], selfId = null, pageName = '') {
+/** A saved definition map as `{ [name]: { value, fxActive } }`; see `readVariableDefinitionMap`. */
+export const normalizeVariableDefinitionMap = (map) => readVariableDefinitionMap(map).definitions;
+
+/** A saved map as a list of in-memory definitions: `{ scope, name, value, fxActive }`. */
+export const definitionsOf = (map, scope) =>
+  Object.entries(normalizeVariableDefinitionMap(map)).map(([name, definition]) => ({ scope, name, ...definition }));
+
+/** `selfName` is the variable being renamed, which can keep its own name. */
+export function validateVariableName(rawName, scope, definitions = [], selfName = null, pageName = '') {
   const name = String(rawName ?? '');
   if (!name.trim()) return 'Enter a name.';
   if (/^\d/.test(name)) {
@@ -62,7 +101,7 @@ export function validateVariableName(rawName, scope, definitions = [], selfId = 
   }
   if (!IDENTIFIER.test(name)) return 'Use letters, numbers, _ or $ only, with no spaces, dots or dashes.';
   if (BLOCKED_NAMES.has(name)) return `“${name}” can’t be used as a variable name. Pick another name.`;
-  const clash = definitions.find((d) => d.id !== selfId && d.scope === scope && d.name === name);
+  const clash = name !== selfName && definitions.find((d) => d.scope === scope && d.name === name);
   if (clash) {
     const where = scope === VARIABLE_SCOPES.PAGE && pageName ? ` on ${pageName}` : '';
     return `${scope === VARIABLE_SCOPES.APP ? 'An app' : 'A page'} variable named “${name}” already exists${where}. Names must be unique within their scope.`;
@@ -122,16 +161,15 @@ export function getVariableRefs(value) {
   return refs;
 }
 
-const keyOf = (scope, name) => `${scope}:${name}`;
 const labelOf = (def) => (def.scope === VARIABLE_SCOPES.PAGE ? `page.${def.name}` : def.name);
 
 function buildEdges(definitions) {
-  const byKey = new Map(definitions.map((d) => [keyOf(d.scope, d.name), d]));
+  const byKey = new Map(definitions.map((d) => [variableKey(d.scope, d.name), d]));
   const edges = new Map();
   definitions.forEach((d) => {
     const deps = isExpressionValue(d)
       ? getVariableRefs(toExpression(d))
-          .map((r) => byKey.get(keyOf(r.scope, r.name)))
+          .map((r) => byKey.get(variableKey(r.scope, r.name)))
           .filter(Boolean)
       : [];
     edges.set(d, deps);

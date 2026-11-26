@@ -6,6 +6,7 @@ import { v4 as uuid } from 'uuid';
 import Fuse from 'fuse.js';
 import _ from 'lodash';
 import { decimalToHex } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { isLinkedAppValid } from '../utils';
 import moment from 'moment';
 
@@ -24,6 +25,16 @@ const didItemChangePosition = (originalArr, sortedArry) => {
   return originalArr.some((item, index) => {
     return item.id !== sortedArry[index].id;
   });
+};
+
+const closeDeletedPageConfiguration = (state) => {
+  const pageId = state.editingPage?.id;
+  if (!pageId || state.modules.canvas.pages.some((page) => page.id === pageId)) return;
+  state.editingPage = null;
+  if (state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION) {
+    state.activeRightSideBarTab = null;
+    state.isRightSidebarOpen = false;
+  }
 };
 
 /**
@@ -67,7 +78,7 @@ const createPageUpdateCommand =
           updatePaths.forEach((path, index) => {
             _.set(page, path, values[index]);
           });
-          state.editingPage = page;
+          if (state.editingPage?.id === pageId) state.editingPage = page;
           afterUpdateFn(state);
         }
       });
@@ -90,7 +101,6 @@ export const createPageMenuSlice = (set, get) => {
   const updatePageName = createPageUpdateCommand(['name'], (state) => {
     state.showEditPageNameInput = false;
     state.showEditingPopover = false;
-    state.editingPage = null;
   });
 
   const updatePageIcon = createPageUpdateCommand(['icon']);
@@ -103,7 +113,6 @@ export const createPageMenuSlice = (set, get) => {
   const updatePageHandle = createPageUpdateCommand(['handle'], (state) => {
     state.showRenamePageHandleModal = false;
     state.showEditingPopover = false;
-    state.editingPage = null;
   });
 
   const updatePageWithPermissions = createPageUpdateCommand(['permissions'], (state) => {}, false);
@@ -114,6 +123,7 @@ export const createPageMenuSlice = (set, get) => {
     showRenamePageHandleModal: false,
     showEditPageEventsModal: false,
     showDeleteConfirmationModal: false,
+    pageToDelete: null,
     showEditPageNameInput: false,
     popoverTargetId: null,
     showAddNewPageInput: false,
@@ -122,6 +132,7 @@ export const createPageMenuSlice = (set, get) => {
     isPageGroup: false,
     pageSettings: {},
     showPagePermissionModal: false,
+    pagePermissionTarget: null,
     newPagePopupConfig: {
       show: false,
       type: null,
@@ -152,6 +163,7 @@ export const createPageMenuSlice = (set, get) => {
         state.showRenamePageHandleModal = false;
         state.showEditPageNameInput = false;
         state.showDeleteConfirmationModal = false;
+        state.pageToDelete = null;
       }),
 
     setNewPagePopupConfig: (config) =>
@@ -175,10 +187,10 @@ export const createPageMenuSlice = (set, get) => {
         else state.isPageGroup = false;
       }),
 
-    toggleDeleteConfirmationModal: (show) =>
+    toggleDeleteConfirmationModal: (show, page = get().editingPage) =>
       set((state) => {
         state.showDeleteConfirmationModal = show;
-        if (!state?.editingPage?.isPageGroup) state.showEditingPopover = !show;
+        state.pageToDelete = show ? page : null;
       }),
 
     togglePageEventsModal: (show) =>
@@ -334,6 +346,10 @@ export const createPageMenuSlice = (set, get) => {
         toast.error('You cannot delete the only page in your app.');
         return;
       }
+      if (pageId === homePageId) {
+        toast.error("Home page can't be deleted");
+        return;
+      }
       if (currentPageId === pageId) {
         const homePage = pages.find((p) => p.id === homePageId);
         switchPage(homePage.id, homePage.handle);
@@ -341,8 +357,9 @@ export const createPageMenuSlice = (set, get) => {
       set((state) => {
         state.modules.canvas.pages = pages.filter((p) => p.id !== pageId);
         state.showDeleteConfirmationModal = false;
+        state.pageToDelete = null;
         state.showEditingPopover = false;
-        state.editingPage = null;
+        closeDeletedPageConfiguration(state);
       });
 
       if (saveAfterAction) {
@@ -388,6 +405,8 @@ export const createPageMenuSlice = (set, get) => {
           });
           state.modules.canvas.pages = newPages;
           state.showDeleteConfirmationModal = false;
+          state.pageToDelete = null;
+          closeDeletedPageConfiguration(state);
         });
         // switch page to home page if current page is in the group
         if (isCurrentPageInGroup) {
@@ -412,12 +431,14 @@ export const createPageMenuSlice = (set, get) => {
 
           state.modules.canvas.pages = newPages;
           state.showDeleteConfirmationModal = false;
+          state.pageToDelete = null;
+          closeDeletedPageConfiguration(state);
         });
         await savePageChanges(appId, currentVersionId, pageGroupId, diff, 'delete', 'pages', get().trackAppSave);
       }
     },
     markAsHomePage: async (pageId, moduleId = 'canvas') => {
-      const { getAppId, currentVersionId, editingPage } = get();
+      const { getAppId, currentVersionId } = get();
       const appId = getAppId(moduleId);
       const diff = {
         homePageId: pageId,
@@ -427,7 +448,7 @@ export const createPageMenuSlice = (set, get) => {
         state.appStore.modules[moduleId].app.homePageId = pageId;
         state.showEditingPopover = false;
       });
-      await savePageChanges(appId, currentVersionId, editingPage.id, diff, 'update', null, get().trackAppSave);
+      await savePageChanges(appId, currentVersionId, pageId, diff, 'update', null, get().trackAppSave);
     },
     reorderPages: async (reorderdPages) => {
       const diff = {};
@@ -566,9 +587,10 @@ export const createPageMenuSlice = (set, get) => {
       }
     },
 
-    togglePagePermissionModal: (show) => {
+    togglePagePermissionModal: (show, page = get().pagePermissionTarget) => {
       set((state) => {
         state.showPagePermissionModal = show;
+        state.pagePermissionTarget = show ? page : null;
       });
     },
 

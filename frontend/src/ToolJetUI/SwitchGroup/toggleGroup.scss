@@ -11,7 +11,6 @@
   color: var(--text-disabled);
   min-height: 28px;
   display: flex;
-  font-size: 12px;
   line-height: 20px;
   font-weight: 500;
   align-items: center;
@@ -19,8 +18,12 @@
   padding: 2px 2px;
   border-radius: 6px;
   width: 100%;
-  font-size: 10px;
+  font-size: var(--app-builder-small-font-size, 10px);
+}
 
+// Editor chrome only (the body class lives while the App Builder edits): off options stay readable.
+.app-builder-chrome .ToggleGroupItem {
+  color: var(--text-medium);
 }
 
 .ToggleGroupItem:first-child {
@@ -44,13 +47,12 @@
     color: var(--text-default);
     padding: 4px;
     height: 28px;
-    font-size: 10px;
     width: 100%;
     text-align: center;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: var(--app-builder-small-font-size, 10px);
 
     svg {
       path {

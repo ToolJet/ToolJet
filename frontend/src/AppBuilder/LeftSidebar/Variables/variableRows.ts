@@ -2,8 +2,11 @@ import { getVariableUsage } from '@/AppBuilder/_utils/entityUsage/variableUsage'
 
 export type VariableScope = 'app' | 'page';
 
+/** A saved definition map: `{ [name]: { value, fxActive } }`. */
+export type StoredVariableMap = Record<string, { value: string; fxActive: boolean }>;
+
+/** A declared variable as the panel shows it; saved maps are keyed by `name`. */
 export type VariableDefinitionRecord = {
-  id: string;
   name: string;
   value: string;
   fxActive: boolean;
@@ -47,8 +50,8 @@ const BULK_ROW_NAMES = new Set(['all app variables', 'all page variables']);
 export function buildVariableRows(
   state: any,
   moduleId: string,
-  appDefinitions: Record<string, VariableDefinitionRecord> = {},
-  pageDefinitions: Record<string, VariableDefinitionRecord> = {}
+  appDefinitions: StoredVariableMap = {},
+  pageDefinitions: StoredVariableMap = {}
 ): Record<VariableScope, VariableRow[]> {
   const rows: Record<VariableScope, VariableRow[]> = { app: [], page: [] };
   const declared = new Set<string>();
@@ -58,9 +61,10 @@ export function buildVariableRows(
       ['page', pageDefinitions],
     ] as const
   ).forEach(([scope, map]) => {
-    Object.values(map).forEach((definition) => {
-      declared.add(rowKey(scope, definition.name));
-      rows[scope].push({ key: definition.id, scope, name: definition.name, definition });
+    Object.entries(map).forEach(([name, stored]) => {
+      const definition = { name, value: stored.value, fxActive: stored.fxActive };
+      declared.add(rowKey(scope, name));
+      rows[scope].push({ key: rowKey(scope, name), scope, name, definition });
     });
   });
 

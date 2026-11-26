@@ -1,6 +1,6 @@
 import React from 'react';
 import Select from '@/_ui/Select';
-import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import { querySelectStyle } from '@/_ui/Select/styles';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
@@ -75,7 +75,7 @@ const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
 
   const customSelectStyles = (darkMode, width) => {
     return {
-      ...queryManagerSelectComponentStyle(darkMode, width),
+      ...querySelectStyle(restProps.surface, darkMode, width),
       control: (provided) => ({
         ...provided,
         boxShadow: 'none',
@@ -107,6 +107,7 @@ const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
           <div className="col-6 d-flex">
             <div className={`${darkMode && 'dark'}`} style={{ width: '200px', height: '32px' }}>
               <Select
+                animateMenu
                 options={serviceNames}
                 onChange={(value) => {
                   const selectedService = serviceNames.find((service) => service.value === value);
@@ -125,6 +126,7 @@ const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
             </div>
             <div className={`${darkMode && 'dark'}`} style={{ width: '180px', height: '32px' }}>
               <Select
+                animateMenu
                 options={selectedServiceName?.rpcs || []}
                 onChange={(value) => {
                   setRpc(value);

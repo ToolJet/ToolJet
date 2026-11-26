@@ -383,15 +383,10 @@ export const createComponentsSlice = (set, get) => ({
   clearSelectedComponents: () =>
     set(
       (state) => {
+        // Canvas selection only: the right panel's tab and subject stay exactly as they were.
         state.selectedComponents = [];
         state.isCanvasHeaderSelected = false;
         state.isCanvasFooterSelected = false;
-        if (state.isRightSidebarOpen) {
-          state.activeRightSideBarTab =
-            state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
-              ? RIGHT_SIDE_BAR_TAB.PAGES
-              : RIGHT_SIDE_BAR_TAB.COMPONENTS;
-        }
       },
       false,
       'clearSelectedComponents'
@@ -1244,7 +1239,7 @@ export const createComponentsSlice = (set, get) => ({
     const components = getCurrentPageComponents(moduleId);
 
     // Declared variables first, so components resolve against their values.
-    const seededVariableIds = initVariableDefinitions(moduleId);
+    const seededVariableKeys = initVariableDefinitions(moduleId);
 
     //TODO: Replace with object of component types
     const resolvedComponentValues = {};
@@ -1294,7 +1289,7 @@ export const createComponentsSlice = (set, get) => ({
     );
 
     resolveOthers(moduleId);
-    refreshExpressionVariables(seededVariableIds, moduleId);
+    refreshExpressionVariables(seededVariableKeys, moduleId);
 
     // Register query option dependencies for queries with runOnDependencyChange enabled.
     const queries = get().dataQuery?.queries?.modules?.[moduleId] || [];
@@ -2620,6 +2615,7 @@ export const createComponentsSlice = (set, get) => ({
         state.selectedComponents = components;
         state.isCanvasHeaderSelected = false;
         state.isCanvasFooterSelected = false;
+        state.rightPanelSubject = { type: 'component', id: components[0] };
         if (components.length === 1) {
           if (state.isRightSidebarOpen) {
             state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
@@ -2637,11 +2633,12 @@ export const createComponentsSlice = (set, get) => ({
     }
     set(
       (state) => {
-        state.selectedComponents = componentId ? [componentId] : [];
+        state.selectedComponents = [componentId];
         state.isCanvasHeaderSelected = false;
         state.isCanvasFooterSelected = false;
+        state.rightPanelSubject = { type: 'component', id: componentId };
         if (state.isRightSidebarOpen) {
-          state.activeRightSideBarTab = componentId ? RIGHT_SIDE_BAR_TAB.CONFIGURATION : RIGHT_SIDE_BAR_TAB.COMPONENTS;
+          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
         }
       },
       false,
@@ -2961,7 +2958,7 @@ export const createComponentsSlice = (set, get) => ({
     // Declared variable sentinel - recompute the variable's value from its definition
     if (dependency.endsWith(VARIABLE_DEFINITION_NODE_SUFFIX)) {
       const nodeData = getNodeData(dependency, moduleId);
-      if (nodeData?.definitionId) get().recomputeVariableDefinition(nodeData.definitionId, moduleId);
+      if (nodeData?.scope && nodeData?.name) get().recomputeVariableDefinition(nodeData.scope, nodeData.name, moduleId);
       return;
     }
 

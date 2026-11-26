@@ -7,7 +7,7 @@ import { CreateRow } from './CreateRow';
 import { UpdateRows } from './UpdateRows';
 import { DeleteRows } from './DeleteRows';
 import { toast } from 'react-hot-toast';
-import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import { querySelectStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
 import { JoinTable } from './JoinTable';
 import { difference } from 'lodash';
@@ -21,6 +21,9 @@ import { isSqlModeDisabled } from '@/TooljetDatabase/constants';
 
 import './styles.scss';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import QueryCodeLabel from '@/AppBuilder/QueryManager/Components/QueryCodeLabel';
+import Select from '@/_ui/Select';
+import { getTooljetDbModeControlPresentation, TOOLJET_DB_MODE_OPTIONS } from '@/AppBuilder/panelLayout';
 import useStore from '@/AppBuilder/_stores/store';
 
 const ToolJetDbOperations = ({
@@ -31,9 +34,10 @@ const ToolJetDbOperations = ({
   optionsChanged,
   renderCopilot,
   environmentId,
+  surface,
 }) => {
   const computeSelectStyles = (darkMode, width) => {
-    return queryManagerSelectComponentStyle(darkMode, width);
+    return querySelectStyle(surface, darkMode, width);
   };
   const navigate = useNavigate();
   const { current_organization_id: organizationId } = authenticationService.currentSessionValue;
@@ -538,6 +542,7 @@ const ToolJetDbOperations = ({
   ];
 
   const ComponentToRender = getComponent(operation);
+  const modeControlPresentation = getTooljetDbModeControlPresentation(surface);
 
   return (
     <ToolJetDbOperationsProvider value={value}>
@@ -550,56 +555,22 @@ const ToolJetDbOperations = ({
           <label className={cx('form-label', 'flex-shrink-0')} data-cy="tooljetdb-mode-label">
             Mode
           </label>
-          <div
-            className={cx('d-flex align-items-center justify-content-start gap-2', {
-              'row-tabs-dark': darkMode,
-              'row-tabs': !darkMode,
-            })}
-            data-cy="tooljetdb-mode-tabs"
-          >
-            <div
-              onClick={() => handleTabClick('GUI mode')}
-              style={{
-                backgroundColor:
-                  activeTab === 'GUI mode' && !darkMode
-                    ? 'white'
-                    : activeTab === 'GUI mode' && darkMode
-                      ? '#242f3c'
-                      : 'transparent',
-                color:
-                  activeTab === 'GUI mode' && !darkMode
-                    ? '#3E63DD'
-                    : activeTab === 'GUI mode' && darkMode
-                      ? 'white'
-                      : '#687076',
-              }}
-              className="row-tab-content"
-              data-cy="tooljetdb-gui-mode-tab"
-            >
-              GUI mode
-            </div>
-
-            <div
-              onClick={() => handleTabClick('SQL mode')}
-              style={{
-                backgroundColor:
-                  activeTab === 'SQL mode' && !darkMode
-                    ? 'white'
-                    : activeTab === 'SQL mode' && darkMode
-                      ? '#242f3c'
-                      : 'transparent',
-                color:
-                  activeTab === 'SQL mode' && !darkMode
-                    ? '#3E63DD'
-                    : activeTab === 'SQL mode' && darkMode
-                      ? 'white'
-                      : '#687076',
-              }}
-              className="row-tab-content"
-              data-cy="tooljetdb-sql-mode-tab"
-            >
-              SQL mode
-            </div>
+          <div className="flex-grow-1" data-cy="tooljetdb-mode-dropdown">
+            <Select
+              key="tooljetdb-mode-dropdown"
+              animateMenu={modeControlPresentation.animateMenu}
+              customClassPrefix="tooljetdb-mode-select"
+              dataCy="tooljetdb-mode"
+              darkMode={darkMode}
+              height={modeControlPresentation.height}
+              options={TOOLJET_DB_MODE_OPTIONS}
+              styles={computeSelectStyles(darkMode, '100%')}
+              useCustomStyles
+              useMenuPortal={modeControlPresentation.useMenuPortal}
+              value={activeTab}
+              width="100%"
+              onChange={handleTabClick}
+            />
           </div>
         </div>
       )}
@@ -619,10 +590,7 @@ const ToolJetDbOperations = ({
               <div
                 className={cx(
                   { 'flex-grow-1': isHorizontalLayout },
-                  'border',
-                  'rounded',
-                  'overflow-hidden',
-                  'minw-400-w-400'
+                  'tooljetdb-table-picker border rounded overflow-hidden minw-400-w-400'
                 )}
               >
                 <DropDownSelect
@@ -689,21 +657,25 @@ const ToolJetDbOperations = ({
           className={cx('mt-3', { 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}
           data-cy="tooljetdb-sql-mode-section"
         >
-          {/*<label className="form-label flex-shrink-0" style={{ minWidth: '100px' }}></label>*/}
-          <CodeHinter
-            type="multiline"
-            initialValue={options?.sql_execution?.sqlQuery ?? 'SELECT * from users'}
-            lang="sql"
-            height={150}
-            onChange={(value) => {
-              optionchanged('sql_execution', { sqlQuery: value });
-            }}
-            componentName="TooljetDatabase"
-            delayOnChange={false}
-            className="w-100"
-            renderCopilot={renderCopilot}
-            cyLabel="tooljetdb-sql-query-input"
-          />
+          <div className="w-100">
+            <QueryCodeLabel />
+            <CodeHinter
+              type="multiline"
+              initialValue={options?.sql_execution?.sqlQuery ?? 'SELECT * from users'}
+              lang="sql"
+              height={150}
+              onChange={(value) => {
+                optionchanged('sql_execution', { sqlQuery: value });
+              }}
+              componentName="TooljetDatabase"
+              delayOnChange={false}
+              className="w-100"
+              renderCopilot={renderCopilot}
+              cyLabel="tooljetdb-sql-query-input"
+              // The "Code" label's button opens the SQL in a new tab instead.
+              usePortalEditor={false}
+            />
+          </div>
         </div>
       )}
     </ToolJetDbOperationsProvider>

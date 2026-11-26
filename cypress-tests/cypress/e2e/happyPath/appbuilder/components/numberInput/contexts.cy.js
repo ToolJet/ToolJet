@@ -18,7 +18,6 @@ describe('Number Input — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-NumberInput-Contexts`);
         cy.openApp();
         cy.dragAndDropWidget('Number Input', 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // Device-visibility context matrix: Show on Desktop / Show on Mobile.

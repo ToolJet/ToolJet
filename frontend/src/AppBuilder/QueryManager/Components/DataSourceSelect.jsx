@@ -355,6 +355,9 @@ function DataSourceSelect({
 
   return (
     <div
+      // In the editor the overlay surface (Shared/Panel/panel.scss) overrides this card's look; ee
+      // Workflows renders the same picker and keeps it.
+      className="ds-select-card"
       style={{
         width: '268px',
         border: '1px solid var(--border-weak, #e4e7eb)',
@@ -368,8 +371,21 @@ function DataSourceSelect({
       onKeyDown={handleKeyDown}
     >
       {/* Search */}
-      <div style={{ padding: '4px 2px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '32px', padding: '7px 12px' }}>
+      <div style={{ padding: '8px' }}>
+        {/* The panel search field (Shared/Panel/_mixins.scss panel-search-input): 32px, 8px radius. */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxSizing: 'border-box',
+            height: '32px',
+            padding: '0 12px',
+            border: '1px solid var(--border-default)',
+            borderRadius: '8px',
+            background: 'var(--background-surface-layer-01)',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '18px' }}>
             <Search width="13.33" viewBox="0 0 20 20" fill="var(--icon-default)" />
           </div>

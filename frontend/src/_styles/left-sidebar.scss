@@ -264,6 +264,440 @@
   }
 }
 
+// The App Builder rail. Dashboard, settings and data-source pages keep the shared rail above.
+.editor .left-sidebar {
+  --left-rail-panel-hover: #f8f9fc;
+  --left-rail-text: #222631;
+  --left-rail-muted: #747d8f;
+  --left-rail-border: #e1e5ed;
+  --left-rail-panel: #ffffff;
+  --left-rail-accent: #4368e8;
+  --left-rail-accent-soft: #eef2ff;
+
+  height: 100%;
+  width: 54px;
+  position: fixed;
+  z-index: 2;
+  left: 0;
+  overflow-x: hidden;
+  flex: 1 1 auto;
+  background-clip: border-box;
+  box-sizing: border-box;
+  padding: 7px 5px;
+  gap: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid var(--left-rail-border);
+  background-color: var(--left-rail-panel);
+
+  .accordion-item {
+    border: solid var(--slate5);
+    border-width: 1px 0px 1px 0px;
+    overflow: visible;
+  }
+
+  .sidebar-svg-icon {
+    height: 16px;
+    width: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 160ms cubic-bezier(0.2, 0, 0, 1);
+
+    svg {
+      width: 16px;
+      height: 16px;
+      color: currentColor;
+      stroke-width: 1.8;
+    }
+
+    &.tooljetai-icon {
+      &:hover {
+        border-radius: 6px;
+        background: linear-gradient(315deg,
+            rgba(252, 95, 112, 0.12) 0%,
+            rgba(142, 78, 198, 0.12) 100%);
+      }
+    }
+  }
+
+  .left-sidebar-item {
+    position: relative;
+    flex: 0 0 42px;
+    display: grid !important;
+    place-items: center;
+    transition: color 160ms ease, background-color 160ms ease;
+    height: 42px !important;
+    width: 42px !important;
+    padding: 0 !important;
+    border-radius: 7px !important;
+    border: 0 !important;
+    background: transparent;
+    gap: 0;
+    color: var(--left-rail-muted) !important;
+
+    &:hover {
+      color: var(--left-rail-text) !important;
+      background: var(--left-rail-panel-hover);
+
+      .debugger-badge {
+        display: none;
+      }
+
+      .sidebar-svg-icon {
+        transform: translateY(-6px);
+      }
+
+      .left-sidebar-item-label {
+        opacity: 1;
+      }
+    }
+
+    &.sidebar-item--active {
+      color: var(--left-rail-accent) !important;
+      background: var(--left-rail-accent-soft);
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: -5px;
+        top: 10px;
+        bottom: 10px;
+        width: 2px;
+        border-radius: 2px;
+        background: var(--left-rail-accent);
+      }
+
+      svg {
+        color: currentColor;
+      }
+
+      .sidebar-svg-icon {
+        transform: translateY(-6px);
+      }
+
+      .left-sidebar-item-label {
+        color: var(--left-rail-accent);
+        opacity: 1;
+      }
+    }
+  }
+
+  // Use the rail width to give longer labels room before truncating.
+  .left-sidebar-item-label {
+    position: absolute;
+    right: -5px;
+    bottom: 1px;
+    left: -5px;
+    overflow: hidden;
+    color: var(--left-rail-muted);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 14px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 140ms ease;
+    pointer-events: none;
+  }
+
+  .left-sidebar-section-divider {
+    flex: 0 0 1px;
+    width: 36px;
+    height: 1px;
+    margin: 2px 3px;
+    background: var(--left-rail-border);
+  }
+
+  .sidebar-item {
+    height: 32px;
+    width: 32px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--indigo4);
+
+    &.tooljetai-icon {
+      border-radius: 6px;
+      background: linear-gradient(315deg,
+          rgba(252, 95, 112, 0.12) 0%,
+          rgba(142, 78, 198, 0.12) 100%);
+    }
+  }
+
+  .left-sidebar-stack-bottom {
+    width: 54px;
+    position: fixed;
+    bottom: 5px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+  }
+
+  .popover {
+    position: fixed;
+    left: 54px;
+    top: 55px;
+    overflow: auto;
+    max-height: 60%;
+  }
+
+  .datasources-popover {
+    top: 160px;
+    width: 200px;
+
+    .add-btn {
+      border: none;
+      margin-top: -4px;
+    }
+  }
+
+  .debugger-popover {
+    top: 220px;
+    cursor: pointer;
+  }
+
+  #global-settings-popover {
+    .card-body {
+      background-color: var(--base) !important;
+    }
+  }
+
+  .global-settings-popover {
+    top: 260px;
+    max-width: 350px;
+  }
+
+  .zoom-popover {
+    top: 500px;
+  }
+
+  .sidebar-zoom {
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .show {
+    display: block;
+  }
+
+  .hide {
+    display: none;
+  }
+
+  .dark-mode {
+    transform: scale(0.7);
+  }
+
+  .no-border {
+    border: 0;
+  }
+
+  .comment-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    transform: translate(50%, -50%);
+    transform-origin: 100% 0%;
+  }
+
+  // Same Beta pill as the components panel, scaled onto the 16px search glyph.
+  .search-icon .code-search-beta-tag {
+    position: absolute;
+    // Off the glyph's top-right corner, badge-style, 2px clear of the magnifier (UC-18).
+    top: -14px;
+    right: -16px;
+    z-index: 1;
+    pointer-events: none;
+    transform: scale(0.75);
+    transform-origin: top right;
+  }
+
+  .left-sidebar-inspector {
+    .card-body {
+      padding: 1rem 0rem 1rem 1rem;
+    }
+  }
+
+  .left-sidebar-page-selector {
+    .add-new-page-button-container {
+      width: 100%;
+      margin-top: 10px;
+    }
+  }
+
+  .debugger-badge {
+    position: fixed;
+    margin-top: -0.5rem;
+    margin-left: 1.5rem;
+    height: 20px;
+    width: 20px;
+    font-weight: 400;
+  }
+
+  .queryData {
+    &.close {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s cubic-bezier(0.5, 0, 0.1, 1);
+    }
+
+    &.open {
+      transition: max-height 0.25s cubic-bezier(0.5, 0, 0.1, 1);
+      overflow: hidden;
+    }
+
+    .react-json-view {
+      .object-key-val {
+        margin-top: 0;
+      }
+
+      .icon-container+span {
+        margin-top: -0.14rem;
+
+        +span {
+          transform: translateY(-0.2rem);
+        }
+      }
+
+      .brace-row>span {
+        transform: translateY(-0.2rem);
+      }
+    }
+  }
+
+  .iopen {
+    transform: rotate(90deg);
+    transition: 0.12s;
+  }
+
+  .datasources-container,
+  .variables-container {
+    height: 50%;
+    overflow-y: scroll;
+    scrollbar-width: none;
+  }
+
+  .datasources-container {
+    bottom: 0;
+    height: 500px;
+    border: solid rgba(101, 109, 119, 0.16);
+    border-width: 1px 0px 1px 0px;
+
+    .datasources-header {
+      border: solid rgba(0, 0, 0, 0.125);
+      border-width: 0px 0px 1px 0px;
+    }
+
+    tr {
+      border-color: #f1f1f1;
+    }
+  }
+
+  .variables-container::-webkit-scrollbar-thumb,
+  .datasources-container::-webkit-scrollbar-thumb {
+    background: transparent;
+    height: 0;
+    width: 0;
+  }
+
+  .variables-container::-webkit-scrollbar,
+  .datasources-container::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
+    height: 0;
+  }
+}
+
+.editor .left-sidebar.theme-dark {
+  --left-rail-panel-hover: #252b36;
+  --left-rail-text: #f3f5f9;
+  --left-rail-muted: #a8b0bf;
+  --left-rail-border: #353c49;
+  --left-rail-panel: #1e232d;
+  --left-rail-accent: #7895ff;
+  --left-rail-accent-soft: #293453;
+}
+
+.sidebar-h-100-popover {
+  width: 304px;
+  transform-origin: left center;
+  will-change: transform, opacity;
+
+  &[data-state='open'] {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+  }
+
+  &[data-state='closed'] {
+    animation: app-builder-panel-exit 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
+    pointer-events: none;
+  }
+
+  &.components,
+  &.pages,
+  &.queries,
+  &.settings {
+    overflow-x: hidden !important;
+  }
+}
+
+.left-sidebar-query-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-surface-layer-01);
+
+  .data-pane,
+  .queries-container {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+  }
+}
+
+.left-sidebar-panel-content {
+  height: 100%;
+
+  &.left-sidebar-panel-content--switching {
+    animation: app-builder-panel-content-enter 180ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+}
+
+// The AI chat fills its left panel and scrolls its own messages.
+.sidebar-h-100-popover.tooljetai .ai-builder-sidebar {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes app-builder-panel-exit {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-6px);
+    visibility: hidden;
+  }
+}
+
+@keyframes app-builder-panel-content-enter {
+  from {
+    opacity: 0.68;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .theme-dark {
   .left-sidebar {
     .sidebar-svg-icon {
@@ -477,7 +911,7 @@
     padding: 4px 7px;
     border-radius: 7px;
     color: var(--slate10);
-    font-size: 10px;
+    font-size: var(--app-builder-small-font-size, 10px);
   }
 
   .error-target {
@@ -1080,6 +1514,10 @@
   }
 }
 
+.sidebar-h-100-popover.left-sidebar-overflow-hidden {
+  overflow-y: hidden !important;
+}
+
 .sidebar-h-100-popover-inspector {
   min-width: 422px;
 }
@@ -1216,5 +1654,16 @@
   &::-webkit-scrollbar-thumb {
     background: var(--interactive-default) !important;
     border-radius: 3px;
+  }
+}
+
+// A disabled rail item (aria-disabled, so its tooltip still shows) looks as a natively disabled one did:
+// default cursor and no hover or pressed background.
+.left-sidebar-item[aria-disabled='true'] {
+  cursor: default;
+
+  &:hover,
+  &:active {
+    background-color: transparent;
   }
 }

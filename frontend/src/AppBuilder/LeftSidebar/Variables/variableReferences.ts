@@ -54,22 +54,26 @@ const confirmedPatterns = (scope: 'app' | 'page', name: string): RegExp[] => {
 const APP_VARIABLE_ACTIONS = ['set-custom-variable', 'get-custom-variable', 'unset-custom-variable'];
 const PAGE_VARIABLE_ACTIONS = ['set-page-variable', 'get-page-variable', 'unset-page-variable'];
 
-// The name field of the variable's own definition (globalSettings.variables / page.variables).
+// Declared variables are indexed on the app or a page at `['variables', key]` (value) and
+// `['variables', key, 'name']` (name). The key is the variable's name, which may itself be
+// `variables` or `name`, so the map is found at the start of the path, never by searching it.
+const definitionKeyOf = (record: SearchRecord): string | null =>
+  (record.entityType === 'app' || record.entityType === 'page') &&
+  record.fieldPath[0] === 'variables' &&
+  record.fieldPath.length >= 2
+    ? record.fieldPath[1]
+    : null;
+
+// A declared variable's own name. Not the value of a variable that happens to be called `name`.
 const isDefinitionName = (record: SearchRecord) =>
-  record.fieldPath.includes('variables') && record.fieldPath[record.fieldPath.length - 1] === 'name';
+  definitionKeyOf(record) !== null && record.fieldPath.length === 3 && record.fieldPath[2] === 'name';
 
 // Whole fields that are script code rather than text with {{ }} bindings.
 const SCRIPT_FIELDS = new Set(['code', 'transformation', 'javascript', 'preloadedScript']);
-// A declared variable's value: fx values may have been saved without their {{ }}.
-// The index drops a trailing `value` key, so a definition's value is `[..., 'variables', id]`.
-const isVariableValueField = (record: SearchRecord) => {
-  const at = record.fieldPath.lastIndexOf('variables');
-  if (at === -1) return false;
-  const rest = record.fieldPath.slice(at + 1);
-  return rest.length === 1 || (rest.length === 2 && rest[1] === 'value');
-};
-const isScriptField = (record: SearchRecord) =>
-  record.fieldPath.some((segment) => SCRIPT_FIELDS.has(segment)) || isVariableValueField(record);
+// A declared variable's value (`['variables', key]`).
+const isVariableValueField = (record: SearchRecord) =>
+  definitionKeyOf(record) !== null && record.fieldPath.length === 2;
+const isScriptField = (record: SearchRecord) => record.fieldPath.some((segment) => SCRIPT_FIELDS.has(segment));
 const isEventKeyField = (record: SearchRecord) =>
   record.entityType === 'event' && record.fieldPath[record.fieldPath.length - 1] === 'key';
 
@@ -81,9 +85,16 @@ const bindingSpans = (text: string) => {
   return spans;
 };
 
-/** Hits that sit in code: inside {{ }}, anywhere in a script field, or an event action's key. */
-const codeMatches = (record: SearchRecord, matches: Array<{ start: number; end: number }>) => {
-  if (isScriptField(record) || isEventKeyField(record)) return matches;
+/**
+ * Hits that sit in code: inside {{ }}, anywhere in a script field or a whole-code variable value,
+ * or an event action's key.
+ */
+const codeMatches = (
+  record: SearchRecord,
+  matches: Array<{ start: number; end: number }>,
+  wholeFieldIsCode: boolean
+) => {
+  if (wholeFieldIsCode || isScriptField(record) || isEventKeyField(record)) return matches;
   const spans = bindingSpans(record.text);
   return matches.filter((m) => spans.some(([from, to]) => m.start >= from && m.end <= to));
 };
@@ -109,13 +120,26 @@ export function findVariableReferences(
     currentPageId,
   });
   const patterns = confirmedPatterns(scope, name);
-  // Another declared variable's value is indexed under its id; name it like the panel does.
+  // Another declared variable's value is indexed under its name, in app settings or on its page.
   const definitionOf = (record: SearchRecord) => {
-    const id = record.fieldPath[record.fieldPath.lastIndexOf('variables') + 1];
-    const app = (input.globalSettings as any)?.variables?.[id];
-    if (app) return { name: app.name as string, scopeLabel: 'App variable' };
-    const page = (input.pages as any[]).find((p) => p?.variables?.[id]);
-    return page ? { name: page.variables[id].name as string, scopeLabel: 'Page variable' } : null;
+    const key = definitionKeyOf(record);
+    if (key === null) return null;
+    const isPage = record.entityType === 'page';
+    const map = isPage
+      ? (input.pages as any[]).find((p) => p?.id === record.pageId)?.variables
+      : (input.globalSettings as any)?.variables;
+    const entry = map?.[key];
+    if (!entry) return null;
+    // Development data saved before maps were keyed by name keeps the name inside the entry.
+    const name = typeof entry.id === 'string' && typeof entry.name === 'string' ? entry.name : key;
+    return { name, entry, scopeLabel: isPage ? 'Page variable' : 'App variable' };
+  };
+  // A value runs as code only when it is an expression (see isExpressionValue / toExpression):
+  // with fx on and no {{ }}, all of it is code; otherwise only what is inside {{ }}.
+  const wholeValueIsCode = (record: SearchRecord) => {
+    if (!isVariableValueField(record)) return false;
+    const entry = definitionOf(record)?.entry;
+    return !!(entry?.fxActive ?? entry?.fx_active) && !(record.text.includes('{{') && record.text.includes('}}'));
   };
   const actionIdByEventId = new Map<string, string>(
     (input.events ?? []).map((event: any) => [event.id, event.event?.actionId])
@@ -124,7 +148,7 @@ export function findVariableReferences(
 
   return result.rows
     .filter(({ record }) => !isDefinitionName(record))
-    .map(({ record, matches }) => ({ record, matches: codeMatches(record, matches) }))
+    .map(({ record, matches }) => ({ record, matches: codeMatches(record, matches, wholeValueIsCode(record)) }))
     .filter(({ matches }) => matches.length > 0)
     .map(({ record, matches }) => {
       const text = record.text;

@@ -1,6 +1,7 @@
 import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '../helpers/utils.helper';
+import { KeepVariableMapAsSent } from '../helpers/variable-definition-map.helper';
 import { AppVersionStatus } from '@entities/app_version.entity';
 
 export class AppVersionUpdateDto {
@@ -26,6 +27,8 @@ export class AppVersionUpdateDto {
   homePageId: string;
 
   @IsOptional()
+  // Holds the declared-variables map; see KeepVariableMapAsSent.
+  @KeepVariableMapAsSent()
   globalSettings: any;
 
   @IsOptional()

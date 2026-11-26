@@ -1,7 +1,7 @@
 export const popoverMenuConfig = {
   name: 'PopoverMenu',
-  displayName: 'Popover Menu',
-  description: 'Popover Menu',
+  displayName: 'Popover menu',
+  description: 'Popover menu',
   component: 'PopoverMenu',
   defaultSize: {
     width: 6,

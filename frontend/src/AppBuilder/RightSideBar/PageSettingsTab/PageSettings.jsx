@@ -18,19 +18,19 @@ import { AddNewPageMenu } from './PageMenu/AddNewPageMenu';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import Select from '@/_ui/Select';
-import { DeletePageConfirmationModal } from './PageMenu/DeletePageConfirmationModal';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { Button } from '@/components/ui/Button/Button';
+import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { ToolTip as InspectorTooltip } from '../Inspector/Elements/Components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
+import { getPageSettingsSections, getPanelCloseLabel, SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 import './PageMenu/style.scss';
 import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
-export const PageSettings = () => {
+export const PageSettings = ({ onClose, surface = 'configuration' }) => {
   const pageSettings = useStore((state) => state.pageSettings);
   const pageSettingChanged = useStore((state) => state.pageSettingChanged);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
@@ -40,15 +40,18 @@ export const PageSettings = () => {
   const switchPage = useStore((state) => state.switchPage);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const { moduleId } = useModuleContext();
-  const editingPageId = useStore((state) => state.editingPage?.id);
-  const editingPageName = useStore((state) => state.editingPage?.name);
+  const permissionPage = useStore((state) => state.pagePermissionTarget);
   const showPagePermissionModal = useStore((state) => state.showPagePermissionModal);
   const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
   const updatePageWithPermissions = useStore((state) => state.updatePageWithPermissions);
   const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
   const appPagePermissionEnabled = useStore((state) => state.license?.featureAccess?.appPermissionPages);
+  const isNavigationSurface = surface === 'navigation';
+  const visibleSections = getPageSettingsSections(surface);
+  const propertySections = visibleSections.find(({ id }) => id === 'properties')?.sections ?? [];
 
   const handleToggle = () => {
+    if (onClose) return onClose();
     setActiveRightSideBarTab(null);
     setRightSidebarOpen(false);
   };
@@ -120,7 +123,6 @@ export const PageSettings = () => {
             classNames="page-handler"
           />
         ),
-        <AddNewPageMenu key="new-page" darkMode={darkMode} />,
       ],
     },
   ];
@@ -161,28 +163,24 @@ export const PageSettings = () => {
   ];
 
   return (
-    <div className="inspector pages-settings">
+    <div className={cx('inspector pages-settings', { 'pages-settings--navigation': isNavigationSurface })}>
       <div>
-        <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
-          <span className="panel-header-title">Pages and navigation</span>
-          <div className="panel-header-actions">
-            <Button
-              iconOnly
-              leadingIcon="x"
-              onClick={handleToggle}
-              variant="ghost"
-              size="medium"
-              isLucid={true}
-              data-cy="pages-close-button"
-            />
-          </div>
-        </div>
-        <div className={cx({ disabled: shouldFreeze })}>
-          <Tabs activeKey={activeTab} onSelect={setActiveTab} id="page-settings">
+        <PanelHeader
+          title={isNavigationSurface ? SIDEBAR_ITEMS.pages.name : 'Page configuration'}
+          onClose={handleToggle}
+          closeLabel={getPanelCloseLabel(isNavigationSurface ? 'pages' : 'page')}
+          closeDataCy="pages-close-button"
+          divider={false}
+          className={cx({ disabled: shouldFreeze })}
+        />
+        <div className={cx('pages-settings__tabs', { disabled: shouldFreeze })}>
+          <Tabs activeKey={activeTab} onSelect={setActiveTab} id={`page-settings-${surface}`}>
             <Tab className="page-selector-panel-body" eventKey="properties" title="Properties">
               <div className="tj-text-xsm color-slate12 ">
-                <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
-                <Accordion items={appHeaderMenuItems} />
+                {propertySections.includes('page-list') && (
+                  <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} isTitleCase={false} />
+                )}
+                <Accordion items={appHeaderMenuItems} isTitleCase={false} />
                 {/* <Accordion items={devices} /> */}
               </div>
             </Tab>
@@ -193,12 +191,16 @@ export const PageSettings = () => {
             </Tab>
           </Tabs>
         </div>
-        <DeletePageConfirmationModal darkMode={darkMode} />
+        {isNavigationSurface && (
+          <div className={cx('pages-settings__footer', { disabled: shouldFreeze })}>
+            <AddNewPageMenu darkMode={darkMode} />
+          </div>
+        )}
         {appPagePermissionEnabled && (
           <AppPermissionsModal
             modalType="page"
-            resourceId={editingPageId}
-            resourceName={editingPageName}
+            resourceId={permissionPage?.id}
+            resourceName={permissionPage?.name}
             showModal={showPagePermissionModal}
             toggleModal={togglePagePermissionModal}
             darkMode={darkMode}
@@ -206,7 +208,7 @@ export const PageSettings = () => {
             createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
             updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
             deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
-            onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
+            onSuccess={(data) => updatePageWithPermissions(permissionPage?.id, data)}
           />
         )}
       </div>
@@ -239,7 +241,7 @@ const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
         }),
       },
     ];
-    return <Accordion key={style} items={items} />;
+    return <Accordion key={style} items={items} isTitleCase={false} />;
   });
 });
 
@@ -313,6 +315,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
         </label>
         <label className={`form-switch`}>
           <input
+            aria-label="Show app title"
             className="form-check-input"
             type="checkbox"
             checked={hasAppPagesHeaderAndLogoEnabled ? !hideHeader : true}
@@ -339,6 +342,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
         </label>
         <label className={`form-switch`}>
           <input
+            aria-label="Show logo"
             className="form-check-input"
             type="checkbox"
             checked={hasAppPagesHeaderAndLogoEnabled ? !hideLogo : true}
@@ -447,7 +451,7 @@ const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }
           </div>
           {position == 'side' && style !== 'text' && style !== 'icon' && (
             <div data-param="collapsable" className="d-flex justify-content-between align-items-center pb-2">
-              <label className="form-label font-weight-400 mb-0">Collapsable</label>
+              <label className="form-label font-weight-400 mb-0">Collapsible</label>
               <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
                 <ToggleGroup
                   onValueChange={(value) => {
@@ -483,6 +487,7 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
         <label className="form-label font-weight-400 mb-0">Show on desktop</label>
         <label className={`form-switch`}>
           <input
+            aria-label="Show on desktop"
             className="form-check-input"
             type="checkbox"
             checked={showOnDesktop}
@@ -497,6 +502,7 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
         <label className="form-label font-weight-400 mb-0">Show on mobile</label>
         <label className={`form-switch`}>
           <input
+            aria-label="Show on mobile"
             className="form-check-input"
             type="checkbox"
             checked={showOnMobile}
@@ -555,6 +561,7 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
             {!forceCodeBox && (
               <div className="form-switch m-0">
                 <input
+                  aria-label="Hide navigation menu"
                   className="form-check-input"
                   type="checkbox"
                   checked={isPagesSidebarHidden}

@@ -64,6 +64,7 @@ export default ({
                       darkMode ? 'delete-field-option-dark' : ''
                     }`}
                     role="button"
+                    aria-label="Delete row"
                     onClick={() => {
                       removeKeyValuePair(paramType, index);
                     }}

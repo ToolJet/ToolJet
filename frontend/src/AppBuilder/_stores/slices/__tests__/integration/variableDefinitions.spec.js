@@ -13,14 +13,15 @@ const state = () => useStore.getState();
 const appVars = () => state().resolvedStore.modules.canvas.exposedValues.variables;
 const pageVars = () => state().resolvedStore.modules.canvas.exposedValues.page.variables;
 
-const def = (id, name, value, fxActive = false) => ({ id, name, value, fxActive });
-const byId = (...defs) => Object.fromEntries(defs.map((d) => [d.id, d]));
+// Saved maps are keyed by name. (The first argument once held a definition id; it is unused.)
+const def = (_label, name, value, fxActive = false) => ({ name, value, fxActive });
+const byName = (...defs) => Object.fromEntries(defs.map(({ name, value, fxActive }) => [name, { value, fxActive }]));
 
 function seed({ app = [], page = [], components = {}, queries = {} } = {}) {
   const store = state();
   store.initializeDependencySlice('canvas');
-  store.setGlobalSettings({ ...store.globalSettings, variables: byId(...app) });
-  store.setPages([{ id: 'page-1', handle: 'home', name: 'Home', components, variables: byId(...page) }], 'canvas');
+  store.setGlobalSettings({ ...store.globalSettings, variables: byName(...app) });
+  store.setPages([{ id: 'page-1', handle: 'home', name: 'Home', components, variables: byName(...page) }], 'canvas');
   store.setCurrentPageId('page-1', 'canvas');
   store.setComponentNameIdMapping('canvas');
   Object.entries(queries).forEach(([id, name]) => store.addNewQueryMapping(id, name, 'canvas'));

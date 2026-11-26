@@ -35,7 +35,11 @@ describe('VersionService.updateSettings', () => {
 
   it.each([
     ['a null entry', { bad: null }],
-    ['an entry with a non-string value', { bad: { id: 'b', name: 'x', value: 5, fxActive: false } }],
+    ['an entry with a non-string value', { bad: { value: 5, fxActive: false } }],
+    [
+      'an entry in the old id-keyed shape',
+      { '05688c6c-efd3-4726-b6c5-bfde3a2f32c9': { id: '05688c6c', name: 'x', value: '1', fxActive: false } },
+    ],
     ['a map that is not an object', 'x'],
   ])('rejects %s with a 400 and saves nothing', async (_label, variables) => {
     await expect(service.updateSettings(app, user, { globalSettings: { variables } })).rejects.toBeInstanceOf(

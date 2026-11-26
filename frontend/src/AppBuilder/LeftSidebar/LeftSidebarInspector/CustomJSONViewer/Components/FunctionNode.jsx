@@ -3,7 +3,7 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 
 const FunctionNode = () => {
   return (
-    <div className="json-viewer-node-value" style={{ color: '#4368E3' }}>
+    <div className="json-viewer-node-value" style={{ color: 'var(--indigo11)' }}>
       <OverflowTooltip tooltipClassName="inspector-node-tooltip" style={{ width: '100%' }}>
         function
       </OverflowTooltip>

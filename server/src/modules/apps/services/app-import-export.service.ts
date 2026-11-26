@@ -74,6 +74,7 @@ import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { readVariableDefinitionMap } from '@helpers/variable-definition-map.helper';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -1666,13 +1667,12 @@ export class AppImportExportService {
       });
       for (const page of pages) {
         if (page.variables && Object.keys(page.variables).length > 0) {
-          await manager.update(
-            Page,
-            { id: page.id },
-            {
-              variables: updateEntityReferences(page.variables, mappings),
-            }
+          // Files from development builds keyed definitions by id; save them keyed by name.
+          const variables = readVariableDefinitionMap(
+            updateEntityReferences(page.variables, mappings),
+            `pages.${page.id}.variables`
           );
+          await manager.update(Page, { id: page.id }, { variables });
         }
       }
     }
@@ -1687,6 +1687,12 @@ export class AppImportExportService {
     for (const appVersion of newAppVersions) {
       if (appVersion.globalSettings) {
         const updatedGlobalSettings = updateEntityReferences(appVersion.globalSettings, mappings);
+        if (updatedGlobalSettings.variables) {
+          updatedGlobalSettings.variables = readVariableDefinitionMap(
+            updatedGlobalSettings.variables,
+            'globalSettings.variables'
+          );
+        }
         await manager.update(AppVersion, { id: appVersion.id }, { globalSettings: updatedGlobalSettings });
       }
     }

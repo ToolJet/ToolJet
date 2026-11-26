@@ -2,8 +2,9 @@ import React, { useRef, useState } from 'react';
 import { Overlay, Popover } from 'react-bootstrap';
 import { shallow } from 'zustand/shallow';
 import { Button } from '@/components/ui/Button/Button';
+import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import useStore from '@/AppBuilder/_stores/store';
-import { AddEditPagePopup } from './AddNewPagePopup';
+import { AddEditPagePopup, getPagePopupPopperConfig } from './AddNewPagePopup';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
@@ -84,9 +85,9 @@ export function AddNewPageMenu({ darkMode }) {
         </Button>
       </LicenseTooltip>
 
-      <Button
+      <PanelIconButton
         ref={addPageBtnRef}
-        iconOnly
+        label="Add nav item"
         leadingIcon="ellipsis-vertical"
         isLucid
         fill="var(--icon-strong)"
@@ -101,19 +102,15 @@ export function AddNewPageMenu({ darkMode }) {
       <Overlay
         target={addPageBtnRef.current}
         show={showMenuPopover}
-        placement="bottom-end"
+        // The button is pinned to the bottom of the Pages panel, so the menu opens upward.
+        placement="top-end"
         rootClose
         onHide={() => setShowMenuPopover(false)}
         popperConfig={{
           modifiers: [
             {
               name: 'flip',
-              options: {
-                fallbackPlacements: ['top', 'bottom', 'left', 'right'],
-                flipVariations: true,
-                allowedAutoPlacements: ['top', 'bottom'],
-                boundary: 'viewport',
-              },
+              options: { fallbackPlacements: ['bottom-end'] },
             },
             {
               name: 'offset',
@@ -178,7 +175,8 @@ export function AddNewPageMenu({ darkMode }) {
       <Overlay
         target={newPageBtnRef.current}
         show={newPagePopupConfig.show && newPagePopupConfig?.mode == 'add'}
-        placement="left-start"
+        placement="right-start"
+        popperConfig={getPagePopupPopperConfig(newPageBtnRef.current)}
         rootClose
         onHide={() => {
           setNewPagePopupConfig({ show: false, mode: null, type: null });

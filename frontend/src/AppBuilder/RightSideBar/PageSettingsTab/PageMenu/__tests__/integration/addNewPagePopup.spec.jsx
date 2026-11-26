@@ -28,11 +28,18 @@
  */
 import '@/test/setupMsw';
 import React from 'react';
-import { render, act } from '@testing-library/react';
+import { render, act, fireEvent, screen, userEvent, waitFor, within } from '@/test/test-utils';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import useStore from '@/AppBuilder/_stores/store';
+import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
+import { createAppBuilderControls } from '@/test/app-builder/controls';
 import { AddEditPagePopup } from '../../AddNewPagePopup';
+import { AddNewPageMenu } from '../../AddNewPageMenu';
+import { DeletePageConfirmationModal } from '../../DeletePageConfirmationModal';
+import { PageGroupItem } from '../../PageGroupItem';
+// Imported last: imported first, PageSettings enters the ColorSwatches import cycle before it resolves.
+import { PageSettings } from '@/AppBuilder/RightSideBar/PageSettingsTab/PageSettings';
 
 const state = () => useStore.getState();
 
@@ -115,4 +122,233 @@ describe('AddEditPagePopup auto-create (mode: add)', () => {
       .pop();
     expect(created).toMatchObject({ name: 'Page 1', handle: 'page-1', type: 'default', isPageGroup: false });
   });
+});
+
+describe('AddEditPagePopup embedded in the right panel', () => {
+  // Break this catches: page actions stay in the header or the menu allows deleting Home.
+  test.each(['Home', 'Reports'])('shows the actions for %s in Page options beside the close button', async (name) => {
+    const user = userEvent.setup();
+    seedFreshApp();
+    const s = state();
+    const reports = { id: 'reports-1', handle: 'reports', name: 'Reports', type: 'default', components: {} };
+    s.setPages([...s.modules.canvas.pages, reports], 'canvas');
+    s.setEditingPage(state().modules.canvas.pages.find((page) => page.name === name));
+    s.setNewPagePopupConfig({ show: true, mode: 'edit', type: 'default' });
+    render(
+      <>
+        <AddEditPagePopup darkMode={false} embedded onClose={() => {}} />
+        <DeletePageConfirmationModal darkMode={false} />
+      </>
+    );
+
+    expect(screen.getByRole('button', { name: 'Close page configuration' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Go to page' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Duplicate page' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete page' })).not.toBeInTheDocument();
+
+    const trigger = screen.getByRole('button', { name: 'Page options' });
+    trigger.focus();
+    await user.keyboard('{Enter}');
+    const menu = within(screen.getByRole('menu'));
+    expect(menu.getByRole('menuitem', { name: 'Go to page' })).toHaveFocus();
+    expect(menu.getByRole('menuitem', { name: 'Duplicate page' })).toBeVisible();
+    const deletePage = menu.getByRole('menuitem', { name: 'Delete page' });
+
+    if (name === 'Home') {
+      expect(deletePage).toHaveAttribute('aria-disabled', 'true');
+      expect(deletePage).toHaveAccessibleDescription("Home page can't be deleted");
+      await user.keyboard('{Escape}');
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      expect(trigger).toHaveFocus();
+    } else {
+      await user.click(deletePage);
+      expect(screen.getByRole('heading', { name: 'Delete "Reports"?' })).toBeVisible();
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    }
+  });
+
+  // Break this catches: choosing Duplicate page fails to clone the page being edited once.
+  test('duplicates the edited page once from Page options', async () => {
+    const user = userEvent.setup();
+    seedFreshApp();
+    const s = state();
+    const home = s.modules.canvas.pages[0];
+    const copy = { ...home, id: 'home-copy-1', handle: 'home-copy', name: 'Home copy' };
+    let cloneRequests = 0;
+    server.use(
+      http.post('http://localhost:3000/api/v2/apps/app-1/versions/version-1/pages/home-1/clone', () => {
+        cloneRequests++;
+        return HttpResponse.json({ pages: [home, copy], events: [] });
+      })
+    );
+    s.setEditingPage(home);
+    s.setNewPagePopupConfig({ show: true, mode: 'edit', type: 'default' });
+    render(<AddEditPagePopup darkMode={false} embedded onClose={() => {}} />);
+
+    await user.click(screen.getByRole('button', { name: 'Page options' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Duplicate page' }));
+
+    await waitFor(() => expect(state().modules.canvas.currentPageId).toBe(copy.id));
+    expect(state().modules.canvas.pages.map((page) => page.name)).toEqual(['Home', 'Home copy']);
+    expect(cloneRequests).toBe(1);
+  });
+
+  // The page configuration panel embeds the popup and shares newPagePopupConfig with the Pages panel's
+  // floating popups. Only the floating "New page" popup may create the page.
+  test('New page with a page configuration open creates ONE page, not one per mounted popup', async () => {
+    seedFreshApp();
+    state().setEditingPage(state().modules.canvas.pages[0]);
+    state().setNewPagePopupConfig({ show: true, mode: 'edit', type: 'default' });
+    await act(async () => {
+      render(<AddEditPagePopup darkMode={false} embedded onClose={() => {}} />);
+    });
+
+    await act(async () => {
+      state().setNewPagePopupConfig({ show: true, mode: 'add', type: 'default' });
+      render(<AddEditPagePopup darkMode={false} />);
+    });
+    await act(async () => {
+      await settle();
+    });
+
+    expect(state().modules.canvas.pages.map((p) => p.name)).toEqual(['Home', 'Page 1']);
+  });
+});
+
+// HP-47b: in one open page configuration, renaming A → B and then back to A must save A again.
+describe('AddEditPagePopup page name', () => {
+  test('renaming a page back to its original name saves it', async () => {
+    server.use(
+      http.put('http://localhost:3000/api/v2/apps/:appId/versions/:versionId/pages/:pageId', () =>
+        HttpResponse.json({})
+      ),
+      http.patch('http://localhost:3000/api/v2/apps/:appId/versions/:versionId/pages/:pageId', () =>
+        HttpResponse.json({})
+      )
+    );
+    seedFreshApp();
+    state().setEditingPage(state().modules.canvas.pages[0]);
+    state().setNewPagePopupConfig({ show: true, mode: 'edit', type: 'default' });
+    let view;
+    await act(async () => {
+      view = render(<AddEditPagePopup darkMode={false} embedded onClose={() => {}} />);
+    });
+    const nameInput = () => view.container.querySelector('input.form-control[type="text"]');
+    const rename = async (value) => {
+      await act(async () => {
+        fireEvent.change(nameInput(), { target: { value } });
+        fireEvent.blur(nameInput());
+      });
+    };
+
+    await rename('Main');
+    expect(state().modules.canvas.pages[0].name).toBe('Main');
+
+    await rename('Home');
+    expect(state().modules.canvas.pages[0].name).toBe('Home');
+  });
+});
+
+// LR-23: page popups open from rows and buttons inside the Pages panel. Measured from those, New page and
+// Edit page details opened over the panel and Edit group off the left edge of the screen.
+describe('[LR-23] page popups open past the Pages panel', () => {
+  const PANEL = { x: 54, y: 48, left: 54, top: 48, right: 404, bottom: 852, width: 350, height: 804 };
+  // Every element inside the panel stands in for the row or button a popup opens from.
+  const ROW = { x: 64, y: 200, left: 64, top: 200, right: 343, bottom: 232, width: 279, height: 32 };
+  const controls = createAppBuilderControls();
+  let rect;
+
+  beforeEach(() => {
+    controls.observers.install();
+    rect = jest.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function () {
+      if (this.classList.contains('sidebar-h-100-popover')) return PANEL;
+      return this.closest('.sidebar-h-100-popover')
+        ? ROW
+        : { ...ROW, x: 0, y: 0, left: 0, top: 0, right: 0, bottom: 0 };
+    });
+    seedFreshApp();
+    const s = state();
+    s.setPages(
+      [
+        ...s.modules.canvas.pages,
+        { id: 'group-1', name: 'Group A', handle: 'group-a', isPageGroup: true, icon: 'IconFolder', components: {} },
+      ],
+      'canvas'
+    );
+    s.setPageSettings(s.computePageSettings({}), 'canvas');
+  });
+
+  afterEach(() => {
+    rect.mockRestore();
+    controls.restore();
+  });
+
+  const openInPagesPanel = async (ui, open) => {
+    const { unmount } = render(
+      <ModuleProvider moduleId="canvas" isModuleMode={false}>
+        <div className="sidebar-h-100-popover">
+          <div className="left-sidebar-panel-content">{ui}</div>
+        </div>
+      </ModuleProvider>
+    );
+    await open();
+    await waitFor(() => {
+      const popup = document.getElementById('add-new-page-popup');
+      expect(popup).toHaveAttribute('data-popper-placement', 'right-start');
+      expect(popup.style.transform).toMatch(/^translate\(412px, /);
+    });
+    // A mounted row cannot render once the store resets after the test.
+    unmount();
+  };
+
+  test('New page opens 8px past the panel', () =>
+    openInPagesPanel(<AddNewPageMenu darkMode={false} />, async () => {
+      fireEvent.click(screen.getByRole('button', { name: /new page/i }));
+    }));
+
+  test('Edit group opens 8px past the panel, not off the left edge', () =>
+    openInPagesPanel(<PageGroupItem page={state().modules.canvas.pages[1]} darkMode={false} />, async () => {
+      fireEvent.click(screen.getByText('Group A'));
+    }));
+});
+
+// UC-14: with 19 pages New page sat below the fold, and reaching it scrolled the panel title away. It sits in
+// a footer below the tabs, outside the region that scrolls, on either tab.
+test('[UC-14] New page sits in the Pages panel footer, outside the scrolling tabs', async () => {
+  const controls = createAppBuilderControls();
+  controls.observers.install();
+  seedFreshApp();
+  const s = state();
+  s.setPages(
+    [
+      ...s.modules.canvas.pages,
+      ...Array.from({ length: 18 }, (_, i) => ({
+        id: `page-${i + 2}`,
+        name: `Page ${i + 2}`,
+        handle: `page-${i + 2}`,
+        components: {},
+      })),
+    ],
+    'canvas'
+  );
+  s.setPageSettings(s.computePageSettings({}), 'canvas');
+  let view;
+  await act(async () => {
+    view = render(
+      <ModuleProvider moduleId="canvas" isModuleMode={false}>
+        <PageSettings surface="navigation" onClose={() => {}} />
+      </ModuleProvider>
+    );
+  });
+
+  expect(screen.getByText('Page 19')).toBeInTheDocument();
+  const newPage = screen.getByRole('button', { name: /new page/i });
+  const inTabs = () => screen.getAllByRole('tabpanel', { hidden: true }).some((panel) => panel.contains(newPage));
+  expect(inTabs()).toBe(false);
+
+  fireEvent.click(screen.getByRole('tab', { name: 'Styles' }));
+  expect(screen.getByRole('button', { name: /new page/i })).toBe(newPage);
+  expect(inTabs()).toBe(false);
+  view.unmount();
+  controls.restore();
 });

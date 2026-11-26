@@ -10,8 +10,6 @@ const queryId = '33333333-3333-4333-8333-333333333333';
 const newComponentId = '44444444-4444-4444-8444-444444444444';
 const newOtherComponentId = '55555555-5555-4555-8555-555555555555';
 const newQueryId = '66666666-6666-4666-8666-666666666666';
-const variableId = '77777777-7777-4777-8777-777777777777';
-const appVariableId = '88888888-8888-4888-8888-888888888888';
 const sourcePageId = '99999999-9999-4999-8999-999999999999';
 const copiedPageId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 
@@ -38,7 +36,7 @@ async function copy(variables: Page['variables']) {
     id: 'source-version',
     globalSettings: {
       variables: {
-        [appVariableId]: { id: appVariableId, name: 'comparison', value: `{{components.${componentId}.value}}` },
+        comparison: { value: `{{components.${componentId}.value}}`, fxActive: false },
       },
     },
   });
@@ -75,12 +73,12 @@ async function copy(variables: Page['variables']) {
   await new CopyService().setupNewVersion(version, sourceVersion, 'workspace-1', manager);
   expect(sourcePage.variables).toEqual(original);
   expect(unrelatedPage.variables).toEqual(original);
-  expect(version.globalSettings.variables[appVariableId].value).toBe(`{{components.${newComponentId}.value}}`);
+  expect(version.globalSettings.variables.comparison.value).toBe(`{{components.${newComponentId}.value}}`);
   return copiedPage.variables;
 }
 
 const definitions = (value: string): NonNullable<Page['variables']> => ({
-  [variableId]: { id: variableId, name: 'result', value, fxActive: false },
+  result: { value, fxActive: false },
 });
 
 describe('VersionsCreateService | copied page variables', () => {

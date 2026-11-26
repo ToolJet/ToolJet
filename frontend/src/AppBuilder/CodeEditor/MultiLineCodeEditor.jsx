@@ -3,15 +3,14 @@ import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
-import { keymap, tooltips, EditorView } from '@codemirror/view';
+import { keymap, EditorView } from '@codemirror/view';
 import { completionKeymap, acceptCompletion, autocompletion, completionStatus } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
 import _ from 'lodash';
 import cx from 'classnames';
 import { sass, sassCompletionSource } from '@codemirror/lang-sass';
-import { okaidia } from '@uiw/codemirror-theme-okaidia';
-import { githubLight } from '@uiw/codemirror-theme-github';
+import { getCodeTheme } from './codeTheme';
 import { getSuggestionsForMultiLine } from './autocompleteExtensionConfig';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import CodeHinter from './CodeHinter';
@@ -31,6 +30,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
 import { completionLabelTooltip } from './completionLabelTooltip';
+import { CodeEditorDocumentContext, getTooltipExtension } from './codeEditorDocument';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -53,9 +53,6 @@ const staticCustomKeyMaps = [
 ];
 const searchExtension = search({
   createPanel: handleSearchPanel,
-});
-const tooltipExtension = tooltips({
-  parent: document.body,
 });
 
 const MultiLineCodeEditor = (props) => {
@@ -99,13 +96,15 @@ const MultiLineCodeEditor = (props) => {
     shallow
   );
 
-  const isInsideQueryPane = !!document.querySelector('.code-hinter-wrapper')?.closest('.query-details');
+  const ownerDocument = useContext(CodeEditorDocumentContext) ?? document;
+  const isInsideQueryPane = !!ownerDocument.querySelector('.code-hinter-wrapper')?.closest('.query-details');
   const isInsideQueryManager = useMemo(
     () => isInsideParent(wrapperRef?.current, 'query-manager'),
     [wrapperRef.current]
   );
 
   const context = useContext(CodeHinterContext);
+  const tooltipExtension = getTooltipExtension(ownerDocument);
 
   const { workflowSuggestions } = useWorkflowStore((state) => ({ workflowSuggestions: state.suggestions }), shallow);
 
@@ -168,7 +167,7 @@ const MultiLineCodeEditor = (props) => {
 
   const heightInPx = typeof height === 'string' && height?.includes('px') ? height : `${height}px`;
 
-  const theme = darkMode ? okaidia : githubLight;
+  const theme = getCodeTheme(darkMode);
   const langExtention = langSupport[lang] ?? null;
 
   const setupConfig = useMemo(
@@ -269,7 +268,7 @@ const MultiLineCodeEditor = (props) => {
       customTabKeymap,
       keymap.of([...staticCustomKeyMaps]),
     ],
-    [langExtention, overRideFunction, customTabKeymap]
+    [langExtention, overRideFunction, customTabKeymap, tooltipExtension]
   );
 
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;

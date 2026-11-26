@@ -71,7 +71,7 @@ export const closeDSModal = () => {
 };
 
 export const verifyValueOnInspector = (queryName, value) => {
-  cy.get('[data-cy="left-sidebar-inspector-button"]').click();
+  cy.get('[data-cy="runtime-panel-tab-inspect"]').click();
   cy.hideTooltip();
   cy.get('[data-cy="inspector-node-queries"]')
     .parent()

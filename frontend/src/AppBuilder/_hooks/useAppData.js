@@ -101,7 +101,6 @@ const useAppData = (
   const setIsEditorReadOnly = useStore((state) => state.setIsEditorReadOnly);
   const setAppHomePageId = useStore((state) => state.setAppHomePageId);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
-  const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded);
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
   const getAllGlobalDataSourceList = useStore((state) => state.getAllGlobalDataSourceList);
@@ -172,8 +171,7 @@ const useAppData = (
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
   const sendMessage = useStore((state) => state.ai?.sendMessage);
   const getCreditBalance = useStore((state) => state.ai?.getCreditBalance);
-  const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
-  const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
+  const setAiChatOpen = useStore((state) => state.setAiChatOpen);
   const pathParams = useParams();
   // A module instance has its own app slug, distinct from the parent app's route slug.
   let slug = appSlug ?? pathParams?.slug;
@@ -601,8 +599,7 @@ const useAppData = (
           (liveMessages || []).length === 0
         ) {
           promptSentRef.current = true;
-          setSelectedSidebarItem('tooljetai');
-          toggleLeftSidebar(true);
+          setAiChatOpen(true);
           // Structured datasources/tables the user tagged via "@mentions" in the create prompt. Sent
           // alongside the kickoff message so the backend can auto-complete the data-clarification /
           // datasource-selection / table-mapping steps for what was already referenced.
@@ -648,7 +645,6 @@ const useAppData = (
               moduleId
             );
           }
-          setIsQueryPaneExpanded(false);
         }
 
         if (initialLoadRef.current && !isPublicAccess && mode === 'edit') {
@@ -657,9 +653,7 @@ const useAppData = (
         }
 
         if (appData.app_builder_mode === 'ai' || (appData.build_mode ?? appData.buildMode) === 'code') {
-          setSelectedSidebarItem('tooljetai');
-          toggleLeftSidebar(true);
-          setIsQueryPaneExpanded(false);
+          setAiChatOpen(true);
         }
 
         if (!moduleMode) {
@@ -790,7 +784,7 @@ const useAppData = (
         setQueries(dataQueries, moduleId);
 
         if (dataQueries?.length > 0) {
-          !moduleMode && setSelectedQuery(dataQueries[0]?.id);
+          !moduleMode && setSelectedQuery(dataQueries[0]?.id, 'canvas', { reveal: false });
           initialiseResolvedQuery(
             dataQueries.map((query) => query.id),
             moduleId
@@ -1213,7 +1207,7 @@ const useAppData = (
         setQueries(dataQueries, moduleId);
 
         if (dataQueries?.length > 0) {
-          setSelectedQuery(dataQueries[0]?.id);
+          setSelectedQuery(dataQueries[0]?.id, 'canvas', { reveal: false });
           initialiseResolvedQuery(dataQueries.map((query) => query.id));
         }
 

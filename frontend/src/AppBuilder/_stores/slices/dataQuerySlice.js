@@ -240,21 +240,19 @@ export const createDataQuerySlice = (set, get) => ({
         state.dataQuery.isDeletingQueryInProcess = true;
       });
       const versionId = get().currentVersionId;
+      // Deleting an unselected query must not replace the current configuration.
+      const deletedQuery = get().dataQuery.queries.modules[moduleId].find((query) => query.id === queryId);
+      const wasSelected = get().queryPanel.selectedQuery?.id === queryId;
       get()
         .trackAppSave(() => dataqueryService.del(queryId, versionId), moduleId)
         .then(() => {
           const dataQueries = get().dataQuery.queries.modules[moduleId];
-          // const deletedQueryName = dataQueries.find((query) => query.id === queryId).name;
           const newSelectedQuery = dataQueries.find((query) => query.id !== queryId);
-          const setSelectedQuery = get().queryPanel.setSelectedQuery;
-          const setSelectedDataSource = get().queryPanel.setSelectedDataSource;
-          const selectedQuery = get().queryPanel.selectedQuery;
-          setSelectedQuery(newSelectedQuery?.id || null);
-          get().deleteQueryMapping(selectedQuery?.name, selectedQuery?.id, moduleId);
-
-          if (!newSelectedQuery?.id) {
-            setSelectedDataSource(null);
+          if (wasSelected) {
+            get().queryPanel.setSelectedQuery(newSelectedQuery?.id || null, moduleId, { reveal: false });
+            if (!newSelectedQuery?.id) get().queryPanel.setSelectedDataSource(null);
           }
+          get().deleteQueryMapping(deletedQuery?.name, queryId, moduleId);
           set((state) => {
             state.dataQuery.isDeletingQueryInProcess = false;
             state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].filter(
@@ -446,12 +444,19 @@ export const createDataQuerySlice = (set, get) => ({
         });
     },
     updateDataQuery: (options, moduleId = 'canvas') => {
+      const selectedQuery = get().queryPanel.selectedQuery;
+      get().dataQuery.updateDataQueryById(selectedQuery.id, options, moduleId);
+    },
+    // Updates any query's options, not only the selected one (e.g. from the code editor tab). Saving is
+    // the caller's job: the query panel autosaves the selected query when it changes.
+    updateDataQueryById: (queryId, options, moduleId = 'canvas') => {
       const componentNameIdMapping = get().modules['canvas'].componentNameIdMapping;
       const queryNameIdMapping = get().modules['canvas'].queryNameIdMapping;
+      const query = get().dataQuery.queries.modules[moduleId].find((candidate) => candidate.id === queryId);
+      if (!query) return;
       set((state) => {
         state.dataQuery.isUpdatingQueryInProcess = true;
       });
-      const selectedQuery = get().queryPanel.selectedQuery;
 
       const setSelectedQuery = get().queryPanel.setSelectedQuery;
 
@@ -463,14 +468,14 @@ export const createDataQuerySlice = (set, get) => ({
 
       set((state) => {
         state.dataQuery.isUpdatingQueryInProcess = false;
-        state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) => {
-          if (query.id === selectedQuery.id) {
+        state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((candidate) => {
+          if (candidate.id === queryId) {
             return {
-              ...query,
+              ...candidate,
               options: { ...newOptions },
             };
           }
-          return query;
+          return candidate;
         });
       });
 
@@ -478,10 +483,10 @@ export const createDataQuerySlice = (set, get) => ({
       // Pass `options` (with entity names), not `newOptions` (with IDs), because
       // registerQueryDependencies uses extractAndReplaceReferencesFromString which handles name→ID mapping.
       if (options.runOnDependencyChange) {
-        get().registerQueryDependencies(selectedQuery.id, selectedQuery.name, selectedQuery.kind, options, moduleId);
+        get().registerQueryDependencies(query.id, query.name, query.kind, options, moduleId);
       } else {
         // Toggle turned off — clean up __options__ sentinel node if it exists
-        const optionsPath = `queries.${selectedQuery.id}.__options__`;
+        const optionsPath = `queries.${query.id}.__options__`;
         const depGraph = get().dependencyGraph.modules[moduleId]?.graph;
         if (depGraph && depGraph.hasNode(optionsPath)) {
           set(
@@ -495,7 +500,7 @@ export const createDataQuerySlice = (set, get) => ({
         }
       }
 
-      setSelectedQuery(selectedQuery?.id);
+      if (get().queryPanel.selectedQuery?.id === queryId) setSelectedQuery(queryId);
     },
     saveData: throttle((newValues, moduleId = 'canvas') => {
       // Frozen versions (e.g. synced default-branch draft) reject saves — skip editor-filled defaults.

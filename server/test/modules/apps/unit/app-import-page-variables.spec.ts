@@ -10,16 +10,24 @@ const sourceComponentId = '11111111-1111-4111-8111-111111111111';
 const sourceQueryId = '22222222-2222-4222-8222-222222222222';
 const componentId = '33333333-3333-4333-8333-333333333333';
 const queryId = '44444444-4444-4444-8444-444444444444';
-const variableId = '55555555-5555-4555-8555-555555555555';
+const legacyVariableId = '55555555-5555-4555-8555-555555555555';
 const sourcePageId = '66666666-6666-4666-8666-666666666666';
 const pageId = '77777777-7777-4777-8777-777777777777';
 const versionId = '88888888-8888-4888-8888-888888888888';
 
-const definitions = (value: string): NonNullable<Page['variables']> => ({
-  [variableId]: { id: variableId, name: 'result', value, fxActive: false },
-});
+// Saved maps are keyed by variable name.
+const definitions = (value: string): NonNullable<Page['variables']> => ({ result: { value, fxActive: false } });
+// Development data saved before maps were keyed by name.
+const legacyDefinitions = (value: string) =>
+  ({
+    [legacyVariableId]: { id: legacyVariableId, name: 'result', value, fxActive: false },
+  }) as unknown as Page['variables'];
 
-async function importVariables(variables: Page['variables'], git: boolean) {
+async function importVariables(
+  variables: Page['variables'],
+  git: boolean,
+  versionVariables: Page['variables'] = definitions(`{{components.${sourceComponentId}.value}}`)
+) {
   const original = structuredClone(variables);
   const sourcePage = Object.assign(new Page(), { id: sourcePageId, variables: structuredClone(variables) });
   const importedPage = Object.assign(new Page(), { id: pageId, variables: structuredClone(variables) });
@@ -35,7 +43,7 @@ async function importVariables(variables: Page['variables'], git: boolean) {
   });
   const version = Object.assign(new AppVersion(), {
     id: versionId,
-    globalSettings: { variables: definitions(`{{components.${sourceComponentId}.value}}`) },
+    globalSettings: { variables: structuredClone(versionVariables) },
   });
   const mapping: Parameters<AppImportExportService['updateEntityReferencesForImportedApp']>[1] = {
     componentsMapping: { [sourceComponentId]: componentId },
@@ -111,12 +119,9 @@ describe.each([false, true])('AppImportExportService | page variables (git corre
       `{{components['${sourceComponentId}'].value + queries['${sourceQueryId}'].data}}`,
       `{{components["${componentId}"].value + queries["${queryId}"].data}}`,
     ],
-  ])(
-    'should remap %s references like other imported entities and preserve definition ids',
-    async (_kind, value, expected) => {
-      expect(await importVariables(definitions(value), git)).toEqual(definitions(expected));
-    }
-  );
+  ])('should remap %s references like other imported entities and keep name keys', async (_kind, value, expected) => {
+    expect(await importVariables(definitions(value), git)).toEqual(definitions(expected));
+  });
 
   it.each(['0', 'false', 'null', '', '{"name":"Ada"}', '{{variables.shared + page.variables.local}}'])(
     'should preserve values without imported entity references: %s',
@@ -126,5 +131,20 @@ describe.each([false, true])('AppImportExportService | page variables (git corre
   );
   it.each([null, {}])('should preserve pages without declarations (%j)', async (variables) => {
     expect(await importVariables(variables, git)).toEqual(variables);
+  });
+  // Exports and Git files written by development builds keyed definitions by id.
+  it('should re-key development page and app variable maps by name, remapping their references', async () => {
+    const value = `{{components.${sourceComponentId}.value}}`;
+    expect(await importVariables(legacyDefinitions(value), git, legacyDefinitions(value))).toEqual(
+      definitions(`{{components.${componentId}.value}}`)
+    );
+  });
+
+  it('should refuse a development map with two variables of the same name instead of dropping one', async () => {
+    const duplicated = {
+      a1: { id: 'a1', name: 'result', value: '1', fxActive: false },
+      a2: { id: 'a2', name: 'result', value: '2', fxActive: false },
+    } as unknown as Page['variables'];
+    await expect(importVariables(duplicated, git)).rejects.toThrow('more than one variable named result');
   });
 });

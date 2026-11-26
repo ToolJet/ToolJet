@@ -15,6 +15,7 @@ export const SearchBox = forwardRef(
       debounceDelay = 300,
       darkMode = false,
       placeholder = 'Search',
+      ariaLabel,
       customClass = '',
       dataCy = '',
       callBack,
@@ -83,6 +84,7 @@ export const SearchBox = forwardRef(
               [className]: !!className,
             })}
             placeholder={placeholder}
+            aria-label={ariaLabel}
             onFocus={() => setFocussed(true)}
             onBlur={() => setFocussed(false)}
             data-cy={`${dataCy}-search-bar`}
