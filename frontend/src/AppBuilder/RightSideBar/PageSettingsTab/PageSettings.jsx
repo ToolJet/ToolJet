@@ -24,8 +24,6 @@ import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { ToolTip as InspectorTooltip } from '../Inspector/Elements/Components/ToolTip';
-import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
-import { appPermissionService } from '@/_services';
 import { getPageSettingsSections, getPanelCloseLabel, SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 import './PageMenu/style.scss';
 import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
@@ -40,12 +38,7 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
   const switchPage = useStore((state) => state.switchPage);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const { moduleId } = useModuleContext();
-  const permissionPage = useStore((state) => state.pagePermissionTarget);
-  const showPagePermissionModal = useStore((state) => state.showPagePermissionModal);
-  const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
-  const updatePageWithPermissions = useStore((state) => state.updatePageWithPermissions);
   const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
-  const appPagePermissionEnabled = useStore((state) => state.license?.featureAccess?.appPermissionPages);
   const isNavigationSurface = surface === 'navigation';
   const visibleSections = getPageSettingsSections(surface);
   const propertySections = visibleSections.find(({ id }) => id === 'properties')?.sections ?? [];
@@ -195,21 +188,6 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
           <div className={cx('pages-settings__footer', { disabled: shouldFreeze })}>
             <AddNewPageMenu darkMode={darkMode} />
           </div>
-        )}
-        {appPagePermissionEnabled && (
-          <AppPermissionsModal
-            modalType="page"
-            resourceId={permissionPage?.id}
-            resourceName={permissionPage?.name}
-            showModal={showPagePermissionModal}
-            toggleModal={togglePagePermissionModal}
-            darkMode={darkMode}
-            fetchPermission={(id, appId) => appPermissionService.getPagePermission(appId, id)}
-            createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
-            updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
-            deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
-            onSuccess={(data) => updatePageWithPermissions(permissionPage?.id, data)}
-          />
         )}
       </div>
     </div>

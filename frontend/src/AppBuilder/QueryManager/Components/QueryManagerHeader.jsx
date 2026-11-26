@@ -179,7 +179,7 @@ export const QueryManagerHeader = ({ darkMode, setActiveTab, activeTab }) => {
 
 const QueryHeaderOptionsMenu = ({ selectedQuery, appId, darkMode, disabled }) => {
   const duplicateQuery = useStore((state) => state.dataQuery.duplicateQuery);
-  const deleteDataQuery = useStore((state) => state.dataQuery.deleteDataQuery);
+  const deleteDataQuery = useStore((state) => state.queryPanel.deleteDataQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const setNameInputFocused = useStore((state) => state.queryPanel.setNameInputFocused);
   const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);

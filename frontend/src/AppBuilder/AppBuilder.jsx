@@ -14,6 +14,9 @@ import RealtimeCursors from '@/AppBuilder/RealtimeCursors';
 import EditorHeader from '@/AppBuilder/Header';
 import LeftSidebar from '@/AppBuilder/LeftSidebar';
 import { DeletePageConfirmationModal } from '@/AppBuilder/RightSideBar/PageSettingsTab/PageMenu/DeletePageConfirmationModal';
+import { QueryPermissionModal } from '@/AppBuilder/QueryPanel/QueryPermissionModal';
+import QueryDeleteConfirmation from '@/AppBuilder/QueryPanel/QueryDeleteConfirmation';
+import { PagePermissionModal } from '@/AppBuilder/RightSideBar/PageSettingsTab/PagePermissionModal';
 import Popups from './Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
@@ -119,6 +122,9 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
               <RightSideBar darkMode={darkMode} />
             </DndProvider>
             <DeletePageConfirmationModal darkMode={darkMode} />
+            <QueryPermissionModal darkMode={darkMode} />
+            <QueryDeleteConfirmation darkMode={darkMode} />
+            <PagePermissionModal darkMode={darkMode} />
             <Popups darkMode={darkMode} />
           </ModuleProvider>
         </AppBuilderTooltipProvider>

@@ -268,4 +268,27 @@ describe('panel source audit', () => {
       '.ds-select-card',
     ].forEach((overlay) => expect(overlays[1]).toContain(overlay));
   });
+
+  // QA 2026-11-26: "Query permission" and "Delete" in the query editor header did nothing while the
+  // left Queries panel was closed, because their dialogs lived inside that panel.
+  test('query permission and delete dialogs are hosted by AppBuilder, not the left Queries panel', () => {
+    const read = (file) => fs.readFileSync(path.join(FRONTEND, file), 'utf8');
+    const appBuilder = read('src/AppBuilder/AppBuilder.jsx');
+    const queryPane = read('src/AppBuilder/QueryPanel/QueryDataPane.jsx');
+    expect(appBuilder).toMatch(/<QueryPermissionModal\b/);
+    expect(appBuilder).toMatch(/<QueryDeleteConfirmation\b/);
+    expect(queryPane).not.toMatch(/AppPermissionsModal|QueryDeleteConfirmation/);
+    // The delete action lives on queryPanel; dataQuery has no deleteDataQuery.
+    expect(read('src/AppBuilder/QueryManager/Components/QueryManagerHeader.jsx')).not.toMatch(
+      /state\.dataQuery\.deleteDataQuery\b/
+    );
+  });
+
+  // QA 2026-11-26: "Page permission" in the Edit page header did nothing while the Pages panel was
+  // closed, because the modal lived inside PageSettings.
+  test('the page permission modal is hosted by AppBuilder, not the Pages panel', () => {
+    const read = (file) => fs.readFileSync(path.join(FRONTEND, file), 'utf8');
+    expect(read('src/AppBuilder/AppBuilder.jsx')).toMatch(/<PagePermissionModal\b/);
+    expect(read('src/AppBuilder/RightSideBar/PageSettingsTab/PageSettings.jsx')).not.toMatch(/AppPermissionsModal/);
+  });
 });

@@ -27,7 +27,7 @@ import { EnvironmentSwitcher } from '@/modules/Appbuilder/components';
 import './style.scss';
 
 // Enough rows to fill the fixed-height list body while versions load.
-const VERSION_SKELETON_COUNT = 5;
+const VERSION_SKELETON_COUNT = 3;
 // Fast fetches finish before this, so the list crossfades straight to new content
 // instead of flashing a skeleton for a few frames.
 const SKELETON_DELAY_MS = 150;
@@ -641,8 +641,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           />
         </div>
 
-        {/* Fixed-height body: switching environment tabs swaps content in place
-            instead of resizing the popover. */}
+        {/* Body fits its rows, between three rows and 264px (style.scss). */}
         <div className="version-manager-body">
           {/* Search Field - Only show if more than 5 versions */}
           {versionOnlyCount > 5 && <VersionSearchField value={searchQuery} onChange={handleSearchChange} />}
