@@ -42,7 +42,13 @@ export class ValidateQueryAppGuard implements CanActivate {
         app = await this.appsRepository.findByDataQuery(id, user?.organizationId, versionId);
       }
       if (!app && appId) {
-        app = await this.appsRepository.findById(appId, user?.organizationId, versionId, branchId);
+        // workflow-node has no :versionId; the version in the body must belong to this app too.
+        app = await this.appsRepository.findById(
+          appId,
+          user?.organizationId,
+          versionId ?? request.body?.app_version_id,
+          branchId
+        );
       }
       if (!app && versionId) {
         app = await this.versionRepository.findAppFromVersion(versionId, user?.organizationId);
