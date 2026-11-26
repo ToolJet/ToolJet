@@ -57,6 +57,12 @@ describe('dynamic height: the canvas a container lays its content on', () => {
     expect(slotOf('Tabs', {}, 0)).toBe('box-0');
   });
 
+  it('[DynamicHeight-SLOT-005] uses the default tab while the Tabs reports no tab yet', () => {
+    // Until a Tabs mounts, its exposed currentTab is the registered default '' (tabs.js exposedVariables).
+    expect(slotOf('Tabs', { defaultTab: 't1' }, '')).toBe('box-t1');
+    expect(slotOf('Tabs', { tabItems: [{ id: 't2' }] }, null)).toBe('box-t2');
+  });
+
   it('[DynamicHeight-SLOT-004] is the Tabs canvas itself when it has no tabs', () => {
     expect(slotOf('Tabs', {})).toBe('box');
   });

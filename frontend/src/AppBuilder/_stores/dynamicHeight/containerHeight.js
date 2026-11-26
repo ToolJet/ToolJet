@@ -22,6 +22,10 @@ const firstTabId = (properties) => {
   return (tabs.find((tab) => tab?.visible !== false) ?? tabs[0])?.id ?? null;
 };
 
+// A tab id, or undefined for "no tab": a Tabs reports '' as its currentTab
+// until it mounts (its registered default), and that is not a tab.
+const tabIdOrNone = (value) => (isTruthyOrZero(value) ? value : undefined);
+
 /**
  * The canvas a container lays its components on: its own (`componentId`), or
  * for Tabs the active tab's (`<componentId>-<tabId>`). The active tab is the
@@ -30,7 +34,7 @@ const firstTabId = (properties) => {
  */
 export const getContentSlotId = ({ componentId, contract, properties = {}, currentTab }) => {
   if (contract?.contentSlot !== 'activeTab') return componentId;
-  const activeTab = currentTab ?? properties.defaultTab ?? firstTabId(properties);
+  const activeTab = tabIdOrNone(currentTab) ?? tabIdOrNone(properties.defaultTab) ?? firstTabId(properties);
   return isTruthyOrZero(activeTab) ? `${componentId}-${activeTab}` : componentId;
 };
 

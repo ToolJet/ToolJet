@@ -1,7 +1,6 @@
 import { NO_OF_GRIDS, isModalType } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
 import {
-  bindModuleAwareGetResolvedComponent,
   buildReflowPatch,
   getNextBubbleContext,
   getNextBubbleTargetId,
@@ -10,6 +9,7 @@ import {
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
 import { resolveWidgetVisibility } from '../dynamicHeight/visibility';
+import { bindModuleAwareGetResolvedComponent } from '../dynamicHeight/moduleScope';
 import { getDynamicElementSelector, getDynamicLayoutKey, normalizeLayoutContext } from '../dynamicHeight/layoutKeys';
 import { heightHeldInView, isUi2PerRowType, sizesToDropAreas } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 

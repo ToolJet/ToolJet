@@ -111,27 +111,6 @@ export const getCanonicalLayout = (componentId, currentLayout, currentPageCompon
   return currentPageComponents?.[componentId]?.layouts?.[currentLayout] || null;
 };
 
-// Module-aware resolved-component getter for the reflow engine. An embedded
-// module's root ModuleContainer must take its `dynamicHeight` from the
-// consuming ModuleViewer INSTANCE (resolved in the 'canvas' namespace) — the
-// ModuleContainer's own property is only the module editor's drop-time
-// default. Without this overlay, the dynamic-height opt-out gate in
-// resolveContainerHeight (and the bubble gate in the reflow) pin the module
-// root to its authored height whenever the module-editor default is off, even
-// though the instance enabled dynamic height.
-export const bindModuleAwareGetResolvedComponent = (getResolvedComponent, getComponentTypeFromId, moduleId) => {
-  return (id, ctx) => {
-    const resolved = getResolvedComponent(id, ctx, moduleId);
-    if (moduleId !== 'canvas' && resolved?.properties && getComponentTypeFromId(id, moduleId) === 'ModuleContainer') {
-      const instanceDynamicHeight = getResolvedComponent(moduleId, null, 'canvas')?.properties?.dynamicHeight;
-      if (instanceDynamicHeight !== undefined && resolved.properties.dynamicHeight !== instanceDynamicHeight) {
-        return { ...resolved, properties: { ...resolved.properties, dynamicHeight: instanceDynamicHeight } };
-      }
-    }
-    return resolved;
-  };
-};
-
 // Bottom edge helper. flowHeightOverride lets callers substitute a zero (for
 // hidden widgets) without mutating the layout object.
 export const getLayoutBottom = (layout, flowHeightOverride = null) => {
