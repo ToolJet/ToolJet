@@ -86,8 +86,17 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   (`view_table`) independently — both must receive the same `environmentId`, always change together.
 - `joinTable` falls back to the `TOOLJET_DB_USER` admin role when SQL mode is disabled (Cloud) — an
   over-privileged DB role, not an unvalidated identifier (from/join tables are still workspace-checked).
+  Because of that role, nothing from the query options is pasted into join SQL unchecked: JSON paths
+  must fit `formatJoinsJSONBPath`'s grammar, column names may not contain `"` (`joinColumn`),
+  operators and AND/OR come from allowlists, and left-hand values are bound like right-hand ones.
+  The join names tables unqualified, so it relies on the role's `search_path`.
 - Every table reference reaching a query builder must be workspace-validated first — same-shape leak
   as the proxy path if skipped.
+- Column defaults reach DDL on the admin connection as raw SQL (TypeORM `default`), so every string
+  default is a `pg` `escapeLiteral` literal: `addQuotesIfString` (text) and the DTO's
+  `formatTimestamp`/`formatJSONB`. `view_table` reverses it (outer quotes off, `''` → `'`) — change
+  the two together. SQL mode's privilege checks bind their values, and refuse any schema that isn't
+  the workspace's before querying (`validateSchemaAndTablePrivileges`).
 - DDL ops (`create_table`, `drop_table`, `edit_table`, `add_column`, `drop_column`, `edit_column`)
   split `normalize*`/`apply*`: `normalize` resolves names→ids and mints every column uuid (the only
   place `uuidv4()` happens outside raw SQL); `apply` only writes DDL/`configurations` for the one
@@ -141,7 +150,10 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   environment. `promote` / `promote/preview` gate on licence only - never on the app's granular `environmentAccess`.
 - HTTP `/proxy/*` serves only admins/builders (dashboard, App Builder editor). App queries reach
   PostgREST in-process (`.perform()`), never through this route, so anyone else needs a data query of
-  their own workspace to pass `FEATURE_KEY.PROXY_POSTGREST`.
+  their own workspace to pass `FEATURE_KEY.PROXY_POSTGREST`. That data query only opens its own
+  `table_id` (path, embeds and filter prefixes; no `${name}` placeholders) and its own operation's
+  method (`list_rows` GET/HEAD, `create_row` POST, `update_rows` PATCH, `delete_rows` DELETE);
+  any other operation never opens the proxy (`isProxyRequestWithinDataQuery` in `ability/index.ts`).
 - `internal_table_migrations.resulting_schema` and `internal_table_migration_applications.applied_at`
   are both NULL until `.confirm()` fills them together; `.discard()` deletes both rows.
   `.adjudicatePending()` is the crash-recovery sweep (ignores anything younger than 1 minute, so an

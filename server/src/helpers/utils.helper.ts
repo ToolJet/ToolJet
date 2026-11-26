@@ -13,6 +13,7 @@ import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
 import { EntityManager } from 'typeorm';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { escapeLiteral } from 'pg';
 
 const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#$%^&*()_+\-={}[\]:;"',.?/\\|]+$/;
 
@@ -130,27 +131,9 @@ export function isJSONString(value: string): boolean {
 export function formatTimestamp(value: any, params: any) {
   const { data_type } = params;
   if (data_type === 'timestamp with time zone' && value) {
-    return `'${value}'`;
+    return escapeLiteral(String(value));
   }
   return value;
-}
-
-/**
- * Since for JSONB column the default value must be in stringify format, if the input has single quotes we would need to escape the single quotes.
- * @param input - Default value of JSONB column.
- * @returns - Sanitized input by escaping single quotes in the input.
- */
-function escapeSingleQuotesInDefaultValueForJSONB(input) {
-  if (typeof input === 'string') {
-    return input.replace(/'/g, "''");
-  } else if (input.length && Array.isArray(input)) {
-    return input.map(escapeSingleQuotesInDefaultValueForJSONB);
-  } else if (!Array.isArray(input) && typeof input === 'object') {
-    return Object.fromEntries(
-      Object.entries(input).map(([key, value]) => [key, escapeSingleQuotesInDefaultValueForJSONB(value)])
-    );
-  }
-  return input;
 }
 
 /**
@@ -161,13 +144,20 @@ function escapeSingleQuotesInDefaultValueForJSONB(input) {
 export function formatJSONB(value: any, params: any) {
   const { data_type } = params;
   if (data_type === 'jsonb' && value) {
-    const jsonString = JSON.stringify(escapeSingleQuotesInDefaultValueForJSONB(value));
-    return `'${jsonString}'`;
+    // Escape the whole JSON text so quotes in keys are escaped too.
+    return escapeLiteral(JSON.stringify(value));
   }
   return value;
 }
 
+// One or more -> / ->> steps, each followed by a word or single-quoted key.
+const JOINS_JSONB_PATH = /^(\s*(->>|->)\s*('[^']*'|\w+))+\s*$/;
+
 export function formatJoinsJSONBPath(jsonpath: string): string {
+  // The path is pasted into join SQL, so refuse anything outside the grammar.
+  if (typeof jsonpath !== 'string' || !JOINS_JSONB_PATH.test(jsonpath)) {
+    throw new BadRequestException('Invalid JSON path. Use -> or ->> followed by a key, e.g. ->>key');
+  }
   const addedQuotesToColumnName = jsonpath.replace(/(->>|->|'[^']*'|\w+)/g, (match) => {
     return /->/.test(match) || /^'.*'$/.test(match) ? match : `'${match}'`;
   });
