@@ -1,0 +1,1078 @@
+{
+  "globals": {
+    "readDocumentation": "Dokümantasyonu oku",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "savechanges": "Değişiklikleri kaydet",
+    "execute": "Çalıştır",
+    "Build": "Derle",
+    "back": "Geri",
+    "edit": "Düzenle",
+    "search": "Ara",
+    "update": "Güncelle",
+    "delete": "Sil",
+    "remove": "Kaldır",
+    "add": "Ekle",
+    "view": "Görüntüle",
+    "create": "Oluştur",
+    "enabled": "Etkin",
+    "disabled": "Devre dışı",
+    "yes": "Evet",
+    "submit": "Gönder",
+    "select": "Seç",
+    "environmentVar": "Çalışma alanı sabitler/değişkenler",
+    "saving": "Kaydediliyor...",
+    "saveDatasource": "Veri kaynağını kaydet",
+    "authorize": "Yetkilendir",
+    "connect": "Bağlan",
+    "reconnect": "Yeniden bağlan",
+    "components": "bileşenler",
+    "send": "Gönder",
+    "noConnection": "bağlanılamadı",
+    "connectionVerified": "bağlantı doğrulandı",
+    "left": "Sol",
+    "center": "Orta",
+    "right": "Sağ",
+    "justified": "İki yana yaslı",
+    "host": "Sunucu",
+    "operation": "İşlem",
+    "header": "Başlık",
+    "path": "Yol",
+    "query": "Sorgu",
+    "requestBody": "İstek gövdesi",
+    "page": "Sayfa",
+    "searchItem": "Ara uygulamalar içinde bu çalışma alanı",
+    "workflowsSearchItem": "Ara iş akışları içinde bu çalışma alanı",
+    "searchComponents": "Bileşenlerde ara",
+    "promote": "Yükselt",
+    "release": "Yayınla"
+  },
+  "errorBoundary": "Bir şeyler yanlış gitti.",
+  "viewer": "Üzgünüz! Bu uygulama bakımda.",
+  "app": {
+    "updateAvailable": "Güncelleme mevcut",
+    "newVersionReleased": "ToolJet'in yeni bir sürümü yayınlandı.",
+    "readReleaseNotes": "Sürüm notlarını oku ve güncelle",
+    "skipVersion": "Bu sürümü atla"
+  },
+  "stripe": "Stripe OpenAPI belirtimini yüklerken lütfen bekleyin.",
+  "openApi": {
+    "noValidOpenApi": "Geçerli bir OpenAPI belirtimi kullanılamıyor!",
+    "selectHost": "Bir sunucu seçin",
+    "selectOperation": "Bir işlem seçin"
+  },
+  "slack": {
+    "authorize": "Yetkilendir",
+    "connectToolJetToSlack": "{{whiteLabelText}} can bağlan to Slack and liste kullanıcılar, gönder messages, etc. Lütfen seç appropriate izin scopes.",
+    "chatWrite": "chat:yazma",
+    "listUsersAndSendMessage": "Sizin {{whiteLabelText}} uygulama will be able to liste kullanıcılar and gönder messages to kullanıcılar & channels.",
+    "connectSlack": "Bağlan to Slack"
+  },
+  "googleSheets": {
+    "readOnly": "Okuma only",
+    "enableReadAndWrite": "If siz want sizin {{whiteLabelText}} uygulamalar to modify sizin Google sheets, make sure to seç okuma and yazma erişim",
+    "readDataFromSheets": "Sizin {{whiteLabelText}} uygulamalar can only okuma veri from Google sheets",
+    "readWrite": "Okuma and yazma",
+    "readModifySheets": "Sizin {{whiteLabelText}} uygulamalar can okuma veri from sheets, modify sheets, and daha fazla.",
+    "toGoogleSheets": "to Google Sheets"
+  },
+  "zendesk": {
+    "enableReadAndWrite": "If siz want sizin {{whiteLabelText}} uygulamalar to modify sizin Zendesk kaynaklar, make sure to seç okuma and yazma erişim",
+    "readDataFromResources": "Sizin {{whiteLabelText}} uygulamalar can only okuma veri from kaynaklar",
+    "readModifySheets": "Sizin {{whiteLabelText}} uygulamalar can okuma veri from kaynaklar, modify kaynaklar, and daha fazla."
+  },
+  "profile": {
+    "profileSettings": "Profil ayarları"
+  },
+  "verificationSuccessPage": {
+    "workEmail": "E-posta",
+    "enterFullName": "Adınızı ve soyadınızı girin",
+    "enterNewPassword": "Girin yeni parola",
+    "name": "Ad",
+    "password": "Parola",
+    "acceptInvite": "Accept davet",
+    "successfullyVerifiedEmail": "Successfully doğrulandı e-posta",
+    "setupTooljet": "Set up {{whiteLabelText}}"
+  },
+  "loginSignupPage": {
+    "forgotPassword": "Parolamı unuttum",
+    "emailAddress": "E-posta address",
+    "enterEmail": "E-posta girin",
+    "dontHaveAccount": "Don't sahip hesap yet?",
+    "enterBusinessEmail": "Girin sizin business e-posta",
+    "alreadyHaveAnAccount": "Zaten sahip an hesap?",
+    "resetPassword": "Parolayı sıfırla",
+    "signIn": "Giriş yap",
+    "signUp": "Kayıt ol",
+    "createToolJetAccount": "Hesap oluştur",
+    "password": "Parola",
+    "showPassword": "parolayı göster",
+    "loginTo": "Giriş",
+    "yourAccount": "sizin hesap",
+    "noLoginMethodsEnabled": "Yok giriş methods etkin for bu çalışma alanı",
+    "emailConfirmLink": "Lütfen check sizin e-posta for onay bağlantı",
+    "newPassword": "Yeni parola",
+    "passwordConfirmation": "Parola onayı",
+    "newToTooljet": "Yeni to {{whiteLabelText}}?",
+    "newToWorkspace": "Yeni to bu çalışma alanı?",
+    "enterWorkEmail": "İş e-postanızı girin",
+    "enterPassword": "Parola girin",
+    "forgot": "Unuttunuz mu?",
+    "workEmail": "E-posta",
+    "joinTooljet": "{{whiteLabelText}}'e katılın",
+    "getStartedForFree": "Ücretsiz başlayın",
+    "passwordCharacter": "Parola must be at least 5 characters",
+    "enterFullName": "Adınızı ve soyadınızı girin",
+    "enterNewPassword": "Girin yeni parola"
+  },
+  "editor": {
+    "preview": "Önizle",
+    "share": "Paylaş",
+    "shareModal": {
+      "makeApplicationPublic": "Make uygulama genel",
+      "shareableLink": "Shareable uygulama bağlantı",
+      "copy": "kopyala",
+      "embeddableLink": "Gömülü uygulama bağlantı",
+      "manageUsers": "Kullanıcılar"
+    },
+    "appVersionManager": {
+      "version": "Sürüm",
+      "currentlyReleased": "Şu anda Released",
+      "createVersion": "Oluşturma sürüm",
+      "saveVersion": "Kaydet sürüm",
+      "createDraftVersion": "Oluşturma taslak sürüm",
+      "versionName": "Sürüm ad",
+      "versionDescription": "Sürüm açıklama",
+      "createVersionFrom": "Oluşturma from sürüm",
+      "save": "Kaydet",
+      "create": "Oluşturma Sürüm",
+      "editVersion": "Düzenle sürüm",
+      "deleteVersion": "Do siz really want to silme bu sürüm ({{version}})?",
+      "enterVersionName": "Girin sürüm ad",
+      "enterVersionDescription": "Girin sürüm açıklama",
+      "versionNameHelper": "Sürüm ad cannot contain spaces, special characters or exceed 25 characters",
+      "versionDescriptionHelper": "Açıklama must be max 500 characters",
+      "versionAlreadyReleased": "Siz cannot make değişiklikler to a sürüm that has zaten been released. \n Oluşturma a yeni sürüm or switch to a different sürüm if siz want to make değişiklikler."
+    },
+    "queries": "Sorgular",
+    "inspectComponent": "Lütfen seç a bileşen to inspect",
+    "release": "Yayınla",
+    "searchQueries": "Ara sorgular",
+    "createQuery": "Oluşturma sorgu",
+    "queryManager": {
+      "general": "Genel",
+      "advanced": "Gelişmiş",
+      "preview": "Önizle",
+      "Save": "Kaydet",
+      "selectDatasource": "Seç Veri Kaynak",
+      "addDatasource": "Ekle datasource",
+      "dataSourceManager": {
+        "toast": {
+          "success": {
+            "dataSourceAdded": "Veri Kaynak Eklendi",
+            "dataSourceSaved": "Veri Kaynak Kaydedildi"
+          },
+          "error": {
+            "noEmptyDsName": "The ad of datasource should değil be boş"
+          }
+        },
+        "suggestDataSource": "Suggest Datasource",
+        "suggestAnIntegration": "Suggest an entegrasyon",
+        "whatLookingFor": "Tell us what siz were looking for?",
+        "noResultFound": "Don't see what siz were looking for?",
+        "suggest": "Suggest",
+        "addNewDataSource": "Yeni veri kaynağı ekle",
+        "whiteListIP": "Lütfen white-list our IP address if the veri kaynak is değil publicly accessible",
+        "copied": "Kopyalandı",
+        "copy": "Kopyala",
+        "saving": "Kaydediliyor",
+        "noResultsFor": "Şunun için sonuç yok:",
+        "noteTaken": "Teşekkürler, not aldık!",
+        "goToAllDatasources": "Go to tümü Datasource",
+        "send": "Gönder"
+      },
+      "runQueryOnApplicationLoad": "Uygulama yüklenirken bu sorguyu çalıştır",
+      "confirmBeforeQueryRun": "Sorguyu çalıştırmadan önce onay iste",
+      "notificationOnSuccess": "Başarılı olduğunda bildirim göster",
+      "runOnDependencyChange": "Çalıştır bu sorgu on dependency change",
+      "successMessage": "Başarı mesajı",
+      "queryRanSuccessfully": "Sorgu ran successfully",
+      "notificationDuration": "Bildirim süresi (sn)",
+      "events": "Olaylar",
+      "transformation": {
+        "transformationToolTip": "Transformations can be etkin on sorgular to transform the sorgu sonuçlar. ToolJet allows siz to transform the sorgu sonuçlar using two programming diller: JavaScript and Python",
+        "transformations": "Dönüşümler"
+      }
+    },
+    "inspector": {
+      "eventManager": {
+        "event": "Olay",
+        "action": "Eylem",
+        "debounce": "Debounce",
+        "actionOptions": "Eylem Seçenekler",
+        "message": "Mesaj",
+        "alertType": "Alert Tür",
+        "url": "URL",
+        "modal": "Modal",
+        "text": "Metin",
+        "query": "Sorgu",
+        "key": "Anahtar",
+        "value": "Değer",
+        "type": "Tür",
+        "fileName": "Dosya ad",
+        "data": "Veri",
+        "table": "Tablo",
+        "pageIndex": "Sayfa indeks",
+        "component": "Bileşen",
+        "addHandler": "Yeni olay handler",
+        "addNewEvent": "Ekle yeni olay",
+        "addEventHandler": "+ Ekle olay handler",
+        "emptyMessage": "Bu {{componentName}} doesn't sahip any olay handlers",
+        "page": "Sayfa",
+        "addKeyValueParam": "Ekle {{parameter}}"
+      }
+    }
+  },
+  "header": {
+    "darkModeToggle": {
+      "activateLightMode": "Activate light mode",
+      "activateDarkMode": "Activate dark mode"
+    },
+    "languageSelection": {
+      "changeLanguage": "Dili değiştir",
+      "searchLanguage": "Dil ara"
+    },
+    "notificationCenter": {
+      "notifications": "Bildirimler",
+      "markAllAs": "Mark tümü as",
+      "read": "okuma",
+      "un": "un",
+      "youDontHaveany": "Hiç",
+      "youAreCaughtUp": "Hepsini okudunuz!",
+      "view": "Görüntüle"
+    },
+    "organization": {
+      "addNewWorkSpace": "Ekle yeni çalışma alanı",
+      "loadOrganizations": "Load Kuruluşlar",
+      "createWorkspace": "Oluşturma çalışma alanı",
+      "workspaceName": "Çalışma alanı adı",
+      "editWorkspace": "Çalışma alanını düzenle",
+      "menus": {
+        "addWorkspace": "Çalışma alanı ekle",
+        "instanceLogout": {
+          "title": "Örnek çıkış",
+          "customLogoutUrl": {
+            "label": "Özel çıkış URL",
+            "helperText": "Set a personalized çıkış URL for kullanıcılar logging out of bu örnek."
+          }
+        },
+        "menusList": {
+          "manageUsers": "Kullanıcılar",
+          "manageGroups": "Gruplar",
+          "manageSso": "SSO",
+          "manageEnv": "Çalışma alanı değişkenleri"
+        },
+        "manageUsers": {
+          "usersAndPermission": "Kullanıcılar ve izinler",
+          "inviteNewUser": "Davet one kullanıcı",
+          "inviteUsers": "Kullanıcıları davet et",
+          "name": "Ad",
+          "email": "E-posta",
+          "status": "Durum",
+          "archive": "Arşivle",
+          "unarchive": "Arşivden çıkar",
+          "addNewUser": "Ekle kullanıcılar",
+          "emailAddress": "E-posta address",
+          "createUser": "Oluşturma Kullanıcı",
+          "enterFirstName": "Girin Ilk Ad",
+          "enterLastName": "Girin Son Ad",
+          "enterEmail": "Girin e-posta id",
+          "enterFullName": "Girin tam ad",
+          "inviteNewUsers": "Davet yeni kullanıcılar"
+        },
+        "manageGroups": {
+          "permissions": {
+            "userGroups": "Kullanıcı Gruplar",
+            "createNewGroup": "Oluşturma yeni grup",
+            "updateGroup": "Güncelleme grup",
+            "addNewGroup": "Ekle yeni grup",
+            "enterName": "Girin grup ad",
+            "createGroup": "Oluşturma Grup",
+            "name": "Ad"
+          },
+          "permissionResources": {
+            "userGroup": "Kullanıcı grup",
+            "apps": "Uygulamalar",
+            "workflows": "Iş akışları",
+            "users": "Kullanıcılar",
+            "permissions": "Izinler",
+            "addAppsToGroup": "Seç uygulamalar to ekle to the grup",
+            "addWorkflowsToGroup": "Seç iş akışları to ekle to the grup",
+            "name": "ad",
+            "addUsersToGroup": "Seç kullanıcılar to ekle to the grup",
+            "email": "e-posta",
+            "resource": "Resource",
+            "createUpdateDelete": "Oluşturma/Güncelleme/Silme",
+            "folder": "Uygulama klasör",
+            "dataSource": "Veri kaynaklar",
+            "tooljetDatabase": "ToolJet Veritabanı"
+          },
+          "groupOptions": {
+            "deleteGroup": "Silme Grup",
+            "duplicateGroup": "Çoğalt Grup"
+          }
+        },
+        "manageSSO": {
+          "manageSso": "SSO",
+          "generalSettings": {
+            "title": "Genel Ayarlar",
+            "enableSignup": "Etkinleştir Signup",
+            "newAccountWillBeCreated": "Yeni hesap will be oluşturuldu for user's ilk saat SSO oturum içinde",
+            "allowedDomains": "Izin verilen domains",
+            "enterDomains": "Girin Domains",
+            "supportMultiDomains": "Support multiple domains. Girin domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
+            "loginUrl": "Giriş URL",
+            "workspaceLogin": "Use bu URL to giriş directly to bu çalışma alanı",
+            "allowDefaultSso": "Izin ver varsayılan SSO",
+            "ssoAuth": "Izin ver kullanıcılar to authenticate via varsayılan SSO. Varsayılan SSO configurations can be overridden by \n çalışma alanı level SSO.",
+            "customLogoutUrl": "Özel çıkış URL"
+          },
+          "google": {
+            "title": "Google",
+            "enabled": "Etkin",
+            "disabled": "Devre dışı",
+            "clientId": "Client Id",
+            "enterClientId": "Girin Client Id",
+            "redirectUrl": "Redirect URL"
+          },
+          "github": {
+            "title": "GitHub",
+            "hostName": "Sunucu Ad",
+            "enterHostName": "Girin Sunucu Ad",
+            "requiredGithub": "Gerekli if GitHub is self hosted",
+            "clientId": "Client Id",
+            "enterClientId": "Girin Client Id",
+            "clientSecret": "Client Gizli bilgi",
+            "enterClientSecret": "Girin Client Gizli bilgi",
+            "encrypted": "Encrypted",
+            "redirectUrl": "Redirect URL"
+          },
+          "passwordLogin": "Parola Giriş",
+          "environmentVar": {
+            "noEnvConfig": "Siz haven't configured any çalışma alanı değişkenler, press the 'Ekle yeni değişken' button to oluşturma one",
+            "envWillBeDeleted": "Değişken will be silindi, do siz want to devam et?",
+            "addNewVariable": "Ekle yeni değişken",
+            "variableForm": {
+              "addNewVariable": "Ekle yeni değişken",
+              "updatevariable": "Güncelleme değişken",
+              "name": "Ad",
+              "value": "Değer",
+              "enterVariableName": "Girin Değişken Ad",
+              "enterValue": "Girin Değer",
+              "type": "Tür",
+              "enableEncryption": "Etkinleştir encryption",
+              "addVariable": "Ekle değişken"
+            },
+            "variableTable": {
+              "name": "ad",
+              "value": "değer",
+              "type": "tür",
+              "secret": "gizli bilgi"
+            }
+          }
+        }
+      }
+    },
+    "profileSettingPage": {
+      "profileSettings": "Profil ayarları",
+      "firstName": "Ilk ad",
+      "lastName": "Son ad",
+      "enterFirstName": "Girin Ilk Ad",
+      "enterLastName": "Girin Son Ad",
+      "email": "E-posta address",
+      "avatar": "Avatar",
+      "update": "Güncelle",
+      "profile": "Profil",
+      "changePassword": "Change parola",
+      "currentPassword": "Current parola",
+      "newPassword": "Yeni parola",
+      "confirmNewPassword": "Onayla yeni parola",
+      "enterCurrentPassword": "Girin current parola",
+      "enterNewPassword": "Girin yeni parola",
+      "inviteUsers": "Kullanıcıları davet et"
+    },
+    "profile": "Profil",
+    "logout": "Çıkış"
+  },
+  "homePage": {
+    "appCard": {
+      "changeIcon": "Change Icon",
+      "addToFolder": "Ekle to klasör",
+      "move": "Move",
+      "to": "to",
+      "selectFolder": "Seç klasör",
+      "deleteApp": "Silme uygulama",
+      "exportApp": "Dışa aktar uygulama",
+      "cloneApp": "Clone uygulama",
+      "launch": "Launch",
+      "maintenance": "Maintenance",
+      "noDeployedVersion": "Uygulama does değil sahip a deployed sürüm",
+      "openInAppViewer": "Aç içinde uygulama viewer",
+      "removeFromFolder": "Kaldır from klasör"
+    },
+    "blankPage": {
+      "welcomeToToolJet": "Welcome to sizin yeni ToolJet çalışma alanı",
+      "getStartedCreateNewApp": "Siz can get started by creating a yeni uygulama or by creating an uygulama using a template içinde ToolJet Library.",
+      "importApplication": "Içe aktar an uygulama"
+    },
+    "foldersSection": {
+      "allApplications": "Tümü uygulamalar",
+      "folders": "Klasörler",
+      "createNewFolder": "+ Oluşturma yeni",
+      "noFolders": "Siz haven't oluşturuldu any klasörler. Use klasörler to organize sizin uygulamalar",
+      "createFolder": "Oluşturma klasör",
+      "updateFolder": "Güncelleme klasör",
+      "editFolder": "Düzenle klasör",
+      "deleteFolder": "Silme klasör",
+      "folderName": "Klasör ad",
+      "wishToDeleteFolder": "Are siz sure siz want to silme the klasör {{folderName}}? Uygulamalar within the klasör will değil be silindi."
+    },
+    "header": {
+      "createNewApplication": "Oluşturma an uygulama",
+      "import": "Içe aktar from device",
+      "chooseFromTemplate": "Seç from template",
+      "generateWithAi": "Generate with AI"
+    },
+    "pagination": {
+      "showing": "Showing",
+      "of": "of",
+      "to": "to"
+    },
+    "noApplicationFound": "Yok Uygulamalar found",
+    "noWorkflowFound": "Yok iş akışları found",
+    "thisFolderIsEmpty": "Bu klasör is boş",
+    "nonAccessibleFolderApps": "Siz do değil sahip erişim to any uygulamalar içinde bu klasör.",
+    "deleteAppAndData": "The uygulama {{appName}} and the associated veri will be permanently silindi, do siz want to devam et?",
+    "deleteWorkflowAndData": "The workflow {{appName}} and the associated veri will be permanently silindi, do siz want to devam et?",
+    "removeAppFromFolder": "The uygulama will be kaldırıldı from bu klasör, do siz want to devam et?",
+    "change": "Change",
+    "templateCard": {
+      "use": "Use",
+      "preview": "Önizle",
+      "leadGeneretion": "Lead generetion"
+    },
+    "templateLibraryModal": {
+      "select": "Seç template",
+      "createAppfromTemplate": "Oluşturma uygulama from template"
+    }
+  },
+  "workflowsDashboard": {
+    "appCard": {
+      "run": "Çalıştır",
+      "openInWorkflowEditor": "Aç içinde workflow düzenleyici"
+    },
+    "blankPage": {
+      "welcomeToToolJet": "Welcome to sizin yeni ToolJet çalışma alanı",
+      "getStartedCreateNewApp": "Siz can get started by creating a yeni uygulama or by creating an uygulama using a template içinde ToolJet Library.",
+      "importApplication": "Içe aktar an uygulama"
+    },
+    "foldersSection": {
+      "allApplications": "Tümü iş akışları",
+      "folders": "Klasörler",
+      "createNewFolder": "+ Oluşturma yeni",
+      "noFolders": "Siz haven't oluşturuldu any klasörler. Use klasörler to organize sizin uygulamalar",
+      "createFolder": "Oluşturma klasör",
+      "updateFolder": "Güncelleme klasör",
+      "editFolder": "Düzenle klasör",
+      "deleteFolder": "Silme klasör",
+      "folderName": "Klasör ad",
+      "wishToDeleteFolder": "Are siz sure siz want to silme the klasör? Uygulamalar within the klasör will değil be silindi."
+    },
+    "header": {
+      "createNewApplication": "Oluşturma yeni workflow",
+      "import": "Içe aktar",
+      "chooseFromTemplate": "Seç from template"
+    },
+    "pagination": {
+      "showing": "Showing",
+      "of": "of",
+      "to": "to"
+    },
+    "noApplicationFound": "Yok Uygulamalar found",
+    "thisFolderIsEmpty": "Bu klasör is boş",
+    "deleteAppAndData": "The uygulama and the associated veri will be permanently silindi, do siz want to devam et?",
+    "removeAppFromFolder": "The uygulama will be kaldırıldı from bu klasör, do siz want to devam et?",
+    "change": "Change",
+    "templateCard": {
+      "use": "Use",
+      "preview": "Önizle",
+      "leadGeneretion": "Lead generetion"
+    },
+    "templateLibraryModal": {
+      "select": "Seç template",
+      "createAppfromTemplate": "Oluşturma uygulama from template"
+    }
+  },
+  "confirmationPage": {
+    "setupAccount": "Set up sizin hesap",
+    "signupWithGoogle": "Oturum up with Google",
+    "signupWithGitHub": "Oturum up with GitHub",
+    "signupWithOpenid": "Oturum up with",
+    "or": "OR",
+    "firstName": "Ilk ad",
+    "lastName": "Son ad",
+    "company": "Company",
+    "role": "Rol",
+    "pleaseSelect": "Lütfen seç",
+    "password": "Parola",
+    "confirmPassword": "Onayla Parola",
+    "clickAndAgree": "By clicking the button below, siz agree to our",
+    "termsAndConditions": "Terms and Conditions",
+    "finishAccountSetup": "Bitir hesap setup",
+    "acceptInvite": "Accept davet",
+    "accountExists": "Zaten sahip an hesap?",
+    "and": "and"
+  },
+  "onBoarding": {
+    "finishToolJetInstallation": "Bitir ToolJet installation",
+    "organization": "Kuruluş",
+    "name": "Ad",
+    "email": "E-posta",
+    "receiveUpdatesFromToolJet": "Siz will receive updates from the ToolJet team ( 1-2 emails every ay, we do değil spam )",
+    "finishSetup": "Bitir setup",
+    "skip": "Skip"
+  },
+  "redirectSso": {
+    "upgradingTov1.13.0": "Upgrading to v1.13.0 and above.",
+    "fromV1.13.0": "From v1.13.0 we sahip introduced",
+    "multiWorkspace": "Multi-Workspace",
+    "singleSignOnConfig": "The Single Sign-On related configurations are moved from çalışma alanı değişkenler to veritabanı. Lütfen refer bu",
+    "link": "Bağlantı",
+    "toConfigureSSO": "to configure SSO.",
+    "haveGoogleGithubSSo": "If siz sahip Google or GitHub SSO configurations before upgrade and devre dışı Multi-Workspace, then theSSO configurations will be migrated while upgrade but siz sahip to re-configure the redirect URL içinde the SSO sağlayıcı side. Redirect URLs for each SSO are given below.",
+    "isMultiWorkspaceEnabled": "If siz sahip etkin Multi-Workspace, then the SSO configurations will değil be migrated while upgrade so siz sahip to re-configure the SSO under the respective çalışma alanı.",
+    "youHaveEnabled": "Siz sahip Etkin",
+    "setupSsoWorkspace": "Lütfen giriş with parola and siz can setup sso using çalışma alanı",
+    "manageSsoMenu": "Yönetim SSO menu.",
+    "youHaveDisabled": "Siz sahip Devre dışı",
+    "configureRedirectUrl": "Lütfen configure redirect URL içinde SSO sağlayıcı side.",
+    "google": "Google",
+    "redirectUrl": "Redirect URL:",
+    "gitHub": "GitHub"
+  },
+  "oAuth2": {
+    "pleaseWait": "Lütfen bekleyin...",
+    "authSuccess": "Auth successful, siz can kapat bu tab now.",
+    "authFailed": "Auth başarısız"
+  },
+  "widgetManager": {
+    "commonlyUsed": "commonly used",
+    "layouts": "layouts",
+    "forms": "forms",
+    "integrations": "entegrasyonlar",
+    "others": "others",
+    "noResults": "Yok sonuçlar found",
+    "tryAdjustingFilterMessage": "Try adjusting sizin ara or filter to find what you're looking for.",
+    "clearQuery": "temizle sorgu"
+  },
+  "widget": {
+    "common": {
+      "properties": "Properties",
+      "events": "Olaylar",
+      "layout": "Layout",
+      "devices": "Devices",
+      "styles": "Styles",
+      "general": "Genel",
+      "validation": "Validation",
+      "structure": "Structure",
+      "data": "Veri",
+      "additionalActions": "Additional Actions",
+      "documentation": "Okuma dokümantasyon for {{componentMeta}}",
+      "widgetNameEmptyError": "Widget ad cannot be boş",
+      "componentNameExistsError": "Bileşen ad zaten exists",
+      "invalidWidgetName": "Geçersiz widget ad. Should be unique and only include letters, numbers and underscore."
+    },
+    "commonProperties": {
+      "visibility": "Visibility",
+      "disable": "Devre dışı bırak",
+      "borderRadius": "Kenarlık yarıçap",
+      "transformation": "Transformation",
+      "boxShadow": "Box shadow",
+      "tooltip": "Tooltip",
+      "showOnDesktop": "Göster on desktop",
+      "showOnMobile": "Göster on mobile",
+      "showLoadingState": "Göster yükleniyor state",
+      "backgroundColor": "Arka plan renk",
+      "textColor": "Metin renk",
+      "loaderColor": "Loader renk",
+      "defaultValue": "Varsayılan değer",
+      "placeholder": "Placeholder",
+      "label": "Etiket",
+      "title": "Başlık",
+      "code": "Kod",
+      "data": "Veri",
+      "tableData": "Tablo veri",
+      "tableColumns": "Tablo sütunlar",
+      "loadingState": "Yükleniyor state",
+      "serverSidePagination": "Server-side pagination",
+      "clientSidePagination": "Client-side pagination",
+      "serverSideSearch": "Server-side ara",
+      "showSearchBox": "Göster ara box",
+      "showDownloadButton": "Göster indir button",
+      "showFilterButton": "Göster filter button",
+      "showBulkUpdateActions": "Göster güncelleme buttons",
+      "bulkSelection": "Bulk selection",
+      "highlightSelectedRow": "Highlight seçili satır",
+      "actionButtonRadius": "Eylem button yarıçap",
+      "tableType": "Tablo tür",
+      "cellSize": "Cell boyut",
+      "setPage": "Set sayfa",
+      "page": "Sayfa",
+      "buttonText": "Button metin",
+      "click": "Click",
+      "setText": "Set metin",
+      "text": "Metin",
+      "markerColor": "Marker renk",
+      "showAxes": "Göster axis",
+      "showGridLines": "Göster grid lines",
+      "chartType": "Chart tür",
+      "jsonDescription": "JSON açıklama",
+      "usePlotlyJsonSchema": "Use Plotly JSON schema",
+      "padding": "Iç boşluk",
+      "hideTitleBar": "Gizle başlık bar",
+      "hideCloseButton": "Gizle kapat button",
+      "hideOnEscape": "Gizle on escape",
+      "modalSize": "Modal boyut",
+      "open": "Aç",
+      "close": "Kapat",
+      "regex": "Regex",
+      "minLength": "Min length",
+      "maxLength": "Max length",
+      "customValidation": "Özel validation",
+      "clear": "Temizle",
+      "minimumValue": "Minimum değer",
+      "maximumValue": "Maximum değer",
+      "format": "Biçim",
+      "enableTimeSelection": "Etkinleştir saat selection?",
+      "enableDateSelection": "Etkinleştir tarih selection?",
+      "disabledDates": "Devre dışı dates",
+      "minDate": "Min Tarih",
+      "maxDate": "Max Tarih",
+      "makeThisFieldMandatory": "Make bu field mandatory",
+      "setChecked": "Set checked",
+      "status": "durum",
+      "defaultStatus": "Varsayılan durum",
+      "checkboxColor": "Checkbox renk",
+      "optionValues": "Seçenek değerler",
+      "optionLabels": "Seçenek etiketler",
+      "activeColor": "Etkin renk",
+      "selectOption": "Seç seçenek",
+      "option": "Seçenek",
+      "toggleSwitchColor": "Toggle switch renk",
+      "defaultStartDate": "Varsayılan başlangıç tarih",
+      "defaultEndDate": "Varsayılan bitiş tarih",
+      "textSize": "Metin boyut",
+      "alignText": "Align metin",
+      "url": "URL",
+      "alternativeText": "Alternative metin",
+      "zoomButton": "Zoom button",
+      "borderType": "Kenarlık tür",
+      "imageFit": "Image fit",
+      "optionsLoadingState": "Seçenekler yükleniyor state",
+      "selectedTextColor": "Seçili metin renk",
+      "select": "Seç",
+      "deselectOption": "Deselect seçenek",
+      "clearSelections": "Temizle selections",
+      "enableSelectAllOption": "Etkinleştir seç tümü seçenek",
+      "initialLocation": "Initial location",
+      "defaultMarkers": "Varsayılan markers",
+      "addNewMarkers": "Ekle yeni markers",
+      "searchForPlaces": "Ara for places",
+      "setLocation": "Set location",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "numberOfStars": "Sayı of stars",
+      "defaultNoOfSelectedStars": "Varsayılan yok of seçili stars",
+      "enableHalfStar": "Etkinleştir half star",
+      "tooltips": "Tooltips",
+      "starColor": "Star renk",
+      "labelColor": "Etiket renk",
+      "dividerColor": "Divider renk",
+      "clearFiles": "Temizle dosyalar",
+      "instructionText": "Instruction metin",
+      "useDropZone": "Use drop zone",
+      "useFilePicker": "Use dosya picker",
+      "pickMultipleFiles": "Pick multiple dosyalar",
+      "maxFileCount": "Max dosya sayı",
+      "acceptFileTypes": "Accept dosya types",
+      "maxSizeLimitBytes": "Max boyut limit (Bytes)",
+      "minSizeLimitBytes": "Min boyut limit (Bytes)",
+      "parseContent": "Parse content",
+      "fileType": "Dosya tür",
+      "dateFormat": "Tarih biçim",
+      "timeFormat": "Saat Biçim",
+      "displayIn": "Görüntüle içinde",
+      "storeIn": "Store içinde",
+      "defaultDate": "Varsayılan tarih",
+      "events": "Olaylar",
+      "resources": "Kaynaklar",
+      "defaultView": "Varsayılan görüntüle",
+      "startTimeOnWeekAndDayView": "Başlangıç saat on week and day görüntüle",
+      "endTimeOnWeekAndDayView": "Bitiş saat on week and day görüntüle",
+      "showToolbar": "Göster toolbar",
+      "showViewSwitcher": "Göster görüntüle switcher",
+      "highlightToday": "Highlight bugün",
+      "showPopoverWhenEventIsClicked": "Göster popover when olay is clicked",
+      "cellSizeInViewsClassifiedByResource": "Cell boyut içinde views classified by resource",
+      "headerDateFormatOnWeekView": "Başlık tarih biçim on week görüntüle",
+      "showLineNumber": "Göster line sayı",
+      "mode": "Mode",
+      "tabs": "Tabs",
+      "defaultTab": "Varsayılan tab",
+      "hideTabs": "Gizle tabs",
+      "highlightColor": "Highlight renk",
+      "tabWidth": "Tab genişlik",
+      "setCurrentTab": "Set current tab",
+      "id": "Id",
+      "timerType": "Timer tür",
+      "listData": "Liste veri",
+      "rowHeight": "Satır yükseklik",
+      "showBottomBorder": "Göster alt kenarlık",
+      "tags": "Tags",
+      "numberOfPages": "Sayı of sayfalar",
+      "defaultPageIndex": "Varsayılan sayfa indeks",
+      "progress": "Progress",
+      "color": "Renk",
+      "strokeWidth": "Stroke genişlik",
+      "counterClockwise": "Counter clockwise",
+      "circleRatio": "Circle ratio",
+      "colour": "Renk",
+      "size": "Boyut",
+      "primaryValueLabel": "Primary değer etiket",
+      "primaryValue": "Primary değer",
+      "hideSecondaryValue": "Gizle secondary değer",
+      "secondaryValueLabel": "Secondary değer etiket",
+      "secondaryValue": "Secondary değer",
+      "secondarySignDisplay": "Secondary oturum görüntüle",
+      "primaryLabelColour": "Primary etiket renk",
+      "primaryTextColour": "Primary metin renk",
+      "secondaryLabelColour": "Secondary etiket renk",
+      "secondaryTextColour": "Secondary metin renk",
+      "min": "Min",
+      "max": "Max",
+      "value": "Değer",
+      "twoHandles": "Two handles",
+      "lineColor": "Line renk",
+      "handleColor": "Handle renk",
+      "trackColor": "Track renk",
+      "timelineData": "Timeline veri",
+      "hideDate": "Gizle tarih",
+      "svgData": "Svg  veri",
+      "rawHtml": "Raw HTML",
+      "values": "değerler",
+      "labels": "Etiketler",
+      "defaultSelected": "Varsayılan seçili",
+      "enableMultipleSelection": "Etkinleştir multiple selection",
+      "selectedTextColour": "Seçili metin colour",
+      "selectedBackgroundColor": "Seçili arka plan renk",
+      "fileUrl": "Dosya URL",
+      "scalePageToWidth": "Scale sayfa to genişlik",
+      "showPageControls": "Göster sayfa controls",
+      "steps": "Steps",
+      "currentStep": "Current step",
+      "stepsSelectable": "Steps selectable",
+      "theme": "Theme",
+      "columns": "Sütunlar",
+      "cardData": "Card veri",
+      "enableAddCard": "Etkinleştir ekle card",
+      "width": "Genişlik",
+      "minWidth": "Min genişlik",
+      "accentColor": "Accent renk",
+      "defaultColor": "Varsayılan renk",
+      "setColor": "Set renk",
+      "structure": "Structure",
+      "checkedValues": "Checked değerler",
+      "expandedValues": "Expanded değerler"
+    },
+    "Table": {
+      "displayName": "Tablo",
+      "description": "Görüntüle paginated tabular veri",
+      "columnType": "Sütun tür",
+      "columnName": "Sütun ad",
+      "overflow": "Overflow",
+      "key": "Anahtar",
+      "textColor": "Metin renk",
+      "validation": "Validation",
+      "regex": "Regex",
+      "minLength": "Min length",
+      "maxLength": "Max length",
+      "customRule": "Özel rule",
+      "values": "Değerler",
+      "labels": "Etiketler",
+      "cellBgColor": "Cell arka plan renk",
+      "dateDisplayformat": "Tarih biçim",
+      "dateParseformat": "Tarih",
+      "showTime": "göster saat",
+      "makeEditable": "make editable",
+      "buttonText": "Button metin",
+      "buttonPosition": "Button konum",
+      "remove": "Kaldır",
+      "addButton": "+ Ekle button",
+      "addColumn": "Ekle sütun",
+      "addNewColumn": "Ekle yeni sütun",
+      "noActionMessage": "Bu tablo doesn't sahip any eylem buttons",
+      "horizontalAlignment": "Yatay hizalama",
+      "textAlignment": "Metin hizalama",
+      "deciamalPlaces": "Decimal Places",
+      "imageFit": "Image fit"
+    },
+    "Button": {
+      "displayName": "Button",
+      "description": "Tetikleyici actions: sorgular, alerts, set değişkenler etc."
+    },
+    "Chart": {
+      "displayName": "Chart",
+      "description": "Visualize veri"
+    },
+    "Modal": {
+      "displayName": "Modal",
+      "description": "Göster pop-up windows"
+    },
+    "TextInput": {
+      "displayName": "Metin Girdi",
+      "description": "Kullanıcı metin girdi field"
+    },
+    "NumberInput": {
+      "displayName": "Sayı Girdi",
+      "description": "Numeric girdi field"
+    },
+    "PasswordInput": {
+      "displayName": "Parola Girdi",
+      "description": "Secure metin girdi"
+    },
+    "Datepicker": {
+      "displayName": "Tarih Picker",
+      "description": "Tarih ve saat seçin"
+    },
+    "Checkbox": {
+      "displayName": "Checkbox",
+      "description": "Single checkbox toggle"
+    },
+    "Radio-button": {
+      "displayName": "Radio Button",
+      "description": "Seç one from multiple choices"
+    },
+    "ToggleSwitch": {
+      "displayName": "Toggle Switch",
+      "description": "User-controlled on-off switch"
+    },
+    "Textarea": {
+      "displayName": "Metin Area",
+      "description": "Multi-line metin girdi"
+    },
+    "DateRangePicker": {
+      "displayName": "Tarih Range Picker",
+      "description": "Seç tarih ranges"
+    },
+    "Text": {
+      "displayName": "Metin",
+      "description": "Metin veya HTML göster"
+    },
+    "Image": {
+      "displayName": "Image",
+      "description": "Göster image dosyalar"
+    },
+    "Container": {
+      "displayName": "Container",
+      "description": "Grup bileşenler"
+    },
+    "Dropdown": {
+      "displayName": "Dropdown",
+      "description": "Single öğe selector"
+    },
+    "Multiselect": {
+      "displayName": "Multi Seç",
+      "description": "Multiple öğe selector"
+    },
+    "RichTextEditor": {
+      "displayName": "Metin Düzenleyici",
+      "description": "Rich metin düzenleyici"
+    },
+    "Map": {
+      "displayName": "Map",
+      "description": "Harita konumlarını göster"
+    },
+    "QrScanner": {
+      "displayName": "QR Scanner",
+      "description": "Scan QR codes and hold its veri"
+    },
+    "StarRating": {
+      "displayName": "Rating",
+      "description": "Star rating"
+    },
+    "Divider": {
+      "displayName": "Divider",
+      "description": "Separator between bileşenler"
+    },
+    "FilePicker": {
+      "displayName": "Dosya Picker",
+      "description": "Dosya Picker"
+    },
+    "Calendar": {
+      "displayName": "Takvim",
+      "description": "Görüntüle takvim olaylar"
+    },
+    "Iframe": {
+      "displayName": "Iframe",
+      "description": "Göm external content"
+    },
+    "CodeEditor": {
+      "displayName": "Kod Düzenleyici",
+      "description": "Düzenle kaynak kod"
+    },
+    "Tabs": {
+      "displayName": "Tabs",
+      "description": "Organize content içinde tabs"
+    },
+    "Timer": {
+      "displayName": "Timer",
+      "description": "Countdown or stopwatch"
+    },
+    "Listview": {
+      "displayName": "Liste Görüntüle",
+      "description": "Liste multiple öğeler"
+    },
+    "Tags": {
+      "displayName": "Tags",
+      "description": "Görüntüle tag etiketler"
+    },
+    "Pagination": {
+      "displayName": "Pagination",
+      "description": "Navigate sayfalar"
+    },
+    "CircularProgressbar": {
+      "displayName": "Circular Progressbar",
+      "description": "Göster circular progress"
+    },
+    "Spinner": {
+      "displayName": "Spinner",
+      "description": "Indicate yükleniyor state"
+    },
+    "Statistics": {
+      "displayName": "Statistics",
+      "description": "Göster anahtar metrics"
+    },
+    "RangeSlider": {
+      "displayName": "Range Slider",
+      "description": "Adjust değer range"
+    },
+    "Timeline": {
+      "displayName": "Timeline",
+      "description": "Göster olay timeline"
+    },
+    "SvgImage": {
+      "displayName": "Svg Image",
+      "description": "Görüntüle SVG graphics"
+    },
+    "Html": {
+      "displayName": "HTML Viewer",
+      "description": "Görüntüle HTML content"
+    },
+    "VerticalDivider": {
+      "displayName": "Dikey Divider",
+      "description": "Dikey line separator"
+    },
+    "CustomComponent": {
+      "displayName": "Özel Bileşen",
+      "description": "Oluşturma React bileşenler"
+    },
+    "ButtonGroup": {
+      "displayName": "Button Grup",
+      "description": "Grup of buttons"
+    },
+    "PDF": {
+      "displayName": "PDF",
+      "description": "Göm PDF documents"
+    },
+    "Steps": {
+      "displayName": "Steps",
+      "description": "Step-by-step navigation aid"
+    },
+    "KanbanBoard": {
+      "displayName": "Kanban Board",
+      "description": "Task management board"
+    },
+    "ColorPicker": {
+      "displayName": "Renk Picker",
+      "description": "Seç colors from a palette"
+    },
+    "TreeSelect": {
+      "displayName": "Tree Seç",
+      "description": "Hierarchical öğe selector"
+    }
+  },
+  "leftSidebar": {
+    "Inspector": {
+      "text": "Inceleyici",
+      "tip": "Inceleyici"
+    },
+    "Sources": {
+      "text": "Kaynaklar",
+      "tip": "Ekle or düzenle datasources",
+      "dataSources": "Veri kaynaklar",
+      "addDataSource": "+ ekle veri kaynak"
+    },
+    "Debugger": {
+      "text": "Hata ayıklayıcı",
+      "tip": "Hata ayıklayıcı",
+      "errors": "Hatalar",
+      "noErrors": "Hata bulunamadı",
+      "noLogs": "Günlük bulunamadı",
+      "clear": "temizle"
+    },
+    "Comments": {
+      "text": "Yorumlar",
+      "tip": "Toggle yorumlar",
+      "commentBody": "There are yok yorumlar to görüntüle",
+      "typeComment": "Yorumunuzu buraya yazın"
+    },
+    "Settings": {
+      "text": "Tetikleyiciler",
+      "tip": "Global Ayarlar",
+      "hideHeader": "Gizle başlık for launched uygulamalar",
+      "maintenanceMode": "Bakım modu",
+      "maxWidthOfCanvas": "Max genişlik of canvas",
+      "maxHeightOfCanvas": "Max yükseklik of canvas",
+      "backgroundColorOfCanvas": "Canvas arka plan",
+      "appMode": "Uygulama mode",
+      "exportApp": "Dışa aktar uygulama"
+    },
+    "Back": {
+      "text": "Geri",
+      "tip": "Geri to Ana sayfa"
+    }
+  },
+  "datepicker": {
+    "months": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    }
+  },
+  "notifications": {
+    "empty": "Bildirim yok",
+    "markAllRead": "Tümünü okundu olarak işaretle",
+    "technicalDetails": "Teknik ayrıntılar",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı"
+  }
+}
