@@ -19,7 +19,7 @@ import {
 import { DownOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AntProvider, usePopupTheme, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
+import { AntProvider, tokenLooks, usePopupTheme, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { RADIUS_HINT, THEME_COLOR, useThemeColor, useThemeNumber } from '../lib/themeStyles';
 import { SkeletonSwap, SpinOver } from '../lib/Loading';
 import { oneOf, str, toArray, toKeyedItems, type Row } from '../lib/data';
@@ -725,7 +725,8 @@ export const Skeleton = () => {
   const [rows] = ToolJet.useStateNumber({ name: 'rows', label: 'Paragraph rows', initialValue: 3, min: 0, max: 20 });
   const [loading] = ToolJet.useStateBoolean({ name: 'loading', label: 'Loading', initialValue: true });
   const host = ToolJet.useControlState();
-  const tokens = useTokenStyles();
+  // The bars are Ant's fill grey and its shine, never the primary or border colour (QA PKB-41).
+  const tokens = useTokenStyles({ omit: ['colorPrimary', 'colorBorder'] });
   ToolJet.useComponentSettings({
     role: 'skeleton',
     fit: false,
@@ -740,7 +741,7 @@ export const Skeleton = () => {
   const shown = loading || host.loading;
   const fit = useFittedRows(asked, [shown, title, avatar]);
   return (
-    <AntProvider tokens={tokens} fill>
+    <AntProvider tokens={tokens} fill className={`tj-ant-skeleton tj-ant-boxed ${tokenLooks(tokens)}`.trim()}>
       <div ref={fit.ref} className="tj-ant-skeleton-fit">
         {shown ? <AntSkeleton active={active} avatar={avatar} title={title} paragraph={{ rows: fit.rows }} /> : null}
       </div>
@@ -1225,7 +1226,7 @@ export const Carousel = () => {
     carousel.current?.goTo(wanted);
   }, [wanted, slides.length]);
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-carousel" ownerRef={owner}>
+    <AntProvider tokens={tokens} fill className={`tj-ant-carousel ${tokenLooks(tokens)}`.trim()} ownerRef={owner}>
       <SpinOver loading={loading} as="fill">
         {slides.length ? (
           <AntCarousel
