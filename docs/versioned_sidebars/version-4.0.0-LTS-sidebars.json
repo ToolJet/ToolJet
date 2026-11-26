@@ -1168,7 +1168,8 @@
             "workflows/versions-env/version-control",
             "workflows/versions-env/environments"
           ]
-        }
+        },
+        "workflows/execution-limitations"
       ]
     },
     {
