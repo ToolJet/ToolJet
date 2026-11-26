@@ -7,6 +7,7 @@ import {
   QueryService,
   cleanSensitiveData,
   redactHeaders,
+  getOAuthTokenHeaderName,
   User,
   App,
   OAuthUnauthorizedClientError,
@@ -75,7 +76,7 @@ export default class RestapiQueryService implements QueryService {
 
     try {
       const response = await got(url, finalOptions);
-      const { result, requestObject, responseObject } = this.handleResponse(response);
+      const { result, requestObject, responseObject } = this.handleResponse(response, sourceOptions);
 
       return {
         status: 'ok',
@@ -279,14 +280,15 @@ export default class RestapiQueryService implements QueryService {
     requestOptions.headers = { ...requestOptions.headers, ...form.getHeaders() };
   }
 
-  private handleResponse(response: any) {
+  private handleResponse(response: any, sourceOptions: any) {
+    const tokenHeaderName = getOAuthTokenHeaderName(sourceOptions);
     const result = this.getResponse(response);
     const requestUrl = response?.request?.options?.url?.origin + response?.request?.options?.url?.pathname;
     const requestObject = {
       requestUrl,
       url: response.requestUrl,
       method: response.request.options.method,
-      headers: redactHeaders(response.request.options.headers),
+      headers: redactHeaders(response.request.options.headers, tokenHeaderName),
       params: urrl.parse(response.request.requestUrl, true).query,
     };
 
@@ -303,11 +305,15 @@ export default class RestapiQueryService implements QueryService {
       `Error while calling REST API endpoint. Status code: ${error?.response?.statusCode}, Message: ${error?.response?.body}`
     );
 
+    const tokenHeaderName = getOAuthTokenHeaderName(sourceOptions);
     let result = {};
     let metadata = {};
     if (error instanceof HTTPError) {
       const requestUrl = error?.request?.options?.url?.origin + error?.request?.options?.url?.pathname;
-      const requestHeaders = cleanSensitiveData(error?.request?.options?.headers, ['authorization']);
+      const requestHeaders = cleanSensitiveData(error?.request?.options?.headers, [
+        'authorization',
+        ...(tokenHeaderName ? [tokenHeaderName.trim().toLowerCase()] : []),
+      ]);
       const requestObject = {
         requestUrl: requestUrl,
         requestHeaders: requestHeaders,

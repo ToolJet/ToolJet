@@ -258,7 +258,58 @@ const CommonOAuthFields = ({
   );
 };
 
-const ClientCredentialsFields = ({ authConfig, workspaceConfig, handlers, oauth_configs, isFieldAllowed }) => {
+const TokenHeaderFields = ({ tokenConfig, workspaceConfig, handlers, oauth_configs, isFieldAllowed, grantType }) => {
+  const { optionchanged } = handlers;
+  const { workspaceConstants } = workspaceConfig;
+  const { access_token_header_key, header_prefix } = tokenConfig;
+
+  return (
+    <>
+      {isFieldAllowed('access_token_header_key', grantType, oauth_configs) && (
+        <div className="col-md-12" data-cy="header-key-section">
+          <label className="form-label mt-3" data-cy="label-header-key">
+            Access Token Header key
+          </label>
+          <Input
+            data-cy="header-key-input-field"
+            type="text"
+            className="form-control"
+            onChange={(e) => optionchanged('access_token_header_key', e.target.value)}
+            value={access_token_header_key}
+            workspaceConstants={workspaceConstants}
+            placeholder="Authorization"
+          />
+        </div>
+      )}
+      {isFieldAllowed('header_prefix', grantType, oauth_configs) && (
+        <div className="col-md-12" data-cy="header-prefix-section">
+          <label className="form-label mt-3" data-cy="label-header-prefix">
+            Header prefix
+          </label>
+          <Input
+            data-cy="header-prefix-input-field"
+            type="text"
+            className="form-control"
+            onChange={(e) => optionchanged('header_prefix', e.target.value)}
+            value={header_prefix}
+            workspaceConstants={workspaceConstants}
+            placeholder="Bearer "
+          />
+          <small className="text-muted">Leave the prefix empty if the API expects the raw token.</small>
+        </div>
+      )}
+    </>
+  );
+};
+
+const ClientCredentialsFields = ({
+  authConfig,
+  tokenConfig,
+  workspaceConfig,
+  handlers,
+  oauth_configs,
+  isFieldAllowed,
+}) => {
   const { audience } = authConfig;
   const { optionchanged } = handlers;
   const { workspaceConstants } = workspaceConfig;
@@ -281,6 +332,14 @@ const ClientCredentialsFields = ({ authConfig, workspaceConfig, handlers, oauth_
           />
         </div>
       )}
+      <TokenHeaderFields
+        tokenConfig={tokenConfig}
+        workspaceConfig={workspaceConfig}
+        handlers={handlers}
+        oauth_configs={oauth_configs}
+        isFieldAllowed={isFieldAllowed}
+        grantType="client_credentials"
+      />
     </>
   );
 };
@@ -288,7 +347,7 @@ const ClientCredentialsFields = ({ authConfig, workspaceConfig, handlers, oauth_
 const AuthorizationCode = ({ authConfig, tokenConfig, workspaceConfig, handlers, oauth_configs, isFieldAllowed }) => {
   const { optionchanged } = handlers;
   const { workspaceConstants } = workspaceConfig;
-  const { custom_query_params, add_token_to, header_prefix } = tokenConfig;
+  const { custom_query_params, add_token_to } = tokenConfig;
   const { auth_url, custom_auth_params, multiple_auth_enabled } = authConfig;
   return (
     <>
@@ -307,20 +366,15 @@ const AuthorizationCode = ({ authConfig, tokenConfig, workspaceConfig, handlers,
           />
         </div>
       )}
-      {add_token_to === 'header' && isFieldAllowed('header_prefix', 'authorization_code', oauth_configs) && (
-        <div className="col-md-12" data-cy="header-prefix-section">
-          <label className="form-label mt-3" data-cy="label-header-prefix">
-            Header prefix
-          </label>
-          <Input
-            data-cy="header-prefix-input-field"
-            type="text"
-            className="form-control"
-            onChange={(e) => optionchanged('header_prefix', e.target.value)}
-            value={header_prefix}
-            workspaceConstants={workspaceConstants}
-          />
-        </div>
+      {add_token_to === 'header' && (
+        <TokenHeaderFields
+          tokenConfig={tokenConfig}
+          workspaceConfig={workspaceConfig}
+          handlers={handlers}
+          oauth_configs={oauth_configs}
+          isFieldAllowed={isFieldAllowed}
+          grantType="authorization_code"
+        />
       )}
       {isFieldAllowed('auth_url', 'authorization_code', oauth_configs) && (
         <div className="col-md-12" data-cy="authorization-url-section">
@@ -453,6 +507,7 @@ const OAuthConfiguration = ({
         {grant_type === 'client_credentials' ? (
           <ClientCredentialsFields
             authConfig={authConfig}
+            tokenConfig={tokenConfig}
             workspaceConfig={workspaceConfig}
             handlers={handlers}
             oauth_configs={oauth_configs}

@@ -19,6 +19,9 @@
       "add_token_to": {
         "type": "string"
       },
+      "access_token_header_key": {
+        "type": "string"
+      },
       "header_prefix": {
         "type": "string"
       },
@@ -103,6 +106,9 @@
     },
     "add_token_to": {
       "value": "header"
+    },
+    "access_token_header_key": {
+      "value": "Authorization"
     },
     "header_prefix": {
       "value": "Bearer "

@@ -18,6 +18,7 @@ import {
   getRefreshedToken,
   getAuthUrl,
   redactHeaders,
+  getOAuthTokenHeaderName,
   validateUrlForSSRF,
   getSSRFProtectionOptions,
 } from '@tooljet-plugins/common';
@@ -94,6 +95,7 @@ export default class GraphqlQueryService implements QueryService {
     // Pass requestOptions to properly merge hooks and other options
     const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
 
+    const tokenHeaderName = getOAuthTokenHeaderName(sourceOptions);
     let result = {};
     let requestObject = {};
     let responseObject = {};
@@ -105,7 +107,7 @@ export default class GraphqlQueryService implements QueryService {
       requestObject = {
         url: response.requestUrl,
         method: response.request.options.method,
-        headers: redactHeaders(response.request.options.headers),
+        headers: redactHeaders(response.request.options.headers, tokenHeaderName),
         params: urrl.parse(response.request.requestUrl, true).query,
       };
 
@@ -124,7 +126,7 @@ export default class GraphqlQueryService implements QueryService {
             requestUrl: sourceOptions.password // Remove password from error object
               ? error.request.requestUrl?.replace(`${sourceOptions.password}@`, '<password>@')
               : error.request.requestUrl,
-            requestHeaders: error.request.options.headers,
+            requestHeaders: redactHeaders(error.request.options.headers, tokenHeaderName),
             requestParams: urrl.parse(error.request.requestUrl, true).query,
           },
           responseObject: {

@@ -26,6 +26,7 @@ const OAuth = ({
   grpc_apiKey_value,
   bearer_token,
   auth_url,
+  access_token_header_key,
   header_prefix,
   add_token_to,
   multiple_auth_enabled,
@@ -86,6 +87,7 @@ const OAuth = ({
       )}
       <ElementToRender
         add_token_to={add_token_to}
+        access_token_header_key={access_token_header_key}
         header_prefix={header_prefix}
         access_token_url={access_token_url}
         access_token_custom_headers={access_token_custom_headers}
