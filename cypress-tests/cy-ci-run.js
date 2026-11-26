@@ -13,8 +13,11 @@
 //   BROWSER        --browser value, e.g. chrome (omit for the Cypress default)
 //   SHARD_INDEX    0-based shard of this machine; with SHARD_TOTAL > 1 only
 //   SHARD_TOTAL    this shard's specs run (see ci-shard.js for the other vars)
+//   SPEC_PER_RUN   "1" forces one Cypress run per spec, "0" forbids it; unset
+//                  means on only for Chrome 158+ (see oneSpecPerRun below)
 // CYPRESS_* env vars (e.g. CYPRESS_proxy) are picked up by Cypress automatically.
 const fs = require("fs");
+const { execSync } = require("child_process");
 const cypress = require("cypress");
 const { pickShardSpecs } = require("./ci-shard");
 
@@ -34,15 +37,48 @@ function parseConfig(str) {
   return config;
 }
 
+// Major version of the installed Chrome, or null when it can't be found.
+function chromeMajorVersion() {
+  const commands = [
+    "google-chrome --version",
+    "google-chrome-stable --version",
+    '"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --version',
+  ];
+  for (const command of commands) {
+    try {
+      const match = execSync(command, { stdio: ["ignore", "pipe", "ignore"] })
+        .toString()
+        .match(/(\d+)\./);
+      if (match) return Number(match[1]);
+    } catch (_) {
+      // not installed under this name; try the next one
+    }
+  }
+  return null;
+}
+
+// Cypress 15.18 aborts the whole run when it opens a second spec in Chrome 158+
+// ("* is not a valid URL", cypress-io/cypress#35195, fixed in 15.21.2). Starting a
+// fresh run for each spec means no run ever opens a second spec.
+function oneSpecPerRun(browser) {
+  if (process.env.SPEC_PER_RUN === "1") return true;
+  if (process.env.SPEC_PER_RUN === "0") return false;
+  if (browser !== "chrome") return false;
+  const major = chromeMajorVersion();
+  return major !== null && major >= 158;
+}
+
 const runOptions = { config: parseConfig(process.env.CYPRESS_CONFIG) };
 if (process.env.CONFIG_FILE) runOptions.configFile = process.env.CONFIG_FILE;
 if (process.env.BROWSER) runOptions.browser = process.env.BROWSER;
 
 const shardTotal = Number(process.env.SHARD_TOTAL || 1);
-if (shardTotal > 1) {
-  const specs = pickShardSpecs({
+const perSpec = oneSpecPerRun(process.env.BROWSER);
+let specs = null;
+if (shardTotal > 1 || perSpec) {
+  specs = pickShardSpecs({
     configFile: process.env.CONFIG_FILE,
-    index: Number(process.env.SHARD_INDEX || 0),
+    index: shardTotal > 1 ? Number(process.env.SHARD_INDEX || 0) : 0,
     total: shardTotal,
     groups: (process.env.SHARD_GROUPS || "")
       .split(";")
@@ -50,13 +86,38 @@ if (shardTotal > 1) {
       .map((group) => group.split(",").map((part) => part.trim()).filter(Boolean))
       .filter((group) => group.length),
   });
-  console.log(`Shard ${Number(process.env.SHARD_INDEX || 0) + 1}/${shardTotal} runs ${specs.length} specs:`);
-  specs.forEach((spec) => console.log(`  ${spec}`));
-  runOptions.spec = specs;
+  if (shardTotal > 1) {
+    console.log(`Shard ${Number(process.env.SHARD_INDEX || 0) + 1}/${shardTotal} runs ${specs.length} specs:`);
+    specs.forEach((spec) => console.log(`  ${spec}`));
+  }
+}
+if (perSpec) console.log("Running one Cypress run per spec (Chrome 158+, cypress-io/cypress#35195).");
+
+// One run for all specs, or one run per spec merged into the same result shape.
+async function runAll() {
+  if (!perSpec) return cypress.run(specs ? { ...runOptions, spec: specs } : runOptions);
+
+  const merged = { status: "finished", runs: [], totalTests: 0, totalPassed: 0, totalFailed: 0, totalPending: 0, totalSkipped: 0, totalDuration: 0 };
+  for (const [i, spec] of specs.entries()) {
+    // Only the first run may clear screenshots, or each run deletes the last one's.
+    const config = i === 0 ? runOptions.config : { ...runOptions.config, trashAssetsBeforeRuns: false };
+    const result = await cypress.run({ ...runOptions, config, spec });
+    if (result.status === "failed") {
+      // Cypress could not run this spec at all; count it as one failure and go on.
+      console.error(`${spec}: ${result.message}`);
+      merged.totalFailed += 1;
+      merged.runs.push({ spec: { relative: spec }, stats: { failures: 1 }, tests: [{ state: "failed", title: [result.message || "Cypress could not run this spec"] }] });
+      continue;
+    }
+    merged.runs.push(...(result.runs || []));
+    for (const key of ["totalTests", "totalPassed", "totalFailed", "totalPending", "totalSkipped", "totalDuration"]) {
+      merged[key] += result[key] || 0;
+    }
+  }
+  return merged;
 }
 
-cypress
-  .run(runOptions)
+runAll()
   .then((results) => {
     // status:"failed" means Cypress itself could not run (e.g. config/build
     // error) — there are no test counts to report.
