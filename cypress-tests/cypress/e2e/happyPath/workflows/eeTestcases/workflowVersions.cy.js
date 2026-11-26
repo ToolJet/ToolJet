@@ -111,8 +111,19 @@ describe("Workflows - versions, promotion and release", () => {
       workflowsText.versionLockedText
     );
 
+    cy.intercept("POST", "/api/apps/*/draft-versions*").as("createDraft");
+    cy.intercept("GET", "/api/v2/apps/*/versions/*").as("openVersion");
     cy.get(workflowSelector.createDraftLink).click();
     cy.get(workflowSelector.confirmYesButton).click();
+
+    // The app reports each user's last-opened version, so it only moves to the
+    // new draft once the editor has opened it.
+    cy.wait("@createDraft").then(({ response }) => {
+      expect(response.statusCode).to.equal(201);
+      cy.wait("@openVersion")
+        .its("request.url")
+        .should("include", `/versions/${response.body.id}`);
+    });
 
     // A new editable draft exists; reloading opens it without the lock banner.
     cy.then(() => {

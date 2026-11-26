@@ -86,6 +86,13 @@ export const deleteAppandWorkflowAfterExecution = (workflowName, appName) => {
 };
 
 export const verifyPreviewOutputText = (expectedOutput) => {
+  // The code editor saves 100ms after it loses focus, and the preview runs the
+  // saved code. Blur it and wait for the save so Preview runs what was typed.
+  cy.intercept("PATCH", "/api/data-queries/**", (req) => {
+    if (req.body?.options?.code !== undefined) req.alias = "nodeCodeSaved";
+  });
+  cy.focused().blur();
+  cy.wait("@nodeCodeSaved").its("response.statusCode").should("eq", 200);
   cy.get('[data-cy="preview-button"]').click();
   cy.wait(2000);
   cy.get('[data-cy="inspector-node-data"]')
