@@ -36,6 +36,14 @@ export interface BranchReviewStatusResponse {
     mergedWithoutApproval: boolean;
   }>;
   ready: boolean;
+  // ToolJet's comment on the branch's pull request (GitHub); null where none is kept. `commit` is the commit its verdict
+  // is for, null while no pull request is open.
+  reviewComment: BranchReviewComment | null;
+}
+
+export interface BranchReviewComment {
+  state: 'approved' | 'pending' | 'changes_requested';
+  commit: string | null;
 }
 
 export interface CheckUpdatesResponse {

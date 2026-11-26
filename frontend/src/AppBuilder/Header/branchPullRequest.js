@@ -22,6 +22,13 @@ export const pullRequestAction = (status) => {
   };
 };
 
+// The commit ToolJet's pull request comment approves, once every app is approved and the pull request is open.
+export const approvedCommitNote = (status) => {
+  const comment = status?.reviewComment;
+  if (comment?.state !== 'approved' || !comment.commit) return null;
+  return `Approved for commit ${comment.commit.slice(0, 7)}. A new commit needs a new approval.`;
+};
+
 // Provider-neutral git config reads. orgGit carries whichever provider is active — git_https for
 // GitHub, git_lab for GitLab — so reading only git_https broke Create PR / default-branch detection
 // on GitLab workspaces (repoUrl came back empty → "Unable to determine repository URL").
