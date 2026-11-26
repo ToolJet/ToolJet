@@ -27,6 +27,11 @@ trains on what you send. Use it when customer data goes through this connector.
 2. Paste it into **API Key**. Leave **Base URL** blank for OpenRouter.
 3. Optionally set **Site URL** and **App name**; OpenRouter shows them on its dashboards.
 
+For a private gateway, enter its **Base URL** and add the header names and values it expects under **Headers**.
+You can leave **API Key** blank if the gateway authenticates using those headers alone. ToolJet encrypts the saved
+headers together. Enter literal values in the Headers editor. Workspace secret and constant expressions in these
+rows are sent as typed. Editing the headers replaces the set. **Test connection** calls the custom endpoint's `/models` route.
+
 ## Logo
 
 `lib/icon.svg` is OpenRouter's own glyph (grape) from [openrouter.ai/brand](https://openrouter.ai/brand), used as published: scaled uniformly into ToolJet's 24x24 icon box and centred, with no stretching or recolouring, per their brand rules.

@@ -29,10 +29,21 @@
       "type": "string",
       "title": "App name",
       "description": "Shown on OpenRouter's dashboards"
+    },
+    "customHeaders": {
+      "type": "string",
+      "title": "Headers"
     }
   },
-  "tj:encrypted": ["apiKey"],
-  "required": ["apiKey"],
+  "tj:encrypted": ["apiKey", "customHeaders"],
+  "if": {
+    "required": ["baseUrl", "customHeaders"],
+    "properties": {
+      "baseUrl": { "pattern": "\\S" },
+      "customHeaders": { "pattern": "\\[\"\\s*[^\"\\s]" }
+    }
+  },
+  "else": { "required": ["apiKey"] },
   "tj:ui:properties": {
     "apiKey": {
       "order": 10,
@@ -41,7 +52,7 @@
       "label": "API Key",
       "widget": "password-v3",
       "placeholder": "sk-or-v1-...",
-      "help_text": "For generating an API key, visit: <a href='https://openrouter.ai/keys' target='_blank' rel='noreferrer'>OpenRouter keys</a>"
+      "help_text": "For OpenRouter, use an <a href='https://openrouter.ai/keys' target='_blank' rel='noreferrer'>OpenRouter API key</a>. For a custom endpoint that authenticates with a header, you can leave this blank."
     },
     "baseUrl": {
       "order": 20,
@@ -67,6 +78,14 @@
       "label": "App name (optional)",
       "widget": "text",
       "placeholder": "Support desk"
+    },
+    "customHeaders": {
+      "order": 25,
+      "$ref": "#/properties/customHeaders",
+      "key": "customHeaders",
+      "label": "Headers",
+      "tooltip": "Enter literal header names and values. Workspace secret and constant expressions are sent as typed.",
+      "widget": "encrypted-headers"
     }
   }
 }

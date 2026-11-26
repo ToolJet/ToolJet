@@ -16,6 +16,7 @@ export default ({
   width,
   dataCy,
   classes = null,
+  secretValues = false,
 }) => {
   function addNewKeyValuePair(options) {
     const newPairs = [...options, ['', '']];
@@ -41,7 +42,7 @@ export default ({
     if (!isRenderedAsQueryEditor) {
       const newOptions = deepClone(options);
       newOptions[index][keyIndex] = value;
-      if (options.length - 1 === index) {
+      if (!secretValues && options.length - 1 === index) {
         addNewKeyValuePair(newOptions);
       } else {
         if (handleOptionChange) {
@@ -75,6 +76,6 @@ export default ({
   return isRenderedAsQueryEditor ? (
     <QueryEditor {...commonProps} />
   ) : (
-    <SourceEditor {...commonProps} workspaceConstants={workspaceConstants} width={width} />
+    <SourceEditor {...commonProps} workspaceConstants={workspaceConstants} width={width} secretValues={secretValues} />
   );
 };
