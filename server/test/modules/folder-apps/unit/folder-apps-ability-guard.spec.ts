@@ -104,6 +104,72 @@ describe('folder-apps FeatureAbilityGuard', () => {
     expect(request.tj_folder_app_type_mismatch).toBe(true);
   });
 
+  it('hands the bulk app ids to the ability factory so it can require edit access on each app', async () => {
+    dataSource.manager.findOne.mockResolvedValueOnce({ id: 'f-1', createdBy: 'u1', type: APP_TYPES.FRONT_END });
+    dataSource.manager.find.mockResolvedValueOnce([
+      { id: 'app-1', userId: 'u2', type: APP_TYPES.FRONT_END },
+      { id: 'app-2', userId: 'u3', type: APP_TYPES.FRONT_END },
+    ]);
+    const request: any = {
+      params: { folderId: 'f-1' },
+      body: { app_ids: ['app-1', 'app-2'] },
+      user: { id: 'u1', organizationId: 'org-1' },
+    };
+
+    await guard.canActivate(makeExecutionContext({ request }));
+
+    expect(request.tj_folder_add_app_ids).toEqual(['app-1', 'app-2']);
+    expect(request.tj_folder_add_owned_app_ids).toEqual([]);
+  });
+
+  it('reports which bulk apps the caller owns', async () => {
+    dataSource.manager.findOne.mockResolvedValueOnce({ id: 'f-1', createdBy: 'u1', type: APP_TYPES.FRONT_END });
+    dataSource.manager.find.mockResolvedValueOnce([
+      { id: 'mine', userId: 'u1', type: APP_TYPES.FRONT_END },
+      { id: 'theirs', userId: 'u2', type: APP_TYPES.FRONT_END },
+    ]);
+    const request: any = {
+      params: { folderId: 'f-1' },
+      body: { app_ids: ['mine', 'theirs'] },
+      user: { id: 'u1', organizationId: 'org-1' },
+    };
+
+    await guard.canActivate(makeExecutionContext({ request }));
+
+    expect(request.tj_folder_add_owned_app_ids).toEqual(['mine']);
+  });
+
+  it('hands the single app id to the ability factory as well', async () => {
+    dataSource.manager.findOne.mockResolvedValueOnce({ id: 'f-1', createdBy: 'u1', type: APP_TYPES.FRONT_END });
+    dataSource.manager.find.mockResolvedValueOnce([{ id: 'app-1', userId: 'u2', type: APP_TYPES.FRONT_END }]);
+    const request: any = {
+      params: { folderId: 'f-1' },
+      body: { app_id: 'app-1' },
+      user: { id: 'u1', organizationId: 'org-1' },
+    };
+
+    await guard.canActivate(makeExecutionContext({ request }));
+
+    expect(request.tj_folder_add_app_ids).toEqual(['app-1']);
+    expect(request.tj_folder_add_owned_app_ids).toEqual([]);
+  });
+
+  it.each([
+    [APP_TYPES.FRONT_END, 'APP'],
+    [APP_TYPES.WORKFLOW, 'workflows'],
+    [APP_TYPES.MODULE, 'Modules'],
+  ])('also loads the %s permission bucket when apps are being added', (type, bucket) => {
+    const resources = (guard as any).getResource({ tj_folder_add_app_ids: ['a'], tj_folder_type: type });
+
+    expect(resources.map((r: { resourceType: string }) => r.resourceType)).toContain(bucket);
+  });
+
+  it('loads only the folder buckets when no app is being added', () => {
+    const resources = (guard as any).getResource({ tj_folder_type: APP_TYPES.FRONT_END });
+
+    expect(resources).toHaveLength(3);
+  });
+
   it('does not scope create/delete to a specific app on the bulk app_ids path — folder ownership alone is sufficient', async () => {
     dataSource.manager.findOne.mockResolvedValueOnce({ id: 'f-1', createdBy: 'u1', type: APP_TYPES.MODULE });
     dataSource.manager.find.mockResolvedValueOnce([

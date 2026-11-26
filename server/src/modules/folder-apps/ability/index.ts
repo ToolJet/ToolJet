@@ -17,6 +17,26 @@ export const FOLDER_RESOURCE_TYPE_BY_APP_TYPE: Partial<Record<APP_TYPES, MODULES
   [APP_TYPES.MODULE]: MODULES.MODULE_FOLDER,
 };
 
+// True when, before the folder add changes anything, the caller already owns or can edit every app.
+// Unknown folder types fall back to the front-end app bucket.
+function canEditEveryApp(
+  userPermission: UserAllPermissions['userPermission'],
+  folderType: APP_TYPES,
+  appIds: string[],
+  ownedAppIds: string[] = []
+) {
+  const notOwned = appIds.filter((id) => !ownedAppIds.includes(id));
+  if (!notOwned.length) return true;
+  if (folderType === APP_TYPES.WORKFLOW) {
+    const workflows = userPermission?.[MODULES.WORKFLOWS];
+    return (
+      !!workflows && (workflows.isAllEditable || notOwned.every((id) => workflows.editableWorkflowsId?.includes(id)))
+    );
+  }
+  const apps = userPermission?.[folderType === APP_TYPES.MODULE ? MODULES.MODULES : MODULES.APP];
+  return !!apps && (apps.isAllEditable || notOwned.every((id) => apps.editableAppsId?.includes(id)));
+}
+
 @Injectable()
 export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> {
   protected getSubjectType() {
@@ -37,6 +57,10 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const folderCreate = userPermission.folderCreate;
     const folderResourceType = FOLDER_RESOURCE_TYPE_BY_APP_TYPE[request?.tj_folder_type as APP_TYPES] ?? MODULES.FOLDER;
     const folderPermissions = userPermission[folderResourceType];
+    const addAppIds: string[] | undefined = request?.tj_folder_add_app_ids;
+    const canEditAppsBeingAdded =
+      !addAppIds ||
+      canEditEveryApp(userPermission, request?.tj_folder_type, addAppIds, request?.tj_folder_add_owned_app_ids);
     const ownerCanCreateFolderApp =
       request?.tj_allow_owner_folder_app_create && extractedMetadata.features?.includes(FEATURE_KEY.CREATE_FOLDER_APP);
     const ownerCanDeleteFolderApp =
@@ -45,7 +69,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     if (superAdmin || isAdmin) {
       can([FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
     } else {
-      if (ownerCanCreateFolderApp) {
+      // Folder access (owner, granular or the coarse flag) says who may organise a folder. Adding an app also
+      // needs edit access on that app, since folder access makes the app editable once it is inside.
+      const folderAppKeys = canEditAppsBeingAdded
+        ? [FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP]
+        : [FEATURE_KEY.DELETE_FOLDER_APP];
+
+      if (ownerCanCreateFolderApp && canEditAppsBeingAdded) {
         can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp);
       }
 
@@ -56,15 +86,15 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       if (folderPermissions) {
         if (folderPermissions.isAllEditable) {
           // User can edit ALL folders
-          can([FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
+          can(folderAppKeys, FolderApp);
         } else if (folderPermissions.editableFoldersId?.length > 0) {
           const folderId = request?.tj_resource_id;
           if (folderId && folderPermissions.editableFoldersId.includes(folderId)) {
-            can([FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
+            can(folderAppKeys, FolderApp);
           }
         }
       } else if (folderCreate) {
-        can([FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
+        can(folderAppKeys, FolderApp);
       }
     }
 

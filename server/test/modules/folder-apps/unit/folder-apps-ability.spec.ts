@@ -47,6 +47,143 @@ describe('folder-apps FeatureAbilityFactory', () => {
     });
   });
 
+  describe('owner bulk add — requires edit access on every target app', () => {
+    const bulk = (ids: string[], type = APP_TYPES.FRONT_END, owned: string[] = []) => ({
+      tj_allow_owner_folder_app_create: true,
+      tj_folder_add_app_ids: ids,
+      tj_folder_add_owned_app_ids: owned,
+      tj_folder_type: type,
+    });
+    const features = [FEATURE_KEY.CREATE_FOLDER_APP];
+
+    it('denies when the caller has only view access on one of the apps', async () => {
+      const ability = await build(
+        { userPermission: { [MODULES.APP]: { editableAppsId: ['app-1'], isAllEditable: false } } },
+        bulk(['app-1', 'app-view-only']),
+        features
+      );
+      expect(ability.can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp)).toBe(false);
+    });
+
+    it('allows when every app is individually editable', async () => {
+      const ability = await build(
+        { userPermission: { [MODULES.APP]: { editableAppsId: ['app-1', 'app-2'], isAllEditable: false } } },
+        bulk(['app-1', 'app-2']),
+        features
+      );
+      expect(ability.can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp)).toBe(true);
+    });
+
+    it('allows when the caller can edit all apps', async () => {
+      const ability = await build(
+        { userPermission: { [MODULES.APP]: { editableAppsId: [], isAllEditable: true } } },
+        bulk(['app-1']),
+        features
+      );
+      expect(ability.can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp)).toBe(true);
+    });
+
+    it('allows apps the caller owns even when not in the editable list', async () => {
+      const ability = await build(
+        { userPermission: { [MODULES.APP]: { editableAppsId: [], isAllEditable: false } } },
+        bulk(['app-1'], APP_TYPES.FRONT_END, ['app-1']),
+        features
+      );
+      expect(ability.can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp)).toBe(true);
+    });
+
+    it('requires edit on the apps the caller does not own when the list is mixed', async () => {
+      const ability = await build(
+        { userPermission: { [MODULES.APP]: { editableAppsId: [], isAllEditable: false } } },
+        bulk(['mine', 'theirs'], APP_TYPES.FRONT_END, ['mine']),
+        features
+      );
+      expect(ability.can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp)).toBe(false);
+    });
+
+    it('allows owned module apps even though the module bucket has no owned list', async () => {
+      const ability = await build({}, bulk(['m-1'], APP_TYPES.MODULE, ['m-1']), features);
+      expect(ability.can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp)).toBe(true);
+    });
+
+    it('checks the workflow bucket for workflow folders', async () => {
+      const ability = await build(
+        { userPermission: { [MODULES.WORKFLOWS]: { editableWorkflowsId: ['wf-1'], isAllEditable: false } } },
+        bulk(['wf-1', 'wf-2'], APP_TYPES.WORKFLOW),
+        features
+      );
+      expect(ability.can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp)).toBe(false);
+    });
+
+    it('denies folder-granular all-folder edit adding an app the caller can only view', async () => {
+      const ability = await build(
+        {
+          userPermission: {
+            [MODULES.APP]: { editableAppsId: [], isAllEditable: false },
+            [MODULES.FOLDER]: { isAllEditable: true },
+          },
+        },
+        {
+          tj_folder_add_app_ids: ['app-view-only'],
+          tj_folder_add_owned_app_ids: [],
+          tj_folder_type: APP_TYPES.FRONT_END,
+        },
+        features
+      );
+      expect(ability.can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp)).toBe(false);
+    });
+
+    it('denies the coarse folder-create flag adding an app the caller can only view', async () => {
+      const ability = await build(
+        { userPermission: { folderCreate: true, [MODULES.APP]: { editableAppsId: [], isAllEditable: false } } },
+        {
+          tj_folder_add_app_ids: ['app-view-only'],
+          tj_folder_add_owned_app_ids: [],
+          tj_folder_type: APP_TYPES.FRONT_END,
+        },
+        features
+      );
+      expect(ability.can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp)).toBe(false);
+    });
+
+    it('lets folder-granular all-folder edit add an app the caller can edit', async () => {
+      const ability = await build(
+        {
+          userPermission: {
+            [MODULES.APP]: { editableAppsId: ['app-1'], isAllEditable: false },
+            [MODULES.FOLDER]: { isAllEditable: true },
+          },
+        },
+        { tj_folder_add_app_ids: ['app-1'], tj_folder_add_owned_app_ids: [], tj_folder_type: APP_TYPES.FRONT_END },
+        features
+      );
+      expect(ability.can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp)).toBe(true);
+    });
+
+    it('does not take away removing an app from a folder the caller manages', async () => {
+      const ability = await build(
+        {
+          userPermission: {
+            [MODULES.APP]: { editableAppsId: [], isAllEditable: false },
+            [MODULES.FOLDER]: { isAllEditable: true },
+          },
+        },
+        {
+          tj_folder_add_app_ids: ['app-view-only'],
+          tj_folder_add_owned_app_ids: [],
+          tj_folder_type: APP_TYPES.FRONT_END,
+        },
+        [FEATURE_KEY.DELETE_FOLDER_APP]
+      );
+      expect(ability.can(FEATURE_KEY.DELETE_FOLDER_APP, FolderApp)).toBe(true);
+    });
+
+    it('still lets admins bulk add regardless of app access', async () => {
+      const ability = await build({ isAdmin: true }, bulk(['app-x']), features);
+      expect(ability.can(FEATURE_KEY.CREATE_FOLDER_APP, FolderApp)).toBe(true);
+    });
+  });
+
   describe('owner create/delete flags — gated by both the request flag AND the feature metadata', () => {
     it('grants CREATE_FOLDER_APP when tj_allow_owner_folder_app_create is set and the feature is in scope', async () => {
       const ability = await build({}, { tj_allow_owner_folder_app_create: true }, [FEATURE_KEY.CREATE_FOLDER_APP]);
