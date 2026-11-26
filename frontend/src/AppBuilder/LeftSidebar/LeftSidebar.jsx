@@ -266,6 +266,8 @@ export const BaseLeftSidebar = ({
       case 'access':
         return <AccessPanel onClose={() => toggleLeftSidebar(false)} />;
       case 'variables':
+        // A selection kept from a visual app must not open the panel in a React builder app.
+        if (codeMode) return null;
         return <VariablesPanel darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'dependencies':
         return <DependencyViewer darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
@@ -334,16 +336,19 @@ export const BaseLeftSidebar = ({
         >
           <DatabaseZap size={16} strokeWidth={1.8} />
         </SidebarItem>
-        <SidebarItem
-          panel="variables"
-          selectedSidebarItem={selectedSidebarItem}
-          darkMode={darkMode}
-          onClick={() => handleSelectedSidebarItem('variables')}
-          className="left-sidebar-item left-sidebar-layout"
-          ref={setSideBarBtnRefs('variables')}
-        >
-          <Variable size={16} strokeWidth={1.8} />
-        </SidebarItem>
+        {/* Declared variables feed {{ }} bindings and RunJS; a React builder app keeps its state in React. */}
+        {!codeMode && (
+          <SidebarItem
+            panel="variables"
+            selectedSidebarItem={selectedSidebarItem}
+            darkMode={darkMode}
+            onClick={() => handleSelectedSidebarItem('variables')}
+            className="left-sidebar-item left-sidebar-layout"
+            ref={setSideBarBtnRefs('variables')}
+          >
+            <Variable size={16} strokeWidth={1.8} />
+          </SidebarItem>
+        )}
         {!codeMode && shouldShowLibraries(isModuleEditor, featureAccess?.appJsLibraries) && (
           <AppLibrariesIcon
             darkMode={darkMode}

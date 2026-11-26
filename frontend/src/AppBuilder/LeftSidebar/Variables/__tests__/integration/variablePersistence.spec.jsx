@@ -112,8 +112,7 @@ test.each(['app', 'page'])('%s failed create stays in the form without a success
   await session.user.click(screen.getByRole('button', { name: 'Create variable' }));
   await waitFor(() => expect(requests).toBe(1));
   await waitFor(() => expect(screen.getByRole('button', { name: 'Create variable' })).toBeEnabled());
-  expect(screen.queryByText('Created {{variables.unsaved}}')).not.toBeInTheDocument();
-  expect(screen.queryByText('Created {{page.variables.unsaved}}')).not.toBeInTheDocument();
+  expect(screen.queryByText(/^Created (page )?variable/)).not.toBeInTheDocument();
   expect(screen.getByPlaceholderText('e.g. selectedOrderId')).toHaveValue('unsaved');
 });
 

@@ -2,6 +2,8 @@
  * Which rail items show for an app's build mode and plan.
  * - LP-M05: a React builder (Code mode) app has no visual canvas, so its rail shows no Pages or
  *   Components item (main's rail never had them). Queries stay, as main keeps the query pane.
+ * - A React builder app has no Variables item either: its code keeps state in React, and declared
+ *   variables only feed {{ }} bindings and RunJS, which a React app does not use.
  * - No Style item: product decided there is no Style panel (reverses LP-M11).
  * - LP-M08: App history shows on every plan; below Pro it carries the upgrade note.
  */
@@ -34,20 +36,22 @@ const setup = (buildMode, license) => {
 afterEach(() => controls.restore());
 
 // Break this catches: the React builder rail offers the widget palette, so a drop turns the app visual.
-test('a React builder app shows no Pages or Components rail item', () => {
+test('a React builder app shows no Pages, Components or Variables rail item', () => {
   setup('code');
 
   expect(railItem('pages')).toBeNull();
   expect(railItem('components')).toBeNull();
+  expect(railItem('variables')).toBeNull();
   expect(railItem('queries')).toBeInTheDocument();
 });
 
 // Break this catches: the gate hides the items from visual apps too.
-test('a visual app keeps its Pages and Components rail items', () => {
+test('a visual app keeps its Pages, Components and Variables rail items', () => {
   setup('visual');
 
   expect(railItem('pages')).toBeInTheDocument();
   expect(railItem('components')).toBeInTheDocument();
+  expect(railItem('variables')).toBeInTheDocument();
 });
 
 // Break this catches: the removed Style item (product decided there is no Style panel) comes back. A React

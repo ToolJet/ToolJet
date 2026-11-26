@@ -192,7 +192,8 @@ export const CreateVariableForm = ({
   const readOnly = useStore((state: any) => state.getShouldFreeze());
   const saveVariableDefinition = useStore((state: any) => state.saveVariableDefinition);
   const evaluateWithError = useStore((state: any) => state.evaluateVariableDefinitionWithError);
-  const [scope, setScope] = useState<VariableScope>(isModule ? 'app' : (runtimeVariable?.scope ?? initialScope));
+  const [selectedScope, setScope] = useState<VariableScope>(runtimeVariable?.scope ?? initialScope);
+  const scope: VariableScope = isModule ? 'app' : selectedScope;
   const [name, setName] = useState(runtimeVariable?.name ?? '');
   const [nameTouched, setNameTouched] = useState(false);
   const [value, setValue] = useState('');
@@ -218,39 +219,35 @@ export const CreateVariableForm = ({
       setErrors({ [result.field]: result.error });
       return;
     }
-    toast.success(`Created ${referenceOf(scope, name)}`);
+    toast.success(`Created ${scope === 'page' ? 'page variable' : 'variable'}: ${name}`);
     onCreated(scope, name);
   };
 
   return (
     <div className="variables-form" data-cy="variable-create-form">
-      <div className="variables-field">
-        <span className="variables-label">Scope</span>
-        <RocketToggleGroup
-          type="single"
-          value={scope}
-          onValueChange={(next: VariableScope) => next && !runtimeVariable && setScope(next)}
-          className="tw-w-full"
-          disabled={readOnly || !!runtimeVariable}
-          data-cy="variable-scope-toggle"
-        >
-          <RocketToggleGroupItem value="app" className="tw-flex-1 tw-basis-0 tw-min-w-0 tw-overflow-hidden">
-            App
-          </RocketToggleGroupItem>
-          {!isModule && (
+      {!isModule && (
+        <div className="variables-field">
+          <span className="variables-label">Scope</span>
+          <RocketToggleGroup
+            type="single"
+            value={scope}
+            onValueChange={(next: VariableScope) => next && !runtimeVariable && setScope(next)}
+            className="tw-w-full"
+            disabled={readOnly || !!runtimeVariable}
+            data-cy="variable-scope-toggle"
+          >
+            <RocketToggleGroupItem value="app" className="tw-flex-1 tw-basis-0 tw-min-w-0 tw-overflow-hidden">
+              App
+            </RocketToggleGroupItem>
             <RocketToggleGroupItem value="page" className="tw-flex-1 tw-basis-0 tw-min-w-0 tw-overflow-hidden">
               <TruncatedText className="variables-scope-label" text={`Page · ${pageName}`} />
             </RocketToggleGroupItem>
-          )}
-        </RocketToggleGroup>
-        <span className="variables-hint">
-          {isModule
-            ? 'Available throughout this module.'
-            : scope === 'app'
-              ? 'Available on every page.'
-              : `Available only on ${pageName}.`}
-        </span>
-      </div>
+          </RocketToggleGroup>
+          <span className="variables-hint">
+            {scope === 'app' ? 'Available on every page.' : `Available only on ${pageName}.`}
+          </span>
+        </div>
+      )}
 
       <div className="variables-field">
         <InputComponent
@@ -316,6 +313,7 @@ type EditProps = {
 
 /** Detail view of a declared variable: rename on blur or Enter, value changes apply as you type. */
 export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenamed, onRenameSaving }: EditProps) => {
+  const isModule = useStore((state: any) => state.getAppType(moduleId) === 'module');
   const readOnly = useStore((state: any) => state.getShouldFreeze());
   const saveVariableDefinition = useStore((state: any) => state.saveVariableDefinition);
   const replaceIdsWithName = useStore((state: any) => state.replaceIdsWithName);
@@ -383,19 +381,21 @@ export const EditVariableForm = ({ moduleId, pageName, definitions, row, onRenam
 
   return (
     <div className="variables-form" data-cy="variable-detail-form">
-      <div className="variables-field">
-        <span className="variables-label">
-          Scope <span className="variables-hint">Created in the builder</span>
-        </span>
-        <RocketToggleGroup type="single" value={row.scope} className="tw-w-full" disabled>
-          <RocketToggleGroupItem value="app" className="tw-flex-1 tw-basis-0 tw-min-w-0 tw-overflow-hidden">
-            App
-          </RocketToggleGroupItem>
-          <RocketToggleGroupItem value="page" className="tw-flex-1 tw-basis-0 tw-min-w-0 tw-overflow-hidden">
-            <TruncatedText className="variables-scope-label" text={`Page · ${pageName}`} />
-          </RocketToggleGroupItem>
-        </RocketToggleGroup>
-      </div>
+      {!isModule && (
+        <div className="variables-field">
+          <span className="variables-label">
+            Scope <span className="variables-hint">Created in the builder</span>
+          </span>
+          <RocketToggleGroup type="single" value={row.scope} className="tw-w-full" disabled>
+            <RocketToggleGroupItem value="app" className="tw-flex-1 tw-basis-0 tw-min-w-0 tw-overflow-hidden">
+              App
+            </RocketToggleGroupItem>
+            <RocketToggleGroupItem value="page" className="tw-flex-1 tw-basis-0 tw-min-w-0 tw-overflow-hidden">
+              <TruncatedText className="variables-scope-label" text={`Page · ${pageName}`} />
+            </RocketToggleGroupItem>
+          </RocketToggleGroup>
+        </div>
+      )}
 
       <div className="variables-field">
         <InputComponent

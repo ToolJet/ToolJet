@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen, within, waitFor } from '@testing-library/react';
+import toast, { Toaster } from 'react-hot-toast';
 import _useStore from '@/AppBuilder/_stores/store';
 import { AppBuilderTestSession, defineAppBuilderScenario } from '@/test/app-builder';
 import { CreateVariableForm, EditVariableForm } from '../../VariableEditor';
@@ -24,7 +25,8 @@ const scenario = defineAppBuilderScenario({
     network: [
       {
         method: 'put',
-        url: '*/v2/apps/:appId/versions/:versionId/global_settings',
+        // global_settings for app variables, pages for page variables.
+        url: '*/v2/apps/:appId/versions/:versionId/:resource',
         json: () => {
           savedRequests += 1;
           return {};
@@ -117,6 +119,32 @@ test('a real duplicate is still reported before creating', async () => {
 
   expect(screen.getByText(/already exists/)).toBeVisible();
   expect(screen.getByRole('button', { name: 'Create variable' })).toBeDisabled();
+});
+
+test.each([
+  ['app', 'Created variable: threshold'],
+  ['page', 'Created page variable: threshold'],
+])('creating a variable in %s scope confirms it by name', async (scope, message) => {
+  const session = await setup();
+  // Toasts from earlier creates in this file are still queued.
+  toast.remove();
+  session.render(
+    <>
+      <Toaster />
+      <CreateVariableForm
+        moduleId="canvas"
+        pageName="Home"
+        definitions={[]}
+        initialScope={scope}
+        onCreated={() => {}}
+      />
+    </>
+  );
+  await session.user.type(screen.getByPlaceholderText('e.g. selectedOrderId'), 'threshold');
+  await session.user.click(screen.getByRole('button', { name: 'Create variable' }));
+
+  expect(await screen.findByText(message)).toBeInTheDocument();
+  toast.remove();
 });
 
 test('an intentionally omitted initial value stays an empty string', async () => {
@@ -225,4 +253,54 @@ test('a value saved with the old fx toggle and no braces is shown as {{ }}', asy
     '{{5 * 2}}'
   );
   expect(container.querySelector('[data-cy="variable-value-preview"]')).toHaveTextContent('10');
+});
+
+test.each(['app', 'page'])(
+  'module creation hides scope and saves as app when opened with %s scope',
+  async (initialScope) => {
+    const session = await setup();
+    await session.store.act('setApp', { appId: 'app-1', appType: 'module' }, 'canvas');
+    const created = [];
+    session.render(
+      <CreateVariableForm
+        moduleId="canvas"
+        pageName="Home"
+        definitions={[]}
+        initialScope={initialScope}
+        onCreated={(scope, name) => created.push({ scope, name })}
+      />
+    );
+    expect(screen.queryByText('Scope', { exact: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    await session.user.type(screen.getByPlaceholderText('e.g. selectedOrderId'), 'moduleValue');
+    await session.user.click(screen.getByRole('button', { name: 'Create variable' }));
+    await waitFor(() => expect(created).toEqual([{ scope: 'app', name: 'moduleValue' }]));
+    expect(session.store.read((state) => state.getAppVariableDefinitions())).toEqual([
+      expect.objectContaining({ name: 'moduleValue' }),
+    ]);
+    expect(session.store.read((state) => state.getPageVariableDefinitions())).toEqual([]);
+  }
+);
+
+test.each(['module', 'front-end'])('%s variable details show scope only for visual apps', async (type) => {
+  const session = await setup();
+  await session.store.act('setApp', { appId: 'app-1', appType: type }, 'canvas');
+  await session.store.act('saveVariableDefinition', { scope: 'app', name: 'moduleValue', value: '5' });
+  const definition = session.store.read((state) => state.getAppVariableDefinitions()[0]);
+  session.render(
+    <EditVariableForm
+      moduleId="canvas"
+      pageName="Home"
+      definitions={[definition]}
+      row={{ key: 'app:moduleValue', scope: 'app', name: 'moduleValue', definition }}
+      onRenamed={() => {}}
+    />
+  );
+  if (type === 'module') {
+    expect(screen.queryByText('Scope', { exact: false })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+  } else {
+    expect(screen.getByRole('radio', { name: 'App', exact: true })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Page · Home', exact: true })).toBeDisabled();
+  }
 });
