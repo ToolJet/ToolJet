@@ -12,6 +12,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const ButtonGroupV2 = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -104,7 +105,7 @@ export const ButtonGroupV2 = (props) => {
   // Only Column/Wrap grow vertically (more options -> more rows).
   // Row lays the buttons out on a single line with horizontal scroll,
   // so its height is fixed so gate it out entirely so nothing reflows for row.
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view' && layout !== 'row';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode) && layout !== 'row';
   const heightChangeValue = useHeightObserver(groupRef, isDynamicHeightEnabled);
 
   useDynamicHeight({

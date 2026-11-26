@@ -10,6 +10,7 @@ import ZoomInImage from '@/AppBuilder/Widgets/Image/icons/zoomin-image.svg';
 import ZoomOutImage from '@/AppBuilder/Widgets/Image/icons/zoomout-image.svg';
 import RotateImage from '@/AppBuilder/Widgets/Image/icons/rotate-image.svg';
 import './image.scss';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export default function Image({
   setExposedVariable,
@@ -70,7 +71,7 @@ export default function Image({
   // aspect-ratio height at the current width (instead of the authored fixed box).
   // We measure the wrapper (imageRef) — it grows once the image loads at its natural
   // size — and reflow siblings. Enabled only in view mode.
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   const heightChangeValue = useHeightObserver(imageRef, isDynamicHeightEnabled);
 
   useDynamicHeight({

@@ -14,6 +14,7 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 import { ListviewSubcontainer } from './ListviewSubcontainer';
 import cx from 'classnames';
 import Spinner from '@/_ui/Spinner';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const Listview = function Listview({
   id,
@@ -66,7 +67,7 @@ export const Listview = function Listview({
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const borderColor = styles.borderColor ?? 'transparent';
   const rowPerPageValue = Number(rowsPerPage) ? +rowsPerPage || 10 : 10;
-  const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(dynamicHeight, currentMode);
 
   const computedStyles = {
     backgroundColor,

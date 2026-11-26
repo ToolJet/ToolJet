@@ -19,6 +19,7 @@ import TagsInputOption from './TagsInputOption';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 const TagsInput = ({
   id,
@@ -96,7 +97,7 @@ const TagsInput = ({
   const [focusedOptionIndex, setFocusedOptionIndex] = useState(-1); // -1 means no option focused
 
   // Dynamic height support - only enabled in view mode (same as TextArea)
-  const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(dynamicHeight, currentMode);
   const heightChangeValue = useHeightObserver(tagsRef, isDynamicHeightEnabled);
 
   useDynamicHeight({

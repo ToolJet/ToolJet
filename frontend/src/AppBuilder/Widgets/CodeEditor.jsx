@@ -11,6 +11,7 @@ import { sass } from '@codemirror/lang-sass';
 import { debounce } from 'lodash';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import './codeEditor.scss';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -35,7 +36,7 @@ const CodeEditor = ({
   componentType,
 }) => {
   const { enableLineNumber, mode, placeholder } = properties;
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   const { visibility, disabledState } = styles;
   const [forceDynamicHeightUpdate, setForceDynamicHeightUpdate] = useState(false);
   const [value, setValue] = useState('');

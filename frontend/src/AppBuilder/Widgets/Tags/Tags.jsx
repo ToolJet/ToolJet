@@ -8,6 +8,7 @@ import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import './tags.scss';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const Tags = function Tags({
   id,
@@ -45,7 +46,7 @@ export const Tags = function Tags({
 
   // Tags wrap to multiple rows (overflow: 'wrap'),
   // the observer fires on those height changes for dynamic height
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   const heightChangeValue = useHeightObserver(containerRef, isDynamicHeightEnabled);
 
   useDynamicHeight({

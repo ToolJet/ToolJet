@@ -9,6 +9,7 @@ import Markdown from 'react-markdown';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const ReorderableList = (props) => {
   const {
@@ -52,7 +53,7 @@ export const ReorderableList = (props) => {
   // Ref for portal container
   const portalRef = useRef(null);
 
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   // Item labels can be Markdown/HTML, so a rendered item's height isn't a pure function of the
   // options string (rich markup, wrapping, async content). Observe the rendered container like
   // a Text widget. NOTE: observe this new ref, NOT the Droppable's innerRef (react-beautiful-dnd owns that one).

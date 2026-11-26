@@ -2,6 +2,7 @@ import React from 'react';
 import { isArray } from 'lodash';
 import { getSafeRenderableValue } from './utils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const Timeline = function Timeline({
   id,
@@ -21,7 +22,7 @@ export const Timeline = function Timeline({
 
   const darkModeStyle = darkMode && 'text-white-50';
 
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   // Timeline height is a function of its items (and whether dates show). Trigger the reflow
   // off that data rather than a DOM observer — width changes are already a hook dependency,
   // so text re-wrapping on resize is still re-measured.

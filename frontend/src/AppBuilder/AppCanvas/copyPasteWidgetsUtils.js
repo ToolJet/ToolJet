@@ -13,6 +13,7 @@ import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 import * as pageRoots from '@ee/modules/CodeMode/AppBuilder/_hooks/codePageRoot';
 
 const withoutCodePageRoots = pageRoots.withoutCodePageRoots ?? ((ids) => ids || []);
+import { getRenderedHeight, toSavedTop } from '@/AppBuilder/_stores/dynamicHeight/editorLayout';
 
 const getSelectedText = () => {
   let selectedText = '';
@@ -148,7 +149,14 @@ function calculateComponentPosition(component, existingComponents, layout, targe
 
   if (lastCanvasClickPosition && (!component.component?.parent || component.component?.parent === targetParentId)) {
     newLeft = Math.round(lastCanvasClickPosition.x / gridWidth);
-    newTop = Math.round(lastCanvasClickPosition.y / 10) * 10;
+    // The click is where the builder sees it; paste at the position behind it.
+    newTop = toSavedTop({
+      visibleTop: Math.round(lastCanvasClickPosition.y / 10) * 10,
+      slotId: targetParentId && targetParentId !== 'canvas' ? targetParentId : null,
+      left: newLeft,
+      width: component.layouts[layout].width,
+      height: component.layouts[layout].height,
+    });
   }
   // Ensure component stays within bounds
   if (newLeft + component.layouts[layout].width > NO_OF_GRIDS) {
@@ -499,6 +507,8 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
               ...component.layouts[layout],
               top: position.top,
               left: position.left,
+              // PDF Q21/Q22: the source's grown height is pasted as the saved height.
+              height: getRenderedHeight(component.id, component.layouts[layout].height),
             },
           },
         };
@@ -513,6 +523,7 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
               ...component.layouts[layout],
               top: newTop,
               left: newLeft,
+              height: getRenderedHeight(component.id, component.layouts[layout].height),
             },
           },
         };

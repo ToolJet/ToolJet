@@ -7,6 +7,8 @@ export const containerConfig = {
     height: 450,
   },
   component: 'Container',
+  // How dynamic height treats this container; see frontend dynamicHeight/contracts.js.
+  heightContract: { content: 'grid' },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },

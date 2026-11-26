@@ -14,6 +14,8 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 import { getDynamicLayoutKey, serializeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import { useFlexWidgetLayout } from '@/AppBuilder/Widgets/FlexContainer/useFlexWidgetLayout';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import { isDynamicHeightActive, isDynamicHeightV2Enabled } from '@/AppBuilder/_stores/dynamicHeight/flags';
+import { CONTENT_SIZED_CLASS } from '@/AppBuilder/_stores/dynamicHeight/editorLayout';
 import { syncSelectionCorner } from './selectionCorner';
 import { isCodePageRoot } from '@/AppBuilder/_helpers/codeModeHooks';
 
@@ -40,6 +42,10 @@ const DYNAMIC_HEIGHT_AUTO_LIST = [
   'ReorderableList',
   'ButtonGroupV2',
 ];
+
+// The new engine measures every content-sized leaf through the height
+// registry, so these two need height:auto as well (the old hook set it inline).
+const DYNAMIC_HEIGHT_AUTO_LIST_V2 = [...DYNAMIC_HEIGHT_AUTO_LIST, 'Html', 'Navigation'];
 
 const WidgetWrapper = memo(
   ({
@@ -131,7 +137,7 @@ const WidgetWrapper = memo(
       (state) => fitsContentInView(componentType, state.getResolvedComponent(id, resolveIndex, moduleId)?.properties),
       shallow
     );
-    const isDynamicHeightEnabledInModeView = isDynamicHeightEnabled && mode === 'view';
+    const isDynamicHeightEnabledInModeView = isDynamicHeightActive(isDynamicHeightEnabled, mode);
     // The editor's dynamic-height marker (purple outline and handle): only for widgets whose box follows their content.
     const showsDynamicHeight = useStore(
       (state) => marksDynamicHeight(componentType, state.getResolvedComponent(id, resolveIndex, moduleId)?.properties),
@@ -248,21 +254,31 @@ const WidgetWrapper = memo(
       temporaryLayouts?.height != null && gridHeight > layoutData?.height
         ? Math.max(temporaryLayouts.height, gridHeight)
         : temporaryLayouts?.height;
-    const gridFinalHeight = visibility ? (flooredTemporaryHeight ?? gridHeight) : HIDDEN_COMPONENT_HEIGHT;
+    // Editor POC (PDF Q51): a selected hidden widget is revealed. It is drawn
+    // like a visible widget, faded and outlined, so it can be moved or
+    // resized, and the engine lays its neighbours out as if it were visible.
+    const showHiddenOverlay =
+      isDynamicHeightV2Enabled() && mode === 'edit' && !visibility && isWidgetActive && isGridLayout;
+    const shownOrRevealed = visibility || showHiddenOverlay;
+    const gridFinalHeight = shownOrRevealed ? (flooredTemporaryHeight ?? gridHeight) : HIDDEN_COMPONENT_HEIGHT;
     const layoutContext = indices ?? subContainerIndex;
     const serializedLayoutContext = serializeLayoutContext(layoutContext);
 
     // Sets height to auto for subcontainer or listview if dynamic height is enabled
     const gridOuterStyle = {
       width: gridWidthPx + 'px',
+      // A hidden widget in the editor keeps its collapsed strip.
       height:
         isDynamicHeightEnabledInModeView &&
-        (isTruthyOrZero(subContainerIndex) || DYNAMIC_HEIGHT_AUTO_LIST.includes(componentType))
+        (shownOrRevealed || mode === 'view') &&
+        (isTruthyOrZero(subContainerIndex) ||
+          (isDynamicHeightV2Enabled() ? DYNAMIC_HEIGHT_AUTO_LIST_V2 : DYNAMIC_HEIGHT_AUTO_LIST).includes(componentType))
           ? 'auto'
           : gridFinalHeight + 'px',
       transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
       borderTop: !visibility && mode === 'edit' ? `1px dashed var(--border-accent-strong)` : 'none',
+      ...(showHiddenOverlay && { opacity: 0.5, outline: '1px dashed var(--border-accent-strong)' }),
       boxSizing: 'content-box',
       display: !visibility && mode === 'view' ? 'none' : 'block',
     };
@@ -285,7 +301,7 @@ const WidgetWrapper = memo(
       : gridWidthPx;
     const renderWidgetHeight = isFlexLayout
       ? flexLayout.widgetHeight
-      : !visibility && mode === 'edit'
+      : !shownOrRevealed && mode === 'edit'
         ? HIDDEN_COMPONENT_HEIGHT
         : newLayoutData.height;
     const configWidgetTop = isFlexLayout ? flexLayout.configWidgetTop : (temporaryLayouts?.top ?? layoutData.top);
@@ -326,6 +342,11 @@ const WidgetWrapper = memo(
             'opacity-0 pointer-events-none': isDragging || isResizing,
             'module-container': isModuleContainer,
             'dynamic-height-target': showsDynamicHeight,
+            [CONTENT_SIZED_CLASS]:
+              mode === 'edit' &&
+              isDynamicHeightEnabledInModeView &&
+              isDynamicHeightV2Enabled() &&
+              DYNAMIC_HEIGHT_AUTO_LIST_V2.includes(componentType),
             'flex-child-wrapper': isFlexLayout,
             'flex-stretch-child': isFlexLayout && flexLayout.isStretched,
           })}

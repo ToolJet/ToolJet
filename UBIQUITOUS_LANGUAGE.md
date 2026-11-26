@@ -48,6 +48,9 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Component** | A pre-designed, drag-and-drop building block on the canvas (45+ built-in types) | Widget (legacy; docs folder is `widgets/` but content says "Components") |
 | **Custom Component** | A user-created component built with React for functionality beyond built-in components | — |
 | **Layout** | Positioning metadata (top, left, width, height) for a component on the canvas grid | — |
+| **Dynamic Height** | A component property: in a released app or preview the component sizes to its content and pushes the components below it. The engine lives in `frontend/src/AppBuilder/_stores/dynamicHeight/` (v2) with the previous one in `_stores/utils/dynamicHeightReflow.js`; `ENABLE_DYNAMIC_HEIGHT_V2` picks one per instance | Reflow (legacy engine term) |
+| **Temporary Layout** | The rendered top and height of a component after dynamic height has run, kept in the store's `temporaryLayouts`; the saved Layout is never changed by it | — |
+| **Height Contract** | How a container takes part in dynamic height, declared as `heightContract` on its widget definition: `content` is `grid`, `rows` or `flex`, plus flags such as `portal` or `followsExpansion` | — |
 | **Canvas** | The visual workspace area in the App-Builder where components are placed | — |
 | **Left Sidebar** | App-Builder panel containing Pages, Inspector, and Debugger | — |
 | **Right Sidebar** | App-Builder panel for component properties and styles | — |

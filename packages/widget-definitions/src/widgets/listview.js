@@ -43,6 +43,8 @@ export const listviewConfig = {
     },
   ],
   component: 'Listview',
+  // How dynamic height treats this container; see frontend dynamicHeight/contracts.js.
+  heightContract: { content: 'rows' },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },

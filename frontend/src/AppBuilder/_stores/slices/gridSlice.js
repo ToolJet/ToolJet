@@ -13,6 +13,9 @@ import {
   resolveWidgetVisibility,
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
+import { isDynamicHeightEditorPocEnabled, isDynamicHeightV2Enabled } from '../dynamicHeight/flags';
+import { scheduleDynamicHeight, watchSavedLayouts, watchSelection } from '../dynamicHeight/scheduler';
+import { watchStickySiblings } from '../dynamicHeight/editorSticky';
 import { heightHeldInView, isUi2PerRowType, sizesToDropAreas } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -48,7 +51,7 @@ const initialState = {
   flexContainerDropTarget: null,
 };
 
-export const createGridSlice = (set, get) => {
+export const createGridSlice = (set, get, store) => {
   // Batch reflow scheduler. Collects adjustComponentPositions requests that
   // arrive in the same JS tick (e.g. 50 Tables in a ListView all reporting
   // height changes on data load), fires them in one shared rAF, and lets
@@ -57,7 +60,21 @@ export const createGridSlice = (set, get) => {
   const _pendingReflows = new Map();
   let _reflowRafId = null;
 
+  // The new engine re-solves a module whenever its saved layouts change.
+  if (store?.subscribe) {
+    // Editor POC: sticky siblings rewrite saved tops before the engine re-solves.
+    store.subscribe(watchStickySiblings(get));
+    store.subscribe(watchSavedLayouts(get));
+    store.subscribe(watchSelection(get));
+    // Editor POC: lets a demo read saved and rendered layouts from the console.
+    if (isDynamicHeightEditorPocEnabled() && typeof window !== 'undefined') window.__tjStore = store;
+  }
+
   const scheduleReflow = (id, layout, isContainer, contextIndices, moduleId) => {
+    if (isDynamicHeightV2Enabled()) {
+      scheduleDynamicHeight(get, { id, layout, isContainer, contextIndices, moduleId });
+      return;
+    }
     const ctxKey = contextIndices ? contextIndices.join('.') : '';
     const key = `${id}|${layout}|${isContainer ? '1' : '0'}|${ctxKey}|${moduleId || 'canvas'}`;
     _pendingReflows.set(key, { id, layout, isContainer, contextIndices, moduleId: moduleId || 'canvas' });

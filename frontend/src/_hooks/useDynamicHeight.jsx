@@ -4,8 +4,10 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { getDynamicElementSelector, normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import useStore from '@/AppBuilder/_stores/store';
+import { isDynamicHeightV2Enabled } from '@/AppBuilder/_stores/dynamicHeight/flags';
+import { useDynamicHeightV2 } from './useDynamicHeightV2';
 
-export const useDynamicHeight = ({
+const useLegacyDynamicHeight = ({
   isDynamicHeightEnabled,
   id,
   height,
@@ -172,4 +174,13 @@ export const useDynamicHeight = ({
   ]);
 
   return;
+};
+
+// The engine is fixed for the life of the page (flags.js), so every render of
+// a widget takes the same branch. It is read here, not at import time: this
+// module can load before the public config that decides it has arrived.
+export const useDynamicHeight = (options) => {
+  const useEngineHook = isDynamicHeightV2Enabled() ? useDynamicHeightV2 : useLegacyDynamicHeight;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return useEngineHook(options);
 };

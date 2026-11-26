@@ -20,6 +20,7 @@ import {
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { cn } from '@/lib/utils';
 import './treeSelect.scss';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 const TreeSelect = ({
   height,
@@ -70,7 +71,7 @@ const TreeSelect = ({
   const containerRef = useRef(null);
   const reactId = useId();
   const inputId = `component-${reactId}`;
-  const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(dynamicHeight, currentMode);
 
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const _width = getLabelWidthOfInput('ofComponent', labelWidth);

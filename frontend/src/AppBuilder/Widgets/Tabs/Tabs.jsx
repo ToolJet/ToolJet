@@ -14,6 +14,7 @@ import { useTabsNavScrollArrows } from '@/AppBuilder/Widgets/Tabs/useTabsNavScro
 import { shallow } from 'zustand/shallow';
 import { getCssVarValue, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import './tabs.scss';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 const tinycolor = require('tinycolor2');
 const TAB_HEADER_HEIGHT = 49.5;
 
@@ -80,7 +81,7 @@ export const Tabs = function Tabs({
   const widgetVisibility = styles?.visibility ?? true;
   const disabledState = styles?.disabledState ?? false;
   const commonBackgroundColor = styles?.commonBackgroundColor;
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   // config for tabs. Includes title
   const tabs = isExpectedDataType(properties.tabs, 'array');
   let parsedTabs = tabs;

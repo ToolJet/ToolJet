@@ -3,6 +3,8 @@ export const moduleContainerConfig = {
   displayName: 'Module Container',
   description: 'Module Container',
   component: 'ModuleContainer',
+  // How dynamic height treats this container; see frontend dynamicHeight/contracts.js.
+  heightContract: { content: 'grid', moduleRoot: true },
   defaultSize: {
     width: 10,
     height: 400,

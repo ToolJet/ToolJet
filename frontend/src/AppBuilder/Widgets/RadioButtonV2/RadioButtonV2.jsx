@@ -13,6 +13,7 @@ import {
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const RadioButtonV2 = ({
   properties,
@@ -70,7 +71,7 @@ export const RadioButtonV2 = ({
 
   // The options container grows when options stack (column) or wrap to new rows;
   // the observer fires on those height changes for dynamic height
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
   const heightChangeValue = useHeightObserver(radioBtnRef, isDynamicHeightEnabled);
 
   useDynamicHeight({

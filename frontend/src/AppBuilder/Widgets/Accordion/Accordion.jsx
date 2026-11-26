@@ -12,6 +12,7 @@ import Header from './components/Header';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const Accordion = ({
   id,
@@ -54,7 +55,7 @@ export const Accordion = ({
   };
 
   // Dynamic height - always enable position adjustments in view mode for accordion
-  const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(dynamicHeight, currentMode);
   const shouldAdjustPositions = currentMode === 'view';
   useDynamicHeight({
     isDynamicHeightEnabled: shouldAdjustPositions,

@@ -3,12 +3,13 @@ import { BaseInput } from './BaseComponents/BaseInput';
 import { useInput } from './BaseComponents/hooks/useInput';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 export const TextArea = (props) => {
   const inputLogic = useInput(props);
   const { properties, height, width, id, currentLayout, currentMode, subContainerIndex, componentType } = props;
   const { inputRef, value } = inputLogic;
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(properties.dynamicHeight, currentMode);
 
   const heightChangeValue = useHeightObserver(inputRef, isDynamicHeightEnabled);
   const resizeTextArea = useCallback(() => {
@@ -17,6 +18,10 @@ export const TextArea = (props) => {
       inputRef.current.style.height = '100%';
       return;
     }
+    // A field its parent hides (collapsed accordion, inactive tab) has no box and
+    // measures as empty; keep the height it had when last shown.
+    const isHidden = inputRef.current.getClientRects().length === 0;
+    if (isHidden && inputRef.current.style.height.endsWith('px')) return;
     inputRef.current.style.height = 'auto';
     // Subtract the input container's padding + border so the outer wrapper
     // matches the authored widget height when content fits. Without this,

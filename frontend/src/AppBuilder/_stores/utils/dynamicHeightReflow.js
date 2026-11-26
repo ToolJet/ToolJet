@@ -337,7 +337,7 @@ export const resolveWidgetVisibility = ({
 //   - Listview row context: subtract 40 to normalize against the widget-level
 //     allowance added elsewhere.
 //   - A UI 2.0 List view row or Kanban card: UI2_ROW_CHROME.
-const getExtraContainerHeight = ({
+export const getExtraContainerHeight = ({
   componentId,
   componentType,
   contextIndices,
@@ -484,6 +484,8 @@ export const resolveListviewHeightFromRows = ({
   currentPageComponents,
   temporaryLayouts,
   moduleId = 'canvas',
+  rowBordersInside = false,
+  outerChrome = 18,
 }) => {
   const componentProperties = component?.properties || {};
   const rowCount = getListviewRenderedRowCount(componentProperties);
@@ -526,9 +528,9 @@ export const resolveListviewHeightFromRows = ({
   // Fixed allowances: per-row bottom border (list mode only), pagination bar,
   // outer chrome (7px padding × 2 = 14 + 1px outer border × 2 = 2 + 2 safety
   // for `.real-canvas` `calc(100% + 1px)` extension and rounding drift).
-  const borderAllowance = componentProperties.showBorder && mode === 'list' ? rowCount : 0;
+  const borderAllowance = componentProperties.showBorder && mode === 'list' && !rowBordersInside ? rowCount : 0;
   const paginationAllowance = componentProperties.enablePagination ? 61 : 0;
-  const outerPaddingAllowance = 18;
+  const outerPaddingAllowance = outerChrome;
 
   return stackedRowsHeight + borderAllowance + paginationAllowance + outerPaddingAllowance;
 };

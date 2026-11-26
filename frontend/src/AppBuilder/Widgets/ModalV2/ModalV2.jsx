@@ -18,6 +18,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import WidgetTooltip from '@/AppBuilder/AppCanvas/WidgetTooltip';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 // Upper bound on how long open() waits for the enter transition
 const OPEN_TIMEOUT_MS = 1000;
@@ -107,7 +108,7 @@ export const ModalV2 = function Modal({
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
-  const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = isDynamicHeightActive(dynamicHeight, currentMode);
   const iconName = styles.icon;
 
   const computedModalBodyHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);

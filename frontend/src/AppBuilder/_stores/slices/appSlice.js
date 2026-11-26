@@ -11,6 +11,7 @@ import _, { isEmpty, has } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
 import { v4 as uuidv4 } from 'uuid';
 import { yieldToMain } from '../batchManager';
+import { isDynamicHeightActive } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 const initialState = {
   isSaving: false,
@@ -201,7 +202,7 @@ export const createAppSlice = (set, get) => ({
     if (moduleId !== 'canvas' && get().checkIfComponentIsModule(moduleId, 'canvas')) {
       const isInstanceDynamicHeight =
         get().getResolvedComponent(moduleId, null, 'canvas')?.properties?.dynamicHeight === true;
-      if (isInstanceDynamicHeight && get().getCurrentMode('canvas') === 'view') {
+      if (isDynamicHeightActive(isInstanceDynamicHeight, get().getCurrentMode('canvas'))) {
         // Size the inner canvas to its REFLOWED content. Use each root
         // component's effective layout (temp height when present, else
         // canonical) — never max(canonical, temp). Flooring at the authored
