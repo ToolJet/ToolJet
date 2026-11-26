@@ -63,6 +63,13 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 - `runQueryOnBuilder` saves the sent `options` back (editor convenience) but skips the write when the
   git-sync edit rule forbids it (e.g. synced draft on the default branch under branching) — the run itself
   still executes. Update/create/delete enforce the same rule as a 403 via `GitSyncQueryEditGuard`.
+- `runQuery` request details: `metadata` and error `data` are scrubbed of resolved secrets, and of data source
+  header/parameter values inside the request parts only (`redactRequestCredentials`). Not on the viewer route
+  (`POST /:id/run`): `mode` is read from the query string on the builder route alone, so only an editor session
+  gets `mode=edit`. Any other mode masks header and parameter values to `[REDACTED]` and drops the URL query
+  (`maskMetadataForViewer`). Scrub before `setFailure`: the audit log reads the same error object.
+- Draft query of a public app: needs membership of the app's workspace (`QueryAuthGuard`). A module query runs
+  anonymously only from the module's released version.
 - Delete removes query events first (`deleteDataQueryEvents`) inside the same transaction.
 - `after*` history hooks are fire-and-forget — never await them in request flow.
 - Never abbreviate `data_source` as `ds`.

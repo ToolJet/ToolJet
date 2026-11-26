@@ -21,3 +21,7 @@ export enum SsoEnvProvider {
 export enum InstanceSsoEnvProvider {
   OIDC = 'oidc',
 }
+
+// Instance SSO fields the settings page never receives back (secrets and PKCE verifiers).
+// On save, a blank or missing value means "keep the stored one".
+export const INSTANCE_SSO_SECRET_FIELD = /secret|code_?verifier/i;

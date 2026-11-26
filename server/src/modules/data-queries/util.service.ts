@@ -4,6 +4,12 @@ import { AppEnvironment } from '@entities/app_environments.entity';
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { redactSecretValues } from '@helpers/utils.helper';
+import {
+  collectCredentialValues,
+  maskErrorDataForViewer,
+  maskMetadataForViewer,
+  redactRequestCredentials,
+} from '@helpers/query-request-metadata.helper';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { VersionRepository } from '@modules/versions/repository';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
@@ -83,6 +89,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     let abortCtrl = null;
     // Resolved secret plaintexts, collected during resolution and scrubbed from the returned metadata.
     const collectedSecretValues: string[] = [];
+    // Data source header, parameter and auth values: scrubbed from the request parts of the response only.
+    const credentialValues: string[] = [];
 
     // Hoist these variables to function scope for access in finally block
     let dataSource: DataSource;
@@ -145,6 +153,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         dataSourceOptions.id,
         collectedSecretValues
       );
+      collectCredentialValues(sourceOptions, credentialValues);
 
       const isTooljetManagedApp = sourceOptions['oauth_type'] === 'tooljet_app';
       if (!isTooljetManagedApp) {
@@ -311,8 +320,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               environmentId,
               user,
               opts,
-              dataSourceOptions.id
+              dataSourceOptions.id,
+              collectedSecretValues
             ));
+            collectCredentialValues(sourceOptions, credentialValues);
             if (sourceOptions['oauth_type'] !== 'tooljet_app') {
               sourceOptions['tj_redirect_host'] =
                 await this.dataSourceUtilService.resolveOAuthRedirectHost(organizationId);
@@ -418,21 +429,40 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       }
 
       // Scrub resolved secrets from metadata before returning.
-      result['metadata'] = redactSecretValues(result['metadata'], collectedSecretValues);
+      result['metadata'] = redactRequestCredentials(
+        redactSecretValues(result['metadata'], collectedSecretValues),
+        credentialValues
+      );
+      // An end user gets the shape of the request, not the values; the editor shows credential-free values.
+      if (mode !== 'edit') result['metadata'] = maskMetadataForViewer(result['metadata']);
 
       return result;
     } catch (queryError) {
       // Null if we threw before it was built. Unguarded, that TypeError masked the real error.
       abortCtrl?.cleanup();
+      // Scrub first: the audit log and the metrics read this same error object.
+      if (queryError?.metadata) {
+        queryError.metadata = redactRequestCredentials(
+          redactSecretValues(queryError.metadata, collectedSecretValues),
+          credentialValues
+        );
+      }
+      if (queryError?.data) {
+        queryError.data = redactRequestCredentials(
+          redactSecretValues(queryError.data, collectedSecretValues),
+          credentialValues
+        );
+      }
       queryStatus.setFailure({
         message: queryError?.message,
         description: queryError?.description,
         data: queryError?.data,
         stack: queryError?.stack,
       });
-      // Error metadata (e.g. restapi handleError) carries the request too — scrub it before returning.
-      if (queryError && queryError.metadata) {
-        queryError.metadata = redactSecretValues(queryError.metadata, collectedSecretValues);
+      // An end user gets the shape of the failed request, not the values.
+      if (mode !== 'edit') {
+        if (queryError?.metadata) queryError.metadata = maskMetadataForViewer(queryError.metadata);
+        if (queryError?.data) queryError.data = maskErrorDataForViewer(queryError.data);
       }
       throw queryError;
     } finally {
@@ -815,10 +845,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             // Check type of replacement and assign accordingly
             if (typeof replacement === 'string' || typeof replacement === 'number') {
               // If replacement is a string, perform the replace
-              resolvedValue = resolvedValue.replace(variable, String(replacement));
+              // Replacer function: a plain string would read `$&` and `$'` as patterns.
+              resolvedValue = resolvedValue.replace(variable, () => String(replacement));
             } else {
               // If replacement is an object or an array, assign the whole value to resolvedValue
-              resolvedValue = resolvedValue.replace(variable, JSON.stringify(replacement));
+              resolvedValue = resolvedValue.replace(variable, () => JSON.stringify(replacement));
             }
           }
           if (parent && key !== null) {

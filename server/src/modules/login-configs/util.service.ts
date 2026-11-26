@@ -8,6 +8,26 @@ import { ILoginConfigsUtilService } from './interfaces/IUtilsService';
 import { SSOConfigsRepository } from './repository';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 
+// Fields the login page reads, per SSO type. Anything not listed is not sent to anonymous callers.
+const PUBLIC_SSO_FIELDS = ['sso', 'enabled', 'featureIncluded', 'bannerMessage'];
+const PUBLIC_CONFIG_FIELDS: Record<string, string[]> = {
+  google: ['clientId'],
+  git: ['clientId', 'hostName'],
+  openid: ['name'],
+  saml: ['name'],
+  ldap: ['name'],
+};
+
+// LDAP sign-in with certificates: the private key is encrypted at rest like a client secret.
+const SSL_CERTS_KEYS = ['sslCerts', 'ssl_certs'];
+const LDAP_CLIENT_KEY = 'client_key';
+
+const toCamelCase = (key: string) => key.replace(/_([a-z])/g, (_, char: string) => char.toUpperCase());
+
+function pickFields(source: Record<string, unknown> | null | undefined, allowed: string[]) {
+  return Object.fromEntries(Object.entries(source ?? {}).filter(([key]) => allowed.includes(toCamelCase(key))));
+}
+
 @Injectable()
 export class LoginConfigsUtilService implements ILoginConfigsUtilService {
   constructor(
@@ -141,12 +161,9 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
 
   public buildConfigs(config: any, configId: string) {
     if (!config) return config;
-    const safeConfigs = Object.fromEntries(
-      Object.entries(config?.configs || {}).filter(([key]) => !key.toLowerCase().includes('secret'))
-    );
     return {
-      ...config,
-      configs: safeConfigs,
+      ...pickFields(config, PUBLIC_SSO_FIELDS),
+      configs: pickFields(config.configs, PUBLIC_CONFIG_FIELDS[config.sso] ?? []),
       configId,
     };
   }
@@ -154,30 +171,33 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
   async encryptSecret(configs, previousConfigs?: Record<string, any>) {
     if (!configs || typeof configs !== 'object') return configs;
     await Promise.all(
-      Object.keys(configs).map(async (key) => {
-        if (key.toLowerCase().includes('secret')) {
-          if (configs[key]) {
-            // Preserve the randomized ciphertext only when the plaintext is unchanged.
-            // Real rotations still change the policy fingerprint and fire revocation hooks.
-            const previous = previousConfigs?.[key];
-            let unchanged = false;
-            if (previous) {
-              try {
-                unchanged =
-                  (await this.encryptionService.decryptColumnValue('ssoConfigs', key, previous)) === configs[key];
-              } catch {
-                /* A replacement secret also repairs unreadable legacy ciphertext. */
-              }
-            }
-            if (unchanged) {
-              configs[key] = previous;
-            } else {
-              configs[key] = await this.encryptionService.encryptColumnValue('ssoConfigs', key, configs[key]);
-            }
-          }
-        }
-      })
+      Object.keys(configs)
+        .filter((key) => key.toLowerCase().includes('secret'))
+        .map((key) => this.encryptSecretValue(configs, key, previousConfigs?.[key]))
     );
+    for (const certsKey of SSL_CERTS_KEYS) {
+      const certs = configs[certsKey];
+      if (certs && typeof certs === 'object') {
+        await this.encryptSecretValue(certs, LDAP_CLIENT_KEY, previousConfigs?.[certsKey]?.[LDAP_CLIENT_KEY]);
+      }
+    }
+  }
+
+  private async encryptSecretValue(target: Record<string, any>, key: string, previous?: string) {
+    if (!target[key]) return;
+    // Preserve the randomized ciphertext only when the plaintext is unchanged.
+    // Real rotations still change the policy fingerprint and fire revocation hooks.
+    let unchanged = false;
+    if (previous) {
+      try {
+        unchanged = (await this.encryptionService.decryptColumnValue('ssoConfigs', key, previous)) === target[key];
+      } catch {
+        /* A replacement secret also repairs unreadable legacy ciphertext. */
+      }
+    }
+    target[key] = unchanged
+      ? previous
+      : await this.encryptionService.encryptColumnValue('ssoConfigs', key, target[key]);
   }
 
   async decryptSecret(configs) {
@@ -191,6 +211,20 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
         }
       })
     );
+    for (const certsKey of SSL_CERTS_KEYS) {
+      const certs = configs[certsKey];
+      if (certs?.[LDAP_CLIENT_KEY]) {
+        try {
+          certs[LDAP_CLIENT_KEY] = await this.encryptionService.decryptColumnValue(
+            'ssoConfigs',
+            LDAP_CLIENT_KEY,
+            certs[LDAP_CLIENT_KEY]
+          );
+        } catch {
+          /* Saved as plain text before the key was encrypted: use it as is. */
+        }
+      }
+    }
   }
 
   async getConfigs(id: string): Promise<SSOConfigs> {

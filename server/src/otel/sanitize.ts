@@ -5,10 +5,15 @@ const CREDENTIAL_KEYS =
 export function sanitizeTraceObject(value: any): any {
   if (Array.isArray(value)) return value.map(sanitizeTraceObject);
   if (!value || typeof value !== 'object') return value;
+  // Data source options are { key, value, encrypted } items: the secret sits under the key "value".
+  const valueIsSecret = value.encrypted === true || (typeof value.key === 'string' && CREDENTIAL_KEYS.test(value.key));
   return Object.fromEntries(
     Object.entries(value)
       .filter(([, item]) => typeof item !== 'function')
-      .map(([key, item]) => [key, CREDENTIAL_KEYS.test(key) ? '[REDACTED]' : sanitizeTraceObject(item)])
+      .map(([key, item]) => [
+        key,
+        CREDENTIAL_KEYS.test(key) || (key === 'value' && valueIsSecret) ? '[REDACTED]' : sanitizeTraceObject(item),
+      ])
   );
 }
 

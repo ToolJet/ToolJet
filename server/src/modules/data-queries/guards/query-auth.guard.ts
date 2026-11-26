@@ -51,9 +51,10 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
         // query requires auth. Scoped to front-end: workflows/modules keep is_public elsewhere and
         // the module branch below handles public-parent embedding.
         if (app.type === APP_TYPES.FRONT_END && !(await this.isQueryInReleasedVersion(id, app))) {
+          let authed: boolean;
           try {
             // An authenticated builder may still preview a draft; an anonymous caller may not.
-            return await super.canActivate(context);
+            authed = (await super.canActivate(context)) as boolean;
           } catch {
             throw new UnauthorizedException(
               JSON.stringify({
@@ -61,6 +62,9 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
               })
             );
           }
+          // Only a member of the app's workspace may preview its draft.
+          this.validateUserBelongsToAppOrg(request, app);
+          return authed;
         }
         // No need to do user validation
         this.organizationRepository.touchLastAccessedAt(app.organizationId);

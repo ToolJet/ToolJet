@@ -54,4 +54,10 @@ describe('redactSecretValues', () => {
     expect(redactSecretValues(null, [SECRET])).toBeNull();
     expect(redactSecretValues(undefined, [SECRET])).toBeUndefined();
   });
+
+  it('redacts the URL-encoded form of a secret, as it appears in a request URL', () => {
+    const secret = 'pa ss&word/1';
+    const metadata = { url: `https://api.example.com/x?token=${encodeURIComponent(secret)}` };
+    expect(JSON.stringify(redactSecretValues(metadata, [secret]))).not.toContain(encodeURIComponent(secret));
+  });
 });

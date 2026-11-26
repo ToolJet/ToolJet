@@ -95,6 +95,8 @@ describe('DataQueryRepository.findPublicParentAppForModuleQuery', () => {
     const moduleApp = await createApplication(nestApp, { name: 'module', type: 'module', user } as any);
     await updateEntity(App, moduleApp.id, { co_relation_id: moduleApp.id });
     const moduleVersion = await createApplicationVersion(nestApp, moduleApp as App & { organizationId: string });
+    // The module has a released version: the one the parent app's "latest" setting resolves to.
+    await updateEntity(App, moduleApp.id, { currentVersionId: moduleVersion.id });
 
     await saveEntity(Component, {
       pageId: canonicalVersion.homePageId,
@@ -112,7 +114,7 @@ describe('DataQueryRepository.findPublicParentAppForModuleQuery', () => {
     } as any);
     const dataQuery = await createDataQuery(nestApp, { dataSource, appVersion: moduleVersion, options: {} } as any);
 
-    return { moduleApp, dataQuery };
+    return { moduleApp, moduleVersion, dataQuery, dataSource };
   }
 
   it('finds the public parent app when the canonical version row is public, ignoring a later-touched stub row', async () => {
@@ -137,5 +139,46 @@ describe('DataQueryRepository.findPublicParentAppForModuleQuery', () => {
     const result = await repository.findPublicParentAppForModuleQuery(moduleApp.id, dataQuery.id);
 
     expect(result).toBeNull();
+  });
+
+  describe('module query of a version that is not the released one', () => {
+    async function addUnreleasedModuleVersionWithQuery(
+      moduleApp: App,
+      dataSource: Awaited<ReturnType<typeof createDataSource>>
+    ) {
+      const draftVersion = await createApplicationVersion(nestApp, moduleApp as App & { organizationId: string });
+      const draftQuery = await createDataQuery(nestApp, {
+        dataSource,
+        appVersion: draftVersion,
+        options: {},
+      } as any);
+      return draftQuery;
+    }
+
+    it('returns null for a query that only exists in a newer, unreleased module version', async () => {
+      const { user } = await createUser(nestApp, { email: 'module-guard-unreleased@tooljet.io' });
+      const { moduleApp, dataSource } = await setUpParentAndModule(user, {
+        canonicalVersionIsPublic: true,
+        addLaterTouchedStub: false,
+      });
+      const draftQuery = await addUnreleasedModuleVersionWithQuery(moduleApp, dataSource);
+
+      const result = await repository.findPublicParentAppForModuleQuery(moduleApp.id, draftQuery.id);
+
+      expect(result).toBeNull();
+    });
+
+    it('still finds the parent for a query of the released module version', async () => {
+      const { user } = await createUser(nestApp, { email: 'module-guard-released@tooljet.io' });
+      const { moduleApp, dataQuery, dataSource } = await setUpParentAndModule(user, {
+        canonicalVersionIsPublic: true,
+        addLaterTouchedStub: false,
+      });
+      await addUnreleasedModuleVersionWithQuery(moduleApp, dataSource);
+
+      const result = await repository.findPublicParentAppForModuleQuery(moduleApp.id, dataQuery.id);
+
+      expect(result).not.toBeNull();
+    });
   });
 });
