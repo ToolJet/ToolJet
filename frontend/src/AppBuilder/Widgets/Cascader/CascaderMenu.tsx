@@ -197,7 +197,8 @@ const CascaderMenu = forwardRef<CascaderMenuRef, CascaderMenuProps>(
           ) : (
             currentNodes.map((node, index) => {
               const isParent = !!node.children;
-              const isSelected = !isParent && selectedValue != null && areCascaderValuesEqual(node.value, selectedValue);
+              const isSelected =
+                !isParent && selectedValue != null && areCascaderValuesEqual(node.value, selectedValue);
               const isHighlighted = index === highlightedIndex && !node.disabled;
               return (
                 <div
