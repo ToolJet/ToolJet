@@ -65,6 +65,8 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   still executes. Update/create/delete enforce the same rule as a 403 via `GitSyncQueryEditGuard`.
 - Delete removes query events first (`deleteDataQueryEvents`) inside the same transaction.
 - `after*` history hooks are fire-and-forget — never await them in request flow.
+- Ids in a body never decide scope. `POST /workflow-node` has no `:versionId`: `ValidateQueryAppGuard` hands `body.app_version_id` to `findById`, so the version must belong to the authorised `app_id`, and EE `create` checks `folder_id` is in that version before writing anything. Pinned by `ee/test/modules/data-queries/e2e/workflow-node-scope.spec.ts`.
+- `list-tables` has a data source but no app, so `tj_app` is unset. EE `ValidateEnvironmentAccessGuard` then uses group-level environment access only (a builder always keeps development). Run and preview always have `tj_app`. Pinned by `list-tables-environment.spec.ts` and the guard's unit spec.
 - Never abbreviate `data_source` as `ds`.
 
 ## Related modules
@@ -73,5 +75,5 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 - `app-environments` — per-Environment data source option resolution (`getOptions`)
 - `versions` / `apps` — version scoping, promoted-version checks, app type (workflow vs app)
 - `app-permissions` + `app-history` (EE) — query-level permissions; change history hooks
-- `data-query-folders` (EE) — folder mappings created/removed with queries
+- `data-query-folders` (EE) — folder mappings created/removed with queries; folder permissions reuse `defineAppQueryAbility` (`ability/app/index.ts`)
 - `tooljet-db`, `plugins` — ToolJet Database operations service; marketplace plugin loading

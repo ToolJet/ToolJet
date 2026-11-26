@@ -23,22 +23,29 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     extractedMetadata: { moduleName: string; features: string[] },
     request?: any
   ): void {
-    const resourceId = request?.tj_resource_id;
-    const app = request?.tj_app as App;
-    const resourceType = UserAllPermissions.resource[0].resourceType;
+    defineAppQueryAbility(can, UserAllPermissions, request?.tj_app as App, request?.tj_resource_id);
+  }
+}
 
-    switch (resourceType) {
-      case MODULES.APP:
-        defineDataQueryAppAbility(can, UserAllPermissions, app);
-        break;
-      case MODULES.MODULES:
-        defineDataQueryAppAbility(can, UserAllPermissions, app);
-        break;
-      case MODULES.WORKFLOWS:
-        defineDataQueryWorkflowAbility(can, UserAllPermissions, resourceId);
-        break;
-      default:
-        throw new Error(`Unsupported resource type: ${resourceType}`);
-    }
+// Query permissions of the user on one app, module or workflow. Query folders reuse it, so
+// folders and queries can never disagree on who may edit.
+export function defineAppQueryAbility(
+  can: AbilityBuilder<FeatureAbility>['can'],
+  UserAllPermissions: UserAllPermissions,
+  app: App,
+  resourceId?: string
+): void {
+  const resourceType = UserAllPermissions.resource[0].resourceType;
+
+  switch (resourceType) {
+    case MODULES.APP:
+    case MODULES.MODULES:
+      defineDataQueryAppAbility(can, UserAllPermissions, app);
+      break;
+    case MODULES.WORKFLOWS:
+      defineDataQueryWorkflowAbility(can, UserAllPermissions, resourceId);
+      break;
+    default:
+      throw new Error(`Unsupported resource type: ${resourceType}`);
   }
 }

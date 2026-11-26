@@ -5,12 +5,13 @@ import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { MODULES } from '@modules/app/constants/modules';
 import { FEATURE_KEY } from './constants';
 import { FeatureAbilityGuard } from './ability/guard';
+import { QueryFolderScopeGuard } from './guards/query-folder-scope.guard';
 import { DataQueryFoldersService } from './service';
 import { IDataQueryFoldersController } from './interfaces/IController';
 import { BatchReorderDto, CreateFolderDto, DeleteFolderDto, RenameFolderDto, ReorderDto } from './dto';
 
 @InitModule(MODULES.DATA_QUERY_FOLDERS)
-@UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+@UseGuards(JwtAuthGuard, QueryFolderScopeGuard, FeatureAbilityGuard)
 @Controller('data-query-folders')
 export class DataQueryFoldersController implements IDataQueryFoldersController {
   constructor(protected dataQueryFoldersService: DataQueryFoldersService) {}
