@@ -18,8 +18,9 @@ Plugin forms render inside `DataSourceManager`: `_components/DynamicForm.jsx` (V
 - **The form shows only the open Environment's options.** A tab switch shows a loader, so the form unmounts and mounts again.
   - `DataSourceManager` copies `props.selectedDataSource` into state in `getDerivedStateFromProps`, before render. Moving it back to `componentDidUpdate` makes the first render use the previous Environment's options.
   - The OAuth text inputs pass raw values (`options?.client_id?.value`). An input that first gets a value and then `undefined` keeps the old text.
-- **Only the latest Environment request may fill the form.** `fetchDataSourceByEnvironment` ignores older responses and responses for a data source that is no longer selected. Answers can arrive out of click order.
-- **A failed Environment request** shows an error, removes the loader, and moves the tab back to the Environment the form still shows (`shownEnvironmentRef`).
+- **An Environment answer counts only for what is open.** `fetchDataSourceByEnvironment` applies an answer (or its failure) only if it is the latest request and is for the open data source and tab (`openDataSourceRef`). Answers can arrive late or out of click order; other answers are ignored silently.
+- **The loader belongs to the open data source and tab.** `environmentLoading` is derived from the pending request, so opening another data source shows its form at once.
+- **A failed Environment request** for the open tab shows an error and moves the tab back to the Environment the form still shows (`shownEnvironmentRef`).
 - **Defaults fill on every mount.** `DynamicForm` fills missing manifest defaults when it mounts (only missing keys; user values stay). This now runs for each Environment you open.
 
 ## Tests
