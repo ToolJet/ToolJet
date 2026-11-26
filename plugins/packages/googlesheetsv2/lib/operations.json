@@ -249,7 +249,7 @@
         "description": "Enter Filter",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter Filter"
+        "placeholder": "[{\"a1Range\": \"Sheet1!A28:B28\"}]"
       }
     },
     "bulk_update_by_primary_key": {
