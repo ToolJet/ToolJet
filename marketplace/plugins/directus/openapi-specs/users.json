@@ -1,0 +1,60 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Directus Users API",
+    "version": "1.0.0",
+    "description": "List Directus users and retrieve the current authenticated user."
+  },
+  "servers": [
+    {
+      "url": "https://your-instance.directus.app"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "operationId": "listUsers",
+        "summary": "List users",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users retrieved successfully"
+          }
+        }
+      }
+    },
+    "/users/me": {
+      "get": {
+        "operationId": "getCurrentUser",
+        "summary": "Get current authenticated user",
+        "responses": {
+          "200": {
+            "description": "Current user retrieved successfully"
+          }
+        }
+      }
+    }
+  }
+}

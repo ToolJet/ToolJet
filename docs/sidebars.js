@@ -331,6 +331,7 @@ const sidebars = {
             'data-sources/couchdb',
             'data-sources/databricks',
             'data-sources/dynamodb',
+            'data-sources/directus',
             'data-sources/elasticsearch',
             'data-sources/gcs',
             'data-sources/googlesheets',
@@ -412,7 +413,8 @@ const sidebars = {
                 'marketplace/plugins/marketplace-plugin-hugging_face',
                 'marketplace/plugins/marketplace-plugin-cohere',
                 'marketplace/plugins/marketplace-plugin-weaviate',
-                'marketplace/plugins/marketplace-plugin-qdrant'
+                'marketplace/plugins/marketplace-plugin-qdrant',
+                'marketplace/plugins/marketplace-plugin-directus'
               ],
             },
           ],
