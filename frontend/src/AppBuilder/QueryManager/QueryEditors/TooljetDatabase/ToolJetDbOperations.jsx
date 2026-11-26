@@ -542,7 +542,7 @@ const ToolJetDbOperations = ({
   ];
 
   const ComponentToRender = getComponent(operation);
-  const modeControlPresentation = getTooljetDbModeControlPresentation();
+  const modeControlPresentation = getTooljetDbModeControlPresentation(surface);
 
   return (
     <ToolJetDbOperationsProvider value={value}>
@@ -590,10 +590,7 @@ const ToolJetDbOperations = ({
               <div
                 className={cx(
                   { 'flex-grow-1': isHorizontalLayout },
-                  'border',
-                  'rounded',
-                  'overflow-hidden',
-                  'minw-400-w-400'
+                  'tooljetdb-table-picker border rounded overflow-hidden minw-400-w-400'
                 )}
               >
                 <DropDownSelect

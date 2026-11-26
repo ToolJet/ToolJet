@@ -18,7 +18,6 @@ import { AddNewPageMenu } from './PageMenu/AddNewPageMenu';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import Select from '@/_ui/Select';
-import { DeletePageConfirmationModal } from './PageMenu/DeletePageConfirmationModal';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
@@ -41,8 +40,7 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
   const switchPage = useStore((state) => state.switchPage);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const { moduleId } = useModuleContext();
-  const editingPageId = useStore((state) => state.editingPage?.id);
-  const editingPageName = useStore((state) => state.editingPage?.name);
+  const permissionPage = useStore((state) => state.pagePermissionTarget);
   const showPagePermissionModal = useStore((state) => state.showPagePermissionModal);
   const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
   const updatePageWithPermissions = useStore((state) => state.updatePageWithPermissions);
@@ -198,12 +196,11 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
             <AddNewPageMenu darkMode={darkMode} />
           </div>
         )}
-        <DeletePageConfirmationModal darkMode={darkMode} />
         {appPagePermissionEnabled && (
           <AppPermissionsModal
             modalType="page"
-            resourceId={editingPageId}
-            resourceName={editingPageName}
+            resourceId={permissionPage?.id}
+            resourceName={permissionPage?.name}
             showModal={showPagePermissionModal}
             toggleModal={togglePagePermissionModal}
             darkMode={darkMode}
@@ -211,7 +208,7 @@ export const PageSettings = ({ onClose, surface = 'configuration' }) => {
             createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
             updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
             deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
-            onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
+            onSuccess={(data) => updatePageWithPermissions(permissionPage?.id, data)}
           />
         )}
       </div>

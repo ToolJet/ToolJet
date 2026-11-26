@@ -629,23 +629,3 @@
 .theme-dark .pages-settings .form-control {
     border-color: var(--border-default);
 }
-
-// Page and page group menu rows are buttons drawn as `.list-item-popover-option` rows (UB-02).
-#edit-page-popover button.list-item-popover-option {
-  width: 100%;
-  border: 0;
-  background: transparent;
-  color: var(--text-default);
-  font: inherit;
-  text-align: left;
-
-  &:disabled,
-  &[aria-disabled='true'] {
-    cursor: not-allowed;
-    opacity: 0.5;
-
-    &:hover {
-      background-color: transparent;
-    }
-  }
-}

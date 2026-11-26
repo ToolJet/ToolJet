@@ -36,6 +36,25 @@ body.app-builder-chrome {
     }
   }
 
+  :is(#query-list-menu, #edit-page-popover) button.list-item-popover-option {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--text-default);
+    font: inherit;
+    text-align: left;
+
+    &:hover {
+      background-color: var(--interactive-hover);
+    }
+
+    &[aria-disabled='true'] {
+      cursor: not-allowed;
+      opacity: 0.5;
+      background-color: transparent;
+    }
+  }
+
   // The data source picker's popover is only a positioner; its card is the overlay. The dark theme's
   // popover rule outranks queryManager.theme.scss's transparent background and painted it navy.
   .ds-select-popover {
@@ -50,7 +69,7 @@ body.app-builder-chrome {
 $widget-scopes: '.main-editor-canvas *, .tj-modal-widget-content *, .tj-widget-overlay *';
 
 body.app-builder-chrome {
-  :focus-visible:not(.cm-content, input[id^='react-select-'], .runtime-inspector__search input, #{$widget-scopes}),
+  :focus-visible:not(.cm-content, input[id^='react-select-'], .runtime-inspector__search input, .runtime-inspector__entry-label, #{$widget-scopes}),
   .cm-editor.cm-focused:not(#{$widget-scopes}),
   .runtime-inspector__search:has(input:focus-visible),
   [class*='-control']:has(input[id^='react-select-']:focus-visible):not(#{$widget-scopes}) {

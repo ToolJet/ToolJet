@@ -13,6 +13,7 @@ import QueryCodeEditorTabs from '@/AppBuilder/QueryManager/CodeEditorTab/QueryCo
 import RealtimeCursors from '@/AppBuilder/RealtimeCursors';
 import EditorHeader from '@/AppBuilder/Header';
 import LeftSidebar from '@/AppBuilder/LeftSidebar';
+import { DeletePageConfirmationModal } from '@/AppBuilder/RightSideBar/PageSettingsTab/PageMenu/DeletePageConfirmationModal';
 import Popups from './Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
@@ -117,6 +118,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
               <QueryCodeEditorTabs darkMode={darkMode} />
               <RightSideBar darkMode={darkMode} />
             </DndProvider>
+            <DeletePageConfirmationModal darkMode={darkMode} />
             <Popups darkMode={darkMode} />
           </ModuleProvider>
         </AppBuilderTooltipProvider>

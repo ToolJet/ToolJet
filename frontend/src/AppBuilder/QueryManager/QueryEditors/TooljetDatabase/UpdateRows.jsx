@@ -81,7 +81,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
           Filter
         </label>
 
-        <div className="field-container flex-grow-1 col">
+        <div className="field-container flex-grow-1 col d-flex custom-gap-6 flex-column">
           {isEmpty(updateRowsOptions?.where_filters || {}) && <NoCondition />}
           {!isEmpty(updateRowsOptions?.where_filters) &&
             Object.values(updateRowsOptions?.where_filters || {}).map((filter) => (
@@ -104,7 +104,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
             onClick={() => {
               addNewFilterConditionPair();
             }}
-            className={`cursor-pointer fit-content ${isEmpty(updateRowsOptions?.where_filters) ? '' : 'mt-2'}`}
+            className="cursor-pointer fit-content"
           >
             Add Condition
           </RadixButton>

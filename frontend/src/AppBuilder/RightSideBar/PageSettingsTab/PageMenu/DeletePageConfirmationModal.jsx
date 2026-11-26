@@ -5,23 +5,22 @@ import useStore from '@/AppBuilder/_stores/store';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 
 export function DeletePageConfirmationModal({ darkMode }) {
-  const editingPage = useStore((state) => state.editingPage);
+  const page = useStore((state) => state.pageToDelete);
   const show = useStore((state) => state.showDeleteConfirmationModal);
   const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
-  const openPageEditPopover = useStore((state) => state.openPageEditPopover);
 
   const deletePageGroup = useStore((state) => state.deletePageGroup);
   const deletePage = useStore((state) => state.deletePage);
 
   const handleClose = () => {
     toggleDeleteConfirmationModal(false);
-    openPageEditPopover(null);
   };
 
   const handleConfirm = () => {
-    deletePage(editingPage?.id);
+    deletePage(page.id);
   };
-  if (editingPage?.isPageGroup)
+  if (!page) return null;
+  if (page.isPageGroup)
     return (
       <Modal
         show={show}
@@ -41,7 +40,7 @@ export function DeletePageConfirmationModal({ darkMode }) {
         <Modal.Footer>
           <button
             onClick={() => {
-              deletePageGroup(editingPage?.id, true);
+              deletePageGroup(page.id, true);
             }}
             className="delete-all-button"
           >
@@ -59,7 +58,7 @@ export function DeletePageConfirmationModal({ darkMode }) {
           </button>
           <button
             onClick={() => {
-              deletePageGroup(editingPage?.id);
+              deletePageGroup(page.id);
             }}
             className="delete-all-button danger"
           >
@@ -74,7 +73,7 @@ export function DeletePageConfirmationModal({ darkMode }) {
     <EntityDeleteDialog
       show={show}
       entityLabel="page"
-      subjects={[{ name: editingPage?.name }]}
+      subjects={[{ name: page.name }]}
       subtitle="The page and everything on it are deleted."
       darkMode={darkMode}
       onCancel={handleClose}

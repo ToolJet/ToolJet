@@ -8,6 +8,7 @@ import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import useStore from '@/AppBuilder/_stores/store';
 import { drainExposedValueBatch } from '@/test/app-builder';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const VERSION_URL = 'http://localhost:3000/api/v2/apps/app-1/versions/version-1';
 const state = () => useStore.getState();
@@ -95,12 +96,62 @@ test('marking a page as home changes the home page and saves it', async () => {
 });
 
 test('deleting a page removes it and saves the deletion', async () => {
+  act(() => {
+    state().setEditingPage(page('home-1'));
+    state().setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION);
+    state().setRightSidebarOpen(true);
+  });
   await act(async () => {
     await state().deletePage('second-1');
   });
 
   expect(page('second-1')).toBeUndefined();
+  expect(state().editingPage?.id).toBe('home-1');
+  expect(state().isRightSidebarOpen).toBe(true);
   expect(saves).toEqual([{ method: 'DELETE', path: '/pages', body: expect.objectContaining({ pageId: 'second-1' }) }]);
+});
+
+test('deleting the page open in configuration closes the panel', async () => {
+  act(() => {
+    state().setEditingPage(page('second-1'));
+    state().setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION);
+    state().setRightSidebarOpen(true);
+  });
+
+  await act(async () => {
+    await state().deletePage('second-1');
+  });
+
+  expect(state().isRightSidebarOpen).toBe(false);
+  expect(state().editingPage).toBeNull();
+});
+
+test('deleting a group and its pages closes the configuration for a deleted child', async () => {
+  act(() => {
+    const group = { id: 'group-1', name: 'Group', isPageGroup: true };
+    const child = { ...page('second-1'), pageGroupId: group.id };
+    state().setPages([page('home-1'), group, child], 'canvas');
+    state().setEditingPage(child);
+    state().setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION);
+    state().setRightSidebarOpen(true);
+  });
+
+  await act(async () => {
+    await state().deletePageGroup('group-1', true);
+  });
+
+  expect(page('second-1')).toBeUndefined();
+  expect(state().isRightSidebarOpen).toBe(false);
+  expect(state().editingPage).toBeNull();
+});
+
+test('the Home page is protected even when the app has other pages', async () => {
+  await act(async () => {
+    await state().deletePage('home-1');
+  });
+
+  expect(page('home-1')).toBeDefined();
+  expect(saves).toEqual([]);
 });
 
 test('the only page of an app cannot be deleted', async () => {

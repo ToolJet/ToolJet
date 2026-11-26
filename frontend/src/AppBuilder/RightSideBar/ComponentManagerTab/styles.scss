@@ -55,25 +55,53 @@
 // renders in the left panel, so keep its visual contract local to that surface rather
 // than depending on which side of the editor owns it.
 .components-container--left {
+  .tj-widgets-search-input {
+    width: auto;
+    margin-inline: 16px;
+  }
+
+  .component-card-group-container {
+    margin-inline: 16px;
+  }
+
+  .component-card-group-wrapper {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 12px;
+
+    .draggable-box {
+      width: 100%;
+    }
+  }
+
+  .draggable-box-wrapper,
+  .component-title {
+    width: 100%;
+  }
+
+  .component-image-wrapper {
+    width: 100% !important;
+  }
+
   .component-image-holder {
     box-sizing: border-box;
     border-radius: 4px;
-    background-color: var(--slate3);
+    background-color: var(--surfaces-surface-02);
+    border: 1px solid transparent;
     transition: background-color 160ms ease, border-color 160ms ease;
 
     &:hover {
-      border: 1px solid var(--slate4);
-      background-color: var(--slate4);
+      border-color: var(--border-default);
+      background-color: var(--interactive-hover);
     }
 
     &:active {
-      border: 1px solid var(--slate6);
-      background-color: var(--slate4);
+      border-color: var(--border-strong);
+      background-color: var(--interactive-hover);
     }
   }
 
   .component-title {
-    width: 72px;
     height: 26px;
     max-width: 100%;
     margin-top: 4px;

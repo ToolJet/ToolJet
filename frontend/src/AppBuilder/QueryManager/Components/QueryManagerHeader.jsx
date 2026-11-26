@@ -184,7 +184,7 @@ const QueryTabs = ({ kind, activeTab, setActiveTab }) => {
           data-cy={`query-tab-${tab.label.toLowerCase()}`}
           onClick={() => setActiveTab(tab.id)}
         >
-          {tab.label}
+          <span className="query-manager-tab-label">{tab.label}</span>
         </button>
       ))}
     </div>

@@ -29,10 +29,12 @@ export const getPanelCloseLabel = (panel) =>
   )}`;
 
 export const RUNTIME_PANEL_COLLAPSED_HEIGHT = 38;
+const RUNTIME_PANEL_MIN_RIGHT_EDGE = 280;
 
 // The query editor's 48px panel header, and the 36px Setup / Transformation / Settings strip below it.
 export const QUERY_HEADER_PX = 48;
 export const QUERY_TABS_PX = 36;
+const QUERY_CONTROL_PX = 32;
 
 // Query preview docks at the bottom of the right-side query panel (containerClassName). It opens at
 // defaultRatio of that panel, resizes from its top edge, collapses below minPx, and always leaves
@@ -266,7 +268,14 @@ export const getRightPanelReservedWidth = (isRightSidebarOpen, activeTab, queryP
   return activeTab === 'query' ? getQueryPanelWidth(queryPanelWidth) : '300px';
 };
 
-export const getRuntimePanelRightOffset = getRightPanelReservedWidth;
+export const getRuntimePanelRightOffset = (isRightSidebarOpen, activeTab, queryPanelWidth, codePanelLeft) => {
+  const sidebarWidth = getRightPanelReservedWidth(isRightSidebarOpen, activeTab, queryPanelWidth);
+  if (codePanelLeft == null) return sidebarWidth;
+  // The Code panel's measured edge already includes the space occupied by the right sidebar.
+  // In a narrow workspace, leave room for the runtime controls over the bottom of Code.
+  const rightEdge = Math.max(codePanelLeft, RUNTIME_PANEL_MIN_RIGHT_EDGE);
+  return `max(${sidebarWidth || '0px'}, calc(100vw - ${rightEdge}px))`;
+};
 
 // The canvas reserves side-panel widths as borders, so it grows by them to keep its content width.
 export const getCanvasMinWidth = (leftWidthPx, rightReservedWidth) => {
@@ -322,10 +331,10 @@ export const getQueryDetailsStyle = (surface) =>
         '--query-control-border': 'var(--slate7)',
         '--query-control-border-width': '1px',
         '--query-dropdown-button-border-width': '0px',
-        '--query-dropdown-height': '36px',
+        '--query-dropdown-height': `${QUERY_CONTROL_PX}px`,
         '--query-dropdown-hover-background': 'var(--background-surface-layer-01)',
-        '--query-dropdown-focus-border': 'var(--slate7)',
-        '--query-dropdown-focus-shadow': 'none',
+        '--query-dropdown-focus-border': 'var(--border-accent-strong)',
+        '--query-dropdown-focus-shadow': 'inset 0 0 0 1px var(--border-accent-strong)',
         '--query-dropdown-selected-background': 'var(--background-surface-layer-01)',
       }
     : undefined;
@@ -343,9 +352,9 @@ export const TOOLJET_DB_MODE_OPTIONS = [
   { label: 'SQL mode', value: 'SQL mode' },
 ];
 
-export const getTooljetDbModeControlPresentation = () => ({
+export const getTooljetDbModeControlPresentation = (surface) => ({
   animateMenu: true,
-  height: 36,
+  height: surface === 'right' ? QUERY_CONTROL_PX : 36,
   type: 'dropdown',
   useMenuPortal: false,
 });

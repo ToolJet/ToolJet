@@ -380,8 +380,11 @@ $border-radius: 4px;
   }
 
   .query-manager-tab {
-    height: 36px;
-    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    margin-bottom: -1px;
+    padding: 0;
     border: 0;
     border-bottom: 2px solid transparent;
     background: transparent;
@@ -393,8 +396,17 @@ $border-radius: 4px;
     cursor: pointer;
     transition: color 120ms ease, border-color 120ms ease;
 
+    .query-manager-tab-label {
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
     &:hover {
       color: var(--text-default);
+
+      .query-manager-tab-label {
+        background: var(--interactive-hover);
+      }
     }
 
     &.is-active {
@@ -463,7 +475,7 @@ $border-radius: 4px;
 
       .tjdb-limit-offset-codehinter .cm-editor {
         border-color: var(--slate7) !important;
-        border-radius: 6px !important;
+        border-radius: 8px !important;
       }
 
       .tooljetdb-condition-row {
@@ -490,19 +502,19 @@ $border-radius: 4px;
         }
 
         > :first-child > .tj-small-btn {
-          border-radius: 6px 0 0 6px !important;
+          border-radius: 8px 0 0 8px !important;
         }
 
         > :first-child .query-dropdown-control {
-          border-radius: 6px 0 0 6px !important;
+          border-radius: 8px 0 0 8px !important;
         }
 
         &.tooljetdb-join-row > :first-child > .tj-small-btn {
-          border-radius: 6px 0 0 6px !important;
+          border-radius: 8px 0 0 8px !important;
         }
 
         &.tooljetdb-join-row > :last-child .query-dropdown-control {
-          border-radius: 0 6px 6px 0 !important;
+          border-radius: 0 8px 8px 0 !important;
         }
 
         .tdb-dropdown-btn {
@@ -519,6 +531,11 @@ $border-radius: 4px;
           flex: 1 1 0;
           width: auto !important;
           min-width: 0 !important;
+
+          > div:has(+ .qm-delete-btn) {
+            flex: 1;
+            min-width: 0;
+          }
         }
 
         .tjdb-codhinter-wrapper .cm-editor {
@@ -526,7 +543,7 @@ $border-radius: 4px;
           border-radius: 0 !important;
         }
 
-        .qm-delete-btn {
+        > [class*='col-'] .qm-delete-btn {
           flex: 0 0 30px !important;
           width: 30px !important;
           max-width: 30px !important;
@@ -537,7 +554,7 @@ $border-radius: 4px;
           min-height: var(--tjdb-compound-control-height) !important;
           padding: 0 4px !important;
           border-color: var(--slate7) !important;
-          border-radius: 0 6px 6px 0 !important;
+          border-radius: 0 8px 8px 0 !important;
         }
 
         .tdb-dropdown-btn .text-truncate > span {
@@ -616,7 +633,7 @@ $border-radius: 4px;
       height: var(--query-dropdown-height) !important;
       min-height: var(--query-dropdown-height) !important;
       border: 1px solid var(--slate7) !important;
-      border-radius: 6px !important;
+      border-radius: 8px !important;
       background: var(--query-control-background) !important;
       box-shadow: none !important;
       transition: none;
@@ -632,7 +649,7 @@ $border-radius: 4px;
     // dropdown treatment instead of React Select's wider default inset/indicator.
     [class*='tooljetdb-mode-select__control'] {
       border-color: var(--query-control-border) !important;
-      border-radius: 6px !important;
+      border-radius: 8px !important;
       background: var(--query-control-background) !important;
     }
 
@@ -708,6 +725,21 @@ $border-radius: 4px;
       min-height: var(--query-dropdown-height) !important;
     }
 
+    [class*='react-select__value-container'],
+    [class*='query-select-motion__value-container'],
+    .query-editor-dynamic-form-container input.form-control:not([type='checkbox'], [type='radio']) {
+      padding-inline: 8px;
+    }
+
+    .single-line-codehinter-input .cm-editor {
+      min-height: var(--query-dropdown-height);
+      border-radius: 8px;
+    }
+
+    .single-line-codehinter-input .cm-line {
+      padding-inline: 8px;
+    }
+
     .query-dropdown-control,
     .query-dropdown-control > button,
     *:has(> .query-dropdown-control) {
@@ -717,7 +749,7 @@ $border-radius: 4px;
 
     .query-dropdown-control {
       width: 100%;
-      border-radius: 6px;
+      border-radius: 8px;
       transition: none;
 
       &:hover {
@@ -2871,6 +2903,16 @@ $border-radius: 4px;
   }
 }
 
+body.app-builder-chrome .popover.tjdb-workflow-query-editor-popover-index {
+  .tooljetdb-popover-search:has(input[id^='react-select-']:focus) {
+    box-shadow: inset 0 0 0 2px var(--border-accent-strong) !important;
+  }
+
+  .tooljetdb-popover-search + .tj-scrollbar {
+    margin-top: 4px;
+  }
+}
+
 @keyframes query-select-menu-in {
   from {
     opacity: 0;
@@ -2934,10 +2976,23 @@ $border-radius: 4px;
   }
 }
 
-// Sort/filter main menu scroll body
+// The menu fits its options on desktop and scrolls when the viewport is short.
 .query-editor-sort-filter-body {
-  height: 315px;
+  max-height: calc(100vh - 16px);
   overflow-y: auto;
+}
+
+.query-row {
+  .query-row-options {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &:is(:hover, :focus-within, .query-row-selected) .query-row-options,
+  .query-row-options:has([aria-expanded='true']) {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 // Datasource filter list scroll body
@@ -3162,7 +3217,6 @@ $border-radius: 4px;
       background: var(--interactive-hover) !important;
     }
 
-    // The ⋮ menu is hidden (d-none) on rows that aren't selected; hovering any row reveals it (QL-49).
     &:hover .query-rename-delete-btn {
       display: flex !important;
     }
@@ -3281,12 +3335,25 @@ $border-radius: 4px;
         box-shadow: none !important;
       }
 
-      // Keyboard focus and a focused code field show the editor's one ring (Shared/Panel/panel.scss).
-      &:focus-visible,
-      &.cm-focused,
-      &:has(input[id^='react-select-']:focus-visible) {
+      &.cm-focused {
         @include focus-ring;
       }
+    }
+
+    input:not([type='checkbox']):not([type='radio']):not([role='combobox']),
+    textarea,
+    select,
+    [class*='react-select__control'],
+    [class*='query-select-motion__control'] {
+      &:not(.is-invalid, [aria-invalid='true']):is(:focus-within, :focus-visible) {
+        border-color: var(--query-dropdown-focus-border) !important;
+        box-shadow: var(--query-dropdown-focus-shadow) !important;
+      }
+    }
+
+    .single-line-codehinter-input .cm-editor.cm-focused {
+      border-color: var(--query-dropdown-focus-border) !important;
+      box-shadow: var(--query-dropdown-focus-shadow) !important;
     }
 
     // React Select keeps a tiny searchable input beside the selected value. It must
@@ -3316,6 +3383,11 @@ $border-radius: 4px;
         background: var(--query-control-background) !important;
         box-shadow: none !important;
       }
+
+      &:is(:focus-within, .is-open) {
+        border-color: var(--query-dropdown-focus-border) !important;
+        box-shadow: var(--query-dropdown-focus-shadow) !important;
+      }
     }
 
     .query-dropdown-control > .tdb-dropdown-btn {
@@ -3334,6 +3406,16 @@ $border-radius: 4px;
         background: transparent !important;
         box-shadow: none !important;
         color: var(--query-field-value-color) !important;
+      }
+    }
+
+    .tooljetdb-table-picker {
+      border: 0 !important;
+      overflow: visible !important;
+
+      > .query-dropdown-control {
+        border-style: solid;
+        border-width: var(--query-control-border-width);
       }
     }
   }

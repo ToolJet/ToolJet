@@ -233,11 +233,12 @@ const LifecycleCTAButton = () => {
             <Button
               variant="ghost"
               iconOnly
+              className="lifecycle-cta-icon-only"
               onClick={handleClick}
               aria-label="Configure Git"
               data-cy="lifecycle-cta-button"
             >
-              <GitBranch size={15} strokeWidth={1.8} aria-hidden="true" />
+              <GitBranch size={16} strokeWidth={1.8} aria-hidden="true" />
             </Button>
           </ToolTip>
         ) : (

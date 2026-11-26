@@ -10,6 +10,7 @@ export const BuildModeBadge = ee.BuildModeBadge ?? Nothing;
 // Without the enterprise module the canvas renders as it is.
 export const CodeCanvasViewport = ee.CodeCanvasViewport ?? (({ children }) => children ?? null);
 export const CodeCanvasWidthControl = ee.CodeCanvasWidthControl ?? Nothing;
+export const useCodePanelEdge = ee.useCodePanelEdge ?? Nothing;
 export const LocalBehindNote = ee.LocalBehindNote ?? Nothing;
 export const LocalChangesNote = ee.LocalChangesNote ?? Nothing;
 export const ToolbarTip = ee.ToolbarTip ?? (({ children }) => children ?? null);

@@ -350,6 +350,16 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getRuntimePanelRightOffset(true, 'query')).toBe('min(496px, calc(100vw - 54px))');
   });
 
+  it('stops the runtime panel at the docked Code panel, including when the query editor is open', () => {
+    expect(getRuntimePanelRightOffset(false, null, null, 650)).toBe('max(0px, calc(100vw - 650px))');
+    expect(getRuntimePanelRightOffset(true, 'query', 720, 350)).toBe(
+      'max(min(720px, calc(100vw - 54px)), calc(100vw - 350px))'
+    );
+    expect(getRuntimePanelRightOffset(true, 'query', 496, -116)).toBe(
+      'max(min(496px, calc(100vw - 54px)), calc(100vw - 280px))'
+    );
+  });
+
   // Break this catches: the canvas reserves 300px while the wider query editor covers its right edge.
   it('reserves the real width of the open right panel on the canvas', () => {
     expect(getRightPanelReservedWidth(false, 'query')).toBe(0);
@@ -491,7 +501,7 @@ describe('AB-PANEL-001 app builder panel composition', () => {
       /\.query-fields-stacked\s*\{[\s\S]*?\.tooljetdb-operation-form\s*\{[\s\S]*?--tjdb-compound-control-height:\s*var\(--query-dropdown-height\)/
     );
     expect(queryManagerStyles).toMatch(
-      /\.tooljetdb-condition-row[\s\S]*?border-radius:\s*6px 0 0 6px\s*!important;[\s\S]*?\.qm-delete-btn[\s\S]*?border-radius:\s*0 6px 6px 0\s*!important;/
+      /\.tooljetdb-condition-row[\s\S]*?border-radius:\s*8px 0 0 8px\s*!important;[\s\S]*?\.qm-delete-btn[\s\S]*?border-radius:\s*0 8px 8px 0\s*!important;/
     );
   });
 
@@ -540,17 +550,16 @@ describe('AB-PANEL-001 app builder panel composition', () => {
       '--query-control-border': 'var(--slate7)',
       '--query-control-border-width': '1px',
       '--query-dropdown-button-border-width': '0px',
-      '--query-dropdown-height': '36px',
+      '--query-dropdown-height': '32px',
       '--query-dropdown-hover-background': 'var(--background-surface-layer-01)',
-      '--query-dropdown-focus-border': 'var(--slate7)',
-      '--query-dropdown-focus-shadow': 'none',
+      '--query-dropdown-focus-border': 'var(--border-accent-strong)',
+      '--query-dropdown-focus-shadow': 'inset 0 0 0 1px var(--border-accent-strong)',
       '--query-dropdown-selected-background': 'var(--background-surface-layer-01)',
     });
     expect(getQueryDetailsStyle('bottom')).toBeUndefined();
   });
 
-  // Break this catches: query controls regain hover, focus, or open-state chrome that visually shifts the field.
-  it('keeps query inputs visually static while they remain fully interactive', () => {
+  it('uses the input accent border and inset focus indicator without changing control geometry', () => {
     const style = getQueryDetailsStyle('right');
 
     expect(style['--query-control-background']).toBe('var(--background-surface-layer-01)');
@@ -558,8 +567,8 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(style['--query-control-border-width']).toBe('1px');
     expect(style['--query-dropdown-button-border-width']).toBe('0px');
     expect(style['--query-dropdown-hover-background']).toBe('var(--background-surface-layer-01)');
-    expect(style['--query-dropdown-focus-border']).toBe('var(--slate7)');
-    expect(style['--query-dropdown-focus-shadow']).toBe('none');
+    expect(style['--query-dropdown-focus-border']).toBe('var(--border-accent-strong)');
+    expect(style['--query-dropdown-focus-shadow']).toBe('inset 0 0 0 1px var(--border-accent-strong)');
     expect(style['--query-dropdown-selected-background']).toBe('var(--background-surface-layer-01)');
   });
 
@@ -607,6 +616,7 @@ describe('AB-PANEL-001 app builder panel composition', () => {
       type: 'dropdown',
       useMenuPortal: false,
     });
+    expect(getTooljetDbModeControlPresentation('right').height).toBe(32);
   });
 
   // Break this catches: the preview opens over the query fields under the 48px header and 36px tabs.

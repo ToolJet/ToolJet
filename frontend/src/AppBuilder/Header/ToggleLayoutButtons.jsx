@@ -33,6 +33,7 @@ export function ToggleLayoutButtons({
               'tw-pressed tw-bg-button-outline-pressed': currentLayout === 'desktop',
             })}
             iconOnly
+            size="default"
             aria-label="Switch to desktop layout"
             aria-selected={currentLayout === 'desktop'}
             tabIndex={currentLayout === 'desktop' ? 0 : -1}
@@ -45,8 +46,7 @@ export function ToggleLayoutButtons({
             disabled={isDesktopLayoutDisabled}
           >
             <Monitor
-              width="15"
-              height="15"
+              size={16}
               strokeWidth={1.8}
               className={cn('tw-text-icon-strong', { 'tw-text-icon-disabled': isDesktopLayoutDisabled })}
             />
@@ -60,6 +60,7 @@ export function ToggleLayoutButtons({
               'tw-pressed tw-bg-button-outline-pressed': currentLayout === 'mobile',
             })}
             iconOnly
+            size="default"
             aria-label="Switch to mobile layout"
             aria-selected={currentLayout === 'mobile'}
             tabIndex={currentLayout === 'mobile' ? 0 : -1}
@@ -72,8 +73,7 @@ export function ToggleLayoutButtons({
             disabled={isMobileLayoutDisabled}
           >
             <Smartphone
-              width="15"
-              height="15"
+              size={16}
               strokeWidth={1.8}
               className={cn('tw-text-icon-strong', { 'tw-text-icon-disabled': isMobileLayoutDisabled })}
             />

@@ -29,7 +29,7 @@
     gap: 12px;
     flex-shrink: 0;
     height: 40px;
-    padding: 0 16px 0 12px;
+    padding: 0 12px;
     border-bottom: 1px solid var(--border-weak);
   }
 
@@ -158,7 +158,7 @@
     flex-shrink: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 4px 6px 12px;
+    padding: 6px 12px 12px;
     border-right: 1px solid var(--border-weak);
   }
 
@@ -172,7 +172,7 @@
     gap: 6px;
     width: 100%;
     height: 28px;
-    padding: 0 6px !important;
+    padding: 0 4px !important;
     border-radius: 4px;
     color: var(--text-default) !important;
     font-size: 12px !important;
@@ -194,6 +194,10 @@
 
     &:hover {
       background: var(--interactive-hover);
+    }
+
+    &:has(> .runtime-inspector__entry-label:focus-visible) {
+      box-shadow: inset 0 0 0 2px var(--border-accent-strong);
     }
 
     &.is-selected {

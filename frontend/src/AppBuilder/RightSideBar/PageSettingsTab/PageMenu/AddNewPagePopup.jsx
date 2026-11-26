@@ -66,10 +66,12 @@ const OPEN_APP_MODES = [
 ];
 
 export const AddEditPagePopup = forwardRef(
-  ({ darkMode, embedded = false, onClose, onNestedPopoverOpenChange, ...props }, ref) => {
+  ({ darkMode, embedded = false, pageGroup, onClose, onNestedPopoverOpenChange, ...props }, ref) => {
     const { moduleId } = useModuleContext();
-    const { show, mode, type } = useStore((state) => state.newPagePopupConfig);
-    const editingPage = useStore((state) => state.editingPage);
+    const popupConfig = useStore((state) => state.newPagePopupConfig);
+    const selectedPage = useStore((state) => state.editingPage);
+    const editingPage = pageGroup ?? selectedPage;
+    const { show, mode, type } = pageGroup ? { show: true, mode: 'edit', type: 'group' } : popupConfig;
     const pages = useStore((state) => state?.modules?.canvas?.pages ?? []);
     const addNewPage = useStore((state) => state.addNewPage);
     const updatePageName = useStore((state) => state.updatePageName);
@@ -92,12 +94,10 @@ export const AddEditPagePopup = forwardRef(
     const updatePageTargetApp = useStore((state) => state.updatePageTargetApp);
     const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
     const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
-    const openPageEditPopover = useStore((state) => state.openPageEditPopover);
     const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
     const [page, setPage] = useState(editingPage || props?.page);
-    // The page as saved now. `page` is a snapshot that isn't refreshed after an update (the update clears
-    // editingPage), so "did this field change?" checks must compare against the store.
+    // Compare input edits with the saved page, including changes made by another control.
     const savedPage = pages.find((p) => p.id === page?.id) ?? page;
 
     const showPageHeaderOnDesktop = useStore(
@@ -354,10 +354,7 @@ export const AddEditPagePopup = forwardRef(
         dataCy: 'delete-page-button',
         destructive: true,
         onSelect: () => {
-          if (!isHomePage && page) {
-            openPageEditPopover(page);
-            toggleDeleteConfirmationModal(true);
-          }
+          if (!isHomePage && page) toggleDeleteConfirmationModal(true, page);
         },
         disabledReason: deleteDisabledReason,
       },

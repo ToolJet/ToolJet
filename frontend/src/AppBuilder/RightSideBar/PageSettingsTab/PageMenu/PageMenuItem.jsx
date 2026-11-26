@@ -60,12 +60,10 @@ export const PageMenuItem = withRouter(
     const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
     const [showPageOptions, toggleShowPageOptions] = useState(false);
 
-    const openPageEditPopover = useStore((state) => state.openPageEditPopover);
     const toggleEditPageNameInput = useStore((state) => state.toggleEditPageNameInput);
 
     const moreBtnRef = useRef(null);
 
-    const isEditingPage = editingPage?.id === page?.id;
     const icon = (props) => {
       const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
       // eslint-disable-next-line import/namespace
@@ -281,7 +279,7 @@ export const PageMenuItem = withRouter(
             {!shouldFreeze && (
               <div
                 className={cx('action-btn-wrapper', {
-                  'options-opened': showPageOptions && editingPage?.id == page?.id,
+                  'options-opened': showPageOptions,
                 })}
               >
                 <div onClick={handlePageSwitch} className="icon-btn">
@@ -296,9 +294,7 @@ export const PageMenuItem = withRouter(
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    setEditingPage(page);
                     toggleShowPageOptions(true);
-                    setNewPagePopupConfig({ show: false, mode: null, type: null });
                   }}
                   className="icon-btn"
                 >
@@ -307,7 +303,7 @@ export const PageMenuItem = withRouter(
 
                 <Overlay
                   target={moreBtnRef.current}
-                  show={showPageOptions && isEditingPage}
+                  show={showPageOptions}
                   placement="bottom-end"
                   rootClose
                   transition={false}
@@ -319,10 +315,7 @@ export const PageMenuItem = withRouter(
                       },
                     },
                   ]}
-                  onHide={() => {
-                    setEditingPage(null);
-                    toggleShowPageOptions(false);
-                  }}
+                  onHide={() => toggleShowPageOptions(false)}
                 >
                   <Popover
                     style={{ zIndex: '99999', position: 'absolute' }}
@@ -380,8 +373,7 @@ export const PageMenuItem = withRouter(
                           e.stopPropagation();
                           e.preventDefault();
                           toggleShowPageOptions(false);
-                          openPageEditPopover(page);
-                          toggleDeleteConfirmationModal(true);
+                          toggleDeleteConfirmationModal(true, page);
                         }}
                       />
                       <PageOptions
@@ -407,7 +399,7 @@ export const PageMenuItem = withRouter(
                           e.stopPropagation();
                           e.preventDefault();
                           toggleShowPageOptions(false);
-                          togglePagePermissionModal(true);
+                          togglePagePermissionModal(true, page);
                         }}
                       />
                     </div>

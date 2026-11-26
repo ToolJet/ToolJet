@@ -115,7 +115,10 @@ const QueryCardMenu = ({ darkMode }) => {
         show={showQueryHandlerMenu}
         rootClose
         transition={popoverMotion.transition ? Fade : false}
-        onHide={() => toggleQueryHandlerMenu(false)}
+        onHide={(event) => {
+          if (event?.key === 'Escape') targetElement?.focus();
+          toggleQueryHandlerMenu(false);
+        }}
         popperConfig={{
           strategy: 'absolute',
           modifiers: [
@@ -141,12 +144,17 @@ const QueryCardMenu = ({ darkMode }) => {
           <Popover
             {...props}
             id="query-list-menu"
+            role="group"
+            aria-label="Query actions"
             className={classNames(popoverMotion.className, { 'dark-theme': darkMode })}
           >
             <Popover.Body bsPrefix="list-item-popover-body">
               {QUERY_MENU_OPTIONS.map((option) => {
                 const optionBody = (
-                  <div
+                  <button
+                    type="button"
+                    autoFocus={option.value === 'rename'}
+                    aria-disabled={option.value === 'permission' && !hasAppPermissionQuery ? true : undefined}
                     data-cy={`query-card-${String(option?.value).toLowerCase()}-button`}
                     className="list-item-popover-option"
                     key={option?.value}
@@ -155,17 +163,19 @@ const QueryCardMenu = ({ darkMode }) => {
                       handleQueryMenuActions(option.value);
                     }}
                   >
-                    <div className="list-item-popover-menu-option-icon">{option.icon}</div>
-                    <div
+                    <span className="list-item-popover-menu-option-icon" aria-hidden="true">
+                      {option.icon}
+                    </span>
+                    <span
                       className={classNames('list-item-option-menu-label', {
                         'tw-text-editor-text-danger': option.value === 'delete',
                         'color-disabled': option.value === 'permission' && !hasAppPermissionQuery,
                       })}
                     >
                       {option?.label}
-                    </div>
+                    </span>
                     {option.value === 'permission' && !hasAppPermissionQuery && option.trailingIcon}
-                  </div>
+                  </button>
                 );
 
                 return option.value === 'permission' ? (

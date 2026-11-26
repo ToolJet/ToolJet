@@ -292,7 +292,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surfac
           ariaLabel={searchName}
           customClass={`tj-widgets-search-input tj-text-xsm`}
           showClearButton={false}
-          width={266}
+          width={surface === 'left' ? '100%' : 266}
         />
       </div>
     );

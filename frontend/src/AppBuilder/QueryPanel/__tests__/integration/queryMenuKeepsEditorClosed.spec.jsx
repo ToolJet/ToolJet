@@ -3,7 +3,8 @@
  * query without selecting it, so the editor stays closed and the selection stays put.
  */
 import React from 'react';
-import { act, fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import useStore from '@/AppBuilder/_stores/store';
 import { dataqueryService } from '@/_services';
 import { QueryCard } from '@/AppBuilder/QueryPanel/QueryCard';
@@ -73,6 +74,30 @@ test.each(MENUS)("%s menu: acts on its own row's query", (_, Menu) => {
 
   expect(state().queryPanel.deletingQueryId).toBe('q2');
   expect(state().isRightSidebarOpen).toBe(false);
+});
+
+// Break this catches: keyboard users can open the options but cannot focus and activate Rename.
+test.each(MENUS)('%s menu: renames an unselected query using the keyboard', async (_, Menu) => {
+  setup(Menu);
+  act(() => state().setRightSidebarOpen(true));
+  const row = screen.getByText('secondQuery').closest('.query-row');
+  const options = within(row).getByRole('button', { name: 'Query options' });
+
+  await userEvent.tab();
+  await userEvent.tab();
+  expect(options).toHaveFocus();
+  await userEvent.keyboard('{Enter}');
+  expect(screen.getByRole('button', { name: 'Rename' })).toHaveFocus();
+  await userEvent.keyboard('{Enter}');
+
+  const input = within(row).getByRole('textbox');
+  expect(input).toHaveValue('secondQuery');
+  expect(input).toHaveFocus();
+  await userEvent.click(input);
+  expect(state().queryPanel.selectedQuery?.id).toBe('q1');
+  expect(state().isRightSidebarOpen).toBe(true);
+  await userEvent.keyboard('{Escape}');
+  expect(within(row).queryByRole('textbox')).not.toBeInTheDocument();
 });
 
 // Break this catches (review B1): deleting a query that isn't selected re-selects the first query, and

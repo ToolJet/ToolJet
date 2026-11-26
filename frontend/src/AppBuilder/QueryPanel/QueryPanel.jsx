@@ -14,6 +14,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import RuntimeInspector from '@/AppBuilder/QueryPanel/RuntimeInspector/RuntimeInspector';
 import RuntimeDebugger from '@/AppBuilder/QueryPanel/RuntimeDebugger/RuntimeDebugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useCodePanelEdge } from '@/AppBuilder/_helpers/codeModeHooks';
 import {
   RUNTIME_PANEL_ITEMS,
   PANEL_MOTION,
@@ -39,6 +40,7 @@ export const QueryPanel = ({ darkMode }) => {
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
   const queryPanelWidth = useStore((state) => state.queryPanel.queryPanelWidth);
+  const codePanelLeft = useCodePanelEdge((state) => state.left);
   const unreadErrorCount = useStore((state) => state.debugger.unreadErrorCount);
   const resetUnreadErrorCount = useStore((state) => state.debugger.resetUnreadErrorCount);
   const activeTab = useStore((state) => state.queryPanel.runtimePanelTab);
@@ -150,11 +152,12 @@ export const QueryPanel = ({ darkMode }) => {
   );
 
   const rightPanelOffset = {
-    right: getRuntimePanelRightOffset(isRightSidebarOpen, activeRightSideBarTab, queryPanelWidth),
+    right: getRuntimePanelRightOffset(isRightSidebarOpen, activeRightSideBarTab, queryPanelWidth, codePanelLeft),
   };
   const runtimePanelTheme = getRuntimePanelTheme(darkMode);
   const runtimePanelBarStyle = {
     ...rightPanelOffset,
+    ...(codePanelLeft != null && { zIndex: 14 }),
     '--runtime-panel-background': runtimePanelTheme.panel,
     '--runtime-panel-text': runtimePanelTheme.text,
     '--runtime-panel-muted': runtimePanelTheme.muted,

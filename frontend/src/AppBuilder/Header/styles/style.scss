@@ -243,6 +243,11 @@
     margin-left: 8px;
   }
 
+  [data-cy='lifecycle-cta-button'].lifecycle-cta-icon-only svg {
+    width: 16px;
+    height: 16px;
+  }
+
   [data-cy='lifecycle-cta-button'][data-unsynced='true'] {
     color: var(--orange9) !important;
     border-color: var(--orange8) !important;

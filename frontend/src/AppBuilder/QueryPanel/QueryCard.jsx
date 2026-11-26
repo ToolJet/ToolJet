@@ -50,6 +50,9 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
 
   const toggleQueryHandlerMenu = useStore((state) => state.queryPanel.toggleQueryHandlerMenu);
+  const hasOpenMenu = useStore(
+    (state) => state.queryPanel.showQueryHandlerMenu && state.queryPanel.menuQueryId === dataQuery.id
+  );
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const isRestricted = dataQuery.permissions && dataQuery.permissions.length !== 0;
@@ -179,11 +182,12 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         </div>
         {!shouldFreeze && hasPermissions && (
           <div
-            className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}
+            className="col-auto query-rename-delete-btn query-row-options d-flex"
             onClick={(e) => e.stopPropagation()}
           >
             <PanelIconButton
               label="Query options"
+              aria-expanded={hasOpenMenu}
               onClick={() => toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`, dataQuery?.id)}
               size="small"
               variant="outline"

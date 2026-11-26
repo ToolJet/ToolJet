@@ -137,7 +137,7 @@ const EntryList = ({ entries, depth, selectedPath, onSelect, expanded, onToggle,
       <React.Fragment key={entry.id}>
         <div
           className={cx('runtime-inspector__entry', { 'is-selected': isPathWithin(selectedPath, path) })}
-          style={{ paddingLeft: 8 + depth * 14 }}
+          style={{ paddingInlineStart: 4 + depth * 14 }}
         >
           <button
             type="button"
