@@ -91,6 +91,10 @@ describe('dynamic height: module scope', () => {
     expect(scope.ownerOf(uuid(99))).toBeNull();
   });
 
+  it('[DynamicHeight-SCOPE-019] lists every canvas that holds a widget, the root as null', () => {
+    expect(scopeOf().canvases()).toEqual([null, CONTAINER, `${TABS}-t1`, `${MODAL}-header`, LIST, INNER_LIST]);
+  });
+
   it('[DynamicHeight-SCOPE-005] counts the containers around a widget', () => {
     const scope = scopeOf();
     expect(scope.depthOf('title')).toBe(0);

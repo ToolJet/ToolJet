@@ -89,6 +89,9 @@ export const createModuleScope = (state, moduleId, currentLayout) => {
 
   const childrenOf = (canvasId) => childrenIndex.get(canvasId ?? ROOT) ?? [];
 
+  // Every canvas that holds a widget, in page order; the root canvas is null.
+  const canvases = () => [...childrenIndex.keys()];
+
   // The widget a canvas belongs to: a Container's canvas is its own id, a
   // tab's is `<tabs id>-<tab id>`, a modal header's `<modal id>-header`.
   // Null for the root canvas, or a canvas whose widget is not on this page.
@@ -167,6 +170,7 @@ export const createModuleScope = (state, moduleId, currentLayout) => {
     typeOf,
     contractOf,
     childrenOf,
+    canvases,
     ownerOf,
     depthOf,
     rowDepthOf,

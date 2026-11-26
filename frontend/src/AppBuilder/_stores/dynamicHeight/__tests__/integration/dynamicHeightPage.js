@@ -6,15 +6,16 @@ import { componentDefinition } from '@/test/app-builder';
 // (formComponentSlice getBaseParentId), as in real apps.
 export const uuid = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 
-// One component with a desktop layout. `left` and `width` are grid columns, `top` and `height` px.
+// One component with a desktop layout. `left` and `width` are grid columns, `top` and `height` px. `layout` adds
+// saved layout fields such as a flex child's `widthPx`.
 export const widget = (
   id,
   type,
-  { parent, top = 0, left = 0, width = 10, height = 40, properties, styles, mobile } = {}
+  { parent, top = 0, left = 0, width = 10, height = 40, layout, properties, styles, mobile } = {}
 ) => {
   const definition = componentDefinition(id, id, type, properties, { styles });
   definition.component.parent = parent;
-  definition.layouts = { desktop: { top, left, width, height } };
+  definition.layouts = { desktop: { top, left, width, height, ...layout } };
   if (mobile) definition.layouts.mobile = mobile;
   return definition;
 };
