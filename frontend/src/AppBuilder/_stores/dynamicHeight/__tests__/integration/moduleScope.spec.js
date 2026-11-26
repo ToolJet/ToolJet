@@ -6,14 +6,12 @@
  * synchronously, so React is never rendered (as in validateWidget.spec.js and the Listview reflow spec).
  */
 import useStore from '@/AppBuilder/_stores/store';
-import { seedApp, componentDefinition, binding } from '@/test/app-builder';
+import { seedApp, binding } from '@/test/app-builder';
 import { bindModuleAwareGetResolvedComponent, createModuleScope } from '../../moduleScope';
+import { bootModule, uuid, widget } from './dynamicHeightPage';
 
 const s = () => useStore.getState();
 
-// Container ids are UUIDs: a canvas id such as `<tabs id>-<tab id>` maps back to its owner only for a UUID owner
-// (formComponentSlice getBaseParentId), as in real apps.
-const uuid = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const CONTAINER = uuid(1);
 const TABS = uuid(2);
 const MODAL = uuid(3);
@@ -21,14 +19,6 @@ const LIST = uuid(4);
 const INNER_LIST = uuid(5);
 const ACCORDION = uuid(6);
 const FORM = uuid(7);
-
-const widget = (id, type, { parent, top = 0, height = 40, properties, styles, mobile } = {}) => {
-  const definition = componentDefinition(id, id, type, properties, { styles });
-  definition.component.parent = parent;
-  definition.layouts = { desktop: { top, left: 0, width: 10, height } };
-  if (mobile) definition.layouts.mobile = mobile;
-  return definition;
-};
 
 const PAGE = {
   title: widget('title', 'Text', { top: 0, height: 40, mobile: { top: 5, left: 0, width: 20, height: 30 } }),
@@ -182,18 +172,6 @@ describe('dynamic height: module scope', () => {
 describe('dynamic height: a module root takes Dynamic height from the module it is used in', () => {
   const INSTANCE = uuid(50);
   const ROOT = uuid(51);
-
-  // Creates the module's namespace in every slice the resolver reads (as moduleIsolation.spec.js does).
-  const bootModule = (moduleId) => {
-    s().initializeComponentsSlice(moduleId);
-    s().initializeAppSlice(moduleId);
-    s().initializeEventsSlice(moduleId);
-    s().initializeResolvedSlice(moduleId);
-    s().initializeDependencySlice(moduleId);
-    s().initializeDataQuerySlice(moduleId);
-    s().initializeModeSlice(moduleId);
-    s().initializeLoaderSlice(moduleId);
-  };
 
   const seedModule = ({ instanceDynamicHeight, rootDynamicHeight }) => {
     seedApp({

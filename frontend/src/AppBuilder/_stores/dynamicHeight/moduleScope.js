@@ -62,11 +62,10 @@ export const bindModuleAwareGetResolvedComponent = (getResolvedComponent, getCom
 export const createModuleScope = (state, moduleId, currentLayout) => {
   const components = state.getCurrentPageComponents(moduleId) || {};
   const childrenIndex = childrenIndexOf(components);
-  const getResolvedComponent = bindModuleAwareGetResolvedComponent(
-    state.getResolvedComponent,
-    state.getComponentTypeFromId,
-    moduleId
-  );
+  const typeOf = (id) => components[id]?.component?.component;
+  // The type is read from this page's components, as the store's getComponentTypeFromId would, without its page
+  // lookup on every resolve.
+  const getResolvedComponent = bindModuleAwareGetResolvedComponent(state.getResolvedComponent, typeOf, moduleId);
   const getExposed = (id, contextIndices, property) =>
     state.getExposedPropertyForAdditionalActions(id, contextIndices, property, moduleId);
 
@@ -75,7 +74,6 @@ export const createModuleScope = (state, moduleId, currentLayout) => {
   const rowDepths = new Map();
 
   const savedLayout = (id) => components[id]?.layouts?.[currentLayout];
-  const typeOf = (id) => components[id]?.component?.component;
   const contractOf = (id) => heightContractOf(typeOf(id));
 
   // The height the editor draws the widget at: its saved height, plus the
