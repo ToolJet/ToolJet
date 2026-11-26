@@ -105,6 +105,13 @@ function groupToReportIssue(group, { resolution, hideBadges }) {
   };
 }
 
+// e.g. "Workflows with multiple draft versions"; mixed types read "Resources".
+function multiDraftTitle(resources) {
+  const types = new Set(resources.map((r) => r.type));
+  const label = types.size === 1 ? TYPE_LABEL_MAP[[...types][0]] : null;
+  return `${label ? `${label}s` : 'Resources'} with multiple draft versions`;
+}
+
 function MultiDraftSection({ resources }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -113,7 +120,7 @@ function MultiDraftSection({ resources }) {
   return (
     <div className="conflict-category">
       <div className="conflict-category-header">
-        <span className="conflict-category-title">Apps with multiple draft versions</span>
+        <span className="conflict-category-title">{multiDraftTitle(resources)}</span>
         <span className="conflict-count-badge conflict-count-badge--danger">{resources.length}</span>
       </div>
       <p className="conflict-category-subtext">All resources must have exactly one draft version to pull from git</p>
@@ -270,6 +277,8 @@ export function PullConflictModal({
     !isImport &&
     !isPushNameConflict &&
     conflictGroups.some((g) => g.conflicts?.some((c) => c.status === 'local' || c.status === 'remote'));
+  // Status-based push detection can't tell a pull-app conflict from a push one; the caller can.
+  const describesPush = (isPushNameConflict || isPushConflict) && context !== 'pull';
   const isPullOnly = !isBranchCreation && !isBranchSwitch && !isPushConflict && !isImport && !isPushNameConflict;
   // Pull and import both bring in resources from git and can selectively sync a
   // conflicting one; push/branch-creation/branch-switch have no "remote version to
@@ -283,7 +292,7 @@ export function PullConflictModal({
     if (isBranchCreation) return 'Cannot create branch';
     if (isBranchSwitch) return 'Cannot open branch';
     if (isImport) return 'Cannot import resources';
-    if (isPushNameConflict || isPushConflict) return 'Cannot push resources';
+    if (describesPush) return 'Cannot push resources';
     return 'Cannot pull branch';
   })();
 
@@ -322,7 +331,7 @@ export function PullConflictModal({
     if (isBranchCreation) return 'Create branch';
     if (isBranchSwitch) return 'Open branch';
     if (isImport) return 'Import resources';
-    if (isPushNameConflict || isPushConflict) return 'Push resources';
+    if (describesPush) return 'Push resources';
     return 'Pull branch';
   })();
 
@@ -330,7 +339,7 @@ export function PullConflictModal({
     const manual = { resolution: 'Manual resolution required', hideBadges };
     const sections = [
       {
-        title: 'Apps with multiple draft versions',
+        title: multiDraftTitle(multiDraftResources),
         issues: multiDraftResources.map((r) => ({
           issue: 'Multiple draft versions',
           value: r.name,
@@ -451,7 +460,7 @@ export function PullConflictModal({
 
           <p className="conflict-description">
             {/* Every category gets one generic line regardless of conflict type — always all-manual, nothing to differentiate. */}
-            {isPushNameConflict || isPushConflict
+            {describesPush
               ? 'The following resources have errors and cannot be pushed to git remote. Read docs to resolve the errors and try again.'
               : (() => {
                   if (isBranchCreation)
