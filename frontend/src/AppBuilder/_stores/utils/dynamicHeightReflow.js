@@ -18,6 +18,12 @@ import {
   serializeLayoutContext,
 } from '../dynamicHeight/layoutKeys';
 import { resolveWidgetVisibility } from '../dynamicHeight/visibility';
+import {
+  listviewFallbackRowHeight,
+  listviewHeight,
+  listviewRowCount,
+  listviewRowHeight,
+} from '../dynamicHeight/listviewHeight';
 import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
 import {
   heightHeldInView,
@@ -343,19 +349,6 @@ const getExtraContainerHeight = ({
   return { extraHeight, currentMax: nextCurrentMax, skipContentHeightCalculation };
 };
 
-// Rendered row count in a Listview, respecting pagination.
-const getListviewRenderedRowCount = (componentProperties = {}) => {
-  const { dataSourceSelector, data, enablePagination = false, rowsPerPage = 10 } = componentProperties;
-  const resolvedData = dataSourceSelector === 'rawJson' ? data : dataSourceSelector;
-  const totalRows = Array.isArray(resolvedData) ? resolvedData.length : 0;
-
-  if (!enablePagination) {
-    return totalRows;
-  }
-
-  return Math.min(Number(rowsPerPage) || 10, totalRows);
-};
-
 // Real height one Listview row occupies = max bottom of its template children
 // (temp-aware) — so a Listview measures content like other containers, not a rowHeight guess.
 const getListviewTemplateHeight = ({
@@ -396,7 +389,7 @@ export const resolveListviewHeightFromRows = ({
   moduleId = 'canvas',
 }) => {
   const componentProperties = component?.properties || {};
-  const rowCount = getListviewRenderedRowCount(componentProperties);
+  const rowCount = listviewRowCount(componentProperties);
   const context = normalizeLayoutContext(contextIndices);
   // Fallback height for rows that were never measured (e.g. off-screen rows).
   const templateRowHeight = getListviewTemplateHeight({
@@ -406,41 +399,16 @@ export const resolveListviewHeightFromRows = ({
     temporaryLayouts,
     context,
   });
-  const baseRowHeight =
-    templateRowHeight ||
-    componentProperties.rowHeight ||
-    getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ||
-    0;
-  const mode = componentProperties.mode ?? 'list';
-  const positiveColumns = Math.max(Number(componentProperties.columns) || 1, 1);
+  const fallbackRowHeight = listviewFallbackRowHeight({
+    templateBottom: templateRowHeight,
+    properties: componentProperties,
+    savedHeight: getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height,
+  });
   const rowHeights = Array.from({ length: rowCount }, (_, rowIndex) => {
     const rowContext = [...(context || []), rowIndex];
-    const rowLayout = temporaryLayouts?.[getDynamicLayoutKey(componentId, rowContext, '', moduleId)];
-    return rowLayout?.height ?? baseRowHeight;
+    return temporaryLayouts?.[getDynamicLayoutKey(componentId, rowContext, '', moduleId)]?.height;
   });
-
-  // Grid mode: widest band per row group (columns-many rows stack horizontally).
-  // List mode: straight sum of row heights.
-  const stackedRowsHeight =
-    mode === 'grid'
-      ? rowHeights.reduce((totalHeight, rowHeight, rowIndex) => {
-          if (rowIndex % positiveColumns !== 0) {
-            return totalHeight;
-          }
-
-          const bandHeights = rowHeights.slice(rowIndex, rowIndex + positiveColumns);
-          return totalHeight + Math.max(...bandHeights, 0);
-        }, 0)
-      : rowHeights.reduce((totalHeight, rowHeight) => totalHeight + rowHeight, 0);
-
-  // Fixed allowances: per-row bottom border (list mode only), pagination bar,
-  // outer chrome (7px padding × 2 = 14 + 1px outer border × 2 = 2 + 2 safety
-  // for `.real-canvas` `calc(100% + 1px)` extension and rounding drift).
-  const borderAllowance = componentProperties.showBorder && mode === 'list' ? rowCount : 0;
-  const paginationAllowance = componentProperties.enablePagination ? 61 : 0;
-  const outerPaddingAllowance = 18;
-
-  return stackedRowsHeight + borderAllowance + paginationAllowance + outerPaddingAllowance;
+  return listviewHeight({ properties: componentProperties, rowHeights, fallbackRowHeight });
 };
 
 // Compute a container widget's target height from its children. Called on the
@@ -483,7 +451,6 @@ export const resolveContainerHeight = ({
   // Listview row with no queryable DOM (e.g. mobile): size it from its children instead of guessing rowHeight; fall back to rowHeight only when there are no children.
   if (componentType === 'Listview' && context && !isScopedContextRenderable) {
     const component = getResolvedComponent(componentId, context);
-    const rowHeightFallback = component?.properties?.rowHeight ?? containerHeight;
     const childrenBottom = getListviewTemplateHeight({
       componentId,
       currentLayout,
@@ -492,7 +459,11 @@ export const resolveContainerHeight = ({
       context,
       getContainerChildrenMapping,
     });
-    return childrenBottom > 0 ? childrenBottom : rowHeightFallback;
+    return listviewRowHeight({
+      contentBottom: childrenBottom,
+      properties: component?.properties,
+      savedHeight: containerHeight,
+    });
   }
   // A UI 2.0 row or card is floored at its row (card) height the same way.
   if (isUi2RowContext) {
