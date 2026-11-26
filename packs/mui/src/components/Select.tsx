@@ -143,7 +143,8 @@ export const Select = () => {
   const fieldId = ToolJet.useFieldId();
   const options = toOptions(rawOptions, 'Select');
   // MUI's Select holds option keys (lib/data Option); the one clicked is the one exposed.
-  const key = value === '' ? '' : keyForValue(options, value);
+  // '' is nothing picked, unless an option has the empty value ('All'): then that option is the one shown.
+  const key = keyForValue(options, value);
   const known = key !== '' && options.some((o) => o.value === key);
   const check = ToolJet.useValidation({ kind: 'choice', value: str(value), present: known });
   // A value no option offers is not kept while nothing shows picked; not while the options are empty or loading (a
@@ -177,11 +178,17 @@ export const Select = () => {
     setSelectedOption(exposedOption(selected));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedKey]);
+  // A value naming an option by its text (a Default value '2' for the option 2) is exposed as that option's own value,
+  // as a pick or setValue writes it; fitting the value is not the user's change, so no event.
+  useEffect(() => {
+    if (selected && selected.data !== rawValue) setValue(selected.data as never);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedKey, rawValue]);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   // A wanted value: the option it names, with that option's own value (the text '1' picks the option 1), else as text.
   const change = (wanted: unknown) => {
-    const k = wanted === undefined || wanted === null || wanted === '' ? '' : keyForValue(options, wanted);
+    const k = keyForValue(options, wanted ?? '');
     const next = k === '' ? '' : valueForKey(options, k);
     if (!valueSetter.set(next)) return;
     // Set with the value, so an onChange (or onClose) handler reads the new option, not the one the effect would
@@ -225,7 +232,7 @@ export const Select = () => {
   const showEmpty = displayEmpty && !!placeholder;
   // MUI's Select has no clear of its own: a small x before the arrow (the Autocomplete's clear indicator look), only
   // while a known value is picked. It takes no focus on press and does not open the menu; focus goes to the trigger.
-  const clearable = !disableClearable && known && !disabled;
+  const clearable = !disableClearable && known && value !== '' && !disabled;
   // As a flex item after the value, the x took its room from the value: a long label ran under it ("09:00x" in a
   // narrow field). It sits at a fixed place left of the arrow instead, and the value's own right padding reserves both,
   // so the label ends in an ellipsis before them in every variant and size.
@@ -429,6 +436,22 @@ const usePopupState = (
 // MUI's Autocomplete (a searchable single choice): label, options [{ label, value }], value (MUI's shape: the picked
 // option { label, value }, or null; a bare value or label also picks), freeSolo, disableClearable, noOptionsText;
 // inputValue (the typed text) is exposed. Events onChange, onInputChange, onOpen, onClose.
+// A Value that names no pick: undefined, null, '' or an object with no keys (what an empty object field and a Form's
+// reset write).
+const isEmptyValue = (v: unknown) =>
+  v === undefined ||
+  v === '' ||
+  (v !== null && typeof v === 'object' && !Array.isArray(v) && Object.keys(v as object).length === 0);
+
+// Free solo: a typed text no option offers, given bare ('my city') or in the picked shape ({ label, value }) that
+// typing + Enter and setValue write.
+const typedOption = (v: unknown): Option | null => {
+  const text =
+    typeof v === 'string' ? v : v && typeof v === 'object' ? (v as { value?: unknown }).value : undefined;
+  if (typeof text !== 'string' || text === '') return null;
+  return { label: text, value: text, data: text, key: text } as Option;
+};
+
 export const Autocomplete = () => {
   const p = useAutocompleteProps({ label: 'City', placeholder: 'Search a city...', options: SAMPLE.cities });
   const [value, setValue] = ToolJet.useStateObject({
@@ -450,9 +473,7 @@ export const Autocomplete = () => {
   const ref = useRef<HTMLInputElement>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const found =
-    findOption(p.options, value) ??
-    (freeSolo && typeof value === 'string' && value ? { label: value, value, data: value, key: value } : null);
+  const found = findOption(p.options, value) ?? (freeSolo ? typedOption(value) : null);
   // The same object while the pick is the same (options are rebuilt every render): MUI takes a new value object for a
   // change and resets the typed text to its label, so editing the text of a picked city was undone by the next render.
   const pickedKey = JSON.stringify(found);
@@ -484,6 +505,8 @@ export const Autocomplete = () => {
   useEffect(() => {
     const shaped = picked ? pickedValue(picked) : null;
     if (shaped && !sameValue(shaped, value)) setValue(shaped as never);
+    // An empty Value (or a Form reset's {}) is nothing picked: null, as the clear button leaves it, not a truthy {}.
+    if (!picked && isEmptyValue(value)) setValue(null as never);
   });
 
   // A value it already has changes nothing and fires nothing (lib/sameValue).
@@ -497,7 +520,9 @@ export const Autocomplete = () => {
     { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
     (next) => {
       const o = findOption(p.options, next);
-      change(o ? pickedValue(o) : null);
+      // Free solo takes any text, as typing it and pressing Enter does.
+      const typed = freeSolo && typeof next === 'string' && next !== '' ? { label: next, value: next } : null;
+      change(o ? pickedValue(o) : typed);
     }
   );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(null));

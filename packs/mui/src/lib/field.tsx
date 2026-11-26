@@ -2,6 +2,7 @@ import React from 'react';
 import { FormControl, FormHelperText, FormLabel } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from './text';
+import { oneOf } from './enumeration';
 
 type Check = { error: string; required: boolean };
 
@@ -91,11 +92,15 @@ export const FormControlField = ({
   );
 };
 
+const BUTTON_VARIANTS = ['text', 'outlined', 'contained'];
+const BUTTON_COLORS = ['inherit', 'primary', 'secondary', 'success', 'error', 'info', 'warning'];
+
 // A role value can set variant and color together (useComponentSettings roleValues: { variant: 'outlined', color: 'inherit' }).
-export const lookOf = (variant: unknown, color: unknown) => {
-  if (variant && typeof variant === 'object') {
-    const v = variant as Record<string, unknown>;
-    return { variant: String(v.variant ?? 'contained'), color: String(v.color ?? color ?? 'primary') };
-  }
-  return { variant: String(variant ?? 'contained'), color: String(color ?? 'primary') };
+// A variant or colour MUI doesn't know draws a button with no fill and no border, so it reads as the default.
+export const lookOf = (variant: unknown, color: unknown, defaultVariant = 'contained') => {
+  const both = variant && typeof variant === 'object' ? (variant as Record<string, unknown>) : null;
+  return {
+    variant: oneOf(both ? both.variant : variant, BUTTON_VARIANTS, defaultVariant),
+    color: oneOf(both ? (both.color ?? color) : color, BUTTON_COLORS, 'primary'),
+  };
 };

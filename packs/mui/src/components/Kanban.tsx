@@ -33,8 +33,12 @@ import {
 // cards, drag and keyboard moves, collapsible columns, details, actions and events) is the shared useKanban.
 
 const cls = (...names: (string | false | null | undefined)[]) => names.filter(Boolean).join(' ');
+// A card field as text: text, a number or true/false as written. An object or a list read [object Object] (and an
+// avatar 'OO'), so it is left out, as an empty field is.
+const scalarText = (value: unknown): string =>
+  typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : '';
 // A card's text: a stored ISO date or timestamp as a short date, anything else as written.
-const shown = (value: unknown): string => cardDateLabel(value) ?? String(value);
+const shown = (value: unknown): string => (scalarText(value) ? (cardDateLabel(value) ?? scalarText(value)) : '');
 const BADGE_COLOR: Record<string, ChipProps['color']> = {
   destructive: 'error',
   warning: 'warning',
@@ -52,9 +56,9 @@ const CardBody = ({
   badgeColors: unknown;
   expanded: boolean;
 }) => {
-  const badge = fields.badge ? card[fields.badge] : undefined;
-  const avatar = fields.avatar ? card[fields.avatar] : undefined;
-  const meta = fields.meta ? card[fields.meta] : undefined;
+  const badge = fields.badge ? scalarText(card[fields.badge]) : undefined;
+  const avatar = fields.avatar ? scalarText(card[fields.avatar]) : undefined;
+  const meta = fields.meta ? scalarText(card[fields.meta]) : undefined;
   const tags = fields.tags ? asTags(card[fields.tags]) : [];
   const progress = fields.progress && isSet(card[fields.progress]) ? Number(card[fields.progress]) : NaN;
   const details = expanded && fields.details ? cardDetails(card[fields.details]) : [];
@@ -67,9 +71,9 @@ const CardBody = ({
   return (
     <>
       <Typography variant="body2" className="tj-mui-kb-card-title">
-        {String(card[fields.title] ?? '')}
+        {scalarText(card[fields.title])}
       </Typography>
-      {fields.description && isSet(card[fields.description]) ? (
+      {fields.description && isSet(shown(card[fields.description])) ? (
         <Typography variant="caption" component="p" className="tj-mui-kb-card-text">
           {shown(card[fields.description])}
         </Typography>

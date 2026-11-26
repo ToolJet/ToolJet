@@ -43,7 +43,7 @@ import {
   type KeyValueRow,
 } from '../lib/ui2/display/lists/model';
 import { BAR_HEIGHT, percentLabel, progressEntries, progressItem, progressMax } from '../lib/ui2/charts/progressModel';
-import { formatTime, statusColor, timelineItems, type TimelineItem } from '../lib/ui2/display/timeline';
+import { formatTime, statusColor, timelineItems, usableColor, type TimelineItem } from '../lib/ui2/display/timeline';
 import { StatusChip } from './DataGrid';
 import { useWidth } from './CardGrid';
 
@@ -348,7 +348,12 @@ export const RecordList = () => {
                         ) : null}
                       </Box>
                       {row.status ? (
-                        <StatusChip label={chipLabel(row.status)} color={toneChipColor(row.status, statusColors)} />
+                        // A long status is cut short so the title keeps its room and the row does not scroll sideways.
+                        <StatusChip
+                          label={chipLabel(row.status)}
+                          color={toneChipColor(row.status, statusColors)}
+                          maxWidth="40%"
+                        />
                       ) : null}
                       {row.value ? (
                         <Typography
@@ -543,6 +548,7 @@ export const ProgressList = () => {
                           <StatusChip
                             label={chipLabel(row.status)}
                             color={TONE_COLOR[row.tone || chipTone(row.status)] ?? 'default'}
+                            maxWidth="40%"
                           />
                         ) : null}
                         <Box sx={{ flex: 1 }} />
@@ -740,7 +746,7 @@ export const Timeline = () => {
             <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }}>
               {list.slice(0, grow.shown).map((item, i, shown) => {
                 const colour =
-                  (isSet(item.color) ? item.color : statusColor(item.status, statusColors)) || 'primary.main';
+                  usableColor(item.color) ?? statusColor(item.status, statusColors) ?? 'primary.main';
                 const glyph = icons && item.icon ? iconOf(iconName(item.icon), 'inherit') : undefined;
                 const time = formatTime(item.time, dateFormat);
                 const last = i === shown.length - 1 && !grow.more;
@@ -1041,8 +1047,12 @@ export const KeyValue = () => {
     locale: localeFor(currency, locale),
     dateFormat: dateFormat || 'DD MMM YYYY',
   };
+  // Empty value text left empty or bound to null (which reaches the component as '') is the default dash; a space
+  // shows nothing.
   const empty =
-    emptyText === undefined || emptyText === null || typeof emptyText === 'object' ? '-' : String(emptyText);
+    emptyText === undefined || emptyText === null || emptyText === '' || typeof emptyText === 'object'
+      ? '-'
+      : String(emptyText);
   const live = !disabled && !loading;
   const activate = (row: KeyValueRow) => {
     if (!live) return;

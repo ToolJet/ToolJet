@@ -24,6 +24,22 @@
 .tj-mui-block {
   display: block;
 }
+/* A control centred in its box (a Chip) shrinks to the box at most, so its own max-width: 100% holds and a long label
+   ends in an ellipsis: the loading wrapper, a flex item, grew to the label and the chip ran past the box (MU-31). */
+.tj-mui-center > .tj-mui-loading {
+  min-width: 0;
+  max-width: 100%;
+}
+/* A row of buttons wider than its box (a Toggle Button Group without Full width) scrolls sideways, so every button can
+   be reached: the buttons past the box's edge were cut off (MU-27). */
+.tj-mui-loading--scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+/* Text taller than its box scrolls inside it, as a ToolJet Text does (Typography; MU-28). */
+.tj-mui-scroll {
+  overflow-y: auto;
+}
 /* A button never grows past its box: the Large size (42px) in a 40px box ends at the box's edge. */
 .tj-mui-center > .MuiButton-root {
   max-height: 100%;

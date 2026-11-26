@@ -9,6 +9,11 @@ import { holdPressesAfterFirst } from '../../../pressHold';
 // for the board to draw the same drop line as a mouse drag; lifting it drops the card through the same move. Cards are
 // found by their data-kb-card (the card's key) and columns by data-kb-col (the column id). The same file in every pack
 // (keep the copies the same).
+//
+// A mouse moves a card by an HTML drag, except from a custom card's components: they are the host's, slotted into the
+// card from outside its shadow root, and Chrome starts no HTML drag from slotted content (nothing moved, wherever the
+// card was pressed). A mouse press there picks the card up through this same move once it has moved MOVE_SLOP, without
+// the long press.
 
 export const LONG_PRESS_MS = 400;
 export const MOVE_SLOP = 8;
@@ -37,8 +42,12 @@ const rootOf = (el: Element): Root => {
 /** Where a card held at (x, y) over `board` would land: before a card (its upper half) or after it, or a column's end. */
 export const dropPointAt = (board: HTMLElement | null, columns: BoardColumn[], x: number, y: number): DropPoint | null => {
   if (!board) return null;
-  const hit = rootOf(board).elementFromPoint?.(x, y) ?? null;
-  if (!hit || !board.contains(hit)) return null;
+  // The board's own element under the point: over a custom card the topmost one is a slotted component (the host's,
+  // outside the board's shadow root), and the drop found no column (MU-13).
+  const root = rootOf(board);
+  const hits = root.elementsFromPoint?.(x, y) ?? [root.elementFromPoint?.(x, y)];
+  const hit = hits.find((el): el is Element => !!el && board.contains(el)) ?? null;
+  if (!hit) return null;
   const col = hit.closest<HTMLElement>('[data-kb-col]');
   if (!col || !board.contains(col)) return null;
   const columnId = col.getAttribute('data-kb-col') ?? '';
@@ -103,6 +112,7 @@ const bind = (root: HTMLElement, opts: React.MutableRefObject<TouchDragOptions>)
   let at = { x: 0, y: 0 };
   let pointerId = -1;
   let dragging = false;
+  let byMouse = false;
   let swallowClick = false;
   const cardStyle = { userSelect: '', webkitUserSelect: '', webkitTouchCallout: '' };
   let wasDraggable = false;
@@ -143,6 +153,7 @@ const bind = (root: HTMLElement, opts: React.MutableRefObject<TouchDragOptions>)
       held -= 1;
     }
     dragging = false;
+    byMouse = false;
     key = null;
     card = null;
     pointerId = -1;
@@ -177,21 +188,30 @@ const bind = (root: HTMLElement, opts: React.MutableRefObject<TouchDragOptions>)
     if (typeof requestAnimationFrame === 'function') frame = requestAnimationFrame(tick);
   };
   const onDown = (e: PointerEvent) => {
-    if (e.pointerType !== 'touch' || e.isPrimary === false || pointerId !== -1) return;
+    const mouse = e.pointerType === 'mouse';
+    if ((!mouse && e.pointerType !== 'touch') || e.isPrimary === false || pointerId !== -1) return;
+    if (mouse && e.button !== 0) return;
     if (!opts.current.enabled) return;
+    const path = e.composedPath();
+    // A mouse press on the card's own parts starts an HTML drag; only one on slotted components needs this move.
+    const shadow = root.getRootNode();
+    if (mouse && !(shadow instanceof ShadowRoot && path[0] instanceof Node && !shadow.contains(path[0]))) return;
     const target = e.target instanceof Element ? e.target : null;
-    const el = target?.closest<HTMLElement>('[data-kb-card]') ?? null;
+    // The card along the composed path: a custom card's components are slotted into it, so closest() from one of them
+    // (in the light DOM) never reached it.
+    const el = (path.find((n) => n instanceof HTMLElement && n.hasAttribute('data-kb-card')) as HTMLElement) ?? null;
     if (!el || !root.contains(el)) return;
     // A press on a control inside the card (delete, show more, a custom card's field) is that control's.
     const control = target?.closest('button, a[href], input, textarea, select, [contenteditable="true"]');
-    if (control && el.contains(control)) return;
+    if (control && path.includes(control)) return;
     key = el.getAttribute('data-kb-card');
     card = el;
     pointerId = e.pointerId;
     start = { x: e.clientX, y: e.clientY };
     at = start;
     holdCard(el);
-    timer = setTimeout(pick, LONG_PRESS_MS);
+    byMouse = mouse;
+    if (!mouse) timer = setTimeout(pick, LONG_PRESS_MS);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onPointerCancel);
@@ -200,8 +220,10 @@ const bind = (root: HTMLElement, opts: React.MutableRefObject<TouchDragOptions>)
     if (e.pointerId !== pointerId) return;
     at = { x: e.clientX, y: e.clientY };
     if (!dragging) {
-      // Moved before the long press: a scroll or a swipe, not a pick up.
-      if (Math.hypot(at.x - start.x, at.y - start.y) > MOVE_SLOP) stop();
+      const moved = Math.hypot(at.x - start.x, at.y - start.y) > MOVE_SLOP;
+      // A mouse picks the card up once it moves; a finger that moves before the long press scrolls or swipes.
+      if (moved && byMouse) pick();
+      else if (moved) stop();
       return;
     }
     opts.current.onOver(at.x, at.y);

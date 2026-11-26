@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Avatar,
   Box,
@@ -47,20 +47,21 @@ const clamp = (lines: number) => ({
   overflow: 'hidden',
 });
 
-/** The element's content width, kept current as it resizes (0 until measured, and in jsdom). */
+/** The element's content width, kept current as it resizes (0 until measured, and in jsdom). A callback ref: the
+ *  element mounts after the first render (MuiProvider draws its children once its styles are attached), so an effect
+ *  that read a ref once found none, left the width 0 and the Card Grid fell back to four columns. */
 export const useWidth = () => {
-  const ref = useRef<HTMLDivElement | null>(null);
+  const [el, setEl] = useState<HTMLDivElement | null>(null);
   const [width, setWidth] = useState(0);
   useEffect(() => {
-    const el = ref.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
     const measure = () => setWidth(el.clientWidth);
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
-  return [ref, width] as const;
+  }, [el]);
+  return [setEl, width] as const;
 };
 
 const RowAvatar = ({ image, name }: { image: string; name: string }) =>
@@ -75,11 +76,21 @@ const RowAvatar = ({ image, name }: { image: string; name: string }) =>
 /** The card's picture: the image, or the title's initials on a tint where a row has no image (the box keeps its shape,
  *  so the cards of a row stay level). */
 const Media = ({ card, aspect, row }: { card: CardItem; aspect: string; row: boolean }) => {
+  // An image that fails to load gets the initials panel too, not the browser's broken-image picture.
+  const [failed, setFailed] = useState<string | null>(null);
   const shape = row
     ? { width: '38%', minWidth: 96, maxWidth: 220, alignSelf: 'stretch', flexShrink: 0 }
     : { width: '100%', aspectRatio: aspect };
-  if (card.image)
-    return <CardMedia component="img" image={card.image} alt={card.title} sx={{ ...shape, objectFit: 'cover' }} />;
+  if (card.image && failed !== card.image)
+    return (
+      <CardMedia
+        component="img"
+        image={card.image}
+        alt={card.title}
+        onError={() => setFailed(card.image)}
+        sx={{ ...shape, objectFit: 'cover' }}
+      />
+    );
   return (
     <Box
       className="tj-mui-cardgrid__placeholder"
@@ -343,7 +354,7 @@ export const CardGrid = () => {
               </Typography>
             </Box>
           ) : (
-            <Grid container columns={count} spacing={2} sx={{ p: 0.5 }}>
+            <Grid container columns={count} spacing={2} sx={{ p: 0.5 }} data-columns={count}>
               {items.slice(0, grow.shown).map((card) => {
                 const selected = highlightSelected !== false && card.key === selectedItemId;
                 return (

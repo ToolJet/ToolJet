@@ -8,6 +8,8 @@ const ITEM = 13 + 8;
 const CHAR = 7.5;
 const GAP = 16;
 const ROW = 24;
+/** A side legend's entry, one under another (MUI X: 24px and a 6px gap, about 30px each in Chrome). */
+const SIDE_ROW = 30;
 /** Below this the pie is a dot: the legend gives way. */
 const MIN_PIE = 64;
 
@@ -19,7 +21,10 @@ const MIN_PIE = 64;
 export const pieLegendPlace = (w: number, h: number, labels: string[]): LegendPlace => {
   if (!(w > 0 && h > 0) || !labels.length) return 'side';
   const widths = labels.map((l) => ITEM + Math.ceil(l.length * CHAR));
-  const side = Math.min(w - Math.max(...widths) - GAP, h);
+  // A side legend is one column: one taller than the box ran past its bottom with no scrollbar (12 months in 300px
+  // showed 9; MU-16), so it counts only when every entry fits, and the wrapped legend under the pie is used instead.
+  const sideFits = labels.length * SIDE_ROW - (SIDE_ROW - ROW) <= h;
+  const side = sideFits ? Math.min(w - Math.max(...widths) - GAP, h) : 0;
   let rows = 1;
   let line = 0;
   for (const iw of widths) {

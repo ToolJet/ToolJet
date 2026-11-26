@@ -20,6 +20,7 @@ import {
   Typography as MuiTypography,
 } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useEnumeration } from '../lib/enumeration';
 import { toText, useStateText } from '../lib/text';
 import type { Theme } from '@mui/material/styles';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
@@ -32,6 +33,9 @@ import { LOCALE_HINT } from '../lib/locale';
 import { BlockSkeleton, Loading, Spinner, TextSkeleton } from '../lib/loading';
 import { useFitLayout, useFitSquare, useFitText } from '../lib/fitText';
 import { useValueSetter } from '../lib/sameValue';
+// The lists' initials: the first letter or digit of the first and last word with a letter, so an emoji, a bracket or
+// a tag (😀 Smile, (Admin) Bob) no longer gives half a character or a symbol (MU-29).
+import { initials } from '../lib/ui2/display/lists/model';
 
 const COLORS = ['default', ...PALETTE_COLORS];
 
@@ -207,7 +211,12 @@ export const Alert = () => {
     defaultHeight: 8,
   });
   ToolJet.useAction({ name: 'show', displayName: 'Show' }, () => setOpen(true));
-  ToolJet.useAction({ name: 'close', displayName: 'Close' }, () => setOpen(false));
+  // Closing fires On close as the close button does; an alert already closed fires nothing.
+  ToolJet.useAction({ name: 'close', displayName: 'Close' }, () => {
+    if (open === false) return;
+    setOpen(false);
+    onClose();
+  });
   if (open === false) return <MuiProvider overrides={overrides}>{null}</MuiProvider>;
   // Fills its box, and a long message scrolls inside it (MUI's message part scrolls): drawn at its natural height, the
   // host cut what did not fit.
@@ -347,7 +356,8 @@ export const TypographyHeading = () => {
     defaultHeight: 4,
   });
   return (
-    <MuiProvider overrides={overrides}>
+    // The box's height, scrolling text that wraps past it, as a ToolJet Text does: it ran out of the box (MU-28).
+    <MuiProvider overrides={overrides} fill className="tj-mui-scroll">
       <Loading loading={loading} look={<TextSkeleton variant={t.variant as 'h5'} />}>
         <TypographyView t={t} gutterBottom={gutterBottom} heading />
       </Loading>
@@ -381,7 +391,8 @@ export const Typography = () => {
     defaultHeight: 3,
   });
   return (
-    <MuiProvider overrides={overrides}>
+    // The box's height, scrolling text that wraps past it, as a ToolJet Text does: it ran out of the box (MU-28).
+    <MuiProvider overrides={overrides} fill className="tj-mui-scroll">
       <Loading loading={loading} look={<TextSkeleton variant={t.variant as 'body1'} lines={3} />}>
         <TypographyView t={t} />
       </Loading>
@@ -646,7 +657,9 @@ export const LinearProgress = () => {
   return (
     <MuiProvider overrides={overrides} fill className="tj-mui-progress">
       {label ? (
-        <MuiTypography variant="body2" sx={{ color: 'text.secondary', mb: 0.5 }}>
+        // One line, cut with an ellipsis (the full text on hover): a long label wrapped and pushed the bar out of the
+        // box.
+        <MuiTypography variant="body2" noWrap title={label} sx={{ color: 'text.secondary', mb: 0.5 }}>
           {label}
         </MuiTypography>
       ) : null}
@@ -655,7 +668,9 @@ export const LinearProgress = () => {
           <MuiLinearProgress
             variant={loading ? 'indeterminate' : (variant as 'determinate')}
             value={pct}
-            valueBuffer={toNumber(valueBuffer) ?? 0}
+            // Held between the value and 100, as MUI needs it: 150 drew the buffer on only the second half of the
+            // track.
+            valueBuffer={Math.max(pct, Math.min(100, toNumber(valueBuffer) ?? 0))}
             color={color as 'primary'}
           />
         </Box>
@@ -668,14 +683,6 @@ export const LinearProgress = () => {
     </MuiProvider>
   );
 };
-
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join('');
 
 // MUI's Avatar: src (an image URL), alt (the person's name; its initials show without an image), variant (circular,
 // rounded, square), size in px, color (the initials' background). Event onClick.
@@ -782,14 +789,30 @@ export const Divider = () => {
     defaultHeight: 2,
   });
   const vertical = orientation === 'vertical';
+  // A horizontal line fills the box with flex, inside MUI's own margins (Inset 72px on the left, Middle 16px each
+  // side): the pack's centring of a lone child (margin-inline: auto) and width: 100% drew all three edge to edge. A
+  // caption longer than the line ends in an ellipsis, inside the box; its full text is the tooltip.
   return (
-    <MuiProvider overrides={overrides} fill className={vertical ? 'tj-mui-center tj-mui-divider-v' : 'tj-mui-center'}>
+    <MuiProvider
+      overrides={overrides}
+      fill
+      className={vertical ? 'tj-mui-center tj-mui-divider-v' : 'tj-mui-center tj-mui-start'}
+    >
       <MuiDivider
         orientation={orientation as 'horizontal'}
         variant={variant as 'fullWidth'}
         textAlign={textAlign as 'center'}
         flexItem={vertical}
-        sx={vertical ? undefined : { width: '100%' }}
+        title={children || undefined}
+        sx={
+          vertical
+            ? undefined
+            : {
+                flex: '1 1 auto',
+                minWidth: 0,
+                '& .MuiDivider-wrapper': { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' },
+              }
+        }
       >
         {children || undefined}
       </MuiDivider>
@@ -866,7 +889,9 @@ export const Stepper = () => {
   });
   const steps = toSteps(rawSteps);
   const byLabel = steps.findIndex((s) => s.id === str(activeStep) || s.label === str(activeStep));
-  const current = byLabel >= 0 ? byLabel : Math.max(0, Math.min(steps.length, toNumber(activeStep) ?? 0));
+  // An index with decimals (1.6) is the nearest step: no step was active.
+  const current =
+    byLabel >= 0 ? byLabel : Math.max(0, Math.min(steps.length, Math.round(toNumber(activeStep) ?? 0)));
   // The step shown is the exposed one: an index past the steps (they shrank) or a step id that is gone falls back, and
   // activeStep now says so, with no onChange. An id or label that names a shown step is left as the app gave it.
   useEffect(() => {
@@ -889,7 +914,7 @@ export const Stepper = () => {
     },
     (next) => {
       const i = steps.findIndex((s) => s.id === str(next) || s.label === str(next));
-      go(i >= 0 ? i : (toNumber(next) ?? 0));
+      go(i >= 0 ? i : Math.round(toNumber(next) ?? 0));
     }
   );
   ToolJet.useAction({ name: 'next', displayName: 'Next' }, () => go((c) => c + 1));
@@ -964,25 +989,25 @@ export const Pagination = () => {
     min: 0,
     max: 5,
   });
-  const [variant] = ToolJet.useStateEnumeration({
+  const [variant] = useEnumeration({
     name: 'variant',
     label: 'Variant',
     enumDefinition: ['text', 'outlined'],
     initialValue: 'text',
   });
-  const [shape] = ToolJet.useStateEnumeration({
+  const [shape] = useEnumeration({
     name: 'shape',
     label: 'Shape',
     enumDefinition: ['circular', 'rounded'],
     initialValue: 'circular',
   });
-  const [color] = ToolJet.useStateEnumeration({
+  const [color] = useEnumeration({
     name: 'color',
     label: 'Color',
     enumDefinition: ['standard', 'primary', 'secondary'],
     initialValue: 'primary',
   });
-  const [size] = ToolJet.useStateEnumeration({
+  const [size] = useEnumeration({
     name: 'size',
     label: 'Size',
     enumDefinition: ['small', 'medium', 'large'],

@@ -76,11 +76,11 @@ export const toOptions = (raw: unknown, widget = 'Options'): Option[] => {
       disabled = Boolean(r.disabled);
     } else continue;
     const text = str(data);
-    if (text === '') continue;
     const type = typeof data;
     const first = firstType.get(text);
     if (first === undefined) firstType.set(text, type);
-    const value = first === undefined || first === type ? text : `${text}\u0001${type}`;
+    // An empty value ('All' in a filter) is a choice too, keyed apart from '' (which MUI's controls read as nothing).
+    const value = text !== '' && (first === undefined || first === type) ? text : `${text}\u0001${type}`;
     const count = seen.get(value) ?? 0;
     if (count) warnDuplicateOption(widget, data);
     seen.set(value, count + 1);

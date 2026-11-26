@@ -171,6 +171,39 @@ const rgbToHsl = (color: string) => {
 
 export const sameAppTheme = (a: AppTheme, b: AppTheme) => JSON.stringify(a) === JSON.stringify(b);
 
+// A fixed element's containing block: the nearest ancestor (across shadow roots) whose transform, filter, perspective
+// or contain makes it one, else the window. ToolJet's popup layer is one on purpose (its dialogs fill the visible
+// canvas), but MUI's Popover places its paper in window coordinates: inside the layer every Menu and Select menu
+// opened the layer's offset below its button (33px under the viewer's header), and a long one ran that far past the
+// window's bottom (MU-14, MU-43).
+const set = (value: string | undefined, none: string) => !!value && value !== none;
+const CONTAINS = (cs: CSSStyleDeclaration) =>
+  set(cs.transform, 'none') ||
+  set(cs.perspective, 'none') ||
+  set(cs.filter, 'none') ||
+  set(cs.backdropFilter, 'none') ||
+  set(cs.containerType, 'normal') ||
+  /\b(paint|layout|strict|content)\b/.test(cs.contain ?? '') ||
+  /\b(transform|perspective|filter)\b/.test(cs.willChange ?? '');
+export const fixedOrigin = (el: Element | null): { top: number; left: number } => {
+  for (let node: Element | null = el; node; ) {
+    if (CONTAINS(getComputedStyle(node))) {
+      const r = node.getBoundingClientRect();
+      return { top: r.top + node.clientTop, left: r.left + node.clientLeft };
+    }
+    const root = node.getRootNode();
+    node = node.parentElement ?? (root instanceof ShadowRoot ? root.host : null);
+  }
+  return { top: 0, left: 0 };
+};
+/** A Popover's root over the window again, wherever its containing block is, so MUI's window coordinates (the
+ *  button's position, its 16px margin from the window's edges) land where it computed them. Read as it opens. */
+const popoverOverWindow = (container: HTMLElement | null) => () => {
+  const { top, left } = fixedOrigin(container);
+  if (!top && !left) return {};
+  return { top: -top, left: -left, right: 'auto', bottom: 'auto', width: '100vw', height: '100vh' };
+};
+
 const defined = <T extends object>(o: T): Partial<T> =>
   Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
 
@@ -209,7 +242,7 @@ export const buildTheme = (app: AppTheme, o: ThemeOverrides, container: HTMLElem
     components: {
       MuiPopper: { defaultProps: portal },
       MuiModal: { defaultProps: portal },
-      MuiPopover: { defaultProps: portal },
+      MuiPopover: { defaultProps: portal, styleOverrides: { root: popoverOverWindow(container) } },
       // A Switch, Checkbox or Radio is an invisible <input> over the control. The ToolJet host stops a press that starts
       // on an <input> at the widget (a text field's press must not drag it), so in the editor a click on the control
       // toggled it and never selected the widget. Inside a FormControlLabel (a <label>) the press starts on the
