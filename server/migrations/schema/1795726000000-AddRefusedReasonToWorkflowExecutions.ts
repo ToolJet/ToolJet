@@ -5,7 +5,7 @@ import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
  * quota). Such a row is shown in the run history with its reason but is excluded from the quota
  * count. NULL for every run that actually started.
  */
-export class AddRefusedReasonToWorkflowExecutions1795009209000 implements MigrationInterface {
+export class AddRefusedReasonToWorkflowExecutions1795726000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumn(
       'workflow_executions',
