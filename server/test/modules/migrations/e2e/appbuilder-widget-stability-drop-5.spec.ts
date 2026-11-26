@@ -320,6 +320,26 @@ describe('Widget stability drop 5 migrations: copy and backfill in the data phas
     expect((await stored('container')).properties).toEqual({});
   }, 120_000);
 
+  it('should pin registerNestedFields on a Form whose properties hold an escaped NUL or half an emoji, and keep those characters', async () => {
+    // ::jsonb rejects both, even under a key the migration never reads; the json column stores them.
+    await db.query(
+      `INSERT INTO components (name, type, page_id, properties, styles)
+       VALUES ('form-nul', 'Form', (SELECT id FROM pages WHERE app_version_id = $1), $2::json, '{}'),
+              ('form-surrogate', 'Form', (SELECT id FROM pages WHERE app_version_id = $1), $3::json, '{}')`,
+      [VERSION, '{"label":{"value":"a\\u0000b"}}', '{"label":{"value":"cut \\ud83d"}}']
+    );
+
+    await inTransaction((queryRunner) => new BackfillRegisterNestedFieldsForForm1795418406136().up(queryRunner));
+
+    expect(await db.query(`SELECT name, properties::text AS properties FROM components ORDER BY name`)).toEqual([
+      { name: 'form-nul', properties: '{"label":{"value":"a\\u0000b"},"registerNestedFields":{"value":"{{false}}"}}' },
+      {
+        name: 'form-surrogate',
+        properties: '{"label":{"value":"cut \\ud83d"},"registerNestedFields":{"value":"{{false}}"}}',
+      },
+    ]);
+  }, 120_000);
+
   it('should clear undo history only for app versions whose Forms the backfill changed', async () => {
     await save('form', 'Form', {});
     await save('form-set', 'Form', { properties: { registerNestedFields: { value: '{{true}}' } } }, OTHER_VERSION);
