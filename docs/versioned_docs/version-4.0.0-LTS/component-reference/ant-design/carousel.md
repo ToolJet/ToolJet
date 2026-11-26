@@ -13,7 +13,7 @@ The **Carousel** component shows images one at a time as slides, with an optiona
 |:--|:--|:--|
 | Items | The slides, as a list of `{src, title, description}`, where `src` is the image URL. A plain list of image URLs also works. | Array |
 | Autoplay | Moves to the next slide on its own. | On or off. Default: Off |
-| Autoplay speed (ms) | Time each slide stays on screen when **Autoplay** is on, in milliseconds. The lowest is 500. | Number. Default: `3000` |
+| Autoplay speed (ms) | Time each slide stays on screen when **Autoplay** is on, in milliseconds. Positive values below `500` use `500`; `0` uses `3000`. | Number. Default: `3000` |
 | Dots | Shows dots under the slides that show the current slide and jump to another. | On or off. Default: On |
 | Arrows | Shows previous and next arrows at the sides. | On or off. Default: On |
 | Effect | How slides change. `scrollx` slides sideways; `fade` fades one into the next. | `scrollx`, `fade`. Default: `scrollx` |
@@ -60,7 +60,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 |:--|:--|:--|
 | `items` | The slides, as a list of `{src, title, description}`, where `src` is the image URL. A plain list of image URLs also works. | `{{components.carousel1.items}}` |
 | `autoplay` | Moves to the next slide on its own. | `{{components.carousel1.autoplay}}` |
-| `autoplaySpeed` | Time each slide stays on screen when **Autoplay** is on, in milliseconds. The lowest is 500. | `{{components.carousel1.autoplaySpeed}}` |
+| `autoplaySpeed` | Time each slide stays on screen when **Autoplay** is on, in milliseconds. Positive values below `500` use `500`; `0` uses `3000`. | `{{components.carousel1.autoplaySpeed}}` |
 | `dots` | Shows dots under the slides that show the current slide and jump to another. | `{{components.carousel1.dots}}` |
 | `arrows` | Shows previous and next arrows at the sides. | `{{components.carousel1.arrows}}` |
 | `effect` | How slides change. `scrollx` slides sideways; `fade` fades one into the next. | `{{components.carousel1.effect}}` |

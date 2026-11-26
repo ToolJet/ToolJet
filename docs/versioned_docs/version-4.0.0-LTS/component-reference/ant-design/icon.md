@@ -15,7 +15,7 @@ The **Icon** component shows a single icon, optionally on a tinted circle or squ
 | Size (px) | Size of the icon, from 8 to 200 pixels. | Number. Default: `20` |
 | Type | Color of the icon. `muted` is a light gray; the others use the theme's colors. | `default`, `muted`, `primary`, `success`, `warning`, `danger`. Default: `default` |
 | Chip | Puts the icon on a lightly tinted `circle` or `square` in the icon's color. | `none`, `circle`, `square`. Default: `none` |
-| Chip size (px) | Width and height of the chip in pixels. It shrinks to fit a smaller box. | Number. Default: `40` |
+| Chip size (px) | Width and height of the chip in pixels. The control is shown when **Chip** is `circle`; its value also applies to a square chip. The chip shrinks to fit a smaller box. | Number. Default: `40` |
 
 ### Additional Actions
 
@@ -63,7 +63,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `size` | Size of the icon, from 8 to 200 pixels. | `{{components.icon1.size}}` |
 | `type` | Color of the icon. `muted` is a light gray; the others use the theme's colors. | `{{components.icon1.type}}` |
 | `chip` | Puts the icon on a lightly tinted `circle` or `square` in the icon's color. | `{{components.icon1.chip}}` |
-| `chipSize` | Width and height of the chip in pixels. It shrinks to fit a smaller box. | `{{components.icon1.chipSize}}` |
+| `chipSize` | Width and height of the chip in pixels. The control is shown when **Chip** is `circle`; its value also applies to a square chip. The chip shrinks to fit a smaller box. | `{{components.icon1.chipSize}}` |
 | `isVisible` | Whether the component is visible. | `{{components.icon1.isVisible}}` |
 | `isLoading` | Whether the component is in its loading state. | `{{components.icon1.isLoading}}` |
 | `isDisabled` | Whether the component is disabled. | `{{components.icon1.isDisabled}}` |

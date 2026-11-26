@@ -14,10 +14,10 @@ The **Funnel** chart shows how many items reach each stage of a process, such as
 | Data | The stages to show, in order from first to last, such as `[{ stage, value }]`. | Array |
 | X field | Name of the field in **Data** that holds the stage name. | Text. Default: `stage` |
 | Y field | Name of the field that holds the stage's value. | Array. Default: `["value"]` |
-| Color field | This chart colors each stage on its own, so this setting has no visible effect. | Text |
+| Color field | Field used to group stages by color. Leave it empty to color each stage separately. | Text |
 | Title | Heading shown above the chart. | Text |
 | Legend | This chart shows no legend, so this setting has no visible effect. | `top`, `bottom`, `right`, `none`. Default: `top` |
-| Label | This chart always labels each stage with its name, value and share of the first stage, so this setting has no visible effect. | On or off. Default: Off |
+| Label | This chart always labels each stage with its name and value, so this setting has no visible effect. It also shows the share of the first stage when the first value is greater than zero. | On or off. Default: Off |
 | Y formatter | How values in labels and tooltips are written. `compact` shortens large numbers, such as `1.2K`; `percent` reads `0.25` as `25%`; `auto` shows whole numbers with no decimals and others with up to two. | `auto`, `number`, `currency`, `percent`, `compact`. Default: `compact` |
 | Currency | Currency code, such as `USD` or `EUR`, used when **Y formatter** is `currency`. | Text. Default: `USD` |
 | Locale | Locale for number and currency formats, such as `pt-BR`. Leave it empty to follow the currency's usual format. | Text |
@@ -67,10 +67,10 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `data` | The stages to show, in order from first to last, such as `[{ stage, value }]`. | `{{components.funnel1.data}}` |
 | `xField` | Name of the field in **Data** that holds the stage name. | `{{components.funnel1.xField}}` |
 | `yField` | Name of the field that holds the stage's value. | `{{components.funnel1.yField}}` |
-| `colorField` | This chart colors each stage on its own, so this setting has no visible effect. | `{{components.funnel1.colorField}}` |
+| `colorField` | Field used to group stages by color. Leave it empty to color each stage separately. | `{{components.funnel1.colorField}}` |
 | `title` | Heading shown above the chart. | `{{components.funnel1.title}}` |
 | `legend` | This chart shows no legend, so this setting has no visible effect. | `{{components.funnel1.legend}}` |
-| `label` | This chart always labels each stage with its name, value and share of the first stage, so this setting has no visible effect. | `{{components.funnel1.label}}` |
+| `label` | This chart always labels each stage with its name and value, so this setting has no visible effect. It also shows the share of the first stage when the first value is greater than zero. | `{{components.funnel1.label}}` |
 | `yFormatter` | How values in labels and tooltips are written. `compact` shortens large numbers, such as `1.2K`; `percent` reads `0.25` as `25%`; `auto` shows whole numbers with no decimals and others with up to two. | `{{components.funnel1.yFormatter}}` |
 | `currency` | Currency code, such as `USD` or `EUR`, used when **Y formatter** is `currency`. | `{{components.funnel1.currency}}` |
 | `locale` | Locale for number and currency formats, such as `pt-BR`. Leave it empty to follow the currency's usual format. | `{{components.funnel1.locale}}` |

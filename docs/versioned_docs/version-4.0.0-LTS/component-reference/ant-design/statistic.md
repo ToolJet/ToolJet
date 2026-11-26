@@ -16,7 +16,7 @@ The **Statistic** component is Ant Design's stat display. It shows one key figur
 | Formatter | How a number is written. `auto` keeps whole numbers whole and others to two decimals, `percent` reads 0.25 as 25%, and `compact` shortens large numbers to 12K or 1.2M. | `auto`, `number`, `currency`, `percent`, `compact`. Default: `auto` |
 | Currency | Currency code, such as `USD` or `EUR`, used when **Formatter** is `currency`. | Text. Default: `USD` |
 | Locale | Locale for number formatting, such as `pt-BR`. Leave it empty to follow the currency's usual format. | Text |
-| Precision | Number of decimal places. Leave it empty to use the format's own. | Number |
+| Precision | Number of decimal places, from 0 to 10. Leave it empty to use the format's own. | Number |
 | Prefix | Text shown before the figure, such as a unit. | Text |
 | Suffix | Text shown after the figure, such as `orders` or `ms`. | Text |
 | Trend | Direction of the change. `up` and `down` add an arrow before **Trend value**. | `neutral`, `up`, `down`. Default: `neutral` |
@@ -63,7 +63,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `formatter` | How a number is written. `auto` keeps whole numbers whole and others to two decimals, `percent` reads 0.25 as 25%, and `compact` shortens large numbers to 12K or 1.2M. | `{{components.statistic1.formatter}}` |
 | `currency` | Currency code, such as `USD` or `EUR`, used when **Formatter** is `currency`. | `{{components.statistic1.currency}}` |
 | `locale` | Locale for number formatting, such as `pt-BR`. Leave it empty to follow the currency's usual format. | `{{components.statistic1.locale}}` |
-| `precision` | Number of decimal places. Leave it empty to use the format's own. | `{{components.statistic1.precision}}` |
+| `precision` | Number of decimal places, from 0 to 10. Leave it empty to use the format's own. | `{{components.statistic1.precision}}` |
 | `prefix` | Text shown before the figure, such as a unit. | `{{components.statistic1.prefix}}` |
 | `suffix` | Text shown after the figure, such as `orders` or `ms`. | `{{components.statistic1.suffix}}` |
 | `trend` | Direction of the change. `up` and `down` add an arrow before **Trend value**. | `{{components.statistic1.trend}}` |
