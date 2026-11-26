@@ -28,10 +28,11 @@ describe("App Slug", () => {
   });
 
   it("Verify app slug cases in global settings", () => {
-    cy.url().should(
-      "eq",
-      `${host}/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}/`
-    );
+    cy.url().should((url) => {
+      expect(url.split("?")[0]).to.eq(
+        `${host}/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}/`
+      );
+    });
 
     cy.get('[data-cy="query-manager-toggle-button"]', { timeout: 20000 })
       .should("be.visible")

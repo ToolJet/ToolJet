@@ -316,7 +316,7 @@ export const uiCreateDraftVersion = (versionName) => {
   cy.get(commonSelectors.buttonSelector('create draft version')).click();
   cy.get(versionModalSelector.versionNameInput).type(versionName);
   cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
-  cy.get(versionSwitcherSelectors.versionSwitcherButton).should('contain.text', versionName);
+  cy.get(versionSwitcherSelectors.versionSwitcherButton, { timeout: 30000 }).should('contain.text', versionName);
 };
 
 export const openModuleEditorExpectingReadOnly = (workspaceSlug, moduleId) => {

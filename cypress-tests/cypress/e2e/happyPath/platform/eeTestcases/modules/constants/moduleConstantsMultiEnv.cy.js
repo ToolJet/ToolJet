@@ -61,7 +61,7 @@ describe('Modules — Workspace Constants Across Environments', () => {
     cy.url({ timeout: 15000 }).should('include', '/apps/');
 
     cy.url().then((url) => {
-      moduleAppId = url.split('/apps/')[1].split('/')[0];
+      moduleAppId = url.split('/apps/')[1].split(/[/?#]/)[0];
       Cypress.env('appId', moduleAppId);
       cy.intercept('GET', `/api/apps/${moduleAppId}`).as('getModuleData');
       cy.reload();

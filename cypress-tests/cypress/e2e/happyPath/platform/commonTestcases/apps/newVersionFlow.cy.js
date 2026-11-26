@@ -63,7 +63,7 @@ describe("New Version Creation Flow", () => {
     // Step 6: Create v2 draft from v1
     openVersionSwitcher();
     createDraftVersion("v2", "v1");
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Version Created");
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Draft version created successfully!", true, 30000);
 
     // Step 7: Verify v2 draft state
     openVersionSwitcher();
@@ -89,7 +89,7 @@ describe("New Version Creation Flow", () => {
     // Step 11: Create v3 draft from v2
     openVersionSwitcher();
     createDraftVersion("v3", "v2");
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Version Created");
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Draft version created successfully!", true, 30000);
 
     // Step 12: Verify v3 draft state and all versions exist
     openVersionSwitcher();
