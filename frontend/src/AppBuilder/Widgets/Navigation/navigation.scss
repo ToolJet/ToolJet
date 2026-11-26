@@ -86,11 +86,18 @@
       min-width: 0;
     }
 
-    &.nav-align-center {
-      align-items: center;
-    }
-    &.nav-align-right {
-      align-items: flex-end;
+    // Auto: every item takes the width of the widest one; the block is positioned by alignment.
+    &:not(.nav-equal-width) {
+      width: max-content;
+      align-items: stretch;
+
+      &.nav-align-center {
+        margin-left: auto;
+        margin-right: auto;
+      }
+      &.nav-align-right {
+        margin-left: auto;
+      }
     }
 
     &.nav-equal-width {
