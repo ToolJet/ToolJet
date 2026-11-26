@@ -80,7 +80,11 @@ export default class Snowflake implements QueryService {
         return await this.handleGuiQuery(connection, queryOptions);
       }
 
-      const result: any = await this.connExecuteAsync(connection, { sqlText });
+      // {{}} values arrive as query_params and bind to :1, :2 … by position.
+      const binds = (queryOptions.query_params || []).map(([, value]) =>
+        value == null ? null : typeof value === 'object' ? JSON.stringify(value) : value
+      );
+      const result: any = await this.connExecuteAsync(connection, { sqlText, ...(binds.length && { binds }) });
       return { status: 'ok', data: result.rows };
     } catch (err) {
       if (err instanceof QueryError) throw err;

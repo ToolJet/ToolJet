@@ -38,6 +38,13 @@ export default class Awsredshift implements QueryService {
     try {
       const input = {
         Sql: queryOptions.sql_query,
+        // Data API values are strings; Redshift casts them to the column type.
+        ...(queryOptions.query_params?.length && {
+          Parameters: queryOptions.query_params.map(([name, value]) => ({
+            name,
+            value: value !== null && typeof value === 'object' ? JSON.stringify(value) : String(value ?? ''),
+          })),
+        }),
         Database: sourceOptions.database,
         WithEvent: false,
         WorkgroupName: sourceOptions.workgroup_name,

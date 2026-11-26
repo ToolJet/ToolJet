@@ -20,6 +20,7 @@ export type QueryOptions = {
   document_id?: string;
   document?: any;
   query?: any;
+  query_params?: [string, unknown][];
   args?: any;
   query_options?: any;
   index_name?: string;

@@ -31,7 +31,8 @@ export default class Athena implements QueryService {
           sourceOptions.database,
           sourceOptions.output_location,
           queryOptions.pagination,
-          queryOptions.nextToken
+          queryOptions.nextToken,
+          (queryOptions.query_params || []).map(([, value]) => this.toLiteral(value))
         );
         result = this.toJson(data);
       }
@@ -82,11 +83,13 @@ export default class Athena implements QueryService {
     database: string,
     outputLocation: string,
     pagination?: number,
-    nextToken?: string
+    nextToken?: string,
+    executionParameters: string[] = []
   ): Promise<any> {
     // Start query execution
     const startCommand = new StartQueryExecutionCommand({
       QueryString: query,
+      ...(executionParameters.length && { ExecutionParameters: executionParameters }),
       QueryExecutionContext: {
         Database: database,
       },
@@ -103,6 +106,16 @@ export default class Athena implements QueryService {
 
     // Get results
     return await this.getQueryResults(client, queryExecutionId, pagination, nextToken);
+  }
+
+  // Athena takes execution parameters as SQL literals. Athena (Trino) strings have no backslash
+  // escapes, so doubling single quotes keeps any value a single string literal.
+  private toLiteral(value: unknown): string {
+    if (value === null || value === undefined) return 'NULL';
+    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+    if (typeof value === 'boolean') return String(value);
+    const text = typeof value === 'object' ? JSON.stringify(value) : String(value);
+    return `'${text.replace(/'/g, "''")}'`;
   }
 
   private async waitForQueryToComplete(client: AthenaClient, queryExecutionId: string): Promise<void> {

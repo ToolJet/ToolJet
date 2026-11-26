@@ -9,7 +9,10 @@ export default class PostgresqlQueryService implements QueryService {
     let result: any;
 
     try {
-      result = await this.execute(connection, queryOptions.query);
+      const params = (queryOptions.query_params || []).map(([, value]) =>
+        value == null ? null : typeof value === 'object' ? JSON.stringify(value) : value
+      );
+      result = await this.execute(connection, queryOptions.query, params);
     } catch (err) {
       console.log(err);
       throw new QueryError('Query could not be completed', err.message, {});
@@ -23,9 +26,9 @@ export default class PostgresqlQueryService implements QueryService {
     };
   }
 
-  execute(connection, query): Promise<QueryResult> {
+  execute(connection, query, params: unknown[] = []): Promise<QueryResult> {
     return new Promise((resolve, reject) => {
-      connection.exec(query, function (err, result) {
+      connection.exec(query, params, function (err, result) {
         if (err) return reject(new QueryError('Query could not be completed', err.message, {}));
         return resolve({
           status: 'ok',

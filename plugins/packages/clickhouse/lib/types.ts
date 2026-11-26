@@ -9,6 +9,7 @@ export type SourceOptions = {
 export type QueryOptions = {
   operation: string;
   query: string;
+  query_params?: [string, unknown][];
   fields: Array<string>;
   tablename: string;
 };
