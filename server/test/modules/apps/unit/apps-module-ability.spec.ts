@@ -456,6 +456,17 @@ describe('AppsService.validatePrivateAppAccess — unknown version name', () => 
     await expect(call(service, { versionName: 'bogus' })).rejects.toThrow('app-not-ready');
   });
 
+  it('looks for the stub on the requested branch only', async () => {
+    const service = makeService();
+    const findOne = jest.fn().mockResolvedValue(null);
+    (service as any).versionRepository = { findByName: jest.fn().mockRejectedValue(notFound()), findOne };
+
+    await expect(call(service, { versionName: 'bogus', branchId: 'branch-1' })).rejects.toBeInstanceOf(
+      NotFoundException
+    );
+    expect(findOne).toHaveBeenCalledWith({ where: { appId: expect.anything(), isStub: true, branchId: 'branch-1' } });
+  });
+
   it('rethrows lookup errors that are not "not found"', async () => {
     const service = makeService();
     (service as any).versionRepository = { findByName: jest.fn().mockRejectedValue(new Error('db down')) };

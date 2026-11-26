@@ -238,8 +238,11 @@ export class AppsService implements IAppsService {
             );
 
       if (!version) {
-        // Check if the app is in stub state (pulled from git but not yet hydrated)
-        const stubVersion = await this.versionRepository.findOne({ where: { appId: app.id, isStub: true } });
+        // Check if the app is in stub state (pulled from git but not yet hydrated). Scoped to the
+        // requested branch: a stub on another branch says nothing about this one.
+        const stubVersion = await this.versionRepository.findOne({
+          where: { appId: app.id, isStub: true, ...(branchId && { branchId }) },
+        });
         if (stubVersion) {
           throw new NotFoundException('app-not-ready');
         }
