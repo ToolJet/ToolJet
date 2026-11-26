@@ -573,7 +573,7 @@ module.exports = {
           },
           {
             from: '/docs/development-lifecycle/gitsync/connect-to-git-repo/gitsync-env-vars/',
-            to: '/docs/setup/configuration/env-vars#configure-gitsync-via-environment-variables',
+            to: '/docs/setup/env-vars#configure-gitsync-via-environment-variables',
           },
           {
             from: '/docs/tooljet-api/',
