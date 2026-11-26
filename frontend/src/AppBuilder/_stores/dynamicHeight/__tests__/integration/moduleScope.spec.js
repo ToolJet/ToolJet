@@ -112,6 +112,16 @@ describe('dynamic height: module scope', () => {
     expect(scope.rowDepthOf('deepText')).toBe(2);
   });
 
+  it('[DynamicHeight-SCOPE-020] finds the nearest List view around a widget', () => {
+    const scope = scopeOf();
+    expect(scope.listAround('rowText')).toBe(LIST);
+    expect(scope.listAround('deepText')).toBe(INNER_LIST);
+    expect(scope.listAround(INNER_LIST)).toBe(LIST);
+    // Not in a row, even inside other containers; a List view is not in its own rows.
+    expect(scope.listAround('onTab')).toBeNull();
+    expect(scope.listAround(LIST)).toBeNull();
+  });
+
   it('[DynamicHeight-SCOPE-007] knows each widget type and its height contract', () => {
     const scope = scopeOf();
     expect(scope.typeOf(TABS)).toBe('Tabs');

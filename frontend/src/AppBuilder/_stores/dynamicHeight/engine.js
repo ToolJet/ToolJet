@@ -1,6 +1,7 @@
 import { getContentSlotId, resolveContainerHeight } from './containerHeight';
 import { resolveFlexContainerHeight } from './flexContainerHeight';
 import { getDynamicLayoutKey, normalizeLayoutContext } from './layoutKeys';
+import { listviewFallbackRowHeight, listviewRowCount, listviewRowHeight } from './listviewHeight';
 import { createModuleScope } from './moduleScope';
 import { solveContainer } from './solver';
 import { createWorkQueue } from './workQueue';
@@ -29,6 +30,16 @@ import { createWorkQueue } from './workQueue';
 //
 // How a container sizes and where its content goes comes from its height
 // contract (contracts.js); nothing here names a widget type.
+//
+// List view rows: a List view's canvas is drawn once per row, and a widget in
+// a row carries the row's index at the end of its context (`[row]`, or
+// `[outer row, row]` in a nested list). A row is solved like any canvas, its
+// height is written under the list's key at that row, and the list is then
+// sized from its rows in its own (outer) context.
+//
+// A pass that fails on one widget throws outside production, so a broken
+// engine fails tests and local runs. In production the rest of the pass is
+// written, the failure is logged, and `onError` lets the caller recover.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // The canvas key of the main canvas (and a module's root canvas): no widget id
@@ -45,6 +56,11 @@ const layoutKeyOf = (scope, id, context) => getDynamicLayoutKey(id, context, '',
 const canvasKeyOf = (scope, canvasId, context) =>
   getDynamicLayoutKey(canvasId ?? ROOT_CANVAS, context, '', scope.moduleId);
 
+// The context a row's list is drawn in: the row's context without its own index.
+const outerContextOf = (rowContext) => normalizeLayoutContext(rowContext.slice(0, -1));
+
+const isProduction = () => process.env.NODE_ENV === 'production';
+
 // One pass over the store state it was created from. Everything it decides is
 // kept here until `run` returns, so the store is written once.
 const createPass = (state, { measureWidth }) => {
@@ -56,6 +72,8 @@ const createPass = (state, { measureWidth }) => {
   const heights = new Map(); // layout key → height decided in this pass
   const solvedCanvases = new Map(); // canvas key → { bottom }
   const solvedSlots = []; // canvas keys, in the order they were solved
+  const failures = []; // { item, error } of each item that threw
+  const contexts = new Map(); // `<moduleId>|<widget id>` → every context it is drawn in (contextsOf)
   const patch = {}; // layout key → { top, height }, or { height } for a flex child or a modal body
   let rootMoved = false;
 
@@ -64,12 +82,33 @@ const createPass = (state, { measureWidth }) => {
     return scopes.get(moduleId);
   };
 
-  // On the page, drawn in this layout, and on a canvas that is drawn: the root,
-  // or one whose owner is on the page. Anything else is not on screen.
-  const isPlaced = (scope, id) => {
+  // On the page, drawn in this layout, on a canvas that is drawn (the root, or
+  // one whose owner is on the page), and with a row index for each List view
+  // around it. Anything else is not on screen.
+  const isPlaced = (scope, id, context) => {
     if (!scope.savedLayout(id)) return false;
+    if ((context?.length ?? 0) !== scope.rowDepthOf(id)) return false;
     const canvasId = scope.components[id].component?.parent;
     return canvasId == null || scope.ownerOf(canvasId) !== null;
+  };
+
+  // How many rows a List view draws in a given context.
+  const rowCountOf = (scope, list, context) => listviewRowCount(scope.getResolvedComponent(list, context)?.properties);
+
+  // Every context a widget is drawn in: one per row of each List view around it (nested lists multiply), or just the
+  // root context outside any list.
+  // Cached per module: one module used twice shares its widget ids, not its rows.
+  const contextsOf = (scope, id) => {
+    const cacheKey = `${scope.moduleId}|${id}`;
+    if (contexts.has(cacheKey)) return contexts.get(cacheKey);
+    const list = scope.listAround(id);
+    const drawnIn = list
+      ? contextsOf(scope, list).flatMap((outer) =>
+          Array.from({ length: rowCountOf(scope, list, outer) }, (_, row) => [...(outer ?? []), row])
+        )
+      : [null];
+    contexts.set(cacheKey, drawnIn);
+    return drawnIn;
   };
 
   // The height a widget is drawn at before this pass.
@@ -199,6 +238,32 @@ const createPass = (state, { measureWidth }) => {
     });
   };
 
+  // A List view's rows in one context: each row's height (decided in this pass, else as last written, else not sized
+  // yet), and the height to assume for a row not sized yet: what the row's components fill as drawn.
+  const rowsOf = (scope, list, context, properties) => {
+    const rowHeights = Array.from({ length: listviewRowCount(properties) }, (_, row) => {
+      const rowKey = layoutKeyOf(scope, list, [...(context ?? []), row]);
+      return heights.has(rowKey) ? heights.get(rowKey) : temporaryLayouts[rowKey]?.height;
+    });
+    let templateBottom = 0;
+    for (const childId of scope.childrenOf(list)) {
+      const layout = scope.savedLayout(childId);
+      if (layout) templateBottom = Math.max(templateBottom, (layout.top ?? 0) + (layout.height ?? 0));
+    }
+    const savedHeight = scope.savedHeight(list);
+    return { rowHeights, fallbackRowHeight: listviewFallbackRowHeight({ templateBottom, properties, savedHeight }) };
+  };
+
+  // A row has been solved: its height is its content's bottom (listviewHeight.js), written under the list's key at
+  // the row. Only the height: the List view draws its rows itself.
+  const sizeRow = (scope, list, rowContext, contentBottom) => {
+    const properties = scope.getResolvedComponent(list, outerContextOf(rowContext))?.properties;
+    const height = listviewRowHeight({ contentBottom, properties, savedHeight: scope.savedHeight(list) });
+    const rowKey = layoutKeyOf(scope, list, rowContext);
+    heights.set(rowKey, height);
+    if (temporaryLayouts[rowKey]?.height !== height) patch[rowKey] = { height };
+  };
+
   // How tall a container is drawn (containerHeight.js). Its content is only measured if that decides the height.
   const containerHeight = (scope, id, context, key) => {
     const contract = scope.contractOf(id);
@@ -211,9 +276,12 @@ const createPass = (state, { measureWidth }) => {
       savedHeight: scope.savedHeight(id),
       visible: scope.isVisible(id, context),
       isExpanded: contract.followsExpansion ? scope.getExposed(id, context, 'isExpanded') : undefined,
+      // A List view drawn in an outer list's row fits its rows both ways.
+      isNestedInRow: context !== null,
       jsonSchemaForm: scope.isJsonSchemaForm(id),
       content: {
         gridBottom: () => solveCanvas(scope, contentSlot, context).bottom,
+        rows: () => rowsOf(scope, id, context, properties),
         flexHeight: () => flexHeightOf(scope, id, context),
         // A Form generated from a JSON schema draws its own fields, so it is measured like a leaf.
         jsonSchemaHeight: () => (measured.has(key) ? measured.get(key) : drawnHeight(scope, id, key)),
@@ -227,7 +295,7 @@ const createPass = (state, { measureWidth }) => {
 
   // A widget: decide its height, then its canvas if that could have moved.
   const runWidget = ({ scope, id, context, asked }) => {
-    if (!isPlaced(scope, id)) return;
+    if (!isPlaced(scope, id, context)) return;
     const key = layoutKeyOf(scope, id, context);
     const contract = scope.contractOf(id);
     let height;
@@ -247,34 +315,55 @@ const createPass = (state, { measureWidth }) => {
     }
   };
 
-  // A canvas: place its widgets, then size the container it belongs to.
+  // A canvas: place its widgets, then size the container it belongs to. A List view's canvas is one of its rows: the
+  // row is sized, then the list in its own context.
   const runCanvas = ({ scope, canvasId, context }) => {
-    solveCanvas(scope, canvasId, context);
+    const { bottom } = solveCanvas(scope, canvasId, context);
     const owner = scope.ownerOf(canvasId);
-    if (owner) queueWidget(scope, owner, context, false);
+    if (!owner) return;
+    if (scope.contractOf(owner)?.content === 'rows') {
+      sizeRow(scope, owner, context, bottom);
+      queueWidget(scope, owner, outerContextOf(context), false);
+    } else {
+      queueWidget(scope, owner, context, false);
+    }
   };
+
+  // A row of a List view asking to be sized: the list's id with the row's context, one index longer than the list's
+  // own. Its canvas sits one level inside the list.
+  const isRowOf = (scope, id, context) =>
+    scope.contractOf(id)?.content === 'rows' && (context?.length ?? 0) > scope.rowDepthOf(id);
 
   return {
     request({ id, contextIndices, moduleId = 'canvas', height }) {
       const scope = scopeOf(moduleId);
       const context = normalizeLayoutContext(contextIndices);
       if (height !== undefined) measured.set(layoutKeyOf(scope, id, context), height);
-      queueWidget(scope, id, context, true);
+      if (isRowOf(scope, id, context)) queueCanvas(scope, id, context, scope.depthOf(id) + 1);
+      else queueWidget(scope, id, context, true);
     },
     // Every canvas on the module's page, after a saved layout changed: what moved is not known, so all of it is
     // placed again. Each owner is then sized as usual.
     requestModule(moduleId) {
       const scope = scopeOf(moduleId);
       for (const canvasId of scope.canvases()) {
-        const owner = scope.ownerOf(canvasId);
-        if (canvasId != null && !owner) continue; // its container is not on the page
-        if (owner && scope.contractOf(owner)?.content === 'rows') continue; // rows are solved per row (A6e)
-        queueCanvas(scope, canvasId, null, owner ? scope.depthOf(owner) + 1 : 0);
+        if (canvasId != null && !scope.ownerOf(canvasId)) continue; // its container is not on the page
+        // A canvas is drawn wherever the widgets on it are: once per row inside a List view.
+        const onIt = scope.childrenOf(canvasId)[0];
+        for (const context of contextsOf(scope, onIt)) queueCanvas(scope, canvasId, context, scope.depthOf(onIt));
       }
     },
     run() {
-      queue.drain((item) => (item.kind === 'widget' ? runWidget(item) : runCanvas(item)));
-      return { patch, solvedSlots, rootMoved };
+      queue.drain((item) => {
+        // One widget failing must not lose the rest of the pass; flushDynamicHeight decides what a failure means.
+        try {
+          if (item.kind === 'widget') runWidget(item);
+          else runCanvas(item);
+        } catch (error) {
+          failures.push({ item, error });
+        }
+      });
+      return { patch, solvedSlots, rootMoved, failures };
     },
   };
 };
@@ -291,19 +380,34 @@ const createPass = (state, { measureWidth }) => {
  *   placed again
  * @param {(id: string, contextIndices: Array<number>|null, moduleId: string) => number|null} [options.measureWidth]
  *   a FlexContainer's drawn width (padding included, border excluded), or null when unknown
+ * @param {(moduleId: string, error: Error) => void} [options.onError]  in production, called once per module a
+ *   widget failed in (outside production the pass throws instead)
  * @returns {{patch: object, solvedSlots: Array<string>}}  what was written (layout key → { top, height }), and the
  *   canvases solved, innermost first
  */
-export const flushDynamicHeight = (getState, { changes = [], fullModules = [], measureWidth = () => null } = {}) => {
+export const flushDynamicHeight = (
+  getState,
+  { changes = [], fullModules = [], measureWidth = () => null, onError } = {}
+) => {
   const pass = createPass(getState(), { measureWidth });
   for (const change of changes) pass.request(change);
   for (const moduleId of fullModules) pass.requestModule(moduleId);
-  const { patch, solvedSlots, rootMoved } = pass.run();
+  const { patch, solvedSlots, rootMoved, failures } = pass.run();
+
+  if (failures.length > 0 && !isProduction()) throw failures[0].error;
 
   if (Object.keys(patch).length > 0) {
     getState().setTemporaryLayouts(patch);
     // The canvas's own height follows its lowest widget; it reads it again on this signal.
     if (rootMoved) getState().incrementCanvasUpdater();
   }
+
+  const failedModules = new Map(); // moduleId → its first failure
+  for (const { item, error } of failures) {
+    console.error('dynamic height: could not size', item.id ?? item.canvasId, error);
+    if (!failedModules.has(item.scope.moduleId)) failedModules.set(item.scope.moduleId, error);
+  }
+  for (const [moduleId, error] of failedModules) onError?.(moduleId, error);
+
   return { patch, solvedSlots };
 };

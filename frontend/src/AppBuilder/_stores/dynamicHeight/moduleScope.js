@@ -130,6 +130,9 @@ export const createModuleScope = (state, moduleId, currentLayout) => {
     return rowDepths.get(id);
   };
 
+  // The nearest List view a widget is drawn in, whose rows its last row index counts; null outside any row.
+  const listAround = (id) => ownersAround(id).find((owner) => contractOf(owner)?.content === 'rows') ?? null;
+
   const isVisible = (id, contextIndices) =>
     resolveWidgetVisibility({
       componentId: id,
@@ -174,6 +177,7 @@ export const createModuleScope = (state, moduleId, currentLayout) => {
     ownerOf,
     depthOf,
     rowDepthOf,
+    listAround,
     isVisible,
     isCollapsible,
     isJsonSchemaForm,
