@@ -3,11 +3,17 @@ import { Reflector } from '@nestjs/core';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
 import { Request } from 'express';
-import { Observable } from 'rxjs';
-import { concatMap } from 'rxjs/operators';
+import { from, Observable } from 'rxjs';
+import { concatMap, switchMap } from 'rxjs/operators';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataQueryFolder } from '@entities/data_query_folder.entity';
+import { DataQuery } from '@entities/data_query.entity';
+import { ChildType } from '@modules/data-query-folders/types';
 import { GIT_DIRTY_SUBJECT_KEY, GitDirtySubjectType } from '../decorators/marks-git-dirty.decorator';
+
+type QueryFolderChild = { childId?: unknown; childType?: unknown };
+type QueryFolderWriteBody = QueryFolderChild & { appVersionId?: unknown; items?: unknown };
 
 /**
  * Flips `hasUncommittedChanges: true` on the AppVersion/DataSourceVersion a write just touched,
@@ -37,16 +43,36 @@ export class GitDirtyFlagInterceptor implements NestInterceptor {
 
     const request = context.switchToHttp().getRequest<Request>();
 
+    if (subjectType === GitDirtySubjectType.QUERY_FOLDER) {
+      // Resolved before the handler: a folder delete (or folder_and_queries delete) removes the
+      // rows the owning version would otherwise be looked up from.
+      return from(this.bestEffort(subjectType, () => this.resolveQueryFolderVersionId(request))).pipe(
+        switchMap((versionId) =>
+          next.handle().pipe(
+            concatMap(async (result) => {
+              if (versionId) await this.bestEffort(subjectType, () => this.markAppVersionDirty(versionId));
+              return result;
+            })
+          )
+        )
+      );
+    }
+
     return next.handle().pipe(
       concatMap(async (result) => {
-        try {
-          await this.markDirty(subjectType, request);
-        } catch (err) {
-          this.logger.warn(`Failed to set git dirty flag (${subjectType}): ${(err as Error)?.message}`);
-        }
+        await this.bestEffort(subjectType, () => this.markDirty(subjectType, request));
         return result;
       })
     );
+  }
+
+  private async bestEffort<T>(subjectType: GitDirtySubjectType, fn: () => Promise<T>): Promise<T | undefined> {
+    try {
+      return await fn();
+    } catch (err) {
+      this.logger.warn(`Failed to set git dirty flag (${subjectType}): ${(err as Error)?.message}`);
+      return undefined;
+    }
   }
 
   private async markDirty(subjectType: GitDirtySubjectType, request: Request): Promise<void> {
@@ -58,9 +84,7 @@ export class GitDirtyFlagInterceptor implements NestInterceptor {
         this.asString((request.body as { app_version_id?: unknown })?.app_version_id);
       if (!versionId) return;
 
-      await this.dataSource
-        .getRepository(AppVersion)
-        .update({ id: versionId, isSynced: true, hasUncommittedChanges: false }, { hasUncommittedChanges: true });
+      await this.markAppVersionDirty(versionId);
       return;
     }
 
@@ -80,6 +104,39 @@ export class GitDirtyFlagInterceptor implements NestInterceptor {
         { hasUncommittedChanges: true }
       );
     }
+  }
+
+  private async markAppVersionDirty(versionId: string): Promise<void> {
+    await this.dataSource
+      .getRepository(AppVersion)
+      .update({ id: versionId, isSynced: true, hasUncommittedChanges: false }, { hasUncommittedChanges: true });
+  }
+
+  /**
+   * Query-folder routes: create carries `appVersionId`; rename/delete carry the folder as `:id`;
+   * reorder carries one child, batch-reorder a list of children (all in one version).
+   */
+  private async resolveQueryFolderVersionId(request: Request): Promise<string | undefined> {
+    const body = (request.body ?? {}) as QueryFolderWriteBody;
+
+    const bodyVersionId = this.asString(body.appVersionId);
+    if (bodyVersionId) return bodyVersionId;
+
+    const folderId = this.asString(request.params?.id);
+    if (folderId) return this.findVersionIdOf(DataQueryFolder, folderId);
+
+    const child: QueryFolderChild | undefined = Array.isArray(body.items) ? body.items[0] : body;
+    const childId = this.asString(child?.childId);
+    if (!childId) return undefined;
+
+    return this.findVersionIdOf(child.childType === ChildType.FOLDER ? DataQueryFolder : DataQuery, childId);
+  }
+
+  private async findVersionIdOf(entity: typeof DataQueryFolder | typeof DataQuery, id: string) {
+    const row = await this.dataSource
+      .getRepository<DataQueryFolder | DataQuery>(entity)
+      .findOne({ where: { id }, select: ['id', 'appVersionId'] });
+    return row?.appVersionId;
   }
 
   private asString(value: unknown): string | undefined {
