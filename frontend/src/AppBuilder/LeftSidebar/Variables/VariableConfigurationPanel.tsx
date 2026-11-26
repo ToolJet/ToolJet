@@ -136,13 +136,11 @@ const VariableConfigurationPanel = ({
         closeLabel={getPanelCloseLabel('variable')}
         closeDataCy="variable-configuration-close"
       >
-        {context.mode === 'detail' && (
-          <PanelDocumentationLink
-            href="https://docs.tooljet.com/docs/actions/set-page-variable/"
-            label="Variables documentation"
-            dataCy="variable-documentation-link"
-          />
-        )}
+        <PanelDocumentationLink
+          href="https://docs.tooljet.com/docs/actions/set-page-variable/"
+          label="Variables documentation"
+          dataCy="variable-documentation-link"
+        />
         <DetailMenu items={menuItems} darkMode={darkMode} />
       </PanelHeader>
       <div className="variables-body">

@@ -104,6 +104,10 @@ test('creation stays on the right, preserves list search and shows the saved det
   await session.user.type(screen.getByPlaceholderText('Search variables'), 'source');
   await session.user.click(screen.getByRole('button', { name: 'New variable', exact: true }));
   const name = screen.getByPlaceholderText('e.g. selectedOrderId');
+  const documentation = screen.getByRole('link', { name: 'Variables documentation' });
+  expect(documentation).toHaveAttribute('href', 'https://docs.tooljet.com/docs/actions/set-page-variable/');
+  expect(documentation).toHaveAttribute('target', '_blank');
+  expect(documentation).toHaveAttribute('rel', 'noreferrer');
   expect(name.closest('.right-panel-shell')).not.toBeNull();
   await session.user.type(name, 'createdValue');
   await session.user.click(screen.getByRole('button', { name: 'Create variable', exact: true }));
